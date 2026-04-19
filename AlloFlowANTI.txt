@@ -19596,7 +19596,7 @@ Return ONLY valid JSON:
   const applyWordRestorationInPlace = _docPipeline ? _docPipeline.applyWordRestorationInPlace : () => ({ restored: [], unplaceable: [] });
   const retargetMissingWordsViaGemini = _docPipeline ? _docPipeline.retargetMissingWordsViaGemini : async (h) => ({ html: h, stillMissing: [], restoredViaRetry: [] });
   const restoreSentencesDeterministic = _docPipeline ? _docPipeline.restoreSentencesDeterministic : (h) => ({ html: h, stillMissing: [], restoredViaSentence: [] });
-  const detectAndHandleDuplicates = _docPipeline ? _docPipeline.detectAndHandleDuplicates : (h) => ({ html: h, autoRemoved: [], highlighted: [] });
+  const detectAndHandleDuplicates = _docPipeline ? _docPipeline.detectAndHandleDuplicates : (h, _s) => ({ html: h, autoRemoved: [], highlighted: [] });
   const generateCustomExportStyle = _docPipeline ? _docPipeline.generateCustomExportStyle : async () => {};
   const runPdfBatchRemediation = _docPipeline ? _docPipeline.runPdfBatchRemediation : async () => {};
   const proceedWithPdfTransform = _docPipeline ? _docPipeline.proceedWithPdfTransform : async () => {};
@@ -19739,7 +19739,9 @@ Return ONLY valid JSON:
             let dedupResult = { autoRemoved: [], highlighted: [] };
             try {
               const currentHtml = (pdfFixResult && pdfFixResult.accessibleHtml) || (getPdfPreviewHtml ? getPdfPreviewHtml() : '');
-              const dedup = detectAndHandleDuplicates(currentHtml);
+              // Pass the pdf.js source text so dedup can distinguish legitimate repetition
+              // (running headers, refrains, table labels) from AI-inserted chunk stutters.
+              const dedup = detectAndHandleDuplicates(currentHtml, sourceText);
               if (dedup && dedup.html && dedup.html !== currentHtml) {
                 if (typeof setPdfFixResult === 'function' && pdfFixResult) {
                   setPdfFixResult({ ...pdfFixResult, accessibleHtml: dedup.html });

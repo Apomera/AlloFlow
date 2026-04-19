@@ -524,6 +524,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         gfx.save(); gfx.beginPath(); gfx.rect(x, y, w, h2); gfx.clip();
         var pxPerKt = 2;
         var centerY = y + h2 / 2;
+        // Rotation speed (Vr) ~ 55 kts for a Cessna 172. Marker line + label so the
+        // student knows exactly when to pull back on the yoke.
+        var vrSpeed = 55;
         for (var spd = Math.max(0, Math.floor(speed / 10) * 10 - 60); spd <= speed + 60; spd += 10) {
           var tickY = centerY - (spd - speed) * pxPerKt;
           if (tickY < y || tickY > y + h2) continue;
@@ -540,6 +543,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             gfx.fillStyle = 'rgba(255,255,255,0.8)'; gfx.font = '9px monospace'; gfx.textAlign = 'right';
             gfx.fillText(spd, x + w - 14, tickY + 3);
           }
+        }
+        // Vr (rotation speed) line — bright cyan band right at 55 kts
+        var vrY = centerY - (vrSpeed - speed) * pxPerKt;
+        if (vrY >= y && vrY <= y + h2) {
+          gfx.strokeStyle = '#22d3ee';
+          gfx.lineWidth = 2;
+          gfx.beginPath(); gfx.moveTo(x, vrY); gfx.lineTo(x + w, vrY); gfx.stroke();
+          gfx.fillStyle = '#22d3ee';
+          gfx.font = 'bold 8px monospace';
+          gfx.textAlign = 'left';
+          gfx.fillText('Vr', x + 2, vrY - 2);
         }
         gfx.restore();
         // Current value box
@@ -2752,6 +2766,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             var d = haversineNm(state.lat, state.lon, wp.lat, wp.lon);
             if (d < nearDist) { nearDist = d; nearWp = wp; }
           });
+          // Expose to UI overlays (landing tutorial reads from hudRef).
+          hudRef.current.nearWp = nearWp;
+          hudRef.current.nearDist = nearDist;
 
           // ── RENDER ──
           // Sky gradient
@@ -3768,6 +3785,61 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           // Shown when plane is on the ground at low speed. Auto-dismisses on liftoff.
           // User can also dismiss manually with the X button. Tracks dismissal in
           // d.takeoffTutorialSeen so it doesn't show again after the first liftoff.
+          // Landing tutorial: shows when player is on approach (low altitude near a
+          // runway, descending) and hasn't dismissed it yet. Different content from
+          // takeoff: glideslope, flare, target FPM.
+          (flightRef.current && !flightRef.current.onGround && hudRef.current.nearWp
+            && hudRef.current.nearDist != null && hudRef.current.nearDist < 5
+            && (flightRef.current.altitude - (flightRef.current.fieldElev || 0)) < 1500
+            && (flightRef.current.altitude - (flightRef.current.fieldElev || 0)) > 50
+            && flightRef.current.vsi < 0
+            && !d.landingTutorialDismissed) ? h('div', {
+            style: {
+              position: 'absolute', top: '50%', right: '20px', transform: 'translateY(-50%)',
+              maxWidth: '340px', padding: '16px', borderRadius: '12px',
+              background: 'rgba(2,6,23,0.92)', border: '2px solid #fbbf24',
+              color: '#e2e8f0', fontSize: '12px', lineHeight: '1.6', zIndex: 20,
+              boxShadow: '0 8px 24px rgba(0,0,0,0.6)'
+            }
+          },
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' } },
+              h('div', { style: { fontSize: '14px', fontWeight: 900, color: '#fbbf24' } }, '🛬 On Approach'),
+              h('button', { onClick: function() { upd('landingTutorialDismissed', true); },
+                'aria-label': 'Dismiss landing tutorial',
+                style: { background: 'none', border: 'none', color: '#94a3b8', fontSize: '16px', cursor: 'pointer', padding: '0 4px' }
+              }, '✕')
+            ),
+            h('div', { style: { fontSize: '11px', color: '#94a3b8', marginBottom: '8px' } }, "You're descending toward " + (hudRef.current.nearWp.code || hudRef.current.nearWp.name) + ". Land smoothly:"),
+            h('ol', { style: { paddingLeft: '20px', margin: '0 0 12px 0' } },
+              h('li', { style: { marginBottom: '6px' } },
+                h('b', { style: { color: '#fbbf24' } }, '1. Reduce throttle: '),
+                'Hold ', h('kbd', { style: { padding: '1px 5px', background: '#334155', borderRadius: '3px', fontSize: '10px' } }, 'Ctrl'),
+                ' to spool the engine down to ~30%. Speed will bleed off.'
+              ),
+              h('li', { style: { marginBottom: '6px' } },
+                h('b', { style: { color: '#fbbf24' } }, '2. Hold the glideslope: '),
+                'Aim for a ', h('span', { style: { color: '#22d3ee', fontWeight: 700 } }, '3° descent'),
+                '. The PAPI lights show 2 white + 2 red when you\'re on slope.'
+              ),
+              h('li', { style: { marginBottom: '6px' } },
+                h('b', { style: { color: '#fbbf24' } }, '3. Approach speed: '),
+                'Keep speed at ~', h('span', { style: { color: '#22d3ee', fontWeight: 700 } }, '65 kts'),
+                ' (1.3 × stall speed). Faster = float past runway. Slower = stall.'
+              ),
+              h('li', null,
+                h('b', { style: { color: '#fbbf24' } }, '4. Flare: '),
+                'Just above the runway (~10 ft), gently pull ', h('kbd', { style: { padding: '1px 5px', background: '#334155', borderRadius: '3px', fontSize: '10px' } }, 'W'),
+                ' to raise the nose. Target ', h('span', { style: { color: '#22d3ee', fontWeight: 700 } }, '< 200 fpm'),
+                ' descent at touchdown.'
+              )
+            ),
+            h('div', { style: { padding: '10px', background: 'rgba(251,191,36,0.1)', borderRadius: '6px', borderLeft: '3px solid #fbbf24', fontSize: '11px' } },
+              h('div', { style: { fontWeight: 800, color: '#fbbf24', marginBottom: '4px' } }, '🔬 The Science'),
+              h('div', { style: { color: '#cbd5e1' } },
+                'Energy = ½mv² (kinetic) + mgh (potential). To descend safely, you trade altitude for distance — letting drag bleed off speed. The flare converts forward velocity into a brief lift increase that breaks the descent rate just before the wheels touch.'
+              )
+            )
+          ) : null,
           (flightRef.current && flightRef.current.onGround && flightRef.current.speed < 30 && !d.takeoffTutorialDismissed) ? h('div', {
             style: {
               position: 'absolute', top: '50%', right: '20px', transform: 'translateY(-50%)',

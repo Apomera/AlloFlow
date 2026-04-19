@@ -2976,6 +2976,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // Seatbelt state: must be fastened to start driving. Chime plays until buckled.
       // User presses B (or any movement key will also auto-buckle after first prompt).
       var seatbeltRef = useRef({ fastened: false, chimeOsc: null, chimeGain: null });
+      // React-state mirror of seatbeltRef.current.fastened — the UI prompt reads this
+      // so it actually re-renders when the belt gets fastened (a ref mutation alone
+      // doesn't trigger React re-renders, which left the prompt stuck on screen).
+      var beltFastenedTuple = useState(false);
+      var beltFastened = beltFastenedTuple[0];
+      var setBeltFastened = beltFastenedTuple[1];
       // Blind spot detector: populated every render based on adjacent-lane traffic.
       var blindSpotRef = useRef({ left: false, right: false });
       // Lane departure detector: flags when we drift across a lane line without signaling.
@@ -3099,6 +3105,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         // Scenarios that auto-bypass this: parking (top-down, no real car), 3-point, backingDrill.
         var autoBelt = ['parking', 'threePoint', 'backingDrill'].indexOf(scn.id) !== -1;
         seatbeltRef.current = { fastened: autoBelt, chimeOsc: null, chimeGain: null, startedAt: Date.now() };
+        setBeltFastened(!!autoBelt); // reset the UI mirror whenever driving starts
         if (!autoBelt) {
           safeTimeout(function() {
             if (!seatbeltRef.current.fastened) {
@@ -4168,6 +4175,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           if (!seatbeltRef.current.fastened) {
             if (throttleInput > 0 || brakeInput > 0 || k['b']) {
               seatbeltRef.current.fastened = true;
+              setBeltFastened(true); // sync React state so the prompt disappears
               addToast('🔔 Seatbelt fastened. Drive safe.');
               speak('Seatbelt fastened.');
             } else {
@@ -6591,14 +6599,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
           // ── Road surface ──
           var centerX = Math.floor(MAP_SIZE / 2);
-          var roadGeo = new T.PlaneGeometry(7, MAP_SIZE * 2);
           var roadColor = isSnow ? 0x8899a6 : 0x333842;
           var roadMat = new T.MeshLambertMaterial({ color: roadColor });
-          var road = new T.Mesh(roadGeo, roadMat);
-          road.rotation.x = -Math.PI / 2;
-          road.position.set(centerX - MAP_SIZE / 2, 0.01, 0);
-          road.receiveShadow = true;
-          scene.add(road);
+          var _isRuralCurve = ['rural', 'snow', 'fog', 'dawn'].indexOf(currentScenario.id) !== -1;
+          var _isHwyCurve = currentScenario.id === 'highway';
+          if (_isRuralCurve || _isHwyCurve) {
+            // Segmented asphalt that follows the same sine curve as the lane lines.
+            for (var _rs = -MAP_SIZE; _rs < MAP_SIZE; _rs += 2) {
+              var _rSegGeo = new T.PlaneGeometry(7, 2.15);
+              var _rSeg = new T.Mesh(_rSegGeo, roadMat);
+              _rSeg.rotation.x = -Math.PI / 2;
+              var _rMY = _rs + MAP_SIZE / 2;
+              var _rCX = _isRuralCurve ? centerX + Math.sin(_rMY * 0.12) * 5
+                                       : centerX + Math.sin(_rMY * 0.06) * 3;
+              _rSeg.position.set(_rCX - MAP_SIZE / 2, 0.01, _rs + 1);
+              _rSeg.receiveShadow = true;
+              scene.add(_rSeg);
+            }
+          } else {
+            var roadGeo = new T.PlaneGeometry(7, MAP_SIZE * 2);
+            var road = new T.Mesh(roadGeo, roadMat);
+            road.rotation.x = -Math.PI / 2;
+            road.position.set(centerX - MAP_SIZE / 2, 0.01, 0);
+            road.receiveShadow = true;
+            scene.add(road);
+          }
 
           // ── Center line dashes (follow road curve) ──
           var dashMat = new T.MeshBasicMaterial({ color: 0xfacc15 });
@@ -6652,23 +6677,51 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
           // ── Sidewalks (concrete strips between road and grass) ──
           var sidewalkMat = new T.MeshLambertMaterial({ color: isSnow ? 0xc0c8d0 : 0xb0a890 });
-          [-4.5, 4.5].forEach(function(offset) {
-            var swGeo = new T.PlaneGeometry(1.5, MAP_SIZE * 2);
-            var sw = new T.Mesh(swGeo, sidewalkMat);
-            sw.rotation.x = -Math.PI / 2;
-            sw.position.set(centerX - MAP_SIZE / 2 + offset, 0.015, 0);
-            sw.receiveShadow = true;
-            scene.add(sw);
-          });
+          if (_isRuralCurve || _isHwyCurve) {
+            [-4.5, 4.5].forEach(function(offset) {
+              for (var _sw = -MAP_SIZE; _sw < MAP_SIZE; _sw += 2) {
+                var _swMY = _sw + MAP_SIZE / 2;
+                var _swCX = _isRuralCurve ? centerX + Math.sin(_swMY * 0.12) * 5
+                                          : centerX + Math.sin(_swMY * 0.06) * 3;
+                var _swSeg = new T.Mesh(new T.PlaneGeometry(1.5, 2.15), sidewalkMat);
+                _swSeg.rotation.x = -Math.PI / 2;
+                _swSeg.position.set(_swCX - MAP_SIZE / 2 + offset, 0.015, _sw + 1);
+                _swSeg.receiveShadow = true;
+                scene.add(_swSeg);
+              }
+            });
+          } else {
+            [-4.5, 4.5].forEach(function(offset) {
+              var swGeo = new T.PlaneGeometry(1.5, MAP_SIZE * 2);
+              var sw = new T.Mesh(swGeo, sidewalkMat);
+              sw.rotation.x = -Math.PI / 2;
+              sw.position.set(centerX - MAP_SIZE / 2 + offset, 0.015, 0);
+              sw.receiveShadow = true;
+              scene.add(sw);
+            });
+          }
 
           // ── Curbs (raised edges between road and sidewalk) ──
           var curbMat = new T.MeshLambertMaterial({ color: 0x888888 });
-          [-3.5, 3.5].forEach(function(offset) {
-            var cGeo = new T.BoxGeometry(0.15, 0.12, MAP_SIZE * 2);
-            var curb = new T.Mesh(cGeo, curbMat);
-            curb.position.set(centerX - MAP_SIZE / 2 + offset, 0.06, 0);
-            scene.add(curb);
-          });
+          if (_isRuralCurve || _isHwyCurve) {
+            [-3.5, 3.5].forEach(function(offset) {
+              for (var _cb = -MAP_SIZE; _cb < MAP_SIZE; _cb += 2) {
+                var _cbMY = _cb + MAP_SIZE / 2;
+                var _cbCX = _isRuralCurve ? centerX + Math.sin(_cbMY * 0.12) * 5
+                                          : centerX + Math.sin(_cbMY * 0.06) * 3;
+                var _cbSeg = new T.Mesh(new T.BoxGeometry(0.15, 0.12, 2.1), curbMat);
+                _cbSeg.position.set(_cbCX - MAP_SIZE / 2 + offset, 0.06, _cb + 1);
+                scene.add(_cbSeg);
+              }
+            });
+          } else {
+            [-3.5, 3.5].forEach(function(offset) {
+              var cGeo = new T.BoxGeometry(0.15, 0.12, MAP_SIZE * 2);
+              var curb = new T.Mesh(cGeo, curbMat);
+              curb.position.set(centerX - MAP_SIZE / 2 + offset, 0.06, 0);
+              scene.add(curb);
+            });
+          }
 
           // ── Street lamps (poles with point lights — key for night immersion) ──
           var lampMeshes = [];
@@ -13593,7 +13646,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             )
           ) : null,
           // ── Seatbelt prompt — shows until the driver buckles up ──
-          !seatbeltRef.current.fastened ? h('div', {
+          // Read the React-state mirror, NOT the ref — a ref update alone won't
+          // cause a re-render and the prompt would hang on screen forever.
+          !beltFastened ? h('div', {
             style: { position: 'absolute', top: '100px', left: '50%', transform: 'translateX(-50%)', padding: '14px 22px', borderRadius: '14px', background: 'linear-gradient(135deg, rgba(127,29,29,0.95), rgba(185,28,28,0.95))', border: '2px solid #fca5a5', color: '#fff', zIndex: 28, textAlign: 'center', maxWidth: '440px', boxShadow: '0 6px 24px rgba(239,68,68,0.5)', animation: 'rr-pulse-soft 1.5s ease-in-out infinite' }
           },
             h('div', { style: { fontSize: '36px', marginBottom: '4px' } }, '🔔'),

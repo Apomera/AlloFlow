@@ -9910,7 +9910,7 @@ tr { page-break-inside: avoid; }
   // Skip zones: headings, captions, th, figcaption, and our own data-source-restored
   // / data-source-preserved-block / data-image-recovery / data-content-recovery
   // sections (that content SHOULD sometimes echo other text by design).
-  const detectAndHandleDuplicates = (html) => {
+  const detectAndHandleDuplicates = (html, sourceText) => {
     if (!html) return { html: html || '', autoRemoved: [], highlighted: [] };
     const doctypeMatch = html.match(/^\s*<!DOCTYPE[^>]*>/i);
     const doctypePrefix = doctypeMatch ? doctypeMatch[0] + '\n' : '';
@@ -9950,28 +9950,71 @@ tr { page-break-inside: avoid; }
     const highlighted = [];
     const blocksToRemove = new Set();
 
-    // ── Tier 1: exact-duplicate full blocks — auto-remove 2nd+ occurrence ──
-    const seenNormalized = new Map();
+    // ── Source index from pdf.js extraction — the authoritative ground truth. ──
+    // Maps normalized-source-text → count of occurrences in source. Used to gate every
+    // auto-remove and highlight decision below. A paragraph appearing 2x in remediated is
+    // only a "real" duplicate if the source has it FEWER than 2 times.
+    const sourceNormCount = new Map();
+    const sourceSentenceSet = []; // [{ normalized, words: Set<string> }] for Tier 3 matching
+    if (sourceText && typeof sourceText === 'string' && sourceText.length > 20) {
+      // Sentence-level index (for shorter matches + Tier 3 near-duplicate anchoring).
+      splitSentences(sourceText).forEach(s => {
+        const trimmed = s.trim();
+        if (trimmed.length < 20) return;
+        const norm = normalizeText(trimmed);
+        if (norm.length < 20) return;
+        sourceNormCount.set(norm, (sourceNormCount.get(norm) || 0) + 1);
+        sourceSentenceSet.push({ normalized: norm, words: new Set(wordArr(trimmed)) });
+      });
+      // Paragraph-level index (blank-line separated) for whole-block comparison.
+      sourceText.split(/\n\s*\n+/).forEach(p => {
+        const trimmed = p.trim();
+        if (trimmed.length < 40) return;
+        const norm = normalizeText(trimmed);
+        if (norm.length < 40) return;
+        sourceNormCount.set(norm, (sourceNormCount.get(norm) || 0) + 1);
+      });
+    }
+    const srcCountOf = (norm) => sourceNormCount.get(norm) || 0;
+
+    // ── Tier 1: byte-identical full blocks — source-anchored auto-remove. ──
+    // Only remove an occurrence when the remediated count exceeds the source count.
+    // If the source legitimately has the text N times (running headers, refrains,
+    // repeated table labels), we keep all N occurrences in the remediated output.
+    const seenCount = new Map();
     blocks.forEach(el => {
       const txt = (el.textContent || '').trim();
       if (txt.length < 40) return;
       const norm = normalizeText(txt);
       if (norm.length < 40) return;
-      if (seenNormalized.has(norm)) {
-        blocksToRemove.add(el);
-        autoRemoved.push({ text: txt.slice(0, 100) + (txt.length > 100 ? '…' : ''), reason: 'exact-duplicate' });
-      } else {
-        seenNormalized.set(norm, el);
+      const prev = seenCount.get(norm);
+      const remCountNow = (prev ? prev.count : 0) + 1;
+      seenCount.set(norm, { el, count: remCountNow });
+      if (remCountNow > 1) {
+        const srcCount = srcCountOf(norm);
+        if (remCountNow > srcCount) {
+          blocksToRemove.add(el);
+          autoRemoved.push({
+            text: txt.slice(0, 100) + (txt.length > 100 ? '…' : ''),
+            reason: srcCount === 0 ? 'ai-hallucination' : 'chunk-stutter',
+            srcCount,
+            remCount: remCountNow,
+          });
+        }
+        // else: source has >= remCount copies; legitimate repetition, keep.
       }
     });
 
-    // ── Tier 2: truncation fragments — auto-remove mid-word/ellipsis cutoffs ──
+    // ── Tier 2: truncation fragments — source-anchored auto-remove. ──
+    // If the truncation fragment also exists in the source (rare but possible for a
+    // legitimate truncated caption or citation), keep it. Otherwise it's a chunk-boundary
+    // stutter and safe to remove.
     blocks.forEach(el => {
       if (blocksToRemove.has(el)) return;
       const txt = (el.textContent || '').trim();
       if (!isTruncationFragment(txt)) return;
-      // Extra safety: only auto-remove if the block is short (< 300 chars) — long truncations
-      // likely contain real content the user wants to keep and manually fix.
+      const norm = normalizeText(txt);
+      if (srcCountOf(norm) > 0) return; // source vouches for the fragment
       if (txt.length >= 300) {
         highlighted.push({ el, reason: 'truncation-fragment-long', text: txt.slice(0, 80) + '…' });
         return;
@@ -9994,14 +10037,52 @@ tr { page-break-inside: avoid; }
 
     // Apply Tier 1+2 removals
     blocksToRemove.forEach(el => { if (el.parentNode) el.parentNode.removeChild(el); });
-    // Tiers 3 (≥85% word overlap) and 4 (8-word N-gram repeats) were removed 2026-04-18.
-    // Both triggered false positives on dense academic prose where adjacent paragraphs on
-    // the same topic legitimately share much of their vocabulary and occasionally collide
-    // on 8-word sequences. Tier 1 (byte-identical auto-remove) and Tier 2 (truncation
-    // auto-remove) cover the original chunk-boundary stutter case cleanly and safely. If
-    // the "highlight for review" feature comes back, it needs a Jaccard-based metric, a
-    // much higher threshold, a minimum-shared-tokens absolute floor, and probably a
-    // cosine-similarity style weighted by TF-IDF rather than raw set overlap.
+
+    // ── Tier 3: source-anchored near-duplicate highlight. ──
+    // Only flags a remediated block as suspicious if it best-matches the SAME source
+    // sentence as another remediated block AND the two remediated blocks are themselves
+    // substantially similar. That means the source has ONE paragraph on a topic but the
+    // remediation produced TWO similar paragraphs — a likely AI stutter. Two adjacent
+    // remediated paragraphs that happen to share domain vocabulary are NOT flagged, because
+    // they map to DIFFERENT source sentences.
+    if (sourceSentenceSet.length > 0) {
+      const remaining = blocks.filter(el => !blocksToRemove.has(el))
+        .map(el => ({ el, words: new Set(wordArr(el.textContent || '')) }))
+        .filter(b => b.words.size >= 8);
+      // For each remaining block, find the best-matching source sentence (Jaccard index).
+      const bestMatch = remaining.map(b => {
+        let bestIdx = -1, bestScore = 0;
+        for (let si = 0; si < sourceSentenceSet.length; si++) {
+          const s = sourceSentenceSet[si];
+          if (s.words.size < 8) continue;
+          let common = 0;
+          s.words.forEach(w => { if (b.words.has(w)) common++; });
+          const union = s.words.size + b.words.size - common;
+          const jaccard = union > 0 ? common / union : 0;
+          if (jaccard > bestScore) { bestScore = jaccard; bestIdx = si; }
+        }
+        return bestScore >= 0.5 ? bestIdx : -1;
+      });
+      // Two remediated blocks pointing at the same source sentence + similar to each other
+      // = source-anchored near-duplicate.
+      const seenBestIdx = new Map();
+      remaining.forEach((b, i) => {
+        const bi = bestMatch[i];
+        if (bi === -1) return;
+        if (seenBestIdx.has(bi)) {
+          const first = seenBestIdx.get(bi);
+          let common = 0;
+          first.words.forEach(w => { if (b.words.has(w)) common++; });
+          const union = first.words.size + b.words.size - common;
+          const pairJaccard = union > 0 ? common / union : 0;
+          if (pairJaccard >= 0.6) {
+            highlighted.push({ el: b.el, reason: 'source-anchored-near-duplicate', text: (b.el.textContent || '').trim().slice(0, 80) + '…' });
+          }
+        } else {
+          seenBestIdx.set(bi, b);
+        }
+      });
+    }
 
     // Apply highlight class + one-time CSS rule if any flags
     if (highlighted.length > 0) {

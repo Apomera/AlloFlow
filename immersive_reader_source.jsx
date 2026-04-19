@@ -653,154 +653,264 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
 });
 
 // ============================================================================
-// KaraokeReaderOverlay — word-by-word sing-along reader
-// Text is laid out in normal paragraphs at a comfortable reading size. One
-// word at a time is highlighted, view auto-scrolls to keep it centered. With
-// "Speak" on, a speech-synthesis utterance drives the highlight via onboundary
-// events so the visual and audio stay perfectly in sync.
+// KaraokeReaderOverlay — sentence-sweep "Focus Reader"
+// Full-screen immersive view. Plays each sentence via Gemini TTS (when the
+// parent passes `getAudioUrl`) or browser speechSynthesis fallback. As audio
+// plays, a colored gradient "wipes" across the active sentence's text —
+// proportional to audio.currentTime/audio.duration — so visual progress
+// stays synced with audio without needing per-word boundary events.
+// (Compatible with Gemini TTS, which returns audio-only with no timepoint
+// metadata. See plan.md for rationale.)
 // ============================================================================
-const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen }) => {
+const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl }) => {
     const { t } = useContext(LanguageContext);
-    const [words, setWords] = useState([]); // [{text, start, end, paraIdx}]
-    const [paragraphs, setParagraphs] = useState([]); // [[wordIdx...], ...]
-    const [currentIdx, setCurrentIdx] = useState(0);
+    const [sentences, setSentences] = useState([]);
+    const [sentenceIdx, setSentenceIdx] = useState(0);
+    const [sweepPct, setSweepPct] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false);
-    const [wpm, setWpm] = useState(220);
-    const [useTts, setUseTts] = useState(true);
+    const [autoAdvance, setAutoAdvance] = useState(true);
     const [theme, setTheme] = useState('warm');
     const themes = {
-        warm: { bg: '#fdfbf7', ink: '#111827', dim: '#94a3b8', accent: '#fde68a', accentInk: '#78350f' },
-        dark: { bg: '#0f172a', ink: '#f1f5f9', dim: '#64748b', accent: '#a855f7', accentInk: '#fff' },
-        sepia: { bg: '#f4ecd8', ink: '#3b2a1a', dim: '#a08968', accent: '#f97316', accentInk: '#fff' }
+        warm: { bg: '#fdfbf7', ink: '#111827', dim: '#9ca3af', sweep: '#b45309', accent: '#fde68a' },
+        dark: { bg: '#0f172a', ink: '#f1f5f9', dim: '#64748b', sweep: '#a5b4fc', accent: '#a855f7' },
+        sepia: { bg: '#f4ecd8', ink: '#3b2a1a', dim: '#a08968', sweep: '#c2410c', accent: '#f97316' }
     };
     const c = themes[theme] || themes.warm;
-    const wordRefs = useRef([]);
-    const viewportRef = useRef(null);
-    const intervalRef = useRef(null);
-    const ttsAvailable = typeof window !== 'undefined' && 'speechSynthesis' in window && typeof SpeechSynthesisUtterance !== 'undefined';
+    const audioRef = useRef(null);
+    const rafRef = useRef(null);
+    const activeSentenceRef = useRef(null);
+    const reducedMotion = typeof window !== 'undefined' && window.matchMedia
+        ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
+        : false;
 
-    // Parse text once (on mount / text change)
+    // Split text into sentences once (self-contained — parent's splitTextToSentences isn't exported)
     useEffect(() => {
-        if (!text) { setWords([]); setParagraphs([]); return; }
-        const cleaned = String(text || '').replace(/<[^>]*>/g, '');
-        const paras = cleaned.split(/\n{2,}/).map(p => p.replace(/\s+/g, ' ').trim()).filter(Boolean);
-        const flat = [];
-        const paraMap = [];
-        let charCursor = 0;
-        paras.forEach((para, pIdx) => {
-            const wordsInPara = para.split(' ').filter(Boolean);
-            const indicesInPara = [];
-            wordsInPara.forEach(w => {
-                flat.push({ text: w, paraIdx: pIdx, start: charCursor, end: charCursor + w.length });
-                indicesInPara.push(flat.length - 1);
-                charCursor += w.length + 1; // +1 for space
-            });
-            paraMap.push(indicesInPara);
-            charCursor += 1; // paragraph break
-        });
-        setWords(flat);
-        setParagraphs(paraMap);
-        setCurrentIdx(0);
-        wordRefs.current = new Array(flat.length).fill(null);
+        if (!text) { setSentences([]); return; }
+        const cleaned = String(text || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+        // Preserve terminal punctuation in each sentence; split on "punct + whitespace"
+        const parts = cleaned.split(/([.!?]+["'\u201D\u2019]?)(\s+|$)/);
+        const out = [];
+        let buf = '';
+        for (let i = 0; i < parts.length; i++) {
+            buf += parts[i] || '';
+            // Every 3rd chunk (index 0, 3, 6...) is body, next two are punct + whitespace
+            if ((i % 3) === 2) {
+                const s = buf.trim();
+                if (s) out.push(s);
+                buf = '';
+            }
+        }
+        const tail = buf.trim();
+        if (tail) out.push(tail);
+        setSentences(out.length > 0 ? out : [cleaned]);
+        setSentenceIdx(0);
+        setSweepPct(0);
     }, [text]);
 
-    // Auto-scroll current word into view
+    // Hard teardown when the overlay closes or the component unmounts
     useEffect(() => {
-        const node = wordRefs.current[currentIdx];
-        if (node && viewportRef.current) {
-            try {
-                node.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            } catch (e) { /* older browsers */ }
+        if (!isOpen) {
+            try { if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; } } catch (e) {}
+            if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null; }
+            try { if (typeof window !== 'undefined' && window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {}
+            setIsPlaying(false);
+            setSweepPct(0);
         }
-    }, [currentIdx]);
+        return () => {
+            try { if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; } } catch (e) {}
+            if (rafRef.current) cancelAnimationFrame(rafRef.current);
+            try { if (typeof window !== 'undefined' && window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {}
+        };
+    }, [isOpen]);
 
-    // Pure timer-based advancement (non-TTS mode)
+    // Scroll the active sentence into view
     useEffect(() => {
-        if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null; }
-        if (!isPlaying || useTts) return;
-        const delay = 60000 / Math.max(30, wpm);
-        intervalRef.current = setInterval(() => {
-            setCurrentIdx(prev => {
-                if (prev >= words.length - 1) { setIsPlaying(false); return prev; }
-                return prev + 1;
-            });
-        }, delay);
-        return () => { if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null; } };
-    }, [isPlaying, useTts, wpm, words.length]);
+        const node = activeSentenceRef.current;
+        if (node) { try { node.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'center' }); } catch (e) {} }
+    }, [sentenceIdx, reducedMotion]);
 
-    // TTS-driven advancement (speech onboundary event maps char offset → word index)
-    useEffect(() => {
-        if (!isPlaying || !useTts || !ttsAvailable || words.length === 0) return;
-        try {
-            window.speechSynthesis.cancel();
-            // Start speaking from the current word onward
-            const startingWord = words[currentIdx];
-            if (!startingWord) return;
-            const offsetShift = startingWord.start;
-            const plain = words.map(w => w.text).join(' ');
-            const remaining = plain.slice(offsetShift);
-            const u = new SpeechSynthesisUtterance(remaining);
-            u.rate = Math.max(0.5, Math.min(2.0, wpm / 200));
-            u.pitch = 1.0; u.volume = 0.95;
-            u.onboundary = (ev) => {
-                if (ev.name !== 'word') return;
-                const absCharIdx = offsetShift + ev.charIndex;
-                // Find the word whose [start, end] bracket absCharIdx
-                for (let i = 0; i < words.length; i++) {
-                    if (absCharIdx >= words[i].start && absCharIdx < words[i].end + 1) {
-                        setCurrentIdx(i);
-                        return;
-                    }
+    // Play the current sentence (Gemini audio if getAudioUrl provided, else browser TTS fallback)
+    const playSentence = useCallback(async (idx) => {
+        if (idx < 0 || idx >= sentences.length) return;
+        // Stop anything already playing
+        try { if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; } } catch (e) {}
+        if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null; }
+        try { if (typeof window !== 'undefined' && window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {}
+        setSweepPct(0);
+        const sentenceText = sentences[idx];
+
+        // Try parent-provided audio (Gemini)
+        let url = null;
+        if (typeof getAudioUrl === 'function') {
+            try { url = await getAudioUrl(sentenceText); } catch (e) { url = null; }
+        }
+
+        if (url) {
+            const audio = new Audio(url);
+            audioRef.current = audio;
+            const updateSweep = () => {
+                if (!audioRef.current || audioRef.current !== audio) return;
+                const dur = audio.duration;
+                let pct;
+                if (isFinite(dur) && dur > 0) {
+                    pct = Math.min(100, (audio.currentTime / dur) * 100);
+                } else {
+                    // Unknown duration — approximate from char count at ~15 chars/sec
+                    const estSec = Math.max(1.5, sentenceText.length / 15);
+                    pct = Math.min(100, (audio.currentTime / estSec) * 100);
                 }
+                setSweepPct(reducedMotion ? (pct > 5 ? 100 : 0) : pct);
             };
-            u.onend = () => { setIsPlaying(false); };
-            u.onerror = () => { setIsPlaying(false); };
-            window.speechSynthesis.speak(u);
-        } catch (e) { setIsPlaying(false); }
-        return () => { try { window.speechSynthesis.cancel(); } catch (e) {} };
-    }, [isPlaying, useTts, ttsAvailable, words, wpm]);
+            audio.addEventListener('timeupdate', updateSweep);
+            audio.addEventListener('ended', () => {
+                setSweepPct(100);
+                if (autoAdvance && idx < sentences.length - 1) {
+                    setTimeout(() => { setSentenceIdx(idx + 1); }, 250);
+                } else {
+                    setIsPlaying(false);
+                }
+            });
+            audio.addEventListener('error', () => { setIsPlaying(false); });
+            try { await audio.play(); }
+            catch (e) { setIsPlaying(false); }
+            return;
+        }
 
-    // Keyboard
+        // Browser TTS fallback with estimated duration
+        if (typeof window !== 'undefined' && 'speechSynthesis' in window && typeof SpeechSynthesisUtterance !== 'undefined') {
+            try {
+                const u = new SpeechSynthesisUtterance(sentenceText);
+                u.rate = 0.95; u.pitch = 1.0; u.volume = 0.95;
+                const estMs = Math.max(1500, sentenceText.length * 60);
+                const startTs = performance.now();
+                const tick = () => {
+                    const elapsed = performance.now() - startTs;
+                    const pct = Math.min(100, (elapsed / estMs) * 100);
+                    setSweepPct(reducedMotion ? (pct > 5 ? 100 : 0) : pct);
+                    if (pct < 100) rafRef.current = requestAnimationFrame(tick);
+                };
+                u.onend = () => {
+                    if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null; }
+                    setSweepPct(100);
+                    if (autoAdvance && idx < sentences.length - 1) {
+                        setTimeout(() => { setSentenceIdx(idx + 1); }, 250);
+                    } else {
+                        setIsPlaying(false);
+                    }
+                };
+                u.onerror = () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); setIsPlaying(false); };
+                window.speechSynthesis.speak(u);
+                rafRef.current = requestAnimationFrame(tick);
+            } catch (e) { setIsPlaying(false); }
+            return;
+        }
+
+        // No TTS available — just mark sentence as read after a short display
+        setTimeout(() => {
+            setSweepPct(100);
+            if (autoAdvance && idx < sentences.length - 1) setSentenceIdx(idx + 1);
+            else setIsPlaying(false);
+        }, 1500);
+    }, [sentences, getAudioUrl, autoAdvance, reducedMotion]);
+
+    // Start / restart playback when sentenceIdx changes while playing, or when play toggles on
+    useEffect(() => {
+        if (!isOpen || !isPlaying) return;
+        playSentence(sentenceIdx);
+        // Intentional: playSentence already stops prior audio. Don't return cleanup here to avoid
+        // double-stop during sentence transitions (the next call handles it).
+    }, [sentenceIdx, isOpen, isPlaying, playSentence]);
+
+    // Keyboard shortcuts
     useEffect(() => {
         if (!isOpen) return;
         const handler = (e) => {
             if (e.code === 'Space') { e.preventDefault(); setIsPlaying(p => !p); }
-            else if (e.code === 'ArrowLeft') setCurrentIdx(p => Math.max(0, p - 1));
-            else if (e.code === 'ArrowRight') setCurrentIdx(p => Math.min(words.length - 1, p + 1));
-            else if (e.code === 'Home') setCurrentIdx(0);
-            else if (e.code === 'End') setCurrentIdx(Math.max(0, words.length - 1));
-            else if (e.key === 'Escape') { try { window.speechSynthesis.cancel(); } catch (ee) {} onClose(); }
+            else if (e.code === 'ArrowRight') { setSentenceIdx(i => Math.min(sentences.length - 1, i + 1)); setSweepPct(0); }
+            else if (e.code === 'ArrowLeft')  { setSentenceIdx(i => Math.max(0, i - 1)); setSweepPct(0); }
+            else if (e.code === 'Home') { setSentenceIdx(0); setSweepPct(0); }
+            else if (e.code === 'End') { setSentenceIdx(Math.max(0, sentences.length - 1)); setSweepPct(0); }
+            else if (e.key === 'Escape') {
+                try { if (audioRef.current) audioRef.current.pause(); window.speechSynthesis && window.speechSynthesis.cancel(); } catch (ee) {}
+                onClose();
+            }
         };
         window.addEventListener('keydown', handler);
         return () => window.removeEventListener('keydown', handler);
-    }, [isOpen, onClose, words.length]);
+    }, [isOpen, onClose, sentences.length]);
 
     if (!isOpen) return null;
-    const progressPct = words.length > 0 ? ((currentIdx + 1) / words.length) * 100 : 0;
+    const overallPct = sentences.length > 0
+        ? ((sentenceIdx + (sweepPct / 100)) / sentences.length) * 100
+        : 0;
+
+    const renderSentence = (sText, idx) => {
+        const isActive = idx === sentenceIdx;
+        const isPast = idx < sentenceIdx;
+        if (isActive) {
+            const pct = sweepPct;
+            // Build background-image inline so each re-render captures the current sweepPct
+            const bgImage = 'linear-gradient(to right, ' + c.sweep + ' 0%, ' + c.sweep + ' ' + pct + '%, ' + c.dim + ' ' + pct + '%, ' + c.dim + ' 100%)';
+            return (
+                <span
+                    key={idx}
+                    ref={el => { activeSentenceRef.current = el; }}
+                    aria-current="true"
+                    onClick={() => { setSentenceIdx(idx); setSweepPct(0); if (!isPlaying) setIsPlaying(true); }}
+                    style={{
+                        backgroundImage: bgImage,
+                        WebkitBackgroundClip: 'text',
+                        backgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                        color: 'transparent',
+                        fontWeight: 700,
+                        transition: reducedMotion ? 'none' : 'background-image 0.08s linear',
+                        cursor: 'pointer',
+                        borderRadius: 2
+                    }}
+                >
+                    {sText}
+                </span>
+            );
+        }
+        return (
+            <span
+                key={idx}
+                onClick={() => { setSentenceIdx(idx); setSweepPct(0); }}
+                style={{
+                    color: c.dim,
+                    opacity: isPast ? 0.85 : 0.35,
+                    transition: reducedMotion ? 'none' : 'opacity 0.3s',
+                    cursor: 'pointer'
+                }}
+            >
+                {sText}
+            </span>
+        );
+    };
+
+    const hardStop = () => {
+        try { if (audioRef.current) audioRef.current.pause(); } catch (e) {}
+        try { if (typeof window !== 'undefined' && window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {}
+        if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null; }
+    };
 
     return (
         <div className="fixed inset-0 z-[300] flex flex-col animate-in fade-in duration-200" style={{ backgroundColor: c.bg, color: c.ink }}>
             <div className="p-4 flex justify-between items-center gap-3 flex-wrap">
                 <div className="flex items-center gap-3">
-                    <button onClick={() => { try { window.speechSynthesis.cancel(); } catch (e) {} onClose(); }} aria-label={t('common.close') || 'Close'} className="p-2 rounded-full hover:bg-black/5" style={{ color: c.ink }}>
+                    <button onClick={() => { hardStop(); onClose(); }} aria-label={t('common.close') || 'Close'} className="p-2 rounded-full hover:bg-black/5" style={{ color: c.ink }}>
                         <ArrowLeft size={22} />
                     </button>
                     <div className="flex flex-col">
-                        <span className="font-bold text-base">{t('immersive.karaoke_reader') || 'Karaoke Reader'}</span>
-                        <span className="text-xs" style={{ color: c.dim }}>Word {currentIdx + 1} / {words.length} · {useTts ? 'audio-synced' : 'timed'}</span>
+                        <span className="font-bold text-base">{t('immersive.focus_reader') || 'Focus Reader'}</span>
+                        <span className="text-xs" style={{ color: c.dim }}>Sentence {sentenceIdx + 1} / {sentences.length} · read-along sweep</span>
                     </div>
                 </div>
                 <div className="flex items-center gap-4 flex-wrap text-xs font-bold">
-                    {ttsAvailable && (
-                        <label className="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" checked={useTts} onChange={e => { setIsPlaying(false); setUseTts(e.target.checked); }} aria-label="Use speech synthesis" />
-                            <span>🔊 Speak along</span>
-                        </label>
-                    )}
-                    <label className="flex items-center gap-2">
-                        <span style={{ color: c.dim }}>PACE</span>
-                        <input aria-label="Reading pace" type="range" min="90" max="400" step="10" value={wpm} onChange={e => setWpm(parseInt(e.target.value))} className="w-24" />
-                        <span className="font-mono w-16 text-right">{wpm} wpm</span>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" checked={autoAdvance} onChange={e => setAutoAdvance(e.target.checked)} aria-label="Auto-advance to next sentence" />
+                        <span style={{ color: c.ink }}>Auto-advance</span>
                     </label>
                     <label className="flex items-center gap-2">
                         <span style={{ color: c.dim }}>THEME</span>
@@ -810,48 +920,29 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen }) => {
                             <option value="sepia">📜 Sepia</option>
                         </select>
                     </label>
-                    <button onClick={() => setIsPlaying(p => !p)} className="px-3 py-1.5 rounded-full" style={{ background: c.accent, color: c.accentInk }} aria-label={isPlaying ? 'Pause' : 'Play'}>
+                    <button onClick={() => { if (isPlaying) { hardStop(); setIsPlaying(false); } else { setIsPlaying(true); } }}
+                        aria-label={isPlaying ? 'Pause' : 'Play'} aria-pressed={isPlaying}
+                        className="px-3 py-1.5 rounded-full" style={{ background: c.accent, color: c.ink }}>
                         {isPlaying ? <Pause size={14} /> : <Play size={14} />}
                     </button>
-                    <button onClick={() => { try { window.speechSynthesis.cancel(); } catch (e) {} setCurrentIdx(0); setIsPlaying(false); }} className="px-3 py-1 rounded text-xs" style={{ background: c.dim + '33', color: c.ink }} aria-label="Restart from first word">↺ Restart</button>
+                    <button onClick={() => { hardStop(); setSentenceIdx(0); setSweepPct(0); setIsPlaying(false); }}
+                        className="px-3 py-1 rounded text-xs" style={{ background: c.dim + '33', color: c.ink }} aria-label="Restart from first sentence">
+                        ↺ Restart
+                    </button>
                 </div>
             </div>
-            <div ref={viewportRef} className="flex-1 overflow-auto px-6 md:px-16 py-10" style={{ scrollBehavior: 'smooth' }}>
-                <div className="max-w-3xl mx-auto" style={{ fontSize: 'clamp(1.25rem, 2vw, 1.75rem)', lineHeight: 1.75, fontFamily: 'Georgia, "Iowan Old Style", "Times New Roman", serif' }}>
-                    {paragraphs.map((wordIndices, pIdx) => (
-                        <p key={pIdx} style={{ marginBottom: '1.5em' }}>
-                            {wordIndices.map((wi, i) => {
-                                const w = words[wi];
-                                if (!w) return null;
-                                const isCurrent = wi === currentIdx;
-                                const isPast = wi < currentIdx;
-                                return (
-                                    <React.Fragment key={wi}>
-                                        <span
-                                            ref={el => { wordRefs.current[wi] = el; }}
-                                            onClick={() => { setCurrentIdx(wi); if (isPlaying && useTts) { setIsPlaying(false); setTimeout(() => setIsPlaying(true), 30); } }}
-                                            style={{
-                                                backgroundColor: isCurrent ? c.accent : 'transparent',
-                                                color: isCurrent ? c.accentInk : (isPast ? c.dim : c.ink),
-                                                padding: isCurrent ? '0.05em 0.2em' : 0,
-                                                borderRadius: 4,
-                                                transition: 'background-color 0.15s, color 0.15s',
-                                                cursor: 'pointer'
-                                            }}
-                                        >{w.text}</span>
-                                        {i < wordIndices.length - 1 ? ' ' : ''}
-                                    </React.Fragment>
-                                );
-                            })}
-                        </p>
+            <div className="flex-1 overflow-auto px-6 md:px-16 py-10" style={{ scrollBehavior: reducedMotion ? 'auto' : 'smooth' }}>
+                <div className="max-w-3xl mx-auto" style={{ fontSize: 'clamp(1.5rem, 2.4vw, 2.25rem)', lineHeight: 1.7, fontFamily: 'Georgia, "Iowan Old Style", "Times New Roman", serif' }}>
+                    {sentences.map((s, i) => (
+                        <React.Fragment key={i}>{renderSentence(s, i)}{' '}</React.Fragment>
                     ))}
                 </div>
             </div>
-            <div className="h-2 w-full" style={{ background: c.dim + '33' }}>
-                <div className="h-full transition-all duration-200" style={{ width: `${progressPct}%`, backgroundColor: c.accent }} />
+            <div className="h-2 w-full" role="progressbar" aria-valuenow={Math.round(overallPct)} aria-valuemin={0} aria-valuemax={100} aria-label="Reading progress" style={{ background: c.dim + '33' }}>
+                <div className="h-full" style={{ width: overallPct + '%', backgroundColor: c.sweep, transition: reducedMotion ? 'none' : 'width 0.2s linear' }} />
             </div>
             <div className="px-4 py-2 text-center text-xs" style={{ color: c.dim }}>
-                Space play/pause · ← → step word · Home/End jump · click any word to set position · Esc closes
+                Space play/pause · ← → sentences · Home/End jump · click any sentence to jump · Esc closes
             </div>
         </div>
     );
