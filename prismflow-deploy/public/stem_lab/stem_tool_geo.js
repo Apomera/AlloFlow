@@ -707,7 +707,7 @@ var d = labToolData || {};
 
               // Spaced repetition: if this country was on the review list, they've
               // now learned it — remove it. If the review list is now empty AND
-              // we're in review mode, exit review mode.
+              // we're in review mode, exit review mode (was leaving the user stuck).
               if (geoMissed.indexOf(geoTarget.iso) !== -1) {
                 var newMissed = geoMissed.filter(function(iso) { return iso !== geoTarget.iso; });
                 upd('geoMissed', newMissed);

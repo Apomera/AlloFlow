@@ -8049,27 +8049,27 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@90df051/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@90df051/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@90df051/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@90df051/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@90df051/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@90df051/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@90df051/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@90df051/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@90df051/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@90df051/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@90df051/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@90df051/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@90df051/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@90df051/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@90df051/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@90df051/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@90df051/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@90df051/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@90df051/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@90df051/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@90df051/content_engine_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e220857/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e220857/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e220857/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e220857/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e220857/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e220857/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e220857/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e220857/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e220857/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e220857/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e220857/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e220857/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e220857/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e220857/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e220857/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e220857/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e220857/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e220857/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e220857/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e220857/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e220857/content_engine_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -8085,7 +8085,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@90df051/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e220857/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -13375,6 +13375,26 @@ Return only the corrected version of this exact text:`;
   const [pdfPreviewA11yInspect, setPdfPreviewA11yInspect] = useState(false);
   const pdfPreviewRef = useRef(null);
   const selectedPreviewImgRef = useRef(null);
+  // Extracted-images gallery: populated from the alloflow:extraction-complete event fired
+  // by doc_pipeline_source.jsx at the end of PDF image extraction. Each entry:
+  // { index, description, src (base64 dataURL), type, educationalPurpose, isRegenerated, cropData }
+  const [extractedImagesList, setExtractedImagesList] = useState([]);
+  useEffect(() => {
+    const onExtracted = (e) => {
+      const images = (e && e.detail && Array.isArray(e.detail.images)) ? e.detail.images.filter(img => img && img.src) : [];
+      setExtractedImagesList(images);
+    };
+    window.addEventListener('alloflow:extraction-complete', onExtracted);
+    return () => window.removeEventListener('alloflow:extraction-complete', onExtracted);
+  }, []);
+  // Push the latest extracted-images list into the preview iframe whenever it changes, so the
+  // in-placeholder "Pick extracted" popover always sees a current list.
+  useEffect(() => {
+    try {
+      const cw = pdfPreviewRef.current && pdfPreviewRef.current.contentWindow;
+      if (cw) cw.__alloflowExtractedImages = extractedImagesList || [];
+    } catch (_) {}
+  }, [extractedImagesList, pdfPreviewOpen]);
   // ── PDF Batch Mode ──
   const [pdfBatchMode, setPdfBatchMode] = useState(false);
   const [pdfWebMode, setPdfWebMode] = useState(false);
@@ -57174,6 +57194,40 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 🤖 Full Re-audit (AI + axe-core)
               </button>
 
+              {/* Extracted images — collapsible gallery, draggable into iframe placeholders */}
+              {extractedImagesList.length > 0 && (
+                <details className="bg-white border border-indigo-200 rounded-lg p-2" open>
+                  <summary className="cursor-pointer text-[11px] font-bold text-slate-600 uppercase tracking-widest select-none">
+                    🖼 Extracted Images ({extractedImagesList.length})
+                  </summary>
+                  <p className="text-[10px] text-slate-500 mt-1 mb-2">Drag a thumbnail onto any image placeholder in the preview to insert it, or click "📷 Upload" inside a placeholder and choose "Use extracted image".</p>
+                  <div className="grid grid-cols-3 gap-1.5 max-h-64 overflow-y-auto">
+                    {extractedImagesList.map((img, i) => (
+                      <div key={i} className="relative group">
+                        <img
+                          src={img.src}
+                          alt={img.description || ('Extracted image ' + (i + 1))}
+                          draggable="true"
+                          onDragStart={(e) => {
+                            try {
+                              e.dataTransfer.setData('text/x-alloflow-image', JSON.stringify({ src: img.src, alt: img.description || '' }));
+                              e.dataTransfer.setData('text/plain', img.src);
+                              e.dataTransfer.effectAllowed = 'copy';
+                            } catch (_) {}
+                          }}
+                          loading="lazy"
+                          className="w-full h-16 object-cover rounded border border-slate-200 cursor-grab active:cursor-grabbing hover:border-indigo-400 hover:shadow-md transition-all"
+                          title={img.description || ('Image ' + (i + 1))}
+                        />
+                        {img.isRegenerated && (
+                          <span className="absolute top-0 right-0 text-[8px] bg-violet-600 text-white px-1 rounded-bl">AI</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </details>
+              )}
+
               {/* Export from preview */}
               <div className="mt-auto space-y-2 pt-3 border-t border-slate-200">
                 <button onClick={() => {
@@ -57296,8 +57350,12 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 onLoad={() => {
                   const iframe = pdfPreviewRef.current;
                   const doc = iframe?.contentDocument;
+                  const cw = iframe?.contentWindow;
                   if (doc) {
                     doc.body.spellcheck = true;
+                    // Expose extracted images to the iframe so the placeholder "Pick extracted"
+                    // button can offer them without a cross-window postMessage round-trip.
+                    try { if (cw) cw.__alloflowExtractedImages = extractedImagesList || []; } catch(_) {}
                     // Track which image the user most recently clicked, so "Edit Selected Image" knows the target.
                     doc.addEventListener('click', function(e) {
                       const target = e.target;

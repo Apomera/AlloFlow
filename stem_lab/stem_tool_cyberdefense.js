@@ -3331,7 +3331,7 @@
                     title: 'Your personal performance stats',
                     style: { padding: '6px 12px', borderRadius: 6, border: '1px solid rgba(59,130,246,0.3)', background: warRoomStatsOpen ? 'rgba(59,130,246,0.25)' : 'rgba(59,130,246,0.12)', color: '#93c5fd', fontSize: 11, fontWeight: 700, cursor: 'pointer' } },
                     (warRoomStatsOpen ? '\u2715 Close' : '\uD83D\uDCC8 My') + ' Stats'),
-                  el('button', { onClick: function() { upd({ warRoomGlossaryOpen: !warRoomGlossaryOpen, warRoomTeacherDashOpen: false, warRoomHelpOpen: false, warRoomPlaybookOpen: false, warRoomStatsOpen: false }); sfxCyberdClick(); },
+                  el('button', { onClick: function() { upd({ warRoomGlossaryOpen: !warRoomGlossaryOpen, warRoomGlossaryFilter: warRoomGlossaryOpen ? '' : warRoomGlossaryFilter, warRoomTeacherDashOpen: false, warRoomHelpOpen: false, warRoomPlaybookOpen: false, warRoomStatsOpen: false }); sfxCyberdClick(); },
                     'aria-expanded': warRoomGlossaryOpen, 'aria-controls': 'warroom-glossary-panel',
                     style: { padding: '6px 12px', borderRadius: 6, border: '1px solid rgba(99,102,241,0.3)', background: warRoomGlossaryOpen ? 'rgba(99,102,241,0.25)' : 'rgba(99,102,241,0.12)', color: '#a5b4fc', fontSize: 11, fontWeight: 700, cursor: 'pointer' } },
                     (warRoomGlossaryOpen ? '\u2715 Close' : '\uD83D\uDCD6 Open') + ' Glossary'),
@@ -4176,7 +4176,7 @@
                     el('div', { style: { flex: '1 1 200px' } },
                       el('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 } },
                         el('span', { style: { fontSize: 11, color: todayCompletion ? '#86efac' : '#fbbf24', fontWeight: 800, letterSpacing: 0.5 } }, todayCompletion ? 'TODAY\'S CHALLENGE \u2022 COMPLETED \u2713' : 'TODAY\'S CHALLENGE'),
-                        dailyStreak >= 2 && el('span', { 'aria-label': dailyStreak + ' day streak', style: { padding: '1px 6px', borderRadius: 3, background: 'rgba(244,63,94,0.15)', border: '1px solid rgba(244,63,94,0.35)', color: '#fca5a5', fontSize: 10, fontWeight: 800 } }, '\uD83D\uDD25 ' + dailyStreak + '-day streak')
+                        dailyStreak >= 2 && el('span', { 'aria-label': dailyStreak + ' day streak', 'aria-live': 'polite', style: { padding: '1px 6px', borderRadius: 3, background: 'rgba(244,63,94,0.15)', border: '1px solid rgba(244,63,94,0.35)', color: '#fca5a5', fontSize: 10, fontWeight: 800 } }, '\uD83D\uDD25 ' + dailyStreak + '-day streak')
                       ),
                       el('div', { style: { fontSize: 13, color: '#e2e8f0', fontWeight: 700 } }, 'Campaign #' + todaysChallenge.id + ' \u2022 ' + (campaignThemes[todaysChallenge.theme] ? campaignThemes[todaysChallenge.theme].label : todaysChallenge.theme) + ' \u2022 ' + todaysChallenge.difficulty),
                       todayCompletion
@@ -5305,6 +5305,7 @@
                       !warLiveIsObserving && el('button', {
                         onClick: function() {
                           if (confirm('Quit this campaign? Your progress this run will be lost and it will NOT appear in your history.')) {
+                            warTtsStop();
                             upd({ warRoomActive: false, warRoomVerdict: null, warRoomAAR: null, warRoomCampaignId: null, warRoomRoundResolved: false, warRoomLastResolution: null, warRoomHouseRulesActive: null });
                             sfxCyberdClick();
                             if (ctx.announceToSR) ctx.announceToSR('Campaign abandoned.');
