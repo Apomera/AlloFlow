@@ -4175,6 +4175,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           });
         }
 
+        // ── Night-time ramp floodlights ──
+        // Sodium-orange light cones from lamp posts lining the ramp, and flood
+        // pools under the hangar doors and terminal windows. Only renders at
+        // night; during the day the ramp is lit by ambient.
+        if (dayNight.isNight && groundFactor > 0.3) {
+          // Lamp posts — a row of three down the left ramp
+          var lampY = horizonY + (H - horizonY) * 0.58;
+          [W * 0.06, W * 0.18, W * 0.30].forEach(function(lampX) {
+            // Pole
+            gfx.fillStyle = '#1f2937';
+            gfx.fillRect(lampX, lampY - 22, 1.5, 22);
+            // Lamp head
+            gfx.fillStyle = '#fbbf24';
+            gfx.fillRect(lampX - 2, lampY - 26, 5, 4);
+            // Light cone
+            var coneGrad = gfx.createRadialGradient(lampX, lampY - 24, 2, lampX, lampY - 24, 40);
+            coneGrad.addColorStop(0, 'rgba(255,220,130,0.55)');
+            coneGrad.addColorStop(0.5, 'rgba(255,200,100,0.18)');
+            coneGrad.addColorStop(1, 'rgba(255,190,90,0)');
+            gfx.fillStyle = coneGrad;
+            // Tapered downward cone (trapezoid)
+            gfx.beginPath();
+            gfx.moveTo(lampX - 2, lampY - 24);
+            gfx.lineTo(lampX + 3, lampY - 24);
+            gfx.lineTo(lampX + 22, lampY + 14);
+            gfx.lineTo(lampX - 22, lampY + 14);
+            gfx.closePath();
+            gfx.fill();
+            // Ground pool
+            gfx.fillStyle = 'rgba(255,220,130,0.28)';
+            gfx.beginPath(); gfx.ellipse(lampX, lampY + 14, 22, 5, 0, 0, Math.PI * 2); gfx.fill();
+          });
+          // Hangar door flood — rectangular warm pool below each hangar door
+          var hangGlowY = horizonY + (H - horizonY) * 0.42;
+          [0, 1, 2].forEach(function(hi) {
+            var hW = W * 0.09 * (1 - hi * 0.08);
+            var hX = W * 0.04 + hi * (hW + 6);
+            var flGrad = gfx.createLinearGradient(hX, hangGlowY + 20, hX, hangGlowY + 45);
+            flGrad.addColorStop(0, 'rgba(255,210,140,0.32)');
+            flGrad.addColorStop(1, 'rgba(255,210,140,0)');
+            gfx.fillStyle = flGrad;
+            gfx.fillRect(hX, hangGlowY + 20, hW, 30);
+          });
+          // Runway threshold PAPI halos brighten at night too (additional
+          // readability pass — base PAPI already renders earlier).
+        }
+
         // ── Windsock — classic orange cone on a striped pole beside the runway.
         // Angle and stretch scale with wind speed so the student can read the
         // wind at a glance (into-the-wind takeoff is cheaper). Weather is read
@@ -4445,6 +4492,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           skyAnnounce('Landing: ' + ls.grade + '. ' + Math.round(fpm) + ' feet per minute. ' + Math.round(ls.touchdownSpeed) + ' knots.');
         }
         if (!ls.wasAirborne) ls.lastVSI = state.vsi * 60;
+
+        // ── Touchdown dust / tire smoke puff ──
+        // For 1.5 s after wheels meet ground, render two expanding tan smoke
+        // clouds behind the mains. Size scales with how hard we hit — a butter
+        // landing gives a little wisp, a hard slam gives a big cloud.
+        if (ls.scored && ls.touchdownTime && time - ls.touchdownTime < 1.5) {
+          var tdAge = time - ls.touchdownTime;
+          var tdIntensity = Math.min(1, Math.abs(ls.touchdownFPM) / 500);
+          var tdFade = Math.max(0, 1 - tdAge / 1.5);
+          gfx.save();
+          [ -30, 30 ].forEach(function(dx, pi) {
+            for (var tp = 0; tp < 6; tp++) {
+              var tpAge = tdAge - tp * 0.04;
+              if (tpAge < 0) continue;
+              var tpRad = 4 + tpAge * 30;
+              var tpY = H * 0.78 - tpAge * 5;
+              var tpX = W / 2 + dx + (pi === 0 ? -1 : 1) * tpAge * 8;
+              var tpAlpha = tdFade * (0.35 + tdIntensity * 0.35) * Math.max(0, 1 - tpAge / 1.2);
+              var tpGrad = gfx.createRadialGradient(tpX, tpY, 0, tpX, tpY, tpRad);
+              tpGrad.addColorStop(0, 'rgba(210,195,170,' + tpAlpha + ')');
+              tpGrad.addColorStop(0.7, 'rgba(190,175,150,' + (tpAlpha * 0.5) + ')');
+              tpGrad.addColorStop(1, 'rgba(160,150,130,0)');
+              gfx.fillStyle = tpGrad;
+              gfx.fillRect(tpX - tpRad, tpY - tpRad, tpRad * 2, tpRad * 2);
+            }
+          });
+          // Brief skid streaks on the pavement (black rubber marks)
+          if (tdIntensity > 0.2 && tdAge < 0.8) {
+            gfx.strokeStyle = 'rgba(15,15,20,' + (0.3 * tdFade) + ')';
+            gfx.lineWidth = 2;
+            gfx.beginPath();
+            gfx.moveTo(W / 2 - 30, H * 0.78);
+            gfx.lineTo(W / 2 - 30 - tdAge * 80, H * 0.78 + tdAge * 10);
+            gfx.stroke();
+            gfx.beginPath();
+            gfx.moveTo(W / 2 + 30, H * 0.78);
+            gfx.lineTo(W / 2 + 30 - tdAge * 80, H * 0.78 + tdAge * 10);
+            gfx.stroke();
+          }
+          gfx.restore();
+        }
+
         // Display landing score card
         if (ls.scored && ls.touchdownTime && time - ls.touchdownTime < 8) {
           var alpha = Math.min(1, (8 - (time - ls.touchdownTime)) / 2);
@@ -5247,8 +5336,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           if (keys['a'] || keys['arrowleft']) ctrl.bank = Math.max(-45, ctrl.bank - 1);
           else if (keys['d'] || keys['arrowright']) ctrl.bank = Math.min(45, ctrl.bank + 1);
           else ctrl.bank *= 0.95;
+          // Engine-start cough: first time throttle leaves zero on the ground,
+          // record the moment so the render block can draw a puff of exhaust
+          // smoke and the HUD can print "IGNITION" briefly. Reset once we're
+          // airborne.
+          var prevThrottle = ctrl.throttle;
           if (keys['shift'] || keys['=']) ctrl.throttle = Math.min(1, ctrl.throttle + 0.01);
           if (keys['control'] || keys['-']) ctrl.throttle = Math.max(0, ctrl.throttle - 0.01);
+          if (state.onGround && prevThrottle < 0.005 && ctrl.throttle >= 0.005 && !flightRef.current._ignitionTime) {
+            flightRef.current._ignitionTime = timeRef.current;
+            if (typeof skyAnnounce === 'function') skyAnnounce('Engine started');
+          }
+          if (!state.onGround) flightRef.current._ignitionTime = 0;
           // Toggle force diagram
           if (keys['f']) { upd('showForces', !showForces); keys['f'] = false; }
           if (keys['?'] || keys['/']) { upd('showHelp', !d.showHelp); keys['?'] = false; keys['/'] = false; skyAnnounce(d.showHelp ? 'Help closed' : 'Help screen opened'); }
@@ -5772,6 +5871,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           // Artificial Horizon (center)
           drawHorizon(gfx, W / 2, H - 85, 58, ctrl.pitch, ctrl.bank);
 
+          // ── ILS localizer + glideslope needles ──
+          // Standard instrument-approach crosshair overlaid on the artificial
+          // horizon: vertical needle = lateral course deviation (left/right of
+          // runway centerline), horizontal needle = glidepath deviation (high/
+          // low of the 3° glideslope). Only shown when cleared for approach:
+          // within 5 nm of an airport, below 3000 ft AGL, pointed roughly at it.
+          if (nearWp && nearDist < 5 && (state.altitude - (nearWp.alt || 0)) < 3000 && (state.altitude - (nearWp.alt || 0)) > 30) {
+            var ilsBrg = bearing(state.lat, state.lon, nearWp.lat, nearWp.lon);
+            var ilsRelBrg = ((ilsBrg - state.heading + 540) % 360) - 180;
+            if (Math.abs(ilsRelBrg) < 60) {
+              var ilsCx = W / 2, ilsCy = H - 85, ilsR = 58;
+              // Localizer deviation: ±2.5° full-scale.
+              var ilsLocDev = Math.max(-1, Math.min(1, ilsRelBrg / 2.5));
+              // Glideslope deviation: compare actual descent angle to ideal 3°.
+              var ilsActualGs = Math.atan2(state.altitude - (nearWp.alt || 0), nearDist * 6076) * 180 / Math.PI;
+              var ilsGsDev = Math.max(-1, Math.min(1, (ilsActualGs - 3) / 1.5));
+              // Vertical (localizer) needle with dot scale
+              gfx.save();
+              gfx.strokeStyle = '#a855f7';
+              gfx.lineWidth = 2;
+              var ilsNeedleX = ilsCx + ilsLocDev * ilsR * 0.55;
+              gfx.beginPath();
+              gfx.moveTo(ilsNeedleX, ilsCy - ilsR * 0.55);
+              gfx.lineTo(ilsNeedleX, ilsCy + ilsR * 0.55);
+              gfx.stroke();
+              // Horizontal (glideslope) needle
+              var ilsNeedleY = ilsCy + ilsGsDev * ilsR * 0.55;
+              gfx.beginPath();
+              gfx.moveTo(ilsCx - ilsR * 0.55, ilsNeedleY);
+              gfx.lineTo(ilsCx + ilsR * 0.55, ilsNeedleY);
+              gfx.stroke();
+              // Dot scale — 5 dots on each axis (center = on course)
+              gfx.fillStyle = 'rgba(250,250,255,0.85)';
+              for (var ilsD = -2; ilsD <= 2; ilsD++) {
+                if (ilsD === 0) continue;
+                gfx.beginPath(); gfx.arc(ilsCx + ilsD * ilsR * 0.28, ilsCy, 1.8, 0, Math.PI * 2); gfx.fill();
+                gfx.beginPath(); gfx.arc(ilsCx, ilsCy + ilsD * ilsR * 0.28, 1.8, 0, Math.PI * 2); gfx.fill();
+              }
+              // Label
+              gfx.fillStyle = '#a855f7';
+              gfx.font = 'bold 9px monospace';
+              gfx.textAlign = 'left'; gfx.textBaseline = 'top';
+              gfx.fillText('ILS ' + nearWp.code, ilsCx - ilsR + 4, ilsCy - ilsR + 4);
+              gfx.restore();
+            }
+          }
+
           // Flight Path Vector
           drawFPV(gfx, W, H, state, ctrl);
 
@@ -6268,6 +6414,62 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             gfx.fillStyle = '#64748b'; gfx.font = '11px system-ui'; gfx.textAlign = 'center';
             gfx.fillText('Press ? or ESC to close', W / 2, H - 8);
             animRef.current = requestAnimationFrame(loop); return;
+          }
+
+          // ── Engine ignition cough ──
+          // For ~1.6 s after the engine first fires (throttle lifts off zero
+          // on the ground), draw an exhaust smoke plume centered in the lower
+          // third of the screen + a small "IGNITION" label. Gives the first-
+          // time student a real "I just started the engine" moment.
+          if (flightRef.current._ignitionTime) {
+            var igAge = timeRef.current - flightRef.current._ignitionTime;
+            if (igAge >= 0 && igAge < 1.6) {
+              var igFade = Math.max(0, 1 - igAge / 1.6);
+              // Exhaust smoke puff (only drawn in chase cam; first-person the
+              // exhaust is behind the cowl and we fake it with engine rumble).
+              if (d.thirdPerson) {
+                for (var igp = 0; igp < 5; igp++) {
+                  var igAgeP = igAge - igp * 0.08;
+                  if (igAgeP < 0) continue;
+                  var igRad = 6 + igAgeP * 40;
+                  var igX = W / 2 + 36 + igAgeP * 14;
+                  var igY = H * 0.6 + Math.sin(igAgeP * 3 + igp) * 3;
+                  var igAlpha = igFade * 0.45 * Math.max(0, 1 - igAgeP / 1.0);
+                  var igGrad = gfx.createRadialGradient(igX, igY, 0, igX, igY, igRad);
+                  igGrad.addColorStop(0, 'rgba(60,60,65,' + igAlpha + ')');
+                  igGrad.addColorStop(0.5, 'rgba(120,120,130,' + (igAlpha * 0.5) + ')');
+                  igGrad.addColorStop(1, 'rgba(180,180,190,0)');
+                  gfx.fillStyle = igGrad;
+                  gfx.fillRect(igX - igRad, igY - igRad, igRad * 2, igRad * 2);
+                }
+              }
+              // Ignition label (both views)
+              gfx.save();
+              gfx.globalAlpha = igFade;
+              gfx.font = 'bold 14px monospace';
+              var igLbl = '\u26A1 IGNITION — RPM SPOOLING UP';
+              var igW = gfx.measureText(igLbl).width + 24;
+              gfx.fillStyle = 'rgba(2,6,23,0.8)';
+              gfx.beginPath(); gfx.roundRect((W - igW) / 2, H * 0.35 - 16, igW, 28, 5); gfx.fill();
+              gfx.strokeStyle = '#fb923c'; gfx.lineWidth = 1.5;
+              gfx.beginPath(); gfx.roundRect((W - igW) / 2, H * 0.35 - 16, igW, 28, 5); gfx.stroke();
+              gfx.fillStyle = '#fed7aa';
+              gfx.textAlign = 'center'; gfx.textBaseline = 'middle';
+              gfx.fillText(igLbl, W / 2, H * 0.35 - 2);
+              gfx.restore();
+              // Small camera shake in the first 0.4 s — the prop catching
+              if (igAge < 0.4 && !d.thirdPerson) {
+                var shakeAmp = (0.4 - igAge) * 4;
+                gfx.save();
+                gfx.translate(Math.sin(timeRef.current * 60) * shakeAmp, Math.cos(timeRef.current * 55) * shakeAmp * 0.5);
+                // no-op — the shake will affect anything drawn afterward this
+                // frame only; we restore at end of block
+                gfx.restore();
+              }
+            } else {
+              // Age out the flag after the callout fades
+              flightRef.current._ignitionTime = 0;
+            }
           }
 
           // ── Takeoff V-speed callouts ──

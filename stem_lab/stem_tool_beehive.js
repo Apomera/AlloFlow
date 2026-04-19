@@ -1968,6 +1968,295 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             });
           }
 
+          // ═══ WAGGLE DANCE DIAGRAM (Karl von Frisch's symbolic-language decoding) ═══
+          function drawWaggleDance() {
+            // Soft sunset gradient (evocative of summer afternoon foraging)
+            var wdGrad = c.createLinearGradient(0, 0, 0, H);
+            wdGrad.addColorStop(0, '#fef3c7'); wdGrad.addColorStop(0.6, '#fde68a'); wdGrad.addColorStop(1, '#fbbf24');
+            c.fillStyle = wdGrad; c.fillRect(0, 0, W, H);
+
+            // Title
+            c.fillStyle = '#78350f'; c.textAlign = 'center';
+            c.font = 'bold 18px Georgia, serif';
+            c.fillText('💃 The Waggle Dance · Bee Symbolic Language', W / 2, 28);
+            c.font = 'italic 11px Georgia, serif'; c.fillStyle = '#a16207';
+            c.fillText('Karl von Frisch decoded this, 1920s–60s · Nobel Prize 1973 · Only symbolic language in non-human animals', W / 2, 46);
+
+            // ═══ LEFT PANEL: vertical comb with dancing bee + followers ═══
+            var pL_W = W * 0.45;
+            (function() {
+              var pX = 10, pY = 60;
+              var pW2 = pL_W - 20;
+              var pH2 = H - pY - 100;
+              c.save();
+              c.fillStyle = 'rgba(255,255,255,0.55)';
+              c.beginPath(); if (c.roundRect) c.roundRect(pX, pY, pW2, pH2, 10); else c.rect(pX, pY, pW2, pH2); c.fill();
+              c.strokeStyle = '#ea580c'; c.lineWidth = 2;
+              c.beginPath(); if (c.roundRect) c.roundRect(pX, pY, pW2, pH2, 10); else c.rect(pX, pY, pW2, pH2); c.stroke();
+              c.font = 'bold 12px system-ui'; c.textAlign = 'center'; c.fillStyle = '#9a3412';
+              c.fillText('ON THE COMB (vertical surface, in the dark hive)', pX + pW2 / 2, pY + 20);
+
+              // Draw the vertical comb background inside the panel
+              var combX = pX + 20, combY = pY + 40, combW = pW2 - 40, combH = pH2 - 60;
+              c.fillStyle = '#d4aa40';
+              c.fillRect(combX, combY, combW, combH);
+              // Hexagonal comb pattern
+              c.strokeStyle = 'rgba(120,83,15,0.25)'; c.lineWidth = 0.7;
+              var chR = 10;
+              for (var cy2 = 0; cy2 < combH / (chR * 1.5) + 1; cy2++) {
+                for (var cx2 = 0; cx2 < combW / (chR * 2) + 1; cx2++) {
+                  var hcx3 = combX + cx2 * chR * 2 + (cy2 % 2) * chR;
+                  var hcy3 = combY + cy2 * chR * 1.5;
+                  if (hcx3 < combX + combW && hcy3 < combY + combH) {
+                    c.beginPath();
+                    for (var hh3 = 0; hh3 < 6; hh3++) {
+                      var hhA3 = hh3 * 1.047 + 0.524;
+                      var px3 = hcx3 + Math.cos(hhA3) * chR;
+                      var py3 = hcy3 + Math.sin(hhA3) * chR;
+                      hh3 === 0 ? c.moveTo(px3, py3) : c.lineTo(px3, py3);
+                    }
+                    c.closePath(); c.stroke();
+                  }
+                }
+              }
+
+              // Gravity arrow ↓ on the right edge of the comb
+              c.strokeStyle = '#7c2d12'; c.lineWidth = 1.5;
+              c.beginPath(); c.moveTo(combX + combW + 8, combY + 10); c.lineTo(combX + combW + 8, combY + 40); c.stroke();
+              c.beginPath(); c.moveTo(combX + combW + 8, combY + 40); c.lineTo(combX + combW + 5, combY + 35); c.lineTo(combX + combW + 11, combY + 35); c.closePath();
+              c.fillStyle = '#7c2d12'; c.fill();
+              c.font = 'bold 9px system-ui'; c.textAlign = 'left'; c.fillStyle = '#7c2d12';
+              c.fillText('gravity', combX + combW + 14, combY + 25);
+              c.font = 'italic 8px system-ui';
+              c.fillText('(vertical)', combX + combW + 14, combY + 36);
+
+              // Sun direction indicator at the top (represents the sun's current direction)
+              var sunAng = Math.sin(t2 * 0.003) * 0.5; // slowly changing
+              var sunIconX = combX + combW / 2, sunIconY = combY - 20;
+              c.save(); c.shadowColor = '#fbbf24'; c.shadowBlur = 10;
+              c.fillStyle = '#fbbf24';
+              c.beginPath(); c.arc(sunIconX, sunIconY, 8, 0, 6.28); c.fill();
+              c.restore();
+              c.font = 'bold 9px system-ui'; c.textAlign = 'center'; c.fillStyle = '#78350f';
+              c.fillText('☀ sun direction (virtual)', sunIconX, sunIconY - 12);
+
+              // ── The dancing bee — figure-8 waggle run angled RELATIVE TO VERTICAL by sunAng ──
+              var dnCenterX = combX + combW / 2, dnCenterY = combY + combH / 2;
+              var dnT = t2 * 0.05;
+              var dnPhase = dnT % (Math.PI * 2);
+              var dnScale = Math.min(combW, combH) * 0.25;
+              // Rotate frame by sunAng (the decoded direction)
+              c.save();
+              c.translate(dnCenterX, dnCenterY);
+              c.rotate(sunAng);
+
+              // Draw the lemniscate path (faint yellow)
+              c.strokeStyle = 'rgba(251,191,36,0.3)'; c.lineWidth = 1;
+              c.beginPath();
+              for (var lem = 0; lem <= 80; lem++) {
+                var lemA = (lem / 80) * Math.PI * 2;
+                var lx = dnScale * Math.cos(lemA) / (1 + Math.sin(lemA) * Math.sin(lemA));
+                var ly = dnScale * 0.4 * Math.sin(lemA) * Math.cos(lemA) / (1 + Math.sin(lemA) * Math.sin(lemA));
+                lem === 0 ? c.moveTo(lx, ly) : c.lineTo(lx, ly);
+              }
+              c.stroke();
+
+              // Emphasize the STRAIGHT "waggle run" section (vertical through center)
+              c.strokeStyle = '#dc2626'; c.lineWidth = 2.5;
+              c.beginPath(); c.moveTo(0, -dnScale * 0.3); c.lineTo(0, dnScale * 0.3); c.stroke();
+              // Arrow at top of waggle run (pointing up = sun direction)
+              c.fillStyle = '#dc2626';
+              c.beginPath(); c.moveTo(0, -dnScale * 0.32); c.lineTo(-4, -dnScale * 0.22); c.lineTo(4, -dnScale * 0.22); c.closePath(); c.fill();
+
+              // Dancing bee on the path
+              var inStraightRun = Math.abs(Math.sin(dnPhase)) < 0.3;
+              var dancerX = dnScale * Math.cos(dnPhase) / (1 + Math.sin(dnPhase) * Math.sin(dnPhase));
+              var dancerY = dnScale * 0.4 * Math.sin(dnPhase) * Math.cos(dnPhase) / (1 + Math.sin(dnPhase) * Math.sin(dnPhase));
+              var dancerWag = inStraightRun ? Math.sin(t2 * 1.2) * 3 : 0;
+              c.save();
+              c.translate(dancerX, dancerY);
+              // Orient bee along tangent (roughly upward in straight-run)
+              c.rotate(-0.3);
+              c.shadowColor = '#fbbf24'; c.shadowBlur = 6;
+              c.fillStyle = '#fbbf24';
+              c.beginPath(); c.ellipse(dancerWag, 0, 7, 4.5, 0, 0, 6.28); c.fill();
+              c.shadowBlur = 0;
+              c.fillStyle = '#292524';
+              c.fillRect(dancerWag - 1.2, -4, 1.6, 8);
+              c.fillRect(dancerWag + 1.5, -3.5, 1.2, 7);
+              c.globalAlpha = 0.4; c.fillStyle = '#e0f2fe';
+              var dWB = Math.sin(t2 * 0.5) * 2.5;
+              c.beginPath(); c.ellipse(dancerWag, -3 + dWB, 8, 2, 0, 0, 6.28); c.fill();
+              c.globalAlpha = 1;
+              c.restore();
+
+              // Follower bees arranged around the dancer (static, watching)
+              var followers = [[-dnScale * 0.9, 0], [dnScale * 0.9, 0], [-dnScale * 0.6, dnScale * 0.5], [dnScale * 0.6, dnScale * 0.5], [-dnScale * 0.3, -dnScale * 0.55], [dnScale * 0.3, -dnScale * 0.55]];
+              followers.forEach(function(f) {
+                c.save(); c.translate(f[0], f[1]);
+                // Face toward dancer
+                var fAng = Math.atan2(dancerY - f[1], dancerX - f[0]);
+                c.rotate(fAng);
+                c.fillStyle = '#fbbf24';
+                c.beginPath(); c.ellipse(0, 0, 5, 3, 0, 0, 6.28); c.fill();
+                c.fillStyle = '#292524';
+                c.fillRect(-0.8, -2.5, 1, 5);
+                c.fillRect(1, -2, 0.8, 4);
+                // Subtle head/antenna
+                c.fillStyle = '#1c1917';
+                c.beginPath(); c.arc(-4, 0, 1.2, 0, 6.28); c.fill();
+                c.restore();
+              });
+
+              c.restore(); // end bee-frame rotation
+
+              // Label the waggle angle (θ) with an arc
+              c.save();
+              c.translate(dnCenterX, dnCenterY);
+              c.strokeStyle = '#7c3aed'; c.lineWidth = 1;
+              c.beginPath(); c.arc(0, 0, dnScale * 0.2, -Math.PI / 2, -Math.PI / 2 + sunAng, sunAng < 0); c.stroke();
+              c.font = 'bold 11px Georgia, serif'; c.fillStyle = '#6d28d9'; c.textAlign = 'center';
+              c.fillText('θ', Math.sin(sunAng / 2) * dnScale * 0.35, -Math.cos(sunAng / 2) * dnScale * 0.35);
+              // Vertical reference line (dashed)
+              c.strokeStyle = 'rgba(100,100,100,0.4)'; c.setLineDash([3, 3]); c.lineWidth = 0.8;
+              c.beginPath(); c.moveTo(0, 0); c.lineTo(0, -dnScale * 0.4); c.stroke();
+              c.setLineDash([]);
+              c.restore();
+
+              // Caption inside comb panel
+              c.font = 'italic 10px system-ui'; c.fillStyle = '#7c2d12'; c.textAlign = 'center';
+              c.fillText('Bee waggles along the red line at angle θ from vertical', combX + combW / 2, pY + pH2 - 10);
+              c.restore();
+            })();
+
+            // ═══ RIGHT PANEL: overhead view — decoded direction + distance ═══
+            var pR_X = W * 0.48, pR_W = W - pR_X - 10;
+            (function() {
+              var pX = pR_X, pY = 60;
+              var pH2 = H - pY - 100;
+              c.save();
+              c.fillStyle = 'rgba(255,255,255,0.55)';
+              c.beginPath(); if (c.roundRect) c.roundRect(pX, pY, pR_W, pH2, 10); else c.rect(pX, pY, pR_W, pH2); c.fill();
+              c.strokeStyle = '#059669'; c.lineWidth = 2;
+              c.beginPath(); if (c.roundRect) c.roundRect(pX, pY, pR_W, pH2, 10); else c.rect(pX, pY, pR_W, pH2); c.stroke();
+              c.font = 'bold 12px system-ui'; c.textAlign = 'center'; c.fillStyle = '#065f46';
+              c.fillText('DECODED — OVERHEAD OUTSIDE THE HIVE', pX + pR_W / 2, pY + 20);
+
+              // Ground (top-down view)
+              var gdX = pX + 20, gdY = pY + 36, gdW = pR_W - 40, gdH = pH2 * 0.55;
+              c.fillStyle = 'rgba(190,230,180,0.55)';
+              c.fillRect(gdX, gdY, gdW, gdH);
+
+              // Hive in center
+              var hvX = gdX + gdW / 2, hvY = gdY + gdH * 0.6;
+              c.fillStyle = '#8a6508'; c.strokeStyle = '#3c2a10'; c.lineWidth = 1.5;
+              c.fillRect(hvX - 12, hvY - 10, 24, 20);
+              c.strokeRect(hvX - 12, hvY - 10, 24, 20);
+              c.font = 'bold 8px system-ui'; c.textAlign = 'center'; c.fillStyle = '#fff';
+              c.fillText('HIVE', hvX, hvY + 2);
+
+              // Sun (top-right of panel)
+              var vSunAng = Math.sin(t2 * 0.003) * 0.5;
+              var sunVX = hvX + Math.sin(-vSunAng) * (gdW * 0.35);
+              var sunVY = gdY + 20;
+              c.save(); c.shadowColor = '#fbbf24'; c.shadowBlur = 10;
+              c.fillStyle = '#fbbf24';
+              c.beginPath(); c.arc(sunVX, sunVY, 8, 0, 6.28); c.fill();
+              c.restore();
+              c.font = 'bold 9px system-ui'; c.fillStyle = '#78350f';
+              c.fillText('☀', sunVX, sunVY + 3);
+              c.font = '9px system-ui';
+              c.fillText('sun', sunVX, sunVY + 18);
+
+              // Flower (at angle θ from sun, distance d from hive)
+              var _waggleDurSec = 1.5 + (Math.sin(t2 * 0.008) + 1) * 1.25; // 1.5..4s cycles
+              var flowerDist = _waggleDurSec * 35; // meters (scaled: 1s ≈ 1km in real bees, scaled for display)
+              var flowerAng = -Math.PI / 2 + vSunAng; // θ from vertical
+              var flX = hvX + Math.sin(flowerAng + Math.PI) * Math.min(flowerDist, gdW * 0.35);
+              var flY = hvY + Math.cos(flowerAng + Math.PI) * Math.min(flowerDist, gdH * 0.4);
+              // Line from hive to flower
+              c.strokeStyle = 'rgba(220,38,38,0.6)'; c.lineWidth = 2;
+              c.setLineDash([4, 3]);
+              c.beginPath(); c.moveTo(hvX, hvY); c.lineTo(flX, flY); c.stroke();
+              c.setLineDash([]);
+              // Line from hive to sun
+              c.strokeStyle = 'rgba(251,191,36,0.6)'; c.lineWidth = 1.5;
+              c.setLineDash([3, 3]);
+              c.beginPath(); c.moveTo(hvX, hvY); c.lineTo(sunVX, sunVY); c.stroke();
+              c.setLineDash([]);
+              // Angle arc between them
+              c.strokeStyle = '#7c3aed'; c.lineWidth = 1.2;
+              var hiveSunAng = Math.atan2(sunVY - hvY, sunVX - hvX);
+              var hiveFlowerAng = Math.atan2(flY - hvY, flX - hvX);
+              c.beginPath(); c.arc(hvX, hvY, 22, hiveSunAng, hiveFlowerAng, hiveFlowerAng < hiveSunAng); c.stroke();
+              c.font = 'bold 12px Georgia, serif'; c.fillStyle = '#6d28d9'; c.textAlign = 'center';
+              var midAng = (hiveSunAng + hiveFlowerAng) / 2;
+              c.fillText('θ', hvX + Math.cos(midAng) * 30, hvY + Math.sin(midAng) * 30);
+
+              // Flower at the end
+              c.save(); c.translate(flX, flY);
+              c.fillStyle = '#f472b6';
+              for (var fp = 0; fp < 6; fp++) {
+                var fpa = fp * 1.047;
+                c.beginPath(); c.ellipse(Math.cos(fpa) * 6, Math.sin(fpa) * 6, 4, 2.5, fpa, 0, 6.28); c.fill();
+              }
+              c.fillStyle = '#fbbf24'; c.beginPath(); c.arc(0, 0, 3, 0, 6.28); c.fill();
+              c.restore();
+              c.font = 'bold 8px system-ui'; c.fillStyle = '#065f46'; c.textAlign = 'center';
+              c.fillText('FLOWER', flX, flY + 18);
+
+              // Distance label on the dashed line
+              var distM = Math.round(_waggleDurSec * 1000); // real-world meters
+              c.font = 'bold 10px system-ui'; c.fillStyle = '#dc2626';
+              c.fillText(distM + ' m', (hvX + flX) / 2 + 12, (hvY + flY) / 2);
+
+              // ── DISTANCE CODE: waggle duration bar ──
+              var wdBarY = pY + gdH + 60;
+              c.font = 'bold 11px system-ui'; c.textAlign = 'left'; c.fillStyle = '#065f46';
+              c.fillText('DISTANCE ENCODING (waggle duration → kilometers)', gdX, wdBarY);
+              // Bar background
+              c.fillStyle = 'rgba(0,0,0,0.1)';
+              c.fillRect(gdX, wdBarY + 6, gdW, 16);
+              // Current waggle duration fill
+              var wBarFill = Math.min(1, _waggleDurSec / 5) * gdW;
+              c.fillStyle = '#059669';
+              c.fillRect(gdX, wdBarY + 6, wBarFill, 16);
+              // Tick marks every 1 second
+              c.strokeStyle = '#064e3b'; c.lineWidth = 1;
+              c.font = '9px monospace'; c.fillStyle = '#064e3b'; c.textAlign = 'center';
+              for (var tk = 0; tk <= 5; tk++) {
+                var tkX = gdX + (tk / 5) * gdW;
+                c.beginPath(); c.moveTo(tkX, wdBarY + 6); c.lineTo(tkX, wdBarY + 26); c.stroke();
+                c.fillText(tk + 's', tkX, wdBarY + 38);
+                c.fillText((tk * 1000) + 'm', tkX, wdBarY + 50);
+              }
+              // Current value label
+              c.font = 'bold 10px monospace'; c.fillStyle = '#dc2626'; c.textAlign = 'center';
+              c.fillText(_waggleDurSec.toFixed(1) + 's = ' + distM + 'm', gdX + wBarFill, wdBarY - 6);
+
+              c.restore();
+            })();
+
+            // Bottom master fact strip
+            var stripY = H - 52;
+            c.fillStyle = 'rgba(120,53,15,0.92)';
+            c.fillRect(0, stripY, W, 52);
+            c.font = 'bold 11px system-ui'; c.textAlign = 'center'; c.fillStyle = '#fef3c7';
+            c.fillText('Direction: waggle-run angle vs vertical = flower angle vs sun   ·   Distance: duration of waggle phase', W / 2, stripY + 18);
+            c.font = 'italic 10px Georgia, serif'; c.fillStyle = '#fcd34d';
+            var wdFacts = [
+              'Karl von Frisch (Austria) decoded this between 1923–1964. Nobel Prize 1973.',
+              'Bees compensate for the sun\'s apparent motion — they track time-of-day!',
+              'On cloudy days, bees use polarized light patterns to find the sun.',
+              'Inside the dark hive, followers read the dance by TOUCH and VIBRATION, not sight.',
+              '1 second of waggle = roughly 1 kilometer of distance to the nectar source.',
+              'Scouts also use the round dance (for flowers <~100m) — no directional info needed.',
+              'A good forage source gets a more vigorous, longer-lasting dance.'
+            ];
+            var wdfIdx = Math.floor(t2 / 420) % wdFacts.length;
+            c.fillText('💡 ' + wdFacts[wdfIdx], W / 2, stripY + 38);
+          }
+
           // ═══ HONEY CHEMISTRY DIAGRAM (nectar → honey: enzymatic + evaporative conversion) ═══
           function drawHoneyChemistry() {
             // Warm cream/amber background
@@ -2523,6 +2812,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               }
               if (_bv === 'honey') {
                 drawHoneyChemistry();
+                _animId.current = requestAnimationFrame(frame);
+                return;
+              }
+              if (_bv === 'waggle') {
+                drawWaggleDance();
                 _animId.current = requestAnimationFrame(frame);
                 return;
               }
@@ -5372,7 +5666,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 { id: 'anatomy', icon: '🔬', label: 'Anatomy', desc: 'Labeled bee diagram' },
                 { id: 'physics', icon: '✈️', label: 'Flight Physics', desc: 'How bees fly — leading-edge vortex' },
                 { id: 'lifecycle', icon: '🥚', label: 'Life Cycle', desc: 'Egg → larva → pupa → adult (21 days)' },
-                { id: 'honey', icon: '🍯', label: 'Honey Chem', desc: 'Nectar → honey: enzymes + evaporation' }
+                { id: 'honey', icon: '🍯', label: 'Honey Chem', desc: 'Nectar → honey: enzymes + evaporation' },
+                { id: 'waggle', icon: '💃', label: 'Waggle Dance', desc: 'Bee symbolic language (von Frisch 1973)' }
               ].map(function(v) {
                 var active = beeView === v.id;
                 return h('button', { key: v.id, role: 'tab', 'aria-selected': active ? 'true' : 'false', onClick: function() { upd('beeView', v.id); }, title: v.desc,
