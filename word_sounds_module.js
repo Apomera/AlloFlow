@@ -6060,29 +6060,68 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           setWsPreloadedWords((prev) =>
             prev.map((w) =>
               wordsNeedingAudio.some((n) => n.word === w.word)
-                ? { ...w, _audioRequested: true }
+                ? { ...w, _audioRequested: true, _ttsFailed: false }
                 : w,
             ),
           );
         }
+        // Pre-fetch with an inner retry + per-word success tracking. Previously
+        // a 401/transient failure left `ttsReady: true` because the .catch in
+        // the middle swallowed the error silently; the UI then showed the word
+        // as ready while handleAudio quietly played nothing in Blend Sounds.
+        // Now: retry up to 2 times with exponential backoff, and only mark
+        // `ttsReady` true if we actually got a cached URL back. On final
+        // failure, mark `_ttsFailed: true` so the Review Panel can surface a
+        // retry-missing-words button.
+        const tryPrefetch = async (text) => {
+          let lastErr = null;
+          for (let attempt = 0; attempt < 3; attempt++) {
+            try {
+              await handleAudio(text, false);
+              // Probe the cache so we know the URL actually materialized.
+              const cached =
+                (audioInstances &&
+                  audioInstances.current &&
+                  audioInstances.current.has(text.toLowerCase())) ||
+                (audioCache &&
+                  audioCache.current &&
+                  audioCache.current.has(text.toLowerCase())) ||
+                (typeof window !== "undefined" &&
+                  window._CACHE_WORD_AUDIO_BANK &&
+                  window._CACHE_WORD_AUDIO_BANK[text.toLowerCase()]);
+              if (cached) return true;
+              // No cache entry even though no throw: treat as failure + retry.
+              throw new Error("prefetch completed without caching a URL");
+            } catch (e) {
+              lastErr = e;
+              // 429 means we're rate-limited globally — further retries will
+              // hit the cooldown and fail instantly. Break early.
+              if (e && e.message && (e.message.includes("429") || e.message.includes("Rate Limited"))) break;
+              if (attempt < 2) {
+                await new Promise((r) => setTimeout(r, 600 * (attempt + 1)));
+              }
+            }
+          }
+          warnLog("Audio prefetch exhausted retries for", text, lastErr && lastErr.message);
+          return false;
+        };
         wordsNeedingAudio.forEach(async (w) => {
           const text = w.word;
-          try {
-            await handleAudio(text, false).catch((e) =>
-              warnLog("Audio prefetch failed:", e),
+          const ok = await tryPrefetch(text);
+          if (setWsPreloadedWords) {
+            setWsPreloadedWords((prev) =>
+              prev.map((pw) => {
+                if (pw.word === text) {
+                  return {
+                    ...pw,
+                    ttsReady: ok,
+                    _audioRequested: false,
+                    _ttsFailed: !ok,
+                  };
+                }
+                return pw;
+              }),
             );
-            if (setWsPreloadedWords) {
-              setWsPreloadedWords((prev) =>
-                prev.map((pw) => {
-                  if (pw.word === text) {
-                    return { ...pw, ttsReady: true, _audioRequested: false };
-                  }
-                  return pw;
-                }),
-              );
-            }
-          } catch (e) {
-            warnLog(`Audio prefetch failed for ${text}`, e);
           }
         });
       }, [preloadedWords, setWsPreloadedWords]);
@@ -6394,6 +6433,36 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         setPreloadedWords,
         addToast,
       ]);
+      // Retry TTS prefetch for only the words the initial pass couldn't cache
+      // (marked with _ttsFailed by the preload effect above). This is the
+      // "second pass" the teacher can trigger if 401 or transient errors left
+      // some words without audio. No phoneme data is re-fetched — we just
+      // re-run the prefetch pipeline with a fresh retry cycle.
+      const handleRetryFailedTTS = React.useCallback(async () => {
+        const missing = (preloadedWords || []).filter(
+          (w) => w && (w._ttsFailed || (w.ttsReady === false && !w._audioRequested)),
+        );
+        if (missing.length === 0) {
+          addToast?.("All audio is ready — nothing to retry.", "info");
+          return;
+        }
+        addToast?.(
+          `🎧 Retrying audio for ${missing.length} word${missing.length === 1 ? "" : "s"}...`,
+          "info",
+        );
+        // Flip _audioRequested so the prefetch effect picks them up again, and
+        // clear _ttsFailed + ttsReady so the filter matches cleanly.
+        if (setWsPreloadedWords) {
+          setWsPreloadedWords((prev) =>
+            (Array.isArray(prev) ? prev : []).map((w) => {
+              if (missing.some((m) => m.word === w.word)) {
+                return { ...w, ttsReady: false, _audioRequested: false, _ttsFailed: false };
+              }
+              return w;
+            }),
+          );
+        }
+      }, [preloadedWords, setWsPreloadedWords, addToast]);
       const handleGenerateWordImage = React.useCallback(
         async (index, word) => {
           if (generatingImageSet.size >= 5) {
@@ -8105,21 +8174,40 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               await new Promise((r) => setTimeout(r, 400));
               if (cancelled) return;
               await handleAudio(currentWordSoundsWord);
-              if (isolationState?.isoOptions?.length > 0) {
+              // Read options from the REF + wait for them to populate on first
+              // item. Previously this block closed over the `isolationState`
+              // React prop snapshot captured at runInstructionSequence start
+              // — on the first word, that snapshot was often null/empty
+              // because setIsolationState hadn't flushed to the re-render
+              // yet, so the options block was silently skipped. (Second word
+              // onward, the prior word's state was still present → options
+              // DID play — matching the user's observed behavior.) Use the
+              // ref and spin-wait up to ~3s for options to land.
+              let isoSnap2 = isolationStateRef.current || isolationState;
+              if (!isoSnap2?.isoOptions?.length) {
+                for (let isoWait2 = 0; isoWait2 < 20; isoWait2++) {
+                  await new Promise((r) => setTimeout(r, 150));
+                  if (cancelled || audioCancelledRef.current) return;
+                  isoSnap2 = isolationStateRef.current;
+                  if (isoSnap2?.isoOptions?.length > 0) break;
+                }
+              }
+              if (isoSnap2?.isoOptions?.length > 0) {
                 await new Promise((r) => setTimeout(r, 300));
+                if (cancelled) return;
                 await Promise.all(
-                  isolationState.isoOptions.map((o) =>
+                  isoSnap2.isoOptions.map((o) =>
                     handleAudio(o, false).catch(() => { }),
                   ),
                 );
                 for (
                   let i = 0;
-                  i < (isolationState?.isoOptions?.length || 0);
+                  i < (isoSnap2?.isoOptions?.length || 0);
                   i++
                 ) {
                   if (cancelled) break;
                   setHighlightedIsoIndex(i);
-                  await handleAudio(isolationState.isoOptions[i]);
+                  await handleAudio(isoSnap2.isoOptions[i]);
                   if (cancelled) return;
                   await new Promise((r) => setTimeout(r, 450));
                 }
@@ -8892,7 +8980,24 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       lastWordForIsolation.current = targetWord;
                       isolationPositionRef.current =
                         bufferedWord.isolationOptions.currentPosition;
-                      setIsolationState(bufferedWord.isolationOptions);
+                      // Re-shuffle on each reuse — without this, the same
+                      // word re-presented in a session always shows the
+                      // options in the same saved order (correct answer
+                      // ends up "parked" in the same spot), which the
+                      // student eventually pattern-matches on. Dedup first
+                      // as a belt-and-suspenders safeguard against any
+                      // lingering dupes from legacy saved sessions.
+                      const _reuseOpts = Array.from(
+                        new Set(
+                          (bufferedWord.isolationOptions.isoOptions || []).map(
+                            (x) => (typeof x === "string" ? x : String(x)),
+                          ),
+                        ),
+                      );
+                      setIsolationState({
+                        ...bufferedWord.isolationOptions,
+                        isoOptions: fisherYatesShuffle(_reuseOpts),
+                      });
                     } else if (lastWordForIsolation.current !== targetWord) {
                       debugLog(
                         "🔧 Generating isolation state for:",
@@ -8912,23 +9017,29 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       const distractors = allPhonemes
                         .filter((p) => p !== correctPhoneme)
                         .slice(0, 5);
-                      while (distractors.length < 5)
-                        distractors.push(
-                          [
-                            "b",
-                            "d",
-                            "f",
-                            "g",
-                            "k",
-                            "l",
-                            "m",
-                            "n",
-                            "p",
-                            "r",
-                            "s",
-                            "t",
-                          ][Math.floor(Math.random() * 12)],
-                        );
+                      // Dedup-aware fill: the previous version did a blind
+                      // Math.random pick with no used-set check, so the same
+                      // letter could be pushed twice (e.g. ["b","b","f","g","k"])
+                      // → Find Sounds would show two identical response options.
+                      const _distUsed = new Set(
+                        [
+                          correctPhoneme,
+                          ...distractors,
+                        ].map((x) => x?.toLowerCase()),
+                      );
+                      const _fillPool = [
+                        "b","d","f","g","k","l","m","n","p","r","s","t",
+                      ];
+                      const _fillShuffled = [..._fillPool].sort(
+                        () => Math.random() - 0.5,
+                      );
+                      for (const _f of _fillShuffled) {
+                        if (distractors.length >= 5) break;
+                        if (!_distUsed.has(_f)) {
+                          distractors.push(_f);
+                          _distUsed.add(_f);
+                        }
+                      }
                       const isoUniqueSet = new Set(
                         [correctPhoneme, ...distractors.slice(0, 5)].map((x) =>
                           x?.toLowerCase(),
@@ -9150,23 +9261,24 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       const iso_dist = iso_all
                         .filter((p) => p !== iso_correct)
                         .slice(0, 5);
-                      while (iso_dist.length < 5)
-                        iso_dist.push(
-                          [
-                            "b",
-                            "d",
-                            "f",
-                            "g",
-                            "k",
-                            "l",
-                            "m",
-                            "n",
-                            "p",
-                            "r",
-                            "s",
-                            "t",
-                          ][Math.floor(Math.random() * 12)],
-                        );
+                      // Dedup-aware fill (see matching block above for the
+                      // "Find Sounds double option" bug fix).
+                      const _isoDistUsed = new Set(
+                        [iso_correct, ...iso_dist].map((x) => x?.toLowerCase()),
+                      );
+                      const _isoFillPool = [
+                        "b","d","f","g","k","l","m","n","p","r","s","t",
+                      ];
+                      const _isoFillShuffled = [..._isoFillPool].sort(
+                        () => Math.random() - 0.5,
+                      );
+                      for (const _f of _isoFillShuffled) {
+                        if (iso_dist.length >= 5) break;
+                        if (!_isoDistUsed.has(_f)) {
+                          iso_dist.push(_f);
+                          _isoDistUsed.add(_f);
+                        }
+                      }
                       const iso_unique = new Set(
                         [iso_correct, ...iso_dist.slice(0, 5)].map((x) =>
                           x?.toLowerCase(),
@@ -12686,6 +12798,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           onRegenerateWord: handleRegenerateWord,
           onRegenerateOption: handleRegenerateOption,
           onRegenerateAll: handleRegenerateAll,
+          onRetryFailedTTS: handleRetryFailedTTS,
           onGenerateImage: handleGenerateWordImage,
           onRefineImage: handleRefineWordImage,
           activitySequence: activitySequence,

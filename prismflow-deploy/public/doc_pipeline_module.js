@@ -507,8 +507,8 @@ var createDocPipeline = function(deps) {
       // Short doc: single call with full document (use stripped html without base64 images)
       try {
         const _singleHtml = _hasImages ? strippedHtml : html;
-        const prompt = `Fix these WCAG violations in the HTML. Change ONLY what's needed. Preserve ALL content and inline styles. Do NOT summarize or shorten.\n\nIMAGE PLACEHOLDERS: Any src value or token matching __ALLOFLOW_DATAURL_*__ (including __ALLOFLOW_DATAURL_FINAL_N__ and __IMG_DATA_N__) is a reference to an extracted image. Do NOT remove the containing <img> or <figure> element, do NOT modify the token text, do NOT replace the src with a description. Keep every such token exactly as-is.\n\nVIOLATIONS:\n${violationsText}\n\nHTML:\n"""\n${_singleHtml}\n"""\n\nReturn the COMPLETE fixed HTML.`;
-        const fixed = stripFence(await callGemini(prompt, true));
+        const prompt = `Fix these WCAG violations in the HTML. Change ONLY what's needed. Preserve ALL content and inline styles. Do NOT summarize or shorten.\n\nIMAGE PLACEHOLDERS: Any src value or token matching __ALLOFLOW_DATAURL_*__ (including __ALLOFLOW_DATAURL_FINAL_N__ and __IMG_DATA_N__) is a reference to an extracted image. Do NOT remove the containing <img> or <figure> element, do NOT modify the token text, do NOT replace the src with a description. Keep every such token exactly as-is.\n\nVIOLATIONS:\n${violationsText}\n\nHTML:\n"""\n${_singleHtml}\n"""\n\nReturn the COMPLETE fixed HTML — raw HTML only, do NOT wrap in JSON or a code fence.`;
+        const fixed = stripFence(await callGemini(prompt, false));
         // FINAL-token preservation: reject this pass if any image placeholder was dropped.
         const _finalBefore = (_singleHtml.match(/__ALLOFLOW_DATAURL_FINAL_\d+__/gi) || []);
         const _finalAfter = fixed ? (fixed.match(/__ALLOFLOW_DATAURL_FINAL_\d+__/gi) || []) : [];
@@ -533,9 +533,9 @@ var createDocPipeline = function(deps) {
         : isLast
           ? `This is the LAST fragment (${ci + 1} of ${chunks.length}) — it may end with </main></body></html>.`
           : `This is fragment ${ci + 1} of ${chunks.length} — starts and ends mid-document.`;
-      const prompt = `Fix these WCAG violations in the HTML fragment below. Change ONLY what's needed. Preserve ALL content, text, and inline styles. Do NOT summarize or shorten.\n\nIMAGE PLACEHOLDERS: Any src value or token matching __ALLOFLOW_DATAURL_*__ (including __ALLOFLOW_DATAURL_FINAL_N__ and __IMG_DATA_N__) is a reference to an extracted image. Do NOT remove the containing <img> or <figure> element, do NOT modify the token text, do NOT replace the src with a description. Keep every such token exactly as-is.\n\n${fragNote}\n\nVIOLATIONS:\n${violationsText}\n\nHTML FRAGMENT:\n"""\n${part}\n"""\n\nReturn ONLY the fixed fragment with the same opening and closing boundaries as the input.`;
+      const prompt = `Fix these WCAG violations in the HTML fragment below. Change ONLY what's needed. Preserve ALL content, text, and inline styles. Do NOT summarize or shorten.\n\nIMAGE PLACEHOLDERS: Any src value or token matching __ALLOFLOW_DATAURL_*__ (including __ALLOFLOW_DATAURL_FINAL_N__ and __IMG_DATA_N__) is a reference to an extracted image. Do NOT remove the containing <img> or <figure> element, do NOT modify the token text, do NOT replace the src with a description. Keep every such token exactly as-is.\n\n${fragNote}\n\nVIOLATIONS:\n${violationsText}\n\nHTML FRAGMENT:\n"""\n${part}\n"""\n\nReturn ONLY the fixed fragment — raw HTML only, do NOT wrap in JSON or a code fence. Same opening and closing boundaries as the input.`;
       try {
-        let out = stripFence(await callGemini(prompt, true));
+        let out = stripFence(await callGemini(prompt, false));
         if (_isJsonWrapped(out)) {
           const unwrapped = _tryUnwrapJsonHtml(out);
           if (unwrapped && unwrapped.length >= part.length * 0.9 && textCharCount(unwrapped) >= textCharCount(part) * 0.95) {
@@ -554,8 +554,8 @@ var createDocPipeline = function(deps) {
           const _lost = _finalBefore.length - _finalAfter.length;
           warnLog(`[aiFixChunked:${label}] chunk ${ci + 1} dropped ${_lost} image FINAL token(s) — retrying with explicit preservation instructions`);
           try {
-            const retryPrompt = `Re-fix this HTML fragment. Your previous response REMOVED image placeholder tokens matching __ALLOFLOW_DATAURL_FINAL_N__ — these are extracted images that MUST be preserved. Every <img src="__ALLOFLOW_DATAURL_FINAL_*__"> and <figure> containing such a token must appear in your output verbatim.\n\nVIOLATIONS:\n${violationsText}\n\nHTML FRAGMENT:\n"""\n${part}\n"""\n\nReturn ONLY the fixed fragment with ALL __ALLOFLOW_DATAURL_FINAL_*__ tokens intact.`;
-            let retried = stripFence(await callGemini(retryPrompt, true));
+            const retryPrompt = `Re-fix this HTML fragment. Your previous response REMOVED image placeholder tokens matching __ALLOFLOW_DATAURL_FINAL_N__ — these are extracted images that MUST be preserved. Every <img src="__ALLOFLOW_DATAURL_FINAL_*__"> and <figure> containing such a token must appear in your output verbatim.\n\nVIOLATIONS:\n${violationsText}\n\nHTML FRAGMENT:\n"""\n${part}\n"""\n\nReturn ONLY the fixed fragment — raw HTML only, do NOT wrap in JSON. Keep ALL __ALLOFLOW_DATAURL_FINAL_*__ tokens intact.`;
+            let retried = stripFence(await callGemini(retryPrompt, false));
             if (_isJsonWrapped(retried)) {
               const unwrappedRetry = _tryUnwrapJsonHtml(retried);
               if (unwrappedRetry) retried = unwrappedRetry;
@@ -580,8 +580,8 @@ var createDocPipeline = function(deps) {
           const halfChunks = splitHtmlOnTagBoundary(part, Math.ceil(part.length / 2));
           const halfResults = await Promise.all(halfChunks.map(async (half, hi) => {
             try {
-              const halfPrompt = `Fix these WCAG violations in the HTML fragment. Change ONLY what's needed. Preserve ALL content.\n\nIMAGE PLACEHOLDERS: Any token matching __ALLOFLOW_DATAURL_*__ (including __ALLOFLOW_DATAURL_FINAL_N__) or __IMG_DATA_N__ is an image placeholder — keep it exactly and do NOT remove its containing element.\n\nVIOLATIONS:\n${violationsText}\n\nHTML FRAGMENT:\n"""\n${half}\n"""\n\nReturn ONLY the fixed fragment.`;
-              let halfOut = stripFence(await callGemini(halfPrompt, true));
+              const halfPrompt = `Fix these WCAG violations in the HTML fragment. Change ONLY what's needed. Preserve ALL content.\n\nIMAGE PLACEHOLDERS: Any token matching __ALLOFLOW_DATAURL_*__ (including __ALLOFLOW_DATAURL_FINAL_N__) or __IMG_DATA_N__ is an image placeholder — keep it exactly and do NOT remove its containing element.\n\nVIOLATIONS:\n${violationsText}\n\nHTML FRAGMENT:\n"""\n${half}\n"""\n\nReturn ONLY the fixed fragment — raw HTML only, do NOT wrap in JSON or a code fence.`;
+              let halfOut = stripFence(await callGemini(halfPrompt, false));
               if (_isJsonWrapped(halfOut)) {
                 const unwrappedHalf = _tryUnwrapJsonHtml(halfOut);
                 if (unwrappedHalf && unwrappedHalf.length >= half.length * 0.85 && textCharCount(unwrappedHalf) >= textCharCount(half) * 0.9) {
@@ -1528,7 +1528,7 @@ var createDocPipeline = function(deps) {
             'RULES: Preserve ALL text content, ALL attributes (especially src= even if they look like placeholder tokens), ALL inline styles. Do NOT shorten, summarize, or drop content. IMAGE PLACEHOLDERS: Any src value or bare token matching __ALLOFLOW_DATAURL_*__ (including __ALLOFLOW_DATAURL_FINAL_N__) is a reference to an extracted image. Do NOT remove the containing <img> or <figure> element, do NOT modify the token text, do NOT replace the src with a description. Keep every such token exactly as-is.\n\n' +
             'HTML:\n"""\n' + chunk + '\n"""\n\n' +
             'Return ONLY the fixed fragment.';
-          let rewritten = stripFence(await callGemini(rewritePrompt, true));
+          let rewritten = stripFence(await callGemini(rewritePrompt, false));
           if (_isJsonWrapped(rewritten)) {
             const unwrappedRw = _tryUnwrapJsonHtml(rewritten);
             if (unwrappedRw && unwrappedRw.length >= chunk.length * 0.9) {
@@ -1694,10 +1694,10 @@ var createDocPipeline = function(deps) {
       'Do NOT add or remove text the user can read. Preserve all inline styles.\n\n' +
       'VIOLATIONS TO FIX (axe-core rule IDs):\n' + ruleList + '\n\n' +
       'ELEMENT:\n' + cluster.anchorHtml + '\n\n' +
-      'Return ONLY the rewritten element. No explanation. No markdown fences. ' +
+      'Return ONLY the rewritten element. No explanation. No markdown fences. No JSON wrapping. ' +
       'The opening and closing tags must match the input.';
     try {
-      let raw = await callGemini(prompt, true);
+      let raw = await callGemini(prompt, false);
       if (!raw) return cluster.anchorHtml;
       // Strip code fences if the model added them anyway
       raw = raw.trim().replace(/^```[a-z]*\n?/i, '').replace(/\n?```\s*$/i, '').trim();
@@ -1930,9 +1930,9 @@ var createDocPipeline = function(deps) {
       'VIOLATIONS TO FIX (axe-core rule IDs):\n' + ruleList + '\n\n' +
       'SECTION:\n' + cluster.sectionHtml + '\n\n' +
       'Return ONLY the rewritten <' + cluster.sectionTag + '> element. No explanation.\n' +
-      'No markdown fences. The opening and closing tag names must match the input.';
+      'No markdown fences. No JSON wrapping. The opening and closing tag names must match the input.';
     try {
-      let raw = await callGemini(prompt, true);
+      let raw = await callGemini(prompt, false);
       if (!raw) return cluster.sectionHtml;
       raw = raw.trim().replace(/^```[a-z]*\n?/i, '').replace(/\n?```\s*$/i, '').trim();
       if (!raw.startsWith('<')) return cluster.sectionHtml;
@@ -3149,7 +3149,7 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
     if (textChunks.length === 1) {
       // Short document: single call, same as before
       const singlePrompt = buildTransformPrompt(textChunks[0], { isFirst: true, isLast: true, chunkIdx: 0, totalChunks: 1 });
-      accessibleHtml = await callGemini(singlePrompt, true);
+      accessibleHtml = await callGemini(singlePrompt, false);
       accessibleHtml = _stripJsonWrapperArtifacts(accessibleHtml);
     } else {
       // Long document: parallel chunks in batches of 5
@@ -3162,7 +3162,7 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
           const meta = { isFirst: ci === 0, isLast: ci === textChunks.length - 1, chunkIdx: ci, totalChunks: textChunks.length };
           const prompt = buildTransformPrompt(textChunks[ci], meta);
           batchPromises.push(
-            callGemini(prompt, true).then(r => ({ ci, result: r })).catch(err => {
+            callGemini(prompt, false).then(r => ({ ci, result: r })).catch(err => {
               warnLog(`[Transform] Chunk ${ci + 1} failed:`, err?.message);
               return { ci, result: null };
             })
@@ -5790,9 +5790,9 @@ HTML SECTION ${chi + 1}/${bodyChunks.length}:
 ${chunk}
 """
 
-Return the fixed section content only.`;
+Return the fixed section content only — raw HTML, no JSON wrapping.`;
 
-                const fixedChunk = await callGemini(prompt, true);
+                const fixedChunk = await callGemini(prompt, false);
 
                 if (!fixedChunk || fixedChunk.trim().length === 0) continue;
 
@@ -6236,10 +6236,10 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
 
       try {
         const prompt = isRetry
-          ? `CRITICAL: Your previous fix of this HTML section LOST CONTENT. Re-fix preserving EVERY word.\n\nVIOLATIONS:\n${violationInstructions}\n\nORIGINAL SECTION ${chunkIndex + 1}/${totalChunks}:\n"""\n${chunk}\n"""\n\nReturn fixed section with ALL text preserved.`
-          : `You are an accessibility remediation expert. Fix REMAINING violations in this HTML SECTION.\nNOTE: Deterministic fixes already applied. Focus on semantic issues: alt text, heading hierarchy, ARIA, table structure, link text.\n\nVIOLATIONS:\n${violationInstructions}\n\nRULES:\n- Section ${chunkIndex + 1} of ${totalChunks}.\n- Fix ONLY accessibility. PRESERVE EVERY WORD.\n- Return ONLY the fixed HTML fragment (no DOCTYPE/html/head/body).\n\nHTML SECTION:\n"""\n${chunk}\n"""\n\nReturn fixed section only.`;
+          ? `CRITICAL: Your previous fix of this HTML section LOST CONTENT. Re-fix preserving EVERY word.\n\nVIOLATIONS:\n${violationInstructions}\n\nORIGINAL SECTION ${chunkIndex + 1}/${totalChunks}:\n"""\n${chunk}\n"""\n\nReturn fixed section with ALL text preserved — raw HTML only, no JSON wrapping.`
+          : `You are an accessibility remediation expert. Fix REMAINING violations in this HTML SECTION.\nNOTE: Deterministic fixes already applied. Focus on semantic issues: alt text, heading hierarchy, ARIA, table structure, link text.\n\nVIOLATIONS:\n${violationInstructions}\n\nRULES:\n- Section ${chunkIndex + 1} of ${totalChunks}.\n- Fix ONLY accessibility. PRESERVE EVERY WORD.\n- Return ONLY the fixed HTML fragment (no DOCTYPE/html/head/body).\n\nHTML SECTION:\n"""\n${chunk}\n"""\n\nReturn fixed section only — raw HTML, no JSON wrapping.`;
 
-        const fixedChunk = await callGemini(prompt, true);
+        const fixedChunk = await callGemini(prompt, false);
         if (!fixedChunk || fixedChunk.trim().length === 0) continue;
 
         // Clean AI artifacts
@@ -7610,8 +7610,8 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
                   }
                   const pc = polishChunks[pci];
                   try {
-                    const pPrompt = `Fix: merge split tables, smooth section transitions, remove duplicated headings. Preserve ALL text and class attributes.\n\nHTML:\n${pc}\n\nReturn ONLY the fixed fragment.`;
-                    const pOut = stripFence(await callGemini(pPrompt, true));
+                    const pPrompt = `Fix: merge split tables, smooth section transitions, remove duplicated headings. Preserve ALL text and class attributes.\n\nHTML:\n${pc}\n\nReturn ONLY the fixed fragment — raw HTML, no JSON wrapping.`;
+                    const pOut = stripFence(await callGemini(pPrompt, false));
                     if (pOut && pOut.length >= pc.length * 0.85 && textCharCount(pOut) >= textCharCount(pc) * 0.9) {
                       polishedParts.push(pOut);
                     } else {

@@ -871,6 +871,7 @@ const WordSoundsReviewPanel = ({
     onRegenerateWord,
     onRegenerateOption,
     onRegenerateAll,
+    onRetryFailedTTS,
     regeneratingIndex,
     onGenerateImage,
     onRefineImage,
@@ -1148,9 +1149,26 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                             </div>
                         </span>
                     </h2>
-                    <p className="text-sm opacity-80 mt-1 flex items-center gap-2">
+                    <p className="text-sm opacity-80 mt-1 flex items-center gap-2 flex-wrap">
                         <span>Review and edit words • {preloadedWords.length} words ready</span>
                         {isLoading && <span className="flex items-center gap-1 bg-white/20 px-2 py-0.5 rounded-full text-xs animate-pulse"><div className="w-2 h-2 bg-white rounded-full animate-bounce"/> Generating more...</span>}
+                        {/* Failed-TTS banner: counts words whose audio prefetch exhausted retries
+                            (typically 401 / 429 / transient errors). Shown only after loading completes
+                            so we don't scare the teacher mid-preload. Click the button to re-run the
+                            prefetch pipeline just for the failed words. */}
+                        {!isLoading && preloadedWords.some(w => w && w._ttsFailed) && (
+                            <span className="flex items-center gap-2 bg-red-500/30 border border-red-200/60 px-3 py-1 rounded-full text-xs">
+                                <span>🔇 Audio missing for {preloadedWords.filter(w => w && w._ttsFailed).length} word{preloadedWords.filter(w => w && w._ttsFailed).length === 1 ? '' : 's'}</span>
+                                {typeof onRetryFailedTTS === 'function' && (
+                                    <button
+                                        type="button"
+                                        onClick={(e) => { e.stopPropagation(); onRetryFailedTTS(); }}
+                                        className="px-2 py-0.5 bg-white/90 hover:bg-white text-red-600 font-bold rounded-full text-xs"
+                                        title="Retry audio generation for words that failed"
+                                    >Retry audio</button>
+                                )}
+                            </span>
+                        )}
                     </p>
                 </div>
                 <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar">
@@ -1265,15 +1283,17 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                             }}
                                             disabled={playingWordIndex !== null || !word.ttsReady}
                                             className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
-                                                playingWordIndex === idx
-                                                    ? 'bg-pink-200 text-pink-700 animate-pulse'
-                                                    : playingWordIndex !== null
-                                                        ? 'bg-pink-50 text-pink-300 cursor-not-allowed'
-                                                        : 'bg-pink-100 hover:bg-pink-200 text-pink-600'
+                                                word._ttsFailed
+                                                    ? 'bg-red-100 hover:bg-red-200 text-red-600 border-2 border-red-300'
+                                                    : playingWordIndex === idx
+                                                        ? 'bg-pink-200 text-pink-700 animate-pulse'
+                                                        : playingWordIndex !== null
+                                                            ? 'bg-pink-50 text-pink-300 cursor-not-allowed'
+                                                            : 'bg-pink-100 hover:bg-pink-200 text-pink-600'
                                             }`}
-                                            title={playingWordIndex === idx ? "Playing..." : !word.ttsReady ? "Loading audio..." : "Play word"}
+                                            title={playingWordIndex === idx ? "Playing..." : word._ttsFailed ? "Audio failed to generate — click Retry audio in header" : !word.ttsReady ? "Loading audio..." : "Play word"}
                                         >
-                                            {playingWordIndex === idx ? <RefreshCw size={18} className="animate-spin" /> : <Volume2 size={18} />}
+                                            {word._ttsFailed ? '🔇' : (playingWordIndex === idx ? <RefreshCw size={18} className="animate-spin" /> : <Volume2 size={18} />)}
                                         </button>
                                         {word.phonemes && Array.isArray(word.phonemes) && word.phonemes.length > 0 && (
                                             <button

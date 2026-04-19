@@ -1968,6 +1968,141 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             });
           }
 
+          // ═══ PHEROMONES DIAGRAM (the chemical language of the hive) ═══
+          function drawPheromones() {
+            // Deep-purple / indigo background to feel "mysterious / chemical"
+            var phGrad = c.createLinearGradient(0, 0, 0, H);
+            phGrad.addColorStop(0, '#faf5ff'); phGrad.addColorStop(1, '#e9d5ff');
+            c.fillStyle = phGrad; c.fillRect(0, 0, W, H);
+
+            // Title
+            c.fillStyle = '#4c1d95'; c.textAlign = 'center';
+            c.font = 'bold 18px Georgia, serif';
+            c.fillText('🧪 Pheromones · The Chemical Language of the Hive', W / 2, 28);
+            c.font = 'italic 11px Georgia, serif'; c.fillStyle = '#6d28d9';
+            c.fillText('Bees communicate mostly by SMELL — ~50 known pheromones, each a precise chemical instruction', W / 2, 46);
+
+            // Central queen bee emitting pheromones outward
+            var qX = W / 2, qY = H * 0.40;
+            // Glow halo
+            c.save();
+            c.shadowColor = '#a855f7'; c.shadowBlur = 20;
+            c.fillStyle = 'rgba(192,132,252,0.25)';
+            c.beginPath(); c.arc(qX, qY, 50, 0, 6.28); c.fill();
+            c.restore();
+            // Queen body
+            c.save(); c.translate(qX, qY);
+            c.shadowColor = '#c084fc'; c.shadowBlur = 8;
+            c.fillStyle = '#fbbf24';
+            c.beginPath(); c.ellipse(0, 0, 34, 14, 0, 0, 6.28); c.fill();
+            c.restore();
+            c.fillStyle = '#292524';
+            for (var qs = 0; qs < 4; qs++) c.fillRect(qX - 20 + qs * 11, qY - 12, 3, 24);
+            // Head
+            c.fillStyle = '#292524';
+            c.beginPath(); c.arc(qX - 38, qY, 10, 0, 6.28); c.fill();
+            c.fillStyle = '#1e293b';
+            c.beginPath(); c.ellipse(qX - 42, qY - 2, 5, 6, -0.2, 0, 6.28); c.fill();
+            // Crown
+            c.font = '14px system-ui'; c.fillStyle = '#fbbf24'; c.textAlign = 'center';
+            c.fillText('👑', qX, qY - 22);
+            // Wings
+            c.globalAlpha = 0.4; c.fillStyle = '#e0f2fe';
+            var wP = Math.sin(t2 * 0.3) * 2;
+            c.beginPath(); c.ellipse(qX - 8, qY - 10 + wP, 22, 6, -0.3, 0, 6.28); c.fill();
+            c.globalAlpha = 1;
+
+            // ── Radiating pheromone clouds (6 different types, color-coded) ──
+            var pheromones = [
+              { ang: -Math.PI / 2, col: '#c084fc', name: 'QMP', fullName: 'Queen Mandibular Pheromone', effect: 'Suppresses worker ovaries · marks queen presence · calms colony', desc: '9-ODA acid + 8 others. Without QMP, workers start laying (unfertilized) eggs within hours.' },
+              { ang: -Math.PI / 2 + Math.PI / 3, col: '#f87171', name: 'ALARM', fullName: 'Alarm Pheromone (isoamyl acetate)', effect: 'Smells like BANANA · mobilizes guards to sting intruders', desc: 'Released from stinger. 1 bee stings → 10 more come. Never eat bananas near a hive!' },
+              { ang: -Math.PI / 2 + Math.PI * 2 / 3, col: '#60a5fa', name: 'NASONOV', fullName: 'Nasonov Pheromone', effect: 'Orientation signal · "come home" · rally the swarm', desc: 'Released from Nasonov gland (abdomen tip). Workers fan wings + expose gland = scent beacon.' },
+              { ang: -Math.PI / 2 + Math.PI, col: '#fbbf24', name: 'BROOD', fullName: 'Brood Recognition Pheromone', effect: 'Larvae signal "feed me" · regulates comb capping', desc: 'Released by larvae — triggers nurse bees to supply food and causes workers to cap cells at the right time.' },
+              { ang: -Math.PI / 2 - Math.PI / 3, col: '#34d399', name: 'FORAGE', fullName: 'Forager Recruitment', effect: 'Marks rich food sources · recruits more foragers', desc: 'Foot-printing (tarsi glands) + waggle dance. A good find = more pheromone = more workers sent.' },
+              { ang: -Math.PI / 2 - Math.PI * 2 / 3, col: '#fb923c', name: 'FOOTPRINT', fullName: 'Footprint Pheromone', effect: 'Queen marks the hive — every step leaves her scent', desc: 'Wherever she walks, tarsal gland secretion marks the surface as "hers". Colony recognizes home.' }
+            ];
+
+            // Draw each pheromone as an animated flowing cloud + label card
+            pheromones.forEach(function(ph, pi) {
+              // Label card positioned along the ring
+              var cardR = Math.min(W, H) * 0.28;
+              var cx = qX + Math.cos(ph.ang) * cardR;
+              var cy = qY + Math.sin(ph.ang) * cardR;
+
+              // Animated pheromone particles drifting from queen to card
+              var numP = 6;
+              for (var pp = 0; pp < numP; pp++) {
+                var ppT = ((t2 * 0.015 + pp * 12 + pi * 7) % 100) / 100; // 0..1 progress
+                var ppx = qX + (cx - qX) * ppT + Math.sin(t2 * 0.05 + pp) * 3;
+                var ppy = qY + (cy - qY) * ppT + Math.cos(t2 * 0.04 + pp) * 2;
+                var ppSz = 2 + Math.sin(ppT * Math.PI) * 3;
+                var ppAlpha = Math.sin(ppT * Math.PI) * 0.7;
+                c.globalAlpha = ppAlpha;
+                c.fillStyle = ph.col;
+                c.beginPath(); c.arc(ppx, ppy, ppSz, 0, 6.28); c.fill();
+              }
+              c.globalAlpha = 1;
+
+              // Card
+              var cardW = 140, cardH = 48;
+              c.save();
+              c.fillStyle = 'rgba(255,255,255,0.85)';
+              c.beginPath(); if (c.roundRect) c.roundRect(cx - cardW / 2, cy - cardH / 2, cardW, cardH, 8); else c.rect(cx - cardW / 2, cy - cardH / 2, cardW, cardH); c.fill();
+              c.strokeStyle = ph.col; c.lineWidth = 2;
+              c.beginPath(); if (c.roundRect) c.roundRect(cx - cardW / 2, cy - cardH / 2, cardW, cardH, 8); else c.rect(cx - cardW / 2, cy - cardH / 2, cardW, cardH); c.stroke();
+              // Color chip
+              c.fillStyle = ph.col;
+              c.beginPath(); c.arc(cx - cardW / 2 + 12, cy - cardH / 2 + 12, 6, 0, 6.28); c.fill();
+              // Name
+              c.font = 'bold 10px system-ui'; c.textAlign = 'left'; c.fillStyle = '#1e1b4b';
+              c.fillText(ph.name, cx - cardW / 2 + 24, cy - cardH / 2 + 15);
+              // Effect (wrapped)
+              c.font = '8px system-ui'; c.fillStyle = '#312e81';
+              var eWords = ph.effect.split(' ');
+              var eLine = ''; var eY = cy - cardH / 2 + 27;
+              for (var ew = 0; ew < eWords.length; ew++) {
+                var tLine = eLine + eWords[ew] + ' ';
+                if (c.measureText(tLine).width > cardW - 16 && eLine.length > 0) {
+                  c.fillText(eLine, cx - cardW / 2 + 8, eY);
+                  eLine = eWords[ew] + ' ';
+                  eY += 10;
+                  if (eY > cy + cardH / 2 - 4) break;
+                } else {
+                  eLine = tLine;
+                }
+              }
+              if (eY <= cy + cardH / 2 - 4) c.fillText(eLine, cx - cardW / 2 + 8, eY);
+              c.restore();
+            });
+
+            // Bottom: rotating detail explanation of one pheromone at a time
+            var stripY = H - 90;
+            c.fillStyle = 'rgba(76,29,149,0.92)';
+            c.fillRect(0, stripY, W, 90);
+            // Current pheromone deep-dive rotates every ~6s
+            var deepIdx = Math.floor(t2 / 360) % pheromones.length;
+            var deep = pheromones[deepIdx];
+            c.font = 'bold 11px system-ui'; c.textAlign = 'center'; c.fillStyle = deep.col;
+            c.fillText('SPOTLIGHT · ' + deep.fullName, W / 2, stripY + 20);
+            c.font = 'italic 11px Georgia, serif'; c.fillStyle = '#f5f3ff';
+            // Word-wrap the deep description
+            var deepWords = deep.desc.split(' ');
+            var deepLine = ''; var deepY = stripY + 42;
+            for (var dw = 0; dw < deepWords.length; dw++) {
+              var dtLine = deepLine + deepWords[dw] + ' ';
+              if (c.measureText(dtLine).width > W * 0.9 && deepLine.length > 0) {
+                c.fillText(deepLine, W / 2, deepY);
+                deepLine = deepWords[dw] + ' ';
+                deepY += 14;
+              } else {
+                deepLine = dtLine;
+              }
+            }
+            c.fillText(deepLine, W / 2, deepY);
+            c.font = '9px system-ui'; c.fillStyle = '#c4b5fd';
+            c.fillText('Rotating spotlight · hover any card for effect · 50+ pheromones known in honeybees', W / 2, stripY + 78);
+          }
+
           // ═══ CASTES DIAGRAM (three bee types: queen, worker, drone) ═══
           function drawCastes() {
             // Warm parchment background
@@ -3427,6 +3562,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               }
               if (_bv === 'castes') {
                 drawCastes();
+                _animId.current = requestAnimationFrame(frame);
+                return;
+              }
+              if (_bv === 'pheromones') {
+                drawPheromones();
                 _animId.current = requestAnimationFrame(frame);
                 return;
               }
@@ -4935,6 +5075,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             else if (key === '5') { e.preventDefault(); if (ks.colonySurvived) advanceDays(5); }
             else if (key === '3') { e.preventDefault(); if (ks.colonySurvived) advanceDays(30); }
             else if (key === '?') { e.preventDefault(); upd('showKeys', true); }
+            // Shift+1..9 → switch educational canvas view
+            else if (e.shiftKey && /^[1-9]$/.test(e.key)) {
+              e.preventDefault();
+              var views = ['scene', 'anatomy', 'physics', 'lifecycle', 'honey', 'waggle', 'thermo', 'castes', 'pheromones'];
+              var idx = parseInt(e.key, 10) - 1;
+              if (views[idx]) upd('beeView', views[idx]);
+            }
           }
           document.addEventListener('keydown', onKey);
           return function() { document.removeEventListener('keydown', onKey); };
@@ -6269,21 +6416,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   className: 'flex-1 py-2 px-3 rounded-lg text-xs font-bold ' + (active ? (dk ? 'bg-amber-700 text-white' : 'bg-white text-amber-800') : (dk ? 'text-slate-400' : 'text-slate-500')) },
                   h('span', { 'aria-hidden': 'true' }, tab.icon), ' ', tab.label);
               })),
-            // View selector: Scene / Anatomy / Flight Physics (beekeeper only)
-            viewMode === 'beekeeper' && h('div', { className: 'flex gap-1.5 text-xs font-bold', role: 'tablist', 'aria-label': 'Canvas view mode' },
+            // View selector: educational canvas views (beekeeper only).
+            // Wraps on narrow screens. Keyboard 1–9 also switch views.
+            viewMode === 'beekeeper' && h('div', { className: 'flex gap-1.5 flex-wrap text-xs font-bold', role: 'tablist', 'aria-label': 'Canvas view mode' },
               [
-                { id: 'scene', icon: '🏡', label: 'Scene', desc: 'Live apiary scene' },
-                { id: 'anatomy', icon: '🔬', label: 'Anatomy', desc: 'Labeled bee diagram' },
-                { id: 'physics', icon: '✈️', label: 'Flight Physics', desc: 'How bees fly — leading-edge vortex' },
-                { id: 'lifecycle', icon: '🥚', label: 'Life Cycle', desc: 'Egg → larva → pupa → adult (21 days)' },
-                { id: 'honey', icon: '🍯', label: 'Honey Chem', desc: 'Nectar → honey: enzymes + evaporation' },
-                { id: 'waggle', icon: '💃', label: 'Waggle Dance', desc: 'Bee symbolic language (von Frisch 1973)' },
-                { id: 'thermo', icon: '🌡️', label: 'Thermoreg', desc: 'Summer cooling + winter clustering = 35°C year-round' },
-                { id: 'castes', icon: '👑', label: 'Castes', desc: 'Queen, worker, drone — the three bee types' }
-              ].map(function(v) {
+                { id: 'scene', icon: '🏡', label: 'Scene', desc: 'Live apiary scene (Shift+1)' },
+                { id: 'anatomy', icon: '🔬', label: 'Anatomy', desc: 'Labeled bee diagram (Shift+2)' },
+                { id: 'physics', icon: '✈️', label: 'Flight Physics', desc: 'How bees fly — leading-edge vortex (Shift+3)' },
+                { id: 'lifecycle', icon: '🥚', label: 'Life Cycle', desc: 'Egg → larva → pupa → adult, 21 days (Shift+4)' },
+                { id: 'honey', icon: '🍯', label: 'Honey Chem', desc: 'Nectar → honey: enzymes + evaporation (Shift+5)' },
+                { id: 'waggle', icon: '💃', label: 'Waggle Dance', desc: 'Bee symbolic language (Shift+6)' },
+                { id: 'thermo', icon: '🌡️', label: 'Thermoreg', desc: 'Summer cooling + winter clustering (Shift+7)' },
+                { id: 'castes', icon: '👑', label: 'Castes', desc: 'Queen, worker, drone (Shift+8)' },
+                { id: 'pheromones', icon: '🧪', label: 'Pheromones', desc: 'The chemical language of the hive (Shift+9)' }
+              ].map(function(v, vi) {
                 var active = beeView === v.id;
-                return h('button', { key: v.id, role: 'tab', 'aria-selected': active ? 'true' : 'false', onClick: function() { upd('beeView', v.id); }, title: v.desc,
-                  className: 'px-3 py-1.5 rounded-lg border transition-all ' + (active
+                return h('button', { key: v.id, role: 'tab', 'aria-selected': active ? 'true' : 'false',
+                  onClick: function() { upd('beeView', v.id); },
+                  title: v.desc,
+                  'aria-keyshortcuts': 'Shift+' + (vi + 1),
+                  className: 'px-3 py-1.5 rounded-lg border transition-all whitespace-nowrap ' + (active
                     ? (dk ? 'bg-amber-600 border-amber-500 text-white shadow-md' : 'bg-amber-500 border-amber-600 text-white shadow-md')
                     : (dk ? 'bg-slate-800 border-slate-700 text-slate-300 hover:border-amber-500/60' : 'bg-white border-slate-200 text-slate-600 hover:border-amber-400'))
                 }, v.icon + ' ' + v.label);
