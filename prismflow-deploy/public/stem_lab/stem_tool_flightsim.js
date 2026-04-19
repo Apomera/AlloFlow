@@ -3847,17 +3847,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         groundGrad.addColorStop(1, grassTint[1]);
         gfx.fillStyle = groundGrad;
         gfx.fillRect(0, groundTop, W, H - groundTop);
-        // Grass tufts — seeded so they don't crawl every frame.
+        // Grass tufts — seeded so they don't crawl every frame. Near the
+        // player and engine running, they bend radially outward from the prop
+        // wash. Far tufts are drawn as dots; close tufts get a short bent
+        // stroke showing the direction of the wind the prop is generating.
         var tufts = 120;
         var tuftSeed = Math.floor(state.lat * 50) * 17 + Math.floor(state.lon * 50);
-        gfx.fillStyle = dayNight.isNight ? 'rgba(140,160,140,0.12)' : 'rgba(180,220,160,0.22)';
+        var tuftThrottle = (controlsRef.current && controlsRef.current.throttle) || 0;
+        var tuftColor = dayNight.isNight ? 'rgba(140,160,140,0.14)' : 'rgba(180,220,160,0.28)';
         for (var tf = 0; tf < tufts; tf++) {
           var tSeed = (tuftSeed + tf * 91) % 1000;
           var tFrac = tf / tufts; // 0 near horizon, 1 near player
           var ty = groundTop + (H - groundTop) * (0.05 + 0.95 * (tFrac * tFrac));
           var tx = (tSeed * 7.13) % W;
           var tSize = 0.5 + tFrac * 2;
-          gfx.fillRect(tx, ty, tSize, tSize);
+          // Propwash bend radius: only tufts near the plane (bottom-center) get
+          // bent. Distance from (W/2, H) normalized.
+          var dxT = tx - W / 2;
+          var dyT = ty - H;
+          var distT = Math.sqrt(dxT * dxT + dyT * dyT);
+          var bendRadius = 180 + tuftThrottle * 140;
+          if (tuftThrottle > 0.12 && distT < bendRadius && tFrac > 0.4) {
+            var bendInv = 1 - distT / bendRadius;
+            var bendPower = tuftThrottle * bendInv * 8;
+            var bx = tx + (dxT / (distT + 0.1)) * bendPower + Math.sin(timeRef.current * 18 + tf) * 0.5;
+            var by = ty + (dyT / (distT + 0.1)) * bendPower * 0.3;
+            gfx.strokeStyle = tuftColor;
+            gfx.lineWidth = tSize * 0.7;
+            gfx.beginPath();
+            gfx.moveTo(tx, ty + tSize);
+            gfx.lineTo(bx, by);
+            gfx.stroke();
+          } else {
+            gfx.fillStyle = tuftColor;
+            gfx.fillRect(tx, ty, tSize, tSize);
+          }
         }
 
         // ── Distant tree line along the horizon — green strip of conifers.
@@ -5521,10 +5545,66 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             });
           }
 
-          // Horizon line
-          gfx.save(); gfx.translate(W/2, horizonY); gfx.rotate(-ctrl.bank * Math.PI / 180 * 0.3);
+          // Horizon line — plus a pitch ladder of climb/dive marks above and
+          // below. Each rung is the standard length/spacing convention: longer
+          // every 10° with numeric labels, shorter ticks at 5°. Whole ladder
+          // rolls with bank so the horizon/rungs stay level with the world.
+          gfx.save();
+          gfx.translate(W/2, horizonY);
+          gfx.rotate(-ctrl.bank * Math.PI / 180 * 0.3);
           gfx.strokeStyle = 'rgba(255,255,255,0.3)'; gfx.lineWidth = 1;
           gfx.beginPath(); gfx.moveTo(-W, 0); gfx.lineTo(W, 0); gfx.stroke();
+
+          // Pitch ladder: 1° ≈ 8 px offset (calibrated to match horizonY
+          // shift of ctrl.pitch * 3 used earlier). Draw rungs from the
+          // player's nose, relative to horizon.
+          var pxPerDeg = 8;
+          var pitchNow = ctrl.pitch;
+          gfx.strokeStyle = 'rgba(230,240,255,0.55)';
+          gfx.fillStyle = 'rgba(230,240,255,0.75)';
+          gfx.font = 'bold 9px monospace';
+          gfx.textAlign = 'center';
+          gfx.textBaseline = 'middle';
+          gfx.lineWidth = 1.2;
+          for (var pd = -20; pd <= 20; pd += 5) {
+            if (pd === 0) continue;
+            // y on the horizon-centered canvas: positive pd (nose up) → ladder
+            // rung appears ABOVE horizon by `pd * pxPerDeg` when pitch is 0.
+            // The horizon already shifted by pitch (outside the save block), so
+            // we only paint the rung's static world-frame position.
+            var prY = -(pd - pitchNow) * pxPerDeg;
+            if (Math.abs(prY) > (H / 2)) continue;
+            var isTen = (pd % 10) === 0;
+            var rungW = isTen ? 42 : 18;
+            // Dashed line for dive (negative), solid for climb
+            if (pd < 0) gfx.setLineDash([4, 4]);
+            gfx.beginPath();
+            gfx.moveTo(-rungW, prY);
+            gfx.lineTo(rungW, prY);
+            gfx.stroke();
+            gfx.setLineDash([]);
+            if (isTen) {
+              gfx.fillText(String(Math.abs(pd)), -rungW - 9, prY);
+              gfx.fillText(String(Math.abs(pd)), rungW + 9, prY);
+            }
+          }
+          gfx.restore();
+
+          // Fixed miniature-airplane nose reference in the middle of the HUD —
+          // tiny static "W" that stays put while the horizon+ladder roll. In a
+          // real PFD the aircraft symbol is the thing you keep ON the horizon.
+          gfx.save();
+          gfx.strokeStyle = '#fbbf24';
+          gfx.lineWidth = 2;
+          gfx.beginPath();
+          gfx.moveTo(W / 2 - 26, horizonY);
+          gfx.lineTo(W / 2 - 8, horizonY);
+          gfx.lineTo(W / 2, horizonY + 6);
+          gfx.lineTo(W / 2 + 8, horizonY);
+          gfx.lineTo(W / 2 + 26, horizonY);
+          gfx.stroke();
+          gfx.fillStyle = '#fbbf24';
+          gfx.beginPath(); gfx.arc(W / 2, horizonY, 2, 0, Math.PI * 2); gfx.fill();
           gfx.restore();
 
           // Stars at high altitude
@@ -5930,6 +6010,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           // Heading Tape (top-center, below status bar)
           drawHeadingTape(gfx, W / 2 - 100, 36, 200, 22, state.heading);
 
+          // ── Heading bug — cyan triangle on the heading tape showing the
+          // target course. Sources (in priority): autopilot target → nearest
+          // waypoint bearing. Helps the student steer toward the destination.
+          var hbugTape = { x: W / 2 - 100, y: 36, w: 200, h: 22 };
+          var hbugTarget = null;
+          var hbugLabel = null;
+          if (d.autopilot && d.autopilot.hdg && d.autopilot.tgtHdg != null) {
+            hbugTarget = d.autopilot.tgtHdg; hbugLabel = 'AP';
+          } else if (nearWp) {
+            hbugTarget = bearing(state.lat, state.lon, nearWp.lat, nearWp.lon); hbugLabel = nearWp.code;
+          }
+          if (hbugTarget != null) {
+            var hbugRel = ((hbugTarget - state.heading + 540) % 360) - 180;
+            var hbugPxPerDeg = 3;
+            var hbugX = hbugTape.x + hbugTape.w / 2 + hbugRel * hbugPxPerDeg;
+            if (hbugX > hbugTape.x && hbugX < hbugTape.x + hbugTape.w) {
+              gfx.fillStyle = '#22d3ee';
+              gfx.beginPath();
+              gfx.moveTo(hbugX, hbugTape.y - 2);
+              gfx.lineTo(hbugX - 5, hbugTape.y - 10);
+              gfx.lineTo(hbugX + 5, hbugTape.y - 10);
+              gfx.closePath();
+              gfx.fill();
+              // Label above bug
+              gfx.fillStyle = 'rgba(34,211,238,0.9)';
+              gfx.font = 'bold 8px monospace';
+              gfx.textAlign = 'center'; gfx.textBaseline = 'bottom';
+              gfx.fillText(hbugLabel, hbugX, hbugTape.y - 11);
+            } else {
+              // Off-tape indicator: arrow at the nearest edge pointing toward target
+              var edgeX = hbugX < hbugTape.x ? hbugTape.x + 2 : hbugTape.x + hbugTape.w - 2;
+              gfx.fillStyle = 'rgba(34,211,238,0.8)';
+              gfx.font = 'bold 10px monospace';
+              gfx.textAlign = 'center'; gfx.textBaseline = 'bottom';
+              gfx.fillText(hbugX < hbugTape.x ? '◀' : '▶', edgeX, hbugTape.y - 2);
+            }
+          }
+
           // VSI (vertical speed, right side)
           drawGauge(gfx, W / 2 + 160, H - 85, 30, Math.abs(fpm), 3000, fpm >= 0 ? 'UP' : 'DN', 'FPM', fpm >= 0 ? '#4ade80' : '#f97316');
 
@@ -5944,6 +6062,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           gfx.fillStyle = '#fff'; gfx.font = '9px system-ui'; gfx.textAlign = 'center';
           gfx.fillText('THR', W - 22, 152);
           gfx.fillText(Math.round(ctrl.throttle * 100) + '%', W - 22, 14);
+
+          // ── Engine tachometer (round gauge below the throttle bar) ──
+          // RPM reads out what the engine is actually doing — idle 700, full
+          // 2700 for a typical Cessna O-320. Red arc above 2700 = redline.
+          var tachCx = W - 22, tachCy = 180, tachR = 18;
+          var tachIdle = 700, tachMax = 2700, tachRed = 2800;
+          var tachRpm = tachIdle + ctrl.throttle * (tachMax - tachIdle) + Math.sin(timeRef.current * 20) * 15 * ctrl.throttle;
+          gfx.fillStyle = 'rgba(0,0,0,0.6)';
+          gfx.beginPath(); gfx.arc(tachCx, tachCy, tachR, 0, Math.PI * 2); gfx.fill();
+          // Green normal arc
+          gfx.strokeStyle = '#4ade80'; gfx.lineWidth = 2.5;
+          gfx.beginPath(); gfx.arc(tachCx, tachCy, tachR - 3, Math.PI * 0.75, Math.PI * 0.75 + Math.PI * 1.2); gfx.stroke();
+          // Yellow caution arc
+          gfx.strokeStyle = '#fbbf24';
+          gfx.beginPath(); gfx.arc(tachCx, tachCy, tachR - 3, Math.PI * 0.75 + Math.PI * 1.2, Math.PI * 0.75 + Math.PI * 1.4); gfx.stroke();
+          // Red redline arc
+          gfx.strokeStyle = '#ef4444';
+          gfx.beginPath(); gfx.arc(tachCx, tachCy, tachR - 3, Math.PI * 0.75 + Math.PI * 1.4, Math.PI * 0.75 + Math.PI * 1.5); gfx.stroke();
+          // Needle
+          var tachT = Math.max(0, Math.min(1, (tachRpm - tachIdle) / (tachRed - tachIdle)));
+          var tachAng = Math.PI * 0.75 + tachT * Math.PI * 1.5;
+          gfx.strokeStyle = '#fff'; gfx.lineWidth = 1.5;
+          gfx.beginPath();
+          gfx.moveTo(tachCx, tachCy);
+          gfx.lineTo(tachCx + Math.cos(tachAng) * (tachR - 4), tachCy + Math.sin(tachAng) * (tachR - 4));
+          gfx.stroke();
+          // Center hub
+          gfx.fillStyle = '#fbbf24';
+          gfx.beginPath(); gfx.arc(tachCx, tachCy, 2, 0, Math.PI * 2); gfx.fill();
+          // Label
+          gfx.fillStyle = '#cbd5e1'; gfx.font = 'bold 8px monospace'; gfx.textAlign = 'center';
+          gfx.fillText(Math.round(tachRpm) + ' RPM', tachCx, tachCy + tachR + 10);
 
           // ── Additional Instruments (bottom-right cluster) ──
           var instrX = W - 55; var instrY = H - 55;
@@ -6065,6 +6215,120 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             });
           }
 
+          // ── ATC radio chatter bubbles ──
+          // Short ATC-style transmissions surface at key milestones: engine
+          // start (ground), reaching VR on takeoff, airborne pattern altitude,
+          // on final approach, and touchdown. Each is one-shot via a flag on
+          // flightRef.current. Bubbles fade after ~4s; the 4 lines scroll in
+          // order so a student sees the progression of a real flight.
+          if (nearWp && !flightRef.current._atcLog) flightRef.current._atcLog = [];
+          if (nearWp) {
+            var atcLog = flightRef.current._atcLog;
+            var atcField = nearWp.alt || 0;
+            var atcAgl2 = state.altitude - atcField;
+            var atcSay = function(tag, msg) {
+              if (flightRef.current['_atcSaid_' + tag]) return;
+              flightRef.current['_atcSaid_' + tag] = timeRef.current;
+              atcLog.push({ t: timeRef.current, msg: msg });
+              if (atcLog.length > 4) atcLog.shift();
+            };
+            var atcCall = nearWp.code + ' Tower';
+            var atcRwy = String(Math.max(1, Math.min(36, Math.round(state.heading / 10)))).padStart(2, '0');
+            // Engine start → taxi clearance
+            if (flightRef.current._ignitionTime && state.onGround) {
+              atcSay('taxi', atcCall + ': Cessna, taxi to runway ' + atcRwy + ' via Alpha. Wind ' + String(Math.round((weatherRef.current||{}).windDir||270)).padStart(3,'0') + ' @ ' + Math.round((weatherRef.current||{}).wind||5) + '.');
+            }
+            // Roll speed > 20 kt → takeoff clearance
+            if (state.onGround && state.speed * 0.5924838 > 20 && state.speed * 0.5924838 < 30) {
+              atcSay('tko_clr', atcCall + ': Cessna, runway ' + atcRwy + ' cleared for takeoff.');
+            }
+            // Airborne above 400 ft AGL → departure handoff
+            if (!state.onGround && atcAgl2 > 400 && atcAgl2 < 700) {
+              atcSay('dep', atcCall + ': Cessna, contact Departure 121.3. Good day.');
+            }
+            // Descending through 1500 AGL → traffic pattern entry
+            if (!state.onGround && state.vsi < -3 && atcAgl2 > 1200 && atcAgl2 < 1700) {
+              atcSay('entry', atcCall + ': Cessna, report midfield downwind runway ' + atcRwy + '.');
+            }
+            // Short final below 500 AGL
+            if (!state.onGround && atcAgl2 < 500 && atcAgl2 > 200 && state.vsi < 0) {
+              atcSay('final', atcCall + ': Cessna, runway ' + atcRwy + ' cleared to land.');
+            }
+            // Touchdown
+            if (state.onGround && landingRef.current && landingRef.current.touchdownTime && timeRef.current - landingRef.current.touchdownTime < 3) {
+              atcSay('tdn', atcCall + ': Cessna, taxi clear of runway at your convenience. Nice landing.');
+            }
+            // Render the last 4 bubbles, fading by age, stacked bottom-right
+            if (atcLog.length > 0) {
+              gfx.save();
+              gfx.font = '10px system-ui';
+              atcLog.forEach(function(entry, ei) {
+                var ageSec = timeRef.current - entry.t;
+                if (ageSec > 12) return;
+                var atcFade = Math.min(1, Math.max(0, 1 - (ageSec - 8) / 4));
+                gfx.globalAlpha = atcFade;
+                var bw = Math.min(W * 0.42, gfx.measureText(entry.msg).width + 22);
+                var bx = W - bw - 18;
+                var by = H * 0.22 + ei * 26;
+                gfx.fillStyle = 'rgba(6,12,30,0.82)';
+                gfx.beginPath(); gfx.roundRect(bx, by, bw, 22, 4); gfx.fill();
+                gfx.strokeStyle = 'rgba(56,189,248,0.55)'; gfx.lineWidth = 1;
+                gfx.beginPath(); gfx.roundRect(bx, by, bw, 22, 4); gfx.stroke();
+                // 📻 icon
+                gfx.fillStyle = '#38bdf8';
+                gfx.textAlign = 'left'; gfx.textBaseline = 'middle';
+                gfx.fillText('\uD83D\uDCFB', bx + 6, by + 11);
+                // Message text, truncated if needed
+                gfx.fillStyle = '#e2e8f0';
+                var shownMsg = entry.msg.length > 55 ? entry.msg.slice(0, 52) + '…' : entry.msg;
+                gfx.fillText(shownMsg, bx + 22, by + 11);
+              });
+              gfx.restore();
+            }
+          }
+
+          // ── Crab-angle indicator ──
+          // Shows the drift angle between where the nose is pointed (heading)
+          // and where the plane is actually tracking (ground course due to
+          // wind). Crosswind landings require the student to "crab" into the
+          // wind — this visualizes the problem.
+          if (!state.onGround && weatherRef.current && weatherRef.current.wind > 5 && state.speed > 30) {
+            var wSp = weatherRef.current.wind;
+            var wDr = weatherRef.current.windDir;
+            // Crosswind component perpendicular to heading
+            var windRel = ((wDr - state.heading + 540) % 360) - 180;
+            var xwindKt = wSp * Math.sin(windRel * Math.PI / 180);
+            var crabDeg = Math.atan2(xwindKt, Math.max(30, state.speed * 0.5924838)) * 180 / Math.PI;
+            if (Math.abs(crabDeg) > 1) {
+              var caX = W / 2;
+              var caY = 90;
+              gfx.save();
+              gfx.translate(caX, caY);
+              // Base plate
+              gfx.fillStyle = 'rgba(2,6,23,0.6)';
+              gfx.beginPath(); gfx.roundRect(-42, -14, 84, 28, 4); gfx.fill();
+              gfx.strokeStyle = 'rgba(56,189,248,0.45)'; gfx.lineWidth = 1;
+              gfx.beginPath(); gfx.roundRect(-42, -14, 84, 28, 4); gfx.stroke();
+              // Heading arrow (up)
+              gfx.strokeStyle = '#fbbf24'; gfx.lineWidth = 2;
+              gfx.beginPath(); gfx.moveTo(0, 10); gfx.lineTo(0, -8); gfx.stroke();
+              gfx.beginPath(); gfx.moveTo(-3, -4); gfx.lineTo(0, -10); gfx.lineTo(3, -4); gfx.stroke();
+              // Track arrow (tilted by crab angle, cyan)
+              gfx.strokeStyle = '#22d3ee'; gfx.lineWidth = 2;
+              var crabRad = crabDeg * Math.PI / 180;
+              gfx.save(); gfx.rotate(crabRad);
+              gfx.beginPath(); gfx.moveTo(0, 10); gfx.lineTo(0, -8); gfx.stroke();
+              gfx.beginPath(); gfx.moveTo(-3, -4); gfx.lineTo(0, -10); gfx.lineTo(3, -4); gfx.stroke();
+              gfx.restore();
+              // Label
+              gfx.fillStyle = '#cbd5e1';
+              gfx.font = '8px monospace';
+              gfx.textAlign = 'center'; gfx.textBaseline = 'top';
+              gfx.fillText('CRAB ' + (crabDeg > 0 ? 'R' : 'L') + ' ' + Math.abs(crabDeg).toFixed(1) + '°', 0, 15);
+              gfx.restore();
+            }
+          }
+
           // Force diagram
           drawForces(gfx, W - 110, 120, state.forces, showForces);
 
@@ -6081,6 +6345,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           drawAirportGround(gfx, W, H, horizonY, state, nearWp, nearDist);
           // Far-view runway (shows up to 10nm out) — for landing approach visibility.
           drawRunway(gfx, W, H, horizonY, state, nearWp, nearDist);
+
+          // ── Aircraft shadow on the runway during takeoff + landing ──
+          // When within ~150 ft AGL and low-to-none bank, cast an elongated
+          // ellipse shadow just ahead on the runway. It grows bigger + darker
+          // as altitude decreases, giving the student a real depth cue for
+          // flaring. Only renders when the runway is visible under us (nearby
+          // airport + roughly aligned with heading).
+          if (nearWp && !state.onGround) {
+            var shAgl = state.altitude - (nearWp.alt || 0);
+            var shBrg = bearing(state.lat, state.lon, nearWp.lat, nearWp.lon);
+            var shRelBrg = ((shBrg - state.heading + 540) % 360) - 180;
+            var shAlign = 1 - Math.min(1, Math.abs(shRelBrg) / 25);
+            if (shAgl < 200 && shAgl > 0 && shAlign > 0.3 && nearDist < 2) {
+              var shT = Math.min(1, shAgl / 200);           // 0 at ground, 1 at 200ft
+              var shYFrac = 0.62 + shT * 0.22;              // higher on screen when higher AGL
+              var shY = horizonY + (H - horizonY) * shYFrac;
+              var shScaleIn = (1 - shT) * shAlign;          // fades with altitude + misalignment
+              var shW = 18 + (1 - shT) * 44;
+              var shH = 2 + (1 - shT) * 5;
+              // Sun direction determines shadow offset: low sun → long shadow;
+              // reuse the sunX computed later as a proxy via solarHour.
+              var shSolar = dayNight.solarHour != null ? dayNight.solarHour : 12;
+              var shSunArc = Math.sin(Math.max(0, Math.min(1, (shSolar - 6) / 12)) * Math.PI);
+              var shLongMult = 1 + (1 - shSunArc) * 1.8;
+              shW *= shLongMult;
+              // Centered on the perceived runway centerline
+              var shX = W / 2 - shRelBrg * 2;
+              gfx.save();
+              var shGrad = gfx.createRadialGradient(shX, shY, shH * 0.4, shX, shY, shW);
+              shGrad.addColorStop(0, 'rgba(0,0,0,' + (0.55 * shScaleIn) + ')');
+              shGrad.addColorStop(0.6, 'rgba(0,0,0,' + (0.25 * shScaleIn) + ')');
+              shGrad.addColorStop(1, 'rgba(0,0,0,0)');
+              gfx.fillStyle = shGrad;
+              gfx.beginPath(); gfx.ellipse(shX, shY, shW, shH, 0, 0, Math.PI * 2); gfx.fill();
+              gfx.restore();
+            }
+          }
 
           // ── Traffic pattern aircraft ──
           // One ambient Cessna flying a left-hand rectangular pattern at 1000 ft
@@ -6127,6 +6428,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                               - tpProx * 8;
                 tpScreenY = Math.max(horizonY - 40, Math.min(H - 40, tpScreenY));
                 var tpSize = 2 + tpProx * 10;
+                // ── Wake turbulence: two wingtip vortex streaks behind the
+                // wingtips that fade back over ~1 s. Cheap faux trail — just
+                // draw several dashed tail segments at decreasing opacity.
+                if (tpProx > 0.3) {
+                  gfx.save();
+                  gfx.translate(tpScreenX, tpScreenY);
+                  gfx.rotate((tpLegIdx === 1 || tpLegIdx === 3 || tpLegIdx === 4) ? 0.35 : 0);
+                  for (var wt = 0; wt < 8; wt++) {
+                    var wtAlpha = 0.18 * tpProx * (1 - wt / 8);
+                    gfx.strokeStyle = 'rgba(230,235,245,' + wtAlpha + ')';
+                    gfx.lineWidth = 1;
+                    var wtOff = (wt + 1) * tpSize * 0.8;
+                    var wtSag = wt * 0.3; // vortex drops over distance
+                    gfx.beginPath();
+                    gfx.moveTo(-tpSize * 1.4, wtSag);
+                    gfx.lineTo(-tpSize * 1.4 - wtOff * 0.35, wtSag + wtOff * 0.05);
+                    gfx.stroke();
+                    gfx.beginPath();
+                    gfx.moveTo(tpSize * 1.4, wtSag);
+                    gfx.lineTo(tpSize * 1.4 - wtOff * 0.35, wtSag + wtOff * 0.05);
+                    gfx.stroke();
+                  }
+                  gfx.restore();
+                }
                 // Pale aircraft silhouette — fuselage + wings + tail
                 gfx.save();
                 gfx.translate(tpScreenX, tpScreenY);
@@ -6524,6 +6849,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               gfx.restore();
               // Suppress calloutMsg local so it doesn't double-render this frame
               calloutMsg = null;
+            }
+          }
+
+          // ── Flare assist indicator ──
+          // When descending through 30 ft AGL with the runway reasonably
+          // aligned, paint a green pulsing prompt telling the student to pull
+          // back gently. Eases first landings — without it they plant the
+          // gear or flare too high.
+          if (!state.onGround && nearWp) {
+            var faAgl = state.altitude - (nearWp.alt || 0);
+            var faVsiFpm = state.vsi * 60;
+            if (faAgl < 40 && faAgl > 1 && faVsiFpm < -50 && nearDist < 1 && state.speed > 40) {
+              var faBrg = bearing(state.lat, state.lon, nearWp.lat, nearWp.lon);
+              var faRelBrg = ((faBrg - state.heading + 540) % 360) - 180;
+              if (Math.abs(faRelBrg) < 30) {
+                var faPulse = 0.6 + Math.sin(timeRef.current * 6) * 0.4;
+                // Big arrow near the bottom-center pointing UP — "ease back"
+                var faCx = W / 2, faCy = H * 0.72;
+                gfx.save();
+                gfx.globalAlpha = faPulse;
+                gfx.fillStyle = '#22c55e';
+                gfx.beginPath();
+                gfx.moveTo(faCx, faCy - 28);
+                gfx.lineTo(faCx - 16, faCy);
+                gfx.lineTo(faCx - 6, faCy);
+                gfx.lineTo(faCx - 6, faCy + 16);
+                gfx.lineTo(faCx + 6, faCy + 16);
+                gfx.lineTo(faCx + 6, faCy);
+                gfx.lineTo(faCx + 16, faCy);
+                gfx.closePath();
+                gfx.fill();
+                gfx.strokeStyle = '#064e3b'; gfx.lineWidth = 1.5;
+                gfx.stroke();
+                // Label
+                gfx.fillStyle = '#a7f3d0';
+                gfx.font = 'bold 11px system-ui';
+                gfx.textAlign = 'center'; gfx.textBaseline = 'top';
+                gfx.fillText('FLARE — ease back on W', faCx, faCy + 22);
+                gfx.restore();
+              }
             }
           }
 

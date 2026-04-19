@@ -1968,6 +1968,364 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             });
           }
 
+          // ═══ THERMOREGULATION DIAGRAM (summer cooling + winter clustering = 35°C year-round) ═══
+          function drawThermoregulation() {
+            // Split-panel backdrop: warm left (summer), cool right (winter)
+            var trGradL = c.createLinearGradient(0, 0, W / 2, 0);
+            trGradL.addColorStop(0, '#fef3c7'); trGradL.addColorStop(1, '#fed7aa');
+            c.fillStyle = trGradL; c.fillRect(0, 0, W / 2, H);
+            var trGradR = c.createLinearGradient(W / 2, 0, W, 0);
+            trGradR.addColorStop(0, '#dbeafe'); trGradR.addColorStop(1, '#bfdbfe');
+            c.fillStyle = trGradR; c.fillRect(W / 2, 0, W / 2, H);
+            // Dividing line
+            c.strokeStyle = 'rgba(120,53,15,0.25)'; c.lineWidth = 1;
+            c.setLineDash([4, 4]);
+            c.beginPath(); c.moveTo(W / 2, 0); c.lineTo(W / 2, H - 60); c.stroke();
+            c.setLineDash([]);
+
+            // Title
+            c.fillStyle = '#78350f'; c.textAlign = 'center';
+            c.font = 'bold 18px Georgia, serif';
+            c.fillText('🌡️ Thermoregulation · The Warm-Blooded Hive', W / 2, 28);
+            c.font = 'italic 11px Georgia, serif'; c.fillStyle = '#a16207';
+            c.fillText('35°C (95°F) maintained year-round — bees are collectively warm-blooded, despite being cold-blooded individuals', W / 2, 46);
+
+            // ═══ LEFT PANEL: SUMMER COOLING ═══
+            (function() {
+              var pX = 10, pY = 60;
+              var pW2 = W / 2 - 20, pH2 = H - pY - 110;
+              c.save();
+              c.fillStyle = 'rgba(255,255,255,0.55)';
+              c.beginPath(); if (c.roundRect) c.roundRect(pX, pY, pW2, pH2, 10); else c.rect(pX, pY, pW2, pH2); c.fill();
+              c.strokeStyle = '#ea580c'; c.lineWidth = 2;
+              c.beginPath(); if (c.roundRect) c.roundRect(pX, pY, pW2, pH2, 10); else c.rect(pX, pY, pW2, pH2); c.stroke();
+              c.font = 'bold 13px system-ui'; c.textAlign = 'center'; c.fillStyle = '#9a3412';
+              c.fillText('☀️ SUMMER · 35°C AIR OUTSIDE', pX + pW2 / 2, pY + 22);
+              c.font = '10px system-ui'; c.fillStyle = '#7c2d12';
+              c.fillText('Challenge: HOT. Must COOL the hive through evaporation + ventilation.', pX + pW2 / 2, pY + 38);
+
+              // Hive in summer
+              var hvX = pX + pW2 / 2, hvY = pY + pH2 * 0.48;
+              var hvW = 120, hvH = 80;
+              // Body
+              c.fillStyle = '#d4aa40'; c.strokeStyle = '#92400e'; c.lineWidth = 2;
+              c.fillRect(hvX - hvW / 2, hvY - hvH / 2, hvW, hvH);
+              c.strokeRect(hvX - hvW / 2, hvY - hvH / 2, hvW, hvH);
+              // Shingle roof
+              c.fillStyle = '#3f3a36';
+              c.beginPath();
+              c.moveTo(hvX - hvW / 2 - 3, hvY - hvH / 2);
+              c.lineTo(hvX, hvY - hvH / 2 - 12);
+              c.lineTo(hvX + hvW / 2 + 3, hvY - hvH / 2);
+              c.closePath(); c.fill();
+              // Entrance (big rectangle)
+              c.fillStyle = '#2a1a04';
+              c.fillRect(hvX - 30, hvY + hvH / 2 - 4, 60, 7);
+              // Landing board
+              c.fillStyle = '#8a6508';
+              c.fillRect(hvX - 35, hvY + hvH / 2 + 3, 70, 3);
+
+              // Fanning bees at the entrance (animated wings VERY fast)
+              var fanBees = 5;
+              for (var fb = 0; fb < fanBees; fb++) {
+                var fbX = hvX - 25 + fb * 12;
+                var fbY = hvY + hvH / 2 + 1;
+                c.save(); c.translate(fbX, fbY);
+                // Body
+                c.shadowColor = '#fbbf24'; c.shadowBlur = 3;
+                c.fillStyle = '#fbbf24';
+                c.beginPath(); c.ellipse(0, 0, 5, 3, 0, 0, 6.28); c.fill();
+                c.restore();
+                c.fillStyle = '#292524';
+                c.fillRect(fbX - 1, fbY - 2.5, 1.2, 5);
+                c.fillRect(fbX + 1, fbY - 2, 0.8, 4);
+                // BLURRED wings (big translucent ovals, high frequency)
+                var wBlur = Math.sin(t2 * 1.5 + fb) * 5;
+                c.globalAlpha = 0.3; c.fillStyle = '#e0f2fe';
+                c.beginPath(); c.ellipse(fbX - 6, fbY - 1 + wBlur, 10, 3, -0.4, 0, 6.28); c.fill();
+                c.beginPath(); c.ellipse(fbX + 6, fbY - 1 - wBlur, 10, 3, 0.4, 0, 6.28); c.fill();
+                c.globalAlpha = 1;
+              }
+
+              // Air-out arrows (cool air leaving, warm air moving)
+              c.strokeStyle = 'rgba(59,130,246,0.6)'; c.lineWidth = 2;
+              for (var ao = 0; ao < 4; ao++) {
+                var aoPhase = (t2 * 0.05 + ao * 25) % 100;
+                if (aoPhase > 90) continue;
+                var aoY = hvY + hvH / 2 + 15 + aoPhase * 0.4;
+                var aoA = 0.7 + (aoPhase / 100) * 0.3;
+                c.globalAlpha = 1 - aoPhase / 100;
+                c.beginPath();
+                c.moveTo(hvX - 30 + ao * 20, hvY + hvH / 2 + 3);
+                c.lineTo(hvX - 30 + ao * 20 + Math.sin(aoA) * 15, aoY);
+                c.stroke();
+                c.globalAlpha = 1;
+              }
+
+              // Water droplets being spread (evaporative cooling)
+              c.fillStyle = 'rgba(37,99,235,0.7)';
+              for (var wd = 0; wd < 6; wd++) {
+                var wdX = hvX - 40 + wd * 15 + Math.sin(t2 * 0.05 + wd) * 3;
+                var wdY = hvY - 5 + Math.cos(t2 * 0.04 + wd) * 3;
+                c.beginPath(); c.ellipse(wdX, wdY, 1.5, 2.5, 0, 0, 6.28); c.fill();
+              }
+              c.font = 'bold 9px system-ui'; c.fillStyle = '#1d4ed8'; c.textAlign = 'center';
+              c.fillText('💧 water spread on comb', hvX, hvY + 18);
+              c.fillText('evaporation = cooling', hvX, hvY + 30);
+
+              // Thermometer (shows constant 35°C / 95°F inside)
+              var thX = pX + pW2 - 30, thY = pY + 70;
+              var thHi = pH2 * 0.6;
+              c.fillStyle = '#f3f4f6'; c.strokeStyle = '#1c1917'; c.lineWidth = 1.5;
+              c.beginPath(); c.roundRect(thX - 5, thY, 10, thHi, 5); c.fill(); c.stroke();
+              // Mercury (red, fills to 35°C = mid-to-upper)
+              var tempFrac = 0.62; // 35°C of 50°C scale
+              c.fillStyle = '#dc2626';
+              c.fillRect(thX - 3, thY + thHi - thHi * tempFrac, 6, thHi * tempFrac);
+              // Bulb
+              c.beginPath(); c.arc(thX, thY + thHi + 6, 7, 0, 6.28); c.fill();
+              c.strokeStyle = '#1c1917';
+              c.beginPath(); c.arc(thX, thY + thHi + 6, 7, 0, 6.28); c.stroke();
+              // Scale ticks
+              c.strokeStyle = '#44403c'; c.lineWidth = 0.6; c.font = '7px monospace'; c.fillStyle = '#44403c'; c.textAlign = 'right';
+              for (var tk = 0; tk <= 5; tk++) {
+                var tkTY = thY + thHi - (tk / 5) * thHi;
+                c.beginPath(); c.moveTo(thX - 8, tkTY); c.lineTo(thX - 5, tkTY); c.stroke();
+                c.fillText((tk * 10) + '°', thX - 10, tkTY + 2);
+              }
+              // 35°C marker
+              c.strokeStyle = '#dc2626'; c.lineWidth = 1.5;
+              var mkY = thY + thHi - tempFrac * thHi;
+              c.beginPath(); c.moveTo(thX - 12, mkY); c.lineTo(thX + 12, mkY); c.stroke();
+              c.font = 'bold 9px system-ui'; c.fillStyle = '#dc2626'; c.textAlign = 'left';
+              c.fillText('35°C', thX + 14, mkY + 3);
+
+              // Mini stat box
+              c.fillStyle = 'rgba(234,88,12,0.15)';
+              c.beginPath(); if (c.roundRect) c.roundRect(pX + 15, pY + pH2 - 52, pW2 - 30, 42, 6); else c.rect(pX + 15, pY + pH2 - 52, pW2 - 30, 42); c.fill();
+              c.font = 'bold 10px system-ui'; c.fillStyle = '#9a3412'; c.textAlign = 'left';
+              c.fillText('SUMMER STRATEGY:', pX + 22, pY + pH2 - 38);
+              c.font = '9px system-ui'; c.fillStyle = '#7c2d12';
+              c.fillText('· Workers fan wings at entrance (air exchange)', pX + 22, pY + pH2 - 26);
+              c.fillText('· Water carriers spread droplets on comb', pX + 22, pY + pH2 - 15);
+              c.restore();
+            })();
+
+            // ═══ RIGHT PANEL: WINTER CLUSTERING ═══
+            (function() {
+              var pX = W / 2 + 10, pY = 60;
+              var pW2 = W / 2 - 20, pH2 = H - pY - 110;
+              c.save();
+              c.fillStyle = 'rgba(255,255,255,0.55)';
+              c.beginPath(); if (c.roundRect) c.roundRect(pX, pY, pW2, pH2, 10); else c.rect(pX, pY, pW2, pH2); c.fill();
+              c.strokeStyle = '#1e40af'; c.lineWidth = 2;
+              c.beginPath(); if (c.roundRect) c.roundRect(pX, pY, pW2, pH2, 10); else c.rect(pX, pY, pW2, pH2); c.stroke();
+              c.font = 'bold 13px system-ui'; c.textAlign = 'center'; c.fillStyle = '#1e3a8a';
+              c.fillText('❄️ WINTER · −10°C AIR OUTSIDE', pX + pW2 / 2, pY + 22);
+              c.font = '10px system-ui'; c.fillStyle = '#1e40af';
+              c.fillText('Challenge: FREEZING. Must HEAT through shivering + tight cluster.', pX + pW2 / 2, pY + 38);
+
+              // Hive outline (full of cluster)
+              var hvX = pX + pW2 / 2, hvY = pY + pH2 * 0.48;
+              var hvW = 120, hvH = 120;
+              c.fillStyle = '#d4aa40'; c.strokeStyle = '#92400e'; c.lineWidth = 2;
+              c.fillRect(hvX - hvW / 2, hvY - hvH / 2, hvW, hvH);
+              c.strokeRect(hvX - hvW / 2, hvY - hvH / 2, hvW, hvH);
+              // Shingle roof
+              c.fillStyle = '#3f3a36';
+              c.beginPath();
+              c.moveTo(hvX - hvW / 2 - 3, hvY - hvH / 2);
+              c.lineTo(hvX, hvY - hvH / 2 - 12);
+              c.lineTo(hvX + hvW / 2 + 3, hvY - hvH / 2);
+              c.closePath(); c.fill();
+              // Snow on roof
+              c.fillStyle = '#f8fafc';
+              c.beginPath();
+              c.moveTo(hvX - hvW / 2 - 3, hvY - hvH / 2);
+              c.lineTo(hvX, hvY - hvH / 2 - 10);
+              c.lineTo(hvX + hvW / 2 + 3, hvY - hvH / 2);
+              c.lineTo(hvX + hvW / 2 + 3, hvY - hvH / 2 - 2);
+              c.lineTo(hvX, hvY - hvH / 2 - 8);
+              c.lineTo(hvX - hvW / 2 - 3, hvY - hvH / 2 - 2);
+              c.closePath(); c.fill();
+              // Entrance reduced (winter entrance reducer)
+              c.fillStyle = '#2a1a04';
+              c.fillRect(hvX - 6, hvY + hvH / 2 - 4, 12, 5);
+
+              // ── CLUSTER: concentric rings of bees around the queen ──
+              // Heat gradient from center (queen) outward
+              var cGrd = c.createRadialGradient(hvX, hvY, 10, hvX, hvY, 48);
+              cGrd.addColorStop(0, 'rgba(220,38,38,0.85)');
+              cGrd.addColorStop(0.4, 'rgba(251,146,60,0.6)');
+              cGrd.addColorStop(0.8, 'rgba(234,179,8,0.35)');
+              cGrd.addColorStop(1, 'rgba(100,139,232,0.1)');
+              c.fillStyle = cGrd;
+              c.beginPath(); c.arc(hvX, hvY, 48, 0, 6.28); c.fill();
+
+              // Queen in center (larger bee)
+              c.save(); c.translate(hvX, hvY);
+              c.shadowColor = '#dc2626'; c.shadowBlur = 8;
+              c.fillStyle = '#fbbf24';
+              c.beginPath(); c.ellipse(0, 0, 6, 4, 0, 0, 6.28); c.fill();
+              c.shadowBlur = 0;
+              c.fillStyle = '#292524';
+              c.fillRect(-1, -3.5, 1.2, 7);
+              c.fillRect(1.2, -3, 1, 6);
+              // Crown
+              c.font = '10px system-ui'; c.fillStyle = '#facc15'; c.textAlign = 'center';
+              c.fillText('👑', 0, -7);
+              c.restore();
+
+              // Concentric bee rings — INNER hot, OUTER cooler
+              // Inner ring (8 bees, close to queen — "heater bees" shivering)
+              for (var bi1 = 0; bi1 < 8; bi1++) {
+                var b1A = (bi1 / 8) * Math.PI * 2 + t2 * 0.005;
+                var b1R = 15;
+                var b1X = hvX + Math.cos(b1A) * b1R;
+                var b1Y = hvY + Math.sin(b1A) * b1R;
+                // Shiver oscillation
+                var shiver = Math.sin(t2 * 0.8 + bi1) * 1;
+                c.save(); c.translate(b1X + shiver * 0.3, b1Y + shiver * 0.3);
+                c.rotate(b1A + Math.PI / 2);
+                c.fillStyle = '#fbbf24';
+                c.beginPath(); c.ellipse(0, 0, 4, 2.5, 0, 0, 6.28); c.fill();
+                c.fillStyle = '#292524';
+                c.fillRect(-0.8, -2, 1, 4);
+                c.fillRect(0.6, -1.5, 0.8, 3);
+                c.restore();
+              }
+              // Middle ring (12 bees)
+              for (var bi2 = 0; bi2 < 12; bi2++) {
+                var b2A = (bi2 / 12) * Math.PI * 2 - t2 * 0.003;
+                var b2R = 28;
+                var b2X = hvX + Math.cos(b2A) * b2R;
+                var b2Y = hvY + Math.sin(b2A) * b2R;
+                c.save(); c.translate(b2X, b2Y);
+                c.rotate(b2A + Math.PI / 2);
+                c.fillStyle = '#fbbf24';
+                c.beginPath(); c.ellipse(0, 0, 4, 2.5, 0, 0, 6.28); c.fill();
+                c.fillStyle = '#292524';
+                c.fillRect(-0.8, -2, 1, 4);
+                c.fillRect(0.6, -1.5, 0.8, 3);
+                c.restore();
+              }
+              // Outer ring (14 bees, cooler "mantle")
+              for (var bi3 = 0; bi3 < 14; bi3++) {
+                var b3A = (bi3 / 14) * Math.PI * 2 + t2 * 0.002;
+                var b3R = 42;
+                var b3X = hvX + Math.cos(b3A) * b3R;
+                var b3Y = hvY + Math.sin(b3A) * b3R;
+                c.save(); c.translate(b3X, b3Y);
+                c.rotate(b3A + Math.PI / 2);
+                c.fillStyle = '#ca8a04';
+                c.beginPath(); c.ellipse(0, 0, 3.5, 2, 0, 0, 6.28); c.fill();
+                c.fillStyle = '#292524';
+                c.fillRect(-0.7, -1.6, 0.8, 3.2);
+                c.restore();
+              }
+
+              // Temperature labels on cluster
+              c.font = 'bold 9px system-ui'; c.fillStyle = '#fff'; c.textAlign = 'center';
+              c.shadowColor = 'rgba(0,0,0,0.8)'; c.shadowBlur = 4;
+              c.fillText('35°C', hvX, hvY - 4);
+              c.fillText('20°C', hvX + 38, hvY - 24);
+              c.fillText('10°C', hvX - 38, hvY + 32);
+              c.shadowBlur = 0;
+
+              // Snowflakes around outside
+              c.fillStyle = '#fff';
+              for (var sn2 = 0; sn2 < 15; sn2++) {
+                var snX = pX + 20 + ((sn2 * 41 + t2 * 0.3) % (pW2 - 40));
+                var snY = pY + 60 + ((sn2 * 23 + t2 * 0.5) % 60);
+                if (Math.abs(snX - hvX) < hvW / 2 + 20 && Math.abs(snY - hvY) < hvH / 2) continue;
+                c.beginPath(); c.arc(snX, snY, 1.3, 0, 6.28); c.fill();
+              }
+
+              // Thermometer inside
+              var thX = pX + pW2 - 30, thY = pY + 70;
+              var thHi = pH2 * 0.6;
+              c.fillStyle = '#f3f4f6'; c.strokeStyle = '#1c1917'; c.lineWidth = 1.5;
+              c.beginPath(); c.roundRect(thX - 5, thY, 10, thHi, 5); c.fill(); c.stroke();
+              // Mercury STILL at 35°C inside (even though outside is -10°C)
+              var tempFrac2 = 0.62;
+              c.fillStyle = '#dc2626';
+              c.fillRect(thX - 3, thY + thHi - thHi * tempFrac2, 6, thHi * tempFrac2);
+              c.beginPath(); c.arc(thX, thY + thHi + 6, 7, 0, 6.28); c.fill();
+              c.strokeStyle = '#1c1917';
+              c.beginPath(); c.arc(thX, thY + thHi + 6, 7, 0, 6.28); c.stroke();
+              c.strokeStyle = '#44403c'; c.lineWidth = 0.6; c.font = '7px monospace'; c.fillStyle = '#44403c'; c.textAlign = 'right';
+              for (var tk2 = 0; tk2 <= 5; tk2++) {
+                var tkTY2 = thY + thHi - (tk2 / 5) * thHi;
+                c.beginPath(); c.moveTo(thX - 8, tkTY2); c.lineTo(thX - 5, tkTY2); c.stroke();
+                c.fillText((tk2 * 10) + '°', thX - 10, tkTY2 + 2);
+              }
+              c.strokeStyle = '#dc2626'; c.lineWidth = 1.5;
+              var mkY2 = thY + thHi - tempFrac2 * thHi;
+              c.beginPath(); c.moveTo(thX - 12, mkY2); c.lineTo(thX + 12, mkY2); c.stroke();
+              c.font = 'bold 9px system-ui'; c.fillStyle = '#dc2626'; c.textAlign = 'left';
+              c.fillText('35°C', thX + 14, mkY2 + 3);
+
+              // Mini stat box
+              c.fillStyle = 'rgba(30,64,175,0.15)';
+              c.beginPath(); if (c.roundRect) c.roundRect(pX + 15, pY + pH2 - 52, pW2 - 30, 42, 6); else c.rect(pX + 15, pY + pH2 - 52, pW2 - 30, 42); c.fill();
+              c.font = 'bold 10px system-ui'; c.fillStyle = '#1e3a8a'; c.textAlign = 'left';
+              c.fillText('WINTER STRATEGY:', pX + 22, pY + pH2 - 38);
+              c.font = '9px system-ui'; c.fillStyle = '#1e40af';
+              c.fillText('· Heater bees shiver (decouple wings → pure heat)', pX + 22, pY + pH2 - 26);
+              c.fillText('· Mantle bees rotate inward to warm, outward to cool', pX + 22, pY + pH2 - 15);
+              c.restore();
+            })();
+
+            // Bottom: year-long temperature graph (outside vs inside)
+            var stripY = H - 68;
+            c.fillStyle = 'rgba(255,255,255,0.8)';
+            c.fillRect(0, stripY, W, 68);
+            c.strokeStyle = '#78350f'; c.lineWidth = 1;
+            c.strokeRect(0, stripY, W, 68);
+            c.font = 'bold 10px system-ui'; c.textAlign = 'left'; c.fillStyle = '#78350f';
+            c.fillText('Inside vs Outside temperature through the year:', 10, stripY + 14);
+            // Axes: x = months, y = temp
+            var gX = 20, gY = stripY + 18, gW = W - 170, gH = 36;
+            c.strokeStyle = '#a8a29e'; c.lineWidth = 0.6;
+            c.beginPath(); c.moveTo(gX, gY); c.lineTo(gX, gY + gH); c.lineTo(gX + gW, gY + gH); c.stroke();
+            // 0°C line
+            c.strokeStyle = 'rgba(59,130,246,0.5)'; c.lineWidth = 0.6; c.setLineDash([2, 3]);
+            var zeroY = gY + gH * 0.7;
+            c.beginPath(); c.moveTo(gX, zeroY); c.lineTo(gX + gW, zeroY); c.stroke();
+            c.setLineDash([]);
+            c.font = '7px system-ui'; c.fillStyle = '#64748b'; c.textAlign = 'right';
+            c.fillText('0°C', gX - 2, zeroY + 2);
+            // Outside temp curve (sinusoidal year)
+            c.strokeStyle = '#3b82f6'; c.lineWidth = 1.5;
+            c.beginPath();
+            for (var yr = 0; yr <= 100; yr++) {
+              var yT = yr / 100;
+              var oTemp = 12 + Math.sin(yT * Math.PI * 2 - Math.PI / 2) * 20;
+              var yGY = gY + gH - (oTemp + 30) / 70 * gH;
+              var yGX = gX + yT * gW;
+              yr === 0 ? c.moveTo(yGX, yGY) : c.lineTo(yGX, yGY);
+            }
+            c.stroke();
+            // Inside temp: FLAT at 35°C
+            c.strokeStyle = '#dc2626'; c.lineWidth = 2;
+            var insideY = gY + gH - (35 + 30) / 70 * gH;
+            c.beginPath(); c.moveTo(gX, insideY); c.lineTo(gX + gW, insideY); c.stroke();
+            // Legend
+            c.font = '9px system-ui'; c.textAlign = 'left';
+            c.fillStyle = '#dc2626';
+            c.fillText('━ inside hive (35°C)', gX + gW + 8, gY + 10);
+            c.fillStyle = '#3b82f6';
+            c.fillText('━ outside (−10 to 32°C)', gX + gW + 8, gY + 24);
+            // Month labels
+            c.font = '8px system-ui'; c.textAlign = 'center'; c.fillStyle = '#64748b';
+            ['J', 'M', 'M', 'J', 'S', 'N'].forEach(function(m, mi) {
+              c.fillText(m, gX + (mi / 5) * gW, gY + gH + 10);
+            });
+            // Caption
+            c.font = 'italic 9px system-ui'; c.fillStyle = '#78350f'; c.textAlign = 'center';
+            c.fillText('Bees are the only insects that stay warm year-round. Solo they\'re cold-blooded — together they\'re collectively warm-blooded.', W / 2, stripY + 62);
+          }
+
           // ═══ WAGGLE DANCE DIAGRAM (Karl von Frisch's symbolic-language decoding) ═══
           function drawWaggleDance() {
             // Soft sunset gradient (evocative of summer afternoon foraging)
@@ -2817,6 +3175,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               }
               if (_bv === 'waggle') {
                 drawWaggleDance();
+                _animId.current = requestAnimationFrame(frame);
+                return;
+              }
+              if (_bv === 'thermo') {
+                drawThermoregulation();
                 _animId.current = requestAnimationFrame(frame);
                 return;
               }
@@ -5667,7 +6030,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 { id: 'physics', icon: '✈️', label: 'Flight Physics', desc: 'How bees fly — leading-edge vortex' },
                 { id: 'lifecycle', icon: '🥚', label: 'Life Cycle', desc: 'Egg → larva → pupa → adult (21 days)' },
                 { id: 'honey', icon: '🍯', label: 'Honey Chem', desc: 'Nectar → honey: enzymes + evaporation' },
-                { id: 'waggle', icon: '💃', label: 'Waggle Dance', desc: 'Bee symbolic language (von Frisch 1973)' }
+                { id: 'waggle', icon: '💃', label: 'Waggle Dance', desc: 'Bee symbolic language (von Frisch 1973)' },
+                { id: 'thermo', icon: '🌡️', label: 'Thermoreg', desc: 'Summer cooling + winter clustering = 35°C year-round' }
               ].map(function(v) {
                 var active = beeView === v.id;
                 return h('button', { key: v.id, role: 'tab', 'aria-selected': active ? 'true' : 'false', onClick: function() { upd('beeView', v.id); }, title: v.desc,

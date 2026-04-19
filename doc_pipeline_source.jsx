@@ -615,12 +615,20 @@ var createDocPipeline = function(deps) {
   const _stripJsonWrapperArtifacts = (html) => {
     if (!html) return html;
     return html
-      .replace(/<p[^>]*>\s*\[\s*"?\s*<\/p>/gi, '')
-      .replace(/<p[^>]*>\s*"\s*\]\s*<\/p>/gi, '')
+      .replace(/<p[^>]*>\s*\[\s*["\u201c\u201d]?\s*<\/p>/gi, '')
+      .replace(/<p[^>]*>\s*["\u201c\u201d]\s*\]\s*<\/p>/gi, '')
       // Chunk-boundary collision `" ][ "` — chunk N ended with `"]` and chunk N+1 started
       // with `["`; when joined they render as a visible paragraph between real content.
-      .replace(/<p[^>]*>\s*"\s*\]\s*\[\s*"\s*<\/p>/gi, '')
-      .replace(/"\s*\]\s*\[\s*"/g, '')
+      // Smart-quote variants (U+201C/U+201D) appear when Gemini's response serializes JSON
+      // with typographic quotes; strip those too.
+      .replace(/<p[^>]*>\s*["\u201c\u201d]\s*\]\s*\[\s*["\u201c\u201d]\s*<\/p>/gi, '')
+      .replace(/["\u201c\u201d]\s*\]\s*\[\s*["\u201c\u201d]/g, '')
+      // Line-alone artifacts: `" ][ "` or `" ]` or `[ "` sitting on their own line with
+      // nothing else (observed after remediation passes that wrap the seam in whitespace
+      // without a containing <p>, so the content-level regexes miss it).
+      .replace(/^\s*["\u201c\u201d]\s*\]\s*\[\s*["\u201c\u201d]\s*$/gm, '')
+      .replace(/^\s*["\u201c\u201d]\s*\]\s*$/gm, '')
+      .replace(/^\s*\[\s*["\u201c\u201d]\s*$/gm, '')
       // Chunk-object seam: `"}]{"fixed_html":"` (and variants `"}][{"`, `"}],{"`, whitespace/newlines
       // in between) — happens when each chunk streamed its own `[{"fixed_html":"..."}]` wrapper and the
       // concatenation leaves end-of-N's trailing `}]` next to start-of-N+1's opening `{"fixed_html":"`.
@@ -645,7 +653,14 @@ var createDocPipeline = function(deps) {
       .replace(/\[\s*"\s*(?=<)/g, '')
       // Trailing orphan `"}]` at the very end of the document (or immediately before a block tag)
       // — chunk N's closing wrapper that survived every paragraph-specific sweep above.
-      .replace(/"\s*\}\s*\](?=\s*(?:$|<(?:\/?(?:p|div|h[1-6]|section|article|main|header|footer|ul|ol|li|table|figure|aside|nav|blockquote|br|hr)\b|!--|\?)))/g, '')
+      .replace(/["\u201c\u201d]\s*\}\s*\](?=\s*(?:$|<(?:\/?(?:p|div|h[1-6]|section|article|main|header|footer|ul|ol|li|table|figure|aside|nav|blockquote|br|hr)\b|!--|\?)))/g, '')
+      // Trailing orphan `"]` (no `}`) — string-array wrappers like `["<html1>","<html2>"]`
+      // leave just `"]` at the document tail when the object form wasn't used. Anchor to
+      // document end or closing body/main/div tags so we don't touch legit "end-quote + ]"
+      // text mid-document (which is essentially never real in an educational doc).
+      .replace(/["\u201c\u201d]\s*\](?=\s*(?:$|<\/(?:body|html|main|section|article|div)\b))/g, '')
+      // Leading orphan `["` at the absolute start of the document body (before any real content).
+      .replace(/^(\s*(?:<(?:html|body|main|section|article|div)[^>]*>\s*)*)\[\s*["\u201c\u201d]\s*/gi, '$1')
       // Final sweep: decode literal \uXXXX escapes that survived the chunk-level
       // decoder at :3155 (which only runs when chunks start with `["`). This catches:
       //   - `\u2026` in image-placeholder descriptions rendering as literal text
@@ -7076,7 +7091,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
               const _dragLeave = `this.style.borderColor='#64748b';this.style.background='#f1f5f9';`;
               const _dropHandler = `(function(c,ev){ev.preventDefault();c.style.borderColor='#64748b';c.style.background='#f1f5f9';try{var raw=ev.dataTransfer.getData('text/x-alloflow-image');if(raw){var d=JSON.parse(raw);if(d&&d.src){(${_insertFn})(c,d.src,d.alt||'${_imgAltSafe}');return;}}var f=ev.dataTransfer.files&&ev.dataTransfer.files[0];if(f){var r=new FileReader();r.onload=function(e){(${_insertFn})(c,e.target.result,'${_imgAltSafe}');};r.readAsDataURL(f);}}catch(_){}})(this,event)`;
               const _uploadHandler = `(function(el){var f=el.files[0];if(!f)return;var r=new FileReader();r.onload=function(e){var c=document.getElementById('${_imgId}-container');(${_insertFn})(c,e.target.result,'${_imgAltSafe}');};r.readAsDataURL(f);})(this)`;
-              const _pickHandler = `(function(btn){var c=document.getElementById('${_imgId}-container');if(!c)return;var list=(typeof window!=='undefined'&&window.__alloflowExtractedImages)||[];if(!list.length){alert('No extracted images yet. Upload a PDF that contains images, or click \\u0022Upload image\\u0022 to pick a local file.');return;}var ex=c.querySelector('[data-alloflow-picker]');if(ex){ex.remove();return;}var p=document.createElement('div');p.setAttribute('data-alloflow-picker','true');p.style.cssText='margin-top:0.75rem;padding:0.5rem;background:#fff;border:1px solid #cbd5e1;border-radius:6px;display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:4px;width:100%;max-height:220px;overflow-y:auto';list.forEach(function(img,i){if(!img||!img.src)return;var t=document.createElement('img');t.src=img.src;t.alt=img.description||('Image '+(i+1));t.title=img.description||('Image '+(i+1));t.style.cssText='width:100%;height:60px;object-fit:cover;cursor:pointer;border:1px solid #e2e8f0;border-radius:4px';t.onclick=function(){(${_insertFn})(c,img.src,img.description||'${_imgAltSafe}');};p.appendChild(t);});c.appendChild(p);})(this)`;
+              const _pickHandler = `(function(btn){var c=document.getElementById('${_imgId}-container');if(!c)return;var list=(typeof window!=='undefined'&&window.__alloflowExtractedImages)||[];var prevMsg=c.querySelector('[data-alloflow-nomsg]');if(prevMsg)prevMsg.remove();if(!list.length){var msg=document.createElement('div');msg.setAttribute('data-alloflow-nomsg','true');msg.style.cssText='margin-top:0.5rem;padding:8px 12px;background:#fef3c7;border:1px solid #fcd34d;border-radius:6px;font-size:12px;color:#92400e;max-width:90%';msg.textContent='No extracted images yet. Upload a PDF that contains images, or click "Upload image" to pick a local file.';c.appendChild(msg);setTimeout(function(){msg.remove();},5000);return;}var ex=c.querySelector('[data-alloflow-picker]');if(ex){ex.remove();return;}var p=document.createElement('div');p.setAttribute('data-alloflow-picker','true');p.style.cssText='margin-top:0.75rem;padding:0.5rem;background:#fff;border:1px solid #cbd5e1;border-radius:6px;display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:4px;width:100%;max-height:220px;overflow-y:auto';list.forEach(function(img,i){if(!img||!img.src)return;var t=document.createElement('img');t.src=img.src;t.alt=img.description||('Image '+(i+1));t.title=img.description||('Image '+(i+1));t.style.cssText='width:100%;height:60px;object-fit:cover;cursor:pointer;border:1px solid #e2e8f0;border-radius:4px';t.onclick=function(){(${_insertFn})(c,img.src,img.description||'${_imgAltSafe}');};p.appendChild(t);});c.appendChild(p);})(this)`;
               return `<figure id="${_imgId}-figure" data-img-placeholder="true" style="margin:1em 0">`
                 + `<div id="${_imgId}-container" style="background:#f1f5f9;border:2px dashed #64748b;border-radius:8px;padding:1rem;text-align:center;min-height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.5rem" ondragover="${_dragOver}" ondragleave="${_dragLeave}" ondrop="${_dropHandler}">`
                 + `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="1.5" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>`
@@ -7103,14 +7118,18 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
               // Enforce white text on dark gradient + text-shadow guarantees WCAG AA contrast
               // regardless of the auto-extracted headerBg. Accent border + layered typography
               // makes the banner feel like a proper chapter marker rather than a flat heading box.
+              // Inner divs inherit color from the wrapper (background + color live on the same
+              // style there, which keeps fixContrastViolations Pass 1 from darkening the inner
+              // color:#ffffff to gray — seen as the Academic-theme banner reading as muted navy
+              // on navy before this change. Do NOT redeclare color:#ffffff on inner nodes.
               const _bTitle = block.title || '';
               const _bSubtitle = block.subtitle || '';
               const _bEyebrow = block.eyebrow || '';
               const _accent = docStyle.accentColor || '#fbbf24';
               return `<div style="position:relative;background:${docStyle.headerBg};color:#ffffff;padding:36px 40px;border-radius:14px;margin-bottom:28px;overflow:hidden;border-left:6px solid ${_accent};box-shadow:0 6px 20px rgba(15,23,42,0.18)">`
-                + (_bEyebrow ? '<div style="font-size:0.75em;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#ffffff;opacity:0.95;margin-bottom:10px;text-shadow:0 1px 2px rgba(0,0,0,0.25)">' + _bEyebrow + '</div>' : '')
-                + (_bTitle ? '<div style="font-size:2.1em;font-weight:800;line-height:1.1;letter-spacing:-0.01em;color:#ffffff;text-shadow:0 2px 4px rgba(0,0,0,0.35)">' + _bTitle + '</div>' : '')
-                + (_bSubtitle ? '<div style="font-size:1.1em;font-weight:500;margin-top:10px;color:#ffffff;text-shadow:0 1px 2px rgba(0,0,0,0.3)">' + _bSubtitle + '</div>' : '')
+                + (_bEyebrow ? '<div style="font-size:0.75em;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;opacity:0.95;margin-bottom:10px;text-shadow:0 1px 2px rgba(0,0,0,0.25)">' + _bEyebrow + '</div>' : '')
+                + (_bTitle ? '<div style="font-size:2.1em;font-weight:800;line-height:1.1;letter-spacing:-0.01em;text-shadow:0 2px 4px rgba(0,0,0,0.35)">' + _bTitle + '</div>' : '')
+                + (_bSubtitle ? '<div style="font-size:1.1em;font-weight:500;margin-top:10px;text-shadow:0 1px 2px rgba(0,0,0,0.3)">' + _bSubtitle + '</div>' : '')
                 + `</div>`;
             }
             case 'rawhtml': {
@@ -7709,7 +7728,7 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
             const _dragLeave2 = `this.style.borderColor='#cbd5e1';this.style.background='#f1f5f9';`;
             const _dropHandler2 = `(function(c,ev){ev.preventDefault();c.style.borderColor='#cbd5e1';c.style.background='#f1f5f9';try{var raw=ev.dataTransfer.getData('text/x-alloflow-image');if(raw){var d=JSON.parse(raw);if(d&&d.src){(${_insertFn2})(c,d.src,d.alt||'${_altSafe}');return;}}var f=ev.dataTransfer.files&&ev.dataTransfer.files[0];if(f){var r=new FileReader();r.onload=function(e){(${_insertFn2})(c,e.target.result,'${_altSafe}');};r.readAsDataURL(f);}}catch(_){}})(this,event)`;
             const _uploadHandler2 = `(function(el){var f=el.files[0];if(!f)return;var r=new FileReader();r.onload=function(e){var c=document.getElementById('${imgId}-container');(${_insertFn2})(c,e.target.result,'${_altSafe}');};r.readAsDataURL(f);})(this)`;
-            const _pickHandler2 = `(function(btn){var c=document.getElementById('${imgId}-container');if(!c)return;var list=(typeof window!=='undefined'&&window.__alloflowExtractedImages)||[];if(!list.length){alert('No extracted images yet. Upload a PDF that contains images, or click \\u0022Upload image\\u0022 to pick a local file.');return;}var ex=c.querySelector('[data-alloflow-picker]');if(ex){ex.remove();return;}var p=document.createElement('div');p.setAttribute('data-alloflow-picker','true');p.style.cssText='margin-top:0.75rem;padding:0.5rem;background:#fff;border:1px solid #cbd5e1;border-radius:6px;display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:4px;width:100%;max-height:220px;overflow-y:auto';list.forEach(function(img,i){if(!img||!img.src)return;var t=document.createElement('img');t.src=img.src;t.alt=img.description||('Image '+(i+1));t.title=img.description||('Image '+(i+1));t.style.cssText='width:100%;height:60px;object-fit:cover;cursor:pointer;border:1px solid #e2e8f0;border-radius:4px';t.onclick=function(){(${_insertFn2})(c,img.src,img.description||'${_altSafe}');};p.appendChild(t);});c.appendChild(p);})(this)`;
+            const _pickHandler2 = `(function(btn){var c=document.getElementById('${imgId}-container');if(!c)return;var list=(typeof window!=='undefined'&&window.__alloflowExtractedImages)||[];var prevMsg=c.querySelector('[data-alloflow-nomsg]');if(prevMsg)prevMsg.remove();if(!list.length){var msg=document.createElement('div');msg.setAttribute('data-alloflow-nomsg','true');msg.style.cssText='margin-top:0.5rem;padding:8px 12px;background:#fef3c7;border:1px solid #fcd34d;border-radius:6px;font-size:12px;color:#92400e;max-width:90%';msg.textContent='No extracted images yet. Upload a PDF that contains images, or click "Upload image" to pick a local file.';c.appendChild(msg);setTimeout(function(){msg.remove();},5000);return;}var ex=c.querySelector('[data-alloflow-picker]');if(ex){ex.remove();return;}var p=document.createElement('div');p.setAttribute('data-alloflow-picker','true');p.style.cssText='margin-top:0.75rem;padding:0.5rem;background:#fff;border:1px solid #cbd5e1;border-radius:6px;display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:4px;width:100%;max-height:220px;overflow-y:auto';list.forEach(function(img,i){if(!img||!img.src)return;var t=document.createElement('img');t.src=img.src;t.alt=img.description||('Image '+(i+1));t.title=img.description||('Image '+(i+1));t.style.cssText='width:100%;height:60px;object-fit:cover;cursor:pointer;border:1px solid #e2e8f0;border-radius:4px';t.onclick=function(){(${_insertFn2})(c,img.src,img.description||'${_altSafe}');};p.appendChild(t);});c.appendChild(p);})(this)`;
             // If we have a regenerated image, show it; otherwise show placeholder with upload
             return `<figure id="${imgId}-figure" data-img-idx="${imgIdx}"${hasCropData ? ` data-crop="${cropJson}"` : ''} style="position:relative;margin:1em 0">
 <div id="${imgId}-container" style="${hasSrc ? '' : 'background:#f1f5f9;border:2px dashed #cbd5e1;border-radius:8px;padding:1rem;'}text-align:center;min-height:${hasSrc ? '0' : '120px'};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.5rem"${hasSrc ? '' : ` ondragover="${_dragOver2}" ondragleave="${_dragLeave2}" ondrop="${_dropHandler2}"`}>
