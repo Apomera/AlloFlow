@@ -1692,6 +1692,135 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         }
       };
 
+      // ── Ground-perspective airport view ──
+      // Shown when the player is ON or very close to the runway. Renders a proper
+      // perspective runway stretching from beneath the cockpit to the horizon, with
+      // centerline dashes, threshold numbers, edge lights, and a terminal off to the
+      // side — so the student feels like they're parked on a real runway, not floating
+      // above a postcard. Replaces drawRunway's tiny far-view variant when on ground.
+      var drawAirportGround = function(gfx, W, H, horizonY, state, nearWp, nearDist) {
+        if (!nearWp) return;
+        var aglAlt = state.altitude - (state.fieldElev || 0);
+        // Only show ground-perspective runway when low + close
+        if (aglAlt > 200 || nearDist > 0.6) return;
+
+        // ── Asphalt apron underfoot — covers the whole lower half ──
+        gfx.fillStyle = '#3a3f48';
+        gfx.fillRect(0, horizonY, W, H - horizonY);
+
+        // ── Perspective runway: wide trapezoid narrowing to vanishing point at horizon ──
+        // Based on heading vs runway alignment. We assume the player is aligned with the runway
+        // (the airport heading is whichever way the player is facing — they're parked).
+        var rwyHalfWNear = W * 0.18; // wide at the cockpit
+        var rwyHalfWFar = 6;          // narrows to a point near horizon
+        var rwyTopY = horizonY + 4;
+        var rwyBotY = H;
+        // Lift fades as the player gains altitude — runway shrinks back to standard view
+        var groundFactor = Math.max(0, 1 - aglAlt / 200); // 1 on ground, 0 at 200ft AGL
+
+        gfx.fillStyle = '#1f2329';
+        gfx.beginPath();
+        gfx.moveTo(W / 2 - rwyHalfWFar, rwyTopY);
+        gfx.lineTo(W / 2 + rwyHalfWFar, rwyTopY);
+        gfx.lineTo(W / 2 + rwyHalfWNear * groundFactor + rwyHalfWFar * (1 - groundFactor), rwyBotY);
+        gfx.lineTo(W / 2 - rwyHalfWNear * groundFactor - rwyHalfWFar * (1 - groundFactor), rwyBotY);
+        gfx.closePath();
+        gfx.fill();
+
+        // ── Centerline dashes (perspective: short near horizon, long near cockpit) ──
+        gfx.fillStyle = '#fdf3a6';
+        var dashCount = 14;
+        for (var di = 0; di < dashCount; di++) {
+          var t = di / dashCount;
+          var dashY = rwyTopY + (rwyBotY - rwyTopY) * (t * t); // squared for perspective
+          var dashLen = 2 + t * 18;
+          var dashW = 1 + t * 4;
+          gfx.fillRect(W / 2 - dashW / 2, dashY, dashW, dashLen);
+        }
+
+        // ── Threshold numbers near the cockpit (huge white numerals) ──
+        // Compute runway designation from the player's heading: heading 270° → "27"
+        var rwyDesignator = String(Math.round(state.heading / 10)).padStart(2, '0');
+        if (rwyDesignator === '00') rwyDesignator = '36';
+        gfx.save();
+        gfx.fillStyle = '#fff';
+        gfx.font = 'bold ' + Math.max(20, 60 * groundFactor) + 'px monospace';
+        gfx.textAlign = 'center';
+        gfx.textBaseline = 'middle';
+        var rwyNumY = rwyBotY - 50 * groundFactor;
+        if (groundFactor > 0.3 && aglAlt < 100) {
+          gfx.fillText(rwyDesignator, W / 2, rwyNumY);
+        }
+        gfx.restore();
+
+        // ── Threshold bars (white blocks at start of runway) ──
+        if (groundFactor > 0.5 && aglAlt < 50) {
+          gfx.fillStyle = '#fff';
+          var thrY = rwyBotY - 20;
+          var thrSpacing = (rwyHalfWNear * 2) / 8;
+          for (var ti = 0; ti < 8; ti++) {
+            var thrX = W / 2 - rwyHalfWNear + ti * thrSpacing + 4;
+            gfx.fillRect(thrX, thrY, thrSpacing - 8, 6);
+          }
+        }
+
+        // ── Edge lights (small dim white dots running along both edges) ──
+        gfx.fillStyle = 'rgba(255,255,180,0.7)';
+        var edgeLightCount = 18;
+        for (var ei = 0; ei < edgeLightCount; ei++) {
+          var et = ei / edgeLightCount;
+          var lY = rwyTopY + (rwyBotY - rwyTopY) * (et * et);
+          var lXLeft = W / 2 - (rwyHalfWNear * groundFactor + rwyHalfWFar * (1 - groundFactor)) * (et) - rwyHalfWFar * (1 - et) - 2;
+          var lXRight = W / 2 + (rwyHalfWNear * groundFactor + rwyHalfWFar * (1 - groundFactor)) * (et) + rwyHalfWFar * (1 - et) + 2;
+          gfx.fillRect(lXLeft, lY, 2, 2);
+          gfx.fillRect(lXRight, lY, 2, 2);
+        }
+
+        // ── Terminal building off to the right (gray with windows) ──
+        if (groundFactor > 0.4) {
+          var termX = W * 0.78;
+          var termY = horizonY + (H - horizonY) * 0.35;
+          var termW = W * 0.16;
+          var termH = (H - horizonY) * 0.18;
+          gfx.fillStyle = '#475569';
+          gfx.fillRect(termX, termY, termW, termH);
+          // Roof
+          gfx.fillStyle = '#334155';
+          gfx.fillRect(termX, termY - 4, termW, 6);
+          // Windows (rows of yellow squares)
+          gfx.fillStyle = '#fcd34d';
+          for (var wRow = 0; wRow < 3; wRow++) {
+            for (var wCol = 0; wCol < 8; wCol++) {
+              var wxw = termX + 4 + wCol * (termW - 8) / 8;
+              var wyw = termY + 6 + wRow * (termH / 4);
+              gfx.fillRect(wxw, wyw, (termW - 12) / 8, termH / 8);
+            }
+          }
+          // Tower (small box on top)
+          gfx.fillStyle = '#64748b';
+          gfx.fillRect(termX + termW * 0.4, termY - 14, termW * 0.2, 14);
+          // Tower window
+          gfx.fillStyle = '#fcd34d';
+          gfx.fillRect(termX + termW * 0.42, termY - 11, termW * 0.16, 6);
+        }
+
+        // ── Airport sign (showing the airport code) ──
+        if (groundFactor > 0.5 && aglAlt < 30) {
+          var signX = W * 0.12;
+          var signY = horizonY + (H - horizonY) * 0.55;
+          gfx.fillStyle = '#1e3a8a';
+          gfx.fillRect(signX, signY, 80, 20);
+          gfx.strokeStyle = '#fff';
+          gfx.lineWidth = 1;
+          gfx.strokeRect(signX, signY, 80, 20);
+          gfx.fillStyle = '#fff';
+          gfx.font = 'bold 11px monospace';
+          gfx.textAlign = 'center';
+          gfx.textBaseline = 'middle';
+          gfx.fillText(nearWp.code || '???', signX + 40, signY + 11);
+        }
+      };
+
       // ── Runway Visualization ──
       var drawRunway = function(gfx, W, H, horizonY, state, nearWp, nearDist) {
         if (!nearWp || nearDist > 10 || state.altitude > 5000) return;
@@ -3042,7 +3171,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           gfx._time = timeRef.current;
           applySkyLighting(gfx, W, H, dayNight, altFactor);
 
-          // Runway when near airport
+          // Ground-perspective airport (parked or final-approach view) — drawn UNDER
+          // the small far-view runway so transitions are smooth. Only fires near the
+          // ground (AGL ≤ 200ft) and very close to the airport.
+          drawAirportGround(gfx, W, H, horizonY, state, nearWp, nearDist);
+          // Far-view runway (shows up to 10nm out) — for landing approach visibility.
           drawRunway(gfx, W, H, horizonY, state, nearWp, nearDist);
 
           // Weather effects (rain, haze, lightning)
