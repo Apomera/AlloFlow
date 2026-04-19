@@ -885,6 +885,49 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               }
               gfx.stroke();
             }
+
+            // Ships at sea (larger near busy shipping lanes / coastal)
+            if (depth > 0.2 && alt < 15000) {
+              var shipSeed = Math.floor(scanLat * 6) * 31 + Math.floor(scanLon * 6);
+              if (terrainHash(shipSeed, 7) > 0.78) {
+                var ships = Math.min(3, Math.floor(1 + terrainHash(shipSeed, 8) * 3));
+                for (var sh = 0; sh < ships; sh++) {
+                  var shX = ((terrainHash(shipSeed + sh, 9) * W) + time * (2 + sh) * 3) % W;
+                  var shY = y + Math.sin(time * 1.5 + sh) * 0.5;
+                  var shSize = Math.max(1.5, 3 + depth * 4);
+                  // Hull
+                  gfx.fillStyle = sh % 2 === 0 ? 'rgba(40,40,55,0.8)' : 'rgba(180,40,40,0.75)';
+                  gfx.fillRect(shX - shSize, shY, shSize * 2, shSize * 0.4);
+                  // Superstructure
+                  gfx.fillStyle = 'rgba(240,240,240,0.7)';
+                  gfx.fillRect(shX - shSize * 0.3, shY - shSize * 0.35, shSize * 0.6, shSize * 0.4);
+                  // Wake (V-shape trail)
+                  gfx.strokeStyle = 'rgba(255,255,255,' + (0.25 + depth * 0.25) + ')';
+                  gfx.lineWidth = 0.8;
+                  gfx.beginPath();
+                  gfx.moveTo(shX - shSize * 1.2, shY + shSize * 0.5);
+                  gfx.lineTo(shX - shSize * 4, shY + shSize * 1.2);
+                  gfx.moveTo(shX - shSize * 1.2, shY + shSize * 0.5);
+                  gfx.lineTo(shX - shSize * 4, shY - shSize * 0.3);
+                  gfx.stroke();
+                }
+              }
+
+              // Sailboats near coast
+              if (isCoast && terrainHash(shipSeed, 11) > 0.6) {
+                var sbX = terrainHash(shipSeed, 12) * W;
+                var sbS = Math.max(1, 2 + depth * 2);
+                gfx.fillStyle = 'rgba(255,255,255,0.85)';
+                gfx.beginPath();
+                gfx.moveTo(sbX, y - sbS * 1.8);
+                gfx.lineTo(sbX + sbS * 0.6, y + sbS * 0.1);
+                gfx.lineTo(sbX - sbS * 0.1, y + sbS * 0.1);
+                gfx.closePath();
+                gfx.fill();
+                gfx.fillStyle = 'rgba(80,50,30,0.9)';
+                gfx.fillRect(sbX - sbS * 0.8, y + sbS * 0.1, sbS * 1.6, sbS * 0.3);
+              }
+            }
           } else {
             var green = Math.max(40, Math.min(180, 100 - elev / 60 + depth * 40));
             var brown = elev > 3000 ? Math.min(200, 80 + elev / 40) : 30;
