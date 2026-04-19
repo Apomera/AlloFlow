@@ -8929,6 +8929,12 @@ Return ONLY a valid JSON object:
   const [chunkReaderAutoPlay, setChunkReaderAutoPlay] = useState(false);
   const [chunkReaderSpeed, setChunkReaderSpeed] = useState(3000);
   const chunkReaderTimerRef = useRef(null);
+  // Read-along state must be declared BEFORE the chunk-reader useEffect hooks below —
+  // the dep arrays reference these names at render time, so a later `const` triggers TDZ.
+  const [chunkReaderReadAlong, setChunkReaderReadAlong] = useState(false);
+  const [chunkReaderSweepPct, setChunkReaderSweepPct] = useState(0);
+  const chunkReaderSweepAudioRef = useRef(null);
+  const chunkReaderSweepRafRef = useRef(null);
   const handleCloseSpeedReader = useCallback(() => setIsSpeedReaderActive(false), []);
   const handleCloseChunkReader = useCallback(() => {
       setIsChunkReaderActive(false);
@@ -9800,10 +9806,9 @@ Return ONLY a valid JSON object:
   const [isBionicReaderActive, setIsBionicReaderActive] = useState(false);
   const [isCrawlReaderActive, setIsCrawlReaderActive] = useState(false);
   const [isKaraokeOverlayActive, setIsKaraokeOverlayActive] = useState(false);
-  const [chunkReaderReadAlong, setChunkReaderReadAlong] = useState(false);
-  const [chunkReaderSweepPct, setChunkReaderSweepPct] = useState(0);
-  const chunkReaderSweepAudioRef = useRef(null);
-  const chunkReaderSweepRafRef = useRef(null);
+  // Note: chunkReaderReadAlong, chunkReaderSweepPct, chunkReaderSweepAudioRef, and
+  // chunkReaderSweepRafRef were hoisted to the chunk-reader state block near line 8931
+  // to avoid a TDZ error — useEffect dep arrays earlier in the component reference them.
   const [isEditingOptions, setIsEditingOptions] = useState(false);
   const [editingOptionsBuffer, setEditingOptionsBuffer] = useState([]);
   useEffect(() => {
