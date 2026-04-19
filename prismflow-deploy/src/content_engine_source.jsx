@@ -32,6 +32,42 @@ var createContentEngine = function(deps) {
     else { lines[firstNonEmptyIdx] = '# ' + firstLine; }
     return lines.join('\n');
   };
+  // Rebuild each [⁽N⁾](url) using the canonical URI from the (already-reordered)
+  // groundingChunks. N is a deterministic index into chunks — after the LLM cleanup
+  // round-trip, the citation NUMBER is trustworthy even when the URL inside is
+  // truncated, rewritten, space-padded, or otherwise mangled by Gemini.
+  //
+  // This catches ALL forms of URL corruption (mid-URL truncation, dropped protocol,
+  // "webmd. com" space injection, trailing-paren drop) in one deterministic pass,
+  // not the heuristic repair rules in sanitizeTruncatedCitations which can only
+  // handle known shapes.
+  var restoreCanonicalCitationUrls = function(text, chunks) {
+    if (!text || !chunks || !chunks.length) return text;
+    var superMap = {'\u2070':'0','\u00b9':'1','\u00b2':'2','\u00b3':'3','\u2074':'4','\u2075':'5','\u2076':'6','\u2077':'7','\u2078':'8','\u2079':'9'};
+    var decodeSuper = function(s) {
+      var n = '';
+      for (var i = 0; i < s.length; i++) { n += superMap[s[i]] || ''; }
+      return n;
+    };
+    var fixed = 0;
+    var total = 0;
+    // Widened regex: opening ⁽ optional and closing ) optional so we can also rebuild
+    // citations that Gemini produced in a broken shape (missing ⁽ or trailing )).
+    var result = text.replace(/\[\u207d?([\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079]+)\u207e\]\(([^)\n]*)\)?/g, function(match, supDigits, currentUrl) {
+      total++;
+      var n = parseInt(decodeSuper(supDigits), 10);
+      if (!n || n < 1 || n > chunks.length) return match;
+      var chunk = chunks[n - 1];
+      var canonical = chunk && chunk.web && chunk.web.uri;
+      if (!canonical) return match;
+      if (currentUrl !== canonical) fixed++;
+      return '[\u207d' + supDigits + '\u207e](' + canonical + ')';
+    });
+    if (fixed > 0) {
+      warnLog('[Citations] restored ' + fixed + '/' + total + ' corrupt URLs from canonical grounding metadata');
+    }
+    return result;
+  };
   var repairSourceMarkdown = function(rawText) {
     if (!rawText) return rawText;
 
@@ -756,7 +792,7 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
                   text = processedText.trim();
                   if (result.groundingMetadata?.groundingChunks) {
                       const { renumberedText, reorderedChunks } = renumberCitations(text, result.groundingMetadata.groundingChunks);
-                      text = renumberedText;
+                      text = restoreCanonicalCitationUrls(renumberedText, reorderedChunks);
                       const tempMeta = { ...result.groundingMetadata, groundingChunks: reorderedChunks };
                       text += generateBibliographyString(tempMeta, 'Links Only', "Source Text References");
                   } else {
@@ -796,7 +832,11 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
                   text = strippedText.trim();
                   if (result.groundingMetadata?.groundingChunks) {
                       const { renumberedText, reorderedChunks } = renumberCitations(text, result.groundingMetadata.groundingChunks);
-                      text = renumberedText;
+                      // CANONICAL URL VALIDATION: the cleanup round-trip above can corrupt URLs
+                      // (truncate mid-domain, drop the closing paren, space-pad at dots, drop
+                      // the protocol). Rebuild every [⁽N⁾](url) using the canonical web.uri
+                      // from reorderedChunks[N-1] — after renumber, N is a deterministic index.
+                      text = restoreCanonicalCitationUrls(renumberedText, reorderedChunks);
                       const tempMeta = { ...result.groundingMetadata, groundingChunks: reorderedChunks };
                       text += generateBibliographyString(tempMeta, 'Links Only', "Source Text References");
                   } else {
@@ -809,7 +849,7 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
                   fallbackText = fallbackText.replace(/\n*(?:#{1,4}\s*)?(?:Sources?|References?|Works?\s*Cited|Bibliography)\s*[\n\r]+(?:(?:\d+\.\s+|\*\s+|-\s+)?.+[\n\r]+)*(?=\n*(?:#{1,4}\s|\Z|$))/gi, '\n').trim();
                   if (result.groundingMetadata?.groundingChunks) {
                       const { renumberedText, reorderedChunks } = renumberCitations(fallbackText, result.groundingMetadata.groundingChunks);
-                      fallbackText = renumberedText;
+                      fallbackText = restoreCanonicalCitationUrls(renumberedText, reorderedChunks);
                       const tempMeta = { ...result.groundingMetadata, groundingChunks: reorderedChunks };
                       fallbackText += generateBibliographyString(tempMeta, 'Links Only', "Source Text References");
                   } else {
@@ -877,7 +917,7 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
                           .trim();
                       if (retryResult.groundingMetadata?.groundingChunks) {
                           const { renumberedText, reorderedChunks } = renumberCitations(retryText, retryResult.groundingMetadata.groundingChunks);
-                          retryText = renumberedText;
+                          retryText = restoreCanonicalCitationUrls(renumberedText, reorderedChunks);
                           const tempMeta = { ...retryResult.groundingMetadata, groundingChunks: reorderedChunks };
                           retryText += generateBibliographyString(tempMeta, 'Links Only', "Source Text References");
                       }
