@@ -1706,6 +1706,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.fillStyle = 'rgba(255,200,100,0.6)';
                 c.fillRect(fhX - 6, fhY + 3, 3, 3);
                 c.fillRect(fhX + 3, fhY + 3, 3, 3);
+                // Weathervane on roof peak (rooster silhouette rotating slowly)
+                var wvAng = t2 * 0.008;
+                c.save();
+                c.translate(fhX, fhY - 10);
+                // Pole
+                c.strokeStyle = 'rgba(60,45,30,0.8)'; c.lineWidth = 0.8;
+                c.beginPath(); c.moveTo(0, 0); c.lineTo(0, -7); c.stroke();
+                // Rotating rooster
+                c.rotate(Math.sin(wvAng) * 0.8);
+                c.fillStyle = 'rgba(50,35,20,0.85)';
+                c.beginPath();
+                c.moveTo(0, -7);
+                c.lineTo(4, -9);
+                c.lineTo(3, -6);
+                c.lineTo(-3, -6);
+                c.lineTo(-5, -9);
+                c.closePath(); c.fill();
+                // Tail feathers
+                c.beginPath(); c.moveTo(-3, -6); c.lineTo(-6, -4); c.lineTo(-2, -5); c.closePath(); c.fill();
+                c.restore();
+                // N/S cross indicators
+                c.fillStyle = 'rgba(60,45,30,0.6)';
+                c.fillRect(fhX - 1, fhY - 17, 2, 1);
+                c.fillRect(fhX - 4, fhY - 14, 8, 1);
               }
 
               // ── Distant mountain silhouettes (depth layer, non-winter uses blue-gray) ──
@@ -1870,6 +1894,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.fillRect(bbX + 8.7, bbY - 5.8, 0.6, 0.6);
               }
 
+              // ── Sunflowers (3 tall dramatic ones, major bee forage in summer/autumn) ──
+              if (season !== 3) {
+                var sunflowerSpots = [W * 0.50, W * 0.73, W * 0.95];
+                sunflowerSpots.forEach(function(sfx, sfi) {
+                  if (sfx > hiveX - 30 && sfx < hiveX + hiveW + 30) return;
+                  var sfy = H * 0.76;
+                  var sfH = 48 + sfi * 6;
+                  var sfSw = Math.sin(t2 * 0.01 + sfi * 2) * 3;
+                  var sfTopY = sfy - sfH;
+                  // Thick green stem
+                  c.strokeStyle = '#166534'; c.lineWidth = 2.5;
+                  c.beginPath(); c.moveTo(sfx, sfy);
+                  c.quadraticCurveTo(sfx + sfSw * 0.6, sfy - sfH * 0.5, sfx + sfSw, sfTopY);
+                  c.stroke();
+                  // Leaves (2 per stem)
+                  c.fillStyle = '#22c55e';
+                  c.save(); c.translate(sfx + sfSw * 0.4, sfy - sfH * 0.4);
+                  c.beginPath(); c.ellipse(-5, 0, 6, 2.5, -0.4, 0, 6.28); c.fill();
+                  c.beginPath(); c.ellipse(5, -6, 5, 2, 0.4, 0, 6.28); c.fill();
+                  c.restore();
+                  // Petals (big yellow rays)
+                  var sfcX = sfx + sfSw, sfcY = sfTopY;
+                  c.save(); c.shadowColor = '#fbbf24'; c.shadowBlur = 4;
+                  for (var sfp = 0; sfp < 14; sfp++) {
+                    var sfpA = sfp * 0.449 + t2 * 0.001;
+                    c.fillStyle = season === 2 ? '#d97706' : '#facc15';
+                    c.beginPath();
+                    c.ellipse(sfcX + Math.cos(sfpA) * 9, sfcY + Math.sin(sfpA) * 9, 5, 2.4, sfpA, 0, 6.28);
+                    c.fill();
+                  }
+                  c.restore();
+                  // Dark brown center with seed texture
+                  c.fillStyle = '#7c2d12';
+                  c.beginPath(); c.arc(sfcX, sfcY, 7, 0, 6.28); c.fill();
+                  c.fillStyle = '#1c0a03';
+                  for (var sfd = 0; sfd < 12; sfd++) {
+                    var sfdA = sfd * 0.523;
+                    c.beginPath(); c.arc(sfcX + Math.cos(sfdA) * 4, sfcY + Math.sin(sfdA) * 4, 0.8, 0, 6.28); c.fill();
+                  }
+                });
+              }
+
               // ── Lavender bushes along the fence (major honeybee forage plant) ──
               if (season === 0 || season === 1 || season === 2) {
                 var lavSpots = [W * 0.18, W * 0.37, W * 0.65, W * 0.88];
@@ -1937,6 +2003,117 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 for (var wsp = 0; wsp < 5; wsp++) {
                   var wa = 2.3 + wsp * 0.42;
                   c.beginPath(); c.moveTo(webX, webY); c.lineTo(webX + Math.cos(wa) * 11, webY + Math.sin(wa) * 11); c.stroke();
+                }
+              }
+
+              // ── Beekeeper silhouette (rare cameo — walks toward hive every ~30s) ──
+              var bkCycle = (t2 % 1800) / 1800; // 0..1 over ~30s
+              if (season !== 3 && bkCycle > 0.2 && bkCycle < 0.7) {
+                var bkProgress = (bkCycle - 0.2) / 0.5; // 0..1 while visible
+                var bkX = W * 0.85 - bkProgress * (W * 0.85 - (hiveX + hiveW + 40));
+                var bkY = H * 0.765;
+                var bkStep = Math.sin(t2 * 0.15) * 1.2; // walking gait
+                c.save();
+                // Shadow
+                c.fillStyle = 'rgba(0,0,0,0.25)';
+                c.beginPath(); c.ellipse(bkX, bkY + 24, 7, 1.6, 0, 0, 6.28); c.fill();
+                // Body / bee suit (white)
+                c.fillStyle = '#f1f5f9';
+                c.fillRect(bkX - 4, bkY, 8, 14);
+                // Legs (walking animation)
+                c.fillStyle = '#1e293b';
+                c.fillRect(bkX - 3, bkY + 14, 2.5, 8 + bkStep);
+                c.fillRect(bkX + 0.5, bkY + 14, 2.5, 8 - bkStep);
+                // Arms (holding smoker)
+                c.fillStyle = '#f1f5f9';
+                c.fillRect(bkX - 6, bkY + 2, 2, 9);
+                c.fillRect(bkX + 4, bkY + 2, 2, 9);
+                // Veil hood (dome)
+                c.fillStyle = '#f8fafc';
+                c.beginPath(); c.arc(bkX, bkY - 3, 5, 0, 6.28); c.fill();
+                // Dark mesh (veil grid)
+                c.fillStyle = 'rgba(30,41,59,0.4)';
+                c.beginPath(); c.arc(bkX, bkY - 2, 4, 0, 6.28); c.fill();
+                // Smoker in hand (tiny)
+                c.fillStyle = '#44403c';
+                c.fillRect(bkX - 8, bkY + 8, 3, 6);
+                c.fillStyle = 'rgba(220,220,220,0.5)';
+                c.beginPath(); c.arc(bkX - 7, bkY + 5 + Math.sin(t2 * 0.1) * 0.5, 1.5, 0, 6.28); c.fill();
+                c.restore();
+              }
+
+              // ── Hornet predator (rare — flies fast across scene every ~45s, adds drama) ──
+              var hnCycle = (t2 % 2700) / 2700;
+              if (season !== 3 && hnCycle > 0.3 && hnCycle < 0.55) {
+                var hnProgress = (hnCycle - 0.3) / 0.25;
+                var hnX = W + 40 - hnProgress * (W + 80);
+                var hnY = H * 0.35 + Math.sin(hnProgress * 3) * 30;
+                var hnAng = Math.atan2(Math.cos(hnProgress * 3) * 3, -6);
+                c.save();
+                c.translate(hnX, hnY); c.rotate(hnAng);
+                // Glow (menacing yellow/black)
+                c.shadowColor = '#ea580c'; c.shadowBlur = 4;
+                // Body (black + orange segments)
+                c.fillStyle = '#1c1917';
+                c.beginPath(); c.ellipse(-3, 0, 3, 1.8, 0, 0, 6.28); c.fill();
+                c.fillStyle = '#ea580c';
+                c.beginPath(); c.ellipse(0, 0, 2.5, 1.8, 0, 0, 6.28); c.fill();
+                c.fillStyle = '#1c1917';
+                c.beginPath(); c.ellipse(3, 0, 3, 1.8, 0, 0, 6.28); c.fill();
+                // Long wings (bigger than bees, menacing)
+                c.globalAlpha = 0.4; c.fillStyle = '#e5e7eb';
+                c.beginPath(); c.ellipse(-1, -2 + Math.sin(t2 * 0.4) * 1.5, 7, 2.5, 0.2, 0, 6.28); c.fill();
+                c.beginPath(); c.ellipse(-1, -3 - Math.sin(t2 * 0.4) * 1.5, 6, 2, -0.2, 0, 6.28); c.fill();
+                c.globalAlpha = 1;
+                // Stinger
+                c.fillStyle = '#dc2626';
+                c.beginPath(); c.moveTo(6, 0); c.lineTo(9, -0.8); c.lineTo(9, 0.8); c.closePath(); c.fill();
+                c.restore();
+                // Warning "!!" tick above hornet
+                if (hnProgress > 0.2 && hnProgress < 0.5) {
+                  c.font = 'bold 12px system-ui';
+                  c.fillStyle = 'rgba(220,38,38,' + Math.min(1, (hnProgress - 0.2) * 5) * 0.9 + ')';
+                  c.textAlign = 'center';
+                  c.fillText('⚠', hnX, hnY - 12);
+                }
+              }
+
+              // ── Evening fireflies (dusk/night phase of _tod only) ──
+              if (season !== 3 && _tod < -0.15) {
+                c.save();
+                for (var ff = 0; ff < 12; ff++) {
+                  var ffBlink = Math.sin(t2 * 0.07 + ff * 1.3);
+                  if (ffBlink > 0.3) {
+                    var ffx = (ff * 83 + 41 + Math.sin(t2 * 0.012 + ff) * 25) % W;
+                    var ffy = H * 0.52 + Math.sin(t2 * 0.015 + ff * 2) * 40 + (ff % 3) * 20;
+                    c.shadowColor = '#fef08a'; c.shadowBlur = 8;
+                    c.fillStyle = 'rgba(250,204,21,' + Math.min(1, ffBlink * 1.5) + ')';
+                    c.beginPath(); c.arc(ffx, ffy, 1.3, 0, 6.28); c.fill();
+                  }
+                }
+                c.restore();
+              }
+
+              // ── Wind chime hanging from apple tree (when apple tree visible) ──
+              if (hiveX > 40 && season !== 3) {
+                var wcRootX = hiveX * 0.55 + 16;
+                var wcRootY = H * 0.76 - 48 - 4;
+                var wcSwing = Math.sin(t2 * 0.03) * 3;
+                // Hanging string
+                c.strokeStyle = 'rgba(100,100,100,0.5)'; c.lineWidth = 0.4;
+                c.beginPath(); c.moveTo(wcRootX, wcRootY); c.lineTo(wcRootX + wcSwing, wcRootY + 8); c.stroke();
+                // Top cap
+                c.fillStyle = '#a16207';
+                c.beginPath(); c.arc(wcRootX + wcSwing, wcRootY + 8, 2, 0, 6.28); c.fill();
+                // 4 chime rods
+                var chimeCols = ['#fbbf24', '#a78bfa', '#60a5fa', '#34d399'];
+                for (var wc = 0; wc < 4; wc++) {
+                  var wcX = wcRootX + wcSwing - 3 + wc * 2;
+                  var wcLen = 8 + (wc % 2) * 3;
+                  c.strokeStyle = 'rgba(100,100,100,0.4)'; c.lineWidth = 0.3;
+                  c.beginPath(); c.moveTo(wcRootX + wcSwing, wcRootY + 9); c.lineTo(wcX, wcRootY + 10); c.stroke();
+                  c.strokeStyle = chimeCols[wc]; c.lineWidth = 1.2;
+                  c.beginPath(); c.moveTo(wcX, wcRootY + 10); c.lineTo(wcX + wcSwing * 0.5, wcRootY + 10 + wcLen); c.stroke();
                 }
               }
 

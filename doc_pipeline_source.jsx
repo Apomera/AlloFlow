@@ -621,6 +621,17 @@ var createDocPipeline = function(deps) {
       // with `["`; when joined they render as a visible paragraph between real content.
       .replace(/<p[^>]*>\s*"\s*\]\s*\[\s*"\s*<\/p>/gi, '')
       .replace(/"\s*\]\s*\[\s*"/g, '')
+      // Chunk-object seam: `"}]{"fixed_html":"` (and variants `"}][{"`, `"}],{"`, whitespace/newlines
+      // in between) — happens when each chunk streamed its own `[{"fixed_html":"..."}]` wrapper and the
+      // concatenation leaves end-of-N's trailing `}]` next to start-of-N+1's opening `{"fixed_html":"`.
+      // Strip the whole seam; real content flanks it on both sides.
+      .replace(/<p[^>]*>\s*"\s*\}\s*\]\s*,?\s*\[?\s*,?\s*\{\s*"\s*(?:fixed_html|output_html|accessible_html|html|content)\s*"\s*:\s*"\s*<\/p>/gi, '')
+      .replace(/"\s*\}\s*\]\s*,?\s*\[?\s*,?\s*\{\s*"\s*(?:fixed_html|output_html|accessible_html|html|content)\s*"\s*:\s*"/gi, '')
+      // Paragraph that STARTS with a chunk-object seam followed by real content.
+      .replace(/(<p[^>]*>)\s*"\s*\}\s*\]\s*,?\s*\[?\s*,?\s*\{\s*"\s*(?:fixed_html|output_html|accessible_html|html|content)\s*"\s*:\s*"\s*(?=\S)/gi, '$1')
+      // Orphan `{"fixed_html":"` — when the preceding `"}]` was already stripped by the
+      // paragraph-fragment rule below but the opening object survived standalone.
+      .replace(/\{\s*"\s*(?:fixed_html|output_html|accessible_html)\s*"\s*:\s*"/gi, '')
       // Paragraph that STARTS with a trailing-wrapper fragment (`"]`, `"}]`, `" } ]`, …)
       // followed by real content — happens when chunk N+1's Gemini response opened with
       // `"content"]` or the JSON-object variant `"content"}]` and the leading-strip missed
@@ -632,6 +643,9 @@ var createDocPipeline = function(deps) {
       .replace(/\[\s*"\s*<\//g, '</')
       .replace(/^\s*\[\s*"\s*$/gm, '')
       .replace(/\[\s*"\s*(?=<)/g, '')
+      // Trailing orphan `"}]` at the very end of the document (or immediately before a block tag)
+      // — chunk N's closing wrapper that survived every paragraph-specific sweep above.
+      .replace(/"\s*\}\s*\](?=\s*(?:$|<(?:\/?(?:p|div|h[1-6]|section|article|main|header|footer|ul|ol|li|table|figure|aside|nav|blockquote|br|hr)\b|!--|\?)))/g, '')
       // Final sweep: decode literal \uXXXX escapes that survived the chunk-level
       // decoder at :3155 (which only runs when chunks start with `["`). This catches:
       //   - `\u2026` in image-placeholder descriptions rendering as literal text

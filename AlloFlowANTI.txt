@@ -43931,7 +43931,13 @@ Return only the corrected version of this exact text:`;
                                         const _fullData = (typeof rawData === 'string') ? rawData : String(rawData || '');
                                         // Peel trailing "Source Text References" and "--- ENGLISH TRANSLATION ---" blocks
                                         // so each renders in its own dedicated styled panel below the main body.
-                                        const { body: _bodyNoRefs, references: _references } = splitReferencesFromBody(_fullData);
+                                        const { body: _bodyNoRefs, references: _referencesFromContent } = splitReferencesFromBody(_fullData);
+                                        // Fallback: the simplified/adapted text often inherits source-citation numbers
+                                        // (e.g. "⁽¹⁾") but Gemini frequently omits the references list itself. When that
+                                        // happens, pull the references from the original inputText so citations stay
+                                        // resolvable. Source citations are preserved verbatim by the simplify prompt, so
+                                        // the source's reference list still matches the inline numbers.
+                                        const _references = _referencesFromContent || (inputText ? splitReferencesFromBody(inputText).references : '');
                                         const _bilingualIdx = _bodyNoRefs.indexOf('--- ENGLISH TRANSLATION ---');
                                         const _hasBilingual = _bilingualIdx !== -1;
                                         const safeData = _hasBilingual ? _bodyNoRefs.substring(0, _bilingualIdx).trim() : _bodyNoRefs;
