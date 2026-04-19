@@ -1682,6 +1682,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               }
               c.globalAlpha = 1;
 
+              // ── Red barn next to the farmhouse (classic rural pairing) ──
+              if (season !== 3) {
+                var bnX = W * 0.80, bnY = H * 0.70;
+                // Main body (weathered red)
+                c.fillStyle = 'rgba(140,40,30,0.6)';
+                c.fillRect(bnX - 10, bnY, 22, 12);
+                // Gambrel roof (two-slope silhouette)
+                c.beginPath();
+                c.moveTo(bnX - 11, bnY);
+                c.lineTo(bnX - 8, bnY - 5);
+                c.lineTo(bnX, bnY - 9);
+                c.lineTo(bnX + 8, bnY - 5);
+                c.lineTo(bnX + 13, bnY);
+                c.closePath(); c.fill();
+                // Barn doors (dark)
+                c.fillStyle = 'rgba(60,25,15,0.7)';
+                c.fillRect(bnX - 3, bnY + 3, 6, 9);
+                // White X on door (iconic)
+                c.strokeStyle = 'rgba(240,240,230,0.6)'; c.lineWidth = 0.6;
+                c.beginPath(); c.moveTo(bnX - 3, bnY + 3); c.lineTo(bnX + 3, bnY + 12); c.stroke();
+                c.beginPath(); c.moveTo(bnX + 3, bnY + 3); c.lineTo(bnX - 3, bnY + 12); c.stroke();
+                // Hayloft window
+                c.fillStyle = 'rgba(60,30,15,0.75)';
+                c.fillRect(bnX - 2, bnY - 4, 4, 3);
+              }
+
               // ── Distant farmhouse silhouette (beyond the mountains — adds rural scale) ──
               if (season !== 3) {
                 var fhX = W * 0.72, fhY = H * 0.68;
@@ -1838,6 +1864,55 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              // ── Autumn: mushroom cluster at apple tree base ──
+              if (season === 2 && hiveX > 40) {
+                var mshBase = hiveX * 0.55;
+                var mshY = H * 0.765;
+                // Cluster of 4 toadstools
+                var mshSpots = [[-8, 0], [-3, -1], [2, 1], [7, -2]];
+                mshSpots.forEach(function(ms, mi) {
+                  var msX = mshBase + ms[0], msY = mshY + ms[1];
+                  var msR = 3 + (mi % 2);
+                  // Stem
+                  c.fillStyle = '#fef3c7';
+                  c.fillRect(msX - 0.9, msY - 4, 1.8, 4);
+                  // Cap (red with white spots)
+                  c.fillStyle = '#b91c1c';
+                  c.beginPath(); c.ellipse(msX, msY - 4, msR, msR * 0.55, 0, Math.PI, 0); c.fill();
+                  // Highlight
+                  c.fillStyle = '#dc2626';
+                  c.beginPath(); c.ellipse(msX - msR * 0.3, msY - 5, msR * 0.5, msR * 0.3, 0, Math.PI, 0); c.fill();
+                  // White spots
+                  c.fillStyle = '#f8fafc';
+                  c.beginPath(); c.arc(msX - 0.8, msY - 4.5, 0.5, 0, 6.28); c.fill();
+                  c.beginPath(); c.arc(msX + 0.9, msY - 4, 0.4, 0, 6.28); c.fill();
+                });
+              }
+
+              // ── Autumn: pumpkin near the fence (right side, close to viewer) ──
+              if (season === 2) {
+                var pmX = W * 0.89, pmY = H * 0.80;
+                // Pumpkin body (segmented orange)
+                c.fillStyle = '#c2410c';
+                c.beginPath(); c.ellipse(pmX, pmY, 10, 7, 0, 0, 6.28); c.fill();
+                // Segment lines
+                c.strokeStyle = '#7c2d12'; c.lineWidth = 0.6;
+                for (var pms = 0; pms < 3; pms++) {
+                  var pmAng = -0.5 + pms * 0.5;
+                  c.beginPath(); c.moveTo(pmX + Math.sin(pmAng) * 8, pmY - 5);
+                  c.lineTo(pmX + Math.sin(pmAng) * 10, pmY + 5); c.stroke();
+                }
+                // Highlight
+                c.fillStyle = '#ea580c';
+                c.beginPath(); c.ellipse(pmX - 2.5, pmY - 1.5, 2.5, 4, -0.3, 0, 6.28); c.fill();
+                // Stem
+                c.fillStyle = '#14532d';
+                c.fillRect(pmX - 1, pmY - 9, 2.5, 3);
+                // Leaf curl
+                c.fillStyle = '#16a34a';
+                c.beginPath(); c.ellipse(pmX + 2.5, pmY - 8, 3, 1.2, 0.5, 0, 6.28); c.fill();
+              }
+
               // ── Autumn falling leaves ──
               if (season === 2) {
                 var leafColors = ['#c2410c', '#ea580c', '#eab308', '#a16207', '#7c2d12'];
@@ -1854,6 +1929,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              // ── Spring rainbow arc (appears briefly AFTER spring rain fades — poetic touch) ──
+              if (season === 0) {
+                var rbPhase = Math.sin(t2 * 0.0009 - 1.5); // offset from rain phase
+                if (rbPhase > 0.3) {
+                  c.save();
+                  var rbAlpha = (rbPhase - 0.3) * 0.8;
+                  var rbX = W * 0.35, rbY = H * 0.78;
+                  var rbCols = ['#dc2626', '#ea580c', '#facc15', '#22c55e', '#3b82f6', '#7c3aed'];
+                  c.lineWidth = 5;
+                  for (var rb = 0; rb < rbCols.length; rb++) {
+                    c.strokeStyle = rbCols[rb].replace(')', ',' + rbAlpha * 0.55 + ')').replace('rgb', 'rgba');
+                    // Convert hex to rgba manually for alpha
+                    var rbR = parseInt(rbCols[rb].slice(1, 3), 16);
+                    var rbG = parseInt(rbCols[rb].slice(3, 5), 16);
+                    var rbB = parseInt(rbCols[rb].slice(5, 7), 16);
+                    c.strokeStyle = 'rgba(' + rbR + ',' + rbG + ',' + rbB + ',' + (rbAlpha * 0.55) + ')';
+                    c.beginPath(); c.arc(rbX, rbY, 120 + rb * 5, Math.PI, 0); c.stroke();
+                  }
+                  c.restore();
+                }
+              }
+
               // ── Spring light rain (season 0, periodic) ──
               if (season === 0 && Math.sin(t2 * 0.0009) > 0.6) {
                 c.strokeStyle = 'rgba(180,210,255,0.35)'; c.lineWidth = 0.8;
@@ -1862,6 +1959,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   var rdy = (rd * 23 + t2 * 8) % (H * 0.76);
                   c.beginPath(); c.moveTo(rdx, rdy); c.lineTo(rdx - 2, rdy + 5); c.stroke();
                 }
+              }
+
+              // ── Dragonfly hovering near birdbath (eats mosquitoes, loves water sources) ──
+              if ((season === 0 || season === 1) && Math.sin(t2 * 0.01) > 0) {
+                var dfX = W * 0.42 + Math.sin(t2 * 0.015) * 30;
+                var dfY = H * 0.66 + Math.cos(t2 * 0.012) * 10;
+                var dfAng = Math.atan2(Math.cos(t2 * 0.012) * -0.12, Math.cos(t2 * 0.015) * 0.45);
+                c.save();
+                c.translate(dfX, dfY); c.rotate(dfAng);
+                // Long iridescent body (teal/blue)
+                c.fillStyle = '#0e7490';
+                c.fillRect(-8, -0.6, 16, 1.2);
+                c.fillStyle = '#0891b2';
+                c.fillRect(-6, -0.4, 4, 0.8);
+                c.fillStyle = '#164e63';
+                c.fillRect(2, -0.3, 6, 0.6);
+                // Head with big eyes
+                c.fillStyle = '#0e7490';
+                c.beginPath(); c.arc(-8, 0, 1.8, 0, 6.28); c.fill();
+                c.fillStyle = '#1e293b';
+                c.beginPath(); c.arc(-8.5, -0.5, 0.7, 0, 6.28); c.fill();
+                c.beginPath(); c.arc(-8.5, 0.5, 0.7, 0, 6.28); c.fill();
+                // 4 translucent wings (iridescent shimmer)
+                c.fillStyle = 'rgba(180,230,240,0.35)';
+                var dfBeat = Math.sin(t2 * 0.6) * 0.3;
+                c.beginPath(); c.ellipse(-2, -3 + dfBeat, 6, 2, 0, 0, 6.28); c.fill();
+                c.beginPath(); c.ellipse(-2, 3 - dfBeat, 6, 2, 0, 0, 6.28); c.fill();
+                c.beginPath(); c.ellipse(2, -2.5 + dfBeat, 5, 1.6, 0, 0, 6.28); c.fill();
+                c.beginPath(); c.ellipse(2, 2.5 - dfBeat, 5, 1.6, 0, 0, 6.28); c.fill();
+                c.restore();
               }
 
               // ── Birdbath / bee water source (bees need ~1 cup of water per day) ──
@@ -2531,6 +2658,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.globalAlpha = 0.6; c.fillStyle = '#fbbf24';
                 c.beginPath(); c.arc(wagX + Math.sin(wagT * 2) * 6, wagY + Math.sin(wagT * 4) * 4, 2, 0, 6.28); c.fill();
                 c.restore();
+              }
+
+              // ── Choreographed waggle-dance bee on the landing board (scientifically accurate figure-8) ──
+              if (season !== 3) {
+                var dnT = t2 * 0.08;
+                var dnCenterX = hiveX + hiveW * 0.5;
+                var dnCenterY = hiveY + hiveH + 3; // on the landing board
+                var dnPhase = dnT % (Math.PI * 2);
+                // Figure-8 parametric: lemniscate of Bernoulli
+                var dnScale = 11;
+                var dnX = dnCenterX + dnScale * Math.cos(dnPhase) / (1 + Math.sin(dnPhase) * Math.sin(dnPhase));
+                var dnY = dnCenterY + dnScale * 0.35 * Math.sin(dnPhase) * Math.cos(dnPhase) / (1 + Math.sin(dnPhase) * Math.sin(dnPhase));
+                var dnWag = Math.sin(t2 * 0.9) * 1.2; // waggle on the straight run
+                var inStraightRun = Math.abs(Math.sin(dnPhase)) < 0.3;
+                // Direction arrow: sun-relative angle (show direction to flowers)
+                if (inStraightRun) {
+                  // Extra emphasis during waggle run
+                  c.save(); c.shadowColor = '#fbbf24'; c.shadowBlur = 4;
+                  c.strokeStyle = 'rgba(251,191,36,0.45)'; c.lineWidth = 2;
+                  c.beginPath();
+                  c.moveTo(dnCenterX - dnScale, dnCenterY);
+                  c.lineTo(dnCenterX + dnScale, dnCenterY); c.stroke();
+                  c.restore();
+                }
+                // The dancing bee body
+                c.save();
+                c.shadowColor = '#fb923c'; c.shadowBlur = 3;
+                c.fillStyle = '#fbbf24';
+                c.beginPath(); c.ellipse(dnX + (inStraightRun ? dnWag : 0), dnY, 3, 1.9, 0, 0, 6.28); c.fill();
+                // Stripes
+                c.fillStyle = '#292524';
+                c.fillRect(dnX - 0.5 + (inStraightRun ? dnWag : 0), dnY - 1.8, 0.8, 3.6);
+                c.fillRect(dnX + 1 + (inStraightRun ? dnWag : 0), dnY - 1.5, 0.6, 3);
+                // Wings blur (indicating fast movement)
+                c.globalAlpha = 0.4; c.fillStyle = '#e0f2fe';
+                c.beginPath(); c.ellipse(dnX + (inStraightRun ? dnWag : 0), dnY - 2, 3.5, 1.2, 0, 0, 6.28); c.fill();
+                c.restore();
+                // Tiny "followers" watching (2 bees near the dancer)
+                c.fillStyle = 'rgba(251,191,36,0.7)';
+                c.beginPath(); c.arc(dnCenterX - dnScale - 2, dnCenterY, 1.3, 0, 6.28); c.fill();
+                c.beginPath(); c.arc(dnCenterX + dnScale + 2, dnCenterY + 1, 1.3, 0, 6.28); c.fill();
               }
 
               // ── Pollen trail from flowers to hive (pollination feedback) ──
