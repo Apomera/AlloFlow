@@ -8120,27 +8120,27 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ec9e56e/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ec9e56e/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ec9e56e/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ec9e56e/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ec9e56e/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ec9e56e/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ec9e56e/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ec9e56e/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ec9e56e/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ec9e56e/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ec9e56e/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ec9e56e/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ec9e56e/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ec9e56e/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ec9e56e/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ec9e56e/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ec9e56e/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ec9e56e/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ec9e56e/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ec9e56e/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ec9e56e/content_engine_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9e896ca/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9e896ca/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9e896ca/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9e896ca/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9e896ca/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9e896ca/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9e896ca/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9e896ca/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9e896ca/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9e896ca/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9e896ca/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9e896ca/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9e896ca/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9e896ca/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9e896ca/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9e896ca/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9e896ca/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9e896ca/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9e896ca/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9e896ca/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9e896ca/content_engine_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -8156,7 +8156,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ec9e56e/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9e896ca/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -29034,9 +29034,13 @@ Return ONLY JSON.`;
             try {
                 const deepResult = await performDeepVerification(textToProcess);
                 verificationContext = deepResult.text;
-                collectedSources = filterEducationalSources(
-                  (deepResult.sources || []).map(s => ({ web: { uri: s.uri, title: s.title } }))
-                ).map(c => ({ uri: c.web.uri, title: c.web.title }));
+                // Keep ALL sources here (not just the educational ones). The verification
+                // text uses the FULL-list indices as `[N]` markers, and pre-filtering broke
+                // that mapping — Gemini's findings referenced "Source 9" but the displayed
+                // sources list only had 5 entries. Education filtering now happens during
+                // the rehydrate step below so rejected sources are dropped from BOTH the
+                // markers in the text AND the displayed list, staying in sync.
+                collectedSources = (deepResult.sources || []).map(s => ({ uri: s.uri, title: s.title }));
                 if (!verificationContext || verificationContext.length < 10) {
                     verificationContext = "Verification attempted but no specific data returned.";
                     isSearchActive = false;
@@ -29170,24 +29174,44 @@ Return ONLY JSON.`;
                  ...(analysisData.accuracy.discrepancies || []),
                  ...(analysisData.accuracy.verifiedFacts || [])
              ].join(" ");
+             // Normalize "[Source N]" / "[Source 1, Source 2]" → "[1] [2]" so the marker
+             // matcher below works regardless of which emission style Gemini chose. The
+             // previous implementation only matched bare "[N]" which silently dropped every
+             // reference when Gemini emitted the verbose "[Source N]" form.
+             const normalizedFindings = combinedFindings
+                 .replace(/\[Source\s+(\d+)(?:\s*,\s*Source\s+(\d+))*\]/gi, (match) => {
+                     const nums = match.match(/\d+/g) || [];
+                     return nums.map(n => `[${n}]`).join(' ');
+                 });
              // Expand "[1, 2, 6]" → "[1] [2] [6]" so per-source [N] substring matching works
-             const expandedFindings = combinedFindings.replace(
+             const expandedFindings = normalizedFindings.replace(
                  /\[(\d+(?:\s*,\s*\d+)+)\]/g,
                  (match, nums) => nums.split(',').map(n => `[${n.trim()}]`).join(' ')
              );
+             // Build educational-source whitelist so rejected sources (YouTube, social, etc.)
+             // get their markers stripped from the findings text AND dropped from the display list.
+             const _eduWrapped = filterEducationalSources(
+                 collectedSources.map(s => ({ web: { uri: s.uri, title: s.title } }))
+             );
+             const _eduUriSet = new Set(_eduWrapped.map(c => c.web.uri));
              const usedIndices = new Set();
              const finalSources = [];
              const oldToNewIndexMap = new Map();
+             const rejectedIndices = new Set(); // educationally-filtered indices (1-based)
              let newCounter = 1;
              collectedSources.forEach((source, idx) => {
                  const originalGlobalIndex = idx + 1;
                  const marker = `[${originalGlobalIndex}]`;
-                 if (expandedFindings.includes(marker)) {
-                     usedIndices.add(originalGlobalIndex);
-                     finalSources.push({ ...source, newIndex: newCounter });
-                     oldToNewIndexMap.set(originalGlobalIndex, newCounter);
-                     newCounter++;
+                 if (!expandedFindings.includes(marker)) return; // unreferenced — skip
+                 if (!_eduUriSet.has(source.uri)) {
+                     // Referenced but non-educational → strip the marker from the findings.
+                     rejectedIndices.add(originalGlobalIndex);
+                     return;
                  }
+                 usedIndices.add(originalGlobalIndex);
+                 finalSources.push({ ...source, newIndex: newCounter });
+                 oldToNewIndexMap.set(originalGlobalIndex, newCounter);
+                 newCounter++;
              });
              let citationText = "";
              if (finalSources.length > 0) {
@@ -29206,16 +29230,30 @@ Return ONLY JSON.`;
              const rehydrateList = (list) => {
                  if (!Array.isArray(list)) return [];
                  return list.map(itemText => {
-                     // Pre-expand "[1, 2, 6]" → "[1] [2] [6]" so per-source matching works
+                     // First normalize "[Source N]" / "[Source 1, Source 2]" → "[1] [2]".
                      let processedText = itemText.replace(
+                         /\[Source\s+(\d+)(?:\s*,\s*Source\s+(\d+))*\]/gi,
+                         (match) => {
+                             const nums = match.match(/\d+/g) || [];
+                             return nums.map(n => `[${n}]`).join(' ');
+                         }
+                     );
+                     // Then expand "[1, 2, 6]" → "[1] [2] [6]".
+                     processedText = processedText.replace(
                          /\[(\d+(?:\s*,\s*\d+)+)\]/g,
                          (match, nums) => nums.split(',').map(n => `[${n.trim()}]`).join(' ')
                      );
+                     // Strip markers for rejected (non-educational) sources — leaves the fact text
+                     // intact with the bracket gone so users don't see dangling "[7]" with no source.
+                     rejectedIndices.forEach(rej => {
+                         const marker = `[${rej}]`;
+                         processedText = processedText.split(marker).join('').replace(/\s+([.,;:!?])/g, '$1').replace(/\s{2,}/g, ' ');
+                     });
                      collectedSources.forEach((source, idx) => {
                          const originalGlobalIndex = idx + 1;
                          const marker = `[${originalGlobalIndex}]`;
-                         if (processedText.includes(marker) && source.uri) {
-                             const newNum = oldToNewIndexMap.get(originalGlobalIndex) || originalGlobalIndex;
+                         if (processedText.includes(marker) && source.uri && oldToNewIndexMap.has(originalGlobalIndex)) {
+                             const newNum = oldToNewIndexMap.get(originalGlobalIndex);
                              const supMap = { '0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹' };
                              const supNum = String(newNum).split('').map(d => supMap[d] || d).join('');
                              const interactiveMarker = `[⁽${supNum}⁾](${source.uri})`;
@@ -57803,7 +57841,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   aria-label="Insert table" title="Insert accessible table">📊</button>
               </div>
               <iframe ref={pdfPreviewRef} title="Accessible document preview" className="flex-1 w-full border-0"
-                sandbox="allow-same-origin allow-scripts allow-forms"
+                sandbox="allow-same-origin allow-scripts allow-forms allow-modals"
                 onLoad={() => {
                   const iframe = pdfPreviewRef.current;
                   const doc = iframe?.contentDocument;
@@ -57812,7 +57850,10 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     doc.body.spellcheck = true;
                     // Expose extracted images to the iframe so the placeholder "Pick extracted"
                     // button can offer them without a cross-window postMessage round-trip.
-                    try { if (cw) cw.__alloflowExtractedImages = extractedImagesList || []; } catch(_) {}
+                    try {
+                      if (cw) cw.__alloflowExtractedImages = extractedImagesList || [];
+                      console.info('[AlloFlow] Pushed ' + (extractedImagesList || []).length + ' extracted images into preview iframe');
+                    } catch(_) {}
                     // Track which image the user most recently clicked, so "Edit Selected Image" knows the target.
                     doc.addEventListener('click', function(e) {
                       const target = e.target;
