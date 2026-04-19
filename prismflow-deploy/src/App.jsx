@@ -4697,18 +4697,36 @@ const generateBilingualText = async (basePrompt, targetLang, callGeminiFn) => {
         .replace(/^```\s*/, '')
         .replace(/```\s*$/, '')
         .trim();
+    // Explicit URL preservation rules — Gemini has a persistent quirk where it inserts spaces
+    // into URLs (treating `.com` as a sentence boundary) and occasionally drops trailing chars
+    // on the last citation when the input text is wrapped in surrounding quotes.
+    const urlPreservationRules = `
+URL PRESERVATION (CRITICAL — applies to every citation link [⁽N⁾](url)):
+- Reproduce every URL character-for-character from the source. No changes of any kind.
+- Do NOT insert spaces inside URLs (e.g. never "webmd. com" — it must stay "webmd.com").
+- Do NOT drop the "https://" or "http://" prefix.
+- Do NOT truncate URLs. Every citation link must have its closing ")" on the same line as its opening "(".
+- The opening superscript "⁽" and closing "⁾" on the citation number must both be preserved.
+`.trim();
     if (!targetLang || targetLang === 'English') {
-        const raw = await callGeminiFn(basePrompt);
+        const raw = await callGeminiFn(basePrompt + '\n\n' + urlPreservationRules);
         return stripFences(raw);
     }
-    const targetPrompt = `${basePrompt}\nCRITICAL: Return ONLY the ${targetLang} text. Do NOT provide an English translation yet.`;
+    const targetPrompt = `${basePrompt}\n\n${urlPreservationRules}\n\nCRITICAL: Return ONLY the ${targetLang} text. Do NOT provide an English translation yet.`;
     const targetResult = stripFences(await callGeminiFn(targetPrompt));
+    // Use triple-pipe fences instead of "..." wrapping so trailing ")" on the last citation
+    // doesn't butt up against a closing quote (which Gemini sometimes eats).
     const translationPrompt = `
-      Translate the following ${targetLang} text into English.
-      Maintain the formatting, tone, emojis, and citation markers exactly.
-      Return ONLY the English translation.
-      Text to Translate:
-      "${targetResult}"
+Translate the ${targetLang} text between the fences into English.
+Maintain the formatting, tone, emojis, and citation markers exactly.
+
+${urlPreservationRules}
+
+Return ONLY the English translation — no preamble, no fences in your output.
+
+|||BEGIN ${targetLang.toUpperCase()}|||
+${targetResult}
+|||END ${targetLang.toUpperCase()}|||
     `;
     const englishResult = stripFences(await callGeminiFn(translationPrompt));
     return `${targetResult}\n\n--- ENGLISH TRANSLATION ---\n\n${englishResult}`;
@@ -5057,26 +5075,40 @@ const AdventureAmbience = React.memo((props) => {
 // the simplified text. Mirrors repairSourceMarkdown in content_engine_source.jsx.
 const sanitizeTruncatedCitations = (text) => {
     if (!text) return text;
-    // Allow the opening superscript paren ⁽ to be optional — Gemini systematically drops it
-    // on the last citation of the simplified output, producing things like [¹⁴⁾](url-trunc.
-    // Rule 1: Remove truncated citation link at end of line (no closing paren): [⁽¹⁴⁾](https://partial.url
-    text = text.replace(/\[⁽?[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\([^)\s\n]*$/gm, '');
-    // Rule 2: Same but at end of entire text.
-    text = text.replace(/\[⁽?[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\([^)]{0,200}$/, '');
-    // Rule 3: Fix citation links whose closing paren got lost before whitespace: [⁽¹⁾](url  → [⁽¹⁾](url)
+    // REPAIR RULES first (preferred — fix the content). STRIP RULES last (only after repair fails).
+    // Rule R1: Normalize whitespace INSIDE citation URLs. Gemini quirk: inserts spaces at URL dots
+    //   like "webmd. com/articles/284378". Strip any whitespace between "(" and the closing ")".
+    //   Requires a closing ")" to be present so we don't over-reach on truncated ones.
+    text = text.replace(/(\[⁽?[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\()([^)]+)(\))/g, (match, open, url, close) => {
+        return open + url.replace(/\s+/g, '') + close;
+    });
+    // Rule R2: Also normalize whitespace in bibliography list links: "1. [Title](broken url)".
+    //   Only the URL portion has whitespace stripped — the title is left alone.
+    text = text.replace(/(\d+\.\s*\[[^\]]+\]\()([^)]+)(\))/g, (match, open, url, close) => {
+        if (!/^https?:\/\//.test(url.trim()) && !url.includes(' ')) return match;
+        return open + url.replace(/\s+/g, '') + close;
+    });
+    // Rule R3: Restore missing "https://" prefix on citation URLs (Gemini sometimes drops protocol).
+    //   Heuristic: if URL inside a citation link starts with a hostname-looking token, prepend https://.
+    text = text.replace(/(\[⁽?[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\()(?!https?:\/\/|mailto:|#|\/)([a-z0-9][a-z0-9\-.]+\.[a-z]{2,}[^)]*)(\))/gi, '$1https://$2$3');
+    // Rule R4: Restore missing ⁽ in otherwise-complete citations: [N⁾](url) → [⁽N⁾](url)
+    text = text.replace(/\[([⁰¹²³⁴⁵⁶⁷⁸⁹]+)⁾\]\(([^)]+)\)/g, '[⁽$1⁾]($2)');
+    // Rule R5: Add missing closing ")" before whitespace: [⁽¹⁾](url  → [⁽¹⁾](url)
     text = text.replace(/(\[⁽?[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\(https?:\/\/[^\s)]+)(\s)/g, '$1)$2');
-    // Rule 4: Remove orphan superscript citations at end of line with no []() wrapper.
+    // STRIP RULES — only for things that couldn't be repaired:
+    // Rule S1: Remove truncated citation link at end of line (no closing paren found): [⁽¹⁴⁾](https://partial.url
+    text = text.replace(/\[⁽?[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\([^)\s\n]*$/gm, '');
+    // Rule S2: Same at end of entire text.
+    text = text.replace(/\[⁽?[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\([^)]{0,200}$/, '');
+    // Rule S3: Remove orphan superscript citations at end of line with no []() wrapper.
     text = text.replace(/\s*\[?⁽?[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]?\s*$/gm, (match, offset) => {
         const before = text.substring(Math.max(0, offset - 5), offset);
         if (before.includes('](')) return match;
         return '';
     });
-    // Rule 5: Remove stray lone # (orphaned heading markers from truncation).
+    // Rule S4: Remove stray lone # (orphaned heading markers from truncation).
     text = text.replace(/\n\s*#\s*$/gm, '');
     text = text.replace(/\n\s*#\s*\n/g, '\n');
-    // Rule 6: Restore missing ⁽ in otherwise-complete citations: [N⁾](url) → [⁽N⁾](url)
-    // Guarded by requiring the full [...]()) shape to avoid eating other bracketed content.
-    text = text.replace(/\[([⁰¹²³⁴⁵⁶⁷⁸⁹]+)⁾\]\(([^)]+)\)/g, '[⁽$1⁾]($2)');
     return text;
 };
 const normalizeCitationPlacement = (text) => {
@@ -8088,27 +8120,27 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0d32b0/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0d32b0/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0d32b0/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0d32b0/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0d32b0/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0d32b0/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0d32b0/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0d32b0/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0d32b0/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0d32b0/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0d32b0/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0d32b0/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0d32b0/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0d32b0/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0d32b0/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0d32b0/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0d32b0/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0d32b0/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0d32b0/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0d32b0/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0d32b0/content_engine_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8f98e06/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8f98e06/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8f98e06/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8f98e06/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8f98e06/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8f98e06/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8f98e06/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8f98e06/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8f98e06/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8f98e06/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8f98e06/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8f98e06/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8f98e06/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8f98e06/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8f98e06/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8f98e06/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8f98e06/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8f98e06/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8f98e06/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8f98e06/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8f98e06/content_engine_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -8124,7 +8156,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0d32b0/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8f98e06/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -15811,7 +15843,10 @@ Return only the corrected version of this exact text:`;
     return <div className={`leading-relaxed ${className}`}>{renderFormattedText(str)}</div>;
   });
   // Peel a trailing "Source Text References" block (or translated/variant heading) off the body.
-  const REFERENCES_HEADER_RE = /\n+#{1,4}\s*(?:Source\s+Text\s+References|Sources\s+du\s+texte[^\n]*|Accuracy\s+Check\s+References|Verified\s+Sources|Sources?\s*(?:\/[^\n]*)?)\s*\n/i;
+  // Matches trailing references heading. Covers English, French (both "Sources du texte" and
+  // "Références du texte source"), Spanish "Referencias", German "Quellen", and generic
+  // "References"/"Sources" with or without slash-separated bilingual labels.
+  const REFERENCES_HEADER_RE = /\n+#{1,4}\s*(?:Source\s+Text\s+References|Sources?\s+du\s+texte[^\n]*|R[ée]f[ée]rences?\s+du\s+texte[^\n]*|R[ée]f[ée]rences?[^\n]*|Accuracy\s+Check\s+References|Verified\s+Sources|Referencias[^\n]*|Quellen[^\n]*|Fuentes[^\n]*|Sources?\s*(?:\/[^\n]*)?|References?[^\n]*)\s*\n/i;
   const splitReferencesFromBody = (text) => {
       if (!text) return { body: text || '', references: '' };
       const m = text.match(REFERENCES_HEADER_RE);
@@ -15821,9 +15856,17 @@ Return only the corrected version of this exact text:`;
   const parseReferenceItems = (referencesText) => {
       if (!referencesText) return [];
       const items = [];
-      const itemRe = /^\s*(\d+)\.\s*\[([^\]]+)\]\(([^)]+)\)/gm;
+      // Primary pattern: "1. [Title](url)" anchored to line start.
+      const primaryRe = /^\s*(\d+)\.\s*\[([^\]]+)\]\(([^)\s]+)\)?/gm;
       let m;
-      while ((m = itemRe.exec(referencesText)) !== null) {
+      while ((m = primaryRe.exec(referencesText)) !== null) {
+          items.push({ num: m[1], title: m[2].trim(), url: m[3].trim() });
+      }
+      if (items.length > 0) return items;
+      // Fallback: references rendered inline on one wrapped line (common when Gemini collapses
+      // the list or when a markdown renderer has already flattened it). Match anywhere.
+      const inlineRe = /(\d+)\.\s*\[([^\]]+)\]\(([^)\s]+)\)?/g;
+      while ((m = inlineRe.exec(referencesText)) !== null) {
           items.push({ num: m[1], title: m[2].trim(), url: m[3].trim() });
       }
       return items;
@@ -28581,7 +28624,7 @@ Return ONLY JSON.`;
               ${dokLevel ? `- Target Webb's Depth of Knowledge (DOK): ${dokLevel}` : ''}
               ${dialectInstruction}
               ${differentiationContext}
-              Text: "${textToProcess}"
+              Text: "${textWithoutRefs}"
             `;
             content = await generateBilingualText(prompt, effectiveLanguage, callGemini);
             const currentWordCount = countWords(content);
