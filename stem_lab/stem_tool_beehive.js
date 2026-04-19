@@ -2998,32 +2998,95 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           console.log('[Beehive DEBUG EL] h("canvas") result:',
             _testEl ? ('{$$typeof: ' + String(_testEl.$$typeof) + ', type: ' + _testEl.type + ', has props: ' + !!_testEl.props + '}') : String(_testEl));
         }
-        // ═══ BISECT: return ONLY outer div + marker + canvas container ═══
-        // If canvas mounts → the bug is in the REST of the original children.
-        // If canvas still doesn't mount → the bug is in one of these early elements.
-        var _bisectRetval = h('div', { className: 'space-y-4' },
-          h('div', { id: 'beehive-top', style: { background: 'magenta', color: 'white', padding: '16px', fontSize: '18px', fontWeight: 'bold', textAlign: 'center' } },
-            '🟣 BISECT TOP — plugin render output is committing ' + Date.now()),
-          // The beekeeper canvas container (EXACT original, no modifications)
-          viewMode === 'beekeeper' && h('div', {
+        // ═══ ITERATIVE BISECT — runtime child-by-child error logger ═══
+        // Rebuild each top-level child of the ORIGINAL tree inside a try/catch.
+        // Any child that throws or returns an invalid value is logged with its label.
+        // The canvas container is always present so it renders regardless of failures.
+        var _children = [];
+        var _mk = function(label, fn) {
+          try {
+            var el = fn();
+            // Validate
+            function _valid(x) {
+              if (x === null || x === false || x === true || x === undefined) return true;
+              if (typeof x === 'string' || typeof x === 'number') return true;
+              if (Array.isArray(x)) return x.every(_valid);
+              if (x && typeof x === 'object' && typeof x.$$typeof !== 'undefined') return true;
+              return false;
+            }
+            if (!_valid(el)) {
+              console.error('[Beehive BISECT INVALID]', label, '→ type=' + typeof el, el);
+              return;
+            }
+            _children.push(el);
+          } catch(e) {
+            console.error('[Beehive BISECT THROW]', label, '→', e && e.message ? e.message : e, e && e.stack ? e.stack.split('\n').slice(0, 3).join(' | ') : '');
+          }
+        };
+        // Canvas container — always included so visible
+        _mk('canvas-container', function() {
+          return viewMode === 'beekeeper' && h('div', {
             id: 'beehive-canvas-container',
-            style: { height: '300px', border: '4px dashed red', position: 'relative', background: 'yellow' }
+            style: { height: '300px', border: '4px dashed red', position: 'relative' }
           },
             h('canvas', {
               ref: _cvRef,
               role: 'img',
               'aria-label': 'Animated beehive simulation. Workers: ' + workers + ', Honey: ' + honey + ' lbs, Season: ' + seasonNames[season],
-              style: { width: '100%', height: '100%', display: 'block', background: 'lime' }
+              style: { width: '100%', height: '100%', display: 'block' }
             })
-          )
-        );
+          );
+        });
+        // Top banner for diagnostic visibility
+        _mk('top-banner', function() {
+          return h('div', { style: { background: 'magenta', color: 'white', padding: '16px', fontSize: '16px', fontWeight: 'bold', textAlign: 'center' } },
+            '🟣 ITERATIVE BISECT — canvas works; restoring children one block at a time');
+        });
+        // Header
+        _mk('header', function() {
+          return h('div', { className: 'flex items-center justify-between' },
+            h('div', { className: 'flex items-center gap-3' },
+              h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 rounded-lg transition-colors ' + (dk ? 'hover:bg-slate-700' : 'hover:bg-slate-100'), 'aria-label': 'Back' }, h(ArrowLeft, { size: 18, className: dk ? 'text-slate-200' : 'text-slate-600' })),
+              h('div', null,
+                h('h3', { className: 'text-lg font-bold ' + (dk ? 'text-slate-100' : 'text-slate-800') }, '🐝 Beehive Colony Simulator'),
+                h('p', { className: 'text-xs ' + (dk ? 'text-slate-200' : 'text-slate-600') }, 'Manage a living superorganism — 50,000 minds, one purpose'))),
+            h('div', { className: 'flex items-center gap-1' },
+              h('button', { onClick: function() { upd('soundOn', !soundOn); }, 'aria-label': soundOn ? 'Mute' : 'Unmute', className: 'p-1.5 rounded-lg text-sm ' + (dk ? 'hover:bg-slate-700' : 'hover:bg-slate-100') }, soundOn ? '🔊' : '🔇')));
+        });
+        // Mode tabs
+        _mk('mode-tabs', function() {
+          return h('div', { className: 'flex gap-1 p-1 rounded-xl ' + (dk ? 'bg-slate-800' : 'bg-slate-100'), role: 'tablist' },
+            [
+              { id: 'beekeeper', icon: '🧑‍🌾', label: 'Beekeeper' },
+              { id: 'queen', icon: '👑', label: 'Queen RTS' },
+              { id: 'drone', icon: '🚀', label: 'Drone Flight' }
+            ].map(function(tab) {
+              var active = viewMode === tab.id;
+              return h('button', { key: tab.id, role: 'tab', 'aria-selected': active ? 'true' : 'false',
+                onClick: function() { upd('viewMode', tab.id); },
+                className: 'flex-1 py-2 px-3 rounded-lg text-xs font-bold ' + (active ? (dk ? 'bg-amber-700 text-white' : 'bg-white text-amber-800') : (dk ? 'text-slate-400' : 'text-slate-500')) },
+                h('span', { 'aria-hidden': 'true' }, tab.icon), ' ', tab.label);
+            }));
+        });
+        // Next Day + Action buttons (just the core)
+        _mk('next-day-actions', function() {
+          return viewMode === 'beekeeper' && colonySurvived && h('div', { className: 'space-y-2' },
+            h('div', { className: 'flex gap-2' },
+              h('button', { onClick: advanceDay, className: 'flex-1 py-2.5 rounded-xl font-bold text-sm text-white ' + (dk ? 'bg-amber-600' : 'bg-amber-500') }, '⏩ Next Day')),
+            h('div', { className: 'grid grid-cols-3 gap-2' },
+              h('button', { onClick: treatVarroa, className: 'p-2 rounded-lg text-xs bg-red-100 text-red-700' }, '🧪 Treat'),
+              h('button', { onClick: harvestHoney, className: 'p-2 rounded-lg text-xs bg-amber-100 text-amber-700' }, '🍯 Harvest'),
+              h('button', { onClick: feedBees, className: 'p-2 rounded-lg text-xs bg-slate-100 text-slate-700' }, '🥣 Feed')));
+        });
+        console.log('[Beehive BISECT] built _children with ' + _children.length + ' validated elements');
+        var _bisectRetval = h('div', { className: 'space-y-4' }, _children);
         setTimeout(function() {
           var cc = document.getElementById('beehive-canvas-container');
           var cv = cc ? cc.querySelector('canvas') : null;
           console.log('[Beehive BISECT] canvas-container in DOM:', cc ? 'YES' : 'NO',
             '| canvas in DOM:', cv ? 'YES (' + cv.clientWidth + 'x' + cv.clientHeight + ')' : 'NO',
             '| _cvRef.current:', _cvRef.current ? 'ATTACHED' : 'NULL');
-        }, 150);
+        }, 200);
         return _bisectRetval;
 
         // === ORIGINAL TREE (disabled for diagnostic) ===
