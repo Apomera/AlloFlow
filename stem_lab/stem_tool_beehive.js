@@ -3078,6 +3078,222 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             c.fillText('💡 ' + prFacts[prIdx], W / 2, prStripY + 10);
           }
 
+          // ═══ STINGERS & DEFENSE · barbed sting, venom, hot-ball, guarding ═══
+          function drawStingers() {
+            // Moody defense-red background
+            var stGrad = c.createLinearGradient(0, 0, 0, H);
+            stGrad.addColorStop(0, '#450a0a'); stGrad.addColorStop(0.5, '#7f1d1d'); stGrad.addColorStop(1, '#1c1917');
+            c.fillStyle = stGrad; c.fillRect(0, 0, W, H);
+
+            // Title
+            c.fillStyle = '#fecaca'; c.textAlign = 'center';
+            c.font = 'bold 18px Georgia, serif';
+            c.fillText('🗡️ Stingers & Defense · a life-or-death commitment', W / 2, 26);
+            c.font = 'italic 11px Georgia, serif'; c.fillStyle = '#fca5a5';
+            c.fillText('A worker bee can sting ONCE — her barbed lancets tear loose, killing her in the act', W / 2, 44);
+
+            // ═══ LEFT: macro stinger diagram ═══
+            var stX = W * 0.24;
+            var stY = H * 0.5;
+            var stScale = Math.min(W, H) * 0.25;
+
+            // Abdomen of the bee (right side of diagram)
+            c.save(); c.translate(stX, stY);
+            // Body
+            var bodyGrad = c.createLinearGradient(-stScale * 0.5, 0, stScale * 0.5, 0);
+            bodyGrad.addColorStop(0, '#78350f'); bodyGrad.addColorStop(0.5, '#eab308'); bodyGrad.addColorStop(1, '#78350f');
+            c.fillStyle = bodyGrad;
+            c.beginPath();
+            c.ellipse(-stScale * 0.2, 0, stScale * 0.55, stScale * 0.4, 0, 0, Math.PI * 2);
+            c.fill();
+            c.strokeStyle = '#1f2937'; c.lineWidth = 1.5; c.stroke();
+            // Stripes
+            c.fillStyle = '#1f2937';
+            for (var bs = 0; bs < 3; bs++) {
+              var bsx = -stScale * 0.5 + bs * stScale * 0.2;
+              c.fillRect(bsx, -stScale * 0.35, stScale * 0.06, stScale * 0.7);
+            }
+
+            // Stinger apparatus extending right
+            // Venom sac (pale yellow bulb above)
+            var vsX = stScale * 0.38, vsY = -stScale * 0.25;
+            c.fillStyle = '#fef08a';
+            c.beginPath();
+            c.ellipse(vsX, vsY, stScale * 0.14, stScale * 0.11, 0, 0, Math.PI * 2);
+            c.fill();
+            c.strokeStyle = '#78350f'; c.lineWidth = 1; c.stroke();
+            // Duct from venom sac down to stinger
+            c.strokeStyle = '#ca8a04'; c.lineWidth = 2;
+            c.beginPath();
+            c.moveTo(vsX, vsY + stScale * 0.11);
+            c.quadraticCurveTo(vsX - stScale * 0.04, 0, stScale * 0.38, stScale * 0.06);
+            c.stroke();
+
+            // The two lancets (barbed) — draw serrated hollow shafts
+            var lanchX = stScale * 0.35, lanchY = stScale * 0.05;
+            var lanchEnd = stScale * 0.95;
+            // Shaft (two parallel barbed lines)
+            c.strokeStyle = '#fde68a'; c.lineWidth = 2.5;
+            c.beginPath();
+            c.moveTo(lanchX, lanchY - 3); c.lineTo(lanchEnd, lanchY - 3);
+            c.stroke();
+            c.beginPath();
+            c.moveTo(lanchX, lanchY + 3); c.lineTo(lanchEnd, lanchY + 3);
+            c.stroke();
+            // Barbs — 6 per side, pointing backward (toward bee body)
+            c.fillStyle = '#fef3c7';
+            for (var ba = 0; ba < 6; ba++) {
+              var baX = lanchX + (ba + 1) * (lanchEnd - lanchX) / 7;
+              // Upper barb
+              c.beginPath();
+              c.moveTo(baX, lanchY - 3);
+              c.lineTo(baX - 4, lanchY - 8);
+              c.lineTo(baX + 4, lanchY - 3);
+              c.closePath(); c.fill();
+              c.strokeStyle = '#a16207'; c.lineWidth = 0.8; c.stroke();
+              // Lower barb
+              c.fillStyle = '#fef3c7';
+              c.beginPath();
+              c.moveTo(baX, lanchY + 3);
+              c.lineTo(baX - 4, lanchY + 8);
+              c.lineTo(baX + 4, lanchY + 3);
+              c.closePath(); c.fill();
+              c.strokeStyle = '#a16207'; c.lineWidth = 0.8; c.stroke();
+            }
+
+            // Venom drop at the tip — animated drip
+            var dripT = (t2 / 30) % 1;
+            var dripY = lanchY + dripT * 10;
+            c.fillStyle = 'rgba(253,224,71,' + (1 - dripT * 0.4) + ')';
+            c.beginPath();
+            c.ellipse(lanchEnd + 6, dripY, 3 - dripT, 5, 0, 0, Math.PI * 2);
+            c.fill();
+
+            c.restore();
+
+            // Labels with leader lines
+            c.strokeStyle = 'rgba(254,202,202,0.6)'; c.lineWidth = 1;
+            c.fillStyle = '#fecaca'; c.font = 'bold 10px "Inter", sans-serif';
+            // Venom sac
+            c.beginPath();
+            c.moveTo(stX + stScale * 0.38, stY - stScale * 0.35);
+            c.lineTo(stX + stScale * 0.1, stY - stScale * 0.75);
+            c.stroke();
+            c.textAlign = 'right';
+            c.fillText('Venom sac', stX + stScale * 0.05, stY - stScale * 0.78);
+            c.font = '9px "Inter", sans-serif'; c.fillStyle = '#fca5a5';
+            c.fillText('holds ~0.3 mg venom', stX + stScale * 0.05, stY - stScale * 0.65);
+
+            // Lancets / barbs
+            c.strokeStyle = 'rgba(254,202,202,0.6)';
+            c.beginPath();
+            c.moveTo(stX + stScale * 0.65, stY + stScale * 0.10);
+            c.lineTo(stX + stScale * 0.85, stY + stScale * 0.55);
+            c.stroke();
+            c.fillStyle = '#fecaca'; c.textAlign = 'left';
+            c.font = 'bold 10px "Inter", sans-serif';
+            c.fillText('Barbed lancets', stX + stScale * 0.87, stY + stScale * 0.58);
+            c.font = '9px "Inter", sans-serif'; c.fillStyle = '#fca5a5';
+            c.fillText('tear from her body', stX + stScale * 0.87, stY + stScale * 0.72);
+
+            // Caption under diagram
+            c.fillStyle = '#fecaca'; c.textAlign = 'center';
+            c.font = 'bold 11px "Inter", sans-serif';
+            c.fillText('Worker Stinger (0.6 mm)', stX, stY + stScale * 1.05);
+            c.font = 'italic 9.5px "Inter", sans-serif'; c.fillStyle = '#fca5a5';
+            c.fillText('Queens have smooth stingers — they can sting many times.', stX, stY + stScale * 1.2);
+
+            // ═══ MIDDLE: venom chemistry ═══
+            var vnX = W * 0.56, vnY = 84;
+            c.fillStyle = 'rgba(60,10,10,0.75)';
+            if (c.roundRect) { c.beginPath(); c.roundRect(vnX - 95, vnY, 190, 190, 8); c.fill(); }
+            else c.fillRect(vnX - 95, vnY, 190, 190);
+            c.strokeStyle = 'rgba(252,165,165,0.5)'; c.lineWidth = 1;
+            if (c.roundRect) { c.beginPath(); c.roundRect(vnX - 95, vnY, 190, 190, 8); c.stroke(); }
+            c.fillStyle = '#fecaca'; c.textAlign = 'center';
+            c.font = 'bold 12px "Inter", sans-serif';
+            c.fillText('Venom (Apitoxin)', vnX, vnY + 16);
+            var venomComp = [
+              { name: 'Melittin', pct: 50, desc: 'membrane-disrupting peptide' },
+              { name: 'Phospholipase A₂', pct: 12, desc: 'enzyme — cell-membrane attack' },
+              { name: 'Apamin', pct: 2, desc: 'neurotoxin · blocks K⁺ channels' },
+              { name: 'Histamine', pct: 1, desc: 'triggers pain + inflammation' },
+              { name: 'Water + others', pct: 35, desc: 'carrier & minor compounds' }
+            ];
+            venomComp.forEach(function(v, vi) {
+              var vy = vnY + 36 + vi * 28;
+              // Bar background
+              c.fillStyle = 'rgba(252,165,165,0.2)';
+              c.fillRect(vnX - 75, vy, 150, 8);
+              // Filled bar
+              c.fillStyle = '#f87171';
+              c.fillRect(vnX - 75, vy, 150 * (v.pct / 100), 8);
+              c.fillStyle = '#fecaca'; c.textAlign = 'left';
+              c.font = 'bold 9.5px "Inter", sans-serif';
+              c.fillText(v.name, vnX - 75, vy - 2);
+              c.textAlign = 'right'; c.fillStyle = '#fee2e2';
+              c.fillText(v.pct + '%', vnX + 75, vy - 2);
+              c.textAlign = 'left'; c.fillStyle = '#fca5a5';
+              c.font = '8px "Inter", sans-serif';
+              c.fillText(v.desc, vnX - 75, vy + 18);
+            });
+
+            // ═══ RIGHT: defense tactics ═══
+            var dfX = W - 180, dfY = 84;
+            c.fillStyle = 'rgba(60,10,10,0.75)';
+            if (c.roundRect) { c.beginPath(); c.roundRect(dfX, dfY, 170, 270, 8); c.fill(); }
+            else c.fillRect(dfX, dfY, 170, 270);
+            c.strokeStyle = 'rgba(252,165,165,0.5)'; c.lineWidth = 1;
+            if (c.roundRect) { c.beginPath(); c.roundRect(dfX, dfY, 170, 270, 8); c.stroke(); }
+            c.fillStyle = '#fecaca'; c.textAlign = 'center';
+            c.font = 'bold 12px "Inter", sans-serif';
+            c.fillText('Colony Defense', dfX + 85, dfY + 16);
+            var tactics = [
+              { icon: '👮', t: 'Guard Bees', d: 'Older workers sniff every entrant — alarm scent (isoamyl acetate) if intruder' },
+              { icon: '🐝', t: 'Mass Sting', d: 'Alarm pheromone recruits 20-100 defenders in seconds' },
+              { icon: '🔥', t: 'Hot-Balling', d: 'Japanese honeybees cook hornets alive at 47°C' },
+              { icon: '🐻', t: 'Bearding', d: 'Form a living plug over the entrance in heat or attack' }
+            ];
+            tactics.forEach(function(t, ti) {
+              var ty = dfY + 40 + ti * 58;
+              c.fillStyle = '#fbbf24'; c.textAlign = 'left';
+              c.font = '18px "Inter", sans-serif';
+              c.fillText(t.icon, dfX + 8, ty + 10);
+              c.fillStyle = '#fecaca'; c.font = 'bold 11px "Inter", sans-serif';
+              c.fillText(t.t, dfX + 38, ty + 4);
+              c.font = '8.5px "Inter", sans-serif'; c.fillStyle = '#fca5a5';
+              // Wrap description
+              var words = t.d.split(' ');
+              var ln = '', lines = [];
+              words.forEach(function(w) {
+                var trial = ln + (ln ? ' ' : '') + w;
+                if (c.measureText(trial).width > 125) { lines.push(ln); ln = w; }
+                else ln = trial;
+              });
+              if (ln) lines.push(ln);
+              lines.slice(0, 3).forEach(function(l, li) {
+                c.fillText(l, dfX + 38, ty + 18 + li * 10);
+              });
+            });
+
+            // ═══ Bottom fact strip ═══
+            var stStripY = H - 28;
+            c.fillStyle = 'rgba(28,25,23,0.95)'; c.fillRect(0, stStripY - 10, W, 38);
+            c.fillStyle = '#fecaca'; c.textAlign = 'center';
+            c.font = 'bold 11px Georgia, serif';
+            var stFacts = [
+              'A worker bee\'s stinger evolved from her ovipositor (egg-laying tube) — which is why only females sting.',
+              'Bee venom is 30% protein by mass — the most protein-dense animal venom known.',
+              'Melittin, the main toxin, also shows promise destroying HIV-infected cells in lab studies.',
+              'About 2% of people are allergic to bee venom; for them a single sting can trigger anaphylaxis.',
+              'Guard bees remember the scent of nestmates — a returning forager must pass a "smell test".',
+              'The African honeybee (A. m. scutellata) mass-stings orders of magnitude more aggressively than European bees.',
+              'Pull a stinger out with a fingernail drag, NOT tweezers — squeezing injects more venom.'
+            ];
+            var stIdx = Math.floor(t2 / 420) % stFacts.length;
+            c.fillText('💡 ' + stFacts[stIdx], W / 2, stStripY + 10);
+          }
+
           // ═══ POLLINATION DIAGRAM (bee → ecosystem → human food chain) ═══
           function drawPollination() {
             // Fresh green meadow gradient
@@ -5073,6 +5289,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               }
               if (_bv === 'propolis') {
                 drawPropolis();
+                _animId.current = requestAnimationFrame(frame);
+                return;
+              }
+              if (_bv === 'stingers') {
+                drawStingers();
                 _animId.current = requestAnimationFrame(frame);
                 return;
               }
@@ -7941,7 +8162,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 { id: 'native', icon: '🌎', label: 'Native Bees', desc: 'Biodiversity — 20,000 species, honeybee is just one' },
                 { id: 'cognition', icon: '🧠', label: 'Cognition', desc: 'Bee intelligence — counts to 4, knows zero, recognizes faces' },
                 { id: 'vision', icon: '🌸', label: 'Vision', desc: 'UV flower patterns + 200 Hz flicker fusion — what bees see' },
-                { id: 'propolis', icon: '💧', label: 'Propolis', desc: 'Bee glue resin — nature\'s antibiotic, used medicinally since 300 BCE' }
+                { id: 'propolis', icon: '💧', label: 'Propolis', desc: 'Bee glue resin — nature\'s antibiotic, used medicinally since 300 BCE' },
+                { id: 'stingers', icon: '🗡️', label: 'Stingers', desc: 'Barbed sting sacrifice · venom chemistry · hot-ball defense' }
               ].map(function(v, vi) {
                 var active = beeView === v.id;
                 return h('button', { key: v.id, role: 'tab', 'aria-selected': active ? 'true' : 'false',
