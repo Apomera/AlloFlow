@@ -13735,7 +13735,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             threeRef.current.renderer.dispose();
           }
         };
-      }, [view, currentScenario, currentVehicle]);
+      // Depend on the PRIMITIVE IDs, not the scenario/vehicle objects. currentScenario is
+      // `Object.assign({}, _scenarioBase)` (new object each render), so using it in the dep
+      // array caused the effect to re-run on EVERY React re-render — including
+      // setBeltFastened(true) — which disposed and recreated the Three.js renderer mid-drive.
+      // The new renderer sometimes ended up with a broken main camera (world went black),
+      // while the rear-view mirror (initialized lazily on its own code path) kept working.
+      }, [view, selectedScenario, selectedVehicle]);
 
       // ═══════════════════════════════════════════
       // UI RENDERING (menus, lessons, permit test, debrief, driving)
