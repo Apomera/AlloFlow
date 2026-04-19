@@ -15806,6 +15806,57 @@ Return only the corrected version of this exact text:`;
     }
     return <div className={`leading-relaxed ${className}`}>{renderFormattedText(str)}</div>;
   });
+  // Peel a trailing "Source Text References" block (or translated/variant heading) off the body.
+  const REFERENCES_HEADER_RE = /\n+#{1,4}\s*(?:Source\s+Text\s+References|Sources\s+du\s+texte[^\n]*|Accuracy\s+Check\s+References|Verified\s+Sources|Sources?\s*(?:\/[^\n]*)?)\s*\n/i;
+  const splitReferencesFromBody = (text) => {
+      if (!text) return { body: text || '', references: '' };
+      const m = text.match(REFERENCES_HEADER_RE);
+      if (!m) return { body: text, references: '' };
+      return { body: text.substring(0, m.index).trim(), references: text.substring(m.index).trim() };
+  };
+  const parseReferenceItems = (referencesText) => {
+      if (!referencesText) return [];
+      const items = [];
+      const itemRe = /^\s*(\d+)\.\s*\[([^\]]+)\]\(([^)]+)\)/gm;
+      let m;
+      while ((m = itemRe.exec(referencesText)) !== null) {
+          items.push({ num: m[1], title: m[2].trim(), url: m[3].trim() });
+      }
+      return items;
+  };
+  const SourceReferencesPanel = React.memo(({ referencesText, className = "" }) => {
+      if (!referencesText) return null;
+      const items = parseReferenceItems(referencesText);
+      if (items.length === 0) {
+          return (
+              <div className={`mt-6 p-5 rounded-xl border border-indigo-200 bg-indigo-50/50 ${className}`}>
+                  <div className="text-xs font-black text-indigo-700 uppercase tracking-widest mb-3 pb-2 border-b border-indigo-200">
+                      Source Text References
+                  </div>
+                  <div className="text-sm text-slate-700 leading-relaxed">
+                      {renderFormattedText(referencesText)}
+                  </div>
+              </div>
+          );
+      }
+      return (
+          <div className={`mt-6 p-5 rounded-xl border border-indigo-200 bg-indigo-50/50 ${className}`}>
+              <div className="text-xs font-black text-indigo-700 uppercase tracking-widest mb-3 pb-2 border-b border-indigo-200">
+                  Source Text References
+              </div>
+              <ol className="list-decimal list-inside space-y-2 text-sm text-slate-700 leading-relaxed marker:text-indigo-500 marker:font-bold">
+                  {items.map((item, i) => (
+                      <li key={i} className="pl-1">
+                          <a href={item.url} target="_blank" rel="noopener noreferrer"
+                             className="text-indigo-700 underline hover:text-indigo-900 break-words">
+                              {item.title}
+                          </a>
+                      </li>
+                  ))}
+              </ol>
+          </div>
+      );
+  });
   const getSideBySideContent = (text) => {
     if (!text || typeof text !== 'string') return null;
     const delimiter = "--- ENGLISH TRANSLATION ---";
@@ -28470,10 +28521,10 @@ Return ONLY JSON.`;
                 let currentTargetDisplay = fullTargetText.trim();
                 let currentEnglishDisplay = fullEnglishText.trim();
                 if (isLast && extractedReferences && keepCitations) {
+                    // Append only to the target (combined) display. SourceReferencesPanel extracts
+                    // and renders them once from the combined text; appending to the English half
+                    // too would cause the panel to appear twice after render-time split.
                     currentTargetDisplay += `\n\n${extractedReferences}`;
-                    if (effectiveLanguage !== 'English') {
-                        currentEnglishDisplay += `\n\n${extractedReferences}`;
-                    }
                 }
                 let currentTotal = currentTargetDisplay;
                 if (keepCitations) {
@@ -43818,7 +43869,15 @@ Return only the corrected version of this exact text:`;
                                 <div className="space-y-4">
                                     {(() => {
                                         const rawData = generatedContent?.data;
-                                        const safeData = (typeof rawData === 'string') ? rawData : String(rawData || '');
+                                        const _fullData = (typeof rawData === 'string') ? rawData : String(rawData || '');
+                                        // Peel trailing "Source Text References" and "--- ENGLISH TRANSLATION ---" blocks
+                                        // so each renders in its own dedicated styled panel below the main body.
+                                        const { body: _bodyNoRefs, references: _references } = splitReferencesFromBody(_fullData);
+                                        const _bilingualIdx = _bodyNoRefs.indexOf('--- ENGLISH TRANSLATION ---');
+                                        const _hasBilingual = _bilingualIdx !== -1;
+                                        const safeData = _hasBilingual ? _bodyNoRefs.substring(0, _bilingualIdx).trim() : _bodyNoRefs;
+                                        const _englishBlock = _hasBilingual ? _bodyNoRefs.substring(_bilingualIdx + '--- ENGLISH TRANSLATION ---'.length).trim() : '';
+                                        const _bodyEl = (() => {
                                         const sideBySideData = getSideBySideContent(safeData);
                                         if (sideBySideData) {
                                             let sentenceCounter = 0;
@@ -44126,6 +44185,23 @@ Return only the corrected version of this exact text:`;
                                                 );
                                             });
                                         }
+                                        })();
+                                        return (
+                                            <>
+                                                {_bodyEl}
+                                                {_hasBilingual && _englishBlock && (
+                                                    <div className="mt-6 pl-4 border-l-4 border-indigo-300 bg-slate-50 p-4 rounded-r-xl">
+                                                        <div className="text-[11px] font-black text-indigo-500 uppercase tracking-widest mb-2 border-b border-indigo-100 pb-1 inline-block">
+                                                            English Translation
+                                                        </div>
+                                                        <div className="text-slate-700 italic leading-relaxed">
+                                                            {renderFormattedText(_englishBlock)}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                <SourceReferencesPanel referencesText={_references} />
+                                            </>
+                                        );
                                     })()}
                                 </div>
                              ) : (
