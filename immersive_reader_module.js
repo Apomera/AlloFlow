@@ -226,7 +226,11 @@ const ImmersiveToolbar = React.memo(({
   isBionicReaderActive,
   onToggleBionicReader,
   isCrawlReaderActive,
-  onToggleCrawlReader
+  onToggleCrawlReader,
+  isKaraokeOverlayActive,
+  onToggleKaraokeOverlay,
+  chunkReaderReadAlong,
+  onToggleChunkReaderReadAlong
 }) => {
   const {
     t
@@ -334,7 +338,17 @@ const ImmersiveToolbar = React.memo(({
   }, /*#__PURE__*/React.createElement(Zap, {
     size: 14,
     className: "mr-1 inline"
-  }), " ", t('immersive.cinematic_crawl') || 'Crawl')), setInteractionMode && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+  }), " ", t('immersive.cinematic_crawl') || 'Crawl'), onToggleKaraokeOverlay && /*#__PURE__*/React.createElement(ToggleButton, {
+    active: !!isKaraokeOverlayActive,
+    onClick: onToggleKaraokeOverlay,
+    title: t('immersive.focus_reader_title') || 'Focus Reader — full-screen read-along with sentence-sweep visuals',
+    activeColor: "bg-fuchsia-600 text-white",
+    "data-help-key": "immersive_karaoke_overlay",
+    "aria-pressed": !!isKaraokeOverlayActive
+  }, /*#__PURE__*/React.createElement(Volume2, {
+    size: 14,
+    className: "mr-1 inline"
+  }), " ", t('immersive.focus_reader') || 'Focus Reader')), setInteractionMode && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "h-4 w-px bg-slate-300 shrink-0"
   }), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-1 shrink-0 bg-slate-100 rounded-full p-0.5",
@@ -399,12 +413,24 @@ const ImmersiveToolbar = React.memo(({
     step: "500",
     value: chunkReaderSpeed,
     onChange: e => setChunkReaderSpeed(parseInt(e.target.value)),
-    className: "w-14 h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-500",
-    title: `${(chunkReaderSpeed / 1000).toFixed(1)}s`,
+    disabled: !!chunkReaderReadAlong,
+    className: `w-14 h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-500 ${chunkReaderReadAlong ? 'opacity-30' : ''}`,
+    title: chunkReaderReadAlong ? 'Disabled while Read Along is on — audio length drives the pace' : `${(chunkReaderSpeed / 1000).toFixed(1)}s`,
     "aria-label": t('immersive.speed')
   }), /*#__PURE__*/React.createElement("span", {
     className: "text-[11px] text-slate-600 tabular-nums"
-  }, (chunkReaderSpeed / 1000).toFixed(1), "s")))), /*#__PURE__*/React.createElement("div", {
+  }, (chunkReaderSpeed / 1000).toFixed(1), "s")), onToggleChunkReaderReadAlong && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    className: "h-4 w-px bg-slate-200"
+  }), /*#__PURE__*/React.createElement("button", {
+    onClick: onToggleChunkReaderReadAlong,
+    "aria-pressed": !!chunkReaderReadAlong,
+    title: chunkReaderReadAlong ? 'Read-along OFF: return to timer-based advance' : 'Read-along ON: play each sentence with a colored gradient that sweeps across the text in sync with the audio',
+    className: `inline-flex items-center gap-1 px-2 py-1 text-xs font-bold rounded-full transition-all ${chunkReaderReadAlong ? 'bg-fuchsia-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`,
+    "data-help-key": "immersive_chunk_read_along"
+  }, /*#__PURE__*/React.createElement(Volume2, {
+    size: 12,
+    className: "inline"
+  }), " ", t('immersive.read_along') || 'Read Along')))), /*#__PURE__*/React.createElement("div", {
     className: "h-4 w-px bg-slate-300 shrink-0"
   }), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2 shrink-0"
@@ -971,11 +997,489 @@ const PerspectiveCrawlOverlay = React.memo(({
     }
   }, "Space pauses \xB7 R restarts \xB7 Esc closes"));
 });
+
+// ============================================================================
+// KaraokeReaderOverlay — sentence-sweep "Focus Reader"
+// Full-screen immersive view. Plays each sentence via Gemini TTS (when the
+// parent passes `getAudioUrl`) or browser speechSynthesis fallback. As audio
+// plays, a colored gradient "wipes" across the active sentence's text —
+// proportional to audio.currentTime/audio.duration — so visual progress
+// stays synced with audio without needing per-word boundary events.
+// (Compatible with Gemini TTS, which returns audio-only with no timepoint
+// metadata. See plan.md for rationale.)
+// ============================================================================
+const KaraokeReaderOverlay = React.memo(({
+  text,
+  onClose,
+  isOpen,
+  getAudioUrl
+}) => {
+  const {
+    t
+  } = useContext(LanguageContext);
+  const [sentences, setSentences] = useState([]);
+  const [sentenceIdx, setSentenceIdx] = useState(0);
+  const [sweepPct, setSweepPct] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [autoAdvance, setAutoAdvance] = useState(true);
+  const [theme, setTheme] = useState('warm');
+  const themes = {
+    warm: {
+      bg: '#fdfbf7',
+      ink: '#111827',
+      dim: '#9ca3af',
+      sweep: '#b45309',
+      accent: '#fde68a'
+    },
+    dark: {
+      bg: '#0f172a',
+      ink: '#f1f5f9',
+      dim: '#64748b',
+      sweep: '#a5b4fc',
+      accent: '#a855f7'
+    },
+    sepia: {
+      bg: '#f4ecd8',
+      ink: '#3b2a1a',
+      dim: '#a08968',
+      sweep: '#c2410c',
+      accent: '#f97316'
+    }
+  };
+  const c = themes[theme] || themes.warm;
+  const audioRef = useRef(null);
+  const rafRef = useRef(null);
+  const activeSentenceRef = useRef(null);
+  const reducedMotion = typeof window !== 'undefined' && window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)').matches : false;
+
+  // Split text into sentences once (self-contained — parent's splitTextToSentences isn't exported)
+  useEffect(() => {
+    if (!text) {
+      setSentences([]);
+      return;
+    }
+    const cleaned = String(text || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+    // Preserve terminal punctuation in each sentence; split on "punct + whitespace"
+    const parts = cleaned.split(/([.!?]+["'\u201D\u2019]?)(\s+|$)/);
+    const out = [];
+    let buf = '';
+    for (let i = 0; i < parts.length; i++) {
+      buf += parts[i] || '';
+      // Every 3rd chunk (index 0, 3, 6...) is body, next two are punct + whitespace
+      if (i % 3 === 2) {
+        const s = buf.trim();
+        if (s) out.push(s);
+        buf = '';
+      }
+    }
+    const tail = buf.trim();
+    if (tail) out.push(tail);
+    setSentences(out.length > 0 ? out : [cleaned]);
+    setSentenceIdx(0);
+    setSweepPct(0);
+  }, [text]);
+
+  // Hard teardown when the overlay closes or the component unmounts
+  useEffect(() => {
+    if (!isOpen) {
+      try {
+        if (audioRef.current) {
+          audioRef.current.pause();
+          audioRef.current = null;
+        }
+      } catch (e) {}
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      }
+      try {
+        if (typeof window !== 'undefined' && window.speechSynthesis) window.speechSynthesis.cancel();
+      } catch (e) {}
+      setIsPlaying(false);
+      setSweepPct(0);
+    }
+    return () => {
+      try {
+        if (audioRef.current) {
+          audioRef.current.pause();
+          audioRef.current = null;
+        }
+      } catch (e) {}
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      try {
+        if (typeof window !== 'undefined' && window.speechSynthesis) window.speechSynthesis.cancel();
+      } catch (e) {}
+    };
+  }, [isOpen]);
+
+  // Scroll the active sentence into view
+  useEffect(() => {
+    const node = activeSentenceRef.current;
+    if (node) {
+      try {
+        node.scrollIntoView({
+          behavior: reducedMotion ? 'auto' : 'smooth',
+          block: 'center'
+        });
+      } catch (e) {}
+    }
+  }, [sentenceIdx, reducedMotion]);
+
+  // Play the current sentence (Gemini audio if getAudioUrl provided, else browser TTS fallback)
+  const playSentence = useCallback(async idx => {
+    if (idx < 0 || idx >= sentences.length) return;
+    // Stop anything already playing
+    try {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    } catch (e) {}
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
+    try {
+      if (typeof window !== 'undefined' && window.speechSynthesis) window.speechSynthesis.cancel();
+    } catch (e) {}
+    setSweepPct(0);
+    const sentenceText = sentences[idx];
+
+    // Try parent-provided audio (Gemini)
+    let url = null;
+    if (typeof getAudioUrl === 'function') {
+      try {
+        url = await getAudioUrl(sentenceText);
+      } catch (e) {
+        url = null;
+      }
+    }
+    if (url) {
+      const audio = new Audio(url);
+      audioRef.current = audio;
+      const updateSweep = () => {
+        if (!audioRef.current || audioRef.current !== audio) return;
+        const dur = audio.duration;
+        let pct;
+        if (isFinite(dur) && dur > 0) {
+          pct = Math.min(100, audio.currentTime / dur * 100);
+        } else {
+          // Unknown duration — approximate from char count at ~15 chars/sec
+          const estSec = Math.max(1.5, sentenceText.length / 15);
+          pct = Math.min(100, audio.currentTime / estSec * 100);
+        }
+        setSweepPct(reducedMotion ? pct > 5 ? 100 : 0 : pct);
+      };
+      audio.addEventListener('timeupdate', updateSweep);
+      audio.addEventListener('ended', () => {
+        setSweepPct(100);
+        if (autoAdvance && idx < sentences.length - 1) {
+          setTimeout(() => {
+            setSentenceIdx(idx + 1);
+          }, 250);
+        } else {
+          setIsPlaying(false);
+        }
+      });
+      audio.addEventListener('error', () => {
+        setIsPlaying(false);
+      });
+      try {
+        await audio.play();
+      } catch (e) {
+        setIsPlaying(false);
+      }
+      return;
+    }
+
+    // Browser TTS fallback with estimated duration
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window && typeof SpeechSynthesisUtterance !== 'undefined') {
+      try {
+        const u = new SpeechSynthesisUtterance(sentenceText);
+        u.rate = 0.95;
+        u.pitch = 1.0;
+        u.volume = 0.95;
+        const estMs = Math.max(1500, sentenceText.length * 60);
+        const startTs = performance.now();
+        const tick = () => {
+          const elapsed = performance.now() - startTs;
+          const pct = Math.min(100, elapsed / estMs * 100);
+          setSweepPct(reducedMotion ? pct > 5 ? 100 : 0 : pct);
+          if (pct < 100) rafRef.current = requestAnimationFrame(tick);
+        };
+        u.onend = () => {
+          if (rafRef.current) {
+            cancelAnimationFrame(rafRef.current);
+            rafRef.current = null;
+          }
+          setSweepPct(100);
+          if (autoAdvance && idx < sentences.length - 1) {
+            setTimeout(() => {
+              setSentenceIdx(idx + 1);
+            }, 250);
+          } else {
+            setIsPlaying(false);
+          }
+        };
+        u.onerror = () => {
+          if (rafRef.current) cancelAnimationFrame(rafRef.current);
+          setIsPlaying(false);
+        };
+        window.speechSynthesis.speak(u);
+        rafRef.current = requestAnimationFrame(tick);
+      } catch (e) {
+        setIsPlaying(false);
+      }
+      return;
+    }
+
+    // No TTS available — just mark sentence as read after a short display
+    setTimeout(() => {
+      setSweepPct(100);
+      if (autoAdvance && idx < sentences.length - 1) setSentenceIdx(idx + 1);else setIsPlaying(false);
+    }, 1500);
+  }, [sentences, getAudioUrl, autoAdvance, reducedMotion]);
+
+  // Start / restart playback when sentenceIdx changes while playing, or when play toggles on
+  useEffect(() => {
+    if (!isOpen || !isPlaying) return;
+    playSentence(sentenceIdx);
+    // Intentional: playSentence already stops prior audio. Don't return cleanup here to avoid
+    // double-stop during sentence transitions (the next call handles it).
+  }, [sentenceIdx, isOpen, isPlaying, playSentence]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    if (!isOpen) return;
+    const handler = e => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        setIsPlaying(p => !p);
+      } else if (e.code === 'ArrowRight') {
+        setSentenceIdx(i => Math.min(sentences.length - 1, i + 1));
+        setSweepPct(0);
+      } else if (e.code === 'ArrowLeft') {
+        setSentenceIdx(i => Math.max(0, i - 1));
+        setSweepPct(0);
+      } else if (e.code === 'Home') {
+        setSentenceIdx(0);
+        setSweepPct(0);
+      } else if (e.code === 'End') {
+        setSentenceIdx(Math.max(0, sentences.length - 1));
+        setSweepPct(0);
+      } else if (e.key === 'Escape') {
+        try {
+          if (audioRef.current) audioRef.current.pause();
+          window.speechSynthesis && window.speechSynthesis.cancel();
+        } catch (ee) {}
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [isOpen, onClose, sentences.length]);
+  if (!isOpen) return null;
+  const overallPct = sentences.length > 0 ? (sentenceIdx + sweepPct / 100) / sentences.length * 100 : 0;
+  const renderSentence = (sText, idx) => {
+    const isActive = idx === sentenceIdx;
+    const isPast = idx < sentenceIdx;
+    if (isActive) {
+      const pct = sweepPct;
+      // Build background-image inline so each re-render captures the current sweepPct
+      const bgImage = 'linear-gradient(to right, ' + c.sweep + ' 0%, ' + c.sweep + ' ' + pct + '%, ' + c.dim + ' ' + pct + '%, ' + c.dim + ' 100%)';
+      return /*#__PURE__*/React.createElement("span", {
+        key: idx,
+        ref: el => {
+          activeSentenceRef.current = el;
+        },
+        "aria-current": "true",
+        onClick: () => {
+          setSentenceIdx(idx);
+          setSweepPct(0);
+          if (!isPlaying) setIsPlaying(true);
+        },
+        style: {
+          backgroundImage: bgImage,
+          WebkitBackgroundClip: 'text',
+          backgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          color: 'transparent',
+          fontWeight: 700,
+          transition: reducedMotion ? 'none' : 'background-image 0.08s linear',
+          cursor: 'pointer',
+          borderRadius: 2
+        }
+      }, sText);
+    }
+    return /*#__PURE__*/React.createElement("span", {
+      key: idx,
+      onClick: () => {
+        setSentenceIdx(idx);
+        setSweepPct(0);
+      },
+      style: {
+        color: c.dim,
+        opacity: isPast ? 0.85 : 0.35,
+        transition: reducedMotion ? 'none' : 'opacity 0.3s',
+        cursor: 'pointer'
+      }
+    }, sText);
+  };
+  const hardStop = () => {
+    try {
+      if (audioRef.current) audioRef.current.pause();
+    } catch (e) {}
+    try {
+      if (typeof window !== 'undefined' && window.speechSynthesis) window.speechSynthesis.cancel();
+    } catch (e) {}
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
+  };
+  return /*#__PURE__*/React.createElement("div", {
+    className: "fixed inset-0 z-[300] flex flex-col animate-in fade-in duration-200",
+    style: {
+      backgroundColor: c.bg,
+      color: c.ink
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "p-4 flex justify-between items-center gap-3 flex-wrap"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-3"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => {
+      hardStop();
+      onClose();
+    },
+    "aria-label": t('common.close') || 'Close',
+    className: "p-2 rounded-full hover:bg-black/5",
+    style: {
+      color: c.ink
+    }
+  }, /*#__PURE__*/React.createElement(ArrowLeft, {
+    size: 22
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-col"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "font-bold text-base"
+  }, t('immersive.focus_reader') || 'Focus Reader'), /*#__PURE__*/React.createElement("span", {
+    className: "text-xs",
+    style: {
+      color: c.dim
+    }
+  }, "Sentence ", sentenceIdx + 1, " / ", sentences.length, " \xB7 read-along sweep"))), /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-4 flex-wrap text-xs font-bold"
+  }, /*#__PURE__*/React.createElement("label", {
+    className: "flex items-center gap-2 cursor-pointer"
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "checkbox",
+    checked: autoAdvance,
+    onChange: e => setAutoAdvance(e.target.checked),
+    "aria-label": "Auto-advance to next sentence"
+  }), /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: c.ink
+    }
+  }, "Auto-advance")), /*#__PURE__*/React.createElement("label", {
+    className: "flex items-center gap-2"
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: c.dim
+    }
+  }, "THEME"), /*#__PURE__*/React.createElement("select", {
+    "aria-label": "Theme",
+    value: theme,
+    onChange: e => setTheme(e.target.value),
+    className: "text-xs rounded px-2 py-1 border",
+    style: {
+      borderColor: c.dim + '88',
+      background: 'transparent',
+      color: c.ink
+    }
+  }, /*#__PURE__*/React.createElement("option", {
+    value: "warm"
+  }, "\u2600\uFE0F Warm"), /*#__PURE__*/React.createElement("option", {
+    value: "dark"
+  }, "\uD83C\uDF19 Dark"), /*#__PURE__*/React.createElement("option", {
+    value: "sepia"
+  }, "\uD83D\uDCDC Sepia"))), /*#__PURE__*/React.createElement("button", {
+    onClick: () => {
+      if (isPlaying) {
+        hardStop();
+        setIsPlaying(false);
+      } else {
+        setIsPlaying(true);
+      }
+    },
+    "aria-label": isPlaying ? 'Pause' : 'Play',
+    "aria-pressed": isPlaying,
+    className: "px-3 py-1.5 rounded-full",
+    style: {
+      background: c.accent,
+      color: c.ink
+    }
+  }, isPlaying ? /*#__PURE__*/React.createElement(Pause, {
+    size: 14
+  }) : /*#__PURE__*/React.createElement(Play, {
+    size: 14
+  })), /*#__PURE__*/React.createElement("button", {
+    onClick: () => {
+      hardStop();
+      setSentenceIdx(0);
+      setSweepPct(0);
+      setIsPlaying(false);
+    },
+    className: "px-3 py-1 rounded text-xs",
+    style: {
+      background: c.dim + '33',
+      color: c.ink
+    },
+    "aria-label": "Restart from first sentence"
+  }, "\u21BA Restart"))), /*#__PURE__*/React.createElement("div", {
+    className: "flex-1 overflow-auto px-6 md:px-16 py-10",
+    style: {
+      scrollBehavior: reducedMotion ? 'auto' : 'smooth'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "max-w-3xl mx-auto",
+    style: {
+      fontSize: 'clamp(1.5rem, 2.4vw, 2.25rem)',
+      lineHeight: 1.7,
+      fontFamily: 'Georgia, "Iowan Old Style", "Times New Roman", serif'
+    }
+  }, sentences.map((s, i) => /*#__PURE__*/React.createElement(React.Fragment, {
+    key: i
+  }, renderSentence(s, i), ' ')))), /*#__PURE__*/React.createElement("div", {
+    className: "h-2 w-full",
+    role: "progressbar",
+    "aria-valuenow": Math.round(overallPct),
+    "aria-valuemin": 0,
+    "aria-valuemax": 100,
+    "aria-label": "Reading progress",
+    style: {
+      background: c.dim + '33'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "h-full",
+    style: {
+      width: overallPct + '%',
+      backgroundColor: c.sweep,
+      transition: reducedMotion ? 'none' : 'width 0.2s linear'
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "px-4 py-2 text-center text-xs",
+    style: {
+      color: c.dim
+    }
+  }, "Space play/pause \xB7 \u2190 \u2192 sentences \xB7 Home/End jump \xB7 click any sentence to jump \xB7 Esc closes"));
+});
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.SpeedReaderOverlay = SpeedReaderOverlay;
 window.AlloModules.BionicChunkReader = BionicChunkReader;
 window.AlloModules.PerspectiveCrawlOverlay = PerspectiveCrawlOverlay;
+window.AlloModules.KaraokeReaderOverlay = KaraokeReaderOverlay;
 window.AlloModules.ImmersiveToolbar = ImmersiveToolbar;
 window.AlloModules.ImmersiveReaderModule = true;
-console.log('[ImmersiveReaderModule] 4 components registered');
+console.log('[ImmersiveReaderModule] 5 components registered');
 })();

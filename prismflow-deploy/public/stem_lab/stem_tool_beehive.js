@@ -2998,6 +2998,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           console.log('[Beehive DEBUG EL] h("canvas") result:',
             _testEl ? ('{$$typeof: ' + String(_testEl.$$typeof) + ', type: ' + _testEl.type + ', has props: ' + !!_testEl.props + '}') : String(_testEl));
         }
+        // ═══ EXTREME DIAGNOSTIC: return ONLY a hello-world div ═══
+        // If this doesn't show, the plugin is completely disconnected from the DOM.
+        // If this DOES show, the original JSX tree has a specific problem we can hunt down.
+        var _helloRetval = h('div', {
+          id: 'beehive-hello-marker',
+          style: { background: 'magenta', color: 'white', padding: '60px', fontSize: '36px', fontWeight: 'bold', textAlign: 'center', border: '8px solid cyan', margin: '20px' }
+        }, '🟣 HELLO FROM BEEHIVE PLUGIN — if you see this, the plugin DOES render ' + Date.now());
+        console.log('[Beehive DEBUG HELLO] returning simple hello div. element=',
+          _helloRetval ? ('$$typeof=' + String(_helloRetval.$$typeof) + ' type=' + _helloRetval.type + ' text=' + String(_helloRetval.props.children).slice(0, 30)) : 'NULL');
+        setTimeout(function() {
+          var h1 = document.getElementById('beehive-hello-marker');
+          console.log('[Beehive DEBUG HELLO POST] 100ms after render, #beehive-hello-marker in DOM:',
+            h1 ? 'YES (parent: ' + (h1.parentElement ? h1.parentElement.tagName + '.' + h1.parentElement.className : 'none') + ')' : 'NO');
+        }, 100);
+        return _helloRetval;
+
+        // === ORIGINAL TREE (disabled for diagnostic) ===
+        /* eslint-disable */
         return h('div', { className: 'space-y-4 animate-in fade-in duration-200' },
           // DIAGNOSTIC: unconditional top-of-return marker — if invisible, outer div itself isn't committing
           h('div', { style: { background: 'red', color: 'white', padding: '20px', fontSize: '24px', fontWeight: 'bold', textAlign: 'center', border: '4px solid black' } },

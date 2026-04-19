@@ -158,7 +158,7 @@ const SpeedReaderOverlay = React.memo(({ text, onClose, isOpen }) => {
     );
 });
 
-const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackRate, setPlaybackRate, lineHeight, setLineHeight, letterSpacing, setLetterSpacing , isSpeedReaderActive, onToggleSpeedReader, isChunkReaderActive, onToggleChunkReader, chunkReaderIdx, setChunkReaderIdx, chunkReaderAutoPlay, setChunkReaderAutoPlay, chunkReaderSpeed, setChunkReaderSpeed, totalSentences, interactionMode, setInteractionMode, isBionicReaderActive, onToggleBionicReader, isCrawlReaderActive, onToggleCrawlReader }) => {
+const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackRate, setPlaybackRate, lineHeight, setLineHeight, letterSpacing, setLetterSpacing , isSpeedReaderActive, onToggleSpeedReader, isChunkReaderActive, onToggleChunkReader, chunkReaderIdx, setChunkReaderIdx, chunkReaderAutoPlay, setChunkReaderAutoPlay, chunkReaderSpeed, setChunkReaderSpeed, totalSentences, interactionMode, setInteractionMode, isBionicReaderActive, onToggleBionicReader, isCrawlReaderActive, onToggleCrawlReader, isKaraokeOverlayActive, onToggleKaraokeOverlay, chunkReaderReadAlong, onToggleChunkReaderReadAlong }) => {
   const { t } = useContext(LanguageContext);
   const toggleSetting = useCallback((key) => setSettings(prev => ({...prev, [key]: !prev[key]})), [setSettings]);
   const ToggleButton = React.memo(({ active, onClick, settingKey, title, children, activeColor = "bg-indigo-600 text-white", ...props }) => (
@@ -261,6 +261,18 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
                 <Zap size={14} className="mr-1 inline"/> {(t('immersive.cinematic_crawl') || 'Crawl')}
               </ToggleButton>
             )}
+            {onToggleKaraokeOverlay && (
+              <ToggleButton
+                active={!!isKaraokeOverlayActive}
+                onClick={onToggleKaraokeOverlay}
+                title={(t('immersive.focus_reader_title') || 'Focus Reader — full-screen read-along with sentence-sweep visuals')}
+                activeColor="bg-fuchsia-600 text-white"
+                data-help-key="immersive_karaoke_overlay"
+                aria-pressed={!!isKaraokeOverlayActive}
+              >
+                <Volume2 size={14} className="mr-1 inline"/> {(t('immersive.focus_reader') || 'Focus Reader')}
+              </ToggleButton>
+            )}
         </div>
         {setInteractionMode && (
           <>
@@ -299,9 +311,23 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
             </button>
             <div className="flex items-center gap-1">
               <span className="text-[11px] text-slate-600">1s</span>
-              <input type="range" min="1000" max="8000" step="500" value={chunkReaderSpeed} onChange={(e) => setChunkReaderSpeed(parseInt(e.target.value))} className="w-14 h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-500" title={`${(chunkReaderSpeed/1000).toFixed(1)}s`} aria-label={t('immersive.speed')}/>
+              <input type="range" min="1000" max="8000" step="500" value={chunkReaderSpeed} onChange={(e) => setChunkReaderSpeed(parseInt(e.target.value))} disabled={!!chunkReaderReadAlong} className={`w-14 h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-500 ${chunkReaderReadAlong ? 'opacity-30' : ''}`} title={chunkReaderReadAlong ? 'Disabled while Read Along is on — audio length drives the pace' : `${(chunkReaderSpeed/1000).toFixed(1)}s`} aria-label={t('immersive.speed')}/>
               <span className="text-[11px] text-slate-600 tabular-nums">{(chunkReaderSpeed/1000).toFixed(1)}s</span>
             </div>
+            {onToggleChunkReaderReadAlong && (
+              <>
+                <div className="h-4 w-px bg-slate-200"></div>
+                <button
+                  onClick={onToggleChunkReaderReadAlong}
+                  aria-pressed={!!chunkReaderReadAlong}
+                  title={chunkReaderReadAlong ? 'Read-along OFF: return to timer-based advance' : 'Read-along ON: play each sentence with a colored gradient that sweeps across the text in sync with the audio'}
+                  className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-bold rounded-full transition-all ${chunkReaderReadAlong ? 'bg-fuchsia-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                  data-help-key="immersive_chunk_read_along"
+                >
+                  <Volume2 size={12} className="inline"/> {(t('immersive.read_along') || 'Read Along')}
+                </button>
+              </>
+            )}
           </div>
           </>
         )}
