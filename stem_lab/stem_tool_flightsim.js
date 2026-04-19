@@ -928,6 +928,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                 gfx.fillRect(sbX - sbS * 0.8, y + sbS * 0.1, sbS * 1.6, sbS * 0.3);
               }
 
+              // Whale pod (open ocean — spouts visible)
+              if (!isCoast && depth > 0.25 && alt < 6000 && terrainHash(shipSeed, 21) > 0.88) {
+                var podCount = 2 + Math.floor(terrainHash(shipSeed, 22) * 3);
+                for (var wp = 0; wp < podCount; wp++) {
+                  var wpX = terrainHash(shipSeed + wp, 22) * W;
+                  var wpY = y + Math.sin(time * 0.8 + wp) * 1;
+                  // Whale body (dark arc)
+                  gfx.fillStyle = 'rgba(30,40,60,0.75)';
+                  gfx.beginPath();
+                  gfx.ellipse(wpX, wpY, 3 + depth * 2, 1 + depth, 0, 0, Math.PI * 2);
+                  gfx.fill();
+                  // Spout (animated cycle)
+                  var spoutPhase = (time * 2 + wp) % 4;
+                  if (spoutPhase < 1) {
+                    gfx.fillStyle = 'rgba(240,250,255,' + (0.7 - spoutPhase * 0.5) + ')';
+                    gfx.beginPath();
+                    gfx.ellipse(wpX, wpY - 3 - spoutPhase * 4, 1, 3 + spoutPhase * 2, 0, 0, Math.PI * 2);
+                    gfx.fill();
+                  }
+                }
+              }
+
               // Offshore oil platforms (deep water, rare)
               if (!isCoast && depth > 0.3 && alt < 10000 && terrainHash(shipSeed, 17) > 0.93) {
                 var opX = terrainHash(shipSeed, 18) * W;
@@ -1145,6 +1167,64 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               gfx.stroke();
             }
 
+            // African savanna wildlife (elephants/giraffes — distinctive from above)
+            var isSavanna = scanLat < 5 && scanLat > -25 && scanLon > 15 && scanLon < 45 &&
+                           elev < 3000 && !isDensedForest;
+            if (isSavanna && depth > 0.35 && alt < 5000) {
+              var savSeed = Math.floor(scanLat * 8) * 29 + Math.floor(scanLon * 8);
+              if (terrainHash(savSeed, 25) > 0.6) {
+                // Acacia tree (flat-topped)
+                gfx.fillStyle = 'rgba(100,70,40,' + (0.6 * depth) + ')';
+                var atX = terrainHash(savSeed, 26) * W;
+                gfx.fillRect(atX, y - elevBump - 5, 0.8, 5);
+                gfx.fillStyle = 'rgba(60,100,50,' + (0.65 * depth) + ')';
+                gfx.beginPath();
+                gfx.ellipse(atX + 0.4, y - elevBump - 6, 4, 1.5, 0, 0, Math.PI * 2);
+                gfx.fill();
+
+                // Herd (4-8 small dots)
+                var herdSize = 4 + Math.floor(terrainHash(savSeed, 27) * 5);
+                var herdX = terrainHash(savSeed, 28) * W * 0.7 + W * 0.15;
+                var herdType = terrainHash(savSeed, 29);
+                for (var hrd = 0; hrd < herdSize; hrd++) {
+                  var hrx = herdX + (hrd - herdSize / 2) * 2.5 + (terrainHash(hrd, savSeed) - 0.5) * 3;
+                  var hry = y - elevBump + (terrainHash(hrd + 3, savSeed) - 0.5) * 2;
+                  if (herdType > 0.66) {
+                    // Giraffes (tall vertical oval)
+                    gfx.fillStyle = 'rgba(200,150,80,' + (0.75 * depth) + ')';
+                    gfx.fillRect(hrx - 0.4, hry - 3, 0.8, 3);
+                    gfx.fillRect(hrx - 0.9, hry, 1.8, 0.8);
+                  } else if (herdType > 0.33) {
+                    // Elephants (gray rounded shapes)
+                    gfx.fillStyle = 'rgba(120,115,110,' + (0.8 * depth) + ')';
+                    gfx.beginPath();
+                    gfx.ellipse(hrx, hry, 1.5, 1, 0, 0, Math.PI * 2);
+                    gfx.fill();
+                  } else {
+                    // Wildebeest/zebras (dark dots)
+                    gfx.fillStyle = 'rgba(60,55,50,' + (0.75 * depth) + ')';
+                    gfx.beginPath();
+                    gfx.arc(hrx, hry, 0.9, 0, Math.PI * 2);
+                    gfx.fill();
+                  }
+                }
+              }
+            }
+
+            // Arctic wildlife (caribou / polar bears at high latitude)
+            if (isTundra && depth > 0.35 && alt < 4000 && terrainHash(Math.floor(scanLat * 10), Math.floor(scanLon * 10) + 13) > 0.8) {
+              var arcHerdSize = 5 + Math.floor(terrainHash(scanLat * 7, scanLon * 7) * 8);
+              var arcX = terrainHash(scanLat * 13, scanLon * 13) * W * 0.7 + W * 0.15;
+              for (var arc = 0; arc < arcHerdSize; arc++) {
+                var arx = arcX + (arc - arcHerdSize / 2) * 2 + (terrainHash(arc, scanLat * 5) - 0.5) * 2;
+                var ary = y - elevBump + (terrainHash(arc + 7, scanLon * 5) - 0.5) * 2;
+                gfx.fillStyle = 'rgba(100,70,50,' + (0.75 * depth) + ')';
+                gfx.beginPath();
+                gfx.arc(arx, ary, 0.8, 0, Math.PI * 2);
+                gfx.fill();
+              }
+            }
+
             // Wind farms (on farmland/plains, not forest/desert)
             if (isFarmland && depth > 0.4 && alt < 6000 &&
                 terrainHash(Math.floor(scanLat * 9), Math.floor(scanLon * 9) + 5) > 0.75) {
@@ -1235,10 +1315,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             if (depth > 0.5 && alt < 5000 && terrainHash(scanLat * 8, scanLon * 8) > 0.8) {
               gfx.strokeStyle = 'rgba(120,110,100,' + (0.12 * depth) + ')';
               gfx.lineWidth = 1;
+              var rdStart = terrainHash(r, 3) * W;
+              var rdEnd = terrainHash(r, 4) * W;
               gfx.beginPath();
-              gfx.moveTo(terrainHash(r, 3) * W, y);
-              gfx.lineTo(terrainHash(r, 4) * W, y + rowH);
+              gfx.moveTo(rdStart, y);
+              gfx.lineTo(rdEnd, y + rowH);
               gfx.stroke();
+
+              // Moving headlights/taillights on the road at night
+              var isNightRd = typeof dayNight2 !== 'undefined' && dayNight2 && dayNight2.isNight;
+              if (isNightRd && alt < 6000) {
+                var carCount = 2 + Math.floor(depth * 3);
+                for (var cr = 0; cr < carCount; cr++) {
+                  // Animate along the road line
+                  var tCar = ((time * 0.3 + cr * 0.3) % 1);
+                  var dir = cr % 2 === 0 ? tCar : 1 - tCar;
+                  var cX = rdStart + (rdEnd - rdStart) * dir;
+                  var cY = y + rowH * dir;
+                  // Headlight (white, facing forward)
+                  if (cr % 2 === 0) {
+                    gfx.fillStyle = 'rgba(255,255,220,0.9)';
+                    gfx.beginPath(); gfx.arc(cX, cY, 1, 0, Math.PI * 2); gfx.fill();
+                    // Beam cone
+                    gfx.fillStyle = 'rgba(255,255,200,0.15)';
+                    gfx.beginPath();
+                    gfx.moveTo(cX, cY);
+                    gfx.lineTo(cX + 8, cY + 3);
+                    gfx.lineTo(cX + 8, cY - 3);
+                    gfx.closePath();
+                    gfx.fill();
+                  } else {
+                    // Taillight (red)
+                    gfx.fillStyle = 'rgba(255,60,40,0.85)';
+                    gfx.beginPath(); gfx.arc(cX, cY, 0.8, 0, Math.PI * 2); gfx.fill();
+                  }
+                }
+              }
             }
           }
 
@@ -1731,6 +1843,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         { name: 'Arc de Triomphe', lat: 48.874, lon: 2.295, type: 'arch', fact: '164 ft tall arch commissioned by Napoleon (1806). Honors French war heroes.' },
         { name: 'Leaning Tower of Shanghai', lat: 31.245, lon: 121.506, type: 'megatower', height: 2073, color: '#c8d0d8', fact: 'Shanghai Tower — 2nd tallest building in the world. Twists 120° to reduce wind load.' },
         { name: 'Neuschwanstein Castle', lat: 47.557, lon: 10.750, type: 'castle', fact: 'Bavarian fairy-tale castle (1869). Inspiration for Disney\'s Sleeping Beauty Castle.' },
+        { name: 'Kennedy Space Center', lat: 28.573, lon: -80.649, type: 'rocketpad', fact: 'NASA launch complex since 1962. Site of every crewed US moon mission (Apollo 11 onward).' },
+        { name: 'Las Vegas Strip', lat: 36.115, lon: -115.173, type: 'vegas', fact: '4.2-mile stretch of casinos. Visible from space at night due to extreme light output.' },
+        { name: 'Statue of Unity', lat: 21.838, lon: 73.719, type: 'unity', height: 597, fact: 'Tallest statue in the world (597 ft). Depicts Indian statesman Sardar Vallabhbhai Patel (2018).' },
+        { name: 'Salar de Uyuni', lat: -20.133, lon: -67.489, type: 'saltflat', fact: 'World\'s largest salt flat — 4,086 sq mi. Becomes a mirror during the rainy season.' },
+        { name: 'Mt. Saint Helens', lat: 46.191, lon: -122.195, type: 'volcano_active', fact: '1980 eruption was the deadliest in US history. Lost 1,300 ft of summit in 9 hours.' },
+        { name: 'Atomium (Brussels)', lat: 50.895, lon: 4.341, type: 'atomium', fact: 'Built for 1958 World Expo. 9 steel spheres represent an iron crystal magnified 165 billion times.' },
       ];
 
       var iconicDiscoveredRef = useRef({});
@@ -2644,6 +2762,245 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           for (var cw = 0; cw < 4; cw++) {
             gfx.fillRect(x - sz * 0.6 + cw * sz * 0.4, y - sz * 1.2, sz * 0.08, sz * 0.12);
           }
+        } else if (t === 'rocketpad') {
+          // Kennedy Space Center: launch pad with rocket + gantry
+          // Pad base
+          gfx.fillStyle = '#6a6a6a';
+          gfx.fillRect(x - sz * 1.2, y - sz * 0.2, sz * 2.4, sz * 0.2);
+          // Rocket (white with black stripes)
+          gfx.fillStyle = '#f5f5f5';
+          gfx.fillRect(x - sz * 0.2, y - sz * 2.3, sz * 0.4, sz * 2.1);
+          // Rocket nose cone
+          gfx.beginPath();
+          gfx.moveTo(x - sz * 0.2, y - sz * 2.3);
+          gfx.lineTo(x, y - sz * 2.7);
+          gfx.lineTo(x + sz * 0.2, y - sz * 2.3);
+          gfx.closePath();
+          gfx.fill();
+          // Black stripes
+          gfx.fillStyle = '#202020';
+          gfx.fillRect(x - sz * 0.2, y - sz * 1.9, sz * 0.4, sz * 0.1);
+          gfx.fillRect(x - sz * 0.2, y - sz * 0.8, sz * 0.4, sz * 0.1);
+          // USA flag marker (red)
+          gfx.fillStyle = '#cc2030';
+          gfx.fillRect(x - sz * 0.2, y - sz * 1.5, sz * 0.1, sz * 0.15);
+          gfx.fillStyle = '#2050a0';
+          gfx.fillRect(x - sz * 0.1, y - sz * 1.5, sz * 0.1, sz * 0.15);
+          // Fins at base
+          gfx.fillStyle = '#d0d0d0';
+          gfx.beginPath();
+          gfx.moveTo(x - sz * 0.2, y - sz * 0.3);
+          gfx.lineTo(x - sz * 0.45, y - sz * 0.2);
+          gfx.lineTo(x - sz * 0.2, y - sz * 0.2);
+          gfx.closePath();
+          gfx.fill();
+          gfx.beginPath();
+          gfx.moveTo(x + sz * 0.2, y - sz * 0.3);
+          gfx.lineTo(x + sz * 0.45, y - sz * 0.2);
+          gfx.lineTo(x + sz * 0.2, y - sz * 0.2);
+          gfx.closePath();
+          gfx.fill();
+          // Launch tower/gantry (red lattice)
+          gfx.strokeStyle = '#a03030';
+          gfx.lineWidth = 0.8;
+          gfx.beginPath();
+          gfx.moveTo(x + sz * 0.5, y - sz * 0.2);
+          gfx.lineTo(x + sz * 0.5, y - sz * 2.2);
+          gfx.moveTo(x + sz * 0.8, y - sz * 0.2);
+          gfx.lineTo(x + sz * 0.8, y - sz * 2.2);
+          gfx.stroke();
+          // Gantry arms
+          for (var ga = 0; ga < 5; ga++) {
+            gfx.beginPath();
+            gfx.moveTo(x + sz * 0.5, y - sz * 0.3 - ga * sz * 0.4);
+            gfx.lineTo(x + sz * 0.8, y - sz * 0.3 - ga * sz * 0.4);
+            gfx.stroke();
+          }
+          // Exhaust smoke (if "launching" — time-based)
+          var launchPhase = (time % 20) / 20;
+          if (launchPhase > 0.3 && launchPhase < 0.5) {
+            gfx.fillStyle = 'rgba(255,230,200,0.7)';
+            gfx.beginPath();
+            gfx.ellipse(x, y + sz * 0.2, sz * 0.6, sz * 0.4, 0, 0, Math.PI * 2);
+            gfx.fill();
+            gfx.fillStyle = 'rgba(200,200,200,0.6)';
+            gfx.beginPath();
+            gfx.ellipse(x - sz * 0.5, y + sz * 0.3, sz * 0.4, sz * 0.3, 0, 0, Math.PI * 2);
+            gfx.ellipse(x + sz * 0.5, y + sz * 0.3, sz * 0.4, sz * 0.3, 0, 0, Math.PI * 2);
+            gfx.fill();
+          }
+        } else if (t === 'vegas') {
+          // Las Vegas Strip: cluster of bright themed casinos
+          // Street base
+          gfx.fillStyle = '#2a2a35';
+          gfx.fillRect(x - sz * 2.5, y - sz * 0.1, sz * 5, sz * 0.1);
+          // Pyramid (Luxor)
+          gfx.fillStyle = '#d4a84a';
+          gfx.beginPath();
+          gfx.moveTo(x - sz * 2.3, y - sz * 0.1);
+          gfx.lineTo(x - sz * 1.5, y - sz * 1.5);
+          gfx.lineTo(x - sz * 0.7, y - sz * 0.1);
+          gfx.closePath();
+          gfx.fill();
+          // Eiffel tower mini (Paris casino)
+          gfx.strokeStyle = '#b8b0a0';
+          gfx.lineWidth = 1;
+          gfx.beginPath();
+          gfx.moveTo(x - sz * 0.5, y - sz * 0.1); gfx.lineTo(x - sz * 0.2, y - sz * 1.8);
+          gfx.moveTo(x + sz * 0.1, y - sz * 0.1); gfx.lineTo(x - sz * 0.2, y - sz * 1.8);
+          gfx.stroke();
+          // Casino hotels (colorful towers)
+          gfx.fillStyle = '#d5b45a';
+          gfx.fillRect(x + sz * 0.3, y - sz * 1.3, sz * 0.4, sz * 1.3);
+          gfx.fillStyle = '#c04040';
+          gfx.fillRect(x + sz * 0.8, y - sz * 1.6, sz * 0.4, sz * 1.6);
+          gfx.fillStyle = '#4080c0';
+          gfx.fillRect(x + sz * 1.3, y - sz * 1.4, sz * 0.4, sz * 1.4);
+          gfx.fillStyle = '#50a050';
+          gfx.fillRect(x + sz * 1.8, y - sz * 1.7, sz * 0.4, sz * 1.7);
+          // BRIGHT neon glow (flickering)
+          var neonPulse = 0.6 + Math.sin(time * 6) * 0.3;
+          gfx.fillStyle = 'rgba(255,240,100,' + neonPulse + ')';
+          gfx.fillRect(x + sz * 0.35, y - sz * 1.25, sz * 0.3, sz * 0.1);
+          gfx.fillStyle = 'rgba(255,100,200,' + neonPulse + ')';
+          gfx.fillRect(x + sz * 0.85, y - sz * 1.55, sz * 0.3, sz * 0.1);
+          gfx.fillStyle = 'rgba(100,220,255,' + neonPulse + ')';
+          gfx.fillRect(x + sz * 1.35, y - sz * 1.35, sz * 0.3, sz * 0.1);
+          // Ground glow halo
+          var vegasGrad = gfx.createRadialGradient(x, y, 0, x, y, sz * 3);
+          vegasGrad.addColorStop(0, 'rgba(255,240,180,0.25)');
+          vegasGrad.addColorStop(1, 'rgba(255,240,180,0)');
+          gfx.fillStyle = vegasGrad;
+          gfx.beginPath();
+          gfx.arc(x, y, sz * 3, 0, Math.PI * 2);
+          gfx.fill();
+        } else if (t === 'unity') {
+          // Statue of Unity: massive bronze statue on pedestal
+          // Pedestal
+          gfx.fillStyle = '#a08570';
+          gfx.fillRect(x - sz * 0.7, y - sz * 0.8, sz * 1.4, sz * 0.8);
+          // Figure body (bronze)
+          gfx.fillStyle = '#8b6a3d';
+          gfx.fillRect(x - sz * 0.3, y - sz * 2.6, sz * 0.6, sz * 1.8);
+          // Head
+          gfx.beginPath();
+          gfx.arc(x, y - sz * 2.75, sz * 0.18, 0, Math.PI * 2);
+          gfx.fill();
+          // Robes (draped)
+          gfx.fillStyle = '#6b4e2d';
+          gfx.beginPath();
+          gfx.moveTo(x - sz * 0.35, y - sz * 2.3);
+          gfx.lineTo(x - sz * 0.45, y - sz * 0.8);
+          gfx.lineTo(x + sz * 0.45, y - sz * 0.8);
+          gfx.lineTo(x + sz * 0.35, y - sz * 2.3);
+          gfx.closePath();
+          gfx.fill();
+          // Water (statue sits on island in river)
+          gfx.fillStyle = 'rgba(80,130,170,0.7)';
+          gfx.fillRect(x - sz * 2, y, sz * 4, sz * 0.2);
+        } else if (t === 'saltflat') {
+          // Salar de Uyuni: vast white salt plain with hexagonal pattern
+          gfx.fillStyle = '#f5f5f8';
+          gfx.fillRect(x - sz * 2.5, y - sz * 0.2, sz * 5, sz * 0.7);
+          // Hexagonal crack pattern
+          gfx.strokeStyle = 'rgba(160,170,180,0.6)';
+          gfx.lineWidth = 0.5;
+          for (var hx = 0; hx < 7; hx++) {
+            for (var hy = 0; hy < 3; hy++) {
+              var hxX = x - sz * 2.3 + hx * sz * 0.7 + (hy % 2) * sz * 0.35;
+              var hxY = y - sz * 0.1 + hy * sz * 0.2;
+              gfx.beginPath();
+              for (var hxi = 0; hxi < 6; hxi++) {
+                var hxAng = hxi * Math.PI / 3;
+                var hxPtX = hxX + Math.cos(hxAng) * sz * 0.2;
+                var hxPtY = hxY + Math.sin(hxAng) * sz * 0.1;
+                if (hxi === 0) gfx.moveTo(hxPtX, hxPtY); else gfx.lineTo(hxPtX, hxPtY);
+              }
+              gfx.closePath();
+              gfx.stroke();
+            }
+          }
+          // Reflection shimmer (mirror effect)
+          gfx.fillStyle = 'rgba(200,220,255,0.3)';
+          var shmX = (time * 30) % (sz * 5);
+          gfx.fillRect(x - sz * 2.5 + shmX, y - sz * 0.2, sz * 0.3, sz * 0.7);
+          // Distant mountains
+          gfx.fillStyle = 'rgba(120,100,90,0.5)';
+          gfx.beginPath();
+          gfx.moveTo(x - sz * 2.5, y - sz * 0.2);
+          gfx.lineTo(x - sz * 1.5, y - sz * 0.8);
+          gfx.lineTo(x - sz * 0.5, y - sz * 0.5);
+          gfx.lineTo(x + sz * 0.5, y - sz * 0.9);
+          gfx.lineTo(x + sz * 1.5, y - sz * 0.4);
+          gfx.lineTo(x + sz * 2.5, y - sz * 0.2);
+          gfx.closePath();
+          gfx.fill();
+        } else if (t === 'volcano_active') {
+          // Mt St Helens: erupting volcano with ash plume
+          gfx.fillStyle = '#5a4a3a';
+          gfx.beginPath();
+          gfx.moveTo(x - sz * 2, y);
+          gfx.lineTo(x - sz * 0.5, y - sz * 1.4);
+          // Broken/blown-out crater edge (jagged)
+          gfx.lineTo(x + sz * 0.1, y - sz * 1.2);
+          gfx.lineTo(x + sz * 0.5, y - sz * 1.35);
+          gfx.lineTo(x + sz * 2, y);
+          gfx.closePath();
+          gfx.fill();
+          // Snow cap (partial, remaining side)
+          gfx.fillStyle = '#e8e8ec';
+          gfx.beginPath();
+          gfx.moveTo(x - sz * 0.9, y - sz * 1.1);
+          gfx.lineTo(x - sz * 0.5, y - sz * 1.4);
+          gfx.lineTo(x - sz * 0.2, y - sz * 1.25);
+          gfx.closePath();
+          gfx.fill();
+          // Ash plume (billowing)
+          for (var ap2 = 0; ap2 < 8; ap2++) {
+            var apS = sz * (0.35 + ap2 * 0.1);
+            var apY = y - sz * 1.4 - ap2 * sz * 0.4 + Math.sin(time * 0.5 + ap2) * sz * 0.1;
+            var apX = x + Math.sin(time * 0.3 + ap2) * sz * 0.3;
+            gfx.fillStyle = 'rgba(' + (80 + ap2 * 10) + ',' + (70 + ap2 * 8) + ',' + (65 + ap2 * 8) + ',' + (0.7 - ap2 * 0.06) + ')';
+            gfx.beginPath();
+            gfx.arc(apX, apY, apS, 0, Math.PI * 2);
+            gfx.fill();
+          }
+          // Orange glow at vent
+          gfx.fillStyle = 'rgba(255,100,30,' + (0.5 + Math.sin(time * 4) * 0.2) + ')';
+          gfx.beginPath();
+          gfx.ellipse(x, y - sz * 1.25, sz * 0.25, sz * 0.08, 0, 0, Math.PI * 2);
+          gfx.fill();
+        } else if (t === 'atomium') {
+          // Atomium: 9 connected spheres in cubic arrangement (viewed isometrically)
+          var atPositions = [
+            [0, -3.0], [-1.3, -2.2], [1.3, -2.2], // Top + upper sides
+            [0, -1.5],                              // Center
+            [-1.8, -0.6], [1.8, -0.6],              // Middle sides
+            [-1.3, 0.4], [1.3, 0.4], [0, 1.0]       // Bottom
+          ];
+          // Connecting tubes (draw first behind spheres)
+          gfx.strokeStyle = 'rgba(190,195,205,0.7)';
+          gfx.lineWidth = sz * 0.08;
+          var connections = [[0,3],[1,3],[2,3],[3,4],[3,5],[3,8],[4,6],[5,7],[6,8],[7,8],[0,1],[0,2],[1,2]];
+          connections.forEach(function(c) {
+            var a = atPositions[c[0]], b = atPositions[c[1]];
+            gfx.beginPath();
+            gfx.moveTo(x + a[0] * sz * 0.3, y + a[1] * sz * 0.35);
+            gfx.lineTo(x + b[0] * sz * 0.3, y + b[1] * sz * 0.35);
+            gfx.stroke();
+          });
+          // Spheres
+          atPositions.forEach(function(p) {
+            var px = x + p[0] * sz * 0.3, py = y + p[1] * sz * 0.35;
+            var sphGrad = gfx.createRadialGradient(px - sz * 0.07, py - sz * 0.07, 0, px, py, sz * 0.25);
+            sphGrad.addColorStop(0, '#ffffff');
+            sphGrad.addColorStop(0.6, '#b8bdc5');
+            sphGrad.addColorStop(1, '#6a6e78');
+            gfx.fillStyle = sphGrad;
+            gfx.beginPath();
+            gfx.arc(px, py, sz * 0.25, 0, Math.PI * 2);
+            gfx.fill();
+          });
         } else {
           // Fallback: generic landmark marker
           gfx.fillStyle = '#fde68a';
@@ -3022,6 +3379,58 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             gfx.stroke();
           }
         }
+        // Rainbow (appears when transitioning out of rain — light rain + sun)
+        if (wx.type === 'overcast' && wx.rainbowPhase === undefined) { wx.rainbowPhase = 0; }
+        var showRainbow = (wx.type === 'partly_cloudy' && Math.sin(time * 0.05) > 0.3) ||
+                          (wx.type === 'overcast' && Math.sin(time * 0.08) > 0.7);
+        if (showRainbow && state && state.altitude > 500 && state.altitude < 15000) {
+          var rbCenterX = W / 2 + Math.sin(time * 0.03) * W * 0.2;
+          var rbCenterY = horizonY + 80;
+          var rbBands = [
+            { r: 220, g: 50, b: 50, radius: 200 },     // Red (outer)
+            { r: 230, g: 130, b: 30, radius: 195 },    // Orange
+            { r: 240, g: 220, b: 50, radius: 190 },    // Yellow
+            { r: 80, g: 200, b: 80, radius: 185 },     // Green
+            { r: 60, g: 130, b: 230, radius: 180 },    // Blue
+            { r: 100, g: 70, b: 200, radius: 175 },    // Indigo
+            { r: 150, g: 80, b: 200, radius: 170 },    // Violet
+          ];
+          gfx.lineWidth = 4;
+          rbBands.forEach(function(band) {
+            gfx.strokeStyle = 'rgba(' + band.r + ',' + band.g + ',' + band.b + ',0.35)';
+            gfx.beginPath();
+            gfx.arc(rbCenterX, rbCenterY, band.radius, Math.PI + 0.2, Math.PI * 2 - 0.2);
+            gfx.stroke();
+          });
+        }
+
+        // Shooting stars at night, high altitude
+        if (state && state.altitude > 15000 && horizonY > 40) {
+          var shootSeed = Math.floor(time / 8);
+          var shootPhase = (time % 8) / 8;
+          if ((shootSeed * 43) % 5 === 0 && shootPhase < 0.4) {
+            var shX = (shootSeed * 229) % W;
+            var shY = ((shootSeed * 131) % Math.floor(horizonY * 0.8));
+            var shProgress = shootPhase / 0.4;
+            var shLen = 60 * shProgress;
+            var shAlpha = 1 - shProgress;
+            var shGrad = gfx.createLinearGradient(shX, shY, shX + shLen, shY + shLen * 0.4);
+            shGrad.addColorStop(0, 'rgba(255,255,255,0)');
+            shGrad.addColorStop(1, 'rgba(255,255,255,' + shAlpha + ')');
+            gfx.strokeStyle = shGrad;
+            gfx.lineWidth = 1.5;
+            gfx.beginPath();
+            gfx.moveTo(shX, shY);
+            gfx.lineTo(shX + shLen, shY + shLen * 0.4);
+            gfx.stroke();
+            // Bright head
+            gfx.fillStyle = 'rgba(255,250,220,' + shAlpha + ')';
+            gfx.beginPath();
+            gfx.arc(shX + shLen, shY + shLen * 0.4, 1.5, 0, Math.PI * 2);
+            gfx.fill();
+          }
+        }
+
         // Icing warning overlay (high altitude + precipitation)
         if (state && state.altitude > 10000 && state.altitude < 25000 && (wx.type === 'overcast' || wx.type === 'stormy')) {
           var iceAlpha = Math.min(0.15, (state.altitude - 10000) / 50000);
