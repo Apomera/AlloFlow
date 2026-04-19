@@ -8120,27 +8120,27 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@67e46b3/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@67e46b3/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@67e46b3/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@67e46b3/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@67e46b3/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@67e46b3/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@67e46b3/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@67e46b3/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@67e46b3/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@67e46b3/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@67e46b3/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@67e46b3/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@67e46b3/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@67e46b3/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@67e46b3/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@67e46b3/student_interaction_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@67e46b3/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@67e46b3/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@67e46b3/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@67e46b3/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@67e46b3/content_engine_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@014fefc/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@014fefc/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@014fefc/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@014fefc/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@014fefc/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@014fefc/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@014fefc/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@014fefc/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@014fefc/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@014fefc/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@014fefc/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@014fefc/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@014fefc/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@014fefc/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@014fefc/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@014fefc/student_interaction_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@014fefc/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@014fefc/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@014fefc/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@014fefc/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@014fefc/content_engine_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -8156,7 +8156,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@67e46b3/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@014fefc/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -56117,30 +56117,48 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         </div>
                       </details>
 
-                      {/* Expert Workbench — Advanced Remediation Command Bar */}
-                      <div className="bg-gradient-to-r from-slate-800 to-slate-900 border border-slate-600 rounded-xl p-3 space-y-2">
-                        <div className="text-[11px] font-bold text-purple-300 uppercase tracking-widest flex items-center gap-1">🤖 Expert Workbench {isAgentRunning && <span className="text-[11px] text-amber-300 animate-pulse ml-1">Running...</span>}</div>
+                      {/* Expert Workbench — Advanced Remediation Command Bar (collapsible) */}
+                      <details open className="bg-gradient-to-r from-slate-800 to-slate-900 border border-slate-600 rounded-xl group">
+                        <summary className="cursor-pointer p-3 text-[11px] font-bold text-purple-300 uppercase tracking-widest flex items-center gap-2 list-none select-none hover:bg-slate-800/50 rounded-xl">
+                          <span className="inline-block transition-transform group-open:rotate-90 text-slate-400">▸</span>
+                          🤖 Expert Workbench
+                          {isAgentRunning && <span className="text-[11px] text-amber-300 animate-pulse ml-1">Running...</span>}
+                          <span className="ml-auto text-[10px] text-slate-500 font-normal normal-case tracking-normal">{agentActivityLog.length > 0 ? `${agentActivityLog.length} event${agentActivityLog.length === 1 ? '' : 's'}` : 'idle'}</span>
+                        </summary>
+                        <div className="px-3 pb-3 space-y-2">
                         <form className="flex gap-1" onSubmit={async (e) => {
                           e.preventDefault();
                           if (!expertCommandInput.trim() || isAgentRunning || !pdfFixResult?.accessibleHtml) return;
                           const cmd = expertCommandInput.trim();
                           setExpertCommandInput('');
                           setIsAgentRunning(true);
+                          console.info('[ExpertWorkbench] start command=' + JSON.stringify(cmd));
+                          addToast(`🤖 Workbench running: ${cmd}`, 'info');
                           setAgentActivityLog(prev => [...prev, { text: '▶ ' + cmd, type: 'command', time: new Date().toLocaleTimeString() }]);
                           try {
                             const result = await processExpertCommand(cmd, pdfFixResult.accessibleHtml, {
                               onProgress: () => {},
-                              onActivity: (entry) => { setAgentActivityLog(prev => [...prev, entry]); }
+                              onActivity: (entry) => {
+                                console.info('[ExpertWorkbench] activity type=' + entry.type + ' text=' + entry.text);
+                                setAgentActivityLog(prev => [...prev, entry]);
+                              }
                             });
                             if (result && result.html && result.html !== pdfFixResult.accessibleHtml) {
                               setPdfFixResult(prev => ({ ...prev, accessibleHtml: result.html }));
                               if (result.score !== undefined) {
                                 setAgentActivityLog(prev => [...prev, { text: '📊 Score: ' + result.score + '/100', type: 'score', time: new Date().toLocaleTimeString() }]);
                               }
+                              console.info('[ExpertWorkbench] complete command=' + JSON.stringify(cmd) + ' score=' + (result.score !== undefined ? result.score : 'n/a'));
                               addToast('✅ Command applied!', 'success');
+                            } else {
+                              console.warn('[ExpertWorkbench] noop command=' + JSON.stringify(cmd) + ' — no HTML changes');
+                              setAgentActivityLog(prev => [...prev, { text: 'ℹ No changes applied', type: 'info', time: new Date().toLocaleTimeString() }]);
+                              addToast('ℹ️ No changes applied', 'info');
                             }
                           } catch (err) {
-                            setAgentActivityLog(prev => [...prev, { text: '❌ ' + (err.message || err), type: 'error', time: new Date().toLocaleTimeString() }]);
+                            console.error('[ExpertWorkbench] error command=' + JSON.stringify(cmd), err);
+                            setAgentActivityLog(prev => [...prev, { text: '❌ ' + (err && (err.message || err)), type: 'error', time: new Date().toLocaleTimeString() }]);
+                            addToast('❌ Workbench failed: ' + (err && (err.message || err) || 'unknown error'), 'error');
                           }
                           setIsAgentRunning(false);
                         }}>
@@ -56158,17 +56176,26 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           >{isAgentRunning ? '⏳' : '▶'}</button>
                         </form>
                         {agentActivityLog.length > 0 && (
-                          <div className="max-h-20 overflow-y-auto bg-slate-900 rounded-lg px-2 py-1 space-y-0.5 text-[11px] font-mono">
-                            {agentActivityLog.slice(-6).map((entry, i) => (
-                              <div key={i} className={'flex items-start gap-1 ' + (entry.type === 'error' ? 'text-red-400' : entry.type === 'score' ? 'text-cyan-300' : entry.type === 'success' || entry.type === 'complete' ? 'text-green-400' : entry.type === 'tool' ? 'text-amber-300' : entry.type === 'command' ? 'text-purple-300' : 'text-slate-600')}>
-                                <span className="text-slate-600 shrink-0">{entry.time}</span>
-                                <span>{entry.text}</span>
-                              </div>
-                            ))}
+                          <div>
+                            <div className={(agentLogFullView ? 'max-h-64' : 'max-h-20') + ' overflow-y-auto bg-slate-900 rounded-lg px-2 py-1 space-y-0.5 text-[11px] font-mono'} aria-live="polite" aria-label="Agent activity log">
+                              {(agentLogFullView ? agentActivityLog : agentActivityLog.slice(-6)).map((entry, i) => (
+                                <div key={i} className={'flex items-start gap-1 ' + (entry.type === 'error' ? 'text-red-400' : entry.type === 'score' ? 'text-cyan-300' : entry.type === 'success' || entry.type === 'complete' ? 'text-green-400' : entry.type === 'tool' ? 'text-amber-300' : entry.type === 'command' ? 'text-purple-300' : 'text-slate-400')}>
+                                  <span className="text-slate-600 shrink-0">{entry.time}</span>
+                                  <span>{entry.text}</span>
+                                </div>
+                              ))}
+                            </div>
+                            <div className="flex items-center gap-3 mt-1">
+                              <button type="button" onClick={() => setAgentLogFullView(v => !v)} className="text-[10px] text-purple-300 hover:text-purple-200 underline">
+                                {agentLogFullView ? 'Show recent only' : `Show full log (${agentActivityLog.length})`}
+                              </button>
+                              <button type="button" onClick={() => { setAgentActivityLog([]); console.info('[ExpertWorkbench] log cleared'); }} className="text-[10px] text-slate-500 hover:text-slate-300 underline ml-auto">Clear</button>
+                            </div>
                           </div>
                         )}
                         <p className="text-[11px] text-slate-600">Commands: <span className="text-slate-600">audit</span> · <span className="text-slate-600">auto</span> · <span className="text-slate-600">contrast</span> · or describe what to fix in plain language</p>
-                      </div>
+                        </div>
+                      </details>
 
                       {/* Differentiation Tools */}
                       <div className="bg-gradient-to-r from-violet-50 to-indigo-50 border border-violet-200 rounded-xl p-3 space-y-2">

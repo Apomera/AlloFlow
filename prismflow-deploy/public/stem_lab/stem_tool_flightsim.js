@@ -272,7 +272,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
 
       // Stall check. A parked plane at speed=0 trivially satisfies speed < stallSpeed,
       // so without this onGround guard the sim fires STALL warnings the instant you
-      // load into Sky School. Stall is a flight phenomenon; suppress it on the runway.
+      // load into Sky School — banner, horn, voice alert, and an adaptive hint that
+      // tells you to push S (pitch-down) when you actually need Shift (throttle-up).
+      // Stall is a flight phenomenon; suppress it while wheels are on the runway.
       var stalling = !state.onGround && this.isStalling(speed, alt);
       if (stalling) { lift *= 0.4; drag *= 1.5; } // dramatic lift loss in stall
 
