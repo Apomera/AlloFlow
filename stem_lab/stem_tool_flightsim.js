@@ -6136,6 +6136,75 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             }
           }
 
+          // ── Radio/radar altimeter callouts during approach to landing ──
+          // Descending toward the ground with a runway in reach triggers the
+          // classic "Bitchin' Betty" decreasing-altitude callouts — 500, 400,
+          // 300, 200, 100, 50, 40, 30, 20, 10, MINIMUMS. One-shot each: once
+          // fired, the flag on flightRef.current persists until the plane is
+          // back above 600 ft AGL. The voice synthesis is optional (skipped if
+          // skyAnnounce is unavailable). On-screen: small HUD pill bottom-right.
+          if (!pausedRef.current && !state.onGround && state.vsi < 0) {
+            var raAgl = Math.max(0, state.altitude - (state.fieldElev || 0));
+            var flRa = flightRef.current;
+            if (!flRa._raCallouts) flRa._raCallouts = {};
+            if (raAgl > 600) flRa._raCallouts = {};
+            var raSteps = [500, 400, 300, 200, 100, 50, 40, 30, 20, 10];
+            for (var rsi = 0; rsi < raSteps.length; rsi++) {
+              var rs = raSteps[rsi];
+              if (raAgl <= rs && raAgl > rs - 8 && !flRa._raCallouts[rs]) {
+                flRa._raCallouts[rs] = timeRef.current;
+                if (typeof skyAnnounce === 'function') skyAnnounce(String(rs));
+                break;
+              }
+            }
+            // Render the most recent callout briefly
+            var lastRa = 0, lastRaStep = null;
+            Object.keys(flRa._raCallouts).forEach(function(k) {
+              if (flRa._raCallouts[k] > lastRa) { lastRa = flRa._raCallouts[k]; lastRaStep = k; }
+            });
+            if (lastRaStep != null && timeRef.current - lastRa < 1.3) {
+              var raFade = Math.max(0, 1 - (timeRef.current - lastRa) / 1.3);
+              gfx.save();
+              gfx.globalAlpha = raFade;
+              gfx.font = 'bold 20px system-ui';
+              var raTxt = lastRaStep;
+              var raW = gfx.measureText(raTxt).width + 28;
+              var raX = W - raW - 18;
+              var raY = H - 40;
+              gfx.fillStyle = 'rgba(2,6,23,0.78)';
+              gfx.beginPath(); gfx.roundRect(raX, raY - 20, raW, 30, 6); gfx.fill();
+              gfx.strokeStyle = '#fb923c'; gfx.lineWidth = 1.5;
+              gfx.beginPath(); gfx.roundRect(raX, raY - 20, raW, 30, 6); gfx.stroke();
+              gfx.fillStyle = '#fed7aa';
+              gfx.textAlign = 'center'; gfx.textBaseline = 'middle';
+              gfx.fillText(raTxt, raX + raW / 2, raY - 5);
+              gfx.restore();
+            }
+          }
+
+          // ── Permanent AGL (radar altimeter) readout when low ──
+          // When within 2000 ft AGL, show ground-relative altitude next to the
+          // MSL altitude tape. Pilots use AGL on approach; MSL alone makes the
+          // student guess how high they actually are above the runway.
+          if (!state.onGround) {
+            var aglNow = Math.max(0, state.altitude - (state.fieldElev || 0));
+            if (aglNow < 2000) {
+              var aglColor = aglNow < 100 ? '#ef4444' : aglNow < 500 ? '#fbbf24' : '#4ade80';
+              gfx.font = 'bold 11px monospace';
+              var aglLbl = 'AGL ' + Math.round(aglNow) + ' ft';
+              var aglTw = gfx.measureText(aglLbl).width + 14;
+              var aglX = W - aglTw - 10;
+              var aglY = H - 180;
+              gfx.fillStyle = 'rgba(2,6,23,0.8)';
+              gfx.beginPath(); gfx.roundRect(aglX, aglY, aglTw, 18, 4); gfx.fill();
+              gfx.strokeStyle = aglColor; gfx.lineWidth = 1;
+              gfx.beginPath(); gfx.roundRect(aglX, aglY, aglTw, 18, 4); gfx.stroke();
+              gfx.fillStyle = aglColor;
+              gfx.textAlign = 'center'; gfx.textBaseline = 'middle';
+              gfx.fillText(aglLbl, aglX + aglTw / 2, aglY + 9);
+            }
+          }
+
           // ── Adaptive Flight Hints ──
           if (!pausedRef.current) {
             var hintMsg2 = null;

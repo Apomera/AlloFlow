@@ -5405,6 +5405,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             });
           }
 
+          // ── Bird flocks — silhouetted V formations at low-to-mid altitude.
+          // Birds live in the biosphere (surface..~6000 ft), so we hide them
+          // above 8000 ft. The flock drifts with wind-ish motion and each bird
+          // flaps independently. Purely ambient — gives the empty sky life.
+          if (state.altitude > 200 && state.altitude < 8000 && !dayNight.isNight) {
+            var flockCount = 2;
+            for (var flk = 0; flk < flockCount; flk++) {
+              var flkSeed = flk * 53 + Math.floor(timeRef.current / 40);
+              // Wrap the flock across the screen so it reappears after drifting off.
+              var flkLead = {
+                x: ((flk * 330 + timeRef.current * (18 + flk * 6)) % (W + 200)) - 100,
+                y: horizonY + 30 + flk * 40 + Math.sin(timeRef.current * 0.2 + flk) * 12
+              };
+              if (flkLead.y > H - 20) continue;
+              gfx.strokeStyle = dayNight.isDusk ? 'rgba(40,30,50,0.7)' : 'rgba(30,35,45,0.75)';
+              gfx.lineWidth = 1;
+              var birdN = 5 + (flkSeed % 3);
+              for (var bd = 0; bd < birdN; bd++) {
+                // V formation: row 0 is lead, subsequent rows fan out diagonally.
+                var bdRow = Math.ceil(bd / 2);
+                var bdSide = bd % 2 === 0 ? -1 : 1;
+                var bx = flkLead.x + bdSide * bdRow * 12;
+                var by = flkLead.y + bdRow * 5;
+                // Flap phase offset per-bird so they don't all sync
+                var flap = Math.sin(timeRef.current * 8 + bd * 0.6) * 0.5 + 0.5; // 0..1
+                var wingUp = 3 + flap * 3;
+                var wingOut = 5;
+                gfx.beginPath();
+                gfx.moveTo(bx - wingOut, by + wingUp);
+                gfx.lineTo(bx, by);
+                gfx.lineTo(bx + wingOut, by + wingUp);
+                gfx.stroke();
+              }
+            }
+          }
+
           // High-altitude jet contrails (visible when above 10k ft, more at cruise altitudes)
           if (state.altitude > 10000 && horizonY > 30) {
             var contrailCount = state.altitude > 25000 ? 4 : 2;
@@ -5505,6 +5541,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             // Vertical stabilizer
             gfx.fillStyle = '#6366f1';
             gfx.beginPath(); gfx.moveTo(25, -2); gfx.lineTo(30, -14); gfx.lineTo(28, -2); gfx.fill();
+            // ── Propeller disc — at idle the individual blades are visible,
+            // at higher RPM they blur into a translucent disc with a faint
+            // motion streak. Lets the student read engine RPM from the view.
+            var propX = 30;
+            var propRpmFactor = 0.15 + ctrl.throttle * 0.85;
+            var propBlur = propRpmFactor > 0.55; // blur once "at power"
+            if (propBlur) {
+              // Disc
+              gfx.fillStyle = 'rgba(210,220,230,' + (0.18 + ctrl.throttle * 0.15) + ')';
+              gfx.beginPath(); gfx.ellipse(propX, 0, 2, 8, 0, 0, Math.PI * 2); gfx.fill();
+              // Outer rim
+              gfx.strokeStyle = 'rgba(180,190,200,' + (0.25 + ctrl.throttle * 0.15) + ')';
+              gfx.lineWidth = 0.8;
+              gfx.beginPath(); gfx.ellipse(propX, 0, 2, 8, 0, 0, Math.PI * 2); gfx.stroke();
+              // Streak hint
+              gfx.fillStyle = 'rgba(255,255,255,' + (0.06 + ctrl.throttle * 0.1) + ')';
+              gfx.fillRect(propX - 2, -7, 4, 14);
+            } else {
+              // Slow blades visible individually — two lines rotating together
+              var propAngle = timeRef.current * (3 + propRpmFactor * 40);
+              gfx.strokeStyle = 'rgba(30,32,38,0.85)';
+              gfx.lineWidth = 1.2;
+              var pr = 7;
+              gfx.beginPath();
+              gfx.moveTo(propX + Math.cos(propAngle) * pr, Math.sin(propAngle) * pr);
+              gfx.lineTo(propX - Math.cos(propAngle) * pr, -Math.sin(propAngle) * pr);
+              gfx.stroke();
+              gfx.beginPath();
+              gfx.moveTo(propX + Math.cos(propAngle + Math.PI / 2) * pr, Math.sin(propAngle + Math.PI / 2) * pr);
+              gfx.lineTo(propX - Math.cos(propAngle + Math.PI / 2) * pr, -Math.sin(propAngle + Math.PI / 2) * pr);
+              gfx.stroke();
+            }
+            // Spinner (prop hub)
+            gfx.fillStyle = '#334155';
+            gfx.beginPath(); gfx.arc(propX, 0, 1.5, 0, Math.PI * 2); gfx.fill();
+
             // Engine glow (when throttle > 0)
             if (ctrl.throttle > 0.1) {
               var engGlow = gfx.createRadialGradient(28, 0, 0, 28, 0, 8 + ctrl.throttle * 10);
@@ -5518,20 +5590,60 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               gfx.fillStyle = '#ef4444'; gfx.beginPath(); gfx.arc(-48, -5, 2, 0, Math.PI * 2); gfx.fill(); // Left wing red
               gfx.fillStyle = '#22c55e'; gfx.beginPath(); gfx.arc(-48, 5, 2, 0, Math.PI * 2); gfx.fill();  // Right wing green
             }
+            // Strobe on the belly (1 Hz white flash)
+            if (timeRef.current % 1 > 0.92) {
+              gfx.fillStyle = 'rgba(255,255,255,0.9)';
+              gfx.beginPath(); gfx.arc(0, 4, 2.5, 0, Math.PI * 2); gfx.fill();
+            }
             gfx.restore();
           }
 
           // Day/night cycle (computed early so sun/lens flare/haze can use it)
           var dayNight = getDayNight(state.lon || 0, timeRef.current || 0) || { brightness: 0.8, isNight: false, isDusk: false, solarHour: 12 };
 
-          // Sun/moon glow
-          var sunX = W * 0.8; var sunY = Math.max(20, horizonY * 0.2);
-          var sunGrad = gfx.createRadialGradient(sunX, sunY, 5, sunX, sunY, 80);
-          sunGrad.addColorStop(0, 'rgba(255,250,220,0.9)');
-          sunGrad.addColorStop(0.3, 'rgba(255,200,50,0.3)');
-          sunGrad.addColorStop(1, 'rgba(255,200,50,0)');
-          gfx.fillStyle = sunGrad; gfx.fillRect(sunX - 80, sunY - 80, 160, 160);
-          gfx.fillStyle = '#fffde0'; gfx.beginPath(); gfx.arc(sunX, sunY, 8, 0, Math.PI * 2); gfx.fill();
+          // Sun/moon glow. Position moves with solar hour (sunrise at 06:00 in
+          // the east → noon high overhead → sunset in the west at 18:00). This
+          // replaces a fixed sunX = W*0.8 which meant every airport on every
+          // flight had the same static lighting regardless of time of day.
+          var solarHrN = (dayNight.solarHour != null ? dayNight.solarHour : 12);
+          // Map 6→left (0.12 W), 12→center (0.5 W), 18→right (0.88 W); clamp otherwise.
+          var sunT = Math.max(0, Math.min(1, (solarHrN - 6) / 12));
+          var sunX = W * (0.12 + sunT * 0.76);
+          // Arc height: peaks at noon, dips at sunrise/sunset, below horizon at night.
+          var sunArc = Math.sin(sunT * Math.PI); // 0..1..0 over 06→18
+          var sunY = horizonY - sunArc * (horizonY * 0.75) - 10;
+          if (dayNight.isNight) {
+            // Moon: cool white glow, slower arc (rough 20:00 → 06:00 visible).
+            var moonHr = ((solarHrN + 12) % 24);
+            var moonT = Math.max(0, Math.min(1, (moonHr - 20) / 10 + (moonHr < 6 ? 1 : 0)));
+            sunX = W * (0.12 + moonT * 0.76);
+            sunArc = Math.sin(moonT * Math.PI);
+            sunY = horizonY - sunArc * (horizonY * 0.7) - 10;
+            var moonGrad = gfx.createRadialGradient(sunX, sunY, 3, sunX, sunY, 60);
+            moonGrad.addColorStop(0, 'rgba(240,245,255,0.9)');
+            moonGrad.addColorStop(0.4, 'rgba(200,220,255,0.25)');
+            moonGrad.addColorStop(1, 'rgba(150,180,220,0)');
+            gfx.fillStyle = moonGrad; gfx.fillRect(sunX - 60, sunY - 60, 120, 120);
+            gfx.fillStyle = '#f1f5f9';
+            gfx.beginPath(); gfx.arc(sunX, sunY, 7, 0, Math.PI * 2); gfx.fill();
+            // Crater shadow
+            gfx.fillStyle = 'rgba(160,170,190,0.35)';
+            gfx.beginPath(); gfx.arc(sunX - 2, sunY - 1, 2, 0, Math.PI * 2); gfx.fill();
+            gfx.beginPath(); gfx.arc(sunX + 2, sunY + 2, 1.5, 0, Math.PI * 2); gfx.fill();
+          } else {
+            // Sun: warm yellow with a slightly redder tint near horizon (golden hour)
+            var horizonProxim = 1 - sunArc; // 0 overhead, 1 at horizon
+            var sunR = 255;
+            var sunG = Math.round(230 - horizonProxim * 80);
+            var sunB = Math.round(180 - horizonProxim * 150);
+            var sunGrad = gfx.createRadialGradient(sunX, sunY, 5, sunX, sunY, 80);
+            sunGrad.addColorStop(0, 'rgba(' + sunR + ',' + sunG + ',' + Math.max(100, sunB) + ',0.9)');
+            sunGrad.addColorStop(0.3, 'rgba(' + sunR + ',' + (sunG - 30) + ',50,0.3)');
+            sunGrad.addColorStop(1, 'rgba(255,200,50,0)');
+            gfx.fillStyle = sunGrad; gfx.fillRect(sunX - 80, sunY - 80, 160, 160);
+            gfx.fillStyle = 'rgb(' + sunR + ',' + sunG + ',' + Math.max(120, sunB) + ')';
+            gfx.beginPath(); gfx.arc(sunX, sunY, 8, 0, Math.PI * 2); gfx.fill();
+          }
 
           // Lens flare (when looking toward sun)
           if (dayNight && !dayNight.isNight) {
@@ -6021,6 +6133,75 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               gfx.restore();
               // Suppress calloutMsg local so it doesn't double-render this frame
               calloutMsg = null;
+            }
+          }
+
+          // ── Radio/radar altimeter callouts during approach to landing ──
+          // Descending toward the ground with a runway in reach triggers the
+          // classic "Bitchin' Betty" decreasing-altitude callouts — 500, 400,
+          // 300, 200, 100, 50, 40, 30, 20, 10, MINIMUMS. One-shot each: once
+          // fired, the flag on flightRef.current persists until the plane is
+          // back above 600 ft AGL. The voice synthesis is optional (skipped if
+          // skyAnnounce is unavailable). On-screen: small HUD pill bottom-right.
+          if (!pausedRef.current && !state.onGround && state.vsi < 0) {
+            var raAgl = Math.max(0, state.altitude - (state.fieldElev || 0));
+            var flRa = flightRef.current;
+            if (!flRa._raCallouts) flRa._raCallouts = {};
+            if (raAgl > 600) flRa._raCallouts = {};
+            var raSteps = [500, 400, 300, 200, 100, 50, 40, 30, 20, 10];
+            for (var rsi = 0; rsi < raSteps.length; rsi++) {
+              var rs = raSteps[rsi];
+              if (raAgl <= rs && raAgl > rs - 8 && !flRa._raCallouts[rs]) {
+                flRa._raCallouts[rs] = timeRef.current;
+                if (typeof skyAnnounce === 'function') skyAnnounce(String(rs));
+                break;
+              }
+            }
+            // Render the most recent callout briefly
+            var lastRa = 0, lastRaStep = null;
+            Object.keys(flRa._raCallouts).forEach(function(k) {
+              if (flRa._raCallouts[k] > lastRa) { lastRa = flRa._raCallouts[k]; lastRaStep = k; }
+            });
+            if (lastRaStep != null && timeRef.current - lastRa < 1.3) {
+              var raFade = Math.max(0, 1 - (timeRef.current - lastRa) / 1.3);
+              gfx.save();
+              gfx.globalAlpha = raFade;
+              gfx.font = 'bold 20px system-ui';
+              var raTxt = lastRaStep;
+              var raW = gfx.measureText(raTxt).width + 28;
+              var raX = W - raW - 18;
+              var raY = H - 40;
+              gfx.fillStyle = 'rgba(2,6,23,0.78)';
+              gfx.beginPath(); gfx.roundRect(raX, raY - 20, raW, 30, 6); gfx.fill();
+              gfx.strokeStyle = '#fb923c'; gfx.lineWidth = 1.5;
+              gfx.beginPath(); gfx.roundRect(raX, raY - 20, raW, 30, 6); gfx.stroke();
+              gfx.fillStyle = '#fed7aa';
+              gfx.textAlign = 'center'; gfx.textBaseline = 'middle';
+              gfx.fillText(raTxt, raX + raW / 2, raY - 5);
+              gfx.restore();
+            }
+          }
+
+          // ── Permanent AGL (radar altimeter) readout when low ──
+          // When within 2000 ft AGL, show ground-relative altitude next to the
+          // MSL altitude tape. Pilots use AGL on approach; MSL alone makes the
+          // student guess how high they actually are above the runway.
+          if (!state.onGround) {
+            var aglNow = Math.max(0, state.altitude - (state.fieldElev || 0));
+            if (aglNow < 2000) {
+              var aglColor = aglNow < 100 ? '#ef4444' : aglNow < 500 ? '#fbbf24' : '#4ade80';
+              gfx.font = 'bold 11px monospace';
+              var aglLbl = 'AGL ' + Math.round(aglNow) + ' ft';
+              var aglTw = gfx.measureText(aglLbl).width + 14;
+              var aglX = W - aglTw - 10;
+              var aglY = H - 180;
+              gfx.fillStyle = 'rgba(2,6,23,0.8)';
+              gfx.beginPath(); gfx.roundRect(aglX, aglY, aglTw, 18, 4); gfx.fill();
+              gfx.strokeStyle = aglColor; gfx.lineWidth = 1;
+              gfx.beginPath(); gfx.roundRect(aglX, aglY, aglTw, 18, 4); gfx.stroke();
+              gfx.fillStyle = aglColor;
+              gfx.textAlign = 'center'; gfx.textBaseline = 'middle';
+              gfx.fillText(aglLbl, aglX + aglTw / 2, aglY + 9);
             }
           }
 

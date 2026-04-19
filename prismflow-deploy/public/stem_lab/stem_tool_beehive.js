@@ -1738,6 +1738,236 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             c.fillText('Flies at ~15 mph · Flaps wings 230× per second · Visits up to 100 flowers per trip', W / 2, H - 14);
           }
 
+          // ═══ LIFE CYCLE DIAGRAM (21-day metamorphosis: egg → larva → pupa → adult) ═══
+          function drawLifeCycle() {
+            // Honeycomb-golden background
+            var lcGrad = c.createLinearGradient(0, 0, 0, H);
+            lcGrad.addColorStop(0, '#fef3c7'); lcGrad.addColorStop(1, '#fde68a');
+            c.fillStyle = lcGrad; c.fillRect(0, 0, W, H);
+
+            // Faint hexagonal comb pattern background
+            c.strokeStyle = 'rgba(120,83,15,0.08)'; c.lineWidth = 0.8;
+            var hexR = 18;
+            for (var hgy = -1; hgy < H / (hexR * 1.5); hgy++) {
+              for (var hgx = -1; hgx < W / (hexR * 2); hgx++) {
+                var hcx = hgx * hexR * 2 + (hgy % 2) * hexR;
+                var hcy = hgy * hexR * 1.5;
+                c.beginPath();
+                for (var hh = 0; hh < 6; hh++) {
+                  var hhAng = hh * 1.047 + 0.524;
+                  var px = hcx + Math.cos(hhAng) * hexR;
+                  var py = hcy + Math.sin(hhAng) * hexR;
+                  hh === 0 ? c.moveTo(px, py) : c.lineTo(px, py);
+                }
+                c.closePath(); c.stroke();
+              }
+            }
+
+            // Title
+            c.fillStyle = '#78350f'; c.textAlign = 'center';
+            c.font = 'bold 18px Georgia, serif';
+            c.fillText('🥚 Honeybee Life Cycle · 21 Days from Egg to Forager', W / 2, 28);
+            c.font = 'italic 11px Georgia, serif'; c.fillStyle = '#a16207';
+            c.fillText('Complete metamorphosis inside a single comb cell — the miracle inside the hive', W / 2, 46);
+
+            // 4 large honeycomb cells showing the 4 stages
+            var stages = [
+              { day: '1–3', name: 'EGG', desc: 'White rice-grain egg laid by queen', detail: 'Queen can lay 1,500 eggs/day — her own body weight', col: '#fef3c7' },
+              { day: '4–8', name: 'LARVA', desc: 'C-shaped grub fed royal jelly', detail: 'Larva grows 900× in size. Royal jelly for 3 days, then worker jelly (pollen+honey)', col: '#fde68a' },
+              { day: '9–20', name: 'PUPA', desc: 'Capped cell, metamorphosis hidden', detail: 'Workers cap the cell with wax. Inside: eyes, wings, legs, organs all form', col: '#fbbf24' },
+              { day: '21+', name: 'ADULT', desc: 'Chews out of capping, emerges', detail: 'First jobs: cleaning cells → nurse bee → guard → forager (last 3 weeks of life)', col: '#f59e0b' }
+            ];
+            var sW = W / 4;
+            var activeStage = Math.floor((t2 / 180) % 4); // cycle highlight every 3s
+            stages.forEach(function(st, si) {
+              var stX = sW * si + sW / 2;
+              var stY = H * 0.42;
+              var cellR = 70;
+              // Hexagon cell
+              c.save();
+              if (activeStage === si) {
+                c.shadowColor = '#fbbf24'; c.shadowBlur = 25;
+              }
+              c.fillStyle = st.col;
+              c.beginPath();
+              for (var hhc = 0; hhc < 6; hhc++) {
+                var chAng = hhc * 1.047 + 0.524;
+                var cpx = stX + Math.cos(chAng) * cellR;
+                var cpy = stY + Math.sin(chAng) * cellR;
+                hhc === 0 ? c.moveTo(cpx, cpy) : c.lineTo(cpx, cpy);
+              }
+              c.closePath(); c.fill();
+              c.shadowBlur = 0;
+              c.strokeStyle = '#92400e'; c.lineWidth = 2;
+              c.stroke();
+              c.restore();
+
+              // Draw the bee at the right life stage
+              c.save();
+              c.translate(stX, stY);
+              if (si === 0) {
+                // EGG — tiny white oval
+                var eggPhase = Math.sin(t2 * 0.04 + si) * 0.2;
+                c.fillStyle = '#fef9c3';
+                c.beginPath(); c.ellipse(0, 0, 6, 18 + eggPhase * 2, 0.3, 0, 6.28); c.fill();
+                c.strokeStyle = '#a16207'; c.lineWidth = 0.8;
+                c.stroke();
+                // Glow tip
+                c.fillStyle = 'rgba(255,255,255,0.5)';
+                c.beginPath(); c.ellipse(-2, -6, 2, 4, 0.3, 0, 6.28); c.fill();
+              } else if (si === 1) {
+                // LARVA — C-shaped white grub with segments
+                c.fillStyle = '#fef9c3';
+                c.beginPath();
+                c.moveTo(-25, 10);
+                c.quadraticCurveTo(-35, -20, -5, -25);
+                c.quadraticCurveTo(25, -25, 30, 5);
+                c.quadraticCurveTo(25, 15, 5, 18);
+                c.quadraticCurveTo(-15, 20, -25, 10);
+                c.closePath(); c.fill();
+                c.strokeStyle = '#ca8a04'; c.lineWidth = 1; c.stroke();
+                // Segmentation rings
+                c.strokeStyle = 'rgba(160,120,20,0.4)'; c.lineWidth = 0.7;
+                for (var ls = 0; ls < 6; ls++) {
+                  var lsA = -2 + ls * 0.7;
+                  c.beginPath();
+                  c.arc(0, -6, 24, lsA, lsA + 0.5);
+                  c.stroke();
+                }
+                // Tiny dark head
+                c.fillStyle = '#78350f';
+                c.beginPath(); c.arc(-22, 8, 4, 0, 6.28); c.fill();
+                // Royal jelly drop next to it
+                var jellyPulse = Math.sin(t2 * 0.08) * 0.2 + 0.8;
+                c.fillStyle = 'rgba(255,255,255,' + jellyPulse + ')';
+                c.beginPath(); c.ellipse(20, 20, 5, 8, 0.3, 0, 6.28); c.fill();
+                c.font = '8px system-ui'; c.fillStyle = '#92400e'; c.textAlign = 'center';
+                c.fillText('royal jelly', 20, 36);
+              } else if (si === 2) {
+                // PUPA — capped cell (wax covering), with dim silhouette inside
+                // Wax cap
+                c.fillStyle = '#fbbf24';
+                c.beginPath(); c.arc(0, 0, 50, 0, 6.28); c.fill();
+                // Subtle bee silhouette inside (forming)
+                c.fillStyle = 'rgba(120,83,15,0.35)';
+                c.beginPath(); c.ellipse(0, 0, 30, 18, 0, 0, 6.28); c.fill();
+                // Developing wing stubs
+                c.fillStyle = 'rgba(180,220,240,0.5)';
+                c.beginPath(); c.ellipse(-12, -12, 14, 6, -0.3, 0, 6.28); c.fill();
+                c.beginPath(); c.ellipse(12, -12, 14, 6, 0.3, 0, 6.28); c.fill();
+                // Forming eye spots
+                c.fillStyle = '#292524';
+                c.beginPath(); c.arc(-8, -3, 2, 0, 6.28); c.fill();
+                c.beginPath(); c.arc(8, -3, 2, 0, 6.28); c.fill();
+                // Wax cap crosshatch (capping pattern)
+                c.strokeStyle = 'rgba(146,64,14,0.3)'; c.lineWidth = 0.5;
+                for (var cw = -40; cw < 40; cw += 8) {
+                  c.beginPath(); c.moveTo(cw, -30); c.lineTo(cw, 30); c.stroke();
+                  c.beginPath(); c.moveTo(-40, cw); c.lineTo(40, cw); c.stroke();
+                }
+                c.font = 'bold 8px system-ui'; c.fillStyle = '#92400e'; c.textAlign = 'center';
+                c.fillText('sealed', 0, 5);
+              } else {
+                // ADULT — fully emerged bee
+                c.save();
+                // Body
+                c.shadowColor = '#fbbf24'; c.shadowBlur = 6;
+                c.fillStyle = '#fbbf24';
+                c.beginPath(); c.ellipse(0, 0, 30, 22, 0, 0, 6.28); c.fill();
+                c.restore();
+                // Stripes
+                c.fillStyle = '#292524';
+                c.fillRect(-8, -20, 6, 40);
+                c.fillRect(6, -18, 5, 36);
+                // Head with eye
+                c.fillStyle = '#292524';
+                c.beginPath(); c.arc(-25, 0, 10, 0, 6.28); c.fill();
+                c.fillStyle = '#1e293b';
+                c.beginPath(); c.ellipse(-28, -2, 6, 7, -0.2, 0, 6.28); c.fill();
+                c.fillStyle = 'rgba(255,255,255,0.5)';
+                c.beginPath(); c.arc(-30, -4, 1.5, 0, 6.28); c.fill();
+                // Antennae
+                c.strokeStyle = '#1c1917'; c.lineWidth = 1.5;
+                c.beginPath(); c.moveTo(-28, -8); c.quadraticCurveTo(-38, -18, -32, -24); c.stroke();
+                c.beginPath(); c.moveTo(-22, -8); c.quadraticCurveTo(-30, -20, -24, -26); c.stroke();
+                // Wings (animated)
+                var aW = 2 + Math.sin(t2 * 0.4) * 1.5;
+                c.globalAlpha = 0.5; c.fillStyle = '#bfdbfe';
+                c.beginPath(); c.ellipse(-5, -15 + aW, 22, 6, -0.3, 0, 6.28); c.fill();
+                c.beginPath(); c.ellipse(-5, -17 - aW, 18, 5, -0.4, 0, 6.28); c.fill();
+                c.globalAlpha = 1;
+                // Legs
+                c.strokeStyle = '#1c1917'; c.lineWidth = 2;
+                for (var lx = -1; lx <= 1; lx++) {
+                  c.beginPath(); c.moveTo(lx * 10, 15); c.lineTo(lx * 10 + 4, 28); c.stroke();
+                }
+              }
+              c.restore();
+
+              // Day label (below cell)
+              c.font = 'bold 16px Georgia, serif'; c.textAlign = 'center'; c.fillStyle = '#78350f';
+              c.fillText('Day ' + st.day, stX, stY + 100);
+              // Stage name
+              c.font = 'bold 12px system-ui'; c.fillStyle = activeStage === si ? '#dc2626' : '#a16207';
+              c.fillText(st.name, stX, stY + 122);
+              // Short description
+              c.font = '10px system-ui'; c.fillStyle = '#78350f';
+              c.fillText(st.desc, stX, stY + 140);
+              // Detail text (wraps if needed)
+              c.font = 'italic 9px system-ui'; c.fillStyle = '#a16207';
+              var words = st.detail.split(' ');
+              var line = ''; var lineY = stY + 156;
+              for (var wi = 0; wi < words.length; wi++) {
+                var testLine = line + words[wi] + ' ';
+                if (c.measureText(testLine).width > sW - 30 && line.length > 0) {
+                  c.fillText(line, stX, lineY);
+                  line = words[wi] + ' ';
+                  lineY += 11;
+                } else {
+                  line = testLine;
+                }
+              }
+              c.fillText(line, stX, lineY);
+
+              // Arrow to next stage
+              if (si < 3) {
+                c.fillStyle = '#ca8a04';
+                c.beginPath();
+                c.moveTo(stX + 85, stY);
+                c.lineTo(stX + 100, stY - 6);
+                c.lineTo(stX + 100, stY + 6);
+                c.closePath(); c.fill();
+              }
+            });
+
+            // ── Comparison timeline at bottom (worker 21d vs queen 16d vs drone 24d) ──
+            var tlY = H - 48;
+            var tlX = 40, tlW = W - 80;
+            c.fillStyle = 'rgba(255,255,255,0.7)';
+            c.beginPath(); if (c.roundRect) c.roundRect(tlX, tlY - 10, tlW, 56, 8); else c.rect(tlX, tlY - 10, tlW, 56); c.fill();
+            c.strokeStyle = '#ca8a04'; c.lineWidth = 1;
+            c.beginPath(); if (c.roundRect) c.roundRect(tlX, tlY - 10, tlW, 56, 8); else c.rect(tlX, tlY - 10, tlW, 56); c.stroke();
+            c.font = 'bold 10px system-ui'; c.textAlign = 'left'; c.fillStyle = '#78350f';
+            c.fillText('Development time by caste:', tlX + 10, tlY + 3);
+            var castes = [
+              { name: '👑 Queen', days: 16, col: '#c084fc' },
+              { name: '🧑‍🏭 Worker (♀)', days: 21, col: '#fbbf24' },
+              { name: '🚀 Drone (♂)', days: 24, col: '#60a5fa' }
+            ];
+            castes.forEach(function(cs, ci) {
+              var cY = tlY + 13 + ci * 10;
+              // Bar
+              c.fillStyle = cs.col;
+              var cBarMax = tlW - 180;
+              c.fillRect(tlX + 140, cY - 3, cBarMax * (cs.days / 25), 6);
+              // Label
+              c.font = 'bold 9px system-ui'; c.fillStyle = '#78350f'; c.textAlign = 'left';
+              c.fillText(cs.name, tlX + 10, cY + 2);
+              c.font = '9px system-ui'; c.fillStyle = '#a16207';
+              c.fillText(cs.days + ' days', tlX + 145 + cBarMax * (cs.days / 25), cY + 2);
+            });
+          }
+
           // ═══ FLIGHT PHYSICS DIAGRAM (animated wing cross-section with vortex visualization) ═══
           function drawFlightPhysics() {
             // Cool sky-blue gradient (like wind-tunnel visualization)
@@ -1941,6 +2171,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               }
               if (_bv === 'physics') {
                 drawFlightPhysics();
+                _animId.current = requestAnimationFrame(frame);
+                return;
+              }
+              if (_bv === 'lifecycle') {
+                drawLifeCycle();
                 _animId.current = requestAnimationFrame(frame);
                 return;
               }
@@ -4788,7 +5023,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               [
                 { id: 'scene', icon: '🏡', label: 'Scene', desc: 'Live apiary scene' },
                 { id: 'anatomy', icon: '🔬', label: 'Anatomy', desc: 'Labeled bee diagram' },
-                { id: 'physics', icon: '✈️', label: 'Flight Physics', desc: 'How bees fly — leading-edge vortex' }
+                { id: 'physics', icon: '✈️', label: 'Flight Physics', desc: 'How bees fly — leading-edge vortex' },
+                { id: 'lifecycle', icon: '🥚', label: 'Life Cycle', desc: 'Egg → larva → pupa → adult (21 days)' }
               ].map(function(v) {
                 var active = beeView === v.id;
                 return h('button', { key: v.id, role: 'tab', 'aria-selected': active ? 'true' : 'false', onClick: function() { upd('beeView', v.id); }, title: v.desc,
