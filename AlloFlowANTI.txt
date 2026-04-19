@@ -34147,6 +34147,15 @@ Return ONLY a JSON array like:
         [data-reading-theme="green"] { color: #1b5e20 !important; }
         [data-reading-theme="rose"] { color: #880e4f !important; }
         [data-reading-theme="dyslexia"] { color: #1e293b !important; }
+        /* Explicit heading overrides — cascade-based themes rely on `* { color: inherit }` above,
+           but headings in the simplified-text renderer carry Tailwind text-color classes that win
+           specificity over inherit. Force each theme's text color onto h1-h4 via !important. */
+        [data-reading-theme="warm"] h1, [data-reading-theme="warm"] h2, [data-reading-theme="warm"] h3, [data-reading-theme="warm"] h4 { color: #5c4033 !important; }
+        [data-reading-theme="sepia"] h1, [data-reading-theme="sepia"] h2, [data-reading-theme="sepia"] h3, [data-reading-theme="sepia"] h4 { color: #5c4033 !important; }
+        [data-reading-theme="blue"] h1, [data-reading-theme="blue"] h2, [data-reading-theme="blue"] h3, [data-reading-theme="blue"] h4 { color: #1b2631 !important; }
+        [data-reading-theme="green"] h1, [data-reading-theme="green"] h2, [data-reading-theme="green"] h3, [data-reading-theme="green"] h4 { color: #1b5e20 !important; }
+        [data-reading-theme="rose"] h1, [data-reading-theme="rose"] h2, [data-reading-theme="rose"] h3, [data-reading-theme="rose"] h4 { color: #880e4f !important; }
+        [data-reading-theme="dyslexia"] h1, [data-reading-theme="dyslexia"] h2, [data-reading-theme="dyslexia"] h3, [data-reading-theme="dyslexia"] h4 { color: #1e293b !important; }
         [data-reading-theme="dark"] .bg-white, [data-reading-theme="dark"] .bg-slate-50 { background-color: rgba(26,26,46,0.5) !important; color: #e2e8f0 !important; }
         [data-reading-theme="dark"] h1, [data-reading-theme="dark"] h2, [data-reading-theme="dark"] h3, [data-reading-theme="dark"] p, [data-reading-theme="dark"] span, [data-reading-theme="dark"] li, [data-reading-theme="dark"] div { color: #e2e8f0 !important; }
         [data-reading-theme="highContrast"] .bg-white, [data-reading-theme="highContrast"] .bg-slate-50 { background-color: #000 !important; color: #ffff00 !important; }

@@ -623,16 +623,21 @@ var createDocPipeline = function(deps) {
       // with `["`; when joined they render as a visible paragraph between real content.
       .replace(/<p[^>]*>\s*"\s*\]\s*\[\s*"\s*<\/p>/gi, '')
       .replace(/"\s*\]\s*\[\s*"/g, '')
-      // Paragraph that STARTS with a trailing-wrapper fragment (`"]`) followed by real
-      // content — happens when chunk N+1's Gemini response opened with `"content"]` and the
-      // leading-strip missed it because the opening `[` was absent. Keep the real content.
-      .replace(/(<p[^>]*>)\s*"\s*\]\s+(?=\S)/gi, '$1')
+      // Paragraph that STARTS with a trailing-wrapper fragment (`"]`, `"}]`, `" } ]`, …)
+      // followed by real content — happens when chunk N+1's Gemini response opened with
+      // `"content"]` or the JSON-object variant `"content"}]` and the leading-strip missed
+      // it because the opening `[` was absent. Keep the real content.
+      .replace(/(<p[^>]*>)\s*"\s*[}\]][\s}\],]*(?=\S)/gi, '$1')
       // Paragraph that STARTS with a leading-wrapper fragment (`[ "`) followed by real content.
       .replace(/(<p[^>]*>)\s*\[\s*"\s*(?=\S)/gi, '$1')
       .replace(/>\s*\[\s*"?\s*(<\/[^>]+>)/g, '>$1')
       .replace(/\[\s*"\s*<\//g, '</')
       .replace(/^\s*\[\s*"\s*$/gm, '')
-      .replace(/\[\s*"\s*(?=<)/g, '');
+      .replace(/\[\s*"\s*(?=<)/g, '')
+      // Final sweep: decode literal \uXXXX escapes that survived the chunk-level
+      // decoder (which only runs when chunks start with `["`). Catches `\u2026`
+      // in image-placeholder descriptions and surrogate-pair emoji escapes.
+      .replace(/\\u([0-9a-fA-F]{4})/g, function(_, hex) { return String.fromCharCode(parseInt(hex, 16)); });
   };
 
   // ── Heuristic text structuring (RECITATION fallback) ──
@@ -3159,8 +3164,11 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
         // `[ "` fragment that occasionally appears at the bottom of a rendered page.
         // Also strip leading `["` so that when chunk N+1 is joined to chunk N, the two
         // wrappers can't collide into a `" ][ "` artifact between real content.
-        c = c.replace(/\[\s*"?\s*$/, '').replace(/"\s*\]\s*$/, '').trim();
-        c = c.replace(/^\s*\[\s*"\s*/, '').replace(/^\s*"\s*\]\s*/, '').trim();
+        // Widened to also catch `"}]`, `"} ]`, `" } ]` — Gemini's JSON-object wrapping
+        // (`[{"html":"…"}]`) leaves a stray `}` between the quote and the `]` that the
+        // original narrow `" ]` pattern missed, producing visible artifacts in output.
+        c = c.replace(/\[\s*"?\s*$/, '').replace(/"[\s}\],]*\]\s*$/, '').trim();
+        c = c.replace(/^\s*\[\s*"\s*/, '').replace(/^\s*"\s*[}\]][\s}\],]*/, '').trim();
         // If a chunk is ENTIRELY partial JSON (no visible HTML tags), drop it with a recovery placeholder.
         if (c && !/<[a-z][\s\S]*?>/i.test(c) && /^\s*[\[\{]/.test(c)) {
           warnLog(`[Transform] Chunk ${i + 1} returned non-HTML JSON fragment — replacing with placeholder`);
@@ -7034,7 +7042,18 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
               // Drag-and-drop + pick-extracted support: handlers pull a dataURL from
               // either the drop dataTransfer, a local file picker, or the shared
               // window.__alloflowExtractedImages list populated by the main app on iframe load.
-              const _insertFn = `function(c, dataUrl, altText){var target=c.querySelector('img');if(target){target.src=dataUrl;if(altText)target.alt=altText;}else{target=document.createElement('img');target.src=dataUrl;target.alt=altText||'Image';target.style.cssText='max-width:100%;border-radius:8px;border:1px solid #e2e8f0';c.appendChild(target);}c.style.background='none';c.style.border='none';c.style.padding='0';c.style.minHeight='0';Array.from(c.children).forEach(function(ch){if(ch!==target)ch.remove();});c.removeAttribute('ondragover');c.removeAttribute('ondragleave');c.removeAttribute('ondrop');}`;
+              // FIX: remove any open picker first, and scope the <img> lookup to
+              // direct children only. `c.querySelector('img')` was matching a
+              // thumbnail INSIDE the picker and the child-wipe below was then
+              // removing the picker — which took the just-inserted image with it.
+              const _insertFn = `function(c, dataUrl, altText){`
+                + `var pk=c.querySelector('[data-alloflow-picker]');if(pk)pk.remove();`
+                + `var target=null;var kids=c.children;for(var ii=0;ii<kids.length;ii++){if(kids[ii].tagName==='IMG'){target=kids[ii];break;}}`
+                + `if(target){target.src=dataUrl;if(altText)target.alt=altText;}`
+                + `else{target=document.createElement('img');target.src=dataUrl;target.alt=altText||'Image';target.style.cssText='max-width:100%;border-radius:8px;border:1px solid #e2e8f0';c.appendChild(target);}`
+                + `c.style.background='none';c.style.border='none';c.style.padding='0';c.style.minHeight='0';`
+                + `Array.from(c.children).forEach(function(ch){if(ch!==target)ch.remove();});`
+                + `c.removeAttribute('ondragover');c.removeAttribute('ondragleave');c.removeAttribute('ondrop');}`;
               const _dragOver = `event.preventDefault();this.style.borderColor='#4f46e5';this.style.background='#eef2ff';`;
               const _dragLeave = `this.style.borderColor='#64748b';this.style.background='#f1f5f9';`;
               const _dropHandler = `(function(c,ev){ev.preventDefault();c.style.borderColor='#64748b';c.style.background='#f1f5f9';try{var raw=ev.dataTransfer.getData('text/x-alloflow-image');if(raw){var d=JSON.parse(raw);if(d&&d.src){(${_insertFn})(c,d.src,d.alt||'${_imgAltSafe}');return;}}var f=ev.dataTransfer.files&&ev.dataTransfer.files[0];if(f){var r=new FileReader();r.onload=function(e){(${_insertFn})(c,e.target.result,'${_imgAltSafe}');};r.readAsDataURL(f);}}catch(_){}})(this,event)`;
@@ -10129,9 +10148,16 @@ tr { page-break-inside: avoid; }
 
   // ── PDF Preview: Get current edited HTML from iframe ──
   const getPdfPreviewHtml = () => {
-    if (!pdfPreviewRef.current) return pdfFixResult?.accessibleHtml || '';
+    const memHtml = pdfFixResult?.accessibleHtml || '';
+    if (!pdfPreviewRef.current) return memHtml;
     const doc = pdfPreviewRef.current.contentDocument || pdfPreviewRef.current.contentWindow?.document;
-    if (!doc) return pdfFixResult?.accessibleHtml || '';
+    if (!doc) return memHtml;
+    // If the iframe document exists but hasn't hydrated yet (common when
+    // verification fires ~200ms after remediation completes), fall back to the
+    // in-memory accessibleHtml. Without this the fidelity check reads an empty
+    // shell and silently no-ops.
+    const bodyText = (doc.body ? (doc.body.textContent || '') : '');
+    if (bodyText.trim().length < 50 && memHtml) return memHtml;
     // Remove inspect CSS before export
     const inspectEl = doc.getElementById('a11y-inspect-css');
     if (inspectEl) inspectEl.remove();
