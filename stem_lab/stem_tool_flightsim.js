@@ -270,8 +270,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       var lift = this.liftForce(speed, alt, aoa);
       var drag = this.dragForce(speed, alt, aoa);
 
-      // Stall check
-      var stalling = this.isStalling(speed, alt);
+      // Stall check. A parked plane at speed=0 trivially satisfies speed < stallSpeed,
+      // so without this onGround guard the sim fires STALL warnings the instant you
+      // load into Sky School — banner, horn, voice alert, and an adaptive hint that
+      // tells you to push S (pitch-down) when you actually need Shift (throttle-up).
+      // Stall is a flight phenomenon; suppress it while wheels are on the runway.
+      var stalling = !state.onGround && this.isStalling(speed, alt);
       if (stalling) { lift *= 0.4; drag *= 1.5; } // dramatic lift loss in stall
 
       // Acceleration along flight path
@@ -5635,8 +5639,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           if (!pausedRef.current) {
             var hintMsg2 = null;
             var ktsH = state.speed * 0.5924838;
-            if (state.onGround && timeRef.current > 5 && ktsH < 10 && ctrl.throttle < 0.1) {
-              hintMsg2 = '💡 Push Shift to increase throttle — you need speed to fly!';
+            if (state.onGround && ktsH < 10 && ctrl.throttle < 0.1) {
+              hintMsg2 = '💡 Hold SHIFT to add throttle — need ~55 kt before W to pitch up and take off.';
             } else if (state.onGround && ktsH > 50 && ktsH < 70 && ctrl.pitch < 1) {
               hintMsg2 = '💡 You\'re fast enough! Press W to pitch up and take off!';
             } else if (!state.onGround && state.altitude < 500 && state.vsi < -5 && ctrl.throttle < 0.3) {
