@@ -295,9 +295,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         speed *= 0.995; // ground friction
       }
 
-      // Turn rate (bank angle → heading change)
+      // Turn rate (bank angle → heading change).
+      // speed > 30 gate prevents divide-by-near-zero. Bank capped at ±45° elsewhere
+      // means tan() stays bounded (tan(45°)=1). Defensive: clamp tan input so a
+      // future bank limit > 89° wouldn't blow up to Infinity.
       if (Math.abs(bank) > 1 && speed > 30) {
-        var turnRate = (this.G * Math.tan(bank * Math.PI / 180)) / speed * (180 / Math.PI);
+        var bankAngle = Math.max(-Math.PI / 2 + 0.01, Math.min(Math.PI / 2 - 0.01, bank * Math.PI / 180));
+        var turnRate = (this.G * Math.tan(bankAngle)) / speed * (180 / Math.PI);
         heading += turnRate * dt;
         heading = ((heading % 360) + 360) % 360;
       }
@@ -329,6 +333,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
     var dLat = (lat2 - lat1) * Math.PI / 180;
     var dLon = (lon2 - lon1) * Math.PI / 180;
     var a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI/180) * Math.cos(lat2 * Math.PI/180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+    // Clamp a to [0, 1] — floating-point rounding can push a slightly past 1 when
+    // points are identical or nearly so, making sqrt(1−a) NaN and propagating to
+    // every distance/bearing consumer (waypoint finding, sprint progress, etc.).
+    if (a > 1) a = 1; else if (a < 0) a = 0;
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
   }
 
@@ -625,8 +633,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       // ── G-Force Indicator ──
       var gForceRef = useRef(1.0);
       var drawGForce = function(gfx, x, y, state, ctrl) {
-        // Approximate G-force from bank angle and pitch change
-        var bankG = 1 / Math.cos(Math.abs(ctrl.bank) * Math.PI / 180);
+        // Approximate G-force from bank angle and pitch change.
+        // Guard against cos(90°) = 0 (would divide-by-zero → Infinity G). Bank is
+        // currently capped at ±45° but this clamp keeps the calc safe if that limit
+        // is ever raised (e.g., aerobatic mode).
+        var bankRad = Math.abs(ctrl.bank) * Math.PI / 180;
+        var bankG = 1 / Math.max(0.01, Math.cos(bankRad));
         var pitchG = ctrl.pitch * 0.02;
         var totalG = bankG + pitchG;
         gForceRef.current = gForceRef.current * 0.9 + totalG * 0.1; // smoothed
@@ -1668,7 +1680,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         if (Math.abs(relBrg) > 60) return; // not in view
 
         var screenX = W / 2 + (relBrg / 60) * (W / 2);
-        var proximity = 1 - nearDist / 10; // 0 to 1
+        // Clamp proximity to [0, 1] — the early-return at the top guards nearDist > 10,
+        // but if the threshold is ever raised (or this fn called from another path),
+        // negative proximity makes rwyWidth shrink past zero and breaks the geometry.
+        var proximity = Math.max(0, Math.min(1, 1 - nearDist / 10));
         var rwyWidth = 8 + proximity * 30;
         var rwyLen = 20 + proximity * 100;
         var rwyY = horizonY + (H - horizonY) * (0.3 + proximity * 0.5);
@@ -1878,7 +1893,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           } catch(e) { return; }
         }
         if (!a.ctx || !a.osc) return;
-        if (a.ctx.state === 'suspended') a.ctx.resume();
+        // resume() may reject if user hasn't interacted yet (browser autoplay policy).
+        // Wrap defensively so a rejection doesn't kill this audio update path.
+        if (a.ctx.state === 'suspended') { try { a.ctx.resume(); } catch (e) {} }
         // Frequency scales with throttle + speed
         var freq = 60 + throttle * 120 + Math.min(speed * 0.05, 80);
         var vol = Math.min(0.08, throttle * 0.06 + 0.01);

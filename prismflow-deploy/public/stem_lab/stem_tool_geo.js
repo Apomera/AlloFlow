@@ -578,6 +578,25 @@ var d = labToolData || {};
             if (live) live.textContent = msg;
           }
 
+          // ── Level progression — gamification based on countries mastered ──
+          // Thresholds chosen so a focused session can reach Navigator; Master
+          // Cartographer requires studying most of the 117 countries.
+          var GEO_LEVELS = [
+            { idx: 0, icon: '\uD83C\uDF31', name: 'Novice',             min: 0,   next: 5   },
+            { idx: 1, icon: '\uD83E\uDDED', name: 'Explorer',           min: 5,   next: 15  },
+            { idx: 2, icon: '\uD83D\uDDFA\uFE0F', name: 'Navigator',    min: 15,  next: 30  },
+            { idx: 3, icon: '\uD83C\uDF0F', name: 'Geographer',         min: 30,  next: 60  },
+            { idx: 4, icon: '\u2708\uFE0F', name: 'Globetrotter',       min: 60,  next: 100 },
+            { idx: 5, icon: '\uD83C\uDFC6', name: 'Master Cartographer', min: 100, next: null }
+          ];
+          function getGeoLevel(count) {
+            for (var i = GEO_LEVELS.length - 1; i >= 0; i--) {
+              if (count >= GEO_LEVELS[i].min) return GEO_LEVELS[i];
+            }
+            return GEO_LEVELS[0];
+          }
+          var geoCurrentLevel = getGeoLevel(geoAnswered.length);
+
           // ── Region filter ──
           // Supports: 'world', continent keys (africa/asia/europe/n_america/s_america/oceania),
           // 'americas' (legacy combined), and 'r:<Sub-Region Name>' for finer-grained UN regions.
@@ -1348,6 +1367,17 @@ var d = labToolData || {};
               ),
 
               React.createElement('div', { className: 'flex items-center gap-3' },
+
+                // Level pill — shows current rank + progress to the next level
+                React.createElement('span', {
+                  className: 'text-xs bg-white/25 text-white rounded-full px-2 py-0.5 font-bold flex items-center gap-1',
+                  title: geoCurrentLevel.next
+                    ? geoCurrentLevel.name + ' \u2014 ' + geoAnswered.length + '/' + geoCurrentLevel.next + ' mastered to reach the next rank'
+                    : 'Highest rank reached \u2014 ' + geoAnswered.length + ' countries mastered'
+                },
+                  React.createElement('span', null, geoCurrentLevel.icon),
+                  React.createElement('span', null, geoCurrentLevel.name)
+                ),
 
                 React.createElement('span', { className: 'text-xs bg-yellow-400 text-yellow-900 rounded-full px-2 py-0.5 font-bold' }, '\u2B50 ' + geoScore),
 
@@ -2572,7 +2602,28 @@ var d = labToolData || {};
 
               React.createElement('button', {
 
-                onClick: function() { upd('geoScore', 0); upd('geoStreak', 0); upd('geoAnswered', []); upd('geoTarget', null); upd('geoRound', 0); upd('geoDistCorrect', 0); upd('geoBadges', {}); upd('geoMissed', []); upd('geoReviewMode', false); upd('geoSessionStats', {}); upd('geoGlobeInfo', null); upd('geoCapitalsChoices', null); upd('geoLandmarkChoices', null); upd('geoLandmarkQuizFb', null); if (addToast) addToast('\u267B Score reset!', 'info'); },
+                onClick: function() {
+                  // Score & streak
+                  upd('geoScore', 0); upd('geoStreak', 0);
+                  // Answered pool + current target
+                  upd('geoAnswered', []); upd('geoTarget', null); upd('geoRound', 0);
+                  // Badges + review pool + stats
+                  upd('geoBadges', {}); upd('geoMissed', []); upd('geoReviewMode', false); upd('geoSessionStats', {});
+                  // Pending feedback across all quizzes
+                  upd('geoFeedback', null); upd('geoDistFeedback', null); upd('geoLandmarkQuizFb', null);
+                  // Pair-based quizzes (distance + size compare)
+                  upd('geoDistA', null); upd('geoDistB', null); upd('geoDistGuess', ''); upd('geoDistCorrect', 0);
+                  upd('geoSize1', null); upd('geoSize2', null);
+                  // Cached multiple-choice options
+                  upd('geoCapitalsChoices', null); upd('geoLandmarkChoices', null);
+                  // Text inputs
+                  upd('geoCapitalInput', ''); upd('geoQuizAnswer', '');
+                  // AI quiz (questions, position, score)
+                  upd('geoQuizQuestions', null); upd('geoQuizIdx', 0); upd('geoQuizCorrectCount', 0);
+                  // Globe info card
+                  upd('geoGlobeInfo', null);
+                  if (addToast) addToast('\u267B Fresh start \u2014 score, streak, and progress cleared.', 'info');
+                },
 
                 className: 'text-teal-600 hover:text-teal-800 font-bold'
 

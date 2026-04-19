@@ -1436,6 +1436,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             var al = dc.getAttribute('aria-label') || '';
             console.log('[Beehive DEBUG]   canvas[' + i + ']: aria-label="' + al.slice(0, 50) + '" size=' + dc.clientWidth + 'x' + dc.clientHeight + ' parent=' + (dc.parentElement ? dc.parentElement.tagName : '?'));
           }
+          // NEW: find the TOP MARKER (if it rendered) and log its siblings to see what's actually in DOM
+          var topMarker = document.querySelector('div[style*="TOP MARKER"]') || Array.from(document.querySelectorAll('div')).find(function(d) { return d.textContent && d.textContent.indexOf('TOP MARKER') !== -1 && d.children.length === 0; });
+          console.log('[Beehive DEBUG] TOP MARKER in DOM:', topMarker ? 'YES' : 'NO');
+          if (topMarker) {
+            var parent = topMarker.parentElement;
+            console.log('[Beehive DEBUG] TOP MARKER parent:', parent ? parent.tagName + '.' + parent.className + ' (' + parent.children.length + ' children)' : 'NULL');
+            if (parent) {
+              for (var ci = 0; ci < Math.min(parent.children.length, 10); ci++) {
+                var ch = parent.children[ci];
+                var txt = (ch.textContent || '').slice(0, 60).replace(/\s+/g, ' ');
+                console.log('[Beehive DEBUG]   child[' + ci + ']: <' + ch.tagName + '> "' + txt + '"');
+              }
+            }
+          }
           var tries = 0;
           var retryTimer = null;
           var teardownFn = null;
@@ -2985,6 +2999,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             _testEl ? ('{$$typeof: ' + String(_testEl.$$typeof) + ', type: ' + _testEl.type + ', has props: ' + !!_testEl.props + '}') : String(_testEl));
         }
         return h('div', { className: 'space-y-4 animate-in fade-in duration-200' },
+          // DIAGNOSTIC: unconditional top-of-return marker — if invisible, outer div itself isn't committing
+          h('div', { style: { background: 'red', color: 'white', padding: '20px', fontSize: '24px', fontWeight: 'bold', textAlign: 'center', border: '4px solid black' } },
+            '🔴 TOP MARKER — outer div committed OK'),
           // Header
           h('div', { className: 'flex items-center justify-between' },
             h('div', { className: 'flex items-center gap-3' },
