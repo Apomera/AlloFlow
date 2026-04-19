@@ -3888,6 +3888,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           }
         }
 
+        // ── Aiming point markers (two thick white rectangles ~1000ft down) ──
+        // Standard ICAO "fixed-distance marker" — what pilots visually target.
+        if (groundFactor > 0.4) {
+          var aimT = 0.45; // ~40-50% down the runway perspective
+          var aimY = rwyTopY + (rwyBotY - rwyTopY) * (aimT * aimT);
+          var aimHalfW = (rwyHalfWNear * 0.15) * aimT + 3;
+          var aimH = 6 + aimT * 10;
+          gfx.fillStyle = 'rgba(255,255,255,0.9)';
+          gfx.fillRect(W / 2 - aimHalfW - 4 - aimHalfW, aimY, aimHalfW * 2, aimH);
+          gfx.fillRect(W / 2 + 4, aimY, aimHalfW * 2, aimH);
+        }
+
+        // ── PAPI glideslope lights (4 lights off the runway left-hand side) ──
+        // On the ground they all glow white (on-ground reference). In flight the
+        // proper red/white mix is computed in drawRunway for approach training.
+        if (groundFactor > 0.3) {
+          var papiY = rwyTopY + (rwyBotY - rwyTopY) * 0.12;
+          var papiBoxW = 2 + groundFactor * 3;
+          var papiSpacing = papiBoxW + 2;
+          var papiStartX = W / 2 - rwyHalfWNear * 0.42 * groundFactor - papiBoxW * 4;
+          for (var pi = 0; pi < 4; pi++) {
+            gfx.fillStyle = 'rgba(255,255,220,0.95)';
+            gfx.fillRect(papiStartX + pi * papiSpacing, papiY, papiBoxW, papiBoxW);
+            // soft glow
+            gfx.fillStyle = 'rgba(255,255,150,0.25)';
+            gfx.fillRect(papiStartX + pi * papiSpacing - 1, papiY - 1, papiBoxW + 2, papiBoxW + 2);
+          }
+        }
+
         // ── Edge lights (small dim white dots running along both edges) ──
         gfx.fillStyle = 'rgba(255,255,180,0.7)';
         var edgeLightCount = 18;
@@ -3920,12 +3949,117 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               gfx.fillRect(wxw, wyw, (termW - 12) / 8, termH / 8);
             }
           }
-          // Tower (small box on top)
+          // ── Control tower: taller block rising ABOVE the terminal with a
+          // glass cab on top and a rotating beacon. Gives the airport a real
+          // recognizable silhouette instead of a bare rectangle.
+          var twX = termX + termW * 0.35;
+          var twW = termW * 0.18;
+          var twShaftH = 28;
           gfx.fillStyle = '#64748b';
-          gfx.fillRect(termX + termW * 0.4, termY - 14, termW * 0.2, 14);
-          // Tower window
+          gfx.fillRect(twX, termY - twShaftH, twW, twShaftH);
+          // Glass cab (wider than shaft)
+          gfx.fillStyle = '#1e293b';
+          gfx.fillRect(twX - 2, termY - twShaftH - 8, twW + 4, 8);
           gfx.fillStyle = '#fcd34d';
-          gfx.fillRect(termX + termW * 0.42, termY - 11, termW * 0.16, 6);
+          gfx.fillRect(twX - 1, termY - twShaftH - 6, twW + 2, 4);
+          // Antenna mast
+          gfx.strokeStyle = '#1e293b';
+          gfx.lineWidth = 1;
+          gfx.beginPath();
+          gfx.moveTo(twX + twW / 2, termY - twShaftH - 8);
+          gfx.lineTo(twX + twW / 2, termY - twShaftH - 20);
+          gfx.stroke();
+          // Rotating beacon (red, sweeps with time)
+          var beaconPhase = (Math.sin(timeRef.current * 1.8) + 1) * 0.5;
+          gfx.fillStyle = 'rgba(239,68,68,' + (0.35 + beaconPhase * 0.5) + ')';
+          gfx.beginPath();
+          gfx.arc(twX + twW / 2, termY - twShaftH - 10, 3 + beaconPhase * 2, 0, Math.PI * 2);
+          gfx.fill();
+        }
+
+        // ── Hangars on the left side of the ramp (curved roof silhouette) ──
+        // Adds the "we're at a real airport" read even before the tower registers.
+        if (groundFactor > 0.4) {
+          var hangY = horizonY + (H - horizonY) * 0.42;
+          var hangBaseX = W * 0.04;
+          [0, 1, 2].forEach(function(hi) {
+            var hW = W * 0.09 * (1 - hi * 0.08);
+            var hH = (H - horizonY) * (0.14 - hi * 0.015);
+            var hX = hangBaseX + hi * (hW + 6);
+            // Metal siding
+            gfx.fillStyle = hi === 0 ? '#6b7280' : (hi === 1 ? '#7b8390' : '#8a95a3');
+            gfx.fillRect(hX, hangY, hW, hH);
+            // Arched roof (half-ellipse)
+            gfx.fillStyle = hi === 0 ? '#4b5563' : (hi === 1 ? '#5b6776' : '#6a7888');
+            gfx.beginPath();
+            gfx.ellipse(hX + hW / 2, hangY, hW / 2, 10 - hi * 2, 0, Math.PI, 0);
+            gfx.fill();
+            // Big hangar door (darker rectangle centered)
+            gfx.fillStyle = '#1f2937';
+            gfx.fillRect(hX + hW * 0.15, hangY + hH * 0.35, hW * 0.7, hH * 0.6);
+            // Door vertical stripes
+            gfx.strokeStyle = '#374151';
+            gfx.lineWidth = 0.5;
+            for (var dsi = 1; dsi < 5; dsi++) {
+              var dsx = hX + hW * 0.15 + (hW * 0.7) * (dsi / 5);
+              gfx.beginPath(); gfx.moveTo(dsx, hangY + hH * 0.35); gfx.lineTo(dsx, hangY + hH * 0.95); gfx.stroke();
+            }
+            // Roof highlight
+            gfx.fillStyle = 'rgba(255,255,255,0.12)';
+            gfx.fillRect(hX, hangY, hW, 2);
+          });
+        }
+
+        // ── Parked Cessna on the ramp (small, to the right of hangars) ──
+        // Tiny white silhouette that sells "other planes live here".
+        if (groundFactor > 0.5 && aglAlt < 40) {
+          var pkX = W * 0.33;
+          var pkY = horizonY + (H - horizonY) * 0.56;
+          gfx.save();
+          gfx.translate(pkX, pkY);
+          // Shadow
+          gfx.fillStyle = 'rgba(0,0,0,0.25)';
+          gfx.beginPath(); gfx.ellipse(1, 5, 18, 3, 0, 0, Math.PI * 2); gfx.fill();
+          // Fuselage
+          gfx.fillStyle = '#e2e8f0';
+          gfx.beginPath(); gfx.ellipse(0, 0, 18, 3, 0, 0, Math.PI * 2); gfx.fill();
+          // Wings (high-wing Cessna: wings ABOVE the fuselage)
+          gfx.fillStyle = '#f1f5f9';
+          gfx.beginPath(); gfx.moveTo(-3, -2); gfx.lineTo(-26, -3); gfx.lineTo(-25, -1); gfx.lineTo(-3, -1); gfx.fill();
+          gfx.beginPath(); gfx.moveTo(-3, -2); gfx.lineTo(20, -3); gfx.lineTo(19, -1); gfx.lineTo(-3, -1); gfx.fill();
+          // Tail fin
+          gfx.fillStyle = '#94a3b8';
+          gfx.beginPath(); gfx.moveTo(14, -1); gfx.lineTo(18, -7); gfx.lineTo(16, -1); gfx.fill();
+          // Prop blur (spinning if engine on, else static cross)
+          gfx.strokeStyle = 'rgba(30,30,40,0.55)';
+          gfx.lineWidth = 1;
+          gfx.beginPath(); gfx.moveTo(-20, -3); gfx.lineTo(-20, 3); gfx.stroke();
+          gfx.restore();
+        }
+
+        // ── Fuel truck between hangars and runway ──
+        if (groundFactor > 0.55 && aglAlt < 30) {
+          var ftX = W * 0.22;
+          var ftY = horizonY + (H - horizonY) * 0.62;
+          // Cab
+          gfx.fillStyle = '#dc2626';
+          gfx.fillRect(ftX, ftY, 10, 6);
+          // Tank
+          gfx.fillStyle = '#e5e7eb';
+          gfx.fillRect(ftX + 10, ftY - 1, 20, 8);
+          // Wheels
+          gfx.fillStyle = '#111827';
+          gfx.beginPath(); gfx.arc(ftX + 3, ftY + 7, 2, 0, Math.PI * 2); gfx.fill();
+          gfx.beginPath(); gfx.arc(ftX + 16, ftY + 7, 2, 0, Math.PI * 2); gfx.fill();
+          gfx.beginPath(); gfx.arc(ftX + 26, ftY + 7, 2, 0, Math.PI * 2); gfx.fill();
+          // JET-A placard
+          gfx.fillStyle = '#111827';
+          gfx.fillRect(ftX + 14, ftY + 2, 12, 3);
+          gfx.fillStyle = '#fcd34d';
+          gfx.font = 'bold 3px monospace';
+          gfx.textAlign = 'center';
+          gfx.textBaseline = 'middle';
+          gfx.fillText('JET-A', ftX + 20, ftY + 3.5);
         }
 
         // ── Airport sign (showing the airport code) ──
@@ -5042,6 +5176,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           // Procedural terrain (replaces flat gradient)
           drawTerrain(gfx, W, H, horizonY, state, timeRef.current, dayNight);
 
+          // Distant hills poking above the horizon — a deterministic silhouette
+          // seeded by lat/lon so each airport gets a consistent skyline instead
+          // of a flat horizon line. Only visible below cruise altitude where
+          // distant terrain reads from the cockpit.
+          if (state.altitude < 12000) {
+            var hillSeed = Math.floor(state.lat * 10) * 47 + Math.floor(state.lon * 10) * 13;
+            var hillHide = Math.min(1, state.altitude / 12000);
+            // Two parallax layers: back (gray-blue) and front (darker).
+            [
+              { alpha: 0.55 * (1 - hillHide), tint: 'rgb(95,115,145)', amp: 22, base: 6, freq: 0.018, offset: 0 },
+              { alpha: 0.75 * (1 - hillHide), tint: 'rgb(60,78,100)',  amp: 14, base: 3, freq: 0.032, offset: 40 }
+            ].forEach(function(layer) {
+              if (layer.alpha < 0.02) return;
+              gfx.fillStyle = layer.tint.replace('rgb(', 'rgba(').replace(')', ',' + layer.alpha + ')');
+              gfx.beginPath();
+              gfx.moveTo(0, horizonY + 2);
+              for (var hx = 0; hx <= W; hx += 6) {
+                // Sum of two sines + seeded noise → lumpy ridge line
+                var n = Math.sin((hx + layer.offset + hillSeed) * layer.freq) * 0.6
+                      + Math.sin((hx + layer.offset * 1.3 + hillSeed * 0.7) * layer.freq * 2.1) * 0.3
+                      + Math.sin(hillSeed * 0.1 + hx * layer.freq * 0.5) * 0.15;
+                var hy = horizonY - layer.base - (n + 1) * 0.5 * layer.amp;
+                gfx.lineTo(hx, hy);
+              }
+              gfx.lineTo(W, horizonY + 2);
+              gfx.closePath();
+              gfx.fill();
+            });
+          }
+
           // Horizon line
           gfx.save(); gfx.translate(W/2, horizonY); gfx.rotate(-ctrl.bank * Math.PI / 180 * 0.3);
           gfx.strokeStyle = 'rgba(255,255,255,0.3)'; gfx.lineWidth = 1;
@@ -5058,18 +5222,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             }
           }
 
-          // Clouds
+          // Clouds — two bands so they read even when the player is on the runway.
+          // High band drifts high above the horizon; low band sits just above it so
+          // the ground view isn't an empty blue wash. Alpha was previously 0.15 which
+          // ghosted out completely against the bright daylight gradient.
           if (state.altitude < 15000) {
-            var cloudAlpha = 0.15 + Math.sin(timeRef.current * 0.1) * 0.05;
-            var cloudY = horizonY - 30 - state.altitude * 0.003;
-            for (var ci = 0; ci < 8; ci++) {
-              var cx2 = ((ci * 170 + timeRef.current * state.speed * 0.012) % (W + 200)) - 100;
-              var cSize = 40 + ci * 15 + Math.sin(ci * 2.1) * 20;
-              gfx.fillStyle = 'rgba(255,255,255,' + (cloudAlpha * (1 - ci * 0.08)) + ')';
-              gfx.beginPath(); gfx.ellipse(cx2, cloudY + ci * 6, cSize, 12 + ci * 2, 0, 0, Math.PI * 2); gfx.fill();
-              // Secondary puff
-              gfx.beginPath(); gfx.ellipse(cx2 + cSize * 0.4, cloudY + ci * 6 - 4, cSize * 0.6, 10, 0, 0, Math.PI * 2); gfx.fill();
-            }
+            var baseAlpha = dayNight.isNight ? 0.22 : 0.42;
+            var tintStr = dayNight.isNight ? '220,225,240' : '255,255,255';
+            [
+              { yOff: -60, size: 1.0, speed: 0.012, count: 6 },   // high cirrus
+              { yOff: -20, size: 1.25, speed: 0.020, count: 5 }   // low cumulus
+            ].forEach(function(band, bi) {
+              var cloudAlpha = baseAlpha + Math.sin(timeRef.current * 0.1 + bi) * 0.05;
+              var cloudY = horizonY + band.yOff - state.altitude * 0.003;
+              for (var ci = 0; ci < band.count; ci++) {
+                var cx2 = ((ci * 210 + bi * 90 + timeRef.current * (state.speed * band.speed + 8)) % (W + 200)) - 100;
+                var cSize = (40 + ci * 18 + Math.sin(ci * 2.1 + bi) * 20) * band.size;
+                var alphaHere = cloudAlpha * (1 - ci * 0.07);
+                gfx.fillStyle = 'rgba(' + tintStr + ',' + alphaHere + ')';
+                gfx.beginPath(); gfx.ellipse(cx2, cloudY + ci * 6, cSize, 12 + ci * 2, 0, 0, Math.PI * 2); gfx.fill();
+                gfx.beginPath(); gfx.ellipse(cx2 + cSize * 0.4, cloudY + ci * 6 - 4, cSize * 0.6, 10, 0, 0, Math.PI * 2); gfx.fill();
+                gfx.beginPath(); gfx.ellipse(cx2 - cSize * 0.35, cloudY + ci * 6 + 2, cSize * 0.55, 9, 0, 0, Math.PI * 2); gfx.fill();
+              }
+            });
           }
 
           // High-altitude jet contrails (visible when above 10k ft, more at cruise altitudes)
@@ -5344,8 +5519,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             var brg = bearing(state.lat, state.lon, nearWp.lat, nearWp.lon);
             gfx.fillText(nearWp.code + '  ' + Math.round(nearDist) + ' nm  BRG ' + String(Math.round(brg)).padStart(3, '0') + '°', W - 40, 21);
 
-            // Arrival detection
-            if (nearDist < 3 && state.altitude < nearWp.alt + 2000) {
+            // Arrival detection. Stall warning claims the banner slot (y=32..60);
+            // if we drew the welcome here too they'd render on top of each other.
+            if (nearDist < 3 && state.altitude < nearWp.alt + 2000 && !state.stalling) {
               gfx.fillStyle = 'rgba(34,197,94,0.3)'; gfx.fillRect(0, 32, W, 28);
               gfx.fillStyle = '#fff'; gfx.font = 'bold 13px system-ui'; gfx.textAlign = 'center';
               gfx.fillText('✈️ Welcome to ' + nearWp.name + ' (' + nearWp.code + ')  —  ' + nearWp.fact, W / 2, 50);
@@ -5674,26 +5850,89 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           if (!state.stalling) flightRef.current._stallAnnounced = false;
 
           // ── Cockpit Frame Overlay ──
-          // Canopy bars (subtle frame around the view)
-          gfx.strokeStyle = 'rgba(30,30,40,0.5)';
-          gfx.lineWidth = 3;
-          // Top bar
-          gfx.beginPath(); gfx.moveTo(0, 2); gfx.lineTo(W, 2); gfx.stroke();
-          // Side pillars
-          gfx.lineWidth = 5;
-          gfx.beginPath(); gfx.moveTo(2, 0); gfx.lineTo(2, H); gfx.stroke();
-          gfx.beginPath(); gfx.moveTo(W - 2, 0); gfx.lineTo(W - 2, H); gfx.stroke();
-          // Center post (very subtle)
-          gfx.strokeStyle = 'rgba(30,30,40,0.15)'; gfx.lineWidth = 2;
-          gfx.beginPath(); gfx.moveTo(W / 2, 0); gfx.lineTo(W / 2, 34); gfx.stroke();
-          // Canopy arch
-          gfx.strokeStyle = 'rgba(30,30,40,0.25)'; gfx.lineWidth = 3;
-          gfx.beginPath();
-          gfx.moveTo(0, H * 0.4); gfx.quadraticCurveTo(W / 2, -10, W, H * 0.4);
-          gfx.stroke();
-          // Dashboard edge (bottom)
-          gfx.fillStyle = 'rgba(20,20,30,0.6)';
-          gfx.fillRect(0, H - 2, W, 2);
+          // Only drawn in first-person view; chase cam shouldn't have a canopy.
+          if (!d.thirdPerson) {
+            // Canopy bars (subtle frame around the view)
+            gfx.strokeStyle = 'rgba(30,30,40,0.5)';
+            gfx.lineWidth = 3;
+            // Top bar
+            gfx.beginPath(); gfx.moveTo(0, 2); gfx.lineTo(W, 2); gfx.stroke();
+            // Side pillars
+            gfx.lineWidth = 5;
+            gfx.beginPath(); gfx.moveTo(2, 0); gfx.lineTo(2, H); gfx.stroke();
+            gfx.beginPath(); gfx.moveTo(W - 2, 0); gfx.lineTo(W - 2, H); gfx.stroke();
+            // Center post (very subtle)
+            gfx.strokeStyle = 'rgba(30,30,40,0.15)'; gfx.lineWidth = 2;
+            gfx.beginPath(); gfx.moveTo(W / 2, 0); gfx.lineTo(W / 2, 34); gfx.stroke();
+            // Canopy arch
+            gfx.strokeStyle = 'rgba(30,30,40,0.25)'; gfx.lineWidth = 3;
+            gfx.beginPath();
+            gfx.moveTo(0, H * 0.4); gfx.quadraticCurveTo(W / 2, -10, W, H * 0.4);
+            gfx.stroke();
+
+            // ── Dashboard / glareshield — real dark panel across the bottom
+            // of the cockpit view. Previously this was just a 2px line, which
+            // left the HUD instruments floating in sky instead of sitting on a
+            // real panel. Now it's a ~58px shelf with a riveted-edge band, a
+            // subtle top highlight so it reads as metal, and a Y-shaped control
+            // yoke silhouette so the student feels their hands on something.
+            var dashH = 58;
+            var dashTop = H - dashH;
+            var dashGrad = gfx.createLinearGradient(0, dashTop, 0, H);
+            dashGrad.addColorStop(0, 'rgba(18,22,28,0.92)');
+            dashGrad.addColorStop(1, 'rgba(6,8,12,0.98)');
+            gfx.fillStyle = dashGrad;
+            gfx.fillRect(0, dashTop, W, dashH);
+            // Glareshield top edge highlight (thin light line for shape)
+            gfx.strokeStyle = 'rgba(120,135,155,0.45)';
+            gfx.lineWidth = 1;
+            gfx.beginPath(); gfx.moveTo(0, dashTop); gfx.lineTo(W, dashTop); gfx.stroke();
+            // Secondary inset line for "stacked panel" feel
+            gfx.strokeStyle = 'rgba(40,48,60,0.9)';
+            gfx.beginPath(); gfx.moveTo(0, dashTop + 4); gfx.lineTo(W, dashTop + 4); gfx.stroke();
+            // Rivet row along the glareshield top
+            gfx.fillStyle = 'rgba(70,80,95,0.8)';
+            for (var rv = 0; rv < W; rv += 18) {
+              gfx.beginPath(); gfx.arc(rv + 9, dashTop + 2, 0.8, 0, Math.PI * 2); gfx.fill();
+            }
+
+            // ── Control yoke silhouette (Y-shape rising from bottom-center) ──
+            // Banks with the aircraft so pitch/bank inputs read visually.
+            gfx.save();
+            gfx.translate(W / 2, H - 2);
+            gfx.rotate(-ctrl.bank * Math.PI / 180 * 0.35);
+            gfx.fillStyle = 'rgba(8,10,14,0.95)';
+            gfx.beginPath();
+            gfx.moveTo(-6, 0);
+            gfx.lineTo(-6, -18);
+            gfx.lineTo(-38, -22 + ctrl.pitch * 0.4);
+            gfx.lineTo(-38, -16 + ctrl.pitch * 0.4);
+            gfx.lineTo(-6, -12);
+            gfx.lineTo(-6, 0);
+            gfx.closePath();
+            gfx.fill();
+            gfx.beginPath();
+            gfx.moveTo(6, 0);
+            gfx.lineTo(6, -18);
+            gfx.lineTo(38, -22 + ctrl.pitch * 0.4);
+            gfx.lineTo(38, -16 + ctrl.pitch * 0.4);
+            gfx.lineTo(6, -12);
+            gfx.lineTo(6, 0);
+            gfx.closePath();
+            gfx.fill();
+            // Center column of the yoke
+            gfx.fillRect(-6, -26, 12, 26);
+            // Yoke trim highlight
+            gfx.strokeStyle = 'rgba(120,135,155,0.35)';
+            gfx.lineWidth = 0.8;
+            gfx.strokeRect(-6, -26, 12, 3);
+            gfx.restore();
+          } else {
+            // Third-person: just a faint bottom shadow so instruments still
+            // have a surface to read against.
+            gfx.fillStyle = 'rgba(0,0,0,0.35)';
+            gfx.fillRect(0, H - 12, W, 12);
+          }
 
           // ── Vignette (darkened edges for depth) ──
           var vigGrad = gfx.createRadialGradient(W/2, H/2, W * 0.3, W/2, H/2, W * 0.7);
