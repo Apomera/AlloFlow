@@ -635,9 +635,13 @@ var createDocPipeline = function(deps) {
       .replace(/^\s*\[\s*"\s*$/gm, '')
       .replace(/\[\s*"\s*(?=<)/g, '')
       // Final sweep: decode literal \uXXXX escapes that survived the chunk-level
-      // decoder at :3155 (which only runs when chunks start with `["`). Catches
-      // `\u2026` in image-placeholder descriptions and surrogate-pair emoji
-      // (`\ud83d\udcf7`) in UI templates when Gemini's JSON re-encoded them.
+      // decoder at :3155 (which only runs when chunks start with `["`). This catches:
+      //   - `\u2026` in image-placeholder descriptions rendering as literal text
+      //   - surrogate-pair emoji (`\ud83d\udcf7`) in UI templates when Gemini's
+      //     JSON serialization escape-encoded the emoji characters we hardcoded.
+      // Adjacent high/low surrogates remain adjacent in the output and render as
+      // the intended emoji glyph. Safe for typical doc_pipeline output (no legit
+      // `\uXXXX` text content exists in remediated educational documents).
       .replace(/\\u([0-9a-fA-F]{4})/g, function(_, hex) { return String.fromCharCode(parseInt(hex, 16)); });
   };
 
@@ -7043,10 +7047,11 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
               // Drag-and-drop + pick-extracted support: handlers pull a dataURL from
               // either the drop dataTransfer, a local file picker, or the shared
               // window.__alloflowExtractedImages list populated by the main app on iframe load.
-              // FIX: remove any open picker first, and scope the <img> lookup to
-              // direct children only. `c.querySelector('img')` was matching a
-              // thumbnail INSIDE the picker and the child-wipe below was then
-              // removing the picker — which took the just-inserted image with it.
+              // FIX: remove any open thumbnail picker FIRST, and scope the <img> lookup
+              // to direct children only. Without this, `c.querySelector('img')` finds
+              // a thumbnail *inside* the picker (not a real target), and the subsequent
+              // child-wipe removes the picker — taking the newly-aliased target with it,
+              // so the inserted image appears for one frame then vanishes.
               const _insertFn = `function(c, dataUrl, altText){`
                 + `var pk=c.querySelector('[data-alloflow-picker]');if(pk)pk.remove();`
                 + `var target=null;var kids=c.children;for(var ii=0;ii<kids.length;ii++){if(kids[ii].tagName==='IMG'){target=kids[ii];break;}}`
@@ -10153,10 +10158,12 @@ tr { page-break-inside: avoid; }
     if (!pdfPreviewRef.current) return memHtml;
     const doc = pdfPreviewRef.current.contentDocument || pdfPreviewRef.current.contentWindow?.document;
     if (!doc) return memHtml;
-    // If the iframe document exists but hasn't hydrated yet (very common when
-    // verification fires ~200ms after remediation completes), fall back to the
-    // in-memory accessibleHtml. Without this the fidelity check reads an empty
-    // shell and silently no-ops.
+    // If the iframe document exists but hasn't hydrated its body yet (very common when
+    // verification fires ~200ms after remediation completes), the outerHTML is a near-
+    // empty shell. Falling through to the shell produced empty `remText1` which made
+    // the fidelity check silently no-op — the user was "not seeing the verification run."
+    // Prefer the in-memory accessibleHtml in that case; only trust the iframe once it
+    // clearly holds rendered remediation content.
     const bodyText = (doc.body ? (doc.body.textContent || '') : '');
     if (bodyText.trim().length < 50 && memHtml) return memHtml;
     // Remove inspect CSS before export

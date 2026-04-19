@@ -1759,9 +1759,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               bees.forEach(function(b) {
                 var tX = b.toFlower ? (W * 0.6 + Math.sin(b.ph) * W * 0.15) : (hiveX + hiveW * 0.5);
                 var tY = b.toFlower ? (H * 0.55 + Math.cos(b.ph * 0.7) * 18) : (hiveY + hiveH - 4);
-                b.vx += (tX - b.x) * 0.004 + (Math.random() - 0.5) * 0.25;
-                b.vy += (tY - b.y) * 0.004 + (Math.random() - 0.5) * 0.18;
-                b.vx *= 0.96; b.vy *= 0.96;
+                // Slower, gentler physics: reduced seek force + jitter + more damping.
+                b.vx += (tX - b.x) * 0.002 + (Math.random() - 0.5) * 0.12;
+                b.vy += (tY - b.y) * 0.002 + (Math.random() - 0.5) * 0.09;
+                b.vx *= 0.93; b.vy *= 0.93;
+                // Cap top speed so bees never zip across the scene.
+                var _sp = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
+                if (_sp > 1.4) { b.vx *= 1.4 / _sp; b.vy *= 1.4 / _sp; }
                 b.x += b.vx; b.y += b.vy;
                 if (Math.abs(b.x - tX) < 12 && Math.abs(b.y - tY) < 12) {
                   b.toFlower = !b.toFlower;
