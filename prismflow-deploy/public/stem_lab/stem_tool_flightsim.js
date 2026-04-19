@@ -5316,11 +5316,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           hudRef.current.nearDist = nearDist;
 
           // ── RENDER ──
-          // Sky gradient
+          // Day/night cycle — computed FIRST so the sky gradient, horizon hills,
+          // and terrain draws all get the correct time-of-day palette. Used to
+          // be computed post-terrain which meant drawTerrain received undefined.
+          var dayNight = getDayNight(state.lon || 0, timeRef.current || 0) || { brightness: 0.8, isNight: false, isDusk: false, solarHour: 12 };
+          // Sunrise/sunset warmth — peaks within ±2h of solar 06:00 and 18:00.
+          var solarHrEarly = (dayNight.solarHour != null ? dayNight.solarHour : 12);
+          var dawnProx = Math.max(0, 1 - Math.abs(solarHrEarly - 6) / 2);
+          var duskProx = Math.max(0, 1 - Math.abs(solarHrEarly - 18) / 2);
+          var goldenProx = Math.max(dawnProx, duskProx);
+          var goldenSide = dawnProx > duskProx ? 'east' : 'west'; // east = left, west = right
+
+          // Sky gradient — biased warmer at the horizon during golden hour.
           var skyGrad = gfx.createLinearGradient(0, 0, 0, H * 0.6);
           var altFactor = Math.min(1, state.altitude / 40000);
-          skyGrad.addColorStop(0, 'rgb(' + Math.round(10 + altFactor * 5) + ',' + Math.round(10 + altFactor * 20) + ',' + Math.round(40 + altFactor * 60) + ')');
-          skyGrad.addColorStop(1, 'rgb(' + Math.round(80 - altFactor * 40) + ',' + Math.round(140 - altFactor * 40) + ',' + Math.round(220 - altFactor * 20) + ')');
+          var topR = 10 + altFactor * 5;
+          var topG = 10 + altFactor * 20 + goldenProx * 10;
+          var topB = 40 + altFactor * 60 - goldenProx * 10;
+          var botR = 80 - altFactor * 40 + goldenProx * 120;
+          var botG = 140 - altFactor * 40 + goldenProx * 30;
+          var botB = 220 - altFactor * 20 - goldenProx * 80;
+          skyGrad.addColorStop(0, 'rgb(' + Math.round(topR) + ',' + Math.round(topG) + ',' + Math.round(topB) + ')');
+          skyGrad.addColorStop(1, 'rgb(' + Math.round(botR) + ',' + Math.round(botG) + ',' + Math.round(botB) + ')');
           gfx.fillStyle = skyGrad;
           gfx.fillRect(0, 0, W, H);
 
@@ -5330,6 +5347,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             ? H * 0.4 + state.vsi * 0.03 + ctrl.pitch * 2  // Higher horizon = see more ground
             : H * 0.55 + state.vsi * 0.05 + ctrl.pitch * 3;
           horizonY = Math.max(H * 0.2, Math.min(H * 0.8, horizonY));
+
+          // ── Sunrise / sunset horizon wash ──
+          // Radial orange-to-pink glow centered on the sun's side of the sky,
+          // painted just above the horizon. Strongest inside ±2h of solar
+          // 06:00 and 18:00 (see dawnProx / duskProx above).
+          if (goldenProx > 0.05) {
+            var ghCx = goldenSide === 'east' ? W * 0.18 : W * 0.82;
+            var ghR = W * 0.7;
+            var ghGrad = gfx.createRadialGradient(ghCx, horizonY, 10, ghCx, horizonY, ghR);
+            ghGrad.addColorStop(0, 'rgba(255,175,90,' + (0.55 * goldenProx) + ')');
+            ghGrad.addColorStop(0.35, 'rgba(255,130,110,' + (0.28 * goldenProx) + ')');
+            ghGrad.addColorStop(0.7, 'rgba(180,90,140,' + (0.12 * goldenProx) + ')');
+            ghGrad.addColorStop(1, 'rgba(120,70,130,0)');
+            gfx.fillStyle = ghGrad;
+            gfx.fillRect(0, Math.max(0, horizonY - ghR * 0.6), W, horizonY + ghR * 0.3);
+          }
 
           // Procedural terrain (replaces flat gradient)
           drawTerrain(gfx, W, H, horizonY, state, timeRef.current, dayNight);
@@ -5598,8 +5631,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             gfx.restore();
           }
 
-          // Day/night cycle (computed early so sun/lens flare/haze can use it)
-          var dayNight = getDayNight(state.lon || 0, timeRef.current || 0) || { brightness: 0.8, isNight: false, isDusk: false, solarHour: 12 };
+          // (dayNight was computed at the top of the render block so drawTerrain
+          // and the horizon hills/wash could reuse it. Kept here as a no-op.)
 
           // Sun/moon glow. Position moves with solar hour (sunrise at 06:00 in
           // the east → noon high overhead → sunset in the west at 18:00). This

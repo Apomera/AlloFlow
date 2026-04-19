@@ -5841,6 +5841,59 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             if (Math.floor(timeRef.current * 4) % 2 === 0 && window._alloHaptic) window._alloHaptic('bump');
           }
 
+          // ── ATIS information strip ──
+          // Classic airport Automatic Terminal Information Service readout. Real
+          // pilots listen to ATIS on a radio frequency before calling the tower:
+          // wind, visibility, ceiling, temperature, dewpoint, altimeter, active
+          // runway. We surface the same set on-screen when the plane is near an
+          // airport (≤ 6 nm and AGL < 3000 ft), with a letter-code that rotates
+          // hourly (real ATIS updates use sequential A/B/C/... identifiers).
+          if (nearWp && nearDist < 6 && (state.altitude - (nearWp.alt || 0)) < 3000) {
+            var atisWx = weatherRef.current || {};
+            var atisWSpd = Math.round(atisWx.wind || 5);
+            var atisWDir = String(Math.round(atisWx.windDir || 270)).padStart(3, '0');
+            var atisVis = atisWx.visibility != null ? (atisWx.visibility * 10).toFixed(0) + ' mi' : '10 mi';
+            var atisType = (atisWx.type || 'clear');
+            // Altimeter from standard lapse + airport elevation (simple model)
+            var atisAlt = (29.92 - (nearWp.alt || 0) / 1000 * 0.01).toFixed(2);
+            // Temperature (rough standard lapse: 15°C at sea level, -2°C per 1000ft)
+            var atisTemp = Math.round(15 - (nearWp.alt || 0) / 1000 * 2);
+            var atisDewpt = atisTemp - (atisType === 'overcast' || atisType === 'stormy' ? 2 : 8);
+            // Active runway: player's current heading divided by 10 → designator
+            var atisRwy = String(Math.max(1, Math.min(36, Math.round(state.heading / 10)))).padStart(2, '0');
+            // Rotating letter code — A..Z, new letter each hour of solarHour
+            var atisLetters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            var atisLtr = atisLetters[Math.floor((dayNight.solarHour != null ? dayNight.solarHour : 12) + nearWp.code.length) % 26];
+            // Panel layout — bottom-left, above the speed tape.
+            var atisX = 10;
+            var atisY = H - 320;
+            var atisW2 = 190;
+            var atisH2 = 96;
+            gfx.fillStyle = 'rgba(2,6,23,0.82)';
+            gfx.beginPath(); gfx.roundRect(atisX, atisY, atisW2, atisH2, 6); gfx.fill();
+            gfx.strokeStyle = '#38bdf8';
+            gfx.lineWidth = 1;
+            gfx.beginPath(); gfx.roundRect(atisX, atisY, atisW2, atisH2, 6); gfx.stroke();
+            // Title
+            gfx.fillStyle = '#38bdf8';
+            gfx.font = 'bold 10px monospace';
+            gfx.textAlign = 'left'; gfx.textBaseline = 'top';
+            gfx.fillText(nearWp.code + ' ATIS  INFO ' + atisLtr, atisX + 8, atisY + 6);
+            // Body
+            gfx.fillStyle = '#e2e8f0';
+            gfx.font = '9px monospace';
+            var atisLines = [
+              'WIND ' + atisWDir + '° @ ' + atisWSpd + 'KT',
+              'VIS ' + atisVis + '  ' + atisType.toUpperCase(),
+              'TEMP ' + atisTemp + '°C  DEW ' + atisDewpt + '°C',
+              'ALTIMETER ' + atisAlt + '"',
+              'RWY IN USE: ' + atisRwy
+            ];
+            atisLines.forEach(function(line, li) {
+              gfx.fillText(line, atisX + 8, atisY + 22 + li * 13);
+            });
+          }
+
           // Force diagram
           drawForces(gfx, W - 110, 120, state.forces, showForces);
 
@@ -5857,6 +5910,84 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           drawAirportGround(gfx, W, H, horizonY, state, nearWp, nearDist);
           // Far-view runway (shows up to 10nm out) — for landing approach visibility.
           drawRunway(gfx, W, H, horizonY, state, nearWp, nearDist);
+
+          // ── Traffic pattern aircraft ──
+          // One ambient Cessna flying a left-hand rectangular pattern at 1000 ft
+          // AGL around the nearest airport. Four legs — upwind, crosswind,
+          // downwind, base, final — each taken in sequence. Student sees another
+          // plane in the sky instead of flying in an empty world.
+          if (nearWp && nearDist < 6 && state.altitude < 6000) {
+            var tpField = nearWp.alt || 0;
+            var tpAglLocal = state.altitude - tpField;
+            // Position around a 90-second circuit using timeRef as phase
+            var tpPhase = (timeRef.current * 0.011) % 1;
+            // Rectangular pattern centered on the airport. "Upwind" heading is
+            // the airport's runway heading — we reuse the player's heading as a
+            // rough proxy since the sim lands in whatever direction you face.
+            var tpLegs = [
+              { dx:  0,     dy: -1.2, lbl: 'upwind'    },
+              { dx:  0.6,   dy: -0.6, lbl: 'crosswind' },
+              { dx:  0.9,   dy:  0.0, lbl: 'downwind'  },
+              { dx:  0.9,   dy:  0.9, lbl: 'downwind2' },
+              { dx:  0.5,   dy:  1.4, lbl: 'base'      },
+              { dx:  0.0,   dy:  1.2, lbl: 'final'     }
+            ];
+            var tpLegIdx = Math.floor(tpPhase * tpLegs.length);
+            var tpLegT   = (tpPhase * tpLegs.length) % 1;
+            var tpFromLeg = tpLegs[tpLegIdx];
+            var tpToLeg   = tpLegs[(tpLegIdx + 1) % tpLegs.length];
+            // Interpolated offset in nm relative to airport center
+            var tpOffX = tpFromLeg.dx + (tpToLeg.dx - tpFromLeg.dx) * tpLegT;
+            var tpOffY = tpFromLeg.dy + (tpToLeg.dy - tpFromLeg.dy) * tpLegT;
+            // Project to screen using the player's heading. Simple: compute
+            // relative bearing from the player to the traffic point.
+            var tpLat = nearWp.lat + tpOffY * 0.015;
+            var tpLon = nearWp.lon + tpOffX * 0.015 / Math.max(0.5, Math.cos(state.lat * Math.PI / 180));
+            var tpDist = haversineNm(state.lat, state.lon, tpLat, tpLon);
+            if (tpDist > 0.1 && tpDist < 6) {
+              var tpBrg = bearing(state.lat, state.lon, tpLat, tpLon);
+              var tpRelBrg = ((tpBrg - state.heading + 540) % 360) - 180;
+              if (Math.abs(tpRelBrg) < 60) {
+                var tpScreenX = W / 2 + (tpRelBrg / 60) * (W / 2);
+                var tpProx = 1 - tpDist / 6;
+                // Traffic is at 1000 ft AGL — render it above or below horizon
+                // based on how high the PLAYER is.
+                var tpScreenY = horizonY - (tpAglLocal - 1000) * 0.0015 * (H - horizonY)
+                              - tpProx * 8;
+                tpScreenY = Math.max(horizonY - 40, Math.min(H - 40, tpScreenY));
+                var tpSize = 2 + tpProx * 10;
+                // Pale aircraft silhouette — fuselage + wings + tail
+                gfx.save();
+                gfx.translate(tpScreenX, tpScreenY);
+                // Roll the silhouette into its pattern turns
+                var tpBank = (tpLegIdx === 1 || tpLegIdx === 3 || tpLegIdx === 4) ? 0.35 : 0;
+                gfx.rotate(tpBank);
+                gfx.fillStyle = 'rgba(220,225,235,0.85)';
+                // Fuselage
+                gfx.beginPath(); gfx.ellipse(0, 0, tpSize, tpSize * 0.25, 0, 0, Math.PI * 2); gfx.fill();
+                // Wings
+                gfx.fillRect(-tpSize * 1.4, -tpSize * 0.15, tpSize * 2.8, tpSize * 0.25);
+                // Tail fin
+                gfx.fillRect(tpSize * 0.7, -tpSize * 0.5, tpSize * 0.2, tpSize * 0.4);
+                // Nav light blink
+                if (tpProx > 0.25 && Math.sin(timeRef.current * 4 + tpLegIdx) > 0) {
+                  gfx.fillStyle = 'rgba(239,68,68,0.9)';
+                  gfx.beginPath(); gfx.arc(-tpSize * 1.4, 0, 0.8, 0, Math.PI * 2); gfx.fill();
+                  gfx.fillStyle = 'rgba(34,197,94,0.9)';
+                  gfx.beginPath(); gfx.arc(tpSize * 1.4, 0, 0.8, 0, Math.PI * 2); gfx.fill();
+                }
+                gfx.restore();
+                // Leg label for student ("TRAFFIC DOWNWIND") when close enough
+                if (tpProx > 0.45) {
+                  gfx.fillStyle = 'rgba(203,213,225,0.6)';
+                  gfx.font = '8px monospace';
+                  gfx.textAlign = 'center';
+                  gfx.textBaseline = 'top';
+                  gfx.fillText('TFC ' + (tpFromLeg.lbl.split('2')[0]).toUpperCase(), tpScreenX, tpScreenY + tpSize + 4);
+                }
+              }
+            }
+          }
 
           // Weather effects (rain, haze, lightning)
           drawWeatherEffects(gfx, W, H, horizonY, timeRef.current, state);
