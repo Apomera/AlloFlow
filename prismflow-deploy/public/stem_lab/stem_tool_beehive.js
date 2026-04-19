@@ -201,6 +201,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
         // ── View Mode ──
         var viewMode = d.viewMode || 'beekeeper'; // 'beekeeper' | 'queen' | 'drone'
+        var beeView = d.beeView || 'scene'; // 'scene' | 'anatomy' | 'physics' (beekeeper canvas view mode)
 
         // ── Sound toggle ──
         var soundOn = d.soundOn !== false; // default on
@@ -1437,7 +1438,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
         // Store live colony state in a ref so the animation loop always reads fresh values
         var _liveState = React.useRef({});
-        _liveState.current = { workers: workers, honey: honey, season: season, habitat: habitat, gardenPollinators: gardenPollinators, gardenBonus: gardenBonus, colonyHealth: colonyHealth, queenHealth: queenHealth, morale: morale, day: day, brood: brood, drones: drones };
+        _liveState.current = { workers: workers, honey: honey, season: season, habitat: habitat, gardenPollinators: gardenPollinators, gardenBonus: gardenBonus, colonyHealth: colonyHealth, queenHealth: queenHealth, morale: morale, day: day, brood: brood, drones: drones, beeView: beeView };
 
         React.useEffect(function() {
           console.log('[Beehive DEBUG] beekeeper useEffect fired. viewMode=' + viewMode);
@@ -1553,6 +1554,373 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             };
           }
 
+          // ═══ BEE ANATOMY DIAGRAM (educational overlay view) ═══
+          function drawBeeAnatomy() {
+            // Soft creamy background with faint grid
+            c.fillStyle = '#fffbeb';
+            c.fillRect(0, 0, W, H);
+            c.strokeStyle = 'rgba(251,191,36,0.08)'; c.lineWidth = 1;
+            for (var bg = 0; bg < W; bg += 40) { c.beginPath(); c.moveTo(bg, 0); c.lineTo(bg, H); c.stroke(); }
+            for (var bg2 = 0; bg2 < H; bg2 += 40) { c.beginPath(); c.moveTo(0, bg2); c.lineTo(W, bg2); c.stroke(); }
+            // Title
+            c.fillStyle = '#78350f'; c.textAlign = 'center';
+            c.font = 'bold 18px Georgia, serif';
+            c.fillText('🐝 Honeybee Anatomy (Apis mellifera)', W / 2, 28);
+            c.font = 'italic 11px Georgia, serif'; c.fillStyle = '#a16207';
+            c.fillText('~15 mm · 3 body segments · 6 legs · 4 wings · 5 eyes · 1 stinger', W / 2, 46);
+
+            // Center the bee — scaled to canvas
+            var cX = W * 0.5, cY = H * 0.58;
+            var scale = Math.min(W * 0.0007, H * 0.002); // auto-scale
+            var bee = function(s) { return s * scale; };
+
+            // ── Wings (behind body, translucent with venation) ──
+            c.save();
+            c.globalAlpha = 0.55;
+            // Forewing (larger)
+            var fwGrad = c.createLinearGradient(cX - bee(120), cY - bee(180), cX, cY - bee(80));
+            fwGrad.addColorStop(0, '#e0f2fe'); fwGrad.addColorStop(1, '#bfdbfe');
+            c.fillStyle = fwGrad;
+            c.beginPath(); c.ellipse(cX - bee(90), cY - bee(120), bee(160), bee(60), -0.4, 0, 6.28); c.fill();
+            // Hindwing (smaller, tucked behind)
+            c.fillStyle = '#dbeafe';
+            c.beginPath(); c.ellipse(cX - bee(30), cY - bee(100), bee(100), bee(40), -0.25, 0, 6.28); c.fill();
+            c.globalAlpha = 1;
+            // Wing venation (dark lines)
+            c.strokeStyle = 'rgba(60,90,120,0.5)'; c.lineWidth = 0.8;
+            for (var vi = 0; vi < 6; vi++) {
+              var vAng = -1.2 + vi * 0.2;
+              c.beginPath();
+              c.moveTo(cX - bee(30), cY - bee(100));
+              c.lineTo(cX - bee(30) + Math.cos(vAng) * bee(180), cY - bee(100) + Math.sin(vAng) * bee(80));
+              c.stroke();
+            }
+            c.restore();
+
+            // ── Abdomen (striped, tapered to stinger) ──
+            c.save();
+            var abX = cX + bee(150), abY = cY;
+            c.fillStyle = '#fbbf24';
+            c.beginPath(); c.ellipse(abX, abY, bee(180), bee(100), 0, 0, 6.28); c.fill();
+            // Stripes (real bees have 5 abdominal segments)
+            c.fillStyle = '#292524';
+            for (var ab = 0; ab < 5; ab++) {
+              c.save();
+              c.translate(abX - bee(120) + ab * bee(60), abY);
+              c.beginPath(); c.ellipse(0, 0, bee(12), bee(95), 0, 0, 6.28); c.fill();
+              c.restore();
+            }
+            // Abdomen highlight
+            c.fillStyle = 'rgba(255,255,255,0.2)';
+            c.beginPath(); c.ellipse(abX - bee(20), abY - bee(40), bee(120), bee(30), 0, 0, 6.28); c.fill();
+            // Stinger
+            c.fillStyle = '#44403c';
+            c.beginPath(); c.moveTo(abX + bee(180), abY);
+            c.lineTo(abX + bee(230), abY - bee(8));
+            c.lineTo(abX + bee(230), abY + bee(8)); c.closePath(); c.fill();
+            // Stinger barbs
+            c.strokeStyle = '#1c1917'; c.lineWidth = 0.6;
+            for (var st = 0; st < 3; st++) {
+              var stY = abY - 3 + st * 3;
+              c.beginPath(); c.moveTo(abX + bee(195) + st * 8, stY); c.lineTo(abX + bee(195) + st * 8 + 3, stY - 2); c.stroke();
+            }
+            c.restore();
+
+            // ── Thorax (fuzzy, orange-brown) ──
+            c.save();
+            var thX = cX, thY = cY;
+            c.shadowColor = '#fb923c'; c.shadowBlur = 4;
+            c.fillStyle = '#d97706';
+            c.beginPath(); c.ellipse(thX, thY, bee(100), bee(85), 0, 0, 6.28); c.fill();
+            // Fuzzy hair halo
+            c.shadowBlur = 0; c.globalAlpha = 0.35; c.fillStyle = '#fdba74';
+            for (var fh = 0; fh < 30; fh++) {
+              var fhAng = fh * 0.21;
+              c.beginPath(); c.arc(thX + Math.cos(fhAng) * bee(95), thY + Math.sin(fhAng) * bee(80), 1.5, 0, 6.28); c.fill();
+            }
+            c.restore();
+
+            // ── Head (rounded, with big compound eyes) ──
+            var hdX = cX - bee(150), hdY = cY - bee(20);
+            c.save();
+            c.fillStyle = '#292524';
+            c.beginPath(); c.ellipse(hdX, hdY, bee(80), bee(75), 0, 0, 6.28); c.fill();
+            // Compound eye (big, iridescent)
+            c.fillStyle = '#1e293b';
+            c.beginPath(); c.ellipse(hdX - bee(20), hdY - bee(15), bee(35), bee(50), -0.2, 0, 6.28); c.fill();
+            // Eye facet highlights
+            c.strokeStyle = 'rgba(100,120,160,0.3)'; c.lineWidth = 0.4;
+            for (var ey = 0; ey < 6; ey++) {
+              c.beginPath(); c.ellipse(hdX - bee(20), hdY - bee(15), bee(15 + ey * 4), bee(20 + ey * 5), -0.2, 0, 6.28); c.stroke();
+            }
+            c.fillStyle = 'rgba(255,255,255,0.4)';
+            c.beginPath(); c.arc(hdX - bee(30), hdY - bee(30), bee(6), 0, 6.28); c.fill();
+            // Ocelli (3 simple eyes on top of head)
+            c.fillStyle = '#fbbf24';
+            c.beginPath(); c.arc(hdX - bee(10), hdY - bee(55), bee(4), 0, 6.28); c.fill();
+            c.beginPath(); c.arc(hdX - bee(25), hdY - bee(60), bee(3), 0, 6.28); c.fill();
+            c.beginPath(); c.arc(hdX + bee(5), hdY - bee(58), bee(3), 0, 6.28); c.fill();
+            // Antennae
+            c.strokeStyle = '#1c1917'; c.lineWidth = 2;
+            c.beginPath(); c.moveTo(hdX - bee(30), hdY - bee(50));
+            c.quadraticCurveTo(hdX - bee(60), hdY - bee(80), hdX - bee(85), hdY - bee(65)); c.stroke();
+            c.beginPath(); c.moveTo(hdX - bee(15), hdY - bee(55));
+            c.quadraticCurveTo(hdX - bee(40), hdY - bee(90), hdX - bee(65), hdY - bee(80)); c.stroke();
+            // Antenna tips
+            c.fillStyle = '#1c1917';
+            c.beginPath(); c.arc(hdX - bee(85), hdY - bee(65), bee(3), 0, 6.28); c.fill();
+            c.beginPath(); c.arc(hdX - bee(65), hdY - bee(80), bee(3), 0, 6.28); c.fill();
+            // Mandibles (tiny jaws)
+            c.fillStyle = '#57534e';
+            c.beginPath(); c.moveTo(hdX - bee(60), hdY + bee(20));
+            c.lineTo(hdX - bee(75), hdY + bee(30));
+            c.lineTo(hdX - bee(55), hdY + bee(32)); c.closePath(); c.fill();
+            // Proboscis (feeding tube)
+            c.strokeStyle = '#78350f'; c.lineWidth = 2;
+            c.beginPath(); c.moveTo(hdX - bee(45), hdY + bee(40));
+            c.quadraticCurveTo(hdX - bee(55), hdY + bee(65), hdX - bee(45), hdY + bee(80)); c.stroke();
+            c.restore();
+
+            // ── Legs (6 total, jointed, front pair smallest) ──
+            c.save();
+            c.strokeStyle = '#1c1917'; c.lineWidth = 3;
+            var legBase = cY + bee(60);
+            // 3 pairs of legs with different sizes
+            var legPairs = [
+              { x: thX - bee(60), len: bee(65), ang: 0.8 }, // front
+              { x: thX, len: bee(80), ang: 0.6 }, // middle
+              { x: thX + bee(60), len: bee(95), ang: 0.4 }  // back (largest — has pollen basket)
+            ];
+            legPairs.forEach(function(lp, li) {
+              var lx1 = lp.x, ly1 = legBase;
+              var lx2 = lx1 + Math.cos(lp.ang) * lp.len * 0.5;
+              var ly2 = ly1 + Math.sin(lp.ang) * lp.len * 0.5;
+              var lx3 = lx2 + Math.cos(lp.ang - 0.3) * lp.len * 0.6;
+              var ly3 = ly2 + Math.sin(lp.ang - 0.3) * lp.len * 0.6;
+              c.beginPath(); c.moveTo(lx1, ly1); c.lineTo(lx2, ly2); c.lineTo(lx3, ly3); c.stroke();
+              // Foot
+              c.fillStyle = '#1c1917';
+              c.beginPath(); c.arc(lx3, ly3, 2, 0, 6.28); c.fill();
+              // Pollen basket (corbicula) on back legs
+              if (li === 2) {
+                c.save(); c.shadowColor = '#fbbf24'; c.shadowBlur = 5;
+                c.fillStyle = '#facc15';
+                c.beginPath(); c.ellipse(lx2, ly2, bee(12), bee(8), lp.ang - 0.3, 0, 6.28); c.fill();
+                c.restore();
+              }
+            });
+            c.restore();
+
+            // ── Labels with leader lines ──
+            var labels = [
+              { lx: hdX - bee(105), ly: hdY - bee(30), tx: 40, ty: 100, t: '① Compound eye (6,900 facets)' },
+              { lx: hdX - bee(15), ly: hdY - bee(60), tx: 40, ty: 130, t: '② Ocelli (3 simple eyes)' },
+              { lx: hdX - bee(85), ly: hdY - bee(70), tx: 40, ty: 160, t: '③ Antennae (smell + touch)' },
+              { lx: hdX - bee(55), ly: hdY + bee(30), tx: 40, ty: 190, t: '④ Mandibles (jaws)' },
+              { lx: hdX - bee(50), ly: hdY + bee(75), tx: 40, ty: 220, t: '⑤ Proboscis (nectar tube)' },
+              { lx: thX, ly: thY, tx: W - 260, ty: 100, t: '⑥ Thorax (flight muscles)' },
+              { lx: thX - bee(80), ly: cY - bee(170), tx: W - 260, ty: 130, t: '⑦ Forewings + hindwings' },
+              { lx: abX, ly: abY, tx: W - 260, ty: 160, t: '⑧ Abdomen (5 segments, honey sac)' },
+              { lx: abX + bee(210), ly: abY, tx: W - 260, ty: 190, t: '⑨ Stinger (modified ovipositor)' },
+              { lx: thX + bee(90), ly: legBase + bee(60), tx: W - 260, ty: 220, t: '⑩ Pollen basket (corbicula)' }
+            ];
+            c.strokeStyle = '#a16207'; c.lineWidth = 0.8;
+            c.font = 'bold 11px system-ui'; c.fillStyle = '#78350f'; c.textAlign = 'left';
+            labels.forEach(function(lab) {
+              c.beginPath(); c.moveTo(lab.lx, lab.ly);
+              c.lineTo(lab.tx - 5, lab.ty); c.stroke();
+              c.beginPath(); c.arc(lab.lx, lab.ly, 2, 0, 6.28); c.fill();
+              c.fillText(lab.t, lab.tx, lab.ty + 4);
+            });
+
+            // Footer stats
+            c.font = '10px system-ui'; c.fillStyle = '#a16207'; c.textAlign = 'center';
+            c.fillText('Flies at ~15 mph · Flaps wings 230× per second · Visits up to 100 flowers per trip', W / 2, H - 14);
+          }
+
+          // ═══ FLIGHT PHYSICS DIAGRAM (animated wing cross-section with vortex visualization) ═══
+          function drawFlightPhysics() {
+            // Cool sky-blue gradient (like wind-tunnel visualization)
+            var phGrad = c.createLinearGradient(0, 0, 0, H);
+            phGrad.addColorStop(0, '#e0f2fe'); phGrad.addColorStop(1, '#bae6fd');
+            c.fillStyle = phGrad; c.fillRect(0, 0, W, H);
+
+            // Grid
+            c.strokeStyle = 'rgba(30,64,175,0.07)'; c.lineWidth = 1;
+            for (var pg = 0; pg < W; pg += 30) { c.beginPath(); c.moveTo(pg, 0); c.lineTo(pg, H); c.stroke(); }
+            for (var pg2 = 0; pg2 < H; pg2 += 30) { c.beginPath(); c.moveTo(0, pg2); c.lineTo(W, pg2); c.stroke(); }
+
+            // Title
+            c.fillStyle = '#1e3a8a'; c.textAlign = 'center';
+            c.font = 'bold 18px Georgia, serif';
+            c.fillText('✈️ How Do Bees Fly? The Leading-Edge Vortex', W / 2, 28);
+            c.font = 'italic 11px Georgia, serif'; c.fillStyle = '#1e40af';
+            c.fillText('Classical aerodynamics says bees CAN\'T fly. They do it with rotational airfoil tricks.', W / 2, 46);
+
+            // ═══ PANEL 1: Figure-8 wing path (left side) ═══
+            var p1X = W * 0.25, p1Y = H * 0.40;
+            c.save();
+            c.translate(p1X, p1Y);
+            // Panel bg
+            c.fillStyle = 'rgba(255,255,255,0.6)';
+            c.beginPath(); if (c.roundRect) c.roundRect(-140, -100, 280, 200, 10); else c.rect(-140, -100, 280, 200); c.fill();
+            c.strokeStyle = '#3b82f6'; c.lineWidth = 2;
+            c.beginPath(); if (c.roundRect) c.roundRect(-140, -100, 280, 200, 10); else c.rect(-140, -100, 280, 200); c.stroke();
+            c.font = 'bold 12px system-ui'; c.textAlign = 'center'; c.fillStyle = '#1e40af';
+            c.fillText('Wing traces a FIGURE-8 pattern', 0, -80);
+            // Draw the figure-8 path (traced with lemniscate)
+            c.strokeStyle = '#3b82f6'; c.lineWidth = 2;
+            c.beginPath();
+            for (var fg = 0; fg <= 100; fg++) {
+              var fga = (fg / 100) * Math.PI * 2;
+              var fgx = 90 * Math.cos(fga) / (1 + Math.sin(fga) * Math.sin(fga));
+              var fgy = 40 * Math.sin(fga) * Math.cos(fga) / (1 + Math.sin(fga) * Math.sin(fga));
+              fg === 0 ? c.moveTo(fgx, fgy) : c.lineTo(fgx, fgy);
+            }
+            c.stroke();
+            // Moving wing tip indicator
+            var fgT = (t2 * 0.05) % (Math.PI * 2);
+            var tipX = 90 * Math.cos(fgT) / (1 + Math.sin(fgT) * Math.sin(fgT));
+            var tipY = 40 * Math.sin(fgT) * Math.cos(fgT) / (1 + Math.sin(fgT) * Math.sin(fgT));
+            // Wing itself (oriented airfoil-like shape at tip)
+            c.save(); c.translate(tipX, tipY);
+            var wingAng = Math.atan2(Math.cos(fgT * 2 + 0.1), -Math.sin(fgT + 0.1));
+            c.rotate(wingAng);
+            c.fillStyle = 'rgba(251,191,36,0.9)'; c.strokeStyle = '#92400e'; c.lineWidth = 1;
+            c.beginPath();
+            c.moveTo(-18, 0); c.quadraticCurveTo(-8, -4, 10, -1); c.quadraticCurveTo(10, 2, -18, 2); c.closePath();
+            c.fill(); c.stroke();
+            c.restore();
+            // Glow at tip
+            c.save(); c.shadowColor = '#fbbf24'; c.shadowBlur = 10;
+            c.fillStyle = '#fbbf24';
+            c.beginPath(); c.arc(tipX, tipY, 3, 0, 6.28); c.fill();
+            c.restore();
+            // Direction arrows on path
+            c.fillStyle = '#1e40af'; c.font = '10px system-ui';
+            c.fillText('→ Thrust', 0, 60);
+            c.fillStyle = '#64748b'; c.font = '9px system-ui';
+            c.fillText('230 Hz · ~130° arc · near-horizontal plane', 0, 85);
+            c.restore();
+
+            // ═══ PANEL 2: Leading-edge vortex (center) ═══
+            var p2X = W * 0.62, p2Y = H * 0.40;
+            c.save();
+            c.translate(p2X, p2Y);
+            c.fillStyle = 'rgba(255,255,255,0.6)';
+            c.beginPath(); if (c.roundRect) c.roundRect(-150, -100, 300, 200, 10); else c.rect(-150, -100, 300, 200); c.fill();
+            c.strokeStyle = '#7c3aed'; c.lineWidth = 2;
+            c.beginPath(); if (c.roundRect) c.roundRect(-150, -100, 300, 200, 10); else c.rect(-150, -100, 300, 200); c.stroke();
+            c.font = 'bold 12px system-ui'; c.textAlign = 'center'; c.fillStyle = '#5b21b6';
+            c.fillText('Leading-Edge Vortex (LEV) creates LIFT', 0, -80);
+            // Animated wing cross-section
+            var lvPhase = Math.sin(t2 * 0.04);
+            c.save(); c.translate(0, 10);
+            c.rotate(lvPhase * 0.25);
+            // Airfoil shape
+            c.fillStyle = '#fbbf24'; c.strokeStyle = '#92400e'; c.lineWidth = 1.5;
+            c.beginPath();
+            c.moveTo(-80, 0);
+            c.quadraticCurveTo(-40, -18, 40, -6);
+            c.quadraticCurveTo(60, 0, 40, 4);
+            c.quadraticCurveTo(-40, 10, -80, 0);
+            c.closePath();
+            c.fill(); c.stroke();
+            // Leading edge marker
+            c.fillStyle = '#dc2626';
+            c.beginPath(); c.arc(-80, 0, 3, 0, 6.28); c.fill();
+            // ── The vortex itself (swirling spiral on top of wing) ──
+            c.strokeStyle = 'rgba(124,58,237,0.75)'; c.lineWidth = 1.8;
+            c.beginPath();
+            for (var sp = 0; sp < 40; sp++) {
+              var sR = 2 + sp * 0.55;
+              var sA = sp * 0.5 + t2 * 0.08;
+              var sx = -55 + Math.cos(sA) * sR;
+              var sy = -14 + Math.sin(sA) * sR * 0.6;
+              sp === 0 ? c.moveTo(sx, sy) : c.lineTo(sx, sy);
+            }
+            c.stroke();
+            // Curved airflow streamlines
+            c.strokeStyle = 'rgba(59,130,246,0.5)'; c.lineWidth = 1;
+            for (var sf = 0; sf < 5; sf++) {
+              var sfY = -35 - sf * 5;
+              c.beginPath();
+              c.moveTo(-120, sfY);
+              for (var sx2 = -110; sx2 < 100; sx2 += 4) {
+                var sfDip = sx2 > -70 && sx2 < 0 ? Math.sin((sx2 + 70) * 0.05) * (8 - sf) : 0;
+                c.lineTo(sx2, sfY + sfDip);
+              }
+              c.stroke();
+              // Arrowhead
+              c.fillStyle = 'rgba(59,130,246,0.7)';
+              c.beginPath(); c.moveTo(100, sfY); c.lineTo(94, sfY - 2); c.lineTo(94, sfY + 2); c.closePath(); c.fill();
+            }
+            c.restore();
+            // Annotations
+            c.fillStyle = '#5b21b6'; c.font = 'bold 10px system-ui'; c.textAlign = 'left';
+            c.fillText('↓ Low pressure', -140, -55);
+            c.fillStyle = '#1e40af';
+            c.fillText('→ Airflow', -140, 70);
+            c.fillStyle = '#dc2626'; c.font = '10px system-ui'; c.textAlign = 'center';
+            c.fillText('Leading edge', -55, 85);
+            c.restore();
+
+            // ═══ PANEL 3: Clap and fling (bottom) ═══
+            var p3Y = H * 0.77;
+            c.save();
+            c.fillStyle = 'rgba(255,255,255,0.6)';
+            var pnW = Math.min(W - 60, 520);
+            c.beginPath(); if (c.roundRect) c.roundRect((W - pnW) / 2, p3Y - 60, pnW, 110, 10); else c.rect((W - pnW) / 2, p3Y - 60, pnW, 110); c.fill();
+            c.strokeStyle = '#059669'; c.lineWidth = 2;
+            c.beginPath(); if (c.roundRect) c.roundRect((W - pnW) / 2, p3Y - 60, pnW, 110, 10); else c.rect((W - pnW) / 2, p3Y - 60, pnW, 110); c.stroke();
+            c.font = 'bold 12px system-ui'; c.textAlign = 'center'; c.fillStyle = '#065f46';
+            c.fillText('Clap-and-Fling: wings touch overhead, then rip apart, sucking extra air into the gap', W / 2, p3Y - 42);
+            // Animated wing pair doing clap-and-fling
+            var cfPhase = (Math.sin(t2 * 0.06) + 1) * 0.5; // 0..1 cycle
+            var cfCenterX = W / 2, cfCenterY = p3Y - 10;
+            var cfSep = 4 + cfPhase * 50;
+            // Left wing
+            c.save(); c.translate(cfCenterX - cfSep, cfCenterY); c.rotate(-cfPhase * 0.9);
+            c.fillStyle = 'rgba(251,191,36,0.85)'; c.strokeStyle = '#92400e'; c.lineWidth = 1.2;
+            c.beginPath(); c.ellipse(-22, 0, 22, 8, 0, 0, 6.28); c.fill(); c.stroke();
+            c.restore();
+            // Right wing (mirror)
+            c.save(); c.translate(cfCenterX + cfSep, cfCenterY); c.rotate(cfPhase * 0.9);
+            c.fillStyle = 'rgba(251,191,36,0.85)'; c.strokeStyle = '#92400e'; c.lineWidth = 1.2;
+            c.beginPath(); c.ellipse(22, 0, 22, 8, 0, 0, 6.28); c.fill(); c.stroke();
+            c.restore();
+            // Air rushing in (blue arrows when wings fling apart)
+            if (cfPhase > 0.5) {
+              var airAlpha = (cfPhase - 0.5) * 1.8;
+              c.strokeStyle = 'rgba(59,130,246,' + airAlpha + ')'; c.lineWidth = 2;
+              c.beginPath(); c.moveTo(cfCenterX, cfCenterY - 18); c.lineTo(cfCenterX, cfCenterY); c.stroke();
+              c.fillStyle = 'rgba(59,130,246,' + airAlpha + ')';
+              c.beginPath(); c.moveTo(cfCenterX - 3, cfCenterY - 3); c.lineTo(cfCenterX, cfCenterY); c.lineTo(cfCenterX + 3, cfCenterY - 3); c.closePath(); c.fill();
+              c.fillText('air pulled in', cfCenterX, cfCenterY - 22);
+            } else {
+              c.fillStyle = '#065f46'; c.font = '10px system-ui';
+              c.fillText('wings clap', cfCenterX, cfCenterY - 22);
+            }
+            c.restore();
+
+            // Fun fact bar at bottom
+            var facts = [
+              'Honeybees beat their wings ~230 times per second — faster than a hummingbird.',
+              'Wings rotate ~110° at each end of the stroke, creating a secondary vortex.',
+              'Michael Dickinson (Caltech) proved bees use 3 tricks: LEV, rotational circulation, and wake capture.',
+              'The "bee paradox" (bees can\'t fly by classical math) assumed FIXED wings — bees have ROTATING ones.',
+              'A hovering bee generates 2× the lift of a same-weight fixed-wing airfoil.',
+              'Warm bees can fly; below 10°C (50°F) they must shiver to warm their flight muscles first.'
+            ];
+            var factIdx = Math.floor(t2 / 420) % facts.length;
+            c.fillStyle = '#1e40af'; c.font = 'italic 11px Georgia, serif'; c.textAlign = 'center';
+            c.fillText('💡 ' + facts[factIdx], W / 2, H - 10);
+          }
+
+          // t2 shared between frame() and diagram drawers (they read it via closure).
+          // Hoist here so drawBeeAnatomy + drawFlightPhysics can see the tick counter.
+          var t2 = 0;
+
           function frame() {
             try {
               // Read live state from ref (updated every React render)
@@ -1563,7 +1931,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               gardenPollinators = ls.gardenPollinators || 0;
               gardenBonus = ls.gardenBonus || 0;
               colonyHealth = typeof ls.colonyHealth === 'number' ? ls.colonyHealth : 50;
-              var t2 = ++_tick.current;
+              t2 = ++_tick.current;
+              // ── View dispatch: anatomy / physics diagrams render instead of the live scene ──
+              var _bv = ls.beeView || 'scene';
+              if (_bv === 'anatomy') {
+                drawBeeAnatomy();
+                _animId.current = requestAnimationFrame(frame);
+                return;
+              }
+              if (_bv === 'physics') {
+                drawFlightPhysics();
+                _animId.current = requestAnimationFrame(frame);
+                return;
+              }
               // Recompute bee/flower arrays + hive rect each frame so resize/reinit is live.
               // Previously these were captured once before frame() → stale after resize.
               if (!_bees.current || _bees.current.length === 0) {
@@ -4402,6 +4782,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   onClick: function() { upd('viewMode', tab.id); },
                   className: 'flex-1 py-2 px-3 rounded-lg text-xs font-bold ' + (active ? (dk ? 'bg-amber-700 text-white' : 'bg-white text-amber-800') : (dk ? 'text-slate-400' : 'text-slate-500')) },
                   h('span', { 'aria-hidden': 'true' }, tab.icon), ' ', tab.label);
+              })),
+            // View selector: Scene / Anatomy / Flight Physics (beekeeper only)
+            viewMode === 'beekeeper' && h('div', { className: 'flex gap-1.5 text-xs font-bold', role: 'tablist', 'aria-label': 'Canvas view mode' },
+              [
+                { id: 'scene', icon: '🏡', label: 'Scene', desc: 'Live apiary scene' },
+                { id: 'anatomy', icon: '🔬', label: 'Anatomy', desc: 'Labeled bee diagram' },
+                { id: 'physics', icon: '✈️', label: 'Flight Physics', desc: 'How bees fly — leading-edge vortex' }
+              ].map(function(v) {
+                var active = beeView === v.id;
+                return h('button', { key: v.id, role: 'tab', 'aria-selected': active ? 'true' : 'false', onClick: function() { upd('beeView', v.id); }, title: v.desc,
+                  className: 'px-3 py-1.5 rounded-lg border transition-all ' + (active
+                    ? (dk ? 'bg-amber-600 border-amber-500 text-white shadow-md' : 'bg-amber-500 border-amber-600 text-white shadow-md')
+                    : (dk ? 'bg-slate-800 border-slate-700 text-slate-300 hover:border-amber-500/60' : 'bg-white border-slate-200 text-slate-600 hover:border-amber-400'))
+                }, v.icon + ' ' + v.label);
               })),
             // Beekeeper canvas — height 500px; container is the fullscreen target
             viewMode === 'beekeeper' && h('div', {
