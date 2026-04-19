@@ -5586,20 +5586,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               t.y += Math.sin(t.heading) * t.speed * dt / 5;
               t.x += Math.cos(t.heading) * t.speed * dt / 5;
               // ── Pull toward target lane position PERPENDICULAR to the spline ──
-              // Spline direction is (sin θ, cos θ); perpendicular-right is (cos θ, −sin θ).
-              // Lane offset is signed (positive = right-of-spline in straight-road convention).
-              //
-              // Measure the car's current perpendicular offset from the spline point at t.y:
-              //   perpOffset = (t.x − splineCenter) · perp-right
-              //              = (t.x − splineCenter) * cos θ
-              // Desired perp offset = t.laneOffset. Correct by shifting along perp-right.
               // Lane positioning: laneOffset is interpreted as RAW X-offset from the spline
               // center, matching how road geometry + lane paint are constructed (ribbon
-              // verts at worldCx ± roadHalfW, paint at worldCx + offset). With perpendicular
-              // offset the AI sat OUTSIDE the painted lane on curves; raw-X keeps them
-              // exactly on the painted lane. Heading still follows the spline tangent so
-              // the car FACES the correct direction; only the position uses raw-X.
-              var targetX = splineCenter + t.laneOffset;
+              // verts at worldCx ± roadHalfW, paint at worldCx + offset). Heading still
+              // follows the spline tangent so the car FACES the correct direction; only
+              // the position uses raw-X.
+              //
+              // Re-sample the spline center at the NEW t.y after the forward motion — the
+              // pre-motion sample used for heading is stale by ~speed*dt meters along Y, which
+              // on tight curves means the lane correction was chasing a target several meters
+              // behind the car's actual position and the AI drifted progressively off-lane.
+              var laneSplineCenter = (iwTraf && iwTraf.spline) ? iwTraf.spline.centerAt(t.y) : splineCenter;
+              var targetX = laneSplineCenter + t.laneOffset;
               var xErr = t.x - targetX;
               // Aggressive lerp (0.12s time constant) so the X correction outruns the
               // perpendicular drift introduced by spline-aligned forward motion on bends.

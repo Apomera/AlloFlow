@@ -1703,6 +1703,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              // ── Distant birds (seasonal: V-formation migrating in autumn, scattered swooping in spring/summer) ──
+              if (season !== 3) {
+                c.strokeStyle = season === 2 ? 'rgba(40,30,20,0.55)' : 'rgba(40,40,60,0.4)'; c.lineWidth = 1.2;
+                var birdFlyX = (t2 * 0.6) % (W + 120) - 60;
+                if (season === 2) {
+                  // V-formation of migrating geese
+                  for (var bd = 0; bd < 7; bd++) {
+                    var bdOffX = -bd * 14;
+                    var bdOffY = Math.abs(bd - 3) * 6;
+                    var bdx = birdFlyX + bdOffX;
+                    var bdy = H * 0.16 + bdOffY + Math.sin(t2 * 0.01 + bd) * 1;
+                    c.beginPath();
+                    c.moveTo(bdx - 4, bdy + 1); c.quadraticCurveTo(bdx - 2, bdy - 2, bdx, bdy);
+                    c.quadraticCurveTo(bdx + 2, bdy - 2, bdx + 4, bdy + 1);
+                    c.stroke();
+                  }
+                } else {
+                  // Single swallow or scattered swooping birds
+                  for (var bd2 = 0; bd2 < 2; bd2++) {
+                    var bdx2 = (birdFlyX + bd2 * 300) % (W + 80) - 40;
+                    var bdy2 = H * 0.22 + Math.sin(t2 * 0.008 + bd2 * 2) * 12;
+                    c.beginPath();
+                    c.moveTo(bdx2 - 5, bdy2 + 1); c.quadraticCurveTo(bdx2 - 2, bdy2 - 3, bdx2, bdy2);
+                    c.quadraticCurveTo(bdx2 + 2, bdy2 - 3, bdx2 + 5, bdy2 + 1);
+                    c.stroke();
+                  }
+                }
+              }
+
               // ── Ground flora: clover + dandelions scattered in grass ──
               if (season === 0 || season === 1) {
                 // White clover (small triple dots)
@@ -1751,6 +1780,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              // ── Birdbath / bee water source (bees need ~1 cup of water per day) ──
+              if (season !== 3) {
+                var bbX = W * 0.42, bbY = H * 0.74;
+                // Stone pedestal
+                c.fillStyle = '#78716c';
+                c.beginPath(); c.roundRect(bbX - 4, bbY - 2, 8, 14, 2); c.fill();
+                c.fillStyle = '#a8a29e';
+                c.fillRect(bbX - 4, bbY - 2, 8, 3);
+                // Bowl
+                c.fillStyle = '#57534e';
+                c.beginPath(); c.ellipse(bbX, bbY - 6, 16, 5, 0, 0, 6.28); c.fill();
+                c.fillStyle = '#78716c';
+                c.beginPath(); c.ellipse(bbX, bbY - 7, 14, 4, 0, 0, 6.28); c.fill();
+                // Water surface with shimmer
+                var waterAlpha = 0.65 + Math.sin(t2 * 0.04) * 0.08;
+                c.fillStyle = 'rgba(125,175,220,' + waterAlpha + ')';
+                c.beginPath(); c.ellipse(bbX, bbY - 7, 13, 3.5, 0, 0, 6.28); c.fill();
+                // Ripple rings
+                var rippleR = (t2 * 0.3) % 10;
+                c.strokeStyle = 'rgba(255,255,255,' + (0.4 - rippleR * 0.04) + ')'; c.lineWidth = 0.5;
+                c.beginPath(); c.ellipse(bbX + Math.sin(t2 * 0.01) * 3, bbY - 7, rippleR, rippleR * 0.28, 0, 0, 6.28); c.stroke();
+                // Tiny bees drinking at the rim (2 static)
+                c.fillStyle = '#fbbf24';
+                c.beginPath(); c.arc(bbX - 10, bbY - 6, 1.4, 0, 6.28); c.fill();
+                c.beginPath(); c.arc(bbX + 9, bbY - 5.5, 1.4, 0, 6.28); c.fill();
+                c.fillStyle = '#292524';
+                c.fillRect(bbX - 10.3, bbY - 6.3, 0.6, 0.6);
+                c.fillRect(bbX + 8.7, bbY - 5.8, 0.6, 0.6);
+              }
+
               // ── Wooden garden fence along the ground ──
               c.fillStyle = season === 2 ? '#8a5f2a' : season === 3 ? '#6b4a1f' : '#a0763a';
               var fenceBaseY = H * 0.775;
@@ -1769,6 +1828,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   c.fillStyle = season === 2 ? '#8a5f2a' : season === 3 ? '#6b4a1f' : '#a0763a';
                 }
               }
+
+              // ── Morning mist (low horizontal fog band, tied to time-of-day "warm" phase) ──
+              if (season !== 3 && _tod > 0.2) {
+                var mistAlpha = (_tod - 0.2) * 0.22;
+                var mistGrad = c.createLinearGradient(0, H * 0.70, 0, H * 0.82);
+                mistGrad.addColorStop(0, 'rgba(240,245,250,0)');
+                mistGrad.addColorStop(0.5, 'rgba(240,245,250,' + mistAlpha + ')');
+                mistGrad.addColorStop(1, 'rgba(240,245,250,0)');
+                c.fillStyle = mistGrad;
+                c.fillRect(0, H * 0.70, W, H * 0.12);
+              }
+
+              // ── Spider web on fence corner (decorative micro-detail, lower-right) ──
+              if (season !== 3) {
+                var webX = W * 0.95, webY = H * 0.78;
+                c.strokeStyle = 'rgba(255,255,255,0.35)'; c.lineWidth = 0.4;
+                for (var wr = 0; wr < 5; wr++) {
+                  c.beginPath(); c.arc(webX, webY, 3 + wr * 1.6, 2.3, 4.0); c.stroke();
+                }
+                for (var wsp = 0; wsp < 5; wsp++) {
+                  var wa = 2.3 + wsp * 0.42;
+                  c.beginPath(); c.moveTo(webX, webY); c.lineTo(webX + Math.cos(wa) * 11, webY + Math.sin(wa) * 11); c.stroke();
+                }
+              }
+
+              // ── Apiary sign mounted on fence (right side) ──
+              var signX = W * 0.58;
+              var signY = H * 0.72;
+              // Post
+              c.fillStyle = '#6b4a1f'; c.fillRect(signX, signY - 4, 2.5, 22);
+              // Sign board (two-tone wood)
+              c.fillStyle = '#b5833a';
+              c.beginPath(); c.roundRect(signX - 22, signY - 8, 48, 16, 2); c.fill();
+              c.strokeStyle = '#6b4a1f'; c.lineWidth = 1;
+              c.beginPath(); c.roundRect(signX - 22, signY - 8, 48, 16, 2); c.stroke();
+              // Sign text
+              c.font = 'bold 9px Georgia, serif'; c.fillStyle = '#3c2a10'; c.textAlign = 'center';
+              c.fillText('🐝 APIARY', signX + 2, signY + 2);
+              // Tiny chain/nails holding sign
+              c.fillStyle = '#4b5563';
+              c.beginPath(); c.arc(signX - 20, signY - 6, 0.7, 0, 6.28); c.fill();
+              c.beginPath(); c.arc(signX + 24, signY - 6, 0.7, 0, 6.28); c.fill();
 
               // ── Tree line (mid-ground, adds scale) ──
               for (var tr = 0; tr < 8; tr++) {
@@ -1878,6 +1979,56 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               c.beginPath(); c.roundRect(hiveX + hiveW * 0.28, hiveY + hiveH - 3, hiveW * 0.44, 7, 3); c.fill();
               // Landing board
               c.fillStyle = '#8a6508'; c.fillRect(hiveX + hiveW * 0.2, hiveY + hiveH + 1, hiveW * 0.6, 3);
+
+              // ── Guard bees on the landing board (static sentries, face the entrance) ──
+              var lbY = hiveY + hiveH + 0.5;
+              var lbL = hiveX + hiveW * 0.24, lbR = hiveX + hiveW * 0.76;
+              // 3 guards: 2 at edges + 1 closer to center
+              var guards = [
+                { x: lbL + 2, face: 1 },
+                { x: lbR - 2, face: -1 },
+                { x: hiveX + hiveW * 0.38, face: 1 }
+              ];
+              guards.forEach(function(g) {
+                var gwing = Math.sin(t2 * 0.15 + g.x) * 0.6;
+                // Body
+                c.save(); c.shadowColor = '#fbbf24'; c.shadowBlur = 2;
+                c.fillStyle = '#fbbf24';
+                c.beginPath(); c.ellipse(g.x, lbY, 3.2, 2.0, 0, 0, 6.28); c.fill();
+                c.restore();
+                // Stripes
+                c.fillStyle = '#292524';
+                c.fillRect(g.x - 0.4, lbY - 1.8, 0.7, 3.6);
+                c.fillRect(g.x + 0.8 * g.face, lbY - 1.5, 0.6, 3);
+                // Antennae
+                c.strokeStyle = '#292524'; c.lineWidth = 0.5;
+                c.beginPath();
+                c.moveTo(g.x + 1.8 * g.face, lbY - 1.4);
+                c.lineTo(g.x + 2.7 * g.face, lbY - 2.4 + gwing);
+                c.moveTo(g.x + 1.8 * g.face, lbY - 1.4);
+                c.lineTo(g.x + 3.1 * g.face, lbY - 2.0 + gwing);
+                c.stroke();
+              });
+
+              // ── Beekeeper tools leaning against the hive (smoker + hive tool) ──
+              var toolX = hiveX - 10;
+              var toolY = hiveY + hiveH - 18;
+              // Smoker body (canister)
+              c.fillStyle = '#44403c'; c.fillRect(toolX, toolY, 8, 16);
+              c.fillStyle = '#57534e'; c.fillRect(toolX, toolY, 8, 2);
+              c.fillStyle = '#292524'; c.fillRect(toolX + 1, toolY + 3, 6, 10);
+              // Smoker bellows (small lighter rectangle at back)
+              c.fillStyle = '#78350f'; c.fillRect(toolX + 8, toolY + 6, 4, 8);
+              // Smoke puff
+              c.fillStyle = 'rgba(220,220,220,0.5)';
+              for (var sm = 0; sm < 3; sm++) {
+                var smY = toolY - 3 - sm * 4 + Math.sin(t2 * 0.03 + sm) * 1;
+                c.beginPath(); c.arc(toolX + 4 + Math.sin(t2 * 0.02 + sm) * 2, smY, 2 + sm * 0.8, 0, 6.28); c.fill();
+              }
+              // Hive tool (J-shaped metal bar)
+              c.fillStyle = '#9ca3af';
+              c.fillRect(toolX - 5, toolY + 4, 2, 14);
+              c.fillRect(toolX - 5, toolY + 16, 4, 2);
 
               // Hive labels
               c.font = 'bold 9px system-ui'; c.fillStyle = '#fff'; c.textAlign = 'center';
