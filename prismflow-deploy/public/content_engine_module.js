@@ -1,72 +1,37 @@
 (function(){"use strict";
 if(window.AlloModules&&window.AlloModules.ContentEngineModule){return;}
-"use strict";
-
 // content_engine_source.jsx — Content Generation + Text Revision handlers
 // Pure function extraction — no hooks. Uses factory + window state bag pattern.
 
-var warnLog = window.warnLog || function () {
-  console.warn.apply(console, arguments);
-};
+var warnLog = window.warnLog || function() { console.warn.apply(console, arguments); };
 var cleanJson = window.__alloUtils && window.__alloUtils.cleanJson;
-if (!cleanJson) cleanJson = function (t) {
-  try {
-    return JSON.parse(t);
-  } catch (e) {
-    return null;
-  }
-};
+if (!cleanJson) cleanJson = function(t) { try { return JSON.parse(t); } catch(e) { return null; } };
 var processGrounding = window.__alloUtils && window.__alloUtils.processGrounding;
-if (!processGrounding) processGrounding = function (t) {
-  return t;
-};
-var createContentEngine = function (deps) {
+if (!processGrounding) processGrounding = function(t) { return t; };
+
+var createContentEngine = function(deps) {
   var callGemini = deps.callGemini;
   var addToast = deps.addToast;
   var t = deps.t;
-  var getBilingualPromptInstruction = deps.getBilingualPromptInstruction || function () {
-    return '';
+  var getBilingualPromptInstruction = deps.getBilingualPromptInstruction || function() { return ''; };
+  var flyToElement = deps.flyToElement || function() {};
+  var callTTS = deps.callTTS || function() { return Promise.resolve(); };
+  var toSuperscript = function(num) {
+    var map = {'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};
+    return num.toString().split('').map(function(d) { return map[d] || d; }).join('');
   };
-  var flyToElement = deps.flyToElement || function () {};
-  var callTTS = deps.callTTS || function () {
-    return Promise.resolve();
-  };
-  var toSuperscript = function (num) {
-    var map = {
-      '0': '⁰',
-      '1': '¹',
-      '2': '²',
-      '3': '³',
-      '4': '⁴',
-      '5': '⁵',
-      '6': '⁶',
-      '7': '⁷',
-      '8': '⁸',
-      '9': '⁹'
-    };
-    return num.toString().split('').map(function (d) {
-      return map[d] || d;
-    }).join('');
-  };
-  var ensureTitleHeading = function (text) {
+  var ensureTitleHeading = function(text) {
     if (!text) return text;
     var lines = text.split('\n');
-    var firstNonEmptyIdx = lines.findIndex(function (l) {
-      return l.trim().length > 0;
-    });
+    var firstNonEmptyIdx = lines.findIndex(function(l) { return l.trim().length > 0; });
     if (firstNonEmptyIdx === -1) return text;
     var firstLine = lines[firstNonEmptyIdx].trim();
     if (/^#{1,6}\s/.test(firstLine)) return text;
     if (firstLine.length > 120) return text;
-    if (lines.filter(function (l) {
-      return l.trim().length > 0;
-    }).length < 2) return text;
+    if (lines.filter(function(l) { return l.trim().length > 0; }).length < 2) return text;
     var titlePrefixMatch = firstLine.match(/^Title:\s*(.+)/i);
-    if (titlePrefixMatch) {
-      lines[firstNonEmptyIdx] = '# ' + titlePrefixMatch[1];
-    } else {
-      lines[firstNonEmptyIdx] = '# ' + firstLine;
-    }
+    if (titlePrefixMatch) { lines[firstNonEmptyIdx] = '# ' + titlePrefixMatch[1]; }
+    else { lines[firstNonEmptyIdx] = '# ' + firstLine; }
     return lines.join('\n');
   };
   // Rebuild each [⁽N⁾](url) using the canonical URI from the (already-reordered)
@@ -78,32 +43,19 @@ var createContentEngine = function (deps) {
   // "webmd. com" space injection, trailing-paren drop) in one deterministic pass,
   // not the heuristic repair rules in sanitizeTruncatedCitations which can only
   // handle known shapes.
-  var restoreCanonicalCitationUrls = function (text, chunks) {
+  var restoreCanonicalCitationUrls = function(text, chunks) {
     if (!text || !chunks || !chunks.length) return text;
-    var superMap = {
-      '\u2070': '0',
-      '\u00b9': '1',
-      '\u00b2': '2',
-      '\u00b3': '3',
-      '\u2074': '4',
-      '\u2075': '5',
-      '\u2076': '6',
-      '\u2077': '7',
-      '\u2078': '8',
-      '\u2079': '9'
-    };
-    var decodeSuper = function (s) {
+    var superMap = {'\u2070':'0','\u00b9':'1','\u00b2':'2','\u00b3':'3','\u2074':'4','\u2075':'5','\u2076':'6','\u2077':'7','\u2078':'8','\u2079':'9'};
+    var decodeSuper = function(s) {
       var n = '';
-      for (var i = 0; i < s.length; i++) {
-        n += superMap[s[i]] || '';
-      }
+      for (var i = 0; i < s.length; i++) { n += superMap[s[i]] || ''; }
       return n;
     };
     var fixed = 0;
     var total = 0;
     // Widened regex: opening ⁽ optional and closing ) optional so we can also rebuild
     // citations that Gemini produced in a broken shape (missing ⁽ or trailing )).
-    var result = text.replace(/\[\u207d?([\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079]+)\u207e\]\(([^)\n]*)\)?/g, function (match, supDigits, currentUrl) {
+    var result = text.replace(/\[\u207d?([\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079]+)\u207e\]\(([^)\n]*)\)?/g, function(match, supDigits, currentUrl) {
       total++;
       var n = parseInt(decodeSuper(supDigits), 10);
       if (!n || n < 1 || n > chunks.length) return match;
@@ -118,7 +70,7 @@ var createContentEngine = function (deps) {
     }
     return result;
   };
-  var repairSourceMarkdown = function (rawText) {
+  var repairSourceMarkdown = function(rawText) {
     if (!rawText) return rawText;
 
     // ── Fix broken/truncated citations (Gemini systematically drops characters in the
@@ -131,7 +83,7 @@ var createContentEngine = function (deps) {
     // 3. Fix citation links missing closing paren: [⁽¹⁾](url  → [⁽¹⁾](url)
     rawText = rawText.replace(/(\[⁽?[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\(https?:\/\/[^\s)]+)(\s)/g, '$1)$2');
     // 4. Remove orphan superscript citations with no link: ⁽¹⁸⁾ at end of line with no []() wrapper
-    rawText = rawText.replace(/\s*\[?⁽?[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]?\s*$/gm, function (match, offset) {
+    rawText = rawText.replace(/\s*\[?⁽?[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]?\s*$/gm, function(match, offset) {
       // Only strip if it's truly orphaned (not part of a [⁽N⁾](url) pattern)
       var before = rawText.substring(Math.max(0, offset - 5), offset);
       if (before.includes('](')) return match; // it's inside a proper link
@@ -143,13 +95,14 @@ var createContentEngine = function (deps) {
     // 6. Restore missing opening ⁽ in otherwise-complete citations: [N⁾](url) → [⁽N⁾](url)
     //    (must come AFTER rules 1-2 so we don't restore the opening on a citation we just stripped)
     rawText = rawText.replace(/\[([⁰¹²³⁴⁵⁶⁷⁸⁹]+)⁾\]\(([^)]+)\)/g, '[⁽$1⁾]($2)');
+
     var bibMatch = rawText.match(/(\n---\n|\n#{2,3} Source Text References)/s);
     var body = bibMatch ? rawText.substring(0, bibMatch.index) : rawText;
     var bib = bibMatch ? rawText.substring(bibMatch.index) : '';
     var trimmedBody = body.trimEnd();
     if (trimmedBody.length > 50) {
       var lastSentenceEnd = Math.max(trimmedBody.lastIndexOf('.'), trimmedBody.lastIndexOf('!'), trimmedBody.lastIndexOf('?'));
-      if (lastSentenceEnd > 0 && trimmedBody.length - lastSentenceEnd < 120) {
+      if (lastSentenceEnd > 0 && (trimmedBody.length - lastSentenceEnd) < 120) {
         var afterPunctuation = trimmedBody.substring(lastSentenceEnd + 1).trim();
         if (afterPunctuation.length > 5 && !/[.!?]/.test(afterPunctuation)) body = trimmedBody.substring(0, lastSentenceEnd + 1);
       }
@@ -163,17 +116,11 @@ var createContentEngine = function (deps) {
     rawText = rawText.replace(/([^\n])\n?(#{1,6}\s+)/g, '$1\n\n$2');
     var lines = rawText.split('\n');
     var titleProcessed = false;
-    var repairedLines = lines.map(function (line, index) {
+    var repairedLines = lines.map(function(line, index) {
       var trimmed = line.trim();
       if (!titleProcessed && trimmed.length > 0) {
-        if (/^Title:\s*/i.test(trimmed)) {
-          titleProcessed = true;
-          return trimmed.replace(/^Title:\s*/i, '# ');
-        }
-        if (!/^[#\-*]/.test(trimmed) && !/^\*\*/.test(trimmed) && !/^\[/.test(trimmed) && !/^\d+\.\s/.test(trimmed) && trimmed.length < 80 && index < 3) {
-          titleProcessed = true;
-          return '# ' + trimmed;
-        }
+        if (/^Title:\s*/i.test(trimmed)) { titleProcessed = true; return trimmed.replace(/^Title:\s*/i, '# '); }
+        if (!/^[#\-*]/.test(trimmed) && !/^\*\*/.test(trimmed) && !/^\[/.test(trimmed) && !/^\d+\.\s/.test(trimmed) && trimmed.length < 80 && index < 3) { titleProcessed = true; return '# ' + trimmed; }
       }
       if (!titleProcessed && trimmed.length >= 80) titleProcessed = true;
       if (/^#{1,6}\s+/.test(trimmed) && trimmed.length > 150) return line.replace(/^#{1,6}\s+/, '');
@@ -191,234 +138,142 @@ var createContentEngine = function (deps) {
     return finalLines.join('\n');
   };
   // Citation utilities
-  var renumberCitations = function (text, originalChunks) {
-    if (!text || !originalChunks || originalChunks.length === 0) return {
-      renumberedText: text,
-      reorderedChunks: originalChunks || []
-    };
-    var reverseMap = {
-      '⁰': 0,
-      '¹': 1,
-      '²': 2,
-      '³': 3,
-      '⁴': 4,
-      '⁵': 5,
-      '⁶': 6,
-      '⁷': 7,
-      '⁸': 8,
-      '⁹': 9
-    };
-    var decodeSuperscript = function (str) {
-      return parseInt(str.split('').map(function (c) {
-        return reverseMap[c];
-      }).join(''), 10);
-    };
-    var newChunksMap = new Map();
-    var reorderedChunks = [];
-    var nextIndex = 1;
-    var renumberedText = text.replace(/⁽([⁰¹²³⁴⁵⁶⁷⁸⁹]+)⁾/g, function (match, digits) {
+  var renumberCitations = function(text, originalChunks) {
+    if (!text || !originalChunks || originalChunks.length === 0) return { renumberedText: text, reorderedChunks: originalChunks || [] };
+    var reverseMap = {'⁰':0,'¹':1,'²':2,'³':3,'⁴':4,'⁵':5,'⁶':6,'⁷':7,'⁸':8,'⁹':9};
+    var decodeSuperscript = function(str) { return parseInt(str.split('').map(function(c){return reverseMap[c];}).join(''), 10); };
+    var newChunksMap = new Map(); var reorderedChunks = []; var nextIndex = 1;
+    var renumberedText = text.replace(/⁽([⁰¹²³⁴⁵⁶⁷⁸⁹]+)⁾/g, function(match, digits) {
       var oldIdx = decodeSuperscript(digits) - 1;
       if (!originalChunks[oldIdx]) return match;
-      var newIdx;
-      if (newChunksMap.has(oldIdx)) {
-        newIdx = newChunksMap.get(oldIdx);
-      } else {
-        newIdx = nextIndex++;
-        newChunksMap.set(oldIdx, newIdx);
-        reorderedChunks.push(originalChunks[oldIdx]);
-      }
+      var newIdx; if (newChunksMap.has(oldIdx)) { newIdx = newChunksMap.get(oldIdx); } else { newIdx = nextIndex++; newChunksMap.set(oldIdx, newIdx); reorderedChunks.push(originalChunks[oldIdx]); }
       return '⁽' + toSuperscript(newIdx) + '⁾';
     });
-    return reorderedChunks.length === 0 ? {
-      renumberedText: text,
-      reorderedChunks: []
-    } : {
-      renumberedText: renumberedText,
-      reorderedChunks: reorderedChunks
-    };
+    return reorderedChunks.length === 0 ? { renumberedText: text, reorderedChunks: [] } : { renumberedText: renumberedText, reorderedChunks: reorderedChunks };
   };
-  var validateAndRepairCitations = function (text, groundingChunks) {
+  var validateAndRepairCitations = function(text, groundingChunks) {
     if (!text || !groundingChunks || groundingChunks.length === 0) return text;
-    var reverseMap = {
-      '⁰': 0,
-      '¹': 1,
-      '²': 2,
-      '³': 3,
-      '⁴': 4,
-      '⁵': 5,
-      '⁶': 6,
-      '⁷': 7,
-      '⁸': 8,
-      '⁹': 9
-    };
-    var decodeSuperscript = function (str) {
-      return parseInt(str.split('').map(function (c) {
-        return reverseMap[c];
-      }).join(''), 10);
-    };
+    var reverseMap = {'⁰':0,'¹':1,'²':2,'³':3,'⁴':4,'⁵':5,'⁶':6,'⁷':7,'⁸':8,'⁹':9};
+    var decodeSuperscript = function(str) { return parseInt(str.split('').map(function(c){return reverseMap[c];}).join(''), 10); };
     var usedCitations = new Set();
-    var repairedText = text.replace(/(\[)?⁽([⁰¹²³⁴⁵⁶⁷⁸⁹]+)⁾(\]\([^)]+\))?/g, function (match, bracket, digits, linkPart) {
-      var citNum = decodeSuperscript(digits);
-      usedCitations.add(citNum);
+    var repairedText = text.replace(/(\[)?⁽([⁰¹²³⁴⁵⁶⁷⁸⁹]+)⁾(\]\([^)]+\))?/g, function(match, bracket, digits, linkPart) {
+      var citNum = decodeSuperscript(digits); usedCitations.add(citNum);
       if (bracket && linkPart) return match;
       var chunk = groundingChunks[citNum - 1];
-      return chunk && chunk.web && chunk.web.uri ? '[⁽' + digits + '⁾](' + chunk.web.uri + ')' : '⁽' + digits + '⁾';
+      return (chunk && chunk.web && chunk.web.uri) ? '[⁽' + digits + '⁾](' + chunk.web.uri + ')' : '⁽' + digits + '⁾';
     });
     return repairedText;
   };
   // Filter non-educational sources (YouTube music, IMDB, Rotten Tomatoes, social media, shopping)
   var _rejectSourceUrl = [/youtube\.com\/watch/i, /youtu\.be\//i, /imdb\.com/i, /spotify\.com/i, /tiktok\.com/i, /instagram\.com/i, /facebook\.com/i, /twitter\.com|x\.com/i, /reddit\.com/i, /pinterest\.com/i, /amazon\.com\/(?!science)/i, /ebay\.com/i, /yelp\.com/i, /tripadvisor\.com/i, /rottentomatoes\.com/i, /fandom\.com/i, /letterboxd\.com/i];
   var _rejectSourceTitle = [/official\s*(music\s*)?video/i, /\(official\s*video\)/i, /\blyrics?\b/i, /\bremaster(ed)?\b/i, /\bmovie\s*trailer\b/i, /\bfull\s*movie\b/i];
-  var filterSources = function (chunks) {
+  var filterSources = function(chunks) {
     if (!chunks || !Array.isArray(chunks)) return chunks;
-    return chunks.filter(function (c) {
-      var uri = c && c.web && c.web.uri || '';
-      var title = c && c.web && c.web.title || '';
-      for (var i = 0; i < _rejectSourceUrl.length; i++) {
-        if (_rejectSourceUrl[i].test(uri)) return false;
-      }
-      for (var j = 0; j < _rejectSourceTitle.length; j++) {
-        if (_rejectSourceTitle[j].test(title)) return false;
-      }
+    return chunks.filter(function(c) {
+      var uri = (c && c.web && c.web.uri) || '';
+      var title = (c && c.web && c.web.title) || '';
+      for (var i = 0; i < _rejectSourceUrl.length; i++) { if (_rejectSourceUrl[i].test(uri)) return false; }
+      for (var j = 0; j < _rejectSourceTitle.length; j++) { if (_rejectSourceTitle[j].test(title)) return false; }
       return true;
     });
   };
-  var generateBibliographyString = function (metadata, citationStyle, title) {
-    citationStyle = citationStyle || 'Links Only';
-    title = title || 'Verified Sources';
+  var generateBibliographyString = function(metadata, citationStyle, title) {
+    citationStyle = citationStyle || 'Links Only'; title = title || 'Verified Sources';
     if (!metadata || !metadata.groundingChunks || metadata.groundingChunks.length === 0) return "";
     var chunks = filterSources(metadata.groundingChunks);
     if (chunks.length === 0) return "";
     var bib = '\n\n### ' + title + '\n\n';
-    chunks.forEach(function (chunk, i) {
-      var t = chunk.web && chunk.web.title || "Unknown Source";
-      var u = chunk.web && chunk.web.uri || "#";
-      bib += i + 1 + '. [' + t + '](' + u + ')\n\n';
-    });
+    chunks.forEach(function(chunk, i) { var t = (chunk.web && chunk.web.title) || "Unknown Source"; var u = (chunk.web && chunk.web.uri) || "#"; bib += (i+1) + '. [' + t + '](' + u + ')\n\n'; });
     return bib;
   };
-  var sanitizeRawUrls = function (text) {
+  var sanitizeRawUrls = function(text) {
     if (!text) return text;
     var linkPlaceholders = [];
-    var protectedText = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, function (match) {
-      var ph = '__LINK_PLACEHOLDER_' + linkPlaceholders.length + '__';
-      linkPlaceholders.push(match);
-      return ph;
-    });
+    var protectedText = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, function(match) { var ph = '__LINK_PLACEHOLDER_' + linkPlaceholders.length + '__'; linkPlaceholders.push(match); return ph; });
     protectedText = protectedText.replace(/https?:\/\/[^\s<>\[\]()'"]+/gi, '');
     protectedText = protectedText.replace(/\s{2,}/g, ' ').replace(/\s+([.,;:!?])/g, '$1');
-    linkPlaceholders.forEach(function (link, idx) {
-      protectedText = protectedText.replace('__LINK_PLACEHOLDER_' + idx + '__', link);
-    });
+    linkPlaceholders.forEach(function(link, idx) { protectedText = protectedText.replace('__LINK_PLACEHOLDER_' + idx + '__', link); });
     return protectedText;
   };
-  var cleanSourceMetaCommentary = function (text) {
+  var cleanSourceMetaCommentary = function(text) {
     if (!text) return text;
     var cleaned = text;
     cleaned = cleaned.replace(/\n*\s*\*\((?:Word Count|Note|Target|Revised|Total)[^)]{5,}\)\*\s*\n*/gi, '\n');
     var revisedMatch = cleaned.match(/^(###?\s*Revised\s+(?:Content|Version)[^\n]*\n)/mi);
-    if (revisedMatch) {
-      var revisedIdx = cleaned.indexOf(revisedMatch[0]);
-      if (revisedIdx > 0) cleaned = cleaned.substring(revisedIdx + revisedMatch[0].length);
-    }
+    if (revisedMatch) { var revisedIdx = cleaned.indexOf(revisedMatch[0]); if (revisedIdx > 0) cleaned = cleaned.substring(revisedIdx + revisedMatch[0].length); }
     cleaned = cleaned.replace(/^(?:Note that |The research confirms |I (?:will|must|should) (?:now )?(?:write|increase|revise|ensure)|This (?:is|meets|exceeds) (?:within|significantly|the target)|Aiming for \d+ words)[^\n]*\n*/gmi, '');
     cleaned = cleaned.replace(/\n---\n\s*\n/g, '\n\n');
     cleaned = cleaned.replace(/([^\n])\n(#{1,4}\s)/g, '$1\n\n$2');
     cleaned = cleaned.replace(/(#{1,4}\s[^\n]+)\n([^#\n])/g, '$1\n\n$2');
     var lines = cleaned.split('\n');
-    var nonEmptyLines = lines.filter(function (l) {
-      return l.trim().length > 0;
-    });
-    var headerLines = nonEmptyLines.filter(function (l) {
-      return /^#{1,4}\s/.test(l.trim());
-    });
+    var nonEmptyLines = lines.filter(function(l) { return l.trim().length > 0; });
+    var headerLines = nonEmptyLines.filter(function(l) { return /^#{1,4}\s/.test(l.trim()); });
     var headerRatio = nonEmptyLines.length > 3 ? headerLines.length / nonEmptyLines.length : 0;
     if (headerRatio > 0.4) {
       var prevWasHeader = false;
-      cleaned = lines.map(function (line, idx) {
+      cleaned = lines.map(function(line, idx) {
         var trimmed = line.trim();
         var headerMatch = trimmed.match(/^(#{1,4})\s+(.*)/);
-        if (!headerMatch) {
-          prevWasHeader = false;
-          return line;
-        }
-        var headerText = headerMatch[2];
-        var headerLevel = headerMatch[1].length;
-        if (idx === lines.findIndex(function (l) {
-          return l.trim().length > 0;
-        })) {
-          prevWasHeader = true;
-          return line;
-        }
-        if (headerText.length <= 80 && !prevWasHeader && headerLevel <= 3) {
-          prevWasHeader = true;
-          return line;
-        }
-        prevWasHeader = false;
-        return headerText;
+        if (!headerMatch) { prevWasHeader = false; return line; }
+        var headerText = headerMatch[2]; var headerLevel = headerMatch[1].length;
+        if (idx === lines.findIndex(function(l) { return l.trim().length > 0; })) { prevWasHeader = true; return line; }
+        if (headerText.length <= 80 && !prevWasHeader && headerLevel <= 3) { prevWasHeader = true; return line; }
+        prevWasHeader = false; return headerText;
       }).join('\n');
     } else {
-      cleaned = cleaned.replace(/^(#{1,4})\s+(.{150,})$/gm, function (match, hashes, text) {
-        return text;
-      });
+      cleaned = cleaned.replace(/^(#{1,4})\s+(.{150,})$/gm, function(match, hashes, text) { return text; });
     }
     cleaned = cleaned.replace(/\n{4,}/g, '\n\n\n');
     return cleaned.trim();
   };
-  var getStructureForLength = function (lengthInput) {
+  var getStructureForLength = function(lengthInput) {
     var length = parseInt(lengthInput) || 0;
     if (length <= 350) return "Structure: Write exactly 2 paragraphs. Do not use section headers.";
     if (length <= 650) return "Structure: Write exactly 4 sections. Each section must have a header and exactly 2 paragraphs.";
     if (length <= 1000) return "Structure: Write exactly 6 sections. Each section must have a header and 2-3 paragraphs.";
     return "Structure: Write exactly 8 sections. Each section must have a header and 3 paragraphs.";
   };
-  var _s = function () {
-    return window.__contentEngineState || {};
-  };
+  var _s = function() { return window.__contentEngineState || {}; };
   var _bindState;
-  var inputText, gradeLevel, sourceTopic, generatedContent, leveledTextLanguage, selectedLanguages, studentInterests, selectedConcepts, conceptInput, interestInput, languageInput, activeView, showSourceGen, generationStep, isGeneratingSource, selectionMenu, phonicsData, sourceCustomInstructions, sourceLength, sourceLevel, sourceTone, sourceVocabulary, resourceCount, targetStandards, dokLevel, selectedFont, includeSourceCitations, interactionMode, revisionData, standardsPromptString, ai, webSearchProvider, selectedVoice, voiceSpeed, setActiveView, setConceptInput, setError, setGeneratedContent, setGenerationStep, setInputText, setInterestInput, setIsGeneratingSource, setLanguageInput, setLeveledTextLanguage, setSelectedConcepts, setSelectedLanguages, setShowSourceGen, setStudentInterests, setCustomReviseInstruction, setDefinitionData, setIsCustomReviseOpen, setPhonicsData, setRevisionData, setSelectionMenu, setPlayingContentId, setPlaybackState;
-  var alloBotRef = {
-    current: null
-  };
+  var inputText, gradeLevel, sourceTopic, generatedContent,
+      leveledTextLanguage, selectedLanguages, studentInterests, selectedConcepts,
+      conceptInput, interestInput, languageInput, activeView, showSourceGen,
+      generationStep, isGeneratingSource, selectionMenu, phonicsData,
+      sourceCustomInstructions, sourceLength, sourceLevel, sourceTone,
+      sourceVocabulary, resourceCount, targetStandards, dokLevel,
+      selectedFont, includeSourceCitations,
+      interactionMode, revisionData, standardsPromptString,
+      ai, webSearchProvider,
+      selectedVoice, voiceSpeed,
+      setActiveView, setConceptInput, setError, setGeneratedContent,
+      setGenerationStep, setInputText, setInterestInput, setIsGeneratingSource,
+      setLanguageInput, setLeveledTextLanguage, setSelectedConcepts,
+      setSelectedLanguages, setShowSourceGen, setStudentInterests,
+      setCustomReviseInstruction, setDefinitionData, setIsCustomReviseOpen,
+      setPhonicsData, setRevisionData, setSelectionMenu,
+      setPlayingContentId, setPlaybackState;
+  var alloBotRef = { current: null };
   var isBotVisible = false;
-  var isPlayingRef = {
-    current: false
-  };
-  var isSystemAudioActiveRef = {
-    current: false
-  };
-  var currentAudioRef = {
-    current: null
-  };
+  var isPlayingRef = { current: false };
+  var isSystemAudioActiveRef = { current: false };
+  var currentAudioRef = { current: null };
   var _phonicsReqId = 0;
-  _bindState = function () {
+  _bindState = function() {
     var s = _s();
-    inputText = s.inputText;
-    gradeLevel = s.gradeLevel;
-    sourceTopic = s.sourceTopic;
-    generatedContent = s.generatedContent;
+    inputText = s.inputText; gradeLevel = s.gradeLevel;
+    sourceTopic = s.sourceTopic; generatedContent = s.generatedContent;
     leveledTextLanguage = s.leveledTextLanguage;
-    selectedLanguages = s.selectedLanguages;
-    studentInterests = s.studentInterests;
-    selectedConcepts = s.selectedConcepts;
-    conceptInput = s.conceptInput;
-    interestInput = s.interestInput;
-    languageInput = s.languageInput;
-    activeView = s.activeView;
-    showSourceGen = s.showSourceGen;
-    generationStep = s.generationStep;
-    isGeneratingSource = s.isGeneratingSource;
-    selectionMenu = s.selectionMenu;
-    phonicsData = s.phonicsData;
+    selectedLanguages = s.selectedLanguages; studentInterests = s.studentInterests;
+    selectedConcepts = s.selectedConcepts; conceptInput = s.conceptInput;
+    interestInput = s.interestInput; languageInput = s.languageInput;
+    activeView = s.activeView; showSourceGen = s.showSourceGen;
+    generationStep = s.generationStep; isGeneratingSource = s.isGeneratingSource;
+    selectionMenu = s.selectionMenu; phonicsData = s.phonicsData;
     sourceCustomInstructions = s.sourceCustomInstructions;
-    sourceLength = s.sourceLength;
-    sourceLevel = s.sourceLevel;
-    sourceTone = s.sourceTone;
-    sourceVocabulary = s.sourceVocabulary;
-    resourceCount = s.resourceCount;
-    targetStandards = s.targetStandards;
-    dokLevel = s.dokLevel;
-    selectedFont = s.selectedFont;
+    sourceLength = s.sourceLength; sourceLevel = s.sourceLevel;
+    sourceTone = s.sourceTone; sourceVocabulary = s.sourceVocabulary;
+    resourceCount = s.resourceCount; targetStandards = s.targetStandards;
+    dokLevel = s.dokLevel; selectedFont = s.selectedFont;
     includeSourceCitations = s.includeSourceCitations;
     interactionMode = s.interactionMode;
     revisionData = s.revisionData;
@@ -427,67 +282,50 @@ var createContentEngine = function (deps) {
     webSearchProvider = s.webSearchProvider || null;
     selectedVoice = s.selectedVoice || 'Puck';
     voiceSpeed = s.voiceSpeed || 1;
-    alloBotRef = s.alloBotRef || {
-      current: null
-    };
+    alloBotRef = s.alloBotRef || { current: null };
     isBotVisible = s.isBotVisible || false;
-    isPlayingRef = s.isPlayingRef || {
-      current: false
-    };
-    isSystemAudioActiveRef = s.isSystemAudioActiveRef || {
-      current: false
-    };
-    currentAudioRef = s.currentAudioRef || {
-      current: null
-    };
-    setActiveView = s.setActiveView;
-    setConceptInput = s.setConceptInput;
-    setError = s.setError;
-    setGeneratedContent = s.setGeneratedContent;
-    setGenerationStep = s.setGenerationStep;
-    setInputText = s.setInputText;
-    setInterestInput = s.setInterestInput;
-    setIsGeneratingSource = s.setIsGeneratingSource;
-    setLanguageInput = s.setLanguageInput;
-    setLeveledTextLanguage = s.setLeveledTextLanguage;
-    setSelectedConcepts = s.setSelectedConcepts;
-    setSelectedLanguages = s.setSelectedLanguages;
-    setShowSourceGen = s.setShowSourceGen;
-    setStudentInterests = s.setStudentInterests;
+    isPlayingRef = s.isPlayingRef || { current: false };
+    isSystemAudioActiveRef = s.isSystemAudioActiveRef || { current: false };
+    currentAudioRef = s.currentAudioRef || { current: null };
+    setActiveView = s.setActiveView; setConceptInput = s.setConceptInput;
+    setError = s.setError; setGeneratedContent = s.setGeneratedContent;
+    setGenerationStep = s.setGenerationStep; setInputText = s.setInputText;
+    setInterestInput = s.setInterestInput; setIsGeneratingSource = s.setIsGeneratingSource;
+    setLanguageInput = s.setLanguageInput; setLeveledTextLanguage = s.setLeveledTextLanguage;
+    setSelectedConcepts = s.setSelectedConcepts; setSelectedLanguages = s.setSelectedLanguages;
+    setShowSourceGen = s.setShowSourceGen; setStudentInterests = s.setStudentInterests;
     setCustomReviseInstruction = s.setCustomReviseInstruction;
-    setDefinitionData = s.setDefinitionData;
-    setIsCustomReviseOpen = s.setIsCustomReviseOpen;
-    setPhonicsData = s.setPhonicsData;
-    setRevisionData = s.setRevisionData;
+    setDefinitionData = s.setDefinitionData; setIsCustomReviseOpen = s.setIsCustomReviseOpen;
+    setPhonicsData = s.setPhonicsData; setRevisionData = s.setRevisionData;
     setSelectionMenu = s.setSelectionMenu;
-    setPlayingContentId = s.setPlayingContentId;
-    setPlaybackState = s.setPlaybackState;
+    setPlayingContentId = s.setPlayingContentId; setPlaybackState = s.setPlaybackState;
   };
+
   const handleGenerateSource = async (overrides = {}, switchView = true) => {
     // Guard: if called from onClick, first arg is an event — ignore it
-    if (overrides && overrides.nativeEvent) {
-      overrides = {};
-    }
-    const effTopic = overrides && typeof overrides.topic === 'string' ? overrides.topic : sourceTopic;
-    const effGrade = overrides && typeof overrides.grade === 'string' ? overrides.grade : sourceLevel;
-    const effStandards = overrides && typeof overrides.standards === 'string' ? overrides.standards : standardsPromptString;
-    const effIncludeCitations = overrides && typeof overrides.includeCitations === 'boolean' ? overrides.includeCitations : includeSourceCitations;
-    const effLength = overrides && overrides.length ? overrides.length : sourceLength;
-    const effTone = overrides && overrides.tone ? overrides.tone : sourceTone;
-    const effDokLevel = overrides && overrides.dokLevel ? overrides.dokLevel : dokLevel;
-    const effVocabulary = overrides && overrides.vocabulary ? overrides.vocabulary : sourceVocabulary;
-    const effCustomInstructions = overrides && overrides.customInstructions ? overrides.customInstructions : sourceCustomInstructions;
+    if (overrides && overrides.nativeEvent) { overrides = {}; }
+    const effTopic = (overrides && typeof overrides.topic === 'string') ? overrides.topic : sourceTopic;
+    const effGrade = (overrides && typeof overrides.grade === 'string') ? overrides.grade : sourceLevel;
+    const effStandards = (overrides && typeof overrides.standards === 'string') ? overrides.standards : standardsPromptString;
+    const effIncludeCitations = (overrides && typeof overrides.includeCitations === 'boolean') ? overrides.includeCitations : includeSourceCitations;
+    const effLength = (overrides && overrides.length) ? overrides.length : sourceLength;
+    const effTone = (overrides && overrides.tone) ? overrides.tone : sourceTone;
+    const effDokLevel = (overrides && overrides.dokLevel) ? overrides.dokLevel : dokLevel;
+    const effVocabulary = (overrides && overrides.vocabulary) ? overrides.vocabulary : sourceVocabulary;
+    const effCustomInstructions = (overrides && overrides.customInstructions) ? overrides.customInstructions : sourceCustomInstructions;
     const effectiveLanguage = leveledTextLanguage;
     if (!effTopic.trim() && (!effStandards || effStandards.length === 0)) return;
-    const dialectInstruction = effectiveLanguage !== 'English' ? "STRICT DIALECT ADHERENCE: If a specific dialect is named (e.g. 'Brazilian Portuguese' vs 'European Portuguese'), explicitly use that region's vocabulary, spelling, and grammar conventions." : "";
+    const dialectInstruction = effectiveLanguage !== 'English'
+        ? "STRICT DIALECT ADHERENCE: If a specific dialect is named (e.g. 'Brazilian Portuguese' vs 'European Portuguese'), explicitly use that region's vocabulary, spelling, and grammar conventions."
+        : "";
     console.error('[CE-TRACE] About to setIsGeneratingSource. typeof:', typeof setIsGeneratingSource);
     setIsGeneratingSource(true);
     setGenerationStep(t('status_steps.generating_source'));
     setError(null);
     console.error('[CE-TRACE] State setters called. About to call Gemini...');
     if (switchView) {
-      setGeneratedContent(null);
-      setActiveView('input');
+        setGeneratedContent(null);
+        setActiveView('input');
     }
     addToast(t('input.status_generating'), "info");
     const targetWords = parseInt(effLength) || 250;
@@ -497,21 +335,24 @@ var createContentEngine = function (deps) {
     try {
       let researchContext = "";
       if (effIncludeCitations) {
-        setGenerationStep(t('status_steps.researching_topic'));
-        try {
-          const isLocalBackend = ai?.backend === 'ollama' || ai?.backend === 'localai';
-          if (isLocalBackend) {
-            // ── For local backends: web search + LLM research ──
-            let searchContext = '';
-            try {
-              const searchResults = await webSearchProvider.search(`${effTopic} ${effGrade} facts statistics`);
-              if (searchResults && searchResults.length > 0) {
-                searchContext = searchResults.slice(0, 8).map((r, i) => `[${i + 1}] ${r.title}\n${r.snippet}\nURL: ${r.url}`).join('\n\n');
-              }
-            } catch (searchErr) {
-              warnLog('[Research] Web search failed:', searchErr.message);
-            }
-            const localResearchPrompt = `
+          setGenerationStep(t('status_steps.researching_topic'));
+          try {
+              const isLocalBackend = ai?.backend === 'ollama' || ai?.backend === 'localai';
+
+              if (isLocalBackend) {
+                  // ── For local backends: web search + LLM research ──
+                  let searchContext = '';
+                  try {
+                      const searchResults = await webSearchProvider.search(`${effTopic} ${effGrade} facts statistics`);
+                      if (searchResults && searchResults.length > 0) {
+                          searchContext = searchResults.slice(0, 8).map((r, i) =>
+                              `[${i+1}] ${r.title}\n${r.snippet}\nURL: ${r.url}`
+                          ).join('\n\n');
+                      }
+                  } catch (searchErr) {
+                      warnLog('[Research] Web search failed:', searchErr.message);
+                  }
+                  const localResearchPrompt = `
                       Research brief for educational content creation.
                       Topic: "${effTopic}" | Audience: ${effGrade}
                       ${effStandards ? `Standard: "${effStandards}"` : ''}
@@ -519,12 +360,10 @@ var createContentEngine = function (deps) {
                       Extract 8-12 key facts, vocabulary terms, and important points from the search results above.
                       Return a structured research brief with clear bullet points. Do NOT write the article itself.
                   `;
-            researchContext = await ai.generateText(localResearchPrompt, {
-              temperature: 0.2
-            });
-          } else {
-            // ── For Gemini: use Google Search grounding as before ──
-            const researchPrompt = `
+                  researchContext = await ai.generateText(localResearchPrompt, { temperature: 0.2 });
+              } else {
+                  // ── For Gemini: use Google Search grounding as before ──
+                  const researchPrompt = `
                       Research the following topic for educational content creation.
                       Topic: "${effTopic}"
                       Target Audience: ${effGrade}
@@ -538,47 +377,47 @@ var createContentEngine = function (deps) {
                       5. Identify reliable sources for the claims.
                       Return a structured research brief with clear bullet points. Do NOT write the article itself.
                   `;
-            // Retry loop for Google Search grounding (transient failures are common)
-            const maxResearchRetries = 2;
-            let researchSuccess = false;
-            for (let rAttempt = 0; rAttempt <= maxResearchRetries && !researchSuccess; rAttempt++) {
-              try {
-                if (rAttempt > 0) console.log(`[Research] 🔄 Grounding retry ${rAttempt + 1}/${maxResearchRetries + 1}...`);
-                const researchResult = await callGemini(researchPrompt, false, true);
-                if (typeof researchResult === 'object' && researchResult?.text) {
-                  researchContext = researchResult.text;
-                } else if (researchResult) {
-                  researchContext = String(researchResult);
-                }
-                researchSuccess = true;
-                if (rAttempt > 0) console.log(`[Research] ✅ Grounding succeeded on attempt ${rAttempt + 1}`);
-              } catch (rErr) {
-                console.warn(`[Research] ⚠️ Grounding attempt ${rAttempt + 1} failed:`, rErr?.message);
-                if (rAttempt < maxResearchRetries) {
-                  await new Promise(r => setTimeout(r, 2000));
-                } else {
-                  throw rErr;
-                }
+                  // Retry loop for Google Search grounding (transient failures are common)
+                  const maxResearchRetries = 2;
+                  let researchSuccess = false;
+                  for (let rAttempt = 0; rAttempt <= maxResearchRetries && !researchSuccess; rAttempt++) {
+                      try {
+                          if (rAttempt > 0) console.log(`[Research] 🔄 Grounding retry ${rAttempt + 1}/${maxResearchRetries + 1}...`);
+                          const researchResult = await callGemini(researchPrompt, false, true);
+                          if (typeof researchResult === 'object' && researchResult?.text) {
+                              researchContext = researchResult.text;
+                          } else if (researchResult) {
+                              researchContext = String(researchResult);
+                          }
+                          researchSuccess = true;
+                          if (rAttempt > 0) console.log(`[Research] ✅ Grounding succeeded on attempt ${rAttempt + 1}`);
+                      } catch (rErr) {
+                          console.warn(`[Research] ⚠️ Grounding attempt ${rAttempt + 1} failed:`, rErr?.message);
+                          if (rAttempt < maxResearchRetries) {
+                              await new Promise(r => setTimeout(r, 2000));
+                          } else {
+                              throw rErr;
+                          }
+                      }
+                  }
               }
-            }
+              if (!researchContext || researchContext.length < 50) {
+                  researchContext = "";
+                  warnLog("Research phase returned insufficient data");
+              }
+          } catch (researchErr) {
+              warnLog("Research phase failed, proceeding with standard generation", researchErr);
+              researchContext = "";
           }
-          if (!researchContext || researchContext.length < 50) {
-            researchContext = "";
-            warnLog("Research phase returned insufficient data");
-          }
-        } catch (researchErr) {
-          warnLog("Research phase failed, proceeding with standard generation", researchErr);
-          researchContext = "";
-        }
       }
       // Show toast only when research context is truly empty (not on transient errors)
       if (effIncludeCitations && !researchContext) {
-        addToast(t('toasts.research_skipped'), "info");
+          addToast(t('toasts.research_skipped'), "info");
       }
       // targetWords, chunkCapacity, numChunks, isShortText are declared above (before the research block)
       if (numChunks > 1) {
-        setGenerationStep(t('status_steps.designing_structure'));
-        const outlinePrompt = `
+           setGenerationStep(t('status_steps.designing_structure'));
+           const outlinePrompt = `
              You are an expert curriculum designer.
              Plan a comprehensive educational article.
              Topic: "${effTopic}"
@@ -586,34 +425,26 @@ var createContentEngine = function (deps) {
              Total Target Word Count: ${targetWords} words.
              Task: Create a structured outline with exactly ${numChunks} distinct section headings that cover the topic in depth.
              Return ONLY a JSON array of strings (the headings).
-             Example: ${JSON.stringify(Array.from({
-          length: numChunks
-        }, (_, i) => `Section ${i + 1} Title`))}
+             Example: ${JSON.stringify(Array.from({length: numChunks}, (_, i) => `Section ${i+1} Title`))}
            `;
-        const outlineResult = await callGemini(outlinePrompt, true);
-        let sections = [];
-        try {
-          sections = JSON.parse(cleanJson(outlineResult));
-          if (!Array.isArray(sections) || sections.length === 0) throw new Error("Invalid outline");
-        } catch (e) {
-          sections = Array.from({
-            length: numChunks
-          }, (_, i) => `Part ${i + 1}`);
-        }
-        let fullDocument = `Title: ${effTopic}\n\n`;
-        const wordsPerSection = Math.ceil(targetWords / sections.length);
-        let allGroundingChunks = [];
-        let currentCitationOffset = 0;
-        setInputText(fullDocument);
-        for (let i = 0; i < sections.length; i++) {
-          const sectionTitle = sections[i];
-          setGenerationStep(t('status_steps.writing_part', {
-            current: i + 1,
-            total: sections.length,
-            title: sectionTitle
-          }));
-          const bilingualInstruction = getBilingualPromptInstruction(effectiveLanguage);
-          const sectionPrompt = `
+           const outlineResult = await callGemini(outlinePrompt, true);
+           let sections = [];
+           try {
+               sections = JSON.parse(cleanJson(outlineResult));
+               if (!Array.isArray(sections) || sections.length === 0) throw new Error("Invalid outline");
+           } catch (e) {
+               sections = Array.from({length: numChunks}, (_, i) => `Part ${i+1}`);
+           }
+           let fullDocument = `Title: ${effTopic}\n\n`;
+           const wordsPerSection = Math.ceil(targetWords / sections.length);
+           let allGroundingChunks = [];
+           let currentCitationOffset = 0;
+           setInputText(fullDocument);
+           for (let i = 0; i < sections.length; i++) {
+               const sectionTitle = sections[i];
+               setGenerationStep(t('status_steps.writing_part', { current: i + 1, total: sections.length, title: sectionTitle }));
+               const bilingualInstruction = getBilingualPromptInstruction(effectiveLanguage);
+               const sectionPrompt = `
                    Write the section "${sectionTitle}" for an educational article about "${effTopic}".
                    Target Audience: ${effGrade}
                    Tone: ${effTone}
@@ -643,163 +474,160 @@ var createContentEngine = function (deps) {
                    ${bilingualInstruction}
                    Return ONLY the section text. Do not wrap in markdown code blocks.
                `;
-          let result;
-          let groundingSuccess = false;
-          const maxGroundingRetries = 2;
-          for (let attempt = 0; attempt <= maxGroundingRetries && !groundingSuccess; attempt++) {
-            try {
-              result = await callGemini(sectionPrompt, false, effIncludeCitations);
-              groundingSuccess = true;
-            } catch (sectionErr) {
-              if (attempt < maxGroundingRetries && effIncludeCitations) {
-                warnLog(`Section ${i + 1} grounding attempt ${attempt + 1} failed, retrying...`, sectionErr.message);
-                await new Promise(r => setTimeout(r, 1500));
-              } else {
-                warnLog(`[Citations] ⚠️ Section ${i + 1}/${sections.length} ("${sectionTitle}") grounding failed after ${attempt + 1} attempts, falling back to no-grounding. Citations for this section will be missing.`);
-                result = await callGemini(sectionPrompt, false, false);
-              }
-            }
-          }
-          let sectionText = "";
-          if (typeof result === 'object' && result !== null) {
-            const rawSection = result.text || "";
-            if (effIncludeCitations && rawSection) {
-              const cleanedSection = rawSection.replace(/\[cite:\s*[^\]]*\]\.?\s*/gi, '').replace(/,?\s*\d+\s+in\s+step\s+\d+/gi, '').trim();
-              let processedSection = processGrounding(cleanedSection, result.groundingMetadata, 'Links Only', false, false);
-              if (result.groundingMetadata?.groundingChunks) {
-                const chunkCount = result.groundingMetadata.groundingChunks.length;
-                processedSection = processedSection.replace(/⁽([⁰¹²³⁴⁵⁶⁷⁸⁹]+)⁾/g, (match, digits) => {
-                  const reverseMap = {
-                    '⁰': 0,
-                    '¹': 1,
-                    '²': 2,
-                    '³': 3,
-                    '⁴': 4,
-                    '⁵': 5,
-                    '⁶': 6,
-                    '⁷': 7,
-                    '⁸': 8,
-                    '⁹': 9
-                  };
-                  const val = parseInt(digits.split('').map(d => reverseMap[d]).join(''), 10);
-                  const newVal = val + currentCitationOffset;
-                  return `⁽${toSuperscript(newVal)}⁾`;
-                });
-                // Convert [Source N], [Source N, M], Source N, M] etc. to clickable superscript links
-                const sectionChunks = result.groundingMetadata.groundingChunks;
-                processedSection = processedSection.replace(/\[?Sources?\s+([\d,\s]+(?:and\s+\d+)?)\]?/gi, (match, numsPart) => {
-                  const nums = numsPart.replace(/and/gi, ',').split(',').map(n => parseInt(n.trim(), 10)).filter(n => !isNaN(n));
-                  if (nums.length === 0) return '';
-                  const converted = nums.map(num => {
-                    const localIdx = num - 1;
-                    if (localIdx >= 0 && localIdx < sectionChunks.length) {
-                      const globalIdx = localIdx + currentCitationOffset + 1;
-                      const uri = sectionChunks[localIdx]?.web?.uri;
-                      const label = `⁽${toSuperscript(globalIdx)}⁾`;
-                      return uri ? `[${label}](${uri})` : label;
-                    }
-                    return '';
-                  }).filter(Boolean);
-                  return converted.length > 0 ? ' ' + converted.join(' ') : '';
-                });
-                allGroundingChunks = [...allGroundingChunks, ...result.groundingMetadata.groundingChunks];
-                currentCitationOffset += chunkCount;
-              }
-              // Sanitize orphan brackets that could break markdown link rendering
-              processedSection = processedSection.replace(/\[(⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾)(?!\]\()/g, '$1') // [⁽³⁾ → ⁽³⁾ (but not [⁽³⁾](url) links)
-              .replace(/(⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾)\](?!\()/g, '$1') // ⁽³⁾] → ⁽³⁾ (but not ⁾](url) links)
-              .replace(/\[?Sources?\s+[\d,\s]+(?:and\s+\d+)?\]?/gi, ''); // any remaining Source refs
-              // Move citations before punctuation to after (same fix as short-text L37182)
-              processedSection = processedSection.replace(/(\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\([^)]+\))\s*([.!?])/g, '$2 $1');
-              sectionText = processedSection;
-            } else {
-              sectionText = rawSection;
-            }
-          } else {
-            sectionText = String(result || "");
-          }
-          sectionText = sectionText.replace(/^```[a-zA-Z]*\n/i, '').replace(/^```\s*/, '').replace(/```\s*$/, '').trim();
-          fullDocument += sectionText + "\n\n";
-          setInputText(fullDocument);
-          if (i < sections.length - 1) await new Promise(r => setTimeout(r, 1000));
-        }
-        if (effIncludeCitations && allGroundingChunks.length > 0) {
-          // Strip hallucinated citations whose index is outside the collected chunks.
-          // These happen when a later section's Gemini emits a higher N than that
-          // section's chunk count — the offset then pushes it past the end of
-          // allGroundingChunks. Three passes to avoid a greedy over-match:
-          //   1. well-formed links  [⁽N⁾](url)  with a closing ).
-          //   2. truncated links    [⁽N⁾](url-cut-off  at end of line (no closing ).
-          //   3. bare citations     ⁽N⁾  that aren't part of a link.
-          var _maxIdx = allGroundingChunks.length;
-          var _superMap = {
-            '\u2070': 0,
-            '\u00b9': 1,
-            '\u00b2': 2,
-            '\u00b3': 3,
-            '\u2074': 4,
-            '\u2075': 5,
-            '\u2076': 6,
-            '\u2077': 7,
-            '\u2078': 8,
-            '\u2079': 9
-          };
-          var _decodeSup = function (s) {
-            var n = 0;
-            for (var i = 0; i < s.length; i++) {
-              n = n * 10 + (_superMap[s[i]] || 0);
-            }
-            return n;
-          };
-          var _keepInRange = function (match, digits) {
-            var n = _decodeSup(digits);
-            return n >= 1 && n <= _maxIdx ? match : '';
-          };
-          // Pass 1: well-formed [⁽N⁾](url)
-          fullDocument = fullDocument.replace(/\[\u207d?([\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079]+)\u207e\]\([^)\n]*\)/g, _keepInRange);
-          // Pass 2: truncated [⁽N⁾](url-without-close) at end of line
-          fullDocument = fullDocument.replace(/\[\u207d?([\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079]+)\u207e\]\([^)\n]*$/gm, _keepInRange);
-          // Pass 3: bare ⁽N⁾ not followed by ]( (i.e., not inside a surviving link)
-          fullDocument = fullDocument.replace(/\u207d([\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079]+)\u207e(?!\])/g, _keepInRange);
+               let result;
+               let groundingSuccess = false;
+               const maxGroundingRetries = 2;
+               for (let attempt = 0; attempt <= maxGroundingRetries && !groundingSuccess; attempt++) {
+                   try {
+                       result = await callGemini(sectionPrompt, false, effIncludeCitations);
+                       groundingSuccess = true;
+                   } catch (sectionErr) {
+                       if (attempt < maxGroundingRetries && effIncludeCitations) {
+                           warnLog(`Section ${i + 1} grounding attempt ${attempt + 1} failed, retrying...`, sectionErr.message);
+                           await new Promise(r => setTimeout(r, 1500));
+                       } else {
+                           warnLog(`[Citations] ⚠️ Section ${i + 1}/${sections.length} ("${sectionTitle}") grounding failed after ${attempt + 1} attempts, falling back to no-grounding. Citations for this section will be missing.`);
+                           result = await callGemini(sectionPrompt, false, false);
+                       }
+                   }
+               }
+               let sectionText = "";
+               if (typeof result === 'object' && result !== null) {
+                   const rawSection = result.text || "";
+                   if (effIncludeCitations && rawSection) {
+                                                 const cleanedSection = rawSection.replace(/\[cite:\s*[^\]]*\]\.?\s*/gi, '').replace(/,?\s*\d+\s+in\s+step\s+\d+/gi, '').trim();
+                        let processedSection = processGrounding(cleanedSection, result.groundingMetadata, 'Links Only', false, false);
+                        if (result.groundingMetadata?.groundingChunks) {
+                             const chunkCount = result.groundingMetadata.groundingChunks.length;
+                             processedSection = processedSection.replace(/⁽([⁰¹²³⁴⁵⁶⁷⁸⁹]+)⁾/g, (match, digits) => {
+                                 const reverseMap = { '⁰':0, '¹':1, '²':2, '³':3, '⁴':4, '⁵':5, '⁶':6, '⁷':7, '⁸':8, '⁹':9 };
+                                 const val = parseInt(digits.split('').map(d => reverseMap[d]).join(''), 10);
+                                 const newVal = val + currentCitationOffset;
+                                 return `⁽${toSuperscript(newVal)}⁾`;
+                             });
+                             // Convert [Source N], [Source N, M], Source N, M] etc. to clickable superscript links
+                             const sectionChunks = result.groundingMetadata.groundingChunks;
+                             processedSection = processedSection.replace(/\[?Sources?\s+([\d,\s]+(?:and\s+\d+)?)\]?/gi, (match, numsPart) => {
+                                 const nums = numsPart.replace(/and/gi, ',').split(',').map(n => parseInt(n.trim(), 10)).filter(n => !isNaN(n));
+                                 if (nums.length === 0) return '';
+                                 const converted = nums.map(num => {
+                                     const localIdx = num - 1;
+                                     if (localIdx >= 0 && localIdx < sectionChunks.length) {
+                                         const globalIdx = localIdx + currentCitationOffset + 1;
+                                         const uri = sectionChunks[localIdx]?.web?.uri;
+                                         const label = `⁽${toSuperscript(globalIdx)}⁾`;
+                                         return uri ? `[${label}](${uri})` : label;
+                                     }
+                                     return '';
+                                 }).filter(Boolean);
+                                 return converted.length > 0 ? ' ' + converted.join(' ') : '';
+                             });
+                             allGroundingChunks = [...allGroundingChunks, ...result.groundingMetadata.groundingChunks];
+                             currentCitationOffset += chunkCount;
+                        }
+                        // Sanitize orphan brackets that could break markdown link rendering
+                        processedSection = processedSection
+                            .replace(/\[(⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾)(?!\]\()/g, '$1')   // [⁽³⁾ → ⁽³⁾ (but not [⁽³⁾](url) links)
+                            .replace(/(⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾)\](?!\()/g, '$1')   // ⁽³⁾] → ⁽³⁾ (but not ⁾](url) links)
+                            .replace(/\[?Sources?\s+[\d,\s]+(?:and\s+\d+)?\]?/gi, '');   // any remaining Source refs
+                        // Move citations before punctuation to after (same fix as short-text L37182)
+                        processedSection = processedSection.replace(/(\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\([^)]+\))\s*([.!?])/g, '$2 $1');
+                        sectionText = processedSection;
+                   } else {
+                        sectionText = rawSection;
+                   }
+               } else {
+                   sectionText = String(result || "");
+               }
+               sectionText = sectionText.replace(/^```[a-zA-Z]*\n/i, '').replace(/^```\s*/, '').replace(/```\s*$/, '').trim();
+               fullDocument += sectionText + "\n\n";
+               setInputText(fullDocument);
+               if (i < sections.length - 1) await new Promise(r => setTimeout(r, 1000));
+           }
+           if (effIncludeCitations && allGroundingChunks.length > 0) {
+                // Strip hallucinated citations whose index is outside the collected chunks.
+                // These happen when a later section's Gemini emits a higher N than that
+                // section's chunk count — the offset then pushes it past the end of
+                // allGroundingChunks. Three passes to avoid a greedy over-match:
+                //   1. well-formed links  [⁽N⁾](url)  with a closing ).
+                //   2. truncated links    [⁽N⁾](url-cut-off  at end of line (no closing ).
+                //   3. bare citations     ⁽N⁾  that aren't part of a link.
+                //
+                // ALSO strip body citations whose target chunk will be rejected by
+                // filterSources (YouTube music, Spotify, social, shopping). Previously these
+                // orphaned the body citation: bibliography dropped the YouTube entry but the
+                // inline ⁽N⁾ stayed, leaving a broken reference. Compute the rejected index
+                // set here so _keepInRange can match both out-of-range and rejected cases.
+                var _maxIdx = allGroundingChunks.length;
+                var _rejectedIdx = new Set();
+                var _kept = filterSources(allGroundingChunks);
+                var _keptSet = new Set(_kept);
+                allGroundingChunks.forEach(function(ch, i) { if (!_keptSet.has(ch)) _rejectedIdx.add(i + 1); });
+                var _superMap = {'\u2070':0,'\u00b9':1,'\u00b2':2,'\u00b3':3,'\u2074':4,'\u2075':5,'\u2076':6,'\u2077':7,'\u2078':8,'\u2079':9};
+                var _decodeSup = function(s) { var n = 0; for (var i = 0; i < s.length; i++) { n = n * 10 + (_superMap[s[i]] || 0); } return n; };
+                var _keepInRange = function(match, digits) {
+                    var n = _decodeSup(digits);
+                    if (n < 1 || n > _maxIdx) return '';
+                    if (_rejectedIdx.has(n)) return ''; // source will be filtered from bibliography — don't leave a dangling inline cit
+                    return match;
+                };
+                // Pass 1: well-formed [⁽N⁾](url)
+                fullDocument = fullDocument.replace(
+                    /\[\u207d?([\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079]+)\u207e\]\([^)\n]*\)/g,
+                    _keepInRange
+                );
+                // Pass 2: truncated [⁽N⁾](url-without-close) at end of line
+                fullDocument = fullDocument.replace(
+                    /\[\u207d?([\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079]+)\u207e\]\([^)\n]*$/gm,
+                    _keepInRange
+                );
+                // Pass 3: bare ⁽N⁾ not followed by ]( (i.e., not inside a surviving link)
+                fullDocument = fullDocument.replace(
+                    /\u207d([\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079]+)\u207e(?!\])/g,
+                    _keepInRange
+                );
 
-          // Renumber body citations 1..N in order of first appearance and get
-          // chunks reordered to match that sequence. This aligns body numbers
-          // with bibliography numbers — they'll both run 1..N in the same order.
-          var _renum = renumberCitations(fullDocument, allGroundingChunks);
-          fullDocument = _renum.renumberedText;
+                // Renumber body citations 1..N in order of first appearance and get
+                // chunks reordered to match that sequence. This aligns body numbers
+                // with bibliography numbers — they'll both run 1..N in the same order.
+                var _renum = renumberCitations(fullDocument, allGroundingChunks);
+                fullDocument = _renum.renumberedText;
 
-          // Restore any URLs Gemini corrupted (truncation at end of section,
-          // space injection at dots like "webmd. com", dropped https://) using
-          // the canonical URIs from the reordered chunks. Deterministic because
-          // after renumber, citation N is exactly reorderedChunks[N-1].
-          fullDocument = restoreCanonicalCitationUrls(fullDocument, _renum.reorderedChunks);
+                // Restore any URLs Gemini corrupted (truncation at end of section,
+                // space injection at dots like "webmd. com", dropped https://) using
+                // the canonical URIs from the reordered chunks. Deterministic because
+                // after renumber, citation N is exactly reorderedChunks[N-1].
+                fullDocument = restoreCanonicalCitationUrls(fullDocument, _renum.reorderedChunks);
 
-          // Generate bibliography from reordered chunks so its numbers match body.
-          var masterMetadata = {
-            groundingChunks: _renum.reorderedChunks
-          };
-          fullDocument += generateBibliographyString(masterMetadata, 'Links Only', "Source Text References");
-          fullDocument = validateAndRepairCitations(fullDocument, _renum.reorderedChunks);
-        }
-        if (effIncludeCitations) {
-          const finalCitCount = (fullDocument.match(/\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\(/g) || []).length;
-          const hasBiblio = /Source Text References/i.test(fullDocument);
-          const sourceCount = (fullDocument.match(/^\d+\.\s+\[/gm) || []).length;
-          console.log(`[Citations] 📊 Multi-chunk pipeline summary: ${finalCitCount} inline citations across ${sections.length} sections, bibliography=${hasBiblio}, ${sourceCount} sources listed, ${allGroundingChunks.length} total grounding chunks collected`);
-          const hasCitationMarkers = finalCitCount > 0 || hasBiblio;
-          if (!hasCitationMarkers) {
-            warnLog("Multi-chunk citation verification: No citation markers found despite setting enabled");
-            addToast(t('toasts.citations_unavailable'), "info");
-          }
-        }
-        fullDocument = cleanSourceMetaCommentary(fullDocument);
-        fullDocument = repairSourceMarkdown(fullDocument);
-        setInputText(fullDocument);
-        setShowSourceGen(false);
-        addToast(t('input.success_long_form'), "success");
-        setIsGeneratingSource(false);
-        flyToElement('tour-source-input');
-        return;
+                // Generate bibliography from reordered chunks so its numbers match body.
+                var masterMetadata = { groundingChunks: _renum.reorderedChunks };
+                fullDocument += generateBibliographyString(masterMetadata, 'Links Only', "Source Text References");
+                fullDocument = validateAndRepairCitations(fullDocument, _renum.reorderedChunks);
+           }
+           if (effIncludeCitations) {
+                const finalCitCount = (fullDocument.match(/\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\(/g) || []).length;
+
+                const hasBiblio = /Source Text References/i.test(fullDocument);
+
+                const sourceCount = (fullDocument.match(/^\d+\.\s+\[/gm) || []).length;
+
+                console.log(`[Citations] 📊 Multi-chunk pipeline summary: ${finalCitCount} inline citations across ${sections.length} sections, bibliography=${hasBiblio}, ${sourceCount} sources listed, ${allGroundingChunks.length} total grounding chunks collected`);
+
+                const hasCitationMarkers = finalCitCount > 0 || hasBiblio;
+
+               if (!hasCitationMarkers) {
+                   warnLog("Multi-chunk citation verification: No citation markers found despite setting enabled");
+                   addToast(t('toasts.citations_unavailable'), "info");
+               }
+           }
+           fullDocument = cleanSourceMetaCommentary(fullDocument);
+           fullDocument = repairSourceMarkdown(fullDocument);
+           setInputText(fullDocument);
+           setShowSourceGen(false);
+           addToast(t('input.success_long_form'), "success");
+           setIsGeneratingSource(false);
+           flyToElement('tour-source-input');
+           return;
       }
       const minParagraphs = Math.max(3, Math.ceil(targetWords / 60));
       const minSections = Math.max(3, Math.ceil(targetWords / 250));
@@ -858,7 +686,7 @@ IMPORTANT: Plan for DIALOGUE, not narration. 70%+ should be spoken lines.
         `;
         try {
           const outlineResult = await callGemini(outlinePrompt, false, false, 1.6);
-          storyOutline = typeof outlineResult === 'object' ? outlineResult.text || '' : String(outlineResult || '');
+          storyOutline = typeof outlineResult === 'object' ? (outlineResult.text || '') : String(outlineResult || '');
           storyOutline = storyOutline.replace(/^```[a-zA-Z]*\n/i, '').replace(/```\s*$/, '').trim();
         } catch (outlineErr) {
           warnLog("Dialogue plan generation failed, proceeding without plan:", outlineErr);
@@ -943,7 +771,7 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
         CRITICAL FORMAT RULES:
         - Write in PROSE PARAGRAPHS. Do NOT use numbered lists or bullet points for the main content. Use flowing text with complete paragraphs.
         - Do NOT include any "Sources", "References", "Works Cited", "Bibliography", or similar sections. I will automatically append verified sources at the end.
-        ` : effIncludeCitations ? `
+        ` : (effIncludeCitations ? `
         CRITICAL: You MUST use Google Search to find, verify, and cite facts about "${effTopic}".
         Search for key facts, statistics, dates, and claims relevant to this topic. Every paragraph must include at least one cited source.
         ${isShortText ? `CITATION DENSITY (SHORT TEXT): This is a concise document. You MUST include at least 1 citation per paragraph. Every major factual claim needs a cited source. Err on the side of MORE citations, not fewer.` : ''}
@@ -951,7 +779,7 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
         CRITICAL FORMAT RULES:
         - Write in PROSE PARAGRAPHS. Do NOT use numbered lists or bullet points for the main content. Use flowing text with complete paragraphs.
         - Do NOT include any "Sources", "References", "Works Cited", "Bibliography", or similar sections. I will automatically append verified sources at the end.
-        ` : ''}
+        ` : '')}
         STRICT READING LEVEL GUIDELINES (COMPENSATION FOR AI BIAS):
         - AI models typically write 1-2 grades higher than requested. You MUST compensate for this.
         - If "Kindergarten" or "1st Grade": Target Pre-K complexity. Use extremely short sentences (3-5 words). No compound sentences.
@@ -976,69 +804,61 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
       let groundingSuccess = false;
       const maxGroundingRetries = 2;
       for (let attempt = 0; attempt <= maxGroundingRetries && !groundingSuccess; attempt++) {
-        try {
-          result = await callGemini(prompt, shouldUseJsonMode, useSearchForThisCall, creativeTemperature);
-          groundingSuccess = true;
-        } catch (apiError) {
-          if (attempt < maxGroundingRetries && effIncludeCitations) {
-            warnLog(`Short text grounding attempt ${attempt + 1} failed, retrying...`, apiError.message);
-            await new Promise(r => setTimeout(r, 1500));
-          } else if (effIncludeCitations) {
-            warnLog(`Short text grounding failed after ${attempt + 1} attempts, falling back to no-grounding`);
-            addToast(t('toasts.verification_unavailable'), "info");
-            try {
-              result = await callGemini(prompt, shouldUseJsonMode, false, creativeTemperature);
-            } catch (fallbackErr) {
-              warnLog(`[Citations] Fallback no-grounding call also failed:`, fallbackErr.message);
-              result = {
-                text: "",
-                groundingMetadata: null
-              };
-            }
-          } else {
-            throw apiError;
+          try {
+              result = await callGemini(prompt, shouldUseJsonMode, useSearchForThisCall, creativeTemperature);
+              groundingSuccess = true;
+          } catch (apiError) {
+              if (attempt < maxGroundingRetries && effIncludeCitations) {
+                  warnLog(`Short text grounding attempt ${attempt + 1} failed, retrying...`, apiError.message);
+                  await new Promise(r => setTimeout(r, 1500));
+              } else if (effIncludeCitations) {
+                  warnLog(`Short text grounding failed after ${attempt + 1} attempts, falling back to no-grounding`);
+                  addToast(t('toasts.verification_unavailable'), "info");
+                  try {
+                      result = await callGemini(prompt, shouldUseJsonMode, false, creativeTemperature);
+                  } catch (fallbackErr) {
+                      warnLog(`[Citations] Fallback no-grounding call also failed:`, fallbackErr.message);
+                      result = { text: "", groundingMetadata: null };
+                  }
+              } else {
+                  throw apiError;
+              }
           }
-        }
       }
       let text = '';
       if (typeof result === 'object' && result !== null && 'text' in result) {
-        const rawText = result.text || "";
-        if (effIncludeCitations && rawText) {
-          const cleanedRawText = rawText.replace(/\[cite:\s*[\d,\s]+(?:in step \d+)?\]\.?\s*/gi, '');
-          const rawWithCitations = processGrounding(cleanedRawText, result.groundingMetadata, 'Links Only', false, false);
-          if (isShortText) {
-            // ── Short text: deterministic citation cleanup (no lossy LLM round-trip) ──
-            setGenerationStep(t('status_steps.optimizing_citations'));
-            let processedText = rawWithCitations
-            // Move citations before punctuation to after: "fact [⁽¹⁾](url)." → "fact. [⁽¹⁾](url)"
-            .replace(/(\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\([^)]+\))\s*([.!?])/g, '$2 $1')
-            // Separate adjacent citations with comma
-            .replace(/(\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\([^)]+\))(\[⁽)/g, '$1, $2')
-            // Strip any Sources/References/Bibliography sections (auto-generated later)
-            .replace(/\n*(?:#{1,4}\s*)?(?:Sources?|References?|Works?\s*Cited|Bibliography)\s*[\n\r]+(?:(?:\d+\.\s+|\*\s+|-\s+)?.+[\n\r]+)*(?=\n*(?:#{1,4}\s|\Z|$))/gi, '\n')
-            // Clean orphan brackets around citations
-            .replace(/\[(⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾)(?!\]\()/g, '$1').replace(/(⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾)\](?!\()/g, '$1')
-            // Remove remaining Source N references
-            .replace(/\[?Sources?\s+[\d,\s]+(?:and\s+\d+)?\]?/gi, '');
-            text = processedText.trim();
-            if (result.groundingMetadata?.groundingChunks) {
-              const {
-                renumberedText,
-                reorderedChunks
-              } = renumberCitations(text, result.groundingMetadata.groundingChunks);
-              text = restoreCanonicalCitationUrls(renumberedText, reorderedChunks);
-              const tempMeta = {
-                ...result.groundingMetadata,
-                groundingChunks: reorderedChunks
-              };
-              text += generateBibliographyString(tempMeta, 'Links Only', "Source Text References");
-            } else {
-              text += generateBibliographyString(result.groundingMetadata, 'Links Only', "Source Text References");
-            }
-          } else {
-            // ── Long text: LLM-based citation cleanup (existing behavior) ──
-            setGenerationStep(t('status_steps.optimizing_citations') || 'Optimizing citations...');
-            const cleanupPrompt = `
+          const rawText = result.text || "";
+          if (effIncludeCitations && rawText) {
+              const cleanedRawText = rawText.replace(/\[cite:\s*[\d,\s]+(?:in step \d+)?\]\.?\s*/gi, '');
+              const rawWithCitations = processGrounding(cleanedRawText, result.groundingMetadata, 'Links Only', false, false);
+              if (isShortText) {
+                  // ── Short text: deterministic citation cleanup (no lossy LLM round-trip) ──
+                  setGenerationStep(t('status_steps.optimizing_citations'));
+                  let processedText = rawWithCitations
+                      // Move citations before punctuation to after: "fact [⁽¹⁾](url)." → "fact. [⁽¹⁾](url)"
+                      .replace(/(\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\([^)]+\))\s*([.!?])/g, '$2 $1')
+                      // Separate adjacent citations with comma
+                      .replace(/(\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\([^)]+\))(\[⁽)/g, '$1, $2')
+                      // Strip any Sources/References/Bibliography sections (auto-generated later)
+                      .replace(/\n*(?:#{1,4}\s*)?(?:Sources?|References?|Works?\s*Cited|Bibliography)\s*[\n\r]+(?:(?:\d+\.\s+|\*\s+|-\s+)?.+[\n\r]+)*(?=\n*(?:#{1,4}\s|\Z|$))/gi, '\n')
+                      // Clean orphan brackets around citations
+                      .replace(/\[(⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾)(?!\]\()/g, '$1')
+                      .replace(/(⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾)\](?!\()/g, '$1')
+                      // Remove remaining Source N references
+                      .replace(/\[?Sources?\s+[\d,\s]+(?:and\s+\d+)?\]?/gi, '');
+                  text = processedText.trim();
+                  if (result.groundingMetadata?.groundingChunks) {
+                      const { renumberedText, reorderedChunks } = renumberCitations(text, result.groundingMetadata.groundingChunks);
+                      text = restoreCanonicalCitationUrls(renumberedText, reorderedChunks);
+                      const tempMeta = { ...result.groundingMetadata, groundingChunks: reorderedChunks };
+                      text += generateBibliographyString(tempMeta, 'Links Only', "Source Text References");
+                  } else {
+                      text += generateBibliographyString(result.groundingMetadata, 'Links Only', "Source Text References");
+                  }
+              } else {
+              // ── Long text: LLM-based citation cleanup (existing behavior) ──
+              setGenerationStep(t('status_steps.optimizing_citations') || 'Optimizing citations...');
+              const cleanupPrompt = `
                 You are a meticulous text editor. The text below contains citation links (e.g. [⁽¹⁾](url)).
                 Task:
                 1. Move the citation markers to the most appropriate location (usually the end of the sentence or clause, after punctuation).
@@ -1050,66 +870,59 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
                 Text to Fix:
                 ${rawWithCitations}
               `;
-            try {
-              const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Optimization timed out")), 60000));
-              const cleaned = await Promise.race([callGemini(cleanupPrompt), timeoutPromise]);
-              if (!cleaned) throw new Error("Cleanup returned empty");
-              const rawCitCount = (rawWithCitations.match(/\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\(/g) || []).length;
-              const cleanedCitCount = (cleaned.match(/\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\(/g) || []).length;
-              if (rawCitCount > 0 && cleanedCitCount < rawCitCount * 0.5) {
-                warnLog(`Citation validation: cleanup lost ${rawCitCount - cleanedCitCount}/${rawCitCount} citations. Falling back to raw.`);
-                throw new Error("Citation loss detected - using raw grounding");
+              try {
+                  const timeoutPromise = new Promise((_, reject) =>
+                      setTimeout(() => reject(new Error("Optimization timed out")), 60000)
+                  );
+                  const cleaned = await Promise.race([
+                      callGemini(cleanupPrompt),
+                      timeoutPromise
+                  ]);
+                  if (!cleaned) throw new Error("Cleanup returned empty");
+                  const rawCitCount = (rawWithCitations.match(/\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\(/g) || []).length;
+                  const cleanedCitCount = (cleaned.match(/\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\(/g) || []).length;
+                  if (rawCitCount > 0 && cleanedCitCount < rawCitCount * 0.5) {
+                      warnLog(`Citation validation: cleanup lost ${rawCitCount - cleanedCitCount}/${rawCitCount} citations. Falling back to raw.`);
+                      throw new Error("Citation loss detected - using raw grounding");
+                  }
+                  let strippedText = cleaned.replace(/\n*(?:#{1,4}\s*)?(?:Sources?|References?|Works?\s*Cited|Bibliography)\s*[\n\r]+(?:(?:\d+\.\s+|\*\s+|-\s+)?.+[\n\r]+)*(?=\n*(?:#{1,4}\s|\Z|$))/gi, '\n');
+                  text = strippedText.trim();
+                  if (result.groundingMetadata?.groundingChunks) {
+                      const { renumberedText, reorderedChunks } = renumberCitations(text, result.groundingMetadata.groundingChunks);
+                      // CANONICAL URL VALIDATION: the cleanup round-trip above can corrupt URLs
+                      // (truncate mid-domain, drop the closing paren, space-pad at dots, drop
+                      // the protocol). Rebuild every [⁽N⁾](url) using the canonical web.uri
+                      // from reorderedChunks[N-1] — after renumber, N is a deterministic index.
+                      text = restoreCanonicalCitationUrls(renumberedText, reorderedChunks);
+                      const tempMeta = { ...result.groundingMetadata, groundingChunks: reorderedChunks };
+                      text += generateBibliographyString(tempMeta, 'Links Only', "Source Text References");
+                  } else {
+                      text += generateBibliographyString(result.groundingMetadata, 'Links Only', "Source Text References");
+                  }
+              } catch (cleanupErr) {
+                  warnLog("Citation placement optimization skipped (Timeout or Error):", cleanupErr);
+                  const cleanedFallback = rawText.replace(/\[cite:\s*[\d,\s]+(?:in step \d+)?\]\.?\s*/gi, '');
+                  let fallbackText = processGrounding(cleanedFallback, result.groundingMetadata, 'Links Only', false, false);
+                  fallbackText = fallbackText.replace(/\n*(?:#{1,4}\s*)?(?:Sources?|References?|Works?\s*Cited|Bibliography)\s*[\n\r]+(?:(?:\d+\.\s+|\*\s+|-\s+)?.+[\n\r]+)*(?=\n*(?:#{1,4}\s|\Z|$))/gi, '\n').trim();
+                  if (result.groundingMetadata?.groundingChunks) {
+                      const { renumberedText, reorderedChunks } = renumberCitations(fallbackText, result.groundingMetadata.groundingChunks);
+                      fallbackText = restoreCanonicalCitationUrls(renumberedText, reorderedChunks);
+                      const tempMeta = { ...result.groundingMetadata, groundingChunks: reorderedChunks };
+                      fallbackText += generateBibliographyString(tempMeta, 'Links Only', "Source Text References");
+                  } else {
+                      fallbackText += generateBibliographyString(result.groundingMetadata, 'Links Only', "Source Text References");
+                  }
+                  text = fallbackText;
+                  if (cleanupErr.message === "Optimization timed out") {
+                      addToast(t('input.error_optimization_timeout'), "info");
+                  }
               }
-              let strippedText = cleaned.replace(/\n*(?:#{1,4}\s*)?(?:Sources?|References?|Works?\s*Cited|Bibliography)\s*[\n\r]+(?:(?:\d+\.\s+|\*\s+|-\s+)?.+[\n\r]+)*(?=\n*(?:#{1,4}\s|\Z|$))/gi, '\n');
-              text = strippedText.trim();
-              if (result.groundingMetadata?.groundingChunks) {
-                const {
-                  renumberedText,
-                  reorderedChunks
-                } = renumberCitations(text, result.groundingMetadata.groundingChunks);
-                // CANONICAL URL VALIDATION: the cleanup round-trip above can corrupt URLs
-                // (truncate mid-domain, drop the closing paren, space-pad at dots, drop
-                // the protocol). Rebuild every [⁽N⁾](url) using the canonical web.uri
-                // from reorderedChunks[N-1] — after renumber, N is a deterministic index.
-                text = restoreCanonicalCitationUrls(renumberedText, reorderedChunks);
-                const tempMeta = {
-                  ...result.groundingMetadata,
-                  groundingChunks: reorderedChunks
-                };
-                text += generateBibliographyString(tempMeta, 'Links Only', "Source Text References");
-              } else {
-                text += generateBibliographyString(result.groundingMetadata, 'Links Only', "Source Text References");
               }
-            } catch (cleanupErr) {
-              warnLog("Citation placement optimization skipped (Timeout or Error):", cleanupErr);
-              const cleanedFallback = rawText.replace(/\[cite:\s*[\d,\s]+(?:in step \d+)?\]\.?\s*/gi, '');
-              let fallbackText = processGrounding(cleanedFallback, result.groundingMetadata, 'Links Only', false, false);
-              fallbackText = fallbackText.replace(/\n*(?:#{1,4}\s*)?(?:Sources?|References?|Works?\s*Cited|Bibliography)\s*[\n\r]+(?:(?:\d+\.\s+|\*\s+|-\s+)?.+[\n\r]+)*(?=\n*(?:#{1,4}\s|\Z|$))/gi, '\n').trim();
-              if (result.groundingMetadata?.groundingChunks) {
-                const {
-                  renumberedText,
-                  reorderedChunks
-                } = renumberCitations(fallbackText, result.groundingMetadata.groundingChunks);
-                fallbackText = restoreCanonicalCitationUrls(renumberedText, reorderedChunks);
-                const tempMeta = {
-                  ...result.groundingMetadata,
-                  groundingChunks: reorderedChunks
-                };
-                fallbackText += generateBibliographyString(tempMeta, 'Links Only', "Source Text References");
-              } else {
-                fallbackText += generateBibliographyString(result.groundingMetadata, 'Links Only', "Source Text References");
-              }
-              text = fallbackText;
-              if (cleanupErr.message === "Optimization timed out") {
-                addToast(t('input.error_optimization_timeout'), "info");
-              }
-            }
+          } else {
+              text = rawText;
           }
-        } else {
-          text = rawText;
-        }
       } else {
-        text = String(result || "");
+          text = String(result || "");
       }
       if (isDialogueMode && text) {
         try {
@@ -1136,51 +949,52 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
         }
       }
       if (effIncludeCitations && text) {
-        text = sanitizeRawUrls(text);
-        if (result?.groundingMetadata?.groundingChunks) {
-          text = validateAndRepairCitations(text, result.groundingMetadata.groundingChunks);
-        }
-        const hasCitationMarkers = /\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\(/.test(text) || /Source Text References/i.test(text);
-        if (!hasCitationMarkers && isShortText) {
-          // Short text citation density retry: regenerate once if zero citations
-          warnLog("[Citations] Short text got 0 citations, retrying generation once...");
-          try {
-            setGenerationStep(t('status_steps.retrying_citations') || 'Retrying for better citations...');
-            const retryResult = await callGemini(prompt, shouldUseJsonMode, useSearchForThisCall, creativeTemperature);
-            if (typeof retryResult === 'object' && retryResult !== null && retryResult.text) {
-              const retryRaw = retryResult.text.replace(/\[cite:\s*[\d,\s]+(?:in step \d+)?\]\.?\s*/gi, '');
-              let retryText = processGrounding(retryRaw, retryResult.groundingMetadata, 'Links Only', false, false);
-              // Apply deterministic cleanup
-              retryText = retryText.replace(/(\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\([^)]+\))\s*([.!?])/g, '$2 $1').replace(/(\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\([^)]+\))(\[⁽)/g, '$1, $2').replace(/\n*(?:#{1,4}\s*)?(?:Sources?|References?|Works?\s*Cited|Bibliography)\s*[\n\r]+(?:(?:\d+\.\s+|\*\s+|-\s+)?.+[\n\r]+)*(?=\n*(?:#{1,4}\s|\Z|$))/gi, '\n').replace(/\[(⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾)(?!\]\()/g, '$1').replace(/(⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾)\](?!\()/g, '$1').replace(/\[?Sources?\s+[\d,\s]+(?:and\s+\d+)?\]?/gi, '').trim();
-              if (retryResult.groundingMetadata?.groundingChunks) {
-                const {
-                  renumberedText,
-                  reorderedChunks
-                } = renumberCitations(retryText, retryResult.groundingMetadata.groundingChunks);
-                retryText = restoreCanonicalCitationUrls(renumberedText, reorderedChunks);
-                const tempMeta = {
-                  ...retryResult.groundingMetadata,
-                  groundingChunks: reorderedChunks
-                };
-                retryText += generateBibliographyString(tempMeta, 'Links Only', "Source Text References");
-              }
-              const retryCitCount = (retryText.match(/\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\(/g) || []).length;
-              if (retryCitCount > 0) {
-                text = retryText;
-                warnLog(`[Citations] Retry succeeded: ${retryCitCount} citations recovered`);
-              } else {
-                warnLog("[Citations] Retry also yielded 0 citations");
-                addToast(t('toasts.citations_unavailable'), "info");
-              }
-            }
-          } catch (retryErr) {
-            warnLog("[Citations] Retry failed:", retryErr.message);
-            addToast(t('toasts.citations_unavailable'), "info");
+          text = sanitizeRawUrls(text);
+          if (result?.groundingMetadata?.groundingChunks) {
+              text = validateAndRepairCitations(text, result.groundingMetadata.groundingChunks);
           }
-        } else if (!hasCitationMarkers) {
-          warnLog("Citation verification: No citation markers found despite setting enabled");
-          addToast(t('toasts.citations_unavailable'), "info");
-        }
+          const hasCitationMarkers = /\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\(/.test(text) || /Source Text References/i.test(text);
+          if (!hasCitationMarkers && isShortText) {
+              // Short text citation density retry: regenerate once if zero citations
+              warnLog("[Citations] Short text got 0 citations, retrying generation once...");
+              try {
+                  setGenerationStep(t('status_steps.retrying_citations') || 'Retrying for better citations...');
+                  const retryResult = await callGemini(prompt, shouldUseJsonMode, useSearchForThisCall, creativeTemperature);
+                  if (typeof retryResult === 'object' && retryResult !== null && retryResult.text) {
+                      const retryRaw = retryResult.text.replace(/\[cite:\s*[\d,\s]+(?:in step \d+)?\]\.?\s*/gi, '');
+                      let retryText = processGrounding(retryRaw, retryResult.groundingMetadata, 'Links Only', false, false);
+                      // Apply deterministic cleanup
+                      retryText = retryText
+                          .replace(/(\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\([^)]+\))\s*([.!?])/g, '$2 $1')
+                          .replace(/(\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\([^)]+\))(\[⁽)/g, '$1, $2')
+                          .replace(/\n*(?:#{1,4}\s*)?(?:Sources?|References?|Works?\s*Cited|Bibliography)\s*[\n\r]+(?:(?:\d+\.\s+|\*\s+|-\s+)?.+[\n\r]+)*(?=\n*(?:#{1,4}\s|\Z|$))/gi, '\n')
+                          .replace(/\[(⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾)(?!\]\()/g, '$1')
+                          .replace(/(⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾)\](?!\()/g, '$1')
+                          .replace(/\[?Sources?\s+[\d,\s]+(?:and\s+\d+)?\]?/gi, '')
+                          .trim();
+                      if (retryResult.groundingMetadata?.groundingChunks) {
+                          const { renumberedText, reorderedChunks } = renumberCitations(retryText, retryResult.groundingMetadata.groundingChunks);
+                          retryText = restoreCanonicalCitationUrls(renumberedText, reorderedChunks);
+                          const tempMeta = { ...retryResult.groundingMetadata, groundingChunks: reorderedChunks };
+                          retryText += generateBibliographyString(tempMeta, 'Links Only', "Source Text References");
+                      }
+                      const retryCitCount = (retryText.match(/\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\(/g) || []).length;
+                      if (retryCitCount > 0) {
+                          text = retryText;
+                          warnLog(`[Citations] Retry succeeded: ${retryCitCount} citations recovered`);
+                      } else {
+                          warnLog("[Citations] Retry also yielded 0 citations");
+                          addToast(t('toasts.citations_unavailable'), "info");
+                      }
+                  }
+              } catch (retryErr) {
+                  warnLog("[Citations] Retry failed:", retryErr.message);
+                  addToast(t('toasts.citations_unavailable'), "info");
+              }
+          } else if (!hasCitationMarkers) {
+              warnLog("Citation verification: No citation markers found despite setting enabled");
+              addToast(t('toasts.citations_unavailable'), "info");
+          }
       }
       text = cleanSourceMetaCommentary(text);
       text = ensureTitleHeading(text);
@@ -1190,13 +1004,16 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
     } catch (err) {
       console.error('[CE-TRACE] CAUGHT ERROR in handleGenerateSource:', err);
       if (!err.message?.includes("401")) {
-        warnLog("Unhandled error:", err);
+          warnLog("Unhandled error:", err);
       }
-      const errMsg = err.message?.includes("Blocked") ? "Content blocked by safety filters." : err.message?.includes("Stopped") ? "Generation stopped by AI model." : err.message?.includes("401") ? "Daily Usage Limit Reached. Please try again later." : "Error generating content. Please try again.";
+      const errMsg = err.message?.includes("Blocked") ? "Content blocked by safety filters." :
+                     err.message?.includes("Stopped") ? "Generation stopped by AI model." :
+                     err.message?.includes("401") ? "Daily Usage Limit Reached. Please try again later." :
+                     "Error generating content. Please try again.";
       setError(errMsg);
       addToast(errMsg, "error");
       if (isBotVisible && alloBotRef.current) {
-        alloBotRef.current.speak(t('bot_events.feedback_error_apology'), 'confused');
+          alloBotRef.current.speak(t('bot_events.feedback_error_apology'), 'confused');
       }
     } finally {
       setIsGeneratingSource(false);
@@ -1215,19 +1032,19 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
       setInterestInput('');
     }
   };
-  const removeInterest = interest => {
+  const removeInterest = (interest) => {
     setStudentInterests(studentInterests.filter(i => i !== interest));
   };
-  const handleInterestKeyDown = e => {
+  const handleInterestKeyDown = (e) => {
     if (e.key === 'Enter') addInterest();
   };
-  const removeLanguage = lang => {
+  const removeLanguage = (lang) => {
     const newLangs = selectedLanguages.filter(l => l !== lang);
     setSelectedLanguages(newLangs);
     if (leveledTextLanguage === lang) setLeveledTextLanguage('English');
     if (leveledTextLanguage === 'All Selected Languages' && newLangs.length === 0) setLeveledTextLanguage('English');
   };
-  const handleKeyDown = e => {
+  const handleKeyDown = (e) => {
     if (e.key === 'Enter') addLanguage();
   };
   const addConcept = () => {
@@ -1236,131 +1053,124 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
       setConceptInput('');
     }
   };
-  const removeConcept = concept => {
+  const removeConcept = (concept) => {
     setSelectedConcepts(selectedConcepts.filter(c => c !== concept));
   };
-  const handleConceptKeyDown = e => {
-    if (e.key === 'Enter') addConcept();
+  const handleConceptKeyDown = (e) => {
+      if (e.key === 'Enter') addConcept();
   };
   const handleDownloadImage = () => {
     if (generatedContent?.type !== 'image' || !generatedContent?.data?.imageUrl) return;
     const downloadWithLabels = (imgUrl, labels, filename) => {
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        canvas.width = img.naturalWidth;
-        canvas.height = img.naturalHeight;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0);
-        if (labels && labels.length > 0) {
-          ctx.font = 'bold 14px Inter, Segoe UI, system-ui, sans-serif';
-          ctx.textAlign = 'center';
-          labels.forEach(label => {
-            const x = label.x / 100 * canvas.width;
-            const y = label.y / 100 * canvas.height;
-            const text = label.text || '';
-            const metrics = ctx.measureText(text);
-            const pad = 6;
-            ctx.fillStyle = 'rgba(30, 27, 75, 0.85)';
-            const rx = x - metrics.width / 2 - pad;
-            const ry = y - 10;
-            const rw = metrics.width + pad * 2;
-            const rh = 20;
-            ctx.beginPath();
-            ctx.roundRect(rx, ry, rw, rh, 4);
-            ctx.fill();
-            ctx.fillStyle = '#ffffff';
-            ctx.fillText(text, x, y + 4);
-          });
-        }
-        canvas.toBlob(blob => {
-          const url = URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = filename;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          URL.revokeObjectURL(url);
-        }, 'image/png');
-      };
-      img.onerror = () => {
-        const link = document.createElement('a');
-        link.href = imgUrl;
-        link.download = filename;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      };
-      img.src = imgUrl;
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.naturalWidth;
+            canvas.height = img.naturalHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+            if (labels && labels.length > 0) {
+                ctx.font = 'bold 14px Inter, Segoe UI, system-ui, sans-serif';
+                ctx.textAlign = 'center';
+                labels.forEach(label => {
+                    const x = (label.x / 100) * canvas.width;
+                    const y = (label.y / 100) * canvas.height;
+                    const text = label.text || '';
+                    const metrics = ctx.measureText(text);
+                    const pad = 6;
+                    ctx.fillStyle = 'rgba(30, 27, 75, 0.85)';
+                    const rx = x - metrics.width / 2 - pad;
+                    const ry = y - 10;
+                    const rw = metrics.width + pad * 2;
+                    const rh = 20;
+                    ctx.beginPath();
+                    ctx.roundRect(rx, ry, rw, rh, 4);
+                    ctx.fill();
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillText(text, x, y + 4);
+                });
+            }
+            canvas.toBlob(blob => {
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            }, 'image/png');
+        };
+        img.onerror = () => {
+            const link = document.createElement('a');
+            link.href = imgUrl;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        };
+        img.src = imgUrl;
     };
     if (generatedContent?.data.visualPlan && generatedContent?.data.visualPlan.panels.length > 1) {
-      const labelsHidden = document.querySelector('[data-labels-hidden]');
-      generatedContent?.data.visualPlan.panels.forEach((panel, idx) => {
-        if (!panel.imageUrl) return;
-        const labels = !labelsHidden ? panel.labels || [] : [];
-        setTimeout(() => {
-          downloadWithLabels(panel.imageUrl, labels, `udl-visual-panel-${idx + 1}-${Date.now()}.png`);
-        }, idx * 500);
-      });
-      addToast(t('visual_director.panels_downloaded') || `${generatedContent?.data.visualPlan.panels.length} panels downloaded!`, "success");
+        const labelsHidden = document.querySelector('[data-labels-hidden]');
+        generatedContent?.data.visualPlan.panels.forEach((panel, idx) => {
+            if (!panel.imageUrl) return;
+            const labels = !labelsHidden ? (panel.labels || []) : [];
+            setTimeout(() => {
+                downloadWithLabels(panel.imageUrl, labels, `udl-visual-panel-${idx + 1}-${Date.now()}.png`);
+            }, idx * 500);
+        });
+        addToast(t('visual_director.panels_downloaded') || `${generatedContent?.data.visualPlan.panels.length} panels downloaded!`, "success");
     } else {
-      downloadWithLabels(generatedContent?.data.imageUrl, [], `udl-visual-support-${Date.now()}.png`);
-      addToast(t('toasts.image_saved'), "success");
+        downloadWithLabels(generatedContent?.data.imageUrl, [], `udl-visual-support-${Date.now()}.png`);
+        addToast(t('toasts.image_saved'), "success");
     }
   };
   const handleDeleteImage = () => {
     if (generatedContent) {
-      setGeneratedContent(function (prev) {
-        return prev ? Object.assign({}, prev, {
-          data: Object.assign({}, prev.data, {
-            imageUrl: null,
-            visualPlan: null
-          })
-        }) : null;
-      });
+      setGeneratedContent(function(prev) { return prev ? Object.assign({}, prev, { data: Object.assign({}, prev.data, { imageUrl: null, visualPlan: null }) }) : null; });
     }
   };
 
   // ── Text Revision + Selection handlers ──
   const handleTextMouseUp = () => {
-    const selection = window.getSelection();
-    if (!selection || selection.toString().trim().length === 0) {
-      return;
-    }
-    const text = selection.toString().trim();
-    const range = selection.getRangeAt(0);
-    const rect = range.getBoundingClientRect();
-    if (interactionMode === 'explain' || interactionMode === 'revise' || interactionMode === 'define' || interactionMode === 'add-glossary') {
-      setSelectionMenu({
-        x: rect.left + rect.width / 2,
-        y: rect.top,
-        text: text
-      });
-    }
+      const selection = window.getSelection();
+      if (!selection || selection.toString().trim().length === 0) {
+          return;
+      }
+      const text = selection.toString().trim();
+      const range = selection.getRangeAt(0);
+      const rect = range.getBoundingClientRect();
+      if (interactionMode === 'explain' || interactionMode === 'revise' || interactionMode === 'define' || interactionMode === 'add-glossary') {
+          setSelectionMenu({
+              x: rect.left + (rect.width / 2),
+              y: rect.top,
+              text: text
+          });
+      }
   };
   const handleReviseSelection = async (action, customInstruction = '') => {
-    if (!selectionMenu || !selectionMenu.text) return;
-    const originalText = selectionMenu.text;
-    if (action === 'custom-input') {
-      setIsCustomReviseOpen(true);
-      return;
-    }
-    setSelectionMenu(null);
-    setIsCustomReviseOpen(false);
-    setRevisionData({
-      type: action,
-      original: originalText,
-      result: null,
-      x: selectionMenu.x,
-      y: selectionMenu.y
-    });
-    try {
-      const currentFullText = typeof generatedContent?.data === 'string' ? generatedContent?.data : '';
-      const isBilingual = currentFullText.includes("--- ENGLISH TRANSLATION ---");
-      if (isBilingual && (action === 'simplify' || action === 'custom')) {
-        const prompt = `
+      if (!selectionMenu || !selectionMenu.text) return;
+      const originalText = selectionMenu.text;
+      if (action === 'custom-input') {
+          setIsCustomReviseOpen(true);
+          return;
+      }
+      setSelectionMenu(null);
+      setIsCustomReviseOpen(false);
+      setRevisionData({
+          type: action,
+          original: originalText,
+          result: null,
+          x: selectionMenu.x,
+          y: selectionMenu.y
+      });
+      try {
+          const currentFullText = typeof generatedContent?.data === 'string' ? generatedContent?.data : '';
+          const isBilingual = currentFullText.includes("--- ENGLISH TRANSLATION ---");
+          if (isBilingual && (action === 'simplify' || action === 'custom')) {
+               const prompt = `
                 You are an expert educational editor helping a teacher revise a bilingual text.
                 Goal: ${action === 'simplify' ? `Simplify the selected text for ${gradeLevel}.` : `Revise based on: "${customInstruction}".`}
                 Context:
@@ -1382,25 +1192,25 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
                     ]
                 }
                `;
-        const jsonStr = await callGemini(prompt, true);
-        try {
-          const data = JSON.parse(cleanJson(jsonStr));
-          setRevisionData(prev => ({
-            ...prev,
-            result: data.primaryRevision,
-            replacements: data.replacements
-          }));
-          return;
-        } catch (jsonErr) {
-          warnLog("Bilingual revision JSON parse failed, falling back to standard revision.", jsonErr);
-          addToast(t('toasts.complex_revision_fallback'), "info");
-        }
-      }
-      let prompt;
-      const outputLang = leveledTextLanguage === 'All Selected Languages' ? 'English' : leveledTextLanguage;
-      const dialectInstruction = outputLang !== 'English' ? `STRICT DIALECT ADHERENCE: If a specific dialect is named (e.g. 'Brazilian Portuguese' vs 'European Portuguese'), explicitly use that region's vocabulary, spelling, and grammar conventions.` : '';
-      if (action === 'simplify') {
-        prompt = `
+               const jsonStr = await callGemini(prompt, true);
+               try {
+                   const data = JSON.parse(cleanJson(jsonStr));
+                   setRevisionData(prev => ({
+                       ...prev,
+                       result: data.primaryRevision,
+                       replacements: data.replacements
+                   }));
+                   return;
+               } catch (jsonErr) {
+                   warnLog("Bilingual revision JSON parse failed, falling back to standard revision.", jsonErr);
+                   addToast(t('toasts.complex_revision_fallback'), "info");
+               }
+          }
+          let prompt;
+          const outputLang = leveledTextLanguage === 'All Selected Languages' ? 'English' : leveledTextLanguage;
+          const dialectInstruction = outputLang !== 'English' ? `STRICT DIALECT ADHERENCE: If a specific dialect is named (e.g. 'Brazilian Portuguese' vs 'European Portuguese'), explicitly use that region's vocabulary, spelling, and grammar conventions.` : '';
+          if (action === 'simplify') {
+              prompt = `
                 Simplify this specific sentence/phrase for a ${gradeLevel} student.
                 Keep the meaning but make it easier to read.
                 Context Topic: ${sourceTopic || "General"}.
@@ -1409,8 +1219,8 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
                 ${dialectInstruction}
                 Return ONLY the simplified text. No quotes or labels.
               `;
-      } else if (action === 'custom') {
-        prompt = `
+          } else if (action === 'custom') {
+              prompt = `
                 Revise the following text based on these instructions: "${customInstruction}",
                 Text to revise: "${originalText}"
                 Context Topic: ${sourceTopic || "General"}.
@@ -1419,8 +1229,8 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
                 ${dialectInstruction}
                 Return ONLY the revised text. No quotes, no conversational filler.
               `;
-      } else {
-        prompt = `
+          } else {
+              prompt = `
                 Explain the meaning of this phrase for a ${gradeLevel} student.
                 Provide a short, clear explanation or definition.
                 Context Topic: ${sourceTopic || "General"}.
@@ -1430,34 +1240,35 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
                 ${dialectInstruction}
                 Return ONLY the explanation.
               `;
+          }
+          const result = await callGemini(prompt);
+          setRevisionData(prev => ({
+              ...prev,
+              result: result
+          }));
+      } catch (err) {
+          warnLog("Unhandled error:", err);
+          setRevisionData(null);
+          addToast(t('toasts.revision_failed'), "error");
+      } finally {
       }
-      const result = await callGemini(prompt);
-      setRevisionData(prev => ({
-        ...prev,
-        result: result
-      }));
-    } catch (err) {
-      warnLog("Unhandled error:", err);
-      setRevisionData(null);
-      addToast(t('toasts.revision_failed'), "error");
-    } finally {}
   };
   const handleWordClick = async (rawWord, e) => {
-    if (interactionMode !== 'define') return;
-    e.stopPropagation();
-    const word = rawWord.replace(/[^a-zA-ZÀ-ÿ0-9-\s]/g, "").trim();
-    if (!word || word.length < 2) return;
-    const x = e.clientX;
-    const y = e.clientY;
-    setDefinitionData({
-      word,
-      text: null,
-      x,
-      y
-    });
-    try {
-      const outputLang = leveledTextLanguage === 'All Selected Languages' ? 'English' : leveledTextLanguage;
-      const prompt = `
+      if (interactionMode !== 'define') return;
+      e.stopPropagation();
+      const word = rawWord.replace(/[^a-zA-ZÀ-ÿ0-9-\s]/g, "").trim();
+      if (!word || word.length < 2) return;
+      const x = e.clientX;
+      const y = e.clientY;
+      setDefinitionData({
+          word,
+          text: null,
+          x,
+          y
+      });
+      try {
+          const outputLang = leveledTextLanguage === 'All Selected Languages' ? 'English' : leveledTextLanguage;
+          const prompt = `
             Define the word "${word}" for a ${gradeLevel} student.
             Context Topic: ${sourceTopic || "General"}.
             Output Language: ${outputLang}.
@@ -1465,131 +1276,132 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
             ${outputLang !== 'English' ? `STRICT DIALECT ADHERENCE: If a specific dialect is named (e.g. 'Brazilian Portuguese'), use that region's conventions.` : ''}
             Return ONLY the definition. Keep it concise (1-2 sentences).
           `;
-      const result = await callGemini(prompt);
-      setDefinitionData(prev => ({
-        ...prev,
-        text: result
-      }));
-    } catch (err) {
-      warnLog("Unhandled error:", err);
-      setDefinitionData(null);
-      addToast(t('toasts.definition_failed'), "error");
-    } finally {}
+          const result = await callGemini(prompt);
+          setDefinitionData(prev => ({
+              ...prev,
+              text: result
+          }));
+      } catch (err) {
+          warnLog("Unhandled error:", err);
+          setDefinitionData(null);
+          addToast(t('toasts.definition_failed'), "error");
+      } finally {
+      }
   };
   const handlePhonicsClick = async (rawWord, e = null) => {
-    const word = rawWord.replace(/[^a-zA-ZÀ-ÿ0-9-\s]/g, "").trim();
-    if (!word) return;
-    if (e) e.stopPropagation();
-    const reqId = ++_phonicsReqId;
-    setPhonicsData({
-      word,
-      data: null,
-      isLoading: true,
-      x: e ? e.clientX : 0,
-      y: e ? e.clientY : 0
-    });
-    try {
-      const prompt = `Analyze the English word: '${word}'. Return ONLY JSON: { "ipa": "International Phonetic Alphabet representation", "phoneticSpelling": "Simple phonetic spelling (e.g. cat -> kat)", "syllables": ["syl", "la", "bles"] }.`;
-      const result = await callGemini(prompt, true);
-      if (reqId !== _phonicsReqId) return;
-      let data;
+      const word = rawWord.replace(/[^a-zA-ZÀ-ÿ0-9-\s]/g, "").trim();
+      if (!word) return;
+      if (e) e.stopPropagation();
+      const reqId = ++_phonicsReqId;
+      setPhonicsData({
+          word,
+          data: null,
+          isLoading: true,
+          x: e ? e.clientX : 0,
+          y: e ? e.clientY : 0
+      });
       try {
-        data = JSON.parse(cleanJson(result));
-      } catch (jsonError) {
-        warnLog("Phonics JSON Parse Error:", jsonError);
-        if (reqId !== _phonicsReqId) return;
-        setPhonicsData(null);
-        addToast(t('toasts.phonics_parse_failed'), "error");
-        return;
-      }
-      setPhonicsData(prev => reqId === _phonicsReqId && prev ? {
-        ...prev,
-        data: data,
-        isLoading: false
-      } : prev);
-      try {
-        const audioUrl = await callTTS(word, selectedVoice);
-        if (reqId !== _phonicsReqId) return;
-        if (audioUrl) {
-          const audio = new Audio(audioUrl);
-          audio.playbackRate = voiceSpeed;
-          await audio.play();
+          const prompt = `Analyze the English word: '${word}'. Return ONLY JSON: { "ipa": "International Phonetic Alphabet representation", "phoneticSpelling": "Simple phonetic spelling (e.g. cat -> kat)", "syllables": ["syl", "la", "bles"] }.`;
+          const result = await callGemini(prompt, true);
           if (reqId !== _phonicsReqId) return;
-          setPhonicsData(prev => reqId === _phonicsReqId && prev ? {
-            ...prev,
-            audioUrl: audioUrl
-          } : prev);
-        }
-      } catch (audioError) {
-        warnLog("Phonics audio error:", audioError);
-        if (reqId === _phonicsReqId) addToast(t('toasts.phonics_audio_failed'), "error");
+          let data;
+          try {
+              data = JSON.parse(cleanJson(result));
+          } catch (jsonError) {
+              warnLog("Phonics JSON Parse Error:", jsonError);
+              if (reqId !== _phonicsReqId) return;
+              setPhonicsData(null);
+              addToast(t('toasts.phonics_parse_failed'), "error");
+              return;
+          }
+          setPhonicsData(prev => (reqId === _phonicsReqId && prev ? {
+              ...prev,
+              data: data,
+              isLoading: false
+          } : prev));
+          try {
+              const audioUrl = await callTTS(word, selectedVoice);
+              if (reqId !== _phonicsReqId) return;
+              if (audioUrl) {
+                  const audio = new Audio(audioUrl);
+                  audio.playbackRate = voiceSpeed;
+                  await audio.play();
+                  if (reqId !== _phonicsReqId) return;
+                  setPhonicsData(prev => (reqId === _phonicsReqId && prev ? {
+                      ...prev,
+                      audioUrl: audioUrl
+                  } : prev));
+              }
+          } catch (audioError) {
+              warnLog("Phonics audio error:", audioError);
+              if (reqId === _phonicsReqId) addToast(t('toasts.phonics_audio_failed'), "error");
+          }
+      } catch (error) {
+          warnLog("Phonics Error:", error);
+          if (reqId !== _phonicsReqId) return;
+          addToast(t('toasts.phonics_analyze_failed'), "error");
+          setPhonicsData(null);
       }
-    } catch (error) {
-      warnLog("Phonics Error:", error);
-      if (reqId !== _phonicsReqId) return;
-      addToast(t('toasts.phonics_analyze_failed'), "error");
-      setPhonicsData(null);
-    }
   };
   const applyTextRevision = () => {
-    if (!revisionData || !revisionData.result || !generatedContent) return;
-    const currentFullText = typeof generatedContent?.data === 'string' ? generatedContent?.data : '';
-    let newFullText = currentFullText;
-    if (revisionData.replacements && Array.isArray(revisionData.replacements)) {
-      let notFoundCount = 0;
-      revisionData.replacements.forEach(rep => {
-        if (newFullText.includes(rep.original)) {
-          newFullText = newFullText.replace(rep.original, rep.new);
-        } else {
-          notFoundCount++;
-        }
-      });
-      if (notFoundCount === revisionData.replacements.length) {
-        addToast(t('toasts.text_not_found'), "error");
-        return;
+      if (!revisionData || !revisionData.result || !generatedContent) return;
+      const currentFullText = typeof generatedContent?.data === 'string' ? generatedContent?.data : '';
+      let newFullText = currentFullText;
+      if (revisionData.replacements && Array.isArray(revisionData.replacements)) {
+          let notFoundCount = 0;
+          revisionData.replacements.forEach(rep => {
+              if (newFullText.includes(rep.original)) {
+                  newFullText = newFullText.replace(rep.original, rep.new);
+              } else {
+                  notFoundCount++;
+              }
+          });
+          if (notFoundCount === revisionData.replacements.length) {
+               addToast(t('toasts.text_not_found'), "error");
+               return;
+          }
+      } else {
+          newFullText = currentFullText.replace(revisionData.original, revisionData.result);
+          if (newFullText === currentFullText) {
+              addToast(t('toasts.text_exact_not_found'), "error");
+              return;
+          }
       }
-    } else {
-      newFullText = currentFullText.replace(revisionData.original, revisionData.result);
-      if (newFullText === currentFullText) {
-        addToast(t('toasts.text_exact_not_found'), "error");
-        return;
-      }
-    }
-    handleSimplifiedTextChange(newFullText);
-    setRevisionData(null);
-    window.getSelection().removeAllRanges();
-    addToast(t('toasts.text_updated'), "success");
+      handleSimplifiedTextChange(newFullText);
+      setRevisionData(null);
+      window.getSelection().removeAllRanges();
+      addToast(t('toasts.text_updated'), "success");
   };
   const closeRevision = () => {
-    setRevisionData(null);
-    setSelectionMenu(null);
-    setIsCustomReviseOpen(false);
-    setCustomReviseInstruction('');
-    window.getSelection().removeAllRanges();
+      setRevisionData(null);
+      setSelectionMenu(null);
+      setIsCustomReviseOpen(false);
+      setCustomReviseInstruction('');
+      window.getSelection().removeAllRanges();
   };
   const closeDefinition = () => setDefinitionData(null);
   const closePhonics = () => {
-    if (phonicsData?.audioUrl) {
-      URL.revokeObjectURL(phonicsData.audioUrl);
-    }
-    setPhonicsData(null);
-    stopPlayback();
+      if (phonicsData?.audioUrl) {
+          URL.revokeObjectURL(phonicsData.audioUrl);
+      }
+      setPhonicsData(null);
+      stopPlayback();
   };
   const handleDefineSelection = async () => {
-    if (!selectionMenu || !selectionMenu.text) return;
-    const word = selectionMenu.text.trim();
-    const x = selectionMenu.x;
-    const y = selectionMenu.y;
-    setDefinitionData({
-      word,
-      text: null,
-      x,
-      y
-    });
-    setSelectionMenu(null);
-    try {
-      const outputLang = leveledTextLanguage === 'All Selected Languages' ? 'English' : leveledTextLanguage;
-      const prompt = `
+      if (!selectionMenu || !selectionMenu.text) return;
+      const word = selectionMenu.text.trim();
+      const x = selectionMenu.x;
+      const y = selectionMenu.y;
+      setDefinitionData({
+          word,
+          text: null,
+          x,
+          y
+      });
+      setSelectionMenu(null);
+      try {
+          const outputLang = leveledTextLanguage === 'All Selected Languages' ? 'English' : leveledTextLanguage;
+          const prompt = `
             Define the word or phrase "${word}" for a ${gradeLevel} student.
             Context Topic: ${sourceTopic || "General"}.
             Output Language: ${outputLang}.
@@ -1597,16 +1409,17 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
             ${outputLang !== 'English' ? `STRICT DIALECT ADHERENCE: If a specific dialect is named (e.g. 'Brazilian Portuguese'), use that region's conventions.` : ''}
             Return ONLY the definition. Keep it concise (1-2 sentences).
           `;
-      const result = await callGemini(prompt);
-      setDefinitionData(prev => ({
-        ...prev,
-        text: result
-      }));
-    } catch (err) {
-      warnLog("Unhandled error:", err);
-      setDefinitionData(null);
-      addToast(t('toasts.definition_failed'), "error");
-    } finally {}
+          const result = await callGemini(prompt);
+          setDefinitionData(prev => ({
+              ...prev,
+              text: result
+          }));
+      } catch (err) {
+          warnLog("Unhandled error:", err);
+          setDefinitionData(null);
+          addToast(t('toasts.definition_failed'), "error");
+      } finally {
+      }
   };
   const stopPlayback = () => {
     // Read refs from window state bag (they're React refs in the main component)
@@ -1618,51 +1431,39 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
     // chain stops at its next iteration check
     if (_playbackRef) _playbackRef.current = -1;
     if (_audioRef && _audioRef.current) {
-      const currentSrc = _audioRef.current.src;
-      _audioRef.current.pause();
-      _audioRef.current.onended = null; // prevent chained playback
-      if (currentSrc && currentSrc.startsWith('blob:') && _blobUrlsRef) {
-        URL.revokeObjectURL(currentSrc);
-        _blobUrlsRef.current.delete(currentSrc);
-      }
-      _audioRef.current = null;
+        const currentSrc = _audioRef.current.src;
+        _audioRef.current.pause();
+        _audioRef.current.onended = null; // prevent chained playback
+        if (currentSrc && currentSrc.startsWith('blob:') && _blobUrlsRef) {
+             URL.revokeObjectURL(currentSrc);
+             _blobUrlsRef.current.delete(currentSrc);
+        }
+        _audioRef.current = null;
     }
     // Stop any Kokoro streaming queue
     if (window._kokoroTTS && window._kokoroTTS.stop) {
-      try {
-        window._kokoroTTS.stop();
-      } catch (e) {}
+        try { window._kokoroTTS.stop(); } catch(e) {}
     }
     // Cancel any browser speechSynthesis
     if (window.speechSynthesis) window.speechSynthesis.cancel();
     // Clear any pending playback timeout
     var _timeoutRef = _state.playbackTimeoutRef || null;
     if (_timeoutRef && _timeoutRef.current) {
-      clearTimeout(_timeoutRef.current);
-      _timeoutRef.current = null;
+        clearTimeout(_timeoutRef.current);
+        _timeoutRef.current = null;
     }
-    if (typeof setIsPlaying === 'function') setIsPlaying(false);else if (_state.setIsPlaying) _state.setIsPlaying(false);
-    if (typeof setIsPaused === 'function') setIsPaused(false);else if (_state.setIsPaused) _state.setIsPaused(false);
+    if (typeof setIsPlaying === 'function') setIsPlaying(false);
+    else if (_state.setIsPlaying) _state.setIsPlaying(false);
+    if (typeof setIsPaused === 'function') setIsPaused(false);
+    else if (_state.setIsPaused) _state.setIsPaused(false);
     if (typeof setPlayingContentId === 'function') setPlayingContentId(null);
-    if (typeof setPlaybackState === 'function') setPlaybackState({
-      sentences: [],
-      currentIdx: -1
-    });
+    if (typeof setPlaybackState === 'function') setPlaybackState({ sentences: [], currentIdx: -1 });
     if (isPlayingRef) isPlayingRef.current = false;
     if (isSystemAudioActiveRef) isSystemAudioActiveRef.current = false;
   };
-  var _wrap = function (fn) {
-    return function () {
-      _bindState();
-      return fn.apply(this, arguments);
-    };
-  };
-  var _wrapAsync = function (fn) {
-    return async function () {
-      _bindState();
-      return fn.apply(this, arguments);
-    };
-  };
+
+  var _wrap = function(fn) { return function() { _bindState(); return fn.apply(this, arguments); }; };
+  var _wrapAsync = function(fn) { return async function() { _bindState(); return fn.apply(this, arguments); }; };
   return {
     handleGenerateSource: _wrapAsync(handleGenerateSource),
     addLanguage: _wrap(addLanguage),
@@ -1686,9 +1487,14 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
     closeDefinition: _wrap(closeDefinition),
     closePhonics: _wrap(closePhonics),
     handleDefineSelection: _wrapAsync(handleDefineSelection),
-    stopPlayback: _wrap(stopPlayback)
+    stopPlayback: _wrap(stopPlayback),
   };
 }; // end createContentEngine
+
+window.AlloModules = window.AlloModules || {};
+window.AlloModules.createContentEngine = createContentEngine;
+window.AlloModules.ContentEngineModule = true;
+console.log('[ContentEngineModule] Content engine factory registered');
 
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.createContentEngine = createContentEngine;

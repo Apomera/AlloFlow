@@ -550,12 +550,24 @@ var createContentEngine = function(deps) {
                 //   1. well-formed links  [⁽N⁾](url)  with a closing ).
                 //   2. truncated links    [⁽N⁾](url-cut-off  at end of line (no closing ).
                 //   3. bare citations     ⁽N⁾  that aren't part of a link.
+                //
+                // ALSO strip body citations whose target chunk will be rejected by
+                // filterSources (YouTube music, Spotify, social, shopping). Previously these
+                // orphaned the body citation: bibliography dropped the YouTube entry but the
+                // inline ⁽N⁾ stayed, leaving a broken reference. Compute the rejected index
+                // set here so _keepInRange can match both out-of-range and rejected cases.
                 var _maxIdx = allGroundingChunks.length;
+                var _rejectedIdx = new Set();
+                var _kept = filterSources(allGroundingChunks);
+                var _keptSet = new Set(_kept);
+                allGroundingChunks.forEach(function(ch, i) { if (!_keptSet.has(ch)) _rejectedIdx.add(i + 1); });
                 var _superMap = {'\u2070':0,'\u00b9':1,'\u00b2':2,'\u00b3':3,'\u2074':4,'\u2075':5,'\u2076':6,'\u2077':7,'\u2078':8,'\u2079':9};
                 var _decodeSup = function(s) { var n = 0; for (var i = 0; i < s.length; i++) { n = n * 10 + (_superMap[s[i]] || 0); } return n; };
                 var _keepInRange = function(match, digits) {
                     var n = _decodeSup(digits);
-                    return (n >= 1 && n <= _maxIdx) ? match : '';
+                    if (n < 1 || n > _maxIdx) return '';
+                    if (_rejectedIdx.has(n)) return ''; // source will be filtered from bibliography — don't leave a dangling inline cit
+                    return match;
                 };
                 // Pass 1: well-formed [⁽N⁾](url)
                 fullDocument = fullDocument.replace(
