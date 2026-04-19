@@ -19862,7 +19862,6 @@ Return ONLY valid JSON:
                   if (fuzzyCount > 0) parts.push(fuzzyCount + ' reinserted (fuzzy)');
                   if (uCount > 0) parts.push(uCount + ' in recovery appendix');
                   if (dedupRemoved > 0) parts.push(dedupRemoved + ' duplicate' + (dedupRemoved === 1 ? '' : 's') + ' removed');
-                  if (dedupFlagged > 0) parts.push(dedupFlagged + ' flagged for review');
                   const detail = parts.length > 0 ? ' · ' + parts.join(' · ') : '';
                   const msg = 'Fidelity: ' + beforeFidelity + '% → ' + afterFidelity + '%' + detail;
                   addToast(msg, afterFidelity >= 99.5 ? 'success' : 'info');

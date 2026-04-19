@@ -9945,7 +9945,6 @@ tr { page-break-inside: avoid; }
       return (el.textContent || '').trim().length >= 40;
     });
     const autoRemoved = [];
-    const highlighted = [];
     const blocksToRemove = new Set();
 
     // ── Source index from pdf.js extraction — the authoritative ground truth. ──
@@ -9953,16 +9952,14 @@ tr { page-break-inside: avoid; }
     // auto-remove and highlight decision below. A paragraph appearing 2x in remediated is
     // only a "real" duplicate if the source has it FEWER than 2 times.
     const sourceNormCount = new Map();
-    const sourceSentenceSet = []; // [{ normalized, words: Set<string> }] for Tier 3 matching
     if (sourceText && typeof sourceText === 'string' && sourceText.length > 20) {
-      // Sentence-level index (for shorter matches + Tier 3 near-duplicate anchoring).
+      // Sentence-level index for shorter matches.
       splitSentences(sourceText).forEach(s => {
         const trimmed = s.trim();
         if (trimmed.length < 20) return;
         const norm = normalizeText(trimmed);
         if (norm.length < 20) return;
         sourceNormCount.set(norm, (sourceNormCount.get(norm) || 0) + 1);
-        sourceSentenceSet.push({ normalized: norm, words: new Set(wordArr(trimmed)) });
       });
       // Paragraph-level index (blank-line separated) for whole-block comparison.
       sourceText.split(/\n\s*\n+/).forEach(p => {
@@ -10006,29 +10003,26 @@ tr { page-break-inside: avoid; }
     // ── Tier 2: truncation fragments — source-anchored auto-remove. ──
     // If the truncation fragment also exists in the source (rare but possible for a
     // legitimate truncated caption or citation), keep it. Otherwise it's a chunk-boundary
-    // stutter and safe to remove.
+    // stutter and safe to remove. Long truncations (≥ 300 chars) are left alone entirely
+    // rather than decorated — the user can manually edit if they notice.
     blocks.forEach(el => {
       if (blocksToRemove.has(el)) return;
       const txt = (el.textContent || '').trim();
       if (!isTruncationFragment(txt)) return;
       const norm = normalizeText(txt);
       if (srcCountOf(norm) > 0) return; // source vouches for the fragment
-      if (txt.length >= 300) {
-        highlighted.push({ el, reason: 'truncation-fragment-long', text: txt.slice(0, 80) + '…' });
-        return;
-      }
+      if (txt.length >= 300) return;    // too long to auto-remove; leave as-is
       blocksToRemove.add(el);
       autoRemoved.push({ text: txt.slice(0, 100) + (txt.length > 100 ? '…' : ''), reason: 'truncation-fragment' });
     });
 
     // Safety cap: if we're about to remove more than 30% of blocks, abort auto-removal entirely
-    // (something is wrong with the detection or the doc is highly repetitive by design).
+    // (something is wrong with the detection or the doc is highly repetitive by design). We
+    // used to fall back to highlighting the would-have-been-removed blocks, but the visual
+    // decoration (yellow background + ::before banner) disrupted preview formatting, so we now
+    // just leave the doc untouched when the cap trips.
     if (blocks.length > 0 && blocksToRemove.size > Math.max(3, blocks.length * 0.3)) {
-      warnLog('[Dedup] Safety cap hit: would remove ' + blocksToRemove.size + ' of ' + blocks.length + ' blocks — aborting auto-removal and falling back to highlight-only.');
-      blocksToRemove.forEach(el => {
-        const txt = (el.textContent || '').trim();
-        highlighted.push({ el, reason: 'safety-cap-skip', text: txt.slice(0, 80) + '…' });
-      });
+      warnLog('[Dedup] Safety cap hit: would remove ' + blocksToRemove.size + ' of ' + blocks.length + ' blocks — aborting auto-removal.');
       blocksToRemove.clear();
       autoRemoved.length = 0;
     }
@@ -10036,73 +10030,15 @@ tr { page-break-inside: avoid; }
     // Apply Tier 1+2 removals
     blocksToRemove.forEach(el => { if (el.parentNode) el.parentNode.removeChild(el); });
 
-    // ── Tier 3: source-anchored near-duplicate highlight. ──
-    // Only flags a remediated block as suspicious if it best-matches the SAME source
-    // sentence as another remediated block AND the two remediated blocks are themselves
-    // substantially similar. That means the source has ONE paragraph on a topic but the
-    // remediation produced TWO similar paragraphs — a likely AI stutter. Two adjacent
-    // remediated paragraphs that happen to share domain vocabulary are NOT flagged, because
-    // they map to DIFFERENT source sentences.
-    if (sourceSentenceSet.length > 0) {
-      const remaining = blocks.filter(el => !blocksToRemove.has(el))
-        .map(el => ({ el, words: new Set(wordArr(el.textContent || '')) }))
-        .filter(b => b.words.size >= 8);
-      // For each remaining block, find the best-matching source sentence (Jaccard index).
-      const bestMatch = remaining.map(b => {
-        let bestIdx = -1, bestScore = 0;
-        for (let si = 0; si < sourceSentenceSet.length; si++) {
-          const s = sourceSentenceSet[si];
-          if (s.words.size < 8) continue;
-          let common = 0;
-          s.words.forEach(w => { if (b.words.has(w)) common++; });
-          const union = s.words.size + b.words.size - common;
-          const jaccard = union > 0 ? common / union : 0;
-          if (jaccard > bestScore) { bestScore = jaccard; bestIdx = si; }
-        }
-        return bestScore >= 0.5 ? bestIdx : -1;
-      });
-      // Two remediated blocks pointing at the same source sentence + similar to each other
-      // = source-anchored near-duplicate.
-      const seenBestIdx = new Map();
-      remaining.forEach((b, i) => {
-        const bi = bestMatch[i];
-        if (bi === -1) return;
-        if (seenBestIdx.has(bi)) {
-          const first = seenBestIdx.get(bi);
-          let common = 0;
-          first.words.forEach(w => { if (b.words.has(w)) common++; });
-          const union = first.words.size + b.words.size - common;
-          const pairJaccard = union > 0 ? common / union : 0;
-          if (pairJaccard >= 0.6) {
-            highlighted.push({ el: b.el, reason: 'source-anchored-near-duplicate', text: (b.el.textContent || '').trim().slice(0, 80) + '…' });
-          }
-        } else {
-          seenBestIdx.set(bi, b);
-        }
-      });
-    }
-
-    // Apply highlight class + one-time CSS rule if any flags
-    if (highlighted.length > 0) {
-      const head = doc.head;
-      if (head && !head.querySelector('style[data-allo-duplicate-style]')) {
-        const style = doc.createElement('style');
-        style.setAttribute('data-allo-duplicate-style', 'true');
-        style.textContent = '.allo-duplicate-suspect { background: #fef3c7; border-bottom: 2px solid #f59e0b; padding: 0 2px; } .allo-duplicate-suspect::before { content: "⚠ possible duplicate — review"; display: block; font-size: 0.7em; color: #92400e; font-weight: 700; margin-bottom: 0.25em; }';
-        head.appendChild(style);
-      }
-      highlighted.forEach(h => {
-        if (h.el && !h.el.classList.contains('allo-duplicate-suspect')) {
-          h.el.classList.add('allo-duplicate-suspect');
-          h.el.setAttribute('data-allo-duplicate-reason', h.reason);
-        }
-      });
-    }
+    // Tier 3 (source-anchored near-duplicate highlighting) was removed on 2026-04-18. Its
+    // decorative CSS (yellow background + "⚠ possible duplicate — review" ::before banner)
+    // was disruptive to preview formatting. If near-duplicate detection comes back, it should
+    // surface via a sidebar list or structured report rather than inline visual decoration.
 
     let outHtml;
     try { outHtml = doctypePrefix + (doc.documentElement ? doc.documentElement.outerHTML : html); }
     catch (e) { outHtml = html; }
-    return { html: outHtml, autoRemoved, highlighted: highlighted.map(h => ({ reason: h.reason, text: h.text })) };
+    return { html: outHtml, autoRemoved, highlighted: [] };
   };
 
   // Side-effecting wrapper — reads current HTML from the preview iframe (authoritative, since
