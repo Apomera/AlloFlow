@@ -1968,6 +1968,201 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             });
           }
 
+          // ═══ POLLINATION DIAGRAM (bee → ecosystem → human food chain) ═══
+          function drawPollination() {
+            // Fresh green meadow gradient
+            var poGrad = c.createLinearGradient(0, 0, 0, H);
+            poGrad.addColorStop(0, '#ecfccb'); poGrad.addColorStop(1, '#bbf7d0');
+            c.fillStyle = poGrad; c.fillRect(0, 0, W, H);
+
+            // Title
+            c.fillStyle = '#14532d'; c.textAlign = 'center';
+            c.font = 'bold 18px Georgia, serif';
+            c.fillText('🌍 Pollination · Why Bees Feed the World', W / 2, 28);
+            c.font = 'italic 11px Georgia, serif'; c.fillStyle = '#15803d';
+            c.fillText('One honeybee visits up to 100 flowers per trip · each trip moves pollen · each transfer = fruit or seed', W / 2, 46);
+
+            // ═══ LEFT: flower + pollen pickup ═══
+            var col1X = W * 0.15;
+            var flY = H * 0.35;
+            // Flower stem
+            c.strokeStyle = '#166534'; c.lineWidth = 3;
+            c.beginPath(); c.moveTo(col1X, H * 0.6); c.lineTo(col1X + Math.sin(t2 * 0.01) * 4, flY + 30); c.stroke();
+            // Leaf
+            c.fillStyle = '#22c55e';
+            c.beginPath(); c.ellipse(col1X - 8, flY + 40, 10, 4, -0.5, 0, 6.28); c.fill();
+            // Petals
+            c.save(); c.shadowColor = '#f472b6'; c.shadowBlur = 10;
+            for (var p1 = 0; p1 < 6; p1++) {
+              var p1A = p1 * 1.047 + t2 * 0.002;
+              c.fillStyle = '#f472b6';
+              c.beginPath();
+              c.ellipse(col1X + Math.cos(p1A) * 22, flY + Math.sin(p1A) * 22, 20, 10, p1A, 0, 6.28);
+              c.fill();
+            }
+            c.restore();
+            // Center with visible pollen grains
+            c.fillStyle = '#fbbf24';
+            c.beginPath(); c.arc(col1X, flY, 10, 0, 6.28); c.fill();
+            // Pollen anthers (stamens)
+            c.fillStyle = '#facc15';
+            for (var st1 = 0; st1 < 5; st1++) {
+              var stA = st1 * 1.256;
+              c.beginPath(); c.arc(col1X + Math.cos(stA) * 4, flY + Math.sin(stA) * 4, 1.8, 0, 6.28); c.fill();
+            }
+            // Label
+            c.font = 'bold 11px system-ui'; c.fillStyle = '#9d174d'; c.textAlign = 'center';
+            c.fillText('① FLOWER', col1X, flY + 70);
+            c.font = '9px system-ui'; c.fillStyle = '#831843';
+            c.fillText('offers nectar + pollen', col1X, flY + 84);
+
+            // ═══ CENTER: bee carrying pollen between flower and crop ═══
+            var beePhase = (Math.sin(t2 * 0.02) + 1) / 2; // 0..1
+            var col2X = W / 2;
+            var beeX = col1X + (W * 0.85 - col1X) * beePhase;
+            var beeY = flY - 20 + Math.sin(t2 * 0.06) * 8;
+            var beeAng = beePhase > 0.5 ? 0.1 : -0.1;
+
+            // Draw bee
+            c.save(); c.translate(beeX, beeY); c.rotate(beeAng);
+            c.shadowColor = '#fbbf24'; c.shadowBlur = 6;
+            c.fillStyle = '#fbbf24';
+            c.beginPath(); c.ellipse(0, 0, 12, 7, 0, 0, 6.28); c.fill();
+            c.shadowBlur = 0;
+            c.fillStyle = '#292524';
+            c.fillRect(-2.5, -5, 2.5, 10);
+            c.fillRect(2, -4, 2, 8);
+            // Head
+            c.fillStyle = '#292524';
+            c.beginPath(); c.arc(-14, 0, 5, 0, 6.28); c.fill();
+            c.fillStyle = '#1e293b';
+            c.beginPath(); c.arc(-16, -1, 3, 0, 6.28); c.fill();
+            // Wings (fast)
+            var bWB = Math.sin(t2 * 0.7) * 3;
+            c.globalAlpha = 0.4; c.fillStyle = '#e0f2fe';
+            c.beginPath(); c.ellipse(-4, -7 + bWB, 14, 4, -0.3, 0, 6.28); c.fill();
+            c.beginPath(); c.ellipse(0, -8 - bWB, 12, 3.5, 0.3, 0, 6.28); c.fill();
+            c.globalAlpha = 1;
+            // Big glowing pollen ball on back leg
+            c.save(); c.shadowColor = '#facc15'; c.shadowBlur = 6;
+            c.fillStyle = '#facc15';
+            c.beginPath(); c.ellipse(4, 5, 3.5, 5, 0.4, 0, 6.28); c.fill();
+            c.restore();
+            c.restore();
+
+            // Dotted trail behind bee
+            c.fillStyle = 'rgba(250,204,21,0.35)';
+            for (var tr = 1; tr <= 8; tr++) {
+              var trT = Math.max(0, beePhase - tr * 0.04);
+              var trX = col1X + (W * 0.85 - col1X) * trT;
+              var trY = flY - 20 + Math.sin(t2 * 0.06 - tr * 0.5) * 8;
+              c.beginPath(); c.arc(trX, trY, 2, 0, 6.28); c.fill();
+            }
+
+            // Bee label
+            c.font = 'bold 11px system-ui'; c.fillStyle = '#78350f'; c.textAlign = 'center';
+            c.fillText('② POLLINATOR', col2X, flY - 55);
+            c.font = '9px system-ui'; c.fillStyle = '#a16207';
+            c.fillText('carries pollen between flowers', col2X, flY - 42);
+
+            // ═══ RIGHT: fruit/crop (apple tree + dangling fruits) ═══
+            var col3X = W * 0.85;
+            c.fillStyle = '#4a2f1a';
+            c.fillRect(col3X - 3, flY - 15, 6, 60);
+            // Apple canopy
+            c.save(); c.shadowColor = '#166534'; c.shadowBlur = 8;
+            c.fillStyle = '#22c55e';
+            c.beginPath(); c.arc(col3X, flY - 20, 35, 0, 6.28); c.fill();
+            c.restore();
+            // Apples
+            var apples = [[0, -4], [-16, 0], [15, -2], [-8, -18], [10, -15], [-22, -10], [18, -22]];
+            apples.forEach(function(ap) {
+              c.fillStyle = '#dc2626';
+              c.beginPath(); c.arc(col3X + ap[0], flY - 20 + ap[1], 4, 0, 6.28); c.fill();
+              c.fillStyle = 'rgba(255,255,255,0.4)';
+              c.beginPath(); c.arc(col3X + ap[0] - 1.2, flY - 20 + ap[1] - 1.2, 1.2, 0, 6.28); c.fill();
+              // tiny stem
+              c.strokeStyle = '#166534'; c.lineWidth = 0.8;
+              c.beginPath(); c.moveTo(col3X + ap[0], flY - 20 + ap[1] - 3); c.lineTo(col3X + ap[0] + 1, flY - 20 + ap[1] - 5); c.stroke();
+            });
+            // Label
+            c.font = 'bold 11px system-ui'; c.fillStyle = '#7f1d1d'; c.textAlign = 'center';
+            c.fillText('③ FOOD CROP', col3X, flY + 70);
+            c.font = '9px system-ui'; c.fillStyle = '#991b1b';
+            c.fillText('fruit forms only after pollination', col3X, flY + 84);
+
+            // ═══ Flow arrows between stages ═══
+            c.strokeStyle = 'rgba(22,83,45,0.5)'; c.lineWidth = 1.5;
+            c.setLineDash([4, 4]);
+            c.beginPath(); c.moveTo(col1X + 40, flY); c.lineTo(col2X - 40, flY);
+            c.moveTo(col2X + 40, flY); c.lineTo(col3X - 45, flY);
+            c.stroke();
+            c.setLineDash([]);
+
+            // ═══ BOTTOM: crop dependency chart ═══
+            var chY = H * 0.55;
+            c.font = 'bold 13px Georgia, serif'; c.textAlign = 'center'; c.fillStyle = '#14532d';
+            c.fillText('CROPS THAT NEED HONEYBEE POLLINATION', W / 2, chY);
+
+            // Dependency table — emoji + name + % dependency bar
+            var crops = [
+              { icon: '🌰', name: 'Almonds', pct: 100, col: '#fde68a' },
+              { icon: '🍎', name: 'Apples', pct: 90, col: '#fecaca' },
+              { icon: '🫐', name: 'Blueberries', pct: 90, col: '#c7d2fe' },
+              { icon: '🎃', name: 'Pumpkin/Squash', pct: 90, col: '#fdba74' },
+              { icon: '🍒', name: 'Cherries', pct: 90, col: '#fca5a5' },
+              { icon: '🥑', name: 'Avocados', pct: 85, col: '#bef264' },
+              { icon: '🍓', name: 'Strawberries', pct: 80, col: '#fca5a5' },
+              { icon: '🍈', name: 'Melons', pct: 90, col: '#fef08a' },
+              { icon: '☕', name: 'Coffee', pct: 40, col: '#d6d3d1' }
+            ];
+            var rowsPerCol = 3;
+            var cCol = 3;
+            var cW = (W - 40) / cCol;
+            crops.forEach(function(cp, ci) {
+              var cc = ci % cCol;
+              var cr = Math.floor(ci / cCol);
+              var cX = 20 + cc * cW;
+              var cY = chY + 20 + cr * 32;
+              // Background bar
+              c.fillStyle = 'rgba(255,255,255,0.7)';
+              c.beginPath(); if (c.roundRect) c.roundRect(cX, cY, cW - 10, 26, 5); else c.rect(cX, cY, cW - 10, 26); c.fill();
+              c.strokeStyle = '#166534'; c.lineWidth = 1;
+              c.beginPath(); if (c.roundRect) c.roundRect(cX, cY, cW - 10, 26, 5); else c.rect(cX, cY, cW - 10, 26); c.stroke();
+              // Dependency fill bar
+              c.fillStyle = cp.col;
+              c.fillRect(cX + 1, cY + 1, (cW - 12) * (cp.pct / 100), 24);
+              // Icon + label
+              c.font = '16px system-ui'; c.textAlign = 'left'; c.fillStyle = '#14532d';
+              c.fillText(cp.icon, cX + 6, cY + 18);
+              c.font = 'bold 10px system-ui'; c.fillStyle = '#14532d';
+              c.fillText(cp.name, cX + 28, cY + 13);
+              c.font = '9px system-ui'; c.fillStyle = '#166534';
+              c.fillText(cp.pct + '% bee-dependent', cX + 28, cY + 23);
+              // Right-edge percentage
+              c.font = 'bold 11px monospace'; c.textAlign = 'right'; c.fillStyle = '#14532d';
+              c.fillText(cp.pct + '%', cX + cW - 18, cY + 17);
+            });
+            rowsPerCol = rowsPerCol; // avoid unused warning
+
+            // Bottom economic + ecosystem impact strip
+            var stripY = H - 52;
+            c.fillStyle = 'rgba(20,83,45,0.92)';
+            c.fillRect(0, stripY, W, 52);
+            c.font = 'bold 11px system-ui'; c.textAlign = 'center'; c.fillStyle = '#bbf7d0';
+            c.fillText('$15 BILLION USD/year · 80+ US crops · 1/3 of human food supply', W / 2, stripY + 20);
+            c.font = 'italic 10px Georgia, serif'; c.fillStyle = '#86efac';
+            var poFacts = [
+              'California almonds alone need 1.6 MILLION commercial hives shipped in each February.',
+              '90% of wild plants depend on animal pollinators — bees do most of that work.',
+              'No bees = no apples, no almonds, no blueberries, no coffee, no avocados, no cotton.',
+              'Crops pollinated by bees produce seeds & fruit. Crops fertilized by wind (corn, wheat) don\'t.',
+              'Planting ONE native wildflower patch feeds thousands of bees across their life cycles.'
+            ];
+            var poIdx = Math.floor(t2 / 420) % poFacts.length;
+            c.fillText('💡 ' + poFacts[poIdx], W / 2, stripY + 38);
+          }
+
           // ═══ THREATS & CCD DIAGRAM (what's killing honeybees + what helps) ═══
           function drawThreats() {
             // Ominous dark red → orange gradient
@@ -3738,6 +3933,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               }
               if (_bv === 'threats') {
                 drawThreats();
+                _animId.current = requestAnimationFrame(frame);
+                return;
+              }
+              if (_bv === 'pollination') {
+                drawPollination();
                 _animId.current = requestAnimationFrame(frame);
                 return;
               }
@@ -6600,7 +6800,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 { id: 'thermo', icon: '🌡️', label: 'Thermoreg', desc: 'Summer cooling + winter clustering (Shift+7)' },
                 { id: 'castes', icon: '👑', label: 'Castes', desc: 'Queen, worker, drone (Shift+8)' },
                 { id: 'pheromones', icon: '🧪', label: 'Pheromones', desc: 'The chemical language of the hive (Shift+9)' },
-                { id: 'threats', icon: '🚨', label: 'Threats', desc: 'Varroa, pesticides, habitat loss, CCD (Shift+0)' }
+                { id: 'threats', icon: '🚨', label: 'Threats', desc: 'Varroa, pesticides, habitat loss, CCD (Shift+0)' },
+                { id: 'pollination', icon: '🌍', label: 'Pollination', desc: 'Why bees feed the world — $15B/year, 1/3 of food supply' }
               ].map(function(v, vi) {
                 var active = beeView === v.id;
                 return h('button', { key: v.id, role: 'tab', 'aria-selected': active ? 'true' : 'false',
