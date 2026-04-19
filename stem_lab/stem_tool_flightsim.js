@@ -927,6 +927,73 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                 gfx.fillStyle = 'rgba(80,50,30,0.9)';
                 gfx.fillRect(sbX - sbS * 0.8, y + sbS * 0.1, sbS * 1.6, sbS * 0.3);
               }
+
+              // Offshore oil platforms (deep water, rare)
+              if (!isCoast && depth > 0.3 && alt < 10000 && terrainHash(shipSeed, 17) > 0.93) {
+                var opX = terrainHash(shipSeed, 18) * W;
+                var opS = Math.max(2, 3 + depth * 3);
+                // Platform deck
+                gfx.fillStyle = 'rgba(255,180,60,0.85)';
+                gfx.fillRect(opX - opS, y - opS * 0.3, opS * 2, opS * 0.3);
+                // Derrick tower
+                gfx.strokeStyle = 'rgba(200,200,210,0.8)';
+                gfx.lineWidth = 0.6;
+                gfx.beginPath();
+                gfx.moveTo(opX - opS * 0.5, y - opS * 0.3);
+                gfx.lineTo(opX, y - opS * 1.5);
+                gfx.moveTo(opX + opS * 0.5, y - opS * 0.3);
+                gfx.lineTo(opX, y - opS * 1.5);
+                gfx.stroke();
+                // Gas flare (orange flicker)
+                var flickerA = 0.6 + Math.sin(time * 12) * 0.3;
+                gfx.fillStyle = 'rgba(255,120,30,' + flickerA + ')';
+                gfx.beginPath();
+                gfx.arc(opX + opS * 0.9, y - opS * 0.9, opS * 0.25, 0, Math.PI * 2);
+                gfx.fill();
+                // Support legs into water
+                gfx.strokeStyle = 'rgba(100,100,110,0.6)';
+                gfx.lineWidth = 0.5;
+                for (var ol = 0; ol < 3; ol++) {
+                  gfx.beginPath();
+                  gfx.moveTo(opX - opS * 0.7 + ol * opS * 0.7, y);
+                  gfx.lineTo(opX - opS * 0.7 + ol * opS * 0.7, y + opS * 0.4);
+                  gfx.stroke();
+                }
+              }
+            }
+
+            // Lighthouses on coastlines (rotating beam)
+            if (isCoast && depth > 0.25 && alt < 8000) {
+              var lhSeed = Math.floor(scanLat * 8) * 19 + Math.floor(scanLon * 8);
+              if (terrainHash(lhSeed, 23) > 0.8) {
+                var lhX = terrainHash(lhSeed, 24) * W;
+                var lhS = Math.max(1.5, 2 + depth * 2);
+                // Tower (red and white bands)
+                gfx.fillStyle = '#ffffff';
+                gfx.fillRect(lhX - lhS * 0.3, y - lhS * 2.5, lhS * 0.6, lhS * 2.5);
+                gfx.fillStyle = '#cc2020';
+                for (var bd = 0; bd < 3; bd++) {
+                  gfx.fillRect(lhX - lhS * 0.3, y - lhS * 2.5 + bd * lhS * 0.8 + lhS * 0.3, lhS * 0.6, lhS * 0.3);
+                }
+                // Lantern room
+                gfx.fillStyle = '#444';
+                gfx.fillRect(lhX - lhS * 0.35, y - lhS * 2.8, lhS * 0.7, lhS * 0.3);
+                // Rotating beam
+                var beamAngle = time * 0.8 + lhSeed;
+                var beamLen = lhS * 4;
+                gfx.fillStyle = 'rgba(255,250,180,' + (0.25 * depth) + ')';
+                gfx.beginPath();
+                gfx.moveTo(lhX, y - lhS * 2.65);
+                gfx.lineTo(lhX + Math.cos(beamAngle) * beamLen, y - lhS * 2.65 - Math.abs(Math.sin(beamAngle)) * beamLen * 0.2);
+                gfx.lineTo(lhX + Math.cos(beamAngle + 0.3) * beamLen, y - lhS * 2.65 - Math.abs(Math.sin(beamAngle + 0.3)) * beamLen * 0.2);
+                gfx.closePath();
+                gfx.fill();
+                // Light bulb glow
+                gfx.fillStyle = 'rgba(255,240,120,' + (0.8 + Math.sin(time * 3) * 0.15) + ')';
+                gfx.beginPath();
+                gfx.arc(lhX, y - lhS * 2.65, lhS * 0.2, 0, Math.PI * 2);
+                gfx.fill();
+              }
             }
           } else {
             var green = Math.max(40, Math.min(180, 100 - elev / 60 + depth * 40));
@@ -1025,6 +1092,110 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                   gfx.beginPath(); gfx.moveTo(fdx, y); gfx.lineTo(fdx + 2, y + rowH * 0.75); gfx.stroke();
                 }
               }
+            }
+
+            // Small rural villages/hamlets (away from cities, sparse cluster of ~5-8 buildings + church)
+            var villageSeed = Math.floor(scanLat * 7) * 23 + Math.floor(scanLon * 7);
+            var isVillage = !isDesert && !isTundra && elev < 3500 && depth > 0.3 && alt < 7000 &&
+                           terrainHash(villageSeed, 3) > 0.86;
+            if (isVillage) {
+              var vX = terrainHash(villageSeed, 4) * W * 0.7 + W * 0.15;
+              var vW = 25 + terrainHash(villageSeed, 5) * 30;
+              // Church steeple (tallest in center)
+              gfx.fillStyle = 'rgba(230,220,200,' + (0.55 + depth * 0.3) + ')';
+              gfx.fillRect(vX - 1.5, y - elevBump - 6, 3, 6);
+              gfx.beginPath();
+              gfx.moveTo(vX - 2, y - elevBump - 6);
+              gfx.lineTo(vX, y - elevBump - 10);
+              gfx.lineTo(vX + 2, y - elevBump - 6);
+              gfx.closePath();
+              gfx.fill();
+              // Cross
+              gfx.strokeStyle = 'rgba(60,50,40,' + (0.7 * depth) + ')';
+              gfx.lineWidth = 0.4;
+              gfx.beginPath();
+              gfx.moveTo(vX, y - elevBump - 10);
+              gfx.lineTo(vX, y - elevBump - 12);
+              gfx.moveTo(vX - 1, y - elevBump - 11);
+              gfx.lineTo(vX + 1, y - elevBump - 11);
+              gfx.stroke();
+              // Small houses around church
+              var vHouses = 6;
+              for (var vh = 0; vh < vHouses; vh++) {
+                var vhx = vX - vW / 2 + (vh / (vHouses - 1)) * vW + terrainHash(vh, villageSeed) * 3 - 1.5;
+                var vhh = 2 + terrainHash(vh + 2, villageSeed) * 2;
+                // Roof color varies
+                var rHue = terrainHash(vh, villageSeed + 1);
+                gfx.fillStyle = rHue < 0.5 ? 'rgba(160,60,40,' + (0.6 * depth) + ')' : 'rgba(120,100,80,' + (0.6 * depth) + ')';
+                gfx.fillRect(vhx - 1.5, y - elevBump - vhh, 3, vhh);
+                // Roof triangle
+                gfx.beginPath();
+                gfx.moveTo(vhx - 2, y - elevBump - vhh);
+                gfx.lineTo(vhx, y - elevBump - vhh - 1.2);
+                gfx.lineTo(vhx + 2, y - elevBump - vhh);
+                gfx.closePath();
+                gfx.fill();
+              }
+              // Dirt road leading out
+              gfx.strokeStyle = 'rgba(130,100,70,' + (0.35 * depth) + ')';
+              gfx.lineWidth = 0.8;
+              gfx.beginPath();
+              gfx.moveTo(vX, y - elevBump);
+              gfx.lineTo(vX + (terrainHash(villageSeed, 6) - 0.5) * 40, y + rowH * 0.9);
+              gfx.stroke();
+            }
+
+            // Wind farms (on farmland/plains, not forest/desert)
+            if (isFarmland && depth > 0.4 && alt < 6000 &&
+                terrainHash(Math.floor(scanLat * 9), Math.floor(scanLon * 9) + 5) > 0.75) {
+              var turbineCount = 3 + Math.floor(depth * 5);
+              var spin = time * 1.5;
+              for (var tb = 0; tb < turbineCount; tb++) {
+                var tbX = (tb + 0.5) * (W / turbineCount) + terrainHash(tb, scanLat) * 10 - 5;
+                var tbTop = y - elevBump - 4 - depth * 5;
+                // Tower
+                gfx.strokeStyle = 'rgba(240,240,245,' + (0.6 * depth) + ')';
+                gfx.lineWidth = 0.8;
+                gfx.beginPath();
+                gfx.moveTo(tbX, y - elevBump); gfx.lineTo(tbX, tbTop);
+                gfx.stroke();
+                // Rotating blades (3 blades, 120° apart)
+                var bladeLen = 3 + depth * 3;
+                var baseAngle = spin + tb * 0.7;
+                gfx.strokeStyle = 'rgba(255,255,255,' + (0.7 * depth) + ')';
+                gfx.lineWidth = 0.6;
+                for (var bl = 0; bl < 3; bl++) {
+                  var ba = baseAngle + bl * Math.PI * 2 / 3;
+                  gfx.beginPath();
+                  gfx.moveTo(tbX, tbTop);
+                  gfx.lineTo(tbX + Math.cos(ba) * bladeLen, tbTop + Math.sin(ba) * bladeLen * 0.5);
+                  gfx.stroke();
+                }
+              }
+            }
+
+            // Solar farm (sun belt, farmland-adjacent)
+            if (!isDensedForest && !isTundra && elev < 2000 && depth > 0.45 && alt < 5000 &&
+                Math.abs(scanLat) < 45 &&
+                terrainHash(Math.floor(scanLat * 11), Math.floor(scanLon * 11) + 3) > 0.88) {
+              var sfX = terrainHash(scanLat * 31, scanLon * 31) * W * 0.7;
+              var sfW = 20 + depth * 30;
+              // Dark blue panel array
+              gfx.fillStyle = 'rgba(25,40,80,' + (0.55 * depth) + ')';
+              gfx.fillRect(sfX, y - elevBump, sfW, rowH * 0.5);
+              // Panel row lines
+              gfx.strokeStyle = 'rgba(60,90,140,' + (0.4 * depth) + ')';
+              gfx.lineWidth = 0.3;
+              for (var sr = 0; sr < 5; sr++) {
+                gfx.beginPath();
+                gfx.moveTo(sfX, y - elevBump + sr * rowH * 0.1);
+                gfx.lineTo(sfX + sfW, y - elevBump + sr * rowH * 0.1);
+                gfx.stroke();
+              }
+              // Shimmer highlight
+              var shim = (time * 20) % sfW;
+              gfx.fillStyle = 'rgba(200,220,255,0.2)';
+              gfx.fillRect(sfX + shim, y - elevBump, 2, rowH * 0.5);
             }
 
             // Small inland lakes/ponds (random low-lying pockets)
@@ -1542,6 +1713,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         { name: 'Sydney Opera House', lat: -33.857, lon: 151.215, type: 'opera_house', fact: '1+ million ceramic roof tiles. Opened 1973. UNESCO site.' },
         { name: 'Uluru', lat: -25.345, lon: 131.036, type: 'monolith', fact: 'Sacred sandstone monolith. 1,142 ft tall, 5.8 mi around, 600M years old.' },
         { name: 'Easter Island Moai', lat: -27.122, lon: -109.367, type: 'moai', fact: '887 stone heads carved by Rapa Nui people 1100-1500 AD.' },
+        // Natural wonders
+        { name: 'Grand Canyon', lat: 36.107, lon: -112.113, type: 'canyon', fact: '277 miles long, 1+ mile deep. Rocks at bottom are 1.8 billion years old.' },
+        { name: 'Niagara Falls', lat: 43.084, lon: -79.074, type: 'waterfall', fact: '6 million cubic feet/minute. Migrated 7 miles upstream in 12,000 years.' },
+        { name: 'Mt. Everest', lat: 27.988, lon: 86.925, type: 'peak', fact: '29,032 ft tall. Summit has 1/3 the oxygen of sea level. Grows 4mm/year.' },
+        { name: 'Victoria Falls', lat: -17.925, lon: 25.857, type: 'waterfall', fact: '5,604 ft wide, 354 ft tall — largest sheet of falling water on Earth.' },
+        { name: 'Iguazú Falls', lat: -25.695, lon: -54.437, type: 'multi_waterfall', fact: '275 individual waterfalls spanning nearly 2 miles of cliffs.' },
+        { name: 'Mt. Kilimanjaro', lat: -3.076, lon: 37.353, type: 'peak_snow', fact: 'Africa\'s tallest peak (19,341 ft). Dormant volcano with melting glaciers.' },
+        { name: 'Yellowstone (Old Faithful)', lat: 44.460, lon: -110.828, type: 'geyser', fact: 'Erupts every ~90 min, shooting 3,700-8,400 gal of water 100-180 ft high.' },
+        { name: 'Aurora (Iceland)', lat: 64.963, lon: -19.021, type: 'aurora', fact: 'Northern Lights caused by solar wind colliding with Earth\'s magnetic field.' },
+        // Additional iconic structures
+        { name: 'Chichén Itzá', lat: 20.683, lon: -88.568, type: 'maya_pyramid', fact: 'Maya pyramid (9th-12th c.). During equinoxes, a serpent shadow slithers down the steps.' },
+        { name: 'Burj Al Arab', lat: 25.141, lon: 55.185, type: 'sail_tower', height: 1053, color: '#f5f5f8', fact: 'Sail-shaped 7-star hotel built on its own artificial island (1999).' },
+        { name: 'Tower Bridge', lat: 51.505, lon: -0.075, type: 'drawbridge', fact: 'Bascule bridge completed 1894. Opens ~800 times a year for ship traffic.' },
+        { name: 'Brandenburg Gate', lat: 52.516, lon: 13.378, type: 'gate', fact: '18th-century neoclassical arch. Symbol of German reunification (1989).' },
+        { name: 'Kremlin', lat: 55.752, lon: 37.617, type: 'kremlin', fact: 'Fortified complex (15th c.). Contains 4 palaces, 4 cathedrals, and red-brick walls.' },
+        { name: 'Arc de Triomphe', lat: 48.874, lon: 2.295, type: 'arch', fact: '164 ft tall arch commissioned by Napoleon (1806). Honors French war heroes.' },
+        { name: 'Leaning Tower of Shanghai', lat: 31.245, lon: 121.506, type: 'megatower', height: 2073, color: '#c8d0d8', fact: 'Shanghai Tower — 2nd tallest building in the world. Twists 120° to reduce wind load.' },
+        { name: 'Neuschwanstein Castle', lat: 47.557, lon: 10.750, type: 'castle', fact: 'Bavarian fairy-tale castle (1869). Inspiration for Disney\'s Sleeping Beauty Castle.' },
       ];
 
       var iconicDiscoveredRef = useRef({});
@@ -2090,6 +2279,370 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             gfx.fillRect(miX - sz * 0.14, y - miH + sz * 0.2, sz * 0.07, sz * 0.05);
             gfx.fillRect(miX + sz * 0.07, y - miH + sz * 0.2, sz * 0.07, sz * 0.05);
             gfx.fillStyle = '#7a7568';
+          }
+        } else if (t === 'canyon') {
+          // Grand Canyon: layered cliff strata in reds/oranges
+          var layers = ['#a04030', '#b8553a', '#c9684a', '#d47858', '#c06040', '#a84830'];
+          var layerH = sz * 0.25;
+          for (var cl = 0; cl < layers.length; cl++) {
+            gfx.fillStyle = layers[cl];
+            gfx.beginPath();
+            gfx.moveTo(x - sz * 2.2, y - cl * layerH);
+            gfx.lineTo(x - sz * 1.5 + Math.sin(cl) * sz * 0.2, y - (cl + 1) * layerH);
+            gfx.lineTo(x + sz * 1.5 + Math.cos(cl) * sz * 0.2, y - (cl + 1) * layerH);
+            gfx.lineTo(x + sz * 2.2, y - cl * layerH);
+            gfx.closePath();
+            gfx.fill();
+          }
+          // River at bottom
+          gfx.strokeStyle = '#3d6b9c';
+          gfx.lineWidth = 1;
+          gfx.beginPath();
+          gfx.moveTo(x - sz * 2, y);
+          gfx.bezierCurveTo(x - sz * 0.5, y + sz * 0.1, x + sz * 0.5, y - sz * 0.1, x + sz * 2, y);
+          gfx.stroke();
+        } else if (t === 'waterfall') {
+          // Cliff + curtain of falling water
+          gfx.fillStyle = '#4a5548';
+          gfx.fillRect(x - sz * 1.8, y - sz * 1.4, sz * 3.6, sz * 0.3);
+          // Water curtain (vertical lines with animation)
+          for (var wf = 0; wf < 12; wf++) {
+            var wfx = x - sz * 1.6 + wf * (sz * 3.2 / 11);
+            var wfAlpha = 0.5 + Math.sin(time * 4 + wf) * 0.2;
+            gfx.strokeStyle = 'rgba(180,210,230,' + wfAlpha + ')';
+            gfx.lineWidth = sz * 0.15;
+            gfx.beginPath();
+            gfx.moveTo(wfx, y - sz * 1.1);
+            gfx.lineTo(wfx, y);
+            gfx.stroke();
+          }
+          // Mist at base (animated)
+          for (var ms = 0; ms < 6; ms++) {
+            var msX = x - sz * 1.8 + ms * sz * 0.6;
+            var msY = y + Math.sin(time * 2 + ms) * sz * 0.08;
+            gfx.fillStyle = 'rgba(230,240,250,' + (0.35 + Math.sin(time + ms) * 0.15) + ')';
+            gfx.beginPath();
+            gfx.ellipse(msX, msY, sz * 0.4, sz * 0.15, 0, 0, Math.PI * 2);
+            gfx.fill();
+          }
+          // River above falls
+          gfx.fillStyle = '#5a88b8';
+          gfx.fillRect(x - sz * 1.6, y - sz * 1.6, sz * 3.2, sz * 0.2);
+        } else if (t === 'multi_waterfall') {
+          // Iguazu: panoramic multi-tier falls
+          gfx.fillStyle = '#4a5548';
+          gfx.fillRect(x - sz * 2.2, y - sz * 1.2, sz * 4.4, sz * 0.25);
+          // Multiple water drops at varied heights
+          for (var mw = 0; mw < 20; mw++) {
+            var mwX = x - sz * 2.0 + mw * (sz * 4.0 / 19);
+            var mwTop = y - sz * (1.0 + Math.sin(mw * 0.6) * 0.15);
+            gfx.strokeStyle = 'rgba(200,225,240,' + (0.6 + Math.sin(time * 3 + mw) * 0.2) + ')';
+            gfx.lineWidth = sz * 0.12;
+            gfx.beginPath();
+            gfx.moveTo(mwX, mwTop);
+            gfx.lineTo(mwX, y);
+            gfx.stroke();
+          }
+          // Rainforest flanks (green)
+          gfx.fillStyle = '#2a5020';
+          gfx.fillRect(x - sz * 2.6, y - sz * 1.4, sz * 0.4, sz * 1.4);
+          gfx.fillRect(x + sz * 2.2, y - sz * 1.4, sz * 0.4, sz * 1.4);
+          // Heavy mist
+          for (var mg = 0; mg < 8; mg++) {
+            gfx.fillStyle = 'rgba(240,245,250,' + (0.3 + Math.sin(time + mg) * 0.15) + ')';
+            gfx.beginPath();
+            gfx.ellipse(x - sz * 2 + mg * sz * 0.55, y + Math.sin(time * 2 + mg) * sz * 0.1, sz * 0.5, sz * 0.2, 0, 0, Math.PI * 2);
+            gfx.fill();
+          }
+        } else if (t === 'peak' || t === 'peak_snow') {
+          // Mountain with sharp snow-capped summit
+          gfx.fillStyle = '#4a5870';
+          gfx.beginPath();
+          gfx.moveTo(x - sz * 2.5, y);
+          gfx.lineTo(x - sz * 0.5, y - sz * 1.8);
+          gfx.lineTo(x, y - sz * 2.4);
+          gfx.lineTo(x + sz * 0.6, y - sz * 1.5);
+          gfx.lineTo(x + sz * 2.5, y);
+          gfx.closePath();
+          gfx.fill();
+          // Snow cap
+          gfx.fillStyle = '#f8f8fa';
+          gfx.beginPath();
+          gfx.moveTo(x - sz * 0.35, y - sz * 1.6);
+          gfx.lineTo(x, y - sz * 2.4);
+          gfx.lineTo(x + sz * 0.45, y - sz * 1.3);
+          gfx.lineTo(x + sz * 0.2, y - sz * 1.4);
+          gfx.lineTo(x, y - sz * 1.9);
+          gfx.lineTo(x - sz * 0.2, y - sz * 1.5);
+          gfx.closePath();
+          gfx.fill();
+          // Shadowed right face
+          gfx.fillStyle = 'rgba(30,40,60,0.4)';
+          gfx.beginPath();
+          gfx.moveTo(x, y - sz * 2.4);
+          gfx.lineTo(x + sz * 0.6, y - sz * 1.5);
+          gfx.lineTo(x + sz * 2.5, y);
+          gfx.lineTo(x + sz * 0.3, y);
+          gfx.closePath();
+          gfx.fill();
+          // Foreground smaller peaks
+          if (t === 'peak') {
+            gfx.fillStyle = '#3a4860';
+            gfx.beginPath();
+            gfx.moveTo(x - sz * 2.5, y);
+            gfx.lineTo(x - sz * 1.8, y - sz * 0.8);
+            gfx.lineTo(x - sz * 1.2, y);
+            gfx.closePath();
+            gfx.fill();
+          }
+        } else if (t === 'geyser') {
+          // Old Faithful: steam/water column + pool
+          var erupt = (time % 6) / 6; // 0-1 eruption cycle
+          var jetH = sz * (0.6 + erupt * 2.8);
+          // Pool base
+          gfx.fillStyle = '#a8b8c0';
+          gfx.beginPath();
+          gfx.ellipse(x, y, sz * 1.2, sz * 0.2, 0, 0, Math.PI * 2);
+          gfx.fill();
+          // Water/steam column (billowing)
+          for (var gj = 0; gj < 5; gj++) {
+            var gjW = sz * (0.2 + Math.sin(time * 3 + gj) * 0.08);
+            var gjAlpha = 0.7 - gj * 0.1;
+            gfx.fillStyle = 'rgba(240,248,255,' + gjAlpha + ')';
+            gfx.beginPath();
+            gfx.ellipse(x + Math.sin(time * 2 + gj) * sz * 0.15, y - gj * jetH / 5, gjW, jetH / 5, 0, 0, Math.PI * 2);
+            gfx.fill();
+          }
+          // Steam plume at top
+          gfx.fillStyle = 'rgba(255,255,255,' + (0.4 + erupt * 0.3) + ')';
+          gfx.beginPath();
+          gfx.arc(x, y - jetH, sz * 0.6, 0, Math.PI * 2);
+          gfx.fill();
+        } else if (t === 'aurora') {
+          // Northern lights: green/purple ribbons above dark terrain
+          gfx.fillStyle = '#2a3a50';
+          gfx.fillRect(x - sz * 2.5, y - sz * 0.3, sz * 5, sz * 0.3);
+          // Snow on ground
+          gfx.fillStyle = '#e8eef5';
+          gfx.fillRect(x - sz * 2.5, y - sz * 0.1, sz * 5, sz * 0.1);
+          // Aurora ribbons (multiple colored waves)
+          var colors = ['rgba(80,255,160,0.35)', 'rgba(160,100,255,0.3)', 'rgba(100,220,200,0.3)'];
+          for (var au = 0; au < colors.length; au++) {
+            gfx.strokeStyle = colors[au];
+            gfx.lineWidth = sz * 0.4;
+            gfx.beginPath();
+            for (var ap = 0; ap <= 20; ap++) {
+              var apX = x - sz * 2.5 + ap * sz * 5 / 20;
+              var apY = y - sz * (1.5 + au * 0.3) + Math.sin(ap * 0.5 + time + au) * sz * 0.4;
+              if (ap === 0) gfx.moveTo(apX, apY); else gfx.lineTo(apX, apY);
+            }
+            gfx.stroke();
+          }
+          // Stars
+          gfx.fillStyle = 'rgba(255,255,255,0.8)';
+          for (var st2 = 0; st2 < 10; st2++) {
+            gfx.fillRect(x - sz * 2.5 + (st2 * 37 % 100) / 100 * sz * 5, y - sz * 2.5 + (st2 * 71 % 100) / 100 * sz * 0.7, 1, 1);
+          }
+        } else if (t === 'maya_pyramid') {
+          // Chichen Itza: stepped pyramid with temple on top
+          gfx.fillStyle = '#a08f6a';
+          for (var mp = 0; mp < 8; mp++) {
+            var mpW = sz * (2.0 - mp * 0.2);
+            var mpH = sz * 0.2;
+            gfx.fillRect(x - mpW / 2, y - mp * mpH, mpW, mpH);
+            // Shaded right face
+            gfx.fillStyle = '#70603f';
+            gfx.fillRect(x + mpW / 2 - sz * 0.08, y - mp * mpH, sz * 0.08, mpH);
+            gfx.fillStyle = '#a08f6a';
+          }
+          // Stairway
+          gfx.fillStyle = '#6b5a38';
+          gfx.fillRect(x - sz * 0.12, y - sz * 1.6, sz * 0.24, sz * 1.6);
+          // Temple on top
+          gfx.fillStyle = '#8a7858';
+          gfx.fillRect(x - sz * 0.5, y - sz * 2.1, sz * 1.0, sz * 0.45);
+          gfx.fillRect(x - sz * 0.15, y - sz * 2.2, sz * 0.3, sz * 0.1);
+        } else if (t === 'sail_tower') {
+          // Burj Al Arab: sail shape on island
+          // Water/island
+          gfx.fillStyle = '#a0c8d8';
+          gfx.beginPath();
+          gfx.ellipse(x, y, sz * 1.5, sz * 0.3, 0, 0, Math.PI * 2);
+          gfx.fill();
+          // Main sail curve
+          gfx.fillStyle = lm.color || '#f5f5f8';
+          gfx.beginPath();
+          gfx.moveTo(x - sz * 0.4, y);
+          gfx.quadraticCurveTo(x - sz * 0.9, y - sz * 1.5, x, y - sz * 3.2);
+          gfx.lineTo(x + sz * 0.5, y - sz * 3.0);
+          gfx.quadraticCurveTo(x + sz * 0.2, y - sz * 1.5, x + sz * 0.5, y);
+          gfx.closePath();
+          gfx.fill();
+          // Mast/spire
+          gfx.strokeStyle = '#888'; gfx.lineWidth = 1;
+          gfx.beginPath();
+          gfx.moveTo(x, y - sz * 3.2); gfx.lineTo(x, y - sz * 3.6);
+          gfx.stroke();
+          // Window grid on sail
+          gfx.fillStyle = 'rgba(80,120,160,0.45)';
+          var btH = sz * 2.8;
+          for (var btr = 0; btr < 18; btr++) {
+            var btY = y - sz * 0.3 - btr * (btH / 18);
+            var wd = sz * (0.5 - btr * 0.015);
+            gfx.fillRect(x - wd * 0.45, btY, wd, 0.5);
+          }
+        } else if (t === 'drawbridge') {
+          // Tower Bridge: two gothic towers + span + bascule
+          var tbW = sz * 3.2;
+          // Towers
+          gfx.fillStyle = '#d4cfb8';
+          gfx.fillRect(x - tbW / 2 - sz * 0.3, y - sz * 1.8, sz * 0.5, sz * 1.8);
+          gfx.fillRect(x + tbW / 2 - sz * 0.2, y - sz * 1.8, sz * 0.5, sz * 1.8);
+          // Tower spires
+          gfx.fillStyle = '#6a8a5a';
+          gfx.beginPath();
+          gfx.moveTo(x - tbW / 2 - sz * 0.3, y - sz * 1.8);
+          gfx.lineTo(x - tbW / 2 - sz * 0.05, y - sz * 2.3);
+          gfx.lineTo(x - tbW / 2 + sz * 0.2, y - sz * 1.8);
+          gfx.closePath();
+          gfx.fill();
+          gfx.beginPath();
+          gfx.moveTo(x + tbW / 2 - sz * 0.2, y - sz * 1.8);
+          gfx.lineTo(x + tbW / 2 + sz * 0.05, y - sz * 2.3);
+          gfx.lineTo(x + tbW / 2 + sz * 0.3, y - sz * 1.8);
+          gfx.closePath();
+          gfx.fill();
+          // Upper walkway
+          gfx.fillStyle = '#d4cfb8';
+          gfx.fillRect(x - tbW / 2, y - sz * 1.4, tbW, sz * 0.15);
+          // Deck bascules
+          gfx.fillStyle = '#bab090';
+          gfx.fillRect(x - tbW / 2, y - sz * 0.3, tbW, sz * 0.2);
+          // Water
+          gfx.fillStyle = 'rgba(80,130,170,0.65)';
+          gfx.fillRect(x - sz * 2, y, sz * 4, sz * 0.3);
+        } else if (t === 'gate') {
+          // Brandenburg Gate: 5 columns + horse chariot on top
+          var gW = sz * 2.4;
+          gfx.fillStyle = '#e0dac8';
+          // Top entablature
+          gfx.fillRect(x - gW / 2 - sz * 0.2, y - sz * 1.7, gW + sz * 0.4, sz * 0.25);
+          // Columns
+          gfx.fillStyle = '#d0c8b4';
+          for (var gc = 0; gc < 6; gc++) {
+            gfx.fillRect(x - gW / 2 + gc * (gW / 5) - sz * 0.08, y - sz * 1.45, sz * 0.16, sz * 1.45);
+          }
+          // Quadriga (horse chariot) silhouette
+          gfx.fillStyle = '#a08860';
+          gfx.fillRect(x - sz * 0.3, y - sz * 2.0, sz * 0.6, sz * 0.3);
+          // Horse shapes
+          for (var hrs = 0; hrs < 4; hrs++) {
+            gfx.fillRect(x - sz * 0.25 + hrs * sz * 0.15, y - sz * 2.1, sz * 0.08, sz * 0.1);
+          }
+        } else if (t === 'kremlin') {
+          // Kremlin: red walls + onion domes (St Basil's style)
+          // Red wall base
+          gfx.fillStyle = '#8b2222';
+          gfx.fillRect(x - sz * 2.0, y - sz * 0.8, sz * 4.0, sz * 0.8);
+          // Crenellations
+          for (var kcr = 0; kcr < 10; kcr++) {
+            gfx.fillRect(x - sz * 2.0 + kcr * sz * 0.4, y - sz * 0.95, sz * 0.2, sz * 0.15);
+          }
+          // Onion domes (colorful)
+          var domeColors = ['#c0503a', '#20609c', '#d4a017', '#3a8a4a', '#8b5aa8'];
+          for (var kd = 0; kd < 5; kd++) {
+            var kdX = x + (kd - 2) * sz * 0.6;
+            var kdH = sz * (0.9 + (kd === 2 ? 0.5 : 0));
+            // Tower base
+            gfx.fillStyle = '#d0c0a0';
+            gfx.fillRect(kdX - sz * 0.13, y - sz * 0.8 - kdH * 0.5, sz * 0.26, kdH * 0.5);
+            // Onion bulb
+            gfx.fillStyle = domeColors[kd % domeColors.length];
+            gfx.beginPath();
+            gfx.moveTo(kdX - sz * 0.2, y - sz * 0.8 - kdH * 0.5);
+            gfx.bezierCurveTo(
+              kdX - sz * 0.3, y - sz * 0.8 - kdH * 0.75,
+              kdX - sz * 0.08, y - sz * 0.8 - kdH,
+              kdX, y - sz * 0.8 - kdH * 1.1
+            );
+            gfx.bezierCurveTo(
+              kdX + sz * 0.08, y - sz * 0.8 - kdH,
+              kdX + sz * 0.3, y - sz * 0.8 - kdH * 0.75,
+              kdX + sz * 0.2, y - sz * 0.8 - kdH * 0.5
+            );
+            gfx.closePath();
+            gfx.fill();
+            // Cross on top
+            gfx.strokeStyle = '#d4a017'; gfx.lineWidth = 0.5;
+            gfx.beginPath();
+            gfx.moveTo(kdX, y - sz * 0.8 - kdH * 1.1); gfx.lineTo(kdX, y - sz * 0.8 - kdH * 1.25);
+            gfx.moveTo(kdX - sz * 0.04, y - sz * 0.8 - kdH * 1.18); gfx.lineTo(kdX + sz * 0.04, y - sz * 0.8 - kdH * 1.18);
+            gfx.stroke();
+          }
+        } else if (t === 'arch') {
+          // Arc de Triomphe: single large arch
+          var aW = sz * 1.6, aH = sz * 1.8;
+          gfx.fillStyle = '#e5ddc5';
+          gfx.fillRect(x - aW / 2, y - aH, aW, aH);
+          // Arched opening
+          gfx.fillStyle = 'rgba(40,30,20,0.75)';
+          gfx.beginPath();
+          gfx.moveTo(x - aW * 0.3, y);
+          gfx.lineTo(x - aW * 0.3, y - aH * 0.6);
+          gfx.quadraticCurveTo(x, y - aH * 0.9, x + aW * 0.3, y - aH * 0.6);
+          gfx.lineTo(x + aW * 0.3, y);
+          gfx.closePath();
+          gfx.fill();
+          // Relief sculptures (decorative rectangles)
+          gfx.fillStyle = '#b8a878';
+          gfx.fillRect(x - aW * 0.45, y - aH + sz * 0.2, aW * 0.15, sz * 0.35);
+          gfx.fillRect(x + aW * 0.3, y - aH + sz * 0.2, aW * 0.15, sz * 0.35);
+          // Top entablature
+          gfx.fillRect(x - aW / 2, y - aH, aW, sz * 0.15);
+        } else if (t === 'castle') {
+          // Neuschwanstein: fairy-tale castle with towers and spires
+          // Hill base
+          gfx.fillStyle = '#5a704a';
+          gfx.beginPath();
+          gfx.moveTo(x - sz * 2.5, y);
+          gfx.quadraticCurveTo(x, y - sz * 0.5, x + sz * 2.5, y);
+          gfx.closePath();
+          gfx.fill();
+          // Main keep
+          gfx.fillStyle = '#e8e0d0';
+          gfx.fillRect(x - sz * 0.8, y - sz * 1.6, sz * 1.6, sz * 1.4);
+          // Side wings
+          gfx.fillRect(x - sz * 1.5, y - sz * 1.1, sz * 0.7, sz * 0.9);
+          gfx.fillRect(x + sz * 0.8, y - sz * 1.0, sz * 0.7, sz * 0.8);
+          // Tall central tower
+          gfx.fillRect(x - sz * 0.2, y - sz * 2.2, sz * 0.4, sz * 0.6);
+          // Blue conical roofs
+          gfx.fillStyle = '#4a7ba8';
+          // Main tower spire
+          gfx.beginPath();
+          gfx.moveTo(x - sz * 0.25, y - sz * 2.2);
+          gfx.lineTo(x, y - sz * 2.7);
+          gfx.lineTo(x + sz * 0.25, y - sz * 2.2);
+          gfx.closePath();
+          gfx.fill();
+          // Side tower roofs
+          gfx.beginPath();
+          gfx.moveTo(x - sz * 1.55, y - sz * 1.1);
+          gfx.lineTo(x - sz * 1.15, y - sz * 1.4);
+          gfx.lineTo(x - sz * 0.75, y - sz * 1.1);
+          gfx.closePath();
+          gfx.fill();
+          // Main roof
+          gfx.beginPath();
+          gfx.moveTo(x - sz * 0.85, y - sz * 1.6);
+          gfx.lineTo(x, y - sz * 1.95);
+          gfx.lineTo(x + sz * 0.85, y - sz * 1.6);
+          gfx.closePath();
+          gfx.fill();
+          // Windows (small yellow dots)
+          gfx.fillStyle = 'rgba(255,220,120,0.7)';
+          for (var cw = 0; cw < 4; cw++) {
+            gfx.fillRect(x - sz * 0.6 + cw * sz * 0.4, y - sz * 1.2, sz * 0.08, sz * 0.12);
           }
         } else {
           // Fallback: generic landmark marker
@@ -3747,6 +4300,83 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               gfx.beginPath(); gfx.ellipse(cx2, cloudY + ci * 6, cSize, 12 + ci * 2, 0, 0, Math.PI * 2); gfx.fill();
               // Secondary puff
               gfx.beginPath(); gfx.ellipse(cx2 + cSize * 0.4, cloudY + ci * 6 - 4, cSize * 0.6, 10, 0, 0, Math.PI * 2); gfx.fill();
+            }
+          }
+
+          // High-altitude jet contrails (visible when above 10k ft, more at cruise altitudes)
+          if (state.altitude > 10000 && horizonY > 30) {
+            var contrailCount = state.altitude > 25000 ? 4 : 2;
+            for (var jc = 0; jc < contrailCount; jc++) {
+              var jcSeed = jc * 37 + Math.floor(timeRef.current / 120);
+              var jcY = horizonY * 0.3 + jc * horizonY * 0.18 + Math.sin(timeRef.current * 0.05 + jc) * 5;
+              var jcStartX = ((jc * 230 + timeRef.current * 8) % (W + 400)) - 200;
+              var jcLen = 180 + (jcSeed % 80);
+              // Contrail streak (gradient fade)
+              var ctGrad = gfx.createLinearGradient(jcStartX, jcY, jcStartX + jcLen, jcY);
+              ctGrad.addColorStop(0, 'rgba(255,255,255,0)');
+              ctGrad.addColorStop(0.3, 'rgba(255,255,255,0.35)');
+              ctGrad.addColorStop(0.95, 'rgba(255,255,255,0.55)');
+              ctGrad.addColorStop(1, 'rgba(255,255,255,0)');
+              gfx.strokeStyle = ctGrad;
+              gfx.lineWidth = 1.2;
+              gfx.beginPath();
+              gfx.moveTo(jcStartX, jcY);
+              gfx.lineTo(jcStartX + jcLen, jcY);
+              gfx.stroke();
+              // Aircraft dot at leading edge
+              gfx.fillStyle = 'rgba(220,220,230,0.8)';
+              gfx.fillRect(jcStartX + jcLen - 1, jcY - 0.5, 2, 1);
+            }
+          }
+
+          // Flocks of birds at low altitude (V-formation)
+          if (state.altitude < 5000 && state.altitude > 200 && horizonY < H * 0.7) {
+            var flockSeed = Math.floor(timeRef.current / 30);
+            if (((flockSeed * 17) % 5) < 2) { // sometimes show a flock
+              var fkY = horizonY + (H - horizonY) * 0.15;
+              var fkX = ((timeRef.current * 15) % (W + 200)) - 100;
+              gfx.strokeStyle = 'rgba(40,40,40,0.55)';
+              gfx.lineWidth = 0.8;
+              for (var fkb = 0; fkb < 7; fkb++) {
+                var row = Math.abs(fkb - 3);
+                var bx = fkX + row * 6;
+                var by = fkY + row * 3;
+                gfx.beginPath();
+                gfx.moveTo(bx - 3, by + 1);
+                gfx.quadraticCurveTo(bx, by - 1.5, bx + 3, by + 1);
+                gfx.stroke();
+              }
+            }
+          }
+
+          // Hot air balloon (rare, scenic regions)
+          if (state.altitude < 8000 && state.altitude > 500) {
+            var balloonSeed = Math.floor(state.lat * 3) + Math.floor(state.lon * 3) * 7;
+            if (((balloonSeed * 41) % 23) < 3) {
+              var balX = ((balloonSeed * 97) % W);
+              var balY = horizonY + (H - horizonY) * 0.2 + Math.sin(timeRef.current * 0.3) * 3;
+              // Balloon envelope (striped)
+              var balC1 = '#e74c3c', balC2 = '#f1c40f';
+              gfx.fillStyle = balC1;
+              gfx.beginPath();
+              gfx.ellipse(balX, balY, 8, 10, 0, 0, Math.PI * 2);
+              gfx.fill();
+              gfx.fillStyle = balC2;
+              for (var bst = 0; bst < 3; bst++) {
+                gfx.beginPath();
+                gfx.ellipse(balX - 6 + bst * 6, balY, 1.5, 10, 0, 0, Math.PI * 2);
+                gfx.fill();
+              }
+              // Basket
+              gfx.fillStyle = '#8b6f47';
+              gfx.fillRect(balX - 3, balY + 13, 6, 3);
+              // Ropes
+              gfx.strokeStyle = 'rgba(80,70,60,0.7)';
+              gfx.lineWidth = 0.3;
+              gfx.beginPath();
+              gfx.moveTo(balX - 3, balY + 13); gfx.lineTo(balX - 6, balY + 8);
+              gfx.moveTo(balX + 3, balY + 13); gfx.lineTo(balX + 6, balY + 8);
+              gfx.stroke();
             }
           }
 

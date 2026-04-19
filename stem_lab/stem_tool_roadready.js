@@ -3973,6 +3973,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   if (tickCtx[k] !== undefined) act[k] = tickCtx[k];
                 });
                 act.progress = result.progress || 0;
+                // Throttled force-update (once per second) so the progress bar in the
+                // challenge banner actually ticks — React can't see ref mutations.
+                var _chSec = Math.floor(curT);
+                if (act._lastUIUpd !== _chSec) { act._lastUIUpd = _chSec; upd('challengeTick', Date.now()); }
                 if (result.passed) {
                   addToast('🏅 Challenge complete: ' + act.def.title + (result.extra ? ' — ' + result.extra : ''));
                   speak('Challenge complete. ' + act.def.title + '.');
@@ -4016,6 +4020,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               if (ch.offered && curT - ch.offered.offeredAt > 15) {
                 ch.offered = null;
                 ch.nextOfferAt = curT + 30;
+                upd('challengeTick', Date.now()); // force UI to drop the stale offer banner
               }
             }
 
@@ -7340,8 +7345,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // Calculate road center at this Y position (accounting for curves)
             var dashCenterX = centerX;
             var mapY = di + MAP_SIZE / 2; // convert world Z back to map Y
-            if (isRuralCurve) dashCenterX = centerX + Math.round(Math.sin(mapY * 0.12) * 5);
-            else if (isHwyCurve) dashCenterX = centerX + Math.round(Math.sin(mapY * 0.06) * 3);
+            // Smooth curve (no Math.round) so dashes track the segmented asphalt
+            // plane exactly — rounding previously made them zig-zag visibly.
+            if (isRuralCurve) dashCenterX = centerX + Math.sin(mapY * 0.12) * 5;
+            else if (isHwyCurve) dashCenterX = centerX + Math.sin(mapY * 0.06) * 3;
             dash.position.set(dashCenterX - MAP_SIZE / 2, 0.02, di);
             // Rotate dash to align with curve direction
             if (isRuralCurve || isHwyCurve) {
@@ -15022,6 +15029,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                         var cr = challengeRef.current;
                         cr.offered = null;
                         cr.nextOfferAt = timeRef.current + 30;
+                        upd('challengeTick', Date.now()); // force UI to close the banner
                       },
                       style: { flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid #64748b', background: 'rgba(100,116,139,0.2)', color: '#cbd5e1', fontSize: '12px', fontWeight: 800, cursor: 'pointer' }
                     }, 'Decline')
