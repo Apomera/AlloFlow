@@ -163,24 +163,38 @@ const SpeedReaderOverlay = React.memo(({ text, onClose, isOpen }) => {
     }
   )));
 });
-const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackRate, setPlaybackRate, lineHeight, setLineHeight, letterSpacing, setLetterSpacing, isSpeedReaderActive, onToggleSpeedReader, isChunkReaderActive, onToggleChunkReader, chunkReaderIdx, setChunkReaderIdx, chunkReaderAutoPlay, setChunkReaderAutoPlay, chunkReaderSpeed, setChunkReaderSpeed, totalSentences, interactionMode, setInteractionMode, isBionicReaderActive, onToggleBionicReader, isCrawlReaderActive, onToggleCrawlReader, isKaraokeOverlayActive, onToggleKaraokeOverlay, chunkReaderReadAlong, onToggleChunkReaderReadAlong, onGeneratePOS, isGeneratingPOS, posReady }) => {
+const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackRate, setPlaybackRate, lineHeight, setLineHeight, letterSpacing, setLetterSpacing, isSpeedReaderActive, onToggleSpeedReader, isChunkReaderActive, onToggleChunkReader, chunkReaderIdx, setChunkReaderIdx, chunkReaderAutoPlay, setChunkReaderAutoPlay, chunkReaderSpeed, setChunkReaderSpeed, totalSentences, interactionMode, setInteractionMode, isBionicReaderActive, onToggleBionicReader, isCrawlReaderActive, onToggleCrawlReader, isKaraokeOverlayActive, onToggleKaraokeOverlay, chunkReaderReadAlong, onToggleChunkReaderReadAlong, onGeneratePOS, isGeneratingPOS, posReady, onGenerateSyllables, isGeneratingSyllables, syllablesReady }) => {
   const { t } = useContext(LanguageContext);
   const toggleSetting = useCallback((key) => setSettings((prev) => ({ ...prev, [key]: !prev[key] })), [setSettings]);
   const handlePosToggle = useCallback((settingKey) => {
     if (!posReady && onGeneratePOS && !isGeneratingPOS) {
       try {
         onGeneratePOS();
-      } catch (_) {
+      } catch (err) {
+        console.warn("[Immersive] POS gen failed:", err);
       }
     }
     toggleSetting(settingKey);
   }, [posReady, onGeneratePOS, isGeneratingPOS, toggleSetting]);
+  const handleSyllableToggle = useCallback(() => {
+    const gen = onGenerateSyllables || onGeneratePOS;
+    const ready = syllablesReady || posReady;
+    const busy = isGeneratingSyllables || isGeneratingPOS;
+    if (!ready && gen && !busy) {
+      try {
+        gen();
+      } catch (err) {
+        console.warn("[Immersive] Syllable gen failed:", err);
+      }
+    }
+    toggleSetting("showSyllables");
+  }, [onGenerateSyllables, onGeneratePOS, syllablesReady, posReady, isGeneratingSyllables, isGeneratingPOS, toggleSetting]);
   const ToggleButton = React.memo(({ active, onClick, settingKey, title, children, activeColor = "bg-indigo-600 text-white", ...props }) => /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: settingKey ? () => toggleSetting(settingKey) : onClick,
       title,
-      className: `px-2.5 py-1 text-xs font-bold rounded-full transition-all ${active ? activeColor : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`,
+      className: `px-2.5 py-1 text-xs font-bold rounded-full transition-all disabled:opacity-60 disabled:cursor-wait ${active ? activeColor : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`,
       ...props
     },
     children
@@ -210,11 +224,13 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
     ToggleButton,
     {
       active: settings.showSyllables,
-      settingKey: "showSyllables",
-      title: t("immersive.toggle_syllables"),
-      "data-help-key": "immersive_syllables"
+      onClick: handleSyllableToggle,
+      title: isGeneratingSyllables || isGeneratingPOS && !syllablesReady ? "Generating syllable markers\u2026" : t("immersive.toggle_syllables"),
+      "data-help-key": "immersive_syllables",
+      disabled: (isGeneratingSyllables || isGeneratingPOS && !syllablesReady && !posReady) && !settings.showSyllables
     },
-    t("immersive.syllables")
+    t("immersive.syllables"),
+    (isGeneratingSyllables || isGeneratingPOS && !syllablesReady && !posReady) && settings.showSyllables ? " \u2026" : ""
   ), /* @__PURE__ */ React.createElement(
     ToggleButton,
     {
@@ -324,7 +340,7 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
       onClick: () => handlePosToggle("showNouns"),
       title: isGeneratingPOS ? "Classifying parts of speech\u2026" : t("immersive.highlight_nouns"),
       activeColor: "bg-blue-700 text-white",
-      disabled: isGeneratingPOS && !posReady ? void 0 : void 0
+      disabled: isGeneratingPOS && !posReady && !settings.showNouns
     },
     t("immersive.nouns"),
     isGeneratingPOS && settings.showNouns ? " \u2026" : ""
@@ -334,7 +350,8 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
       active: settings.showVerbs,
       onClick: () => handlePosToggle("showVerbs"),
       title: isGeneratingPOS ? "Classifying parts of speech\u2026" : t("immersive.highlight_verbs"),
-      activeColor: "bg-red-500 text-white"
+      activeColor: "bg-red-500 text-white",
+      disabled: isGeneratingPOS && !posReady && !settings.showVerbs
     },
     t("immersive.verbs"),
     isGeneratingPOS && settings.showVerbs ? " \u2026" : ""
@@ -344,7 +361,8 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
       active: settings.showAdjectives,
       onClick: () => handlePosToggle("showAdjectives"),
       title: isGeneratingPOS ? "Classifying parts of speech\u2026" : t("immersive.highlight_adjectives"),
-      activeColor: "bg-green-700 text-white"
+      activeColor: "bg-green-700 text-white",
+      disabled: isGeneratingPOS && !posReady && !settings.showAdjectives
     },
     t("immersive.adjectives"),
     isGeneratingPOS && settings.showAdjectives ? " \u2026" : ""
@@ -354,7 +372,8 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
       active: settings.showAdverbs,
       onClick: () => handlePosToggle("showAdverbs"),
       title: isGeneratingPOS ? "Classifying parts of speech\u2026" : t("immersive.highlight_adverbs"),
-      activeColor: "bg-purple-500 text-white"
+      activeColor: "bg-purple-500 text-white",
+      disabled: isGeneratingPOS && !posReady && !settings.showAdverbs
     },
     t("immersive.adverbs"),
     isGeneratingPOS && settings.showAdverbs ? " \u2026" : ""
@@ -476,11 +495,16 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
   const textRef = useRef(null);
   const rafRef = useRef(null);
   const lastTsRef = useRef(null);
-  useEffect(() => {
-    if (!isOpen) return;
+  const translateYRef = useRef(0);
+  const resetCrawl = useCallback(() => {
+    translateYRef.current = 0;
     setTranslateY(0);
     lastTsRef.current = null;
-  }, [isOpen, text]);
+  }, []);
+  useEffect(() => {
+    if (!isOpen) return;
+    resetCrawl();
+  }, [isOpen, text, resetCrawl]);
   useEffect(() => {
     if (!isOpen || !isPlaying) {
       lastTsRef.current = null;
@@ -490,10 +514,12 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
       if (lastTsRef.current == null) lastTsRef.current = ts;
       const dt = (ts - lastTsRef.current) / 1e3;
       lastTsRef.current = ts;
-      setTranslateY((y) => y - dt * speedPxPerSec);
+      const nextY = translateYRef.current - dt * speedPxPerSec;
+      translateYRef.current = nextY;
+      setTranslateY(nextY);
       const vh = viewportRef.current ? viewportRef.current.clientHeight : 600;
       const th = textRef.current ? textRef.current.clientHeight : 0;
-      if (th > 0 && translateY < -(th + vh * 0.5)) {
+      if (th > 0 && nextY < -(th + vh * 0.5)) {
         setIsPlaying(false);
         return;
       }
@@ -504,7 +530,7 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       lastTsRef.current = null;
     };
-  }, [isOpen, isPlaying, speedPxPerSec, translateY]);
+  }, [isOpen, isPlaying, speedPxPerSec]);
   useEffect(() => {
     if (!isOpen) return;
     const handler = (e) => {
@@ -512,15 +538,15 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
         e.preventDefault();
         setIsPlaying((pl) => !pl);
       } else if (e.key === "Escape") onClose();
-      else if (e.key === "r" || e.key === "R") setTranslateY(0);
+      else if (e.key === "r" || e.key === "R") resetCrawl();
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, resetCrawl]);
   if (!isOpen) return null;
   const cleaned = String(text || "").replace(/<[^>]*>/g, "").replace(/\n{3,}/g, "\n\n").trim();
   const paragraphs = cleaned.split(/\n{2,}/).filter(Boolean);
-  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[300] flex flex-col", style: { backgroundColor: p.bg, color: p.text } }, /* @__PURE__ */ React.createElement("div", { className: "p-4 flex justify-between items-center gap-3 flex-wrap backdrop-blur-sm", style: { background: "rgba(0,0,0,0.55)" } }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("button", { onClick: onClose, "aria-label": t("common.close") || "Close", className: "p-2 rounded-full", style: { color: p.text } }, /* @__PURE__ */ React.createElement(ArrowLeft, { size: 22 })), /* @__PURE__ */ React.createElement("span", { className: "font-bold text-base" }, t("immersive.cinematic_crawl") || "Cinematic Crawl")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 text-xs font-bold flex-wrap" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { style: { opacity: 0.7 } }, "SPEED"), /* @__PURE__ */ React.createElement("input", { "aria-label": "Crawl speed", type: "range", min: "10", max: "140", value: speedPxPerSec, onChange: (e) => setSpeedPxPerSec(parseInt(e.target.value)), className: "w-24 accent-yellow-400" }), /* @__PURE__ */ React.createElement("span", { className: "font-mono w-14 text-right" }, speedPxPerSec, "px/s")), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { style: { opacity: 0.7 } }, "PALETTE"), /* @__PURE__ */ React.createElement("select", { "aria-label": "Palette", value: palette, onChange: (e) => setPalette(e.target.value), className: "text-xs rounded px-2 py-1 bg-transparent border", style: { borderColor: p.text + "55", color: p.text } }, /* @__PURE__ */ React.createElement("option", { value: "gold" }, "Golden"), /* @__PURE__ */ React.createElement("option", { value: "teal" }, "Aqua"), /* @__PURE__ */ React.createElement("option", { value: "paper" }, "Paper"))), /* @__PURE__ */ React.createElement("button", { onClick: () => setIsPlaying((pl) => !pl), "aria-label": isPlaying ? "Pause" : "Play", className: "px-3 py-1 rounded", style: { background: p.text + "22", color: p.text } }, isPlaying ? /* @__PURE__ */ React.createElement(Pause, { size: 14 }) : /* @__PURE__ */ React.createElement(Play, { size: 14 })), /* @__PURE__ */ React.createElement("button", { onClick: () => setTranslateY(0), "aria-label": "Restart crawl from top", className: "px-3 py-1 rounded text-xs", style: { background: p.text + "22", color: p.text } }, "\u21BA Restart"))), /* @__PURE__ */ React.createElement("div", { ref: viewportRef, className: "flex-1 relative overflow-hidden", style: { perspective: "500px", perspectiveOrigin: "50% 100%" } }, /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[300] flex flex-col", style: { backgroundColor: p.bg, color: p.text } }, /* @__PURE__ */ React.createElement("div", { className: "p-4 flex justify-between items-center gap-3 flex-wrap backdrop-blur-sm", style: { background: "rgba(0,0,0,0.55)" } }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("button", { onClick: onClose, "aria-label": t("common.close") || "Close", className: "p-2 rounded-full", style: { color: p.text } }, /* @__PURE__ */ React.createElement(ArrowLeft, { size: 22 })), /* @__PURE__ */ React.createElement("span", { className: "font-bold text-base" }, t("immersive.cinematic_crawl") || "Cinematic Crawl")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 text-xs font-bold flex-wrap" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { style: { opacity: 0.7 } }, "SPEED"), /* @__PURE__ */ React.createElement("input", { "aria-label": "Crawl speed", type: "range", min: "10", max: "140", value: speedPxPerSec, onChange: (e) => setSpeedPxPerSec(parseInt(e.target.value)), className: "w-24 accent-yellow-400" }), /* @__PURE__ */ React.createElement("span", { className: "font-mono w-14 text-right" }, speedPxPerSec, "px/s")), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { style: { opacity: 0.7 } }, "PALETTE"), /* @__PURE__ */ React.createElement("select", { "aria-label": "Palette", value: palette, onChange: (e) => setPalette(e.target.value), className: "text-xs rounded px-2 py-1 bg-transparent border", style: { borderColor: p.text + "55", color: p.text } }, /* @__PURE__ */ React.createElement("option", { value: "gold" }, "Golden"), /* @__PURE__ */ React.createElement("option", { value: "teal" }, "Aqua"), /* @__PURE__ */ React.createElement("option", { value: "paper" }, "Paper"))), /* @__PURE__ */ React.createElement("button", { onClick: () => setIsPlaying((pl) => !pl), "aria-label": isPlaying ? "Pause" : "Play", className: "px-3 py-1 rounded", style: { background: p.text + "22", color: p.text } }, isPlaying ? /* @__PURE__ */ React.createElement(Pause, { size: 14 }) : /* @__PURE__ */ React.createElement(Play, { size: 14 })), /* @__PURE__ */ React.createElement("button", { onClick: resetCrawl, "aria-label": "Restart crawl from top", className: "px-3 py-1 rounded text-xs", style: { background: p.text + "22", color: p.text } }, "\u21BA Restart"))), /* @__PURE__ */ React.createElement("div", { ref: viewportRef, className: "flex-1 relative overflow-hidden", style: { perspective: "500px", perspectiveOrigin: "50% 100%" } }, /* @__PURE__ */ React.createElement(
     "div",
     {
       ref: textRef,
@@ -561,6 +587,7 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl })
   const audioRef = useRef(null);
   const rafRef = useRef(null);
   const activeSentenceRef = useRef(null);
+  const playTokenRef = useRef(0);
   const reducedMotion = typeof window !== "undefined" && window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)").matches : false;
   useEffect(() => {
     if (!text) {
@@ -587,6 +614,7 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl })
   }, [text]);
   useEffect(() => {
     if (!isOpen) {
+      playTokenRef.current++;
       try {
         if (audioRef.current) {
           audioRef.current.pause();
@@ -606,6 +634,7 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl })
       setSweepPct(0);
     }
     return () => {
+      playTokenRef.current++;
       try {
         if (audioRef.current) {
           audioRef.current.pause();
@@ -648,6 +677,7 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl })
     }
     setSweepPct(0);
     const sentenceText = sentences[idx];
+    const token = ++playTokenRef.current;
     let url = null;
     if (typeof getAudioUrl === "function") {
       try {
@@ -656,6 +686,7 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl })
         url = null;
       }
     }
+    if (token !== playTokenRef.current) return;
     if (url) {
       const audio = new Audio(url);
       audioRef.current = audio;

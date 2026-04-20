@@ -158,7 +158,7 @@ const SpeedReaderOverlay = React.memo(({ text, onClose, isOpen }) => {
     );
 });
 
-const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackRate, setPlaybackRate, lineHeight, setLineHeight, letterSpacing, setLetterSpacing , isSpeedReaderActive, onToggleSpeedReader, isChunkReaderActive, onToggleChunkReader, chunkReaderIdx, setChunkReaderIdx, chunkReaderAutoPlay, setChunkReaderAutoPlay, chunkReaderSpeed, setChunkReaderSpeed, totalSentences, interactionMode, setInteractionMode, isBionicReaderActive, onToggleBionicReader, isCrawlReaderActive, onToggleCrawlReader, isKaraokeOverlayActive, onToggleKaraokeOverlay, chunkReaderReadAlong, onToggleChunkReaderReadAlong, onGeneratePOS, isGeneratingPOS, posReady }) => {
+const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackRate, setPlaybackRate, lineHeight, setLineHeight, letterSpacing, setLetterSpacing , isSpeedReaderActive, onToggleSpeedReader, isChunkReaderActive, onToggleChunkReader, chunkReaderIdx, setChunkReaderIdx, chunkReaderAutoPlay, setChunkReaderAutoPlay, chunkReaderSpeed, setChunkReaderSpeed, totalSentences, interactionMode, setInteractionMode, isBionicReaderActive, onToggleBionicReader, isCrawlReaderActive, onToggleCrawlReader, isKaraokeOverlayActive, onToggleKaraokeOverlay, chunkReaderReadAlong, onToggleChunkReaderReadAlong, onGeneratePOS, isGeneratingPOS, posReady, onGenerateSyllables, isGeneratingSyllables, syllablesReady }) => {
   const { t } = useContext(LanguageContext);
   const toggleSetting = useCallback((key) => setSettings(prev => ({...prev, [key]: !prev[key]})), [setSettings]);
   // POS buttons trigger lazy Gemini tagging the first time any of them is pressed.
@@ -171,15 +171,27 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
       // Fire-and-forget: we don't await because the setting toggle below should
       // flip the color immediately. When the POS data finishes loading, the
       // already-toggled category will light up automatically.
-      try { onGeneratePOS(); } catch (_) {}
+      try { onGeneratePOS(); } catch (err) { console.warn('[Immersive] POS gen failed:', err); }
     }
     toggleSetting(settingKey);
   }, [posReady, onGeneratePOS, isGeneratingPOS, toggleSetting]);
+  // Syllable toggle: same lazy-generation pattern as POS, but falls back to the
+  // POS generator when a dedicated syllable handler isn't provided — the POS
+  // Gemini prompt already adds syllable markers, so one call populates both.
+  const handleSyllableToggle = useCallback(() => {
+    const gen = onGenerateSyllables || onGeneratePOS;
+    const ready = syllablesReady || posReady;
+    const busy = isGeneratingSyllables || isGeneratingPOS;
+    if (!ready && gen && !busy) {
+      try { gen(); } catch (err) { console.warn('[Immersive] Syllable gen failed:', err); }
+    }
+    toggleSetting('showSyllables');
+  }, [onGenerateSyllables, onGeneratePOS, syllablesReady, posReady, isGeneratingSyllables, isGeneratingPOS, toggleSetting]);
   const ToggleButton = React.memo(({ active, onClick, settingKey, title, children, activeColor = "bg-indigo-600 text-white", ...props }) => (
     <button
       onClick={settingKey ? () => toggleSetting(settingKey) : onClick}
       title={title}
-      className={`px-2.5 py-1 text-xs font-bold rounded-full transition-all ${
+      className={`px-2.5 py-1 text-xs font-bold rounded-full transition-all disabled:opacity-60 disabled:cursor-wait ${
         active ? activeColor : "bg-slate-100 text-slate-600 hover:bg-slate-200"
       }`}
       {...props}
@@ -222,11 +234,12 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
             </ToggleButton>
             <ToggleButton
               active={settings.showSyllables}
-              settingKey="showSyllables"
-              title={t('immersive.toggle_syllables')}
+              onClick={handleSyllableToggle}
+              title={(isGeneratingSyllables || (isGeneratingPOS && !syllablesReady)) ? 'Generating syllable markers…' : t('immersive.toggle_syllables')}
               data-help-key="immersive_syllables"
+              disabled={(isGeneratingSyllables || (isGeneratingPOS && !syllablesReady && !posReady)) && !settings.showSyllables}
             >
-              {t('immersive.syllables')}
+              {t('immersive.syllables')}{(isGeneratingSyllables || (isGeneratingPOS && !syllablesReady && !posReady)) && settings.showSyllables ? ' …' : ''}
             </ToggleButton>
             <ToggleButton
               active={settings.lineFocus}
@@ -357,7 +370,7 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
               onClick={() => handlePosToggle('showNouns')}
               title={isGeneratingPOS ? 'Classifying parts of speech…' : t('immersive.highlight_nouns')}
               activeColor="bg-blue-700 text-white"
-              disabled={isGeneratingPOS && !posReady ? undefined : undefined}
+              disabled={isGeneratingPOS && !posReady && !settings.showNouns}
             >
               {t('immersive.nouns')}{isGeneratingPOS && settings.showNouns ? ' …' : ''}
             </ToggleButton>
@@ -366,6 +379,7 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
               onClick={() => handlePosToggle('showVerbs')}
               title={isGeneratingPOS ? 'Classifying parts of speech…' : t('immersive.highlight_verbs')}
               activeColor="bg-red-500 text-white"
+              disabled={isGeneratingPOS && !posReady && !settings.showVerbs}
             >
               {t('immersive.verbs')}{isGeneratingPOS && settings.showVerbs ? ' …' : ''}
             </ToggleButton>
@@ -374,6 +388,7 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
               onClick={() => handlePosToggle('showAdjectives')}
               title={isGeneratingPOS ? 'Classifying parts of speech…' : t('immersive.highlight_adjectives')}
               activeColor="bg-green-700 text-white"
+              disabled={isGeneratingPOS && !posReady && !settings.showAdjectives}
             >
               {t('immersive.adjectives')}{isGeneratingPOS && settings.showAdjectives ? ' …' : ''}
             </ToggleButton>
@@ -382,6 +397,7 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
               onClick={() => handlePosToggle('showAdverbs')}
               title={isGeneratingPOS ? 'Classifying parts of speech…' : t('immersive.highlight_adverbs')}
               activeColor="bg-purple-500 text-white"
+              disabled={isGeneratingPOS && !posReady && !settings.showAdverbs}
             >
               {t('immersive.adverbs')}{isGeneratingPOS && settings.showAdverbs ? ' …' : ''}
             </ToggleButton>
@@ -570,7 +586,7 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
     const { t } = useContext(LanguageContext);
     const [speedPxPerSec, setSpeedPxPerSec] = useState(50);
     const [isPlaying, setIsPlaying] = useState(true);
-    const [translateY, setTranslateY] = useState(0); // negative = scrolled up
+    const [translateY, setTranslateY] = useState(0); // negative = scrolled up — used for render only
     const [palette, setPalette] = useState('gold'); // 'gold' | 'teal' | 'paper'
     const palettes = {
         gold: { bg: '#000000', text: '#fde047', accent: '#facc15' },
@@ -582,13 +598,21 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
     const textRef = useRef(null);
     const rafRef = useRef(null);
     const lastTsRef = useRef(null);
+    // Mirror translateY in a ref so the RAF loop can read/write it without
+    // re-triggering the effect every frame (the previous implementation listed
+    // translateY in the effect deps, which tore down and re-scheduled RAF on
+    // every tick — visible perf cost on long documents).
+    const translateYRef = useRef(0);
+    const resetCrawl = useCallback(() => {
+        translateYRef.current = 0;
+        setTranslateY(0);
+        lastTsRef.current = null;
+    }, []);
 
     useEffect(() => {
         if (!isOpen) return;
-        // reset when text or open state changes
-        setTranslateY(0);
-        lastTsRef.current = null;
-    }, [isOpen, text]);
+        resetCrawl();
+    }, [isOpen, text, resetCrawl]);
 
     useEffect(() => {
         if (!isOpen || !isPlaying) { lastTsRef.current = null; return; }
@@ -596,11 +620,13 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
             if (lastTsRef.current == null) lastTsRef.current = ts;
             const dt = (ts - lastTsRef.current) / 1000;
             lastTsRef.current = ts;
-            setTranslateY(y => y - dt * speedPxPerSec);
+            const nextY = translateYRef.current - dt * speedPxPerSec;
+            translateYRef.current = nextY;
+            setTranslateY(nextY);
             // stop when text fully off-top
             const vh = viewportRef.current ? viewportRef.current.clientHeight : 600;
             const th = textRef.current ? textRef.current.clientHeight : 0;
-            if (th > 0 && translateY < -(th + vh * 0.5)) {
+            if (th > 0 && nextY < -(th + vh * 0.5)) {
                 setIsPlaying(false);
                 return;
             }
@@ -611,18 +637,18 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
             if (rafRef.current) cancelAnimationFrame(rafRef.current);
             lastTsRef.current = null;
         };
-    }, [isOpen, isPlaying, speedPxPerSec, translateY]);
+    }, [isOpen, isPlaying, speedPxPerSec]);
 
     useEffect(() => {
         if (!isOpen) return;
         const handler = (e) => {
             if (e.code === 'Space') { e.preventDefault(); setIsPlaying(pl => !pl); }
             else if (e.key === 'Escape') onClose();
-            else if (e.key === 'r' || e.key === 'R') setTranslateY(0);
+            else if (e.key === 'r' || e.key === 'R') resetCrawl();
         };
         window.addEventListener('keydown', handler);
         return () => window.removeEventListener('keydown', handler);
-    }, [isOpen, onClose]);
+    }, [isOpen, onClose, resetCrawl]);
 
     if (!isOpen) return null;
 
@@ -655,7 +681,7 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
                     <button onClick={() => setIsPlaying(pl => !pl)} aria-label={isPlaying ? 'Pause' : 'Play'} className="px-3 py-1 rounded" style={{ background: p.text + '22', color: p.text }}>
                         {isPlaying ? <Pause size={14} /> : <Play size={14} />}
                     </button>
-                    <button onClick={() => setTranslateY(0)} aria-label="Restart crawl from top" className="px-3 py-1 rounded text-xs" style={{ background: p.text + '22', color: p.text }}>
+                    <button onClick={resetCrawl} aria-label="Restart crawl from top" className="px-3 py-1 rounded text-xs" style={{ background: p.text + '22', color: p.text }}>
                         ↺ Restart
                     </button>
                 </div>
@@ -724,6 +750,11 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl })
     const audioRef = useRef(null);
     const rafRef = useRef(null);
     const activeSentenceRef = useRef(null);
+    // Monotonic token used to ignore stale getAudioUrl resolutions — if the
+    // user advances, closes the overlay, or reopens between the async fetch
+    // starting and resolving, the token increments and the stale promise bails
+    // instead of playing phantom audio over the current sentence.
+    const playTokenRef = useRef(0);
     const reducedMotion = typeof window !== 'undefined' && window.matchMedia
         ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
         : false;
@@ -755,6 +786,8 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl })
     // Hard teardown when the overlay closes or the component unmounts
     useEffect(() => {
         if (!isOpen) {
+            // Bump the play token so any pending getAudioUrl resolution is ignored.
+            playTokenRef.current++;
             try { if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; } } catch (e) {}
             if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null; }
             try { if (typeof window !== 'undefined' && window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {}
@@ -762,6 +795,7 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl })
             setSweepPct(0);
         }
         return () => {
+            playTokenRef.current++;
             try { if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; } } catch (e) {}
             if (rafRef.current) cancelAnimationFrame(rafRef.current);
             try { if (typeof window !== 'undefined' && window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {}
@@ -777,18 +811,21 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl })
     // Play the current sentence (Gemini audio if getAudioUrl provided, else browser TTS fallback)
     const playSentence = useCallback(async (idx) => {
         if (idx < 0 || idx >= sentences.length) return;
-        // Stop anything already playing
+        // Stop anything already playing and invalidate any in-flight audio fetch
         try { if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; } } catch (e) {}
         if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null; }
         try { if (typeof window !== 'undefined' && window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {}
         setSweepPct(0);
         const sentenceText = sentences[idx];
+        const token = ++playTokenRef.current;
 
         // Try parent-provided audio (Gemini)
         let url = null;
         if (typeof getAudioUrl === 'function') {
             try { url = await getAudioUrl(sentenceText); } catch (e) { url = null; }
         }
+        // If the user advanced / closed / reopened during the await, bail.
+        if (token !== playTokenRef.current) return;
 
         if (url) {
             const audio = new Audio(url);

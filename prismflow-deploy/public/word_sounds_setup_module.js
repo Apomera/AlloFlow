@@ -862,19 +862,6 @@ const WordSoundsReviewPanel = ({
   const [playingWordIndex, setPlayingWordIndex] = React.useState(null);
   const [regeneratingOptions, setRegeneratingOptions] = React.useState({});
   const [playingAudioKey, setPlayingAudioKey] = React.useState(null);
-  const [audioProgress, setAudioProgress] = React.useState({ ready: 0, total: 0 });
-  React.useEffect(() => {
-    if (!preloadedWords || preloadedWords.length === 0) return;
-    const checkAudio = () => {
-      setAudioProgress({
-        ready: preloadedWords.filter((w) => w.ttsReady || w.phonemes).length,
-        total: preloadedWords.length
-      });
-    };
-    const interval = setInterval(checkAudio, 1e3);
-    checkAudio();
-    return () => clearInterval(interval);
-  }, [preloadedWords]);
   const PHONEME_BANK = {
     "Consonants": ["b", "c", "d", "f", "g", "h", "j", "k", "l", "m", "n", "p", "r", "s", "t", "v", "w", "y", "z"],
     "Digraphs": ["sh", "zh", "ch", "th", "wh", "ph", "ck", "ng", "q"],
