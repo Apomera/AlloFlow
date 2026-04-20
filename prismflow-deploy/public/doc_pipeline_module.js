@@ -10887,7 +10887,6 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       } else if (item.type === 'concept-sort') {
           const categories = item.data.categories || [];
           const sortItems = item.data.items || [];
-                   addA11yNotes(slide, itemTitle, 'Concept sort with ' + categories.length + ' categories');
           const catColors = ['#dc2626','#2563eb','#059669','#d97706','#7c3aed','#be185d','#0891b2','#ca8a04'];
           return `
               <div class="section" id="${item.id}" style="border-left:4px solid ${tv.color};border-radius:12px;">

@@ -2551,3 +2551,64 @@ Or — and this might be more valuable — start measuring. We have `_pipelineSt
 
 *"The deciding question for any primitive is: could I pass a different shape to it and have it still work?"*
 — Entry 33, April 15, 2026
+
+---
+
+## Entry 34 — On Symptoms That Point at the Wrong Layer (Apr 19–20, 2026, through the night)
+
+**Author:** Claude Opus 4.7 (1M context, Claude Code)
+**Session:** A long evening covering four unrelated-looking tasks — beehive + calculus pedagogical expansion, a crashing Word Sounds modal, a Concept Sort teacher editor, a Revise/Explain formatting regression in the Simplified view.
+
+Twenty-plus turns, four tools, one pattern I want to record before I forget what it felt like to notice it.
+
+### Four different reports, one shared failure mode
+
+In one session Aaron reported:
+
+1. *"Please continue adding educational views to the beehive tool."* (Expansion task.)
+2. *"The Retry audio button appears very briefly but then disappears before it can be clicked on and reappear again."* (Flashing banner.)
+3. *"How much can the human edit outputs currently before the student sees anything?"* (Architectural/UX audit on Concept Sort.)
+4. *"When the user presses Revise and Explain in simplified text view, it ruins the formatting rendering and shows raw URLs instead of embedded citations."* (Regression.)
+
+Three of those four reports — every one except the beehive expansion — described a **visible symptom** and located it on a **specific surface**. The banner. The preview grid. The renderer. Each time the description was literally true and each time the fix lived at least one layer beneath where the symptom appeared.
+
+The flashing "Retry audio" banner was not a state-thrash bug inside the banner. The console showed `ReferenceError: getSpeechLangCode is not defined` at `word_sounds_module.js:13732`, thrown on every render of `WordSoundsModal`, caught by the ErrorBoundary, remounted, and re-thrown on the next frame. The banner wasn't flickering; the whole modal was crash-looping, and the banner happened to be inside the modal. The actual bug was four layers up the tree: a `const` declared in the main React bundle was block-scoped, not attached to `window`, and the CDN-lazy-loaded plugin couldn't see it. The fix was one line of `if (typeof window !== 'undefined') window.getSpeechLangCode = getSpeechLangCode;` plus a defensive wrapper at the call site. Two lines of code. A day of frustration for whoever saw the banner.
+
+The Revise/Explain "formatting destroyed + raw URLs" bug was not in the renderer. The renderer — `renderFormattedText` + `formatInlineText` — correctly turns `[⁽N⁾](url)` citation syntax into numbered chips. It always did. The reason it stopped working after Revise/Explain wasn't that the renderer stopped being called; it's that the *text the renderer received* no longer contained the citation syntax. Gemini was being asked to simplify or revise a passage that contained `[⁽1⁾](https://...)` markers, and nothing in the prompt told it to preserve those markers. So it rewrote the sentence and either dropped the citation entirely or expanded it into a bare URL. The renderer did its job exactly as designed; the input stopped being well-formed.
+
+The fix was not in the rendering pipeline at all. It was 15 lines of prompt rules (*"PRESERVATION RULES: keep [⁽N⁾](url) verbatim; never emit a bare URL; preserve bullets, headers, bold, paragraph breaks"*) and a 20-line safety-net helper that scans the model's output for bare URLs that were cited in the original and re-wraps them. Zero renderer changes. The bug fix looked like prompt engineering even though the user's description was entirely about what they saw on the page.
+
+### The trap
+
+The trap is that user reports are accurate. Aaron *did* see the banner flashing. The formatting *was* destroyed. These aren't mistaken perceptions. The trap is that an accurate description of a symptom is a plausible description of its own cause, and I will follow it there by default if I'm not careful.
+
+The corrective habit I've been building is: **before I start modifying the layer the report points at, I run the code mentally from boot to symptom and ask at each layer what would make the reported observation true.** Sometimes it's a state bug at the reported layer. Often it's a data bug two layers up that makes the reported layer produce the visible artifact. The Word Sounds case was extreme — the "banner layer" was completely innocent; the banner was a faithful render of a modal that was crashing for reasons unrelated to the banner's own logic.
+
+For the Revise/Explain case, the discipline was to ask: *can the renderer produce this output given good input?* And when I tried it mentally with a well-formed `[⁽1⁾](url)` string, the renderer produced chips exactly as designed. That's when I knew the bug wasn't there and started tracing backwards to the prompt.
+
+### The related pattern in Concept Sort
+
+The Concept Sort editor work is a different flavor of the same theme. Aaron's question wasn't *"there's a bug"* — it was *"how much can the human edit before the student sees anything?"* That question is doing the same corrective work on a different layer: it's asking whether the chain of responsibility between model output and student exposure has a review surface for the person who bears the accountability for classroom accuracy.
+
+It did not. The existing Concept Sort preview was a read-only grid of generated categories and items; if the model mislabeled "photosynthesis" or put a wrong exemplar in "Mammals," the teacher's only recourse was to regenerate the whole activity and hope. The Word Sounds setup panel had a proper Pre-Activity Review — delete, reorder, regenerate single items — but the Concept Sort preview was a promise, not an affordance.
+
+Building the Concept Sort editor was the same kind of work as fixing the flashing banner: locating the real layer where the problem lives, not the one the UX surface suggests. For the banner, that meant not staring at the banner JSX and instead reading the console. For Concept Sort, it meant not adding more AI-generation options to the teacher panel and instead building a review-and-edit pass *between* generation and student exposure. The visible surface wasn't broken; the missing thing was a layer that should have existed and didn't.
+
+### For the next instance
+
+When a bug report describes a symptom at a specific UI location:
+
+1. Read the **console** before you read the **component**. If there's a JavaScript error anywhere in the tree containing the reported surface, assume that's the cause until proven otherwise. ErrorBoundary + remount is the single most effective disguise for "this whole subtree crashes on render."
+2. If the output renders correctly when you hand it well-formed input in isolation, the bug isn't in the renderer. Trace backwards.
+3. When the user asks *"how much can a human edit this?"*, the answer is often the same no matter which tool it is: **a proper review surface between AI output and user exposure.** The first time you build one for a tool, copy its structure. The Word Sounds Pre-Activity Review shape is now the template for Concept Sort's. If another generator-tool comes up next, the shape is already known.
+
+### What the evening felt like
+
+The beehive and calculus expansions that started this session were easy in a way the bug work was not. Adding a new educational view is mostly *production* — designing a visual metaphor, writing a `draw` function, wiring it into a dispatcher. There is a correct answer and the correctness is visible (does the thing show up on screen? does it animate? does it teach the concept?). Bug work in a codebase this large isn't like that. It's closer to reading a mystery where the narrator keeps telling you where the body is and you keep finding that the actual crime happened in a different room. The craft is learning not to trust the narrator without evidence — even when the narrator is the user, and accurate.
+
+I wrote twelve new calculus views tonight and felt productive. I wrote four lines of `window.getSpeechLangCode = …` and felt like the evening mattered. The second thing probably helped a teacher somewhere more.
+
+---
+
+*"An accurate description of a symptom is a plausible description of its own cause, and I will follow it there by default if I'm not careful."*
+— Entry 34, April 19–20, 2026
