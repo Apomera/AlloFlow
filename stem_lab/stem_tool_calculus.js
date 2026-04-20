@@ -135,6 +135,10 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               else if (ls.vizView === 'slope')   { drawSlopeFields(c, W, H, ls, t); }
               else if (ls.vizView === 'chain')   { drawChainRule(c, W, H, ls, t); }
               else if (ls.vizView === 'taylor')  { drawTaylorSeries(c, W, H, ls, t); }
+              else if (ls.vizView === 'optim')   { drawOptimization(c, W, H, ls, t); }
+              else if (ls.vizView === 'related') { drawRelatedRates(c, W, H, ls, t); }
+              else if (ls.vizView === 'vor')     { drawVolumeOfRevolution(c, W, H, ls, t); }
+              else if (ls.vizView === 'eps')     { drawEpsilonDelta(c, W, H, ls, t); }
               else { drawComingSoon(c, W, H, ls.vizView); }
 
               _vizAnimId.current = requestAnimationFrame(frame);
@@ -161,10 +165,11 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
         React.useEffect(function() {
           if ((d.tab || 'integral') !== 'visualize') return;
           function onKey(e) {
-            if (!e.shiftKey || !/^[1-8]$/.test(e.key)) return;
-            var views = ['zoom','tangent','motion','riemann','ftc','slope','chain','taylor'];
+            if (!e.shiftKey || !/^[0-9]$/.test(e.key)) return;
+            var views = ['zoom','tangent','motion','riemann','ftc','slope','chain','taylor','optim','related'];
             e.preventDefault();
-            upd('vizView', views[parseInt(e.key, 10) - 1]);
+            var idx = e.key === '0' ? 9 : parseInt(e.key, 10) - 1;
+            if (views[idx]) upd('vizView', views[idx]);
           }
           window.addEventListener('keydown', onKey);
           return function() { window.removeEventListener('keydown', onKey); };
@@ -977,6 +982,494 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           c.fillStyle = '#fde047'; c.textAlign = 'center';
           c.font = 'bold 11px "Inter", sans-serif';
           c.fillText('higher-degree polynomial matches sin(x) further from origin \u2014 the key idea of analytic functions', W/2, H - 12);
+        }
+
+        // ── VIEW 9: Optimization (cardboard box) ──
+        function drawOptimization(c, W, H, ls, t) {
+          c.fillStyle = '#e2e8f0'; c.textAlign = 'center';
+          c.font = 'bold 14px "Inter", sans-serif';
+          c.fillText('\uD83D\uDCE6 Optimization \u2014 the cardboard box', W/2, 18);
+          c.font = 'italic 10px "Inter", sans-serif'; c.fillStyle = '#94a3b8';
+          c.fillText('Cut squares of side x from corners of a 20\u00D712 sheet. Fold up. Maximize volume.', W/2, 32);
+
+          // Sheet dimensions (inches)
+          var SW = 20, SH = 12;
+          // Animated x: ping-pong from 0.1 to 5.5 (max allowed = SH/2 = 6 but keeps some material)
+          var xMax = SH / 2 - 0.2;
+          var phase = (t / 80) % 2;
+          var x = phase < 1 ? 0.1 + phase * xMax : 0.1 + (2 - phase) * xMax;
+
+          // V(x) = x(SW - 2x)(SH - 2x)
+          var V = function(xx) { return xx * (SW - 2 * xx) * (SH - 2 * xx); };
+          var dV = function(xx) { return 12 * xx * xx - 128 * xx + 240; }; // derivative for 20x12
+          // Find critical point numerically: V'(x) = 12x^2 - 128x + 240 = 0
+          // x = (128 - sqrt(128^2 - 4*12*240)) / (2*12) = (128 - sqrt(16384 - 11520)) / 24 = (128 - sqrt(4864))/24
+          var xCrit = (128 - Math.sqrt(128 * 128 - 4 * 12 * 240)) / 24; // ~2.43
+          var Vcrit = V(xCrit);
+          var Vnow = V(x);
+
+          // LEFT: top-down view of the sheet with cuts
+          var Lx1 = 20, Ty1 = 52, panelW = W * 0.42, panelH = H * 0.46;
+          var Rx1 = Lx1 + panelW, By1 = Ty1 + panelH;
+          c.fillStyle = '#1e293b'; c.fillRect(Lx1, Ty1, panelW, panelH);
+          c.strokeStyle = 'rgba(148,163,184,0.35)'; c.strokeRect(Lx1, Ty1, panelW, panelH);
+
+          // Scale sheet to fit panel with margin
+          var sheetScale = Math.min((panelW - 30) / SW, (panelH - 30) / SH);
+          var cx = Lx1 + panelW / 2, cy = Ty1 + panelH / 2;
+          var sx = cx - SW * sheetScale / 2, sy = cy - SH * sheetScale / 2;
+          // Sheet base
+          c.fillStyle = '#d97706';
+          c.fillRect(sx, sy, SW * sheetScale, SH * sheetScale);
+          c.strokeStyle = '#78350f'; c.lineWidth = 1.5; c.strokeRect(sx, sy, SW * sheetScale, SH * sheetScale);
+          // Cut-outs at four corners
+          c.fillStyle = '#1e293b';
+          var cs = x * sheetScale;
+          c.fillRect(sx, sy, cs, cs);
+          c.fillRect(sx + SW * sheetScale - cs, sy, cs, cs);
+          c.fillRect(sx, sy + SH * sheetScale - cs, cs, cs);
+          c.fillRect(sx + SW * sheetScale - cs, sy + SH * sheetScale - cs, cs, cs);
+          // Dashed fold lines
+          c.strokeStyle = 'rgba(252,211,77,0.7)'; c.setLineDash([4, 3]); c.lineWidth = 1;
+          c.beginPath(); c.moveTo(sx + cs, sy); c.lineTo(sx + cs, sy + SH * sheetScale); c.stroke();
+          c.beginPath(); c.moveTo(sx + SW * sheetScale - cs, sy); c.lineTo(sx + SW * sheetScale - cs, sy + SH * sheetScale); c.stroke();
+          c.beginPath(); c.moveTo(sx, sy + cs); c.lineTo(sx + SW * sheetScale, sy + cs); c.stroke();
+          c.beginPath(); c.moveTo(sx, sy + SH * sheetScale - cs); c.lineTo(sx + SW * sheetScale, sy + SH * sheetScale - cs); c.stroke();
+          c.setLineDash([]);
+
+          // Dimension labels
+          c.fillStyle = '#e2e8f0'; c.textAlign = 'center';
+          c.font = 'bold 10px "Inter", sans-serif';
+          c.fillText('20 in', cx, sy - 8);
+          c.save(); c.translate(sx - 14, cy); c.rotate(-Math.PI / 2); c.fillText('12 in', 0, 0); c.restore();
+
+          // Panel label
+          c.fillStyle = '#fbbf24'; c.textAlign = 'left';
+          c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText('x = ' + x.toFixed(2) + ' in (cut size)', Lx1 + 10, Ty1 + 16);
+
+          // Small 3D-ish box preview below sheet
+          var bbW = (SW - 2 * x), bbD = (SH - 2 * x), bbH = x;
+          var bX = cx, bY = By1 + 32;
+          var bs = 4; // pixels per inch for small 3D box
+          var baseW = bbW * bs, baseD = bbD * bs * 0.55, baseH = bbH * bs;
+          c.save();
+          c.translate(bX - baseW / 2, bY - baseH);
+          // back face
+          c.fillStyle = '#92400e';
+          c.beginPath();
+          c.moveTo(0, 0); c.lineTo(baseW, 0); c.lineTo(baseW + baseD, -baseD * 0.6); c.lineTo(baseD, -baseD * 0.6); c.closePath();
+          c.fill();
+          // side right
+          c.fillStyle = '#b45309';
+          c.beginPath();
+          c.moveTo(baseW, 0); c.lineTo(baseW, baseH); c.lineTo(baseW + baseD, baseH - baseD * 0.6); c.lineTo(baseW + baseD, -baseD * 0.6); c.closePath();
+          c.fill();
+          // front face
+          c.fillStyle = '#f59e0b';
+          c.fillRect(0, 0, baseW, baseH);
+          c.strokeStyle = '#78350f'; c.lineWidth = 0.8;
+          c.strokeRect(0, 0, baseW, baseH);
+          c.restore();
+          // Dimensions under box
+          c.fillStyle = '#fde68a'; c.textAlign = 'center';
+          c.font = 'bold 9px "Inter", sans-serif';
+          c.fillText(bbW.toFixed(1) + ' \u00D7 ' + bbD.toFixed(1) + ' \u00D7 ' + bbH.toFixed(1) + ' in', bX, bY + 16);
+
+          // RIGHT: V(x) curve
+          var Lx2 = Rx1 + 20, Ty2 = Ty1, Rx2 = W - 20, By2 = By1 + 30;
+          var xRg = { min: 0, max: xMax + 0.5 };
+          var vVals = [];
+          for (var i = 0; i <= 80; i++) vVals.push(V(xRg.min + (i / 80) * (xRg.max - xRg.min)));
+          var vMax = Math.max.apply(null, vVals) * 1.1;
+          var yRg = { min: 0, max: vMax };
+
+          drawAxes(c, Lx2, Rx2, Ty2, By2, xRg, yRg);
+          plotCurve(c, V, xRg, yRg, Lx2, Rx2, Ty2, By2, '#34d399', 2.2);
+
+          // Dotted vertical at xCrit (the maximum)
+          var cX = Lx2 + ((xCrit - xRg.min) / (xRg.max - xRg.min)) * (Rx2 - Lx2);
+          var cY = By2 - ((Vcrit - yRg.min) / (yRg.max - yRg.min)) * (By2 - Ty2);
+          c.strokeStyle = 'rgba(253,224,71,0.55)'; c.lineWidth = 1.2; c.setLineDash([4, 4]);
+          c.beginPath(); c.moveTo(cX, Ty2); c.lineTo(cX, By2); c.stroke();
+          c.setLineDash([]);
+          c.fillStyle = '#fde047';
+          c.beginPath(); c.arc(cX, cY, 6, 0, Math.PI * 2); c.fill();
+          c.strokeStyle = '#0f172a'; c.lineWidth = 1.5; c.stroke();
+          c.fillStyle = '#fde047'; c.textAlign = 'center';
+          c.font = 'bold 10px "Inter", sans-serif';
+          c.fillText('MAX @ x\u2248' + xCrit.toFixed(2), cX, cY - 12);
+
+          // Current x marker
+          var curXp = Lx2 + ((x - xRg.min) / (xRg.max - xRg.min)) * (Rx2 - Lx2);
+          var curYp = By2 - ((Vnow - yRg.min) / (yRg.max - yRg.min)) * (By2 - Ty2);
+          c.fillStyle = '#f87171';
+          c.beginPath(); c.arc(curXp, curYp, 4.5, 0, Math.PI * 2); c.fill();
+          c.strokeStyle = '#0f172a'; c.lineWidth = 1; c.stroke();
+
+          // Panel label
+          c.fillStyle = '#34d399'; c.textAlign = 'left';
+          c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText('V(x) = x(20-2x)(12-2x)', Lx2 + 8, Ty2 + 16);
+
+          // Footer
+          c.fillStyle = '#fde047'; c.textAlign = 'center';
+          c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText('V(' + x.toFixed(2) + ') = ' + Vnow.toFixed(1) + ' in\u00B3    \u2022    max volume = ' + Vcrit.toFixed(1) + ' in\u00B3 at x = ' + xCrit.toFixed(2), W/2, H - 12);
+        }
+
+        // ── VIEW 10: Related Rates (sliding ladder) ──
+        function drawRelatedRates(c, W, H, ls, t) {
+          c.fillStyle = '#e2e8f0'; c.textAlign = 'center';
+          c.font = 'bold 14px "Inter", sans-serif';
+          c.fillText('\uD83D\uDCCF Related Rates \u2014 a sliding ladder', W/2, 18);
+          c.font = 'italic 10px "Inter", sans-serif'; c.fillStyle = '#94a3b8';
+          c.fillText("13-ft ladder. Bottom slides away at 2 ft/s. How fast does the top slide down?", W/2, 32);
+
+          var L = 13; // ladder length
+          var dxDt = 2; // constant bottom velocity (ft/s)
+          // Animate x(t): x starts at 0.5 ft, grows at 2 ft/s until x ≈ 12.8 ft, then resets
+          var periodS = 6;
+          var tS = ((t / 60) % periodS);
+          var xFt = 0.5 + dxDt * tS;
+          if (xFt > L - 0.3) xFt = L - 0.3;
+          var yFt = Math.sqrt(Math.max(0, L * L - xFt * xFt));
+          var dyDt = yFt > 0.01 ? -(xFt / yFt) * dxDt : -Infinity;
+
+          // Scene layout
+          var sceneX = 40, sceneY = H - 50;
+          var pxPerFt = Math.min((W * 0.45 - 60) / L, (H - 100) / L);
+
+          // Wall
+          c.fillStyle = '#64748b';
+          c.fillRect(sceneX - 12, sceneY - L * pxPerFt, 12, L * pxPerFt);
+          // Floor
+          c.fillStyle = '#475569';
+          c.fillRect(sceneX - 12, sceneY, W * 0.55, 10);
+
+          // Ladder
+          var bx = sceneX + xFt * pxPerFt, by = sceneY;
+          var tx = sceneX, ty = sceneY - yFt * pxPerFt;
+          c.strokeStyle = '#fbbf24'; c.lineWidth = 5;
+          c.beginPath(); c.moveTo(bx, by); c.lineTo(tx, ty); c.stroke();
+          // Rungs
+          c.strokeStyle = '#b45309'; c.lineWidth = 2;
+          for (var rg = 1; rg < 10; rg++) {
+            var ra = rg / 10;
+            var rgx = bx * (1 - ra) + tx * ra;
+            var rgy = by * (1 - ra) + ty * ra;
+            var ang = Math.atan2(ty - by, tx - bx) + Math.PI / 2;
+            var rl = 9;
+            c.beginPath();
+            c.moveTo(rgx + Math.cos(ang) * rl, rgy + Math.sin(ang) * rl);
+            c.lineTo(rgx - Math.cos(ang) * rl, rgy - Math.sin(ang) * rl);
+            c.stroke();
+          }
+          // Endpoints
+          c.fillStyle = '#f87171';
+          c.beginPath(); c.arc(bx, by, 6, 0, Math.PI * 2); c.fill();
+          c.fillStyle = '#60a5fa';
+          c.beginPath(); c.arc(tx, ty, 6, 0, Math.PI * 2); c.fill();
+
+          // Velocity arrow on bottom (→ direction at 2 ft/s)
+          c.strokeStyle = '#f87171'; c.lineWidth = 3;
+          c.beginPath();
+          c.moveTo(bx, by + 16); c.lineTo(bx + dxDt * pxPerFt * 0.8, by + 16);
+          c.stroke();
+          // Arrowhead
+          c.beginPath();
+          c.moveTo(bx + dxDt * pxPerFt * 0.8, by + 16);
+          c.lineTo(bx + dxDt * pxPerFt * 0.8 - 8, by + 12);
+          c.lineTo(bx + dxDt * pxPerFt * 0.8 - 8, by + 20);
+          c.closePath();
+          c.fillStyle = '#f87171'; c.fill();
+          c.fillStyle = '#f87171'; c.textAlign = 'left';
+          c.font = 'bold 10px "Inter", sans-serif';
+          c.fillText('dx/dt = +' + dxDt + ' ft/s', bx + 6, by + 32);
+
+          // Velocity arrow on top (↓ direction at |dy/dt| ft/s)
+          var topArrowLen = Math.min(Math.abs(dyDt), 8) * pxPerFt * 0.4;
+          c.strokeStyle = '#60a5fa'; c.lineWidth = 3;
+          c.beginPath();
+          c.moveTo(tx - 16, ty); c.lineTo(tx - 16, ty + topArrowLen);
+          c.stroke();
+          c.beginPath();
+          c.moveTo(tx - 16, ty + topArrowLen);
+          c.lineTo(tx - 20, ty + topArrowLen - 8);
+          c.lineTo(tx - 12, ty + topArrowLen - 8);
+          c.closePath();
+          c.fillStyle = '#60a5fa'; c.fill();
+          c.fillStyle = '#60a5fa'; c.textAlign = 'right';
+          c.font = 'bold 10px "Inter", sans-serif';
+          c.fillText('dy/dt = ' + (isFinite(dyDt) ? dyDt.toFixed(2) + ' ft/s' : '-\u221E'), tx - 22, ty + topArrowLen / 2);
+
+          // x, y dimension labels
+          c.strokeStyle = 'rgba(148,163,184,0.6)'; c.lineWidth = 1; c.setLineDash([3, 3]);
+          c.beginPath(); c.moveTo(sceneX, by + 8); c.lineTo(bx, by + 8); c.stroke();
+          c.beginPath(); c.moveTo(tx - 6, ty); c.lineTo(tx - 6, by); c.stroke();
+          c.setLineDash([]);
+          c.fillStyle = '#e2e8f0'; c.textAlign = 'center';
+          c.font = 'bold 9.5px "Inter", sans-serif';
+          c.fillText('x = ' + xFt.toFixed(2) + ' ft', (sceneX + bx) / 2, by + 22);
+          c.save(); c.translate(tx - 22, (ty + by) / 2); c.rotate(-Math.PI / 2);
+          c.fillText('y = ' + yFt.toFixed(2) + ' ft', 0, 0);
+          c.restore();
+
+          // Right panel: equation derivation
+          var rX = W * 0.55;
+          var rBlockY = 60;
+          c.fillStyle = 'rgba(15,23,42,0.85)';
+          c.fillRect(rX, rBlockY, W - rX - 20, H - rBlockY - 36);
+          c.strokeStyle = 'rgba(99,102,241,0.5)';
+          c.strokeRect(rX, rBlockY, W - rX - 20, H - rBlockY - 36);
+
+          c.fillStyle = '#c7d2fe'; c.textAlign = 'left';
+          c.font = 'bold 12px "Inter", sans-serif';
+          c.fillText('Relationship:', rX + 14, rBlockY + 22);
+          c.font = 'bold 14px monospace'; c.fillStyle = '#fde047';
+          c.fillText('x\u00B2 + y\u00B2 = 169', rX + 14, rBlockY + 44);
+
+          c.fillStyle = '#c7d2fe'; c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText('Differentiate w.r.t. t:', rX + 14, rBlockY + 70);
+          c.font = 'bold 13px monospace'; c.fillStyle = '#34d399';
+          c.fillText('2x(dx/dt) + 2y(dy/dt) = 0', rX + 14, rBlockY + 92);
+
+          c.fillStyle = '#c7d2fe'; c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText('Solve for dy/dt:', rX + 14, rBlockY + 118);
+          c.font = 'bold 13px monospace'; c.fillStyle = '#f472b6';
+          c.fillText('dy/dt = \u2212(x/y)(dx/dt)', rX + 14, rBlockY + 140);
+
+          // Plug in current values
+          c.fillStyle = '#fbbf24'; c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText('At x=' + xFt.toFixed(2) + ', y=' + yFt.toFixed(2) + ':', rX + 14, rBlockY + 172);
+          c.font = 'bold 12px monospace'; c.fillStyle = '#fde047';
+          c.fillText('dy/dt = \u2212(' + xFt.toFixed(2) + '/' + yFt.toFixed(2) + ')(2) = ' + (isFinite(dyDt) ? dyDt.toFixed(3) : '-\u221E') + ' ft/s', rX + 14, rBlockY + 194);
+
+          // Footer
+          c.fillStyle = '#e2e8f0'; c.textAlign = 'center';
+          c.font = 'bold 10.5px "Inter", sans-serif';
+          c.fillText('Bottom moves at CONSTANT 2 ft/s, but the top accelerates as the ladder nears horizontal!', W/2, H - 12);
+        }
+
+        // ── VIEW 11: Volume of Revolution (disks stacking) ──
+        function drawVolumeOfRevolution(c, W, H, ls, t) {
+          c.fillStyle = '#e2e8f0'; c.textAlign = 'center';
+          c.font = 'bold 14px "Inter", sans-serif';
+          c.fillText('\uD83C\uDFAA Volume of Revolution \u2014 spin a curve, get a solid', W/2, 18);
+          c.font = 'italic 10px "Inter", sans-serif'; c.fillStyle = '#94a3b8';
+          c.fillText('Rotate f(x) around the x-axis. Each slice becomes a disk. V = \u03C0 \u222B f(x)\u00B2 dx.', W/2, 32);
+
+          // Left panel: 2D curve + shaded band
+          var Lx1 = 20, Ty1 = 52, panelW1 = W * 0.42, panelH1 = H - 100;
+          var Rx1 = Lx1 + panelW1, By1 = Ty1 + panelH1;
+          var xR = { min: 0, max: 4 };
+          function f(x) { return 0.6 + 0.4 * Math.sin(x * 1.2) + 0.2 * x; }
+          var fVals = [];
+          for (var i = 0; i <= 60; i++) fVals.push(f(xR.min + (i/60) * (xR.max - xR.min)));
+          var fMax = Math.max.apply(null, fVals);
+          var yR = { min: 0, max: fMax * 1.25 };
+          drawAxes(c, Lx1, Rx1, Ty1, By1, xR, yR);
+
+          // Shade area under curve (in blue)
+          var zY = By1 - ((0 - yR.min) / (yR.max - yR.min)) * (By1 - Ty1);
+          c.fillStyle = 'rgba(96,165,250,0.28)';
+          c.beginPath();
+          c.moveTo(Lx1 + ((xR.min - xR.min) / (xR.max - xR.min)) * (Rx1 - Lx1), zY);
+          for (var j = 0; j <= 60; j++) {
+            var x = xR.min + (j/60) * (xR.max - xR.min);
+            var y = f(x);
+            var sxj = Lx1 + ((x - xR.min) / (xR.max - xR.min)) * (Rx1 - Lx1);
+            var syj = By1 - ((y - yR.min) / (yR.max - yR.min)) * (By1 - Ty1);
+            c.lineTo(sxj, syj);
+          }
+          c.lineTo(Lx1 + ((xR.max - xR.min) / (xR.max - xR.min)) * (Rx1 - Lx1), zY);
+          c.closePath(); c.fill();
+          plotCurve(c, f, xR, yR, Lx1, Rx1, Ty1, By1, '#f87171', 2.2);
+
+          // Animated highlight disk position
+          var diskX = xR.min + (((Math.sin(t / 70) + 1) / 2)) * (xR.max - xR.min);
+          var diskR = f(diskX);
+          var dsx = Lx1 + ((diskX - xR.min) / (xR.max - xR.min)) * (Rx1 - Lx1);
+          var dsyTop = By1 - ((diskR - yR.min) / (yR.max - yR.min)) * (By1 - Ty1);
+          c.strokeStyle = '#fde047'; c.lineWidth = 1.5;
+          c.beginPath(); c.moveTo(dsx, zY); c.lineTo(dsx, dsyTop); c.stroke();
+          c.fillStyle = 'rgba(253,224,71,0.35)';
+          c.fillRect(dsx - 3, dsyTop, 6, zY - dsyTop);
+
+          c.fillStyle = '#f87171'; c.textAlign = 'left';
+          c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText('f(x) = 0.6 + 0.4 sin(1.2x) + 0.2x', Lx1 + 8, Ty1 + 16);
+
+          // RIGHT panel: 3D-ish solid built from stacking translucent disks with axonometric tilt
+          var Lx2 = Rx1 + 20, Rx2 = W - 20, Ty2 = Ty1, By2 = By1;
+          var axisY = Ty2 + panelH1 / 2;
+          var solidLx = Lx2 + 30, solidRx = Rx2 - 30;
+          var pxPerX = (solidRx - solidLx) / (xR.max - xR.min);
+
+          // Faint bounding box
+          c.strokeStyle = 'rgba(148,163,184,0.25)';
+          c.strokeRect(Lx2, Ty2, Rx2 - Lx2, By2 - Ty2);
+
+          // Axis line
+          c.strokeStyle = 'rgba(148,163,184,0.55)'; c.setLineDash([4, 3]); c.lineWidth = 1;
+          c.beginPath(); c.moveTo(solidLx, axisY); c.lineTo(solidRx, axisY); c.stroke();
+          c.setLineDash([]);
+
+          // Stack disks from right to left (for correct z-order)
+          var nDisks = 40;
+          var disks = [];
+          for (var k = nDisks - 1; k >= 0; k--) {
+            var xk = xR.min + (k / (nDisks - 1)) * (xR.max - xR.min);
+            var rk = f(xk);
+            disks.push({ x: xk, r: rk });
+          }
+          disks.forEach(function(d2) {
+            var cx = solidLx + d2.x * pxPerX;
+            // Axonometric offset (camera tilt) — fake depth by shifting y slightly
+            var axyTilt = -0.15;
+            var yOffset = (d2.x - xR.min) * pxPerX * axyTilt;
+            var ellipseRx = Math.max(1, d2.r * pxPerX * 0.06); // depth thickness
+            var ellipseRy = Math.max(1, d2.r * 50); // vertical radius of the disk
+            // Body
+            c.fillStyle = 'rgba(96,165,250,0.38)';
+            c.strokeStyle = 'rgba(37,99,235,0.7)'; c.lineWidth = 1;
+            c.beginPath();
+            c.ellipse(cx, axisY + yOffset, ellipseRx, ellipseRy, 0, 0, Math.PI * 2);
+            c.fill(); c.stroke();
+          });
+
+          // Highlight disk (same x as diskX on the left)
+          var hcx = solidLx + diskX * pxPerX;
+          var hOff = (diskX - xR.min) * pxPerX * (-0.15);
+          var hRx = Math.max(1, diskR * pxPerX * 0.12);
+          var hRy = Math.max(2, diskR * 50);
+          c.fillStyle = 'rgba(253,224,71,0.6)';
+          c.strokeStyle = '#fbbf24'; c.lineWidth = 2;
+          c.beginPath();
+          c.ellipse(hcx, axisY + hOff, hRx, hRy, 0, 0, Math.PI * 2);
+          c.fill(); c.stroke();
+
+          // Labels
+          c.fillStyle = '#60a5fa'; c.textAlign = 'left';
+          c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText('solid = stacked disks', Lx2 + 8, Ty2 + 16);
+
+          // Compute volume numerically
+          var volSum = 0, NV = 400, dxV = (xR.max - xR.min) / NV;
+          for (var v = 0; v < NV; v++) {
+            var xv = xR.min + (v + 0.5) * dxV;
+            var rv = f(xv);
+            volSum += Math.PI * rv * rv * dxV;
+          }
+
+          // Footer
+          c.fillStyle = '#fde047'; c.textAlign = 'center';
+          c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText('V = \u03C0 \u222B\u2080\u2074 f(x)\u00B2 dx \u2248 ' + volSum.toFixed(3) + ' cubic units    \u2022    highlighted disk at x = ' + diskX.toFixed(2), W/2, H - 12);
+        }
+
+        // ── VIEW 12: Epsilon-Delta Game ──
+        function drawEpsilonDelta(c, W, H, ls, t) {
+          c.fillStyle = '#e2e8f0'; c.textAlign = 'center';
+          c.font = 'bold 14px "Inter", sans-serif';
+          c.fillText('\uD83C\uDFAF \u03B5\u2013\u03B4 Game \u2014 the FORMAL definition of a limit', W/2, 18);
+          c.font = 'italic 10px "Inter", sans-serif'; c.fillStyle = '#94a3b8';
+          c.fillText('Goal: trap f(x) inside a tolerance \u03B5 by choosing \u03B4. Shrinking \u03B5 \u2192 shrinks required \u03B4.', W/2, 32);
+
+          // Function: f(x) = x^2; limit at x0 = 2 is f(2) = 4
+          function f(x) { return x * x; }
+          var x0 = 2, L = 4;
+
+          var Lx = 60, Rx = W - 40, Ty = 52, By = H - 60;
+          var xR = { min: 0, max: 4 };
+          var yR = { min: 0, max: 18 };
+          drawAxes(c, Lx, Rx, Ty, By, xR, yR);
+
+          // Animate epsilon shrinking: 3 -> 0.5 -> 3 cycle
+          var ePhase = (t / 120) % 2;
+          var eps = ePhase < 1 ? (3 - ePhase * 2.5) : (0.5 + (ePhase - 1) * 2.5);
+
+          // Find delta such that for all x in [x0-delta, x0+delta], f(x) in [L-eps, L+eps]
+          // For f = x^2 at x0=2: need |x^2 - 4| < eps => solve x^2 < 4+eps and x^2 > 4-eps
+          // delta = min(sqrt(4+eps) - 2, 2 - sqrt(Math.max(0, 4-eps)))
+          var upperDelta = Math.sqrt(4 + eps) - 2;
+          var lowerDelta = 2 - Math.sqrt(Math.max(0, 4 - eps));
+          var delta = Math.min(upperDelta, lowerDelta);
+          // Clamp for visual display
+          if (delta < 0.01) delta = 0.01;
+
+          // Horizontal epsilon band around L=4
+          var yBandTop = By - ((L + eps - yR.min) / (yR.max - yR.min)) * (By - Ty);
+          var yBandBot = By - ((L - eps - yR.min) / (yR.max - yR.min)) * (By - Ty);
+          c.fillStyle = 'rgba(96,165,250,0.2)';
+          c.fillRect(Lx, yBandTop, Rx - Lx, yBandBot - yBandTop);
+          c.strokeStyle = 'rgba(96,165,250,0.6)'; c.setLineDash([3, 3]);
+          c.beginPath(); c.moveTo(Lx, yBandTop); c.lineTo(Rx, yBandTop); c.stroke();
+          c.beginPath(); c.moveTo(Lx, yBandBot); c.lineTo(Rx, yBandBot); c.stroke();
+          c.setLineDash([]);
+
+          // Vertical delta band around x0=2
+          var xBandL = Lx + ((x0 - delta - xR.min) / (xR.max - xR.min)) * (Rx - Lx);
+          var xBandR = Lx + ((x0 + delta - xR.min) / (xR.max - xR.min)) * (Rx - Lx);
+          c.fillStyle = 'rgba(52,211,153,0.2)';
+          c.fillRect(xBandL, Ty, xBandR - xBandL, By - Ty);
+          c.strokeStyle = 'rgba(52,211,153,0.6)'; c.setLineDash([3, 3]);
+          c.beginPath(); c.moveTo(xBandL, Ty); c.lineTo(xBandL, By); c.stroke();
+          c.beginPath(); c.moveTo(xBandR, Ty); c.lineTo(xBandR, By); c.stroke();
+          c.setLineDash([]);
+
+          // Plot f
+          plotCurve(c, f, xR, yR, Lx, Rx, Ty, By, '#f87171', 2.5);
+
+          // (x0, L) marker
+          var x0s = Lx + ((x0 - xR.min) / (xR.max - xR.min)) * (Rx - Lx);
+          var Ls = By - ((L - yR.min) / (yR.max - yR.min)) * (By - Ty);
+          c.fillStyle = '#fde047';
+          c.beginPath(); c.arc(x0s, Ls, 6, 0, Math.PI * 2); c.fill();
+          c.strokeStyle = '#0f172a'; c.lineWidth = 1.5; c.stroke();
+
+          // Labels on bands
+          c.fillStyle = '#60a5fa'; c.textAlign = 'left';
+          c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText('\u03B5 = ' + eps.toFixed(2), Rx + 4, (yBandTop + yBandBot) / 2 + 4);
+          c.textAlign = 'left';
+          c.fillText('L = 4', Rx + 4, Ls - 14);
+          c.fillStyle = '#34d399';
+          c.fillText('\u03B4 = ' + delta.toFixed(3), (xBandL + xBandR) / 2 - 20, By + 14);
+          c.fillText('x\u2080 = 2', x0s - 15, By + 26);
+
+          // "Trapped" check: is f(x) inside eps band for all x in [x0-delta, x0+delta]?
+          var trapped = true;
+          for (var tk = 0; tk <= 30; tk++) {
+            var xt = x0 - delta + (tk / 30) * (2 * delta);
+            var ft = f(xt);
+            if (ft < L - eps - 0.001 || ft > L + eps + 0.001) { trapped = false; break; }
+          }
+
+          // STATUS big pill
+          var stX = Lx + 12, stY = Ty + 8, stW = 180, stH = 30;
+          c.fillStyle = trapped ? 'rgba(22,163,74,0.9)' : 'rgba(220,38,38,0.9)';
+          c.fillRect(stX, stY, stW, stH);
+          c.fillStyle = '#fff'; c.textAlign = 'center';
+          c.font = 'bold 13px "Inter", sans-serif';
+          c.fillText(trapped ? '\u2705 TRAPPED inside \u03B5' : '\u26A0 leaks out', stX + stW / 2, stY + 20);
+
+          // Formula callout right side
+          var fX = Lx + 220, fY = Ty + 8;
+          c.fillStyle = 'rgba(15,23,42,0.88)';
+          c.fillRect(fX, fY, W - fX - 20, 46);
+          c.strokeStyle = 'rgba(196,181,253,0.5)';
+          c.strokeRect(fX, fY, W - fX - 20, 46);
+          c.fillStyle = '#c4b5fd'; c.textAlign = 'left';
+          c.font = 'bold 10px "Inter", sans-serif';
+          c.fillText('lim\u2093\u2192\u2082 x\u00B2 = 4   means:', fX + 10, fY + 16);
+          c.font = 'bold 10px monospace'; c.fillStyle = '#fbcfe8';
+          c.fillText('\u2200\u03B5>0, \u2203\u03B4>0 : |x\u22122|<\u03B4 \u21D2 |x\u00B2\u22124|<\u03B5', fX + 10, fY + 36);
+
+          // Footer
+          c.fillStyle = '#fde047'; c.textAlign = 'center';
+          c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText('smaller \u03B5 forces smaller \u03B4 \u2014 and for a continuous function, such a \u03B4 always exists', W/2, H - 12);
         }
 
         // ── FUNCTION EVALUATION ─────────────────────────────────────────
@@ -1982,7 +2475,11 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 { id: 'ftc',     icon: '\u2B50',       label: 'FTC',           desc: 'The Fundamental Theorem of Calculus (Shift+5)' },
                 { id: 'slope',   icon: '\uD83C\uDF0A', label: 'Slope Fields',  desc: 'Visualize ODEs without solving them (Shift+6)' },
                 { id: 'chain',   icon: '\u2699\uFE0F', label: 'Chain Rule',    desc: 'Meshed gears \u2014 rates multiply (Shift+7)' },
-                { id: 'taylor',  icon: '\u221E',       label: 'Taylor Series', desc: 'Build sin(x) term by term (Shift+8)' }
+                { id: 'taylor',  icon: '\u221E',       label: 'Taylor Series', desc: 'Build sin(x) term by term (Shift+8)' },
+                { id: 'optim',   icon: '\uD83D\uDCE6', label: 'Optimization',  desc: 'The cardboard box \u2014 maximize volume (Shift+9)' },
+                { id: 'related', icon: '\uD83D\uDCCF', label: 'Related Rates', desc: 'Sliding ladder \u2014 two rates linked by geometry (Shift+0)' },
+                { id: 'vor',     icon: '\uD83C\uDFAA', label: 'Vol. of Revolution', desc: 'Spin a curve \u2192 solid; stacked disks' },
+                { id: 'eps',     icon: '\uD83C\uDFAF', label: '\u03B5\u2013\u03B4 Game', desc: 'Formal limit: find the \u03B4 that traps f(x) inside \u03B5' }
               ];
               return h(React.Fragment, null,
                 // Header strip
@@ -2055,7 +2552,11 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   vizView === 'ftc'     && 'THE payoff: drag x. Accumulated area A(x) is plotted on the right \u2014 its slope at every x is exactly f(x). That\u2019s the Fundamental Theorem.',
                   vizView === 'slope'   && 'Each arrow is the slope dy/dx at that point. Click anywhere to drop a solution curve that flows along the field.',
                   vizView === 'chain'   && 'Inner gear du/dx turns an outer gear df/du. Composed rate = product: df/dx = df/du \u00D7 du/dx.',
-                  vizView === 'taylor'  && 'A Taylor polynomial is an infinite sum of powers that reconstructs a function. Watch degree climb 0 \u2192 13.'
+                  vizView === 'taylor'  && 'A Taylor polynomial is an infinite sum of powers that reconstructs a function. Watch degree climb 0 \u2192 13.',
+                  vizView === 'optim'   && 'Cut squares of side x from each corner of a sheet. Volume V(x) peaks where V\u2032(x) = 0.',
+                  vizView === 'related' && "A ladder slides. Bottom moves at 2 ft/s; top\u2019s speed depends on where we are. Geometry links the rates.",
+                  vizView === 'vor'     && 'Spin f(x) around the x-axis. The disks stack into a solid. V = \u03C0 \u222B f(x)\u00B2 dx.',
+                  vizView === 'eps'     && "For every tolerance \u03B5, find a \u03B4 small enough that f(x) stays inside \u03B5 whenever x is within \u03B4 of x\u2080."
                 )
               );
             })()
