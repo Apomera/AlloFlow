@@ -1217,6 +1217,32 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
           });
       }
   };
+  // Citation-restore helper. If the model dropped [⁽N⁾](url) wrappers from
+  // the original and emitted bare URLs, put the wrappers back so the
+  // simplified-view renderer turns them into numbered chips instead of raw
+  // URL text. Also strips bare URLs that were NOT in the original (likely
+  // hallucinated citations).
+  const _restoreCitations = (result, original) => {
+      if (!result || !original || typeof result !== 'string' || typeof original !== 'string') return result;
+      const citRegex = /\[(⁽[0-9⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾)\]\(([^)]+)\)/g;
+      const urlToMarker = new Map();
+      let m;
+      while ((m = citRegex.exec(original)) !== null) {
+          urlToMarker.set(m[2], m[1]);
+      }
+      let fixed = result;
+      // Re-wrap known bare URLs
+      urlToMarker.forEach((marker, url) => {
+          const urlEsc = url.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          // If the URL is already inside a markdown link in the result, skip.
+          const alreadyLinked = new RegExp('\\]\\(' + urlEsc + '\\)');
+          if (alreadyLinked.test(fixed)) return;
+          // Replace the bare URL (not already inside ](...)) with a citation.
+          const bareUrl = new RegExp('(^|[^(\\[])' + urlEsc, 'g');
+          fixed = fixed.replace(bareUrl, '$1[' + marker + '](' + url + ')');
+      });
+      return fixed;
+  };
   const handleReviseSelection = async (action, customInstruction = '') => {
       if (!selectionMenu || !selectionMenu.text) return;
       const originalText = selectionMenu.text;
@@ -1276,6 +1302,24 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
           let prompt;
           const outputLang = leveledTextLanguage === 'All Selected Languages' ? 'English' : leveledTextLanguage;
           const dialectInstruction = outputLang !== 'English' ? `STRICT DIALECT ADHERENCE: If a specific dialect is named (e.g. 'Brazilian Portuguese' vs 'European Portuguese'), explicitly use that region's vocabulary, spelling, and grammar conventions.` : '';
+          // Shared preservation rules injected into Revise/Simplify prompts so
+          // Gemini keeps citation chips like [⁽1⁾](url) and markdown structure
+          // intact. Without this, the model drops citation wrappers and
+          // re-emits raw URLs inline, breaking the simplified view's renderer.
+          const preservationRules = `
+                PRESERVATION RULES (follow EXACTLY):
+                1. If the input contains citation markers in the form [⁽N⁾](url)
+                   (e.g. [⁽1⁾](https://example.com)), keep EACH ONE VERBATIM in
+                   your output at the appropriate place in the new sentence.
+                   Do not re-number them, drop the superscript wrapper, or
+                   convert them into plain URLs.
+                2. NEVER emit a bare URL (e.g. "https://example.com") anywhere
+                   in your output. URLs must only appear inside a
+                   [⁽N⁾](url) markdown link.
+                3. Preserve markdown structure from the input: keep bullet
+                   points (- or *), numbered lists, bold (**...**), headers
+                   (#, ##, ###), and paragraph breaks exactly where they are.
+              `;
           if (action === 'simplify') {
               prompt = `
                 Simplify this specific sentence/phrase for a ${gradeLevel} student.
@@ -1283,6 +1327,7 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
                 Context Topic: ${sourceTopic || "General"}.
                 Text to simplify: "${originalText}",
                 CRITICAL: Output the simplified text in the SAME language as the input "Text to simplify".
+                ${preservationRules}
                 ${dialectInstruction}
                 Return ONLY the simplified text. No quotes or labels.
               `;
@@ -1293,6 +1338,7 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
                 Context Topic: ${sourceTopic || "General"}.
                 Target Audience: ${gradeLevel}.
                 CRITICAL: Output the revised text in the SAME language as the input "Text to revise" unless the instructions explicitly ask to translate.
+                ${preservationRules}
                 ${dialectInstruction}
                 Return ONLY the revised text. No quotes, no conversational filler.
               `;
@@ -1304,14 +1350,18 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
                 Phrase: "${originalText}",
                 Output Language: ${outputLang}.
                 ${outputLang !== 'English' ? `Provide the explanation in ${outputLang} first. Then add a new line with "**English:**" followed by the English explanation.` : ''}
+                IMPORTANT: Do NOT include bare URLs in your explanation. Reference sources only by name.
                 ${dialectInstruction}
                 Return ONLY the explanation.
               `;
           }
           const result = await callGemini(prompt);
+          // Safety net: if Gemini still dropped citation wrappers and emitted
+          // bare URLs that were cited in the original, re-wrap them as [⁽N⁾](url).
+          const restoredResult = _restoreCitations(result, originalText);
           setRevisionData(prev => ({
               ...prev,
-              result: result
+              result: restoredResult
           }));
       } catch (err) {
           warnLog("Unhandled error:", err);
@@ -1341,6 +1391,7 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
             Output Language: ${outputLang}.
             ${outputLang !== 'English' ? `Provide the definition in ${outputLang} first. Then add a new line with "**English:**" followed by the English definition.` : ''}
             ${outputLang !== 'English' ? `STRICT DIALECT ADHERENCE: If a specific dialect is named (e.g. 'Brazilian Portuguese'), use that region's conventions.` : ''}
+            IMPORTANT: Do NOT include bare URLs in your definition. Reference sources only by name.
             Return ONLY the definition. Keep it concise (1-2 sentences).
           `;
           const result = await callGemini(prompt);
