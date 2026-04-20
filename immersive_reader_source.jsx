@@ -1,5 +1,9 @@
-// immersive_reader_source.jsx — SpeedReaderOverlay, ImmersiveToolbar
+// immersive_reader_source.jsx — FocusReaderOverlay, ImmersiveToolbar, PerspectiveCrawlOverlay, KaraokeReaderOverlay
 // Extracted from AlloFlowANTI.txt for CDN modularization
+// NOTE: FocusReaderOverlay unifies the former SpeedReaderOverlay (RSVP, chunkSize=1)
+// and BionicChunkReader (chunkSize>=2 with bold-assist) into one overlay with a
+// chunkSize slider. The two prior exports are still published as aliases so any
+// legacy consumers keep working.
 
 var LanguageContext = window.AlloLanguageContext;
 var useState = React.useState; var useEffect = React.useEffect; var useRef = React.useRef;
@@ -18,14 +22,29 @@ var Volume2 = _lazyIcon('Volume2');
 var X = _lazyIcon('X');
 var Zap = _lazyIcon('Zap');
 
-const SpeedReaderOverlay = React.memo(({ text, onClose, isOpen }) => {
-  const { t } = useContext(LanguageContext);
-    const [words, setWords] = React.useState([]);
-    const [currentIndex, setCurrentIndex] = React.useState(0);
-    const [isPlaying, setIsPlaying] = React.useState(false);
-    const [wpm, setWpm] = React.useState(300);
-    const [showControls, setShowControls] = React.useState(true);
-    const [focusColor, setFocusColor] = React.useState('#dc2626');
+// ============================================================================
+// FocusReaderOverlay — unified RSVP + chunked bionic reader.
+// chunkSize === 1 → single-word RSVP with crosshair and focus color.
+// chunkSize >= 2 → multi-word chunks with bionic bold-assist on each word.
+// Pace is expressed in words-per-minute for intuitiveness; chunk delay is
+// derived as (60000 / wpm) * chunkSize so throughput stays constant when the
+// user widens the window.
+// ============================================================================
+const FocusReaderOverlay = React.memo(({ text, onClose, isOpen }) => {
+    const { t } = useContext(LanguageContext);
+    const [words, setWords] = useState([]);
+    const [chunkIdx, setChunkIdx] = useState(0);
+    const [chunkSize, setChunkSize] = useState(1);
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [wpm, setWpm] = useState(300);
+    const [theme, setTheme] = useState('warm');
+    const [focusColor, setFocusColor] = useState('#dc2626');
+    const themes = {
+        warm: { bg: '#fdfbf7', strong: '#111827', light: '#6b7280', accent: '#4f46e5', panel: 'rgba(255,255,255,0.85)' },
+        dark: { bg: '#0f172a', strong: '#f1f5f9', light: '#94a3b8', accent: '#818cf8', panel: 'rgba(15,23,42,0.85)' },
+        sepia: { bg: '#f4ecd8', strong: '#3b2a1a', light: '#8b6f4e', accent: '#b45309', panel: 'rgba(244,236,216,0.85)' }
+    };
+    const c = themes[theme] || themes.warm;
     const colorOptions = [
         { name: 'Red', value: '#dc2626' },
         { name: 'Blue', value: '#2563eb' },
@@ -35,130 +54,168 @@ const SpeedReaderOverlay = React.memo(({ text, onClose, isOpen }) => {
         { name: 'Pink', value: '#db2777' },
         { name: 'Teal', value: '#0d9488' },
     ];
-    React.useEffect(() => {
+
+    useEffect(() => {
         if (text) {
-            const cleaned = String(text || '')
-                .replace(/<[^>]*>/g, '')
-                .replace(/\s+/g, ' ')
-                .trim();
-            const w = cleaned.split(' ').filter(word => word.length > 0);
-            setWords(w);
-            setCurrentIndex(0);
+            const cleaned = String(text || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+            setWords(cleaned.split(' ').filter(w => w.length > 0));
+            setChunkIdx(0);
         }
     }, [text]);
-    React.useEffect(() => {
+
+    const chunks = useMemo(() => {
+        const out = [];
+        const size = Math.max(1, chunkSize);
+        for (let i = 0; i < words.length; i += size) out.push(words.slice(i, i + size));
+        return out;
+    }, [words, chunkSize]);
+
+    // When chunkSize changes mid-read, remap the current position so the user
+    // doesn't lose their place (word index ~= chunkIdx * prevChunkSize).
+    const prevChunkSizeRef = useRef(chunkSize);
+    useEffect(() => {
+        const prev = prevChunkSizeRef.current;
+        if (prev !== chunkSize && words.length > 0) {
+            const wordCursor = chunkIdx * prev;
+            setChunkIdx(Math.min(Math.floor(wordCursor / chunkSize), Math.max(0, Math.ceil(words.length / chunkSize) - 1)));
+        }
+        prevChunkSizeRef.current = chunkSize;
+    }, [chunkSize, words.length]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    useEffect(() => {
         if (!isPlaying) return;
-        const delay = 60000 / wpm;
-        const interval = setInterval(() => {
-            setCurrentIndex(prev => {
-                if (prev >= words.length - 1) {
-                    setIsPlaying(false);
-                    return prev;
-                }
+        // wpm governs words/second; delay between chunks = seconds per chunk.
+        const delay = Math.max(60, (60000 / Math.max(50, wpm)) * Math.max(1, chunkSize));
+        const id = setInterval(() => {
+            setChunkIdx(prev => {
+                if (prev >= chunks.length - 1) { setIsPlaying(false); return prev; }
                 return prev + 1;
             });
         }, delay);
-        return () => clearInterval(interval);
-    }, [isPlaying, wpm, words.length]);
-    React.useEffect(() => {
-        const handleKeyDown = (e) => {
+        return () => clearInterval(id);
+    }, [isPlaying, wpm, chunkSize, chunks.length]);
+
+    useEffect(() => {
+        const handler = (e) => {
             if (!isOpen) return;
-            if (e.code === 'Space') {
-                e.preventDefault();
-                setIsPlaying(p => !p);
-            } else if (e.code === 'ArrowLeft') {
-                setCurrentIndex(p => Math.max(0, p - 1));
-            } else if (e.code === 'ArrowRight') {
-                setCurrentIndex(p => Math.min(words.length - 1, p + 1));
-            } else if (e.key === 'Escape') {
-                onClose();
-            }
+            if (e.code === 'Space') { e.preventDefault(); setIsPlaying(p => !p); }
+            else if (e.code === 'ArrowLeft') setChunkIdx(p => Math.max(0, p - 1));
+            else if (e.code === 'ArrowRight') setChunkIdx(p => Math.min(chunks.length - 1, p + 1));
+            else if (e.key === 'Escape') onClose();
         };
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [isOpen, onClose, words.length]);
+        window.addEventListener('keydown', handler);
+        return () => window.removeEventListener('keydown', handler);
+    }, [isOpen, onClose, chunks.length]);
+
     if (!isOpen) return null;
-    const currentWord = words[currentIndex] || "";
-    const centerIdx = Math.floor(currentWord.length / 2);
-    const pre = currentWord.slice(0, centerIdx);
-    const mid = currentWord.charAt(centerIdx);
-    const post = currentWord.slice(centerIdx + 1);
+
+    const currentChunk = chunks[chunkIdx] || [];
+    const progressPct = chunks.length > 0 ? ((chunkIdx + 1) / chunks.length) * 100 : 0;
+    const rsvp = chunkSize === 1;
+    const rsvpWord = rsvp ? (currentChunk[0] || '') : '';
+    const centerIdx = Math.floor(rsvpWord.length / 2);
+
+    const renderBionicWord = (w, i) => {
+        const boldLen = Math.max(1, Math.ceil(w.length * 0.4));
+        return (
+            <span key={i}>
+                <span style={{ fontWeight: 900, color: c.strong }}>{w.slice(0, boldLen)}</span>
+                <span style={{ fontWeight: 400, color: c.light }}>{w.slice(boldLen)}</span>
+                {i < currentChunk.length - 1 ? ' ' : ''}
+            </span>
+        );
+    };
+
     return (
-        <div className="fixed inset-0 z-[300] bg-white text-slate-900 flex flex-col animate-in fade-in duration-200">
-            <div
-                className={`p-4 flex justify-between items-center transition-opacity duration-300 ${showControls || !isPlaying ? 'opacity-100' : 'opacity-0 hover:opacity-100 focus-within:opacity-100'}`}
-            >
-                <div className="flex items-center gap-4">
-                     <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full text-slate-600">
-                        <ArrowLeft size={24} />
-                     </button>
-                     <div className="flex flex-col">
-                        <span className="font-bold text-lg">{t('adventure.focus_reader')}</span>
-                        <span className="text-xs text-slate-600">{currentIndex + 1} / {words.length}</span>
-                     </div>
+        <div className="fixed inset-0 z-[300] flex flex-col animate-in fade-in duration-200" style={{ backgroundColor: c.bg }}>
+            <div className="p-4 flex justify-between items-center gap-3 flex-wrap">
+                <div className="flex items-center gap-3">
+                    <button onClick={onClose} aria-label={t('common.close') || 'Close'} className="p-2 rounded-full hover:bg-black/5" style={{ color: c.strong }}>
+                        <ArrowLeft size={22} />
+                    </button>
+                    <div className="flex flex-col">
+                        <span className="font-bold text-base" style={{ color: c.strong }}>{t('immersive.focus_mode') || 'Focus Mode'}</span>
+                        <span className="text-xs" style={{ color: c.light }}>
+                            {chunkIdx + 1} / {chunks.length} · {rsvp ? 'single-word RSVP' : `${chunkSize}-word chunks · bold-assist`}
+                        </span>
+                    </div>
                 </div>
-                <div className="flex items-center gap-6">
-                    <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-slate-600">COLOR</span>
-                        <div className="flex gap-1">
-                            {colorOptions.map(c => (
-                                <button
-                                    key={c.value}
-                                    onClick={() => setFocusColor(c.value)}
-                                    className={`w-6 h-6 rounded-full border-2 transition-transform hover:scale-110 ${focusColor === c.value ? 'border-slate-800 scale-110' : 'border-transparent'}`}
-                                    style={{ backgroundColor: c.value }}
-                                    title={c.name}
-                                />
-                            ))}
+                <div className="flex items-center gap-4 flex-wrap text-xs font-bold" style={{ color: c.strong }}>
+                    <label className="flex items-center gap-2">
+                        <span style={{ color: c.light }}>WORDS</span>
+                        <input aria-label="Words per chunk" type="range" min="1" max="6" value={chunkSize} onChange={e => setChunkSize(parseInt(e.target.value))} className="w-16 accent-indigo-600" />
+                        <span className="font-mono w-4 text-right">{chunkSize}</span>
+                    </label>
+                    <label className="flex items-center gap-2">
+                        <span style={{ color: c.light }}>SPEED</span>
+                        <input aria-label={t('common.speed') || 'Words per minute'} type="range" min="100" max="900" step="25" value={wpm} onChange={e => setWpm(parseInt(e.target.value))} className="w-28 accent-indigo-600" />
+                        <span className="font-mono w-16 text-right">{wpm} wpm</span>
+                    </label>
+                    <label className="flex items-center gap-2">
+                        <span style={{ color: c.light }}>THEME</span>
+                        <select aria-label="Theme" value={theme} onChange={e => setTheme(e.target.value)} className="text-xs rounded px-2 py-1 border" style={{ borderColor: c.light + '55', background: 'transparent', color: c.strong }}>
+                            <option value="warm">☀ Warm</option>
+                            <option value="dark">🌙 Dark</option>
+                            <option value="sepia">📜 Sepia</option>
+                        </select>
+                    </label>
+                    {rsvp && (
+                        <div className="flex items-center gap-2">
+                            <span style={{ color: c.light }}>FOCUS</span>
+                            <div className="flex gap-1">
+                                {colorOptions.map(opt => (
+                                    <button
+                                        key={opt.value}
+                                        onClick={() => setFocusColor(opt.value)}
+                                        aria-label={`Focus color ${opt.name}`}
+                                        className={`w-5 h-5 rounded-full border-2 transition-transform hover:scale-110 ${focusColor === opt.value ? 'scale-110' : 'border-transparent'}`}
+                                        style={{ backgroundColor: opt.value, borderColor: focusColor === opt.value ? c.strong : 'transparent' }}
+                                        title={opt.name}
+                                    />
+                                ))}
+                            </div>
                         </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-slate-600">SPEED</span>
-                        <input aria-label={t('common.speed')}
-                            type="range"
-                            min="100"
-                            max="800"
-                            step="50"
-                            value={wpm}
-                            onChange={(e) => setWpm(Number(e.target.value))}
-                            className="w-32 accent-indigo-600"
-                        />
-                        <span className="font-mono font-bold w-12 text-right">{wpm}</span>
-                    </div>
-                </div>
-            </div>
-            <div
-                className="flex-1 flex flex-col items-center justify-center cursor-pointer"
-                onClick={() => setIsPlaying(p => !p)}
-            >
-                <div className="relative text-7xl md:text-9xl font-mono font-bold tracking-wide select-none">
-                    <div className="flex items-baseline">
-                        <span className="text-slate-800">{pre}</span>
-                        <span style={{ color: focusColor }}>{mid}</span>
-                        <span className="text-slate-800">{post}</span>
-                    </div>
-                    <div className="absolute top-0 bottom-0 left-1/2 w-0.5 bg-slate-100 -translate-x-1/2 -z-10 h-full"></div>
-                    <div className="absolute left-0 right-0 top-1/2 h-0.5 bg-slate-100 -translate-y-1/2 -z-10 w-full"></div>
-                </div>
-                <div className="mt-12 text-slate-600 animate-pulse text-sm">
-                    {isPlaying ? (
-                        <span className="flex items-center gap-2"><Pause size={16}/> Tap to Pause</span>
-                    ) : (
-                        <span className="flex items-center gap-2"><Play size={16}/> Tap or Space to Play</span>
                     )}
                 </div>
             </div>
-            <div className="h-2 bg-slate-100 w-full">
-                <div
-                    className="h-full bg-indigo-600 transition-all duration-100 ease-linear"
-                    style={{ width: `${((currentIndex + 1) / words.length) * 100}%` }}
-                />
+            <div className="flex-1 flex flex-col items-center justify-center cursor-pointer select-none px-8" onClick={() => setIsPlaying(p => !p)}>
+                {rsvp ? (
+                    <div className="relative text-7xl md:text-9xl font-mono font-bold tracking-wide" style={{ color: c.strong }}>
+                        <div className="flex items-baseline">
+                            <span>{rsvpWord.slice(0, centerIdx)}</span>
+                            <span style={{ color: focusColor }}>{rsvpWord.charAt(centerIdx)}</span>
+                            <span>{rsvpWord.slice(centerIdx + 1)}</span>
+                        </div>
+                        <div className="absolute top-0 bottom-0 left-1/2 w-0.5 -translate-x-1/2 -z-10 h-full" style={{ backgroundColor: c.light + '33' }}></div>
+                        <div className="absolute left-0 right-0 top-1/2 h-0.5 -translate-y-1/2 -z-10 w-full" style={{ backgroundColor: c.light + '33' }}></div>
+                    </div>
+                ) : (
+                    <div className="max-w-5xl text-center" style={{ fontSize: 'clamp(2.5rem, 8vw, 6rem)', lineHeight: 1.15, fontFamily: 'Georgia, "Iowan Old Style", "Times New Roman", serif' }}>
+                        {currentChunk.map((w, i) => renderBionicWord(w, i))}
+                    </div>
+                )}
+                <div className="mt-10 text-sm flex items-center gap-2" style={{ color: c.light }}>
+                    {isPlaying
+                        ? <><Pause size={16} /> Tap to pause · ← → navigate</>
+                        : <><Play size={16} /> Tap or Space to play · ← → navigate · Esc closes</>}
+                </div>
+            </div>
+            <div className="h-2 w-full" style={{ background: c.light + '33' }}>
+                <div className="h-full transition-all duration-200" style={{ width: `${progressPct}%`, backgroundColor: c.accent }} />
             </div>
         </div>
     );
 });
 
-const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackRate, setPlaybackRate, lineHeight, setLineHeight, letterSpacing, setLetterSpacing , isSpeedReaderActive, onToggleSpeedReader, isChunkReaderActive, onToggleChunkReader, chunkReaderIdx, setChunkReaderIdx, chunkReaderAutoPlay, setChunkReaderAutoPlay, chunkReaderSpeed, setChunkReaderSpeed, totalSentences, interactionMode, setInteractionMode, isBionicReaderActive, onToggleBionicReader, isCrawlReaderActive, onToggleCrawlReader, isKaraokeOverlayActive, onToggleKaraokeOverlay, chunkReaderReadAlong, onToggleChunkReaderReadAlong, onGeneratePOS, isGeneratingPOS, posReady, onGenerateSyllables, isGeneratingSyllables, syllablesReady }) => {
+const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackRate, setPlaybackRate, lineHeight, setLineHeight, letterSpacing, setLetterSpacing , isSpeedReaderActive, onToggleSpeedReader, isChunkReaderActive, onToggleChunkReader, chunkReaderIdx, setChunkReaderIdx, chunkReaderAutoPlay, setChunkReaderAutoPlay, chunkReaderSpeed, setChunkReaderSpeed, totalSentences, interactionMode, setInteractionMode, isBionicReaderActive, onToggleBionicReader, isCrawlReaderActive, onToggleCrawlReader, isKaraokeOverlayActive, onToggleKaraokeOverlay, chunkReaderReadAlong, onToggleChunkReaderReadAlong, onGeneratePOS, isGeneratingPOS, posReady, onGenerateSyllables, isGeneratingSyllables, syllablesReady, isFocusReaderActive, onToggleFocusReader }) => {
+  // Back-compat: if the parent hasn't upgraded to the unified Focus Mode prop
+  // yet, synthesize it from the two legacy props (Speed Read and Chunk Stream).
+  const focusReaderActive = (typeof isFocusReaderActive === 'boolean')
+    ? isFocusReaderActive
+    : (!!isSpeedReaderActive || !!isBionicReaderActive);
+  const toggleFocusReader = onToggleFocusReader
+    || onToggleSpeedReader
+    || onToggleBionicReader;
   const { t } = useContext(LanguageContext);
   const toggleSetting = useCallback((key) => setSettings(prev => ({...prev, [key]: !prev[key]})), [setSettings]);
   // POS buttons trigger lazy Gemini tagging the first time any of them is pressed.
@@ -249,14 +306,17 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
             >
               {t('immersive.line_focus')}
             </ToggleButton>
-            <ToggleButton
-              active={isSpeedReaderActive}
-              onClick={onToggleSpeedReader}
-              title={t('common.lightning_speed_read_rsvp')}
-              activeColor="bg-sky-500 text-white"
-            >
-              <Zap size={14} className="mr-1 inline"/> Speed Read
-            </ToggleButton>
+            {toggleFocusReader && (
+              <ToggleButton
+                active={!!focusReaderActive}
+                onClick={toggleFocusReader}
+                title={t('immersive.focus_mode_title') || 'Focus Mode — single-word RSVP or multi-word chunks with bold-assist (drag the WORDS slider once open)'}
+                activeColor="bg-sky-500 text-white"
+                data-help-key="immersive_focus_mode"
+              >
+                <Zap size={14} className="mr-1 inline"/> {t('immersive.focus_mode') || 'Focus Mode'}
+              </ToggleButton>
+            )}
             <ToggleButton
               active={isChunkReaderActive}
               onClick={onToggleChunkReader}
@@ -266,17 +326,6 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
             >
               <List size={14} className="mr-1 inline"/> {(t('immersive.chunk_read') || 'Chunk Read')}
             </ToggleButton>
-            {onToggleBionicReader && (
-              <ToggleButton
-                active={!!isBionicReaderActive}
-                onClick={onToggleBionicReader}
-                title={(t('immersive.chunk_stream') || 'Chunk Stream — bold-assist chunked reading')}
-                activeColor="bg-indigo-600 text-white"
-                data-help-key="immersive_bionic_reader"
-              >
-                <BookOpen size={14} className="mr-1 inline"/> {(t('immersive.chunk_stream') || 'Chunk Stream')}
-              </ToggleButton>
-            )}
             {onToggleCrawlReader && (
               <ToggleButton
                 active={!!isCrawlReaderActive}
@@ -452,130 +501,10 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
   );
 });
 
-// ============================================================================
-// BionicChunkReader — phrase-chunked display with bionic-style bold-assist
-// Shows N words at a time, large and centered, with the leading ~40% of each
-// word bolded to accelerate decoding. A calmer, meaning-preserving alternative
-// to single-word RSVP.
-// ============================================================================
-const BionicChunkReader = React.memo(({ text, onClose, isOpen }) => {
-    const { t } = useContext(LanguageContext);
-    const [words, setWords] = useState([]);
-    const [chunkIdx, setChunkIdx] = useState(0);
-    const [chunkSize, setChunkSize] = useState(3);
-    const [isPlaying, setIsPlaying] = useState(false);
-    const [cpm, setCpm] = useState(120); // chunks per minute (120 × 3 words = 360 wpm)
-    const [theme, setTheme] = useState('warm'); // 'warm' | 'dark' | 'sepia'
-    const themes = {
-        warm: { bg: '#fdfbf7', strong: '#111827', light: '#6b7280', accent: '#4f46e5' },
-        dark: { bg: '#0f172a', strong: '#f1f5f9', light: '#94a3b8', accent: '#818cf8' },
-        sepia: { bg: '#f4ecd8', strong: '#3b2a1a', light: '#8b6f4e', accent: '#b45309' }
-    };
-    const c = themes[theme] || themes.warm;
-
-    useEffect(() => {
-        if (text) {
-            const cleaned = String(text || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
-            setWords(cleaned.split(' ').filter(w => w.length > 0));
-            setChunkIdx(0);
-        }
-    }, [text]);
-
-    const chunks = useMemo(() => {
-        const out = [];
-        for (let i = 0; i < words.length; i += chunkSize) out.push(words.slice(i, i + chunkSize));
-        return out;
-    }, [words, chunkSize]);
-
-    useEffect(() => {
-        if (!isPlaying) return;
-        const delay = 60000 / Math.max(10, cpm);
-        const id = setInterval(() => {
-            setChunkIdx(prev => {
-                if (prev >= chunks.length - 1) { setIsPlaying(false); return prev; }
-                return prev + 1;
-            });
-        }, delay);
-        return () => clearInterval(id);
-    }, [isPlaying, cpm, chunks.length]);
-
-    useEffect(() => {
-        const handler = (e) => {
-            if (!isOpen) return;
-            if (e.code === 'Space') { e.preventDefault(); setIsPlaying(p => !p); }
-            else if (e.code === 'ArrowLeft') setChunkIdx(p => Math.max(0, p - 1));
-            else if (e.code === 'ArrowRight') setChunkIdx(p => Math.min(chunks.length - 1, p + 1));
-            else if (e.key === 'Escape') onClose();
-        };
-        window.addEventListener('keydown', handler);
-        return () => window.removeEventListener('keydown', handler);
-    }, [isOpen, onClose, chunks.length]);
-
-    if (!isOpen) return null;
-
-    const renderBionicWord = (w, i) => {
-        const boldLen = Math.max(1, Math.ceil(w.length * 0.4));
-        return (
-            <span key={i}>
-                <span style={{ fontWeight: 900, color: c.strong }}>{w.slice(0, boldLen)}</span>
-                <span style={{ fontWeight: 400, color: c.light }}>{w.slice(boldLen)}</span>
-                {i < (chunks[chunkIdx] || []).length - 1 ? ' ' : ''}
-            </span>
-        );
-    };
-
-    const currentChunk = chunks[chunkIdx] || [];
-    const progressPct = chunks.length > 0 ? ((chunkIdx + 1) / chunks.length) * 100 : 0;
-
-    return (
-        <div className="fixed inset-0 z-[300] flex flex-col animate-in fade-in duration-200" style={{ backgroundColor: c.bg }}>
-            <div className="p-4 flex justify-between items-center gap-3 flex-wrap">
-                <div className="flex items-center gap-3">
-                    <button onClick={onClose} aria-label={t('common.close') || 'Close'} className="p-2 rounded-full hover:bg-black/5" style={{ color: c.strong }}>
-                        <ArrowLeft size={22} />
-                    </button>
-                    <div className="flex flex-col">
-                        <span className="font-bold text-base" style={{ color: c.strong }}>{t('immersive.chunk_stream') || 'Chunk Stream'}</span>
-                        <span className="text-xs" style={{ color: c.light }}>{chunkIdx + 1} / {chunks.length} · bold-assist reading</span>
-                    </div>
-                </div>
-                <div className="flex items-center gap-4 flex-wrap text-xs font-bold" style={{ color: c.strong }}>
-                    <label className="flex items-center gap-2">
-                        <span style={{ color: c.light }}>WORDS</span>
-                        <input aria-label="Words per chunk" type="range" min="1" max="6" value={chunkSize} onChange={e => setChunkSize(parseInt(e.target.value))} className="w-16" />
-                        <span className="font-mono w-4 text-right">{chunkSize}</span>
-                    </label>
-                    <label className="flex items-center gap-2">
-                        <span style={{ color: c.light }}>SPEED</span>
-                        <input aria-label="Chunks per minute" type="range" min="40" max="300" step="10" value={cpm} onChange={e => setCpm(parseInt(e.target.value))} className="w-24" />
-                        <span className="font-mono w-16 text-right">{cpm} cpm</span>
-                    </label>
-                    <label className="flex items-center gap-2">
-                        <span style={{ color: c.light }}>THEME</span>
-                        <select aria-label="Theme" value={theme} onChange={e => setTheme(e.target.value)} className="text-xs rounded px-2 py-1 border" style={{ borderColor: c.light + '55', background: 'transparent', color: c.strong }}>
-                            <option value="warm">☀️ Warm</option>
-                            <option value="dark">🌙 Dark</option>
-                            <option value="sepia">📜 Sepia</option>
-                        </select>
-                    </label>
-                </div>
-            </div>
-            <div className="flex-1 flex flex-col items-center justify-center cursor-pointer select-none px-8" onClick={() => setIsPlaying(p => !p)}>
-                <div className="max-w-5xl text-center" style={{ fontSize: 'clamp(2.5rem, 8vw, 6rem)', lineHeight: 1.15, fontFamily: 'Georgia, "Iowan Old Style", "Times New Roman", serif' }}>
-                    {currentChunk.map((w, i) => renderBionicWord(w, i))}
-                </div>
-                <div className="mt-10 text-sm flex items-center gap-2" style={{ color: c.light }}>
-                    {isPlaying
-                        ? <><Pause size={16} /> Tap to pause · ← → navigate</>
-                        : <><Play size={16} /> Tap or Space to play · ← → navigate · Esc closes</>}
-                </div>
-            </div>
-            <div className="h-2 w-full" style={{ background: c.light + '33' }}>
-                <div className="h-full transition-all duration-200" style={{ width: `${progressPct}%`, backgroundColor: c.accent }} />
-            </div>
-        </div>
-    );
-});
+// Back-compat aliases for FocusReaderOverlay are published at the bottom of
+// this module under the old window.AlloModules names (SpeedReaderOverlay,
+// BionicChunkReader). No local aliases are needed because nothing inside this
+// file references the old names directly.
 
 // ============================================================================
 // PerspectiveCrawlOverlay — cinematic upward-receding scroll (the "crawl")
@@ -588,6 +517,9 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
     const [isPlaying, setIsPlaying] = useState(true);
     const [translateY, setTranslateY] = useState(0); // negative = scrolled up — used for render only
     const [palette, setPalette] = useState('gold'); // 'gold' | 'teal' | 'paper'
+    const [finished, setFinished] = useState(false);
+    const [ambientOn, setAmbientOn] = useState(true);
+    const [progressPct, setProgressPct] = useState(0);
     const palettes = {
         gold: { bg: '#000000', text: '#fde047', accent: '#facc15' },
         teal: { bg: '#061629', text: '#67e8f9', accent: '#22d3ee' },
@@ -603,9 +535,16 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
     // translateY in the effect deps, which tore down and re-scheduled RAF on
     // every tick — visible perf cost on long documents).
     const translateYRef = useRef(0);
+    // Web Audio nodes for the ambient pad (detuned sines + low-pass). Built
+    // lazily on first open so construction doesn't run for users who never
+    // launch the Crawl.
+    const audioCtxRef = useRef(null);
+    const audioNodesRef = useRef(null);
     const resetCrawl = useCallback(() => {
         translateYRef.current = 0;
         setTranslateY(0);
+        setFinished(false);
+        setProgressPct(0);
         lastTsRef.current = null;
     }, []);
 
@@ -623,12 +562,17 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
             const nextY = translateYRef.current - dt * speedPxPerSec;
             translateYRef.current = nextY;
             setTranslateY(nextY);
-            // stop when text fully off-top
             const vh = viewportRef.current ? viewportRef.current.clientHeight : 600;
             const th = textRef.current ? textRef.current.clientHeight : 0;
-            if (th > 0 && nextY < -(th + vh * 0.5)) {
-                setIsPlaying(false);
-                return;
+            if (th > 0) {
+                const total = th + vh * 0.5;
+                setProgressPct(Math.min(100, (-nextY / total) * 100));
+                if (nextY < -total) {
+                    setIsPlaying(false);
+                    setFinished(true);
+                    setProgressPct(100);
+                    return;
+                }
             }
             rafRef.current = requestAnimationFrame(step);
         };
@@ -639,12 +583,85 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
         };
     }, [isOpen, isPlaying, speedPxPerSec]);
 
+    // Ambient pad — 3 detuned sines through a low-pass filter, routed to a
+    // gain node we can ramp to zero on pause / close for a smooth fade.
+    // Built lazily on first "play while isOpen" so we don't synthesize audio
+    // nodes for users who never open the Crawl.
+    useEffect(() => {
+        if (!isOpen || !ambientOn || !isPlaying) {
+            // fade out
+            if (audioNodesRef.current) {
+                try {
+                    const { gain, ctx } = audioNodesRef.current;
+                    gain.gain.cancelScheduledValues(ctx.currentTime);
+                    gain.gain.setTargetAtTime(0, ctx.currentTime, 0.4);
+                } catch (e) {}
+            }
+            return;
+        }
+        try {
+            if (!audioCtxRef.current) {
+                const Ctx = window.AudioContext || window.webkitAudioContext;
+                if (!Ctx) return;
+                audioCtxRef.current = new Ctx();
+            }
+            const ctx = audioCtxRef.current;
+            if (ctx.state === 'suspended') { try { ctx.resume(); } catch (e) {} }
+            if (!audioNodesRef.current) {
+                const gain = ctx.createGain();
+                gain.gain.value = 0;
+                const lp = ctx.createBiquadFilter();
+                lp.type = 'lowpass';
+                lp.frequency.value = 600;
+                lp.Q.value = 0.5;
+                // Three quiet sines at fifths — harmonically consonant, not melodic.
+                const freqs = [110, 164.81, 220]; // A2, E3, A3
+                const oscs = freqs.map((f, i) => {
+                    const o = ctx.createOscillator();
+                    o.type = i === 1 ? 'triangle' : 'sine';
+                    o.frequency.value = f;
+                    // Subtle detune gives it a breathing pad quality.
+                    o.detune.value = (i - 1) * 6;
+                    o.connect(gain);
+                    o.start();
+                    return o;
+                });
+                gain.connect(lp);
+                lp.connect(ctx.destination);
+                audioNodesRef.current = { ctx, gain, lp, oscs };
+            }
+            const { gain, ctx: c2 } = audioNodesRef.current;
+            gain.gain.cancelScheduledValues(c2.currentTime);
+            gain.gain.setTargetAtTime(0.06, c2.currentTime, 0.8);
+        } catch (e) {
+            // Audio blocked (no gesture yet, or autoplay restriction). Non-fatal.
+        }
+    }, [isOpen, isPlaying, ambientOn]);
+
+    // Tear audio all the way down when the overlay closes, so no nodes linger.
+    useEffect(() => {
+        return () => {
+            try {
+                if (audioNodesRef.current) {
+                    const { oscs } = audioNodesRef.current;
+                    oscs.forEach(o => { try { o.stop(); } catch (e) {} });
+                    audioNodesRef.current = null;
+                }
+                if (audioCtxRef.current) {
+                    try { audioCtxRef.current.close(); } catch (e) {}
+                    audioCtxRef.current = null;
+                }
+            } catch (e) {}
+        };
+    }, []);
+
     useEffect(() => {
         if (!isOpen) return;
         const handler = (e) => {
             if (e.code === 'Space') { e.preventDefault(); setIsPlaying(pl => !pl); }
             else if (e.key === 'Escape') onClose();
-            else if (e.key === 'r' || e.key === 'R') resetCrawl();
+            else if (e.key === 'r' || e.key === 'R') { resetCrawl(); setIsPlaying(true); }
+            else if (e.key === 'm' || e.key === 'M') setAmbientOn(a => !a);
         };
         window.addEventListener('keydown', handler);
         return () => window.removeEventListener('keydown', handler);
@@ -654,6 +671,10 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
 
     const cleaned = String(text || '').replace(/<[^>]*>/g, '').replace(/\n{3,}/g, '\n\n').trim();
     const paragraphs = cleaned.split(/\n{2,}/).filter(Boolean);
+    const togglePlay = () => {
+        if (finished) { resetCrawl(); setIsPlaying(true); }
+        else setIsPlaying(pl => !pl);
+    };
 
     return (
         <div className="fixed inset-0 z-[300] flex flex-col" style={{ backgroundColor: p.bg, color: p.text }}>
@@ -678,15 +699,45 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
                             <option value="paper">Paper</option>
                         </select>
                     </label>
-                    <button onClick={() => setIsPlaying(pl => !pl)} aria-label={isPlaying ? 'Pause' : 'Play'} className="px-3 py-1 rounded" style={{ background: p.text + '22', color: p.text }}>
+                    <button
+                        onClick={() => setAmbientOn(a => !a)}
+                        aria-pressed={ambientOn}
+                        aria-label={ambientOn ? 'Mute ambient pad' : 'Unmute ambient pad'}
+                        title={ambientOn ? 'Ambient pad on (M to toggle)' : 'Ambient pad muted (M to toggle)'}
+                        className="px-3 py-1 rounded text-xs"
+                        style={{ background: p.text + '22', color: p.text, opacity: ambientOn ? 1 : 0.55 }}
+                    >
+                        {ambientOn ? '♪' : '♪̸'}
+                    </button>
+                    <button onClick={togglePlay} aria-label={isPlaying ? 'Pause' : 'Play'} className="px-3 py-1 rounded" style={{ background: p.text + '22', color: p.text }}>
                         {isPlaying ? <Pause size={14} /> : <Play size={14} />}
                     </button>
-                    <button onClick={resetCrawl} aria-label="Restart crawl from top" className="px-3 py-1 rounded text-xs" style={{ background: p.text + '22', color: p.text }}>
+                    <button onClick={() => { resetCrawl(); setIsPlaying(true); }} aria-label="Restart crawl from top" className="px-3 py-1 rounded text-xs" style={{ background: p.text + '22', color: p.text }}>
                         ↺ Restart
                     </button>
                 </div>
             </div>
-            <div ref={viewportRef} className="flex-1 relative overflow-hidden" style={{ perspective: '500px', perspectiveOrigin: '50% 100%' }}>
+            <div
+                ref={viewportRef}
+                onClick={togglePlay}
+                className="flex-1 relative overflow-hidden cursor-pointer select-none"
+                style={{ perspective: '500px', perspectiveOrigin: '50% 100%' }}
+                role="button"
+                aria-label={isPlaying ? 'Pause crawl' : 'Play crawl'}
+            >
+                {/* Starfield backdrop — three layered box-shadow dot fields drifting at
+                    different rates for parallax. Rendered behind the text so we get a
+                    sense of travelling through space without needing any image assets. */}
+                <div className="absolute inset-0 pointer-events-none" style={{
+                    backgroundImage: `radial-gradient(circle at 20% 30%, ${p.accent}22 0 1px, transparent 2px), radial-gradient(circle at 70% 20%, ${p.accent}1a 0 1px, transparent 2px), radial-gradient(circle at 85% 80%, ${p.accent}33 0 1px, transparent 2.5px), radial-gradient(circle at 15% 75%, ${p.accent}22 0 1px, transparent 2px), radial-gradient(circle at 40% 60%, ${p.accent}1a 0 1px, transparent 2px)`,
+                    backgroundSize: '3px 3px, 5px 5px, 7px 7px, 4px 4px, 6px 6px',
+                    backgroundPosition: `0 ${translateY * 0.08}px, 0 ${translateY * 0.12}px, 0 ${translateY * 0.18}px, 0 ${translateY * 0.05}px, 0 ${translateY * 0.1}px`,
+                    opacity: 0.6,
+                    willChange: 'background-position'
+                }} />
+                <div className="absolute inset-0 pointer-events-none" style={{
+                    background: `radial-gradient(ellipse at 50% 100%, ${p.accent}14 0%, transparent 60%)`
+                }} />
                 {/* The scrolling slab */}
                 <div
                     ref={textRef}
@@ -713,11 +764,38 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
                 </div>
                 {/* Fade at top so text gracefully vanishes as it recedes */}
                 <div className="absolute inset-x-0 top-0 pointer-events-none" style={{ height: '40%', background: `linear-gradient(to bottom, ${p.bg} 0%, ${p.bg}cc 40%, transparent 100%)` }} />
+                {/* Matching fade-in at bottom so paragraphs ease into view as they enter */}
+                <div className="absolute inset-x-0 bottom-0 pointer-events-none" style={{ height: '18%', background: `linear-gradient(to top, ${p.bg} 0%, transparent 100%)` }} />
                 {/* subtle vignette */}
                 <div className="absolute inset-0 pointer-events-none" style={{ boxShadow: 'inset 0 0 180px rgba(0,0,0,0.6)' }} />
+                {/* Outro card when the crawl completes */}
+                {finished && (
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <div
+                            className="text-center px-10 py-6 rounded-lg backdrop-blur-sm"
+                            style={{ background: `${p.bg}cc`, border: `1px solid ${p.accent}55`, color: p.text, boxShadow: `0 0 40px ${p.accent}33` }}
+                        >
+                            <div style={{ fontFamily: 'Georgia, serif', fontSize: 'clamp(2rem, 4vw, 3rem)', fontWeight: 900, letterSpacing: '0.15em' }}>
+                                THE END
+                            </div>
+                            <div className="text-xs mt-2" style={{ opacity: 0.7 }}>
+                                Click anywhere · press R to replay · Esc closes
+                            </div>
+                        </div>
+                    </div>
+                )}
+                {/* Pause indicator — only visible when paused mid-scroll */}
+                {!isPlaying && !finished && translateYRef.current < -4 && (
+                    <div className="absolute top-4 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-xs pointer-events-none" style={{ background: `${p.bg}99`, border: `1px solid ${p.accent}33`, color: p.text }}>
+                        ⏸ Paused — click to resume
+                    </div>
+                )}
+            </div>
+            <div className="h-1 w-full" style={{ background: p.text + '22' }}>
+                <div className="h-full transition-all duration-200 ease-linear" style={{ width: `${progressPct}%`, backgroundColor: p.accent }} />
             </div>
             <div className="py-2 text-center text-xs" style={{ color: p.text, opacity: 0.6 }}>
-                Space pauses · R restarts · Esc closes
+                Click or Space pauses · R restarts · M mutes pad · Esc closes
             </div>
         </div>
     );
@@ -1031,10 +1109,12 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl })
 });
 
 window.AlloModules = window.AlloModules || {};
-window.AlloModules.SpeedReaderOverlay = SpeedReaderOverlay;
-window.AlloModules.BionicChunkReader = BionicChunkReader;
+window.AlloModules.FocusReaderOverlay = FocusReaderOverlay;
+// Back-compat aliases — old consumers resolve to the unified overlay.
+window.AlloModules.SpeedReaderOverlay = FocusReaderOverlay;
+window.AlloModules.BionicChunkReader = FocusReaderOverlay;
 window.AlloModules.PerspectiveCrawlOverlay = PerspectiveCrawlOverlay;
 window.AlloModules.KaraokeReaderOverlay = KaraokeReaderOverlay;
 window.AlloModules.ImmersiveToolbar = ImmersiveToolbar;
 window.AlloModules.ImmersiveReaderModule = true;
-console.log('[ImmersiveReaderModule] 5 components registered');
+console.log('[ImmersiveReaderModule] Focus + Crawl + Karaoke + Toolbar registered');

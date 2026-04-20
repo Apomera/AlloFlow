@@ -57,14 +57,21 @@ var Settings2 = _lazyIcon("Settings2");
 var Volume2 = _lazyIcon("Volume2");
 var X = _lazyIcon("X");
 var Zap = _lazyIcon("Zap");
-const SpeedReaderOverlay = React.memo(({ text, onClose, isOpen }) => {
+const FocusReaderOverlay = React.memo(({ text, onClose, isOpen }) => {
   const { t } = useContext(LanguageContext);
-  const [words, setWords] = React.useState([]);
-  const [currentIndex, setCurrentIndex] = React.useState(0);
-  const [isPlaying, setIsPlaying] = React.useState(false);
-  const [wpm, setWpm] = React.useState(300);
-  const [showControls, setShowControls] = React.useState(true);
-  const [focusColor, setFocusColor] = React.useState("#dc2626");
+  const [words, setWords] = useState([]);
+  const [chunkIdx, setChunkIdx] = useState(0);
+  const [chunkSize, setChunkSize] = useState(1);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [wpm, setWpm] = useState(300);
+  const [theme, setTheme] = useState("warm");
+  const [focusColor, setFocusColor] = useState("#dc2626");
+  const themes = {
+    warm: { bg: "#fdfbf7", strong: "#111827", light: "#6b7280", accent: "#4f46e5", panel: "rgba(255,255,255,0.85)" },
+    dark: { bg: "#0f172a", strong: "#f1f5f9", light: "#94a3b8", accent: "#818cf8", panel: "rgba(15,23,42,0.85)" },
+    sepia: { bg: "#f4ecd8", strong: "#3b2a1a", light: "#8b6f4e", accent: "#b45309", panel: "rgba(244,236,216,0.85)" }
+  };
+  const c = themes[theme] || themes.warm;
   const colorOptions = [
     { name: "Red", value: "#dc2626" },
     { name: "Blue", value: "#2563eb" },
@@ -74,96 +81,80 @@ const SpeedReaderOverlay = React.memo(({ text, onClose, isOpen }) => {
     { name: "Pink", value: "#db2777" },
     { name: "Teal", value: "#0d9488" }
   ];
-  React.useEffect(() => {
+  useEffect(() => {
     if (text) {
       const cleaned = String(text || "").replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
-      const w = cleaned.split(" ").filter((word) => word.length > 0);
-      setWords(w);
-      setCurrentIndex(0);
+      setWords(cleaned.split(" ").filter((w) => w.length > 0));
+      setChunkIdx(0);
     }
   }, [text]);
-  React.useEffect(() => {
+  const chunks = useMemo(() => {
+    const out = [];
+    const size = Math.max(1, chunkSize);
+    for (let i = 0; i < words.length; i += size) out.push(words.slice(i, i + size));
+    return out;
+  }, [words, chunkSize]);
+  const prevChunkSizeRef = useRef(chunkSize);
+  useEffect(() => {
+    const prev = prevChunkSizeRef.current;
+    if (prev !== chunkSize && words.length > 0) {
+      const wordCursor = chunkIdx * prev;
+      setChunkIdx(Math.min(Math.floor(wordCursor / chunkSize), Math.max(0, Math.ceil(words.length / chunkSize) - 1)));
+    }
+    prevChunkSizeRef.current = chunkSize;
+  }, [chunkSize, words.length]);
+  useEffect(() => {
     if (!isPlaying) return;
-    const delay = 6e4 / wpm;
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) => {
-        if (prev >= words.length - 1) {
+    const delay = Math.max(60, 6e4 / Math.max(50, wpm) * Math.max(1, chunkSize));
+    const id = setInterval(() => {
+      setChunkIdx((prev) => {
+        if (prev >= chunks.length - 1) {
           setIsPlaying(false);
           return prev;
         }
         return prev + 1;
       });
     }, delay);
-    return () => clearInterval(interval);
-  }, [isPlaying, wpm, words.length]);
-  React.useEffect(() => {
-    const handleKeyDown = (e) => {
+    return () => clearInterval(id);
+  }, [isPlaying, wpm, chunkSize, chunks.length]);
+  useEffect(() => {
+    const handler = (e) => {
       if (!isOpen) return;
       if (e.code === "Space") {
         e.preventDefault();
         setIsPlaying((p) => !p);
-      } else if (e.code === "ArrowLeft") {
-        setCurrentIndex((p) => Math.max(0, p - 1));
-      } else if (e.code === "ArrowRight") {
-        setCurrentIndex((p) => Math.min(words.length - 1, p + 1));
-      } else if (e.key === "Escape") {
-        onClose();
-      }
+      } else if (e.code === "ArrowLeft") setChunkIdx((p) => Math.max(0, p - 1));
+      else if (e.code === "ArrowRight") setChunkIdx((p) => Math.min(chunks.length - 1, p + 1));
+      else if (e.key === "Escape") onClose();
     };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, onClose, words.length]);
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [isOpen, onClose, chunks.length]);
   if (!isOpen) return null;
-  const currentWord = words[currentIndex] || "";
-  const centerIdx = Math.floor(currentWord.length / 2);
-  const pre = currentWord.slice(0, centerIdx);
-  const mid = currentWord.charAt(centerIdx);
-  const post = currentWord.slice(centerIdx + 1);
-  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[300] bg-white text-slate-900 flex flex-col animate-in fade-in duration-200" }, /* @__PURE__ */ React.createElement(
-    "div",
+  const currentChunk = chunks[chunkIdx] || [];
+  const progressPct = chunks.length > 0 ? (chunkIdx + 1) / chunks.length * 100 : 0;
+  const rsvp = chunkSize === 1;
+  const rsvpWord = rsvp ? currentChunk[0] || "" : "";
+  const centerIdx = Math.floor(rsvpWord.length / 2);
+  const renderBionicWord = (w, i) => {
+    const boldLen = Math.max(1, Math.ceil(w.length * 0.4));
+    return /* @__PURE__ */ React.createElement("span", { key: i }, /* @__PURE__ */ React.createElement("span", { style: { fontWeight: 900, color: c.strong } }, w.slice(0, boldLen)), /* @__PURE__ */ React.createElement("span", { style: { fontWeight: 400, color: c.light } }, w.slice(boldLen)), i < currentChunk.length - 1 ? " " : "");
+  };
+  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[300] flex flex-col animate-in fade-in duration-200", style: { backgroundColor: c.bg } }, /* @__PURE__ */ React.createElement("div", { className: "p-4 flex justify-between items-center gap-3 flex-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("button", { onClick: onClose, "aria-label": t("common.close") || "Close", className: "p-2 rounded-full hover:bg-black/5", style: { color: c.strong } }, /* @__PURE__ */ React.createElement(ArrowLeft, { size: 22 })), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-base", style: { color: c.strong } }, t("immersive.focus_mode") || "Focus Mode"), /* @__PURE__ */ React.createElement("span", { className: "text-xs", style: { color: c.light } }, chunkIdx + 1, " / ", chunks.length, " \xB7 ", rsvp ? "single-word RSVP" : `${chunkSize}-word chunks \xB7 bold-assist`))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4 flex-wrap text-xs font-bold", style: { color: c.strong } }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { style: { color: c.light } }, "WORDS"), /* @__PURE__ */ React.createElement("input", { "aria-label": "Words per chunk", type: "range", min: "1", max: "6", value: chunkSize, onChange: (e) => setChunkSize(parseInt(e.target.value)), className: "w-16 accent-indigo-600" }), /* @__PURE__ */ React.createElement("span", { className: "font-mono w-4 text-right" }, chunkSize)), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { style: { color: c.light } }, "SPEED"), /* @__PURE__ */ React.createElement("input", { "aria-label": t("common.speed") || "Words per minute", type: "range", min: "100", max: "900", step: "25", value: wpm, onChange: (e) => setWpm(parseInt(e.target.value)), className: "w-28 accent-indigo-600" }), /* @__PURE__ */ React.createElement("span", { className: "font-mono w-16 text-right" }, wpm, " wpm")), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { style: { color: c.light } }, "THEME"), /* @__PURE__ */ React.createElement("select", { "aria-label": "Theme", value: theme, onChange: (e) => setTheme(e.target.value), className: "text-xs rounded px-2 py-1 border", style: { borderColor: c.light + "55", background: "transparent", color: c.strong } }, /* @__PURE__ */ React.createElement("option", { value: "warm" }, "\u2600 Warm"), /* @__PURE__ */ React.createElement("option", { value: "dark" }, "\u{1F319} Dark"), /* @__PURE__ */ React.createElement("option", { value: "sepia" }, "\u{1F4DC} Sepia"))), rsvp && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { style: { color: c.light } }, "FOCUS"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1" }, colorOptions.map((opt) => /* @__PURE__ */ React.createElement(
+    "button",
     {
-      className: `p-4 flex justify-between items-center transition-opacity duration-300 ${showControls || !isPlaying ? "opacity-100" : "opacity-0 hover:opacity-100 focus-within:opacity-100"}`
-    },
-    /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4" }, /* @__PURE__ */ React.createElement("button", { onClick: onClose, className: "p-2 hover:bg-slate-100 rounded-full text-slate-600" }, /* @__PURE__ */ React.createElement(ArrowLeft, { size: 24 })), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-lg" }, t("adventure.focus_reader")), /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600" }, currentIndex + 1, " / ", words.length))),
-    /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-6" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-slate-600" }, "COLOR"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1" }, colorOptions.map((c) => /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        key: c.value,
-        onClick: () => setFocusColor(c.value),
-        className: `w-6 h-6 rounded-full border-2 transition-transform hover:scale-110 ${focusColor === c.value ? "border-slate-800 scale-110" : "border-transparent"}`,
-        style: { backgroundColor: c.value },
-        title: c.name
-      }
-    )))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-slate-600" }, "SPEED"), /* @__PURE__ */ React.createElement(
-      "input",
-      {
-        "aria-label": t("common.speed"),
-        type: "range",
-        min: "100",
-        max: "800",
-        step: "50",
-        value: wpm,
-        onChange: (e) => setWpm(Number(e.target.value)),
-        className: "w-32 accent-indigo-600"
-      }
-    ), /* @__PURE__ */ React.createElement("span", { className: "font-mono font-bold w-12 text-right" }, wpm)))
-  ), /* @__PURE__ */ React.createElement(
-    "div",
-    {
-      className: "flex-1 flex flex-col items-center justify-center cursor-pointer",
-      onClick: () => setIsPlaying((p) => !p)
-    },
-    /* @__PURE__ */ React.createElement("div", { className: "relative text-7xl md:text-9xl font-mono font-bold tracking-wide select-none" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-baseline" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-800" }, pre), /* @__PURE__ */ React.createElement("span", { style: { color: focusColor } }, mid), /* @__PURE__ */ React.createElement("span", { className: "text-slate-800" }, post)), /* @__PURE__ */ React.createElement("div", { className: "absolute top-0 bottom-0 left-1/2 w-0.5 bg-slate-100 -translate-x-1/2 -z-10 h-full" }), /* @__PURE__ */ React.createElement("div", { className: "absolute left-0 right-0 top-1/2 h-0.5 bg-slate-100 -translate-y-1/2 -z-10 w-full" })),
-    /* @__PURE__ */ React.createElement("div", { className: "mt-12 text-slate-600 animate-pulse text-sm" }, isPlaying ? /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Pause, { size: 16 }), " Tap to Pause") : /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Play, { size: 16 }), " Tap or Space to Play"))
-  ), /* @__PURE__ */ React.createElement("div", { className: "h-2 bg-slate-100 w-full" }, /* @__PURE__ */ React.createElement(
-    "div",
-    {
-      className: "h-full bg-indigo-600 transition-all duration-100 ease-linear",
-      style: { width: `${(currentIndex + 1) / words.length * 100}%` }
+      key: opt.value,
+      onClick: () => setFocusColor(opt.value),
+      "aria-label": `Focus color ${opt.name}`,
+      className: `w-5 h-5 rounded-full border-2 transition-transform hover:scale-110 ${focusColor === opt.value ? "scale-110" : "border-transparent"}`,
+      style: { backgroundColor: opt.value, borderColor: focusColor === opt.value ? c.strong : "transparent" },
+      title: opt.name
     }
-  )));
+  )))))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 flex flex-col items-center justify-center cursor-pointer select-none px-8", onClick: () => setIsPlaying((p) => !p) }, rsvp ? /* @__PURE__ */ React.createElement("div", { className: "relative text-7xl md:text-9xl font-mono font-bold tracking-wide", style: { color: c.strong } }, /* @__PURE__ */ React.createElement("div", { className: "flex items-baseline" }, /* @__PURE__ */ React.createElement("span", null, rsvpWord.slice(0, centerIdx)), /* @__PURE__ */ React.createElement("span", { style: { color: focusColor } }, rsvpWord.charAt(centerIdx)), /* @__PURE__ */ React.createElement("span", null, rsvpWord.slice(centerIdx + 1))), /* @__PURE__ */ React.createElement("div", { className: "absolute top-0 bottom-0 left-1/2 w-0.5 -translate-x-1/2 -z-10 h-full", style: { backgroundColor: c.light + "33" } }), /* @__PURE__ */ React.createElement("div", { className: "absolute left-0 right-0 top-1/2 h-0.5 -translate-y-1/2 -z-10 w-full", style: { backgroundColor: c.light + "33" } })) : /* @__PURE__ */ React.createElement("div", { className: "max-w-5xl text-center", style: { fontSize: "clamp(2.5rem, 8vw, 6rem)", lineHeight: 1.15, fontFamily: 'Georgia, "Iowan Old Style", "Times New Roman", serif' } }, currentChunk.map((w, i) => renderBionicWord(w, i))), /* @__PURE__ */ React.createElement("div", { className: "mt-10 text-sm flex items-center gap-2", style: { color: c.light } }, isPlaying ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(Pause, { size: 16 }), " Tap to pause \xB7 \u2190 \u2192 navigate") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(Play, { size: 16 }), " Tap or Space to play \xB7 \u2190 \u2192 navigate \xB7 Esc closes"))), /* @__PURE__ */ React.createElement("div", { className: "h-2 w-full", style: { background: c.light + "33" } }, /* @__PURE__ */ React.createElement("div", { className: "h-full transition-all duration-200", style: { width: `${progressPct}%`, backgroundColor: c.accent } })));
 });
-const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackRate, setPlaybackRate, lineHeight, setLineHeight, letterSpacing, setLetterSpacing, isSpeedReaderActive, onToggleSpeedReader, isChunkReaderActive, onToggleChunkReader, chunkReaderIdx, setChunkReaderIdx, chunkReaderAutoPlay, setChunkReaderAutoPlay, chunkReaderSpeed, setChunkReaderSpeed, totalSentences, interactionMode, setInteractionMode, isBionicReaderActive, onToggleBionicReader, isCrawlReaderActive, onToggleCrawlReader, isKaraokeOverlayActive, onToggleKaraokeOverlay, chunkReaderReadAlong, onToggleChunkReaderReadAlong, onGeneratePOS, isGeneratingPOS, posReady, onGenerateSyllables, isGeneratingSyllables, syllablesReady }) => {
+const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackRate, setPlaybackRate, lineHeight, setLineHeight, letterSpacing, setLetterSpacing, isSpeedReaderActive, onToggleSpeedReader, isChunkReaderActive, onToggleChunkReader, chunkReaderIdx, setChunkReaderIdx, chunkReaderAutoPlay, setChunkReaderAutoPlay, chunkReaderSpeed, setChunkReaderSpeed, totalSentences, interactionMode, setInteractionMode, isBionicReaderActive, onToggleBionicReader, isCrawlReaderActive, onToggleCrawlReader, isKaraokeOverlayActive, onToggleKaraokeOverlay, chunkReaderReadAlong, onToggleChunkReaderReadAlong, onGeneratePOS, isGeneratingPOS, posReady, onGenerateSyllables, isGeneratingSyllables, syllablesReady, isFocusReaderActive, onToggleFocusReader }) => {
+  const focusReaderActive = typeof isFocusReaderActive === "boolean" ? isFocusReaderActive : !!isSpeedReaderActive || !!isBionicReaderActive;
+  const toggleFocusReader = onToggleFocusReader || onToggleSpeedReader || onToggleBionicReader;
   const { t } = useContext(LanguageContext);
   const toggleSetting = useCallback((key) => setSettings((prev) => ({ ...prev, [key]: !prev[key] })), [setSettings]);
   const handlePosToggle = useCallback((settingKey) => {
@@ -240,16 +231,18 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
       "data-help-key": "immersive_line_focus"
     },
     t("immersive.line_focus")
-  ), /* @__PURE__ */ React.createElement(
+  ), toggleFocusReader && /* @__PURE__ */ React.createElement(
     ToggleButton,
     {
-      active: isSpeedReaderActive,
-      onClick: onToggleSpeedReader,
-      title: t("common.lightning_speed_read_rsvp"),
-      activeColor: "bg-sky-500 text-white"
+      active: !!focusReaderActive,
+      onClick: toggleFocusReader,
+      title: t("immersive.focus_mode_title") || "Focus Mode \u2014 single-word RSVP or multi-word chunks with bold-assist (drag the WORDS slider once open)",
+      activeColor: "bg-sky-500 text-white",
+      "data-help-key": "immersive_focus_mode"
     },
     /* @__PURE__ */ React.createElement(Zap, { size: 14, className: "mr-1 inline" }),
-    " Speed Read"
+    " ",
+    t("immersive.focus_mode") || "Focus Mode"
   ), /* @__PURE__ */ React.createElement(
     ToggleButton,
     {
@@ -262,18 +255,6 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
     /* @__PURE__ */ React.createElement(List, { size: 14, className: "mr-1 inline" }),
     " ",
     t("immersive.chunk_read") || "Chunk Read"
-  ), onToggleBionicReader && /* @__PURE__ */ React.createElement(
-    ToggleButton,
-    {
-      active: !!isBionicReaderActive,
-      onClick: onToggleBionicReader,
-      title: t("immersive.chunk_stream") || "Chunk Stream \u2014 bold-assist chunked reading",
-      activeColor: "bg-indigo-600 text-white",
-      "data-help-key": "immersive_bionic_reader"
-    },
-    /* @__PURE__ */ React.createElement(BookOpen, { size: 14, className: "mr-1 inline" }),
-    " ",
-    t("immersive.chunk_stream") || "Chunk Stream"
   ), onToggleCrawlReader && /* @__PURE__ */ React.createElement(
     ToggleButton,
     {
@@ -417,74 +398,15 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
     /* @__PURE__ */ React.createElement(X, { size: 18 })
   ));
 });
-const BionicChunkReader = React.memo(({ text, onClose, isOpen }) => {
-  const { t } = useContext(LanguageContext);
-  const [words, setWords] = useState([]);
-  const [chunkIdx, setChunkIdx] = useState(0);
-  const [chunkSize, setChunkSize] = useState(3);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [cpm, setCpm] = useState(120);
-  const [theme, setTheme] = useState("warm");
-  const themes = {
-    warm: { bg: "#fdfbf7", strong: "#111827", light: "#6b7280", accent: "#4f46e5" },
-    dark: { bg: "#0f172a", strong: "#f1f5f9", light: "#94a3b8", accent: "#818cf8" },
-    sepia: { bg: "#f4ecd8", strong: "#3b2a1a", light: "#8b6f4e", accent: "#b45309" }
-  };
-  const c = themes[theme] || themes.warm;
-  useEffect(() => {
-    if (text) {
-      const cleaned = String(text || "").replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
-      setWords(cleaned.split(" ").filter((w) => w.length > 0));
-      setChunkIdx(0);
-    }
-  }, [text]);
-  const chunks = useMemo(() => {
-    const out = [];
-    for (let i = 0; i < words.length; i += chunkSize) out.push(words.slice(i, i + chunkSize));
-    return out;
-  }, [words, chunkSize]);
-  useEffect(() => {
-    if (!isPlaying) return;
-    const delay = 6e4 / Math.max(10, cpm);
-    const id = setInterval(() => {
-      setChunkIdx((prev) => {
-        if (prev >= chunks.length - 1) {
-          setIsPlaying(false);
-          return prev;
-        }
-        return prev + 1;
-      });
-    }, delay);
-    return () => clearInterval(id);
-  }, [isPlaying, cpm, chunks.length]);
-  useEffect(() => {
-    const handler = (e) => {
-      if (!isOpen) return;
-      if (e.code === "Space") {
-        e.preventDefault();
-        setIsPlaying((p) => !p);
-      } else if (e.code === "ArrowLeft") setChunkIdx((p) => Math.max(0, p - 1));
-      else if (e.code === "ArrowRight") setChunkIdx((p) => Math.min(chunks.length - 1, p + 1));
-      else if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [isOpen, onClose, chunks.length]);
-  if (!isOpen) return null;
-  const renderBionicWord = (w, i) => {
-    const boldLen = Math.max(1, Math.ceil(w.length * 0.4));
-    return /* @__PURE__ */ React.createElement("span", { key: i }, /* @__PURE__ */ React.createElement("span", { style: { fontWeight: 900, color: c.strong } }, w.slice(0, boldLen)), /* @__PURE__ */ React.createElement("span", { style: { fontWeight: 400, color: c.light } }, w.slice(boldLen)), i < (chunks[chunkIdx] || []).length - 1 ? " " : "");
-  };
-  const currentChunk = chunks[chunkIdx] || [];
-  const progressPct = chunks.length > 0 ? (chunkIdx + 1) / chunks.length * 100 : 0;
-  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[300] flex flex-col animate-in fade-in duration-200", style: { backgroundColor: c.bg } }, /* @__PURE__ */ React.createElement("div", { className: "p-4 flex justify-between items-center gap-3 flex-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("button", { onClick: onClose, "aria-label": t("common.close") || "Close", className: "p-2 rounded-full hover:bg-black/5", style: { color: c.strong } }, /* @__PURE__ */ React.createElement(ArrowLeft, { size: 22 })), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-base", style: { color: c.strong } }, t("immersive.chunk_stream") || "Chunk Stream"), /* @__PURE__ */ React.createElement("span", { className: "text-xs", style: { color: c.light } }, chunkIdx + 1, " / ", chunks.length, " \xB7 bold-assist reading"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4 flex-wrap text-xs font-bold", style: { color: c.strong } }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { style: { color: c.light } }, "WORDS"), /* @__PURE__ */ React.createElement("input", { "aria-label": "Words per chunk", type: "range", min: "1", max: "6", value: chunkSize, onChange: (e) => setChunkSize(parseInt(e.target.value)), className: "w-16" }), /* @__PURE__ */ React.createElement("span", { className: "font-mono w-4 text-right" }, chunkSize)), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { style: { color: c.light } }, "SPEED"), /* @__PURE__ */ React.createElement("input", { "aria-label": "Chunks per minute", type: "range", min: "40", max: "300", step: "10", value: cpm, onChange: (e) => setCpm(parseInt(e.target.value)), className: "w-24" }), /* @__PURE__ */ React.createElement("span", { className: "font-mono w-16 text-right" }, cpm, " cpm")), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { style: { color: c.light } }, "THEME"), /* @__PURE__ */ React.createElement("select", { "aria-label": "Theme", value: theme, onChange: (e) => setTheme(e.target.value), className: "text-xs rounded px-2 py-1 border", style: { borderColor: c.light + "55", background: "transparent", color: c.strong } }, /* @__PURE__ */ React.createElement("option", { value: "warm" }, "\u2600\uFE0F Warm"), /* @__PURE__ */ React.createElement("option", { value: "dark" }, "\u{1F319} Dark"), /* @__PURE__ */ React.createElement("option", { value: "sepia" }, "\u{1F4DC} Sepia"))))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 flex flex-col items-center justify-center cursor-pointer select-none px-8", onClick: () => setIsPlaying((p) => !p) }, /* @__PURE__ */ React.createElement("div", { className: "max-w-5xl text-center", style: { fontSize: "clamp(2.5rem, 8vw, 6rem)", lineHeight: 1.15, fontFamily: 'Georgia, "Iowan Old Style", "Times New Roman", serif' } }, currentChunk.map((w, i) => renderBionicWord(w, i))), /* @__PURE__ */ React.createElement("div", { className: "mt-10 text-sm flex items-center gap-2", style: { color: c.light } }, isPlaying ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(Pause, { size: 16 }), " Tap to pause \xB7 \u2190 \u2192 navigate") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(Play, { size: 16 }), " Tap or Space to play \xB7 \u2190 \u2192 navigate \xB7 Esc closes"))), /* @__PURE__ */ React.createElement("div", { className: "h-2 w-full", style: { background: c.light + "33" } }, /* @__PURE__ */ React.createElement("div", { className: "h-full transition-all duration-200", style: { width: `${progressPct}%`, backgroundColor: c.accent } })));
-});
 const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
   const { t } = useContext(LanguageContext);
   const [speedPxPerSec, setSpeedPxPerSec] = useState(50);
   const [isPlaying, setIsPlaying] = useState(true);
   const [translateY, setTranslateY] = useState(0);
   const [palette, setPalette] = useState("gold");
+  const [finished, setFinished] = useState(false);
+  const [ambientOn, setAmbientOn] = useState(true);
+  const [progressPct, setProgressPct] = useState(0);
   const palettes = {
     gold: { bg: "#000000", text: "#fde047", accent: "#facc15" },
     teal: { bg: "#061629", text: "#67e8f9", accent: "#22d3ee" },
@@ -496,9 +418,13 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
   const rafRef = useRef(null);
   const lastTsRef = useRef(null);
   const translateYRef = useRef(0);
+  const audioCtxRef = useRef(null);
+  const audioNodesRef = useRef(null);
   const resetCrawl = useCallback(() => {
     translateYRef.current = 0;
     setTranslateY(0);
+    setFinished(false);
+    setProgressPct(0);
     lastTsRef.current = null;
   }, []);
   useEffect(() => {
@@ -519,9 +445,15 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
       setTranslateY(nextY);
       const vh = viewportRef.current ? viewportRef.current.clientHeight : 600;
       const th = textRef.current ? textRef.current.clientHeight : 0;
-      if (th > 0 && nextY < -(th + vh * 0.5)) {
-        setIsPlaying(false);
-        return;
+      if (th > 0) {
+        const total = th + vh * 0.5;
+        setProgressPct(Math.min(100, -nextY / total * 100));
+        if (nextY < -total) {
+          setIsPlaying(false);
+          setFinished(true);
+          setProgressPct(100);
+          return;
+        }
       }
       rafRef.current = requestAnimationFrame(step);
     };
@@ -532,13 +464,92 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
     };
   }, [isOpen, isPlaying, speedPxPerSec]);
   useEffect(() => {
+    if (!isOpen || !ambientOn || !isPlaying) {
+      if (audioNodesRef.current) {
+        try {
+          const { gain, ctx } = audioNodesRef.current;
+          gain.gain.cancelScheduledValues(ctx.currentTime);
+          gain.gain.setTargetAtTime(0, ctx.currentTime, 0.4);
+        } catch (e) {
+        }
+      }
+      return;
+    }
+    try {
+      if (!audioCtxRef.current) {
+        const Ctx = window.AudioContext || window.webkitAudioContext;
+        if (!Ctx) return;
+        audioCtxRef.current = new Ctx();
+      }
+      const ctx = audioCtxRef.current;
+      if (ctx.state === "suspended") {
+        try {
+          ctx.resume();
+        } catch (e) {
+        }
+      }
+      if (!audioNodesRef.current) {
+        const gain2 = ctx.createGain();
+        gain2.gain.value = 0;
+        const lp = ctx.createBiquadFilter();
+        lp.type = "lowpass";
+        lp.frequency.value = 600;
+        lp.Q.value = 0.5;
+        const freqs = [110, 164.81, 220];
+        const oscs = freqs.map((f, i) => {
+          const o = ctx.createOscillator();
+          o.type = i === 1 ? "triangle" : "sine";
+          o.frequency.value = f;
+          o.detune.value = (i - 1) * 6;
+          o.connect(gain2);
+          o.start();
+          return o;
+        });
+        gain2.connect(lp);
+        lp.connect(ctx.destination);
+        audioNodesRef.current = { ctx, gain: gain2, lp, oscs };
+      }
+      const { gain, ctx: c2 } = audioNodesRef.current;
+      gain.gain.cancelScheduledValues(c2.currentTime);
+      gain.gain.setTargetAtTime(0.06, c2.currentTime, 0.8);
+    } catch (e) {
+    }
+  }, [isOpen, isPlaying, ambientOn]);
+  useEffect(() => {
+    return () => {
+      try {
+        if (audioNodesRef.current) {
+          const { oscs } = audioNodesRef.current;
+          oscs.forEach((o) => {
+            try {
+              o.stop();
+            } catch (e) {
+            }
+          });
+          audioNodesRef.current = null;
+        }
+        if (audioCtxRef.current) {
+          try {
+            audioCtxRef.current.close();
+          } catch (e) {
+          }
+          audioCtxRef.current = null;
+        }
+      } catch (e) {
+      }
+    };
+  }, []);
+  useEffect(() => {
     if (!isOpen) return;
     const handler = (e) => {
       if (e.code === "Space") {
         e.preventDefault();
         setIsPlaying((pl) => !pl);
       } else if (e.key === "Escape") onClose();
-      else if (e.key === "r" || e.key === "R") resetCrawl();
+      else if (e.key === "r" || e.key === "R") {
+        resetCrawl();
+        setIsPlaying(true);
+      } else if (e.key === "m" || e.key === "M") setAmbientOn((a) => !a);
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
@@ -546,29 +557,83 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
   if (!isOpen) return null;
   const cleaned = String(text || "").replace(/<[^>]*>/g, "").replace(/\n{3,}/g, "\n\n").trim();
   const paragraphs = cleaned.split(/\n{2,}/).filter(Boolean);
-  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[300] flex flex-col", style: { backgroundColor: p.bg, color: p.text } }, /* @__PURE__ */ React.createElement("div", { className: "p-4 flex justify-between items-center gap-3 flex-wrap backdrop-blur-sm", style: { background: "rgba(0,0,0,0.55)" } }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("button", { onClick: onClose, "aria-label": t("common.close") || "Close", className: "p-2 rounded-full", style: { color: p.text } }, /* @__PURE__ */ React.createElement(ArrowLeft, { size: 22 })), /* @__PURE__ */ React.createElement("span", { className: "font-bold text-base" }, t("immersive.cinematic_crawl") || "Cinematic Crawl")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 text-xs font-bold flex-wrap" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { style: { opacity: 0.7 } }, "SPEED"), /* @__PURE__ */ React.createElement("input", { "aria-label": "Crawl speed", type: "range", min: "10", max: "140", value: speedPxPerSec, onChange: (e) => setSpeedPxPerSec(parseInt(e.target.value)), className: "w-24 accent-yellow-400" }), /* @__PURE__ */ React.createElement("span", { className: "font-mono w-14 text-right" }, speedPxPerSec, "px/s")), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { style: { opacity: 0.7 } }, "PALETTE"), /* @__PURE__ */ React.createElement("select", { "aria-label": "Palette", value: palette, onChange: (e) => setPalette(e.target.value), className: "text-xs rounded px-2 py-1 bg-transparent border", style: { borderColor: p.text + "55", color: p.text } }, /* @__PURE__ */ React.createElement("option", { value: "gold" }, "Golden"), /* @__PURE__ */ React.createElement("option", { value: "teal" }, "Aqua"), /* @__PURE__ */ React.createElement("option", { value: "paper" }, "Paper"))), /* @__PURE__ */ React.createElement("button", { onClick: () => setIsPlaying((pl) => !pl), "aria-label": isPlaying ? "Pause" : "Play", className: "px-3 py-1 rounded", style: { background: p.text + "22", color: p.text } }, isPlaying ? /* @__PURE__ */ React.createElement(Pause, { size: 14 }) : /* @__PURE__ */ React.createElement(Play, { size: 14 })), /* @__PURE__ */ React.createElement("button", { onClick: resetCrawl, "aria-label": "Restart crawl from top", className: "px-3 py-1 rounded text-xs", style: { background: p.text + "22", color: p.text } }, "\u21BA Restart"))), /* @__PURE__ */ React.createElement("div", { ref: viewportRef, className: "flex-1 relative overflow-hidden", style: { perspective: "500px", perspectiveOrigin: "50% 100%" } }, /* @__PURE__ */ React.createElement(
+  const togglePlay = () => {
+    if (finished) {
+      resetCrawl();
+      setIsPlaying(true);
+    } else setIsPlaying((pl) => !pl);
+  };
+  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[300] flex flex-col", style: { backgroundColor: p.bg, color: p.text } }, /* @__PURE__ */ React.createElement("div", { className: "p-4 flex justify-between items-center gap-3 flex-wrap backdrop-blur-sm", style: { background: "rgba(0,0,0,0.55)" } }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("button", { onClick: onClose, "aria-label": t("common.close") || "Close", className: "p-2 rounded-full", style: { color: p.text } }, /* @__PURE__ */ React.createElement(ArrowLeft, { size: 22 })), /* @__PURE__ */ React.createElement("span", { className: "font-bold text-base" }, t("immersive.cinematic_crawl") || "Cinematic Crawl")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 text-xs font-bold flex-wrap" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { style: { opacity: 0.7 } }, "SPEED"), /* @__PURE__ */ React.createElement("input", { "aria-label": "Crawl speed", type: "range", min: "10", max: "140", value: speedPxPerSec, onChange: (e) => setSpeedPxPerSec(parseInt(e.target.value)), className: "w-24 accent-yellow-400" }), /* @__PURE__ */ React.createElement("span", { className: "font-mono w-14 text-right" }, speedPxPerSec, "px/s")), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { style: { opacity: 0.7 } }, "PALETTE"), /* @__PURE__ */ React.createElement("select", { "aria-label": "Palette", value: palette, onChange: (e) => setPalette(e.target.value), className: "text-xs rounded px-2 py-1 bg-transparent border", style: { borderColor: p.text + "55", color: p.text } }, /* @__PURE__ */ React.createElement("option", { value: "gold" }, "Golden"), /* @__PURE__ */ React.createElement("option", { value: "teal" }, "Aqua"), /* @__PURE__ */ React.createElement("option", { value: "paper" }, "Paper"))), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: () => setAmbientOn((a) => !a),
+      "aria-pressed": ambientOn,
+      "aria-label": ambientOn ? "Mute ambient pad" : "Unmute ambient pad",
+      title: ambientOn ? "Ambient pad on (M to toggle)" : "Ambient pad muted (M to toggle)",
+      className: "px-3 py-1 rounded text-xs",
+      style: { background: p.text + "22", color: p.text, opacity: ambientOn ? 1 : 0.55 }
+    },
+    ambientOn ? "\u266A" : "\u266A\u0338"
+  ), /* @__PURE__ */ React.createElement("button", { onClick: togglePlay, "aria-label": isPlaying ? "Pause" : "Play", className: "px-3 py-1 rounded", style: { background: p.text + "22", color: p.text } }, isPlaying ? /* @__PURE__ */ React.createElement(Pause, { size: 14 }) : /* @__PURE__ */ React.createElement(Play, { size: 14 })), /* @__PURE__ */ React.createElement("button", { onClick: () => {
+    resetCrawl();
+    setIsPlaying(true);
+  }, "aria-label": "Restart crawl from top", className: "px-3 py-1 rounded text-xs", style: { background: p.text + "22", color: p.text } }, "\u21BA Restart"))), /* @__PURE__ */ React.createElement(
     "div",
     {
-      ref: textRef,
-      style: {
-        position: "absolute",
-        left: 0,
-        right: 0,
-        top: "100%",
-        padding: "0 10%",
-        fontFamily: 'Georgia, "Iowan Old Style", "Times New Roman", serif',
-        fontWeight: 700,
-        fontSize: "clamp(1.4rem, 2.6vw, 2.4rem)",
-        lineHeight: 1.5,
-        textAlign: "justify",
-        transform: `translateY(${translateY}px) rotateX(22deg)`,
-        transformOrigin: "50% 100%",
-        willChange: "transform",
-        textShadow: "0 0 12px " + p.accent + "44"
-      }
+      ref: viewportRef,
+      onClick: togglePlay,
+      className: "flex-1 relative overflow-hidden cursor-pointer select-none",
+      style: { perspective: "500px", perspectiveOrigin: "50% 100%" },
+      role: "button",
+      "aria-label": isPlaying ? "Pause crawl" : "Play crawl"
     },
-    paragraphs.map((para, i) => /* @__PURE__ */ React.createElement("p", { key: i, style: { marginBottom: "1.5em" } }, para))
-  ), /* @__PURE__ */ React.createElement("div", { className: "absolute inset-x-0 top-0 pointer-events-none", style: { height: "40%", background: `linear-gradient(to bottom, ${p.bg} 0%, ${p.bg}cc 40%, transparent 100%)` } }), /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 pointer-events-none", style: { boxShadow: "inset 0 0 180px rgba(0,0,0,0.6)" } })), /* @__PURE__ */ React.createElement("div", { className: "py-2 text-center text-xs", style: { color: p.text, opacity: 0.6 } }, "Space pauses \xB7 R restarts \xB7 Esc closes"));
+    /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 pointer-events-none", style: {
+      backgroundImage: `radial-gradient(circle at 20% 30%, ${p.accent}22 0 1px, transparent 2px), radial-gradient(circle at 70% 20%, ${p.accent}1a 0 1px, transparent 2px), radial-gradient(circle at 85% 80%, ${p.accent}33 0 1px, transparent 2.5px), radial-gradient(circle at 15% 75%, ${p.accent}22 0 1px, transparent 2px), radial-gradient(circle at 40% 60%, ${p.accent}1a 0 1px, transparent 2px)`,
+      backgroundSize: "3px 3px, 5px 5px, 7px 7px, 4px 4px, 6px 6px",
+      backgroundPosition: `0 ${translateY * 0.08}px, 0 ${translateY * 0.12}px, 0 ${translateY * 0.18}px, 0 ${translateY * 0.05}px, 0 ${translateY * 0.1}px`,
+      opacity: 0.6,
+      willChange: "background-position"
+    } }),
+    /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 pointer-events-none", style: {
+      background: `radial-gradient(ellipse at 50% 100%, ${p.accent}14 0%, transparent 60%)`
+    } }),
+    /* @__PURE__ */ React.createElement(
+      "div",
+      {
+        ref: textRef,
+        style: {
+          position: "absolute",
+          left: 0,
+          right: 0,
+          top: "100%",
+          padding: "0 10%",
+          fontFamily: 'Georgia, "Iowan Old Style", "Times New Roman", serif',
+          fontWeight: 700,
+          fontSize: "clamp(1.4rem, 2.6vw, 2.4rem)",
+          lineHeight: 1.5,
+          textAlign: "justify",
+          transform: `translateY(${translateY}px) rotateX(22deg)`,
+          transformOrigin: "50% 100%",
+          willChange: "transform",
+          textShadow: "0 0 12px " + p.accent + "44"
+        }
+      },
+      paragraphs.map((para, i) => /* @__PURE__ */ React.createElement("p", { key: i, style: { marginBottom: "1.5em" } }, para))
+    ),
+    /* @__PURE__ */ React.createElement("div", { className: "absolute inset-x-0 top-0 pointer-events-none", style: { height: "40%", background: `linear-gradient(to bottom, ${p.bg} 0%, ${p.bg}cc 40%, transparent 100%)` } }),
+    /* @__PURE__ */ React.createElement("div", { className: "absolute inset-x-0 bottom-0 pointer-events-none", style: { height: "18%", background: `linear-gradient(to top, ${p.bg} 0%, transparent 100%)` } }),
+    /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 pointer-events-none", style: { boxShadow: "inset 0 0 180px rgba(0,0,0,0.6)" } }),
+    finished && /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 flex items-center justify-center pointer-events-none" }, /* @__PURE__ */ React.createElement(
+      "div",
+      {
+        className: "text-center px-10 py-6 rounded-lg backdrop-blur-sm",
+        style: { background: `${p.bg}cc`, border: `1px solid ${p.accent}55`, color: p.text, boxShadow: `0 0 40px ${p.accent}33` }
+      },
+      /* @__PURE__ */ React.createElement("div", { style: { fontFamily: "Georgia, serif", fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 900, letterSpacing: "0.15em" } }, "THE END"),
+      /* @__PURE__ */ React.createElement("div", { className: "text-xs mt-2", style: { opacity: 0.7 } }, "Click anywhere \xB7 press R to replay \xB7 Esc closes")
+    )),
+    !isPlaying && !finished && translateYRef.current < -4 && /* @__PURE__ */ React.createElement("div", { className: "absolute top-4 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-xs pointer-events-none", style: { background: `${p.bg}99`, border: `1px solid ${p.accent}33`, color: p.text } }, "\u23F8 Paused \u2014 click to resume")
+  ), /* @__PURE__ */ React.createElement("div", { className: "h-1 w-full", style: { background: p.text + "22" } }, /* @__PURE__ */ React.createElement("div", { className: "h-full transition-all duration-200 ease-linear", style: { width: `${progressPct}%`, backgroundColor: p.accent } })), /* @__PURE__ */ React.createElement("div", { className: "py-2 text-center text-xs", style: { color: p.text, opacity: 0.6 } }, "Click or Space pauses \xB7 R restarts \xB7 M mutes pad \xB7 Esc closes"));
 });
 const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl }) => {
   const { t } = useContext(LanguageContext);
@@ -907,13 +972,14 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl })
   ))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-auto px-6 md:px-16 py-10", style: { scrollBehavior: reducedMotion ? "auto" : "smooth" } }, /* @__PURE__ */ React.createElement("div", { className: "max-w-3xl mx-auto", style: { fontSize: "clamp(1.5rem, 2.4vw, 2.25rem)", lineHeight: 1.7, fontFamily: 'Georgia, "Iowan Old Style", "Times New Roman", serif' } }, sentences.map((s, i) => /* @__PURE__ */ React.createElement(React.Fragment, { key: i }, renderSentence(s, i), " ")))), /* @__PURE__ */ React.createElement("div", { className: "h-2 w-full", role: "progressbar", "aria-valuenow": Math.round(overallPct), "aria-valuemin": 0, "aria-valuemax": 100, "aria-label": "Reading progress", style: { background: c.dim + "33" } }, /* @__PURE__ */ React.createElement("div", { className: "h-full", style: { width: overallPct + "%", backgroundColor: c.sweep, transition: reducedMotion ? "none" : "width 0.2s linear" } })), /* @__PURE__ */ React.createElement("div", { className: "px-4 py-2 text-center text-xs", style: { color: c.dim } }, "Space play/pause \xB7 \u2190 \u2192 sentences \xB7 Home/End jump \xB7 click any sentence to jump \xB7 Esc closes"));
 });
 window.AlloModules = window.AlloModules || {};
-window.AlloModules.SpeedReaderOverlay = SpeedReaderOverlay;
-window.AlloModules.BionicChunkReader = BionicChunkReader;
+window.AlloModules.FocusReaderOverlay = FocusReaderOverlay;
+window.AlloModules.SpeedReaderOverlay = FocusReaderOverlay;
+window.AlloModules.BionicChunkReader = FocusReaderOverlay;
 window.AlloModules.PerspectiveCrawlOverlay = PerspectiveCrawlOverlay;
 window.AlloModules.KaraokeReaderOverlay = KaraokeReaderOverlay;
 window.AlloModules.ImmersiveToolbar = ImmersiveToolbar;
 window.AlloModules.ImmersiveReaderModule = true;
-console.log("[ImmersiveReaderModule] 5 components registered");
+console.log("[ImmersiveReaderModule] Focus + Crawl + Karaoke + Toolbar registered");
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.SpeedReaderOverlay = (typeof SpeedReaderOverlay !== 'undefined') ? SpeedReaderOverlay : null;
 window.AlloModules.BionicChunkReader = (typeof BionicChunkReader !== 'undefined') ? BionicChunkReader : null;
