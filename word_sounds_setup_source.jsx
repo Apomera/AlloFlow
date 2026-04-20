@@ -1018,19 +1018,11 @@ const WordSoundsReviewPanel = ({
     const [playingWordIndex, setPlayingWordIndex] = React.useState(null);
     const [regeneratingOptions, setRegeneratingOptions] = React.useState({});
     const [playingAudioKey, setPlayingAudioKey] = React.useState(null);
-    const [audioProgress, setAudioProgress] = React.useState({ ready: 0, total: 0 });
-    React.useEffect(() => {
-        if (!preloadedWords || preloadedWords.length === 0) return;
-        const checkAudio = () => {
-             setAudioProgress({
-                 ready: preloadedWords.filter(w => w.ttsReady || w.phonemes).length,
-                 total: preloadedWords.length
-             });
-        };
-        const interval = setInterval(checkAudio, 1000);
-        checkAudio();
-        return () => clearInterval(interval);
-    }, [preloadedWords]);
+    // Note: audioProgress state and its 1s setInterval were removed. The
+    // value was never read anywhere; the only visible effect was forcing a
+    // re-render every second, which interacted badly with retry-TTS flows
+    // and added CPU churn on low-end devices. The "Audio missing" banner is
+    // computed inline from preloadedWords at render time.
     const PHONEME_BANK = {
         'Consonants': ['b', 'c', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'm', 'n', 'p', 'r', 's', 't', 'v', 'w', 'y', 'z'],
         'Digraphs': ['sh', 'zh', 'ch', 'th', 'wh', 'ph', 'ck', 'ng', 'q'],
