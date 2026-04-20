@@ -74,8 +74,11 @@ var createContentEngine = function(deps) {
     // ── Fix broken/truncated citations (Gemini systematically drops characters in the
     // last citation of any generated text, regardless of length — missing ⁽ and/or closing ). ──
     // The `⁽?` makes the opening superscript-paren optional so malformed [N⁾](url) also matches.
-    // 1. Remove truncated citation links: [⁽¹⁸⁾](https://partial.url  (no closing paren)
-    rawText = rawText.replace(/\[⁽?[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\([^)\s\n]*$/gm, '');
+    // 1. Remove truncated citation links: [⁽¹⁸⁾](https://partial.url  (no closing paren).
+    //    Char-class is [^)\n] (not [^)\s\n]) so trailing whitespace before the newline is
+    //    consumed — Gemini sometimes emits "...sleepfoundation.  \n" and the old regex failed
+    //    to match because it stopped at the space and then needed $ immediately after.
+    rawText = rawText.replace(/\[⁽?[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\([^)\n]*$/gm, '');
     // 2. Remove truncated citations at end of text (URL cut off mid-string, no closing paren)
     rawText = rawText.replace(/\[⁽?[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\([^)]{0,200}$/, '');
     // 3. Fix citation links missing closing paren: [⁽¹⁾](url  → [⁽¹⁾](url)
