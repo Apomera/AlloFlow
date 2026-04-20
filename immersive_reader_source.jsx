@@ -158,9 +158,23 @@ const SpeedReaderOverlay = React.memo(({ text, onClose, isOpen }) => {
     );
 });
 
-const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackRate, setPlaybackRate, lineHeight, setLineHeight, letterSpacing, setLetterSpacing , isSpeedReaderActive, onToggleSpeedReader, isChunkReaderActive, onToggleChunkReader, chunkReaderIdx, setChunkReaderIdx, chunkReaderAutoPlay, setChunkReaderAutoPlay, chunkReaderSpeed, setChunkReaderSpeed, totalSentences, interactionMode, setInteractionMode, isBionicReaderActive, onToggleBionicReader, isCrawlReaderActive, onToggleCrawlReader, isKaraokeOverlayActive, onToggleKaraokeOverlay, chunkReaderReadAlong, onToggleChunkReaderReadAlong }) => {
+const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackRate, setPlaybackRate, lineHeight, setLineHeight, letterSpacing, setLetterSpacing , isSpeedReaderActive, onToggleSpeedReader, isChunkReaderActive, onToggleChunkReader, chunkReaderIdx, setChunkReaderIdx, chunkReaderAutoPlay, setChunkReaderAutoPlay, chunkReaderSpeed, setChunkReaderSpeed, totalSentences, interactionMode, setInteractionMode, isBionicReaderActive, onToggleBionicReader, isCrawlReaderActive, onToggleCrawlReader, isKaraokeOverlayActive, onToggleKaraokeOverlay, chunkReaderReadAlong, onToggleChunkReaderReadAlong, onGeneratePOS, isGeneratingPOS, posReady }) => {
   const { t } = useContext(LanguageContext);
   const toggleSetting = useCallback((key) => setSettings(prev => ({...prev, [key]: !prev[key]})), [setSettings]);
+  // POS buttons trigger lazy Gemini tagging the first time any of them is pressed.
+  // Subsequent presses (after `posReady` flips true) are a plain toggle. If POS
+  // generation is in-flight, we still toggle the setting so the color turns on
+  // immediately and starts highlighting the moment tagging finishes — the user
+  // doesn't have to click again.
+  const handlePosToggle = useCallback((settingKey) => {
+    if (!posReady && onGeneratePOS && !isGeneratingPOS) {
+      // Fire-and-forget: we don't await because the setting toggle below should
+      // flip the color immediately. When the POS data finishes loading, the
+      // already-toggled category will light up automatically.
+      try { onGeneratePOS(); } catch (_) {}
+    }
+    toggleSetting(settingKey);
+  }, [posReady, onGeneratePOS, isGeneratingPOS, toggleSetting]);
   const ToggleButton = React.memo(({ active, onClick, settingKey, title, children, activeColor = "bg-indigo-600 text-white", ...props }) => (
     <button
       onClick={settingKey ? () => toggleSetting(settingKey) : onClick}
@@ -334,37 +348,42 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
         <div className="h-4 w-px bg-slate-300 shrink-0"></div>
         <div className="flex items-center gap-2 shrink-0">
             <span className="text-xs font-bold text-slate-600">{t('immersive.grammar_label')}</span>
+            {/* POS toggle buttons — on first press, kick off lazy Gemini tagging.
+                When tagging is in-flight we show a subtle spinner suffix so the
+                user knows why highlights haven't appeared yet. The toggled-on
+                color flips immediately so the button state doesn't appear stuck. */}
             <ToggleButton
               active={settings.showNouns}
-              settingKey="showNouns"
-              title={t('immersive.highlight_nouns')}
+              onClick={() => handlePosToggle('showNouns')}
+              title={isGeneratingPOS ? 'Classifying parts of speech…' : t('immersive.highlight_nouns')}
               activeColor="bg-blue-700 text-white"
+              disabled={isGeneratingPOS && !posReady ? undefined : undefined}
             >
-              {t('immersive.nouns')}
+              {t('immersive.nouns')}{isGeneratingPOS && settings.showNouns ? ' …' : ''}
             </ToggleButton>
             <ToggleButton
               active={settings.showVerbs}
-              settingKey="showVerbs"
-              title={t('immersive.highlight_verbs')}
+              onClick={() => handlePosToggle('showVerbs')}
+              title={isGeneratingPOS ? 'Classifying parts of speech…' : t('immersive.highlight_verbs')}
               activeColor="bg-red-500 text-white"
             >
-              {t('immersive.verbs')}
+              {t('immersive.verbs')}{isGeneratingPOS && settings.showVerbs ? ' …' : ''}
             </ToggleButton>
             <ToggleButton
               active={settings.showAdjectives}
-              settingKey="showAdjectives"
-              title={t('immersive.highlight_adjectives')}
+              onClick={() => handlePosToggle('showAdjectives')}
+              title={isGeneratingPOS ? 'Classifying parts of speech…' : t('immersive.highlight_adjectives')}
               activeColor="bg-green-700 text-white"
             >
-              {t('immersive.adjectives')}
+              {t('immersive.adjectives')}{isGeneratingPOS && settings.showAdjectives ? ' …' : ''}
             </ToggleButton>
             <ToggleButton
               active={settings.showAdverbs}
-              settingKey="showAdverbs"
-              title={t('immersive.highlight_adverbs')}
+              onClick={() => handlePosToggle('showAdverbs')}
+              title={isGeneratingPOS ? 'Classifying parts of speech…' : t('immersive.highlight_adverbs')}
               activeColor="bg-purple-500 text-white"
             >
-              {t('immersive.adverbs')}
+              {t('immersive.adverbs')}{isGeneratingPOS && settings.showAdverbs ? ' …' : ''}
             </ToggleButton>
         </div>
         <div className="h-4 w-px bg-slate-300 shrink-0"></div>
