@@ -39,6 +39,8 @@ const FocusReaderOverlay = React.memo(({ text, onClose, isOpen }) => {
     const [wpm, setWpm] = useState(300);
     const [theme, setTheme] = useState('warm');
     const [focusColor, setFocusColor] = useState('#dc2626');
+    const [punctPauses, setPunctPauses] = useState(true);
+    const [countdown, setCountdown] = useState(0); // 0 = inactive; 3/2/1 = showing that number
     const themes = {
         warm: { bg: '#fdfbf7', strong: '#111827', light: '#6b7280', accent: '#4f46e5', panel: 'rgba(255,255,255,0.85)' },
         dark: { bg: '#0f172a', strong: '#f1f5f9', light: '#94a3b8', accent: '#818cf8', panel: 'rgba(15,23,42,0.85)' },
@@ -82,30 +84,89 @@ const FocusReaderOverlay = React.memo(({ text, onClose, isOpen }) => {
         prevChunkSizeRef.current = chunkSize;
     }, [chunkSize, words.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
+    // Computes a per-chunk delay. Base = wpm-normalized time for `chunkSize`
+    // words. When punctPauses is on, multiply by a factor based on the trailing
+    // character of the last word in the chunk — commas get a light pause,
+    // sentence-ending punctuation gets a stronger one. Research on RSVP
+    // comprehension (Juola, 1991; Benedetto et al., 2015) shows that honoring
+    // natural prosody at punctuation substantially helps recall vs. fixed pacing.
+    const chunkDelayFor = useCallback((idx) => {
+        const base = (60000 / Math.max(50, wpm)) * Math.max(1, chunkSize);
+        if (!punctPauses) return Math.max(60, base);
+        const chunk = chunks[idx] || [];
+        const last = chunk[chunk.length - 1] || '';
+        const trailing = last.replace(/["'\u201D\u2019\)\]]*$/, '');
+        const tail = trailing.slice(-1);
+        let mult = 1;
+        if (/[.!?]/.test(tail)) mult = 2.0;
+        else if (/[,;:]/.test(tail)) mult = 1.4;
+        else if (/[—–]/.test(tail)) mult = 1.3;
+        return Math.max(60, base * mult);
+    }, [wpm, chunkSize, punctPauses, chunks]);
+
+    // setTimeout-based advance loop. A single setInterval would fire on a fixed
+    // cadence and can't do punctuation-aware pacing — we chain setTimeouts so
+    // the next delay can depend on the current chunk's trailing punctuation.
     useEffect(() => {
-        if (!isPlaying) return;
-        // wpm governs words/second; delay between chunks = seconds per chunk.
-        const delay = Math.max(60, (60000 / Math.max(50, wpm)) * Math.max(1, chunkSize));
-        const id = setInterval(() => {
+        if (!isPlaying || countdown > 0) return;
+        let timeoutId = null;
+        const advance = () => {
             setChunkIdx(prev => {
                 if (prev >= chunks.length - 1) { setIsPlaying(false); return prev; }
-                return prev + 1;
+                const next = prev + 1;
+                timeoutId = setTimeout(advance, chunkDelayFor(next));
+                return next;
             });
-        }, delay);
-        return () => clearInterval(id);
-    }, [isPlaying, wpm, chunkSize, chunks.length]);
+        };
+        timeoutId = setTimeout(advance, chunkDelayFor(chunkIdx));
+        return () => { if (timeoutId) clearTimeout(timeoutId); };
+    // chunkIdx intentionally omitted — we read it once at effect start; the
+    // functional setState inside advance carries position forward. Re-running
+    // this effect on every chunk tick would double-schedule the timer.
+    }, [isPlaying, countdown, wpm, chunkSize, punctPauses, chunks, chunkDelayFor]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    // 3-2-1 countdown at the start. Fires when Play is pressed from the first
+    // chunk, which is almost always "I just opened this." Skipped on mid-document
+    // resumes so the reader isn't forced to wait again after a pause.
+    useEffect(() => {
+        if (!isPlaying || countdown === 0) return;
+        if (countdown === 1) {
+            const t2 = setTimeout(() => setCountdown(0), 650);
+            return () => clearTimeout(t2);
+        }
+        const t1 = setTimeout(() => setCountdown(n => n - 1), 650);
+        return () => clearTimeout(t1);
+    }, [countdown, isPlaying]);
+
+    const handlePlayToggle = useCallback(() => {
+        setIsPlaying(p => {
+            const next = !p;
+            // Only countdown when starting fresh or from the very top — never
+            // when pausing, and never mid-document.
+            if (next && chunkIdx === 0) setCountdown(3);
+            return next;
+        });
+    }, [chunkIdx]);
 
     useEffect(() => {
         const handler = (e) => {
             if (!isOpen) return;
-            if (e.code === 'Space') { e.preventDefault(); setIsPlaying(p => !p); }
+            if (e.code === 'Space') { e.preventDefault(); handlePlayToggle(); }
             else if (e.code === 'ArrowLeft') setChunkIdx(p => Math.max(0, p - 1));
             else if (e.code === 'ArrowRight') setChunkIdx(p => Math.min(chunks.length - 1, p + 1));
             else if (e.key === 'Escape') onClose();
+            // +/- tweak WPM in 25-wpm steps (matching the slider step).
+            else if (e.key === '+' || e.key === '=') setWpm(w => Math.min(900, w + 25));
+            else if (e.key === '-' || e.key === '_') setWpm(w => Math.max(100, w - 25));
+            // [ / ] tweak chunk size so fluent readers can widen on the fly.
+            else if (e.key === '[') setChunkSize(s => Math.max(1, s - 1));
+            else if (e.key === ']') setChunkSize(s => Math.min(6, s + 1));
+            // P toggles punctuation pauses.
+            else if (e.key === 'p' || e.key === 'P') setPunctPauses(v => !v);
         };
         window.addEventListener('keydown', handler);
         return () => window.removeEventListener('keydown', handler);
-    }, [isOpen, onClose, chunks.length]);
+    }, [isOpen, onClose, chunks.length, handlePlayToggle]);
 
     if (!isOpen) return null;
 
@@ -159,6 +220,15 @@ const FocusReaderOverlay = React.memo(({ text, onClose, isOpen }) => {
                             <option value="sepia">📜 Sepia</option>
                         </select>
                     </label>
+                    <button
+                        onClick={() => setPunctPauses(v => !v)}
+                        aria-pressed={punctPauses}
+                        title={punctPauses ? 'Punctuation-aware pauses on (P to toggle) — commas slow slightly, sentence ends longer' : 'Punctuation pauses off — constant cadence (P to toggle)'}
+                        className="px-3 py-1 rounded-full text-xs transition-all"
+                        style={{ background: punctPauses ? c.accent + '22' : 'transparent', border: `1px solid ${c.light}55`, color: c.strong, opacity: punctPauses ? 1 : 0.7 }}
+                    >
+                        ‥ Pause at punctuation
+                    </button>
                     {rsvp && (
                         <div className="flex items-center gap-2">
                             <span style={{ color: c.light }}>FOCUS</span>
@@ -178,7 +248,20 @@ const FocusReaderOverlay = React.memo(({ text, onClose, isOpen }) => {
                     )}
                 </div>
             </div>
-            <div className="flex-1 flex flex-col items-center justify-center cursor-pointer select-none px-8" onClick={() => setIsPlaying(p => !p)}>
+            <div className="flex-1 flex flex-col items-center justify-center cursor-pointer select-none px-8 relative" onClick={handlePlayToggle}>
+                {/* 3-2-1 countdown. Only fires at the very start of a fresh read
+                    so mid-document pauses/resumes aren't penalized. */}
+                {countdown > 0 && (
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none" aria-live="polite" aria-atomic="true">
+                        <div
+                            key={countdown}
+                            className="animate-in fade-in zoom-in duration-300"
+                            style={{ fontSize: 'clamp(8rem, 20vw, 16rem)', fontWeight: 900, color: c.accent, textShadow: `0 0 40px ${c.accent}44`, fontFamily: 'Georgia, "Iowan Old Style", serif' }}
+                        >
+                            {countdown}
+                        </div>
+                    </div>
+                )}
                 {rsvp ? (
                     <div className="relative text-7xl md:text-9xl font-mono font-bold tracking-wide" style={{ color: c.strong }}>
                         <div className="flex items-baseline">
@@ -194,10 +277,10 @@ const FocusReaderOverlay = React.memo(({ text, onClose, isOpen }) => {
                         {currentChunk.map((w, i) => renderBionicWord(w, i))}
                     </div>
                 )}
-                <div className="mt-10 text-sm flex items-center gap-2" style={{ color: c.light }}>
+                <div className="mt-10 text-sm flex items-center gap-2 flex-wrap justify-center max-w-3xl" style={{ color: c.light }}>
                     {isPlaying
-                        ? <><Pause size={16} /> Tap to pause · ← → navigate</>
-                        : <><Play size={16} /> Tap or Space to play · ← → navigate · Esc closes</>}
+                        ? <><Pause size={16} /> Tap to pause · ← → navigate · +/− speed · [ ] chunk size · P pause-style</>
+                        : <><Play size={16} /> Tap or Space to play · ← → navigate · +/− speed · [ ] chunk size · P pause-style · Esc closes</>}
                 </div>
             </div>
             <div className="h-2 w-full" style={{ background: c.light + '33' }}>
@@ -450,6 +533,30 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
             >
               {t('immersive.adverbs')}{isGeneratingPOS && settings.showAdverbs ? ' …' : ''}
             </ToggleButton>
+        </div>
+        <div className="h-4 w-px bg-slate-300 shrink-0"></div>
+        {/* Font picker — Lexend and OpenDyslexic are the dyslexia-friendly options
+            that Aaron specifically flagged as important. The empty value means
+            "inherit from the surrounding theme" so we don't force a font on
+            readers who are happy with the default. */}
+        <div className="flex items-center gap-2 shrink-0">
+            <span className="text-xs font-bold text-slate-600">{t('immersive.font') || 'Font'}</span>
+            <select
+              aria-label={t('immersive.font_family') || 'Font family'}
+              value={settings.fontFamily || ''}
+              onChange={(e) => setSettings(prev => ({ ...prev, fontFamily: e.target.value }))}
+              className="text-xs bg-slate-100 border border-slate-200 rounded-full px-2 py-1 cursor-pointer hover:bg-slate-200 transition-all font-medium text-slate-700"
+              data-help-key="immersive_font_family"
+            >
+                <option value="">Default</option>
+                <option value="'Lexend', system-ui, sans-serif">Lexend (readable)</option>
+                <option value="'OpenDyslexic', 'Atkinson Hyperlegible', sans-serif">OpenDyslexic</option>
+                <option value="'Atkinson Hyperlegible', system-ui, sans-serif">Atkinson Hyperlegible</option>
+                <option value="Georgia, 'Iowan Old Style', serif">Serif (Georgia)</option>
+                <option value="'Inter', system-ui, sans-serif">Sans (Inter)</option>
+                <option value="'Comic Sans MS', 'Comic Neue', cursive">Comic Sans</option>
+                <option value="ui-monospace, 'SF Mono', Consolas, monospace">Monospace</option>
+            </select>
         </div>
         <div className="h-4 w-px bg-slate-300 shrink-0"></div>
         <div className="flex items-center gap-2 shrink-0 relative">
@@ -819,6 +926,21 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl })
     const [isPlaying, setIsPlaying] = useState(false);
     const [autoAdvance, setAutoAdvance] = useState(true);
     const [theme, setTheme] = useState('warm');
+    // Playback speed multiplier applied to both Gemini audio (audio.playbackRate)
+    // and the browser-speechSynthesis fallback (utterance.rate). 1.0 is the
+    // default natural pace; 0.75 is helpful for ELL and early readers, 1.5 for
+    // fluent readers skimming review material. The ref lets playSentence read
+    // the current speed without being re-memoized on every change.
+    const [playbackSpeed, setPlaybackSpeed] = useState(1);
+    const playbackSpeedRef = useRef(1);
+    useEffect(() => {
+        playbackSpeedRef.current = playbackSpeed;
+        // Apply to the currently-playing Gemini audio so the user gets immediate
+        // feedback when they tap a speed button mid-sentence. speechSynthesis
+        // utterances can't change rate after speak() — those will pick up the
+        // new rate on the next sentence.
+        try { if (audioRef.current) audioRef.current.playbackRate = playbackSpeed; } catch (e) {}
+    }, [playbackSpeed]);
     const themes = {
         warm: { bg: '#fdfbf7', ink: '#111827', dim: '#9ca3af', sweep: '#b45309', accent: '#fde68a' },
         dark: { bg: '#0f172a', ink: '#f1f5f9', dim: '#64748b', sweep: '#a5b4fc', accent: '#a855f7' },
@@ -907,6 +1029,7 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl })
 
         if (url) {
             const audio = new Audio(url);
+            audio.playbackRate = playbackSpeedRef.current || 1;
             audioRef.current = audio;
             const updateSweep = () => {
                 if (!audioRef.current || audioRef.current !== audio) return;
@@ -940,8 +1063,13 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl })
         if (typeof window !== 'undefined' && 'speechSynthesis' in window && typeof SpeechSynthesisUtterance !== 'undefined') {
             try {
                 const u = new SpeechSynthesisUtterance(sentenceText);
-                u.rate = 0.95; u.pitch = 1.0; u.volume = 0.95;
-                const estMs = Math.max(1500, sentenceText.length * 60);
+                // Browser TTS: multiply the natural 0.95 base by the user's
+                // playback speed. speechSynthesis rate is clamped by the browser
+                // to roughly [0.1, 10], so 0.95 * 0.75 = 0.7125 and 0.95 * 1.5 =
+                // 1.425 both land comfortably in range.
+                u.rate = 0.95 * (playbackSpeedRef.current || 1);
+                u.pitch = 1.0; u.volume = 0.95;
+                const estMs = Math.max(1500, sentenceText.length * 60) / (playbackSpeedRef.current || 1);
                 const startTs = performance.now();
                 const tick = () => {
                     const elapsed = performance.now() - startTs;
@@ -1072,6 +1200,30 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl })
                         <input type="checkbox" checked={autoAdvance} onChange={e => setAutoAdvance(e.target.checked)} aria-label="Auto-advance to next sentence" />
                         <span style={{ color: c.ink }}>Auto-advance</span>
                     </label>
+                    {/* Playback speed. Applies live to Gemini audio (the speed
+                        flips on the currently-playing sentence); browser TTS
+                        picks it up on the next sentence since speechSynthesis
+                        rate is locked once speak() fires. */}
+                    <div className="flex items-center gap-1" role="group" aria-label="Playback speed">
+                        <span style={{ color: c.dim }}>SPEED</span>
+                        {[0.75, 1, 1.25, 1.5].map(rate => (
+                            <button
+                                key={rate}
+                                onClick={() => setPlaybackSpeed(rate)}
+                                aria-pressed={playbackSpeed === rate}
+                                title={`Playback speed ${rate}x`}
+                                className="px-2 py-1 text-[11px] rounded-full transition-all tabular-nums"
+                                style={{
+                                    background: playbackSpeed === rate ? c.accent : 'transparent',
+                                    color: playbackSpeed === rate ? c.ink : c.dim,
+                                    border: `1px solid ${playbackSpeed === rate ? c.accent : c.dim + '55'}`,
+                                    fontWeight: playbackSpeed === rate ? 800 : 600
+                                }}
+                            >
+                                {rate}×
+                            </button>
+                        ))}
+                    </div>
                     <label className="flex items-center gap-2">
                         <span style={{ color: c.dim }}>THEME</span>
                         <select aria-label="Theme" value={theme} onChange={e => setTheme(e.target.value)} className="text-xs rounded px-2 py-1 border" style={{ borderColor: c.dim + '88', background: 'transparent', color: c.ink }}>
