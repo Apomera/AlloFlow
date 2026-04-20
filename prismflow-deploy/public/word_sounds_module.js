@@ -6300,6 +6300,29 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               });
             } catch (e) { warnLog('Clear wordSoundsAudioLibrary failed:', e && e.message); }
           }
+          // ── Clear downstream activity option caches ──
+          // Each activity (rhyming, blending, isolation, etc.) builds its
+          // own option list from wordSoundsPhonemes.rhymeDistractors /
+          // .blendingDistractors and gates the rebuild behind "only run if
+          // the current list is empty or doesn't include the correct
+          // answer." After regenerate, wordSoundsPhonemes IS updated with
+          // fresh distractors, but those gates stay false so the UI keeps
+          // showing the pre-regen options — exactly what the user sees
+          // when the rhyme panel still reads "bin / bin / chin / fin"
+          // after pressing regenerate. Force the rebuild by wiping the
+          // caches here so each activity effect starts from scratch.
+          try {
+            if (typeof setRhymeOptions === 'function') setRhymeOptions([]);
+            if (typeof setBlendingOptions === 'function') setBlendingOptions([]);
+            if (typeof setIsolationState === 'function') setIsolationState(null);
+            if (lastWordForRhyming && 'current' in lastWordForRhyming) lastWordForRhyming.current = null;
+            if (typeof lastWordForBlending !== 'undefined' && lastWordForBlending && 'current' in lastWordForBlending) {
+              lastWordForBlending.current = null;
+            }
+            if (typeof lastWordForIsolation !== 'undefined' && lastWordForIsolation && 'current' in lastWordForIsolation) {
+              lastWordForIsolation.current = null;
+            }
+          } catch (e) { warnLog('Clear activity option caches failed:', e && e.message); }
           if (preloadedWordCache.current) {
             preloadedWordCache.current.delete(targetWord.toLowerCase());
           }

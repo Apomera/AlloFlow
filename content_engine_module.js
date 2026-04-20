@@ -9,6 +9,15 @@ if (!cleanJson) cleanJson = function(t) { try { return JSON.parse(t); } catch(e)
 var processGrounding = window.__alloUtils && window.__alloUtils.processGrounding;
 if (!processGrounding) processGrounding = function(t) { return t; };
 
+// content_engine_source.jsx — Content Generation + Text Revision handlers
+// Pure function extraction — no hooks. Uses factory + window state bag pattern.
+
+var warnLog = window.warnLog || function() { console.warn.apply(console, arguments); };
+var cleanJson = window.__alloUtils && window.__alloUtils.cleanJson;
+if (!cleanJson) cleanJson = function(t) { try { return JSON.parse(t); } catch(e) { return null; } };
+var processGrounding = window.__alloUtils && window.__alloUtils.processGrounding;
+if (!processGrounding) processGrounding = function(t) { return t; };
+
 var createContentEngine = function(deps) {
   var callGemini = deps.callGemini;
   var addToast = deps.addToast;
@@ -462,16 +471,47 @@ var createContentEngine = function(deps) {
            const wordsPerSection = Math.ceil(targetWords / sections.length);
            let allGroundingChunks = [];
            let currentCitationOffset = 0;
+           // Track per-section text so each subsequent prompt can include a recap of
+           // what's already been written. Without this, Gemini sees only the section
+           // title + the same research brief every chunk — the result is near-
+           // identical chunks that each re-establish the introduction, definitions,
+           // and high-level framing instead of continuing the article.
+           const sectionTexts = [];
            setInputText(fullDocument);
            for (let i = 0; i < sections.length; i++) {
                const sectionTitle = sections[i];
                setGenerationStep(t('status_steps.writing_part', { current: i + 1, total: sections.length, title: sectionTitle }));
                const bilingualInstruction = getBilingualPromptInstruction(effectiveLanguage);
+               // Build an outline snapshot Gemini can orient against and a trimmed
+               // prior-content recap (~250 words per prior section, tail-biased so
+               // the model sees how each section ENDED — the most useful continuity
+               // signal). Citations in the prior text are stripped so superscript
+               // numbers don't carry over and conflict with the current section's
+               // grounding offsets.
+               const outlineSnapshot = sections.map((st, idx) => {
+                   const marker = idx < i ? 'DONE' : idx === i ? 'WRITING NOW' : 'upcoming';
+                   return `  ${idx + 1}. ${st}  ← ${marker}`;
+               }).join('\n');
+               const _trimPrior = (text, maxWords) => {
+                   const stripped = String(text || '')
+                       .replace(/\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\([^)]+\)/g, '')
+                       .replace(/⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾/g, '')
+                       .replace(/\s+/g, ' ')
+                       .trim();
+                   const words = stripped.split(' ');
+                   if (words.length <= maxWords) return stripped;
+                   return '… ' + words.slice(-maxWords).join(' ');
+               };
+               const priorRecap = i === 0
+                   ? ''
+                   : sectionTexts.map((st, idx) => `===== SECTION ${idx + 1}: ${sections[idx]} =====\n${_trimPrior(st, 250)}`).join('\n\n');
                const sectionPrompt = `
                    Write the section "${sectionTitle}" for an educational article about "${effTopic}".
                    Target Audience: ${effGrade}
                    Tone: ${effTone}
                    Target Length for this section: ~${wordsPerSection} words.
+                   You are writing section ${i + 1} of ${sections.length}. Full outline:
+${outlineSnapshot}
                    ${researchContext ? `
                    --- RESEARCH BRIEF (BACKGROUND CONTEXT ONLY) ---
                    The following background information is available:
@@ -481,8 +521,19 @@ var createContentEngine = function(deps) {
                    ------------------------------------------------
                    IMPORTANT: This brief is for context. You MUST still use Google Search independently to verify and cite every fact you write.
                    ` : ''}
-                   Context So Far:
-                   ${i === 0 ? "This is the FIRST section." : "This follows previous sections."}
+                   ${i === 0 ? 'This is the FIRST section. Write an engaging opening that sets up the article.' : `
+--- PREVIOUSLY WRITTEN SECTIONS (READ CAREFULLY — DO NOT REPEAT) ---
+${priorRecap}
+---------------------------------------------------------------
+CRITICAL: The sections above are already written. You MUST NOT:
+  • Re-introduce the topic, re-define terms, or restate background
+  • Repeat facts, examples, or analogies already covered
+  • Start with framing like "In this article we will explore..."
+You MUST:
+  • Continue naturally from where section ${i} ended
+  • Cover genuinely NEW ground specific to "${sectionTitle}"
+  • Assume the reader has just finished reading the prior sections
+`}
                    STRICT INSTRUCTIONS:
                    ${effIncludeCitations ? `
                    1. CITATION REQUIREMENT (section ${i + 1} of ${sections.length}): Include inline citations throughout this section.
@@ -492,7 +543,7 @@ var createContentEngine = function(deps) {
                    ` : ''}
                    5. Write detailed, rigorous paragraphs. Do NOT summarize.
                    6. Include a header "## ${sectionTitle}".
-                   7. Do NOT write a conclusion unless this is the final section.
+                   7. ${i === sections.length - 1 ? 'This IS the final section — end with a conclusion paragraph.' : 'Do NOT write a conclusion; more sections follow.'}
                    ${dialectInstruction}
                    ${bilingualInstruction}
                    Return ONLY the section text. Do not wrap in markdown code blocks.
@@ -563,6 +614,7 @@ var createContentEngine = function(deps) {
                    sectionText = String(result || "");
                }
                sectionText = sectionText.replace(/^```[a-zA-Z]*\n/i, '').replace(/^```\s*/, '').replace(/```\s*$/, '').trim();
+               sectionTexts.push(sectionText);
                fullDocument += sectionText + "\n\n";
                setInputText(fullDocument);
                if (i < sections.length - 1) await new Promise(r => setTimeout(r, 1000));
