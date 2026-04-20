@@ -125,6 +125,139 @@
       ng: "ring", ck: "duck", ph: "phone", oo: "moon", ee: "bee",
       ai: "rain", ay: "play", oa: "boat", ow: "owl", ou: "cloud",
     };
+    // ── HOMOPHONE GUARD ──
+    // Blend-Sounds / Syllable-Blending presents the target word spoken and then
+    // asks students to pick the matching written word. If a distractor SOUNDS
+    // identical to the target (e.g., "wail" for "whale"), the item becomes
+    // unanswerable by ear. Gemini will sometimes pick homophones because they
+    // share syllable count and topic feel. This curated table lets us detect
+    // the common pairs locally; the prompt is also strengthened to avoid them.
+    // Keys and values are lowercase. Keep additions mutually consistent — any
+    // two words that share a pronunciation belong in the same cluster.
+    const HOMOPHONE_CLUSTERS = [
+      ["ate", "eight"],
+      ["bare", "bear"],
+      ["be", "bee"],
+      ["blew", "blue"],
+      ["board", "bored"],
+      ["brake", "break"],
+      ["buy", "by", "bye"],
+      ["cell", "sell"],
+      ["cent", "scent", "sent"],
+      ["dear", "deer"],
+      ["die", "dye"],
+      ["eye", "i"],
+      ["fair", "fare"],
+      ["feat", "feet"],
+      ["flour", "flower"],
+      ["flu", "flew"],
+      ["for", "four", "fore"],
+      ["grate", "great"],
+      ["hair", "hare"],
+      ["hear", "here"],
+      ["heard", "herd"],
+      ["heel", "heal"],
+      ["hi", "high"],
+      ["hoarse", "horse"],
+      ["hole", "whole"],
+      ["hour", "our"],
+      ["knead", "need"],
+      ["knight", "night"],
+      ["knot", "not"],
+      ["know", "no"],
+      ["made", "maid"],
+      ["mail", "male"],
+      ["meat", "meet"],
+      ["one", "won"],
+      ["pair", "pare", "pear"],
+      ["peace", "piece"],
+      ["plain", "plane"],
+      ["read", "red"],
+      ["right", "write"],
+      ["road", "rode", "rowed"],
+      ["role", "roll"],
+      ["rose", "rows"],
+      ["sail", "sale"],
+      ["scene", "seen"],
+      ["sea", "see"],
+      ["so", "sew", "sow"],
+      ["son", "sun"],
+      ["stair", "stare"],
+      ["steal", "steel"],
+      ["tail", "tale"],
+      ["their", "there", "they're"],
+      ["threw", "through"],
+      ["throne", "thrown"],
+      ["tide", "tied"],
+      ["to", "too", "two"],
+      ["toe", "tow"],
+      ["wail", "whale"],
+      ["waist", "waste"],
+      ["wait", "weight"],
+      ["way", "weigh"],
+      ["weak", "week"],
+      ["wear", "where"],
+      ["which", "witch"],
+      ["wood", "would"],
+      ["your", "you're"],
+    ];
+    // Build lookup: word -> cluster-index for O(1) homophone checks.
+    const HOMOPHONE_INDEX = (function () {
+      const idx = Object.create(null);
+      for (let ci = 0; ci < HOMOPHONE_CLUSTERS.length; ci++) {
+        const cluster = HOMOPHONE_CLUSTERS[ci];
+        for (let wi = 0; wi < cluster.length; wi++) {
+          idx[cluster[wi]] = ci;
+        }
+      }
+      return idx;
+    })();
+    const isHomophone = (a, b) => {
+      if (!a || !b) return false;
+      const na = String(a).trim().toLowerCase();
+      const nb = String(b).trim().toLowerCase();
+      if (!na || !nb) return false;
+      if (na === nb) return true; // same word counts as blocked too
+      const ia = HOMOPHONE_INDEX[na];
+      const ib = HOMOPHONE_INDEX[nb];
+      return ia !== undefined && ia === ib;
+    };
+    // ── PHONEME EQUIVALENCE ──
+    // Find Sounds (isolation) presents a target phoneme audibly and asks the
+    // child to pick the matching grapheme. If two answer choices SPELL the
+    // same phoneme differently (e.g., "c" and "k" both saying /k/), the item
+    // has multiple correct-sounding answers and becomes unsolvable by ear.
+    // This table groups graphemes that share an unambiguous default phoneme
+    // in American English. Deliberately conservative — only graphemes that
+    // reliably produce the same sound outside rare contexts. phonemeKey()
+    // returns the shared phoneme label so two spellings collapse to one key
+    // during option dedup.
+    const SAME_PHONEME_CLUSTERS = [
+      { phoneme: "/k/",  graphemes: ["k", "c", "ck", "q"] },
+      { phoneme: "/f/",  graphemes: ["f", "ph"] },
+      { phoneme: "/w/",  graphemes: ["w", "wh"] },
+      { phoneme: "/oi/", graphemes: ["oi", "oy"] },
+      { phoneme: "/ur/", graphemes: ["er", "ir", "ur"] },
+      { phoneme: "/aw/", graphemes: ["aw", "au"] },
+      { phoneme: "/ay/", graphemes: ["ai", "ay"] },
+      { phoneme: "/ee/", graphemes: ["ee", "ea"] },
+      { phoneme: "/oh/", graphemes: ["oa", "oe"] },
+    ];
+    const PHONEME_KEY_OF = (function () {
+      const map = Object.create(null);
+      for (const cluster of SAME_PHONEME_CLUSTERS) {
+        for (const g of cluster.graphemes) map[g] = cluster.phoneme;
+      }
+      return map;
+    })();
+    // Returns a stable key representing the sound this grapheme makes. Two
+    // graphemes in the same cluster return the same key so Set-based dedup
+    // treats them as one option. Graphemes not in any cluster key by themselves.
+    const phonemeKey = (grapheme) => {
+      if (!grapheme) return "";
+      const g = String(grapheme).trim().toLowerCase();
+      return PHONEME_KEY_OF[g] || g;
+    };
     const WordSoundsReviewPanel =
       typeof window.WordSoundsReviewPanel !== "undefined"
         ? window.WordSoundsReviewPanel
@@ -1329,7 +1462,7 @@
           try {
             let result = null;
             if (typeof callGemini === "function") {
-              const prompt = `You are a reading specialist. For the word "${word}", return ONLY valid JSON with no markdown:\n{"syllables":["syl","la","bles"],"blendingOptions":["${word}","word2","word3","word4"]}\nsyllables: the syllables of "${word}" as an array of strings\nblendingOptions: exactly 4 words — "${word}" first, then 3 distractors of similar syllable count and general topic`;
+              const prompt = `You are a reading specialist. For the word "${word}", return ONLY valid JSON with no markdown:\n{"syllables":["syl","la","bles"],"blendingOptions":["${word}","word2","word3","word4"]}\nsyllables: the syllables of "${word}" as an array of strings\nblendingOptions: exactly 4 words — "${word}" first, then 3 distractors of similar syllable count and general topic.\n\nCRITICAL: Distractors MUST be pronounced differently from "${word}". NEVER include homophones (words that sound the same as the target — e.g., for "whale" do not use "wail"; for "eight" do not use "ate"; for "night" do not use "knight"; for "meet" do not use "meat"). The activity plays the target word aloud and asks the child to pick the correct written word, so phonetically identical distractors make it unsolvable. If you cannot think of 3 non-homophone distractors, return fewer rather than including a homophone.`;
               try {
                 const raw = await callGemini(prompt);
                 const match = raw.match(/\{[\s\S]*?\}/);
@@ -1352,13 +1485,40 @@
               }
               result = { syllables: syls, blendingOptions: null };
             }
+            // Strip any distractor that sounds like the target word (homophone)
+            // or duplicates it. The target must be preserved so it's always in
+            // the options pool. If filtering leaves us with fewer than 2 total
+            // options (target + 1 distractor), drop the options entirely and
+            // the UI falls back to the syllable-only view — better than a
+            // broken item where two answers sound identical.
+            let cleanOptions = null;
+            if (Array.isArray(result.blendingOptions) && result.blendingOptions.length >= 2) {
+              const targetLc = String(word).trim().toLowerCase();
+              const seen = new Set([targetLc]);
+              const filtered = [];
+              // Target always first if present; otherwise prepend it.
+              if (!result.blendingOptions.some((w) => String(w).trim().toLowerCase() === targetLc)) {
+                filtered.push(word);
+              }
+              for (const opt of result.blendingOptions) {
+                const lc = String(opt || "").trim().toLowerCase();
+                if (!lc) continue;
+                if (seen.has(lc)) continue; // de-dupe
+                if (isHomophone(targetLc, lc)) {
+                  warnLog("[Syllable] Dropped homophone distractor:", opt, "for target:", word);
+                  continue;
+                }
+                seen.add(lc);
+                filtered.push(opt);
+              }
+              if (filtered.length >= 2) {
+                cleanOptions = fisherYatesShuffle(filtered).slice(0, 4);
+              }
+            }
             const data = {
               syllables: result.syllables,
               count: result.syllables.length,
-              blendingOptions:
-                Array.isArray(result.blendingOptions) && result.blendingOptions.length >= 2
-                  ? fisherYatesShuffle([...result.blendingOptions]).slice(0, 4)
-                  : null,
+              blendingOptions: cleanOptions,
             };
             setSyllableData(data);
             syllableDataRef.current = data;
@@ -5519,14 +5679,30 @@
               const fetchAudio = async () => {
                 try {
                   await handleAudio(targetWord, false);
+                  // Phonemes may arrive as strings OR {ipa, grapheme} objects
+                  // from glossary entries; flatten safely.
+                  const _flatPhoneme = (p) =>
+                    typeof p === "string"
+                      ? p
+                      : (p && (p.grapheme || p.ipa)) || "";
                   const distractorSets = [
                     ...(wordEntry.blendingDistractors || []),
                     ...(wordEntry.rhymeDistractors || []),
                     ...(wordEntry.familyMembers || []),
+                    // ── Coverage additions (match Gemini path) ──
+                    // The word's phonemes — Find Sounds and Segmentation
+                    // play each as its own response option.
+                    ...((wordEntry.phonemes || []).map(_flatPhoneme)),
+                    // Sound Sort options.
+                    ...((wordEntry.soundSortMatches?.words) || []),
+                    // Spelling / Orthography distractors.
+                    ...(wordEntry.orthographyDistractors || []),
+                    // Manipulation distractors.
+                    ...(wordEntry.manipulationDistractors || []),
                   ];
                   if (distractorSets.length > 0) {
                     await Promise.all(
-                      distractorSets.map((d) =>
+                      [...new Set(distractorSets.filter(Boolean))].map((d) =>
                         handleAudio(d, false).catch(() => { }),
                       ),
                     );
@@ -5766,15 +5942,31 @@ EXAMPLES:
                   const safeBlendingDistractors = filterDistractors(phonemeData?.blendingDistractors);
                   const safeRhymeDistractors = filterDistractors(phonemeData?.rhymeDistractors || phonemeData?.rhymeWords);
 
+                  // Phonemes arrive as objects {ipa, grapheme} from the
+                  // Gemini path; flatten to playable strings for TTS prefetch.
+                  // Accept strings too so this helper is safe on either shape.
+                  const flattenPhoneme = (p) =>
+                    typeof p === "string"
+                      ? p
+                      : (p && (p.grapheme || p.ipa)) || "";
                   const keys = [
                     phonemeData?.firstSound,
                     phonemeData?.lastSound,
                     phonemeData?.rhymeWord,
-                    ...(phonemeData?.phonemes || []),
+                    ...(phonemeData?.phonemes || []).map(flattenPhoneme),
                     ...safeBlendingDistractors,
                     ...safeRhymeDistractors,
                     ...(phonemeData?.familyMembers || []),
                     ...(phonemeData?.mappingGraphemes || []),
+                    // ── Coverage additions ──
+                    // Sound Sort options: match-words rendered as taps.
+                    ...((phonemeData?.soundSortMatches?.words) || []),
+                    // Spelling / Orthography distractors: the misspellings
+                    // shown as response options. Activity plays them on tap.
+                    ...(phonemeData?.orthographyDistractors || []),
+                    // Manipulation distractors (e.g., "cat" - /k/ → "at"
+                    // with distractors "hat", "bat", "mat").
+                    ...(phonemeData?.manipulationDistractors || []),
                   ].filter(Boolean);
 
                   // Deduplicate TTS queue
@@ -6977,14 +7169,22 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             typeof currentPosition === "number" ? currentPosition : 0;
           const correctSound =
             phonemes[positionIdx] || wordSoundsPhonemes?.firstSound;
+          // Dedup by PHONEME (not grapheme string) so different spellings of
+          // the same sound — e.g., "c" and "k" both saying /k/, "oi" and "oy"
+          // both /oi/, "ai" and "ay" both /ā/ — can never coexist as options.
+          // phonemeKey() returns a shared key for clustered graphemes; for
+          // everything else it's just the lowercase grapheme.
+          const correctKey = phonemeKey(correctSound);
           const isoAllPhonemes = wordSoundsPhonemes?.phonemes || [];
-          const isoDistractors = isoAllPhonemes
-            .filter((p) => p.toLowerCase() !== correctSound?.toLowerCase())
-            .slice(0, 5);
-          const used = new Set([
-            correctSound?.toLowerCase(),
-            ...(isoDistractors || []).map((d) => d.toLowerCase()),
-          ]);
+          const isoDistractors = [];
+          const used = new Set([correctKey]);
+          for (const p of isoAllPhonemes) {
+            if (isoDistractors.length >= 5) break;
+            const k = phonemeKey(p);
+            if (!k || used.has(k)) continue;
+            isoDistractors.push(p);
+            used.add(k);
+          }
           const SIMILAR_SOUNDS = {
             b: ["d", "p", "v", "g"],
             d: ["b", "t", "g", "n"],
@@ -7043,9 +7243,10 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           );
           for (const sim of shuffledSimilar) {
             if (isoDistractors.length >= 5) break;
-            if (!used.has(sim.toLowerCase())) {
+            const k = phonemeKey(sim);
+            if (!used.has(k)) {
               isoDistractors.push(sim);
-              used.add(sim.toLowerCase());
+              used.add(k);
             }
           }
           const isoExpandedPool = [
@@ -7089,17 +7290,28 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           );
           for (const p of shuffledPool) {
             if (isoDistractors.length >= 5) break;
-            if (!used.has(p.toLowerCase())) {
+            const k = phonemeKey(p);
+            if (!used.has(k)) {
               isoDistractors.push(p);
-              used.add(p.toLowerCase());
+              used.add(k);
             }
           }
           const fallbackSound =
             (currentWordSoundsWord || "")[0]?.toLowerCase() || "a";
           const effectiveCorrect = correctSound || fallbackSound;
-          const isoUniqueOpts = [
-            ...new Set([effectiveCorrect, ...isoDistractors.slice(0, 5)]),
-          ];
+          // Final dedup by phoneme — catches any same-sound pairs even if
+          // upstream steps missed them.
+          const isoUniqueOpts = (function () {
+            const out = [];
+            const seenKeys = new Set();
+            for (const g of [effectiveCorrect, ...isoDistractors.slice(0, 5)]) {
+              const k = phonemeKey(g);
+              if (!k || seenKeys.has(k)) continue;
+              seenKeys.add(k);
+              out.push(g);
+            }
+            return out;
+          })();
           const isoExpandedPool2 = [
             "b",
             "d",
@@ -7127,12 +7339,13 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             "ch",
             "th",
           ];
-          const isoUsedSet = new Set(isoUniqueOpts.map((o) => o.toLowerCase()));
+          const isoUsedSet = new Set(isoUniqueOpts.map((o) => phonemeKey(o)));
           for (const p of isoExpandedPool2) {
             if (isoUniqueOpts.length >= 6) break;
-            if (!isoUsedSet.has(p)) {
+            const k = phonemeKey(p);
+            if (!isoUsedSet.has(k)) {
               isoUniqueOpts.push(p);
-              isoUsedSet.add(p);
+              isoUsedSet.add(k);
             }
           }
           const isoOptions = fisherYatesShuffle(isoUniqueOpts.slice(0, 6));
@@ -7171,18 +7384,24 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             estimatePhonemesBasic(currentWordSoundsWord);
           const pos = Math.floor(Math.random() * phonemes.length);
           const correct = phonemes[pos] || currentWordSoundsWord[0] || "a";
-          const dists = phonemes.filter((p) => p !== correct).slice(0, 5);
+          // Phoneme-key dedup — keep distractors in truly different phonemes
+          // from the correct answer AND from each other.
+          const _used = new Set([phonemeKey(correct)]);
+          const dists = [];
+          for (const p of phonemes) {
+            if (dists.length >= 5) break;
+            const k = phonemeKey(p);
+            if (!k || _used.has(k)) continue;
+            dists.push(p);
+            _used.add(k);
+          }
           {
             const _pool = ["b", "d", "f", "g", "k", "l", "m", "n", "p", "r", "s", "t", "a", "e", "i", "o", "u"];
-            const _used = new Set([correct, ...dists].map(x => x?.toLowerCase()));
             const _shuffled = [..._pool].sort(() => Math.random() - 0.5);
             for (const _p of _shuffled) {
               if (dists.length >= 5) break;
-              if (!_used.has(_p)) { dists.push(_p); _used.add(_p); }
-            }
-            while (dists.length < 5) {
-              const _fallback = _pool[Math.floor(Math.random() * _pool.length)];
-              if (!_used.has(_fallback)) { dists.push(_fallback); _used.add(_fallback); }
+              const k = phonemeKey(_p);
+              if (!_used.has(k)) { dists.push(_p); _used.add(k); }
             }
           }
           setIsolationState({
@@ -9061,20 +9280,19 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                         phonemes[correctIdx] ||
                         phonemes[0] ||
                         targetWord.charAt(0);
-                      const allPhonemes = [...new Set(phonemes)];
-                      const distractors = allPhonemes
-                        .filter((p) => p !== correctPhoneme)
-                        .slice(0, 5);
-                      // Dedup-aware fill: the previous version did a blind
-                      // Math.random pick with no used-set check, so the same
-                      // letter could be pushed twice (e.g. ["b","b","f","g","k"])
-                      // → Find Sounds would show two identical response options.
-                      const _distUsed = new Set(
-                        [
-                          correctPhoneme,
-                          ...distractors,
-                        ].map((x) => x?.toLowerCase()),
-                      );
+                      // Phoneme-key dedup — guarantees no two options share a
+                      // sound (e.g., c/k, oi/oy, ai/ay) even if the source
+                      // phoneme list contains equivalent spellings.
+                      const _correctKey = phonemeKey(correctPhoneme);
+                      const _distUsed = new Set([_correctKey]);
+                      const distractors = [];
+                      for (const p of phonemes) {
+                        if (distractors.length >= 5) break;
+                        const k = phonemeKey(p);
+                        if (!k || _distUsed.has(k)) continue;
+                        distractors.push(p);
+                        _distUsed.add(k);
+                      }
                       const _fillPool = [
                         "b","d","f","g","k","l","m","n","p","r","s","t",
                       ];
@@ -9083,16 +9301,13 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       );
                       for (const _f of _fillShuffled) {
                         if (distractors.length >= 5) break;
-                        if (!_distUsed.has(_f)) {
+                        const k = phonemeKey(_f);
+                        if (!_distUsed.has(k)) {
                           distractors.push(_f);
-                          _distUsed.add(_f);
+                          _distUsed.add(k);
                         }
                       }
-                      const isoUniqueSet = new Set(
-                        [correctPhoneme, ...distractors.slice(0, 5)].map((x) =>
-                          x?.toLowerCase(),
-                        ),
-                      );
+                      const isoUniqueSet = new Set(_distUsed);
                       const ioFiller = [
                         "b",
                         "d",
@@ -9123,9 +9338,10 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       ];
                       for (const p of ioFiller) {
                         if (ioFilled.length >= 6) break;
-                        if (!isoUniqueSet.has(p)) {
+                        const k = phonemeKey(p);
+                        if (!isoUniqueSet.has(k)) {
                           ioFilled.push(p);
-                          isoUniqueSet.add(p);
+                          isoUniqueSet.add(k);
                         }
                       }
                       const isoOptions = fisherYatesShuffle(
@@ -9305,15 +9521,19 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                         iso_phonemes[iso_correctIdx] ||
                         iso_phonemes[0] ||
                         targetWord.charAt(0);
-                      const iso_all = [...new Set(iso_phonemes)];
-                      const iso_dist = iso_all
-                        .filter((p) => p !== iso_correct)
-                        .slice(0, 5);
-                      // Dedup-aware fill (see matching block above for the
-                      // "Find Sounds double option" bug fix).
-                      const _isoDistUsed = new Set(
-                        [iso_correct, ...iso_dist].map((x) => x?.toLowerCase()),
-                      );
+                      // Phoneme-key dedup — no two options may share a sound
+                      // (e.g., c/k, oi/oy, ai/ay). Mirrors the matching block
+                      // above for the other bufferedWord path.
+                      const _isoCorrectKey = phonemeKey(iso_correct);
+                      const _isoDistUsed = new Set([_isoCorrectKey]);
+                      const iso_dist = [];
+                      for (const p of iso_phonemes) {
+                        if (iso_dist.length >= 5) break;
+                        const k = phonemeKey(p);
+                        if (!k || _isoDistUsed.has(k)) continue;
+                        iso_dist.push(p);
+                        _isoDistUsed.add(k);
+                      }
                       const _isoFillPool = [
                         "b","d","f","g","k","l","m","n","p","r","s","t",
                       ];
@@ -9322,16 +9542,13 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       );
                       for (const _f of _isoFillShuffled) {
                         if (iso_dist.length >= 5) break;
-                        if (!_isoDistUsed.has(_f)) {
+                        const k = phonemeKey(_f);
+                        if (!_isoDistUsed.has(k)) {
                           iso_dist.push(_f);
-                          _isoDistUsed.add(_f);
+                          _isoDistUsed.add(k);
                         }
                       }
-                      const iso_unique = new Set(
-                        [iso_correct, ...iso_dist.slice(0, 5)].map((x) =>
-                          x?.toLowerCase(),
-                        ),
-                      );
+                      const iso_unique = new Set(_isoDistUsed);
                       const iso_filler = [
                         "b",
                         "d",
@@ -9359,9 +9576,10 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       const iso_filled = [iso_correct, ...iso_dist.slice(0, 5)];
                       for (const p of iso_filler) {
                         if (iso_filled.length >= 6) break;
-                        if (!iso_unique.has(p)) {
+                        const k = phonemeKey(p);
+                        if (!iso_unique.has(k)) {
                           iso_filled.push(p);
-                          iso_unique.add(p);
+                          iso_unique.add(k);
                         }
                       }
                       const iso_opts = fisherYatesShuffle(

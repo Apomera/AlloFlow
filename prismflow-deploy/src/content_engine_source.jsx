@@ -1353,7 +1353,11 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
       }
   };
   const handlePhonicsClick = async (rawWord, e = null) => {
-      const word = rawWord.replace(/[^a-zA-ZÀ-ÿ0-9-\s]/g, "").trim();
+      // Use a Unicode property class so non-Latin scripts (Cyrillic, Greek, Arabic, Hebrew,
+      // Han, Hiragana/Katakana, Hangul, Devanagari, etc.) survive the character scrub.
+      // Previously the regex was /[^a-zA-ZÀ-ÿ0-9-\s]/g which kept only Latin + Latin-Extended-A,
+      // so a click on any non-Latin word produced an empty string and silently did nothing.
+      const word = rawWord.replace(/[^\p{L}\p{N}\s-]/gu, "").trim();
       if (!word) return;
       if (e) e.stopPropagation();
       const reqId = ++_phonicsReqId;
@@ -1364,8 +1368,15 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
           x: e ? e.clientX : 0,
           y: e ? e.clientY : 0
       });
+      // Resolve the active content language. "All Selected Languages" is a UI pseudo-value
+      // that means "generate in every selected language"; for phonics of a specific word,
+      // fall back to English as the analysis language in that ambiguous case.
+      const _phLang = (leveledTextLanguage && leveledTextLanguage !== 'All Selected Languages')
+          ? leveledTextLanguage : 'English';
       try {
-          const prompt = `Analyze the English word: '${word}'. Return ONLY JSON: { "ipa": "International Phonetic Alphabet representation", "phoneticSpelling": "Simple phonetic spelling (e.g. cat -> kat)", "syllables": ["syl", "la", "bles"] }.`;
+          const prompt = _phLang === 'English'
+              ? `Analyze the English word: '${word}'. Return ONLY JSON: { "ipa": "International Phonetic Alphabet representation", "phoneticSpelling": "Simple phonetic spelling (e.g. cat -> kat)", "syllables": ["syl", "la", "bles"] }.`
+              : `Analyze the ${_phLang} word: '${word}'. Return IPA and syllables appropriate to ${_phLang} phonology — NOT English. Return ONLY JSON: { "ipa": "IPA in the ${_phLang} phoneme system", "phoneticSpelling": "Simple phonetic spelling a ${_phLang} reader would understand", "syllables": ["syl","la","bles"] }.`;
           const result = await callGemini(prompt, true);
           if (reqId !== _phonicsReqId) return;
           let data;
@@ -1384,7 +1395,10 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
               isLoading: false
           } : prev));
           try {
-              const audioUrl = await callTTS(word, selectedVoice);
+              // Pass the active language so callTTS can (a) swap Kokoro for a multilingual
+              // Gemini voice when content is non-English, and (b) include a language-hint
+              // prefix in the TTS prompt so Gemini uses the right phonology.
+              const audioUrl = await callTTS(word, selectedVoice, voiceSpeed || 1, 2, _phLang);
               if (reqId !== _phonicsReqId) return;
               if (audioUrl) {
                   const audio = new Audio(audioUrl);
@@ -1407,15 +1421,19 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
           setPhonicsData(null);
       }
   };
-  const applyTextRevision = () => {
+  const applyTextRevision = async () => {
       if (!revisionData || !revisionData.result || !generatedContent) return;
       const currentFullText = typeof generatedContent?.data === 'string' ? generatedContent?.data : '';
       let newFullText = currentFullText;
+      // Track the (original → replacement) pairs we actually applied, so the bilingual
+      // sync step below can translate the same edits into the other-language block.
+      const _appliedEdits = [];
       if (revisionData.replacements && Array.isArray(revisionData.replacements)) {
           let notFoundCount = 0;
           revisionData.replacements.forEach(rep => {
               if (newFullText.includes(rep.original)) {
                   newFullText = newFullText.replace(rep.original, rep.new);
+                  _appliedEdits.push({ original: rep.original, result: rep.new });
               } else {
                   notFoundCount++;
               }
@@ -1425,16 +1443,78 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
                return;
           }
       } else {
-          newFullText = currentFullText.replace(revisionData.original, revisionData.result);
-          if (newFullText === currentFullText) {
+          const after = currentFullText.replace(revisionData.original, revisionData.result);
+          if (after === currentFullText) {
               addToast(t('toasts.text_exact_not_found'), "error");
               return;
           }
+          newFullText = after;
+          _appliedEdits.push({ original: revisionData.original, result: revisionData.result });
       }
       handleSimplifiedTextChange(newFullText);
       setRevisionData(null);
       window.getSelection().removeAllRanges();
       addToast(t('toasts.text_updated'), "success");
+
+      // ── Bidirectional bilingual sync ───────────────────────────────────────────
+      // If the document has a "--- ENGLISH TRANSLATION ---" delimiter, try to keep
+      // the paired sentence in the OTHER block consistent with the edit we just
+      // applied. For each applied edit we:
+      //   1. Determine whether it landed in the target-language half or the English
+      //      half (by substring position relative to the delimiter).
+      //   2. Find the counterpart sentence in the other half at the same sentence
+      //      index within its paragraph (best-effort — bilingual output from
+      //      generateBilingualText preserves paragraph + sentence parity).
+      //   3. Ask Gemini to translate the NEW version (one short call per edit)
+      //      into the other language, then replace just that counterpart sentence.
+      // This is best-effort: if the counterpart can't be found, or translation
+      // fails, we silently skip — the primary edit is already committed.
+      const BILINGUAL_DELIMITER = '--- ENGLISH TRANSLATION ---';
+      const _biIdx = newFullText.indexOf(BILINGUAL_DELIMITER);
+      if (_biIdx === -1 || _appliedEdits.length === 0 || !callGemini) return;
+      const targetLang = (leveledTextLanguage && leveledTextLanguage !== 'All Selected Languages' && leveledTextLanguage !== 'English')
+          ? leveledTextLanguage : null;
+      if (!targetLang) return; // no meaningful paired language
+      const _splitIntoSentences = (txt) => {
+          // Mirror the splitTextToSentences heuristic used in the renderer so indices line up.
+          const m = (txt || '').match(/[^.!?…]+[.!?…]+\s*/g);
+          return m ? m.map(s => s.trim()).filter(Boolean) : (txt ? [txt.trim()] : []);
+      };
+      let resultText = newFullText;
+      let syncedCount = 0;
+      for (const edit of _appliedEdits) {
+          // Where did the EDITED sentence land? Search the NEW text for the replacement.
+          const editPos = resultText.indexOf(edit.result);
+          if (editPos === -1) continue;
+          const biIdxNow = resultText.indexOf(BILINGUAL_DELIMITER);
+          const editInTarget = editPos < biIdxNow;
+          const sourceSentences = editInTarget ? _splitIntoSentences(resultText.substring(0, biIdxNow))
+                                               : _splitIntoSentences(resultText.substring(biIdxNow + BILINGUAL_DELIMITER.length));
+          const pairedSentences = editInTarget ? _splitIntoSentences(resultText.substring(biIdxNow + BILINGUAL_DELIMITER.length))
+                                               : _splitIntoSentences(resultText.substring(0, biIdxNow));
+          const editedSentenceIdx = sourceSentences.findIndex(s => s.includes(edit.result.trim().split(/[.!?…]/)[0].slice(0, 40)));
+          if (editedSentenceIdx === -1 || editedSentenceIdx >= pairedSentences.length) continue;
+          const counterpart = pairedSentences[editedSentenceIdx];
+          if (!counterpart) continue;
+          const translatePrompt = editInTarget
+              ? `Translate this ${targetLang} sentence into English, preserving meaning, tone, and any citation markers like ⁽¹⁾:\n"${edit.result}"\nReturn ONLY the English translation — no quotes, no explanation.`
+              : `Translate this English sentence into ${targetLang}, preserving meaning, tone, and any citation markers like ⁽¹⁾:\n"${edit.result}"\nReturn ONLY the ${targetLang} translation — no quotes, no explanation.`;
+          try {
+              const translation = await callGemini(translatePrompt);
+              const cleanTranslation = String(translation || '').trim().replace(/^["""'']|["""''.]$/g, '').trim();
+              if (!cleanTranslation) continue;
+              if (resultText.includes(counterpart)) {
+                  resultText = resultText.replace(counterpart, cleanTranslation);
+                  syncedCount++;
+              }
+          } catch (e) {
+              warnLog('Bilingual sync translation failed for an edit:', e?.message || e);
+          }
+      }
+      if (syncedCount > 0 && resultText !== newFullText) {
+          handleSimplifiedTextChange(resultText);
+          addToast((t('toasts.bilingual_synced') || 'Paired translation updated.') + ' (' + syncedCount + ')', 'info');
+      }
   };
   const closeRevision = () => {
       setRevisionData(null);
