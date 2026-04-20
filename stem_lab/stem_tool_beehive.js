@@ -3294,6 +3294,217 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             c.fillText('💡 ' + stFacts[stIdx], W / 2, stStripY + 10);
           }
 
+          // ═══ BUZZ PHYSICS · 230 Hz wingbeat + sonication pollination ═══
+          function drawBuzzPhysics() {
+            // Deep teal soundwave background
+            var bzGrad = c.createLinearGradient(0, 0, 0, H);
+            bzGrad.addColorStop(0, '#042f2e'); bzGrad.addColorStop(0.5, '#134e4a'); bzGrad.addColorStop(1, '#064e3b');
+            c.fillStyle = bzGrad; c.fillRect(0, 0, W, H);
+
+            // Title
+            c.fillStyle = '#5eead4'; c.textAlign = 'center';
+            c.font = 'bold 18px Georgia, serif';
+            c.fillText('🎵 Buzz Physics · why bees sound the way they do', W / 2, 26);
+            c.font = 'italic 11px Georgia, serif'; c.fillStyle = '#2dd4bf';
+            c.fillText('Honeybee wings beat ~230 times/sec · the audible "BZZZ" is that pressure oscillation', W / 2, 44);
+
+            // ═══ LEFT: live oscilloscope trace of the wingbeat ═══
+            var oscX0 = 18, oscX1 = W * 0.58;
+            var oscY = H * 0.33;
+            var oscH = 85;
+            c.fillStyle = 'rgba(0,0,0,0.35)';
+            if (c.roundRect) { c.beginPath(); c.roundRect(oscX0, oscY - oscH / 2 - 10, oscX1 - oscX0, oscH + 34, 6); c.fill(); }
+            else c.fillRect(oscX0, oscY - oscH / 2 - 10, oscX1 - oscX0, oscH + 34);
+            c.strokeStyle = 'rgba(94,234,212,0.4)'; c.lineWidth = 1;
+            if (c.roundRect) { c.beginPath(); c.roundRect(oscX0, oscY - oscH / 2 - 10, oscX1 - oscX0, oscH + 34, 6); c.stroke(); }
+            c.fillStyle = '#5eead4'; c.textAlign = 'left';
+            c.font = 'bold 10.5px "Inter", sans-serif';
+            c.fillText('Wingbeat Waveform · 230 Hz', oscX0 + 10, oscY - oscH / 2 + 3);
+            // Grid
+            c.strokeStyle = 'rgba(94,234,212,0.15)'; c.lineWidth = 0.5;
+            for (var gx = 1; gx < 8; gx++) {
+              var gxp = oscX0 + ((oscX1 - oscX0) * gx / 8);
+              c.beginPath(); c.moveTo(gxp, oscY - oscH / 2); c.lineTo(gxp, oscY + oscH / 2); c.stroke();
+            }
+            c.beginPath(); c.moveTo(oscX0, oscY); c.lineTo(oscX1, oscY); c.stroke();
+            // Waveform: honeybee 230 Hz fundamental + harmonic ripple
+            c.strokeStyle = '#34d399'; c.lineWidth = 2;
+            c.shadowColor = '#10b981'; c.shadowBlur = 6;
+            c.beginPath();
+            var scrollT = t2 * 3;
+            for (var wx = 0; wx < (oscX1 - oscX0); wx++) {
+              var phase = wx * 0.17 - scrollT * 0.08;
+              var fundamental = Math.sin(phase);
+              var harmonic = 0.25 * Math.sin(phase * 2 + 0.8);
+              var amp = (fundamental + harmonic) * (oscH * 0.38);
+              var px = oscX0 + wx, py = oscY + amp;
+              if (wx === 0) c.moveTo(px, py); else c.lineTo(px, py);
+            }
+            c.stroke();
+            c.shadowBlur = 0;
+            // X-axis time label
+            c.fillStyle = '#5eead4'; c.textAlign = 'left';
+            c.font = '8.5px "Inter", sans-serif';
+            c.fillText('0 ms', oscX0 + 4, oscY + oscH / 2 + 12);
+            c.textAlign = 'right';
+            c.fillText('40 ms (≈ 9 wingbeats)', oscX1 - 6, oscY + oscH / 2 + 12);
+
+            // ═══ MIDDLE: frequency comparison chart — bee species ═══
+            var chY = oscY + oscH + 30;
+            c.fillStyle = '#5eead4'; c.textAlign = 'left';
+            c.font = 'bold 11px "Inter", sans-serif';
+            c.fillText('Wingbeat frequency comparison', oscX0 + 4, chY + 4);
+            var species = [
+              { n: 'Mosquito', hz: 600, col: '#f472b6' },
+              { n: 'Honeybee', hz: 230, col: '#fbbf24' },
+              { n: 'Bumblebee', hz: 200, col: '#a78bfa' },
+              { n: 'Housefly', hz: 200, col: '#94a3b8' },
+              { n: 'Hummingbird', hz: 80, col: '#22d3ee' },
+              { n: 'Pigeon', hz: 8, col: '#86efac' }
+            ];
+            species.forEach(function(sp, spi) {
+              var by = chY + 18 + spi * 16;
+              var barW = (sp.hz / 600) * (oscX1 - oscX0 - 130);
+              c.fillStyle = '#5eead4'; c.textAlign = 'left';
+              c.font = 'bold 9px "Inter", sans-serif';
+              c.fillText(sp.n, oscX0 + 4, by + 1);
+              // Bar
+              c.fillStyle = 'rgba(94,234,212,0.15)';
+              c.fillRect(oscX0 + 80, by - 7, oscX1 - oscX0 - 130, 10);
+              c.fillStyle = sp.col;
+              c.fillRect(oscX0 + 80, by - 7, Math.max(2, barW), 10);
+              c.fillStyle = '#ccfbf1'; c.textAlign = 'left';
+              c.font = 'bold 9px "Inter", sans-serif';
+              c.fillText(sp.hz + ' Hz', oscX0 + 88 + Math.max(barW, 40), by + 1);
+            });
+
+            // ═══ RIGHT TOP: asynchronous flight muscles diagram ═══
+            var mnX = W - 180, mnY = 72;
+            c.fillStyle = 'rgba(6,78,59,0.85)';
+            if (c.roundRect) { c.beginPath(); c.roundRect(mnX, mnY, 170, 180, 8); c.fill(); }
+            else c.fillRect(mnX, mnY, 170, 180);
+            c.strokeStyle = 'rgba(94,234,212,0.45)'; c.lineWidth = 1;
+            if (c.roundRect) { c.beginPath(); c.roundRect(mnX, mnY, 170, 180, 8); c.stroke(); }
+            c.fillStyle = '#5eead4'; c.textAlign = 'center';
+            c.font = 'bold 11px "Inter", sans-serif';
+            c.fillText('Asynchronous Flight', mnX + 85, mnY + 16);
+            c.font = 'italic 9px "Inter", sans-serif'; c.fillStyle = '#2dd4bf';
+            c.fillText('one nerve pulse → many beats', mnX + 85, mnY + 30);
+
+            // Schematic thorax cross-section with 2 muscle groups (dorsal + vertical)
+            var thX = mnX + 85, thY = mnY + 98;
+            var thR = 36;
+            // Thorax outline
+            c.fillStyle = '#78350f';
+            c.beginPath(); c.ellipse(thX, thY, thR, thR * 0.9, 0, 0, Math.PI * 2); c.fill();
+            c.strokeStyle = '#5eead4'; c.lineWidth = 1.5; c.stroke();
+
+            // Dorsal-longitudinal muscle (horizontal) — contracts = wings go UP
+            var dlPhase = Math.sin(t2 / 2) * 0.5 + 0.5; // 0..1
+            c.fillStyle = 'rgb(' + Math.floor(220 + dlPhase * 35) + ',' + Math.floor(38 + dlPhase * 80) + ',38)';
+            c.fillRect(thX - thR * 0.75, thY - 6, thR * 1.5, 12);
+            // Dorsal-ventral (vertical) — contracts = wings go DOWN
+            var dvPhase = 1 - dlPhase;
+            c.fillStyle = 'rgb(' + Math.floor(37 + dvPhase * 100) + ',99,' + Math.floor(235 - dvPhase * 80) + ')';
+            c.fillRect(thX - 6, thY - thR * 0.7, 12, thR * 1.4);
+
+            // Wing hinges + wings
+            var wingLift = (dlPhase - 0.5) * 0.6; // wings up when DL contracts
+            c.save(); c.translate(thX - thR, thY - thR * 0.2); c.rotate(-wingLift);
+            c.fillStyle = 'rgba(255,255,255,0.45)';
+            c.beginPath(); c.ellipse(-14, 0, 18, 5, 0, 0, Math.PI * 2); c.fill();
+            c.strokeStyle = 'rgba(94,234,212,0.6)'; c.lineWidth = 1; c.stroke();
+            c.restore();
+            c.save(); c.translate(thX + thR, thY - thR * 0.2); c.rotate(wingLift);
+            c.fillStyle = 'rgba(255,255,255,0.45)';
+            c.beginPath(); c.ellipse(14, 0, 18, 5, 0, 0, Math.PI * 2); c.fill();
+            c.strokeStyle = 'rgba(94,234,212,0.6)'; c.lineWidth = 1; c.stroke();
+            c.restore();
+
+            // Legend
+            c.fillStyle = '#fecaca'; c.textAlign = 'left';
+            c.font = '8.5px "Inter", sans-serif';
+            c.fillRect(mnX + 10, mnY + 154, 8, 8);
+            c.fillStyle = '#fecaca';
+            c.fillText('DL (horizontal)', mnX + 22, mnY + 162);
+            c.fillStyle = '#93c5fd'; c.fillRect(mnX + 95, mnY + 154, 8, 8);
+            c.fillStyle = '#93c5fd';
+            c.fillText('DV (vertical)', mnX + 107, mnY + 162);
+
+            // ═══ RIGHT BOTTOM: buzz pollination (sonication) explainer ═══
+            var sonY = mnY + 194;
+            c.fillStyle = 'rgba(6,78,59,0.85)';
+            if (c.roundRect) { c.beginPath(); c.roundRect(mnX, sonY, 170, 92, 8); c.fill(); }
+            else c.fillRect(mnX, sonY, 170, 92);
+            c.strokeStyle = 'rgba(94,234,212,0.45)'; c.lineWidth = 1;
+            if (c.roundRect) { c.beginPath(); c.roundRect(mnX, sonY, 170, 92, 8); c.stroke(); }
+            c.fillStyle = '#5eead4'; c.textAlign = 'center';
+            c.font = 'bold 11px "Inter", sans-serif';
+            c.fillText('Buzz Pollination', mnX + 85, sonY + 14);
+            c.font = '8.5px "Inter", sans-serif'; c.fillStyle = '#2dd4bf';
+            c.textAlign = 'left';
+            c.fillText('Bumblebees bite the flower,', mnX + 10, sonY + 30);
+            c.fillText('then vibrate at ~400 Hz —', mnX + 10, sonY + 42);
+            c.fillText('shaking pollen loose from', mnX + 10, sonY + 54);
+            c.fillText('poricidal anthers.', mnX + 10, sonY + 66);
+            c.fillStyle = '#fde047'; c.font = 'bold 9px "Inter", sans-serif';
+            c.fillText('Tomatoes · blueberries · kiwi', mnX + 10, sonY + 82);
+            c.font = 'italic 8px "Inter", sans-serif'; c.fillStyle = '#fbbf24';
+            c.fillText('(Honeybees cannot do this!)', mnX + 10, sonY + 92 - 2);
+
+            // ═══ Center: animated sound waves emanating from a bee silhouette ═══
+            var beeCx = W * 0.28, beeCy = H - 110;
+            // Bee silhouette
+            c.save(); c.translate(beeCx, beeCy);
+            // Wings shimmer
+            var wingF = Math.sin(t2 * 3) * 0.25;
+            c.fillStyle = 'rgba(255,255,255,0.35)';
+            c.save(); c.rotate(-wingF);
+            c.beginPath(); c.ellipse(-12, -8, 14, 5, -0.3, 0, Math.PI * 2); c.fill();
+            c.restore();
+            c.save(); c.rotate(wingF);
+            c.beginPath(); c.ellipse(12, -8, 14, 5, 0.3, 0, Math.PI * 2); c.fill();
+            c.restore();
+            c.fillStyle = '#fbbf24';
+            c.beginPath(); c.ellipse(0, 0, 18, 11, 0, 0, Math.PI * 2); c.fill();
+            c.fillStyle = '#1f2937';
+            c.fillRect(-9, -7, 3, 14); c.fillRect(-2, -7, 3, 14); c.fillRect(5, -7, 3, 14);
+            c.fillStyle = '#111827';
+            c.beginPath(); c.arc(-17, 0, 6, 0, Math.PI * 2); c.fill();
+            c.restore();
+            // Concentric expanding sound rings
+            for (var sr = 0; sr < 4; sr++) {
+              var ringT = (t2 / 25 + sr * 0.25) % 1;
+              var ringR = 25 + ringT * 70;
+              c.strokeStyle = 'rgba(94,234,212,' + (0.55 * (1 - ringT)) + ')';
+              c.lineWidth = 2;
+              c.beginPath();
+              c.arc(beeCx, beeCy, ringR, 0, Math.PI * 2);
+              c.stroke();
+            }
+            c.fillStyle = '#5eead4'; c.textAlign = 'center';
+            c.font = 'bold 10px "Inter", sans-serif';
+            c.fillText('pressure wave @ 230 Hz', beeCx, beeCy + 130);
+            c.font = 'italic 8.5px "Inter", sans-serif'; c.fillStyle = '#2dd4bf';
+            c.fillText('~0.5 m audible to humans', beeCx, beeCy + 143);
+
+            // ═══ Bottom fact strip ═══
+            var bzStripY = H - 28;
+            c.fillStyle = 'rgba(4,47,46,0.95)'; c.fillRect(0, bzStripY - 10, W, 38);
+            c.fillStyle = '#5eead4'; c.textAlign = 'center';
+            c.font = 'bold 11px Georgia, serif';
+            var bzFacts = [
+              'Insect flight muscles were once thought to need a nerve pulse per beat — until 1960s studies found them "asynchronous".',
+              'A sick or cold bee buzzes at a lower pitch — beekeepers often diagnose colonies by listening.',
+              'Bumblebees buzz-pollinate at ~400 Hz — this is why commercial tomato growers use bumblebees, not honeybees.',
+              'The "piping" and "quacking" sounds virgin queens make are substrate-borne vibrations, not airborne sounds.',
+              'Bee wings are driven indirectly — they don\'t attach to muscles. Muscles deform the thorax; the thorax flexes the wings.',
+              'The African killer-bee\'s buzz is slightly higher pitch than European honeybees — a clue for researchers.'
+            ];
+            var bzIdx = Math.floor(t2 / 420) % bzFacts.length;
+            c.fillText('💡 ' + bzFacts[bzIdx], W / 2, bzStripY + 10);
+          }
+
           // ═══ POLLINATION DIAGRAM (bee → ecosystem → human food chain) ═══
           function drawPollination() {
             // Fresh green meadow gradient
@@ -5294,6 +5505,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               }
               if (_bv === 'stingers') {
                 drawStingers();
+                _animId.current = requestAnimationFrame(frame);
+                return;
+              }
+              if (_bv === 'buzz') {
+                drawBuzzPhysics();
                 _animId.current = requestAnimationFrame(frame);
                 return;
               }
@@ -8163,7 +8379,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 { id: 'cognition', icon: '🧠', label: 'Cognition', desc: 'Bee intelligence — counts to 4, knows zero, recognizes faces' },
                 { id: 'vision', icon: '🌸', label: 'Vision', desc: 'UV flower patterns + 200 Hz flicker fusion — what bees see' },
                 { id: 'propolis', icon: '💧', label: 'Propolis', desc: 'Bee glue resin — nature\'s antibiotic, used medicinally since 300 BCE' },
-                { id: 'stingers', icon: '🗡️', label: 'Stingers', desc: 'Barbed sting sacrifice · venom chemistry · hot-ball defense' }
+                { id: 'stingers', icon: '🗡️', label: 'Stingers', desc: 'Barbed sting sacrifice · venom chemistry · hot-ball defense' },
+                { id: 'buzz', icon: '🎵', label: 'Buzz Physics', desc: '230 Hz wingbeat · sonication pollination at 400 Hz' }
               ].map(function(v, vi) {
                 var active = beeView === v.id;
                 return h('button', { key: v.id, role: 'tab', 'aria-selected': active ? 'true' : 'false',
