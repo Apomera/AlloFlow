@@ -908,6 +908,15 @@
     // from game state so game re-renders aren't batched with animation ticks.
     var minimapTickState = useState(0);
     var feedback = feedbackState[0], setFeedback = feedbackState[1];
+    // Consecutive correct answers. Resets to 0 on a wrong answer. Drives the
+    // HUD combo meter and triggers a milestone celebration at every third
+    // correct answer — meaningful reinforcement for fluency gains.
+    var streakState = useState(0);
+    var streak = streakState[0], setStreak = streakState[1];
+    // Direction hint shown briefly on the minimap after the user presses H
+    // or taps the Hint button. Cleared by setTimeout. Cost: -5 score.
+    var hintDirState = useState(null);
+    var hintDir = hintDirState[0], setHintDir = hintDirState[1];
     var canvasRef = useRef(null);
     var playerPosRef = useRef({ r: 0, c: 0 });
     var timerRef = useRef(null);
@@ -947,6 +956,64 @@
     var MAZE_COLS = getMazeSize().cols;
     var MAZE_ROWS = getMazeSize().rows;
 
+    // BFS from player cell to exit cell respecting wall openings. Returns
+    // the direction ('up'|'down'|'left'|'right') of the first step along
+    // the shortest path, or null if no path exists (shouldn't happen for a
+    // valid maze).
+    function findHintDir() {
+      if (!maze) return null;
+      var start = playerPosRef.current;
+      if (start.r === MAZE_ROWS - 1 && start.c === MAZE_COLS - 1) return null;
+      var visited = {};
+      visited[start.r + ',' + start.c] = null; // predecessor marker
+      var queue = [start];
+      var head = 0;
+      while (head < queue.length) {
+        var cur = queue[head++];
+        if (cur.r === MAZE_ROWS - 1 && cur.c === MAZE_COLS - 1) {
+          // Walk back to start-1 to find the first move direction.
+          var node = cur;
+          while (visited[node.r + ',' + node.c]) {
+            var prev = visited[node.r + ',' + node.c];
+            if (prev.r === start.r && prev.c === start.c) {
+              if (node.r < prev.r) return 'up';
+              if (node.r > prev.r) return 'down';
+              if (node.c < prev.c) return 'left';
+              if (node.c > prev.c) return 'right';
+            }
+            node = prev;
+          }
+          return null;
+        }
+        var cellH = maze[cur.r][cur.c];
+        var neighbors = [];
+        if (!cellH.walls.top && cur.r > 0) neighbors.push({ r: cur.r - 1, c: cur.c });
+        if (!cellH.walls.bottom && cur.r < MAZE_ROWS - 1) neighbors.push({ r: cur.r + 1, c: cur.c });
+        if (!cellH.walls.left && cur.c > 0) neighbors.push({ r: cur.r, c: cur.c - 1 });
+        if (!cellH.walls.right && cur.c < MAZE_COLS - 1) neighbors.push({ r: cur.r, c: cur.c + 1 });
+        for (var ni = 0; ni < neighbors.length; ni++) {
+          var n = neighbors[ni];
+          var key = n.r + ',' + n.c;
+          if (!(key in visited)) {
+            visited[key] = cur;
+            queue.push(n);
+          }
+        }
+      }
+      return null;
+    }
+
+    function requestHint() {
+      if (mode !== 'playing' || gameOver || won) return;
+      var dir = findHintDir();
+      if (!dir) return;
+      setHintDir(dir);
+      setScore(function(p) { return Math.max(0, p - 5); });
+      setStreak(0); // using a hint resets combo — keeps it honest
+      playTone(660, 0.08, 'sine', 0.04);
+      setTimeout(function() { setHintDir(null); }, 2200);
+    }
+
     function startMaze() {
       var sz = getMazeSize();
       var newMaze = generateMaze(sz.rows, sz.cols);
@@ -958,6 +1025,7 @@
       setCurrentProblem(null);
       setScore(0); setCorrect(0); setWrong(0); setMoveCount(0); setElapsed(0);
       setGameOver(false); setWon(false); setFeedback('');
+      setStreak(0); setHintDir(null);
       setMode('playing');
       // Timer
       if (timerRef.current) clearInterval(timerRef.current);
@@ -1009,10 +1077,27 @@
         // there's no extra re-render and no race with the playerPos update.
         visitedCellsRef.current[playerPos.r + ',' + playerPos.c] = true;
         visitedCellsRef.current[newPos.r + ',' + newPos.c] = true;
+        // Streak bump. Every 3 in a row = bonus score + a little fanfare,
+        // reinforcing sustained fluency rather than just isolated correct
+        // answers. Captured here synchronously so the milestone check fires
+        // on the same tick as the increment.
+        var nextStreak = streak + 1;
+        setStreak(nextStreak);
+        var streakBonus = 0;
+        if (nextStreak > 0 && nextStreak % 3 === 0) {
+          streakBonus = 5 + nextStreak; // 8 @3, 11 @6, 14 @9, …
+          if (addToast) addToast('\uD83D\uDD25 Streak x' + nextStreak + '! +' + streakBonus + ' bonus', 'success');
+          // Quick ascending chime for the milestone
+          playTone(880, 0.06, 'sine', 0.05);
+          setTimeout(function() { playTone(1175, 0.06, 'sine', 0.05); }, 70);
+          setTimeout(function() { playTone(1568, 0.08, 'sine', 0.05); }, 140);
+        }
         setCorrect(function(p) { return p + 1; });
-        setScore(function(p) { return p + 10; });
+        setScore(function(p) { return p + 10 + streakBonus; });
         setMoveCount(function(p) { return p + 1; });
         setFeedback('correct');
+        // Clear any active hint — reward for solving without it
+        setHintDir(null);
         playTone(880, 0.05, 'sine', 0.06);
         setTimeout(function() { playTone(1320, 0.05, 'sine', 0.05); }, 50);
         // 3D feedback: green ambient flash + gem drop at the cell we just left
@@ -1033,6 +1118,23 @@
             gem.userData._baseY = 0.7;
             eng3d.scene.add(gem);
             eng3d.gems.push(gem);
+            // Gem-burst — 10 small sparks fly outward from the gem spawn
+            // point. Gravity pulls them down; they fade and self-reap in the
+            // animate() particle loop.
+            if (!eng3d._particles) eng3d._particles = [];
+            for (var burstI = 0; burstI < 10; burstI++) {
+              var sparkMat = new window.THREE.MeshBasicMaterial({ color: gemColor, transparent: true, opacity: 1 });
+              var spark = new window.THREE.Mesh(new window.THREE.BoxGeometry(0.05, 0.05, 0.05), sparkMat);
+              spark.position.set(gcx, 0.7, gcz);
+              spark.userData._age = 0;
+              spark.userData._life = 0.9;
+              spark.userData._gravity = 8;
+              var ang = Math.random() * Math.PI * 2;
+              var spd = 1.5 + Math.random() * 1.5;
+              spark.userData._vel = { x: Math.cos(ang) * spd, y: 2 + Math.random() * 1.5, z: Math.sin(ang) * spd };
+              eng3d.scene.add(spark);
+              eng3d._particles.push(spark);
+            }
           }
         }
         // Check win
@@ -1050,28 +1152,71 @@
               localStorage.setItem('fluency_maze_best', JSON.stringify({ score: finalScore, correct: correct + 1, wrong: wrong, time: elapsed, op: operation, size: mazeSize }));
             }
           } catch(e) {}
-          // 3D completion particles
+          // 3D completion celebration — denser confetti + bigger spread +
+          // a floating "MAZE COMPLETE" banner sprite in front of the camera.
           var eng3dC = maze3dEngRef.current;
           if (eng3dC && window.THREE) {
             var THREE = window.THREE;
-            var confColors = [0xfbbf24, 0x22c55e, 0x7c3aed, 0xef4444, 0x3b82f6];
-            for (var ci = 0; ci < 20; ci++) {
-              var cGeo = new THREE.BoxGeometry(0.08, 0.08, 0.08);
+            var confColors = [0xfbbf24, 0x22c55e, 0x7c3aed, 0xef4444, 0x3b82f6, 0xec4899, 0x06b6d4, 0xf97316];
+            if (!eng3dC._particles) eng3dC._particles = [];
+            // 70 confetti bits (was 20) — mix of cubes and thin ribbons for
+            // visual variety.
+            for (var ci = 0; ci < 70; ci++) {
+              var isRibbon = ci % 3 === 0;
+              var cGeo = isRibbon
+                ? new THREE.BoxGeometry(0.14, 0.02, 0.02)
+                : new THREE.BoxGeometry(0.08, 0.08, 0.08);
               var cMat = new THREE.MeshBasicMaterial({ color: confColors[ci % confColors.length], transparent: true, opacity: 1 });
               var cMesh = new THREE.Mesh(cGeo, cMat);
               cMesh.position.copy(eng3dC.camera.position);
-              cMesh.userData._age = 0; cMesh.userData._life = 2 + Math.random();
-              cMesh.userData._vel = { x: (Math.random() - 0.5) * 5, y: 3 + Math.random() * 3, z: (Math.random() - 0.5) * 5 };
+              cMesh.userData._age = 0; cMesh.userData._life = 2.5 + Math.random() * 1.5;
+              cMesh.userData._gravity = 5;
+              cMesh.userData._vel = {
+                x: (Math.random() - 0.5) * 7,
+                y: 4 + Math.random() * 4,
+                z: (Math.random() - 0.5) * 7
+              };
               eng3dC.scene.add(cMesh);
-              if (!eng3dC._particles) eng3dC._particles = [];
               eng3dC._particles.push(cMesh);
             }
+            // Floating banner — Canvas-rendered "MAZE COMPLETE" sprite placed
+            // ahead of the camera at the time of winning. Fades via the same
+            // particle-aging pipeline so it disappears with the confetti.
+            try {
+              var bannerCnv = document.createElement('canvas');
+              bannerCnv.width = 512; bannerCnv.height = 128;
+              var bctx = bannerCnv.getContext('2d');
+              bctx.fillStyle = 'rgba(15,23,42,0.85)';
+              bctx.fillRect(0, 0, 512, 128);
+              bctx.strokeStyle = '#fbbf24'; bctx.lineWidth = 4;
+              bctx.strokeRect(6, 6, 500, 116);
+              bctx.font = 'bold 56px Georgia, serif';
+              bctx.textAlign = 'center'; bctx.textBaseline = 'middle';
+              bctx.fillStyle = '#fde047';
+              bctx.shadowColor = '#f59e0b'; bctx.shadowBlur = 20;
+              bctx.fillText('\uD83C\uDFC6 MAZE COMPLETE', 256, 64);
+              var bannerTex = new THREE.CanvasTexture(bannerCnv);
+              var banner = new THREE.Sprite(new THREE.SpriteMaterial({ map: bannerTex, transparent: true, opacity: 1 }));
+              banner.scale.set(4, 1, 1);
+              // Position ~2 units in front of the current camera facing.
+              var camDir = new THREE.Vector3();
+              eng3dC.camera.getWorldDirection(camDir);
+              var bp = eng3dC.camera.position.clone().addScaledVector(camDir, 2.5);
+              banner.position.copy(bp);
+              banner.userData._age = 0;
+              banner.userData._life = 4;
+              banner.userData._gravity = 0; // floats, doesn't fall
+              banner.userData._vel = { x: 0, y: 0.2, z: 0 };
+              eng3dC.scene.add(banner);
+              eng3dC._particles.push(banner);
+            } catch (bErr) { /* banner is optional polish; swallow */ }
           }
         }
       } else {
-        // Wrong — don't move, penalty
+        // Wrong — don't move, penalty, streak broken
         setWrong(function(p) { return p + 1; });
         setScore(function(p) { return Math.max(0, p - 3); });
+        setStreak(0);
         setFeedback('wrong');
         playTone(220, 0.1, 'triangle', 0.04);
         // Screen shake + red ambient flash. shakeRef decays inside the animate
@@ -1106,6 +1251,7 @@
         if (e.key === 'ArrowDown' || e.key === 's') tryMove('down');
         if (e.key === 'ArrowLeft' || e.key === 'a') tryMove('left');
         if (e.key === 'ArrowRight' || e.key === 'd') tryMove('right');
+        if (e.key === 'h' || e.key === 'H') requestHint();
       }
       document.addEventListener('keydown', handleKey);
       return function() { document.removeEventListener('keydown', handleKey); };
@@ -1205,6 +1351,20 @@
       ctx.strokeStyle = 'rgba(99,102,241,' + (0.35 + pulse * 0.45) + ')';
       ctx.lineWidth = 2 + pulse * 2;
       ctx.beginPath(); ctx.arc(pcx, pcy, CELL_SIZE * 0.32 + pulse * 4, 0, Math.PI * 2); ctx.stroke();
+      // Hint arrow — pulses toward the next-step direction the BFS picked.
+      if (hintDir) {
+        var arrowGlyph = { up: '\u2B06', down: '\u2B07', left: '\u2B05', right: '\u27A1' }[hintDir] || '';
+        if (arrowGlyph) {
+          ctx.save();
+          ctx.font = 'bold 26px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.shadowColor = '#fde047';
+          ctx.shadowBlur = 10 + pulse * 8;
+          ctx.fillStyle = '#fde047';
+          ctx.fillText(arrowGlyph, pcx, pcy + 10);
+          ctx.restore();
+        }
+      }
       ctx.font = '22px sans-serif'; ctx.textAlign = 'center';
       ctx.fillStyle = '#fff';
       ctx.fillText('\uD83D\uDC31', pcx, pcy + 6);
@@ -1357,6 +1517,53 @@
       eng.dust = new THREE.Points(dustGeo, dustMat);
       eng.dust.userData.phases = dustPhases;
       eng.scene.add(eng.dust);
+
+      // Wall torches — pick ~1/3 of interior wall segments and mount a small
+      // wooden sconce with a flickering flame sprite + point light. Keeps the
+      // count modest so WebGL stays smooth on classroom devices.
+      eng.torches = [];
+      var flameTex = buildGlowSpriteTexture(THREE, 0xff9944);
+      var sconceMat = new THREE.MeshStandardMaterial({ color: 0x3a2815, roughness: 1 });
+      var torchTargetCount = Math.round((MAZE_COLS + MAZE_ROWS) * 1.2);
+      var torchCandidates = [];
+      for (var tr = 0; tr < MAZE_ROWS; tr++) {
+        for (var tc = 0; tc < MAZE_COLS; tc++) {
+          var cellT = maze[tr][tc];
+          // Favor outer walls (visible more often) but include some interior.
+          if (cellT.walls.top && tr > 0) torchCandidates.push({ r: tr, c: tc, side: 'top' });
+          if (cellT.walls.left && tc > 0) torchCandidates.push({ r: tr, c: tc, side: 'left' });
+        }
+      }
+      // Fisher-Yates shuffle so the torch locations are varied each run
+      for (var shI = torchCandidates.length - 1; shI > 0; shI--) {
+        var shJ = Math.floor(Math.random() * (shI + 1));
+        var tmp = torchCandidates[shI]; torchCandidates[shI] = torchCandidates[shJ]; torchCandidates[shJ] = tmp;
+      }
+      var torchN = Math.min(torchTargetCount, torchCandidates.length);
+      for (var tt = 0; tt < torchN; tt++) {
+        var cand = torchCandidates[tt];
+        var tcx = cand.c * 2 + 1, tcz = cand.r * 2 + 1;
+        var tOff = cand.side === 'top' ? { x: 0, z: -0.95 } : { x: -0.95, z: 0 };
+        var torchGroup = new THREE.Group();
+        torchGroup.position.set(tcx + tOff.x, 1.7, tcz + tOff.z);
+        // Sconce (small wooden bracket)
+        var sconce = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.18, 0.08), sconceMat);
+        sconce.position.y = -0.05; torchGroup.add(sconce);
+        // Flame sprite
+        var flameSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: flameTex, color: 0xffb066, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false }));
+        flameSprite.scale.set(0.55, 0.7, 1);
+        flameSprite.position.y = 0.2;
+        torchGroup.add(flameSprite);
+        // Point light — low-intensity so many torches don't blow out the scene
+        var tLight = new THREE.PointLight(0xff8844, 0.7, 3.2);
+        tLight.position.y = 0.15;
+        torchGroup.add(tLight);
+        eng.scene.add(torchGroup);
+        torchGroup.userData.phase = Math.random() * Math.PI * 2;
+        torchGroup.flame = flameSprite;
+        torchGroup.light = tLight;
+        eng.torches.push(torchGroup);
+      }
 
       // Exit portal — rotating torus + particle ring + pulsing light. A step
       // up from the old static sphere; reads clearly as a goal.
@@ -1564,6 +1771,49 @@
           }
         }
 
+        // ── Transient particles (gem bursts + win confetti) ──
+        // Each particle has userData: _age, _life, _vel, _gravity (optional).
+        // Advanced here, reaped when age > life. Previously these piled up in
+        // the scene without ever being removed — now they animate and clean
+        // themselves up.
+        if (eng._particles && eng._particles.length) {
+          var dt = 0.016; // approx since RAF is ~60fps; good enough for fx
+          for (var pi = eng._particles.length - 1; pi >= 0; pi--) {
+            var pt = eng._particles[pi];
+            pt.userData._age += dt;
+            var age = pt.userData._age;
+            var life = pt.userData._life;
+            var v = pt.userData._vel;
+            var grav = pt.userData._gravity != null ? pt.userData._gravity : 6;
+            v.y -= grav * dt; // gravity
+            pt.position.x += v.x * dt;
+            pt.position.y += v.y * dt;
+            pt.position.z += v.z * dt;
+            pt.rotation.x += dt * 5;
+            pt.rotation.y += dt * 7;
+            if (pt.material && pt.material.opacity != null) {
+              pt.material.opacity = Math.max(0, 1 - age / life);
+            }
+            if (age >= life) {
+              eng.scene.remove(pt);
+              if (pt.geometry) pt.geometry.dispose();
+              if (pt.material) pt.material.dispose();
+              eng._particles.splice(pi, 1);
+            }
+          }
+        }
+
+        // ── Wall-torch flame flicker ──
+        if (eng.torches) {
+          for (var ti = 0; ti < eng.torches.length; ti++) {
+            var tr = eng.torches[ti];
+            var phase = tr.userData.phase || 0;
+            var flick = 0.8 + Math.sin(t2 * 8 + phase) * 0.15 + Math.random() * 0.1;
+            if (tr.flame) tr.flame.scale.set(flick, flick * 1.2, 1);
+            if (tr.light) tr.light.intensity = 0.7 * flick;
+          }
+        }
+
         eng.renderer.render(eng.scene, eng.camera);
       }
       animate();
@@ -1667,13 +1917,39 @@
 
     // Playing mode
     return h('div', { style: { maxWidth: 500, margin: '0 auto', position: 'relative' } },
-      // HUD
-      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 8px', background: '#f1f5f9', borderRadius: '10px', marginBottom: '6px', fontSize: '11px' } },
+      // HUD — scores + streak combo meter + hint button
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 8px', background: '#f1f5f9', borderRadius: '10px', marginBottom: '6px', fontSize: '11px', flexWrap: 'wrap', gap: '6px' } },
         h('span', { style: { color: '#22c55e', fontWeight: 700 } }, '\u2705 ' + correct),
         h('span', { style: { color: '#ef4444', fontWeight: 700 } }, '\u274C ' + wrong),
         h('span', { style: { color: '#7c3aed', fontWeight: 700 } }, '\uD83C\uDFAF ' + score),
+        // Streak pill — grows / glows at milestones so fluency runs feel earned.
+        streak > 0 && h('span', {
+          style: {
+            color: streak >= 3 ? '#fff' : '#f97316',
+            background: streak >= 3 ? 'linear-gradient(90deg,#f97316,#ef4444)' : 'rgba(249,115,22,0.12)',
+            fontWeight: 800,
+            padding: '2px 8px',
+            borderRadius: '999px',
+            border: streak >= 3 ? '1px solid #fbbf24' : '1px solid rgba(249,115,22,0.3)',
+            boxShadow: streak >= 3 ? '0 0 8px rgba(251,191,36,0.5)' : 'none',
+            transition: 'all 0.2s'
+          }
+        }, '\uD83D\uDD25 x' + streak),
         h('span', { style: { color: '#64748b' } }, '\u23F1 ' + elapsed + 's'),
-        chaseMode && h('span', { style: { color: '#f59e0b', fontWeight: 700 } }, '\uD83D\uDC7E CHASE!')
+        chaseMode && h('span', { style: { color: '#f59e0b', fontWeight: 700 } }, '\uD83D\uDC7E CHASE!'),
+        // Hint button — costs 5 points, resets streak. Uses BFS to find the
+        // direction of the next step along the shortest path to the exit.
+        h('button', {
+          onClick: requestHint,
+          disabled: !!hintDir,
+          title: 'Show direction toward exit (H key) — costs 5 points, resets streak',
+          style: {
+            marginLeft: 'auto', padding: '4px 10px', fontSize: '11px', fontWeight: 700,
+            background: hintDir ? '#fbbf24' : '#6366f1', color: '#fff',
+            border: 'none', borderRadius: '999px', cursor: hintDir ? 'default' : 'pointer',
+            opacity: hintDir ? 0.8 : 1
+          }
+        }, '\uD83D\uDCA1 Hint (-5)')
       ),
       // 3D View (or 2D fallback)
       has3D ? h('div', { ref: maze3dRef, style: { width: '100%', height: '320px', borderRadius: '10px', overflow: 'hidden', border: '2px solid #7c3aed', position: 'relative', background: '#0a0a1a' } }) :
@@ -1701,7 +1977,7 @@
         h('button', { onClick: function() { tryMove('down'); }, style: { padding: '10px', borderRadius: '8px', background: '#e2e8f0', border: 'none', fontSize: '18px', cursor: 'pointer' } }, '\u25BC'),
         h('button', { onClick: function() { tryMove('right'); }, style: { padding: '10px', borderRadius: '8px', background: '#e2e8f0', border: 'none', fontSize: '18px', cursor: 'pointer' } }, '\u25B6')
       ),
-      h('p', { style: { fontSize: '10px', color: '#94a3b8', textAlign: 'center', marginTop: '6px' } }, 'Arrow keys or WASD to move \u2022 Solve each problem to advance')
+      h('p', { style: { fontSize: '10px', color: '#94a3b8', textAlign: 'center', marginTop: '6px' } }, 'Arrow keys or WASD to move \u2022 H for hint \u2022 Solve each problem to advance \u2022 3-in-a-row for bonus')
     );
   }
 
