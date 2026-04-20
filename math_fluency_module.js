@@ -835,6 +835,15 @@
     var timerRef = useRef(null);
     var monsterTimerRef = useRef(null);
     var inputRef = useRef(null);
+    // 3D maze refs — hoisted above the early returns so the hook order is
+    // stable across renders. Previously these sat after `if (mode === 'setup')
+    // return ...`, which meant they were only called once the user started the
+    // maze — crashing React with "Rendered more hooks than during the previous
+    // render." (Rules of Hooks: every hook must be called on every render, in
+    // the same order.)
+    var maze3dRef = useRef(null);
+    var maze3dEngRef = useRef(null);
+    var maze3dAnimRef = useRef(0);
 
     function makeProblem() {
       var a, b, op = operation === 'mixed' ? ['add','sub','mul','div'][Math.floor(Math.random() * 4)] : operation;
@@ -1051,89 +1060,10 @@
       };
     }, []);
 
-    // ── Render ──
-    if (mode === 'setup') {
-      return h('div', { style: { maxWidth: 420, margin: '0 auto', padding: '20px', textAlign: 'center' } },
-        h('div', { style: { fontSize: '36px', marginBottom: '8px' } }, '\uD83C\uDFAF'),
-        h('h2', { style: { fontSize: '20px', fontWeight: 800, color: '#1e293b', marginBottom: '4px' } }, 'Fluency Maze'),
-        h('p', { style: { fontSize: '12px', color: '#64748b', marginBottom: '16px' } }, 'Solve math problems to navigate through the maze. Reach the exit!'),
-        // Operation selector
-        h('div', { style: { display: 'flex', gap: '6px', justifyContent: 'center', marginBottom: '12px', flexWrap: 'wrap' } },
-          ['add', 'sub', 'mul', 'div', 'mixed'].map(function(op) {
-            var labels = { add: '➕ Add', sub: '➖ Sub', mul: '✖️ Mul', div: '➗ Div', mixed: '🔀 Mixed' };
-            return h('button', { key: op, onClick: function() { setOperation(op); },
-              style: { padding: '6px 12px', borderRadius: '8px', fontSize: '11px', fontWeight: 700, cursor: 'pointer',
-                background: operation === op ? '#7c3aed' : '#f1f5f9', color: operation === op ? '#fff' : '#475569',
-                border: operation === op ? '2px solid #7c3aed' : '2px solid #e2e8f0' }
-            }, labels[op]);
-          })
-        ),
-        // Difficulty
-        h('div', { style: { display: 'flex', gap: '6px', justifyContent: 'center', marginBottom: '12px' } },
-          ['single', 'double'].map(function(d) {
-            return h('button', { key: d, onClick: function() { setDifficulty(d); },
-              style: { padding: '6px 14px', borderRadius: '8px', fontSize: '11px', fontWeight: 600, cursor: 'pointer',
-                background: difficulty === d ? '#f59e0b' : '#f1f5f9', color: difficulty === d ? '#fff' : '#475569',
-                border: difficulty === d ? '2px solid #f59e0b' : '2px solid #e2e8f0' }
-            }, d === 'single' ? 'Single Digit (0-12)' : 'Double Digit (0-20)');
-          })
-        ),
-        // Maze size selector
-        h('div', { style: { display: 'flex', gap: '6px', justifyContent: 'center', marginBottom: '12px' } },
-          ['small', 'medium', 'large'].map(function(sz) {
-            return h('button', { key: sz, onClick: function() { setMazeSize(sz); },
-              style: { padding: '6px 14px', borderRadius: '8px', fontSize: '11px', fontWeight: 600, cursor: 'pointer',
-                background: mazeSize === sz ? '#6366f1' : '#f1f5f9', color: mazeSize === sz ? '#fff' : '#475569',
-                border: mazeSize === sz ? '2px solid #6366f1' : '2px solid #e2e8f0' }
-            }, MAZE_SIZES[sz].label);
-          })
-        ),
-        // Chase mode toggle
-        h('label', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '16px', fontSize: '12px', color: '#475569', cursor: 'pointer' } },
-          h('input', { type: 'checkbox', checked: chaseMode, onChange: function() { setChaseMode(!chaseMode); } }),
-          '\uD83D\uDC7E Chase Mode', h('span', { style: { fontSize: '10px', color: '#94a3b8' } }, '(monster pursues you!)')
-        ),
-        // Start button
-        h('button', { onClick: startMaze,
-          style: { padding: '12px 32px', background: 'linear-gradient(135deg, #7c3aed, #6366f1)', color: '#fff',
-            border: 'none', borderRadius: '12px', fontSize: '16px', fontWeight: 800, cursor: 'pointer',
-            boxShadow: '0 4px 15px rgba(124,58,237,0.3)' }
-        }, '\u25B6\uFE0F Start Maze')
-      );
-    }
-
-    if (mode === 'results') {
-      var dcpm = elapsed > 0 ? Math.round(correct / (elapsed / 60)) : 0;
-      return h('div', { style: { maxWidth: 420, margin: '0 auto', padding: '20px', textAlign: 'center' } },
-        h('div', { style: { fontSize: '48px', marginBottom: '8px' } }, won ? '\uD83C\uDFC6' : '\uD83D\uDC7E'),
-        h('h2', { style: { fontSize: '20px', fontWeight: 800, color: won ? '#22c55e' : '#ef4444', marginBottom: '12px' } },
-          won ? 'Maze Complete!' : (gameOver ? 'Caught by the monster!' : 'Game Over')),
-        h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '16px' } },
-          h('div', { style: { background: '#f0fdf4', borderRadius: '10px', padding: '10px' } },
-            h('div', { style: { fontSize: '24px', fontWeight: 800, color: '#22c55e' } }, String(correct)),
-            h('div', { style: { fontSize: '10px', color: '#64748b' } }, 'Correct')),
-          h('div', { style: { background: '#fef2f2', borderRadius: '10px', padding: '10px' } },
-            h('div', { style: { fontSize: '24px', fontWeight: 800, color: '#ef4444' } }, String(wrong)),
-            h('div', { style: { fontSize: '10px', color: '#64748b' } }, 'Wrong')),
-          h('div', { style: { background: '#f5f3ff', borderRadius: '10px', padding: '10px' } },
-            h('div', { style: { fontSize: '24px', fontWeight: 800, color: '#7c3aed' } }, String(dcpm)),
-            h('div', { style: { fontSize: '10px', color: '#64748b' } }, 'Facts/Min')),
-          h('div', { style: { background: '#fffbeb', borderRadius: '10px', padding: '10px' } },
-            h('div', { style: { fontSize: '24px', fontWeight: 800, color: '#f59e0b' } }, elapsed + 's'),
-            h('div', { style: { fontSize: '10px', color: '#64748b' } }, 'Time'))
-        ),
-        h('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center' } },
-          h('button', { onClick: startMaze, style: { padding: '10px 24px', background: '#7c3aed', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' } }, '\uD83D\uDD04 Play Again'),
-          h('button', { onClick: function() { setMode('setup'); }, style: { padding: '10px 20px', background: '#f1f5f9', color: '#475569', border: '2px solid #e2e8f0', borderRadius: '10px', fontSize: '12px', cursor: 'pointer' } }, 'Settings')
-        )
-      );
-    }
-
-    // ── 3D Maze Rendering (Three.js) ──
-    var maze3dRef = useRef(null);
-    var maze3dEngRef = useRef(null);
-    var maze3dAnimRef = useRef(0);
-
+    // 3D maze init — hoisted above the early returns for stable hook order.
+    // The internal `if (mode !== 'playing' || !maze) return;` guard makes this
+    // a no-op until the user actually starts a maze, so the effect body only
+    // runs at the right time.
     useEffect(function() {
       if (mode !== 'playing' || !maze) return;
       var container = maze3dRef.current;
@@ -1307,6 +1237,84 @@
       var lookX = pr.c * 2 + 1, lookZ = pr.r * 2 + 1 + 2; // default: look forward (+z)
       eng.camera.lookAt(lookX, 1.2, lookZ);
     }, [playerPos]);
+
+    // ── Render ──
+    if (mode === 'setup') {
+      return h('div', { style: { maxWidth: 420, margin: '0 auto', padding: '20px', textAlign: 'center' } },
+        h('div', { style: { fontSize: '36px', marginBottom: '8px' } }, '\uD83C\uDFAF'),
+        h('h2', { style: { fontSize: '20px', fontWeight: 800, color: '#1e293b', marginBottom: '4px' } }, 'Fluency Maze'),
+        h('p', { style: { fontSize: '12px', color: '#64748b', marginBottom: '16px' } }, 'Solve math problems to navigate through the maze. Reach the exit!'),
+        // Operation selector
+        h('div', { style: { display: 'flex', gap: '6px', justifyContent: 'center', marginBottom: '12px', flexWrap: 'wrap' } },
+          ['add', 'sub', 'mul', 'div', 'mixed'].map(function(op) {
+            var labels = { add: '➕ Add', sub: '➖ Sub', mul: '✖️ Mul', div: '➗ Div', mixed: '🔀 Mixed' };
+            return h('button', { key: op, onClick: function() { setOperation(op); },
+              style: { padding: '6px 12px', borderRadius: '8px', fontSize: '11px', fontWeight: 700, cursor: 'pointer',
+                background: operation === op ? '#7c3aed' : '#f1f5f9', color: operation === op ? '#fff' : '#475569',
+                border: operation === op ? '2px solid #7c3aed' : '2px solid #e2e8f0' }
+            }, labels[op]);
+          })
+        ),
+        // Difficulty
+        h('div', { style: { display: 'flex', gap: '6px', justifyContent: 'center', marginBottom: '12px' } },
+          ['single', 'double'].map(function(d) {
+            return h('button', { key: d, onClick: function() { setDifficulty(d); },
+              style: { padding: '6px 14px', borderRadius: '8px', fontSize: '11px', fontWeight: 600, cursor: 'pointer',
+                background: difficulty === d ? '#f59e0b' : '#f1f5f9', color: difficulty === d ? '#fff' : '#475569',
+                border: difficulty === d ? '2px solid #f59e0b' : '2px solid #e2e8f0' }
+            }, d === 'single' ? 'Single Digit (0-12)' : 'Double Digit (0-20)');
+          })
+        ),
+        // Maze size selector
+        h('div', { style: { display: 'flex', gap: '6px', justifyContent: 'center', marginBottom: '12px' } },
+          ['small', 'medium', 'large'].map(function(sz) {
+            return h('button', { key: sz, onClick: function() { setMazeSize(sz); },
+              style: { padding: '6px 14px', borderRadius: '8px', fontSize: '11px', fontWeight: 600, cursor: 'pointer',
+                background: mazeSize === sz ? '#6366f1' : '#f1f5f9', color: mazeSize === sz ? '#fff' : '#475569',
+                border: mazeSize === sz ? '2px solid #6366f1' : '2px solid #e2e8f0' }
+            }, MAZE_SIZES[sz].label);
+          })
+        ),
+        // Chase mode toggle
+        h('label', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '16px', fontSize: '12px', color: '#475569', cursor: 'pointer' } },
+          h('input', { type: 'checkbox', checked: chaseMode, onChange: function() { setChaseMode(!chaseMode); } }),
+          '\uD83D\uDC7E Chase Mode', h('span', { style: { fontSize: '10px', color: '#94a3b8' } }, '(monster pursues you!)')
+        ),
+        // Start button
+        h('button', { onClick: startMaze,
+          style: { padding: '12px 32px', background: 'linear-gradient(135deg, #7c3aed, #6366f1)', color: '#fff',
+            border: 'none', borderRadius: '12px', fontSize: '16px', fontWeight: 800, cursor: 'pointer',
+            boxShadow: '0 4px 15px rgba(124,58,237,0.3)' }
+        }, '\u25B6\uFE0F Start Maze')
+      );
+    }
+
+    if (mode === 'results') {
+      var dcpm = elapsed > 0 ? Math.round(correct / (elapsed / 60)) : 0;
+      return h('div', { style: { maxWidth: 420, margin: '0 auto', padding: '20px', textAlign: 'center' } },
+        h('div', { style: { fontSize: '48px', marginBottom: '8px' } }, won ? '\uD83C\uDFC6' : '\uD83D\uDC7E'),
+        h('h2', { style: { fontSize: '20px', fontWeight: 800, color: won ? '#22c55e' : '#ef4444', marginBottom: '12px' } },
+          won ? 'Maze Complete!' : (gameOver ? 'Caught by the monster!' : 'Game Over')),
+        h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '16px' } },
+          h('div', { style: { background: '#f0fdf4', borderRadius: '10px', padding: '10px' } },
+            h('div', { style: { fontSize: '24px', fontWeight: 800, color: '#22c55e' } }, String(correct)),
+            h('div', { style: { fontSize: '10px', color: '#64748b' } }, 'Correct')),
+          h('div', { style: { background: '#fef2f2', borderRadius: '10px', padding: '10px' } },
+            h('div', { style: { fontSize: '24px', fontWeight: 800, color: '#ef4444' } }, String(wrong)),
+            h('div', { style: { fontSize: '10px', color: '#64748b' } }, 'Wrong')),
+          h('div', { style: { background: '#f5f3ff', borderRadius: '10px', padding: '10px' } },
+            h('div', { style: { fontSize: '24px', fontWeight: 800, color: '#7c3aed' } }, String(dcpm)),
+            h('div', { style: { fontSize: '10px', color: '#64748b' } }, 'Facts/Min')),
+          h('div', { style: { background: '#fffbeb', borderRadius: '10px', padding: '10px' } },
+            h('div', { style: { fontSize: '24px', fontWeight: 800, color: '#f59e0b' } }, elapsed + 's'),
+            h('div', { style: { fontSize: '10px', color: '#64748b' } }, 'Time'))
+        ),
+        h('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center' } },
+          h('button', { onClick: startMaze, style: { padding: '10px 24px', background: '#7c3aed', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' } }, '\uD83D\uDD04 Play Again'),
+          h('button', { onClick: function() { setMode('setup'); }, style: { padding: '10px 20px', background: '#f1f5f9', color: '#475569', border: '2px solid #e2e8f0', borderRadius: '10px', fontSize: '12px', cursor: 'pointer' } }, 'Settings')
+        )
+      );
+    }
 
     var has3D = !!window.THREE;
 
