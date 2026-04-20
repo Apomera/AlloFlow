@@ -13729,7 +13729,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     availableLanguages.map((lang) =>
                         /*#__PURE__*/ React.createElement(
                       "option",
-                      { key: lang, value: getSpeechLangCode(lang) },
+                      { key: lang, value: (window.getSpeechLangCode || function(l){ return l || 'en-US'; })(lang) },
                       lang === "English" ? "🇺🇸 English" : `${lang}`,
                     ),
                     ),
