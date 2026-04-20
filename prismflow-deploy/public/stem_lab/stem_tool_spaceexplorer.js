@@ -663,7 +663,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
           isGenerating: false,
           powerAllocation: normalizeAllocation(d.powerAllocation, unlockedTech),
           consultUsed: false,
-          revealedHiddenOption: false
+          revealedHiddenOption: false,
+          specimenLog: []
         });
         announceToSR('Mission to ' + dest.name + ' selected. Crew of ' + missionCrew.length + ' assembled. Review the briefing.');
       }
@@ -1229,6 +1230,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
               })
             )
           ),
+          // Active tech indicators — tiny chips showing which unlocked tech is
+          // helping this mission. Silent systems become visible — a student
+          // who bought Recycler can now SEE it working ("O2 saves active").
+          unlockedTech.length > 0 && h('div', { className: 'bg-white/5 rounded-xl p-2.5 border border-white/10' },
+            h('div', { className: 'text-[10px] text-slate-500 uppercase tracking-wide mb-1' }, 'Active Tech'),
+            h('div', { className: 'flex flex-wrap gap-1', role: 'list', 'aria-label': 'Active ship technologies' },
+              TECH_TREE.filter(function(t) { return unlockedTech.indexOf(t.id) >= 0; }).map(function(t) {
+                return h('span', {
+                  key: t.id, role: 'listitem', title: t.name + ' \u2014 ' + t.desc,
+                  'aria-label': t.name + ' active: ' + t.desc,
+                  className: 'flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-[10px] text-emerald-200'
+                },
+                  h('span', { 'aria-hidden': 'true' }, t.emoji),
+                  h('span', { className: 'font-bold' }, t.name.split(' ')[0])
+                );
+              })
+            )
+          ),
           h('button', {
             onClick: function() {
               updAll({ missionPhase: 'explore', consultUsed: false, revealedHiddenOption: false });
@@ -1443,14 +1462,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                           var bonus = 15;
                           newRes2.science = Math.max(0, Math.min(RESOURCES.science.max, (newRes2.science || 0) + bonus));
                           patch.resources = newRes2;
+                          // Specimen Log: append this compound to the mission's
+                          // running collection so students see a growing record
+                          // of what they\u2019ve identified. Shown in debrief with
+                          // the real absorption-band teaching text.
+                          var prevSpec = (d.specimenLog || []).slice();
+                          var existing = prevSpec.find(function(s) { return s.id === correct; });
+                          if (existing) {
+                            existing.count += 1;
+                          } else {
+                            prevSpec.push({ id: correct, count: 1, firstTurn: turn + 1 });
+                          }
+                          patch.specimenLog = prevSpec;
                           if (sfxSEDiscovery) sfxSEDiscovery();
-                          if (addToast) addToast('\u2728 Correct! +' + bonus + ' science', 'success');
+                          if (addToast) addToast('\u2728 Correct! +' + bonus + ' science' + (existing ? '' : ' \u2014 new specimen logged'), 'success');
                         } else {
                           if (sfxSEEvent) sfxSEEvent();
                           if (addToast) addToast('\u26A0\uFE0F Not quite \u2014 see the teaching note', 'info');
                         }
                         updAll(patch);
-                        announceToSR(isCorrect ? 'Correct identification.' : 'Incorrect. ' + row.teach);
+                        announceToSR(isCorrect ? 'Correct identification. Specimen logged.' : 'Incorrect. ' + row.teach);
                       },
                       'aria-label': 'Identify as ' + row.label,
                       className: 'px-2 py-2 rounded-md border bg-white/5 border-white/10 hover:border-indigo-400/50 hover:bg-indigo-500/10 text-left text-[11px] font-bold text-white focus:ring-2 focus:ring-indigo-400 focus:outline-none'
@@ -1657,6 +1688,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                 'Room for improvement \u2014 but every explorer learns from experience!')
             )
           ),
+          // ── Specimen Log ──
+          // Compounds the student correctly identified via Spectral Match
+          // across this mission. Shows each once with its real teaching text,
+          // plus a count if they ran into it multiple times.
+          (d.specimenLog || []).length > 0 && h('div', { className: 'bg-indigo-500/5 rounded-xl p-3 border border-indigo-500/20' },
+            h('h3', { className: 'text-[11px] text-indigo-300 font-bold mb-2' },
+              '\uD83D\uDDC3\uFE0F SPECIMEN LOG \u2014 ' + (d.specimenLog || []).length + ' compound' + ((d.specimenLog || []).length === 1 ? '' : 's') + ' identified'
+            ),
+            h('div', { className: 'space-y-1.5' },
+              (d.specimenLog || []).map(function(spec, i) {
+                var row = SPECTRA_TABLE.find(function(s) { return s.id === spec.id; });
+                if (!row) return null;
+                return h('div', { key: i, className: 'bg-white/5 rounded-lg p-2 border-l-2 border-indigo-500/40' },
+                  h('div', { className: 'flex items-center justify-between mb-0.5' },
+                    h('p', { className: 'text-[11px] font-bold text-indigo-200' }, row.label),
+                    h('div', { className: 'flex items-center gap-1.5' },
+                      spec.count > 1 && h('span', { className: 'text-[10px] text-slate-400' }, '\u00D7' + spec.count),
+                      h('span', { className: 'text-[10px] font-mono text-slate-500' }, 'Bands: ' + row.bands.map(function(b) { return b.toFixed(2) + '\u03BCm'; }).join(', '))
+                    )
+                  ),
+                  h('p', { className: 'text-[11px] text-slate-300 leading-relaxed' }, row.teach)
+                );
+              })
+            )
+          ),
+
           // STEM Concepts Learned (science rewards from all decisions)
           decisionLog.length > 0 && decisionLog.some(function(dec2) { return dec2.scienceReward; }) && h('div', { className: 'bg-cyan-500/5 rounded-xl p-3 border border-cyan-500/15' },
             h('h3', { className: 'text-[11px] text-cyan-300 font-bold mb-2' }, '\uD83D\uDD2C SCIENCE CONCEPTS LEARNED'),

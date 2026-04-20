@@ -898,7 +898,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           // Crystal point light (very dim — just enough to hint)
           var crystalLight = new THREE.PointLight(0x7c3aed, 0.3, 4);
           crystalLight.position.set(14, 1.5, 2); eng.scene.add(crystalLight);
-          // High-value Luna Moths in the chamber
+          // High-value Luna Moths in the chamber. Initialize eng.moths up
+          // front — the previous ordering only created this array at line
+          // ~926, AFTER this loop pushed into it via spawnInsect, so mounting
+          // the tool crashed with "Cannot read properties of undefined
+          // (reading 'push')". spawnInsect is function-declared later so
+          // hoisting makes the call legal; it's the backing array that was
+          // missing.
+          if (!eng.moths) eng.moths = [];
           for (var lmi = 0; lmi < 3; lmi++) {
             spawnInsect({ name: 'Luna Moth', color: 0x88ffcc, energy: 25, size: 0.22, speed: 0.2 });
             eng.moths[eng.moths.length - 1].position.set(12 + Math.random() * 4, 2 + Math.random() * 2, -1 + Math.random() * 6);
