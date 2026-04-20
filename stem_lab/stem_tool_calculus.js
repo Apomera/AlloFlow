@@ -133,6 +133,8 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               else if (ls.vizView === 'motion')  { drawMotionLab(c, W, H, ls, t); }
               else if (ls.vizView === 'riemann') { drawRiemannAnimator(c, W, H, fn, ls, t); }
               else if (ls.vizView === 'slope')   { drawSlopeFields(c, W, H, ls, t); }
+              else if (ls.vizView === 'chain')   { drawChainRule(c, W, H, ls, t); }
+              else if (ls.vizView === 'taylor')  { drawTaylorSeries(c, W, H, ls, t); }
               else { drawComingSoon(c, W, H, ls.vizView); }
 
               _vizAnimId.current = requestAnimationFrame(frame);
@@ -159,8 +161,8 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
         React.useEffect(function() {
           if ((d.tab || 'integral') !== 'visualize') return;
           function onKey(e) {
-            if (!e.shiftKey || !/^[1-6]$/.test(e.key)) return;
-            var views = ['zoom','tangent','motion','riemann','ftc','slope'];
+            if (!e.shiftKey || !/^[1-8]$/.test(e.key)) return;
+            var views = ['zoom','tangent','motion','riemann','ftc','slope','chain','taylor'];
             e.preventDefault();
             upd('vizView', views[parseInt(e.key, 10) - 1]);
           }
@@ -778,6 +780,203 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           c.fillStyle = '#fde047'; c.textAlign = 'center';
           c.font = 'bold 11px "Inter", sans-serif';
           c.fillText('cycling through 3 ODEs \u2014 each curve is a solution, no formula needed', W/2, H - 12);
+        }
+
+        // ── VIEW 7: Chain Rule (gears metaphor) ──
+        function drawChainRule(c, W, H, ls, t) {
+          c.fillStyle = '#e2e8f0'; c.textAlign = 'center';
+          c.font = 'bold 14px "Inter", sans-serif';
+          c.fillText("\u2699\uFE0F Chain Rule \u2014 rates multiply when functions compose", W/2, 18);
+          c.font = 'italic 10px "Inter", sans-serif'; c.fillStyle = '#94a3b8';
+          c.fillText('Example: u = 2x  (inner),  f = sin(u)  (outer).  df/dx = cos(u) \u00D7 2.', W/2, 32);
+
+          // Animated input: x increases linearly; u = 2x; f = sin(u)
+          var x = Math.sin(t / 90) * 2;
+          var u = 2 * x;
+          var fVal = Math.sin(u);
+          var duDx = 2;
+          var dfDu = Math.cos(u);
+          var dfDx = dfDu * duDx;
+
+          // Three panels: [x axis box] [meshed gears] [f(x) graph]
+          // Gears are the centerpiece
+          var gearY = H * 0.48;
+          var innerX = W * 0.36;
+          var outerX = W * 0.62;
+
+          // Rotation: inner turns at rate proportional to du/dx
+          // Angle accumulates with x (since x is a sin wave here, angle oscillates too)
+          var innerAngle = u * 0.4;          // visually ties to u
+          var outerAngle = -innerAngle * 1.7; // ratio 1.7 = dfDu placeholder (gears visual metaphor, not strict)
+
+          function drawGear(cx, cy, R, teeth, angle, col, col2) {
+            c.save(); c.translate(cx, cy); c.rotate(angle);
+            c.fillStyle = col;
+            c.beginPath();
+            for (var i = 0; i < teeth * 2; i++) {
+              var a = (i / (teeth * 2)) * Math.PI * 2;
+              var r = (i % 2 === 0) ? R : R * 0.88;
+              if (i === 0) c.moveTo(r, 0); else c.lineTo(r * Math.cos(a), r * Math.sin(a));
+            }
+            c.closePath(); c.fill();
+            c.strokeStyle = col2; c.lineWidth = 1.5; c.stroke();
+            // Hub
+            c.fillStyle = col2;
+            c.beginPath(); c.arc(0, 0, R * 0.28, 0, Math.PI * 2); c.fill();
+            // Spoke so rotation is visible
+            c.strokeStyle = '#0f172a'; c.lineWidth = 2;
+            c.beginPath(); c.moveTo(0, 0); c.lineTo(R * 0.75, 0); c.stroke();
+            c.restore();
+          }
+
+          // Inner gear (small, ties to x)
+          drawGear(innerX, gearY, 44, 12, innerAngle, '#60a5fa', '#1e3a8a');
+          // Outer gear (bigger, ties to f)
+          drawGear(outerX, gearY, 64, 18, outerAngle, '#fbbf24', '#78350f');
+
+          // Tangent arrow on inner = du/dx
+          c.strokeStyle = '#38bdf8'; c.lineWidth = 3;
+          c.beginPath();
+          c.moveTo(innerX + 44, gearY);
+          c.lineTo(innerX + 44 + duDx * 18, gearY - 18);
+          c.stroke();
+          // Tangent arrow on outer = df/du
+          c.strokeStyle = '#fbbf24';
+          c.beginPath();
+          c.moveTo(outerX - 64, gearY);
+          c.lineTo(outerX - 64 - dfDu * 20, gearY + 20);
+          c.stroke();
+
+          // Labels above each gear
+          c.fillStyle = '#60a5fa'; c.textAlign = 'center';
+          c.font = 'bold 12px "Inter", sans-serif';
+          c.fillText('u = 2x', innerX, gearY - 64);
+          c.font = 'bold 10.5px "Inter", sans-serif'; c.fillStyle = '#7dd3fc';
+          c.fillText('du/dx = 2', innerX, gearY - 48);
+
+          c.fillStyle = '#fbbf24';
+          c.font = 'bold 12px "Inter", sans-serif';
+          c.fillText('f = sin(u)', outerX, gearY - 84);
+          c.font = 'bold 10.5px "Inter", sans-serif'; c.fillStyle = '#fde68a';
+          c.fillText('df/du = cos(u) = ' + dfDu.toFixed(2), outerX, gearY - 68);
+
+          // Chain rule equation below gears (animated final value)
+          c.fillStyle = '#fde047'; c.textAlign = 'center';
+          c.font = 'bold 14px "Inter", sans-serif';
+          c.fillText('df/dx = df/du \u00D7 du/dx = ' + dfDu.toFixed(2) + ' \u00D7 ' + duDx.toFixed(0) + ' = ' + dfDx.toFixed(2), W/2, gearY + 88);
+
+          // Left input indicator: x input tape
+          var tapeLx = 20, tapeRx = W - 20, tapeY = H - 30;
+          c.fillStyle = 'rgba(148,163,184,0.2)';
+          c.fillRect(tapeLx, tapeY, tapeRx - tapeLx, 16);
+          c.strokeStyle = 'rgba(148,163,184,0.4)';
+          c.strokeRect(tapeLx, tapeY, tapeRx - tapeLx, 16);
+          var tapeX = tapeLx + ((x + 3) / 6) * (tapeRx - tapeLx);
+          c.fillStyle = '#fde047';
+          c.fillRect(tapeX - 3, tapeY - 3, 6, 22);
+
+          // Readout
+          c.fillStyle = '#e2e8f0'; c.textAlign = 'center';
+          c.font = 'bold 10px "Inter", sans-serif';
+          c.fillText('x = ' + x.toFixed(2) + '    u = 2x = ' + u.toFixed(2) + '    f = sin(u) = ' + fVal.toFixed(2), W/2, tapeY - 6);
+        }
+
+        // ── VIEW 8: Taylor Series Builder (approximates sin x by degree) ──
+        function drawTaylorSeries(c, W, H, ls, t) {
+          c.fillStyle = '#e2e8f0'; c.textAlign = 'center';
+          c.font = 'bold 14px "Inter", sans-serif';
+          c.fillText('\u221E Taylor Series \u2014 a polynomial becomes sin(x), one term at a time', W/2, 18);
+          c.font = 'italic 10px "Inter", sans-serif'; c.fillStyle = '#94a3b8';
+          c.fillText('sin(x) = x \u2212 x\u00B3/3! + x\u2075/5! \u2212 x\u2077/7! + \u2026', W/2, 32);
+
+          // Degree ramps 0..13 then back
+          var phase = (t / 4) % 180;
+          var deg = phase < 90 ? Math.floor(phase / 6) + 1 : Math.floor((180 - phase) / 6) + 1;
+          if (deg < 1) deg = 1; if (deg > 13) deg = 13;
+          // Only odd degrees actually change sin's approximation but we still display all
+          // Use the max odd <= deg
+          var nTerms = Math.floor((deg + 1) / 2);
+
+          // Taylor approx: sum_{k=0..nTerms-1} (-1)^k * x^(2k+1) / (2k+1)!
+          function fact(n) { var r = 1; for (var i = 2; i <= n; i++) r *= i; return r; }
+          function taylorSin(x, n) {
+            var s = 0, sgn = 1;
+            for (var k = 0; k < n; k++) {
+              var p = 2 * k + 1;
+              s += sgn * Math.pow(x, p) / fact(p);
+              sgn *= -1;
+            }
+            return s;
+          }
+
+          // Wider x range so convergence is visible
+          var Lx = 50, Rx = W - 30, Ty = 50, By = H - 60;
+          var xR = { min: -7, max: 7 };
+          var yR = { min: -2.5, max: 2.5 };
+          drawAxes(c, Lx, Rx, Ty, By, xR, yR);
+
+          // Draw sin(x) as the target (ghost thick line)
+          plotCurve(c, Math.sin, xR, yR, Lx, Rx, Ty, By, 'rgba(248,113,113,0.85)', 2.6);
+
+          // Draw each degree up to current as fading polylines
+          for (var k = 1; k <= nTerms; k++) {
+            var alpha = 0.12 + 0.75 * (k / nTerms);
+            c.strokeStyle = 'rgba(52,211,153,' + alpha + ')';
+            c.lineWidth = k === nTerms ? 2.5 : 1;
+            c.beginPath();
+            var N = 240;
+            for (var i = 0; i <= N; i++) {
+              var x = xR.min + (i / N) * (xR.max - xR.min);
+              var y = taylorSin(x, k);
+              // Clip massively out-of-range values for readability
+              if (y > yR.max + 5 || y < yR.min - 5) { y = y > 0 ? yR.max + 5 : yR.min - 5; }
+              var sx = Lx + ((x - xR.min) / (xR.max - xR.min)) * (Rx - Lx);
+              var sy = By - ((y - yR.min) / (yR.max - yR.min)) * (By - Ty);
+              if (i === 0) c.moveTo(sx, sy); else c.lineTo(sx, sy);
+            }
+            c.stroke();
+          }
+
+          // Expression bar at top
+          var currentDeg = 2 * nTerms - 1;
+          c.fillStyle = 'rgba(15,23,42,0.85)';
+          c.fillRect(Lx + 8, Ty + 8, 260, 40);
+          c.strokeStyle = 'rgba(52,211,153,0.5)';
+          c.strokeRect(Lx + 8, Ty + 8, 260, 40);
+          c.fillStyle = '#34d399'; c.textAlign = 'left';
+          c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText('degree ' + currentDeg + ' Taylor polynomial', Lx + 18, Ty + 24);
+
+          // Build a readable polynomial string
+          var polyStr = '';
+          for (var m = 0; m < nTerms; m++) {
+            var pow = 2 * m + 1;
+            var sign = (m % 2 === 0) ? (m === 0 ? '' : ' + ') : ' \u2212 ';
+            var denom = fact(pow);
+            polyStr += sign + (pow === 1 ? 'x' : 'x^' + pow + '/' + denom);
+          }
+          c.font = '10.5px monospace'; c.fillStyle = '#a7f3d0';
+          c.fillText(polyStr.slice(0, 50) + (polyStr.length > 50 ? '\u2026' : ''), Lx + 18, Ty + 40);
+
+          // Error callout near x = 5 (where truncated Taylor series diverge visibly)
+          var xCheck = 5;
+          var errAt5 = Math.abs(taylorSin(xCheck, nTerms) - Math.sin(xCheck));
+          c.fillStyle = '#fbbf24'; c.textAlign = 'right';
+          c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText('error at x = 5: ' + errAt5.toExponential(2), Rx - 8, Ty + 24);
+          c.font = '10px "Inter", sans-serif'; c.fillStyle = '#fde68a';
+          c.fillText('(goes to 0 as degree \u2192 \u221E)', Rx - 8, Ty + 40);
+
+          // Legend
+          c.fillStyle = '#f87171'; c.textAlign = 'left';
+          c.font = 'bold 10.5px "Inter", sans-serif';
+          c.fillText('\u2014 target: sin(x)', Lx + 8, By + 18);
+          c.fillStyle = '#34d399';
+          c.fillText('\u2014 Taylor approximations (darker = higher degree)', Lx + 8, By + 34);
+
+          c.fillStyle = '#fde047'; c.textAlign = 'center';
+          c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText('higher-degree polynomial matches sin(x) further from origin \u2014 the key idea of analytic functions', W/2, H - 12);
         }
 
         // ── FUNCTION EVALUATION ─────────────────────────────────────────
@@ -1781,7 +1980,9 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 { id: 'motion',  icon: '\uD83D\uDE97', label: 'Motion',        desc: 'Position / Velocity / Acceleration (Shift+3)' },
                 { id: 'riemann', icon: '\uD83C\uDFAC', label: 'Riemann',       desc: 'Animated Riemann convergence (Shift+4)' },
                 { id: 'ftc',     icon: '\u2B50',       label: 'FTC',           desc: 'The Fundamental Theorem of Calculus (Shift+5)' },
-                { id: 'slope',   icon: '\uD83C\uDF0A', label: 'Slope Fields',  desc: 'Visualize ODEs without solving them (Shift+6)' }
+                { id: 'slope',   icon: '\uD83C\uDF0A', label: 'Slope Fields',  desc: 'Visualize ODEs without solving them (Shift+6)' },
+                { id: 'chain',   icon: '\u2699\uFE0F', label: 'Chain Rule',    desc: 'Meshed gears \u2014 rates multiply (Shift+7)' },
+                { id: 'taylor',  icon: '\u221E',       label: 'Taylor Series', desc: 'Build sin(x) term by term (Shift+8)' }
               ];
               return h(React.Fragment, null,
                 // Header strip
@@ -1852,7 +2053,9 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   vizView === 'motion'  && 'Drag the position curve. Velocity = slope; acceleration = slope of velocity. Three panels update live.',
                   vizView === 'riemann' && 'Watch n grow from 1 \u2192 256. All four Riemann methods converge to the true area \u2014 but at different speeds.',
                   vizView === 'ftc'     && 'THE payoff: drag x. Accumulated area A(x) is plotted on the right \u2014 its slope at every x is exactly f(x). That\u2019s the Fundamental Theorem.',
-                  vizView === 'slope'   && 'Each arrow is the slope dy/dx at that point. Click anywhere to drop a solution curve that flows along the field.'
+                  vizView === 'slope'   && 'Each arrow is the slope dy/dx at that point. Click anywhere to drop a solution curve that flows along the field.',
+                  vizView === 'chain'   && 'Inner gear du/dx turns an outer gear df/du. Composed rate = product: df/dx = df/du \u00D7 du/dx.',
+                  vizView === 'taylor'  && 'A Taylor polynomial is an infinite sum of powers that reconstructs a function. Watch degree climb 0 \u2192 13.'
                 )
               );
             })()
