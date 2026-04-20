@@ -734,7 +734,81 @@
   // ═══════════════════════════════════════════════════════════
 
   var CELL_SIZE = 52;
-  var MAZE_SIZES = { small: { cols: 5, rows: 5, label: 'Small (5\u00d75)' }, medium: { cols: 7, rows: 7, label: 'Medium (7\u00d77)' }, large: { cols: 9, rows: 9, label: 'Large (9\u00d79)' } };
+  var MAZE_SIZES = { small: { cols: 5, rows: 5, label: 'Small (5\u00d75)' }, medium: { cols: 7, rows: 7, label: 'Medium (7\u00d77)' }, large: { cols: 9, rows: 9, label: 'Large (9\u00d99)' } };
+
+  // ── Procedural stone/dungeon textures (no external assets) ──
+  // Builds a CanvasTexture that reads as stone/brick via layered noise + cracks.
+  // Called once per maze init, cached on the engine object to avoid per-wall
+  // GPU uploads. Returns a THREE.CanvasTexture so callers can set wrap modes
+  // and repeat counts.
+  function buildStoneTexture(THREE, hue) {
+    var sz = 128;
+    var cnv = document.createElement('canvas');
+    cnv.width = sz; cnv.height = sz;
+    var ctx = cnv.getContext('2d');
+    var base = hue || 'rgb(42,42,74)';
+    ctx.fillStyle = base;
+    ctx.fillRect(0, 0, sz, sz);
+    // Value noise — hand-rolled (no perlin lib). Small blotches of lighter/darker
+    // regions give the stone its mottled look.
+    for (var i = 0; i < 1600; i++) {
+      var x = Math.random() * sz, y = Math.random() * sz;
+      var rad = 0.5 + Math.random() * 1.8;
+      var light = Math.random();
+      ctx.fillStyle = light > 0.5
+        ? 'rgba(255,255,255,' + (0.02 + Math.random() * 0.08) + ')'
+        : 'rgba(0,0,0,' + (0.03 + Math.random() * 0.14) + ')';
+      ctx.beginPath(); ctx.arc(x, y, rad, 0, Math.PI * 2); ctx.fill();
+    }
+    // Horizontal brick seams (mortar lines) at irregular intervals
+    ctx.strokeStyle = 'rgba(0,0,0,0.45)';
+    ctx.lineWidth = 1;
+    for (var sy = 0; sy < sz; sy += 22 + Math.floor(Math.random() * 6)) {
+      ctx.beginPath(); ctx.moveTo(0, sy); ctx.lineTo(sz, sy); ctx.stroke();
+    }
+    // Vertical brick seams — offset every other row to break a repeating grid
+    for (var row = 0; row < 6; row++) {
+      var rowY = row * 22;
+      var offset = (row % 2) * 32;
+      for (var sx = offset; sx < sz; sx += 64) {
+        ctx.beginPath(); ctx.moveTo(sx, rowY); ctx.lineTo(sx, rowY + 22); ctx.stroke();
+      }
+    }
+    // A few hairline cracks for character
+    ctx.strokeStyle = 'rgba(0,0,0,0.35)';
+    for (var cr = 0; cr < 5; cr++) {
+      ctx.beginPath();
+      var sxc = Math.random() * sz, syc = Math.random() * sz;
+      ctx.moveTo(sxc, syc);
+      for (var seg = 0; seg < 5; seg++) {
+        sxc += (Math.random() - 0.5) * 18;
+        syc += (Math.random() - 0.5) * 18;
+        ctx.lineTo(sxc, syc);
+      }
+      ctx.stroke();
+    }
+    var tex = new THREE.CanvasTexture(cnv);
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    tex.anisotropy = 4;
+    return tex;
+  }
+
+  // Soft radial-gradient sprite texture — used as a glow card behind point
+  // lights so "bloom" reads visually without requiring EffectComposer.
+  function buildGlowSpriteTexture(THREE, hexColor) {
+    var sz = 128;
+    var cnv = document.createElement('canvas');
+    cnv.width = sz; cnv.height = sz;
+    var ctx = cnv.getContext('2d');
+    var g = ctx.createRadialGradient(sz / 2, sz / 2, 0, sz / 2, sz / 2, sz / 2);
+    var r = (hexColor >> 16) & 0xff, gg = (hexColor >> 8) & 0xff, b = hexColor & 0xff;
+    g.addColorStop(0, 'rgba(' + r + ',' + gg + ',' + b + ',0.9)');
+    g.addColorStop(0.3, 'rgba(' + r + ',' + gg + ',' + b + ',0.45)');
+    g.addColorStop(1, 'rgba(' + r + ',' + gg + ',' + b + ',0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, sz, sz);
+    return new THREE.CanvasTexture(cnv);
+  }
 
   function generateMaze(rows, cols) {
     // Simple recursive backtracker maze generator
@@ -829,6 +903,10 @@
     var wonState = useState(false);
     var won = wonState[0], setWon = wonState[1];
     var feedbackState = useState('');
+    // Small tick counter used only to drive the "you are here" pulse on the
+    // minimap. Incremented by a RAF loop while mode==='playing'. Kept separate
+    // from game state so game re-renders aren't batched with animation ticks.
+    var minimapTickState = useState(0);
     var feedback = feedbackState[0], setFeedback = feedbackState[1];
     var canvasRef = useRef(null);
     var playerPosRef = useRef({ r: 0, c: 0 });
@@ -844,6 +922,16 @@
     var maze3dRef = useRef(null);
     var maze3dEngRef = useRef(null);
     var maze3dAnimRef = useRef(0);
+    // Cells the player has physically stood on. Drives the minimap breadcrumb
+    // trail and fog-of-war, so we want this as a ref (mutated synchronously in
+    // the move handler) rather than state (would trigger extra renders and
+    // race with the correct-answer -> move sequence).
+    var visitedCellsRef = useRef({ '0,0': true });
+    // Animation-time tick used only to nudge the minimap redraw when the
+    // you-are-here pulse / breadcrumb trail needs a frame-accurate update.
+    var minimapTickRef = useRef(0);
+    // Bump when we want the "wrong answer" screen shake to fire.
+    var shakeRef = useRef(0);
 
     function makeProblem() {
       var a, b, op = operation === 'mixed' ? ['add','sub','mul','div'][Math.floor(Math.random() * 4)] : operation;
@@ -864,6 +952,8 @@
       var newMaze = generateMaze(sz.rows, sz.cols);
       setMaze(newMaze);
       setPlayerPos({ r: 0, c: 0 }); playerPosRef.current = { r: 0, c: 0 };
+      // Reset breadcrumb trail — each new maze starts with only the origin lit.
+      visitedCellsRef.current = { '0,0': true };
       setMonsterPos({ r: 0, c: 0 });
       setCurrentProblem(null);
       setScore(0); setCorrect(0); setWrong(0); setMoveCount(0); setElapsed(0);
@@ -914,15 +1004,37 @@
         // Correct — move to new cell
         var newPos = { r: currentProblem.targetR, c: currentProblem.targetC };
         setPlayerPos(newPos); playerPosRef.current = newPos;
+        // Mark the cell we just left AND the new one as visited so both show
+        // on the breadcrumb/fog-of-war minimap. Using a ref (not state) so
+        // there's no extra re-render and no race with the playerPos update.
+        visitedCellsRef.current[playerPos.r + ',' + playerPos.c] = true;
+        visitedCellsRef.current[newPos.r + ',' + newPos.c] = true;
         setCorrect(function(p) { return p + 1; });
         setScore(function(p) { return p + 10; });
         setMoveCount(function(p) { return p + 1; });
         setFeedback('correct');
         playTone(880, 0.05, 'sine', 0.06);
         setTimeout(function() { playTone(1320, 0.05, 'sine', 0.05); }, 50);
-        // 3D feedback: green ambient flash
+        // 3D feedback: green ambient flash + gem drop at the cell we just left
         var eng3d = maze3dEngRef.current;
-        if (eng3d) { eng3d._feedbackFlash = 1; eng3d.scene.children.forEach(function(c) { if (c.isAmbientLight) c.color.setHex(0x22aa44); c.intensity = 0.8; }); }
+        if (eng3d) {
+          eng3d._feedbackFlash = 1;
+          eng3d.scene.children.forEach(function(c) { if (c.isAmbientLight) c.color.setHex(0x22aa44); c.intensity = 0.8; });
+          if (window.THREE && eng3d.gems) {
+            // Gem colors cycle through a pleasant spread so solves read as
+            // distinct rewards rather than "green dots."
+            var gemColors = [0x22c55e, 0x3b82f6, 0xa855f7, 0xec4899, 0xfbbf24, 0x06b6d4];
+            var gemColor = gemColors[eng3d.gems.length % gemColors.length];
+            var gemMat = new window.THREE.MeshStandardMaterial({ color: gemColor, emissive: gemColor, emissiveIntensity: 0.8, transparent: true, opacity: 0.9, metalness: 0.3, roughness: 0.2 });
+            // Octahedron geometry reads as a faceted crystal/gem.
+            var gem = new window.THREE.Mesh(new window.THREE.OctahedronGeometry(0.14, 0), gemMat);
+            var gcx = playerPos.c * 2 + 1, gcz = playerPos.r * 2 + 1;
+            gem.position.set(gcx, 0.7, gcz);
+            gem.userData._baseY = 0.7;
+            eng3d.scene.add(gem);
+            eng3d.gems.push(gem);
+          }
+        }
         // Check win
         if (currentProblem.targetR === MAZE_ROWS - 1 && currentProblem.targetC === MAZE_COLS - 1) {
           setWon(true); setMode('results');
@@ -962,7 +1074,9 @@
         setScore(function(p) { return Math.max(0, p - 3); });
         setFeedback('wrong');
         playTone(220, 0.1, 'triangle', 0.04);
-        // 3D feedback: red ambient flash
+        // Screen shake + red ambient flash. shakeRef decays inside the animate
+        // loop so the effect is short and non-nauseating.
+        shakeRef.current = 1;
         var eng3dW = maze3dEngRef.current;
         if (eng3dW) { eng3dW._feedbackFlash = 1; eng3dW.scene.children.forEach(function(c) { if (c.isAmbientLight) c.color.setHex(0xaa2222); c.intensity = 0.8; }); }
       }
@@ -997,7 +1111,12 @@
       return function() { document.removeEventListener('keydown', handleKey); };
     });
 
-    // Draw maze on canvas
+    // Draw maze on canvas — minimap + 2D fallback. Features:
+    //   · fog of war: unseen cells are dim (still drawn so the shape is legible)
+    //   · breadcrumb trail: visited cells tinted indigo
+    //   · you-are-here pulse: animated ring around current cell
+    // The draw runs on every render (no dep array) and a small RAF-driven
+    // tick (minimapTickRef) keeps the pulse smooth.
     useEffect(function() {
       if (!maze || !canvasRef.current) return;
       var cv = canvasRef.current;
@@ -1005,6 +1124,15 @@
       var W = MAZE_COLS * CELL_SIZE;
       var H = MAZE_ROWS * CELL_SIZE;
       cv.width = W; cv.height = H;
+      var visited = visitedCellsRef.current || { '0,0': true };
+      var pulse = Math.sin(minimapTickRef.current * 0.12) * 0.5 + 0.5; // 0..1
+
+      // A cell is "seen" if visited OR any 4-neighbor is visited — gives the
+      // player a little peek-ahead so corridors aren't completely opaque.
+      function seen(r, c) {
+        if (visited[r + ',' + c]) return true;
+        return !!(visited[(r - 1) + ',' + c] || visited[(r + 1) + ',' + c] || visited[r + ',' + (c - 1)] || visited[r + ',' + (c + 1)]);
+      }
 
       // Background
       ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
@@ -1014,11 +1142,25 @@
         for (var c = 0; c < MAZE_COLS; c++) {
           var cell = maze[r][c];
           var x = c * CELL_SIZE, y = r * CELL_SIZE;
+          var isVisited = !!visited[r + ',' + c];
+          var isSeen = seen(r, c);
+          // Fog-of-war: unseen cells get a heavy dark overlay even though
+          // the wall skeleton underneath keeps the map legible as a shape.
+          if (!isSeen) {
+            ctx.fillStyle = 'rgba(2,6,20,0.85)';
+            ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE);
+          }
           // Cell floor
           if (r === 0 && c === 0) { ctx.fillStyle = 'rgba(34,197,94,0.15)'; ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE); } // start
           else if (r === MAZE_ROWS - 1 && c === MAZE_COLS - 1) { ctx.fillStyle = 'rgba(251,191,36,0.2)'; ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE); } // exit
-          // Walls
-          ctx.strokeStyle = '#475569'; ctx.lineWidth = 2;
+          // Breadcrumb tint for visited non-special cells
+          else if (isVisited) {
+            ctx.fillStyle = 'rgba(99,102,241,0.12)';
+            ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE);
+          }
+          // Walls — dim for unseen cells so the map still reads as a whole.
+          ctx.strokeStyle = isSeen ? '#475569' : '#1e293b';
+          ctx.lineWidth = 2;
           if (cell.walls.top) { ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + CELL_SIZE, y); ctx.stroke(); }
           if (cell.walls.right) { ctx.beginPath(); ctx.moveTo(x + CELL_SIZE, y); ctx.lineTo(x + CELL_SIZE, y + CELL_SIZE); ctx.stroke(); }
           if (cell.walls.bottom) { ctx.beginPath(); ctx.moveTo(x, y + CELL_SIZE); ctx.lineTo(x + CELL_SIZE, y + CELL_SIZE); ctx.stroke(); }
@@ -1026,31 +1168,72 @@
         }
       }
 
+      // Breadcrumb dots on each visited cell (excluding current position, which
+      // gets its own cat emoji below) — reinforces the trail even when many
+      // cells share the same indigo tint.
+      ctx.fillStyle = 'rgba(199,210,254,0.65)';
+      for (var vk in visited) {
+        if (!Object.prototype.hasOwnProperty.call(visited, vk)) continue;
+        var parts = vk.split(',');
+        var vr = parseInt(parts[0]), vc = parseInt(parts[1]);
+        if (vr === playerPos.r && vc === playerPos.c) continue;
+        ctx.beginPath(); ctx.arc(vc * CELL_SIZE + CELL_SIZE / 2, vr * CELL_SIZE + CELL_SIZE / 2, 2.5, 0, Math.PI * 2); ctx.fill();
+      }
+
       // Start label
       ctx.fillStyle = '#22c55e'; ctx.font = 'bold 10px sans-serif'; ctx.textAlign = 'center';
       ctx.fillText('START', CELL_SIZE / 2, CELL_SIZE / 2 + 14);
-      // Exit label
-      ctx.fillStyle = '#fbbf24'; ctx.font = 'bold 10px sans-serif';
-      ctx.fillText('EXIT', (MAZE_COLS - 0.5) * CELL_SIZE, (MAZE_ROWS - 0.5) * CELL_SIZE + 14);
-      // Exit star
-      ctx.font = '18px sans-serif';
-      ctx.fillText('\u2B50', (MAZE_COLS - 0.5) * CELL_SIZE, (MAZE_ROWS - 0.5) * CELL_SIZE);
+      // Exit label (only if seen — keeps the goal mysterious until you're near)
+      var exitSeen = seen(MAZE_ROWS - 1, MAZE_COLS - 1);
+      if (exitSeen) {
+        ctx.fillStyle = '#fbbf24'; ctx.font = 'bold 10px sans-serif';
+        ctx.fillText('EXIT', (MAZE_COLS - 0.5) * CELL_SIZE, (MAZE_ROWS - 0.5) * CELL_SIZE + 14);
+        ctx.font = '18px sans-serif';
+        ctx.fillText('\u2B50', (MAZE_COLS - 0.5) * CELL_SIZE, (MAZE_ROWS - 0.5) * CELL_SIZE);
+      }
 
-      // Monster (chase mode)
-      if (chaseMode && mode === 'playing' && !gameOver) {
+      // Monster (chase mode) — only draw if its cell is seen, so unseen
+      // monster location doesn't leak map info.
+      if (chaseMode && mode === 'playing' && !gameOver && seen(monsterPos.r, monsterPos.c)) {
         ctx.font = '22px sans-serif'; ctx.textAlign = 'center';
         ctx.fillText('\uD83D\uDC7E', (monsterPos.c + 0.5) * CELL_SIZE, (monsterPos.r + 0.5) * CELL_SIZE + 6);
       }
 
-      // Player
+      // Player — animated "you are here" ring first, then the cat on top.
+      var pcx = (playerPos.c + 0.5) * CELL_SIZE;
+      var pcy = (playerPos.r + 0.5) * CELL_SIZE;
+      ctx.strokeStyle = 'rgba(99,102,241,' + (0.35 + pulse * 0.45) + ')';
+      ctx.lineWidth = 2 + pulse * 2;
+      ctx.beginPath(); ctx.arc(pcx, pcy, CELL_SIZE * 0.32 + pulse * 4, 0, Math.PI * 2); ctx.stroke();
       ctx.font = '22px sans-serif'; ctx.textAlign = 'center';
-      ctx.fillText('\uD83D\uDC31', (playerPos.c + 0.5) * CELL_SIZE, (playerPos.r + 0.5) * CELL_SIZE + 6);
+      ctx.fillStyle = '#fff';
+      ctx.fillText('\uD83D\uDC31', pcx, pcy + 6);
 
       // Feedback flash
       if (feedback === 'correct') { ctx.fillStyle = 'rgba(34,197,94,0.2)'; ctx.fillRect(playerPos.c * CELL_SIZE, playerPos.r * CELL_SIZE, CELL_SIZE, CELL_SIZE); }
       if (feedback === 'wrong') { ctx.fillStyle = 'rgba(239,68,68,0.2)'; ctx.fillRect(playerPos.c * CELL_SIZE, playerPos.r * CELL_SIZE, CELL_SIZE, CELL_SIZE); }
       if (feedback === 'wall') { ctx.fillStyle = 'rgba(148,163,184,0.15)'; ctx.fillRect(playerPos.c * CELL_SIZE, playerPos.r * CELL_SIZE, CELL_SIZE, CELL_SIZE); }
     });
+
+    // Minimap pulse RAF — bumps minimapTickState on a throttled cadence
+    // (every 3 frames ~= 20 Hz) so the you-are-here ring animates smoothly
+    // without swamping React with 60 re-renders/sec. Only runs during play.
+    var setMinimapTick = minimapTickState[1];
+    useEffect(function() {
+      if (mode !== 'playing') return;
+      var rafId = 0;
+      var frame = 0;
+      var tick = function() {
+        frame++;
+        if (frame % 3 === 0) {
+          minimapTickRef.current = frame;
+          setMinimapTick(frame); // triggers minimap redraw via the render cycle
+        }
+        rafId = requestAnimationFrame(tick);
+      };
+      rafId = requestAnimationFrame(tick);
+      return function() { cancelAnimationFrame(rafId); };
+    }, [mode, setMinimapTick]);
 
     // Cleanup timers
     useEffect(function() {
@@ -1091,26 +1274,41 @@
       eng.renderer.setSize(container.clientWidth, container.clientHeight);
       eng.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
 
-      // Lighting
+      // Lighting — torch sprite adds a soft glow card so the flame reads as
+      // bright even without a post-processing bloom pass.
       eng.scene.add(new THREE.AmbientLight(0x222244, 0.3));
       var torchLight = new THREE.PointLight(0xffaa44, 1.2, 8);
       torchLight.position.set(0, 2, 0);
-      eng.camera.add(torchLight); // torch follows camera
+      eng.camera.add(torchLight);
+      var torchGlowTex = buildGlowSpriteTexture(THREE, 0xffaa44);
+      var torchGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: torchGlowTex, color: 0xffaa44, transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false }));
+      torchGlow.scale.set(1.2, 1.2, 1);
+      torchGlow.position.set(0, 2, 0.1);
+      eng.camera.add(torchGlow);
       eng.scene.add(eng.camera);
 
+      // Textures — built once, reused across all walls/floor/ceiling.
+      var wallTex = buildStoneTexture(THREE, 'rgb(46,42,66)');
+      wallTex.repeat.set(1.5, 1.2);
+      var floorTex = buildStoneTexture(THREE, 'rgb(28,26,42)');
+      floorTex.repeat.set(MAZE_COLS * 0.8, MAZE_ROWS * 0.8);
+      var ceilTex = buildStoneTexture(THREE, 'rgb(16,14,28)');
+      ceilTex.repeat.set(MAZE_COLS * 0.8, MAZE_ROWS * 0.8);
+      eng._textures = [wallTex, floorTex, ceilTex];
+
       // Floor
-      var floorMat = new THREE.MeshStandardMaterial({ color: 0x1a1a2e, roughness: 0.9 });
+      var floorMat = new THREE.MeshStandardMaterial({ map: floorTex, color: 0xffffff, roughness: 0.95 });
       var floor = new THREE.Mesh(new THREE.PlaneGeometry(MAZE_COLS * 2, MAZE_ROWS * 2), floorMat);
       floor.rotation.x = -Math.PI / 2; floor.position.set(MAZE_COLS, 0, MAZE_ROWS);
       eng.scene.add(floor);
 
       // Ceiling
-      var ceil = new THREE.Mesh(new THREE.PlaneGeometry(MAZE_COLS * 2, MAZE_ROWS * 2), new THREE.MeshStandardMaterial({ color: 0x0a0a18, roughness: 0.9 }));
+      var ceil = new THREE.Mesh(new THREE.PlaneGeometry(MAZE_COLS * 2, MAZE_ROWS * 2), new THREE.MeshStandardMaterial({ map: ceilTex, color: 0xffffff, roughness: 0.95 }));
       ceil.rotation.x = Math.PI / 2; ceil.position.set(MAZE_COLS, 2.5, MAZE_ROWS);
       eng.scene.add(ceil);
 
       // Build walls from maze grid
-      var wallMat = new THREE.MeshStandardMaterial({ color: 0x2a2a4a, roughness: 0.8 });
+      var wallMat = new THREE.MeshStandardMaterial({ map: wallTex, color: 0xffffff, roughness: 0.85 });
       for (var r = 0; r < MAZE_ROWS; r++) {
         for (var c = 0; c < MAZE_COLS; c++) {
           var cell = maze[r][c];
@@ -1134,24 +1332,104 @@
         }
       }
 
-      // Exit marker (golden glow at bottom-right)
-      var exitLight = new THREE.PointLight(0xfbbf24, 1.5, 6);
+      // Dust motes — ~200 floating particles drifting slowly through the
+      // whole maze volume. Each mote also carries a per-particle phase so the
+      // cloud doesn't drift in lockstep.
+      var dustGeo = new THREE.BufferGeometry();
+      var dustCount = 220;
+      var dustPositions = new Float32Array(dustCount * 3);
+      var dustPhases = new Float32Array(dustCount);
+      for (var di = 0; di < dustCount; di++) {
+        dustPositions[di * 3 + 0] = Math.random() * MAZE_COLS * 2;
+        dustPositions[di * 3 + 1] = 0.3 + Math.random() * 2.0;
+        dustPositions[di * 3 + 2] = Math.random() * MAZE_ROWS * 2;
+        dustPhases[di] = Math.random() * Math.PI * 2;
+      }
+      dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPositions, 3));
+      var dustMat = new THREE.PointsMaterial({
+        color: 0xffd9a0,
+        size: 0.05,
+        transparent: true,
+        opacity: 0.45,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false
+      });
+      eng.dust = new THREE.Points(dustGeo, dustMat);
+      eng.dust.userData.phases = dustPhases;
+      eng.scene.add(eng.dust);
+
+      // Exit portal — rotating torus + particle ring + pulsing light. A step
+      // up from the old static sphere; reads clearly as a goal.
+      var exitLight = new THREE.PointLight(0xfbbf24, 1.8, 7);
       exitLight.position.set((MAZE_COLS - 1) * 2 + 1, 1.5, (MAZE_ROWS - 1) * 2 + 1);
       eng.scene.add(exitLight);
-      var exitGeo = new THREE.SphereGeometry(0.3, 8, 8);
-      var exitMesh = new THREE.Mesh(exitGeo, new THREE.MeshBasicMaterial({ color: 0xfbbf24, transparent: true, opacity: 0.6 }));
-      exitMesh.position.copy(exitLight.position); exitMesh.position.y = 0.5;
-      eng.scene.add(exitMesh);
+      eng.exitLight = exitLight;
+      var portalGroup = new THREE.Group();
+      portalGroup.position.copy(exitLight.position); portalGroup.position.y = 1.0;
+      eng.scene.add(portalGroup);
+      eng.exitPortal = portalGroup;
+      // Outer ring
+      var ringGeo = new THREE.TorusGeometry(0.55, 0.06, 12, 28);
+      var ringMat = new THREE.MeshBasicMaterial({ color: 0xfde047, transparent: true, opacity: 0.9 });
+      eng.exitRing = new THREE.Mesh(ringGeo, ringMat);
+      portalGroup.add(eng.exitRing);
+      // Inner swirl — smaller ring rotating in the opposite axis for a vortex feel
+      var swirlMat = new THREE.MeshBasicMaterial({ color: 0xfb923c, transparent: true, opacity: 0.6 });
+      eng.exitSwirl = new THREE.Mesh(new THREE.TorusGeometry(0.32, 0.04, 10, 24), swirlMat);
+      eng.exitSwirl.rotation.x = Math.PI / 2;
+      portalGroup.add(eng.exitSwirl);
+      // Glow card behind the portal so it pops against the dark wall
+      var portalGlowTex = buildGlowSpriteTexture(THREE, 0xfbbf24);
+      var portalGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: portalGlowTex, color: 0xfde047, transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending, depthWrite: false }));
+      portalGlow.scale.set(2.4, 2.4, 1);
+      portalGroup.add(portalGlow);
+      eng.exitGlow = portalGlow;
+      // Particle swirl — 40 small points orbiting the portal
+      var portalPCount = 40;
+      var portalPGeo = new THREE.BufferGeometry();
+      var portalPPos = new Float32Array(portalPCount * 3);
+      var portalPPhases = new Float32Array(portalPCount);
+      for (var pp = 0; pp < portalPCount; pp++) {
+        portalPPhases[pp] = (pp / portalPCount) * Math.PI * 2;
+        portalPPos[pp * 3 + 0] = Math.cos(portalPPhases[pp]) * 0.6;
+        portalPPos[pp * 3 + 1] = Math.sin(portalPPhases[pp] * 3) * 0.15;
+        portalPPos[pp * 3 + 2] = Math.sin(portalPPhases[pp]) * 0.6;
+      }
+      portalPGeo.setAttribute('position', new THREE.BufferAttribute(portalPPos, 3));
+      var portalPMat = new THREE.PointsMaterial({ color: 0xfde047, size: 0.09, transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending, depthWrite: false });
+      eng.exitParticles = new THREE.Points(portalPGeo, portalPMat);
+      eng.exitParticles.userData.phases = portalPPhases;
+      portalGroup.add(eng.exitParticles);
 
-      // Monster mesh (chase mode)
+      // Gems array for correct-answer breadcrumbs (populated by submitAnswer)
+      eng.gems = [];
+
+      // Monster — ghostly glowing orb with trailing wisps instead of a red box.
+      // Emissive sphere gives it presence; a sprite glow gives it threatening
+      // halo; point light lights the walls around it.
       if (chaseMode) {
-        var monMat = new THREE.MeshStandardMaterial({ color: 0xff3333, emissive: 0x880000, emissiveIntensity: 0.5 });
-        eng.monsterMesh = new THREE.Mesh(new THREE.BoxGeometry(0.6, 1.2, 0.6), monMat);
-        eng.monsterMesh.position.set(1, 0.6, 1);
-        eng.scene.add(eng.monsterMesh);
-        var monLight = new THREE.PointLight(0xff3333, 0.8, 4);
-        monLight.position.set(1, 1.5, 1);
-        eng.monsterMesh.add(monLight);
+        var monsterGroup = new THREE.Group();
+        monsterGroup.position.set(1, 0.9, 1);
+        eng.scene.add(monsterGroup);
+        eng.monsterMesh = monsterGroup;
+        var orbMat = new THREE.MeshStandardMaterial({ color: 0xff4444, emissive: 0xaa0000, emissiveIntensity: 0.9, transparent: true, opacity: 0.85 });
+        var orb = new THREE.Mesh(new THREE.SphereGeometry(0.28, 16, 16), orbMat);
+        monsterGroup.add(orb);
+        eng.monsterOrb = orb;
+        // Outer wisp sphere — larger, wobbling, semi-transparent
+        var wispMat = new THREE.MeshBasicMaterial({ color: 0xff2222, transparent: true, opacity: 0.25, blending: THREE.AdditiveBlending, depthWrite: false });
+        var wispMesh = new THREE.Mesh(new THREE.SphereGeometry(0.42, 16, 16), wispMat);
+        monsterGroup.add(wispMesh);
+        eng.monsterWisp = wispMesh;
+        // Glow halo sprite
+        var monGlowTex = buildGlowSpriteTexture(THREE, 0xff2222);
+        var monGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: monGlowTex, color: 0xff3333, transparent: true, opacity: 0.75, blending: THREE.AdditiveBlending, depthWrite: false }));
+        monGlow.scale.set(1.8, 1.8, 1);
+        monsterGroup.add(monGlow);
+        eng.monsterGlow = monGlow;
+        var monLight = new THREE.PointLight(0xff3333, 0.9, 4);
+        monLight.position.set(0, 0, 0);
+        monsterGroup.add(monLight);
       }
 
       eng.clock = new THREE.Clock();
@@ -1166,19 +1444,88 @@
         eng.camera.position.x += (targetX - eng.camera.position.x) * 0.1;
         eng.camera.position.z += (targetZ - eng.camera.position.z) * 0.1;
         eng.camera.position.y = 1.2 + Math.sin(t2 * 3) * 0.03; // subtle bob
+        // Screen shake — decays over ~0.4s after a wrong answer. Applied as
+        // a small additive offset on top of the smoothed camera position.
+        if (shakeRef.current > 0) {
+          var s = shakeRef.current;
+          eng.camera.position.x += (Math.random() - 0.5) * 0.12 * s;
+          eng.camera.position.y += (Math.random() - 0.5) * 0.12 * s;
+          shakeRef.current = Math.max(0, s - 0.04);
+        }
 
-        // Exit glow pulse
-        exitMesh.material.opacity = 0.4 + Math.sin(t2 * 3) * 0.2;
-        exitMesh.scale.setScalar(1 + Math.sin(t2 * 2) * 0.15);
+        // Exit portal — ring spins one axis, swirl spins the other, glow pulses.
+        if (eng.exitPortal) {
+          eng.exitPortal.rotation.z += 0.012;
+          if (eng.exitRing) eng.exitRing.rotation.x = Math.sin(t2 * 0.7) * 0.4;
+          if (eng.exitSwirl) { eng.exitSwirl.rotation.y += 0.05; eng.exitSwirl.rotation.z -= 0.03; }
+          if (eng.exitGlow) {
+            var pulse = 1 + Math.sin(t2 * 2.2) * 0.2;
+            eng.exitGlow.scale.set(2.4 * pulse, 2.4 * pulse, 1);
+            eng.exitGlow.material.opacity = 0.55 + Math.sin(t2 * 2.2) * 0.15;
+          }
+          if (eng.exitLight) eng.exitLight.intensity = 1.4 + Math.sin(t2 * 3) * 0.5;
+          // Orbit the particle ring — reads each point along a slightly
+          // wobbling circle so the swirl looks alive.
+          if (eng.exitParticles) {
+            var pos = eng.exitParticles.geometry.attributes.position;
+            var phases = eng.exitParticles.userData.phases;
+            for (var ei = 0; ei < phases.length; ei++) {
+              var ph = phases[ei] + t2 * 1.4;
+              pos.array[ei * 3 + 0] = Math.cos(ph) * (0.55 + Math.sin(t2 + ei) * 0.04);
+              pos.array[ei * 3 + 1] = Math.sin(ph * 3 + t2 * 2) * 0.2;
+              pos.array[ei * 3 + 2] = Math.sin(ph) * (0.55 + Math.cos(t2 + ei) * 0.04);
+            }
+            pos.needsUpdate = true;
+          }
+        }
 
-        // Monster position
+        // Dust motes — slow drift on X/Z, tiny sin-bob on Y. Loop when a mote
+        // drifts past the maze bounds so we keep the cloud stable forever.
+        if (eng.dust) {
+          var dpos = eng.dust.geometry.attributes.position;
+          var dphases = eng.dust.userData.phases;
+          var dn = dphases.length;
+          for (var idu = 0; idu < dn; idu++) {
+            var ph2 = dphases[idu];
+            dpos.array[idu * 3 + 0] += Math.sin(t2 * 0.25 + ph2) * 0.004;
+            dpos.array[idu * 3 + 1] += Math.sin(t2 * 0.4 + ph2 * 1.3) * 0.003;
+            dpos.array[idu * 3 + 2] += Math.cos(t2 * 0.2 + ph2 * 0.7) * 0.004;
+            // wrap on Y so motes don't sink or rise forever
+            if (dpos.array[idu * 3 + 1] > 2.4) dpos.array[idu * 3 + 1] = 0.3;
+            if (dpos.array[idu * 3 + 1] < 0.2) dpos.array[idu * 3 + 1] = 2.3;
+          }
+          dpos.needsUpdate = true;
+        }
+
+        // Gems drop on correct answers; float + pulse + slow rotate so they
+        // read as "collected XP" without being distracting.
+        if (eng.gems && eng.gems.length) {
+          for (var gi = 0; gi < eng.gems.length; gi++) {
+            var gem = eng.gems[gi];
+            gem.rotation.y += 0.03;
+            gem.position.y = gem.userData._baseY + Math.sin(t2 * 2 + gi) * 0.08;
+            if (gem.material && gem.material.emissiveIntensity != null) {
+              gem.material.emissiveIntensity = 0.6 + Math.sin(t2 * 3 + gi) * 0.3;
+            }
+          }
+        }
+
+        // Monster — smooth follow + pulsing wisps + breathing glow
         if (eng.monsterMesh) {
           var mp = monsterPos;
           var mtx = mp.c * 2 + 1, mtz = mp.r * 2 + 1;
           eng.monsterMesh.position.x += (mtx - eng.monsterMesh.position.x) * 0.08;
           eng.monsterMesh.position.z += (mtz - eng.monsterMesh.position.z) * 0.08;
-          eng.monsterMesh.position.y = 0.6 + Math.sin(t2 * 5) * 0.1;
-          eng.monsterMesh.rotation.y += 0.02;
+          eng.monsterMesh.position.y = 0.9 + Math.sin(t2 * 3) * 0.18; // hovers + bobs
+          if (eng.monsterOrb) eng.monsterOrb.rotation.y += 0.015;
+          if (eng.monsterWisp) {
+            eng.monsterWisp.scale.setScalar(1 + Math.sin(t2 * 4) * 0.15);
+            eng.monsterWisp.material.opacity = 0.18 + Math.sin(t2 * 5) * 0.12;
+          }
+          if (eng.monsterGlow) {
+            var mg = 1.6 + Math.sin(t2 * 3) * 0.25;
+            eng.monsterGlow.scale.set(mg, mg, 1);
+          }
         }
 
         // ── 3D Feedback: green/red ambient flash on correct/wrong ──
