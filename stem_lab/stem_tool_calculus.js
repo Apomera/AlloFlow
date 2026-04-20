@@ -85,7 +85,10 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           vizZoom: d.vizZoom !== undefined ? d.vizZoom : 1,
           vizX0: d.vizX0 !== undefined ? d.vizX0 : 0,
           vizFtcX: d.vizFtcX !== undefined ? d.vizFtcX : -1,
+          vizOptimX: d.vizOptimX !== undefined ? d.vizOptimX : null,
           vizRiemannMode: d.vizRiemannMode || 'midpoint',
+          vizUserInteracted: d.vizUserInteracted || {},
+          vizSlopeSeeds: d.vizSlopeSeeds || [],
           CALC_FUNCS: CALC_FUNCS
         };
 
@@ -112,6 +115,58 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             resize();
             var resizeObs = null;
             try { resizeObs = new ResizeObserver(resize); resizeObs.observe(cv); } catch(e) {}
+
+            // Canvas click interaction — maps pointer X/Y into plot coords per view
+            function onClick(ev) {
+              var ls = _vizLiveState.current;
+              if (ls.tab !== 'visualize') return;
+              var r = cv.getBoundingClientRect();
+              var px = ev.clientX - r.left, py = ev.clientY - r.top;
+              var W = r.width, H = r.height;
+              var v = ls.vizView;
+              if (v === 'zoom' || v === 'tangent') {
+                // Map px over the x range [-3, 3]
+                var Lx = 60, Rx = W - 20;
+                if (v === 'tangent') { Lx = 20; Rx = 20 + (W - 20 - 20 - 12) / 2; } // left panel
+                if (px >= Lx && px <= Rx) {
+                  var newX0 = -3 + ((px - Lx) / (Rx - Lx)) * 6;
+                  upd('vizX0', Math.max(-3, Math.min(3, newX0)));
+                  upd('vizUserInteracted', Object.assign({}, ls.vizUserInteracted, { x0: true }));
+                }
+              } else if (v === 'ftc') {
+                var gap = 12;
+                var panelW = (W - gap - 40) / 2;
+                var Lx1 = 20, Rx1 = Lx1 + panelW;
+                if (px >= Lx1 && px <= Rx1) {
+                  var nx = -3 + ((px - Lx1) / (Rx1 - Lx1)) * 6;
+                  upd('vizFtcX', Math.max(-2.95, Math.min(2.95, nx)));
+                  upd('vizUserInteracted', Object.assign({}, ls.vizUserInteracted, { ftc: true }));
+                }
+              } else if (v === 'slope') {
+                var Lxs = 30, Rxs = W - 30, Tys = 46, Bys = H - 36;
+                if (px >= Lxs && px <= Rxs && py >= Tys && py <= Bys) {
+                  var sxR = { min: -3, max: 3 }, syR = { min: -2.5, max: 2.5 };
+                  var seedX = sxR.min + ((px - Lxs) / (Rxs - Lxs)) * (sxR.max - sxR.min);
+                  var seedY = syR.max - ((py - Tys) / (Bys - Tys)) * (syR.max - syR.min);
+                  var seeds = (ls.vizSlopeSeeds || []).slice(-3);
+                  seeds.push({ x: seedX, y: seedY });
+                  upd('vizSlopeSeeds', seeds);
+                }
+              } else if (v === 'optim') {
+                var Lx2 = (function() {
+                  var panelW2 = W * 0.42;
+                  return 20 + panelW2 + 20;
+                })();
+                var Rx2 = W - 20;
+                if (px >= Lx2 && px <= Rx2) {
+                  var xMax = 6 - 0.2;
+                  var nxv = 0 + ((px - Lx2) / (Rx2 - Lx2)) * (xMax + 0.5);
+                  upd('vizOptimX', Math.max(0.05, Math.min(xMax, nxv)));
+                  upd('vizUserInteracted', Object.assign({}, ls.vizUserInteracted, { optim: true }));
+                }
+              }
+            }
+            cv.addEventListener('click', onClick);
 
             function frame() {
               _vizTick.current++;
@@ -151,6 +206,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               _vizLoopRunning.current = false;
               if (_vizAnimId.current) cancelAnimationFrame(_vizAnimId.current);
               if (resizeObs) { try { resizeObs.disconnect(); } catch(e) {} }
+              cv.removeEventListener('click', onClick);
             };
           }
           tryInit();
@@ -225,8 +281,9 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           c.font = 'italic 10px "Inter", sans-serif'; c.fillStyle = '#94a3b8';
           c.fillText('As you zoom, ANY smooth curve becomes a straight line. That line\u2019s slope = f\u2032(x\u2080).', W/2, 36);
 
-          var x0 = ls.vizX0;
-          // Zoom factor: slow sine ping-pong 1x .. 200x so users see motion even without interacting
+          var userX0 = ls.vizUserInteracted && ls.vizUserInteracted.x0;
+          var x0 = userX0 ? ls.vizX0 : Math.sin(t / 90) * 2;
+          // Zoom factor: slow sine ping-pong 1x .. 100x so users see motion even without interacting
           var autoZoom = 1 + 100 * (1 - Math.cos(t / 90)) / 2;
           var zoom = ls.vizZoom && ls.vizZoom > 1 ? ls.vizZoom : autoZoom;
           var halfW_x = 3 / zoom;
@@ -330,7 +387,8 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           plotCurve(c, fn.f, xR, yR, Lx1, Rx1, Ty, By, '#f87171', 2);
 
           // Auto-sweep x0 (smooth ping-pong) if user hasn't interacted
-          var x0 = (ls.vizX0 !== undefined && ls.vizX0 !== 0) ? ls.vizX0 : Math.sin(t / 60) * 2.5;
+          var userX0 = ls.vizUserInteracted && ls.vizUserInteracted.x0;
+          var x0 = userX0 ? ls.vizX0 : Math.sin(t / 60) * 2.5;
           var slope = fn.df(x0);
           var y0 = fn.f(x0);
 
@@ -411,8 +469,9 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           drawAxes(c, Lx2, Rx2, Ty, By, xR, aR);
 
           // Auto-sweep the x pointer if user hasn't touched it
-          var sweepX = (ls.vizFtcX !== undefined && ls.vizFtcX > xR.min + 0.01 && ls.vizFtcX < xR.max - 0.01)
-            ? ls.vizFtcX
+          var userFtc = ls.vizUserInteracted && ls.vizUserInteracted.ftc;
+          var sweepX = userFtc
+            ? Math.max(xR.min + 0.01, Math.min(xR.max - 0.01, ls.vizFtcX))
             : (xR.min + ((Math.sin(t/80) + 1) / 2) * (xR.max - xR.min));
 
           // Shade area [xR.min .. sweepX] under f on left panel
@@ -743,6 +802,12 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             { x:  0.0, y: -2.3, col: '#f472b6' },
             { x:  0.0, y:  2.3, col: '#a78bfa' }
           ];
+          // Append up to 4 user-clicked seeds (cycle palette)
+          var userSeeds = ls.vizSlopeSeeds || [];
+          var userCols = ['#fde047', '#22d3ee', '#fb7185', '#84cc16'];
+          userSeeds.slice(-4).forEach(function(s, si) {
+            seeds.push({ x: s.x, y: s.y, col: userCols[si % userCols.length] });
+          });
           seeds.forEach(function(s) {
             c.strokeStyle = s.col; c.lineWidth = 2;
             c.shadowColor = s.col; c.shadowBlur = 4;
@@ -996,8 +1061,14 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           var SW = 20, SH = 12;
           // Animated x: ping-pong from 0.1 to 5.5 (max allowed = SH/2 = 6 but keeps some material)
           var xMax = SH / 2 - 0.2;
-          var phase = (t / 80) % 2;
-          var x = phase < 1 ? 0.1 + phase * xMax : 0.1 + (2 - phase) * xMax;
+          var userOptim = ls.vizUserInteracted && ls.vizUserInteracted.optim;
+          var x;
+          if (userOptim && ls.vizOptimX !== null && ls.vizOptimX !== undefined) {
+            x = Math.max(0.05, Math.min(xMax, ls.vizOptimX));
+          } else {
+            var phase = (t / 80) % 2;
+            x = phase < 1 ? 0.1 + phase * xMax : 0.1 + (2 - phase) * xMax;
+          }
 
           // V(x) = x(SW - 2x)(SH - 2x)
           var V = function(xx) { return xx * (SW - 2 * xx) * (SH - 2 * xx); };
@@ -2529,8 +2600,22 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                     ref: _vizCvRef,
                     role: 'img',
                     'aria-label': 'Calculus visualization canvas: ' + (VIEWS.find(function(v){return v.id===vizView;}) || {}).desc,
-                    style: { width: '100%', height: '100%', display: 'block' }
+                    style: {
+                      width: '100%', height: '100%', display: 'block',
+                      cursor: (vizView === 'zoom' || vizView === 'tangent' || vizView === 'ftc' || vizView === 'optim' || vizView === 'slope') ? 'pointer' : 'default'
+                    }
                   }),
+                  // Reset interaction button — shown only on interactive views
+                  (vizView === 'zoom' || vizView === 'tangent' || vizView === 'ftc' || vizView === 'optim' || vizView === 'slope') &&
+                  h('button', {
+                    onClick: function() {
+                      upd('vizUserInteracted', {});
+                      upd('vizSlopeSeeds', []);
+                    },
+                    title: 'Return to auto-animation',
+                    'aria-label': 'Reset interaction; resume auto-animation',
+                    className: 'absolute top-2 right-12 px-2 h-8 rounded-lg bg-slate-900/70 text-indigo-200 hover:bg-slate-900/90 text-xs font-bold'
+                  }, '\u21BA auto'),
                   h('button', {
                     onClick: function() {
                       var el = document.getElementById('calc-viz-wrap');
