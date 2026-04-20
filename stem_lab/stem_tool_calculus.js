@@ -130,6 +130,9 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               if (ls.vizView === 'zoom')         { drawZoomToLinearity(c, W, H, fn, ls, t); }
               else if (ls.vizView === 'tangent') { drawTangentExplorer(c, W, H, fn, ls, t); }
               else if (ls.vizView === 'ftc')     { drawFTCSweep(c, W, H, fn, ls, t); }
+              else if (ls.vizView === 'motion')  { drawMotionLab(c, W, H, ls, t); }
+              else if (ls.vizView === 'riemann') { drawRiemannAnimator(c, W, H, fn, ls, t); }
+              else if (ls.vizView === 'slope')   { drawSlopeFields(c, W, H, ls, t); }
               else { drawComingSoon(c, W, H, ls.vizView); }
 
               _vizAnimId.current = requestAnimationFrame(frame);
@@ -481,6 +484,300 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           c.fillStyle = '#fde047'; c.textAlign = 'center';
           c.font = 'bold 11px "Inter", sans-serif';
           c.fillText("x = " + sweepX.toFixed(2) + "   \u2022   A(x) = " + aAtS.toFixed(3) + "   \u2022   A\u2032(x) = " + fAtS.toFixed(3) + "   \u2190  same as f(x)!", W/2, H - 10);
+        }
+
+        // ── VIEW 3: Motion Lab (position / velocity / acceleration) ──
+        function drawMotionLab(c, W, H, ls, t) {
+          // Title
+          c.fillStyle = '#e2e8f0'; c.textAlign = 'center';
+          c.font = 'bold 14px "Inter", sans-serif';
+          c.fillText('\uD83D\uDE97 Motion Lab \u2014 position \u2192 velocity \u2192 acceleration', W/2, 18);
+          c.font = 'italic 10px "Inter", sans-serif'; c.fillStyle = '#94a3b8';
+          c.fillText('Position p(t). Velocity = p\u2032(t). Acceleration = v\u2032(t). Each is the slope of the one above.', W/2, 32);
+
+          // Driver function — animated scenario: a car that gently accelerates, cruises, brakes
+          // p(t) = 0.5 * t^2 for t in [0, 2], then linear for [2, 4], then decelerating to stop [4, 6]
+          function pos(tt) {
+            if (tt < 2) return 0.5 * tt * tt;
+            if (tt < 4) return 2 + 2 * (tt - 2);
+            if (tt < 6) return 6 + 2 * (tt - 4) - 0.5 * (tt - 4) * (tt - 4);
+            return 8;
+          }
+          function vel(tt) {
+            if (tt < 2) return tt;
+            if (tt < 4) return 2;
+            if (tt < 6) return 2 - (tt - 4);
+            return 0;
+          }
+          function acc(tt) {
+            if (tt < 2) return 1;
+            if (tt < 4) return 0;
+            if (tt < 6) return -1;
+            return 0;
+          }
+
+          // Live time scrubs back and forth 0..6
+          var phase = (t / 60) % 12;
+          var tNow = phase < 6 ? phase : 12 - phase; // ping-pong
+
+          var gap = 10;
+          var panelY0 = 46;
+          var panelH = (H - panelY0 - 36) / 3 - gap;
+          var Lx = 60, Rx = W - 20;
+          var tR = { min: 0, max: 6 };
+
+          // 3 panels stacked
+          var panels = [
+            { lbl: 'position p(t)', fn: pos,  col: '#60a5fa', yMin: -0.5, yMax: 8.8 },
+            { lbl: 'velocity v(t) = p\u2032(t)', fn: vel, col: '#34d399', yMin: -0.5, yMax: 2.8 },
+            { lbl: 'acceleration a(t) = v\u2032(t)', fn: acc, col: '#fbbf24', yMin: -1.5, yMax: 1.5 }
+          ];
+
+          panels.forEach(function(p, pi) {
+            var Ty = panelY0 + pi * (panelH + gap);
+            var By = Ty + panelH;
+            var yR = { min: p.yMin, max: p.yMax };
+            drawAxes(c, Lx, Rx, Ty, By, tR, yR);
+            plotCurve(c, p.fn, tR, yR, Lx, Rx, Ty, By, p.col, 2);
+            // Label
+            c.fillStyle = p.col; c.textAlign = 'left';
+            c.font = 'bold 10.5px "Inter", sans-serif';
+            c.fillText(p.lbl, Lx + 6, Ty + 12);
+            // Dot at current time
+            var yVal = p.fn(tNow);
+            var sx = Lx + ((tNow - tR.min) / (tR.max - tR.min)) * (Rx - Lx);
+            var sy = By - ((yVal - yR.min) / (yR.max - yR.min)) * (By - Ty);
+            c.fillStyle = '#fde047';
+            c.beginPath(); c.arc(sx, sy, 4.5, 0, Math.PI * 2); c.fill();
+            c.strokeStyle = '#0f172a'; c.lineWidth = 1; c.stroke();
+            // Readout of current value
+            c.fillStyle = '#e2e8f0'; c.textAlign = 'right';
+            c.font = 'bold 10px "Inter", sans-serif';
+            c.fillText('= ' + yVal.toFixed(2), Rx - 6, Ty + 12);
+            // Vertical time indicator line across panel
+            c.strokeStyle = 'rgba(253,224,71,0.35)'; c.lineWidth = 1;
+            c.beginPath(); c.moveTo(sx, Ty); c.lineTo(sx, By); c.stroke();
+          });
+
+          // Animated "car" at the top between t-axis and panel 1
+          var carY = 40;
+          var carX = Lx + (pos(tNow) / 8) * (Rx - Lx);
+          c.fillStyle = '#ef4444';
+          c.fillRect(carX - 10, carY - 6, 20, 10);
+          c.fillStyle = '#1f2937';
+          c.beginPath(); c.arc(carX - 5, carY + 4, 2, 0, Math.PI * 2); c.fill();
+          c.beginPath(); c.arc(carX + 5, carY + 4, 2, 0, Math.PI * 2); c.fill();
+
+          // Bottom timestamp
+          c.fillStyle = '#fde047'; c.textAlign = 'center';
+          c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText('t = ' + tNow.toFixed(2) + ' s   \u2022   each graph\u2019s slope = the graph below', W/2, H - 12);
+        }
+
+        // ── VIEW 4: Riemann Animator (n=1..256 all four methods) ──
+        function drawRiemannAnimator(c, W, H, fn, ls, t) {
+          c.fillStyle = '#e2e8f0'; c.textAlign = 'center';
+          c.font = 'bold 14px "Inter", sans-serif';
+          c.fillText('\uD83C\uDFAC Riemann Animator \u2014 as n grows, all methods converge', W/2, 18);
+          c.font = 'italic 10px "Inter", sans-serif'; c.fillStyle = '#94a3b8';
+          c.fillText('Watch left, right, midpoint, trapezoidal rectangles shrink; errors approach 0.', W/2, 32);
+
+          // n scrubs 2..128 in a log-ish ramp + gentle ping-pong
+          var phase = (t / 4) % 240;
+          var k = phase < 120 ? phase / 120 : (240 - phase) / 120;
+          var n = Math.round(2 + Math.pow(k, 2) * 126);
+
+          // 4 small panels (2x2)
+          var methods = [
+            { id: 'left',      lbl: 'Left',       col: '#f87171' },
+            { id: 'right',     lbl: 'Right',      col: '#fbbf24' },
+            { id: 'midpoint',  lbl: 'Midpoint',   col: '#34d399' },
+            { id: 'trapezoid', lbl: 'Trapezoid',  col: '#60a5fa' }
+          ];
+          var gx = 14, gy = 46;
+          var pw = (W - gx * 3) / 2;
+          var ph = (H - gy - 40) / 2 - gx;
+
+          var xR = { min: -2, max: 2 };
+          var sampleY = [];
+          for (var si = 0; si <= 40; si++) sampleY.push(fn.f(xR.min + (si/40) * (xR.max - xR.min)));
+          var fMin = Math.min.apply(null, sampleY), fMax = Math.max.apply(null, sampleY);
+          var yR = { min: Math.min(fMin - 0.3, 0), max: fMax + 0.3 };
+
+          // Exact via fine-grained trapezoid
+          var exactAcc = 0, NE = 2000, dxE = (xR.max - xR.min) / NE;
+          var prevY = fn.f(xR.min);
+          for (var i = 1; i <= NE; i++) {
+            var curY = fn.f(xR.min + i * dxE);
+            exactAcc += (prevY + curY) / 2 * dxE;
+            prevY = curY;
+          }
+
+          methods.forEach(function(m, mi) {
+            var col = mi % 2, row = Math.floor(mi / 2);
+            var Lx = gx + col * (pw + gx);
+            var Ty = gy + row * (ph + gx);
+            var Rx = Lx + pw, By = Ty + ph;
+
+            drawAxes(c, Lx, Rx, Ty, By, xR, yR);
+            plotCurve(c, fn.f, xR, yR, Lx, Rx, Ty, By, m.col, 1.5);
+
+            // Draw rectangles
+            var dx = (xR.max - xR.min) / n;
+            var approx = 0;
+            var zeroY = By - ((0 - yR.min) / (yR.max - yR.min)) * (By - Ty);
+            c.fillStyle = m.col.replace('#', 'rgba(') ? m.col : m.col; // fallback
+            for (var r = 0; r < n; r++) {
+              var xi = xR.min + r * dx;
+              var yVal;
+              if (m.id === 'left')       yVal = fn.f(xi);
+              else if (m.id === 'right') yVal = fn.f(xi + dx);
+              else if (m.id === 'midpoint') yVal = fn.f(xi + dx/2);
+              else { yVal = (fn.f(xi) + fn.f(xi + dx)) / 2; } // trapezoid area-equivalent for approx
+              approx += yVal * dx;
+
+              var rxL = Lx + ((xi - xR.min) / (xR.max - xR.min)) * (Rx - Lx);
+              var rxR = Lx + ((xi + dx - xR.min) / (xR.max - xR.min)) * (Rx - Lx);
+              var ryT, ryB;
+              if (m.id === 'trapezoid') {
+                // Draw trapezoid polygon
+                var yL = fn.f(xi), yRv = fn.f(xi + dx);
+                var syL = By - ((yL - yR.min) / (yR.max - yR.min)) * (By - Ty);
+                var syR = By - ((yRv - yR.min) / (yR.max - yR.min)) * (By - Ty);
+                c.fillStyle = m.col + '33';
+                c.strokeStyle = m.col; c.lineWidth = 0.6;
+                c.beginPath();
+                c.moveTo(rxL, zeroY); c.lineTo(rxL, syL); c.lineTo(rxR, syR); c.lineTo(rxR, zeroY); c.closePath();
+                c.fill(); c.stroke();
+              } else {
+                var sy = By - ((yVal - yR.min) / (yR.max - yR.min)) * (By - Ty);
+                c.fillStyle = m.col + '33';
+                c.strokeStyle = m.col; c.lineWidth = 0.6;
+                var top = Math.min(sy, zeroY), hr = Math.abs(sy - zeroY);
+                c.fillRect(rxL, top, rxR - rxL, hr);
+                c.strokeRect(rxL, top, rxR - rxL, hr);
+              }
+            }
+            // Panel label + error
+            c.fillStyle = m.col; c.textAlign = 'left';
+            c.font = 'bold 11px "Inter", sans-serif';
+            c.fillText(m.lbl, Lx + 6, Ty + 13);
+            var err = Math.abs(approx - exactAcc);
+            c.fillStyle = '#e2e8f0'; c.textAlign = 'right';
+            c.font = 'bold 10px "Inter", sans-serif';
+            c.fillText('err = ' + err.toFixed(4), Rx - 6, Ty + 13);
+          });
+
+          // Footer: n readout + exact value
+          c.fillStyle = '#fde047'; c.textAlign = 'center';
+          c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText('n = ' + n + '  \u2022  exact \u222B f = ' + exactAcc.toFixed(4) + '  \u2022  each method shrinks error as n \u2192 \u221E', W/2, H - 12);
+        }
+
+        // ── VIEW 6: Slope Fields + trajectories ──
+        function drawSlopeFields(c, W, H, ls, t) {
+          c.fillStyle = '#e2e8f0'; c.textAlign = 'center';
+          c.font = 'bold 14px "Inter", sans-serif';
+          c.fillText('\uD83C\uDF0A Slope Fields \u2014 see an ODE without solving it', W/2, 18);
+          c.font = 'italic 10px "Inter", sans-serif'; c.fillStyle = '#94a3b8';
+          c.fillText("dy/dx = f(x,y). Arrows show direction. Trajectories flow along the field.", W/2, 32);
+
+          // Pick a slope function — auto-cycle through 3 interesting ODEs
+          var odes = [
+            { name: "y' = y",              df: function(x,y){ return y; } },
+            { name: "y' = x \u2212 y",     df: function(x,y){ return x - y; } },
+            { name: "y' = sin(x) \u2212 y", df: function(x,y){ return Math.sin(x) - y; } }
+          ];
+          var odeIdx = Math.floor((t / 300)) % odes.length;
+          var ode = odes[odeIdx];
+
+          var Lx = 30, Rx = W - 30, Ty = 46, By = H - 36;
+          var xR = { min: -3, max: 3 };
+          var yR = { min: -2.5, max: 2.5 };
+          drawAxes(c, Lx, Rx, Ty, By, xR, yR);
+
+          // Grid of arrows
+          var nx = 24, ny = 16;
+          for (var ix = 0; ix < nx; ix++) {
+            for (var iy = 0; iy < ny; iy++) {
+              var x = xR.min + (ix + 0.5) / nx * (xR.max - xR.min);
+              var y = yR.min + (iy + 0.5) / ny * (yR.max - yR.min);
+              var slope;
+              try { slope = ode.df(x, y); } catch(e) { slope = 0; }
+              if (!isFinite(slope)) continue;
+              // Clamp large slopes for display
+              var theta = Math.atan(slope);
+              var len = 12;
+              var sx = Lx + ((x - xR.min) / (xR.max - xR.min)) * (Rx - Lx);
+              var sy = By - ((y - yR.min) / (yR.max - yR.min)) * (By - Ty);
+              var dx = Math.cos(theta) * len / 2;
+              var dy = -Math.sin(theta) * len / 2;
+              // Color by slope magnitude
+              var mag = Math.min(1, Math.abs(slope) / 3);
+              var r = Math.floor(100 + mag * 155);
+              var g = Math.floor(200 - mag * 80);
+              var b = 255 - Math.floor(mag * 120);
+              c.strokeStyle = 'rgba(' + r + ',' + g + ',' + b + ',0.75)';
+              c.lineWidth = 1.2;
+              c.beginPath(); c.moveTo(sx - dx, sy - dy); c.lineTo(sx + dx, sy + dy); c.stroke();
+              // Small arrowhead
+              c.beginPath();
+              c.moveTo(sx + dx, sy + dy);
+              c.lineTo(sx + dx - Math.cos(theta + 0.4) * 3, sy + dy + Math.sin(theta + 0.4) * 3);
+              c.stroke();
+            }
+          }
+
+          // Euler-stepped trajectories from a few seed points
+          var seeds = [
+            { x: -2.8, y: -2.0, col: '#fbbf24' },
+            { x: -2.8, y:  0.0, col: '#34d399' },
+            { x: -2.8, y:  2.0, col: '#60a5fa' },
+            { x:  0.0, y: -2.3, col: '#f472b6' },
+            { x:  0.0, y:  2.3, col: '#a78bfa' }
+          ];
+          seeds.forEach(function(s) {
+            c.strokeStyle = s.col; c.lineWidth = 2;
+            c.shadowColor = s.col; c.shadowBlur = 4;
+            c.beginPath();
+            var x = s.x, y = s.y;
+            var step = 0.03, steps = 260;
+            var started = false;
+            for (var k = 0; k < steps; k++) {
+              var slope = ode.df(x, y);
+              if (!isFinite(slope)) break;
+              // Clip trajectory to panel
+              if (x < xR.min || x > xR.max || y < yR.min - 0.5 || y > yR.max + 0.5) break;
+              var sx = Lx + ((x - xR.min) / (xR.max - xR.min)) * (Rx - Lx);
+              var sy = By - ((y - yR.min) / (yR.max - yR.min)) * (By - Ty);
+              if (!started) { c.moveTo(sx, sy); started = true; } else { c.lineTo(sx, sy); }
+              // RK2 (midpoint) step for a smoother curve
+              var kx = step, ky = slope * step;
+              var mSlope = ode.df(x + kx/2, y + ky/2);
+              x += step;
+              y += mSlope * step;
+            }
+            c.stroke();
+            c.shadowBlur = 0;
+            // Seed marker
+            var ssx = Lx + ((s.x - xR.min) / (xR.max - xR.min)) * (Rx - Lx);
+            var ssy = By - ((s.y - yR.min) / (yR.max - yR.min)) * (By - Ty);
+            c.fillStyle = s.col;
+            c.beginPath(); c.arc(ssx, ssy, 3.5, 0, Math.PI * 2); c.fill();
+          });
+
+          // ODE label
+          c.fillStyle = 'rgba(15,23,42,0.85)';
+          c.fillRect(Lx + 8, Ty + 8, 140, 26);
+          c.strokeStyle = 'rgba(99,102,241,0.5)';
+          c.strokeRect(Lx + 8, Ty + 8, 140, 26);
+          c.fillStyle = '#c7d2fe'; c.textAlign = 'left';
+          c.font = 'bold 12px "Inter", sans-serif';
+          c.fillText(ode.name, Lx + 18, Ty + 26);
+
+          c.fillStyle = '#fde047'; c.textAlign = 'center';
+          c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText('cycling through 3 ODEs \u2014 each curve is a solution, no formula needed', W/2, H - 12);
         }
 
         // ── FUNCTION EVALUATION ─────────────────────────────────────────
