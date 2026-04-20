@@ -852,6 +852,44 @@ const d = labToolData.rocks || {};
 
 
 
+            // ── Keyboard zone selector (WCAG 2.1.1) ──
+
+            canvasEl.setAttribute('tabindex', '0');
+
+            canvasEl.setAttribute('role', 'application');
+
+            canvasEl.setAttribute('aria-label', 'Rock cycle landscape. Press 1 for volcano igneous rocks, 2 for river delta sedimentary rocks, 3 for mountain core metamorphic rocks.');
+
+            function onRockKey(e) {
+
+              var zoneIdx = -1;
+
+              if (e.key === '1' || e.key === 'v' || e.key === 'V') zoneIdx = 0;
+
+              else if (e.key === '2' || e.key === 'r' || e.key === 'R') zoneIdx = 1;
+
+              else if (e.key === '3' || e.key === 'm' || e.key === 'M') zoneIdx = 2;
+
+              if (zoneIdx >= 0) {
+
+                e.preventDefault();
+
+                var z = zones[zoneIdx];
+
+                hoverZone = z.id;
+
+                var typeRocks = ROCKS.filter(function (r) { return r.type === z.type; });
+
+                if (typeRocks.length > 0) canvasEl._onSelectRock && canvasEl._onSelectRock(typeRocks[0].id, z.type);
+
+              }
+
+            }
+
+            canvasEl.addEventListener('keydown', onRockKey);
+
+
+
             const ro = new ResizeObserver(function () {
 
               var newW = canvasEl.offsetWidth * dpr;
@@ -879,6 +917,8 @@ const d = labToolData.rocks || {};
               canvasEl.removeEventListener('mousemove', onRockMove);
 
               canvasEl.removeEventListener('click', onRockClick);
+
+              canvasEl.removeEventListener('keydown', onRockKey);
 
               ro.disconnect();
 
@@ -1174,9 +1214,11 @@ const d = labToolData.rocks || {};
 
               React.createElement("div", { className: "flex gap-1 ml-auto" },
 
-                ['landscape', 'rocks', 'minerals', 'quiz'].map(function (m) {
+                ['landscape', 'rocks', 'minerals', 'mystery', 'quiz'].map(function (m) {
 
-                  return React.createElement("button", { "aria-label": "Change mode",
+                  const modeLabel = m === 'landscape' ? 'Landscape' : m === 'rocks' ? 'Rocks' : m === 'minerals' ? 'Minerals' : m === 'mystery' ? 'Mystery Rock' : 'Quiz';
+
+                  return React.createElement("button", { "aria-label": "Switch to " + modeLabel + " mode",
 
                     key: m, onClick: function () {
 
@@ -1186,13 +1228,13 @@ const d = labToolData.rocks || {};
 
                       else { upd("quizMode", false); }
 
-                      if (typeof canvasNarrate === 'function') { canvasNarrate('rocks', 'mode_switch', { first: 'Switched to ' + (m === 'landscape' ? 'Landscape' : m === 'rocks' ? 'Rocks' : m === 'minerals' ? 'Minerals' : 'Quiz') + ' mode.', repeat: (m === 'landscape' ? 'Landscape' : m === 'rocks' ? 'Rocks' : m === 'minerals' ? 'Minerals' : 'Quiz') + ' mode.', terse: m + '.' }, { debounce: 500 }); }
+                      if (typeof canvasNarrate === 'function') { canvasNarrate('rocks', 'mode_switch', { first: 'Switched to ' + modeLabel + ' mode.', repeat: modeLabel + ' mode.', terse: m + '.' }, { debounce: 500 }); }
 
                     }, className: "px-3 py-1 rounded-lg text-xs font-bold capitalize " + (mode === m ? 'bg-amber-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
 
                   },
 
-                    m === 'landscape' ? '🗺️ Landscape' : m === 'rocks' ? '🪨 Rocks' : m === 'minerals' ? '💎 Minerals' : '🧠 Quiz');
+                    m === 'landscape' ? '🗺️ Landscape' : m === 'rocks' ? '🪨 Rocks' : m === 'minerals' ? '💎 Minerals' : m === 'mystery' ? '🔍 Mystery' : '🧠 Quiz');
 
                 })
 
@@ -1206,7 +1248,7 @@ const d = labToolData.rocks || {};
 
             mode === 'landscape' && React.createElement("div", null,
 
-              React.createElement("p", { className: "text-xs text-slate-600 mb-2 italic" }, "Click landscape zones to explore rock types. Hover to see labels."),
+              React.createElement("p", { className: "text-xs text-slate-600 mb-2 italic" }, "Click landscape zones to explore rock types. Hover to see labels. Keyboard: Tab to canvas, then 1=Volcano, 2=River, 3=Mountain."),
 
               React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-amber-200", style: { height: '520px' } },
 
@@ -2093,9 +2135,325 @@ const d = labToolData.rocks || {};
 
 
 
+            // ── Mystery Rock mode (AI) ──
+
+            mode === 'mystery' && (function () {
+
+              const myst = d.mystery || {};
+
+              const mysteryRock = myst.rockId ? ROCKS.find(function (r) { return r.id === myst.rockId; }) : null;
+
+              const clues = Array.isArray(myst.clues) ? myst.clues : [];
+
+              const cluesShown = Math.min(Math.max(myst.cluesShown || 0, 0), clues.length);
+
+
+
+              function startMystery() {
+
+                if (typeof callGemini !== 'function') {
+
+                  upd("mystery", { error: 'AI tutor is not available. Check back when online.' });
+
+                  return;
+
+                }
+
+                const pick = ROCKS[Math.floor(Math.random() * ROCKS.length)];
+
+                const typeLabels = { igneous: 'igneous', sedimentary: 'sedimentary', metamorphic: 'metamorphic' };
+
+                upd("mystery", { rockId: pick.id, clues: [], cluesShown: 0, revealed: false, solved: false, loading: true, lastGuess: null, error: null });
+
+                const prompt = 'You are giving rock identification clues to a ' + (gradeLevel || '5th Grade') + ' student. The mystery rock is ' + pick.label + ' (' + typeLabels[pick.type] + '). '
+
+                  + 'Produce exactly 3 clues, ordered from subtle to obvious. Do NOT use the rock\'s name, color name, or any word from "' + pick.label + '" in the clues. '
+
+                  + 'Clue 1: vague category hint (formation or environment). '
+
+                  + 'Clue 2: a distinctive property (hardness, texture, or famous use). '
+
+                  + 'Clue 3: a defining giveaway. '
+
+                  + 'Return ONLY the three clues separated by "|||", nothing else. No numbering, no labels.';
+
+                callGemini(prompt, false, false, 0.6).then(function (resp) {
+
+                  const parts = String(resp || '').split('|||').map(function (s) { return s.replace(/^\s*[0-9]+\.?\s*/, '').trim(); }).filter(Boolean);
+
+                  const safeClues = parts.length >= 1 ? parts.slice(0, 3) : ['The AI returned no clues. Try again.'];
+
+                  upd("mystery", { rockId: pick.id, clues: safeClues, cluesShown: 1, revealed: false, solved: false, loading: false, lastGuess: null, error: null });
+
+                  if (typeof announceToSR === 'function') announceToSR('Mystery rock ready. First clue revealed.');
+
+                }).catch(function () {
+
+                  upd("mystery", { rockId: pick.id, clues: [], cluesShown: 0, revealed: false, solved: false, loading: false, lastGuess: null, error: 'Could not reach AI tutor. Try again in a moment.' });
+
+                });
+
+              }
+
+
+
+              function revealNextClue() {
+
+                if (cluesShown < clues.length) {
+
+                  upd("mystery", Object.assign({}, myst, { cluesShown: cluesShown + 1 }));
+
+                  sfxRockClick();
+
+                  if (typeof announceToSR === 'function') announceToSR('Clue ' + (cluesShown + 1) + ' of ' + clues.length + ': ' + clues[cluesShown]);
+
+                }
+
+              }
+
+
+
+              function guess(rockId) {
+
+                if (!mysteryRock || myst.solved || myst.revealed) return;
+
+                const correct = rockId === myst.rockId;
+
+                if (correct) {
+
+                  sfxRockCorrect();
+
+                  upd("mystery", Object.assign({}, myst, { solved: true, lastGuess: rockId }));
+
+                  if (typeof awardStemXP === 'function') awardStemXP(15, 'Mystery rock solved!');
+
+                  if (typeof stemCelebrate === 'function') stemCelebrate();
+
+                  if (typeof announceToSR === 'function') announceToSR('Correct! The mystery rock was ' + mysteryRock.label + '.');
+
+                } else {
+
+                  rockTone(200, 0.1, 'sawtooth', 0.05);
+
+                  upd("mystery", Object.assign({}, myst, { lastGuess: rockId, cluesShown: Math.min(cluesShown + 1, clues.length) }));
+
+                  if (typeof announceToSR === 'function') announceToSR('Not quite. Next clue revealed.');
+
+                }
+
+              }
+
+
+
+              function giveUp() {
+
+                if (!mysteryRock) return;
+
+                upd("mystery", Object.assign({}, myst, { revealed: true, cluesShown: clues.length }));
+
+                if (typeof announceToSR === 'function') announceToSR('Answer revealed: ' + mysteryRock.label + '.');
+
+              }
+
+
+
+              return React.createElement("div", { className: "mt-2", role: "region", "aria-label": "Mystery Rock challenge" },
+
+                React.createElement("div", { className: "bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl border-2 border-amber-300 p-4 mb-3" },
+
+                  React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+
+                    React.createElement("span", { className: "text-2xl" }, "🔍"),
+
+                    React.createElement("h4", { className: "font-bold text-sm text-amber-900" }, "Mystery Rock Challenge"),
+
+                    React.createElement("span", { className: "ml-auto text-[11px] text-amber-700 font-bold" }, "Reading level: " + (gradeLevel || '5th Grade'))
+
+                  ),
+
+                  React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed" },
+
+                    "The AI tutor picks a rock and gives you 3 clues. Read each clue, then click a rock from the grid below to guess. Wrong guesses reveal the next clue. Earn 15 XP for a correct ID.")
+
+                ),
+
+                !myst.rockId && !myst.loading && React.createElement("div", { className: "flex flex-col items-center gap-2 p-6 bg-white rounded-xl border-2 border-dashed border-amber-300" },
+
+                  React.createElement("p", { className: "text-xs text-slate-600" }, "Ready to test your rock knowledge?"),
+
+                  React.createElement("button", {
+
+                    onClick: startMystery,
+
+                    "aria-label": "Start Mystery Rock challenge",
+
+                    className: "px-5 py-2 bg-gradient-to-r from-amber-600 to-orange-600 text-white font-bold text-sm rounded-full shadow-md hover:shadow-lg hover:from-amber-700 hover:to-orange-700"
+
+                  }, "🎲 Start Challenge"),
+
+                  myst.error && React.createElement("p", { className: "text-[11px] text-red-600 mt-1", role: "alert" }, myst.error)
+
+                ),
+
+                myst.loading && React.createElement("div", { className: "p-4 bg-white rounded-xl border border-amber-200 text-center text-xs text-slate-600", role: "status", "aria-live": "polite" },
+
+                  "🧠 AI tutor is thinking up clues..."),
+
+                myst.rockId && !myst.loading && React.createElement("div", null,
+
+                  React.createElement("div", { className: "bg-white rounded-xl border-2 border-amber-200 p-3 mb-3" },
+
+                    React.createElement("p", { className: "text-[11px] font-bold text-amber-700 mb-2" }, "Clues (" + cluesShown + "/" + clues.length + ")"),
+
+                    clues.slice(0, cluesShown).map(function (c, i) {
+
+                      return React.createElement("div", { key: i, className: "flex gap-2 mb-1.5 text-xs text-slate-700 leading-relaxed" },
+
+                        React.createElement("span", { className: "font-bold text-amber-700 shrink-0" }, "Clue " + (i + 1) + ":"),
+
+                        React.createElement("span", null, c));
+
+                    }),
+
+                    cluesShown < clues.length && !myst.solved && !myst.revealed && React.createElement("button", {
+
+                      onClick: revealNextClue,
+
+                      "aria-label": "Reveal next clue",
+
+                      className: "mt-1 px-3 py-1 text-[11px] font-bold bg-amber-100 text-amber-800 rounded-lg hover:bg-amber-200"
+
+                    }, "+ Reveal next clue")
+
+                  ),
+
+                  (myst.solved || myst.revealed) && mysteryRock && React.createElement("div", {
+
+                    className: "p-3 rounded-xl border-2 mb-3 " + (myst.solved ? "bg-green-50 border-green-300" : "bg-slate-50 border-slate-300"),
+
+                    role: "alert"
+
+                  },
+
+                    React.createElement("p", { className: "text-sm font-bold " + (myst.solved ? "text-green-800" : "text-slate-800") },
+
+                      (myst.solved ? "✅ Correct! It was " : "📖 The answer was ") + ROCK_TYPES[mysteryRock.type].icon + " " + mysteryRock.label),
+
+                    React.createElement("p", { className: "text-[11px] text-slate-600 mt-1 leading-relaxed" }, mysteryRock.desc),
+
+                    React.createElement("button", {
+
+                      onClick: startMystery,
+
+                      "aria-label": "Start a new Mystery Rock challenge",
+
+                      className: "mt-2 px-3 py-1 text-[11px] font-bold bg-amber-700 text-white rounded-lg hover:bg-amber-800"
+
+                    }, "🎲 New Mystery")
+
+                  ),
+
+                  !myst.solved && !myst.revealed && React.createElement("div", null,
+
+                    React.createElement("p", { className: "text-[11px] font-bold text-slate-600 mb-1.5" }, "Click the rock you think matches the clues:"),
+
+                    React.createElement("div", { className: "grid grid-cols-4 gap-2 mb-2", role: "group", "aria-label": "Rock guess options" },
+
+                      ROCKS.map(function (rock) {
+
+                        const rt = ROCK_TYPES[rock.type];
+
+                        const wasWrong = myst.lastGuess === rock.id && myst.lastGuess !== myst.rockId;
+
+                        return React.createElement("button", {
+
+                          key: rock.id,
+
+                          onClick: function () { guess(rock.id); },
+
+                          "aria-label": "Guess " + rock.label,
+
+                          className: "p-2 rounded-lg text-[11px] font-bold border-2 transition-all hover:scale-105 text-center " +
+
+                            (wasWrong ? "bg-red-50 border-red-300 text-red-700" : "bg-slate-50 border-slate-200 text-slate-700 hover:border-amber-400")
+
+                        },
+
+                          React.createElement("div", { className: "text-lg mb-0.5" }, rt.icon),
+
+                          rock.label);
+
+                      })
+
+                    ),
+
+                    React.createElement("button", {
+
+                      onClick: giveUp,
+
+                      "aria-label": "Give up and reveal the answer",
+
+                      className: "px-3 py-1 text-[11px] font-bold text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200"
+
+                    }, "🤷 Give up · show answer")
+
+                  )
+
+                )
+
+              );
+
+            })(),
+
+
+
             // ── Quiz mode ──
 
-            d.quizMode && quizQ && React.createElement("div", { className: "mt-3 bg-amber-50 rounded-xl border-2 border-amber-200 p-4 animate-in fade-in" },
+            d.quizMode && quizQ && React.createElement("div", {
+
+              className: "mt-3 bg-amber-50 rounded-xl border-2 border-amber-200 p-4 animate-in fade-in outline-none focus:ring-2 focus:ring-amber-400",
+
+              role: "region", "aria-label": "Rock identification quiz. Press 1 through 4 to answer, or N for next.",
+
+              tabIndex: 0,
+
+              ref: function (el) { if (el && !el._rkQuizFocused) { el._rkQuizFocused = true; try { el.focus({ preventScroll: true }); } catch (e) { el.focus(); } } },
+
+              onKeyDown: function (e) {
+
+                const k = e.key;
+
+                if (k >= '1' && k <= '9') {
+
+                  const idx = parseInt(k, 10) - 1;
+
+                  if (!d.quizFeedback && quizQ.options[idx] !== undefined) {
+
+                    e.preventDefault();
+
+                    const opt = quizQ.options[idx];
+
+                    const correct = opt === quizQ.a;
+
+                    upd("quizFeedback", { correct: correct, msg: correct ? "\u2705 Correct! +10 XP" : "\u274C Not quite. The answer is: " + quizQ.a });
+
+                    if (correct) upd("quizScore", (d.quizScore || 0) + 1);
+
+                  }
+
+                } else if ((k === 'n' || k === 'N' || k === 'Enter') && d.quizFeedback) {
+
+                  e.preventDefault();
+
+                  const nextIdx = ((d.quizIdx || 0) + 1) % QUIZ_BANK.length;
+
+                  upd("quizIdx", nextIdx); upd("quizFeedback", null);
+
+                }
+
+              }
+
+            },
 
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
 
@@ -2109,11 +2467,15 @@ const d = labToolData.rocks || {};
 
               React.createElement("div", { className: "grid grid-cols-2 gap-2" },
 
-                quizQ.options.map(function (opt) {
+                quizQ.options.map(function (opt, i) {
 
-                  return React.createElement("button", { "aria-label": "Select answer: " + opt,
+                  const shortcut = (i + 1).toString();
+
+                  return React.createElement("button", { "aria-label": "Answer " + shortcut + ": " + opt,
 
                     key: opt, onClick: function () {
+
+                      if (d.quizFeedback) return;
 
                       const correct = opt === quizQ.a;
 
@@ -2121,11 +2483,15 @@ const d = labToolData.rocks || {};
 
                       if (correct) upd("quizScore", (d.quizScore || 0) + 1);
 
-                    }, className: "px-3 py-2 text-xs font-bold rounded-lg border-2 transition-all hover:scale-[1.02] " +
+                    }, className: "px-3 py-2 text-xs font-bold rounded-lg border-2 transition-all hover:scale-[1.02] flex items-center gap-2 " +
 
                       (d.quizFeedback ? (opt === quizQ.a ? "border-green-400 bg-green-50 text-green-700" : "border-slate-200 bg-white text-slate-600") : "border-amber-200 bg-white text-slate-700 hover:border-amber-400")
 
-                  }, opt);
+                  },
+
+                    React.createElement("span", { className: "inline-flex items-center justify-center w-5 h-5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 shrink-0", "aria-hidden": "true" }, shortcut),
+
+                    React.createElement("span", null, opt));
 
                 })
 
@@ -2135,7 +2501,7 @@ const d = labToolData.rocks || {};
 
                 d.quizFeedback.msg,
 
-                React.createElement("button", { "aria-label": "Next",
+                React.createElement("button", { "aria-label": "Next question (shortcut: N)",
 
                   onClick: function () {
 
@@ -2145,7 +2511,7 @@ const d = labToolData.rocks || {};
 
                   }, className: "ml-3 px-2 py-0.5 bg-amber-700 text-white rounded text-xs"
 
-                }, "Next \u2192")
+                }, "Next \u2192 (N)")
 
               )
 

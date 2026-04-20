@@ -71,6 +71,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       var awardStemXP = ctx.awardXP;
       var announceToSR = ctx.announceToSR;
       var isDark = ctx.isDark;
+      var callGemini = ctx.callGemini;
+      var gradeLevel = ctx.gradeLevel;
 
       // Inject fullscreen CSS rules once per session (idempotent).
       // Without this, inline `height: 500px` sticks even in fullscreen.
@@ -874,14 +876,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           if (awardStemXP) awardStemXP('beehive', 5 + Math.round(reduction / 5), 'Treated varroa: ' + treatment.label);
         }
 
+        // ── Beekeeper-as-character animation trigger ──
+        // Writes { type, caption, emoji, startedAt, duration } to d.bkAnim; canvas draw reads it
+        // to override the random cameo with a scripted walk-to-hive action for ~5s.
+        // IMPORTANT: duration here must match the auto-clear timeout below.
+        function triggerBeekeeperAction(type, caption, emoji) {
+          var duration = 5000;
+          upd('bkAnim', { type: type, caption: caption, emoji: emoji, startedAt: Date.now(), duration: duration });
+          setTimeout(function () { upd('bkAnim', null); }, duration);
+        }
         function treatVarroa() {
           // Open IPM modal instead of applying a single treatment directly
           upd('showTreatModal', true);
+          triggerBeekeeperAction('treat', 'Checking mite load — time to treat.', '🧪');
         }
         function addSuper() {
           updAll({ morale: Math.min(100, morale + 10), wax: wax + 2 });
           playSfx(sfxBeeBuzz); if (addToast) addToast('📦 Added a honey super — more space for the colony!', 'success');
           if (awardStemXP) awardStemXP('beehive', 5, 'Added super');
+          triggerBeekeeperAction('super', 'Adding a super — more room for honey!', '📦');
+        }
+        function smokeHive() {
+          updAll({ morale: Math.min(100, morale + 2) });
+          playSfx(sfxBeeBuzz); if (addToast) addToast('💨 Smoked the hive — bees will gorge on honey and stay calm.', 'info');
+          if (awardStemXP) awardStemXP('beehive', 2, 'Smoked hive');
+          triggerBeekeeperAction('smoke', 'Smoking the hive to calm the bees.', '💨');
+        }
+        function requeenColony() {
+          // Requeen: replaces old queen, brief morale dip (bees accept new queen over ~2 days),
+          // then boosts queenHealth back to 100. Connects to Castes tab teaching.
+          updAll({ queenHealth: 100, morale: Math.max(40, morale - 5) });
+          playSfx(sfxSuccess); if (addToast) addToast('👑 Installed a new queen — colony will accept her in 2-3 days.', 'success');
+          if (awardStemXP) awardStemXP('beehive', 8, 'Requeened colony');
+          triggerBeekeeperAction('requeen', 'Installing a new queen.', '👑');
         }
         // Identify the honey varietal based on season + garden pollinators
         function identifyVarietal() {
@@ -912,11 +939,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           updAll({ honey: 15, score: score + Math.round(harvested * 20), totalHarvested: (d.totalHarvested || 0) + harvested, varietals: newVarietals });
           playSfx(sfxBeeCollect); if (addToast) addToast(varietal.emoji + ' Harvested ' + harvested + ' lbs of ' + varietal.name + ' honey! (+' + Math.round(harvested * 20) + ' pts)', 'success');
           if (awardStemXP) awardStemXP('beehive', 15, 'Harvested ' + varietal.name);
+          triggerBeekeeperAction('harvest', 'Harvesting ' + varietal.name + ' honey — ' + harvested + ' lbs!', varietal.emoji || '🍯');
         }
         function feedBees() {
           updAll({ honey: honey + 5, morale: Math.min(100, morale + 5) });
           playSfx(sfxSuccess); if (addToast) addToast('🫙 Fed sugar syrup — emergency reserves replenished.', 'success');
           if (awardStemXP) awardStemXP('beehive', 3, 'Fed bees');
+          triggerBeekeeperAction('feed', 'Pouring sugar syrup into the top feeder.', '🫙');
         }
         function dismissEvent() {
           var patch = { activeEvent: null, eventsHandled: (d.eventsHandled || 0) + 1 };
@@ -1438,7 +1467,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
         // Store live colony state in a ref so the animation loop always reads fresh values
         var _liveState = React.useRef({});
-        _liveState.current = { workers: workers, honey: honey, season: season, habitat: habitat, gardenPollinators: gardenPollinators, gardenBonus: gardenBonus, colonyHealth: colonyHealth, queenHealth: queenHealth, morale: morale, day: day, brood: brood, drones: drones, beeView: beeView };
+        _liveState.current = { workers: workers, honey: honey, season: season, habitat: habitat, gardenPollinators: gardenPollinators, gardenBonus: gardenBonus, colonyHealth: colonyHealth, queenHealth: queenHealth, morale: morale, day: day, brood: brood, drones: drones, beeView: beeView, bkAnim: d.bkAnim };
 
         React.useEffect(function() {
           console.log('[Beehive DEBUG] beekeeper useEffect fired. viewMode=' + viewMode);
@@ -2240,6 +2269,1269 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             ];
             var eqIdx = Math.floor(t2 / 420) % eqFacts.length;
             c.fillText('💡 ' + eqFacts[eqIdx], W / 2, stripY + 38);
+          }
+
+          // ═══ NATIVE BEES · biodiversity — honeybees are just 1 of ~20,000 species ═══
+          function drawNativeBees() {
+            // Soft meadow-at-dawn background
+            var nbGrad = c.createLinearGradient(0, 0, 0, H);
+            nbGrad.addColorStop(0, '#fde68a'); nbGrad.addColorStop(0.55, '#fef3c7'); nbGrad.addColorStop(1, '#d9f99d');
+            c.fillStyle = nbGrad; c.fillRect(0, 0, W, H);
+
+            // Ground line
+            c.strokeStyle = 'rgba(101,163,13,0.35)'; c.lineWidth = 1;
+            c.beginPath(); c.moveTo(0, H - 60); c.lineTo(W, H - 60); c.stroke();
+
+            // Title
+            c.fillStyle = '#14532d'; c.textAlign = 'center';
+            c.font = 'bold 18px Georgia, serif';
+            c.fillText('🌎 Native Bees · Honeybees are ONE of ~20,000 species', W / 2, 26);
+            c.font = 'italic 11px Georgia, serif'; c.fillStyle = '#15803d';
+            c.fillText('North America alone has ~4,000 native bee species — most are solitary, not social', W / 2, 44);
+
+            // Big fact bar (left) — biodiversity stats
+            var barX = 20, barY = 58, barW = 180, barH = 140;
+            c.fillStyle = 'rgba(20,83,45,0.88)';
+            if (c.roundRect) { c.beginPath(); c.roundRect(barX, barY, barW, barH, 8); c.fill(); }
+            else c.fillRect(barX, barY, barW, barH);
+            c.fillStyle = '#fef3c7'; c.textAlign = 'left';
+            c.font = 'bold 10px "Inter", sans-serif';
+            c.fillText('🌍 GLOBAL BEE DIVERSITY', barX + 10, barY + 18);
+            c.font = '10px "Inter", sans-serif';
+            c.fillStyle = '#fde68a';
+            var facts = [
+              ['~20,000', 'known species worldwide'],
+              ['~4,000', 'native to North America'],
+              ['~270', 'native to UK'],
+              ['~70%', 'nest in the ground, not hives'],
+              ['~90%', 'are solitary (no colony)'],
+              ['Only 1', 'makes the honey you eat: Apis mellifera']
+            ];
+            facts.forEach(function(f, i) {
+              var fy = barY + 36 + i * 17;
+              c.fillStyle = '#fbbf24'; c.font = 'bold 11px "Inter", sans-serif';
+              c.fillText(f[0], barX + 10, fy);
+              c.fillStyle = '#fef3c7'; c.font = '9.5px "Inter", sans-serif';
+              c.fillText(f[1], barX + 56, fy);
+            });
+
+            // ═══ Bee species showcase (right) ═══
+            // Each bee drawn to rough relative scale. Position in a 3×2 grid.
+            var species = [
+              { name: 'Honeybee', sci: 'Apis mellifera', len: 14, bodyCol: '#eab308', stripes: 4, fuzzy: 0.3,
+                habit: 'Social · hives of 40k · introduced from Europe 1622',
+                pollinates: 'Alfalfa, apples, almonds, clover' },
+              { name: 'Bumblebee', sci: 'Bombus spp.', len: 22, bodyCol: '#1f2937', stripes: 2, fuzzy: 0.9,
+                habit: 'Social · small colonies · buzz-pollinates tomatoes',
+                pollinates: 'Tomatoes, blueberries, squash' },
+              { name: 'Mason Bee', sci: 'Osmia spp.', len: 12, bodyCol: '#1e40af', stripes: 0, fuzzy: 0.5, metallic: '#60a5fa',
+                habit: 'Solitary · nests in hollow stems · females work alone',
+                pollinates: 'Apples (120× more efficient than honeybees)' },
+              { name: 'Leafcutter', sci: 'Megachile spp.', len: 13, bodyCol: '#374151', stripes: 3, fuzzy: 0.4, bellyPollen: true,
+                habit: 'Solitary · cuts circles from leaves for nest cells',
+                pollinates: 'Alfalfa (commercially crucial)' },
+              { name: 'Squash Bee', sci: 'Peponapis pruinosa', len: 14, bodyCol: '#b45309', stripes: 3, fuzzy: 0.6,
+                habit: 'Solitary · flies at dawn · sleeps inside flowers',
+                pollinates: 'ONLY squash, pumpkin, zucchini, gourds' },
+              { name: 'Sweat Bee', sci: 'Halictidae', len: 8, bodyCol: '#16a34a', stripes: 0, fuzzy: 0.2, metallic: '#4ade80',
+                habit: 'Semi-social · attracted to sweat for salt',
+                pollinates: 'Wildflowers, strawberries, sunflowers' }
+            ];
+
+            var gridX0 = 220, gridY0 = 68;
+            var cellW = (W - gridX0 - 20) / 3;
+            var cellH = 150;
+            species.forEach(function(s, i) {
+              var col = i % 3, row = Math.floor(i / 3);
+              var cx = gridX0 + col * cellW + cellW / 2;
+              var cy = gridY0 + row * cellH + cellH / 2;
+
+              // Cell background
+              c.fillStyle = 'rgba(255,255,255,0.72)';
+              if (c.roundRect) { c.beginPath(); c.roundRect(gridX0 + col * cellW + 4, gridY0 + row * cellH + 4, cellW - 8, cellH - 8, 10); c.fill(); }
+              else c.fillRect(gridX0 + col * cellW + 4, gridY0 + row * cellH + 4, cellW - 8, cellH - 8);
+              c.strokeStyle = 'rgba(21,128,61,0.4)'; c.lineWidth = 1.5;
+              if (c.roundRect) { c.beginPath(); c.roundRect(gridX0 + col * cellW + 4, gridY0 + row * cellH + 4, cellW - 8, cellH - 8, 10); c.stroke(); }
+
+              // Draw the bee centered-ish in upper half of cell (relative scale, px/mm ~ 2.8)
+              var bx = cx, by = cy - 28;
+              var L = s.len * 2.3; // pixel length
+              // Wings shimmer
+              c.save(); c.translate(bx, by);
+              var wingAlpha = 0.35 + Math.sin(t2 / 14 + i) * 0.08;
+              c.fillStyle = 'rgba(255,255,255,' + wingAlpha + ')';
+              c.beginPath(); c.ellipse(-L * 0.1, -L * 0.28, L * 0.55, L * 0.22, -0.3, 0, Math.PI * 2); c.fill();
+              c.beginPath(); c.ellipse(L * 0.1, -L * 0.28, L * 0.55, L * 0.22, 0.3, 0, Math.PI * 2); c.fill();
+              c.strokeStyle = 'rgba(100,116,139,0.4)'; c.lineWidth = 0.7;
+              c.beginPath(); c.ellipse(-L * 0.1, -L * 0.28, L * 0.55, L * 0.22, -0.3, 0, Math.PI * 2); c.stroke();
+              c.beginPath(); c.ellipse(L * 0.1, -L * 0.28, L * 0.55, L * 0.22, 0.3, 0, Math.PI * 2); c.stroke();
+
+              // Body (metallic or matte base)
+              if (s.metallic) {
+                var metGrad = c.createLinearGradient(0, -L * 0.35, 0, L * 0.35);
+                metGrad.addColorStop(0, s.metallic); metGrad.addColorStop(1, s.bodyCol);
+                c.fillStyle = metGrad;
+              } else {
+                c.fillStyle = s.bodyCol;
+              }
+              c.beginPath(); c.ellipse(0, 0, L * 0.5, L * 0.32, 0, 0, Math.PI * 2); c.fill();
+              c.strokeStyle = '#1f2937'; c.lineWidth = 0.8; c.stroke();
+
+              // Stripes (only for non-metallic)
+              if (s.stripes > 0 && !s.metallic) {
+                c.fillStyle = s.bodyCol === '#eab308' ? '#1f2937' : '#fbbf24';
+                for (var st = 0; st < s.stripes; st++) {
+                  var sxp = -L * 0.28 + st * (L * 0.18);
+                  c.fillRect(sxp, -L * 0.25, L * 0.06, L * 0.5);
+                }
+              }
+
+              // Fuzzy overlay (thorax halo)
+              if (s.fuzzy > 0.3) {
+                c.fillStyle = 'rgba(251,191,36,' + (s.fuzzy * 0.5) + ')';
+                c.beginPath(); c.ellipse(-L * 0.05, -L * 0.08, L * 0.22, L * 0.2, 0, 0, Math.PI * 2); c.fill();
+              }
+
+              // Pollen belly (leafcutters carry pollen on abdomen)
+              if (s.bellyPollen) {
+                c.fillStyle = '#fde047';
+                c.beginPath(); c.arc(L * 0.28, L * 0.15, L * 0.09, 0, Math.PI * 2); c.fill();
+              }
+
+              // Head + eye
+              c.fillStyle = '#111827';
+              c.beginPath(); c.arc(-L * 0.52, 0, L * 0.13, 0, Math.PI * 2); c.fill();
+              c.fillStyle = '#9ca3af';
+              c.beginPath(); c.arc(-L * 0.54, -L * 0.04, L * 0.04, 0, Math.PI * 2); c.fill();
+
+              // Antennae
+              c.strokeStyle = '#111827'; c.lineWidth = 0.8;
+              c.beginPath(); c.moveTo(-L * 0.58, -L * 0.1); c.quadraticCurveTo(-L * 0.75, -L * 0.2, -L * 0.82, -L * 0.1); c.stroke();
+              c.beginPath(); c.moveTo(-L * 0.58, L * 0.1); c.quadraticCurveTo(-L * 0.75, L * 0.2, -L * 0.82, L * 0.1); c.stroke();
+
+              c.restore();
+
+              // Size ruler under the bee
+              var rulerY = cy + 2;
+              c.strokeStyle = 'rgba(21,128,61,0.5)'; c.lineWidth = 1;
+              c.beginPath(); c.moveTo(bx - L * 0.5, rulerY); c.lineTo(bx + L * 0.5, rulerY); c.stroke();
+              c.beginPath(); c.moveTo(bx - L * 0.5, rulerY - 3); c.lineTo(bx - L * 0.5, rulerY + 3); c.stroke();
+              c.beginPath(); c.moveTo(bx + L * 0.5, rulerY - 3); c.lineTo(bx + L * 0.5, rulerY + 3); c.stroke();
+              c.fillStyle = '#14532d'; c.font = 'bold 8.5px "Inter", sans-serif'; c.textAlign = 'center';
+              c.fillText(s.len + ' mm', bx, rulerY + 11);
+
+              // Name + scientific
+              c.fillStyle = '#14532d'; c.textAlign = 'center';
+              c.font = 'bold 11px "Inter", sans-serif';
+              c.fillText(s.name, cx, gridY0 + row * cellH + cellH - 44);
+              c.font = 'italic 9px "Inter", sans-serif'; c.fillStyle = '#15803d';
+              c.fillText(s.sci, cx, gridY0 + row * cellH + cellH - 32);
+              // Habit + pollinates (wrap if too long)
+              c.font = '8.5px "Inter", sans-serif'; c.fillStyle = '#374151';
+              c.fillText(s.habit, cx, gridY0 + row * cellH + cellH - 20);
+              c.fillStyle = '#b45309'; c.font = 'bold 8.5px "Inter", sans-serif';
+              c.fillText('🌸 ' + s.pollinates, cx, gridY0 + row * cellH + cellH - 8);
+            });
+
+            // Bottom fact ticker
+            var tickY = H - 28;
+            c.fillStyle = 'rgba(20,83,45,0.9)'; c.fillRect(0, tickY - 10, W, 38);
+            c.fillStyle = '#fde68a'; c.textAlign = 'center';
+            c.font = 'bold 11px Georgia, serif';
+            var nbFacts = [
+              'Native bees pollinate ~80% of US crops — honeybees get the headlines, but natives do most of the work.',
+              'Squash bees evolved with squash — males sleep inside the closed flowers at night.',
+              'Mason bees pollinate apples 120× more efficiently than honeybees do.',
+              'A bumblebee queen hibernates alone all winter; she starts a new colony from scratch each spring.',
+              'Many native bees are solitary — no honey, no hive, no queen. Just one female raising young.',
+              'The Franklin\'s bumblebee (B. franklini) is likely extinct — last seen 2006 in Oregon.',
+              'Bees evolved from carnivorous wasps ~120 million years ago — coinciding with flowering plants.'
+            ];
+            var nbIdx = Math.floor(t2 / 420) % nbFacts.length;
+            c.fillText('💡 ' + nbFacts[nbIdx], W / 2, tickY + 10);
+          }
+
+          // ═══ BEE COGNITION · bees are smarter than you think ═══
+          function drawBeeCognition() {
+            // Brain-scan purple gradient
+            var cgGrad = c.createLinearGradient(0, 0, 0, H);
+            cgGrad.addColorStop(0, '#1e1b4b'); cgGrad.addColorStop(0.5, '#312e81'); cgGrad.addColorStop(1, '#1e3a8a');
+            c.fillStyle = cgGrad; c.fillRect(0, 0, W, H);
+
+            // Neural-network speckle overlay (subtle)
+            for (var nn = 0; nn < 40; nn++) {
+              var nnx = (Math.sin(t2 / 60 + nn * 0.7) * 0.5 + 0.5) * W;
+              var nny = (Math.cos(t2 / 80 + nn * 1.1) * 0.5 + 0.5) * H;
+              c.fillStyle = 'rgba(167,139,250,' + (0.1 + Math.sin(t2 / 30 + nn) * 0.08) + ')';
+              c.beginPath(); c.arc(nnx, nny, 1.5, 0, Math.PI * 2); c.fill();
+            }
+
+            // Title
+            c.fillStyle = '#fef3c7'; c.textAlign = 'center';
+            c.font = 'bold 18px Georgia, serif';
+            c.fillText('🧠 Bee Cognition · 960,000 neurons, surprising intelligence', W / 2, 26);
+            c.font = 'italic 11px Georgia, serif'; c.fillStyle = '#c4b5fd';
+            c.fillText('A honeybee brain has fewer neurons than a grain of rice has cells — yet does extraordinary things', W / 2, 44);
+
+            // ═══ Central: bee brain diagram (schematic) ═══
+            var brX = W / 2, brY = H * 0.42;
+            var brScale = Math.min(W, H) * 0.11;
+
+            // Mushroom bodies — the seat of learning/memory in insects
+            var pulse = 0.9 + Math.sin(t2 / 18) * 0.1;
+            c.save(); c.translate(brX, brY);
+
+            // Main brain outline (rough bean shape)
+            var brainGrad = c.createRadialGradient(0, 0, brScale * 0.3, 0, 0, brScale * 1.5);
+            brainGrad.addColorStop(0, '#fbcfe8'); brainGrad.addColorStop(0.6, '#ec4899'); brainGrad.addColorStop(1, '#831843');
+            c.fillStyle = brainGrad;
+            c.beginPath();
+            c.ellipse(0, 0, brScale * 1.4, brScale * 1.05, 0, 0, Math.PI * 2);
+            c.fill();
+            c.strokeStyle = 'rgba(253,230,138,0.7)'; c.lineWidth = 1.5;
+            c.stroke();
+
+            // Mushroom bodies (two lobed structures — the "cognitive engine")
+            c.fillStyle = '#fef3c7';
+            c.beginPath(); c.arc(-brScale * 0.55, -brScale * 0.15, brScale * 0.38 * pulse, 0, Math.PI * 2); c.fill();
+            c.beginPath(); c.arc(brScale * 0.55, -brScale * 0.15, brScale * 0.38 * pulse, 0, Math.PI * 2); c.fill();
+
+            // Optic lobes (left/right extremes — vision processing)
+            c.fillStyle = 'rgba(250,204,21,0.9)';
+            c.beginPath(); c.arc(-brScale * 1.15, 0.05 * brScale, brScale * 0.32, 0, Math.PI * 2); c.fill();
+            c.beginPath(); c.arc(brScale * 1.15, 0.05 * brScale, brScale * 0.32, 0, Math.PI * 2); c.fill();
+
+            // Antennal lobes (smell/pheromone processing)
+            c.fillStyle = 'rgba(56,189,248,0.85)';
+            c.beginPath(); c.arc(-brScale * 0.25, brScale * 0.5, brScale * 0.22, 0, Math.PI * 2); c.fill();
+            c.beginPath(); c.arc(brScale * 0.25, brScale * 0.5, brScale * 0.22, 0, Math.PI * 2); c.fill();
+
+            // Label the parts with leader lines
+            c.strokeStyle = 'rgba(253,230,138,0.6)'; c.lineWidth = 1;
+            c.fillStyle = '#fde68a'; c.font = 'bold 10px "Inter", sans-serif'; c.textAlign = 'left';
+            // Mushroom body label
+            c.beginPath(); c.moveTo(-brScale * 0.55, -brScale * 0.35); c.lineTo(-brScale * 2.0, -brScale * 1.3); c.stroke();
+            c.textAlign = 'right';
+            c.fillText('Mushroom Body', -brScale * 2.1, -brScale * 1.35);
+            c.font = '9px "Inter", sans-serif'; c.fillStyle = '#e9d5ff';
+            c.fillText('learning · memory · decisions', -brScale * 2.1, -brScale * 1.20);
+            // Optic lobe
+            c.font = 'bold 10px "Inter", sans-serif'; c.fillStyle = '#fde68a';
+            c.beginPath(); c.moveTo(brScale * 1.4, 0.05 * brScale); c.lineTo(brScale * 2.1, -brScale * 0.55); c.stroke();
+            c.textAlign = 'left';
+            c.fillText('Optic Lobe', brScale * 2.2, -brScale * 0.60);
+            c.font = '9px "Inter", sans-serif'; c.fillStyle = '#fde047';
+            c.fillText('UV + color vision', brScale * 2.2, -brScale * 0.45);
+            // Antennal lobe
+            c.font = 'bold 10px "Inter", sans-serif'; c.fillStyle = '#fde68a';
+            c.beginPath(); c.moveTo(0, brScale * 0.72); c.lineTo(brScale * 1.5, brScale * 1.35); c.stroke();
+            c.textAlign = 'left';
+            c.fillText('Antennal Lobe', brScale * 1.6, brScale * 1.40);
+            c.font = '9px "Inter", sans-serif'; c.fillStyle = '#7dd3fc';
+            c.fillText('smell · pheromones', brScale * 1.6, brScale * 1.55);
+
+            c.restore();
+
+            // Neuron count callout below brain
+            c.fillStyle = '#fef3c7'; c.textAlign = 'center';
+            c.font = 'bold 11px "Inter", sans-serif';
+            c.fillText('960,000 neurons · 1 mm³', brX, brY + brScale * 1.6);
+            c.font = '9.5px "Inter", sans-serif'; c.fillStyle = '#c4b5fd';
+            c.fillText('(humans: 86 billion · mouse: 71 million)', brX, brY + brScale * 1.6 + 14);
+
+            // ═══ LEFT column: cognitive achievements ═══
+            var leftX = 16, leftY = 66;
+            var achievements = [
+              { icon: '🔢', title: 'Counts to 4', body: 'Can tell 2 dots from 3, 3 from 4 — trained honeybees out-perform some birds' },
+              { icon: '0️⃣', title: 'Understands ZERO', body: 'Bees grasp "none" as a quantity — a concept humans don\'t acquire until age 4' },
+              { icon: '👤', title: 'Recognizes faces', body: 'Trained to discriminate human faces like dogs or sheep; uses same config cues' },
+              { icon: '🧩', title: 'Solves puzzles', body: 'Pulls strings, rolls balls to get sugar — teaches other bees by demonstration' }
+            ];
+            achievements.forEach(function(a, i) {
+              var ay = leftY + i * 82;
+              c.fillStyle = 'rgba(88,28,135,0.7)';
+              if (c.roundRect) { c.beginPath(); c.roundRect(leftX, ay, 170, 72, 8); c.fill(); }
+              else c.fillRect(leftX, ay, 170, 72);
+              c.strokeStyle = 'rgba(196,181,253,0.5)'; c.lineWidth = 1;
+              if (c.roundRect) { c.beginPath(); c.roundRect(leftX, ay, 170, 72, 8); c.stroke(); }
+              c.fillStyle = '#fde68a'; c.textAlign = 'left';
+              c.font = 'bold 18px "Inter", sans-serif';
+              c.fillText(a.icon, leftX + 10, ay + 24);
+              c.font = 'bold 11px "Inter", sans-serif';
+              c.fillText(a.title, leftX + 40, ay + 22);
+              c.font = '9px "Inter", sans-serif'; c.fillStyle = '#e9d5ff';
+              // Wrap body text
+              var bodyWords = a.body.split(' ');
+              var line1 = '', line2 = '', widthLimit = 150;
+              for (var wi = 0; wi < bodyWords.length; wi++) {
+                var trial = line1 + (line1 ? ' ' : '') + bodyWords[wi];
+                if (c.measureText(trial).width < widthLimit) line1 = trial;
+                else { line2 = bodyWords.slice(wi).join(' '); break; }
+              }
+              c.fillText(line1, leftX + 10, ay + 42);
+              if (line2) {
+                var line3 = '';
+                var line2Words = line2.split(' ');
+                var finalLine2 = '';
+                for (var wi2 = 0; wi2 < line2Words.length; wi2++) {
+                  var trial2 = finalLine2 + (finalLine2 ? ' ' : '') + line2Words[wi2];
+                  if (c.measureText(trial2).width < widthLimit) finalLine2 = trial2;
+                  else { line3 = line2Words.slice(wi2).join(' '); break; }
+                }
+                c.fillText(finalLine2, leftX + 10, ay + 55);
+                if (line3) c.fillText(line3, leftX + 10, ay + 67);
+              }
+            });
+
+            // ═══ RIGHT column: animated "puzzle" demonstrations ═══
+            var rightX = W - 186, rightY = 66;
+
+            // Puzzle 1: bee pulling a string for sugar
+            c.fillStyle = 'rgba(49,46,129,0.7)';
+            if (c.roundRect) { c.beginPath(); c.roundRect(rightX, rightY, 170, 140, 8); c.fill(); }
+            else c.fillRect(rightX, rightY, 170, 140);
+            c.strokeStyle = 'rgba(196,181,253,0.5)'; c.lineWidth = 1;
+            if (c.roundRect) { c.beginPath(); c.roundRect(rightX, rightY, 170, 140, 8); c.stroke(); }
+            c.fillStyle = '#fde68a'; c.textAlign = 'center';
+            c.font = 'bold 11px "Inter", sans-serif';
+            c.fillText('String-Pulling Test', rightX + 85, rightY + 16);
+            // Draw a sugar disc under a plexi
+            var sugarX = rightX + 85, sugarY = rightY + 100;
+            c.fillStyle = '#fbbf24';
+            c.beginPath(); c.arc(sugarX, sugarY, 10, 0, Math.PI * 2); c.fill();
+            c.fillStyle = 'rgba(255,255,255,0.15)';
+            c.fillRect(rightX + 20, rightY + 80, 130, 40); // plexi cover
+            c.strokeStyle = 'rgba(255,255,255,0.4)'; c.lineWidth = 1;
+            c.strokeRect(rightX + 20, rightY + 80, 130, 40);
+            // String
+            var pullPhase = (t2 / 30) % 4; // 0-4 cycle
+            var pullAmt = Math.min(1, pullPhase / 3); // pull completes over 3 units
+            var stringEnd = rightX + 20 - pullAmt * 50;
+            c.strokeStyle = '#a855f7'; c.lineWidth = 1.5;
+            c.beginPath(); c.moveTo(sugarX, sugarY); c.lineTo(rightX + 25, rightY + 100); c.lineTo(stringEnd, rightY + 100); c.stroke();
+            // Bee pulling
+            var beeX = stringEnd - 8, beeY = rightY + 100;
+            c.fillStyle = '#fbbf24';
+            c.beginPath(); c.ellipse(beeX, beeY, 8, 5, 0, 0, Math.PI * 2); c.fill();
+            c.fillStyle = '#1f2937';
+            c.fillRect(beeX - 2, beeY - 4, 1.5, 8);
+            c.fillRect(beeX + 1, beeY - 4, 1.5, 8);
+            // Tiny wings flutter
+            c.fillStyle = 'rgba(255,255,255,0.5)';
+            c.beginPath(); c.ellipse(beeX, beeY - 3 - Math.sin(t2) * 1, 5, 2, 0, 0, Math.PI * 2); c.fill();
+            // Caption
+            c.fillStyle = '#c4b5fd'; c.textAlign = 'center';
+            c.font = '8.5px "Inter", sans-serif';
+            c.fillText('Naïve bees watch → then learn.', rightX + 85, rightY + 130);
+
+            // Puzzle 2: face recognition
+            rightY += 150;
+            c.fillStyle = 'rgba(49,46,129,0.7)';
+            if (c.roundRect) { c.beginPath(); c.roundRect(rightX, rightY, 170, 140, 8); c.fill(); }
+            else c.fillRect(rightX, rightY, 170, 140);
+            c.strokeStyle = 'rgba(196,181,253,0.5)'; c.lineWidth = 1;
+            if (c.roundRect) { c.beginPath(); c.roundRect(rightX, rightY, 170, 140, 8); c.stroke(); }
+            c.fillStyle = '#fde68a'; c.textAlign = 'center';
+            c.font = 'bold 11px "Inter", sans-serif';
+            c.fillText('Face Discrimination', rightX + 85, rightY + 16);
+            // Two "faces" — rewarded vs unrewarded
+            var faces = [
+              { fx: rightX + 40, fy: rightY + 70, reward: true, ecc: (t2 / 40) % 2 < 1 },
+              { fx: rightX + 130, fy: rightY + 70, reward: false, ecc: (t2 / 40) % 2 >= 1 }
+            ];
+            faces.forEach(function(f) {
+              c.fillStyle = f.reward ? '#86efac' : '#fca5a5';
+              c.beginPath(); c.arc(f.fx, f.fy, 22, 0, Math.PI * 2); c.fill();
+              c.strokeStyle = '#1f2937'; c.lineWidth = 1; c.stroke();
+              // Simple face — eyes + mouth
+              c.fillStyle = '#1f2937';
+              c.beginPath(); c.arc(f.fx - 7, f.fy - 5, 2, 0, Math.PI * 2); c.fill();
+              c.beginPath(); c.arc(f.fx + 7, f.fy - 5, 2, 0, Math.PI * 2); c.fill();
+              c.strokeStyle = '#1f2937'; c.lineWidth = 1.5;
+              c.beginPath();
+              if (f.reward) c.arc(f.fx, f.fy + 4, 6, 0, Math.PI);
+              else c.moveTo(f.fx - 6, f.fy + 8), c.lineTo(f.fx + 6, f.fy + 8);
+              c.stroke();
+              // Reward marker
+              c.fillStyle = f.reward ? '#16a34a' : '#dc2626';
+              c.textAlign = 'center'; c.font = 'bold 10px "Inter", sans-serif';
+              c.fillText(f.reward ? '+🍯' : '—', f.fx, f.fy + 36);
+            });
+            // Bee hovering at the rewarded face
+            var bFx = faces[0].fx, bFy = faces[0].fy - 30 + Math.sin(t2 / 10) * 3;
+            c.fillStyle = '#fbbf24';
+            c.beginPath(); c.ellipse(bFx, bFy, 6, 4, 0, 0, Math.PI * 2); c.fill();
+            c.fillStyle = 'rgba(255,255,255,0.5)';
+            c.beginPath(); c.ellipse(bFx, bFy - 2, 4, 2, 0, 0, Math.PI * 2); c.fill();
+            c.fillStyle = '#c4b5fd'; c.textAlign = 'center';
+            c.font = '8.5px "Inter", sans-serif';
+            c.fillText('Bees learn which face = food (Dyer 2005).', rightX + 85, rightY + 125);
+
+            // ═══ Bottom fact strip ═══
+            var cgStripY = H - 28;
+            c.fillStyle = 'rgba(30,27,75,0.95)'; c.fillRect(0, cgStripY - 10, W, 38);
+            c.fillStyle = '#fde68a'; c.textAlign = 'center';
+            c.font = 'bold 11px Georgia, serif';
+            var cgFacts = [
+              'Bees can be trained to associate colors with sugar in under 5 trials — faster than many vertebrates.',
+              'Lars Chittka showed bees solve novel problems via observation — a form of social learning.',
+              'A bee that visits 100 flowers on a trip must remember which ones it already drained.',
+              'Bees can perform reverse-learning: once rule flips, they switch strategies faster than rats.',
+              'The waggle dance is symbolic communication — one of only a handful of examples in non-humans.',
+              'Howard et al. 2019: bees trained to pick "smaller" understood zero as less-than-one.'
+            ];
+            var cgIdx = Math.floor(t2 / 420) % cgFacts.length;
+            c.fillText('💡 ' + cgFacts[cgIdx], W / 2, cgStripY + 10);
+          }
+
+          // ═══ BEE VISION · UV + trichromatic + flicker fusion ═══
+          function drawBeeVision() {
+            // Split background: left = human sky, right = bee-vision indigo
+            var bvSplit = W * 0.5;
+            var hG = c.createLinearGradient(0, 0, 0, H);
+            hG.addColorStop(0, '#bae6fd'); hG.addColorStop(1, '#93c5fd');
+            c.fillStyle = hG; c.fillRect(0, 0, bvSplit, H);
+            var bG = c.createLinearGradient(0, 0, 0, H);
+            bG.addColorStop(0, '#1e1b4b'); bG.addColorStop(1, '#4c1d95');
+            c.fillStyle = bG; c.fillRect(bvSplit, 0, W - bvSplit, H);
+
+            // Dividing line
+            c.strokeStyle = 'rgba(250,204,21,0.6)'; c.lineWidth = 2;
+            c.beginPath(); c.moveTo(bvSplit, 0); c.lineTo(bvSplit, H); c.stroke();
+
+            // Title
+            c.fillStyle = '#fef3c7'; c.textAlign = 'center';
+            c.font = 'bold 18px Georgia, serif';
+            c.fillText('🌸 Bee Vision · flowers have hidden runway lights', W / 2, 26);
+            c.font = 'italic 11px Georgia, serif';
+            c.fillStyle = '#1e3a8a';
+            c.fillText('What humans see', W * 0.25, 44);
+            c.fillStyle = '#fde047';
+            c.fillText('What bees see (UV-sensitive)', W * 0.75, 44);
+
+            // ═══ Side-by-side flower (black-eyed susan) ═══
+            var flowY = H * 0.35;
+            var flowR = Math.min(W * 0.12, 80);
+
+            // Helper: draw radial petal flower
+            function drawPetals(cx, cy, petalFill, centerFill, showUVGuides) {
+              for (var p = 0; p < 13; p++) {
+                var angle = (p / 13) * Math.PI * 2 - Math.PI / 2;
+                c.save(); c.translate(cx, cy); c.rotate(angle);
+                c.fillStyle = petalFill;
+                c.beginPath();
+                c.ellipse(0, -flowR * 0.55, flowR * 0.18, flowR * 0.5, 0, 0, Math.PI * 2);
+                c.fill();
+                c.strokeStyle = 'rgba(0,0,0,0.15)'; c.lineWidth = 0.5; c.stroke();
+                // UV guides (visible only on bee side) — darken petal tips
+                if (showUVGuides) {
+                  var uvGrad = c.createRadialGradient(0, -flowR * 0.15, 0, 0, -flowR * 0.15, flowR * 0.6);
+                  uvGrad.addColorStop(0, 'rgba(15,23,42,0.95)');
+                  uvGrad.addColorStop(0.55, 'rgba(15,23,42,0.55)');
+                  uvGrad.addColorStop(1, 'rgba(15,23,42,0)');
+                  c.fillStyle = uvGrad;
+                  c.beginPath();
+                  c.ellipse(0, -flowR * 0.45, flowR * 0.16, flowR * 0.45, 0, 0, Math.PI * 2);
+                  c.fill();
+                }
+                c.restore();
+              }
+              // Disc (center)
+              c.fillStyle = centerFill;
+              c.beginPath(); c.arc(cx, cy, flowR * 0.3, 0, Math.PI * 2); c.fill();
+              c.strokeStyle = 'rgba(0,0,0,0.25)'; c.lineWidth = 0.8; c.stroke();
+              // Stippling on disc
+              for (var s = 0; s < 18; s++) {
+                var sa = Math.random() * Math.PI * 2;
+                var sr = Math.random() * flowR * 0.25;
+                c.fillStyle = 'rgba(0,0,0,0.25)';
+                c.beginPath(); c.arc(cx + Math.cos(sa) * sr, cy + Math.sin(sa) * sr, 0.8, 0, Math.PI * 2); c.fill();
+              }
+            }
+
+            // Left: human view — solid yellow flower
+            drawPetals(W * 0.25, flowY, '#fde047', '#78350f', false);
+
+            // Right: bee view — yellow→UV-dark bullseye pattern; center glows ultraviolet
+            drawPetals(W * 0.75, flowY, '#fde047', '#0f172a', true);
+            // UV glow overlay on bee-side center — simulate "bee purple"
+            var uvCenterGrad = c.createRadialGradient(W * 0.75, flowY, 0, W * 0.75, flowY, flowR * 0.4);
+            uvCenterGrad.addColorStop(0, 'rgba(168,85,247,0.95)');
+            uvCenterGrad.addColorStop(1, 'rgba(168,85,247,0)');
+            c.fillStyle = uvCenterGrad;
+            c.beginPath(); c.arc(W * 0.75, flowY, flowR * 0.4, 0, Math.PI * 2); c.fill();
+
+            // Pulsing "BULLSEYE / LAND HERE" marker on bee side
+            var pulse = 0.5 + Math.sin(t2 / 10) * 0.4;
+            c.strokeStyle = 'rgba(253,224,71,' + pulse + ')'; c.lineWidth = 2;
+            c.beginPath(); c.arc(W * 0.75, flowY, flowR * 0.35 + pulse * 3, 0, Math.PI * 2); c.stroke();
+
+            // Captions under each flower
+            c.textAlign = 'center';
+            c.fillStyle = '#1e3a8a'; c.font = 'bold 11px "Inter", sans-serif';
+            c.fillText('Yellow, uniform', W * 0.25, flowY + flowR + 22);
+            c.font = '9.5px "Inter", sans-serif'; c.fillStyle = '#1e40af';
+            c.fillText('No special markings to us', W * 0.25, flowY + flowR + 36);
+
+            c.fillStyle = '#fde047'; c.font = 'bold 11px "Inter", sans-serif';
+            c.fillText('UV bullseye → "LAND HERE"', W * 0.75, flowY + flowR + 22);
+            c.font = '9.5px "Inter", sans-serif'; c.fillStyle = '#c4b5fd';
+            c.fillText('Nectar guides invisible to humans', W * 0.75, flowY + flowR + 36);
+
+            // ═══ Color wheel comparison (top-left and top-right) ═══
+            var cwR = 36;
+            // Human wheel — RGB
+            c.save(); c.translate(W * 0.12, 100);
+            var humanColors = [
+              { a: -Math.PI / 2, col: '#dc2626', name: 'R' },
+              { a: -Math.PI / 2 + 2 * Math.PI / 3, col: '#16a34a', name: 'G' },
+              { a: -Math.PI / 2 + 4 * Math.PI / 3, col: '#2563eb', name: 'B' }
+            ];
+            humanColors.forEach(function(col) {
+              c.fillStyle = col.col;
+              c.beginPath();
+              c.moveTo(0, 0);
+              c.arc(0, 0, cwR, col.a - Math.PI / 3, col.a + Math.PI / 3);
+              c.closePath();
+              c.fill();
+              c.strokeStyle = 'rgba(255,255,255,0.6)'; c.lineWidth = 1; c.stroke();
+              var lx = Math.cos(col.a) * (cwR + 10), ly = Math.sin(col.a) * (cwR + 10);
+              c.fillStyle = '#1e3a8a'; c.textAlign = 'center';
+              c.font = 'bold 10px "Inter", sans-serif';
+              c.fillText(col.name, lx, ly + 3);
+            });
+            c.restore();
+            c.fillStyle = '#1e3a8a'; c.textAlign = 'center';
+            c.font = 'bold 9.5px "Inter", sans-serif';
+            c.fillText('Human: RGB', W * 0.12, 150);
+            c.font = '8.5px "Inter", sans-serif';
+            c.fillText('700 - 400 nm', W * 0.12, 163);
+
+            // Bee wheel — UV/Blue/Green (no red!)
+            c.save(); c.translate(W * 0.88, 100);
+            var beeColors = [
+              { a: -Math.PI / 2, col: '#a855f7', name: 'UV' },
+              { a: -Math.PI / 2 + 2 * Math.PI / 3, col: '#2563eb', name: 'B' },
+              { a: -Math.PI / 2 + 4 * Math.PI / 3, col: '#16a34a', name: 'G' }
+            ];
+            beeColors.forEach(function(col) {
+              c.fillStyle = col.col;
+              c.beginPath();
+              c.moveTo(0, 0);
+              c.arc(0, 0, cwR, col.a - Math.PI / 3, col.a + Math.PI / 3);
+              c.closePath();
+              c.fill();
+              c.strokeStyle = 'rgba(253,224,71,0.7)'; c.lineWidth = 1; c.stroke();
+              var lx = Math.cos(col.a) * (cwR + 12), ly = Math.sin(col.a) * (cwR + 12);
+              c.fillStyle = '#fde047'; c.textAlign = 'center';
+              c.font = 'bold 10px "Inter", sans-serif';
+              c.fillText(col.name, lx, ly + 3);
+            });
+            c.restore();
+            c.fillStyle = '#fde047'; c.textAlign = 'center';
+            c.font = 'bold 9.5px "Inter", sans-serif';
+            c.fillText('Bee: UV-B-G', W * 0.88, 150);
+            c.font = '8.5px "Inter", sans-serif'; c.fillStyle = '#c4b5fd';
+            c.fillText('600 - 300 nm · no red', W * 0.88, 163);
+
+            // ═══ Compound eye diagram (center bottom) ═══
+            var ceY = H - 140;
+            var ceX = W / 2;
+            // Dark hexagon grid simulating ommatidia
+            var hexR = 6, hexGrid = 7;
+            c.fillStyle = 'rgba(30,27,75,0.85)';
+            c.beginPath();
+            c.ellipse(ceX, ceY, 70, 50, 0, 0, Math.PI * 2);
+            c.fill();
+            c.strokeStyle = 'rgba(250,204,21,0.5)'; c.lineWidth = 1; c.stroke();
+            // Draw a 7x5 grid of hex facets within the ellipse
+            for (var hy = -2; hy <= 2; hy++) {
+              for (var hx = -4; hx <= 4; hx++) {
+                var hcx = ceX + hx * hexR * 1.6 + (hy % 2 ? hexR * 0.8 : 0);
+                var hcy = ceY + hy * hexR * 1.4;
+                var distR = Math.hypot((hcx - ceX) / 65, (hcy - ceY) / 45);
+                if (distR > 1) continue;
+                // Flickering color (motion detection metaphor)
+                var flicker = 0.5 + Math.sin(t2 / 8 + hx * 0.7 + hy * 1.1) * 0.45;
+                c.fillStyle = 'rgba(' + Math.floor(250 * flicker) + ',' + Math.floor(204 * flicker) + ',21,0.85)';
+                c.beginPath();
+                for (var he = 0; he < 6; he++) {
+                  var ha = he * Math.PI / 3;
+                  var px = hcx + Math.cos(ha) * hexR * 0.8;
+                  var py = hcy + Math.sin(ha) * hexR * 0.8;
+                  if (he === 0) c.moveTo(px, py); else c.lineTo(px, py);
+                }
+                c.closePath(); c.fill();
+                c.strokeStyle = 'rgba(15,23,42,0.6)'; c.lineWidth = 0.3; c.stroke();
+              }
+            }
+            // Labels
+            c.fillStyle = '#fde68a'; c.textAlign = 'center';
+            c.font = 'bold 11px "Inter", sans-serif';
+            c.fillText('Compound Eye · ~6,900 ommatidia', ceX, ceY - 62);
+            c.font = '9px "Inter", sans-serif'; c.fillStyle = '#c4b5fd';
+            c.fillText('Low resolution, high flicker-rate: 200 Hz (humans: 60 Hz)', ceX, ceY + 68);
+
+            // Stat callouts — flicker fusion comparison bars
+            var statY = ceY - 20;
+            // Left: 60 Hz human
+            c.fillStyle = '#1e3a8a'; c.textAlign = 'right';
+            c.font = 'bold 10px "Inter", sans-serif';
+            c.fillText('You: 60 Hz', ceX - 90, statY);
+            c.fillStyle = 'rgba(37,99,235,0.7)';
+            c.fillRect(ceX - 180, statY + 4, 60, 8);
+            // Right: 200 Hz bee
+            c.fillStyle = '#fde047'; c.textAlign = 'left';
+            c.fillText('Bee: 200 Hz', ceX + 90, statY);
+            c.fillStyle = 'rgba(250,204,21,0.8)';
+            c.fillRect(ceX + 120, statY + 4, 200 * 0.6, 8);
+
+            // ═══ Bottom fact strip ═══
+            var bvStripY = H - 28;
+            c.fillStyle = 'rgba(30,27,75,0.95)'; c.fillRect(0, bvStripY - 10, W, 38);
+            c.fillStyle = '#fde68a'; c.textAlign = 'center';
+            c.font = 'bold 11px Georgia, serif';
+            var bvFacts = [
+              'Bees are RED-blind. A red rose looks black to them — but bees excel at seeing UV.',
+              'Sunflowers, dandelions, and black-eyed susans all have UV "bullseyes" humans can\'t see.',
+              'Bees see movement 3× faster than humans — explains why they dart between flowers effortlessly.',
+              'Karl von Frisch proved bee color vision in 1914 — finally overturning "bees are colorblind" dogma.',
+              'Each ommatidium is a tiny lens + 8 photoreceptors. 6,900 of them tile the bee\'s eye.',
+              'Bees can detect polarized light — they use the sun\'s polarization pattern as a compass even on cloudy days.'
+            ];
+            var bvIdx = Math.floor(t2 / 420) % bvFacts.length;
+            c.fillText('💡 ' + bvFacts[bvIdx], W / 2, bvStripY + 10);
+          }
+
+          // ═══ PROPOLIS · the "bee glue" — nature's antibiotic resin ═══
+          function drawPropolis() {
+            // Warm resinous gradient background
+            var prGrad = c.createLinearGradient(0, 0, 0, H);
+            prGrad.addColorStop(0, '#44403c'); prGrad.addColorStop(0.5, '#78350f'); prGrad.addColorStop(1, '#292524');
+            c.fillStyle = prGrad; c.fillRect(0, 0, W, H);
+
+            // Subtle resin shimmer
+            for (var sh = 0; sh < 30; sh++) {
+              var shx = (Math.sin(t2 / 50 + sh * 0.6) * 0.5 + 0.5) * W;
+              var shy = (Math.cos(t2 / 70 + sh * 0.9) * 0.5 + 0.5) * H;
+              c.fillStyle = 'rgba(251,191,36,' + (0.05 + Math.sin(t2 / 20 + sh) * 0.04) + ')';
+              c.beginPath(); c.arc(shx, shy, 1.5, 0, Math.PI * 2); c.fill();
+            }
+
+            // Title
+            c.fillStyle = '#fde68a'; c.textAlign = 'center';
+            c.font = 'bold 18px Georgia, serif';
+            c.fillText('💧 Propolis · nature\'s antibiotic', W / 2, 26);
+            c.font = 'italic 11px Georgia, serif'; c.fillStyle = '#fbbf24';
+            c.fillText('Bees collect tree resin, mix it with enzymes + wax — result: an antimicrobial superglue', W / 2, 44);
+
+            // ═══ LEFT: forager collecting resin from a tree ═══
+            var treeX = W * 0.18;
+            var treeY = H * 0.55;
+            // Tree trunk
+            var trunkGrad = c.createLinearGradient(treeX - 30, 0, treeX + 30, 0);
+            trunkGrad.addColorStop(0, '#57534e'); trunkGrad.addColorStop(0.5, '#78350f'); trunkGrad.addColorStop(1, '#3f3f46');
+            c.fillStyle = trunkGrad;
+            c.fillRect(treeX - 25, 80, 50, H - 140);
+            // Bark texture
+            c.strokeStyle = 'rgba(30,20,10,0.6)'; c.lineWidth = 1;
+            for (var bk = 0; bk < 12; bk++) {
+              var bky = 90 + bk * 28;
+              c.beginPath();
+              c.moveTo(treeX - 20 + Math.sin(bk) * 3, bky);
+              c.lineTo(treeX + 20 + Math.cos(bk) * 3, bky + 8);
+              c.stroke();
+            }
+            // Resin droplets oozing from bark
+            var resinPoints = [
+              { rx: treeX - 12, ry: 180 },
+              { rx: treeX + 14, ry: 230 },
+              { rx: treeX - 8, ry: 280 },
+              { rx: treeX + 18, ry: 330 }
+            ];
+            resinPoints.forEach(function(rp, ri) {
+              var wiggle = Math.sin(t2 / 30 + ri) * 2;
+              var rGrad = c.createRadialGradient(rp.rx + wiggle, rp.ry, 0, rp.rx + wiggle, rp.ry, 12);
+              rGrad.addColorStop(0, '#fde047'); rGrad.addColorStop(0.6, '#d97706'); rGrad.addColorStop(1, '#78350f');
+              c.fillStyle = rGrad;
+              c.beginPath();
+              c.ellipse(rp.rx + wiggle, rp.ry, 6, 9, 0, 0, Math.PI * 2);
+              c.fill();
+              // Glint
+              c.fillStyle = 'rgba(255,255,255,0.6)';
+              c.beginPath(); c.arc(rp.rx + wiggle - 2, rp.ry - 3, 1.5, 0, Math.PI * 2); c.fill();
+            });
+            // Forager bee with a resin ball on her corbicula (pollen basket)
+            var beeY = treeY + Math.sin(t2 / 10) * 4;
+            var beeX = treeX + 35 + Math.cos(t2 / 10) * 3;
+            c.save(); c.translate(beeX, beeY);
+            // Wings
+            c.fillStyle = 'rgba(255,255,255,0.45)';
+            c.beginPath(); c.ellipse(-2, -6, 10, 4, -0.3, 0, Math.PI * 2); c.fill();
+            c.beginPath(); c.ellipse(2, -6, 10, 4, 0.3, 0, Math.PI * 2); c.fill();
+            // Body
+            c.fillStyle = '#fbbf24';
+            c.beginPath(); c.ellipse(0, 0, 9, 6, 0, 0, Math.PI * 2); c.fill();
+            // Stripes
+            c.fillStyle = '#1f2937';
+            c.fillRect(-5, -4, 1.5, 8); c.fillRect(-1.5, -4, 1.5, 8); c.fillRect(2, -4, 1.5, 8);
+            // Head + eye
+            c.fillStyle = '#111827';
+            c.beginPath(); c.arc(-9, 0, 3, 0, Math.PI * 2); c.fill();
+            // Hind leg with amber corbicula ball
+            var corbX = 5, corbY = 5;
+            c.fillStyle = '#111827';
+            c.beginPath(); c.moveTo(3, 3); c.lineTo(corbX, corbY + 1); c.stroke();
+            var propGrad = c.createRadialGradient(corbX, corbY, 0, corbX, corbY, 4);
+            propGrad.addColorStop(0, '#fbbf24'); propGrad.addColorStop(1, '#78350f');
+            c.fillStyle = propGrad;
+            c.beginPath(); c.arc(corbX, corbY, 4, 0, Math.PI * 2); c.fill();
+            c.restore();
+            // Label for forager
+            c.fillStyle = '#fde68a'; c.textAlign = 'center';
+            c.font = 'bold 9.5px "Inter", sans-serif';
+            c.fillText('Forager + resin ball', treeX + 30, treeY + 28);
+            c.font = '8.5px "Inter", sans-serif'; c.fillStyle = '#fbbf24';
+            c.fillText('~100 mg per trip', treeX + 30, treeY + 40);
+
+            // Tree label
+            c.fillStyle = '#86efac'; c.textAlign = 'center';
+            c.font = 'bold 10px "Inter", sans-serif';
+            c.fillText('Poplar · Birch · Pine', treeX, 72);
+            c.font = '8.5px "Inter", sans-serif'; c.fillStyle = '#bef264';
+            c.fillText('preferred resin sources', treeX, 86);
+
+            // ═══ MIDDLE: chemistry breakdown pie/bar ═══
+            var chX = W * 0.48, chY = H * 0.4;
+            c.fillStyle = '#fde68a'; c.textAlign = 'center';
+            c.font = 'bold 12px "Inter", sans-serif';
+            c.fillText('Composition', chX, chY - 72);
+            // Doughnut chart
+            var composition = [
+              { label: 'Resin', pct: 0.50, col: '#b45309' },
+              { label: 'Wax', pct: 0.30, col: '#fde047' },
+              { label: 'Essential oils', pct: 0.10, col: '#a3e635' },
+              { label: 'Pollen', pct: 0.05, col: '#fbbf24' },
+              { label: 'Other', pct: 0.05, col: '#57534e' }
+            ];
+            var acc = -Math.PI / 2;
+            var donutR = 42;
+            composition.forEach(function(seg) {
+              c.fillStyle = seg.col;
+              c.beginPath();
+              c.moveTo(chX, chY);
+              c.arc(chX, chY, donutR, acc, acc + seg.pct * Math.PI * 2);
+              c.closePath();
+              c.fill();
+              acc += seg.pct * Math.PI * 2;
+            });
+            // Center hole
+            c.fillStyle = '#292524';
+            c.beginPath(); c.arc(chX, chY, donutR * 0.55, 0, Math.PI * 2); c.fill();
+            c.fillStyle = '#fde68a'; c.textAlign = 'center';
+            c.font = 'bold 11px "Inter", sans-serif';
+            c.fillText('Propolis', chX, chY - 3);
+            c.font = '8.5px "Inter", sans-serif'; c.fillStyle = '#fbbf24';
+            c.fillText('by mass', chX, chY + 10);
+            // Legend
+            composition.forEach(function(seg, si) {
+              var ly = chY + donutR + 12 + si * 12;
+              c.fillStyle = seg.col;
+              c.fillRect(chX - 50, ly - 6, 8, 8);
+              c.fillStyle = '#fde68a'; c.textAlign = 'left';
+              c.font = '9px "Inter", sans-serif';
+              c.fillText(seg.label, chX - 38, ly);
+              c.textAlign = 'right'; c.fillStyle = '#fbbf24';
+              c.fillText(Math.round(seg.pct * 100) + '%', chX + 50, ly);
+            });
+
+            // ═══ RIGHT: functional uses inside the hive ═══
+            var useX = W - 180, useY = 72;
+            c.fillStyle = 'rgba(68,64,60,0.8)';
+            if (c.roundRect) { c.beginPath(); c.roundRect(useX, useY, 170, 170, 8); c.fill(); }
+            else c.fillRect(useX, useY, 170, 170);
+            c.strokeStyle = 'rgba(251,191,36,0.6)'; c.lineWidth = 1;
+            if (c.roundRect) { c.beginPath(); c.roundRect(useX, useY, 170, 170, 8); c.stroke(); }
+            c.fillStyle = '#fde68a'; c.textAlign = 'center';
+            c.font = 'bold 11px "Inter", sans-serif';
+            c.fillText('How bees use it', useX + 85, useY + 16);
+            var uses = [
+              { icon: '🧱', t: 'Seals cracks', d: 'Gaps < 6 mm get filled' },
+              { icon: '🛡️', t: 'Sterilizes hive', d: 'Coats interior walls' },
+              { icon: '⚰️', t: 'Mummifies intruders', d: 'Wraps mice too large to remove' },
+              { icon: '🚪', t: 'Narrows entrance', d: 'Winter heat + pest defense' },
+              { icon: '🥚', t: 'Polishes brood cells', d: 'Antiseptic coat before laying' }
+            ];
+            uses.forEach(function(u, ui) {
+              var uy = useY + 34 + ui * 26;
+              c.fillStyle = '#fbbf24'; c.textAlign = 'left';
+              c.font = '14px "Inter", sans-serif';
+              c.fillText(u.icon, useX + 10, uy + 5);
+              c.fillStyle = '#fde68a'; c.font = 'bold 10px "Inter", sans-serif';
+              c.fillText(u.t, useX + 34, uy);
+              c.fillStyle = '#fbbf24'; c.font = '8.5px "Inter", sans-serif';
+              c.fillText(u.d, useX + 34, uy + 12);
+            });
+
+            // ═══ BOTTOM RIGHT: medical/pharmaceutical callout ═══
+            var medY = useY + 180;
+            c.fillStyle = 'rgba(22,101,52,0.75)';
+            if (c.roundRect) { c.beginPath(); c.roundRect(useX, medY, 170, 90, 8); c.fill(); }
+            else c.fillRect(useX, medY, 170, 90);
+            c.strokeStyle = 'rgba(134,239,172,0.6)'; c.lineWidth = 1;
+            if (c.roundRect) { c.beginPath(); c.roundRect(useX, medY, 170, 90, 8); c.stroke(); }
+            c.fillStyle = '#bbf7d0'; c.textAlign = 'center';
+            c.font = 'bold 11px "Inter", sans-serif';
+            c.fillText('⚕️  Human uses', useX + 85, medY + 16);
+            c.font = '8.5px "Inter", sans-serif'; c.fillStyle = '#d9f99d';
+            c.textAlign = 'left';
+            c.fillText('• Cough drops + throat sprays', useX + 10, medY + 32);
+            c.fillText('• Wound-healing ointments', useX + 10, medY + 46);
+            c.fillText('• Antiviral dental rinses', useX + 10, medY + 60);
+            c.fillText('• Cancer-adjuvant research (CAPE)', useX + 10, medY + 74);
+
+            // ═══ Bottom fact strip ═══
+            var prStripY = H - 28;
+            c.fillStyle = 'rgba(28,25,23,0.95)'; c.fillRect(0, prStripY - 10, W, 38);
+            c.fillStyle = '#fde68a'; c.textAlign = 'center';
+            c.font = 'bold 11px Georgia, serif';
+            var prFacts = [
+              'Propolis has been used medicinally since at least 300 BCE — Egyptians used it for embalming.',
+              'The active ingredient CAPE (caffeic acid phenethyl ester) inhibits tumor cell growth in lab studies.',
+              'A bee colony uses ~150 g of propolis per year — about the weight of a baseball.',
+              'Bees can\'t remove dead intruders larger than themselves — so they mummify them in propolis instead.',
+              'Stingless bees (Meliponini) use even MORE propolis than honeybees — their entire nest is often resin.',
+              'Propolis composition varies by region — Brazilian green propolis is chemically distinct from European brown.'
+            ];
+            var prIdx = Math.floor(t2 / 420) % prFacts.length;
+            c.fillText('💡 ' + prFacts[prIdx], W / 2, prStripY + 10);
+          }
+
+          // ═══ STINGERS & DEFENSE · barbed sting, venom, hot-ball, guarding ═══
+          function drawStingers() {
+            // Moody defense-red background
+            var stGrad = c.createLinearGradient(0, 0, 0, H);
+            stGrad.addColorStop(0, '#450a0a'); stGrad.addColorStop(0.5, '#7f1d1d'); stGrad.addColorStop(1, '#1c1917');
+            c.fillStyle = stGrad; c.fillRect(0, 0, W, H);
+
+            // Title
+            c.fillStyle = '#fecaca'; c.textAlign = 'center';
+            c.font = 'bold 18px Georgia, serif';
+            c.fillText('🗡️ Stingers & Defense · a life-or-death commitment', W / 2, 26);
+            c.font = 'italic 11px Georgia, serif'; c.fillStyle = '#fca5a5';
+            c.fillText('A worker bee can sting ONCE — her barbed lancets tear loose, killing her in the act', W / 2, 44);
+
+            // ═══ LEFT: macro stinger diagram ═══
+            var stX = W * 0.24;
+            var stY = H * 0.5;
+            var stScale = Math.min(W, H) * 0.25;
+
+            // Abdomen of the bee (right side of diagram)
+            c.save(); c.translate(stX, stY);
+            // Body
+            var bodyGrad = c.createLinearGradient(-stScale * 0.5, 0, stScale * 0.5, 0);
+            bodyGrad.addColorStop(0, '#78350f'); bodyGrad.addColorStop(0.5, '#eab308'); bodyGrad.addColorStop(1, '#78350f');
+            c.fillStyle = bodyGrad;
+            c.beginPath();
+            c.ellipse(-stScale * 0.2, 0, stScale * 0.55, stScale * 0.4, 0, 0, Math.PI * 2);
+            c.fill();
+            c.strokeStyle = '#1f2937'; c.lineWidth = 1.5; c.stroke();
+            // Stripes
+            c.fillStyle = '#1f2937';
+            for (var bs = 0; bs < 3; bs++) {
+              var bsx = -stScale * 0.5 + bs * stScale * 0.2;
+              c.fillRect(bsx, -stScale * 0.35, stScale * 0.06, stScale * 0.7);
+            }
+
+            // Stinger apparatus extending right
+            // Venom sac (pale yellow bulb above)
+            var vsX = stScale * 0.38, vsY = -stScale * 0.25;
+            c.fillStyle = '#fef08a';
+            c.beginPath();
+            c.ellipse(vsX, vsY, stScale * 0.14, stScale * 0.11, 0, 0, Math.PI * 2);
+            c.fill();
+            c.strokeStyle = '#78350f'; c.lineWidth = 1; c.stroke();
+            // Duct from venom sac down to stinger
+            c.strokeStyle = '#ca8a04'; c.lineWidth = 2;
+            c.beginPath();
+            c.moveTo(vsX, vsY + stScale * 0.11);
+            c.quadraticCurveTo(vsX - stScale * 0.04, 0, stScale * 0.38, stScale * 0.06);
+            c.stroke();
+
+            // The two lancets (barbed) — draw serrated hollow shafts
+            var lanchX = stScale * 0.35, lanchY = stScale * 0.05;
+            var lanchEnd = stScale * 0.95;
+            // Shaft (two parallel barbed lines)
+            c.strokeStyle = '#fde68a'; c.lineWidth = 2.5;
+            c.beginPath();
+            c.moveTo(lanchX, lanchY - 3); c.lineTo(lanchEnd, lanchY - 3);
+            c.stroke();
+            c.beginPath();
+            c.moveTo(lanchX, lanchY + 3); c.lineTo(lanchEnd, lanchY + 3);
+            c.stroke();
+            // Barbs — 6 per side, pointing backward (toward bee body)
+            c.fillStyle = '#fef3c7';
+            for (var ba = 0; ba < 6; ba++) {
+              var baX = lanchX + (ba + 1) * (lanchEnd - lanchX) / 7;
+              // Upper barb
+              c.beginPath();
+              c.moveTo(baX, lanchY - 3);
+              c.lineTo(baX - 4, lanchY - 8);
+              c.lineTo(baX + 4, lanchY - 3);
+              c.closePath(); c.fill();
+              c.strokeStyle = '#a16207'; c.lineWidth = 0.8; c.stroke();
+              // Lower barb
+              c.fillStyle = '#fef3c7';
+              c.beginPath();
+              c.moveTo(baX, lanchY + 3);
+              c.lineTo(baX - 4, lanchY + 8);
+              c.lineTo(baX + 4, lanchY + 3);
+              c.closePath(); c.fill();
+              c.strokeStyle = '#a16207'; c.lineWidth = 0.8; c.stroke();
+            }
+
+            // Venom drop at the tip — animated drip
+            var dripT = (t2 / 30) % 1;
+            var dripY = lanchY + dripT * 10;
+            c.fillStyle = 'rgba(253,224,71,' + (1 - dripT * 0.4) + ')';
+            c.beginPath();
+            c.ellipse(lanchEnd + 6, dripY, 3 - dripT, 5, 0, 0, Math.PI * 2);
+            c.fill();
+
+            c.restore();
+
+            // Labels with leader lines
+            c.strokeStyle = 'rgba(254,202,202,0.6)'; c.lineWidth = 1;
+            c.fillStyle = '#fecaca'; c.font = 'bold 10px "Inter", sans-serif';
+            // Venom sac
+            c.beginPath();
+            c.moveTo(stX + stScale * 0.38, stY - stScale * 0.35);
+            c.lineTo(stX + stScale * 0.1, stY - stScale * 0.75);
+            c.stroke();
+            c.textAlign = 'right';
+            c.fillText('Venom sac', stX + stScale * 0.05, stY - stScale * 0.78);
+            c.font = '9px "Inter", sans-serif'; c.fillStyle = '#fca5a5';
+            c.fillText('holds ~0.3 mg venom', stX + stScale * 0.05, stY - stScale * 0.65);
+
+            // Lancets / barbs
+            c.strokeStyle = 'rgba(254,202,202,0.6)';
+            c.beginPath();
+            c.moveTo(stX + stScale * 0.65, stY + stScale * 0.10);
+            c.lineTo(stX + stScale * 0.85, stY + stScale * 0.55);
+            c.stroke();
+            c.fillStyle = '#fecaca'; c.textAlign = 'left';
+            c.font = 'bold 10px "Inter", sans-serif';
+            c.fillText('Barbed lancets', stX + stScale * 0.87, stY + stScale * 0.58);
+            c.font = '9px "Inter", sans-serif'; c.fillStyle = '#fca5a5';
+            c.fillText('tear from her body', stX + stScale * 0.87, stY + stScale * 0.72);
+
+            // Caption under diagram
+            c.fillStyle = '#fecaca'; c.textAlign = 'center';
+            c.font = 'bold 11px "Inter", sans-serif';
+            c.fillText('Worker Stinger (0.6 mm)', stX, stY + stScale * 1.05);
+            c.font = 'italic 9.5px "Inter", sans-serif'; c.fillStyle = '#fca5a5';
+            c.fillText('Queens have smooth stingers — they can sting many times.', stX, stY + stScale * 1.2);
+
+            // ═══ MIDDLE: venom chemistry ═══
+            var vnX = W * 0.56, vnY = 84;
+            c.fillStyle = 'rgba(60,10,10,0.75)';
+            if (c.roundRect) { c.beginPath(); c.roundRect(vnX - 95, vnY, 190, 190, 8); c.fill(); }
+            else c.fillRect(vnX - 95, vnY, 190, 190);
+            c.strokeStyle = 'rgba(252,165,165,0.5)'; c.lineWidth = 1;
+            if (c.roundRect) { c.beginPath(); c.roundRect(vnX - 95, vnY, 190, 190, 8); c.stroke(); }
+            c.fillStyle = '#fecaca'; c.textAlign = 'center';
+            c.font = 'bold 12px "Inter", sans-serif';
+            c.fillText('Venom (Apitoxin)', vnX, vnY + 16);
+            var venomComp = [
+              { name: 'Melittin', pct: 50, desc: 'membrane-disrupting peptide' },
+              { name: 'Phospholipase A₂', pct: 12, desc: 'enzyme — cell-membrane attack' },
+              { name: 'Apamin', pct: 2, desc: 'neurotoxin · blocks K⁺ channels' },
+              { name: 'Histamine', pct: 1, desc: 'triggers pain + inflammation' },
+              { name: 'Water + others', pct: 35, desc: 'carrier & minor compounds' }
+            ];
+            venomComp.forEach(function(v, vi) {
+              var vy = vnY + 36 + vi * 28;
+              // Bar background
+              c.fillStyle = 'rgba(252,165,165,0.2)';
+              c.fillRect(vnX - 75, vy, 150, 8);
+              // Filled bar
+              c.fillStyle = '#f87171';
+              c.fillRect(vnX - 75, vy, 150 * (v.pct / 100), 8);
+              c.fillStyle = '#fecaca'; c.textAlign = 'left';
+              c.font = 'bold 9.5px "Inter", sans-serif';
+              c.fillText(v.name, vnX - 75, vy - 2);
+              c.textAlign = 'right'; c.fillStyle = '#fee2e2';
+              c.fillText(v.pct + '%', vnX + 75, vy - 2);
+              c.textAlign = 'left'; c.fillStyle = '#fca5a5';
+              c.font = '8px "Inter", sans-serif';
+              c.fillText(v.desc, vnX - 75, vy + 18);
+            });
+
+            // ═══ RIGHT: defense tactics ═══
+            var dfX = W - 180, dfY = 84;
+            c.fillStyle = 'rgba(60,10,10,0.75)';
+            if (c.roundRect) { c.beginPath(); c.roundRect(dfX, dfY, 170, 270, 8); c.fill(); }
+            else c.fillRect(dfX, dfY, 170, 270);
+            c.strokeStyle = 'rgba(252,165,165,0.5)'; c.lineWidth = 1;
+            if (c.roundRect) { c.beginPath(); c.roundRect(dfX, dfY, 170, 270, 8); c.stroke(); }
+            c.fillStyle = '#fecaca'; c.textAlign = 'center';
+            c.font = 'bold 12px "Inter", sans-serif';
+            c.fillText('Colony Defense', dfX + 85, dfY + 16);
+            var tactics = [
+              { icon: '👮', t: 'Guard Bees', d: 'Older workers sniff every entrant — alarm scent (isoamyl acetate) if intruder' },
+              { icon: '🐝', t: 'Mass Sting', d: 'Alarm pheromone recruits 20-100 defenders in seconds' },
+              { icon: '🔥', t: 'Hot-Balling', d: 'Japanese honeybees cook hornets alive at 47°C' },
+              { icon: '🐻', t: 'Bearding', d: 'Form a living plug over the entrance in heat or attack' }
+            ];
+            tactics.forEach(function(t, ti) {
+              var ty = dfY + 40 + ti * 58;
+              c.fillStyle = '#fbbf24'; c.textAlign = 'left';
+              c.font = '18px "Inter", sans-serif';
+              c.fillText(t.icon, dfX + 8, ty + 10);
+              c.fillStyle = '#fecaca'; c.font = 'bold 11px "Inter", sans-serif';
+              c.fillText(t.t, dfX + 38, ty + 4);
+              c.font = '8.5px "Inter", sans-serif'; c.fillStyle = '#fca5a5';
+              // Wrap description
+              var words = t.d.split(' ');
+              var ln = '', lines = [];
+              words.forEach(function(w) {
+                var trial = ln + (ln ? ' ' : '') + w;
+                if (c.measureText(trial).width > 125) { lines.push(ln); ln = w; }
+                else ln = trial;
+              });
+              if (ln) lines.push(ln);
+              lines.slice(0, 3).forEach(function(l, li) {
+                c.fillText(l, dfX + 38, ty + 18 + li * 10);
+              });
+            });
+
+            // ═══ Bottom fact strip ═══
+            var stStripY = H - 28;
+            c.fillStyle = 'rgba(28,25,23,0.95)'; c.fillRect(0, stStripY - 10, W, 38);
+            c.fillStyle = '#fecaca'; c.textAlign = 'center';
+            c.font = 'bold 11px Georgia, serif';
+            var stFacts = [
+              'A worker bee\'s stinger evolved from her ovipositor (egg-laying tube) — which is why only females sting.',
+              'Bee venom is 30% protein by mass — the most protein-dense animal venom known.',
+              'Melittin, the main toxin, also shows promise destroying HIV-infected cells in lab studies.',
+              'About 2% of people are allergic to bee venom; for them a single sting can trigger anaphylaxis.',
+              'Guard bees remember the scent of nestmates — a returning forager must pass a "smell test".',
+              'The African honeybee (A. m. scutellata) mass-stings orders of magnitude more aggressively than European bees.',
+              'Pull a stinger out with a fingernail drag, NOT tweezers — squeezing injects more venom.'
+            ];
+            var stIdx = Math.floor(t2 / 420) % stFacts.length;
+            c.fillText('💡 ' + stFacts[stIdx], W / 2, stStripY + 10);
+          }
+
+          // ═══ BUZZ PHYSICS · 230 Hz wingbeat + sonication pollination ═══
+          function drawBuzzPhysics() {
+            // Deep teal soundwave background
+            var bzGrad = c.createLinearGradient(0, 0, 0, H);
+            bzGrad.addColorStop(0, '#042f2e'); bzGrad.addColorStop(0.5, '#134e4a'); bzGrad.addColorStop(1, '#064e3b');
+            c.fillStyle = bzGrad; c.fillRect(0, 0, W, H);
+
+            // Title
+            c.fillStyle = '#5eead4'; c.textAlign = 'center';
+            c.font = 'bold 18px Georgia, serif';
+            c.fillText('🎵 Buzz Physics · why bees sound the way they do', W / 2, 26);
+            c.font = 'italic 11px Georgia, serif'; c.fillStyle = '#2dd4bf';
+            c.fillText('Honeybee wings beat ~230 times/sec · the audible "BZZZ" is that pressure oscillation', W / 2, 44);
+
+            // ═══ LEFT: live oscilloscope trace of the wingbeat ═══
+            var oscX0 = 18, oscX1 = W * 0.58;
+            var oscY = H * 0.33;
+            var oscH = 85;
+            c.fillStyle = 'rgba(0,0,0,0.35)';
+            if (c.roundRect) { c.beginPath(); c.roundRect(oscX0, oscY - oscH / 2 - 10, oscX1 - oscX0, oscH + 34, 6); c.fill(); }
+            else c.fillRect(oscX0, oscY - oscH / 2 - 10, oscX1 - oscX0, oscH + 34);
+            c.strokeStyle = 'rgba(94,234,212,0.4)'; c.lineWidth = 1;
+            if (c.roundRect) { c.beginPath(); c.roundRect(oscX0, oscY - oscH / 2 - 10, oscX1 - oscX0, oscH + 34, 6); c.stroke(); }
+            c.fillStyle = '#5eead4'; c.textAlign = 'left';
+            c.font = 'bold 10.5px "Inter", sans-serif';
+            c.fillText('Wingbeat Waveform · 230 Hz', oscX0 + 10, oscY - oscH / 2 + 3);
+            // Grid
+            c.strokeStyle = 'rgba(94,234,212,0.15)'; c.lineWidth = 0.5;
+            for (var gx = 1; gx < 8; gx++) {
+              var gxp = oscX0 + ((oscX1 - oscX0) * gx / 8);
+              c.beginPath(); c.moveTo(gxp, oscY - oscH / 2); c.lineTo(gxp, oscY + oscH / 2); c.stroke();
+            }
+            c.beginPath(); c.moveTo(oscX0, oscY); c.lineTo(oscX1, oscY); c.stroke();
+            // Waveform: honeybee 230 Hz fundamental + harmonic ripple
+            c.strokeStyle = '#34d399'; c.lineWidth = 2;
+            c.shadowColor = '#10b981'; c.shadowBlur = 6;
+            c.beginPath();
+            var scrollT = t2 * 3;
+            for (var wx = 0; wx < (oscX1 - oscX0); wx++) {
+              var phase = wx * 0.17 - scrollT * 0.08;
+              var fundamental = Math.sin(phase);
+              var harmonic = 0.25 * Math.sin(phase * 2 + 0.8);
+              var amp = (fundamental + harmonic) * (oscH * 0.38);
+              var px = oscX0 + wx, py = oscY + amp;
+              if (wx === 0) c.moveTo(px, py); else c.lineTo(px, py);
+            }
+            c.stroke();
+            c.shadowBlur = 0;
+            // X-axis time label
+            c.fillStyle = '#5eead4'; c.textAlign = 'left';
+            c.font = '8.5px "Inter", sans-serif';
+            c.fillText('0 ms', oscX0 + 4, oscY + oscH / 2 + 12);
+            c.textAlign = 'right';
+            c.fillText('40 ms (≈ 9 wingbeats)', oscX1 - 6, oscY + oscH / 2 + 12);
+
+            // ═══ MIDDLE: frequency comparison chart — bee species ═══
+            var chY = oscY + oscH + 30;
+            c.fillStyle = '#5eead4'; c.textAlign = 'left';
+            c.font = 'bold 11px "Inter", sans-serif';
+            c.fillText('Wingbeat frequency comparison', oscX0 + 4, chY + 4);
+            var species = [
+              { n: 'Mosquito', hz: 600, col: '#f472b6' },
+              { n: 'Honeybee', hz: 230, col: '#fbbf24' },
+              { n: 'Bumblebee', hz: 200, col: '#a78bfa' },
+              { n: 'Housefly', hz: 200, col: '#94a3b8' },
+              { n: 'Hummingbird', hz: 80, col: '#22d3ee' },
+              { n: 'Pigeon', hz: 8, col: '#86efac' }
+            ];
+            species.forEach(function(sp, spi) {
+              var by = chY + 18 + spi * 16;
+              var barW = (sp.hz / 600) * (oscX1 - oscX0 - 130);
+              c.fillStyle = '#5eead4'; c.textAlign = 'left';
+              c.font = 'bold 9px "Inter", sans-serif';
+              c.fillText(sp.n, oscX0 + 4, by + 1);
+              // Bar
+              c.fillStyle = 'rgba(94,234,212,0.15)';
+              c.fillRect(oscX0 + 80, by - 7, oscX1 - oscX0 - 130, 10);
+              c.fillStyle = sp.col;
+              c.fillRect(oscX0 + 80, by - 7, Math.max(2, barW), 10);
+              c.fillStyle = '#ccfbf1'; c.textAlign = 'left';
+              c.font = 'bold 9px "Inter", sans-serif';
+              c.fillText(sp.hz + ' Hz', oscX0 + 88 + Math.max(barW, 40), by + 1);
+            });
+
+            // ═══ RIGHT TOP: asynchronous flight muscles diagram ═══
+            var mnX = W - 180, mnY = 72;
+            c.fillStyle = 'rgba(6,78,59,0.85)';
+            if (c.roundRect) { c.beginPath(); c.roundRect(mnX, mnY, 170, 180, 8); c.fill(); }
+            else c.fillRect(mnX, mnY, 170, 180);
+            c.strokeStyle = 'rgba(94,234,212,0.45)'; c.lineWidth = 1;
+            if (c.roundRect) { c.beginPath(); c.roundRect(mnX, mnY, 170, 180, 8); c.stroke(); }
+            c.fillStyle = '#5eead4'; c.textAlign = 'center';
+            c.font = 'bold 11px "Inter", sans-serif';
+            c.fillText('Asynchronous Flight', mnX + 85, mnY + 16);
+            c.font = 'italic 9px "Inter", sans-serif'; c.fillStyle = '#2dd4bf';
+            c.fillText('one nerve pulse → many beats', mnX + 85, mnY + 30);
+
+            // Schematic thorax cross-section with 2 muscle groups (dorsal + vertical)
+            var thX = mnX + 85, thY = mnY + 98;
+            var thR = 36;
+            // Thorax outline
+            c.fillStyle = '#78350f';
+            c.beginPath(); c.ellipse(thX, thY, thR, thR * 0.9, 0, 0, Math.PI * 2); c.fill();
+            c.strokeStyle = '#5eead4'; c.lineWidth = 1.5; c.stroke();
+
+            // Dorsal-longitudinal muscle (horizontal) — contracts = wings go UP
+            var dlPhase = Math.sin(t2 / 2) * 0.5 + 0.5; // 0..1
+            c.fillStyle = 'rgb(' + Math.floor(220 + dlPhase * 35) + ',' + Math.floor(38 + dlPhase * 80) + ',38)';
+            c.fillRect(thX - thR * 0.75, thY - 6, thR * 1.5, 12);
+            // Dorsal-ventral (vertical) — contracts = wings go DOWN
+            var dvPhase = 1 - dlPhase;
+            c.fillStyle = 'rgb(' + Math.floor(37 + dvPhase * 100) + ',99,' + Math.floor(235 - dvPhase * 80) + ')';
+            c.fillRect(thX - 6, thY - thR * 0.7, 12, thR * 1.4);
+
+            // Wing hinges + wings
+            var wingLift = (dlPhase - 0.5) * 0.6; // wings up when DL contracts
+            c.save(); c.translate(thX - thR, thY - thR * 0.2); c.rotate(-wingLift);
+            c.fillStyle = 'rgba(255,255,255,0.45)';
+            c.beginPath(); c.ellipse(-14, 0, 18, 5, 0, 0, Math.PI * 2); c.fill();
+            c.strokeStyle = 'rgba(94,234,212,0.6)'; c.lineWidth = 1; c.stroke();
+            c.restore();
+            c.save(); c.translate(thX + thR, thY - thR * 0.2); c.rotate(wingLift);
+            c.fillStyle = 'rgba(255,255,255,0.45)';
+            c.beginPath(); c.ellipse(14, 0, 18, 5, 0, 0, Math.PI * 2); c.fill();
+            c.strokeStyle = 'rgba(94,234,212,0.6)'; c.lineWidth = 1; c.stroke();
+            c.restore();
+
+            // Legend
+            c.fillStyle = '#fecaca'; c.textAlign = 'left';
+            c.font = '8.5px "Inter", sans-serif';
+            c.fillRect(mnX + 10, mnY + 154, 8, 8);
+            c.fillStyle = '#fecaca';
+            c.fillText('DL (horizontal)', mnX + 22, mnY + 162);
+            c.fillStyle = '#93c5fd'; c.fillRect(mnX + 95, mnY + 154, 8, 8);
+            c.fillStyle = '#93c5fd';
+            c.fillText('DV (vertical)', mnX + 107, mnY + 162);
+
+            // ═══ RIGHT BOTTOM: buzz pollination (sonication) explainer ═══
+            var sonY = mnY + 194;
+            c.fillStyle = 'rgba(6,78,59,0.85)';
+            if (c.roundRect) { c.beginPath(); c.roundRect(mnX, sonY, 170, 92, 8); c.fill(); }
+            else c.fillRect(mnX, sonY, 170, 92);
+            c.strokeStyle = 'rgba(94,234,212,0.45)'; c.lineWidth = 1;
+            if (c.roundRect) { c.beginPath(); c.roundRect(mnX, sonY, 170, 92, 8); c.stroke(); }
+            c.fillStyle = '#5eead4'; c.textAlign = 'center';
+            c.font = 'bold 11px "Inter", sans-serif';
+            c.fillText('Buzz Pollination', mnX + 85, sonY + 14);
+            c.font = '8.5px "Inter", sans-serif'; c.fillStyle = '#2dd4bf';
+            c.textAlign = 'left';
+            c.fillText('Bumblebees bite the flower,', mnX + 10, sonY + 30);
+            c.fillText('then vibrate at ~400 Hz —', mnX + 10, sonY + 42);
+            c.fillText('shaking pollen loose from', mnX + 10, sonY + 54);
+            c.fillText('poricidal anthers.', mnX + 10, sonY + 66);
+            c.fillStyle = '#fde047'; c.font = 'bold 9px "Inter", sans-serif';
+            c.fillText('Tomatoes · blueberries · kiwi', mnX + 10, sonY + 82);
+            c.font = 'italic 8px "Inter", sans-serif'; c.fillStyle = '#fbbf24';
+            c.fillText('(Honeybees cannot do this!)', mnX + 10, sonY + 92 - 2);
+
+            // ═══ Center: animated sound waves emanating from a bee silhouette ═══
+            var beeCx = W * 0.28, beeCy = H - 110;
+            // Bee silhouette
+            c.save(); c.translate(beeCx, beeCy);
+            // Wings shimmer
+            var wingF = Math.sin(t2 * 3) * 0.25;
+            c.fillStyle = 'rgba(255,255,255,0.35)';
+            c.save(); c.rotate(-wingF);
+            c.beginPath(); c.ellipse(-12, -8, 14, 5, -0.3, 0, Math.PI * 2); c.fill();
+            c.restore();
+            c.save(); c.rotate(wingF);
+            c.beginPath(); c.ellipse(12, -8, 14, 5, 0.3, 0, Math.PI * 2); c.fill();
+            c.restore();
+            c.fillStyle = '#fbbf24';
+            c.beginPath(); c.ellipse(0, 0, 18, 11, 0, 0, Math.PI * 2); c.fill();
+            c.fillStyle = '#1f2937';
+            c.fillRect(-9, -7, 3, 14); c.fillRect(-2, -7, 3, 14); c.fillRect(5, -7, 3, 14);
+            c.fillStyle = '#111827';
+            c.beginPath(); c.arc(-17, 0, 6, 0, Math.PI * 2); c.fill();
+            c.restore();
+            // Concentric expanding sound rings
+            for (var sr = 0; sr < 4; sr++) {
+              var ringT = (t2 / 25 + sr * 0.25) % 1;
+              var ringR = 25 + ringT * 70;
+              c.strokeStyle = 'rgba(94,234,212,' + (0.55 * (1 - ringT)) + ')';
+              c.lineWidth = 2;
+              c.beginPath();
+              c.arc(beeCx, beeCy, ringR, 0, Math.PI * 2);
+              c.stroke();
+            }
+            c.fillStyle = '#5eead4'; c.textAlign = 'center';
+            c.font = 'bold 10px "Inter", sans-serif';
+            c.fillText('pressure wave @ 230 Hz', beeCx, beeCy + 130);
+            c.font = 'italic 8.5px "Inter", sans-serif'; c.fillStyle = '#2dd4bf';
+            c.fillText('~0.5 m audible to humans', beeCx, beeCy + 143);
+
+            // ═══ Bottom fact strip ═══
+            var bzStripY = H - 28;
+            c.fillStyle = 'rgba(4,47,46,0.95)'; c.fillRect(0, bzStripY - 10, W, 38);
+            c.fillStyle = '#5eead4'; c.textAlign = 'center';
+            c.font = 'bold 11px Georgia, serif';
+            var bzFacts = [
+              'Insect flight muscles were once thought to need a nerve pulse per beat — until 1960s studies found them "asynchronous".',
+              'A sick or cold bee buzzes at a lower pitch — beekeepers often diagnose colonies by listening.',
+              'Bumblebees buzz-pollinate at ~400 Hz — this is why commercial tomato growers use bumblebees, not honeybees.',
+              'The "piping" and "quacking" sounds virgin queens make are substrate-borne vibrations, not airborne sounds.',
+              'Bee wings are driven indirectly — they don\'t attach to muscles. Muscles deform the thorax; the thorax flexes the wings.',
+              'The African killer-bee\'s buzz is slightly higher pitch than European honeybees — a clue for researchers.'
+            ];
+            var bzIdx = Math.floor(t2 / 420) % bzFacts.length;
+            c.fillText('💡 ' + bzFacts[bzIdx], W / 2, bzStripY + 10);
           }
 
           // ═══ POLLINATION DIAGRAM (bee → ecosystem → human food chain) ═══
@@ -4220,6 +5512,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 _animId.current = requestAnimationFrame(frame);
                 return;
               }
+              if (_bv === 'native') {
+                drawNativeBees();
+                _animId.current = requestAnimationFrame(frame);
+                return;
+              }
+              if (_bv === 'cognition') {
+                drawBeeCognition();
+                _animId.current = requestAnimationFrame(frame);
+                return;
+              }
+              if (_bv === 'vision') {
+                drawBeeVision();
+                _animId.current = requestAnimationFrame(frame);
+                return;
+              }
+              if (_bv === 'propolis') {
+                drawPropolis();
+                _animId.current = requestAnimationFrame(frame);
+                return;
+              }
+              if (_bv === 'stingers') {
+                drawStingers();
+                _animId.current = requestAnimationFrame(frame);
+                return;
+              }
+              if (_bv === 'buzz') {
+                drawBuzzPhysics();
+                _animId.current = requestAnimationFrame(frame);
+                return;
+              }
               // Recompute bee/flower arrays + hive rect each frame so resize/reinit is live.
               // Previously these were captured once before frame() → stale after resize.
               if (!_bees.current || _bees.current.length === 0) {
@@ -4255,7 +5577,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 _flowers.current = fa;
               }
               var bees = _bees.current, flowers = _flowers.current;
-              var hiveX = W * 0.10, hiveY = H * 0.20, hiveW = W * 0.30, hiveH = H * 0.56;
+              // Proportions: real Langstroth hive is ~3-5ft tall; beekeeper is 5-6ft tall;
+              // canvas was oversized (hiveW 30% / hiveH 56%). Scaled to realistic diorama proportions.
+              var hiveW = W * 0.12, hiveH = H * 0.30;
+              var hiveX = W * 0.11, hiveY = H * 0.48; // sit hive lower so ground line is consistent
+              var bkScale = Math.max(2.2, H / 220); // beekeeper size multiplier (was implicit 1.0)
               c.clearRect(0, 0, W, H);
 
               // ── Sky (seasonal gradient + atmosphere) ──
@@ -4928,41 +6254,137 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
-              // ── Beekeeper silhouette (rare cameo — walks toward hive every ~30s) ──
-              var bkCycle = (t2 % 1800) / 1800; // 0..1 over ~30s
-              if (season !== 3 && bkCycle > 0.2 && bkCycle < 0.7) {
-                var bkProgress = (bkCycle - 0.2) / 0.5; // 0..1 while visible
-                var bkX = W * 0.85 - bkProgress * (W * 0.85 - (hiveX + hiveW + 40));
-                var bkY = H * 0.765;
-                var bkStep = Math.sin(t2 * 0.15) * 1.2; // walking gait
+              // ── Beekeeper sprite ──
+              // Action-mode overrides the cameo cycle when d.bkAnim is set:
+              //   walk-in (0-25%) → perform at hive entrance (25-75%) → walk-back (75-100%)
+              // Action overlay (emoji above hands) + speech bubble (caption) render during "perform" phase.
+              (function () {
+                var bkAnim = ls.bkAnim;
+                var now = Date.now();
+                var inAction = bkAnim && bkAnim.startedAt && (now - bkAnim.startedAt) < (bkAnim.duration || 5000);
+
+                var bkCycle = (t2 % 1800) / 1800; // cameo cycle
+                var inCameo = !inAction && season !== 3 && bkCycle > 0.2 && bkCycle < 0.7;
+                if (!inAction && !inCameo) return;
+
+                // Compute position + phase
+                var homeX = W * 0.95;
+                var hiveEntranceX = hiveX + hiveW + 40 * bkScale;
+                var bkX, phase, perfT;
+                if (inAction) {
+                  var t = (now - bkAnim.startedAt) / (bkAnim.duration || 5000);
+                  if (t < 0.25) { // walk-in
+                    var p = t / 0.25;
+                    bkX = homeX - p * (homeX - hiveEntranceX);
+                    phase = 'walk';
+                  } else if (t < 0.75) { // perform
+                    bkX = hiveEntranceX;
+                    phase = 'perform';
+                    perfT = (t - 0.25) / 0.5; // 0..1 during perform
+                  } else { // walk-back
+                    var p2 = (t - 0.75) / 0.25;
+                    bkX = hiveEntranceX + p2 * (homeX - hiveEntranceX);
+                    phase = 'walk';
+                  }
+                } else {
+                  var bkProgress = (bkCycle - 0.2) / 0.5;
+                  bkX = homeX - bkProgress * (homeX - hiveEntranceX);
+                  phase = 'walk';
+                }
+
+                var bkGround = hiveY + hiveH + 4;
+                var bkBodyH = 14 * bkScale;
+                var bkBodyW = 8 * bkScale;
+                var bkY = bkGround - bkBodyH - (8 * bkScale);
+                var bkStep = phase === 'walk' ? Math.sin(t2 * 0.15) * 1.2 * bkScale : 0;
+
                 c.save();
                 // Shadow
                 c.fillStyle = 'rgba(0,0,0,0.25)';
-                c.beginPath(); c.ellipse(bkX, bkY + 24, 7, 1.6, 0, 0, 6.28); c.fill();
-                // Body / bee suit (white)
+                c.beginPath(); c.ellipse(bkX, bkGround, 7 * bkScale, 1.6 * bkScale, 0, 0, 6.28); c.fill();
+                // Body
                 c.fillStyle = '#f1f5f9';
-                c.fillRect(bkX - 4, bkY, 8, 14);
-                // Legs (walking animation)
+                c.fillRect(bkX - bkBodyW / 2, bkY, bkBodyW, bkBodyH);
+                // Legs
                 c.fillStyle = '#1e293b';
-                c.fillRect(bkX - 3, bkY + 14, 2.5, 8 + bkStep);
-                c.fillRect(bkX + 0.5, bkY + 14, 2.5, 8 - bkStep);
-                // Arms (holding smoker)
+                c.fillRect(bkX - 3 * bkScale, bkY + bkBodyH, 2.5 * bkScale, 8 * bkScale + bkStep);
+                c.fillRect(bkX + 0.5 * bkScale, bkY + bkBodyH, 2.5 * bkScale, 8 * bkScale - bkStep);
+                // Arms — raised slightly during perform phase
                 c.fillStyle = '#f1f5f9';
-                c.fillRect(bkX - 6, bkY + 2, 2, 9);
-                c.fillRect(bkX + 4, bkY + 2, 2, 9);
-                // Veil hood (dome)
+                var armLift = phase === 'perform' ? -2 * bkScale * Math.abs(Math.sin(t2 * 0.18)) : 0;
+                c.fillRect(bkX - 6 * bkScale, bkY + 2 * bkScale + armLift, 2 * bkScale, 9 * bkScale);
+                c.fillRect(bkX + 4 * bkScale, bkY + 2 * bkScale + armLift, 2 * bkScale, 9 * bkScale);
+                // Veil hood
                 c.fillStyle = '#f8fafc';
-                c.beginPath(); c.arc(bkX, bkY - 3, 5, 0, 6.28); c.fill();
-                // Dark mesh (veil grid)
+                c.beginPath(); c.arc(bkX, bkY - 3 * bkScale, 5 * bkScale, 0, 6.28); c.fill();
                 c.fillStyle = 'rgba(30,41,59,0.4)';
-                c.beginPath(); c.arc(bkX, bkY - 2, 4, 0, 6.28); c.fill();
-                // Smoker in hand (tiny)
+                c.beginPath(); c.arc(bkX, bkY - 2 * bkScale, 4 * bkScale, 0, 6.28); c.fill();
+                // Smoker in hand
                 c.fillStyle = '#44403c';
-                c.fillRect(bkX - 8, bkY + 8, 3, 6);
-                c.fillStyle = 'rgba(220,220,220,0.5)';
-                c.beginPath(); c.arc(bkX - 7, bkY + 5 + Math.sin(t2 * 0.1) * 0.5, 1.5, 0, 6.28); c.fill();
+                c.fillRect(bkX - 8 * bkScale, bkY + 8 * bkScale, 3 * bkScale, 6 * bkScale);
+                // Smoker puff — bigger during "smoke" action
+                var puffAlpha = (bkAnim && bkAnim.type === 'smoke' && phase === 'perform') ? 0.85 : 0.5;
+                var puffSize = (bkAnim && bkAnim.type === 'smoke' && phase === 'perform') ? 3.5 : 1.5;
+                c.fillStyle = 'rgba(220,220,220,' + puffAlpha + ')';
+                c.beginPath(); c.arc(bkX - 7 * bkScale, bkY + 5 * bkScale + Math.sin(t2 * 0.1) * 0.5 * bkScale, puffSize * bkScale, 0, 6.28); c.fill();
                 c.restore();
-              }
+
+                // ── Action overlay + speech bubble (perform phase only) ──
+                if (inAction && phase === 'perform' && bkAnim) {
+                  // Action emoji near hands (slight bounce)
+                  var itemY = bkY + 4 * bkScale + Math.sin(t2 * 0.2) * 1.5;
+                  var itemX = bkX + 7 * bkScale;
+                  c.save();
+                  c.font = 'bold ' + Math.round(14 * bkScale) + 'px system-ui, sans-serif';
+                  c.textAlign = 'center';
+                  c.textBaseline = 'middle';
+                  c.fillText(bkAnim.emoji || '🔍', itemX, itemY);
+                  c.restore();
+
+                  // Speech bubble above the beekeeper's head
+                  var caption = String(bkAnim.caption || '');
+                  if (caption) {
+                    c.save();
+                    c.font = 'bold 12px system-ui, sans-serif';
+                    c.textAlign = 'center';
+                    c.textBaseline = 'middle';
+                    var textW = c.measureText(caption).width;
+                    var bubW = Math.min(W * 0.45, textW + 20);
+                    var bubH = 28;
+                    var bubX = Math.max(8, Math.min(W - bubW - 8, bkX - bubW / 2));
+                    var bubY = bkY - 10 * bkScale - bubH - 6;
+                    // Bubble background
+                    c.fillStyle = 'rgba(255,255,255,0.96)';
+                    c.strokeStyle = 'rgba(30,41,59,0.5)';
+                    c.lineWidth = 1.2;
+                    c.beginPath();
+                    if (c.roundRect) c.roundRect(bubX, bubY, bubW, bubH, 8);
+                    else c.rect(bubX, bubY, bubW, bubH);
+                    c.fill(); c.stroke();
+                    // Tail
+                    c.beginPath();
+                    c.moveTo(bkX - 4, bubY + bubH);
+                    c.lineTo(bkX, bubY + bubH + 6);
+                    c.lineTo(bkX + 4, bubY + bubH);
+                    c.closePath();
+                    c.fillStyle = 'rgba(255,255,255,0.96)';
+                    c.fill();
+                    c.stroke();
+                    // Caption text
+                    c.fillStyle = '#1e293b';
+                    // Truncate if needed to fit bubble
+                    var drawnCaption = caption;
+                    if (textW > bubW - 16) {
+                      while (drawnCaption.length > 3 && c.measureText(drawnCaption + '…').width > bubW - 16) {
+                        drawnCaption = drawnCaption.slice(0, -1);
+                      }
+                      drawnCaption += '…';
+                    }
+                    c.fillText(drawnCaption, bubX + bubW / 2, bubY + bubH / 2);
+                    c.restore();
+                  }
+                }
+              })();
 
               // ── Hornet predator (rare — flies fast across scene every ~45s, adds drama) ──
               var hnCycle = (t2 % 2700) / 2700;
@@ -4997,6 +6419,122 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   c.fillStyle = 'rgba(220,38,38,' + Math.min(1, (hnProgress - 0.2) * 5) * 0.9 + ')';
                   c.textAlign = 'center';
                   c.fillText('⚠', hnX, hnY - 12);
+                }
+              }
+
+              // ── Bee waterer (shallow bowl + rocks — real beekeepers always keep water nearby) ──
+              // Placed on the ground between hive and apiary sign. Rocks let bees land without drowning.
+              if (season !== 3) {
+                var bwX = W * 0.49, bwY = H * 0.88;
+                var bwR = Math.min(14, W * 0.018);
+                // Bowl shadow
+                c.fillStyle = 'rgba(0,0,0,0.25)';
+                c.beginPath(); c.ellipse(bwX, bwY + 1.5, bwR * 1.05, bwR * 0.28, 0, 0, 6.28); c.fill();
+                // Terracotta saucer rim
+                c.fillStyle = '#a16f4a';
+                c.beginPath(); c.ellipse(bwX, bwY, bwR, bwR * 0.35, 0, 0, 6.28); c.fill();
+                // Water surface (animated shimmer)
+                var wavePhase = Math.sin(t2 * 0.05) * 0.15;
+                var wgrad = c.createRadialGradient(bwX - 1, bwY - 0.5, 1, bwX, bwY, bwR * 0.9);
+                wgrad.addColorStop(0, 'rgba(186,230,253,' + (0.85 + wavePhase) + ')');
+                wgrad.addColorStop(1, 'rgba(56,189,248,' + (0.7 + wavePhase) + ')');
+                c.fillStyle = wgrad;
+                c.beginPath(); c.ellipse(bwX, bwY, bwR * 0.85, bwR * 0.28, 0, 0, 6.28); c.fill();
+                // Ripple ring (periodic — from a bee landing)
+                var rippleT = (t2 % 180) / 180;
+                if (rippleT < 0.6) {
+                  c.strokeStyle = 'rgba(255,255,255,' + (0.5 * (1 - rippleT / 0.6)) + ')';
+                  c.lineWidth = 0.6;
+                  c.beginPath(); c.ellipse(bwX + 2, bwY - 0.2, bwR * 0.2 + rippleT * bwR * 0.5, (bwR * 0.2 + rippleT * bwR * 0.5) * 0.35, 0, 0, 6.28); c.stroke();
+                }
+                // Landing rocks (3 small pebbles so bees don't drown)
+                var rockPositions = [[-4, -0.8], [2, -1.2], [5, 0.3]];
+                for (var rkI = 0; rkI < rockPositions.length; rkI++) {
+                  var rp = rockPositions[rkI];
+                  c.fillStyle = rkI % 2 === 0 ? '#78716c' : '#a8a29e';
+                  c.beginPath(); c.ellipse(bwX + rp[0], bwY + rp[1], 1.5, 0.9, 0, 0, 6.28); c.fill();
+                  c.fillStyle = 'rgba(255,255,255,0.25)';
+                  c.beginPath(); c.ellipse(bwX + rp[0] - 0.3, bwY + rp[1] - 0.4, 0.6, 0.3, 0, 0, 6.28); c.fill();
+                }
+                // Tiny bee occasionally perched on a rock (spring/summer only)
+                if ((season === 0 || season === 1) && Math.sin(t2 * 0.02) > 0.4) {
+                  var wbx = bwX + 2, wby = bwY - 1.9;
+                  c.fillStyle = '#fbbf24';
+                  c.beginPath(); c.ellipse(wbx, wby, 1.2, 0.8, 0, 0, 6.28); c.fill();
+                  c.fillStyle = '#292524';
+                  c.fillRect(wbx - 0.15, wby - 0.8, 0.3, 1.6);
+                }
+              }
+
+              // ── Sun rays (midday only, _tod > 0.4 — diagonal god-rays from top-right) ──
+              if (season !== 3 && _tod > 0.4) {
+                c.save();
+                c.globalAlpha = (_tod - 0.4) * 0.18;
+                c.fillStyle = '#fef9c3';
+                c.beginPath();
+                c.moveTo(W * 0.85, 0);
+                c.lineTo(W * 1.05, 0);
+                c.lineTo(W * 0.45, H * 0.75);
+                c.lineTo(W * 0.35, H * 0.75);
+                c.closePath(); c.fill();
+                c.globalAlpha = (_tod - 0.4) * 0.12;
+                c.beginPath();
+                c.moveTo(W * 0.95, 0);
+                c.lineTo(W * 1.1, 0);
+                c.lineTo(W * 0.6, H * 0.75);
+                c.lineTo(W * 0.5, H * 0.75);
+                c.closePath(); c.fill();
+                c.restore();
+              }
+
+              // ── Butterfly visitor (spring/summer — flutters in a lazy arc through flower area) ──
+              // Biodiversity signal; connects to the Native Bees / Pollination tabs.
+              if ((season === 0 || season === 1) && hiveX > 40) {
+                var btCycle = (t2 % 2200) / 2200; // 0..1 over ~37s
+                if (btCycle > 0.1 && btCycle < 0.85) {
+                  var btP = (btCycle - 0.1) / 0.75;
+                  var btX = W * 0.3 + btP * W * 0.45 + Math.sin(btP * 12) * 18;
+                  var btY = H * 0.60 + Math.sin(btP * 7) * 25 + Math.cos(btP * 3) * 8;
+                  var btFlap = Math.sin(t2 * 0.35);
+                  c.save();
+                  c.translate(btX, btY);
+                  // Body (slim, dark)
+                  c.fillStyle = '#1f2937';
+                  c.fillRect(-0.4, -2, 0.8, 4);
+                  // Head
+                  c.beginPath(); c.arc(0, -2.3, 0.7, 0, 6.28); c.fill();
+                  // Antennae
+                  c.strokeStyle = '#1f2937'; c.lineWidth = 0.3;
+                  c.beginPath(); c.moveTo(-0.3, -2.8); c.lineTo(-1.4, -4.2); c.stroke();
+                  c.beginPath(); c.moveTo(0.3, -2.8); c.lineTo(1.4, -4.2); c.stroke();
+                  // Wings — monarch-ish: orange with black veins + white spots
+                  var wingW = 5 + btFlap * 0.8;
+                  var wingH = 4;
+                  // Left wings (upper + lower)
+                  c.save(); c.translate(-0.6, -0.5);
+                  c.fillStyle = '#f97316';
+                  c.beginPath(); c.ellipse(-wingW * 0.5, -0.5, wingW * 0.5, wingH * 0.5, 0.15, 0, 6.28); c.fill();
+                  c.beginPath(); c.ellipse(-wingW * 0.4, 1.5, wingW * 0.4, wingH * 0.4, -0.2, 0, 6.28); c.fill();
+                  // Black border
+                  c.strokeStyle = '#1c1917'; c.lineWidth = 0.5;
+                  c.beginPath(); c.ellipse(-wingW * 0.5, -0.5, wingW * 0.5, wingH * 0.5, 0.15, 0, 6.28); c.stroke();
+                  // White spots
+                  c.fillStyle = '#fefce8';
+                  c.beginPath(); c.arc(-wingW * 0.7, -0.8, 0.4, 0, 6.28); c.fill();
+                  c.beginPath(); c.arc(-wingW * 0.45, -1.1, 0.35, 0, 6.28); c.fill();
+                  c.restore();
+                  // Right wings (mirror)
+                  c.save(); c.translate(0.6, -0.5); c.scale(-1, 1);
+                  c.fillStyle = '#f97316';
+                  c.beginPath(); c.ellipse(-wingW * 0.5, -0.5, wingW * 0.5, wingH * 0.5, 0.15, 0, 6.28); c.fill();
+                  c.beginPath(); c.ellipse(-wingW * 0.4, 1.5, wingW * 0.4, wingH * 0.4, -0.2, 0, 6.28); c.fill();
+                  c.strokeStyle = '#1c1917'; c.lineWidth = 0.5;
+                  c.beginPath(); c.ellipse(-wingW * 0.5, -0.5, wingW * 0.5, wingH * 0.5, 0.15, 0, 6.28); c.stroke();
+                  c.fillStyle = '#fefce8';
+                  c.beginPath(); c.arc(-wingW * 0.7, -0.8, 0.4, 0, 6.28); c.fill();
+                  c.beginPath(); c.arc(-wingW * 0.45, -1.1, 0.35, 0, 6.28); c.fill();
+                  c.restore();
+                  c.restore();
                 }
               }
 
@@ -5302,7 +6840,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               }
 
               // ── Hive (detailed cross-section with 3D-ish look) ──
-              // Shadow
+              // Ground cast shadow (soft, wide ellipse — gives the hive weight)
+              var csY = hiveY + hiveH + 6;
+              var csGrad = c.createRadialGradient(hiveX + hiveW / 2, csY, 2, hiveX + hiveW / 2, csY, hiveW * 0.7);
+              csGrad.addColorStop(0, 'rgba(0,0,0,0.30)');
+              csGrad.addColorStop(0.6, 'rgba(0,0,0,0.10)');
+              csGrad.addColorStop(1, 'rgba(0,0,0,0)');
+              c.fillStyle = csGrad;
+              c.beginPath(); c.ellipse(hiveX + hiveW / 2, csY, hiveW * 0.7, 5, 0, 0, 6.28); c.fill();
+              // Inset body shadow (original subtle offset for depth)
               c.fillStyle = 'rgba(0,0,0,0.12)';
               c.beginPath(); c.roundRect(hiveX + 3, hiveY + 3, hiveW, hiveH, 10); c.fill();
               // Body
@@ -5313,6 +6859,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               c.fillStyle = '#d4aa40'; c.beginPath(); c.roundRect(hiveX + 4, hiveY + 4, hiveW - 8, hiveH - 8, 7); c.fill();
               // Highlight
               c.fillStyle = 'rgba(255,255,255,0.08)'; c.fillRect(hiveX + 5, hiveY + 5, hiveW - 10, 12);
+              // ── Stacked-super seams (3 visible Langstroth boxes separated by dark rails) ──
+              var seamCount = 3; // deep brood box + 2 shallow supers
+              for (var sm = 1; sm < seamCount; sm++) {
+                var smY = hiveY + (hiveH * sm) / seamCount;
+                // Dark seam rail
+                c.fillStyle = 'rgba(60,40,10,0.55)';
+                c.fillRect(hiveX + 2, smY - 1, hiveW - 4, 2);
+                // Tiny highlight above
+                c.fillStyle = 'rgba(255,240,180,0.25)';
+                c.fillRect(hiveX + 2, smY - 2, hiveW - 4, 0.8);
+              }
+              // Box handle grooves (small indents on left + right of each box — classic Langstroth)
+              c.fillStyle = 'rgba(40,25,5,0.35)';
+              for (var bxi = 0; bxi < seamCount; bxi++) {
+                var bxY = hiveY + (hiveH * bxi) / seamCount + (hiveH / seamCount) * 0.5 - 1;
+                c.fillRect(hiveX + 1.5, bxY, 2, 2);
+                c.fillRect(hiveX + hiveW - 3.5, bxY, 2, 2);
+              }
+              // Faint vertical wood grain (low-alpha stripes) for warmth + realism
+              c.globalAlpha = 0.08;
+              c.fillStyle = '#5a3d0a';
+              for (var gi = 0; gi < 4; gi++) {
+                var grX = hiveX + (hiveW * (0.18 + gi * 0.22));
+                c.fillRect(grX, hiveY + 4, 0.6, hiveH - 8);
+              }
+              c.globalAlpha = 1;
               // Peaked roof with asphalt shingles (above the hive body)
               var roofH = 10;
               c.save();
@@ -5374,11 +6946,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               }
               c.globalAlpha = 1;
 
-              // Entrance
-              c.fillStyle = '#2a1a04';
-              c.beginPath(); c.roundRect(hiveX + hiveW * 0.28, hiveY + hiveH - 3, hiveW * 0.44, 7, 3); c.fill();
-              // Landing board
-              c.fillStyle = '#8a6508'; c.fillRect(hiveX + hiveW * 0.2, hiveY + hiveH + 1, hiveW * 0.6, 3);
+              // Entrance — larger, deeper notch with a subtle inner glow (warm from inside)
+              c.fillStyle = '#1a0f02';
+              c.beginPath(); c.roundRect(hiveX + hiveW * 0.26, hiveY + hiveH - 5, hiveW * 0.48, 9, 3); c.fill();
+              // Inner warm glow (suggests the hive is alive)
+              var entGlow = c.createRadialGradient(hiveX + hiveW / 2, hiveY + hiveH - 1, 1, hiveX + hiveW / 2, hiveY + hiveH - 1, hiveW * 0.25);
+              entGlow.addColorStop(0, 'rgba(251,191,36,0.35)');
+              entGlow.addColorStop(1, 'rgba(251,191,36,0)');
+              c.fillStyle = entGlow;
+              c.beginPath(); c.roundRect(hiveX + hiveW * 0.26, hiveY + hiveH - 5, hiveW * 0.48, 9, 3); c.fill();
+              // Landing board — wider, with subtle grain
+              c.fillStyle = '#8a6508'; c.fillRect(hiveX + hiveW * 0.15, hiveY + hiveH + 1, hiveW * 0.7, 4);
+              c.fillStyle = 'rgba(255,255,255,0.12)';
+              c.fillRect(hiveX + hiveW * 0.15, hiveY + hiveH + 1, hiveW * 0.7, 0.8);
+              // Pollen crumbs dropped by foragers (adds life + teaches pollen-gathering signal)
+              c.fillStyle = '#facc15';
+              var crumbSeed = Math.floor(t2 * 0.02) % 7;
+              for (var pc = 0; pc < 5; pc++) {
+                var pcX = hiveX + hiveW * 0.2 + ((pc + crumbSeed) % 5) * hiveW * 0.12;
+                var pcY = hiveY + hiveH + 3.5 + ((pc * 7) % 2) * 0.6;
+                c.beginPath(); c.arc(pcX, pcY, 0.8, 0, 6.28); c.fill();
+              }
 
               // ── Guard bees on the landing board (static sentries, face the entrance) ──
               var lbY = hiveY + hiveH + 0.5;
@@ -6092,23 +7680,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               c.globalAlpha = 1;
             });
 
-            // Render obstacles (trees, buildings)
+            // Render obstacles (trees, buildings, poles)
+            // Previously each obstacle projected ONE point (its midpoint) and
+            // then drew in screen pixels with scale-relative offsets. That
+            // meant the bottom of a tree wasn't anchored to world y=0 — as
+            // the drone climbed or pitched, trees would slide vertically
+            // across the terrain because the screen offset from midpoint
+            // didn't track the projected ground plane. Fix: project the
+            // object's actual base (y=0) and top (y=ob.h) separately and
+            // draw between those screen positions so the foot stays planted
+            // on the ground and the height reacts correctly to perspective.
             ds.obstacles.forEach(function(ob) {
-              var p = project(ob.x, ob.h * 0.5, ob.z);
-              if (!p || p.d > 500 || p.s < 0.2) return;
+              var pBase = project(ob.x, 0, ob.z);
+              var pTop = project(ob.x, ob.h, ob.z);
+              if (!pBase) return;
+              if (pBase.d > 500 || pBase.s < 0.2) return;
+              // Guard: if the top projects behind the camera (drone sitting
+              // under a tall tree) fall back to extrapolating from base so
+              // we still draw something rather than vanishing the obstacle.
+              if (!pTop) {
+                pTop = { x: pBase.x, y: pBase.y - ob.h * pBase.s, s: pBase.s };
+              }
+              var fullH = Math.max(1, pBase.y - pTop.y); // full height in px
               if (ob.type === 'tree') {
-                // Trunk
+                // Trunk = lower 60% of world height, canopy center at 75%.
+                var pCanopyStart = project(ob.x, ob.h * 0.6, ob.z) ||
+                  { x: pBase.x, y: pBase.y - fullH * 0.6, s: pBase.s };
+                var pCanopyCenter = project(ob.x, ob.h * 0.75, ob.z) ||
+                  { x: pBase.x, y: pBase.y - fullH * 0.75, s: pBase.s };
                 c.fillStyle = '#8B4513';
-                c.fillRect(p.x - 1.5 * p.s, p.y, 3 * p.s, ob.h * 0.4 * p.s);
-                // Canopy
+                var trunkW = 3 * pBase.s;
+                var trunkH = pBase.y - pCanopyStart.y;
+                if (trunkH > 0) c.fillRect(pBase.x - trunkW / 2, pCanopyStart.y, trunkW, trunkH);
                 c.fillStyle = '#228B22'; c.globalAlpha = 0.85;
-                c.beginPath(); c.arc(p.x, p.y - 2 * p.s, ob.h * 0.25 * p.s, 0, 6.28); c.fill();
+                c.beginPath(); c.arc(pCanopyCenter.x, pCanopyCenter.y, ob.h * 0.25 * pCanopyCenter.s, 0, 6.28); c.fill();
                 c.globalAlpha = 1;
               } else if (ob.type === 'building') {
-                c.fillStyle = '#6b7280'; c.fillRect(p.x - 10 * p.s, p.y - ob.h * 0.3 * p.s, 20 * p.s, ob.h * 0.6 * p.s);
-                c.fillStyle = '#4b5563'; c.fillRect(p.x - 10 * p.s, p.y - ob.h * 0.3 * p.s, 20 * p.s, 3 * p.s);
+                c.fillStyle = '#6b7280';
+                var bldW = 20 * pBase.s;
+                c.fillRect(pBase.x - bldW / 2, pTop.y, bldW, fullH);
+                c.fillStyle = '#4b5563';
+                c.fillRect(pBase.x - bldW / 2, pTop.y, bldW, Math.min(fullH, 3 * pTop.s));
               } else {
-                c.fillStyle = '#9ca3af'; c.fillRect(p.x - 1 * p.s, p.y, 2 * p.s, ob.h * 0.4 * p.s);
+                // Pole / utility — thin vertical from ground to top
+                c.fillStyle = '#9ca3af';
+                var poleW = 2 * pBase.s;
+                c.fillRect(pBase.x - poleW / 2, pTop.y, poleW, fullH);
               }
             });
 
@@ -7068,7 +8685,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               })),
             // View selector: educational canvas views (beekeeper only).
             // Wraps on narrow screens. Keyboard 1–9 also switch views.
-            viewMode === 'beekeeper' && h('div', { className: 'flex gap-1.5 flex-wrap text-xs font-bold', role: 'tablist', 'aria-label': 'Canvas view mode' },
+            // position:relative + z-index lifts tabs above the global AlloBot avatar (which was overlapping tabs like "Waggle Dance").
+            viewMode === 'beekeeper' && h('div', { className: 'flex gap-1.5 flex-wrap text-xs font-bold', role: 'tablist', 'aria-label': 'Canvas view mode', style: { position: 'relative', zIndex: 20 } },
               [
                 { id: 'scene', icon: '🏡', label: 'Scene', desc: 'Live apiary scene (Shift+1)' },
                 { id: 'anatomy', icon: '🔬', label: 'Anatomy', desc: 'Labeled bee diagram (Shift+2)' },
@@ -7081,7 +8699,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 { id: 'pheromones', icon: '🧪', label: 'Pheromones', desc: 'The chemical language of the hive (Shift+9)' },
                 { id: 'threats', icon: '🚨', label: 'Threats', desc: 'Varroa, pesticides, habitat loss, CCD (Shift+0)' },
                 { id: 'pollination', icon: '🌍', label: 'Pollination', desc: 'Why bees feed the world — $15B/year, 1/3 of food supply' },
-                { id: 'equipment', icon: '🛠️', label: 'Equipment', desc: 'Langstroth hive + beekeeper toolkit (1851)' }
+                { id: 'equipment', icon: '🛠️', label: 'Equipment', desc: 'Langstroth hive + beekeeper toolkit (1851)' },
+                { id: 'native', icon: '🌎', label: 'Native Bees', desc: 'Biodiversity — 20,000 species, honeybee is just one' },
+                { id: 'cognition', icon: '🧠', label: 'Cognition', desc: 'Bee intelligence — counts to 4, knows zero, recognizes faces' },
+                { id: 'vision', icon: '🌸', label: 'Vision', desc: 'UV flower patterns + 200 Hz flicker fusion — what bees see' },
+                { id: 'propolis', icon: '💧', label: 'Propolis', desc: 'Bee glue resin — nature\'s antibiotic, used medicinally since 300 BCE' },
+                { id: 'stingers', icon: '🗡️', label: 'Stingers', desc: 'Barbed sting sacrifice · venom chemistry · hot-ball defense' },
+                { id: 'buzz', icon: '🎵', label: 'Buzz Physics', desc: '230 Hz wingbeat · sonication pollination at 400 Hz' }
               ].map(function(v, vi) {
                 var active = beeView === v.id;
                 return h('button', { key: v.id, role: 'tab', 'aria-selected': active ? 'true' : 'false',
@@ -7197,34 +8821,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                       className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold bg-red-600/80 text-white hover:bg-red-600', 'aria-label': 'End flight' }, '✕ End Flight'))
             ),
             // SUBSPECIES PICKER (day 0) — IMPORTED FROM ORIGINAL (line 3295 in old file)
-            viewMode === 'beekeeper' && day === 0 && colonySurvived && h('div', { className: 'rounded-2xl border-2 p-4 space-y-3 ' + (dk ? 'bg-gradient-to-br from-amber-900/40 to-yellow-900/30 border-amber-500/60' : 'bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-400'), role: 'region', 'aria-label': 'Choose honeybee subspecies' },
-              h('div', null,
-                h('div', { className: 'text-xs font-bold ' + (dk ? 'text-amber-400' : 'text-amber-700') }, '🧬 Choose Your Bee Stock'),
-                h('p', { className: 'text-[11px] mt-0.5 ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'Real honeybees come in distinct genetic lines, each adapted to different climates.'),
-                h('p', { className: 'text-[11px] mt-0.5 italic ' + (dk ? 'text-amber-500/70' : 'text-amber-600/70') }, 'Current selection: ' + activeSubspecies.emoji + ' ' + activeSubspecies.name)),
-              h('div', { className: 'grid grid-cols-1 gap-2' },
-                SUBSPECIES.map(function(s) {
-                  var active = activeSubspecies.id === s.id;
-                  return h('button', { key: s.id, onClick: function() { updAll({ subspecies: s.id }); },
-                    className: 'text-left p-3 rounded-xl border ' + (active ? (dk ? 'bg-amber-900/50 border-amber-400' : 'bg-amber-100 border-amber-500') : (dk ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200')) },
-                    h('div', { className: 'flex items-start gap-2' },
-                      h('span', { className: 'text-2xl' }, s.emoji),
-                      h('div', { className: 'flex-1' },
-                        h('span', { className: 'text-sm font-bold ' + (dk ? 'text-slate-100' : 'text-slate-800') }, s.name),
-                        h('p', { className: 'text-[11px] mt-1 ' + (dk ? 'text-slate-300' : 'text-slate-700') }, s.note))));
-                }))),
+            // Stock picker collapses to compact summary once student has picked (or accepted default).
+            // Default: expanded on first entry (!d.subspecies). Expand button re-opens anytime.
+            viewMode === 'beekeeper' && day === 0 && colonySurvived && (function () {
+              var stockOpen = d.stockPickerOpen != null ? d.stockPickerOpen : !d.subspecies;
+              if (!stockOpen) {
+                return h('div', { className: 'rounded-xl border-2 p-3 flex items-center gap-2 ' + (dk ? 'bg-amber-900/30 border-amber-500/50' : 'bg-amber-50 border-amber-300'), role: 'region', 'aria-label': 'Bee stock (collapsed)' },
+                  h('span', { className: 'text-xl' }, activeSubspecies.emoji),
+                  h('div', { className: 'flex-1 min-w-0' },
+                    h('div', { className: 'text-xs font-bold ' + (dk ? 'text-amber-300' : 'text-amber-800') }, '🧬 Bee Stock: ' + activeSubspecies.name),
+                    h('p', { className: 'text-[11px] truncate ' + (dk ? 'text-slate-300' : 'text-slate-600') }, activeSubspecies.note)),
+                  h('button', { onClick: function () { upd('stockPickerOpen', true); }, 'aria-label': 'Change bee stock', className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold ' + (dk ? 'bg-amber-700 text-white hover:bg-amber-600' : 'bg-amber-500 text-white hover:bg-amber-600') }, 'Change ▾'));
+              }
+              return h('div', { className: 'rounded-2xl border-2 p-4 space-y-3 ' + (dk ? 'bg-gradient-to-br from-amber-900/40 to-yellow-900/30 border-amber-500/60' : 'bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-400'), role: 'region', 'aria-label': 'Choose honeybee subspecies' },
+                h('div', { className: 'flex items-start justify-between gap-2' },
+                  h('div', null,
+                    h('div', { className: 'text-xs font-bold ' + (dk ? 'text-amber-400' : 'text-amber-700') }, '🧬 Choose Your Bee Stock'),
+                    h('p', { className: 'text-[11px] mt-0.5 ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'Real honeybees come in distinct genetic lines, each adapted to different climates.'),
+                    h('p', { className: 'text-[11px] mt-0.5 italic ' + (dk ? 'text-amber-500/70' : 'text-amber-600/70') }, 'Current selection: ' + activeSubspecies.emoji + ' ' + activeSubspecies.name)),
+                  d.subspecies && h('button', { onClick: function () { upd('stockPickerOpen', false); }, 'aria-label': 'Collapse stock picker', className: 'px-2 py-1 rounded text-[11px] font-bold ' + (dk ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200') }, '▲ Collapse')),
+                h('div', { className: 'grid grid-cols-1 gap-2' },
+                  SUBSPECIES.map(function(s) {
+                    var active = activeSubspecies.id === s.id;
+                    return h('button', { key: s.id, onClick: function() {
+                        updAll({ subspecies: s.id, stockPickerOpen: false });
+                        triggerBeekeeperAction('install', 'Installing ' + s.emoji + ' ' + s.name + ' bees into the hive.', s.emoji);
+                      },
+                      className: 'text-left p-3 rounded-xl border ' + (active ? (dk ? 'bg-amber-900/50 border-amber-400' : 'bg-amber-100 border-amber-500') : (dk ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200')) },
+                      h('div', { className: 'flex items-start gap-2' },
+                        h('span', { className: 'text-2xl' }, s.emoji),
+                        h('div', { className: 'flex-1' },
+                          h('span', { className: 'text-sm font-bold ' + (dk ? 'text-slate-100' : 'text-slate-800') }, s.name),
+                          h('p', { className: 'text-[11px] mt-1 ' + (dk ? 'text-slate-300' : 'text-slate-700') }, s.note))));
+                  })));
+            })(),
             // Next Day + actions
             viewMode === 'beekeeper' && colonySurvived && h('div', { className: 'space-y-2' },
               h('div', { className: 'flex gap-2' },
                 h('button', { onClick: advanceDay, className: 'flex-1 py-2.5 rounded-xl font-bold text-sm text-white ' + (dk ? 'bg-amber-600' : 'bg-amber-500') }, '⏩ Next Day'),
                 h('button', { onClick: function() { advanceDays(5); }, className: 'px-3 py-2.5 rounded-xl text-xs ' + (dk ? 'bg-amber-900/40 text-amber-300' : 'bg-amber-100 text-amber-700') }, '+5'),
                 h('button', { onClick: function() { advanceDays(30); }, className: 'px-3 py-2.5 rounded-xl text-xs ' + (dk ? 'bg-amber-900/30 text-amber-400' : 'bg-amber-50 text-amber-600') }, '+30')),
-              h('div', { className: 'grid grid-cols-6 gap-1.5' },
+              h('div', { className: 'grid grid-cols-4 gap-1.5' },
+                h('button', { onClick: function() { smokeHive(); }, className: 'p-2 rounded-lg text-xs ' + (dk ? 'bg-stone-800/40 text-stone-300' : 'bg-stone-100 text-stone-700') }, '💨 Smoke'),
+                h('button', { onClick: function() { upd('showInspect', true); triggerBeekeeperAction('inspect', 'Opening the hive for an inspection.', '🔍'); }, className: 'p-2 rounded-lg text-xs ' + (dk ? 'bg-indigo-900/30 text-indigo-300' : 'bg-indigo-50 text-indigo-700') }, '🔬 Inspect'),
                 h('button', { onClick: treatVarroa, className: 'p-2 rounded-lg text-xs ' + (dk ? 'bg-red-900/30 text-red-300' : 'bg-red-50 text-red-700') }, '🧪 Treat'),
                 h('button', { onClick: addSuper, className: 'p-2 rounded-lg text-xs ' + (dk ? 'bg-blue-900/30 text-blue-300' : 'bg-blue-50 text-blue-700') }, '📦 Super'),
                 h('button', { onClick: harvestHoney, className: 'p-2 rounded-lg text-xs ' + (dk ? 'bg-amber-900/30 text-amber-300' : 'bg-amber-50 text-amber-700') }, '🍯 Harvest'),
                 h('button', { onClick: feedBees, className: 'p-2 rounded-lg text-xs ' + (dk ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700') }, '🥣 Feed'),
-                h('button', { onClick: function() { upd('showInspect', true); }, className: 'p-2 rounded-lg text-xs ' + (dk ? 'bg-indigo-900/30 text-indigo-300' : 'bg-indigo-50 text-indigo-700') }, '🔬 Inspect'),
+                h('button', { onClick: requeenColony, className: 'p-2 rounded-lg text-xs ' + (dk ? 'bg-purple-900/30 text-purple-300' : 'bg-purple-50 text-purple-700') }, '👑 Requeen'),
                 h('button', { onClick: function() { upd('showBadges', true); }, className: 'p-2 rounded-lg text-xs ' + (dk ? 'bg-amber-900/30 text-amber-300' : 'bg-amber-50 text-amber-700') }, '🏅 Badges')))
           );
           console.log('[Beehive ORIGINAL] return succeeded, committing full tree');
@@ -7528,17 +9172,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                       }))))),
 
           // ═══ SUBSPECIES PICKER (day 0 only, before first Next Day click) ═══
-          viewMode === 'beekeeper' && day === 0 && colonySurvived && h('div', { className: 'rounded-2xl border-2 p-4 space-y-3 ' + (dk ? 'bg-gradient-to-br from-amber-900/40 to-yellow-900/30 border-amber-500/60' : 'bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-400'), role: 'region', 'aria-label': 'Choose honeybee subspecies' },
-            h('div', null,
-              h('div', { className: 'text-xs font-bold ' + (dk ? 'text-amber-400' : 'text-amber-700') }, '🧬 Choose Your Bee Stock'),
-              h('p', { className: 'text-[11px] mt-0.5 ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'Real honeybees come in distinct genetic lines, each adapted to different climates. Pick a subspecies — it will modify honey yield, winter survival, spring buildup, and varroa resistance throughout your colony\'s life.'),
-              h('p', { className: 'text-[11px] mt-0.5 italic ' + (dk ? 'text-amber-500/70' : 'text-amber-600/70') }, 'Current selection: ' + activeSubspecies.emoji + ' ' + activeSubspecies.name + (d.subspecies ? '' : ' (default)'))),
+          // Collapsible: shows compact summary once student has picked; expand to change.
+          viewMode === 'beekeeper' && day === 0 && colonySurvived && (function () {
+            var stockOpen2 = d.stockPickerOpen != null ? d.stockPickerOpen : !d.subspecies;
+            if (!stockOpen2) {
+              return h('div', { className: 'rounded-xl border-2 p-3 flex items-center gap-2 ' + (dk ? 'bg-amber-900/30 border-amber-500/50' : 'bg-amber-50 border-amber-300'), role: 'region', 'aria-label': 'Bee stock (collapsed)' },
+                h('span', { className: 'text-xl' }, activeSubspecies.emoji),
+                h('div', { className: 'flex-1 min-w-0' },
+                  h('div', { className: 'text-xs font-bold ' + (dk ? 'text-amber-300' : 'text-amber-800') }, '🧬 Bee Stock: ' + activeSubspecies.name),
+                  h('p', { className: 'text-[11px] truncate ' + (dk ? 'text-slate-300' : 'text-slate-600') }, activeSubspecies.note)),
+                h('button', { onClick: function () { upd('stockPickerOpen', true); }, 'aria-label': 'Change bee stock', className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold ' + (dk ? 'bg-amber-700 text-white hover:bg-amber-600' : 'bg-amber-500 text-white hover:bg-amber-600') }, 'Change ▾'));
+            }
+            return h('div', { className: 'rounded-2xl border-2 p-4 space-y-3 ' + (dk ? 'bg-gradient-to-br from-amber-900/40 to-yellow-900/30 border-amber-500/60' : 'bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-400'), role: 'region', 'aria-label': 'Choose honeybee subspecies' },
+              h('div', { className: 'flex items-start justify-between gap-2' },
+                h('div', null,
+                  h('div', { className: 'text-xs font-bold ' + (dk ? 'text-amber-400' : 'text-amber-700') }, '🧬 Choose Your Bee Stock'),
+                  h('p', { className: 'text-[11px] mt-0.5 ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'Real honeybees come in distinct genetic lines, each adapted to different climates. Pick a subspecies — it will modify honey yield, winter survival, spring buildup, and varroa resistance throughout your colony\'s life.'),
+                  h('p', { className: 'text-[11px] mt-0.5 italic ' + (dk ? 'text-amber-500/70' : 'text-amber-600/70') }, 'Current selection: ' + activeSubspecies.emoji + ' ' + activeSubspecies.name + (d.subspecies ? '' : ' (default)'))),
+                d.subspecies && h('button', { onClick: function () { upd('stockPickerOpen', false); }, 'aria-label': 'Collapse stock picker', className: 'px-2 py-1 rounded text-[11px] font-bold ' + (dk ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200') }, '▲ Collapse')),
             h('div', { className: 'grid grid-cols-1 gap-2' },
               SUBSPECIES.map(function(s) {
                 var active = activeSubspecies.id === s.id;
                 return h('button', { key: s.id, onClick: function() {
-                    updAll({ subspecies: s.id });
+                    updAll({ subspecies: s.id, stockPickerOpen: false });
                     if (addToast) addToast(s.emoji + ' ' + s.name + ' bees established — ' + s.origin, 'success');
+                    triggerBeekeeperAction('install', 'Installing ' + s.emoji + ' ' + s.name + ' bees into the hive.', s.emoji);
                   },
                   'aria-label': 'Select ' + s.name + ' subspecies from ' + s.origin,
                   className: 'text-left p-3 rounded-xl border transition-all ' +
@@ -7571,7 +9229,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                             h('div', { className: 'h-1.5 rounded-full overflow-hidden ' + (dk ? 'bg-slate-700' : 'bg-slate-200') },
                               h('div', { style: { width: pct + '%' }, className: 'h-full bg-' + t.c + '-400 rounded-full' })));
                         })))));
-              }))),
+              })));
+          })(),
 
           // ═══ APIARY SITE PICKER (day 0 only) ═══
           viewMode === 'beekeeper' && day === 0 && colonySurvived && h('div', { className: 'rounded-2xl border-2 p-4 space-y-3 ' + (dk ? 'bg-gradient-to-br from-green-900/40 to-emerald-900/30 border-green-500/50' : 'bg-gradient-to-br from-green-50 to-emerald-50 border-green-400'), role: 'region', 'aria-label': 'Choose apiary site' },
@@ -8151,8 +9810,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('button', { onClick: function() { advanceDays(30); }, 'aria-label': 'Advance 30 days (1 month)', className: 'px-3 py-2.5 rounded-xl text-sm font-bold transition-all ' + (dk ? 'bg-amber-900/30 text-amber-400 hover:bg-amber-800/40' : 'bg-amber-50 text-amber-600 hover:bg-amber-100') }, '\u23ED +30')
             ),
             // Management actions
-            h('div', { className: 'grid grid-cols-6 gap-1.5' },
+            h('div', { className: 'grid grid-cols-4 gap-1.5' },
               [
+                { onClick: function() { smokeHive(); }, icon: '\uD83D\uDCA8', label: 'Smoke', tip: 'Smoke the hive to calm bees before opening', disabled: false, color: 'stone' },
+                { onClick: function() { upd('showInspect', true); triggerBeekeeperAction('inspect', 'Opening the hive for an inspection.', '🔍'); }, icon: '\uD83D\uDD2C', label: 'Inspect', tip: 'Open hive inspector — explore bee biology', disabled: false, color: 'indigo' },
                 { onClick: treatVarroa, icon: '\uD83E\uDDEA', label: 'Treat', tip: 'Choose an IPM treatment — each has seasonal trade-offs', disabled: varroaLevel < 10, color: 'red' },
                 { onClick: function() {
                     if (actionPoints < 1) { if (addToast) addToast('Need 1 action point for hive hygiene.', 'info'); return; }
@@ -8161,11 +9822,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     playSfx(sfxSuccess);
                     if (addToast) addToast('🧽 Hive hygiene: frames cleaned, dead bees removed. Disease risk −' + reduceDisease + '%.', 'success');
                     if (awardStemXP) awardStemXP('beehive', 5, 'Hive hygiene');
+                    triggerBeekeeperAction('hygiene', 'Cleaning frames and removing dead bees.', '🧽');
                   }, icon: '\uD83E\uDDFD', label: 'Hygiene', tip: 'Clean comb, remove dead bees, improve ventilation (−disease risk)', disabled: diseaseRisk < 5, color: 'purple' },
                 { onClick: addSuper, icon: '\uD83D\uDCE6', label: 'Super', tip: 'Add honey super (+10 morale, +2 wax)', disabled: false, color: 'blue' },
                 { onClick: harvestHoney, icon: '\uD83C\uDF6F', label: 'Harvest', tip: 'Harvest surplus honey (need 15+ lbs)', disabled: honey < 15, color: 'amber' },
                 { onClick: feedBees, icon: '\uD83E\uDED9', label: 'Feed', tip: 'Feed sugar syrup (+5 lbs honey, +5 morale)', disabled: false, color: 'slate' },
-                { onClick: function() { upd('showInspect', true); }, icon: '\uD83D\uDD2C', label: 'Inspect', tip: 'Open hive inspector — explore bee biology', disabled: false, color: 'indigo' }
+                { onClick: requeenColony, icon: '\uD83D\uDC51', label: 'Requeen', tip: 'Install a new queen — restores queenHealth to 100', disabled: false, color: 'purple' }
               ].map(function(btn) {
                 var enabled = !btn.disabled;
                 var bg = enabled
@@ -8209,6 +9871,63 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
           // Hive Inspection (full view replacement, beekeeper only)
           viewMode === 'beekeeper' && showInspect && renderInspection(),
+
+          // ── AI Beehive Tutor (reading-level aware, current view) ──
+          viewMode === 'beekeeper' && !showInspect && (function () {
+            var aiLevel = d.aiLevel || 'grade5';
+            var aiText = d['aiExplain_' + beeView] || '';
+            var aiLoading = !!d['aiLoading_' + beeView];
+            var aiError = d['aiError_' + beeView] || '';
+            var LEVELS = [
+              { id: 'plain', label: 'Plain', hint: 'using simple everyday words and short sentences' },
+              { id: 'grade5', label: 'Grade 5', hint: 'for a 5th grade student, brief and friendly' },
+              { id: 'hs', label: 'High School', hint: 'for a high school biology student, scientifically accurate' }
+            ];
+            var VIEW_LABELS = { scene: 'the hive scene', anatomy: 'bee anatomy', physics: 'bee flight physics', lifecycle: 'the bee lifecycle', honey: 'honey production', waggle: 'the waggle dance', thermo: 'hive thermoregulation', castes: 'bee castes (queen / worker / drone)', pheromones: 'bee pheromones', threats: 'colony threats' };
+            var viewLabel = VIEW_LABELS[beeView] || beeView;
+            function upd2(k, v) { setLabToolData(function (prev) { return Object.assign({}, prev, { beehive: Object.assign({}, prev.beehive, (function(){var o={};o[k]=v;return o;})()) }); }); }
+            function explain() {
+              if (typeof callGemini !== 'function') { upd2('aiError_' + beeView, 'AI tutor not available.'); return; }
+              upd2('aiLoading_' + beeView, true); upd2('aiError_' + beeView, ''); upd2('aiExplain_' + beeView, '');
+              var lv = LEVELS.find(function (L) { return L.id === aiLevel; }) || LEVELS[1];
+              var prompt = 'Explain this part of a honeybee hive ' + lv.hint + '. '
+                + 'Current view: ' + viewLabel + '. Colony state: ' + (d.day || 0) + ' days old, ' + (d.workers || 0) + ' workers, ' + (d.totalHoney || 0) + ' honey units stored, season: ' + (d.season || 'spring') + '. '
+                + 'In 3 short sentences: (1) What the student is looking at. (2) The most surprising or important fact about this part of hive biology. (3) One everyday observation (in a garden, kitchen, or park) that connects to it. '
+                + 'No markdown, no bullets, no headings. Plain prose.';
+              callGemini(prompt, false, false, 0.5).then(function (resp) {
+                upd2('aiExplain_' + beeView, String(resp || '').trim()); upd2('aiLoading_' + beeView, false);
+                if (typeof announceToSR === 'function') announceToSR('Explanation ready.');
+              }).catch(function () {
+                upd2('aiLoading_' + beeView, false); upd2('aiError_' + beeView, 'Could not reach AI tutor. Try again in a moment.');
+              });
+            }
+            return h('div', { className: 'mt-1 mb-2 p-3 rounded-xl border-2 ' + (dk ? 'border-purple-700 bg-purple-950/40' : 'border-purple-200 bg-purple-50'), role: 'region', 'aria-label': 'AI beehive tutor' },
+              h('div', { className: 'flex items-center flex-wrap gap-2 mb-1.5' },
+                h('span', { className: 'text-sm font-bold ' + (dk ? 'text-purple-300' : 'text-purple-700') }, '\u2728 Explain ' + viewLabel),
+                h('div', { className: 'ml-auto flex gap-1', role: 'group', 'aria-label': 'Reading level' },
+                  LEVELS.map(function (L) {
+                    var active = aiLevel === L.id;
+                    return h('button', {
+                      key: L.id,
+                      onClick: function () { upd2('aiLevel', L.id); },
+                      'aria-label': 'Reading level: ' + L.label + (active ? ' (selected)' : ''),
+                      'aria-pressed': active,
+                      className: 'px-2 py-0.5 rounded text-[10px] font-bold ' + (active ? 'bg-purple-600 text-white' : (dk ? 'bg-slate-800 text-purple-300 border border-purple-500/40' : 'bg-white text-purple-700 border border-purple-200 hover:bg-purple-100'))
+                    }, L.label);
+                  })
+                ),
+                h('button', {
+                  onClick: explain,
+                  disabled: aiLoading,
+                  'aria-label': 'Generate AI explanation for ' + viewLabel + ' at ' + ((LEVELS.find(function (L) { return L.id === aiLevel; }) || {}).label || 'Grade 5') + ' level',
+                  className: 'px-3 py-1 rounded-lg text-[11px] font-bold bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50'
+                }, aiLoading ? '\u23F3 Thinking...' : (aiText ? '\uD83D\uDD04 Re-explain' : '\uD83E\uDDE0 Explain'))
+              ),
+              aiError && h('p', { className: 'text-[11px] text-rose-500', role: 'alert' }, aiError),
+              aiText && h('p', { className: 'text-xs leading-relaxed rounded-lg p-2 ' + (dk ? 'bg-slate-900 text-slate-200 border border-purple-500/30' : 'bg-white text-slate-700 border border-purple-100') }, aiText),
+              !aiText && !aiLoading && !aiError && h('p', { className: 'text-[11px] italic ' + (dk ? 'text-slate-400' : 'text-slate-500') }, 'Click \u201CExplain\u201D for the AI tutor to describe the current view.')
+            );
+          })(),
 
           // Science cards (beekeeper only, when not inspecting)
           viewMode === 'beekeeper' && !showInspect &&

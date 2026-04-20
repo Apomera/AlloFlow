@@ -67,6 +67,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
     { id: 'challenge', name: 'Random Challenge', icon: '\uD83C\uDFB2', desc: 'Procedurally generated. Every attempt is unique.', complexity: 4 }
   ];
 
+  // ── Progress persistence (localStorage) ──
+  var ECHO_STORAGE_KEY = 'alloEchoTrainerProgress_v1';
+  var ECHO_PERSIST_FIELDS = ['goalsFound', 'blindWins', 'urbanNoCarHit', 'batMasterWin', 'schoolWin', 'waypointComplete', 'matQuizCorrect', 'difficulty', 'envType'];
+  function loadEchoProgress() {
+    try {
+      var raw = localStorage.getItem(ECHO_STORAGE_KEY);
+      if (!raw) return null;
+      var parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed !== 'object') return null;
+      return parsed;
+    } catch (e) { return null; }
+  }
+  function saveEchoProgress(toolData) {
+    try {
+      var out = {};
+      for (var i = 0; i < ECHO_PERSIST_FIELDS.length; i++) {
+        var k = ECHO_PERSIST_FIELDS[i];
+        if (toolData[k] !== undefined) out[k] = toolData[k];
+      }
+      localStorage.setItem(ECHO_STORAGE_KEY, JSON.stringify(out));
+    } catch (e) { /* quota or SecurityError — ignore */ }
+  }
+
   // ── Progressive environment unlock system ──
   var ENV_UNLOCK = {
     simple_room: { requires: null },
@@ -666,6 +689,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
       var runStartRef = useRef(Date.now());
       var footstepRef = useRef({ lastStep: 0, stepInterval: 0.4 });
       var coverageRef = useRef(null);
+      var hydratedRef = useRef(false);
+
+      // ── Hydrate progress from localStorage on first mount ──
+      useEffect(function() {
+        if (hydratedRef.current) return;
+        hydratedRef.current = true;
+        var saved = loadEchoProgress();
+        if (!saved) return;
+        var merged = {};
+        var hasAny = false;
+        for (var i = 0; i < ECHO_PERSIST_FIELDS.length; i++) {
+          var k = ECHO_PERSIST_FIELDS[i];
+          if (saved[k] !== undefined && (d[k] === undefined || d[k] === null || d[k] === 0 || d[k] === '' || d[k] === false)) {
+            merged[k] = saved[k];
+            hasAny = true;
+          }
+        }
+        if (hasAny) {
+          updMulti(merged);
+          if (announceToSR) announceToSR('Progress restored. Goals found: ' + (merged.goalsFound || saved.goalsFound || 0) + '.');
+        }
+      }, []);
+
+      // ── Auto-save progress whenever persistent fields change ──
+      useEffect(function() {
+        if (!hydratedRef.current) return;
+        saveEchoProgress(d);
+      }, [d.goalsFound, d.blindWins, d.urbanNoCarHit, d.batMasterWin, d.schoolWin, d.waypointComplete, d.matQuizCorrect, d.difficulty, d.envType]);
 
       if (!mapRef.current || mapRef.current.seed !== seed || mapRef.current.type !== envType) {
         mapRef.current = generateEnvironment(envType, seed);

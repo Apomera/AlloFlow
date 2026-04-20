@@ -3422,7 +3422,42 @@ var d = labToolData.brainAtlas || {};
 
 
 
-          return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fade-in duration-200" },
+          // ── Keyboard shortcuts (WCAG 2.1.1) ──
+          var VIEW_KEYS = Object.keys(VIEWS);
+          function onBrainKey(e) {
+            var tgt = e.target || {};
+            var tn = (tgt.tagName || '').toUpperCase();
+            if (tn === 'INPUT' || tn === 'TEXTAREA' || tn === 'SELECT' || tgt.isContentEditable) return;
+            var k = e.key;
+            if (k >= '1' && k <= '9') {
+              var idx = parseInt(k, 10) - 1;
+              if (VIEW_KEYS[idx]) {
+                e.preventDefault();
+                var vk = VIEW_KEYS[idx];
+                upd('view', vk); upd('selectedRegion', null); upd('quizMode', false); upd('search', '');
+                if (typeof announceToSR === 'function') announceToSR('View ' + (idx + 1) + ': ' + (VIEWS[vk].name || vk) + '.');
+              }
+            } else if (k === 'q' || k === 'Q') {
+              e.preventDefault();
+              upd('quizMode', !d.quizMode); upd('quizIdx', 0); upd('quizScore', 0); upd('quizFeedback', null);
+              if (typeof announceToSR === 'function') announceToSR(d.quizMode ? 'Quiz off.' : 'Quiz on.');
+            } else if (k === 'Escape') {
+              if (d.selectedRegion) { e.preventDefault(); upd('selectedRegion', null); if (typeof announceToSR === 'function') announceToSR('Region deselected.'); }
+              else if (d.quizMode) { e.preventDefault(); upd('quizMode', false); if (typeof announceToSR === 'function') announceToSR('Quiz closed.'); }
+            } else if (k === '/') {
+              e.preventDefault();
+              var searchInput = document.querySelector('input[placeholder*="Search regions"]');
+              if (searchInput) searchInput.focus();
+            }
+          }
+
+          return React.createElement("div", {
+              className: "max-w-4xl mx-auto animate-in fade-in duration-200 outline-none",
+              role: "region",
+              "aria-label": "Brain Atlas. Keyboard shortcuts: 1 through " + VIEW_KEYS.length + " switch views, Q toggles quiz, / focuses search, Escape closes region detail.",
+              tabIndex: 0,
+              onKeyDown: onBrainKey
+            },
 
             // Header
 
@@ -4105,7 +4140,137 @@ var d = labToolData.brainAtlas || {};
 
                         React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-rose-50 rounded-lg p-2" }, sel.damage)
 
-                      )
+                      ),
+
+
+
+                      // ── AI Explain at my level (reading-level aware) ──
+
+                      (function () {
+
+                        var aiKey = '_ai_' + sel.id;
+
+                        var aiLevelKey = '_aiLevel_' + sel.id;
+
+                        var aiLoadingKey = '_aiLoading_' + sel.id;
+
+                        var aiErrorKey = '_aiError_' + sel.id;
+
+                        var aiText = d[aiKey] || '';
+
+                        var aiLevel = d[aiLevelKey] || 'grade5';
+
+                        var aiLoading = !!d[aiLoadingKey];
+
+                        var aiError = d[aiErrorKey] || '';
+
+                        var LEVELS = [
+
+                          { id: 'plain', label: 'Plain', promptHint: 'using simple everyday words and short sentences, no jargon' },
+
+                          { id: 'grade5', label: 'Grade 5', promptHint: 'for a 5th grade student, brief and friendly' },
+
+                          { id: 'hs', label: 'High School', promptHint: 'for a high school student, scientifically accurate but accessible' }
+
+                        ];
+
+                        function explain() {
+
+                          if (typeof callGemini !== 'function') { upd(aiErrorKey, 'AI tutor not available.'); return; }
+
+                          upd(aiLoadingKey, true); upd(aiErrorKey, ''); upd(aiKey, '');
+
+                          var lv = LEVELS.find(function (L) { return L.id === aiLevel; }) || LEVELS[1];
+
+                          var parts = [];
+
+                          parts.push('Brain region: ' + sel.name + '.');
+
+                          parts.push('Function: ' + sel.fn + '.');
+
+                          if (sel.conditions) parts.push('Associated conditions: ' + sel.conditions + '.');
+
+                          if (sel.damage) parts.push('Damage effects: ' + sel.damage + '.');
+
+                          if (sel.drugs) parts.push('Related pharmacology: ' + sel.drugs + '.');
+
+                          var prompt = 'Explain this brain region ' + lv.promptHint + '. '
+
+                            + parts.join(' ') + ' '
+
+                            + 'In 2-3 short sentences, explain (a) what this region does, (b) a concrete everyday example or analogy, and (c) why it matters. '
+
+                            + 'No markdown, no bullets, no headings. Use plain prose.';
+
+                          callGemini(prompt, false, false, 0.5).then(function (resp) {
+
+                            upd(aiKey, String(resp || '').trim());
+
+                            upd(aiLoadingKey, false);
+
+                            if (typeof announceToSR === 'function') announceToSR('Explanation ready for ' + sel.name + '.');
+
+                          }).catch(function () {
+
+                            upd(aiLoadingKey, false);
+
+                            upd(aiErrorKey, 'Could not reach AI tutor. Try again in a moment.');
+
+                          });
+
+                        }
+
+                        return React.createElement("div", { className: "pt-2 border-t border-slate-200" },
+
+                          React.createElement("div", { className: "flex items-center flex-wrap gap-2 mb-1.5" },
+
+                            React.createElement("p", { className: "text-[11px] font-bold text-purple-600 uppercase" }, "\u2728 Explain at my level"),
+
+                            React.createElement("div", { className: "ml-auto flex gap-1", role: "group", "aria-label": "Reading level" },
+
+                              LEVELS.map(function (L) {
+
+                                var active = aiLevel === L.id;
+
+                                return React.createElement("button", {
+
+                                  key: L.id,
+
+                                  onClick: function () { upd(aiLevelKey, L.id); },
+
+                                  "aria-label": "Reading level: " + L.label + (active ? " (selected)" : ""),
+
+                                  "aria-pressed": active,
+
+                                  className: "px-2 py-0.5 rounded text-[10px] font-bold " + (active ? 'bg-purple-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-purple-50')
+
+                                }, L.label);
+
+                              })
+
+                            ),
+
+                            React.createElement("button", {
+
+                              onClick: explain,
+
+                              disabled: aiLoading,
+
+                              "aria-label": "Generate AI explanation for " + sel.name + " at " + ((LEVELS.find(function (L) { return L.id === aiLevel; }) || {}).label || 'Grade 5') + " level",
+
+                              className: "px-2.5 py-1 rounded text-[11px] font-bold bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50"
+
+                            }, aiLoading ? '\u23F3 Thinking...' : (aiText ? '\uD83D\uDD04 Re-explain' : '\uD83E\uDDE0 Explain'))
+
+                          ),
+
+                          aiError && React.createElement("p", { className: "text-[11px] text-rose-600", role: "alert" }, aiError),
+
+                          aiText && React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed bg-purple-50 rounded-lg p-2" }, aiText)
+
+                        );
+
+                      })()
 
                     )
 

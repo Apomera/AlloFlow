@@ -1020,7 +1020,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
       // ══════════════════════════════════════════════════
       //  RENDER
       // ══════════════════════════════════════════════════
-      return el('div', { style: { background: 'linear-gradient(135deg, #064e3b 0%, #0f172a 50%, #064e3b 100%)', borderRadius: 16, minHeight: '70vh', padding: 0, boxShadow: '0 0 40px rgba(34,197,94,0.15)' } },
+      // ── Keyboard shortcuts (WCAG 2.1.1): 1-6 switch tabs, Q toggles quiz ──
+      var _CE_TABS = ['carbon', 'renewables', 'keeling', 'tipping', 'justice', 'solutions'];
+      var _CE_TAB_LABELS = { carbon: 'Carbon Calculator', renewables: 'Renewables', keeling: 'Keeling Curve', tipping: 'Tipping Points', justice: 'Climate Justice', solutions: 'Solutions' };
+      function onCeKey(e) {
+        var tgt = e.target || {};
+        var tn = (tgt.tagName || '').toUpperCase();
+        if (tn === 'INPUT' || tn === 'TEXTAREA' || tn === 'SELECT' || tgt.isContentEditable) return;
+        var k = e.key;
+        if (k >= '1' && k <= '6') {
+          var idx = parseInt(k, 10) - 1;
+          if (_CE_TABS[idx]) {
+            e.preventDefault();
+            visitTab(_CE_TABS[idx]);
+            if (announceToSR) announceToSR('Switched to ' + _CE_TAB_LABELS[_CE_TABS[idx]] + '.');
+          }
+        } else if (k === 'q' || k === 'Q') {
+          e.preventDefault();
+          upd('quizOpen', !quizOpen);
+          if (announceToSR) announceToSR(quizOpen ? 'Quiz closed.' : 'Quiz opened.');
+        }
+      }
+      return el('div', {
+        style: { background: 'linear-gradient(135deg, #064e3b 0%, #0f172a 50%, #064e3b 100%)', borderRadius: 16, minHeight: '70vh', padding: 0, boxShadow: '0 0 40px rgba(34,197,94,0.15)', outline: 'none' },
+        role: 'region',
+        'aria-label': 'Climate Explorer. Keyboard shortcuts: 1 through 6 switch tabs, Q toggles quiz.',
+        tabIndex: 0,
+        onKeyDown: onCeKey
+      },
 
         // ── Header ──
         el('div', { style: { padding: '20px 24px 16px', borderBottom: '1px solid rgba(34,197,94,0.2)', display: 'flex', alignItems: 'center', gap: 12 } },

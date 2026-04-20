@@ -2905,6 +2905,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         } catch (dcErr) {}
       };
       var skidRef = useRef({ active: false, intensity: 0 });
+      // Camera jolt state driven by the physics loop when the player crosses
+      // a residential speed bump. `intensity` scales the damped sine shake
+      // applied to camera.position.y; `startTime` anchors the decay. The
+      // render camera pass reads this each frame and decays it over ~0.4 s.
+      var bumpShakeRef = useRef({ intensity: 0, startTime: 0, lastBumpIdx: -1 });
       var eventToastRef = useRef({ msg: null, until: 0 });
       var drivingRef = useRef(false);
       var pausedRef = useRef(false);
@@ -4525,11 +4530,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
           // Friction circle: lateral grip needed vs available.
           // If you brake HARD while turning, you exceed the grip budget and skid.
-          var lateralAccelNeeded = Math.abs(car.steering) * car.speed * car.speed * 0.08;
+          //
+          // Tuning rationale: the old coefficient 0.08 + threshold 1.1 meant a
+          // full key-press turn at ~30 mph on dry pavement tripped the skid
+          // state, which felt too punishing for basic left/right turns in a
+          // driver's-ed sim. Dropping the lateral-accel coefficient to 0.06
+          // effectively widens the implied turning radius (less aggressive
+          // centripetal demand per unit of steering input), and bumping the
+          // threshold to 1.3 gives students a 30% grip buffer before the car
+          // breaks loose. With these settings:
+          //   30 mph full turn on dry  → grip 7.06 m/s², demand 6.48 → no skid
+          //   35 mph full turn on dry  → demand 8.82 → no skid
+          //   40 mph full turn on dry  → demand 11.52 → skid (correct lesson)
+          //   30 mph full turn on wet  → grip 4.12, demand 6.48 → skid (correct)
+          // Braking WHILE turning still eats lateral grip via the friction
+          // circle, so the key teaching point ("don't brake mid-turn") stays
+          // intact — you just won't skid from a normal intersection turn.
+          var lateralAccelNeeded = Math.abs(car.steering) * car.speed * car.speed * 0.06;
           var longitudinalUsed = (Math.abs(thrust) + brakeForce) / veh.mass;
           var gripAvail = mu * 9.81;
           var lateralAvail = Math.max(0, Math.sqrt(Math.max(0, gripAvail * gripAvail - longitudinalUsed * longitudinalUsed)));
-          var skid = lateralAccelNeeded > lateralAvail * 1.1;
+          var skid = lateralAccelNeeded > lateralAvail * 1.3;
           // Grace period: no skid penalties in first 3 seconds
           if (skid && Math.abs(car.speed) > 4 && timeRef.current > 3) {
             skidRef.current.active = true;
@@ -4553,6 +4574,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var moveY = Math.sin(car.heading) * car.speed * dt / 5;
           var newX = car.x + moveX;
           var newY = car.y + moveY;
+          // Speed-bump crossing detection. The residential-chunk generator
+          // registers bumps in infiniteWorldRef.current._speedBumps with grid
+          // coordinates; here we check whether the car.y advanced PAST any
+          // bump's gridY this frame while staying within the bump's lateral
+          // extent. On cross: set bumpShakeRef for the camera jolt, play the
+          // existing pothole thump, and fire one haptic pulse.
+          (function() {
+            var iwBump = infiniteWorldRef.current;
+            var bumps = iwBump && iwBump._speedBumps;
+            if (!bumps || bumps.length === 0) return;
+            if (Math.abs(car.speed) < 1) return; // Crawling? no jolt.
+            for (var bi = 0; bi < bumps.length; bi++) {
+              var sb = bumps[bi];
+              var prevDelta = car.y - sb.gridY;
+              var newDelta = newY - sb.gridY;
+              // Sign flipped = crossed the bump's Y line this frame
+              if ((prevDelta >= 0) === (newDelta >= 0)) continue;
+              // Within the bump's lateral extent?
+              var latDx = Math.abs(((newX + car.x) * 0.5) - sb.gridX);
+              if (latDx > (sb.width || 4.5) * 0.5) continue;
+              if (bumpShakeRef.current.lastBumpIdx === bi && (timeRef.current - bumpShakeRef.current.startTime) < 0.6) continue;
+              var jSpeedFactor = Math.min(1, Math.abs(car.speed) / 8);
+              bumpShakeRef.current.intensity = 0.22 + 0.28 * jSpeedFactor;
+              bumpShakeRef.current.startTime = timeRef.current;
+              bumpShakeRef.current.lastBumpIdx = bi;
+              if (typeof playThump === 'function') {
+                try { playThump(Math.min(10, Math.abs(car.speed) * 0.7 + 2)); } catch (e) {}
+              }
+              if (typeof window !== 'undefined' && window._alloHaptic) {
+                try { window._alloHaptic('bump'); } catch (e) {}
+              }
+              // Gentle safety nudge if the player was speeding over the bump.
+              if (Math.abs(car.speed) > 6 && !bumpShakeRef.current._tipped) {
+                eventToastRef.current = { msg: '🐢 Speed bump — ease off the gas next time.', until: timeRef.current + 2.5 };
+                bumpShakeRef.current._tipped = true;
+                setTimeout(function() { if (bumpShakeRef.current) bumpShakeRef.current._tipped = false; }, 12000);
+              }
+              break;
+            }
+          })();
           // Wall collision (bounce + penalty) — supports both finite map and infinite world
           var cellX = Math.floor(newX);
           var cellY = Math.floor(newY);
@@ -8889,6 +8950,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             s3.playerCarGroup.visible = true;
           }
 
+          // Speed-bump camera jolt — applied AFTER the mode-specific camera
+          // positioning so it works regardless of whether the student is in
+          // first-person, chase, or overhead. Damped sine decays to zero over
+          // ~0.45s; high-speed crossings have a larger base amplitude + a
+          // subtle nose-dip via the playerCarGroup (simulates suspension
+          // compressing). Car-pitch adds to `car._pitch` rather than
+          // replacing it so terrain-slope pitch set at line ~8772 stays
+          // intact — important on hilly rural chunks.
+          if (bumpShakeRef.current && bumpShakeRef.current.intensity > 0.001) {
+            var bumpElapsed = timeRef.current - bumpShakeRef.current.startTime;
+            if (bumpElapsed > 0.45) {
+              bumpShakeRef.current.intensity = 0;
+            } else {
+              var bumpShake = Math.sin(bumpElapsed * 28) * bumpShakeRef.current.intensity * Math.exp(-bumpElapsed * 5);
+              s3.camera.position.y += bumpShake;
+              if (s3.playerCarGroup) {
+                s3.playerCarGroup.rotation.x = (car._pitch || 0) + bumpShake * 0.25;
+              }
+            }
+          }
+
           // Brake lights
           s3.brakeMat.opacity = car.brake > 0 ? 0.9 : 0.15;
           // Player reverse lights: white when the car is actively moving backward.
@@ -9096,6 +9178,64 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               lampList.forEach(function(lamp) {
                 var lit = lamp.state === curState;
                 lamp.mesh.material.color.setHex(lit ? lamp.onHex : lamp.offHex);
+              });
+            });
+          }
+          // School-zone beacon alternating flash. Two beacons per school
+          // landmark pulse out-of-phase so the assembly reads as active
+                    // school-zone signage. Only active during daytime scenarios
+          // (real flashers turn off outside school hours — we proxy "school
+          // hours" with scn.time === 'day').
+          if (s3.schoolBeaconsByChunk && scn.time !== 'night') {
+            var schBlinkOn = Math.floor(timeRef.current * 2.5) % 2;
+            Object.keys(s3.schoolBeaconsByChunk).forEach(function(schKey) {
+              var bList = s3.schoolBeaconsByChunk[schKey];
+              if (!bList || !bList.length) return;
+              var firstB = bList[0].mesh;
+              var bPar = firstB; while (bPar.parent) bPar = bPar.parent;
+              if (bPar !== s3.scene) { delete s3.schoolBeaconsByChunk[schKey]; return; }
+              bList.forEach(function(b) {
+                var on = schBlinkOn === b.phase;
+                // Bright amber when lit, dim dark amber when off (still visible
+                // but not competing for attention).
+                b.mesh.material.color.setHex(on ? 0xffae2e : 0x5a3410);
+              });
+            });
+          }
+          // Pedestrian-signal face swap — keyed to each chunk's current signal
+          // state. Main-road RED ⇒ pedestrians cross (walk icon bright),
+          // GREEN or YELLOW ⇒ don't-walk (raised-hand icon bright). During
+          // YELLOW the hand flashes to communicate "clear the crosswalk now,"
+          // which matches real FHWA pedestrian-signal behavior.
+          if (s3.pedSigsByChunk && infiniteWorldRef.current) {
+            var _iw = infiniteWorldRef.current;
+            Object.keys(s3.pedSigsByChunk).forEach(function(chunkKey) {
+              var psList = s3.pedSigsByChunk[chunkKey];
+              if (!psList || !psList.length) return;
+              // Clean up if the chunk unloaded.
+              var firstPs = psList[0].mesh;
+              var psPar = firstPs; while (psPar.parent) psPar = psPar.parent;
+              if (psPar !== s3.scene) { delete s3.pedSigsByChunk[chunkKey]; return; }
+              // Find the signalsRef entry for this chunk.
+              var psSigEntry = null;
+              for (var psi = 0; psi < signalsRef.current.length; psi++) {
+                if (signalsRef.current[psi]._chunk === parseInt(chunkKey)) { psSigEntry = signalsRef.current[psi]; break; }
+              }
+              if (!psSigEntry) return;
+              var psWalk = (psSigEntry.state === 'red');
+              // Yellow flash: make the hand icon "blink" by rapidly toggling
+              // between the stop texture and a half-dim version (we just use
+              // the walk texture for the off-blink since both textures share
+              // the same black housing — the flash reads as "hand flickering").
+              var psBlinkOn = psSigEntry.state === 'yellow' ? (Math.floor(timeRef.current * 3) % 2 === 0) : true;
+              psList.forEach(function(ps) {
+                var target;
+                if (psWalk) target = _iw._pedSigWalkTex;
+                else target = psBlinkOn ? _iw._pedSigStopTex : _iw._pedSigWalkTex;
+                if (target && ps.mesh.material.map !== target) {
+                  ps.mesh.material.map = target;
+                  ps.mesh.material.needsUpdate = true;
+                }
               });
             });
           }
@@ -10494,6 +10634,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 if (lt.id === 'school') {
                   addRoadSign('diamond', 0xfacc15, 'SCHOOL\nZONE', 0x000000, 0);
                   addRoadSign('rect', 0xffffff, '20\nMPH', 0x000000, 3);
+                  // Amber beacons above the SCHOOL ZONE sign, twin fixtures one
+                  // on each side of the post like real school-zone warning
+                  // assemblies. Rendered at full opacity here; the per-frame
+                  // update loop flashes them alternately to read as "school in
+                  // session — slow down." Register keyed by chunk index so
+                  // they get cleaned up when the chunk unloads.
+                  s3.schoolBeaconsByChunk = s3.schoolBeaconsByChunk || {};
+                  s3.schoolBeaconsByChunk[ci] = s3.schoolBeaconsByChunk[ci] || [];
+                  var _beaconBody = new T.MeshLambertMaterial({ color: 0x1a1a1a });
+                  [-1, 1].forEach(function(beaconSide, bIdx) {
+                    // Housing — small black cylinder
+                    var bHousing = new T.Mesh(new T.CylinderGeometry(0.09, 0.11, 0.18, 10), _beaconBody);
+                    bHousing.rotation.z = Math.PI / 2;
+                    bHousing.position.set(roadShoulderX, 2.75, landmarkSignZ + beaconSide * 0.5);
+                    chunkGroup.add(bHousing);
+                    // Lens — amber sphere that will pulse
+                    var bLens = new T.Mesh(
+                      new T.SphereGeometry(0.12, 10, 8),
+                      new T.MeshBasicMaterial({ color: 0xff9500 })
+                    );
+                    bLens.position.set(roadShoulderX + (lm.side === 1 ? -0.08 : 0.08), 2.75, landmarkSignZ + beaconSide * 0.5);
+                    chunkGroup.add(bLens);
+                    s3.schoolBeaconsByChunk[ci].push({ mesh: bLens, phase: bIdx });
+                  });
                 } else if (lt.id === 'hospital') {
                   addRoadSign('rect', 0x1e40af, 'H', 0xffffff, 0);
                 } else if (lt.id === 'park') {
@@ -11240,15 +11404,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               };
               var skipZ1 = chunk.hasIntersection ? chunkWorldZ + chunk.intersectionY - 3 : -99999;
               var skipZ2 = chunk.hasIntersection ? chunkWorldZ + chunk.intersectionY + 3 : -99999;
-              // Compact always-on markings: one short stripe every 3m, both edges + center.
-              // Cheap enough that every loaded chunk gets them.
-              var alwaysStripe = function(x_offset, yellow, z_start, step) {
+              // Compact always-on markings: one stripe every N meters, both edges + center.
+              // Stripe widths were bumped from 0.12 → 0.18 (yellow) / 0.22 (white edge)
+              // and stripe lengths lengthened to match US real-world 10-ft stripe / 30-ft
+              // gap ratio at reduced game-world scale. The old markings were skinny and
+              // short enough that from the driver's 3D POV they read as faint dots on
+              // gray asphalt — especially in wet / overcast weather. Students in the
+              // driver's-ed tool need the lanes to be instantly legible.
+              var alwaysStripe = function(x_offset, yellow, z_start, step, lineWidth, lineLen) {
+                var width = lineWidth || (yellow ? 0.18 : 0.22);
+                var length = lineLen || 2.2;
                 var mat = new T.MeshBasicMaterial({ color: yellow ? alwaysYellowColor : alwaysMarksColor });
                 for (var sz = chunkWorldZ + z_start; sz < chunkWorldZ + CHUNK_SIZE - 0.5; sz += step) {
                   if (sz > skipZ1 && sz < skipZ2) continue;
                   var stCtr = markCenterAtZ(sz);
                   var stHt = iw.spline ? iw.spline.heightAt(sz - chunkWorldZ + ribbonChunkBaseY) : 0;
-                  var st = new T.Mesh(new T.PlaneGeometry(0.12, 1.0), mat);
+                  var st = new T.Mesh(new T.PlaneGeometry(width, length), mat);
                   st.rotation.x = -Math.PI / 2;
                   st.position.set(stCtr + x_offset, stHt + 0.012, sz);
                   chunkGroup.add(st);
@@ -11259,28 +11430,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               // This matches real road convention: solid = don't cross, dashed = passing allowed.
               var chunkNoPass = (chunk.biome === 'rural' || chunk.hasIntersection);
               if (chunkNoPass) {
-                // Solid double-yellow: two nearly-continuous parallel stripes offset ±0.18m
+                // Solid double-yellow: two nearly-continuous parallel stripes offset ±0.22m
+                // (slightly wider separation so both stripes read distinctly at distance).
                 var solidYellowMat = new T.MeshBasicMaterial({ color: alwaysYellowColor });
                 var dyStep = 2.0;
                 for (var dyZ = chunkWorldZ + 0.5; dyZ < chunkWorldZ + CHUNK_SIZE - 0.5; dyZ += dyStep) {
                   if (dyZ > skipZ1 && dyZ < skipZ2) continue;
                   var dyCtr = markCenterAtZ(dyZ);
                   var dyHt = iw.spline ? iw.spline.heightAt(dyZ - chunkWorldZ + ribbonChunkBaseY) : 0;
-                  var dyLeft = new T.Mesh(new T.PlaneGeometry(0.10, 2.05), solidYellowMat);
+                  var dyLeft = new T.Mesh(new T.PlaneGeometry(0.14, 2.05), solidYellowMat);
                   dyLeft.rotation.x = -Math.PI / 2;
-                  dyLeft.position.set(dyCtr - 0.18, dyHt + 0.013, dyZ);
+                  dyLeft.position.set(dyCtr - 0.22, dyHt + 0.013, dyZ);
                   chunkGroup.add(dyLeft);
-                  var dyRight = new T.Mesh(new T.PlaneGeometry(0.10, 2.05), solidYellowMat);
+                  var dyRight = new T.Mesh(new T.PlaneGeometry(0.14, 2.05), solidYellowMat);
                   dyRight.rotation.x = -Math.PI / 2;
-                  dyRight.position.set(dyCtr + 0.18, dyHt + 0.013, dyZ);
+                  dyRight.position.set(dyCtr + 0.22, dyHt + 0.013, dyZ);
                   chunkGroup.add(dyRight);
                 }
               } else {
-                // Dashed single-yellow (passing allowed)
-                alwaysStripe(0, true, 1.0, 2.2);
+                // Dashed single-yellow (passing allowed) — 3m stripe, 4m gap = 7m cycle.
+                // Longer stripes read clearly from the driver's POV vs the old 1m @ 2.2m.
+                alwaysStripe(0, true, 1.0, 7.0, 0.20, 3.0);
               }
-              alwaysStripe(-(roadHalfW - 0.3), false, 0.7, 1.8);
-              alwaysStripe(+(roadHalfW - 0.3), false, 0.7, 1.8);
+              // Solid white edge lines — bumped to a near-continuous run so the road
+              // edges are unambiguous. Old 1.0 m line every 1.8 m gave 44% coverage;
+              // 2.5 m line every 3.2 m gives ~78% coverage, reading as a solid line
+              // at distance while still saving polys vs a full continuous extrusion.
+              alwaysStripe(-(roadHalfW - 0.3), false, 0.7, 3.2, 0.22, 2.5);
+              alwaysStripe(+(roadHalfW - 0.3), false, 0.7, 3.2, 0.22, 2.5);
               // ── Painted speed limit numbers on the road surface ──
               // At the start of each chunk whose biome is different from the previous one,
               // paint a big "XX" number on the road so the driver sees the new zone's limit.
@@ -11665,18 +11842,172 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   });
                 }
                 if (chunk.biome === 'commercial' || chunk.biome === 'suburban') {
-                  for (var ldZ = chunkWorldZ + 2; ldZ < chunkWorldZ + CHUNK_SIZE - 2; ldZ += 3) {
+                  // In-lane position guides on wider commercial/suburban roads.
+                  // Bumped to match the primary lane marking visibility pass so
+                  // they read as intentional painted hints rather than thin
+                  // specks that disappear at distance.
+                  for (var ldZ = chunkWorldZ + 2; ldZ < chunkWorldZ + CHUNK_SIZE - 2; ldZ += 5) {
                     if (ldZ > skipZ1 && ldZ < skipZ2) continue;
                     var ldCtr = markCenterAtZ(ldZ);
                     var ldHt = iw.spline ? iw.spline.heightAt(ldZ - chunkWorldZ + ribbonChunkBaseY) : 0;
                     [-1.5, 1.5].forEach(function(laneOff) {
-                      var ld = new T.Mesh(new T.PlaneGeometry(0.1, 1.5), edgeLineMat);
+                      var ld = new T.Mesh(new T.PlaneGeometry(0.16, 2.2), edgeLineMat);
                       ld.rotation.x = -Math.PI / 2;
                       ld.position.set(ldCtr + laneOff, ldHt + 0.013, ldZ);
                       chunkGroup.add(ld);
                     });
                   }
+                  // ── Painted straight-ahead arrows on commercial/suburban lanes ──
+                  // Once every couple of chunks, drop a large white arrow in each
+                  // direction of travel. Teaches students to read painted lane
+                  // guidance and makes the lane structure visually obvious from
+                  // the driver's POV. Skip on chunks with intersections (arrows
+                  // there would conflict with crosswalk/stop-line paint).
+                  if (!chunk.hasIntersection && (ci % 2 === 0)) {
+                    var arrowMat = new T.MeshBasicMaterial({
+                      color: 0xffffff,
+                      transparent: true,
+                      opacity: 0.88,
+                      side: T.DoubleSide, // triangle winding flips with travel dir → render both sides
+                    });
+                    // One arrow per direction-lane; offset ±2.0m from centerline
+                    // so each sits in the middle of its own lane.
+                    [-2.0, 2.0].forEach(function(arrowLaneOff) {
+                      var arrowZ = chunkWorldZ + CHUNK_SIZE * 0.5;
+                      var arrowCtr = markCenterAtZ(arrowZ);
+                      var arrowHt = iw.spline ? iw.spline.heightAt(arrowZ - chunkWorldZ + ribbonChunkBaseY) : 0;
+                      // Arrow points in direction of travel for that lane:
+                      // right lane (arrowLaneOff > 0) goes -Z (toward player at origin),
+                      // left lane (arrowLaneOff < 0) goes +Z (away).
+                      var travelForward = arrowLaneOff > 0 ? -1 : 1;
+                      // Arrow shaft — thin rectangle
+                      var shaft = new T.Mesh(new T.PlaneGeometry(0.35, 2.4), arrowMat);
+                      shaft.rotation.x = -Math.PI / 2;
+                      shaft.position.set(arrowCtr + arrowLaneOff, arrowHt + 0.0135, arrowZ);
+                      chunkGroup.add(shaft);
+                      // Arrowhead — triangle built on the XZ ground plane; positioned
+                      // at the forward end of the shaft. DoubleSide on the material
+                      // covers both possible winding orders (sign-dependent).
+                      var headGeo = new T.BufferGeometry();
+                      var headVerts = new Float32Array([
+                        -0.55, 0, 0,
+                         0.55, 0, 0,
+                         0,    0, 0.9 * travelForward,
+                      ]);
+                      headGeo.setAttribute('position', new T.BufferAttribute(headVerts, 3));
+                      headGeo.setIndex([0, 1, 2]);
+                      headGeo.computeVertexNormals();
+                      var head = new T.Mesh(headGeo, arrowMat);
+                      head.position.set(arrowCtr + arrowLaneOff, arrowHt + 0.0135, arrowZ + travelForward * 1.3);
+                      chunkGroup.add(head);
+                    });
+                  }
                 }
+                // ─── SPEED BUMPS — residential traffic-calming ─────────────
+                // On residential chunks (and roughly every-other chunk so the
+                // player encounters them at a realistic density), paint a
+                // yellow chevron warning band on the road plus a shallow
+                // raised slab that reads as a real bump in the 3D view.
+                // Skip chunks that already carry an intersection so the
+                // chevrons don't land on top of the crosswalk.
+                if (chunk.biome === 'residential' && !chunk.hasIntersection && (ci % 2 === 1)) {
+                  var bumpZ = chunkWorldZ + CHUNK_SIZE * 0.35;
+                  var bumpCtrX = markCenterAtZ(bumpZ);
+                  var bumpHt = iw.spline ? iw.spline.heightAt(bumpZ - chunkWorldZ + ribbonChunkBaseY) : 0;
+                  // Register bump in the world-shared list so the physics loop
+                  // can detect when the player crosses it and trigger the
+                  // camera jolt + thump sound. Deduped by chunk index so
+                  // re-loading the same chunk doesn't double-count.
+                  iw._speedBumps = iw._speedBumps || [];
+                  if (!iw._speedBumps.some(function(b) { return b.chunkIdx === ci; })) {
+                    // Store in GRID coordinates (matches car.x/car.y). The
+                    // ribbon-chunk Y = ci * CHUNK_SIZE, so grid Y of the bump
+                    // is `ci * CHUNK_SIZE + CHUNK_SIZE * 0.35`.
+                    iw._speedBumps.push({
+                      chunkIdx: ci,
+                      gridY: ci * CHUNK_SIZE + CHUNK_SIZE * 0.35,
+                      // Grid X = MAP_SIZE/2 + bumpCtrX (inverse of the world
+                      // transform `x - MAP_SIZE / 2`).
+                      gridX: MAP_SIZE / 2 + bumpCtrX,
+                      width: (typeof MAX_ROAD_WIDTH !== 'undefined' ? MAX_ROAD_WIDTH : 4.5),
+                    });
+                  }
+                  // Painted yellow chevron band — two rows of triangular
+                  // warnings, one for each direction of travel, pointing AT
+                  // the bump so approaching drivers see them head-on.
+                  var chevronMat = new T.MeshBasicMaterial({ color: 0xfacc15, side: T.DoubleSide });
+                  [-1.2, 1.2].forEach(function(chevZOff) {
+                    // Direction arrows point toward the bump (travelling toward +Z
+                    // sees chevrons pointing -Z, and vice versa).
+                    var chevPointDir = chevZOff > 0 ? -1 : 1;
+                    // Cluster of 5 chevrons spanning the road width.
+                    for (var chvI = -2; chvI <= 2; chvI++) {
+                      var chvGeo = new T.BufferGeometry();
+                      var chvVerts = new Float32Array([
+                        -0.28, 0, 0,
+                         0.28, 0, 0,
+                         0,    0, 0.45 * chevPointDir,
+                      ]);
+                      chvGeo.setAttribute('position', new T.BufferAttribute(chvVerts, 3));
+                      chvGeo.setIndex([0, 1, 2]);
+                      chvGeo.computeVertexNormals();
+                      var chv = new T.Mesh(chvGeo, chevronMat);
+                      chv.position.set(bumpCtrX + chvI * 0.85, bumpHt + 0.014, bumpZ + chevZOff);
+                      chunkGroup.add(chv);
+                    }
+                  });
+                  // Physical speed-bump slab — a low-profile rectangle that
+                  // sits ~3cm above the road surface. Shaped like a long
+                  // cylinder segment so light reflects off its crown the
+                  // same way a real asphalt bump does. Keep the bump length
+                  // in world Z very short (0.6m) so driving over it reads
+                  // as a brief jolt rather than a ramp.
+                  var slabMat = new T.MeshLambertMaterial({ color: 0x4a2f1b });
+                  var slabGeo = new T.CylinderGeometry(0.18, 0.18, roadHalfW * 2 - 0.6, 8, 1, false, 0, Math.PI);
+                  var slab = new T.Mesh(slabGeo, slabMat);
+                  // CylinderGeometry's axis is +Y by default. We want the bump
+                  // axis to lie ACROSS the road (±X), so rotate around Z by π/2.
+                  slab.rotation.z = Math.PI / 2;
+                  slab.position.set(bumpCtrX, bumpHt + 0.04, bumpZ);
+                  chunkGroup.add(slab);
+                  // Yellow stripes painted along the length of the bump for
+                  // high visibility at night — three alternating yellow dashes.
+                  var bumpStripeMat = new T.MeshBasicMaterial({ color: 0xfacc15 });
+                  for (var bsi = -2; bsi <= 2; bsi += 2) {
+                    var bsX = bumpCtrX + bsi * (roadHalfW * 0.35);
+                    var bs = new T.Mesh(new T.PlaneGeometry(1.2, 0.18), bumpStripeMat);
+                    bs.rotation.x = -Math.PI / 2;
+                    bs.position.set(bsX, bumpHt + 0.08, bumpZ);
+                    chunkGroup.add(bs);
+                  }
+                  // Small "SPEED BUMP" or "SLOW" painted warning 4m before it.
+                  // Use a pre-cached canvas texture (one texture per chunk is
+                  // fine — cached via iw cache like the speed-limit numbers).
+                  try {
+                    if (!iw._bumpWordTex) {
+                      var bwCan = document.createElement('canvas');
+                      bwCan.width = 256; bwCan.height = 96;
+                      var bwCtx = bwCan.getContext('2d');
+                      bwCtx.clearRect(0, 0, 256, 96);
+                      bwCtx.fillStyle = '#f5f5f5';
+                      bwCtx.font = 'bold 70px system-ui, sans-serif';
+                      bwCtx.textAlign = 'center';
+                      bwCtx.textBaseline = 'middle';
+                      bwCtx.fillText('SLOW', 128, 48);
+                      iw._bumpWordTex = new T.CanvasTexture(bwCan);
+                    }
+                    var bwMat = new T.MeshBasicMaterial({ map: iw._bumpWordTex, transparent: true });
+                    var bwWordZ = bumpZ - 4.5;
+                    var bwCtrX = markCenterAtZ(bwWordZ);
+                    var bwHt = iw.spline ? iw.spline.heightAt(bwWordZ - chunkWorldZ + ribbonChunkBaseY) : 0;
+                    var bwWord = new T.Mesh(new T.PlaneGeometry(1.8, 0.7), bwMat);
+                    bwWord.rotation.x = -Math.PI / 2;
+                    bwWord.rotation.z = Math.PI; // read correctly by approach direction
+                    bwWord.position.set(bwCtrX, bwHt + 0.013, bwWordZ);
+                    chunkGroup.add(bwWord);
+                  } catch (bwErr) { /* canvas unsupported — skip painted word */ }
+                }
+
                 // ─── BIKE LANES — painted green strip inside the right edge line ───
                 // Rendered in residential/suburban/commercial biomes (where cyclists spawn).
                 // The strip is a continuous ribbon following the spline, with a solid white
@@ -12003,14 +12334,76 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       });
                     });
                   });
-                  // Pedestrian signal on the near pole — small "WALK/DONT WALK" box
-                  var pedSigGeo = new T.BoxGeometry(0.32, 0.28, 0.18);
+                  // Pedestrian signal on the near pole — properly iconographic
+                  // "WALK / DON'T WALK" face. Previously this was a plain orange
+                  // rectangle that read as a light but not as a pedestrian
+                  // signal. Now it's a black housing with a canvas-textured
+                  // face showing the standard walking-person icon (white) on
+                  // the left and a raised hand (orange) on the right — so the
+                  // student immediately recognizes the fixture even at distance.
+                  var pedSigGeo = new T.BoxGeometry(0.36, 0.32, 0.18);
                   var pedSigBox = new T.Mesh(pedSigGeo, new T.MeshLambertMaterial({ color: 0x111115 }));
                   pedSigBox.position.set(poleBaseX, crossHt + 3.2, poleBaseZ);
                   chunkGroup.add(pedSigBox);
-                  var pedSigFace = new T.Mesh(new T.PlaneGeometry(0.28, 0.24), new T.MeshBasicMaterial({ color: 0xff7a20 }));
-                  pedSigFace.position.set(poleBaseX, crossHt + 3.2, poleBaseZ + 0.10);
-                  chunkGroup.add(pedSigFace);
+                  try {
+                    // Build one canvas texture per state (walk / don't-walk) and
+                    // cache on the infinite-world ref so every intersection
+                    // shares the same two textures. The render-time update loop
+                    // swaps `material.map` based on the chunk's current main-
+                    // road signal state: main road RED → walk (cars stopped,
+                    // peds go), GREEN or YELLOW → don't-walk (cars moving).
+                    var _buildPedTex = function(walkOn) {
+                      var psCan = document.createElement('canvas');
+                      psCan.width = 128; psCan.height = 112;
+                      var psCtx = psCan.getContext('2d');
+                      psCtx.fillStyle = '#000000';
+                      psCtx.fillRect(0, 0, 128, 112);
+                      // Left half: walking-person icon (bright white when WALK, dim when DON'T-WALK)
+                      psCtx.fillStyle = walkOn ? '#ffffff' : '#2a2a2a';
+                      psCtx.strokeStyle = walkOn ? '#ffffff' : '#2a2a2a';
+                      psCtx.beginPath(); psCtx.arc(34, 22, 8, 0, Math.PI * 2); psCtx.fill();
+                      psCtx.beginPath();
+                      psCtx.moveTo(28, 32); psCtx.lineTo(40, 32);
+                      psCtx.lineTo(44, 64); psCtx.lineTo(30, 64); psCtx.closePath();
+                      psCtx.fill();
+                      psCtx.lineWidth = 7; psCtx.lineCap = 'round';
+                      psCtx.beginPath(); psCtx.moveTo(36, 64); psCtx.lineTo(24, 92); psCtx.stroke();
+                      psCtx.beginPath(); psCtx.moveTo(36, 64); psCtx.lineTo(46, 92); psCtx.stroke();
+                      psCtx.beginPath(); psCtx.moveTo(34, 38); psCtx.lineTo(48, 58); psCtx.stroke();
+                      // Right half: raised hand (bright orange when DON'T-WALK, dim when WALK)
+                      psCtx.fillStyle = walkOn ? '#3a1f10' : '#ff7a20';
+                      psCtx.beginPath();
+                      psCtx.moveTo(80, 64); psCtx.lineTo(112, 64);
+                      psCtx.lineTo(112, 40); psCtx.lineTo(80, 40); psCtx.closePath();
+                      psCtx.fill();
+                      for (var fI = 0; fI < 4; fI++) {
+                        psCtx.fillRect(80 + fI * 8, 20, 6, 22);
+                      }
+                      psCtx.beginPath();
+                      psCtx.moveTo(76, 48); psCtx.lineTo(80, 40);
+                      psCtx.lineTo(80, 60); psCtx.lineTo(76, 60); psCtx.closePath();
+                      psCtx.fill();
+                      return new T.CanvasTexture(psCan);
+                    };
+                    if (!iw._pedSigWalkTex) iw._pedSigWalkTex = _buildPedTex(true);
+                    if (!iw._pedSigStopTex) iw._pedSigStopTex = _buildPedTex(false);
+                    // Default to don't-walk so intersections spawn with the
+                    // correct initial state (signal starts green for the main
+                    // road → cars moving → peds must wait).
+                    var pedSigMat = new T.MeshBasicMaterial({ map: iw._pedSigStopTex, transparent: true, side: T.DoubleSide });
+                    var pedSigFace = new T.Mesh(new T.PlaneGeometry(0.32, 0.28), pedSigMat);
+                    pedSigFace.position.set(poleBaseX, crossHt + 3.2, poleBaseZ + 0.10);
+                    chunkGroup.add(pedSigFace);
+                    // Register for per-frame state updates keyed by the chunk index.
+                    s3.pedSigsByChunk = s3.pedSigsByChunk || {};
+                    s3.pedSigsByChunk[ci] = s3.pedSigsByChunk[ci] || [];
+                    s3.pedSigsByChunk[ci].push({ mesh: pedSigFace, chunkIdx: ci });
+                  } catch (pedErr) {
+                    // Canvas unsupported — fall back to old orange rectangle.
+                    var pedSigFace = new T.Mesh(new T.PlaneGeometry(0.32, 0.28), new T.MeshBasicMaterial({ color: 0xff7a20 }));
+                    pedSigFace.position.set(poleBaseX, crossHt + 3.2, poleBaseZ + 0.10);
+                    chunkGroup.add(pedSigFace);
+                  }
                 } else {
                   // STOP SIGN (4-way stop intersection) — octagonal red sign with white STOP text
                   // Place on both sides of the approach for the main road, offset by spline center.
@@ -12085,17 +12478,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     } catch (ccErr) { /* fallback omitted */ }
                   });
                 }
-                // Crosswalk stripes — span the curved main road, elevation-aware.
+                // Crosswalk stripes — span the full main road width, elevation-aware.
+                // Previously seven 0.25 m stripes covered only ~5 m of the 7-9 m road
+                // which left the crosswalk floating in the middle. Real zebra
+                // crosswalks span curb-to-curb. Now the stripe count adapts to
+                // road width so the ladder goes from near one shoulder to the
+                // other, and each stripe is wider (0.50 m) + longer (1.0 m)
+                // for better visibility from the driver's POV.
                 var cwMat = new T.MeshBasicMaterial({ color: 0xffffff });
                 var cwCtrZ = crossZ - 3.5;
                 var cwCtrX = splineCenterAtZ(cwCtrZ);
-                for (var cwi = -3; cwi <= 3; cwi++) {
-                  var cwGeo = new T.PlaneGeometry(0.25, 0.7);
+                var cwSpan = (roadHalfW - 0.4) * 2; // leave 0.4m margin per side
+                var cwStripeW = 0.50;
+                var cwStripeGap = 0.55;
+                var cwCount = Math.max(6, Math.floor(cwSpan / (cwStripeW + cwStripeGap)));
+                var cwPitch = cwSpan / cwCount;
+                for (var cwi = 0; cwi < cwCount; cwi++) {
+                  var cwGeo = new T.PlaneGeometry(cwStripeW, 1.0);
                   var cw = new T.Mesh(cwGeo, cwMat);
                   cw.rotation.x = -Math.PI / 2;
-                  cw.position.set(cwCtrX + cwi * 0.7, crossHt + 0.022, cwCtrZ);
+                  // Center the ladder on the road: walk from -cwSpan/2 to +cwSpan/2.
+                  var cwX = cwCtrX + (-cwSpan / 2 + cwi * cwPitch + cwPitch / 2);
+                  cw.position.set(cwX, crossHt + 0.022, cwCtrZ);
                   chunkGroup.add(cw);
                 }
+                // Stop bar — solid white transverse line placed ~1.5m BEFORE the
+                // crosswalk on the approaching side (drivers come from -Z). Real
+                // 4-way stop intersections paint this bar as the legal "stop here"
+                // point. Gives the student a crisp visual target to stop at.
+                var sbMat = new T.MeshBasicMaterial({ color: 0xffffff });
+                var sbZ = cwCtrZ - 1.5;
+                var sbCtrX = splineCenterAtZ(sbZ);
+                var sbGeo = new T.PlaneGeometry(roadHalfW * 2 - 0.8, 0.3);
+                var sbMesh = new T.Mesh(sbGeo, sbMat);
+                sbMesh.rotation.x = -Math.PI / 2;
+                sbMesh.position.set(sbCtrX, crossHt + 0.02, sbZ);
+                chunkGroup.add(sbMesh);
                 // Street name sign — green rectangle with white text.
                 // Names are deterministic per chunk index so the same intersection
                 // always has the same name on revisit.

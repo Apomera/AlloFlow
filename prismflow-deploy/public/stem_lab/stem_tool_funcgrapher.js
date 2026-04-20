@@ -339,7 +339,31 @@ window.StemLab = window.StemLab || {
 
 
 
-          return React.createElement("div", { className: "max-w-3xl mx-auto animate-in fade-in duration-200" },
+          // ── Keyboard shortcuts (WCAG 2.1.1): 1-6 pick function type, D/A/T/L toggle overlays ──
+          function onFgKey(e) {
+            var tgt = e.target || {};
+            var tn = (tgt.tagName || '').toUpperCase();
+            if (tn === 'INPUT' || tn === 'TEXTAREA' || tn === 'SELECT' || tgt.isContentEditable) return;
+            var k = e.key;
+            if (k >= '1' && k <= '9') {
+              var idx = parseInt(k, 10) - 1;
+              if (TYPES[idx]) {
+                e.preventDefault();
+                upd('type', TYPES[idx].id);
+                if (typeof announceToSR === 'function') announceToSR(TYPES[idx].label + ' selected.');
+              }
+            } else if (k === 'd' || k === 'D') { e.preventDefault(); upd('showDeriv', !d.showDeriv); }
+            else if (k === 'a' || k === 'A') { e.preventDefault(); upd('showArea', !d.showArea); }
+            else if (k === 't' || k === 'T') { e.preventDefault(); upd('showTable', !d.showTable); }
+            else if (k === 'l' || k === 'L') { e.preventDefault(); upd('showLearn', !d.showLearn); }
+          }
+          return React.createElement("div", {
+              className: "max-w-3xl mx-auto animate-in fade-in duration-200 outline-none",
+              role: "region",
+              "aria-label": "Function Grapher. Keyboard shortcuts: 1 through 6 pick a function type, D derivative, A area, T table, L learn.",
+              tabIndex: 0,
+              onKeyDown: onFgKey
+            },
 
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
 
@@ -1062,7 +1086,67 @@ window.StemLab = window.StemLab || {
 
             })(),
 
-            React.createElement("button", { "aria-label": "Snapshot", onClick: () => { setToolSnapshots(prev => [...prev, { id: 'fg-' + Date.now(), tool: 'funcGrapher', label: d.type + ': a=' + d.a + ' b=' + d.b, data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+            React.createElement("button", { "aria-label": "Snapshot", onClick: () => { setToolSnapshots(prev => [...prev, { id: 'fg-' + Date.now(), tool: 'funcGrapher', label: d.type + ': a=' + d.a + ' b=' + d.b, data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot"),
+
+            // ── AI Function Tutor (reading-level aware) ──
+            (function () {
+              var aiLevel = d.aiLevel || 'grade5';
+              var aiText = d.aiExplain || '';
+              var aiLoading = !!d.aiLoading;
+              var aiError = d.aiError || '';
+              var LEVELS = [
+                { id: 'plain', label: 'Plain', hint: 'using simple everyday words and short sentences, no jargon' },
+                { id: 'grade5', label: 'Grade 5', hint: 'for a 5th grade student' },
+                { id: 'hs', label: 'High School', hint: 'for a high school algebra or pre-calc student, including vocabulary like slope, intercept, vertex, period, amplitude' }
+              ];
+              function explain() {
+                if (typeof callGemini !== 'function') { upd('aiError', 'AI tutor not available.'); return; }
+                upd('aiLoading', true); upd('aiError', ''); upd('aiExplain', '');
+                var lv = LEVELS.find(function (L) { return L.id === aiLevel; }) || LEVELS[1];
+                var fnDesc = d.type === 'linear' ? 'y = ' + d.a + 'x + ' + d.b
+                  : d.type === 'quadratic' ? 'y = ' + d.a + 'x\u00B2 + ' + d.b + 'x + ' + d.c
+                  : d.type === 'trig' ? 'y = ' + d.a + ' sin(' + d.b + 'x + ' + d.c + ')'
+                  : d.type === 'cubic' ? 'y = ' + d.a + 'x\u00B3 + ' + d.b + 'x + ' + d.c
+                  : d.type === 'exponential' ? 'y = ' + d.a + ' e^(' + d.b + 'x) + ' + d.c
+                  : 'y = ' + d.a + ' |x + ' + d.b + '| + ' + d.c;
+                var prompt = 'Explain this function ' + lv.hint + '. '
+                  + 'Function: ' + fnDesc + '. Type: ' + d.type + '. '
+                  + 'In 3 short sentences: (1) What the graph looks like. (2) Which coefficient changes the graph in what way. (3) One real-world situation this function models. '
+                  + 'No markdown, no bullets, no headings. Plain prose.';
+                callGemini(prompt, false, false, 0.5).then(function (resp) {
+                  upd('aiExplain', String(resp || '').trim()); upd('aiLoading', false);
+                  if (typeof announceToSR === 'function') announceToSR('Explanation ready.');
+                }).catch(function () {
+                  upd('aiLoading', false); upd('aiError', 'Could not reach AI tutor. Try again in a moment.');
+                });
+              }
+              return React.createElement("div", { className: "mt-3 p-3 rounded-xl border-2 border-purple-200 bg-purple-50", role: "region", "aria-label": "AI function tutor" },
+                React.createElement("div", { className: "flex items-center flex-wrap gap-2 mb-1.5" },
+                  React.createElement("span", { className: "text-sm font-bold text-purple-700" }, "\u2728 Explain at my level"),
+                  React.createElement("div", { className: "ml-auto flex gap-1", role: "group", "aria-label": "Reading level" },
+                    LEVELS.map(function (L) {
+                      var active = aiLevel === L.id;
+                      return React.createElement("button", {
+                        key: L.id,
+                        onClick: function () { upd('aiLevel', L.id); },
+                        "aria-label": "Reading level: " + L.label + (active ? " (selected)" : ""),
+                        "aria-pressed": active,
+                        className: "px-2 py-0.5 rounded text-[10px] font-bold " + (active ? 'bg-purple-600 text-white' : 'bg-white text-purple-700 border border-purple-200 hover:bg-purple-100')
+                      }, L.label);
+                    })
+                  ),
+                  React.createElement("button", {
+                    onClick: explain,
+                    disabled: aiLoading,
+                    "aria-label": "Generate AI explanation at " + ((LEVELS.find(function (L) { return L.id === aiLevel; }) || {}).label || 'Grade 5') + " level",
+                    className: "px-3 py-1 rounded-lg text-[11px] font-bold bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50"
+                  }, aiLoading ? '\u23F3 Thinking...' : (aiText ? '\uD83D\uDD04 Re-explain' : '\uD83E\uDDE0 Explain'))
+                ),
+                aiError && React.createElement("p", { className: "text-[11px] text-rose-600", role: "alert" }, aiError),
+                aiText && React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed bg-white rounded-lg p-2 border border-purple-100" }, aiText),
+                !aiText && !aiLoading && !aiError && React.createElement("p", { className: "text-[11px] italic text-slate-500" }, "Click \u201CExplain\u201D for the AI tutor to describe this function at your chosen reading level.")
+              );
+            })()
 
           )
       })();

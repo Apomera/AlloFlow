@@ -2905,7 +2905,121 @@ var d = labToolData || {};
 
                 currentLevel.goal > 0 && React.createElement("p", { className: "text-xs text-amber-400 font-bold" },
 
-                  "\uD83C\uDFAF Goal: " + (blLevel === 3 ? "Reinforce 5 lever presses, then stop and observe!" : "Get " + currentLevel.goal + " " + (currentLevel.target || 'target') + " responses!"))
+                  "\uD83C\uDFAF Goal: " + (blLevel === 3 ? "Reinforce 5 lever presses, then stop and observe!" : "Get " + currentLevel.goal + " " + (currentLevel.target || 'target') + " responses!")),
+
+
+
+                // ── AI Tutor: classroom example at my reading level ──
+
+                (function () {
+
+                  var aiLevel = d.aiLevel || 'grade5';
+
+                  var aiText = d['aiExplain_' + blLevel] || '';
+
+                  var aiLoading = !!d['aiLoading_' + blLevel];
+
+                  var aiError = d['aiError_' + blLevel] || '';
+
+                  var LEVELS = [
+
+                    { id: 'plain', label: 'Plain', hint: 'using simple everyday words and short sentences, no jargon' },
+
+                    { id: 'grade5', label: 'Grade 5', hint: 'for a 5th grade student, with a concrete classroom or family example' },
+
+                    { id: 'hs', label: 'High School', hint: 'for a high school psychology student' },
+
+                    { id: 'prof', label: 'Pro', hint: 'for a new school psychologist or BCBA trainee, using accurate technical language' }
+
+                  ];
+
+                  function explain() {
+
+                    if (typeof callGemini !== 'function') { upd('aiError_' + blLevel, 'AI tutor not available.'); return; }
+
+                    upd('aiLoading_' + blLevel, true); upd('aiError_' + blLevel, ''); upd('aiExplain_' + blLevel, '');
+
+                    var lv = LEVELS.find(function (L) { return L.id === aiLevel; }) || LEVELS[1];
+
+                    var prompt = 'Explain the behavior analysis concept "' + currentLevel.concept + '" ' + lv.hint + '. '
+
+                      + 'Context: ' + (currentLevel.intro || '') + ' Definition: ' + (currentLevel.termDef || '') + '. '
+
+                      + 'In 3 short sentences: (1) What the concept means in everyday terms. (2) A concrete classroom or everyday example. (3) One common misconception to watch out for. '
+
+                      + 'No markdown, no bullets, no headings. Plain prose only.';
+
+                    callGemini(prompt, false, false, 0.5).then(function (resp) {
+
+                      upd('aiExplain_' + blLevel, String(resp || '').trim());
+
+                      upd('aiLoading_' + blLevel, false);
+
+                      if (announceToSR) announceToSR('Explanation ready.');
+
+                    }).catch(function () {
+
+                      upd('aiLoading_' + blLevel, false);
+
+                      upd('aiError_' + blLevel, 'Could not reach AI tutor. Try again in a moment.');
+
+                    });
+
+                  }
+
+                  return React.createElement("div", { className: "bg-slate-800/60 rounded-xl p-3 border border-purple-500/40 mt-2", role: "region", "aria-label": "AI behavior-analysis tutor" },
+
+                    React.createElement("div", { className: "flex items-center flex-wrap gap-2 mb-1.5" },
+
+                      React.createElement("span", { className: "text-xs font-bold text-purple-300" }, "\u2728 Explain at my level"),
+
+                      React.createElement("div", { className: "ml-auto flex gap-1", role: "group", "aria-label": "Reading level" },
+
+                        LEVELS.map(function (L) {
+
+                          var active = aiLevel === L.id;
+
+                          return React.createElement("button", {
+
+                            key: L.id,
+
+                            onClick: function () { upd('aiLevel', L.id); },
+
+                            "aria-label": "Reading level: " + L.label + (active ? " (selected)" : ""),
+
+                            "aria-pressed": active,
+
+                            className: "px-2 py-0.5 rounded text-[10px] font-bold " + (active ? 'bg-purple-600 text-white' : 'bg-slate-700 text-purple-200 hover:bg-slate-600 border border-purple-500/30')
+
+                          }, L.label);
+
+                        })
+
+                      ),
+
+                      React.createElement("button", {
+
+                        onClick: explain,
+
+                        disabled: aiLoading,
+
+                        "aria-label": "Generate AI explanation at " + ((LEVELS.find(function (L) { return L.id === aiLevel; }) || {}).label || 'Grade 5') + " level",
+
+                        className: "px-2.5 py-1 rounded text-[11px] font-bold bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50"
+
+                      }, aiLoading ? '\u23F3 Thinking...' : (aiText ? '\uD83D\uDD04 Re-explain' : '\uD83E\uDDE0 Explain'))
+
+                    ),
+
+                    aiError && React.createElement("p", { className: "text-[11px] text-rose-400", role: "alert" }, aiError),
+
+                    aiText && React.createElement("p", { className: "text-xs text-slate-100 leading-relaxed bg-slate-900/50 rounded-lg p-2 border border-purple-500/20" }, aiText),
+
+                    !aiText && !aiLoading && !aiError && React.createElement("p", { className: "text-[11px] italic text-slate-400" }, "Click \u201CExplain\u201D for a classroom example of this concept at your chosen reading level.")
+
+                  );
+
+                })()
 
               ),
 

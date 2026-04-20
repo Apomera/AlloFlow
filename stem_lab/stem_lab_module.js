@@ -2922,6 +2922,11 @@
                 color: 'emerald', ready: true
               },
               {
+                id: 'bakingScience', icon: '🥐', label: 'Baking Lab',
+                desc: 'Leavening chemistry, emulsions, recipe scaling, oven timeline, and Maillard browning — the science behind every bake.',
+                color: 'amber', ready: true
+              },
+              {
                 id: 'dissection', icon: '\uD83D\uDD2C', label: 'Dissection Lab',
                 desc: 'Virtual frog dissection — peel back layers to explore organs, muscles, and skeleton.',
                 color: 'emerald', ready: true
@@ -3058,6 +3063,11 @@
                 id: 'roadReady', icon: '🚗', label: "RoadReady: Driver's Ed",
                 desc: "3D driving simulator + US permit test + fuel efficiency physics. 14 scenarios, 114 practice questions, real stopping-distance math. Maine state focus.",
                 color: 'emerald', ready: true
+              },
+              {
+                id: 'bikeLab', icon: '🚲', label: 'BikeLab: Physics & Repair',
+                desc: '2D side-view physics sandbox (force vectors, energy graph) + gearing lab (chainring/cassette math, climb sim) + hands-on repair simulator (patch tube, brakes, chain, derailleur).',
+                color: 'amber', ready: true
               },
               {
                 id: 'echoTrainer', icon: '🎧', label: 'Echo Navigator',
@@ -4130,6 +4140,7 @@
             worldBuilder: true,
             flightSim: true,
             roadReady: true,
+            bikeLab: true,
             atcTower: true,
             musicSynth: true,
             beehive: true,
@@ -4138,7 +4149,8 @@
             oratory: true,
             singing: true,
             migration: true,
-            appLab: true
+            appLab: true,
+            bakingScience: true
           };
           // Throttle fallback log to once per tool (avoid flooding console on re-renders)
           if (!window._stemFallbackLogged) window._stemFallbackLogged = {};

@@ -1880,7 +1880,67 @@ const d = labToolData.wave;
 
             ),
 
-            React.createElement("button", { "aria-label": "Snapshot", onClick: () => { setToolSnapshots(prev => [...prev, { id: 'wv-' + Date.now(), tool: 'wave', label: 'A=' + d.amplitude + ' f=' + d.frequency, data: Object.assign({}, d), timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+            React.createElement("button", { "aria-label": "Snapshot", onClick: () => { setToolSnapshots(prev => [...prev, { id: 'wv-' + Date.now(), tool: 'wave', label: 'A=' + d.amplitude + ' f=' + d.frequency, data: Object.assign({}, d), timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot"),
+
+            // ── AI Wave Tutor (reading-level aware) ──
+            (function () {
+              var aiLevel = d.aiLevel || 'grade5';
+              var aiText = d.aiExplain || '';
+              var aiLoading = !!d.aiLoading;
+              var aiError = d.aiError || '';
+              var LEVELS = [
+                { id: 'plain', label: 'Plain', hint: 'using simple everyday words and short sentences' },
+                { id: 'grade5', label: 'Grade 5', hint: 'for a 5th grade student, brief and friendly' },
+                { id: 'hs', label: 'High School', hint: 'for a high school physics student, with appropriate equations' }
+              ];
+              function explain() {
+                if (typeof callGemini !== 'function') { var labToolData = ctx.toolData; setLabToolData(function (prev) { return Object.assign({}, prev, { wave: Object.assign({}, prev.wave, { aiError: 'AI tutor not available.' }) }); }); return; }
+                setLabToolData(function (prev) { return Object.assign({}, prev, { wave: Object.assign({}, prev.wave, { aiLoading: true, aiError: '', aiExplain: '' }) }); });
+                var lv = LEVELS.find(function (L) { return L.id === aiLevel; }) || LEVELS[1];
+                var waveMode = d.waveMode || 'free';
+                var waveType = d.waveType || 'sine';
+                var prompt = 'Explain this wave setup ' + lv.hint + '. '
+                  + 'Wave mode: ' + waveMode + '. Wave type: ' + waveType + '. Frequency: ' + (d.frequency || 2) + ' Hz. Amplitude: ' + (d.amplitude || 50) + '. '
+                  + (d.showSecond ? 'A second wave is also showing for comparison. ' : '')
+                  + 'In 3 short sentences: (1) What the student is seeing on screen. (2) Which property changes the wave the most (and how). (3) One everyday example of this wave behavior. '
+                  + 'No markdown, no bullets, no headings. Plain prose.';
+                callGemini(prompt, false, false, 0.5).then(function (resp) {
+                  setLabToolData(function (prev) { return Object.assign({}, prev, { wave: Object.assign({}, prev.wave, { aiExplain: String(resp || '').trim(), aiLoading: false }) }); });
+                  if (typeof announceToSR === 'function') announceToSR('Explanation ready.');
+                }).catch(function () {
+                  setLabToolData(function (prev) { return Object.assign({}, prev, { wave: Object.assign({}, prev.wave, { aiLoading: false, aiError: 'Could not reach AI tutor. Try again in a moment.' }) }); });
+                });
+              }
+              function setAiLevel(id) {
+                setLabToolData(function (prev) { return Object.assign({}, prev, { wave: Object.assign({}, prev.wave, { aiLevel: id }) }); });
+              }
+              return React.createElement("div", { className: "mt-3 p-3 rounded-xl border-2 border-purple-200 bg-purple-50", role: "region", "aria-label": "AI wave tutor" },
+                React.createElement("div", { className: "flex items-center flex-wrap gap-2 mb-1.5" },
+                  React.createElement("span", { className: "text-sm font-bold text-purple-700" }, "\u2728 Explain at my level"),
+                  React.createElement("div", { className: "ml-auto flex gap-1", role: "group", "aria-label": "Reading level" },
+                    LEVELS.map(function (L) {
+                      var active = aiLevel === L.id;
+                      return React.createElement("button", {
+                        key: L.id,
+                        onClick: function () { setAiLevel(L.id); },
+                        "aria-label": "Reading level: " + L.label + (active ? " (selected)" : ""),
+                        "aria-pressed": active,
+                        className: "px-2 py-0.5 rounded text-[10px] font-bold " + (active ? 'bg-purple-600 text-white' : 'bg-white text-purple-700 border border-purple-200 hover:bg-purple-100')
+                      }, L.label);
+                    })
+                  ),
+                  React.createElement("button", {
+                    onClick: explain,
+                    disabled: aiLoading,
+                    "aria-label": "Generate AI explanation at " + ((LEVELS.find(function (L) { return L.id === aiLevel; }) || {}).label || 'Grade 5') + " level",
+                    className: "px-3 py-1 rounded-lg text-[11px] font-bold bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50"
+                  }, aiLoading ? '\u23F3 Thinking...' : (aiText ? '\uD83D\uDD04 Re-explain' : '\uD83E\uDDE0 Explain'))
+                ),
+                aiError && React.createElement("p", { className: "text-[11px] text-rose-600", role: "alert" }, aiError),
+                aiText && React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed bg-white rounded-lg p-2 border border-purple-100" }, aiText),
+                !aiText && !aiLoading && !aiError && React.createElement("p", { className: "text-[11px] italic text-slate-500" }, "Click \u201CExplain\u201D for the AI tutor to describe the current wave at your chosen reading level.")
+              );
+            })()
 
           )
       })();

@@ -1368,7 +1368,38 @@
     // ══════════════════════════════════════════════════════════════
     // ── RENDER ──
     // ══════════════════════════════════════════════════════════════
-    return el('div', { key: 'archStudio', style: { display: 'flex', flexDirection: 'column', height: '100%', background: '#0f172a', borderRadius: 16, overflow: 'hidden' } },
+    // ── Keyboard shortcuts (WCAG 2.1.1): P/E/A switch mode, R rotates ──
+    function onArchKey(e) {
+      var tgt = e.target || {};
+      var tn = (tgt.tagName || '').toUpperCase();
+      if (tn === 'INPUT' || tn === 'TEXTAREA' || tn === 'SELECT' || tgt.isContentEditable) return;
+      var k = e.key;
+      if (k === 'p' || k === 'P') { e.preventDefault(); upd('mode', 'place'); if (announceToSR) announceToSR('Place mode.'); }
+      else if (k === 'e' || k === 'E') { e.preventDefault(); upd('mode', 'erase'); if (announceToSR) announceToSR('Erase mode.'); }
+      else if (k === 'a' || k === 'A') { e.preventDefault(); upd('mode', 'paint'); if (announceToSR) announceToSR('Paint mode.'); }
+      else if (k === 'r' || k === 'R') {
+        e.preventDefault();
+        var nextDeg = ((d.rotation || 0) + 90) % 360;
+        upd('rotation', nextDeg);
+        if (announceToSR) announceToSR('Rotated to ' + nextDeg + ' degrees.');
+      } else if (k >= '1' && k <= '9') {
+        var idx = parseInt(k, 10) - 1;
+        if (modes[idx]) {
+          e.preventDefault();
+          upd('mode', modes[idx].id);
+          if (announceToSR) announceToSR(modes[idx].label + ' mode.');
+        }
+      }
+    }
+
+    return el('div', {
+      key: 'archStudio',
+      style: { display: 'flex', flexDirection: 'column', height: '100%', background: '#0f172a', borderRadius: 16, overflow: 'hidden', outline: 'none' },
+      role: 'region',
+      'aria-label': 'Architecture Studio. Keyboard shortcuts: P Place, E Erase, A Paint, R Rotate.',
+      tabIndex: 0,
+      onKeyDown: onArchKey
+    },
 
       // ── Header bar ──
       el('div', { style: { display: 'flex', alignItems: 'center', gap: 6, padding: '8px 12px', background: 'linear-gradient(90deg,#1e293b,#0f172a)', borderBottom: '1px solid #334155', flexWrap: 'wrap' } },

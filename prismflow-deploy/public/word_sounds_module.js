@@ -3145,6 +3145,7 @@
           ({
             data,
             onPlayAudio,
+            onPlayInstruction,
             onCheckAnswer,
             isEditing,
             onUpdateOption,
@@ -3478,12 +3479,27 @@
                   /*#__PURE__*/ React.createElement(
                     "button",
                     {
-                      "aria-label": t("common.hear_target_sound"),
-                      onClick: () =>
-                        onPlayAudio(
-                          data.targetChar || data.options?.[0] || data.family,
-                        ),
-                      title: t("common.hear_target_sound"),
+                      // Prefer the full instruction sequence ("Find words that
+                      // start with the /s/ sound, as in sit") when the parent
+                      // provided one. Falls back to the bare target sound for
+                      // callers that don't wire onPlayInstruction (e.g. the
+                      // Word Families reuse at line ~12393 where the target
+                      // phoneme IS the full teaching cue).
+                      "aria-label": typeof onPlayInstruction === 'function'
+                        ? (t("common.replay_instructions") || "Replay instructions")
+                        : t("common.hear_target_sound"),
+                      onClick: () => {
+                        if (typeof onPlayInstruction === 'function') {
+                          onPlayInstruction();
+                        } else {
+                          onPlayAudio(
+                            data.targetChar || data.options?.[0] || data.family,
+                          );
+                        }
+                      },
+                      title: typeof onPlayInstruction === 'function'
+                        ? (t("common.replay_instructions") || "Replay instructions")
+                        : t("common.hear_target_sound"),
                       className:
                         "ml-2 p-2 rounded-full bg-violet-100 text-violet-600 hover:bg-violet-200 transition-colors",
                     },
@@ -6334,45 +6350,37 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         },
         [preloadedWords, fetchWordData, setWsPreloadedWords],
       );
+      // Refresh audio for a single distractor word: clear every in-memory layer
+      // handleAudio would hit (audioInstances / audioCache / ttsInflight / global
+      // blob URL cache) and then call handleAudio so a fresh TTS synthesis runs.
+      // Previously this regenerated the distractor WORD via Gemini, which surprised
+      // users who expected the refresh button to only re-synth pronunciation.
       const handleRegenerateOption = React.useCallback(
         async (wordIdx, listKey, opIdx, currentVal) => {
-          if (!preloadedWords || !preloadedWords[wordIdx]) return;
-          const wordObj = preloadedWords[wordIdx];
-          const targetWord = wordObj.targetWord || wordObj.word;
-          const currentList = wordObj[listKey] || [];
-          debugLog(`🔄 Regenerating option for ${targetWord} [${listKey}]`);
+          if (!currentVal) return;
+          const raw = String(currentVal);
+          const text = raw.toLowerCase().trim();
+          debugLog(`🔄 Refreshing audio for: "${raw}"`);
           try {
-            const prompt =
-              listKey === "rhymeDistractors"
-                ? `Generate 1 simple English rhyming word for "${targetWord}". it must NOT be "${targetWord}" and MUST NOT be in this list: [${currentList.join(", ")}]. Return ONLY the single word.`
-                : `Generate 1 phonetically similar distractor word for "${targetWord}" (e.g. swap one sound). It must NOT be "${targetWord}" and MUST NOT be in this list: [${currentList.join(", ")}]. Return ONLY the single word.`;
-            if (!callGemini) throw new Error("GenAI not available");
-            const newOptionRaw = await callGemini(
-              prompt,
-              "You are a precise literacy generator. Output only the single word requested. No punctuation.",
-            );
-            const newOption = newOptionRaw
-              ? newOptionRaw.trim().replace(/['".]+/g, "")
-              : null;
-            if (newOption && newOption.length > 0) {
-              setWsPreloadedWords((prev) => {
-                const copy = [...prev];
-                const newWord = { ...copy[wordIdx] };
-                const newList = [...(newWord[listKey] || [])];
-                newList[opIdx] = newOption;
-                newWord[listKey] = newList;
-                copy[wordIdx] = newWord;
-                return copy;
-              });
-              debugLog("✅ Option Regenerated:", newOption);
-              handleAudio(newOption, false);
+            if (audioInstances.current && audioInstances.current.has(text)) {
+              audioInstances.current.delete(text);
             }
+            if (audioCache && audioCache.current && audioCache.current.has(text)) {
+              audioCache.current.delete(text);
+            }
+            if (ttsInflight.current && ttsInflight.current.has(text)) {
+              ttsInflight.current.delete(text);
+            }
+            if (typeof window.__clearAlloTtsCacheForWord === "function") {
+              window.__clearAlloTtsCacheForWord(raw);
+            }
+            await handleAudio(raw);
           } catch (e) {
-            warnLog("Option regeneration failed", e);
-            if (showError) showError("Failed to regenerate option. Try again.");
+            warnLog("Audio refresh failed", e);
+            if (showError) showError("Failed to refresh audio. Try again.");
           }
         },
-        [preloadedWords, callGemini, setWsPreloadedWords, handleAudio],
+        [audioCache, handleAudio, showError],
       );
       const handleRegenerateAll = React.useCallback(async () => {
         debugLog("🧹 Deep cleaning audio state for regeneration...");
@@ -11953,33 +11961,50 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               if (aiSortData.phoneme) {
                 targetPhoneme = aiSortData.phoneme;
               }
-              debugLog("🤖 Using AI-generated Sound Sort matches:", aiMatches);
+              debugLog("🤖 Using AI-generated Sound Sort matches (unverified):", aiMatches);
+            }
+            // ── Phoneme-validate AI matches ──
+            // The AI sometimes hallucinates words that don't actually share the
+            // target phoneme (e.g. returning "pig" as a /s/-starting match).
+            // Previously those survived into the matches list while ALSO landing
+            // in the distractor pool — students would see the same word in both
+            // positions, or tap a "match" and get told it doesn't match. We now
+            // run every AI word through the same estimator the distractor side
+            // uses, dropping any that don't pass.
+            const phonemeFor = (w) =>
+              aiMode === "first"
+                ? estimateFirstPhoneme(w.toLowerCase())
+                : estimateLastPhoneme(w.toLowerCase());
+            const aiRejected = [];
+            aiMatches = aiMatches.filter((w) => {
+              const pass = phonemeFor(w) === targetPhoneme;
+              if (!pass) aiRejected.push(w);
+              return pass;
+            });
+            if (aiRejected.length > 0) {
+              warnLog(
+                "🧹 Dropping AI sound-sort words whose " + aiMode + " phoneme ≠ target '" + targetPhoneme + "':",
+                aiRejected,
+              );
             }
             const pool = SOUND_MATCH_POOL || ["bat", "cat", "dog", "sit"];
             const poolMatches = pool.filter((w) => {
               const wClean = w.toLowerCase();
               if (wClean === targetWord) return false;
-              const pPhoneme =
-                aiMode === "first"
-                  ? estimateFirstPhoneme(wClean)
-                  : estimateLastPhoneme(wClean);
-              return pPhoneme === targetPhoneme;
+              return phonemeFor(wClean) === targetPhoneme;
             });
             const matches = [...new Set([...aiMatches, ...poolMatches])];
-            const distractorsPool = pool.filter(
-              (w) => {
-                const wClean = w.toLowerCase();
-                if (wClean === targetWord) return false;
-                const pPhoneme =
-                  aiMode === "first"
-                    ? estimateFirstPhoneme(wClean)
-                    : estimateLastPhoneme(wClean);
-                return pPhoneme !== targetPhoneme;
-              },
-              (prevProps, nextProps) =>
-                prevProps.letter === nextProps.letter &&
-                prevProps.word === nextProps.word,
-            );
+            // Build distractor pool from the pool + exclude matches so we never
+            // show the same word on both sides. (The old code passed a bogus
+            // second "comparator" arg to Array.prototype.filter — filter only
+            // takes one arg, so the comparator was silently ignored.)
+            const matchesLower = new Set(matches.map((w) => w.toLowerCase()));
+            const distractorsPool = pool.filter((w) => {
+              const wClean = w.toLowerCase();
+              if (wClean === targetWord) return false;
+              if (matchesLower.has(wClean)) return false;
+              return phonemeFor(wClean) !== targetPhoneme;
+            });
             const wordLen = targetWord.length;
             const hasBlend = /^[bcdfghjklmnpqrstvwxyz]{2,}/i.test(targetWord);
             const difficulty =
@@ -12042,6 +12067,43 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   distractors: selectedDistractors,
                 },
                 onPlayAudio: handleAudio,
+                // Full-instruction replay — mirrors the auto-playback sequence
+                // that runs on first load (instruction prompt → target sound →
+                // "as in" → target word). The old replay button only played
+                // `data.targetChar`, so a student who needed to hear the task
+                // again could only replay the sound, not the "find words that
+                // start with the /s/ sound" guidance.
+                onPlayInstruction: async () => {
+                  try {
+                    const isoMode = mode;
+                    const bank = (typeof window !== 'undefined' && window.__ALLO_INSTRUCTION_AUDIO) || {};
+                    const promptKey = isoMode === 'first' ? 'sound_match_start' : 'sound_match_end';
+                    if (bank[promptKey]) {
+                      await handleAudio(bank[promptKey]);
+                      await new Promise((r) => setTimeout(r, 200));
+                    } else {
+                      await handleAudio(
+                        isoMode === 'first'
+                          ? `Find words that start with the ${targetPhoneme} sound`
+                          : `Find words that end with the ${targetPhoneme} sound`,
+                      );
+                      await new Promise((r) => setTimeout(r, 200));
+                    }
+                    await handleAudio(targetPhoneme);
+                    if (targetWord) {
+                      await new Promise((r) => setTimeout(r, 150));
+                      if (bank['as_in']) {
+                        await handleAudio(bank['as_in']);
+                      } else {
+                        await handleAudio('as in');
+                      }
+                      await new Promise((r) => setTimeout(r, 100));
+                      await handleAudio(targetWord);
+                    }
+                  } catch (e) {
+                    warnLog('Replay instruction failed:', e && e.message);
+                  }
+                },
                 isEditing: isEditing,
                 onUpdateOption: handleOptionUpdate,
                 onCheckAnswer: (result) => {

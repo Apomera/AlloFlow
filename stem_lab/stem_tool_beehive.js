@@ -71,6 +71,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       var awardStemXP = ctx.awardXP;
       var announceToSR = ctx.announceToSR;
       var isDark = ctx.isDark;
+      var callGemini = ctx.callGemini;
+      var gradeLevel = ctx.gradeLevel;
 
       // Inject fullscreen CSS rules once per session (idempotent).
       // Without this, inline `height: 500px` sticks even in fullscreen.
@@ -874,14 +876,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           if (awardStemXP) awardStemXP('beehive', 5 + Math.round(reduction / 5), 'Treated varroa: ' + treatment.label);
         }
 
+        // ── Beekeeper-as-character animation trigger ──
+        // Writes { type, caption, emoji, startedAt, duration } to d.bkAnim; canvas draw reads it
+        // to override the random cameo with a scripted walk-to-hive action for ~5s.
+        // IMPORTANT: duration here must match the auto-clear timeout below.
+        function triggerBeekeeperAction(type, caption, emoji) {
+          var duration = 5000;
+          upd('bkAnim', { type: type, caption: caption, emoji: emoji, startedAt: Date.now(), duration: duration });
+          setTimeout(function () { upd('bkAnim', null); }, duration);
+        }
         function treatVarroa() {
           // Open IPM modal instead of applying a single treatment directly
           upd('showTreatModal', true);
+          triggerBeekeeperAction('treat', 'Checking mite load — time to treat.', '🧪');
         }
         function addSuper() {
           updAll({ morale: Math.min(100, morale + 10), wax: wax + 2 });
           playSfx(sfxBeeBuzz); if (addToast) addToast('📦 Added a honey super — more space for the colony!', 'success');
           if (awardStemXP) awardStemXP('beehive', 5, 'Added super');
+          triggerBeekeeperAction('super', 'Adding a super — more room for honey!', '📦');
+        }
+        function smokeHive() {
+          updAll({ morale: Math.min(100, morale + 2) });
+          playSfx(sfxBeeBuzz); if (addToast) addToast('💨 Smoked the hive — bees will gorge on honey and stay calm.', 'info');
+          if (awardStemXP) awardStemXP('beehive', 2, 'Smoked hive');
+          triggerBeekeeperAction('smoke', 'Smoking the hive to calm the bees.', '💨');
+        }
+        function requeenColony() {
+          // Requeen: replaces old queen, brief morale dip (bees accept new queen over ~2 days),
+          // then boosts queenHealth back to 100. Connects to Castes tab teaching.
+          updAll({ queenHealth: 100, morale: Math.max(40, morale - 5) });
+          playSfx(sfxSuccess); if (addToast) addToast('👑 Installed a new queen — colony will accept her in 2-3 days.', 'success');
+          if (awardStemXP) awardStemXP('beehive', 8, 'Requeened colony');
+          triggerBeekeeperAction('requeen', 'Installing a new queen.', '👑');
         }
         // Identify the honey varietal based on season + garden pollinators
         function identifyVarietal() {
@@ -912,11 +939,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           updAll({ honey: 15, score: score + Math.round(harvested * 20), totalHarvested: (d.totalHarvested || 0) + harvested, varietals: newVarietals });
           playSfx(sfxBeeCollect); if (addToast) addToast(varietal.emoji + ' Harvested ' + harvested + ' lbs of ' + varietal.name + ' honey! (+' + Math.round(harvested * 20) + ' pts)', 'success');
           if (awardStemXP) awardStemXP('beehive', 15, 'Harvested ' + varietal.name);
+          triggerBeekeeperAction('harvest', 'Harvesting ' + varietal.name + ' honey — ' + harvested + ' lbs!', varietal.emoji || '🍯');
         }
         function feedBees() {
           updAll({ honey: honey + 5, morale: Math.min(100, morale + 5) });
           playSfx(sfxSuccess); if (addToast) addToast('🫙 Fed sugar syrup — emergency reserves replenished.', 'success');
           if (awardStemXP) awardStemXP('beehive', 3, 'Fed bees');
+          triggerBeekeeperAction('feed', 'Pouring sugar syrup into the top feeder.', '🫙');
         }
         function dismissEvent() {
           var patch = { activeEvent: null, eventsHandled: (d.eventsHandled || 0) + 1 };
@@ -1438,7 +1467,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
         // Store live colony state in a ref so the animation loop always reads fresh values
         var _liveState = React.useRef({});
-        _liveState.current = { workers: workers, honey: honey, season: season, habitat: habitat, gardenPollinators: gardenPollinators, gardenBonus: gardenBonus, colonyHealth: colonyHealth, queenHealth: queenHealth, morale: morale, day: day, brood: brood, drones: drones, beeView: beeView };
+        _liveState.current = { workers: workers, honey: honey, season: season, habitat: habitat, gardenPollinators: gardenPollinators, gardenBonus: gardenBonus, colonyHealth: colonyHealth, queenHealth: queenHealth, morale: morale, day: day, brood: brood, drones: drones, beeView: beeView, bkAnim: d.bkAnim };
 
         React.useEffect(function() {
           console.log('[Beehive DEBUG] beekeeper useEffect fired. viewMode=' + viewMode);
@@ -5548,7 +5577,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 _flowers.current = fa;
               }
               var bees = _bees.current, flowers = _flowers.current;
-              var hiveX = W * 0.10, hiveY = H * 0.20, hiveW = W * 0.30, hiveH = H * 0.56;
+              // Proportions: real Langstroth hive is ~3-5ft tall; beekeeper is 5-6ft tall;
+              // canvas was oversized (hiveW 30% / hiveH 56%). Scaled to realistic diorama proportions.
+              var hiveW = W * 0.12, hiveH = H * 0.30;
+              var hiveX = W * 0.11, hiveY = H * 0.48; // sit hive lower so ground line is consistent
+              var bkScale = Math.max(2.2, H / 220); // beekeeper size multiplier (was implicit 1.0)
               c.clearRect(0, 0, W, H);
 
               // ── Sky (seasonal gradient + atmosphere) ──
@@ -6221,41 +6254,137 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
-              // ── Beekeeper silhouette (rare cameo — walks toward hive every ~30s) ──
-              var bkCycle = (t2 % 1800) / 1800; // 0..1 over ~30s
-              if (season !== 3 && bkCycle > 0.2 && bkCycle < 0.7) {
-                var bkProgress = (bkCycle - 0.2) / 0.5; // 0..1 while visible
-                var bkX = W * 0.85 - bkProgress * (W * 0.85 - (hiveX + hiveW + 40));
-                var bkY = H * 0.765;
-                var bkStep = Math.sin(t2 * 0.15) * 1.2; // walking gait
+              // ── Beekeeper sprite ──
+              // Action-mode overrides the cameo cycle when d.bkAnim is set:
+              //   walk-in (0-25%) → perform at hive entrance (25-75%) → walk-back (75-100%)
+              // Action overlay (emoji above hands) + speech bubble (caption) render during "perform" phase.
+              (function () {
+                var bkAnim = ls.bkAnim;
+                var now = Date.now();
+                var inAction = bkAnim && bkAnim.startedAt && (now - bkAnim.startedAt) < (bkAnim.duration || 5000);
+
+                var bkCycle = (t2 % 1800) / 1800; // cameo cycle
+                var inCameo = !inAction && season !== 3 && bkCycle > 0.2 && bkCycle < 0.7;
+                if (!inAction && !inCameo) return;
+
+                // Compute position + phase
+                var homeX = W * 0.95;
+                var hiveEntranceX = hiveX + hiveW + 40 * bkScale;
+                var bkX, phase, perfT;
+                if (inAction) {
+                  var t = (now - bkAnim.startedAt) / (bkAnim.duration || 5000);
+                  if (t < 0.25) { // walk-in
+                    var p = t / 0.25;
+                    bkX = homeX - p * (homeX - hiveEntranceX);
+                    phase = 'walk';
+                  } else if (t < 0.75) { // perform
+                    bkX = hiveEntranceX;
+                    phase = 'perform';
+                    perfT = (t - 0.25) / 0.5; // 0..1 during perform
+                  } else { // walk-back
+                    var p2 = (t - 0.75) / 0.25;
+                    bkX = hiveEntranceX + p2 * (homeX - hiveEntranceX);
+                    phase = 'walk';
+                  }
+                } else {
+                  var bkProgress = (bkCycle - 0.2) / 0.5;
+                  bkX = homeX - bkProgress * (homeX - hiveEntranceX);
+                  phase = 'walk';
+                }
+
+                var bkGround = hiveY + hiveH + 4;
+                var bkBodyH = 14 * bkScale;
+                var bkBodyW = 8 * bkScale;
+                var bkY = bkGround - bkBodyH - (8 * bkScale);
+                var bkStep = phase === 'walk' ? Math.sin(t2 * 0.15) * 1.2 * bkScale : 0;
+
                 c.save();
                 // Shadow
                 c.fillStyle = 'rgba(0,0,0,0.25)';
-                c.beginPath(); c.ellipse(bkX, bkY + 24, 7, 1.6, 0, 0, 6.28); c.fill();
-                // Body / bee suit (white)
+                c.beginPath(); c.ellipse(bkX, bkGround, 7 * bkScale, 1.6 * bkScale, 0, 0, 6.28); c.fill();
+                // Body
                 c.fillStyle = '#f1f5f9';
-                c.fillRect(bkX - 4, bkY, 8, 14);
-                // Legs (walking animation)
+                c.fillRect(bkX - bkBodyW / 2, bkY, bkBodyW, bkBodyH);
+                // Legs
                 c.fillStyle = '#1e293b';
-                c.fillRect(bkX - 3, bkY + 14, 2.5, 8 + bkStep);
-                c.fillRect(bkX + 0.5, bkY + 14, 2.5, 8 - bkStep);
-                // Arms (holding smoker)
+                c.fillRect(bkX - 3 * bkScale, bkY + bkBodyH, 2.5 * bkScale, 8 * bkScale + bkStep);
+                c.fillRect(bkX + 0.5 * bkScale, bkY + bkBodyH, 2.5 * bkScale, 8 * bkScale - bkStep);
+                // Arms — raised slightly during perform phase
                 c.fillStyle = '#f1f5f9';
-                c.fillRect(bkX - 6, bkY + 2, 2, 9);
-                c.fillRect(bkX + 4, bkY + 2, 2, 9);
-                // Veil hood (dome)
+                var armLift = phase === 'perform' ? -2 * bkScale * Math.abs(Math.sin(t2 * 0.18)) : 0;
+                c.fillRect(bkX - 6 * bkScale, bkY + 2 * bkScale + armLift, 2 * bkScale, 9 * bkScale);
+                c.fillRect(bkX + 4 * bkScale, bkY + 2 * bkScale + armLift, 2 * bkScale, 9 * bkScale);
+                // Veil hood
                 c.fillStyle = '#f8fafc';
-                c.beginPath(); c.arc(bkX, bkY - 3, 5, 0, 6.28); c.fill();
-                // Dark mesh (veil grid)
+                c.beginPath(); c.arc(bkX, bkY - 3 * bkScale, 5 * bkScale, 0, 6.28); c.fill();
                 c.fillStyle = 'rgba(30,41,59,0.4)';
-                c.beginPath(); c.arc(bkX, bkY - 2, 4, 0, 6.28); c.fill();
-                // Smoker in hand (tiny)
+                c.beginPath(); c.arc(bkX, bkY - 2 * bkScale, 4 * bkScale, 0, 6.28); c.fill();
+                // Smoker in hand
                 c.fillStyle = '#44403c';
-                c.fillRect(bkX - 8, bkY + 8, 3, 6);
-                c.fillStyle = 'rgba(220,220,220,0.5)';
-                c.beginPath(); c.arc(bkX - 7, bkY + 5 + Math.sin(t2 * 0.1) * 0.5, 1.5, 0, 6.28); c.fill();
+                c.fillRect(bkX - 8 * bkScale, bkY + 8 * bkScale, 3 * bkScale, 6 * bkScale);
+                // Smoker puff — bigger during "smoke" action
+                var puffAlpha = (bkAnim && bkAnim.type === 'smoke' && phase === 'perform') ? 0.85 : 0.5;
+                var puffSize = (bkAnim && bkAnim.type === 'smoke' && phase === 'perform') ? 3.5 : 1.5;
+                c.fillStyle = 'rgba(220,220,220,' + puffAlpha + ')';
+                c.beginPath(); c.arc(bkX - 7 * bkScale, bkY + 5 * bkScale + Math.sin(t2 * 0.1) * 0.5 * bkScale, puffSize * bkScale, 0, 6.28); c.fill();
                 c.restore();
-              }
+
+                // ── Action overlay + speech bubble (perform phase only) ──
+                if (inAction && phase === 'perform' && bkAnim) {
+                  // Action emoji near hands (slight bounce)
+                  var itemY = bkY + 4 * bkScale + Math.sin(t2 * 0.2) * 1.5;
+                  var itemX = bkX + 7 * bkScale;
+                  c.save();
+                  c.font = 'bold ' + Math.round(14 * bkScale) + 'px system-ui, sans-serif';
+                  c.textAlign = 'center';
+                  c.textBaseline = 'middle';
+                  c.fillText(bkAnim.emoji || '🔍', itemX, itemY);
+                  c.restore();
+
+                  // Speech bubble above the beekeeper's head
+                  var caption = String(bkAnim.caption || '');
+                  if (caption) {
+                    c.save();
+                    c.font = 'bold 12px system-ui, sans-serif';
+                    c.textAlign = 'center';
+                    c.textBaseline = 'middle';
+                    var textW = c.measureText(caption).width;
+                    var bubW = Math.min(W * 0.45, textW + 20);
+                    var bubH = 28;
+                    var bubX = Math.max(8, Math.min(W - bubW - 8, bkX - bubW / 2));
+                    var bubY = bkY - 10 * bkScale - bubH - 6;
+                    // Bubble background
+                    c.fillStyle = 'rgba(255,255,255,0.96)';
+                    c.strokeStyle = 'rgba(30,41,59,0.5)';
+                    c.lineWidth = 1.2;
+                    c.beginPath();
+                    if (c.roundRect) c.roundRect(bubX, bubY, bubW, bubH, 8);
+                    else c.rect(bubX, bubY, bubW, bubH);
+                    c.fill(); c.stroke();
+                    // Tail
+                    c.beginPath();
+                    c.moveTo(bkX - 4, bubY + bubH);
+                    c.lineTo(bkX, bubY + bubH + 6);
+                    c.lineTo(bkX + 4, bubY + bubH);
+                    c.closePath();
+                    c.fillStyle = 'rgba(255,255,255,0.96)';
+                    c.fill();
+                    c.stroke();
+                    // Caption text
+                    c.fillStyle = '#1e293b';
+                    // Truncate if needed to fit bubble
+                    var drawnCaption = caption;
+                    if (textW > bubW - 16) {
+                      while (drawnCaption.length > 3 && c.measureText(drawnCaption + '…').width > bubW - 16) {
+                        drawnCaption = drawnCaption.slice(0, -1);
+                      }
+                      drawnCaption += '…';
+                    }
+                    c.fillText(drawnCaption, bubX + bubW / 2, bubY + bubH / 2);
+                    c.restore();
+                  }
+                }
+              })();
 
               // ── Hornet predator (rare — flies fast across scene every ~45s, adds drama) ──
               var hnCycle = (t2 % 2700) / 2700;
@@ -6290,6 +6419,122 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   c.fillStyle = 'rgba(220,38,38,' + Math.min(1, (hnProgress - 0.2) * 5) * 0.9 + ')';
                   c.textAlign = 'center';
                   c.fillText('⚠', hnX, hnY - 12);
+                }
+              }
+
+              // ── Bee waterer (shallow bowl + rocks — real beekeepers always keep water nearby) ──
+              // Placed on the ground between hive and apiary sign. Rocks let bees land without drowning.
+              if (season !== 3) {
+                var bwX = W * 0.49, bwY = H * 0.88;
+                var bwR = Math.min(14, W * 0.018);
+                // Bowl shadow
+                c.fillStyle = 'rgba(0,0,0,0.25)';
+                c.beginPath(); c.ellipse(bwX, bwY + 1.5, bwR * 1.05, bwR * 0.28, 0, 0, 6.28); c.fill();
+                // Terracotta saucer rim
+                c.fillStyle = '#a16f4a';
+                c.beginPath(); c.ellipse(bwX, bwY, bwR, bwR * 0.35, 0, 0, 6.28); c.fill();
+                // Water surface (animated shimmer)
+                var wavePhase = Math.sin(t2 * 0.05) * 0.15;
+                var wgrad = c.createRadialGradient(bwX - 1, bwY - 0.5, 1, bwX, bwY, bwR * 0.9);
+                wgrad.addColorStop(0, 'rgba(186,230,253,' + (0.85 + wavePhase) + ')');
+                wgrad.addColorStop(1, 'rgba(56,189,248,' + (0.7 + wavePhase) + ')');
+                c.fillStyle = wgrad;
+                c.beginPath(); c.ellipse(bwX, bwY, bwR * 0.85, bwR * 0.28, 0, 0, 6.28); c.fill();
+                // Ripple ring (periodic — from a bee landing)
+                var rippleT = (t2 % 180) / 180;
+                if (rippleT < 0.6) {
+                  c.strokeStyle = 'rgba(255,255,255,' + (0.5 * (1 - rippleT / 0.6)) + ')';
+                  c.lineWidth = 0.6;
+                  c.beginPath(); c.ellipse(bwX + 2, bwY - 0.2, bwR * 0.2 + rippleT * bwR * 0.5, (bwR * 0.2 + rippleT * bwR * 0.5) * 0.35, 0, 0, 6.28); c.stroke();
+                }
+                // Landing rocks (3 small pebbles so bees don't drown)
+                var rockPositions = [[-4, -0.8], [2, -1.2], [5, 0.3]];
+                for (var rkI = 0; rkI < rockPositions.length; rkI++) {
+                  var rp = rockPositions[rkI];
+                  c.fillStyle = rkI % 2 === 0 ? '#78716c' : '#a8a29e';
+                  c.beginPath(); c.ellipse(bwX + rp[0], bwY + rp[1], 1.5, 0.9, 0, 0, 6.28); c.fill();
+                  c.fillStyle = 'rgba(255,255,255,0.25)';
+                  c.beginPath(); c.ellipse(bwX + rp[0] - 0.3, bwY + rp[1] - 0.4, 0.6, 0.3, 0, 0, 6.28); c.fill();
+                }
+                // Tiny bee occasionally perched on a rock (spring/summer only)
+                if ((season === 0 || season === 1) && Math.sin(t2 * 0.02) > 0.4) {
+                  var wbx = bwX + 2, wby = bwY - 1.9;
+                  c.fillStyle = '#fbbf24';
+                  c.beginPath(); c.ellipse(wbx, wby, 1.2, 0.8, 0, 0, 6.28); c.fill();
+                  c.fillStyle = '#292524';
+                  c.fillRect(wbx - 0.15, wby - 0.8, 0.3, 1.6);
+                }
+              }
+
+              // ── Sun rays (midday only, _tod > 0.4 — diagonal god-rays from top-right) ──
+              if (season !== 3 && _tod > 0.4) {
+                c.save();
+                c.globalAlpha = (_tod - 0.4) * 0.18;
+                c.fillStyle = '#fef9c3';
+                c.beginPath();
+                c.moveTo(W * 0.85, 0);
+                c.lineTo(W * 1.05, 0);
+                c.lineTo(W * 0.45, H * 0.75);
+                c.lineTo(W * 0.35, H * 0.75);
+                c.closePath(); c.fill();
+                c.globalAlpha = (_tod - 0.4) * 0.12;
+                c.beginPath();
+                c.moveTo(W * 0.95, 0);
+                c.lineTo(W * 1.1, 0);
+                c.lineTo(W * 0.6, H * 0.75);
+                c.lineTo(W * 0.5, H * 0.75);
+                c.closePath(); c.fill();
+                c.restore();
+              }
+
+              // ── Butterfly visitor (spring/summer — flutters in a lazy arc through flower area) ──
+              // Biodiversity signal; connects to the Native Bees / Pollination tabs.
+              if ((season === 0 || season === 1) && hiveX > 40) {
+                var btCycle = (t2 % 2200) / 2200; // 0..1 over ~37s
+                if (btCycle > 0.1 && btCycle < 0.85) {
+                  var btP = (btCycle - 0.1) / 0.75;
+                  var btX = W * 0.3 + btP * W * 0.45 + Math.sin(btP * 12) * 18;
+                  var btY = H * 0.60 + Math.sin(btP * 7) * 25 + Math.cos(btP * 3) * 8;
+                  var btFlap = Math.sin(t2 * 0.35);
+                  c.save();
+                  c.translate(btX, btY);
+                  // Body (slim, dark)
+                  c.fillStyle = '#1f2937';
+                  c.fillRect(-0.4, -2, 0.8, 4);
+                  // Head
+                  c.beginPath(); c.arc(0, -2.3, 0.7, 0, 6.28); c.fill();
+                  // Antennae
+                  c.strokeStyle = '#1f2937'; c.lineWidth = 0.3;
+                  c.beginPath(); c.moveTo(-0.3, -2.8); c.lineTo(-1.4, -4.2); c.stroke();
+                  c.beginPath(); c.moveTo(0.3, -2.8); c.lineTo(1.4, -4.2); c.stroke();
+                  // Wings — monarch-ish: orange with black veins + white spots
+                  var wingW = 5 + btFlap * 0.8;
+                  var wingH = 4;
+                  // Left wings (upper + lower)
+                  c.save(); c.translate(-0.6, -0.5);
+                  c.fillStyle = '#f97316';
+                  c.beginPath(); c.ellipse(-wingW * 0.5, -0.5, wingW * 0.5, wingH * 0.5, 0.15, 0, 6.28); c.fill();
+                  c.beginPath(); c.ellipse(-wingW * 0.4, 1.5, wingW * 0.4, wingH * 0.4, -0.2, 0, 6.28); c.fill();
+                  // Black border
+                  c.strokeStyle = '#1c1917'; c.lineWidth = 0.5;
+                  c.beginPath(); c.ellipse(-wingW * 0.5, -0.5, wingW * 0.5, wingH * 0.5, 0.15, 0, 6.28); c.stroke();
+                  // White spots
+                  c.fillStyle = '#fefce8';
+                  c.beginPath(); c.arc(-wingW * 0.7, -0.8, 0.4, 0, 6.28); c.fill();
+                  c.beginPath(); c.arc(-wingW * 0.45, -1.1, 0.35, 0, 6.28); c.fill();
+                  c.restore();
+                  // Right wings (mirror)
+                  c.save(); c.translate(0.6, -0.5); c.scale(-1, 1);
+                  c.fillStyle = '#f97316';
+                  c.beginPath(); c.ellipse(-wingW * 0.5, -0.5, wingW * 0.5, wingH * 0.5, 0.15, 0, 6.28); c.fill();
+                  c.beginPath(); c.ellipse(-wingW * 0.4, 1.5, wingW * 0.4, wingH * 0.4, -0.2, 0, 6.28); c.fill();
+                  c.strokeStyle = '#1c1917'; c.lineWidth = 0.5;
+                  c.beginPath(); c.ellipse(-wingW * 0.5, -0.5, wingW * 0.5, wingH * 0.5, 0.15, 0, 6.28); c.stroke();
+                  c.fillStyle = '#fefce8';
+                  c.beginPath(); c.arc(-wingW * 0.7, -0.8, 0.4, 0, 6.28); c.fill();
+                  c.beginPath(); c.arc(-wingW * 0.45, -1.1, 0.35, 0, 6.28); c.fill();
+                  c.restore();
+                  c.restore();
                 }
               }
 
@@ -6595,7 +6840,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               }
 
               // ── Hive (detailed cross-section with 3D-ish look) ──
-              // Shadow
+              // Ground cast shadow (soft, wide ellipse — gives the hive weight)
+              var csY = hiveY + hiveH + 6;
+              var csGrad = c.createRadialGradient(hiveX + hiveW / 2, csY, 2, hiveX + hiveW / 2, csY, hiveW * 0.7);
+              csGrad.addColorStop(0, 'rgba(0,0,0,0.30)');
+              csGrad.addColorStop(0.6, 'rgba(0,0,0,0.10)');
+              csGrad.addColorStop(1, 'rgba(0,0,0,0)');
+              c.fillStyle = csGrad;
+              c.beginPath(); c.ellipse(hiveX + hiveW / 2, csY, hiveW * 0.7, 5, 0, 0, 6.28); c.fill();
+              // Inset body shadow (original subtle offset for depth)
               c.fillStyle = 'rgba(0,0,0,0.12)';
               c.beginPath(); c.roundRect(hiveX + 3, hiveY + 3, hiveW, hiveH, 10); c.fill();
               // Body
@@ -6606,6 +6859,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               c.fillStyle = '#d4aa40'; c.beginPath(); c.roundRect(hiveX + 4, hiveY + 4, hiveW - 8, hiveH - 8, 7); c.fill();
               // Highlight
               c.fillStyle = 'rgba(255,255,255,0.08)'; c.fillRect(hiveX + 5, hiveY + 5, hiveW - 10, 12);
+              // ── Stacked-super seams (3 visible Langstroth boxes separated by dark rails) ──
+              var seamCount = 3; // deep brood box + 2 shallow supers
+              for (var sm = 1; sm < seamCount; sm++) {
+                var smY = hiveY + (hiveH * sm) / seamCount;
+                // Dark seam rail
+                c.fillStyle = 'rgba(60,40,10,0.55)';
+                c.fillRect(hiveX + 2, smY - 1, hiveW - 4, 2);
+                // Tiny highlight above
+                c.fillStyle = 'rgba(255,240,180,0.25)';
+                c.fillRect(hiveX + 2, smY - 2, hiveW - 4, 0.8);
+              }
+              // Box handle grooves (small indents on left + right of each box — classic Langstroth)
+              c.fillStyle = 'rgba(40,25,5,0.35)';
+              for (var bxi = 0; bxi < seamCount; bxi++) {
+                var bxY = hiveY + (hiveH * bxi) / seamCount + (hiveH / seamCount) * 0.5 - 1;
+                c.fillRect(hiveX + 1.5, bxY, 2, 2);
+                c.fillRect(hiveX + hiveW - 3.5, bxY, 2, 2);
+              }
+              // Faint vertical wood grain (low-alpha stripes) for warmth + realism
+              c.globalAlpha = 0.08;
+              c.fillStyle = '#5a3d0a';
+              for (var gi = 0; gi < 4; gi++) {
+                var grX = hiveX + (hiveW * (0.18 + gi * 0.22));
+                c.fillRect(grX, hiveY + 4, 0.6, hiveH - 8);
+              }
+              c.globalAlpha = 1;
               // Peaked roof with asphalt shingles (above the hive body)
               var roofH = 10;
               c.save();
@@ -6667,11 +6946,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               }
               c.globalAlpha = 1;
 
-              // Entrance
-              c.fillStyle = '#2a1a04';
-              c.beginPath(); c.roundRect(hiveX + hiveW * 0.28, hiveY + hiveH - 3, hiveW * 0.44, 7, 3); c.fill();
-              // Landing board
-              c.fillStyle = '#8a6508'; c.fillRect(hiveX + hiveW * 0.2, hiveY + hiveH + 1, hiveW * 0.6, 3);
+              // Entrance — larger, deeper notch with a subtle inner glow (warm from inside)
+              c.fillStyle = '#1a0f02';
+              c.beginPath(); c.roundRect(hiveX + hiveW * 0.26, hiveY + hiveH - 5, hiveW * 0.48, 9, 3); c.fill();
+              // Inner warm glow (suggests the hive is alive)
+              var entGlow = c.createRadialGradient(hiveX + hiveW / 2, hiveY + hiveH - 1, 1, hiveX + hiveW / 2, hiveY + hiveH - 1, hiveW * 0.25);
+              entGlow.addColorStop(0, 'rgba(251,191,36,0.35)');
+              entGlow.addColorStop(1, 'rgba(251,191,36,0)');
+              c.fillStyle = entGlow;
+              c.beginPath(); c.roundRect(hiveX + hiveW * 0.26, hiveY + hiveH - 5, hiveW * 0.48, 9, 3); c.fill();
+              // Landing board — wider, with subtle grain
+              c.fillStyle = '#8a6508'; c.fillRect(hiveX + hiveW * 0.15, hiveY + hiveH + 1, hiveW * 0.7, 4);
+              c.fillStyle = 'rgba(255,255,255,0.12)';
+              c.fillRect(hiveX + hiveW * 0.15, hiveY + hiveH + 1, hiveW * 0.7, 0.8);
+              // Pollen crumbs dropped by foragers (adds life + teaches pollen-gathering signal)
+              c.fillStyle = '#facc15';
+              var crumbSeed = Math.floor(t2 * 0.02) % 7;
+              for (var pc = 0; pc < 5; pc++) {
+                var pcX = hiveX + hiveW * 0.2 + ((pc + crumbSeed) % 5) * hiveW * 0.12;
+                var pcY = hiveY + hiveH + 3.5 + ((pc * 7) % 2) * 0.6;
+                c.beginPath(); c.arc(pcX, pcY, 0.8, 0, 6.28); c.fill();
+              }
 
               // ── Guard bees on the landing board (static sentries, face the entrance) ──
               var lbY = hiveY + hiveH + 0.5;
@@ -7385,23 +7680,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               c.globalAlpha = 1;
             });
 
-            // Render obstacles (trees, buildings)
+            // Render obstacles (trees, buildings, poles)
+            // Previously each obstacle projected ONE point (its midpoint) and
+            // then drew in screen pixels with scale-relative offsets. That
+            // meant the bottom of a tree wasn't anchored to world y=0 — as
+            // the drone climbed or pitched, trees would slide vertically
+            // across the terrain because the screen offset from midpoint
+            // didn't track the projected ground plane. Fix: project the
+            // object's actual base (y=0) and top (y=ob.h) separately and
+            // draw between those screen positions so the foot stays planted
+            // on the ground and the height reacts correctly to perspective.
             ds.obstacles.forEach(function(ob) {
-              var p = project(ob.x, ob.h * 0.5, ob.z);
-              if (!p || p.d > 500 || p.s < 0.2) return;
+              var pBase = project(ob.x, 0, ob.z);
+              var pTop = project(ob.x, ob.h, ob.z);
+              if (!pBase) return;
+              if (pBase.d > 500 || pBase.s < 0.2) return;
+              // Guard: if the top projects behind the camera (drone sitting
+              // under a tall tree) fall back to extrapolating from base so
+              // we still draw something rather than vanishing the obstacle.
+              if (!pTop) {
+                pTop = { x: pBase.x, y: pBase.y - ob.h * pBase.s, s: pBase.s };
+              }
+              var fullH = Math.max(1, pBase.y - pTop.y); // full height in px
               if (ob.type === 'tree') {
-                // Trunk
+                // Trunk = lower 60% of world height, canopy center at 75%.
+                var pCanopyStart = project(ob.x, ob.h * 0.6, ob.z) ||
+                  { x: pBase.x, y: pBase.y - fullH * 0.6, s: pBase.s };
+                var pCanopyCenter = project(ob.x, ob.h * 0.75, ob.z) ||
+                  { x: pBase.x, y: pBase.y - fullH * 0.75, s: pBase.s };
                 c.fillStyle = '#8B4513';
-                c.fillRect(p.x - 1.5 * p.s, p.y, 3 * p.s, ob.h * 0.4 * p.s);
-                // Canopy
+                var trunkW = 3 * pBase.s;
+                var trunkH = pBase.y - pCanopyStart.y;
+                if (trunkH > 0) c.fillRect(pBase.x - trunkW / 2, pCanopyStart.y, trunkW, trunkH);
                 c.fillStyle = '#228B22'; c.globalAlpha = 0.85;
-                c.beginPath(); c.arc(p.x, p.y - 2 * p.s, ob.h * 0.25 * p.s, 0, 6.28); c.fill();
+                c.beginPath(); c.arc(pCanopyCenter.x, pCanopyCenter.y, ob.h * 0.25 * pCanopyCenter.s, 0, 6.28); c.fill();
                 c.globalAlpha = 1;
               } else if (ob.type === 'building') {
-                c.fillStyle = '#6b7280'; c.fillRect(p.x - 10 * p.s, p.y - ob.h * 0.3 * p.s, 20 * p.s, ob.h * 0.6 * p.s);
-                c.fillStyle = '#4b5563'; c.fillRect(p.x - 10 * p.s, p.y - ob.h * 0.3 * p.s, 20 * p.s, 3 * p.s);
+                c.fillStyle = '#6b7280';
+                var bldW = 20 * pBase.s;
+                c.fillRect(pBase.x - bldW / 2, pTop.y, bldW, fullH);
+                c.fillStyle = '#4b5563';
+                c.fillRect(pBase.x - bldW / 2, pTop.y, bldW, Math.min(fullH, 3 * pTop.s));
               } else {
-                c.fillStyle = '#9ca3af'; c.fillRect(p.x - 1 * p.s, p.y, 2 * p.s, ob.h * 0.4 * p.s);
+                // Pole / utility — thin vertical from ground to top
+                c.fillStyle = '#9ca3af';
+                var poleW = 2 * pBase.s;
+                c.fillRect(pBase.x - poleW / 2, pTop.y, poleW, fullH);
               }
             });
 
@@ -8361,7 +8685,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               })),
             // View selector: educational canvas views (beekeeper only).
             // Wraps on narrow screens. Keyboard 1–9 also switch views.
-            viewMode === 'beekeeper' && h('div', { className: 'flex gap-1.5 flex-wrap text-xs font-bold', role: 'tablist', 'aria-label': 'Canvas view mode' },
+            // position:relative + z-index lifts tabs above the global AlloBot avatar (which was overlapping tabs like "Waggle Dance").
+            viewMode === 'beekeeper' && h('div', { className: 'flex gap-1.5 flex-wrap text-xs font-bold', role: 'tablist', 'aria-label': 'Canvas view mode', style: { position: 'relative', zIndex: 20 } },
               [
                 { id: 'scene', icon: '🏡', label: 'Scene', desc: 'Live apiary scene (Shift+1)' },
                 { id: 'anatomy', icon: '🔬', label: 'Anatomy', desc: 'Labeled bee diagram (Shift+2)' },
@@ -8496,34 +8821,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                       className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold bg-red-600/80 text-white hover:bg-red-600', 'aria-label': 'End flight' }, '✕ End Flight'))
             ),
             // SUBSPECIES PICKER (day 0) — IMPORTED FROM ORIGINAL (line 3295 in old file)
-            viewMode === 'beekeeper' && day === 0 && colonySurvived && h('div', { className: 'rounded-2xl border-2 p-4 space-y-3 ' + (dk ? 'bg-gradient-to-br from-amber-900/40 to-yellow-900/30 border-amber-500/60' : 'bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-400'), role: 'region', 'aria-label': 'Choose honeybee subspecies' },
-              h('div', null,
-                h('div', { className: 'text-xs font-bold ' + (dk ? 'text-amber-400' : 'text-amber-700') }, '🧬 Choose Your Bee Stock'),
-                h('p', { className: 'text-[11px] mt-0.5 ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'Real honeybees come in distinct genetic lines, each adapted to different climates.'),
-                h('p', { className: 'text-[11px] mt-0.5 italic ' + (dk ? 'text-amber-500/70' : 'text-amber-600/70') }, 'Current selection: ' + activeSubspecies.emoji + ' ' + activeSubspecies.name)),
-              h('div', { className: 'grid grid-cols-1 gap-2' },
-                SUBSPECIES.map(function(s) {
-                  var active = activeSubspecies.id === s.id;
-                  return h('button', { key: s.id, onClick: function() { updAll({ subspecies: s.id }); },
-                    className: 'text-left p-3 rounded-xl border ' + (active ? (dk ? 'bg-amber-900/50 border-amber-400' : 'bg-amber-100 border-amber-500') : (dk ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200')) },
-                    h('div', { className: 'flex items-start gap-2' },
-                      h('span', { className: 'text-2xl' }, s.emoji),
-                      h('div', { className: 'flex-1' },
-                        h('span', { className: 'text-sm font-bold ' + (dk ? 'text-slate-100' : 'text-slate-800') }, s.name),
-                        h('p', { className: 'text-[11px] mt-1 ' + (dk ? 'text-slate-300' : 'text-slate-700') }, s.note))));
-                }))),
+            // Stock picker collapses to compact summary once student has picked (or accepted default).
+            // Default: expanded on first entry (!d.subspecies). Expand button re-opens anytime.
+            viewMode === 'beekeeper' && day === 0 && colonySurvived && (function () {
+              var stockOpen = d.stockPickerOpen != null ? d.stockPickerOpen : !d.subspecies;
+              if (!stockOpen) {
+                return h('div', { className: 'rounded-xl border-2 p-3 flex items-center gap-2 ' + (dk ? 'bg-amber-900/30 border-amber-500/50' : 'bg-amber-50 border-amber-300'), role: 'region', 'aria-label': 'Bee stock (collapsed)' },
+                  h('span', { className: 'text-xl' }, activeSubspecies.emoji),
+                  h('div', { className: 'flex-1 min-w-0' },
+                    h('div', { className: 'text-xs font-bold ' + (dk ? 'text-amber-300' : 'text-amber-800') }, '🧬 Bee Stock: ' + activeSubspecies.name),
+                    h('p', { className: 'text-[11px] truncate ' + (dk ? 'text-slate-300' : 'text-slate-600') }, activeSubspecies.note)),
+                  h('button', { onClick: function () { upd('stockPickerOpen', true); }, 'aria-label': 'Change bee stock', className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold ' + (dk ? 'bg-amber-700 text-white hover:bg-amber-600' : 'bg-amber-500 text-white hover:bg-amber-600') }, 'Change ▾'));
+              }
+              return h('div', { className: 'rounded-2xl border-2 p-4 space-y-3 ' + (dk ? 'bg-gradient-to-br from-amber-900/40 to-yellow-900/30 border-amber-500/60' : 'bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-400'), role: 'region', 'aria-label': 'Choose honeybee subspecies' },
+                h('div', { className: 'flex items-start justify-between gap-2' },
+                  h('div', null,
+                    h('div', { className: 'text-xs font-bold ' + (dk ? 'text-amber-400' : 'text-amber-700') }, '🧬 Choose Your Bee Stock'),
+                    h('p', { className: 'text-[11px] mt-0.5 ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'Real honeybees come in distinct genetic lines, each adapted to different climates.'),
+                    h('p', { className: 'text-[11px] mt-0.5 italic ' + (dk ? 'text-amber-500/70' : 'text-amber-600/70') }, 'Current selection: ' + activeSubspecies.emoji + ' ' + activeSubspecies.name)),
+                  d.subspecies && h('button', { onClick: function () { upd('stockPickerOpen', false); }, 'aria-label': 'Collapse stock picker', className: 'px-2 py-1 rounded text-[11px] font-bold ' + (dk ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200') }, '▲ Collapse')),
+                h('div', { className: 'grid grid-cols-1 gap-2' },
+                  SUBSPECIES.map(function(s) {
+                    var active = activeSubspecies.id === s.id;
+                    return h('button', { key: s.id, onClick: function() {
+                        updAll({ subspecies: s.id, stockPickerOpen: false });
+                        triggerBeekeeperAction('install', 'Installing ' + s.emoji + ' ' + s.name + ' bees into the hive.', s.emoji);
+                      },
+                      className: 'text-left p-3 rounded-xl border ' + (active ? (dk ? 'bg-amber-900/50 border-amber-400' : 'bg-amber-100 border-amber-500') : (dk ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200')) },
+                      h('div', { className: 'flex items-start gap-2' },
+                        h('span', { className: 'text-2xl' }, s.emoji),
+                        h('div', { className: 'flex-1' },
+                          h('span', { className: 'text-sm font-bold ' + (dk ? 'text-slate-100' : 'text-slate-800') }, s.name),
+                          h('p', { className: 'text-[11px] mt-1 ' + (dk ? 'text-slate-300' : 'text-slate-700') }, s.note))));
+                  })));
+            })(),
             // Next Day + actions
             viewMode === 'beekeeper' && colonySurvived && h('div', { className: 'space-y-2' },
               h('div', { className: 'flex gap-2' },
                 h('button', { onClick: advanceDay, className: 'flex-1 py-2.5 rounded-xl font-bold text-sm text-white ' + (dk ? 'bg-amber-600' : 'bg-amber-500') }, '⏩ Next Day'),
                 h('button', { onClick: function() { advanceDays(5); }, className: 'px-3 py-2.5 rounded-xl text-xs ' + (dk ? 'bg-amber-900/40 text-amber-300' : 'bg-amber-100 text-amber-700') }, '+5'),
                 h('button', { onClick: function() { advanceDays(30); }, className: 'px-3 py-2.5 rounded-xl text-xs ' + (dk ? 'bg-amber-900/30 text-amber-400' : 'bg-amber-50 text-amber-600') }, '+30')),
-              h('div', { className: 'grid grid-cols-6 gap-1.5' },
+              h('div', { className: 'grid grid-cols-4 gap-1.5' },
+                h('button', { onClick: function() { smokeHive(); }, className: 'p-2 rounded-lg text-xs ' + (dk ? 'bg-stone-800/40 text-stone-300' : 'bg-stone-100 text-stone-700') }, '💨 Smoke'),
+                h('button', { onClick: function() { upd('showInspect', true); triggerBeekeeperAction('inspect', 'Opening the hive for an inspection.', '🔍'); }, className: 'p-2 rounded-lg text-xs ' + (dk ? 'bg-indigo-900/30 text-indigo-300' : 'bg-indigo-50 text-indigo-700') }, '🔬 Inspect'),
                 h('button', { onClick: treatVarroa, className: 'p-2 rounded-lg text-xs ' + (dk ? 'bg-red-900/30 text-red-300' : 'bg-red-50 text-red-700') }, '🧪 Treat'),
                 h('button', { onClick: addSuper, className: 'p-2 rounded-lg text-xs ' + (dk ? 'bg-blue-900/30 text-blue-300' : 'bg-blue-50 text-blue-700') }, '📦 Super'),
                 h('button', { onClick: harvestHoney, className: 'p-2 rounded-lg text-xs ' + (dk ? 'bg-amber-900/30 text-amber-300' : 'bg-amber-50 text-amber-700') }, '🍯 Harvest'),
                 h('button', { onClick: feedBees, className: 'p-2 rounded-lg text-xs ' + (dk ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700') }, '🥣 Feed'),
-                h('button', { onClick: function() { upd('showInspect', true); }, className: 'p-2 rounded-lg text-xs ' + (dk ? 'bg-indigo-900/30 text-indigo-300' : 'bg-indigo-50 text-indigo-700') }, '🔬 Inspect'),
+                h('button', { onClick: requeenColony, className: 'p-2 rounded-lg text-xs ' + (dk ? 'bg-purple-900/30 text-purple-300' : 'bg-purple-50 text-purple-700') }, '👑 Requeen'),
                 h('button', { onClick: function() { upd('showBadges', true); }, className: 'p-2 rounded-lg text-xs ' + (dk ? 'bg-amber-900/30 text-amber-300' : 'bg-amber-50 text-amber-700') }, '🏅 Badges')))
           );
           console.log('[Beehive ORIGINAL] return succeeded, committing full tree');
@@ -8827,17 +9172,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                       }))))),
 
           // ═══ SUBSPECIES PICKER (day 0 only, before first Next Day click) ═══
-          viewMode === 'beekeeper' && day === 0 && colonySurvived && h('div', { className: 'rounded-2xl border-2 p-4 space-y-3 ' + (dk ? 'bg-gradient-to-br from-amber-900/40 to-yellow-900/30 border-amber-500/60' : 'bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-400'), role: 'region', 'aria-label': 'Choose honeybee subspecies' },
-            h('div', null,
-              h('div', { className: 'text-xs font-bold ' + (dk ? 'text-amber-400' : 'text-amber-700') }, '🧬 Choose Your Bee Stock'),
-              h('p', { className: 'text-[11px] mt-0.5 ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'Real honeybees come in distinct genetic lines, each adapted to different climates. Pick a subspecies — it will modify honey yield, winter survival, spring buildup, and varroa resistance throughout your colony\'s life.'),
-              h('p', { className: 'text-[11px] mt-0.5 italic ' + (dk ? 'text-amber-500/70' : 'text-amber-600/70') }, 'Current selection: ' + activeSubspecies.emoji + ' ' + activeSubspecies.name + (d.subspecies ? '' : ' (default)'))),
+          // Collapsible: shows compact summary once student has picked; expand to change.
+          viewMode === 'beekeeper' && day === 0 && colonySurvived && (function () {
+            var stockOpen2 = d.stockPickerOpen != null ? d.stockPickerOpen : !d.subspecies;
+            if (!stockOpen2) {
+              return h('div', { className: 'rounded-xl border-2 p-3 flex items-center gap-2 ' + (dk ? 'bg-amber-900/30 border-amber-500/50' : 'bg-amber-50 border-amber-300'), role: 'region', 'aria-label': 'Bee stock (collapsed)' },
+                h('span', { className: 'text-xl' }, activeSubspecies.emoji),
+                h('div', { className: 'flex-1 min-w-0' },
+                  h('div', { className: 'text-xs font-bold ' + (dk ? 'text-amber-300' : 'text-amber-800') }, '🧬 Bee Stock: ' + activeSubspecies.name),
+                  h('p', { className: 'text-[11px] truncate ' + (dk ? 'text-slate-300' : 'text-slate-600') }, activeSubspecies.note)),
+                h('button', { onClick: function () { upd('stockPickerOpen', true); }, 'aria-label': 'Change bee stock', className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold ' + (dk ? 'bg-amber-700 text-white hover:bg-amber-600' : 'bg-amber-500 text-white hover:bg-amber-600') }, 'Change ▾'));
+            }
+            return h('div', { className: 'rounded-2xl border-2 p-4 space-y-3 ' + (dk ? 'bg-gradient-to-br from-amber-900/40 to-yellow-900/30 border-amber-500/60' : 'bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-400'), role: 'region', 'aria-label': 'Choose honeybee subspecies' },
+              h('div', { className: 'flex items-start justify-between gap-2' },
+                h('div', null,
+                  h('div', { className: 'text-xs font-bold ' + (dk ? 'text-amber-400' : 'text-amber-700') }, '🧬 Choose Your Bee Stock'),
+                  h('p', { className: 'text-[11px] mt-0.5 ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'Real honeybees come in distinct genetic lines, each adapted to different climates. Pick a subspecies — it will modify honey yield, winter survival, spring buildup, and varroa resistance throughout your colony\'s life.'),
+                  h('p', { className: 'text-[11px] mt-0.5 italic ' + (dk ? 'text-amber-500/70' : 'text-amber-600/70') }, 'Current selection: ' + activeSubspecies.emoji + ' ' + activeSubspecies.name + (d.subspecies ? '' : ' (default)'))),
+                d.subspecies && h('button', { onClick: function () { upd('stockPickerOpen', false); }, 'aria-label': 'Collapse stock picker', className: 'px-2 py-1 rounded text-[11px] font-bold ' + (dk ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200') }, '▲ Collapse')),
             h('div', { className: 'grid grid-cols-1 gap-2' },
               SUBSPECIES.map(function(s) {
                 var active = activeSubspecies.id === s.id;
                 return h('button', { key: s.id, onClick: function() {
-                    updAll({ subspecies: s.id });
+                    updAll({ subspecies: s.id, stockPickerOpen: false });
                     if (addToast) addToast(s.emoji + ' ' + s.name + ' bees established — ' + s.origin, 'success');
+                    triggerBeekeeperAction('install', 'Installing ' + s.emoji + ' ' + s.name + ' bees into the hive.', s.emoji);
                   },
                   'aria-label': 'Select ' + s.name + ' subspecies from ' + s.origin,
                   className: 'text-left p-3 rounded-xl border transition-all ' +
@@ -8870,7 +9229,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                             h('div', { className: 'h-1.5 rounded-full overflow-hidden ' + (dk ? 'bg-slate-700' : 'bg-slate-200') },
                               h('div', { style: { width: pct + '%' }, className: 'h-full bg-' + t.c + '-400 rounded-full' })));
                         })))));
-              }))),
+              })));
+          })(),
 
           // ═══ APIARY SITE PICKER (day 0 only) ═══
           viewMode === 'beekeeper' && day === 0 && colonySurvived && h('div', { className: 'rounded-2xl border-2 p-4 space-y-3 ' + (dk ? 'bg-gradient-to-br from-green-900/40 to-emerald-900/30 border-green-500/50' : 'bg-gradient-to-br from-green-50 to-emerald-50 border-green-400'), role: 'region', 'aria-label': 'Choose apiary site' },
@@ -9450,8 +9810,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('button', { onClick: function() { advanceDays(30); }, 'aria-label': 'Advance 30 days (1 month)', className: 'px-3 py-2.5 rounded-xl text-sm font-bold transition-all ' + (dk ? 'bg-amber-900/30 text-amber-400 hover:bg-amber-800/40' : 'bg-amber-50 text-amber-600 hover:bg-amber-100') }, '\u23ED +30')
             ),
             // Management actions
-            h('div', { className: 'grid grid-cols-6 gap-1.5' },
+            h('div', { className: 'grid grid-cols-4 gap-1.5' },
               [
+                { onClick: function() { smokeHive(); }, icon: '\uD83D\uDCA8', label: 'Smoke', tip: 'Smoke the hive to calm bees before opening', disabled: false, color: 'stone' },
+                { onClick: function() { upd('showInspect', true); triggerBeekeeperAction('inspect', 'Opening the hive for an inspection.', '🔍'); }, icon: '\uD83D\uDD2C', label: 'Inspect', tip: 'Open hive inspector — explore bee biology', disabled: false, color: 'indigo' },
                 { onClick: treatVarroa, icon: '\uD83E\uDDEA', label: 'Treat', tip: 'Choose an IPM treatment — each has seasonal trade-offs', disabled: varroaLevel < 10, color: 'red' },
                 { onClick: function() {
                     if (actionPoints < 1) { if (addToast) addToast('Need 1 action point for hive hygiene.', 'info'); return; }
@@ -9460,11 +9822,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     playSfx(sfxSuccess);
                     if (addToast) addToast('🧽 Hive hygiene: frames cleaned, dead bees removed. Disease risk −' + reduceDisease + '%.', 'success');
                     if (awardStemXP) awardStemXP('beehive', 5, 'Hive hygiene');
+                    triggerBeekeeperAction('hygiene', 'Cleaning frames and removing dead bees.', '🧽');
                   }, icon: '\uD83E\uDDFD', label: 'Hygiene', tip: 'Clean comb, remove dead bees, improve ventilation (−disease risk)', disabled: diseaseRisk < 5, color: 'purple' },
                 { onClick: addSuper, icon: '\uD83D\uDCE6', label: 'Super', tip: 'Add honey super (+10 morale, +2 wax)', disabled: false, color: 'blue' },
                 { onClick: harvestHoney, icon: '\uD83C\uDF6F', label: 'Harvest', tip: 'Harvest surplus honey (need 15+ lbs)', disabled: honey < 15, color: 'amber' },
                 { onClick: feedBees, icon: '\uD83E\uDED9', label: 'Feed', tip: 'Feed sugar syrup (+5 lbs honey, +5 morale)', disabled: false, color: 'slate' },
-                { onClick: function() { upd('showInspect', true); }, icon: '\uD83D\uDD2C', label: 'Inspect', tip: 'Open hive inspector — explore bee biology', disabled: false, color: 'indigo' }
+                { onClick: requeenColony, icon: '\uD83D\uDC51', label: 'Requeen', tip: 'Install a new queen — restores queenHealth to 100', disabled: false, color: 'purple' }
               ].map(function(btn) {
                 var enabled = !btn.disabled;
                 var bg = enabled
@@ -9508,6 +9871,63 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
           // Hive Inspection (full view replacement, beekeeper only)
           viewMode === 'beekeeper' && showInspect && renderInspection(),
+
+          // ── AI Beehive Tutor (reading-level aware, current view) ──
+          viewMode === 'beekeeper' && !showInspect && (function () {
+            var aiLevel = d.aiLevel || 'grade5';
+            var aiText = d['aiExplain_' + beeView] || '';
+            var aiLoading = !!d['aiLoading_' + beeView];
+            var aiError = d['aiError_' + beeView] || '';
+            var LEVELS = [
+              { id: 'plain', label: 'Plain', hint: 'using simple everyday words and short sentences' },
+              { id: 'grade5', label: 'Grade 5', hint: 'for a 5th grade student, brief and friendly' },
+              { id: 'hs', label: 'High School', hint: 'for a high school biology student, scientifically accurate' }
+            ];
+            var VIEW_LABELS = { scene: 'the hive scene', anatomy: 'bee anatomy', physics: 'bee flight physics', lifecycle: 'the bee lifecycle', honey: 'honey production', waggle: 'the waggle dance', thermo: 'hive thermoregulation', castes: 'bee castes (queen / worker / drone)', pheromones: 'bee pheromones', threats: 'colony threats' };
+            var viewLabel = VIEW_LABELS[beeView] || beeView;
+            function upd2(k, v) { setLabToolData(function (prev) { return Object.assign({}, prev, { beehive: Object.assign({}, prev.beehive, (function(){var o={};o[k]=v;return o;})()) }); }); }
+            function explain() {
+              if (typeof callGemini !== 'function') { upd2('aiError_' + beeView, 'AI tutor not available.'); return; }
+              upd2('aiLoading_' + beeView, true); upd2('aiError_' + beeView, ''); upd2('aiExplain_' + beeView, '');
+              var lv = LEVELS.find(function (L) { return L.id === aiLevel; }) || LEVELS[1];
+              var prompt = 'Explain this part of a honeybee hive ' + lv.hint + '. '
+                + 'Current view: ' + viewLabel + '. Colony state: ' + (d.day || 0) + ' days old, ' + (d.workers || 0) + ' workers, ' + (d.totalHoney || 0) + ' honey units stored, season: ' + (d.season || 'spring') + '. '
+                + 'In 3 short sentences: (1) What the student is looking at. (2) The most surprising or important fact about this part of hive biology. (3) One everyday observation (in a garden, kitchen, or park) that connects to it. '
+                + 'No markdown, no bullets, no headings. Plain prose.';
+              callGemini(prompt, false, false, 0.5).then(function (resp) {
+                upd2('aiExplain_' + beeView, String(resp || '').trim()); upd2('aiLoading_' + beeView, false);
+                if (typeof announceToSR === 'function') announceToSR('Explanation ready.');
+              }).catch(function () {
+                upd2('aiLoading_' + beeView, false); upd2('aiError_' + beeView, 'Could not reach AI tutor. Try again in a moment.');
+              });
+            }
+            return h('div', { className: 'mt-1 mb-2 p-3 rounded-xl border-2 ' + (dk ? 'border-purple-700 bg-purple-950/40' : 'border-purple-200 bg-purple-50'), role: 'region', 'aria-label': 'AI beehive tutor' },
+              h('div', { className: 'flex items-center flex-wrap gap-2 mb-1.5' },
+                h('span', { className: 'text-sm font-bold ' + (dk ? 'text-purple-300' : 'text-purple-700') }, '\u2728 Explain ' + viewLabel),
+                h('div', { className: 'ml-auto flex gap-1', role: 'group', 'aria-label': 'Reading level' },
+                  LEVELS.map(function (L) {
+                    var active = aiLevel === L.id;
+                    return h('button', {
+                      key: L.id,
+                      onClick: function () { upd2('aiLevel', L.id); },
+                      'aria-label': 'Reading level: ' + L.label + (active ? ' (selected)' : ''),
+                      'aria-pressed': active,
+                      className: 'px-2 py-0.5 rounded text-[10px] font-bold ' + (active ? 'bg-purple-600 text-white' : (dk ? 'bg-slate-800 text-purple-300 border border-purple-500/40' : 'bg-white text-purple-700 border border-purple-200 hover:bg-purple-100'))
+                    }, L.label);
+                  })
+                ),
+                h('button', {
+                  onClick: explain,
+                  disabled: aiLoading,
+                  'aria-label': 'Generate AI explanation for ' + viewLabel + ' at ' + ((LEVELS.find(function (L) { return L.id === aiLevel; }) || {}).label || 'Grade 5') + ' level',
+                  className: 'px-3 py-1 rounded-lg text-[11px] font-bold bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50'
+                }, aiLoading ? '\u23F3 Thinking...' : (aiText ? '\uD83D\uDD04 Re-explain' : '\uD83E\uDDE0 Explain'))
+              ),
+              aiError && h('p', { className: 'text-[11px] text-rose-500', role: 'alert' }, aiError),
+              aiText && h('p', { className: 'text-xs leading-relaxed rounded-lg p-2 ' + (dk ? 'bg-slate-900 text-slate-200 border border-purple-500/30' : 'bg-white text-slate-700 border border-purple-100') }, aiText),
+              !aiText && !aiLoading && !aiError && h('p', { className: 'text-[11px] italic ' + (dk ? 'text-slate-400' : 'text-slate-500') }, 'Click \u201CExplain\u201D for the AI tutor to describe the current view.')
+            );
+          })(),
 
           // Science cards (beekeeper only, when not inspecting)
           viewMode === 'beekeeper' && !showInspect &&

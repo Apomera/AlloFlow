@@ -1132,7 +1132,35 @@ var d = labToolData.plateTectonics || {};
 
           // â”€â”€ render â”€â”€
 
-          return React.createElement("div", { className: "max-w-4xl mx-auto" },
+          // ── Keyboard shortcuts (WCAG 2.1.1): 1-4 switch tabs ──
+          var _PT_TABS = ['sim', 'earthquake', 'timeline', 'quiz'];
+          var _PT_TAB_LABELS = { sim: 'Simulation', earthquake: 'Earthquake Lab', timeline: 'Timeline', quiz: 'Quiz' };
+          function onPtKey(e) {
+            var tgt = e.target || {};
+            var tn = (tgt.tagName || '').toUpperCase();
+            if (tn === 'INPUT' || tn === 'TEXTAREA' || tn === 'SELECT' || tgt.isContentEditable) return;
+            var k = e.key;
+            if (k >= '1' && k <= '4') {
+              var idx = parseInt(k, 10) - 1;
+              if (_PT_TABS[idx]) {
+                e.preventDefault();
+                upd({ simTab: _PT_TABS[idx] });
+                if (typeof announceToSR === 'function') announceToSR('Switched to ' + _PT_TAB_LABELS[_PT_TABS[idx]] + '.');
+              }
+            } else if (k === 'l' || k === 'L') {
+              if (simTab === 'sim') { e.preventDefault(); upd({ showLabels: !showLabels }); if (typeof announceToSR === 'function') announceToSR('Labels ' + (!showLabels ? 'on' : 'off') + '.'); }
+            } else if (k === 'c' || k === 'C') {
+              if (simTab === 'sim') { e.preventDefault(); upd({ showConvection: !showConvection }); if (typeof announceToSR === 'function') announceToSR('Convection currents ' + (!showConvection ? 'on' : 'off') + '.'); }
+            }
+          }
+
+          return React.createElement("div", {
+              className: "max-w-4xl mx-auto outline-none",
+              role: "region",
+              "aria-label": "Plate Tectonics. Keyboard shortcuts: 1 through 4 switch tabs, L toggles labels, C toggles convection currents.",
+              tabIndex: 0,
+              onKeyDown: onPtKey
+            },
 
             // Header
 
@@ -1234,7 +1262,66 @@ var d = labToolData.plateTectonics || {};
                   style: { animation: 'pulse 2s infinite', boxShadow: '0 0 12px rgba(255,100,0,0.4)' }
                 }, "\uD83C\uDF0B Erupt!")
 
-              )
+              ),
+
+              // ── AI Tutor Panel (reading-level aware) ──
+              (function () {
+                var aiLevel = d.aiLevel || 'grade5';
+                var aiText = d.aiExplain || '';
+                var aiLoading = !!d.aiLoading;
+                var aiError = d.aiError || '';
+                var LEVELS = [
+                  { id: 'plain', label: 'Plain', hint: 'using simple everyday words and short sentences' },
+                  { id: 'grade5', label: 'Grade 5', hint: 'for a 5th grade student, brief and friendly' },
+                  { id: 'hs', label: 'High School', hint: 'for a high school earth-science student, accurate but accessible' }
+                ];
+                function explain() {
+                  if (typeof callGemini !== 'function') { upd({ aiError: 'AI tutor not available.' }); return; }
+                  upd({ aiLoading: true, aiError: '', aiExplain: '' });
+                  var lv = LEVELS.find(function (L) { return L.id === aiLevel; }) || LEVELS[1];
+                  var selLine = selectedPlate ? 'Selected plate: ' + selectedPlate + '. ' : 'No plate selected. ';
+                  var prompt = 'Explain what is happening in this plate tectonics simulation ' + lv.hint + '. '
+                    + selLine
+                    + 'Animation speed: ' + speed + 'x. Labels ' + (showLabels ? 'on' : 'off') + '. Convection currents ' + (showConvection ? 'visible' : 'hidden') + '. '
+                    + 'In 3 short sentences: (1) What process is driving the motion? (2) What happens at the boundaries the student can see? (3) One real-world example this connects to (mountain, volcano, earthquake, or ocean feature). '
+                    + 'No markdown, no bullets, no headings. Plain prose.';
+                  callGemini(prompt, false, false, 0.5).then(function (resp) {
+                    upd({ aiExplain: String(resp || '').trim(), aiLoading: false });
+                    if (typeof announceToSR === 'function') announceToSR('Explanation ready.');
+                  }).catch(function () {
+                    upd({ aiLoading: false, aiError: 'Could not reach AI tutor. Try again in a moment.' });
+                  });
+                }
+                return React.createElement("div", {
+                  className: "p-4 rounded-xl border-2 border-purple-200 bg-purple-50/60",
+                  role: "region", "aria-label": "AI tectonics tutor"
+                },
+                  React.createElement("div", { className: "flex items-center flex-wrap gap-2 mb-2" },
+                    React.createElement("span", { className: "text-sm font-bold text-purple-700" }, "\u2728 Explain at my level"),
+                    React.createElement("div", { className: "ml-auto flex gap-1", role: "group", "aria-label": "Reading level" },
+                      LEVELS.map(function (L) {
+                        var active = aiLevel === L.id;
+                        return React.createElement("button", {
+                          key: L.id,
+                          onClick: function () { upd({ aiLevel: L.id }); },
+                          "aria-label": "Reading level: " + L.label + (active ? " (selected)" : ""),
+                          "aria-pressed": active,
+                          className: "px-2 py-0.5 rounded text-[10px] font-bold " + (active ? 'bg-purple-600 text-white' : 'bg-white text-purple-700 border border-purple-200 hover:bg-purple-100')
+                        }, L.label);
+                      })
+                    ),
+                    React.createElement("button", {
+                      onClick: explain,
+                      disabled: aiLoading,
+                      "aria-label": "Generate AI explanation at " + ((LEVELS.find(function (L) { return L.id === aiLevel; }) || {}).label || 'Grade 5') + " level",
+                      className: "px-3 py-1 rounded-lg text-[11px] font-bold bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50"
+                    }, aiLoading ? '\u23F3 Thinking...' : (aiText ? '\uD83D\uDD04 Re-explain' : '\uD83E\uDDE0 Explain'))
+                  ),
+                  aiError && React.createElement("p", { className: "text-[11px] text-rose-600", role: "alert" }, aiError),
+                  aiText && React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed bg-white rounded-lg p-3 border border-purple-100" }, aiText),
+                  !aiText && !aiLoading && !aiError && React.createElement("p", { className: "text-[11px] italic text-slate-500" }, "Click \u201CExplain\u201D for the AI tutor to describe the current simulation at your chosen reading level.")
+                );
+              })()
 
             ),
 

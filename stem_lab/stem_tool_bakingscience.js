@@ -388,6 +388,7 @@
       var announceToSR = ctx.announceToSR;
       var awardXP = ctx.awardXP;
       var celebrate = ctx.celebrate;
+      var callGemini = ctx.callGemini;
       var band = getGradeBand(ctx);
       // i18n helper: {var} tokens are substituted; falls back to English if key is missing.
       var t = function(key, vars) {
@@ -2006,14 +2007,105 @@
         // ═══════════════════════════════════════
         // ROUTER
         // ═══════════════════════════════════════
-        if (subtool === 'leavening') return renderLeavening();
-        if (subtool === 'emulsion')  return renderEmulsion();
-        if (subtool === 'scaler')    return renderScaler();
-        if (subtool === 'oven')      return renderOven();
-        if (subtool === 'diagnosis') return renderDiagnosis();
-        if (subtool === 'gluten')    return renderGluten();
-        if (subtool === 'browning')  return renderBrowning();
-        return renderMenu();
+        var _BK_SUBTOOL_IDS = SUBTOOLS.map(function (s) { return s.id; });
+        function onBakeKey(e) {
+          var tgt = e.target || {};
+          var tn = (tgt.tagName || '').toUpperCase();
+          if (tn === 'INPUT' || tn === 'TEXTAREA' || tn === 'SELECT' || tgt.isContentEditable) return;
+          var k = e.key;
+          if (k >= '1' && k <= '9') {
+            var idx = parseInt(k, 10) - 1;
+            if (_BK_SUBTOOL_IDS[idx]) {
+              e.preventDefault();
+              upd('subtool', _BK_SUBTOOL_IDS[idx]);
+              if (typeof announceToSR === 'function') announceToSR('Switched to ' + SUBTOOLS[idx].label + '.');
+            }
+          } else if (k === 'm' || k === 'M' || k === 'Escape') {
+            if (subtool !== 'menu') {
+              e.preventDefault();
+              upd('subtool', 'menu');
+              if (typeof announceToSR === 'function') announceToSR('Returned to menu.');
+            }
+          }
+        }
+
+        function makeAiPanel() {
+          var aiLevel = d.aiLevel || 'grade5';
+          var aiText = d.aiExplain || '';
+          var aiLoading = !!d.aiLoading;
+          var aiError = d.aiError || '';
+          var LEVELS = [
+            { id: 'plain', label: 'Plain', hint: 'using simple everyday words and short sentences' },
+            { id: 'grade5', label: 'Grade 5', hint: 'for a 5th grade student, brief and friendly' },
+            { id: 'hs', label: 'High School', hint: 'for a high school chemistry student, accurate but accessible' }
+          ];
+          var curSub = SUBTOOLS.find(function (s) { return s.id === subtool; });
+          function explain() {
+            if (typeof callGemini !== 'function') { upd('aiError', 'AI tutor not available.'); return; }
+            upd('aiLoading', true); upd('aiError', ''); upd('aiExplain', '');
+            var lv = LEVELS.find(function (L) { return L.id === aiLevel; }) || LEVELS[1];
+            var prompt = 'Explain the science of this baking activity ' + lv.hint + '. '
+              + 'Activity: ' + (curSub ? curSub.label + ' — ' + curSub.desc : 'Baking Lab menu') + '. '
+              + 'In 3 short sentences: (1) What chemistry or physics is at play here? (2) What will the student observe? (3) One real-world kitchen tip this connects to. '
+              + 'No markdown, no bullets, no headings. Plain prose.';
+            callGemini(prompt, false, false, 0.5).then(function (resp) {
+              upd('aiExplain', String(resp || '').trim());
+              upd('aiLoading', false);
+              if (typeof announceToSR === 'function') announceToSR('Explanation ready.');
+            }).catch(function () {
+              upd('aiLoading', false);
+              upd('aiError', 'Could not reach AI tutor. Try again in a moment.');
+            });
+          }
+          return h('div', {
+            className: 'p-3 rounded-xl border-2 border-purple-200 bg-purple-50/60 mt-4',
+            role: 'region', 'aria-label': 'AI baking tutor'
+          },
+            h('div', { className: 'flex items-center flex-wrap gap-2 mb-1.5' },
+              h('span', { className: 'text-sm font-bold text-purple-700' }, '\u2728 Explain at my level'),
+              h('div', { className: 'ml-auto flex gap-1', role: 'group', 'aria-label': 'Reading level' },
+                LEVELS.map(function (L) {
+                  var active = aiLevel === L.id;
+                  return h('button', {
+                    key: L.id,
+                    onClick: function () { upd('aiLevel', L.id); },
+                    'aria-label': 'Reading level: ' + L.label + (active ? ' (selected)' : ''),
+                    'aria-pressed': active,
+                    className: 'px-2 py-0.5 rounded text-[10px] font-bold ' + (active ? 'bg-purple-600 text-white' : 'bg-white text-purple-700 border border-purple-200 hover:bg-purple-100')
+                  }, L.label);
+                })
+              ),
+              h('button', {
+                onClick: explain,
+                disabled: aiLoading,
+                'aria-label': 'Generate AI explanation at ' + ((LEVELS.find(function (L) { return L.id === aiLevel; }) || {}).label || 'Grade 5') + ' level',
+                className: 'px-3 py-1 rounded-lg text-[11px] font-bold bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50'
+              }, aiLoading ? '\u23F3 Thinking...' : (aiText ? '\uD83D\uDD04 Re-explain' : '\uD83E\uDDE0 Explain'))
+            ),
+            aiError && h('p', { className: 'text-[11px] text-rose-600', role: 'alert' }, aiError),
+            aiText && h('p', { className: 'text-xs text-slate-700 leading-relaxed bg-white rounded-lg p-2 border border-purple-100' }, aiText),
+            !aiText && !aiLoading && !aiError && h('p', { className: 'text-[11px] italic text-slate-500' }, 'Click \u201CExplain\u201D for an AI breakdown of the current activity at your chosen reading level.')
+          );
+        }
+
+        function wrapWithA11y(child) {
+          return h('div', {
+            className: 'outline-none',
+            role: 'region',
+            'aria-label': 'Baking Lab. Keyboard shortcuts: 1 through ' + _BK_SUBTOOL_IDS.length + ' pick an activity, M or Escape returns to menu.',
+            tabIndex: 0,
+            onKeyDown: onBakeKey
+          }, child, makeAiPanel());
+        }
+
+        if (subtool === 'leavening') return wrapWithA11y(renderLeavening());
+        if (subtool === 'emulsion')  return wrapWithA11y(renderEmulsion());
+        if (subtool === 'scaler')    return wrapWithA11y(renderScaler());
+        if (subtool === 'oven')      return wrapWithA11y(renderOven());
+        if (subtool === 'diagnosis') return wrapWithA11y(renderDiagnosis());
+        if (subtool === 'gluten')    return wrapWithA11y(renderGluten());
+        if (subtool === 'browning')  return wrapWithA11y(renderBrowning());
+        return wrapWithA11y(renderMenu());
       })();
     }
   });

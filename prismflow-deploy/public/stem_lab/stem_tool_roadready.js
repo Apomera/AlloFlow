@@ -1314,9 +1314,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         if (ci >= (scenario.traffic === 'light' ? 1 : 2)) return;
         var dir = ci % 2 === 0 ? 1 : -1;
         var crossVType = vehicleTypes[0]; // cars on cross streets
+        // Lane offset perpendicular to direction of travel (US right-side driving).
+        // dir=+1 (heading=0, moving +X): driver's right is +Y → y = crossY + 1.5.
+        // dir=-1 (heading=π, moving -X): driver's right is -Y → y = crossY - 1.5.
+        // (Previously flipped — cars were driving on the left side of the cross street.)
         traffic.push({
           x: dir === 1 ? 5 : MAP_SIZE - 5,
-          y: crossY + (dir === 1 ? -1.5 : 1.5),
+          y: crossY + (dir === 1 ? 1.5 : -1.5),
           heading: dir === 1 ? 0 : Math.PI,
           speed: 20 * MPH_TO_MS,
           color: crossVType.colors[ci % crossVType.colors.length],
@@ -2624,7 +2628,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       }, [Object.keys(d.badges || {}).length]);
 
       var currentVehicle = VEHICLES.find(function(v) { return v.id === selectedVehicle; }) || VEHICLES[0];
-      var currentScenario = SCENARIOS.find(function(s) { return s.id === selectedScenario; }) || SCENARIOS[0];
+      // Shallow-copy the scenario so runtime mutations (Day/Night toggle, traffic level,
+      // biome-driven speedLimit, Free Explore overrides) don't leak into the SCENARIOS
+      // master array. Without this copy, ending a Free Explore drive in night mode left
+      // the underlying scenario entry stuck at time='night' for every subsequent drive.
+      var _scenarioBase = SCENARIOS.find(function(s) { return s.id === selectedScenario; }) || SCENARIOS[0];
+      var currentScenario = Object.assign({}, _scenarioBase);
 
       // ── Refs for the active driving sim ──
       var canvasRef = useRef(null);  // 2D HUD overlay canvas
@@ -2896,6 +2905,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         } catch (dcErr) {}
       };
       var skidRef = useRef({ active: false, intensity: 0 });
+      // Camera jolt state driven by the physics loop when the player crosses
+      // a residential speed bump. `intensity` scales the damped sine shake
+      // applied to camera.position.y; `startTime` anchors the decay. The
+      // render camera pass reads this each frame and decays it over ~0.4 s.
+      var bumpShakeRef = useRef({ intensity: 0, startTime: 0, lastBumpIdx: -1 });
       var eventToastRef = useRef({ msg: null, until: 0 });
       var drivingRef = useRef(false);
       var pausedRef = useRef(false);
@@ -2976,9 +2990,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // Seatbelt state: must be fastened to start driving. Chime plays until buckled.
       // User presses B (or any movement key will also auto-buckle after first prompt).
       var seatbeltRef = useRef({ fastened: false, chimeOsc: null, chimeGain: null });
-      // React-state mirror of seatbeltRef.current.fastened — the UI prompt reads this
-      // so it actually re-renders when the belt gets fastened (a ref mutation alone
-      // doesn't trigger React re-renders, which left the prompt stuck on screen).
+      // Parallel React state — the ref above is read every physics frame (cheap),
+      // but the *prompt UI* needs a re-render when the belt gets fastened. Without
+      // this mirror the prompt never disappears (the ref change is invisible to React).
       var beltFastenedTuple = useState(false);
       var beltFastened = beltFastenedTuple[0];
       var setBeltFastened = beltFastenedTuple[1];
@@ -3078,6 +3092,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         else if (scn.id === 'construction') introMsg = '🚧 WORK ZONE: Fines double. Watch for flaggers. Slow, smooth, patient.';
         else if (scn.id === 'downtown') introMsg = '🏙️ DOWNTOWN: Dense traffic, many signals, pedestrians everywhere. Patience is the skill here.';
         else if (scn.id === 'dawn') introMsg = '🌅 DAWN/DUSK: Low sun glare, reduced visibility. Peak moose/deer danger. Scan tree lines.';
+        // Clear infinite-world state from any prior Free Explore session — without this,
+        // a scenario drive that follows a Free Explore drive would still see the old
+        // procedural world (every `if (infiniteWorldRef.current)` check throughout the
+        // codebase would trigger, mixing scenario-mode rendering with stale spline lookups).
+        infiniteWorldRef.current = null;
         // Free explore gets its own welcome
         if (d.freeExplore && d.freeExploreScenario) {
           var fes = d.freeExploreScenario;
@@ -3183,7 +3202,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             }
           }
         }
-        carRef.current = { x: startX, y: startY, heading: -Math.PI / 2, speed: 0, throttle: 0, brake: 0, steering: 0 };
+        // Align player's spawn heading to the spline so they start FACING the road,
+        // not 30° off when the spline is bent at startY. Default −π/2 (NB) plus the
+        // spline's local tangent. Falls back to −π/2 if no infinite world spline.
+        var startHeading = -Math.PI / 2;
+        if (infiniteWorldRef.current && infiniteWorldRef.current.spline) {
+          var startSplineTheta = infiniteWorldRef.current.spline.headingAt(startY);
+          startHeading = -Math.PI / 2 - startSplineTheta;
+        }
+        carRef.current = { x: startX, y: startY, heading: startHeading, speed: 0, throttle: 0, brake: 0, steering: 0 };
         // ── SAFE-START sanitization ──
         // Clear a 20-cell bubble around the player so you never spawn into an active crash.
         // Traffic in the danger zone gets teleported to a safe distance (preserving lane offset).
@@ -3229,7 +3256,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             cy.y = startY + (cy.y >= startY ? 25 : -25);
           }
         });
-        statsRef.current = { startTime: Date.now(), distance: 0, maxSpeed: 0, mpgSum: 0, mpgSamples: 0, hardBrakes: 0, jackrabbits: 0, speedViolations: 0, closeFollows: 0, crashes: 0, stops: 0, safetyScore: 100, efficiencyScore: 100, fuelUsed: 0, skidSeconds: 0, cyclistClose: 0, unsignaledLaneChanges: 0, emergencyYields: 0 };
+        statsRef.current = { startTime: Date.now(), distance: 0, maxSpeed: 0, mpgSum: 0, mpgSamples: 0, hardBrakes: 0, jackrabbits: 0, speedViolations: 0, closeFollows: 0, crashes: 0, stops: 0, safetyScore: 100, efficiencyScore: 100, fuelUsed: 0, skidSeconds: 0, cyclistClose: 0, unsignaledLaneChanges: 0, emergencyYields: 0, busStopCompliance: 0, pedYields: 0, wrongSideViolations: 0, childStrike: 0, aiCausedCrashes: 0 };
         // Reset challenge state per drive. First offer arrives ~45s in — give the driver time to settle.
         challengeRef.current = { nextOfferAt: 45, offered: null, active: null, completedCount: 0, biomesVisited: {}, lastBiome: null, photoCooldown: 0, currentTown: null };
         // Reset per-drive journal and seed the first entry.
@@ -3521,6 +3548,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             skidSeconds: Math.round(s.skidSeconds),
             cyclistClose: s.cyclistClose,
             unsignaledLaneChanges: s.unsignaledLaneChanges || 0,
+            emergencyYields: s.emergencyYields || 0,
+            busStopCompliance: s.busStopCompliance || 0,
+            pedYields: s.pedYields || 0,
             scenarioId: currentScenario.id,
             lastCrashReplay: s.crashes > 0 ? blackBoxRef.current.slice(-120) : null, // last 2 sec before end
             drivePath: drivePathRef.current.slice() // full drive path for map
@@ -3628,8 +3658,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var dt = Math.min(0.1, (now - lastT) / 1000);
           lastT = now;
           pollGamepad();
+          // ── Suspend audio while paused ──
+          // The update loop is gated on !paused, so updateAudio() never fires while paused
+          // — but engine/siren oscillators keep running at whatever frequency/gain they
+          // had at pause-time. Suspending the AudioContext freezes ALL audio cleanly.
+          if (audioRef.current && audioRef.current.ctx) {
+            var ctxState = audioRef.current.ctx.state;
+            if (pausedRef.current && ctxState === 'running') {
+              try { audioRef.current.ctx.suspend(); } catch (e) {}
+            } else if (!pausedRef.current && ctxState === 'suspended') {
+              try { audioRef.current.ctx.resume(); } catch (e) {}
+            }
+          }
           if (!pausedRef.current) {
             timeRef.current += dt;
+            // Clamp safety/efficiency scores to [0, 100] each frame. Without this they
+            // can go arbitrarily negative — a player who racked up many violations would
+            // need to "earn back" from -150 before any visible improvement, hiding the
+            // benefit of subsequent good driving.
+            if (statsRef.current.safetyScore < 0) statsRef.current.safetyScore = 0;
+            if (statsRef.current.safetyScore > 100) statsRef.current.safetyScore = 100;
+            if (statsRef.current.efficiencyScore < 0) statsRef.current.efficiencyScore = 0;
+            if (statsRef.current.efficiencyScore > 100) statsRef.current.efficiencyScore = 100;
             updateSignals(signalsRef.current, dt);
             updatePhysics(dt);
             updateTraffic(dt);
@@ -3640,6 +3690,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             updateAudio();
             checkSignalCompliance();
             checkCyclistPassing();
+            checkBusCompliance();
+            checkPedestrianYield();
             checkCollisions();
             // ── Quest / destination system (Free Explore) ──
             // Now anchored to REAL landmarks in the procedural world. The quest engine
@@ -4338,13 +4390,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Hill grade: slope of road height at the car's position. Positive
           // slope = uphill (opposes forward motion), negative = downhill (assists).
           // Grade force = m * g * sin(atan(slope)) ≈ m * g * slope for small angles.
+          // Sample slope in the FORWARD direction of travel — the previous code always
+          // used heightAt(y+1) which gave INVERTED gradient for NB drivers (whose forward
+          // is car.y - 1). Result: NB drivers got DECELERATION when going downhill and
+          // ACCELERATION when climbing — the opposite of physics.
           var gradeForce = 0;
           if (infiniteWorldRef.current && infiniteWorldRef.current.spline) {
             var sp = infiniteWorldRef.current.spline;
             var hHere = sp.heightAt(car.y);
-            var hAhead = sp.heightAt(car.y + 1);
-            var slope = (hAhead - hHere); // rise per 1 cell
-            gradeForce = veh.mass * 9.81 * slope * 0.18; // scaled down — full gravity grade is too harsh for gameplay
+            var aheadDirG = Math.sin(car.heading) >= 0 ? 1 : -1;
+            var hAhead = sp.heightAt(car.y + aheadDirG);
+            var slope = (hAhead - hHere); // rise per 1 cell IN FORWARD DIRECTION
+            gradeForce = veh.mass * 9.81 * slope * 0.18;
           }
           var netForce = thrust - (Fd + Fr + brakeForce) * resistSign - gradeForce * resistSign;
           var accel = netForce / veh.mass;
@@ -4373,14 +4430,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Weight transfer (affects car pitch — visible in 3D) PLUS road grade.
           // Grade pitch tilts the whole car to follow the slope; accel pitch adds
           // the suspension nose-dip/lift on top.
+          //
+          // Direction matters. For NB driver (sin(heading) < 0, moving toward smaller Y),
+          // "ahead" is at car.y − 1 and positive pitch (rotation.x > 0) means nose UP.
+          // For SB driver, "ahead" is at car.y + 1 and NEGATIVE rotation.x means nose UP
+          // (the car group's heading rotation around Y reverses the pitch axis).
+          // Net formula: sample gradient in the FORWARD direction, multiply by −aheadDir
+          // so uphill always maps to "nose-up" regardless of which way the car faces.
           var gradePitch = 0;
+          var aheadDirP = Math.sin(car.heading) >= 0 ? 1 : -1;
           if (infiniteWorldRef.current && infiniteWorldRef.current.spline) {
             var spP = infiniteWorldRef.current.spline;
-            gradePitch = Math.atan2(spP.heightAt(car.y + 1) - spP.heightAt(car.y), 1);
+            var gradeAhead = spP.heightAt(car.y + aheadDirP) - spP.heightAt(car.y);
+            gradePitch = Math.atan2(gradeAhead, 1) * (-aheadDirP);
           }
-          car._pitchTarget = accel * 0.003 + gradePitch * 0.5;
+          // Accel pitch (weight transfer) also depends on direction: positive accel
+          // (accelerating forward) should tilt the nose UP. Same direction-sign multiplier
+          // as the grade pitch so SB drivers don't get an inverted weight-transfer feel.
+          car._pitchTarget = accel * 0.003 * (-aheadDirP) + gradePitch * 0.5;
           car._pitch = (car._pitch || 0) + (car._pitchTarget - (car._pitch || 0)) * dt * 5;
-          car._rollTarget = -car.steering * Math.abs(car.speed) * 0.003; // body rolls in turns
+          // Body roll on turns. Coefficient bumped 0.003 → 0.005 — was so subtle that you
+          // couldn't see the lean unless you slow-mo'd a screenshot. Now visibly tilts on
+          // sharp cornering at speed (~5° at full steering at 20 m/s) which sells the
+          // weight-transfer feel without crossing into cartoon territory.
+          car._rollTarget = -car.steering * Math.abs(car.speed) * 0.005;
           car._roll = (car._roll || 0) + (car._rollTarget - (car._roll || 0)) * dt * 4;
           // Suspension bounce — speed-dependent road vibration
           var suspFreq = 3 + absSpeed * 0.3;
@@ -4390,18 +4463,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           car._suspY = Math.sin(timeRef.current * suspFreq) * suspAmp + roadBump;
 
           // ─── RUMBLE STRIPS: detect off-road edge drift and provide audio + visual feedback ───
-          // Check if car is on the shoulder area (just off the painted edge line)
-          if (absSpeed > 5) { // only meaningful when moving
-            var currentCell = 2; // default grass
-            var shoulderX = Math.abs(car.x - Math.floor(MAP_SIZE / 2));
+          // Check if car is on the shoulder area (just off the painted edge line). Uses
+          // SPLINE-PERPENDICULAR distance from the road center — previously used distance
+          // from world center, which on bent roads was always >> shoulder threshold so the
+          // warning never fired. Now checks |perpOffset| against shoulder range (~3 cells).
+          if (absSpeed > 5) {
+            var currentCell = 2;
+            var splineForRumble = infiniteWorldRef.current && infiniteWorldRef.current.spline;
+            var rumbleSplineCx = splineForRumble ? splineForRumble.centerAt(car.y) : Math.floor(MAP_SIZE / 2);
+            var rumbleSplineTheta = splineForRumble ? splineForRumble.headingAt(car.y) : 0;
+            var shoulderPerp = Math.abs((car.x - rumbleSplineCx) * Math.cos(rumbleSplineTheta));
             if (infiniteWorldRef.current) {
               currentCell = infiniteWorldRef.current.getCell(Math.floor(car.x), Math.floor(car.y));
             } else if (mapRef.current && Math.floor(car.y) >= 0 && Math.floor(car.y) < MAP_SIZE && Math.floor(car.x) >= 0 && Math.floor(car.x) < MAP_SIZE) {
               currentCell = mapRef.current[Math.floor(car.y)][Math.floor(car.x)];
             }
-            // Detect edge drift: car is NEAR shoulder (within 1 cell of road edge on grass) or on grass moving fast
             var onGrass = currentCell === 2 || currentCell === 4;
-            var nearShoulder = currentCell === 0 && shoulderX >= 3.0 && shoulderX <= 3.5;
+            // "Near shoulder" = on the road BUT close to the painted edge line.
+            // Lane half-width is ~3.0; shoulder rumble band lives between 2.7 and 3.3.
+            var nearShoulder = currentCell === 0 && shoulderPerp >= 2.7 && shoulderPerp <= 3.3;
             if ((onGrass && absSpeed > 8) || nearShoulder) {
               // Rumble strip audio: low-frequency buzz that only plays while off-line
               try {
@@ -4450,11 +4530,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
           // Friction circle: lateral grip needed vs available.
           // If you brake HARD while turning, you exceed the grip budget and skid.
-          var lateralAccelNeeded = Math.abs(car.steering) * car.speed * car.speed * 0.08;
+          //
+          // Tuning rationale: the old coefficient 0.08 + threshold 1.1 meant a
+          // full key-press turn at ~30 mph on dry pavement tripped the skid
+          // state, which felt too punishing for basic left/right turns in a
+          // driver's-ed sim. Dropping the lateral-accel coefficient to 0.06
+          // effectively widens the implied turning radius (less aggressive
+          // centripetal demand per unit of steering input), and bumping the
+          // threshold to 1.3 gives students a 30% grip buffer before the car
+          // breaks loose. With these settings:
+          //   30 mph full turn on dry  → grip 7.06 m/s², demand 6.48 → no skid
+          //   35 mph full turn on dry  → demand 8.82 → no skid
+          //   40 mph full turn on dry  → demand 11.52 → skid (correct lesson)
+          //   30 mph full turn on wet  → grip 4.12, demand 6.48 → skid (correct)
+          // Braking WHILE turning still eats lateral grip via the friction
+          // circle, so the key teaching point ("don't brake mid-turn") stays
+          // intact — you just won't skid from a normal intersection turn.
+          var lateralAccelNeeded = Math.abs(car.steering) * car.speed * car.speed * 0.06;
           var longitudinalUsed = (Math.abs(thrust) + brakeForce) / veh.mass;
           var gripAvail = mu * 9.81;
           var lateralAvail = Math.max(0, Math.sqrt(Math.max(0, gripAvail * gripAvail - longitudinalUsed * longitudinalUsed)));
-          var skid = lateralAccelNeeded > lateralAvail * 1.1;
+          var skid = lateralAccelNeeded > lateralAvail * 1.3;
           // Grace period: no skid penalties in first 3 seconds
           if (skid && Math.abs(car.speed) > 4 && timeRef.current > 3) {
             skidRef.current.active = true;
@@ -4478,6 +4574,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var moveY = Math.sin(car.heading) * car.speed * dt / 5;
           var newX = car.x + moveX;
           var newY = car.y + moveY;
+          // Speed-bump crossing detection. The residential-chunk generator
+          // registers bumps in infiniteWorldRef.current._speedBumps with grid
+          // coordinates; here we check whether the car.y advanced PAST any
+          // bump's gridY this frame while staying within the bump's lateral
+          // extent. On cross: set bumpShakeRef for the camera jolt, play the
+          // existing pothole thump, and fire one haptic pulse.
+          (function() {
+            var iwBump = infiniteWorldRef.current;
+            var bumps = iwBump && iwBump._speedBumps;
+            if (!bumps || bumps.length === 0) return;
+            if (Math.abs(car.speed) < 1) return; // Crawling? no jolt.
+            for (var bi = 0; bi < bumps.length; bi++) {
+              var sb = bumps[bi];
+              var prevDelta = car.y - sb.gridY;
+              var newDelta = newY - sb.gridY;
+              // Sign flipped = crossed the bump's Y line this frame
+              if ((prevDelta >= 0) === (newDelta >= 0)) continue;
+              // Within the bump's lateral extent?
+              var latDx = Math.abs(((newX + car.x) * 0.5) - sb.gridX);
+              if (latDx > (sb.width || 4.5) * 0.5) continue;
+              if (bumpShakeRef.current.lastBumpIdx === bi && (timeRef.current - bumpShakeRef.current.startTime) < 0.6) continue;
+              var jSpeedFactor = Math.min(1, Math.abs(car.speed) / 8);
+              bumpShakeRef.current.intensity = 0.22 + 0.28 * jSpeedFactor;
+              bumpShakeRef.current.startTime = timeRef.current;
+              bumpShakeRef.current.lastBumpIdx = bi;
+              if (typeof playThump === 'function') {
+                try { playThump(Math.min(10, Math.abs(car.speed) * 0.7 + 2)); } catch (e) {}
+              }
+              if (typeof window !== 'undefined' && window._alloHaptic) {
+                try { window._alloHaptic('bump'); } catch (e) {}
+              }
+              // Gentle safety nudge if the player was speeding over the bump.
+              if (Math.abs(car.speed) > 6 && !bumpShakeRef.current._tipped) {
+                eventToastRef.current = { msg: '🐢 Speed bump — ease off the gas next time.', until: timeRef.current + 2.5 };
+                bumpShakeRef.current._tipped = true;
+                setTimeout(function() { if (bumpShakeRef.current) bumpShakeRef.current._tipped = false; }, 12000);
+              }
+              break;
+            }
+          })();
           // Wall collision (bounce + penalty) — supports both finite map and infinite world
           var cellX = Math.floor(newX);
           var cellY = Math.floor(newY);
@@ -4625,10 +4761,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       evt = { kind: 'cruiser', icon: '🚔', warn: 'POLICE CRUISER pulling out — stay alert!', color: '#1e40af' };
                     }
                     if (evt) {
-                      // Spawn the event as a wildlife-like entity that crosses the road
+                      // Spawn the event from the landmark's side of the road. Position
+                      // perpendicular to the spline so it appears IN the actual shoulder
+                      // (not offset by raw world X, which on curves would put it in trees).
                       var spawnAhead = 6;
-                      var spawnX = car.x + Math.cos(car.heading) * spawnAhead + (eChunk.landmark.side * 4);
                       var spawnY = car.y + Math.sin(car.heading) * spawnAhead;
+                      var evtSpline = infiniteWorldRef.current && infiniteWorldRef.current.spline;
+                      var evtSplineCx = evtSpline ? evtSpline.centerAt(spawnY) : car.x + Math.cos(car.heading) * spawnAhead;
+                      var evtSplineTheta = evtSpline ? evtSpline.headingAt(spawnY) : 0;
+                      var evtPerpX = Math.cos(evtSplineTheta);
+                      var evtPerpY = -Math.sin(evtSplineTheta);
+                      var landmarkSide = eChunk.landmark.side; // +1 or -1
+                      var spawnX = evtSplineCx + landmarkSide * 4 * evtPerpX;
+                      spawnY = spawnY + landmarkSide * 4 * evtPerpY;
                       if (!wildlifeRef.current) {
                         wildlifeRef.current = {
                           kind: evt.kind,
@@ -4636,8 +4781,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                           mass: evt.kind === 'ambulance' || evt.kind === 'firetruck' || evt.kind === 'tractor' || evt.kind === 'cruiser' ? 'medium' : 'small',
                           x: spawnX,
                           y: spawnY,
-                          vx: -eChunk.landmark.side * 1.5, // moves across the road
-                          vy: 0,
+                          // Move toward the road (perpendicular toward spline center)
+                          vx: -landmarkSide * 1.5 * evtPerpX,
+                          vy: -landmarkSide * 1.5 * evtPerpY,
                           hit: false,
                           life: 8,
                           fromLandmark: true,
@@ -4698,16 +4844,64 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
           // Blinker timer (for visual blink)
           blinkerTimerRef.current += dt;
+          // ── Turn-signal click sound ──
+          // When the blinker is on, emit a short "click" on each visual tick transition.
+          // Two clicks per cycle: on → off is a softer "clack", off → on is a sharper "click".
+          // Muted when audioRef.current.muted or the user hasn't interacted (ac suspended).
+          var blinkTickOn = Math.floor(blinkerTimerRef.current * 2.5) % 2 === 0;
+          if (blinkerRef.current !== 0 && audioRef.current && audioRef.current.ctx) {
+            if (!audioRef.current._lastBlinkTickOn) audioRef.current._lastBlinkTickOn = blinkTickOn;
+            if (audioRef.current._lastBlinkTickOn !== blinkTickOn) {
+              try {
+                var acBlink = audioRef.current.ctx;
+                var bkOsc = acBlink.createOscillator();
+                var bkGain = acBlink.createGain();
+                bkOsc.type = 'square';
+                bkOsc.frequency.value = blinkTickOn ? 1800 : 900; // sharper on-tick, thump on off-tick
+                bkGain.gain.value = 0;
+                bkOsc.connect(bkGain);
+                bkGain.connect(acBlink.destination);
+                bkOsc.start();
+                bkGain.gain.setValueAtTime(0, acBlink.currentTime);
+                bkGain.gain.linearRampToValueAtTime(0.035, acBlink.currentTime + 0.003);
+                bkGain.gain.exponentialRampToValueAtTime(0.0001, acBlink.currentTime + 0.04);
+                bkOsc.stop(acBlink.currentTime + 0.05);
+              } catch (bkErr) { /* audio unavailable */ }
+              audioRef.current._lastBlinkTickOn = blinkTickOn;
+            }
+          } else if (audioRef.current) {
+            audioRef.current._lastBlinkTickOn = null;
+          }
 
-          // Lane change detection — hysteresis-based to prevent false positives on curves
-          // Only trigger if car moves 2+ world units from its last stable lane position
-          if (!laneChangeRef.current.stableX) laneChangeRef.current.stableX = car.x;
-          var laneShift = car.x - laneChangeRef.current.stableX;
+          // ── Lane change detection (curve-safe) ──
+          // Measure the player's PERPENDICULAR offset from the spline at their current Y.
+          // On a curving road the raw X drifts naturally; perpendicular offset stays stable
+          // when the player follows the lane, so any > 2m delta is a genuine lane change.
+          var splineForPlayer = infiniteWorldRef.current && infiniteWorldRef.current.spline;
+          var splineCxAtPlayer = splineForPlayer ? splineForPlayer.centerAt(car.y) : Math.floor(MAP_SIZE / 2);
+          var splineThetaAtPlayer = splineForPlayer ? splineForPlayer.headingAt(car.y) : 0;
+          // Project (car − splineCenter) onto perp-right (cos θ, −sin θ). Pure-X component
+          // of player's relative position projected onto perpendicular = (car.x − splineCx) * cos θ.
+          var playerPerpOffset = (car.x - splineCxAtPlayer) * Math.cos(splineThetaAtPlayer);
+          if (laneChangeRef.current.stableLane === undefined || laneChangeRef.current.stableLane === null) {
+            laneChangeRef.current.stableLane = playerPerpOffset;
+          }
+          var laneShift = playerPerpOffset - laneChangeRef.current.stableLane;
           if (Math.abs(laneShift) > 2.0 && Math.abs(car.speed) > 5 && timeRef.current > 5) {
-            // Genuine lane change detected
             if (!laneChangeRef.current._cooldown || timeRef.current - laneChangeRef.current._cooldown > 5) {
-              var dir = laneShift > 0 ? 1 : -1;
-              if (blinkerRef.current !== dir) {
+              // Direction in driver-relative terms (right vs left)
+              var dirShift = laneShift > 0 ? 1 : -1;
+              // For the player heading −π/2 (default Free Explore), sin(heading) < 0 so
+              // they're northbound. Their RIGHT is +X (positive perp-offset). For southbound
+              // (sin > 0), their right is −X. Driver-relative "right" = sign matching myDirSign.
+              // Player heading sign maps to dirSign just like AI.
+              var pDirSign = car.heading > 0 ? 1 : -1;
+              // "right shift" in perp-offset space: positive perp = world +X = right for NB (-1).
+              // For SB (+1) right = negative perp. So driver-right-shift = -dirShift * pDirSign? Equivalent to perp shift sign for NB and inverted for SB.
+              var driverRelDir = -dirShift * pDirSign; // +1 = signaled left, -1 = signaled right
+              // Map blinkerRef.current (-1=left, +1=right) to driverRelDir convention (+1=left, -1=right)
+              var expectedBlinker = driverRelDir === 1 ? -1 : 1;
+              if (blinkerRef.current !== expectedBlinker) {
                 statsRef.current.safetyScore -= 5;
                 if (!statsRef.current.unsignaledLaneChanges) statsRef.current.unsignaledLaneChanges = 0;
                 statsRef.current.unsignaledLaneChanges++;
@@ -4721,10 +4915,62 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               }
               laneChangeRef.current._cooldown = timeRef.current;
             }
-            laneChangeRef.current.stableX = car.x;
+            laneChangeRef.current.stableLane = playerPerpOffset;
           }
-          // Slowly drift the stable position toward current (tolerates gradual curves)
-          laneChangeRef.current.stableX += (car.x - laneChangeRef.current.stableX) * dt * 0.3;
+          // Slowly drift stable toward current to tolerate gentle drift inside a lane.
+          laneChangeRef.current.stableLane += (playerPerpOffset - laneChangeRef.current.stableLane) * dt * 0.3;
+
+          // ── Wrong-side / oncoming-lane detection ──
+          // For US right-side driving: NB driver (heading < 0) belongs at perp > 0.
+          // SB driver (heading > 0) belongs at perp < 0. If the player drifts more than
+          // 0.4m onto the OTHER side of the spline AND stays there for 1.5s while moving,
+          // they're driving in the oncoming lane — major safety violation.
+          //
+          // Coordinated with the more sophisticated wrongSideRef detector (further down
+          // in HUD/render code, line ~13000+) via wrongSideRef.current.lastPenaltyAt so
+          // a single wrong-side incursion doesn't double-penalize through both checks.
+          if (Math.abs(car.speed) > 3 && timeRef.current > 5) {
+            // Use sin(heading) for direction inference — sign-stable across heading wrap
+            // (raw `> 0` would misfire if the player makes more than half a U-turn).
+            var pRightSign = Math.sin(car.heading) > 0 ? -1 : 1; // SB (sin>0): -1, NB (sin<0): +1
+            var inOncoming = (playerPerpOffset * pRightSign) < -0.4;
+            var ws = laneChangeRef.current;
+            if (inOncoming) {
+              if (!ws._wrongSideStart) ws._wrongSideStart = timeRef.current;
+              var wrongDuration = timeRef.current - ws._wrongSideStart;
+              // Suppress if the other detector recently penalized (within 4s)
+              var recentlyPenalized = wrongSideRef.current
+                && wrongSideRef.current.lastPenaltyAt
+                && (timeRef.current - wrongSideRef.current.lastPenaltyAt < 4);
+              if (wrongDuration > 1.5 && !recentlyPenalized
+                  && (!ws._wrongSideLogged || timeRef.current - ws._wrongSideLogged > 5)) {
+                ws._wrongSideLogged = timeRef.current;
+                if (wrongSideRef.current) wrongSideRef.current.lastPenaltyAt = timeRef.current;
+                statsRef.current.safetyScore -= 15;
+                if (!statsRef.current.wrongSideViolations) statsRef.current.wrongSideViolations = 0;
+                statsRef.current.wrongSideViolations++;
+                addToast('🚨 WRONG SIDE — you crossed into oncoming! -15');
+                eventToastRef.current = { msg: '🚨 You drove in oncoming traffic. Solid yellow = NO crossing. Get back to your side.', until: timeRef.current + 5 };
+                speak('Wrong side of the road. Return to your lane immediately.');
+                if (roadTestRef.current.active) {
+                  roadTestRef.current.deductions.push({ type: 'wrong_side', pts: 10, t: timeRef.current, detail: 'Drove in oncoming lane' });
+                  roadTestRef.current.score -= 10;
+                }
+              }
+            } else {
+              ws._wrongSideStart = null;
+            }
+            // ── Lane departure warning (LDW) — milder, just a coaching prompt ──
+            // If the player drifts onto the painted centerline (perp within ±0.4 of 0)
+            // without signaling, gentle nudge them back. Doesn't affect score.
+            var nearCenter = Math.abs(playerPerpOffset) < 0.4 && Math.abs(car.speed) > 8;
+            if (nearCenter && blinkerRef.current === 0) {
+              if (!ws._ldwLast || timeRef.current - ws._ldwLast > 8) {
+                ws._ldwLast = timeRef.current;
+                addToast('⚠️ Lane Departure — drifting toward the centerline');
+              }
+            }
+          }
 
           // MPG history for sparkline (sample every 0.5s)
           if (car.speed > 1 && mpg < 999) {
@@ -4760,13 +5006,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               if (t._busCycleTimer <= 0) {
                 t._stopArmActive = !t._stopArmActive;
                 t._busCycleTimer = t._stopArmActive ? 6 : (28 + Math.random() * 18);
+                // Reset per-cycle compliance + child-spawn flags so the next stop-arm
+                // cycle is treated as a fresh event (not the same one being re-armed).
+                if (t._stopArmActive) {
+                  t._busCompArmed = false;
+                  t._busCompLogged = null;
+                  t._childSpawned = false;
+                  t._childSpawnTimer = null;
+                }
               }
               // While stop arm is active, override speed → 0 and set hard slowFor later.
             }
             // ── Direction-aware forward-vector helper ──
             // Cars travel along either Y (heading = ±π/2) or X (heading = 0 or π).
             // "ahead" of a car depends on which axis it travels along.
-            var travelsY = Math.abs(Math.abs(t.heading) - Math.PI / 2) < 0.3;
+            // travelsY: flagged directly by crossStreet. On curved roads the heading can
+            // swing up to ~0.55 rad off pure ±π/2, so heading-based inference would
+            // incorrectly flip the car to "cross-street" on sharp curves.
+            var travelsY = !t.crossStreet;
             var forwardSign = travelsY ? (t.heading > 0 ? 1 : -1) : (Math.abs(t.heading) < 1 ? 1 : -1);
             var axis = travelsY ? 'y' : 'x';
             var crossAxis = travelsY ? 'x' : 'y';
@@ -4779,15 +5036,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // main-road cars detect directly; cross-street cars treat the same signal as
             // controlling their perpendicular approach: main-road green = cross-street red.
             var slowFor = 0; // 0=clear, 1=slow, 2=stop
-            var signalDetectRange = 14; // brake earlier — was 8
+            // Detection range scales with speed: a fast car needs more distance to brake
+            // smoothly to a stop. Stopping distance grows with v² so adding a v-proportional
+            // term keeps fast traffic from overshooting the stop line.
+            var signalDetectRange = 14 + Math.abs(t.speed || 0) * 0.45;
             // Track the signal currently controlling us (used below for stop-sign resume).
             var activeStopSign = null;
             var activeStopDist = Infinity;
             signals.forEach(function(s) {
               if (!t.crossStreet) {
-                // Main-road car: straight-ahead signal on the path.
+                // Main-road car: signal is on the main road ahead. On curves, raw `rel.lat`
+                // (world X diff) can exceed 3 even for an in-path signal because the spline
+                // bends. Use forward-distance gate only, but verify the signal is for our
+                // road by checking spline center alignment at the signal's Y.
                 var rel = aheadOf(s.x, s.y);
-                if (rel.ahead > 0 && rel.ahead < signalDetectRange && Math.abs(rel.lat) < 3) {
+                var splineAtSignal = (infiniteWorldRef.current && infiniteWorldRef.current.spline)
+                  ? infiniteWorldRef.current.spline.centerAt(s.y) : s.x;
+                var signalLatFromSpline = Math.abs(s.x - splineAtSignal);
+                if (rel.ahead > 0 && rel.ahead < signalDetectRange && signalLatFromSpline < 3) {
                   if (s.type === 'stop' || s.state === 'red') {
                     if (s.type === 'stop' && pers.rollsStops > 0 && Math.random() < pers.rollsStops * 0.05) {
                       slowFor = Math.max(slowFor, 1);
@@ -4846,7 +5112,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 // Cross-axis AI traffic inside the intersection box (4 cells)
                 traffic.forEach(function(other, oi) {
                   if (!intersectionClear || oi === idx) return;
-                  var oYaxis = Math.abs(Math.abs(other.heading) - Math.PI / 2) < 0.3;
+                  // Direct flag, curve-safe (heading-based inference misfires on bent roads).
+                  var oYaxis = !other.crossStreet;
                   if (oYaxis === travelsY) {
                     // Same axis: only a concern if another car is immediately in front of us at the same stop
                     var rel2 = aheadOf(other.x, other.y);
@@ -4923,7 +5190,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               // perpendicular to ours AND close to the intersection point (s.x, s.y).
               traffic.forEach(function(other, oi) {
                 if (oi === idx) return;
-                var otherTravelsY = Math.abs(Math.abs(other.heading) - Math.PI / 2) < 0.3;
+                // Direct flag check (curve-safe). Heading-based inference would misfire
+                // on bent main-road cars whose heading deviates >0.3 rad from pure ±π/2.
+                var otherTravelsY = !other.crossStreet;
                 var sameAxis = (otherTravelsY && travelsY) || (!otherTravelsY && !travelsY);
                 if (sameAxis) return; // only concerned with cross-axis traffic
                 var odx = other.x - s.x, ody = other.y - s.y;
@@ -4958,14 +5227,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // and shifts its lane offset toward the right shoulder (outer edge).
             if (emergency && !emergency.responded) {
               var erel = aheadOf(emergency.x, emergency.y);
-              // Within 20 cells in any direction — react.
-              if (Math.abs(erel.ahead) < 20 && Math.abs(erel.lat) < 8) {
+              // Curve-safe "on the same road" check: both AI and emergency project onto
+              // the spline; their perpendicular offsets should be within ~road width.
+              var emRoadCheck = true;
+              if (!t.crossStreet) {
+                var emiwSp = infiniteWorldRef.current && infiniteWorldRef.current.spline;
+                if (emiwSp) {
+                  var emCenterAtAi = emiwSp.centerAt(t.y);
+                  var emThetaAtAi = emiwSp.headingAt(t.y);
+                  var emCenterAtEm = emiwSp.centerAt(emergency.y);
+                  var emThetaAtEm = emiwSp.headingAt(emergency.y);
+                  var aiPerpEm = (t.x - emCenterAtAi) * Math.cos(emThetaAtAi);
+                  var emPerpEm = (emergency.x - emCenterAtEm) * Math.cos(emThetaAtEm);
+                  emRoadCheck = Math.abs(aiPerpEm - emPerpEm) < 6; // within road width
+                } else {
+                  emRoadCheck = Math.abs(erel.lat) < 8;
+                }
+              } else {
+                emRoadCheck = Math.abs(erel.lat) < 8;
+              }
+              // Within 20 cells in any direction AND on the same road — react.
+              if (Math.abs(erel.ahead) < 20 && emRoadCheck) {
                 slowFor = Math.max(slowFor, 1);
                 // Shift toward the outer edge — direction-dependent.
                 if (!t.crossStreet && t.laneOffset !== undefined) {
-                  var pullOver = t.heading > 0 ? -2.4 : 2.4; // farther right than the default lane
-                  // Only shift if we have room and aren't blocked.
+                  var pullOver = t.heading > 0 ? -2.4 : 2.4;
                   t._emergencyPullOver = true;
+                  // Cancel any in-flight lane change so it doesn't overwrite the pullover.
+                  if (t._pendingLaneOffset !== undefined && t._pendingLaneOffset !== null) {
+                    t._pendingLaneOffset = null;
+                    t._pendingLaneTimer = 0;
+                    t._blinkerCancelTimer = 0;
+                    t.blinker = 1; // right signal — pulling right
+                  }
                   // Gradual pull-over (not instant snap)
                   t.laneOffset += (pullOver - t.laneOffset) * Math.min(1, dt * 1.5);
                 }
@@ -4975,6 +5269,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 t.laneOffset += (defaultOff - t.laneOffset) * Math.min(1, dt * 1.5);
                 if (Math.abs(t.laneOffset - defaultOff) < 0.1) t._emergencyPullOver = false;
               }
+            } else if (t._emergencyPullOver) {
+              // Emergency is null OR responded — still need to return AI cars to their
+              // default lane. Without this branch, AI stayed at pullOver-2.4 forever
+              // because the outer `if (emergency && !emergency.responded)` gate is false.
+              var defaultOffPost = t.heading > 0 ? -1.5 : 1.5;
+              t.laneOffset += (defaultOffPost - t.laneOffset) * Math.min(1, dt * 1.5);
+              if (Math.abs(t.laneOffset - defaultOffPost) < 0.1) t._emergencyPullOver = false;
             }
             // ── Defensive-driver awareness: erratic player expansion ──
             // If the player's safety score is dropping or their recent actions are chaotic,
@@ -4990,7 +5291,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var followFar  = 7 * pers.followMult * erraticMult + t.speed * 0.35 * pers.followMult;
             traffic.forEach(function(other, j) {
               if (j === idx) return;
-              // Must be in the same lane (similar cross-axis position).
+              // Same-lane detection must be curve-safe: use laneOffset proximity, not world X.
+              // Also require same-direction (otherwise oncoming traffic would trigger braking).
+              if (!t.crossStreet && !other.crossStreet) {
+                var tDirSign2 = t.heading > 0 ? 1 : -1;
+                var oDirSign2 = other.heading > 0 ? 1 : -1;
+                if (oDirSign2 !== tDirSign2) return;
+                var otherLaneDelta = (other.laneOffset || 0) - (t.laneOffset || 0);
+                if (Math.abs(otherLaneDelta) > 1.0) return;
+                var otherAhead = (other.y - t.y) * tDirSign2;
+                if (otherAhead > 0 && otherAhead < followNear) slowFor = Math.max(slowFor, 2);
+                else if (otherAhead > 0 && otherAhead < followFar) slowFor = Math.max(slowFor, 1);
+                // ── AI-vs-AI emergency brake ──
+                // When VERY close behind another car in the same lane (< 3m, closing speed
+                // > 2 m/s), apply a hard decel burst — the soft 0.5s speed lerp alone
+                // wasn't enough to prevent rear-ends in heavy traffic. Mirrors the player-
+                // vs-AI AEB logic so AI cars don't stack into each other.
+                if (otherAhead > 0 && otherAhead < 3 && t.speed - other.speed > 2) {
+                  t.speed = Math.max(0, t.speed - 8 * dt); // ~0.8g hard decel
+                  t._aeb = true;
+                }
+                return;
+              }
+              // Cross-street or mixed: fall back to aheadOf (axis-aware).
               var otherRel = aheadOf(other.x, other.y);
               if (Math.abs(otherRel.lat) > 2) return;
               if (otherRel.ahead > 0 && otherRel.ahead < followNear) slowFor = Math.max(slowFor, 2);
@@ -5029,17 +5352,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               if (other4.type !== 'schoolbus') return;
               if (!other4._stopArmActive) return;
               // Bus is stopped with flashers — all traffic within ~15 cells must stop.
-              // Lateral check: same road (within the full road width), any direction.
-              if (Math.abs(other4.x - t.x) > 10) return; // ~full road width + shoulder
+              // Lateral check: same road. Curve-safe — compare spline-perpendicular
+              // distances. The previous raw |bus.x − t.x| < 10 false-negated on bent
+              // roads where spline shift alone could exceed 10 between two same-road cars.
+              var busSameRoad = true;
+              if (!t.crossStreet && !other4.crossStreet) {
+                var bSp = infiniteWorldRef.current && infiniteWorldRef.current.spline;
+                if (bSp) {
+                  var bSpCx_t = bSp.centerAt(t.y);
+                  var bSpCx_b = bSp.centerAt(other4.y);
+                  var bSpTh_t = bSp.headingAt(t.y);
+                  var bSpTh_b = bSp.headingAt(other4.y);
+                  var tPerpForBus = (t.x - bSpCx_t) * Math.cos(bSpTh_t);
+                  var bPerpForBus = (other4.x - bSpCx_b) * Math.cos(bSpTh_b);
+                  busSameRoad = Math.abs(tPerpForBus - bPerpForBus) < 6; // road width + shoulder
+                } else {
+                  busSameRoad = Math.abs(other4.x - t.x) < 10;
+                }
+              } else {
+                busSameRoad = Math.abs(other4.x - t.x) < 10;
+              }
+              if (!busSameRoad) return;
               var busRel = aheadOf(other4.x, other4.y);
-              // Stop whether approaching from behind OR oncoming — this is the rule.
               if (Math.abs(busRel.ahead) < 15) {
                 slowFor = Math.max(slowFor, 2);
               }
             });
-            // React to PLAYER car — slow down, honk, or AEB (emergency brake)
+            // React to PLAYER car — slow down, honk, or AEB (emergency brake).
+            // Use spline-perpendicular lateral distance so we don't false-positive on bends.
             var playerCar = carRef.current;
-            if (Math.abs(playerCar.x - t.x) < 2) {
+            var playerSameLane = false;
+            if (!t.crossStreet) {
+              var aiSpline = infiniteWorldRef.current && infiniteWorldRef.current.spline;
+              if (aiSpline) {
+                var aiThetaForP = aiSpline.headingAt(t.y);
+                var aiCenterForP = aiSpline.centerAt(t.y);
+                var pThetaForP = aiSpline.headingAt(playerCar.y);
+                var pCenterForP = aiSpline.centerAt(playerCar.y);
+                var aiPerpForP = (t.x - aiCenterForP) * Math.cos(aiThetaForP);
+                var pPerpForP = (playerCar.x - pCenterForP) * Math.cos(pThetaForP);
+                playerSameLane = Math.abs(aiPerpForP - pPerpForP) < 1.0;
+              } else {
+                playerSameLane = Math.abs(playerCar.x - t.x) < 2;
+              }
+            } else {
+              playerSameLane = Math.abs(playerCar.x - t.x) < 2;
+            }
+            if (playerSameLane) {
               var playerAhead = (t.heading > 0 ? playerCar.y - t.y : t.y - playerCar.y);
               if (playerAhead > 0 && playerAhead < 3) {
                 // Very close behind player — EMERGENCY AUTOMATIC BRAKING (AEB-style).
@@ -5160,42 +5519,55 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               }
             }
             if (noPassZone) { t._laneChangeCooldown = Math.max(t._laneChangeCooldown || 0, 2); }
-            if (!t.crossStreet && t._laneChangeCooldown <= 0) {
+            // Lane-change decisions require the car to actually be moving — a stopped
+            // car at a red light shouldn't randomly slide sideways into the next lane.
+            if (!t.crossStreet && t._laneChangeCooldown <= 0 && Math.abs(t.speed) > 1.5) {
+              // Driver-relative geometry.
+              //   myDirSign: +1 southbound (heading ~+π/2), -1 northbound (~−π/2).
+              //   innerSign: +laneOffset delta that means "toward centerline" for THIS driver.
+              //     SB default = -1.5, moving toward centerline (+laneOffset) is +delta → +1.
+              //     NB default = +1.5, moving toward centerline (-laneOffset) is -delta → -1.
+              //   "Inner" = toward centerline = driver's LEFT. "Outer" = toward shoulder = driver's RIGHT.
+              var myDirSign = t.heading > 0 ? 1 : -1;
+              var innerSign = myDirSign; // SB: +1 means "going more-positive-offset = toward centerline"; NB: -1
               var wantOvertake = false;
-              var blockedLeft = false, blockedRight = false;
+              var blockedInner = false, blockedOuter = false;
               traffic.forEach(function(other2, j2) {
                 if (j2 === idx) return;
-                if (Math.abs(other2.x - t.x) > 2) return;
-                var ah = (t.heading > 0 ? other2.y - t.y : t.y - other2.y);
-                // Someone directly ahead in my lane, slower than me → reason to overtake
-                if (Math.abs(other2.x - t.x) < 1 && ah > 3 && ah < 10 && other2.speed < t.speed * 0.85) wantOvertake = true;
-                // Check if adjacent lane is blocked (safety check before lane change)
+                if (other2.crossStreet) return;
+                var otherDirSign = other2.heading > 0 ? 1 : -1;
+                if (otherDirSign !== myDirSign) return; // ignore oncoming
+                var laneDelta = (other2.laneOffset || 0) - (t.laneOffset || 0);
+                if (Math.abs(laneDelta) > 2.0) return;
+                // Forward distance along direction of travel: positive = other is ahead of me.
+                var ah = (other2.y - t.y) * myDirSign;
+                // Same lane, slower, 3–10m ahead → reason to overtake
+                if (Math.abs(laneDelta) < 0.7 && ah > 3 && ah < 10 && other2.speed < t.speed * 0.85) wantOvertake = true;
+                // Adjacent lane blocked? laneDelta * innerSign > 0 means "other is inner (to my left)".
                 if (Math.abs(ah) < 5) {
-                  if (other2.x > t.x && other2.x - t.x < 2.2) blockedRight = true;
-                  if (other2.x < t.x && t.x - other2.x < 2.2) blockedLeft = true;
+                  var sideSignedDelta = laneDelta * innerSign;
+                  if (sideSignedDelta > 0.5) blockedInner = true;   // to my left
+                  if (sideSignedDelta < -0.5) blockedOuter = true;  // to my right
                 }
               });
-              // Aggressive drivers overtake — but only if safe and only WITHIN their direction's side.
-              // For heading > 0 (+Y): our side is x < centerXt, safe lanes: [-2.5, -0.5] from center.
-              // For heading < 0 (-Y): our side is x > centerXt, safe lanes: [+0.5, +2.5] from center.
-              // ── Realistic signaling: set blinker FIRST, wait ~1.2s, THEN move. ──
-              // t._pendingLaneOffset + t._pendingLaneTimer track the pre-signal phase.
+              // Overtake direction = INNER (toward centerline) on US right-side roads.
+              // Inner lane offset: SB starts -1.5, moves toward 0 → inner offset = -0.5. NB mirrors to +0.5.
+              var innerOffset = myDirSign === 1 ? -0.5 : 0.5;
               if (wantOvertake && pers.aggro > 0.4 && Math.random() < pers.aggro * 0.015 && !t._pendingLaneOffset) {
-                var newOffset = t.heading > 0 ? -0.5 : 0.5;
-                var blocked = (newOffset > t.laneOffset) ? blockedRight : blockedLeft;
-                if (!blocked && Math.abs(t.laneOffset - newOffset) > 0.5) {
-                  // Start the pre-signal phase — blinker on, lane hasn't moved yet.
-                  t._pendingLaneOffset = newOffset;
-                  t._pendingLaneTimer = 1.2; // legally required 1s+ signal before move
-                  t.blinker = newOffset > t.laneOffset ? 1 : -1;
+                // Going inner — checked blockedInner.
+                if (!blockedInner && Math.abs(t.laneOffset - innerOffset) > 0.5) {
+                  t._pendingLaneOffset = innerOffset;
+                  t._pendingLaneTimer = 1.2;
+                  // Blinker: inner = left (for right-side traffic)
+                  t.blinker = -1;
                 }
               } else if (!wantOvertake && t._laneChangeCooldown <= 0 && !t._pendingLaneOffset && Math.random() < 0.0008) {
-                // Return to default lane (right side for direction) — also pre-signaled.
-                var defaultOffset = t.heading > 0 ? -1.5 : 1.5;
-                if (Math.abs(t.laneOffset - defaultOffset) > 0.3) {
+                // Return to default lane (outer, toward shoulder).
+                var defaultOffset = myDirSign === 1 ? -1.5 : 1.5;
+                if (Math.abs(t.laneOffset - defaultOffset) > 0.3 && !blockedOuter) {
                   t._pendingLaneOffset = defaultOffset;
                   t._pendingLaneTimer = 1.0;
-                  t.blinker = defaultOffset > t.laneOffset ? 1 : -1;
+                  t.blinker = 1; // right signal — returning outer
                 }
               }
             }
@@ -5203,17 +5575,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // blocked during the signal phase, cancel cleanly and cancel the blinker.
             if (t._pendingLaneOffset !== undefined && t._pendingLaneOffset !== null) {
               t._pendingLaneTimer -= dt;
-              // Re-check blockage each frame
+              // Re-check blockage using LANE-OFFSET comparison (curve-safe).
               var stillBlocked = false;
               var pOff = t._pendingLaneOffset;
+              var pendingDirSign = t.heading > 0 ? 1 : -1;
               traffic.forEach(function(other3, j3) {
                 if (j3 === idx) return;
-                if (Math.abs(other3.x - t.x) > 3) return;
-                var ahp = (t.heading > 0 ? other3.y - t.y : t.y - other3.y);
-                if (Math.abs(ahp) < 5) {
-                  if (pOff > t.laneOffset && other3.x > t.x && other3.x - t.x < 2.2) stillBlocked = true;
-                  if (pOff < t.laneOffset && other3.x < t.x && t.x - other3.x < 2.2) stillBlocked = true;
-                }
+                if (other3.crossStreet) return;
+                var otherSign3 = other3.heading > 0 ? 1 : -1;
+                if (otherSign3 !== pendingDirSign) return;
+                // Is other in the target lane? (within 1m of pending laneOffset)
+                if (Math.abs((other3.laneOffset || 0) - pOff) > 1.0) return;
+                // Within ±5m ahead/behind along travel axis?
+                var ahp = (other3.y - t.y) * pendingDirSign;
+                if (Math.abs(ahp) < 5) stillBlocked = true;
               });
               if (stillBlocked) {
                 t._pendingLaneOffset = null;
@@ -5235,20 +5610,64 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               if (t._blinkerCancelTimer <= 0) t.blinker = 0;
             }
             if (t._laneChangeCooldown > 0) t._laneChangeCooldown -= dt;
-            // Move forward along direction of travel
-            t.y += Math.sin(t.heading) * t.speed * dt / 5;
-            t.x += Math.cos(t.heading) * t.speed * dt / 5;
-            // ── Pull toward target lane position (spline-aware) ──
-            // On curved roads the spline center moves; traffic must follow it or drive off-road.
+            // ── Spline-aware heading + lane tracking ──
+            // Previously the car's heading was fixed at ±π/2 and only t.x got corrected to
+            // track the spline center. On curved roads that caused the car to drift across
+            // the centerline into oncoming (the X-only lerp couldn't catch up with the curve).
+            // Fix: align heading to the spline tangent + lateral offset, and apply the lane
+            // offset PERPENDICULAR to the spline direction (not purely along world X).
             if (!t.crossStreet) {
-              var roadCenterAtT = centerXt;
-              if (infiniteWorldRef.current && infiniteWorldRef.current.spline) {
-                roadCenterAtT = infiniteWorldRef.current.spline.centerAt(t.y);
+              var iwTraf = infiniteWorldRef.current;
+              var splineHeading = 0;
+              var splineCenter = centerXt;
+              if (iwTraf && iwTraf.spline) {
+                splineHeading = iwTraf.spline.headingAt(t.y);
+                splineCenter = iwTraf.spline.centerAt(t.y);
               }
-              var targetX = roadCenterAtT + t.laneOffset;
-              // Low-pass: move ~15% of the way per frame at 60fps, scaled by dt.
-              var lerpT = Math.min(1, dt * 4);
-              t.x = t.x * (1 - lerpT) + targetX * lerpT;
+              // Target heading: direction of travel relative to spline.
+              // Spline convention (line ~693): heading=0 ⇒ road goes +Y; positive heading bends +X.
+              // Spline direction vector = (sin θ, cos θ). Southbound (moving +Y) travels along +direction.
+              // Game heading convention: (cos h, sin h) = direction of motion.
+              //   Southbound: (cos h, sin h) = (sin θ, cos θ) ⇒ h = π/2 − θ
+              //   Northbound: (cos h, sin h) = (−sin θ, −cos θ) ⇒ h = −π/2 − θ
+              // direction flag preserved by initial heading sign.
+              var isSouthbound = Math.sin(t.heading) > 0; // sin(heading) > 0 ⇔ heading in (0, π)
+              var targetHeading = isSouthbound ? (Math.PI / 2 - splineHeading) : (-Math.PI / 2 - splineHeading);
+              // Lerp heading smoothly — tight 0.15s time constant so the car turns to
+              // match the spline tangent quickly. With slower lerp (0.3s) the heading
+              // lagged the spline by ~30° at peak curvature; forward motion then had a
+              // big perpendicular component that outran the lateral correction, drifting
+              // the car across the centerline. Tighter heading lerp keeps motion aligned
+              // with the spline so the lateral correction has less to fight.
+              var dh = targetHeading - t.heading;
+              while (dh > Math.PI) dh -= 2 * Math.PI;
+              while (dh < -Math.PI) dh += 2 * Math.PI;
+              t.heading += dh * (1 - Math.exp(-dt / 0.15));
+              // Forward motion in the car's current direction
+              t.y += Math.sin(t.heading) * t.speed * dt / 5;
+              t.x += Math.cos(t.heading) * t.speed * dt / 5;
+              // ── Pull toward target lane position PERPENDICULAR to the spline ──
+              // Lane positioning: laneOffset is interpreted as RAW X-offset from the spline
+              // center, matching how road geometry + lane paint are constructed (ribbon
+              // verts at worldCx ± roadHalfW, paint at worldCx + offset). Heading still
+              // follows the spline tangent so the car FACES the correct direction; only
+              // the position uses raw-X.
+              //
+              // Re-sample the spline center at the NEW t.y after the forward motion — the
+              // pre-motion sample used for heading is stale by ~speed*dt meters along Y, which
+              // on tight curves means the lane correction was chasing a target several meters
+              // behind the car's actual position and the AI drifted progressively off-lane.
+              var laneSplineCenter = (iwTraf && iwTraf.spline) ? iwTraf.spline.centerAt(t.y) : splineCenter;
+              var targetX = laneSplineCenter + t.laneOffset;
+              var xErr = t.x - targetX;
+              // Aggressive lerp (0.12s time constant) so the X correction outruns the
+              // perpendicular drift introduced by spline-aligned forward motion on bends.
+              var xLerp = 1 - Math.exp(-dt / 0.12);
+              t.x -= xErr * xLerp;
+            } else {
+              // Cross-street: straight motion is fine (no spline curvature on cross streets).
+              t.y += Math.sin(t.heading) * t.speed * dt / 5;
+              t.x += Math.cos(t.heading) * t.speed * dt / 5;
             }
             // Wrap / respawn traffic relative to player position
             var playerY = carRef.current.y;
@@ -5258,13 +5677,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             } else if (infiniteWorldRef.current) {
               // Infinite world: respawn traffic that gets too far from player
               if (Math.abs(t.y - playerY) > MAP_SIZE * 0.6) {
-                // Respawn ahead or behind the player
                 var newDir = Math.random() < 0.5 ? 1 : -1;
                 t.y = playerY + newDir * (10 + Math.random() * MAP_SIZE * 0.4);
-                // Position in the correct lane on the spline at the new Y
+                // Position in the correct lane ON the spline perpendicular at the new Y.
+                // Use heading-sign to infer direction (sign-stable even with spline bend).
                 t.laneOffset = t.heading > 0 ? -1.5 : 1.5;
-                var respawnCenter = infiniteWorldRef.current.spline ? infiniteWorldRef.current.spline.centerAt(t.y) : Math.floor(MAP_SIZE / 2);
+                var respawnSpline = infiniteWorldRef.current.spline;
+                var respawnCenter = respawnSpline ? respawnSpline.centerAt(t.y) : Math.floor(MAP_SIZE / 2);
+                var respawnHeadingSp = respawnSpline ? respawnSpline.headingAt(t.y) : 0;
+                // Raw X offset (matches lane paint geometry).
                 t.x = respawnCenter + t.laneOffset;
+                // Reset heading to match the new direction + local spline bend
+                var respIsSouth = t.heading > 0;
+                t.heading = respIsSouth ? (Math.PI / 2 - respawnHeadingSp) : (-Math.PI / 2 - respawnHeadingSp);
+                // Clear any in-flight per-event state so the fresh spawn behaves like
+                // a brand-new car. Without these resets, a respawned car could:
+                //  • commit a lane-change toward a lane that doesn't exist at its new Y
+                //  • be flagged as "already waited at the stop sign" and roll through
+                //  • inherit a stale "pulled over for emergency" lane-offset target
+                //  • remain immune to player collision for 5s due to old _hitCooldown
+                t._pendingLaneOffset = null;
+                t._pendingLaneTimer = 0;
+                t._blinkerCancelTimer = 0;
+                t.blinker = 0;
+                t._stopArrivedAt = 0;
+                t._stopWaitTarget = null;
+                t._stopReleasedAt = 0;
+                t._emergencyPullOver = false;
+                t._hitCooldown = 0;
+                t._rearEndCooldown = 0;
+                t._aeb = false;
+                t._honkCooldown = 0;
+                t._laneChangeCooldown = 0;
+                // Reset bus stop-arm cycle on respawn so a stopped bus doesn't teleport
+                // with its arm still extended somewhere unexpected.
+                if (t.type === 'schoolbus') {
+                  t._busCycleTimer = 25 + Math.random() * 20;
+                  t._stopArmActive = false;
+                  t._busCompArmed = false;
+                  t._busCompLogged = null;
+                  t._childSpawned = false;
+                  t._childSpawnTimer = null;
+                }
                 var respSpeedLimit = (typeof scn.speedLimit === 'number' && isFinite(scn.speedLimit)) ? scn.speedLimit : 30;
                 t.speed = (respSpeedLimit - 3 + (idx % 5) * 1.2) * MPH_TO_MS;
               }
@@ -5282,14 +5736,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           if (!w) {
             var spawn = maybeSpawnWildlife(currentScenario, timeRef.current);
             if (spawn) {
-              // Spawn ahead of the player on the road, crossing across
+              // Spawn ahead of the player and OFF the spline (in the shoulder/woods),
+              // then move it toward the road. On curves the prior code spawned at
+              // car.x + 6 in raw world X — putting wildlife either deep in trees or
+              // already in the road, depending on which way the spline curved.
               var ahead = 12;
-              var sx = car.x + Math.cos(car.heading) * ahead + 6;
               var sy = car.y + Math.sin(car.heading) * ahead;
+              var wlSpline = infiniteWorldRef.current && infiniteWorldRef.current.spline;
+              var wlSplineCenter = wlSpline ? wlSpline.centerAt(sy) : car.x + Math.cos(car.heading) * ahead;
+              var wlSplineTheta = wlSpline ? wlSpline.headingAt(sy) : 0;
+              // Perpendicular-right to spline direction (sin θ, cos θ): (cos θ, −sin θ).
+              // Spawn 6m to the +perp side; vx will move wildlife back toward the road.
+              var wlPerpX = Math.cos(wlSplineTheta);
+              var wlPerpY = -Math.sin(wlSplineTheta);
+              var sx = wlSplineCenter + 6 * wlPerpX;
+              sy = sy + 6 * wlPerpY;
               wildlifeRef.current = {
                 kind: spawn.kind, icon: spawn.icon, mass: spawn.mass,
                 x: sx, y: sy,
-                vx: -1.2, vy: 0,
+                // Move toward the road (negative perpendicular)
+                vx: -1.2 * wlPerpX, vy: -1.2 * wlPerpY,
                 hit: false, life: 8,
                 // Capture player's heading + speed at spawn so we can score their reaction:
                 // brake straight = low maxSwerve + big speed drop. Swerve = high maxSwerve.
@@ -5382,7 +5848,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var dist = Math.hypot(dx, dy);
             if (!w.hit && dist < 1.2) {
               w.hit = true;
-              if (w.mass === 'massive') {
+              // Special case: hitting a CHILD is the worst possible outcome — it's the
+              // exact thing the school-bus stop-arm exists to prevent.
+              if (w.kind === 'child') {
+                statsRef.current.crashes++;
+                statsRef.current.safetyScore -= 80;
+                if (!statsRef.current.childStrike) statsRef.current.childStrike = 0;
+                statsRef.current.childStrike++;
+                addToast('🚨 YOU HIT A CHILD. This is what the stop-arm prevents. -80');
+                eventToastRef.current = { msg: '🚨 The federal stop-arm law exists because of moments exactly like this. Always stop for a school bus with red flashers.', until: timeRef.current + 8 };
+                speak('You struck a child. Always stop for a school bus with red flashers.');
+                car.speed *= 0.05;
+              } else if (w.mass === 'massive') {
                 statsRef.current.crashes++;
                 statsRef.current.safetyScore -= 60;
                 addToast('💥 MOOSE STRIKE — catastrophic. -60 safety');
@@ -5419,12 +5896,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // Normal mode: rare, checked once per second
             if (!spawn) spawn = maybeSpawnEmergency(currentScenario, timeRef.current);
             if (spawn) {
+              // Spawn the emergency vehicle in the player's lane on the spline at +15..+23m
+              // BEHIND them. Previously the X was just car.x copied — on curves that placed
+              // it off the road. Now: project player's perp-offset onto the spline at the
+              // emergency vehicle's spawn Y and use the same perp position.
+              var emSpawnY = car.y + 15 + Math.random() * 8;
+              var emSpawnSpline = infiniteWorldRef.current && infiniteWorldRef.current.spline;
+              var playerSplineAtCar = emSpawnSpline ? emSpawnSpline.centerAt(car.y) : car.x;
+              var playerThetaAtCar = emSpawnSpline ? emSpawnSpline.headingAt(car.y) : 0;
+              var playerLaneOff = (car.x - playerSplineAtCar) * Math.cos(playerThetaAtCar);
+              var emCenterAtSpawn = emSpawnSpline ? emSpawnSpline.centerAt(emSpawnY) : car.x;
+              var emThetaAtSpawn = emSpawnSpline ? emSpawnSpline.headingAt(emSpawnY) : 0;
+              var emSpawnX = emCenterAtSpawn + playerLaneOff * Math.cos(emThetaAtSpawn) + (Math.random() - 0.5) * 0.5;
+              // Heading should match the spline direction at spawn (so the emergency vehicle
+              // actually faces along the curving road, not pure ±π/2).
+              var emSpawnHeading = car.heading > 0
+                ? (Math.PI / 2 - emThetaAtSpawn)
+                : (-Math.PI / 2 - emThetaAtSpawn);
               emergencyRef.current = {
                 kind: spawn.kind, icon: spawn.icon, color: spawn.color, sirenFreq: spawn.sirenFreq,
-                // Spawn in the same lane as the player (slightly offset), BEHIND them
-                x: car.x + (Math.random() - 0.5) * 0.5,
-                y: car.y + 15 + Math.random() * 8,
-                heading: car.heading,
+                x: emSpawnX,
+                y: emSpawnY,
+                heading: emSpawnHeading,
                 speed: Math.abs(car.speed) + 12,
                 life: 20,
                 responded: false,
@@ -5458,8 +5951,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             }
             return;
           }
-          // Move emergency vehicle toward player (from behind, fast)
-          em.y -= em.speed * dt / 5;
+          // Move emergency vehicle toward player (from behind, fast). Now spline-aware:
+          // align heading + lane-offset to the spline so the emergency vehicle stays
+          // on the actual road through curves.
+          var emiSpline = infiniteWorldRef.current && infiniteWorldRef.current.spline;
+          if (emiSpline) {
+            var emiTheta = emiSpline.headingAt(em.y);
+            var emiCenter = emiSpline.centerAt(em.y);
+            // Direction sign matches sign of sin(em.heading) — spawn used same convention as player.
+            var emiDirSign = em.heading > 0 ? 1 : -1;
+            var emiTargetHeading = emiDirSign === 1
+              ? (Math.PI / 2 - emiTheta)
+              : (-Math.PI / 2 - emiTheta);
+            // Lerp heading
+            var emiDh = emiTargetHeading - em.heading;
+            while (emiDh > Math.PI) emiDh -= 2 * Math.PI;
+            while (emiDh < -Math.PI) emiDh += 2 * Math.PI;
+            em.heading += emiDh * (1 - Math.exp(-dt / 0.3));
+            // Forward motion in current heading
+            em.y += Math.sin(em.heading) * em.speed * dt / 5;
+            em.x += Math.cos(em.heading) * em.speed * dt / 5;
+            // Lateral correction toward player's lane — raw-X (matches lane paint).
+            if (em._laneOff === undefined) {
+              var pCenterAtCar = emiSpline.centerAt(carRef.current.y);
+              em._laneOff = carRef.current.x - pCenterAtCar;
+            }
+            var emiTargetX = emiCenter + em._laneOff;
+            var emiXErr = em.x - emiTargetX;
+            em.x -= emiXErr * (1 - Math.exp(-dt / 0.18));
+          } else {
+            em.y -= em.speed * dt / 5;
+          }
           em.life -= dt;
           // Siren warble
           try {
@@ -5495,9 +6017,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Wider detection window (6 units = ~60 feet) and timeout if it passes completely
           if (!em.checked && em.y < car.y + 6) {
             em.checked = true;
-            var centerX = Math.floor(MAP_SIZE / 2);
-            var pulledRight = car.x > centerX + 1.5;
-            var stopped = car.speed < 2;
+            // "Pulled right" = perpendicular offset from spline ≥ 1.5 in the driver's RIGHT direction.
+            // For NB (heading negative, default in Free Explore) RIGHT = +X = positive perp offset.
+            // For SB RIGHT = −X = negative perp offset. Use spline at car's Y for curve-safety.
+            var emSpline = infiniteWorldRef.current && infiniteWorldRef.current.spline;
+            var emSplineCx = emSpline ? emSpline.centerAt(car.y) : Math.floor(MAP_SIZE / 2);
+            var emSplineTheta = emSpline ? emSpline.headingAt(car.y) : 0;
+            var carPerpOff = (car.x - emSplineCx) * Math.cos(emSplineTheta);
+            // Driver's right side via sin(heading) — sign-stable across heading wrap.
+            // SB (sin>0): right = −X = negative perp. NB (sin<0): right = +X = positive perp.
+            var rightSign = Math.sin(car.heading) > 0 ? -1 : 1;
+            var pulledRight = (carPerpOff * rightSign) > 1.5;
+            // Use absolute speed — a player creeping backward at 5 mph isn't "stopped".
+            var stopped = Math.abs(car.speed) < 2;
             if (pulledRight && stopped) {
               em.responded = true;
               statsRef.current.safetyScore = Math.min(100, statsRef.current.safetyScore + 5);
@@ -5535,14 +6067,171 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         };
 
         var updateCyclists = function(dt) {
+          var cySpline = infiniteWorldRef.current && infiniteWorldRef.current.spline;
           cyclistsRef.current.forEach(function(cy) {
-            cy.y += Math.sin(cy.heading) * cy.speed * dt / 5;
-            cy.x += Math.cos(cy.heading) * cy.speed * dt / 5;
+            // Skip the spline lerp + motion entirely for hit cyclists — they should
+            // stay parked far off-screen (cy.x = -99) until the drive ends.
+            if (cy._hit) return;
+            // Spline-aware heading + lateral hold so cyclists stay on the bike lane
+            // edge through curves instead of drifting into trees / oncoming traffic.
+            if (cySpline && !cy.crossStreet) {
+              var cyTheta = cySpline.headingAt(cy.y);
+              var cyCenter = cySpline.centerAt(cy.y);
+              // Bike lane offset matches the PAINTED bike lane center (roadHalfW − 0.7 ≈ 2.8m).
+              // Previously was 2.3 which placed cyclists slightly inside the painted lane —
+              // they'd ride on the inner edge instead of in the center of the bike lane.
+              var cyDirSign = cy.heading > 0 ? 1 : -1;
+              var bikeLaneOff = cyDirSign === 1 ? -2.8 : 2.8;
+              if (cy._bikeLane === undefined) cy._bikeLane = bikeLaneOff;
+              // Target heading aligned with spline tangent ± π/2
+              var cyTargetHeading = (cyDirSign === 1) ? (Math.PI / 2 - cyTheta) : (-Math.PI / 2 - cyTheta);
+              var cyDh = cyTargetHeading - cy.heading;
+              while (cyDh > Math.PI) cyDh -= 2 * Math.PI;
+              while (cyDh < -Math.PI) cyDh += 2 * Math.PI;
+              cy.heading += cyDh * (1 - Math.exp(-dt / 0.4));
+              cy.y += Math.sin(cy.heading) * cy.speed * dt / 5;
+              cy.x += Math.cos(cy.heading) * cy.speed * dt / 5;
+              // Lateral correction: track raw X offset (matches painted bike-lane position).
+              var cyTargetX = cyCenter + cy._bikeLane;
+              var cyXErr = cy.x - cyTargetX;
+              cy.x -= cyXErr * (1 - Math.exp(-dt / 0.18));
+            } else {
+              cy.y += Math.sin(cy.heading) * cy.speed * dt / 5;
+              cy.x += Math.cos(cy.heading) * cy.speed * dt / 5;
+            }
             if (cy.y < -2) cy.y = MAP_SIZE + 2;
             if (cy.y > MAP_SIZE + 2) cy.y = -2;
-            // Small wobble for cyclists
+            // Small wobble for cyclists (keep — adds life)
             if (cy.type === 'cyclist') cy.x += Math.sin(timeRef.current * 3 + cy.y) * 0.002;
           });
+        };
+
+        // ── Bus stop-arm compliance ──
+        // When a school bus in traffic has _stopArmActive, the player must stop within
+        // ~8 cells OR if they pass it at speed. Reward correct stops, penalize pass-through.
+        // One event per bus-cycle — tracked via bus._busCompLogged timestamp.
+        var checkBusCompliance = function() {
+          var car = carRef.current;
+          var traffic = trafficRef.current;
+          if (!traffic || !traffic.length) return;
+          for (var bi = 0; bi < traffic.length; bi++) {
+            var bus = traffic[bi];
+            if (bus.type !== 'schoolbus') continue;
+            if (!bus._stopArmActive) continue;
+            // How close is the player to this bus? Euclidean distance is fine here since
+            // the bus is stationary during stop-arm.
+            var dx = bus.x - car.x;
+            var dy = bus.y - car.y;
+            var dist = Math.hypot(dx, dy);
+            // Only engage the compliance check when player is within 12 cells of the bus
+            // AND the bus is approximately ahead of the player (within ~60° cone).
+            if (dist > 12) { bus._busCompArmed = false; continue; }
+            var forwardDot = Math.cos(car.heading) * dx + Math.sin(car.heading) * dy;
+            if (forwardDot < -2) continue; // bus is behind us
+            if (!bus._busCompArmed && !bus._busCompLogged) {
+              bus._busCompArmed = true;
+              eventToastRef.current = { msg: '🚌 SCHOOL BUS with red flashers — STOP. Both directions must stop on an undivided road.', until: timeRef.current + 5 };
+            }
+            // ── Child runs from the bus ──
+            // 50% chance per arming: a child sprite crosses the road from the bus side ~3s after arming.
+            // Pedagogical: this is WHY the stop-arm exists. If the player ignores the bus,
+            // they may hit a child — which delivers a visceral lesson + a major safety penalty.
+            // Skipped if a wildlife/event entity is already active (only one hazard at a time).
+            if (bus._busCompArmed && !bus._childSpawned && !wildlifeRef.current) {
+              if (!bus._childSpawnTimer) bus._childSpawnTimer = timeRef.current + 2.5;
+              if (timeRef.current >= bus._childSpawnTimer) {
+                bus._childSpawned = true;
+                if (Math.random() < 0.5) {
+                  // Spawn a "kid" hazard that crosses from the bus side toward the road.
+                  // Use spline-perpendicular so the kid actually appears next to the bus.
+                  var childSpawnY = bus.y;
+                  var childSpline = infiniteWorldRef.current && infiniteWorldRef.current.spline;
+                  var childSplineCx = childSpline ? childSpline.centerAt(childSpawnY) : bus.x;
+                  var childSplineTheta = childSpline ? childSpline.headingAt(childSpawnY) : 0;
+                  var childPerpX = Math.cos(childSplineTheta);
+                  var childPerpY = -Math.sin(childSplineTheta);
+                  // Side of the road the bus is on (signed perp offset)
+                  var busPerpOff = (bus.x - childSplineCx) * childPerpX;
+                  var childSideSign = busPerpOff > 0 ? 1 : -1;
+                  // Spawn the kid 1m further out on the bus side, at the bus's Y.
+                  var childStartX = bus.x + childSideSign * 1.0 * childPerpX;
+                  var childStartY = bus.y + childSideSign * 1.0 * childPerpY;
+                  // Move the kid TOWARD the spline center (perpendicular inward, away from bus side)
+                  wildlifeRef.current = {
+                    kind: 'child', icon: '🧒', mass: 'small',
+                    x: childStartX, y: childStartY,
+                    vx: -childSideSign * 1.6 * childPerpX,
+                    vy: -childSideSign * 1.6 * childPerpY,
+                    hit: false, life: 6,
+                    fromBus: true,
+                    color: '#fbbf24'
+                  };
+                  eventToastRef.current = { msg: '🧒 CHILD running from the bus! BRAKE NOW.', until: timeRef.current + 5 };
+                  speak('Child crossing! Brake immediately.');
+                }
+              }
+            }
+            // Success: player at near-stop within 8 cells of the bus
+            if (bus._busCompArmed && !bus._busCompLogged && dist < 8 && Math.abs(car.speed) < 1.2) {
+              bus._busCompLogged = timeRef.current;
+              statsRef.current.safetyScore = Math.min(100, statsRef.current.safetyScore + 6);
+              if (!statsRef.current.busStopCompliance) statsRef.current.busStopCompliance = 0;
+              statsRef.current.busStopCompliance++;
+              addToast('✓ Stopped for school bus with red flashers. +6');
+              eventToastRef.current = { msg: '✓ Federal + Maine law: stop for ANY school bus with stop-arm extended on an undivided road.', until: timeRef.current + 4 };
+            }
+            // Failure: player passed within 4 cells at > 5 mph
+            else if (bus._busCompArmed && !bus._busCompLogged && dist < 4 && Math.abs(car.speed) > 2.3) {
+              bus._busCompLogged = timeRef.current;
+              statsRef.current.safetyScore -= 25;
+              addToast('🚨 ILLEGAL PASS of school bus with red flashers! -25');
+              eventToastRef.current = { msg: '🚨 Passing a stopped school bus with red flashers is a FEDERAL violation. $250+ fine in Maine.', until: timeRef.current + 6 };
+              speak('You passed a stopped school bus. That is a federal violation.');
+            }
+          }
+        };
+
+        // ── Pedestrian yield compliance ──
+        // When a pedestrian is actively crossing within the player's forward cone and near
+        // the car's path, reward a complete stop before reaching them. Penalize driving
+        // through a crosswalk with a pedestrian present.
+        var checkPedestrianYield = function() {
+          var car = carRef.current;
+          var peds = pedsRef.current || [];
+          if (!peds.length) return;
+          for (var pyi = 0; pyi < peds.length; pyi++) {
+            var py = peds[pyi];
+            if (!py.crossing) { py._yieldArmed = false; continue; }
+            var dx = py.x - car.x;
+            var dy = py.y - car.y;
+            var dist = Math.hypot(dx, dy);
+            if (dist > 9) continue;
+            var forwardDot = Math.cos(car.heading) * dx + Math.sin(car.heading) * dy;
+            if (forwardDot < -1) continue; // behind us
+            var carDirX = Math.cos(car.heading), carDirY = Math.sin(car.heading);
+            var latUnits = Math.abs(dx * carDirY - dy * carDirX);
+            if (latUnits > 3) continue; // not in our path
+            if (!py._yieldArmed && !py._yieldLogged) {
+              py._yieldArmed = true;
+              eventToastRef.current = { msg: '🚶 Pedestrian in the crosswalk — full stop until they clear.', until: timeRef.current + 4 };
+            }
+            // Success: came to a near-stop while the ped is still in/near the crosswalk
+            if (py._yieldArmed && !py._yieldLogged && Math.abs(car.speed) < 0.8 && dist < 6) {
+              py._yieldLogged = timeRef.current;
+              statsRef.current.safetyScore = Math.min(100, statsRef.current.safetyScore + 4);
+              if (!statsRef.current.pedYields) statsRef.current.pedYields = 0;
+              statsRef.current.pedYields++;
+              addToast('✓ Yielded to pedestrian in crosswalk. +4');
+            }
+            // Failure: drove through within 2.5 cells at > 4 mph
+            else if (py._yieldArmed && !py._yieldLogged && dist < 2.5 && Math.abs(car.speed) > 1.8) {
+              py._yieldLogged = timeRef.current;
+              statsRef.current.safetyScore -= 20;
+              addToast('🚨 Failed to yield to pedestrian! -20');
+              eventToastRef.current = { msg: '🚨 Pedestrians always have right-of-way in crosswalks. This is negligent driving.', until: timeRef.current + 5 };
+              speak('You failed to yield to a pedestrian in a crosswalk.');
+            }
+          }
         };
 
         var checkCyclistPassing = function() {
@@ -5574,6 +6263,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               statsRef.current.safetyScore -= 50;
               addToast('💥 Struck a ' + cy.type + '! -50');
               eventToastRef.current = { msg: '💥 You struck a ' + cy.type + '. In real life this is a serious injury or fatality.', until: timeRef.current + 5 };
+              // Mark hit so the spline lateral-correction in updateCyclists doesn't snap
+              // the cyclist back into the bike lane (the cy.x = -99 alone would visually
+              // blink the cyclist back to its lane within ~0.5s as the perp lerp pulled
+              // it back). With _hit set, the update skips lateral correction.
+              cy._hit = true;
               cy.x = -99;
             }
           });
@@ -6046,13 +6740,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
         var checkSignalCompliance = function() {
           var car = carRef.current;
+          // Helper: is the car on the same road as this signal? Curve-safe — instead of
+          // raw |car.x − s.x|, project onto the spline at the signal's Y. If the signal
+          // sits on the spline (within 3 cells of spline center) AND the car is within
+          // ±3.5 cells perpendicular, treat as "on this road."
+          var sigSpline = infiniteWorldRef.current && infiniteWorldRef.current.spline;
+          var carSplineCxAtCar = sigSpline ? sigSpline.centerAt(car.y) : Math.floor(MAP_SIZE / 2);
+          var carSplineThetaAtCar = sigSpline ? sigSpline.headingAt(car.y) : 0;
+          var carPerpAtCar = (car.x - carSplineCxAtCar) * Math.cos(carSplineThetaAtCar);
+          var onSameRoadAsSignal = function(s) {
+            if (!sigSpline) return Math.abs(car.x - s.x) < 4;
+            var splineCxAtSig = sigSpline.centerAt(s.y);
+            var sigOffSpline = Math.abs(s.x - splineCxAtSig);
+            return sigOffSpline < 3 && Math.abs(carPerpAtCar) < 3.5;
+          };
           signalsRef.current.forEach(function(s) {
             if (s.type === 'light') {
               // ALWAYS track position relative to each signal (regardless of state)
               if (!s._lastY) s._lastY = car.y;
               var crossed = (s._lastY < s.y && car.y >= s.y) || (s._lastY > s.y && car.y <= s.y);
-              // Only penalize if crossed while signal is RED
-              if (crossed && s.state === 'red' && Math.abs(car.x - s.x) < 4 && Math.abs(car.speed) > 2) {
+              // Only penalize if crossed while signal is RED. Curve-safe road check.
+              if (crossed && s.state === 'red' && onSameRoadAsSignal(s) && Math.abs(car.speed) > 2) {
                 statsRef.current.safetyScore -= 25;
                 statsRef.current.crashes++;
                 addToast('🚨 RED LIGHT VIOLATION! -25 safety');
@@ -6068,12 +6776,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 eventToastRef.current = { msg: '✓ Good stop at the stop sign.', until: timeRef.current + 2 };
               }
               if (Math.hypot(car.x - s.x, car.y - s.y) > 6) s._stopped = false;
-              // Rolling stop detection: only if approaching the sign from ahead (within 2.5 units X) and moving
+              // Rolling stop detection — curve-safe. Use perpendicular distance like the
+              // red-light check, but tighter (±2.5 cells perp) and require approach speed.
               if (!s._lastY) s._lastY = car.y;
               if (!s._violated) {
                 var crossedStop = (s._lastY < s.y && car.y >= s.y) || (s._lastY > s.y && car.y <= s.y);
-                // Narrower X check (2.5 units = ~25 feet) + speed check + approach direction
-                if (crossedStop && Math.abs(car.x - s.x) < 2.5 && Math.abs(car.speed) > 3 && !s._stopped) {
+                if (crossedStop && onSameRoadAsSignal(s) && Math.abs(car.speed) > 3 && !s._stopped) {
                   s._violated = true;
                   statsRef.current.safetyScore -= 20;
                   addToast('🚨 ROLLING STOP! -20 safety');
@@ -6176,19 +6884,56 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // ── Physical collision with traffic vehicles ──
           var nearest = null;
           var nearestDist = Infinity;
+          // Spline lookup once per check (used to filter same-lane candidates)
+          var fnSpline = infiniteWorldRef.current && infiniteWorldRef.current.spline;
+          var fnCarCx = fnSpline ? fnSpline.centerAt(car.y) : Math.floor(MAP_SIZE / 2);
+          var fnCarTheta = fnSpline ? fnSpline.headingAt(car.y) : 0;
+          var fnCarPerp = (car.x - fnCarCx) * Math.cos(fnCarTheta);
           trafficRef.current.forEach(function(t) {
             var dx = t.x - car.x;
             var dy = t.y - car.y;
             var dist = Math.hypot(dx, dy);
-            // Track nearest ahead for following distance
+            // Track nearest SAME-LANE SAME-DIRECTION car ahead for following distance.
+            // Previous version picked the closest ahead regardless of lane — an oncoming
+            // car at 5m would mask a same-lane car at 10m, suppressing the warning.
             var dot = Math.cos(car.heading) * dx + Math.sin(car.heading) * dy;
-            if (dot > 0 && dist < nearestDist) { nearestDist = dist; nearest = t; }
+            if (dot > 0 && dist < nearestDist) {
+              var sameDirAhead = (t.heading > 0) === (car.heading > 0);
+              if (!sameDirAhead) return;
+              if (fnSpline) {
+                var fnTheta = fnSpline.headingAt(t.y);
+                var fnCenter = fnSpline.centerAt(t.y);
+                var fnTPerp = (t.x - fnCenter) * Math.cos(fnTheta);
+                if (Math.abs(fnTPerp - fnCarPerp) > 1.0) return;
+              } else if (Math.abs(t.x - car.x) > 1.5) {
+                return;
+              }
+              nearestDist = dist;
+              nearest = t;
+            }
             // Physical collision: hit radius ~1.2 world units
             // Collision: require meaningful relative speed difference (not just being near a car going the same speed).
             // Thresholds lowered from >2 m/s (~4.5 mph) to ~0.5 m/s (~1 mph) so a slow-speed
             // tap still records as a minor bump — previously you could nose into a stopped
             // car at 3 mph with no crash flag, which hid unsafe habits in the stats.
-            var relativeSpeed = Math.abs(car.speed - t.speed);
+            // Closing speed must factor in DIRECTION. Both car.speed and t.speed are
+            // signed scalars along their own heading direction — so two cars going
+            // OPPOSITE directions (head-on) at 10 m/s each have closing speed 20 m/s,
+            // not |10−10| = 0. Convert each to a velocity vector and take the
+            // relative-velocity magnitude along the line connecting the two cars.
+            var carVx = Math.cos(car.heading) * car.speed;
+            var carVy = Math.sin(car.heading) * car.speed;
+            var tVx = Math.cos(t.heading) * t.speed;
+            var tVy = Math.sin(t.heading) * t.speed;
+            var relVx = carVx - tVx;
+            var relVy = carVy - tVy;
+            // Closing along the impact line (normalize displacement vector first)
+            var distSafe = Math.max(dist, 0.001);
+            var dirX = dx / distSafe;
+            var dirY = dy / distSafe;
+            // Closing speed = component of (-relV) along (other → self) direction
+            // ≈ Math.hypot(relVx, relVy) is the upper bound; use it as worst-case impact.
+            var relativeSpeed = Math.hypot(relVx, relVy);
             if (dist < 1.2 && relativeSpeed > 0.5 && absSpeed > 0.5) {
               if (!t._hitCooldown || timeRef.current - t._hitCooldown > 5) {
                 t._hitCooldown = timeRef.current;
@@ -6217,19 +6962,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               }
             }
           });
-          // Following distance check (for scoring, not collision)
+          // Following distance check (for scoring, not collision). Same-lane check is
+          // curve-safe: compare spline-perpendicular offsets, not raw X.
           if (nearest && absSpeed > 5) {
             var safeFeet = safeFollowingFeet(absSpeed * MS_TO_MPH, currentScenario.weather);
             var actualFeet = nearestDist * 10;
-            // Only count cars in the same lane (within 1.5 units of car.x) and debounce
-            if (actualFeet < safeFeet * 0.5 && Math.abs(nearest.x - car.x) < 1.5) {
+            var fSpline = infiniteWorldRef.current && infiniteWorldRef.current.spline;
+            var sameLaneAsNearest;
+            if (fSpline) {
+              var fThetaNear = fSpline.headingAt(nearest.y);
+              var fCenterNear = fSpline.centerAt(nearest.y);
+              var fThetaCar = fSpline.headingAt(car.y);
+              var fCenterCar = fSpline.centerAt(car.y);
+              var nearestPerp = (nearest.x - fCenterNear) * Math.cos(fThetaNear);
+              var carPerpFollow = (car.x - fCenterCar) * Math.cos(fThetaCar);
+              sameLaneAsNearest = Math.abs(nearestPerp - carPerpFollow) < 1.0
+                && (nearest.heading > 0) === (car.heading > 0); // same direction only
+            } else {
+              sameLaneAsNearest = Math.abs(nearest.x - car.x) < 1.5;
+            }
+            if (actualFeet < safeFeet * 0.5 && sameLaneAsNearest) {
               if (!nearest._closeFollowFlagged) {
                 nearest._closeFollowFlagged = true;
                 statsRef.current.closeFollows++;
               }
               statsRef.current.safetyScore -= 0.1;
             } else if (nearest._closeFollowFlagged && actualFeet > safeFeet * 0.7) {
-              nearest._closeFollowFlagged = false; // reset when distance is restored
+              nearest._closeFollowFlagged = false;
             }
           }
           // ── Physical collision with pedestrians ──
@@ -6437,8 +7196,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             scene.add(haloGroup);
 
             // Starfield — several hundred tiny bright points on a sphere just
-            // inside the skydome. Night + dawn twilight only.
-            if ((isNight && !isDawn) || isDawn) {
+            // inside the skydome. ALWAYS created so the per-frame visibility toggle
+            // works whether the user starts the drive in day or night.
+            {
               var starCount = isDawn ? 120 : 420;
               var starGeo = new T.BufferGeometry();
               var starPos = new Float32Array(starCount * 3);
@@ -6606,12 +7366,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var centerX = Math.floor(MAP_SIZE / 2);
           var roadColor = isSnow ? 0x8899a6 : 0x333842;
           var roadMat = new T.MeshLambertMaterial({ color: roadColor });
+          // Needed below in multiple places — hoisted here so curved helpers see it.
           var _isRuralCurve = ['rural', 'snow', 'fog', 'dawn'].indexOf(currentScenario.id) !== -1;
           var _isHwyCurve = currentScenario.id === 'highway';
           if (_isRuralCurve || _isHwyCurve) {
             // Segmented asphalt that follows the same sine curve as the lane lines.
+            // Previously the road plane was a straight rectangle while the dashes
+            // curved, so grass showed through wherever the curve bulged outward.
             for (var _rs = -MAP_SIZE; _rs < MAP_SIZE; _rs += 2) {
-              var _rSegGeo = new T.PlaneGeometry(7, 2.15);
+              var _rSegGeo = new T.PlaneGeometry(7, 2.15); // 0.15 overlap prevents seams
               var _rSeg = new T.Mesh(_rSegGeo, roadMat);
               _rSeg.rotation.x = -Math.PI / 2;
               var _rMY = _rs + MAP_SIZE / 2;
@@ -6641,7 +7404,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // Calculate road center at this Y position (accounting for curves)
             var dashCenterX = centerX;
             var mapY = di + MAP_SIZE / 2; // convert world Z back to map Y
-            // Smooth curve (no Math.round) so dashes track the segmented asphalt.
+            // Smooth curve (no Math.round) so dashes track the segmented asphalt
+            // plane exactly — rounding previously made them zig-zag visibly.
             if (isRuralCurve) dashCenterX = centerX + Math.sin(mapY * 0.12) * 5;
             else if (isHwyCurve) dashCenterX = centerX + Math.sin(mapY * 0.06) * 3;
             dash.position.set(dashCenterX - MAP_SIZE / 2, 0.02, di);
@@ -6682,6 +7446,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           }
 
           // ── Sidewalks (concrete strips between road and grass) ──
+          // Curved scenarios get segmented sidewalks so they ride alongside the
+          // road instead of floating straight while the asphalt curves away.
           var sidewalkMat = new T.MeshLambertMaterial({ color: isSnow ? 0xc0c8d0 : 0xb0a890 });
           if (_isRuralCurve || _isHwyCurve) {
             [-4.5, 4.5].forEach(function(offset) {
@@ -7551,14 +8317,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var mirR = new T.Mesh(mirGeo, mirMat);
           mirR.position.set(0.25, 0.85, -0.52);
           playerCarGroup.add(mirR);
-          // Wheels
+          // Wheels — lifted by 0.04 to prevent Z-fighting with the road surface mesh.
+          // Each wheel is wrapped in a parent Group ("steering pivot") so we can YAW the
+          // group around vertical for steering visualization, while rotating the wheel
+          // itself around its own axis for the spin animation.
+          // Tagged 'rr_playerWheelF' (front) or 'rr_playerWheelR' (rear) — only fronts
+          // get the steering yaw applied each frame.
           var wheelMat = new T.MeshLambertMaterial({ color: 0x111111 });
-          [[-0.55, 0.2, 0.5], [-0.55, 0.2, -0.5], [0.55, 0.2, 0.5], [0.55, 0.2, -0.5]].forEach(function(pos) {
+          [[-0.55, 0.24, 0.5, 'R'], [-0.55, 0.24, -0.5, 'R'], [0.55, 0.24, 0.5, 'F'], [0.55, 0.24, -0.5, 'F']].forEach(function(pos) {
+            var pivot = new T.Group();
+            pivot.position.set(pos[0], pos[1], pos[2]);
+            pivot.name = pos[3] === 'F' ? 'rr_playerWheelPivotF' : 'rr_playerWheelPivotR';
             var wGeo = new T.CylinderGeometry(0.2, 0.2, 0.15, 12);
             var wMesh = new T.Mesh(wGeo, wheelMat);
             wMesh.rotation.x = Math.PI / 2;
-            wMesh.position.set(pos[0], pos[1], pos[2]);
-            playerCarGroup.add(wMesh);
+            wMesh.name = pos[3] === 'F' ? 'rr_playerWheelF' : 'rr_playerWheelR';
+            pivot.add(wMesh);
+            playerCarGroup.add(pivot);
           });
           // Headlights
           var hlMat = new T.MeshBasicMaterial({ color: 0xffffee, transparent: true, opacity: isNight ? 0.9 : 0.3 });
@@ -7568,32 +8343,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             hl.position.set(0.92, 0.55, z);
             playerCarGroup.add(hl);
           });
-          // Headlight spotlights (at night)
-          var headlightL = null, headlightR = null;
-          if (isNight) {
-            headlightL = new T.SpotLight(0xfff5cc, 1.5, 30, Math.PI / 6, 0.5, 1);
-            headlightL.position.set(0.95, 0.55, -0.3);
-            headlightL.target.position.set(10, 0, -0.3);
-            playerCarGroup.add(headlightL);
-            playerCarGroup.add(headlightL.target);
-            headlightR = new T.SpotLight(0xfff5cc, 1.5, 30, Math.PI / 6, 0.5, 1);
-            headlightR.position.set(0.95, 0.55, 0.3);
-            headlightR.target.position.set(10, 0, 0.3);
-            playerCarGroup.add(headlightR);
-            playerCarGroup.add(headlightR.target);
-          }
+          // Headlight spotlights — always created so a Day→Night toggle mid-drive
+          // actually lights up the beams. Intensity is set to 0 in day mode and
+          // ramped up by the per-frame update when night/fog/rain conditions apply.
+          var headlightL = new T.SpotLight(0xfff5cc, isNight ? 1.5 : 0, 30, Math.PI / 6, 0.5, 1);
+          headlightL.position.set(0.95, 0.55, -0.3);
+          headlightL.target.position.set(10, 0, -0.3);
+          playerCarGroup.add(headlightL);
+          playerCarGroup.add(headlightL.target);
+          var headlightR = new T.SpotLight(0xfff5cc, isNight ? 1.5 : 0, 30, Math.PI / 6, 0.5, 1);
+          headlightR.position.set(0.95, 0.55, 0.3);
+          headlightR.target.position.set(10, 0, 0.3);
+          playerCarGroup.add(headlightR);
+          playerCarGroup.add(headlightR.target);
           // Visible headlight beam cones — a stretched cone per headlight with
           // additive blending. Shows up best at night + fog; hidden by day.
-          if (isNight || isFog || isRain) {
-            var beamColor = isFog ? 0xf0e0a0 : 0xfff5cc;
-            var beamOpacity = isFog ? 0.18 : isRain ? 0.10 : 0.14;
-            var beamMat = new T.MeshBasicMaterial({ color: beamColor, transparent: true, opacity: beamOpacity, blending: T.AdditiveBlending, depthWrite: false, fog: false });
-            // Cone geometry opens along +Y by default; we'll aim it along +X.
+          // Headlight beam cones — ALWAYS created so a Day→Night toggle mid-drive
+          // actually shows the beams. Opacity defaults to 0 in clear day, ramped up
+          // by the per-frame update when night/fog/rain conditions apply.
+          {
+            var beamMat = new T.MeshBasicMaterial({ color: 0xfff5cc, transparent: true, opacity: 0, blending: T.AdditiveBlending, depthWrite: false, fog: false });
             var beamGeo = new T.ConeGeometry(1.8, 9, 12, 1, true);
             [-0.3, 0.3].forEach(function(zOff) {
               var beam = new T.Mesh(beamGeo, beamMat);
-              beam.rotation.z = -Math.PI / 2; // point along +X
+              beam.rotation.z = -Math.PI / 2;
               beam.position.set(0.95 + 4.5, 0.5, zOff);
+              beam.name = 'rr_playerBeam';
               playerCarGroup.add(beam);
             });
           }
@@ -7605,6 +8380,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var brakeR = new T.Mesh(new T.SphereGeometry(0.06, 6, 6), brakeMat);
           brakeR.position.set(-0.92, 0.55, 0.3);
           playerCarGroup.add(brakeR);
+          // Reverse lights — white, lit only when actively reversing.
+          var playerRevMat = new T.MeshBasicMaterial({ color: 0xcccccc, transparent: true, opacity: 0.15 });
+          var playerRevL = new T.Mesh(new T.SphereGeometry(0.05, 6, 6), playerRevMat);
+          playerRevL.position.set(-0.93, 0.45, -0.15);
+          playerRevL.name = 'rr_playerRev';
+          playerCarGroup.add(playerRevL);
+          var playerRevR = new T.Mesh(new T.SphereGeometry(0.05, 6, 6), playerRevMat);
+          playerRevR.position.set(-0.93, 0.45, 0.15);
+          playerRevR.name = 'rr_playerRev';
+          playerCarGroup.add(playerRevR);
 
           scene.add(playerCarGroup);
 
@@ -7864,7 +8649,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             trafficGroup: trafficGroup, pedGroup: pedGroup,
             cyclistGroup: cyclistGroup, wildlifeGroup: wildlifeGroup,
             emergencyGroup: emergencyGroup,
-            brakeMat: brakeMat, headlightL: headlightL, headlightR: headlightR,
+            brakeMat: brakeMat, playerRevMat: playerRevMat, headlightL: headlightL, headlightR: headlightR,
             weatherParticles: weatherParticles,
             snowParticles: snowParticles,
             lightningLight: lightningLight,
@@ -7903,11 +8688,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             ? infiniteWorldRef.current.roadHeightAtY(car.y) : 0;
           s3.playerCarGroup.position.set(carWorldX, roadH + (car._suspY || 0), carWorldZ);
           s3.playerCarGroup.rotation.y = -car.heading;
-          // Pitch the car along the road grade so it visually follows hills.
-          // rotation.x = pitch (positive = nose up in Three.js default orientation).
-          // The car model faces +X, so rotation around Z is pitch. car._pitch has
-          // both grade + accel-induced weight transfer combined.
-          s3.playerCarGroup.rotation.z = car._pitch || 0;
+          // Pitch (rotation.x) + roll (rotation.z) get set later via car._pitch/_roll.
+          // (A duplicate set was here previously — removed; the later assignment was
+          // already correct, but this earlier one assigned _pitch to the roll axis.)
           // ── Windshield wipers: sweep in rain/snow, rest when dry ──
           // Wipers pivot around their base (the group origin at the windshield base).
           // A simple triangle wave on time gives the back-and-forth sweep; rate scales
@@ -7965,9 +8748,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   s3._trackPool.push(tr);
                 }
                 // Place behind the car along its heading axis, offset laterally.
+                // Y is road-relative — using a flat 0.019 made tracks disappear under the
+                // road on hills (road sits at heightAt(y) + 0.011, which can be many units up).
                 var tx = carWorldX - Math.cos(car.heading) * 0.8 - Math.sin(-car.heading) * off;
                 var tz = carWorldZ - Math.sin(car.heading) * 0.8 - Math.cos(-car.heading) * off;
-                tr.position.set(tx, 0.019, tz);
+                tr.position.set(tx, roadH + 0.022, tz);
                 tr.rotation.z = -car.heading;
               });
             }
@@ -7980,17 +8765,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           if (s3._mtnRef) s3._mtnRef.position.set(carWorldX, 0, carWorldZ);
           if (!s3._forestRef) s3._forestRef = s3.scene.getObjectByName('forest_ring');
           if (s3._forestRef) s3._forestRef.position.set(carWorldX, 0, carWorldZ);
-          // Weight transfer: body pitch (brake/accel) and roll (turns)
+          // Weight transfer: body pitch (brake/accel) and roll (turns).
+          // Wheel rotation is handled separately below (the dead wheel-spin loop that
+          // used to live here couldn't find wheels anymore — they're inside steering
+          // pivot Groups now, not direct children of playerCarGroup).
           s3.playerCarGroup.rotation.x = car._pitch || 0;
           s3.playerCarGroup.rotation.z = car._roll || 0;
-          // Wheel rotation animation (spin proportional to speed)
-          var wheelSpinAngle = timeRef.current * Math.abs(car.speed) * 2;
-          s3.playerCarGroup.children.forEach(function(child) {
-            // Wheels are CylinderGeometry with rotation.x = PI/2
-            if (child.geometry && child.geometry.type === 'CylinderGeometry' && Math.abs(child.rotation.x - Math.PI / 2) < 0.1) {
-              child.rotation.y = wheelSpinAngle;
-            }
-          });
 
           // Camera follows car
           var camMode = cameraModeRef.current;
@@ -8024,26 +8804,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             }
             col.needsUpdate = true;
           };
-          // Update fog + skydome dynamically.
-          if (isFogNow && (!s3.scene.fog || s3.scene.fog.far !== 40)) {
-            s3.scene.fog = new T.Fog(0x94a3b8, 5, 40);
-            s3.scene.background = new T.Color(0x94a3b8);
-            recolorSky();
-          } else if (isSnowNow && (!s3.scene.fog || s3.scene.fog.far !== 60)) {
-            s3.scene.fog = new T.Fog(0xcbd5e1, 10, 60);
-            s3.scene.background = new T.Color(0xcbd5e1);
-            recolorSky();
-          } else if (isRainNow && (!s3.scene.fog || s3.scene.fog.far !== 50)) {
-            s3.scene.fog = new T.Fog(0x475569, 8, 50);
-            s3.scene.background = new T.Color(0x475569);
-            recolorSky();
-          } else if (isNightNow && (!s3.scene.fog || s3.scene.fog.far !== 120)) {
-            s3.scene.fog = new T.Fog(0x0a0f1e, 30, 120);
-            s3.scene.background = new T.Color(0x0a0f1e);
-            recolorSky();
-          } else if (!isFogNow && !isSnowNow && !isRainNow && !isNightNow && s3.scene.fog && s3.scene.fog.far !== 120) {
-            s3.scene.fog = new T.Fog(0x87ceeb, 30, 120);
-            s3.scene.background = new T.Color(0x87ceeb);
+          // Update fog + skydome dynamically. Use a state-key string instead of
+          // sniffing fog.far values — both night and clear-day used far=120, which made
+          // the day branch unreachable on a night→day toggle (sky stayed night-blue).
+          var skyState = isFogNow ? 'fog'
+            : isSnowNow ? 'snow'
+            : isRainNow ? 'rain'
+            : isNightNow ? 'night'
+            : 'day';
+          if (s3._lastSkyState !== skyState) {
+            s3._lastSkyState = skyState;
+            if (skyState === 'fog') {
+              s3.scene.fog = new T.Fog(0x94a3b8, 5, 40);
+              s3.scene.background = new T.Color(0x94a3b8);
+            } else if (skyState === 'snow') {
+              s3.scene.fog = new T.Fog(0xcbd5e1, 10, 60);
+              s3.scene.background = new T.Color(0xcbd5e1);
+            } else if (skyState === 'rain') {
+              s3.scene.fog = new T.Fog(0x475569, 8, 50);
+              s3.scene.background = new T.Color(0x475569);
+            } else if (skyState === 'night') {
+              s3.scene.fog = new T.Fog(0x0a0f1e, 30, 120);
+              s3.scene.background = new T.Color(0x0a0f1e);
+            } else {
+              s3.scene.fog = new T.Fog(0x87ceeb, 30, 120);
+              s3.scene.background = new T.Color(0x87ceeb);
+            }
             recolorSky();
           }
           // Update ambient light intensity for time-of-day, plus cloud-shadow
@@ -8057,6 +8843,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               var baseInt = isNightNow ? 0.15 : 0.5;
               child.intensity = baseInt * cloudShadow;
               child.color.setHex(isNightNow ? 0x1a1a3a : 0xffffff);
+            }
+            // Sun directional light also needs to track time-of-day. Without this it
+            // stayed at its initial intensity/color forever — toggling Day/Night
+            // would only change ambient + sky, while shadows + warmth stayed wrong.
+            if (child.isDirectionalLight) {
+              child.intensity = (isNightNow ? 0.3 : 0.9) * cloudShadow;
+              child.color.setHex(isNightNow ? 0x4466aa : 0xfff5e0);
             }
           });
 
@@ -8157,8 +8950,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             s3.playerCarGroup.visible = true;
           }
 
+          // Speed-bump camera jolt — applied AFTER the mode-specific camera
+          // positioning so it works regardless of whether the student is in
+          // first-person, chase, or overhead. Damped sine decays to zero over
+          // ~0.45s; high-speed crossings have a larger base amplitude + a
+          // subtle nose-dip via the playerCarGroup (simulates suspension
+          // compressing). Car-pitch adds to `car._pitch` rather than
+          // replacing it so terrain-slope pitch set at line ~8772 stays
+          // intact — important on hilly rural chunks.
+          if (bumpShakeRef.current && bumpShakeRef.current.intensity > 0.001) {
+            var bumpElapsed = timeRef.current - bumpShakeRef.current.startTime;
+            if (bumpElapsed > 0.45) {
+              bumpShakeRef.current.intensity = 0;
+            } else {
+              var bumpShake = Math.sin(bumpElapsed * 28) * bumpShakeRef.current.intensity * Math.exp(-bumpElapsed * 5);
+              s3.camera.position.y += bumpShake;
+              if (s3.playerCarGroup) {
+                s3.playerCarGroup.rotation.x = (car._pitch || 0) + bumpShake * 0.25;
+              }
+            }
+          }
+
           // Brake lights
           s3.brakeMat.opacity = car.brake > 0 ? 0.9 : 0.15;
+          // Player reverse lights: white when the car is actively moving backward.
+          if (s3.playerRevMat) {
+            var isPlayerReversing = car.speed < -0.3;
+            s3.playerRevMat.opacity = isPlayerReversing ? 0.95 : 0.15;
+            s3.playerRevMat.color.setHex(isPlayerReversing ? 0xffffff : 0x888888);
+          }
 
           // Reverse lights (white glow when in reverse)
           if (s3.playerCarGroup && s3.playerCarGroup.children) {
@@ -8168,13 +8988,63 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               }
             });
           }
+          // Player headlight beam-cone opacity — match the spotlight active state. The
+          // beams were always-created (intensity 0 baseline) so a Day↔Night toggle now
+          // turns them on/off cleanly instead of needing the original isNight at scene init.
+          if (s3.playerCarGroup) {
+            var beamActive = isNightNow || scn.weather === 'fog' || scn.weather === 'rain';
+            var beamTargetOp = beamActive ? (scn.weather === 'fog' ? 0.18 : scn.weather === 'rain' ? 0.10 : 0.14) : 0;
+            var beamColorHex = scn.weather === 'fog' ? 0xf0e0a0 : 0xfff5cc;
+            s3.playerCarGroup.children.forEach(function(child) {
+              if (child.name === 'rr_playerBeam') {
+                child.material.opacity = beamTargetOp;
+                child.material.color.setHex(beamColorHex);
+              }
+            });
+          }
+          // Player wheel rotation + front-wheel steering visualization.
+          // Spin angle accumulated from SIGNED speed × dt / radius — so when the player
+          // reverses, the wheels visibly spin backward instead of forward (was using
+          // Math.abs which made them always look forward, even in reverse).
+          if (s3.playerCarGroup) {
+            if (s3._playerWheelAngle === undefined) s3._playerWheelAngle = 0;
+            if (s3._lastWheelT === undefined) s3._lastWheelT = timeRef.current;
+            var wheelDt = Math.max(0, Math.min(0.1, timeRef.current - s3._lastWheelT));
+            s3._lastWheelT = timeRef.current;
+            s3._playerWheelAngle += car.speed * wheelDt / 0.20;
+            // Steering angle: clamp ~30° max (Math.PI/5 ≈ 36°). Reverse-sign so positive
+            // steering input (right) yaws the wheels to the right (negative pivot.y in
+            // the player car's local frame, where +X is forward).
+            var steerYaw = -Math.max(-1, Math.min(1, car.steering)) * (Math.PI / 5);
+            s3.playerCarGroup.children.forEach(function(child) {
+              if (child.name === 'rr_playerWheelPivotF') {
+                child.rotation.y = steerYaw;
+              }
+              // Walk one level deeper to find the actual wheel mesh inside each pivot
+              if (child.name === 'rr_playerWheelPivotF' || child.name === 'rr_playerWheelPivotR') {
+                child.children.forEach(function(w) {
+                  if (w.name === 'rr_playerWheelF' || w.name === 'rr_playerWheelR') {
+                    w.rotation.y = s3._playerWheelAngle;
+                  }
+                });
+              }
+            });
+          }
 
           // High beam toggle + headlight direction tracking
           if (s3.headlightL && s3.headlightR) {
-            var highBeams = d.highBeams;
+            // Defensive guard: a runtime error (TypeError: Cannot read properties of
+            // undefined reading 'highBeams') was reported here. Closure capture should
+            // always have `d` defined (line 2405 falls back to {}), but guard anyway in
+            // case of strict-mode double-invoke or HMR weirdness.
+            var highBeams = d && d.highBeams;
             var hlDist = highBeams ? 50 : 25;
             var hlAngle = highBeams ? Math.PI / 5 : Math.PI / 6;
-            var hlInt = highBeams ? 2.5 : 1.5;
+            // Headlights only emit when actually needed: night, fog, or rain. In clear
+            // daylight they cost render time without adding visual value, AND if the
+            // user toggled to day from night the lights would otherwise still be on.
+            var hlActive = isNightNow || scn.weather === 'fog' || scn.weather === 'rain';
+            var hlInt = hlActive ? (highBeams ? 2.5 : 1.5) : 0;
             s3.headlightL.distance = hlDist;
             s3.headlightL.angle = hlAngle;
             s3.headlightL.intensity = hlInt;
@@ -8251,15 +9121,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var hardBrake = car.brake > 0.7 && carAbsSpeed > 8;
           if (skidding || hardBrake) {
             var markGeo = new T2.PlaneGeometry(0.08, 0.5);
-            // Two parallel tire strips (left + right wheel tracks)
+            // Two parallel tire strips (left + right wheel tracks).
+            // Marks must be road-relative in Y — using a flat 0.015 made them appear
+            // BELOW the road on hills (road mesh sits at heightAt(y) + 0.011, can be
+            // 5+ units up). Now uses roadH so marks always lay just above the actual
+            // road surface, matching painted markings.
             [-0.35, 0.35].forEach(function(lateral) {
               var mark = new T2.Mesh(markGeo, s3.skidMarkMat);
               mark.rotation.x = -Math.PI / 2;
               mark.rotation.z = -car.heading + Math.PI / 2;
-              // Offset laterally perpendicular to travel direction
               var perpX = -Math.sin(car.heading) * lateral;
               var perpZ = Math.cos(car.heading) * lateral;
-              mark.position.set(carWorldX + perpX, 0.015, carWorldZ + perpZ);
+              mark.position.set(carWorldX + perpX, roadH + 0.018, carWorldZ + perpZ);
               // Hard-brake marks are fainter than skid marks
               if (hardBrake && !skidding) {
                 mark.material = mark.material.clone();
@@ -8285,6 +9158,106 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               });
             }
           });
+          // Update mast-arm signals in the infinite world — match each chunk's lamps
+          // to the signalsRef entry for that chunk. Prune stale chunks as they unload.
+          if (s3.trafficLampsByChunk) {
+            Object.keys(s3.trafficLampsByChunk).forEach(function(chunkKey) {
+              var lampList = s3.trafficLampsByChunk[chunkKey];
+              if (!lampList || !lampList.length) return;
+              // Chunk unloaded? Drop the list.
+              var firstLampParent = lampList[0].mesh;
+              var p = firstLampParent; while (p.parent) p = p.parent;
+              if (p !== s3.scene) { delete s3.trafficLampsByChunk[chunkKey]; return; }
+              // Find the signalsRef entry for this chunk to know current state.
+              var sigEntry = null;
+              for (var si = 0; si < signalsRef.current.length; si++) {
+                if (signalsRef.current[si]._chunk === parseInt(chunkKey)) { sigEntry = signalsRef.current[si]; break; }
+              }
+              if (!sigEntry) return;
+              var curState = sigEntry.state === 'red' ? 'red' : sigEntry.state === 'yellow' ? 'yellow' : 'green';
+              lampList.forEach(function(lamp) {
+                var lit = lamp.state === curState;
+                lamp.mesh.material.color.setHex(lit ? lamp.onHex : lamp.offHex);
+              });
+            });
+          }
+          // School-zone beacon alternating flash. Two beacons per school
+          // landmark pulse out-of-phase so the assembly reads as active
+                    // school-zone signage. Only active during daytime scenarios
+          // (real flashers turn off outside school hours — we proxy "school
+          // hours" with scn.time === 'day').
+          if (s3.schoolBeaconsByChunk && scn.time !== 'night') {
+            var schBlinkOn = Math.floor(timeRef.current * 2.5) % 2;
+            Object.keys(s3.schoolBeaconsByChunk).forEach(function(schKey) {
+              var bList = s3.schoolBeaconsByChunk[schKey];
+              if (!bList || !bList.length) return;
+              var firstB = bList[0].mesh;
+              var bPar = firstB; while (bPar.parent) bPar = bPar.parent;
+              if (bPar !== s3.scene) { delete s3.schoolBeaconsByChunk[schKey]; return; }
+              bList.forEach(function(b) {
+                var on = schBlinkOn === b.phase;
+                // Bright amber when lit, dim dark amber when off (still visible
+                // but not competing for attention).
+                b.mesh.material.color.setHex(on ? 0xffae2e : 0x5a3410);
+              });
+            });
+          }
+          // Pedestrian-signal face swap — keyed to each chunk's current signal
+          // state. Main-road RED ⇒ pedestrians cross (walk icon bright),
+          // GREEN or YELLOW ⇒ don't-walk (raised-hand icon bright). During
+          // YELLOW the hand flashes to communicate "clear the crosswalk now,"
+          // which matches real FHWA pedestrian-signal behavior.
+          if (s3.pedSigsByChunk && infiniteWorldRef.current) {
+            var _iw = infiniteWorldRef.current;
+            Object.keys(s3.pedSigsByChunk).forEach(function(chunkKey) {
+              var psList = s3.pedSigsByChunk[chunkKey];
+              if (!psList || !psList.length) return;
+              // Clean up if the chunk unloaded.
+              var firstPs = psList[0].mesh;
+              var psPar = firstPs; while (psPar.parent) psPar = psPar.parent;
+              if (psPar !== s3.scene) { delete s3.pedSigsByChunk[chunkKey]; return; }
+              // Find the signalsRef entry for this chunk.
+              var psSigEntry = null;
+              for (var psi = 0; psi < signalsRef.current.length; psi++) {
+                if (signalsRef.current[psi]._chunk === parseInt(chunkKey)) { psSigEntry = signalsRef.current[psi]; break; }
+              }
+              if (!psSigEntry) return;
+              var psWalk = (psSigEntry.state === 'red');
+              // Yellow flash: make the hand icon "blink" by rapidly toggling
+              // between the stop texture and a half-dim version (we just use
+              // the walk texture for the off-blink since both textures share
+              // the same black housing — the flash reads as "hand flickering").
+              var psBlinkOn = psSigEntry.state === 'yellow' ? (Math.floor(timeRef.current * 3) % 2 === 0) : true;
+              psList.forEach(function(ps) {
+                var target;
+                if (psWalk) target = _iw._pedSigWalkTex;
+                else target = psBlinkOn ? _iw._pedSigStopTex : _iw._pedSigWalkTex;
+                if (target && ps.mesh.material.map !== target) {
+                  ps.mesh.material.map = target;
+                  ps.mesh.material.needsUpdate = true;
+                }
+              });
+            });
+          }
+          // ── Streetlight per-frame update ──
+          // Walk loaded chunks once and toggle streetlight head color + glow opacity
+          // based on current time-of-day. Without this update, lights baked at
+          // chunk-load time stayed stale when the user toggled Day↔Night mid-drive.
+          if (s3._loadedChunks) {
+            var slLit = isNightNow || scn.time === 'dawn' || scn.weather === 'fog';
+            var slHeadColor = slLit ? 0xfef3c7 : 0x4b5563;
+            var slGlowOp = slLit ? 0.22 : 0;
+            var slPoolOp = slLit ? 0.32 : 0;
+            Object.keys(s3._loadedChunks).forEach(function(slCk) {
+              var slGroup = s3._loadedChunks[slCk];
+              if (!slGroup) return;
+              slGroup.children.forEach(function(c) {
+                if (c.name === 'rr_streetlightHead') c.material.color.setHex(slHeadColor);
+                else if (c.name === 'rr_streetlightGlow') c.material.opacity = slGlowOp;
+                else if (c.name === 'rr_streetlightPool') c.material.opacity = slPoolOp;
+              });
+            });
+          }
           // Update school-zone flashing beacons — alternating amber lamps (top ↔ bottom).
           // Self-cleaning: drop any beacon whose mesh has been removed from the scene
           // (happens when the chunk unloads). ~1.2 Hz alternation.
@@ -8404,30 +9377,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               var wMat = new T.MeshLambertMaterial({ color: 0x0c0c0c });
               var wR = isBus ? 0.32 : isTruck ? 0.27 : isVan ? 0.25 : isSUV ? 0.23 : 0.20;
               var wWidth = isBus ? 0.18 : isTruck ? 0.17 : isVan ? 0.15 : isSUV ? 0.14 : 0.13;
-              // Position wheel center just inside the body edge so the outer half pokes
-              // out clearly (body is 0.85 wide → halfwidth 0.425, wheel center at 0.40).
               var wZOff = 0.40;
-              // X positions: front + rear axle, pushed in from each end by a tire-width margin
               var wXAxle = bLen * 0.30;
-              // Silver hub cap — makes the tire read as a wheel, not a solid cylinder
+              var wLift = 0.04;
               var hubMat = new T.MeshLambertMaterial({ color: 0x909096 });
-              [[-wXAxle, wR, wZOff], [-wXAxle, wR, -wZOff], [wXAxle, wR, wZOff], [wXAxle, wR, -wZOff]].forEach(function(wp) {
+              // Wheel positions tagged 'F' (front, +X) or 'R' (rear, -X). Each wheel gets
+              // a parent steering pivot Group; only fronts get yaw applied per-frame.
+              [[-wXAxle, wR + wLift, wZOff, 'R'], [-wXAxle, wR + wLift, -wZOff, 'R'], [wXAxle, wR + wLift, wZOff, 'F'], [wXAxle, wR + wLift, -wZOff, 'F']].forEach(function(wp) {
+                var wPivot = new T.Group();
+                wPivot.position.set(wp[0], wp[1], wp[2]);
+                wPivot.name = wp[3] === 'F' ? 'rr_aiWheelPivotF' : 'rr_aiWheelPivotR';
                 var wGeo = new T.CylinderGeometry(wR, wR, wWidth, 14);
                 var wheel = new T.Mesh(wGeo, wMat);
                 wheel.rotation.x = Math.PI / 2;
-                wheel.position.set(wp[0], wp[1], wp[2]);
-                cg.add(wheel);
-                // Hub cap — smaller disc with slightly wider Z so it reads outboard
+                wheel.name = 'rr_aiWheel';
+                wPivot.add(wheel);
                 var hubGeo = new T.CylinderGeometry(wR * 0.55, wR * 0.55, wWidth + 0.004, 12);
                 var hub = new T.Mesh(hubGeo, hubMat);
                 hub.rotation.x = Math.PI / 2;
-                hub.position.set(wp[0], wp[1], wp[2]);
-                cg.add(hub);
+                hub.name = 'rr_aiHub';
+                wPivot.add(hub);
+                cg.add(wPivot);
               });
-              // Black wheel-well shading — a dark rectangle beneath each wheel so the wheel
-              // always contrasts against the body even in bright sun / fog.
-              var wellMat = new T.MeshBasicMaterial({ color: 0x050505 });
-              [[-wXAxle, 0.01, 0.40], [wXAxle, 0.01, 0.40], [-wXAxle, 0.01, -0.40], [wXAxle, 0.01, -0.40]].forEach(function(shp) {
+              // Tire shadow patch — also lifted off the road slightly to avoid Z-fighting
+              // with painted road markings (which sit at +0.012–0.016 above the asphalt).
+              var wellMat = new T.MeshBasicMaterial({ color: 0x050505, transparent: true, opacity: 0.55, depthWrite: false });
+              [[-wXAxle, 0.025, 0.40], [wXAxle, 0.025, 0.40], [-wXAxle, 0.025, -0.40], [wXAxle, 0.025, -0.40]].forEach(function(shp) {
                 var well = new T.Mesh(new T.PlaneGeometry(wR * 2.2, wWidth * 1.6), wellMat);
                 well.rotation.x = -Math.PI / 2;
                 well.position.set(shp[0], shp[1], shp[2]);
@@ -8485,6 +9460,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 blink.name = bi === 0 ? 'rr_rrBlinkR' : 'rr_rrBlinkL';
                 cg.add(blink);
               });
+              // ── Rear reverse lights — white, lit only when the car is moving backward ──
+              // Small rectangles inboard of the brake lights, just below the CHMSL.
+              [0.15, -0.15].forEach(function(z, ri) {
+                var revGeo = new T.BoxGeometry(0.04, 0.08, 0.16);
+                var revMat = new T.MeshBasicMaterial({ color: 0xeeeeee, transparent: true, opacity: 0.15 });
+                var rev = new T.Mesh(revGeo, revMat);
+                rev.position.set(-bLen / 2 + 0.02, bH / 2 + 0.1, z);
+                rev.name = ri === 0 ? 'rr_revR' : 'rr_revL';
+                cg.add(rev);
+              });
               tGroup.add(cg);
               m = cg;
             }
@@ -8493,15 +9478,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             m.rotation.y = -t.heading;
             // ── Wheel spin + proper brake + turn signal animation ──
             if (m.children) {
-              var tWheelAngle = timeRef.current * Math.abs(t.speed) * 2;
+              // Wheel rotation: accumulate Δangle each frame (speed * dt / radius).
+              // dt isn't in scope here (this is the render function, not the sim update);
+              // compute it from the AI car's own last-render timestamp. Clamped to [0, 0.1]
+              // so a tab-resume doesn't blast wheel angle by a huge accumulated dt.
+              if (t._wheelSpinAngle === undefined) t._wheelSpinAngle = 0;
+              if (t._lastWheelT === undefined) t._lastWheelT = timeRef.current;
+              var aiWheelDt = Math.max(0, Math.min(0.1, timeRef.current - t._lastWheelT));
+              t._lastWheelT = timeRef.current;
+              t._wheelSpinAngle += Math.abs(t.speed) * aiWheelDt / 0.22;
+              var tWheelAngle = t._wheelSpinAngle;
+              // AI front-wheel steering yaw: derived from heading delta vs the spline
+              // tangent target. If the AI is currently lerping its heading to follow
+              // a curve, the wheels visibly turn in that direction. Clamped ±30°.
+              var aiSteerYaw = 0;
+              if (!t.crossStreet) {
+                var aiwSp = infiniteWorldRef.current && infiniteWorldRef.current.spline;
+                if (aiwSp) {
+                  var targetH = (t.heading > 0)
+                    ? (Math.PI / 2 - aiwSp.headingAt(t.y))
+                    : (-Math.PI / 2 - aiwSp.headingAt(t.y));
+                  var hDelta = targetH - t.heading;
+                  while (hDelta > Math.PI) hDelta -= 2 * Math.PI;
+                  while (hDelta < -Math.PI) hDelta += 2 * Math.PI;
+                  // Amplify visually so even small heading deltas show as turning wheels
+                  aiSteerYaw = Math.max(-Math.PI / 5, Math.min(Math.PI / 5, hDelta * 4));
+                }
+              }
               var tBlinkOn = t.blinker && Math.floor(timeRef.current * 2.5) % 2 === 0;
-              // Braking: bright red if actively slowing or told to slow/stop. The _slowFor
-              // field is set by updateTraffic based on signals, cars ahead, and player state.
               var isBraking = (t._slowFor >= 1) || (t._prevSpeed !== undefined && t.speed < t._prevSpeed - 0.2);
               var nightLights = scn.time === 'night' || scn.weather === 'fog';
               m.children.forEach(function(child) {
-                if (child.geometry && child.geometry.type === 'CylinderGeometry' && Math.abs(child.rotation.x - Math.PI / 2) < 0.1) {
-                  child.rotation.y = tWheelAngle;
+                // Steering pivot Groups: yaw front pivots only; spin the wheel inside both.
+                if (child.name === 'rr_aiWheelPivotF' || child.name === 'rr_aiWheelPivotR') {
+                  if (child.name === 'rr_aiWheelPivotF') child.rotation.y = aiSteerYaw;
+                  child.children.forEach(function(w) {
+                    if (w.name === 'rr_aiWheel' || w.name === 'rr_aiHub') w.rotation.y = tWheelAngle;
+                  });
                   return;
                 }
                 var n = child.name;
@@ -8526,6 +9539,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   // Third brake light only lights when braking (more realistic — CHMSL doesn't do running-light mode)
                   child.material.color.setHex(isBraking ? 0xff1a1a : 0x550000);
                   child.material.opacity = isBraking ? 0.9 : 0.12;
+                  return;
+                }
+                // Reverse lights — white, on only when the vehicle is actively moving backward.
+                // For AI cars this is rare (we don't simulate reversing), but kept consistent.
+                if (n === 'rr_revR' || n === 'rr_revL') {
+                  var isReversing = t.speed < -0.3;
+                  child.material.opacity = isReversing ? 0.95 : 0.15;
+                  child.material.color.setHex(isReversing ? 0xffffff : 0x888888);
                   return;
                 }
                 // Rear turn signals — amber blinker on the active side only.
@@ -8765,10 +9786,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               cGroup.add(cg);
               m = cg;
             }
+            // Lift the entire cyclist by 0.03 to prevent the torus-wheel bottom from
+            // Z-fighting with the road mesh (same fix pattern as the car wheels).
             var cyRoadH = (infiniteWorldRef.current && infiniteWorldRef.current.spline) ? infiniteWorldRef.current.spline.heightAt(cy.y) : 0;
-            m.position.set(cy.x - MAP_SIZE / 2, cyRoadH, cy.y - MAP_SIZE / 2);
-            // Bike local frame is +Z-forward; cars use +X-forward. Offset by π/2 so
-            // cyclists face their motion direction instead of rendering sideways.
+            m.position.set(cy.x - MAP_SIZE / 2, cyRoadH + 0.03, cy.y - MAP_SIZE / 2);
+            // Bike was built with local +Z = forward, but motion uses (cos h, sin h)
+            // in world (X, Z) and every other vehicle was built with +X = forward.
+            // Offset by π/2 so the bike faces its actual travel direction (otherwise
+            // cyclists render sideways across the lane — a.k.a. "horizontal").
             m.rotation.y = Math.PI / 2 - cy.heading;
           });
 
@@ -8777,13 +9802,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           while (wGroup.children.length > 0) wGroup.remove(wGroup.children[0]);
           if (wildlifeRef.current) {
             var wl = wildlifeRef.current;
-            var wSize = wl.mass === 'massive' ? 1.5 : wl.mass === 'medium' ? 0.8 : 0.4;
-            var wGeo = new T.BoxGeometry(wSize * 1.5, wSize, wSize * 0.6);
-            var wMat = new T.MeshLambertMaterial({ color: wl.mass === 'massive' ? 0x4a3520 : 0x8b6914 });
-            var wMesh = new T.Mesh(wGeo, wMat);
-            wMesh.position.set(wl.x - MAP_SIZE / 2, wSize / 2, wl.y - MAP_SIZE / 2);
-            wMesh.castShadow = true;
-            wGroup.add(wMesh);
+            // Look up road height at the wildlife position so children/animals stand
+            // ON the road instead of at world Y=0 (which on hills puts them under it).
+            var wlRoadH = (infiniteWorldRef.current && infiniteWorldRef.current.spline)
+              ? infiniteWorldRef.current.spline.heightAt(wl.y) : 0;
+            if (wl.kind === 'child') {
+              var childGroup = new T.Group();
+              var bodyMat = new T.MeshLambertMaterial({ color: 0xfbbf24 });
+              var torsoChild = new T.Mesh(new T.CylinderGeometry(0.13, 0.16, 0.45, 8), bodyMat);
+              torsoChild.position.y = 0.4;
+              torsoChild.castShadow = true;
+              childGroup.add(torsoChild);
+              var headChild = new T.Mesh(new T.SphereGeometry(0.13, 10, 8), new T.MeshLambertMaterial({ color: 0xf4c8a8 }));
+              headChild.position.y = 0.78;
+              childGroup.add(headChild);
+              var packChild = new T.Mesh(new T.BoxGeometry(0.18, 0.22, 0.12), new T.MeshLambertMaterial({ color: 0xdc2626 }));
+              packChild.position.set(-0.13, 0.45, 0);
+              childGroup.add(packChild);
+              childGroup.position.set(wl.x - MAP_SIZE / 2, wlRoadH, wl.y - MAP_SIZE / 2);
+              wGroup.add(childGroup);
+            } else {
+              var wSize = wl.mass === 'massive' ? 1.5 : wl.mass === 'medium' ? 0.8 : 0.4;
+              var wGeo = new T.BoxGeometry(wSize * 1.5, wSize, wSize * 0.6);
+              var wMat = new T.MeshLambertMaterial({ color: wl.mass === 'massive' ? 0x4a3520 : 0x8b6914 });
+              var wMesh = new T.Mesh(wGeo, wMat);
+              wMesh.position.set(wl.x - MAP_SIZE / 2, wlRoadH + wSize / 2, wl.y - MAP_SIZE / 2);
+              wMesh.castShadow = true;
+              wGroup.add(wMesh);
+            }
           }
 
           // Emergency vehicles — detailed 3D with light bar + SpotLights
@@ -8811,9 +9857,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               cab.position.set(-bodyLen * 0.1, bodyH + 0.35, 0);
               eGrp.add(cab);
             }
-            // Wheels (4)
+            // Wheels (4) — lifted by 0.04 to prevent Z-fighting with road surface
             var ewMat = new T.MeshLambertMaterial({ color: 0x111111 });
-            [[-bodyLen * 0.3, 0.2, 0.52], [-bodyLen * 0.3, 0.2, -0.52], [bodyLen * 0.3, 0.2, 0.52], [bodyLen * 0.3, 0.2, -0.52]].forEach(function(wp) {
+            [[-bodyLen * 0.3, 0.24, 0.52], [-bodyLen * 0.3, 0.24, -0.52], [bodyLen * 0.3, 0.24, 0.52], [bodyLen * 0.3, 0.24, -0.52]].forEach(function(wp) {
               var ewGeo = new T.CylinderGeometry(0.2, 0.2, 0.12, 10);
               var ew = new T.Mesh(ewGeo, ewMat);
               ew.rotation.x = Math.PI / 2;
@@ -9097,9 +10143,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var iw = infiniteWorldRef.current;
             var currentChunk = Math.floor(car.y / CHUNK_SIZE);
             if (!s3._loadedChunks) s3._loadedChunks = {};
-            // Load chunks within range (-2 to +2 from current)
-            // Load chunks 4 ahead and 2 behind (seamless — you never see them pop in)
-            for (var ci = currentChunk - 2; ci <= currentChunk + 4; ci++) {
+            // Load chunks ASYMMETRICALLY based on direction of travel.
+            // Player moving -Y (heading sin < 0, default NB) → ahead = lower chunkIndex.
+            // Player moving +Y (sin > 0, SB) → ahead = higher chunkIndex.
+            // Previously the range was hardcoded `currentChunk - 2 to currentChunk + 4`
+            // which loaded 4 chunks AHEAD only for SB players. NB players (default in Free
+            // Explore) saw chunks pop in 64m ahead (~2 sec at highway speed). Now: 4 chunks
+            // ahead in the direction of travel + 2 behind.
+            var travelSign = Math.sin(car.heading) < 0 ? -1 : 1; // -1 = moving toward lower chunks
+            var loFromTravel = travelSign === -1 ? -4 : -2;
+            var hiFromTravel = travelSign === -1 ? +2 : +4;
+            for (var ci = currentChunk + loFromTravel; ci <= currentChunk + hiFromTravel; ci++) {
               if (s3._loadedChunks[ci]) continue;
               var chunk = iw.getChunk(ci);
               var chunkGroup = new T.Group();
@@ -9261,6 +10315,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 var lt = lm.type;
                 var lmCenterWX = lm.centerX - MAP_SIZE / 2;
                 var lmCenterWZ = chunkWorldZ + lm.centerY;
+                // Wrap all landmark meshes in a road-elevation parent so the structure
+                // sits at the actual road height instead of world Y=0. Without this,
+                // landmarks on hills floated below the road surface (the local landmark
+                // Y values like 0.05, 0.6, 1.7 were treated as absolute world heights).
+                // Temporarily shadow chunkGroup with a positioned subgroup, then restore
+                // at the end of the landmark block.
+                var lmRoadH = iw.spline ? iw.spline.heightAt(ci * CHUNK_SIZE + lm.centerY) : 0;
+                var lmGroup = new T.Group();
+                lmGroup.position.y = lmRoadH;
+                chunkGroup.add(lmGroup);
+                var _origChunkGroup_lm = chunkGroup;
+                chunkGroup = lmGroup;
                 var lmMainMat = new T.MeshLambertMaterial({ color: lt.color });
                 var lmRoofMat = new T.MeshLambertMaterial({ color: lt.roofColor });
 
@@ -9489,7 +10555,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 // ─── CONTEXT-AWARE ROAD SIGNS near each landmark ───
                 // Draw an appropriate warning/regulatory sign on the shoulder as the driver approaches.
                 var landmarkSignZ = chunkWorldZ + lm.centerY - 6; // 6 cells before the landmark center
-                var roadShoulderX = lm.side * (MAX_ROAD_WIDTH + 1); // just off the road on the landmark side
+                // Spline-aware shoulder X: previously this was just `lm.side * (...)` which
+                // pinned signs to world X=0 ± shoulder offset. On curving roads the shoulder
+                // moves with the spline, so signs ended up far off-road. Now anchored to
+                // splineCenter at the sign's Z.
+                var lmSignSplineCx = iw.spline ? (iw.spline.centerAt(landmarkSignZ - chunkWorldZ + ribbonChunkBaseY) - MAP_SIZE / 2) : 0;
+                var roadShoulderX = lmSignSplineCx + lm.side * (MAX_ROAD_WIDTH + 1);
                 var signBackMat = new T.MeshLambertMaterial({ color: 0xffffff });
                 var signPost2Mat = new T.MeshLambertMaterial({ color: 0xd1d5db });
                 function addRoadSign(shape, faceColor, label, labelColor, zOff) {
@@ -9563,6 +10634,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 if (lt.id === 'school') {
                   addRoadSign('diamond', 0xfacc15, 'SCHOOL\nZONE', 0x000000, 0);
                   addRoadSign('rect', 0xffffff, '20\nMPH', 0x000000, 3);
+                  // Amber beacons above the SCHOOL ZONE sign, twin fixtures one
+                  // on each side of the post like real school-zone warning
+                  // assemblies. Rendered at full opacity here; the per-frame
+                  // update loop flashes them alternately to read as "school in
+                  // session — slow down." Register keyed by chunk index so
+                  // they get cleaned up when the chunk unloads.
+                  s3.schoolBeaconsByChunk = s3.schoolBeaconsByChunk || {};
+                  s3.schoolBeaconsByChunk[ci] = s3.schoolBeaconsByChunk[ci] || [];
+                  var _beaconBody = new T.MeshLambertMaterial({ color: 0x1a1a1a });
+                  [-1, 1].forEach(function(beaconSide, bIdx) {
+                    // Housing — small black cylinder
+                    var bHousing = new T.Mesh(new T.CylinderGeometry(0.09, 0.11, 0.18, 10), _beaconBody);
+                    bHousing.rotation.z = Math.PI / 2;
+                    bHousing.position.set(roadShoulderX, 2.75, landmarkSignZ + beaconSide * 0.5);
+                    chunkGroup.add(bHousing);
+                    // Lens — amber sphere that will pulse
+                    var bLens = new T.Mesh(
+                      new T.SphereGeometry(0.12, 10, 8),
+                      new T.MeshBasicMaterial({ color: 0xff9500 })
+                    );
+                    bLens.position.set(roadShoulderX + (lm.side === 1 ? -0.08 : 0.08), 2.75, landmarkSignZ + beaconSide * 0.5);
+                    chunkGroup.add(bLens);
+                    s3.schoolBeaconsByChunk[ci].push({ mesh: bLens, phase: bIdx });
+                  });
                 } else if (lt.id === 'hospital') {
                   addRoadSign('rect', 0x1e40af, 'H', 0xffffff, 0);
                 } else if (lt.id === 'park') {
@@ -9578,16 +10673,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 }
 
                 // ─── CROSSWALK near pedestrian-heavy landmarks ───
+                // Centered on the SPLINE at this Z (not world X=0) so crosswalks land on
+                // the actual road on bent stretches, not floating in the grass.
                 if (lt.id === 'school' || lt.id === 'park' || lt.id === 'market' || lt.id === 'library' || lt.id === 'pharmacy') {
                   var crosswalkZ = chunkWorldZ + lm.centerY;
+                  var cwSplineCx = iw.spline ? (iw.spline.centerAt(ci * CHUNK_SIZE + lm.centerY) - MAP_SIZE / 2) : 0;
                   var cwMat = new T.MeshBasicMaterial({ color: 0xffffff });
                   for (var cwi = -3; cwi <= 3; cwi++) {
                     var cwStripe = new T.Mesh(new T.PlaneGeometry(0.7, 0.3), cwMat);
                     cwStripe.rotation.x = -Math.PI / 2;
-                    cwStripe.position.set(cwi * 0.9, 0.016, crosswalkZ);
+                    cwStripe.position.set(cwSplineCx + cwi * 0.9, 0.016, crosswalkZ);
                     chunkGroup.add(cwStripe);
                   }
                 }
+                // Restore chunkGroup after the landmark block (we'd shadowed it with a
+                // road-elevated subgroup at the start of `if (chunk.landmark)`).
+                chunkGroup = _origChunkGroup_lm;
               }
 
               // Determine LOD: chunks > 1 away get simplified rendering for performance.
@@ -9631,12 +10732,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               // LOD gate: skip ambient entirely on distant chunks (cut ~40 meshes per chunk)
               if (isMediumLOD) {
               // These add life without adding obstacles — all placed in the shoulder grass area.
+              // Ambient X is now SPLINE-RELATIVE: previously placed at fixed world X, which
+              // floated parked cars / mailboxes / streetlights away from the road on curves.
               var ambientRng = seededRandom(chunk.index * 31337 + 7);
               for (var ambI = 2; ambI < CHUNK_SIZE - 2; ambI += 4) {
                 var ambSide = ambientRng() < 0.5 ? 1 : -1;
                 var ambRoll = ambientRng();
-                var ambX = ambSide * (MAX_ROAD_WIDTH + CLEARANCE_BUFFER + 0.3);
                 var ambZ = chunkWorldZ + ambI + Math.floor(ambientRng() * 2);
+                // Look up the spline center at this ambZ so the shoulder follows the curve.
+                var ambSplineCenter = iw.spline ? (iw.spline.centerAt(ambZ + MAP_SIZE / 2) - MAP_SIZE / 2) : 0;
+                var ambX = ambSplineCenter + ambSide * (MAX_ROAD_WIDTH + CLEARANCE_BUFFER + 0.3);
                 // Don't place ambient details at intersections
                 if (chunk.hasIntersection && Math.abs(ambI - chunk.intersectionY) < 4) continue;
                 // Don't place ambient details too close to landmark footprint
@@ -9674,7 +10779,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     chunkGroup.add(fhNozzle);
                   }
                 } else if (ambRoll < 0.58) {
-                  // Streetlight (urban/suburban)
+                  // Streetlight (urban/suburban). Components are name-tagged so the
+                  // render loop can update their lit/unlit state when the user toggles
+                  // Day/Night mid-drive. Previously the lit color + glow were baked at
+                  // chunk-load time and never updated.
                   if (chunk.biome === 'commercial' || chunk.biome === 'suburban' || chunk.biome === 'residential') {
                     var slPole = new T.Mesh(new T.CylinderGeometry(0.07, 0.09, 4.2, 6), new T.MeshLambertMaterial({ color: 0x4b5563 }));
                     slPole.position.set(ambX, 2.1, ambZ);
@@ -9683,9 +10791,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     slArm.rotation.z = Math.PI / 2;
                     slArm.position.set(ambX - ambSide * 0.6, 4.0, ambZ);
                     chunkGroup.add(slArm);
-                    var slHead = new T.Mesh(new T.BoxGeometry(0.3, 0.15, 0.5), new T.MeshBasicMaterial({ color: scn.time === 'night' || scn.time === 'dawn' ? 0xfef3c7 : 0x4b5563 }));
+                    // Head — color updated per-frame based on time
+                    var slHead = new T.Mesh(new T.BoxGeometry(0.3, 0.15, 0.5), new T.MeshBasicMaterial({ color: 0x4b5563 }));
                     slHead.position.set(ambX - ambSide * 1.1, 3.9, ambZ);
+                    slHead.name = 'rr_streetlightHead';
                     chunkGroup.add(slHead);
+                    // Glow cone + ground pool — always create, opacity toggled per-frame
+                    {
+                      var slGlowGeo = new T.ConeGeometry(1.5, 3.6, 14, 1, true);
+                      var slGlowMat = new T.MeshBasicMaterial({
+                        color: 0xfff6cc, transparent: true, opacity: 0,
+                        blending: T.AdditiveBlending, depthWrite: false, side: T.DoubleSide
+                      });
+                      var slGlow = new T.Mesh(slGlowGeo, slGlowMat);
+                      slGlow.position.set(ambX - ambSide * 1.1, 2.1, ambZ);
+                      slGlow.name = 'rr_streetlightGlow';
+                      chunkGroup.add(slGlow);
+                      var slPoolGeo = new T.CircleGeometry(1.6, 20);
+                      var slPoolMat = new T.MeshBasicMaterial({
+                        color: 0xffe8a0, transparent: true, opacity: 0,
+                        blending: T.AdditiveBlending, depthWrite: false
+                      });
+                      var slPool = new T.Mesh(slPoolGeo, slPoolMat);
+                      slPool.rotation.x = -Math.PI / 2;
+                      slPool.position.set(ambX - ambSide * 1.1, 0.015, ambZ);
+                      slPool.name = 'rr_streetlightPool';
+                      chunkGroup.add(slPool);
+                    }
                   }
                 } else if (ambRoll < 0.72) {
                   // Bench (near parks/schools/libraries in commercial/suburban areas)
@@ -9702,7 +10834,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   // Teaches students to watch for doors opening, people exiting, cars pulling out
                   if (chunk.biome === 'commercial' || chunk.biome === 'residential' || chunk.biome === 'suburban') {
                     var carColors = [0xdc2626, 0x1e40af, 0x059669, 0x78350f, 0xf59e0b, 0x4b5563, 0xfef3c7, 0x1a1a2e];
-                    var parkedCarX = ambSide * (MAX_ROAD_WIDTH + 0.9); // just off the road, closer than other ambient
+                    // Spline-relative X so parked cars line the actual road on curves.
+                    var parkedCarX = ambSplineCenter + ambSide * (MAX_ROAD_WIDTH + 0.9);
                     var parkedColor = carColors[Math.floor(ambientRng() * carColors.length)];
                     // Car body
                     var pcBody = new T.Mesh(new T.BoxGeometry(1.6, 0.8, 0.7), new T.MeshLambertMaterial({ color: parkedColor }));
@@ -9721,12 +10854,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     var pcWinBack = new T.Mesh(new T.BoxGeometry(0.1, 0.35, 0.5), pcWinMat);
                     pcWinBack.position.set(parkedCarX - 0.35, 1.05, ambZ);
                     chunkGroup.add(pcWinBack);
-                    // Wheels (4 small black cylinders)
+                    // Wheels (4 small black cylinders) — lifted to avoid Z-fighting with road
                     var wheelMat = new T.MeshLambertMaterial({ color: 0x1a1a1a });
                     [[-0.55, -0.35], [0.55, -0.35], [-0.55, 0.35], [0.55, 0.35]].forEach(function(wp) {
                       var wheel = new T.Mesh(new T.CylinderGeometry(0.18, 0.18, 0.12, 8), wheelMat);
                       wheel.rotation.x = Math.PI / 2;
-                      wheel.position.set(parkedCarX + wp[0], 0.18, ambZ + wp[1]);
+                      wheel.position.set(parkedCarX + wp[0], 0.22, ambZ + wp[1]);
                       chunkGroup.add(wheel);
                     });
                     // Headlights (facing outward so visible at night/dawn)
@@ -10271,15 +11404,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               };
               var skipZ1 = chunk.hasIntersection ? chunkWorldZ + chunk.intersectionY - 3 : -99999;
               var skipZ2 = chunk.hasIntersection ? chunkWorldZ + chunk.intersectionY + 3 : -99999;
-              // Compact always-on markings: one short stripe every 3m, both edges + center.
-              // Cheap enough that every loaded chunk gets them.
-              var alwaysStripe = function(x_offset, yellow, z_start, step) {
+              // Compact always-on markings: one stripe every N meters, both edges + center.
+              // Stripe widths were bumped from 0.12 → 0.18 (yellow) / 0.22 (white edge)
+              // and stripe lengths lengthened to match US real-world 10-ft stripe / 30-ft
+              // gap ratio at reduced game-world scale. The old markings were skinny and
+              // short enough that from the driver's 3D POV they read as faint dots on
+              // gray asphalt — especially in wet / overcast weather. Students in the
+              // driver's-ed tool need the lanes to be instantly legible.
+              var alwaysStripe = function(x_offset, yellow, z_start, step, lineWidth, lineLen) {
+                var width = lineWidth || (yellow ? 0.18 : 0.22);
+                var length = lineLen || 2.2;
                 var mat = new T.MeshBasicMaterial({ color: yellow ? alwaysYellowColor : alwaysMarksColor });
                 for (var sz = chunkWorldZ + z_start; sz < chunkWorldZ + CHUNK_SIZE - 0.5; sz += step) {
                   if (sz > skipZ1 && sz < skipZ2) continue;
                   var stCtr = markCenterAtZ(sz);
                   var stHt = iw.spline ? iw.spline.heightAt(sz - chunkWorldZ + ribbonChunkBaseY) : 0;
-                  var st = new T.Mesh(new T.PlaneGeometry(0.12, 1.0), mat);
+                  var st = new T.Mesh(new T.PlaneGeometry(width, length), mat);
                   st.rotation.x = -Math.PI / 2;
                   st.position.set(stCtr + x_offset, stHt + 0.012, sz);
                   chunkGroup.add(st);
@@ -10290,28 +11430,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               // This matches real road convention: solid = don't cross, dashed = passing allowed.
               var chunkNoPass = (chunk.biome === 'rural' || chunk.hasIntersection);
               if (chunkNoPass) {
-                // Solid double-yellow: two nearly-continuous parallel stripes offset ±0.18m
+                // Solid double-yellow: two nearly-continuous parallel stripes offset ±0.22m
+                // (slightly wider separation so both stripes read distinctly at distance).
                 var solidYellowMat = new T.MeshBasicMaterial({ color: alwaysYellowColor });
                 var dyStep = 2.0;
                 for (var dyZ = chunkWorldZ + 0.5; dyZ < chunkWorldZ + CHUNK_SIZE - 0.5; dyZ += dyStep) {
                   if (dyZ > skipZ1 && dyZ < skipZ2) continue;
                   var dyCtr = markCenterAtZ(dyZ);
                   var dyHt = iw.spline ? iw.spline.heightAt(dyZ - chunkWorldZ + ribbonChunkBaseY) : 0;
-                  var dyLeft = new T.Mesh(new T.PlaneGeometry(0.10, 2.05), solidYellowMat);
+                  var dyLeft = new T.Mesh(new T.PlaneGeometry(0.14, 2.05), solidYellowMat);
                   dyLeft.rotation.x = -Math.PI / 2;
-                  dyLeft.position.set(dyCtr - 0.18, dyHt + 0.013, dyZ);
+                  dyLeft.position.set(dyCtr - 0.22, dyHt + 0.013, dyZ);
                   chunkGroup.add(dyLeft);
-                  var dyRight = new T.Mesh(new T.PlaneGeometry(0.10, 2.05), solidYellowMat);
+                  var dyRight = new T.Mesh(new T.PlaneGeometry(0.14, 2.05), solidYellowMat);
                   dyRight.rotation.x = -Math.PI / 2;
-                  dyRight.position.set(dyCtr + 0.18, dyHt + 0.013, dyZ);
+                  dyRight.position.set(dyCtr + 0.22, dyHt + 0.013, dyZ);
                   chunkGroup.add(dyRight);
                 }
               } else {
-                // Dashed single-yellow (passing allowed)
-                alwaysStripe(0, true, 1.0, 2.2);
+                // Dashed single-yellow (passing allowed) — 3m stripe, 4m gap = 7m cycle.
+                // Longer stripes read clearly from the driver's POV vs the old 1m @ 2.2m.
+                alwaysStripe(0, true, 1.0, 7.0, 0.20, 3.0);
               }
-              alwaysStripe(-(roadHalfW - 0.3), false, 0.7, 1.8);
-              alwaysStripe(+(roadHalfW - 0.3), false, 0.7, 1.8);
+              // Solid white edge lines — bumped to a near-continuous run so the road
+              // edges are unambiguous. Old 1.0 m line every 1.8 m gave 44% coverage;
+              // 2.5 m line every 3.2 m gives ~78% coverage, reading as a solid line
+              // at distance while still saving polys vs a full continuous extrusion.
+              alwaysStripe(-(roadHalfW - 0.3), false, 0.7, 3.2, 0.22, 2.5);
+              alwaysStripe(+(roadHalfW - 0.3), false, 0.7, 3.2, 0.22, 2.5);
               // ── Painted speed limit numbers on the road surface ──
               // At the start of each chunk whose biome is different from the previous one,
               // paint a big "XX" number on the road so the driver sees the new zone's limit.
@@ -10365,6 +11511,106 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   paintPlane2.position.set(paintCtr + 1.3, paintHt + 0.012, paintZ);
                   chunkGroup.add(paintPlane2);
                 } catch (paintErr) { /* canvas not available — skip painting */ }
+              }
+              // ── Railroad crossing (rural + industrial biomes) ──
+              // Deterministic per-chunk: roughly 1 in 7 qualifying chunks gets a crossing.
+              // Render: two steel rails across the road + wood ties + crossbuck sign pole
+              // + warning light mast. Not placed at chunks that already have a street
+              // intersection or landmark (avoids visual collision).
+              var rrEligible = (chunk.biome === 'rural' || chunk.biome === 'industrial')
+                && !chunk.hasIntersection && !chunk.landmark;
+              if (rrEligible && ((chunk.index * 2654435761) >>> 0) % 7 === 3) {
+                // Place the crossing ~60% of the way through the chunk so the warning
+                // signage (which is ~20m before the tracks) fits inside the chunk.
+                var rrZ = chunkWorldZ + CHUNK_SIZE * 0.6;
+                var rrCtr = markCenterAtZ(rrZ);
+                var rrHt = iw.spline ? iw.spline.heightAt(rrZ - chunkWorldZ + ribbonChunkBaseY) : 0;
+                // ── Ballast bed (dark gray gravel) spanning the road + shoulders ──
+                var ballastMat = new T.MeshBasicMaterial({ color: 0x423832 });
+                var ballast = new T.Mesh(new T.PlaneGeometry(roadHalfW * 2 + 3, 3.2), ballastMat);
+                ballast.rotation.x = -Math.PI / 2;
+                ballast.position.set(rrCtr, rrHt + 0.009, rrZ);
+                chunkGroup.add(ballast);
+                // ── Wood ties (crossties) — 14 parallel brown rectangles ──
+                var tieMat = new T.MeshBasicMaterial({ color: 0x4a321a });
+                var tieCount = 14;
+                var tieSpanZ = 3.0;
+                var tieStepZ = tieSpanZ / tieCount;
+                for (var tti = 0; tti < tieCount; tti++) {
+                  var tieZ = rrZ - tieSpanZ / 2 + tti * tieStepZ + tieStepZ / 2;
+                  var tie = new T.Mesh(new T.PlaneGeometry(roadHalfW * 2 + 2.4, tieStepZ * 0.65), tieMat);
+                  tie.rotation.x = -Math.PI / 2;
+                  tie.position.set(rrCtr, rrHt + 0.011, tieZ);
+                  chunkGroup.add(tie);
+                }
+                // ── Two steel rails running perpendicular to the road (along Z axis) ──
+                var railMat = new T.MeshBasicMaterial({ color: 0x9aa0a8 });
+                [-0.7, 0.7].forEach(function(railXOff) {
+                  var rail = new T.Mesh(new T.PlaneGeometry(0.10, 3.2), railMat);
+                  rail.rotation.x = -Math.PI / 2;
+                  rail.position.set(rrCtr + railXOff, rrHt + 0.013, rrZ);
+                  chunkGroup.add(rail);
+                });
+                // ── White stop line painted BEFORE the tracks (both approach directions) ──
+                var rrStopMat = new T.MeshBasicMaterial({ color: 0xf5f5f5 });
+                [-2.2, 2.2].forEach(function(stopOff) {
+                  var rrStop = new T.Mesh(new T.PlaneGeometry(roadHalfW * 2 * 0.95, 0.3), rrStopMat);
+                  rrStop.rotation.x = -Math.PI / 2;
+                  rrStop.position.set(rrCtr, rrHt + 0.014, rrZ + stopOff);
+                  chunkGroup.add(rrStop);
+                });
+                // ── Big painted "RR" on the road, both directions ──
+                try {
+                  if (!iw._rrPaintTex) {
+                    var rrCan = document.createElement('canvas');
+                    rrCan.width = 128; rrCan.height = 256;
+                    var rrCtx = rrCan.getContext('2d');
+                    rrCtx.clearRect(0, 0, 128, 256);
+                    rrCtx.fillStyle = '#f5f5f5';
+                    rrCtx.font = 'bold 140px system-ui, Arial, sans-serif';
+                    rrCtx.textAlign = 'center';
+                    rrCtx.fillText('R', 64, 130);
+                    rrCtx.fillText('R', 64, 240);
+                    iw._rrPaintTex = new T.CanvasTexture(rrCan);
+                  }
+                  var rrPaintMat = new T.MeshBasicMaterial({ map: iw._rrPaintTex, transparent: true, depthWrite: false });
+                  [-1, 1].forEach(function(approachSide) {
+                    var rrPaint = new T.Mesh(new T.PlaneGeometry(1.2, 2.4), rrPaintMat);
+                    rrPaint.rotation.x = -Math.PI / 2;
+                    if (approachSide > 0) rrPaint.rotation.z = Math.PI;
+                    var paintOff = approachSide * 5.5; // 5.5m before the tracks
+                    rrPaint.position.set(rrCtr + approachSide * 0.7, rrHt + 0.0125, rrZ + paintOff);
+                    chunkGroup.add(rrPaint);
+                  });
+                } catch (rrPErr) { /* canvas texture fallback */ }
+                // ── Crossbuck sign (white X on pole) + twin red warning lights on both sides ──
+                [-1, 1].forEach(function(cbSide) {
+                  var cbPoleX = rrCtr + cbSide * (roadHalfW + 0.9);
+                  // Pole
+                  var cbPole = new T.Mesh(new T.CylinderGeometry(0.06, 0.06, 4.0, 6), new T.MeshLambertMaterial({ color: 0xd1d5db }));
+                  cbPole.position.set(cbPoleX, rrHt + 2.0, rrZ);
+                  chunkGroup.add(cbPole);
+                  // Crossbuck: two white boards in an X shape at ~45°
+                  var cbMat = new T.MeshBasicMaterial({ color: 0xf5f5f5, side: T.DoubleSide });
+                  [-1, 1].forEach(function(diag) {
+                    var cb = new T.Mesh(new T.BoxGeometry(1.4, 0.16, 0.02), cbMat);
+                    cb.rotation.z = diag * Math.PI / 4;
+                    cb.position.set(cbPoleX, rrHt + 3.5, rrZ);
+                    chunkGroup.add(cb);
+                  });
+                  // Twin red warning lamps (below the crossbuck) — low opacity by default.
+                  // These could be animated to flash when a train is "present"; for now, steady dim.
+                  [-0.35, 0.35].forEach(function(lampOff) {
+                    var cbLampMat = new T.MeshBasicMaterial({ color: 0x660000, transparent: true, opacity: 0.5 });
+                    var cbLamp = new T.Mesh(new T.SphereGeometry(0.14, 10, 10), cbLampMat);
+                    cbLamp.position.set(cbPoleX + lampOff, rrHt + 2.8, rrZ);
+                    chunkGroup.add(cbLamp);
+                  });
+                  // Small black "2 TRACKS" or "RR XING" placard below the lamps (optional detail)
+                  var rrPlacard = new T.Mesh(new T.BoxGeometry(0.7, 0.3, 0.02), new T.MeshBasicMaterial({ color: 0xfffbeb }));
+                  rrPlacard.position.set(cbPoleX, rrHt + 2.35, rrZ);
+                  chunkGroup.add(rrPlacard);
+                });
               }
               // ── Shoulder rumble strips: short dark dashes just OUTSIDE each edge line ──
               // These are the scored grooves you hear/feel when drifting off the road.
@@ -10446,34 +11692,76 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   // crosswalks). cwOffset < 0 means the crosswalk is at lower Z than the
                   // intersection, so driver approaches from -Z and the arrow must point +Z.
                   // cwOffset > 0: driver approaches from +Z, arrow must point -Z.
+                  //
+                  // On commercial/suburban chunks, the INNER lane (near centerline) gets a
+                  // LEFT-TURN arrow (straight shaft + bent arrow head that turns toward
+                  // oncoming). The OUTER lane keeps a straight arrow. This matches real
+                  // multi-lane approaches where the inside lane is a turn lane.
                   var arrowPointsTowardIntersection = cwOffset < 0 ? +1 : -1;
                   var arrowZ = stopLineZ + (cwOffset < 0 ? -3.0 : 3.0);
                   var arrowCtr = markCenterAtZ(arrowZ);
                   var arrowHt = iw.spline ? iw.spline.heightAt(arrowZ - chunkWorldZ + ribbonChunkBaseY) : 0;
-                  // Build a single reusable arrow geometry (3-plane approach for perf).
-                  // Shaft: 0.12 wide × 1.4 long. Head: two 0.38-long chevron arms at ~30°.
+                  // Lane selection rules per biome
+                  var hasLeftTurnLane = (chunk.biome === 'commercial' || chunk.biome === 'suburban');
                   var laneOffset = roadHalfW * 0.5; // middle of each lane
-                  [-laneOffset, +laneOffset].forEach(function(arrowX) {
-                    // Shaft
+                  // The arrow sits in the approach lanes on the near side of the road.
+                  // Driver's approach lanes are on the negative side of the spline center
+                  // for cwOffset < 0, and positive side for cwOffset > 0.
+                  var driverSide = cwOffset < 0 ? -1 : 1;
+                  // Inner (turn) lane x and outer (straight) lane x for this approach
+                  var innerLaneX = driverSide * (laneOffset * 0.35); // closer to centerline
+                  var outerLaneX = driverSide * (laneOffset * 1.05); // closer to edge
+
+                  var paintArrow = function(laneX, type) {
+                    // type: 'straight' or 'left'
+                    // Shaft (all arrows have a shaft aligned with direction of travel)
                     var shaft = new T.Mesh(new T.PlaneGeometry(0.18, 1.4), zebraMat);
                     shaft.rotation.x = -Math.PI / 2;
-                    shaft.position.set(arrowCtr + arrowX, arrowHt + 0.016, arrowZ);
+                    shaft.position.set(arrowCtr + laneX, arrowHt + 0.016, arrowZ);
                     chunkGroup.add(shaft);
-                    // Arrowhead tip position (toward intersection)
                     var tipZ = arrowZ + arrowPointsTowardIntersection * 0.7;
-                    // Two chevron arms: 0.55 long each, angled 30° off the axis
-                    [-1, 1].forEach(function(side) {
-                      var arm = new T.Mesh(new T.PlaneGeometry(0.18, 0.55), zebraMat);
-                      arm.rotation.x = -Math.PI / 2;
-                      // rotate around Y to form the chevron — 30° off axis, mirrored by side
-                      arm.rotation.z = side * arrowPointsTowardIntersection * (Math.PI / 6);
-                      // position so arm meets at the tip
-                      var armZ = tipZ - arrowPointsTowardIntersection * 0.22;
-                      var armX = arrowCtr + arrowX + side * 0.19;
-                      arm.position.set(armX, arrowHt + 0.016, armZ);
-                      chunkGroup.add(arm);
-                    });
-                  });
+                    if (type === 'straight') {
+                      // Chevron arms pointing forward
+                      [-1, 1].forEach(function(side) {
+                        var arm = new T.Mesh(new T.PlaneGeometry(0.18, 0.55), zebraMat);
+                        arm.rotation.x = -Math.PI / 2;
+                        arm.rotation.z = side * arrowPointsTowardIntersection * (Math.PI / 6);
+                        var armZ = tipZ - arrowPointsTowardIntersection * 0.22;
+                        var armX = arrowCtr + laneX + side * 0.19;
+                        arm.position.set(armX, arrowHt + 0.016, armZ);
+                        chunkGroup.add(arm);
+                      });
+                    } else if (type === 'left') {
+                      // LEFT-turn arrow: shaft + 90° bend toward oncoming side + chevron
+                      // pointing across the centerline. "Left" relative to the driver's
+                      // direction of travel means toward the centerline, i.e. opposite of
+                      // driverSide.
+                      var turnX = -driverSide; // toward centerline (left of driver)
+                      // Bend: horizontal segment crossing lane toward centerline, at the TIP
+                      var bend = new T.Mesh(new T.PlaneGeometry(0.9, 0.18), zebraMat);
+                      bend.rotation.x = -Math.PI / 2;
+                      bend.position.set(arrowCtr + laneX + turnX * 0.45, arrowHt + 0.016, tipZ);
+                      chunkGroup.add(bend);
+                      // Chevron at the end of the bend — arrowhead pointing to the left side
+                      [-1, 1].forEach(function(side) {
+                        var arm = new T.Mesh(new T.PlaneGeometry(0.18, 0.45), zebraMat);
+                        arm.rotation.x = -Math.PI / 2;
+                        // arm rotates around world Y so it points laterally (not forward)
+                        arm.rotation.z = Math.PI / 2 + side * (Math.PI / 6) * turnX;
+                        arm.position.set(arrowCtr + laneX + turnX * 0.75, arrowHt + 0.016, tipZ + side * 0.12);
+                        chunkGroup.add(arm);
+                      });
+                    }
+                  };
+
+                  if (hasLeftTurnLane) {
+                    paintArrow(innerLaneX, 'left');
+                    paintArrow(outerLaneX, 'straight');
+                  } else {
+                    // Original: straight arrow in each of two symmetric lane positions
+                    paintArrow(-laneOffset, 'straight');
+                    paintArrow(+laneOffset, 'straight');
+                  }
                 });
               }
               // ── Wet road sheen: glossy puddle patches + reflective streaks in rain ──
@@ -10554,18 +11842,172 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   });
                 }
                 if (chunk.biome === 'commercial' || chunk.biome === 'suburban') {
-                  for (var ldZ = chunkWorldZ + 2; ldZ < chunkWorldZ + CHUNK_SIZE - 2; ldZ += 3) {
+                  // In-lane position guides on wider commercial/suburban roads.
+                  // Bumped to match the primary lane marking visibility pass so
+                  // they read as intentional painted hints rather than thin
+                  // specks that disappear at distance.
+                  for (var ldZ = chunkWorldZ + 2; ldZ < chunkWorldZ + CHUNK_SIZE - 2; ldZ += 5) {
                     if (ldZ > skipZ1 && ldZ < skipZ2) continue;
                     var ldCtr = markCenterAtZ(ldZ);
                     var ldHt = iw.spline ? iw.spline.heightAt(ldZ - chunkWorldZ + ribbonChunkBaseY) : 0;
                     [-1.5, 1.5].forEach(function(laneOff) {
-                      var ld = new T.Mesh(new T.PlaneGeometry(0.1, 1.5), edgeLineMat);
+                      var ld = new T.Mesh(new T.PlaneGeometry(0.16, 2.2), edgeLineMat);
                       ld.rotation.x = -Math.PI / 2;
                       ld.position.set(ldCtr + laneOff, ldHt + 0.013, ldZ);
                       chunkGroup.add(ld);
                     });
                   }
+                  // ── Painted straight-ahead arrows on commercial/suburban lanes ──
+                  // Once every couple of chunks, drop a large white arrow in each
+                  // direction of travel. Teaches students to read painted lane
+                  // guidance and makes the lane structure visually obvious from
+                  // the driver's POV. Skip on chunks with intersections (arrows
+                  // there would conflict with crosswalk/stop-line paint).
+                  if (!chunk.hasIntersection && (ci % 2 === 0)) {
+                    var arrowMat = new T.MeshBasicMaterial({
+                      color: 0xffffff,
+                      transparent: true,
+                      opacity: 0.88,
+                      side: T.DoubleSide, // triangle winding flips with travel dir → render both sides
+                    });
+                    // One arrow per direction-lane; offset ±2.0m from centerline
+                    // so each sits in the middle of its own lane.
+                    [-2.0, 2.0].forEach(function(arrowLaneOff) {
+                      var arrowZ = chunkWorldZ + CHUNK_SIZE * 0.5;
+                      var arrowCtr = markCenterAtZ(arrowZ);
+                      var arrowHt = iw.spline ? iw.spline.heightAt(arrowZ - chunkWorldZ + ribbonChunkBaseY) : 0;
+                      // Arrow points in direction of travel for that lane:
+                      // right lane (arrowLaneOff > 0) goes -Z (toward player at origin),
+                      // left lane (arrowLaneOff < 0) goes +Z (away).
+                      var travelForward = arrowLaneOff > 0 ? -1 : 1;
+                      // Arrow shaft — thin rectangle
+                      var shaft = new T.Mesh(new T.PlaneGeometry(0.35, 2.4), arrowMat);
+                      shaft.rotation.x = -Math.PI / 2;
+                      shaft.position.set(arrowCtr + arrowLaneOff, arrowHt + 0.0135, arrowZ);
+                      chunkGroup.add(shaft);
+                      // Arrowhead — triangle built on the XZ ground plane; positioned
+                      // at the forward end of the shaft. DoubleSide on the material
+                      // covers both possible winding orders (sign-dependent).
+                      var headGeo = new T.BufferGeometry();
+                      var headVerts = new Float32Array([
+                        -0.55, 0, 0,
+                         0.55, 0, 0,
+                         0,    0, 0.9 * travelForward,
+                      ]);
+                      headGeo.setAttribute('position', new T.BufferAttribute(headVerts, 3));
+                      headGeo.setIndex([0, 1, 2]);
+                      headGeo.computeVertexNormals();
+                      var head = new T.Mesh(headGeo, arrowMat);
+                      head.position.set(arrowCtr + arrowLaneOff, arrowHt + 0.0135, arrowZ + travelForward * 1.3);
+                      chunkGroup.add(head);
+                    });
+                  }
                 }
+                // ─── SPEED BUMPS — residential traffic-calming ─────────────
+                // On residential chunks (and roughly every-other chunk so the
+                // player encounters them at a realistic density), paint a
+                // yellow chevron warning band on the road plus a shallow
+                // raised slab that reads as a real bump in the 3D view.
+                // Skip chunks that already carry an intersection so the
+                // chevrons don't land on top of the crosswalk.
+                if (chunk.biome === 'residential' && !chunk.hasIntersection && (ci % 2 === 1)) {
+                  var bumpZ = chunkWorldZ + CHUNK_SIZE * 0.35;
+                  var bumpCtrX = markCenterAtZ(bumpZ);
+                  var bumpHt = iw.spline ? iw.spline.heightAt(bumpZ - chunkWorldZ + ribbonChunkBaseY) : 0;
+                  // Register bump in the world-shared list so the physics loop
+                  // can detect when the player crosses it and trigger the
+                  // camera jolt + thump sound. Deduped by chunk index so
+                  // re-loading the same chunk doesn't double-count.
+                  iw._speedBumps = iw._speedBumps || [];
+                  if (!iw._speedBumps.some(function(b) { return b.chunkIdx === ci; })) {
+                    // Store in GRID coordinates (matches car.x/car.y). The
+                    // ribbon-chunk Y = ci * CHUNK_SIZE, so grid Y of the bump
+                    // is `ci * CHUNK_SIZE + CHUNK_SIZE * 0.35`.
+                    iw._speedBumps.push({
+                      chunkIdx: ci,
+                      gridY: ci * CHUNK_SIZE + CHUNK_SIZE * 0.35,
+                      // Grid X = MAP_SIZE/2 + bumpCtrX (inverse of the world
+                      // transform `x - MAP_SIZE / 2`).
+                      gridX: MAP_SIZE / 2 + bumpCtrX,
+                      width: (typeof MAX_ROAD_WIDTH !== 'undefined' ? MAX_ROAD_WIDTH : 4.5),
+                    });
+                  }
+                  // Painted yellow chevron band — two rows of triangular
+                  // warnings, one for each direction of travel, pointing AT
+                  // the bump so approaching drivers see them head-on.
+                  var chevronMat = new T.MeshBasicMaterial({ color: 0xfacc15, side: T.DoubleSide });
+                  [-1.2, 1.2].forEach(function(chevZOff) {
+                    // Direction arrows point toward the bump (travelling toward +Z
+                    // sees chevrons pointing -Z, and vice versa).
+                    var chevPointDir = chevZOff > 0 ? -1 : 1;
+                    // Cluster of 5 chevrons spanning the road width.
+                    for (var chvI = -2; chvI <= 2; chvI++) {
+                      var chvGeo = new T.BufferGeometry();
+                      var chvVerts = new Float32Array([
+                        -0.28, 0, 0,
+                         0.28, 0, 0,
+                         0,    0, 0.45 * chevPointDir,
+                      ]);
+                      chvGeo.setAttribute('position', new T.BufferAttribute(chvVerts, 3));
+                      chvGeo.setIndex([0, 1, 2]);
+                      chvGeo.computeVertexNormals();
+                      var chv = new T.Mesh(chvGeo, chevronMat);
+                      chv.position.set(bumpCtrX + chvI * 0.85, bumpHt + 0.014, bumpZ + chevZOff);
+                      chunkGroup.add(chv);
+                    }
+                  });
+                  // Physical speed-bump slab — a low-profile rectangle that
+                  // sits ~3cm above the road surface. Shaped like a long
+                  // cylinder segment so light reflects off its crown the
+                  // same way a real asphalt bump does. Keep the bump length
+                  // in world Z very short (0.6m) so driving over it reads
+                  // as a brief jolt rather than a ramp.
+                  var slabMat = new T.MeshLambertMaterial({ color: 0x4a2f1b });
+                  var slabGeo = new T.CylinderGeometry(0.18, 0.18, roadHalfW * 2 - 0.6, 8, 1, false, 0, Math.PI);
+                  var slab = new T.Mesh(slabGeo, slabMat);
+                  // CylinderGeometry's axis is +Y by default. We want the bump
+                  // axis to lie ACROSS the road (±X), so rotate around Z by π/2.
+                  slab.rotation.z = Math.PI / 2;
+                  slab.position.set(bumpCtrX, bumpHt + 0.04, bumpZ);
+                  chunkGroup.add(slab);
+                  // Yellow stripes painted along the length of the bump for
+                  // high visibility at night — three alternating yellow dashes.
+                  var bumpStripeMat = new T.MeshBasicMaterial({ color: 0xfacc15 });
+                  for (var bsi = -2; bsi <= 2; bsi += 2) {
+                    var bsX = bumpCtrX + bsi * (roadHalfW * 0.35);
+                    var bs = new T.Mesh(new T.PlaneGeometry(1.2, 0.18), bumpStripeMat);
+                    bs.rotation.x = -Math.PI / 2;
+                    bs.position.set(bsX, bumpHt + 0.08, bumpZ);
+                    chunkGroup.add(bs);
+                  }
+                  // Small "SPEED BUMP" or "SLOW" painted warning 4m before it.
+                  // Use a pre-cached canvas texture (one texture per chunk is
+                  // fine — cached via iw cache like the speed-limit numbers).
+                  try {
+                    if (!iw._bumpWordTex) {
+                      var bwCan = document.createElement('canvas');
+                      bwCan.width = 256; bwCan.height = 96;
+                      var bwCtx = bwCan.getContext('2d');
+                      bwCtx.clearRect(0, 0, 256, 96);
+                      bwCtx.fillStyle = '#f5f5f5';
+                      bwCtx.font = 'bold 70px system-ui, sans-serif';
+                      bwCtx.textAlign = 'center';
+                      bwCtx.textBaseline = 'middle';
+                      bwCtx.fillText('SLOW', 128, 48);
+                      iw._bumpWordTex = new T.CanvasTexture(bwCan);
+                    }
+                    var bwMat = new T.MeshBasicMaterial({ map: iw._bumpWordTex, transparent: true });
+                    var bwWordZ = bumpZ - 4.5;
+                    var bwCtrX = markCenterAtZ(bwWordZ);
+                    var bwHt = iw.spline ? iw.spline.heightAt(bwWordZ - chunkWorldZ + ribbonChunkBaseY) : 0;
+                    var bwWord = new T.Mesh(new T.PlaneGeometry(1.8, 0.7), bwMat);
+                    bwWord.rotation.x = -Math.PI / 2;
+                    bwWord.rotation.z = Math.PI; // read correctly by approach direction
+                    bwWord.position.set(bwCtrX, bwHt + 0.013, bwWordZ);
+                    chunkGroup.add(bwWord);
+                  } catch (bwErr) { /* canvas unsupported — skip painted word */ }
+                }
+
                 // ─── BIKE LANES — painted green strip inside the right edge line ───
                 // Rendered in residential/suburban/commercial biomes (where cyclists spawn).
                 // The strip is a continuous ribbon following the spline, with a solid white
@@ -10830,21 +12272,137 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 var sigPoleMat2 = new T.MeshLambertMaterial({ color: 0x555555 });
                 var isTrafficLight = ci % 2 === 0;
                 if (isTrafficLight) {
-                  var sigPole = new T.Mesh(new T.CylinderGeometry(0.07, 0.09, 4.2, 6), sigPoleMat2);
-                  sigPole.position.set(crossCenterX + 4.0, crossHt + 2.1, crossZ);
+                  // ── Proper mast-arm traffic signal ──
+                  // Thick vertical pole (8m) with a horizontal mast arm (6m) extending over
+                  // the approach lane. TWO signal heads: one near the pole, one at the far end
+                  // over the center of the approaching lane — this is how US intersections are
+                  // actually built for visibility.
+                  var poleBaseX = crossCenterX + 4.5;
+                  var poleBaseZ = crossZ - 3.0; // offset back from the crosswalk
+                  // Vertical pole
+                  var sigPole = new T.Mesh(new T.CylinderGeometry(0.10, 0.14, 6.0, 8), sigPoleMat2);
+                  sigPole.position.set(poleBaseX, crossHt + 3.0, poleBaseZ);
                   chunkGroup.add(sigPole);
-                  var sigArm = new T.Mesh(new T.CylinderGeometry(0.04, 0.04, 4.5, 4), sigPoleMat2);
-                  sigArm.position.set(crossCenterX + 1.8, crossHt + 4.0, crossZ);
-                  sigArm.rotation.z = Math.PI / 2;
-                  chunkGroup.add(sigArm);
-                  var sigHousing = new T.Mesh(new T.BoxGeometry(0.3, 0.8, 0.2), new T.MeshLambertMaterial({ color: 0x1a1a2e }));
-                  sigHousing.position.set(crossCenterX, crossHt + 3.5, crossZ);
-                  chunkGroup.add(sigHousing);
-                  var lightColors = [0xef4444, 0xfbbf24, 0x22c55e];
-                  for (var lci = 0; lci < 3; lci++) {
-                    var lightMesh = new T.Mesh(new T.SphereGeometry(0.08, 8, 6), new T.MeshBasicMaterial({ color: lightColors[lci] }));
-                    lightMesh.position.set(crossCenterX + 0.16, crossHt + 3.75 - lci * 0.25, crossZ);
-                    chunkGroup.add(lightMesh);
+                  // Horizontal mast arm (extends over the road toward the intersection)
+                  var mastArm = new T.Mesh(new T.CylinderGeometry(0.06, 0.08, 7.5, 8), sigPoleMat2);
+                  mastArm.position.set(poleBaseX - 3.75, crossHt + 5.7, poleBaseZ);
+                  mastArm.rotation.z = Math.PI / 2;
+                  chunkGroup.add(mastArm);
+                  // Short brace (diagonal support from pole top to mid-arm)
+                  var brace = new T.Mesh(new T.CylinderGeometry(0.03, 0.04, 2.2, 6), sigPoleMat2);
+                  brace.position.set(poleBaseX - 1.0, crossHt + 5.1, poleBaseZ);
+                  brace.rotation.z = Math.PI / 3;
+                  chunkGroup.add(brace);
+                  // Build TWO signal heads: one over each lane of the approach.
+                  var signalHeadPositions = [
+                    { x: poleBaseX - 2.0, label: 'near' },  // over near-side lane
+                    { x: poleBaseX - 6.5, label: 'far' }    // over far-side lane
+                  ];
+                  s3.trafficLampsByChunk = s3.trafficLampsByChunk || {};
+                  s3.trafficLampsByChunk[ci] = [];
+                  signalHeadPositions.forEach(function(sp) {
+                    // Housing: tall black box holding 3 lights
+                    var housingH = 1.2, housingW = 0.38, housingD = 0.28;
+                    var sigHousing = new T.Mesh(new T.BoxGeometry(housingW, housingH, housingD), new T.MeshLambertMaterial({ color: 0x111115 }));
+                    sigHousing.position.set(sp.x, crossHt + 5.1, poleBaseZ);
+                    chunkGroup.add(sigHousing);
+                    // Visor awnings over each light (tiny black rectangles jutting out)
+                    [0.38, 0, -0.38].forEach(function(vy) {
+                      var visor = new T.Mesh(new T.BoxGeometry(0.42, 0.04, 0.12), new T.MeshLambertMaterial({ color: 0x080808 }));
+                      visor.position.set(sp.x, crossHt + 5.1 + vy + 0.20, poleBaseZ + housingD / 2 + 0.06);
+                      chunkGroup.add(visor);
+                    });
+                    // 3 lamps (red top, yellow middle, green bottom) — named so the render
+                    // loop can toggle them based on the signal state.
+                    var lampDefs = [
+                      { dy: 0.38, onHex: 0xff2420, offHex: 0x3a0808, name: 'red' },
+                      { dy: 0, onHex: 0xffc015, offHex: 0x3a2a08, name: 'yellow' },
+                      { dy: -0.38, onHex: 0x21d762, offHex: 0x083a15, name: 'green' }
+                    ];
+                    lampDefs.forEach(function(ld) {
+                      var lampGeo = new T.SphereGeometry(0.14, 12, 10);
+                      var lampMat = new T.MeshBasicMaterial({ color: ld.offHex });
+                      var lampMesh = new T.Mesh(lampGeo, lampMat);
+                      lampMesh.position.set(sp.x, crossHt + 5.1 + ld.dy, poleBaseZ + housingD / 2 + 0.02);
+                      chunkGroup.add(lampMesh);
+                      s3.trafficLampsByChunk[ci].push({
+                        mesh: lampMesh,
+                        onHex: ld.onHex,
+                        offHex: ld.offHex,
+                        state: ld.name,
+                        chunkIdx: ci
+                      });
+                    });
+                  });
+                  // Pedestrian signal on the near pole — properly iconographic
+                  // "WALK / DON'T WALK" face. Previously this was a plain orange
+                  // rectangle that read as a light but not as a pedestrian
+                  // signal. Now it's a black housing with a canvas-textured
+                  // face showing the standard walking-person icon (white) on
+                  // the left and a raised hand (orange) on the right — so the
+                  // student immediately recognizes the fixture even at distance.
+                  var pedSigGeo = new T.BoxGeometry(0.36, 0.32, 0.18);
+                  var pedSigBox = new T.Mesh(pedSigGeo, new T.MeshLambertMaterial({ color: 0x111115 }));
+                  pedSigBox.position.set(poleBaseX, crossHt + 3.2, poleBaseZ);
+                  chunkGroup.add(pedSigBox);
+                  try {
+                    // Build one canvas texture per state (walk / don't-walk) and
+                    // cache on the infinite-world ref so every intersection
+                    // shares the same two textures. The render-time update loop
+                    // swaps `material.map` based on the chunk's current main-
+                    // road signal state: main road RED → walk (cars stopped,
+                    // peds go), GREEN or YELLOW → don't-walk (cars moving).
+                    var _buildPedTex = function(walkOn) {
+                      var psCan = document.createElement('canvas');
+                      psCan.width = 128; psCan.height = 112;
+                      var psCtx = psCan.getContext('2d');
+                      psCtx.fillStyle = '#000000';
+                      psCtx.fillRect(0, 0, 128, 112);
+                      // Left half: walking-person icon (bright white when WALK, dim when DON'T-WALK)
+                      psCtx.fillStyle = walkOn ? '#ffffff' : '#2a2a2a';
+                      psCtx.strokeStyle = walkOn ? '#ffffff' : '#2a2a2a';
+                      psCtx.beginPath(); psCtx.arc(34, 22, 8, 0, Math.PI * 2); psCtx.fill();
+                      psCtx.beginPath();
+                      psCtx.moveTo(28, 32); psCtx.lineTo(40, 32);
+                      psCtx.lineTo(44, 64); psCtx.lineTo(30, 64); psCtx.closePath();
+                      psCtx.fill();
+                      psCtx.lineWidth = 7; psCtx.lineCap = 'round';
+                      psCtx.beginPath(); psCtx.moveTo(36, 64); psCtx.lineTo(24, 92); psCtx.stroke();
+                      psCtx.beginPath(); psCtx.moveTo(36, 64); psCtx.lineTo(46, 92); psCtx.stroke();
+                      psCtx.beginPath(); psCtx.moveTo(34, 38); psCtx.lineTo(48, 58); psCtx.stroke();
+                      // Right half: raised hand (bright orange when DON'T-WALK, dim when WALK)
+                      psCtx.fillStyle = walkOn ? '#3a1f10' : '#ff7a20';
+                      psCtx.beginPath();
+                      psCtx.moveTo(80, 64); psCtx.lineTo(112, 64);
+                      psCtx.lineTo(112, 40); psCtx.lineTo(80, 40); psCtx.closePath();
+                      psCtx.fill();
+                      for (var fI = 0; fI < 4; fI++) {
+                        psCtx.fillRect(80 + fI * 8, 20, 6, 22);
+                      }
+                      psCtx.beginPath();
+                      psCtx.moveTo(76, 48); psCtx.lineTo(80, 40);
+                      psCtx.lineTo(80, 60); psCtx.lineTo(76, 60); psCtx.closePath();
+                      psCtx.fill();
+                      return new T.CanvasTexture(psCan);
+                    };
+                    if (!iw._pedSigWalkTex) iw._pedSigWalkTex = _buildPedTex(true);
+                    if (!iw._pedSigStopTex) iw._pedSigStopTex = _buildPedTex(false);
+                    // Default to don't-walk so intersections spawn with the
+                    // correct initial state (signal starts green for the main
+                    // road → cars moving → peds must wait).
+                    var pedSigMat = new T.MeshBasicMaterial({ map: iw._pedSigStopTex, transparent: true, side: T.DoubleSide });
+                    var pedSigFace = new T.Mesh(new T.PlaneGeometry(0.32, 0.28), pedSigMat);
+                    pedSigFace.position.set(poleBaseX, crossHt + 3.2, poleBaseZ + 0.10);
+                    chunkGroup.add(pedSigFace);
+                    // Register for per-frame state updates keyed by the chunk index.
+                    s3.pedSigsByChunk = s3.pedSigsByChunk || {};
+                    s3.pedSigsByChunk[ci] = s3.pedSigsByChunk[ci] || [];
+                    s3.pedSigsByChunk[ci].push({ mesh: pedSigFace, chunkIdx: ci });
+                  } catch (pedErr) {
+                    // Canvas unsupported — fall back to old orange rectangle.
+                    var pedSigFace = new T.Mesh(new T.PlaneGeometry(0.32, 0.28), new T.MeshBasicMaterial({ color: 0xff7a20 }));
+                    pedSigFace.position.set(poleBaseX, crossHt + 3.2, poleBaseZ + 0.10);
+                    chunkGroup.add(pedSigFace);
                   }
                 } else {
                   // STOP SIGN (4-way stop intersection) — octagonal red sign with white STOP text
@@ -10920,17 +12478,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     } catch (ccErr) { /* fallback omitted */ }
                   });
                 }
-                // Crosswalk stripes — span the curved main road, elevation-aware.
+                // Crosswalk stripes — span the full main road width, elevation-aware.
+                // Previously seven 0.25 m stripes covered only ~5 m of the 7-9 m road
+                // which left the crosswalk floating in the middle. Real zebra
+                // crosswalks span curb-to-curb. Now the stripe count adapts to
+                // road width so the ladder goes from near one shoulder to the
+                // other, and each stripe is wider (0.50 m) + longer (1.0 m)
+                // for better visibility from the driver's POV.
                 var cwMat = new T.MeshBasicMaterial({ color: 0xffffff });
                 var cwCtrZ = crossZ - 3.5;
                 var cwCtrX = splineCenterAtZ(cwCtrZ);
-                for (var cwi = -3; cwi <= 3; cwi++) {
-                  var cwGeo = new T.PlaneGeometry(0.25, 0.7);
+                var cwSpan = (roadHalfW - 0.4) * 2; // leave 0.4m margin per side
+                var cwStripeW = 0.50;
+                var cwStripeGap = 0.55;
+                var cwCount = Math.max(6, Math.floor(cwSpan / (cwStripeW + cwStripeGap)));
+                var cwPitch = cwSpan / cwCount;
+                for (var cwi = 0; cwi < cwCount; cwi++) {
+                  var cwGeo = new T.PlaneGeometry(cwStripeW, 1.0);
                   var cw = new T.Mesh(cwGeo, cwMat);
                   cw.rotation.x = -Math.PI / 2;
-                  cw.position.set(cwCtrX + cwi * 0.7, crossHt + 0.022, cwCtrZ);
+                  // Center the ladder on the road: walk from -cwSpan/2 to +cwSpan/2.
+                  var cwX = cwCtrX + (-cwSpan / 2 + cwi * cwPitch + cwPitch / 2);
+                  cw.position.set(cwX, crossHt + 0.022, cwCtrZ);
                   chunkGroup.add(cw);
                 }
+                // Stop bar — solid white transverse line placed ~1.5m BEFORE the
+                // crosswalk on the approaching side (drivers come from -Z). Real
+                // 4-way stop intersections paint this bar as the legal "stop here"
+                // point. Gives the student a crisp visual target to stop at.
+                var sbMat = new T.MeshBasicMaterial({ color: 0xffffff });
+                var sbZ = cwCtrZ - 1.5;
+                var sbCtrX = splineCenterAtZ(sbZ);
+                var sbGeo = new T.PlaneGeometry(roadHalfW * 2 - 0.8, 0.3);
+                var sbMesh = new T.Mesh(sbGeo, sbMat);
+                sbMesh.rotation.x = -Math.PI / 2;
+                sbMesh.position.set(sbCtrX, crossHt + 0.02, sbZ);
+                chunkGroup.add(sbMesh);
                 // Street name sign — green rectangle with white text.
                 // Names are deterministic per chunk index so the same intersection
                 // always has the same name on revisit.
@@ -10973,8 +12556,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               s3.scene.add(chunkGroup);
               s3._loadedChunks[ci] = chunkGroup;
             }
-            // Add traffic signals at chunk intersections (for physics compliance)
-            for (var sci = currentChunk - 2; sci <= currentChunk + 4; sci++) {
+            // Add traffic signals at chunk intersections — match the load range so we
+            // never have a chunk visually rendered without its signal entry, OR a
+            // signal entry without its rendered chunk.
+            for (var sci = currentChunk + loFromTravel; sci <= currentChunk + hiFromTravel; sci++) {
               var sigChunk = iw.getChunk(sci);
               if (sigChunk && sigChunk.hasIntersection && !sigChunk._signalAdded) {
                 sigChunk._signalAdded = true;
@@ -10991,10 +12576,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               }
             }
 
-            // Unload distant chunks
+            // Unload distant chunks. Hysteresis: keep one extra chunk past the load
+            // range so chunks at the edge don't unload + reload every frame as currentChunk
+            // ticks over. Match the asymmetric direction-aware load range.
+            var unloadLo = currentChunk + loFromTravel - 1;
+            var unloadHi = currentChunk + hiFromTravel + 1;
             Object.keys(s3._loadedChunks).forEach(function(key) {
               var ki = parseInt(key);
-              if (ki < currentChunk - 3 || ki > currentChunk + 5) {
+              if (ki < unloadLo || ki > unloadHi) {
                 var cg = s3._loadedChunks[ki];
                 if (cg) {
                   cg.traverse(function(obj) { if (obj.geometry) obj.geometry.dispose(); if (obj.material) obj.material.dispose(); });
@@ -11003,6 +12592,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 delete s3._loadedChunks[ki];
                 // Remove signals from this chunk
                 signalsRef.current = signalsRef.current.filter(function(sig) { return sig._chunk !== ki; });
+                // Clear the chunk's _signalAdded flag so the signal gets re-added if the
+                // player drives back into this chunk later. Without this, the signal entry
+                // would be removed AND never re-created — silent bug where intersections
+                // lost their signal logic on backtrack.
+                var unloadedChunk = iw.chunks && iw.chunks[ki];
+                if (unloadedChunk) unloadedChunk._signalAdded = false;
+                // Same for the mast-arm signal lamps — they get re-built next time.
+                if (s3.trafficLampsByChunk && s3.trafficLampsByChunk[ki]) {
+                  delete s3.trafficLampsByChunk[ki];
+                }
               }
             });
           }
@@ -11046,7 +12645,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           if (!s3._starsRef) s3._starsRef = s3.scene.getObjectByName('starfield');
           if (s3._starsRef) {
             s3._starsRef.position.set(carWorldX, 0, carWorldZ);
-            if (s3._starsRef.material) {
+            // Visible only at night/dawn — Day toggle hides them. Without this gate, stars
+            // built at night-init would persist in the daytime sky after a Day toggle.
+            s3._starsRef.visible = isNightNow || scn.time === 'dawn';
+            if (s3._starsRef.material && s3._starsRef.visible) {
               s3._starsRef.material.opacity = 0.75 + Math.sin(timeRef.current * 0.7) * 0.15 + Math.sin(timeRef.current * 1.9) * 0.08;
             }
           }
@@ -12553,7 +14155,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             threeRef.current.renderer.dispose();
           }
         };
-      }, [view, currentScenario, currentVehicle]);
+      // Depend on the PRIMITIVE IDs, not the scenario/vehicle objects. currentScenario is
+      // `Object.assign({}, _scenarioBase)` (new object each render), so using it in the dep
+      // array caused the effect to re-run on EVERY React re-render — including
+      // setBeltFastened(true) — which disposed and recreated the Three.js renderer mid-drive.
+      // The new renderer sometimes ended up with a broken main camera (world went black),
+      // while the rear-view mirror (initialized lazily on its own code path) kept working.
+      }, [view, selectedScenario, selectedVehicle]);
 
       // ═══════════════════════════════════════════
       // UI RENDERING (menus, lessons, permit test, debrief, driving)
@@ -13890,9 +15498,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 var active = currentScenario.traffic === t[0];
                 return h('button', { key: t[0], onClick: function() {
                   Object.assign(currentScenario, { traffic: t[0] });
-                  // Respawn traffic to match
+                  // Respawn traffic to match. Also clear the renderer's traffic mesh
+                  // group so old vehicle meshes (built for prior types) don't get
+                  // re-assigned to the new entities — that caused visual type mismatches
+                  // (e.g., a truck mesh "becoming" a car after a traffic toggle).
                   trafficRef.current = spawnTraffic(currentScenario);
                   cyclistsRef.current = spawnCyclists(currentScenario).concat(spawnMotorcycles(currentScenario));
+                  if (threeRef.current && threeRef.current.trafficGroup) {
+                    var tg = threeRef.current.trafficGroup;
+                    while (tg.children.length) {
+                      var oldM = tg.children[tg.children.length - 1];
+                      oldM.traverse(function(o) { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
+                      tg.remove(oldM);
+                    }
+                  }
+                  if (threeRef.current && threeRef.current.cyclistGroup) {
+                    var cgY = threeRef.current.cyclistGroup;
+                    while (cgY.children.length) {
+                      var oldC = cgY.children[cgY.children.length - 1];
+                      oldC.traverse(function(o) { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
+                      cgY.remove(oldC);
+                    }
+                  }
                 },
                   style: { padding: '3px 8px', borderRadius: '4px', border: '1px solid ' + (active ? '#a78bfa' : '#334155'), background: active ? '#2e1065' : 'transparent', color: '#fff', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } }, t[1]);
               })
@@ -14508,7 +16135,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 drivingStats.aiCausedCrashes > 0 ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #60a5fa' } }, 'ℹ️ ' + drivingStats.aiCausedCrashes + ' of your ' + drivingStats.crashes + ' crashes were caused by other drivers (mostly tailgating). In real life you\'d file an insurance claim — your safety score was only lightly penalized.') : null,
                 drivingStats.skidSeconds > 1 ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #ef4444' } }, '🛞 You skidded for ' + drivingStats.skidSeconds + 's. Remember: brake BEFORE turns, not during. The friction circle has a fixed budget — use it for braking OR steering, not both.') : null,
                 drivingStats.cyclistClose > 0 ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #fbbf24' } }, '🚴 ' + drivingStats.cyclistClose + ' close pass(es) to cyclists. Maine requires 3 feet minimum. Cross the centerline to pass if the oncoming lane is clear.') : null,
-                drivingStats.unsignaledLaneChanges > 0 ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #f59e0b' } }, '⚠️ ' + drivingStats.unsignaledLaneChanges + ' unsignaled lane change(s). Use E=left, R=right to signal before changing lanes. Signal at least 100 ft before the change.') : null,
+                drivingStats.unsignaledLaneChanges > 0 ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #f59e0b' } }, '⚠️ ' + drivingStats.unsignaledLaneChanges + ' unsignaled lane change(s). Use E=left, V=right to signal before changing lanes. Signal at least 100 ft before the change.') : null,
+                drivingStats.busStopCompliance > 0 ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #4ade80' } }, '🚌 ' + drivingStats.busStopCompliance + ' correct stop(s) for school bus with red flashers. Federal law — you nailed it.') : null,
+                drivingStats.pedYields > 0 ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #4ade80' } }, '🚶 ' + drivingStats.pedYields + ' pedestrian yield(s) at crosswalks. This is the single most important habit for urban driving.') : null,
+                drivingStats.emergencyYields > 0 ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #4ade80' } }, '🚑 ' + drivingStats.emergencyYields + ' emergency vehicle yield(s) — pulled right and stopped. Good instinct.') : null,
                 parseFloat(drivingStats.avgMPG) > currentVehicle.cityMPG ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #4ade80' } }, '🌿 Beat the EPA sticker average. Hypermiling working!') : null
               )
             ),
@@ -14538,6 +16168,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       closeFollows: drivingStats.closeFollows,
                       skidSeconds: drivingStats.skidSeconds,
                       unsignaledLaneChanges: drivingStats.unsignaledLaneChanges,
+                      busStopCompliance: drivingStats.busStopCompliance || 0,
+                      pedYields: drivingStats.pedYields || 0,
+                      emergencyYields: drivingStats.emergencyYields || 0,
                       recentEvents: (d.lastJournal && d.lastJournal.entries || []).slice(-12).map(function(e){return e.text;})
                     };
                     var promptText = 'You are a warm, experienced teen-driver coach writing a short personalized reflection for a student who just finished a drive in a simulator.\n\n'

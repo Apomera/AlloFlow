@@ -234,6 +234,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
     proxima:     { o2: -5, power: -4, fuel: -4, morale: -3, hull: -1 }
   };
 
+  // ── MISSION MODIFIERS ──
+  // Each turn we roll a random atmospheric/scientific context and inject it
+  // into the event prompt. Gives the same destination dozens of distinct
+  // flavors across sessions — one run's Lunar Base Alpha is dealing with a
+  // solar flare, another run's is chasing a mysterious lidar shadow. Each
+  // modifier names a real scientific concept the event should explore.
+  var MISSION_MODIFIERS = [
+    'A coronal mass ejection is inbound — space-weather response required.',
+    'Local seismic (or ice-quake) activity is rattling sensors.',
+    'Long-range scans pinged something that does not match the star chart.',
+    'Crew morale is dipping — interpersonal dynamics, isolation, or circadian stress.',
+    'A life-support subsystem is wearing faster than spec — engineering puzzle.',
+    'The local atmosphere or vacuum is warping an instrument reading.',
+    'A micrometeoroid grazed the exterior — damage to assess, debris field to navigate.',
+    'An abandoned mission left hardware nearby — salvage vs. safety tradeoff.',
+    'The day/night cycle is disorienting — circadian rhythm / photoperiod challenge.',
+    'A sample from an earlier turn reveals a surprising chemistry or biology result.',
+    'Comms with Earth are patchy — light-speed delay and bandwidth puzzle.',
+    'Background radiation spiked locally — ionizing environment hazard.',
+    'A regolith/dust storm is developing — particulate physics + optical obscuration.',
+    'A crew member made a serendipitous observation they want to investigate.',
+    'A thermal anomaly is complicating heat management — thermodynamics puzzle.',
+    'A previously quiet instrument is suddenly streaming data — what is it?',
+    'Power budgets are tight and a subsystem is drawing more than expected.',
+    'Something in terrain shadow refuses to show on lidar — a true unknown.',
+    'A brief observation window for a rare alignment is closing in one turn.',
+    'The crew has developed a small rivalry between disciplines — teaming problem.'
+  ];
+
   function getInitialResources(dest, tech, crew) {
     var base = { o2: 85, power: 80, hull: 100, morale: 75, fuel: 90, science: 0 };
     // Tech bonuses
@@ -251,18 +280,157 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
     return base;
   }
 
-  function applyTurnDrain(resources, dest, tech) {
+  // ── Power Allocation ──
+  // Each turn the player distributes a pool of pips across four ship systems.
+  // Allocation is read here (in drain) and at event resolution. Persists between
+  // turns as the default so casual players can just mash Launch; deliberate
+  // players tune per turn. Tech solar_v2 adds 2 pips so the upgrade is felt.
+  var DEFAULT_ALLOCATION = { life: 3, science: 2, shields: 3, comms: 2 };
+  function getPipPool(tech) {
+    var pool = 10;
+    if (tech && tech.indexOf('solar_v2') >= 0) pool += 2;
+    return pool;
+  }
+  function normalizeAllocation(alloc, tech) {
+    var pool = getPipPool(tech);
+    var base = alloc || DEFAULT_ALLOCATION;
+    var sum = (base.life || 0) + (base.science || 0) + (base.shields || 0) + (base.comms || 0);
+    if (sum === pool) return base;
+    // Scale each axis to hit the pool exactly (rounding, with Life Support
+    // absorbing any leftover so O2 drain never creeps).
+    if (sum === 0) return Object.assign({}, DEFAULT_ALLOCATION);
+    var scale = pool / sum;
+    var out = {
+      life: Math.round((base.life || 0) * scale),
+      science: Math.round((base.science || 0) * scale),
+      shields: Math.round((base.shields || 0) * scale),
+      comms: Math.round((base.comms || 0) * scale)
+    };
+    var diff = pool - (out.life + out.science + out.shields + out.comms);
+    out.life = Math.max(0, out.life + diff);
+    return out;
+  }
+
+  function applyTurnDrain(resources, dest, tech, allocation) {
     var drain = DESTINATION_DRAINS[dest.id] || { o2: -2, power: -2, fuel: -1 };
     var newRes = Object.assign({}, resources);
+    var alloc = normalizeAllocation(allocation, tech);
     Object.keys(drain).forEach(function(k) {
       var amount = drain[k];
       // Tech mitigations
       if (k === 'o2' && tech && tech.indexOf('recycler') >= 0) amount = Math.round(amount * 0.7);
       if (k === 'power' && tech && tech.indexOf('solar_v2') >= 0) amount = Math.round(amount * 0.8);
       if (k === 'fuel' && tech && tech.indexOf('ion_drive') >= 0) amount = Math.round(amount * 0.6);
+      // Power Allocation: Life Support pips reduce O2 drain by 1 each (cap 0).
+      if (k === 'o2') amount = Math.min(0, amount + (alloc.life || 0));
       newRes[k] = Math.max(0, Math.min(RESOURCES[k].max, (newRes[k] || 0) + amount));
     });
     return newRes;
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // SPECTRAL MATCH — compound absorption bands (real wavelengths in μm)
+  // ═══════════════════════════════════════════════════════════════
+  // Each compound has the strongest absorption features detectable by near-
+  // infrared spectroscopy — the method JWST, Cassini, and Mars rovers use to
+  // identify materials remotely. Wavelengths are authentic (water at 1.4 and
+  // 1.9μm are the classic bands) so older students can cross-check against
+  // real data; younger players match patterns.
+  var SPECTRA_TABLE = [
+    { id: 'water',   label: 'Water (H\u2082O)',         bands: [1.4, 1.9],           teach: 'Water has strong absorption at 1.4 and 1.9 \u03BCm. These bands are how JWST detects water vapor on exoplanets.' },
+    { id: 'methane', label: 'Methane (CH\u2084)',       bands: [1.65, 2.3, 3.3],     teach: 'Methane shows signature bands at 1.65, 2.3, and 3.3 \u03BCm. The 3.3 \u03BCm band is the one that first confirmed methane on Titan and Mars.' },
+    { id: 'co2',     label: 'Carbon Dioxide (CO\u2082)', bands: [2.0, 2.7, 4.3],     teach: 'CO\u2082 has its strongest band at 4.3 \u03BCm \u2014 instruments on Mars and Venus rely on it to map atmospheres.' },
+    { id: 'ammonia', label: 'Ammonia (NH\u2083)',       bands: [1.5, 2.0, 3.0],     teach: 'Ammonia absorbs at 1.5, 2.0, and 3.0 \u03BCm. It is the signature molecule used to map Jupiter\u2019s cloud decks.' },
+    { id: 'silicate',label: 'Silicate (rock)',           bands: [10.0],               teach: 'Silicates \u2014 the building blocks of rocky worlds \u2014 show a broad absorption feature around 10 \u03BCm (the "silicate feature" mid-infrared astronomers look for).' }
+  ];
+
+  function pickSpectraCompound(dest, difficulty) {
+    // Weight compounds by what the destination realistically has.
+    var weights = {
+      mars:        { co2: 4, water: 3, silicate: 2, methane: 1, ammonia: 1 },
+      europa:      { water: 5, silicate: 2, ammonia: 1, methane: 1, co2: 1 },
+      titan:       { methane: 5, ammonia: 2, water: 1, co2: 1, silicate: 1 },
+      enceladus:   { water: 5, ammonia: 2, silicate: 1, methane: 1, co2: 1 },
+      venus_cloud: { co2: 5, water: 1, silicate: 2, methane: 1, ammonia: 1 },
+      proxima:     { water: 3, silicate: 3, methane: 2, co2: 2, ammonia: 2 }
+    };
+    var w = weights[dest.id] || { water: 2, methane: 2, co2: 2, ammonia: 2, silicate: 2 };
+    var total = 0; Object.keys(w).forEach(function(k) { total += w[k]; });
+    var roll = Math.random() * total;
+    var acc = 0, pick = 'water';
+    for (var k in w) { acc += w[k]; if (roll < acc) { pick = k; break; } }
+    var compound = SPECTRA_TABLE.find(function(c) { return c.id === pick; }) || SPECTRA_TABLE[0];
+    // Difficulty ≥ 3: use all real bands (harder to skim). Easier: first 2.
+    var bands = (difficulty >= 3) ? compound.bands.slice() : compound.bands.slice(0, 2);
+    return { compound: compound.id, bands: bands };
+  }
+
+  function drawSpectrum(ctx, W, H, bands) {
+    ctx.fillStyle = '#020a20'; ctx.fillRect(0, 0, W, H);
+    // Wavelength range: we plot 1-5 μm (the near-IR window most compounds
+    // share). The silicate 10μm band is rendered as a right-edge arrow since
+    // it sits off-scale — teaches students that real spectra span huge ranges.
+    var minLam = 1, maxLam = 5;
+    var padL = 28, padR = 16, padT = 14, padB = 20;
+    var plotX = padL, plotY = padT, plotW = W - padL - padR, plotH = H - padT - padB;
+    // Axes
+    ctx.strokeStyle = 'rgba(148,163,184,0.4)'; ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(plotX, plotY); ctx.lineTo(plotX, plotY + plotH);
+    ctx.lineTo(plotX + plotW, plotY + plotH);
+    ctx.stroke();
+    // Tick marks every 1 μm
+    ctx.fillStyle = '#94a3b8'; ctx.font = '9px ui-monospace, monospace'; ctx.textAlign = 'center';
+    for (var lam = minLam; lam <= maxLam; lam++) {
+      var tx = plotX + ((lam - minLam) / (maxLam - minLam)) * plotW;
+      ctx.beginPath(); ctx.moveTo(tx, plotY + plotH); ctx.lineTo(tx, plotY + plotH + 3); ctx.stroke();
+      ctx.fillText(lam + '\u03BCm', tx, plotY + plotH + 13);
+    }
+    // Baseline continuum (a gentle curve representing stellar/thermal light)
+    ctx.strokeStyle = 'rgba(125,211,252,0.85)'; ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    for (var px = 0; px <= plotW; px++) {
+      var frac = px / plotW;
+      var baseY = plotY + plotH * 0.25 + Math.sin(frac * 3.2) * 4;
+      // Subtract absorption dips at each band
+      var absorb = 0;
+      bands.forEach(function(b) {
+        if (b > maxLam) return;
+        var bx = ((b - minLam) / (maxLam - minLam)) * plotW;
+        var d = Math.abs(px - bx);
+        var sigma = 10; // pixel width of band
+        absorb += Math.exp(-(d * d) / (2 * sigma * sigma)) * plotH * 0.55;
+      });
+      var y = baseY + absorb;
+      if (px === 0) ctx.moveTo(plotX + px, y); else ctx.lineTo(plotX + px, y);
+    }
+    ctx.stroke();
+    // Mark each band with a subtle label above axis
+    bands.forEach(function(b) {
+      if (b > maxLam) {
+        // Off-scale marker (e.g., silicate at 10μm) — arrow at right edge
+        ctx.fillStyle = '#fbbf24';
+        ctx.beginPath();
+        ctx.moveTo(plotX + plotW - 2, plotY + plotH * 0.5);
+        ctx.lineTo(plotX + plotW - 10, plotY + plotH * 0.5 - 5);
+        ctx.lineTo(plotX + plotW - 10, plotY + plotH * 0.5 + 5);
+        ctx.closePath(); ctx.fill();
+        ctx.font = '8px ui-monospace, monospace'; ctx.textAlign = 'right';
+        ctx.fillText(b.toFixed(1) + '\u03BCm\u2192', plotX + plotW - 2, plotY + plotH * 0.5 - 8);
+        return;
+      }
+      var bx = plotX + ((b - minLam) / (maxLam - minLam)) * plotW;
+      ctx.strokeStyle = 'rgba(251,191,36,0.4)'; ctx.setLineDash([2, 3]);
+      ctx.beginPath(); ctx.moveTo(bx, plotY); ctx.lineTo(bx, plotY + plotH); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = '#fbbf24'; ctx.font = '9px ui-monospace, monospace'; ctx.textAlign = 'center';
+      ctx.fillText(b.toFixed(2), bx, plotY + 10);
+    });
+    // Y-axis label
+    ctx.fillStyle = '#64748b'; ctx.font = '8px ui-sans-serif'; ctx.textAlign = 'left';
+    ctx.save(); ctx.translate(6, plotY + plotH / 2); ctx.rotate(-Math.PI / 2);
+    ctx.textAlign = 'center'; ctx.fillText('absorption', 0, 0);
+    ctx.restore();
   }
 
   // ═══════════════════════════════════════════════════════════════
@@ -449,7 +617,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
       var highestDifficulty = d.highestDifficulty || 0;
 
       // ── Current mission state ──
-      var missionPhase = d.missionPhase || 'select'; // select | briefing | transit | explore | event | outcome | debrief
+      var missionPhase = d.missionPhase || 'select'; // select | briefing | allocate | explore | event | outcome | debrief
       var destination = d.destination ? DESTINATIONS.find(function(dd) { return dd.id === d.destination; }) : null;
       var resources = d.resources || null;
       var crew = d.crew || [];
@@ -460,6 +628,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
       var eventOutcome = d.eventOutcome || null;
       var decisionLog = d.decisionLog || [];
       var isGenerating = d.isGenerating || false;
+      var powerAllocation = normalizeAllocation(d.powerAllocation, unlockedTech);
+      var consultUsed = d.consultUsed || false;
+      var revealedHiddenOption = d.revealedHiddenOption || false;
+      var minigamePending = d.minigamePending || null;
+      var minigameResult = d.minigameResult || null;
 
       function log(msg) {
         var nl = missionLog.slice();
@@ -487,7 +660,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
           activeEvent: null,
           eventOutcome: null,
           decisionLog: [],
-          isGenerating: false
+          isGenerating: false,
+          powerAllocation: normalizeAllocation(d.powerAllocation, unlockedTech),
+          consultUsed: false,
+          revealedHiddenOption: false
         });
         announceToSR('Mission to ' + dest.name + ' selected. Crew of ' + missionCrew.length + ' assembled. Review the briefing.');
       }
@@ -498,7 +674,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
         upd('isGenerating', true);
 
         // Apply per-turn resource drain BEFORE generating the event
-        var drainedRes = applyTurnDrain(resources, destination, unlockedTech);
+        var drainedRes = applyTurnDrain(resources, destination, unlockedTech, powerAllocation);
         upd('resources', drainedRes);
 
         // Check for critical resource warnings
@@ -530,6 +706,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
           warnings.length > 0 ? 'A resource is critically low \u2014 offer a way to recover it (at a cost).' :
           'Mix: science discovery (40%), systems (25%), crew dynamics (20%), environment (15%).';
 
+        // ── Variety injection ──
+        // 1) Mission modifier: random atmospheric/scientific hook for this turn
+        // 2) Avoid-categories: last 2 event categories the AI used, so we don't
+        //    get 3 engine-failure events in a row. Falls back gracefully when
+        //    category wasn't logged.
+        var modifier = MISSION_MODIFIERS[Math.floor(Math.random() * MISSION_MODIFIERS.length)];
+        var recentCategories = decisionLog.slice(-2).map(function(dl) { return dl.category; }).filter(Boolean);
+        var avoidCatsLine = recentCategories.length > 0
+          ? 'AVOID these categories this turn (too recent): ' + recentCategories.join(', ') + '.\n'
+          : '';
+
         var prompt = 'You are a master storyteller and science educator for "Space Explorer," an educational roguelike. ' +
           'Generate ONE vivid, scientifically grounded event.\n\n' +
           '\u2550\u2550\u2550 MISSION \u2550\u2550\u2550\n' +
@@ -541,20 +728,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
           '\u2550\u2550\u2550 STATUS \u2550\u2550\u2550\n' + resStr + '\n' +
           'Turn ' + (turn + 1) + '/' + maxTurns + ' | ' + missionStage + ' | Tech: ' + techStr + '\n\n' +
           '\u2550\u2550\u2550 HISTORY \u2550\u2550\u2550\n' + prevEventsStr + '\n\n' +
+          '\u2550\u2550\u2550 THIS TURN\u2019S HOOK \u2550\u2550\u2550\n' + modifier + '\n' +
+          'Build the event around this hook and the destination\u2019s real science.\n\n' +
           '\u2550\u2550\u2550 RULES \u2550\u2550\u2550\n' +
           eventHints + '\n' +
+          avoidCatsLine +
           '- Teach REAL SCIENCE through the scenario\n' +
           '- Reference crew members BY NAME when their specialty is relevant\n' +
           '- The optimal choice requires applying scientific knowledge creatively\n' +
           '- Resource effects: costs -3 to -15, gains +5 to +20\n' +
           '- NEVER repeat a previous event topic\n' +
           '- Exactly 3 choices (optimal, adequate, poor)\n' +
-          '- Audience: grades 4-12 (vivid, never graphic)\n\n' +
+          '- Audience: grades 4-12 (vivid, never graphic)\n' +
+          '- Set relevantSpecialties to 1-2 specialty names that would realistically matter (e.g., "chemistry", "geology", "medical", "physics", "astrobiology", "systems", "navigation"). Pick what actually fits the event; "any" is acceptable if no specialty is particularly relevant.\n' +
+          '- Include a hiddenOption ONLY when a specific specialty would meaningfully unlock a better path. The hiddenOption must be STRICTLY better than the public optimal (slightly more science, fewer resource costs, OR a unique outcome the others lack). Set requiresSpecialty to the one specialty that unlocks it. If no specialty would meaningfully change the situation, omit hiddenOption entirely.\n\n' +
           'Return ONLY valid JSON:\n' +
           '{"emoji":"emoji","title":"title","category":"systems|science|crew|environment|navigation",' +
           '"description":"2-3 sentences","stemConcepts":["c1","c2"],' +
+          '"relevantSpecialties":["chemistry"],' +
           '"choices":[{"label":"action","icon":"emoji","effects":{"o2":-5,"science":15},' +
-          '"quality":"optimal|adequate|poor","outcome":"result","scienceReward":"science explanation"}]}';
+          '"quality":"optimal|adequate|poor","outcome":"result","scienceReward":"science explanation"}],' +
+          '"hiddenOption":{"label":"specialist action","icon":"emoji","effects":{"science":20},"quality":"optimal","requiresSpecialty":"chemistry","outcome":"result","scienceReward":"science explanation","consultLine":"what the specialist says when consulted"}}';
 
         callGemini(prompt, true).then(function(result) {
           try {
@@ -565,9 +759,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
             if (jsonStart >= 0 && jsonEnd > jsonStart) cleaned = cleaned.substring(jsonStart, jsonEnd + 1);
             var event = JSON.parse(cleaned);
             if (event && event.title && event.choices && event.choices.length > 0) {
-              updAll({ activeEvent: event, missionPhase: 'event', isGenerating: false });
+              // Roll Spectral Match: 30% chance at destinations whose science
+              // focus includes chemistry/atmospheric keywords. Choice buttons
+              // lock until the mini-game resolves. Compound weighted by dest.
+              var focus = (destination.scienceFocus || []).join(' ').toLowerCase();
+              var chemDest = /chem|atmo|geolog|ice|cryovol|astrobio|material/.test(focus);
+              var minigame = null;
+              if (chemDest && Math.random() < 0.3) {
+                minigame = pickSpectraCompound(destination, destination.difficulty || 1);
+              }
+              updAll({ activeEvent: event, missionPhase: 'event', isGenerating: false, minigamePending: minigame, minigameResult: null });
               log(event.emoji + ' ' + event.title);
-              announceToSR('Mission event: ' + event.title + '. ' + event.description);
+              announceToSR('Mission event: ' + event.title + '. ' + event.description + (minigame ? ' Spectral analysis required before choosing a response.' : ''));
             } else {
               throw new Error('Invalid event format');
             }
@@ -584,16 +787,80 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
         });
       }
 
+      // ── Ask Specialist: consult a crew member about the active event ──
+      // If their specialty matches relevantSpecialties or the hiddenOption's
+      // requiresSpecialty, reveal the hidden 4th option. Otherwise the consult
+      // was a dead-end — costs 1 morale unless Comms pips >= 3 that turn. One
+      // consult per event, tracked on `consultUsed`.
+      function consultSpecialist(member) {
+        if (!activeEvent || consultUsed) return;
+        var event = activeEvent;
+        var spec = (member.specialty || '').toLowerCase();
+        var relevant = (event.relevantSpecialties || []).map(function(s) { return String(s).toLowerCase(); });
+        var hidden = event.hiddenOption || null;
+        var hiddenSpec = hidden && hidden.requiresSpecialty ? String(hidden.requiresSpecialty).toLowerCase() : null;
+        var matchesHidden = hiddenSpec && (spec === hiddenSpec || spec.indexOf(hiddenSpec) >= 0 || hiddenSpec.indexOf(spec) >= 0);
+        var matchesRelevant = relevant.indexOf(spec) >= 0 || relevant.indexOf('any') >= 0;
+        var unlocks = matchesHidden && !!hidden;
+        var commsWaive = (powerAllocation.comms || 0) >= 3;
+        var morDelta = 0;
+        var line;
+        if (unlocks) {
+          line = hidden.consultLine || (member.name + ' spots a path the rest missed.');
+          if (sfxSEDiscovery) sfxSEDiscovery();
+          if (addToast) addToast('\uD83D\uDCA1 ' + member.name + ' unlocked a new option', 'success');
+        } else if (matchesRelevant) {
+          line = member.name + ' confirms your read of the situation. No new options, but you feel more confident.';
+          if (sfxSEEvent) sfxSEEvent();
+        } else {
+          line = member.name + ' listens, but this is outside their specialty.';
+          if (!commsWaive) {
+            morDelta = -1;
+            if (addToast) addToast('\u26A0\uFE0F Wrong specialty \u2014 morale \u22121', 'info');
+          } else {
+            if (addToast) addToast('\uD83D\uDCE1 Comms network found someone useful \u2014 no penalty', 'info');
+          }
+          if (sfxSEEvent) sfxSEEvent();
+        }
+        var newRes = Object.assign({}, resources);
+        if (morDelta !== 0 && newRes.morale !== undefined) {
+          newRes.morale = Math.max(0, Math.min(RESOURCES.morale.max, newRes.morale + morDelta));
+        }
+        updAll({
+          consultUsed: true,
+          revealedHiddenOption: unlocks,
+          resources: newRes,
+          eventOutcome: null,
+          _consultLine: { name: member.name, role: member.role, specialty: member.specialty, emoji: member.emoji, line: line, unlocks: unlocks }
+        });
+        announceToSR((unlocks ? 'Specialist reveals a hidden option. ' : '') + member.name + ' says: ' + line);
+      }
+
       // ── Resolve an event choice ──
       function resolveEvent(event, choice) {
-        // Apply resource effects
+        // Apply resource effects, modified by this turn's power allocation:
+        //  - Shields pips mitigate hull damage (each pip absorbs 1 point of
+        //    negative hull delta, never creates positive).
+        //  - Science pips add a flat bonus at resolution regardless of choice.
+        var alloc = powerAllocation || DEFAULT_ALLOCATION;
         var newRes = Object.assign({}, resources);
+        var shieldsBlocked = 0;
         if (choice.effects) {
           Object.keys(choice.effects).forEach(function(k) {
-            if (newRes[k] !== undefined) {
-              newRes[k] = Math.max(0, Math.min(RESOURCES[k].max, newRes[k] + choice.effects[k]));
+            if (newRes[k] === undefined) return;
+            var delta = choice.effects[k];
+            if (k === 'hull' && delta < 0 && (alloc.shields || 0) > 0) {
+              var absorb = Math.min(alloc.shields, -delta);
+              shieldsBlocked = absorb;
+              delta = delta + absorb;
             }
+            newRes[k] = Math.max(0, Math.min(RESOURCES[k].max, newRes[k] + delta));
           });
+        }
+        // Science pip bonus at event resolution
+        var sciBonus = alloc.science || 0;
+        if (sciBonus > 0 && newRes.science !== undefined) {
+          newRes.science = Math.max(0, Math.min(RESOURCES.science.max, newRes.science + sciBonus));
         }
         // Log decision
         var newDecLog = decisionLog.slice();
@@ -601,14 +868,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
         for (var i = 0; i < event.choices.length; i++) { if (event.choices[i].quality === 'optimal') { optimalLabel = event.choices[i].label; break; } }
         newDecLog.push({
           title: event.title, chosen: choice.label, quality: choice.quality,
-          optimal: optimalLabel, scienceReward: choice.scienceReward
+          optimal: optimalLabel, scienceReward: choice.scienceReward,
+          category: event.category || null
         });
         var newTurn = turn + 1;
         updAll({
           resources: newRes,
           decisionLog: newDecLog,
-          eventOutcome: { outcome: choice.scienceReward, quality: choice.quality, label: choice.label, title: event.title },
+          eventOutcome: { outcome: choice.scienceReward, quality: choice.quality, label: choice.label, title: event.title, shieldsBlocked: shieldsBlocked, sciBonus: sciBonus },
           activeEvent: null,
+          consultUsed: false,
+          revealedHiddenOption: false,
+          _consultLine: null,
+          minigamePending: null,
+          minigameResult: null,
           turn: newTurn,
           missionPhase: 'outcome'
         });
@@ -861,11 +1134,114 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                 )
               ),
               h('button', {
-                onClick: function() { updAll({ missionPhase: 'explore' }); generateEvent(); },
+                onClick: function() { updAll({ missionPhase: 'allocate' }); },
                 className: 'w-full py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 shadow-lg transition-all'
               }, '\uD83D\uDE80 Launch Mission')
             )
           )
+        );
+      }
+
+      // ── Power Allocation (pre-turn resource planning) ──
+      // Distribute pips across four ship systems. Life Support reduces O2 drain,
+      // Science pips add bonus science per event, Shields mitigate hull damage,
+      // Comms waives the wrong-specialty morale penalty on consults. Launch
+      // commits the allocation and fires the next event.
+      if (missionPhase === 'allocate' && destination && resources) {
+        var allocPool = getPipPool(unlockedTech);
+        var allocSum = powerAllocation.life + powerAllocation.science + powerAllocation.shields + powerAllocation.comms;
+        var allocRemaining = allocPool - allocSum;
+        var bumpAlloc = function(key, delta) {
+          var next = Object.assign({}, powerAllocation);
+          var cur = next[key] || 0;
+          var target = cur + delta;
+          if (target < 0) return;
+          if (delta > 0 && allocRemaining <= 0) return;
+          next[key] = target;
+          upd('powerAllocation', next);
+        };
+        var allocSystems = [
+          { key: 'life',    emoji: '\uD83E\uDEE7', label: 'Life Support', color: '#38bdf8', hint: 'Each pip reduces O\u2082 drain by 1.' },
+          { key: 'science', emoji: '\uD83D\uDD2C', label: 'Science',      color: '#a78bfa', hint: 'Each pip adds +1 science at event resolution.' },
+          { key: 'shields', emoji: '\uD83D\uDEE1\uFE0F', label: 'Shields', color: '#22c55e', hint: 'Each pip mitigates 1 point of hull damage.' },
+          { key: 'comms',   emoji: '\uD83D\uDCE1', label: 'Comms',        color: '#f59e0b', hint: '3+ pips waives wrong-specialty consult penalty.' }
+        ];
+        var projectedDrain = applyTurnDrain(resources, destination, unlockedTech, powerAllocation);
+        return h('div', { className: 'space-y-3 animate-in fade-in duration-200', role: 'main', 'aria-label': 'Power allocation' },
+          h('div', { className: 'bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 rounded-xl p-4 border border-indigo-700/50' },
+            h('div', { className: 'flex items-center justify-between mb-2' },
+              h('div', null,
+                h('h2', { className: 'text-sm font-black text-white' }, '\u26A1 Power Allocation'),
+                h('p', { className: 'text-[11px] text-slate-400' }, 'Distribute ' + allocPool + ' pips before Turn ' + (turn + 1) + '/' + maxTurns)
+              ),
+              h('div', { className: 'text-right' },
+                h('div', { className: 'text-[10px] text-slate-500 uppercase tracking-wide' }, 'Remaining'),
+                h('div', { className: 'text-lg font-black ' + (allocRemaining === 0 ? 'text-green-400' : allocRemaining > 0 ? 'text-amber-400' : 'text-red-400') }, allocRemaining)
+              )
+            ),
+            h('div', { className: 'space-y-2', role: 'group', 'aria-label': 'Power systems' },
+              allocSystems.map(function(sys) {
+                var val = powerAllocation[sys.key] || 0;
+                return h('div', { key: sys.key, className: 'bg-white/5 rounded-lg p-2.5 border border-white/10' },
+                  h('div', { className: 'flex items-center justify-between' },
+                    h('div', { className: 'flex items-center gap-2' },
+                      h('span', { className: 'text-lg', 'aria-hidden': 'true' }, sys.emoji),
+                      h('div', null,
+                        h('div', { className: 'text-[11px] font-bold text-white' }, sys.label),
+                        h('div', { className: 'text-[10px] text-slate-400' }, sys.hint)
+                      )
+                    ),
+                    h('div', { className: 'flex items-center gap-1.5' },
+                      h('button', {
+                        onClick: function() { bumpAlloc(sys.key, -1); },
+                        disabled: val <= 0,
+                        'aria-label': 'Decrease ' + sys.label,
+                        className: 'w-7 h-7 rounded-md bg-slate-700 hover:bg-slate-600 disabled:opacity-30 text-white font-bold focus:ring-2 focus:ring-indigo-400 focus:outline-none'
+                      }, '\u2212'),
+                      h('div', {
+                        'aria-label': sys.label + ': ' + val + ' of ' + allocPool + ' pips',
+                        className: 'w-10 text-center text-sm font-mono font-bold',
+                        style: { color: sys.color }
+                      }, val),
+                      h('button', {
+                        onClick: function() { bumpAlloc(sys.key, 1); },
+                        disabled: allocRemaining <= 0,
+                        'aria-label': 'Increase ' + sys.label,
+                        className: 'w-7 h-7 rounded-md bg-slate-700 hover:bg-slate-600 disabled:opacity-30 text-white font-bold focus:ring-2 focus:ring-indigo-400 focus:outline-none'
+                      }, '+')
+                    )
+                  )
+                );
+              })
+            )
+          ),
+          // Projected drain preview
+          h('div', { className: 'bg-white/5 rounded-xl p-2.5 border border-white/10', role: 'status' },
+            h('div', { className: 'text-[10px] text-slate-500 uppercase tracking-wide mb-1' }, 'Projected next turn'),
+            h('div', { className: 'flex flex-wrap gap-x-3 gap-y-1 text-[11px]' },
+              Object.keys(RESOURCES).filter(function(k) { return RESOURCES[k].max !== 999; }).map(function(k) {
+                var before = resources[k] || 0;
+                var after = projectedDrain[k] || 0;
+                var diff = after - before;
+                return h('span', { key: k, className: diff < 0 ? 'text-red-300' : diff > 0 ? 'text-green-300' : 'text-slate-400' },
+                  RESOURCES[k].emoji + ' ' + before + ' \u2192 ' + after + (diff !== 0 ? ' (' + (diff > 0 ? '+' : '') + diff + ')' : '')
+                );
+              })
+            )
+          ),
+          h('button', {
+            onClick: function() {
+              updAll({ missionPhase: 'explore', consultUsed: false, revealedHiddenOption: false });
+              generateEvent();
+            },
+            disabled: allocRemaining !== 0,
+            ref: function(el) { if (el) setTimeout(function() { el.focus(); }, 100); },
+            className: 'w-full py-3 rounded-xl text-sm font-bold text-white ' +
+              (allocRemaining === 0
+                ? 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 shadow-lg'
+                : 'bg-slate-700 opacity-60 cursor-not-allowed') +
+              ' transition-all focus:ring-2 focus:ring-purple-400 focus:outline-none'
+          }, allocRemaining === 0 ? '\uD83D\uDE80 Launch Turn' : 'Allocate ' + allocRemaining + ' more pip' + (Math.abs(allocRemaining) === 1 ? '' : 's'))
         );
       }
 
@@ -911,8 +1287,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
             )
           ),
 
-          // Ship status canvas — shows destination planet + crew
-          !isGenerating && h('div', { className: 'bg-slate-900 rounded-xl overflow-hidden border border-slate-700' },
+          // Ship status canvas — shows destination planet + crew. Always
+          // visible so the layout doesn't jump when an event is generating.
+          h('div', { className: 'bg-slate-900 rounded-xl overflow-hidden border border-slate-700' },
             h('canvas', { 'aria-label': 'Space explorer star map',
               style: { width: '100%', height: '120px', display: 'block' },
               'aria-roledescription': 'illustration',
@@ -960,6 +1337,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
             })
           ),
 
+          // Event/generating/outcome slot — wrapped in a min-height container
+          // so the layout doesn't jump between phases (event ~400px, loader
+          // ~100px, outcome ~300px otherwise cause visible bouncing).
+          h('div', { style: { minHeight: '320px' } },
           // Event card — WCAG: keyboard shortcuts (1/2/3), focus management, aria-describedby
           activeEvent && missionPhase === 'event' && h('div', {
             className: 'bg-gradient-to-br from-amber-950 to-slate-900 rounded-xl p-4 border border-amber-700/50 shadow-lg',
@@ -967,10 +1348,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
             'aria-describedby': 'se-event-desc',
             tabIndex: -1,
             onKeyDown: function(e) {
+              // Lock number-key choice selection while spectral analysis is open
+              if (minigamePending && !minigameResult) return;
               var idx = parseInt(e.key) - 1;
-              if (idx >= 0 && idx < (activeEvent.choices || []).length) {
+              var pubLen = (activeEvent.choices || []).length;
+              if (idx >= 0 && idx < pubLen) {
                 e.preventDefault();
                 resolveEvent(activeEvent, activeEvent.choices[idx]);
+              } else if (idx === pubLen && revealedHiddenOption && activeEvent.hiddenOption) {
+                // Numeric key after the public choices picks the specialist option
+                e.preventDefault();
+                resolveEvent(activeEvent, activeEvent.hiddenOption);
               }
             },
             ref: function(el) { if (el) setTimeout(function() { el.focus(); }, 100); }
@@ -987,21 +1375,178 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
               )
             ),
             h('p', { id: 'se-event-desc', className: 'text-xs text-slate-200 leading-relaxed mb-3' }, activeEvent.description),
+            // ── Spectral Match mini-game ──
+            // Fires on chemistry/atmospheric destinations (~30% of turns). Shows
+            // an absorption spectrum; player identifies the compound. Correct =
+            // +science + unlocks choice buttons. Wrong = teaching callout +
+            // still unlocks. Never negative — stakes are pedagogical, not fail.
+            minigamePending && h('div', {
+              className: 'bg-gradient-to-br from-slate-900 to-indigo-950 rounded-xl p-3 border border-indigo-500/40 mb-3',
+              role: 'group', 'aria-label': 'Spectral analysis: identify the compound'
+            },
+              h('div', { className: 'flex items-center justify-between mb-2' },
+                h('div', null,
+                  h('div', { className: 'text-[11px] font-black text-indigo-300' }, '\uD83D\uDD2C SPECTRAL ANALYSIS'),
+                  h('div', { className: 'text-[10px] text-slate-400' }, minigameResult ? 'Analysis complete' : 'Identify the compound from its absorption bands')
+                ),
+                minigameResult && h('span', { className: 'text-[11px] font-bold ' + (minigameResult === 'correct' ? 'text-green-400' : 'text-amber-400') },
+                  minigameResult === 'correct' ? '\u2714 Correct' : '\u26A0\uFE0F See below'
+                )
+              ),
+              h('div', {
+                className: 'bg-slate-950 rounded-lg overflow-hidden border border-slate-700'
+              },
+                h('canvas', {
+                  style: { width: '100%', height: '110px', display: 'block' },
+                  'aria-label': (function() {
+                    var b = (minigamePending.bands || []).map(function(x) { return x.toFixed(2) + ' micrometers'; }).join(', ');
+                    return 'Absorption spectrum with bands at ' + b + '.';
+                  })(),
+                  ref: function(cvEl) {
+                    if (!cvEl) return;
+                    var cx2 = cvEl.getContext('2d');
+                    var W2 = cvEl.offsetWidth || 360, H2 = cvEl.offsetHeight || 110;
+                    cvEl.width = W2 * 2; cvEl.height = H2 * 2; cx2.scale(2, 2);
+                    drawSpectrum(cx2, W2, H2, minigamePending.bands || []);
+                  }
+                })
+              ),
+              !minigameResult && h('div', { className: 'grid grid-cols-2 gap-1.5 mt-2' },
+                (function() {
+                  // Show the correct answer among 4 randomized candidates.
+                  var pool = SPECTRA_TABLE.map(function(c) { return c.id; });
+                  var correct = minigamePending.compound;
+                  // Seed from the compound + bands length so the options are
+                  // stable across re-renders within the same event.
+                  var seed = correct.length * 7 + (minigamePending.bands || []).length * 3;
+                  var rand = function(i) { return ((seed * 9301 + 49297 + i * 131) % 233280) / 233280; };
+                  // Take 3 distractors + the correct one
+                  var distractors = pool.filter(function(x) { return x !== correct; })
+                    .map(function(x, i) { return { x: x, r: rand(i + 3) }; })
+                    .sort(function(a, b) { return a.r - b.r; })
+                    .slice(0, 3)
+                    .map(function(o) { return o.x; });
+                  var options = distractors.concat([correct])
+                    .map(function(x, i) { return { x: x, r: rand(i + 11) }; })
+                    .sort(function(a, b) { return a.r - b.r; })
+                    .map(function(o) { return o.x; });
+                  return options.map(function(cid, oi) {
+                    var row = SPECTRA_TABLE.find(function(s) { return s.id === cid; });
+                    if (!row) return null;
+                    return h('button', {
+                      key: cid,
+                      onClick: function() {
+                        var isCorrect = cid === correct;
+                        var patch = { minigameResult: isCorrect ? 'correct' : 'wrong' };
+                        if (isCorrect) {
+                          var newRes2 = Object.assign({}, resources);
+                          var bonus = 15;
+                          newRes2.science = Math.max(0, Math.min(RESOURCES.science.max, (newRes2.science || 0) + bonus));
+                          patch.resources = newRes2;
+                          if (sfxSEDiscovery) sfxSEDiscovery();
+                          if (addToast) addToast('\u2728 Correct! +' + bonus + ' science', 'success');
+                        } else {
+                          if (sfxSEEvent) sfxSEEvent();
+                          if (addToast) addToast('\u26A0\uFE0F Not quite \u2014 see the teaching note', 'info');
+                        }
+                        updAll(patch);
+                        announceToSR(isCorrect ? 'Correct identification.' : 'Incorrect. ' + row.teach);
+                      },
+                      'aria-label': 'Identify as ' + row.label,
+                      className: 'px-2 py-2 rounded-md border bg-white/5 border-white/10 hover:border-indigo-400/50 hover:bg-indigo-500/10 text-left text-[11px] font-bold text-white focus:ring-2 focus:ring-indigo-400 focus:outline-none'
+                    }, row.label);
+                  });
+                })()
+              ),
+              minigameResult && h('div', {
+                className: 'mt-2 text-[11px] leading-snug ' + (minigameResult === 'correct' ? 'text-green-200' : 'text-amber-200')
+              },
+                (function() {
+                  var row = SPECTRA_TABLE.find(function(s) { return s.id === minigamePending.compound; });
+                  return row ? (minigameResult === 'correct' ? '\u2728 ' : '\uD83D\uDCD6 ') + row.teach : '';
+                })()
+              )
+            ),
+            // ── Ask Specialist: crew consult row ──
+            // Tapping a crew chip triggers consultSpecialist. One consult per
+            // event. A matching specialty unlocks a hidden 4th choice; wrong
+            // specialty costs 1 morale (waived if Comms pips >= 3). After
+            // consulting, the crew's remark surfaces just below the row.
+            crew.length > 0 && h('div', { className: 'mb-3', role: 'group', 'aria-label': 'Consult a specialist about this event' },
+              h('div', { className: 'flex items-center justify-between mb-1' },
+                h('div', { className: 'text-[10px] font-bold text-amber-400/80 uppercase tracking-wide' }, '\uD83D\uDCAC Consult a specialist'),
+                h('div', { className: 'text-[10px] text-slate-500' },
+                  consultUsed ? 'Consulted' : 'One per event'
+                )
+              ),
+              h('div', { className: 'flex flex-wrap gap-1.5' },
+                crew.map(function(member) {
+                  var canConsult = !consultUsed;
+                  return h('button', {
+                    key: member.name,
+                    onClick: function() { if (canConsult) consultSpecialist(member); },
+                    disabled: !canConsult,
+                    'aria-label': 'Consult ' + member.name + ', ' + (member.role || '') + (member.specialty ? ', specialty ' + member.specialty : ''),
+                    className: 'flex items-center gap-1 px-2 py-1 rounded-md border text-[11px] transition-all ' +
+                      (canConsult
+                        ? 'bg-white/5 border-white/10 hover:border-amber-400/40 hover:bg-amber-500/5 focus:ring-2 focus:ring-amber-400 focus:outline-none cursor-pointer'
+                        : 'bg-white/5 border-white/5 opacity-50 cursor-not-allowed')
+                  },
+                    h('span', { 'aria-hidden': 'true' }, member.emoji),
+                    h('span', { className: 'font-bold text-white' }, member.name.split(' ')[0]),
+                    h('span', { className: 'text-slate-400' }, '\u00B7 ' + (member.specialty || member.role || ''))
+                  );
+                })
+              ),
+              d._consultLine && h('div', {
+                className: 'mt-2 rounded-md border px-2.5 py-1.5 text-[11px] ' + (d._consultLine.unlocks ? 'bg-yellow-500/10 border-yellow-500/30 text-yellow-100' : 'bg-slate-700/30 border-slate-600/50 text-slate-200'),
+                role: 'status', 'aria-live': 'polite'
+              },
+                h('span', { 'aria-hidden': 'true' }, d._consultLine.emoji + ' '),
+                h('span', { className: 'font-bold' }, d._consultLine.name + ': '),
+                h('span', null, d._consultLine.line)
+              )
+            ),
             h('div', { className: 'space-y-2', role: 'group', 'aria-label': 'Choose your response. Press 1, 2, or 3 to select.' },
-              (activeEvent.choices || []).map(function(choice, ci) {
+              // Merge the public choices with the hiddenOption if it's been
+              // unlocked via a matching specialist consult. Hidden option
+              // renders with a distinct yellow treatment so its origin reads.
+              (function() {
+                var list = (activeEvent.choices || []).slice();
+                if (revealedHiddenOption && activeEvent.hiddenOption) {
+                  list.push(Object.assign({}, activeEvent.hiddenOption, { _hidden: true }));
+                }
+                return list;
+              })().map(function(choice, ci) {
+                // Resource deltas stay hidden until the player decides. The AI
+                // Co-Pilot tech (when unlocked) reveals them as a paid hint —
+                // otherwise showing them turns the decision into arithmetic
+                // and telegraphs the optimal answer. Aria-label mirrors the
+                // visual so screen-reader users aren't spoiled either.
+                var showHints = unlockedTech.indexOf('ai_copilot') >= 0;
+                var isHidden = !!choice._hidden;
+                // Choices lock until spectral analysis resolves.
+                var locked = !!(minigamePending && !minigameResult);
                 return h('button', {
                   key: ci,
-                  'aria-label': 'Option ' + (ci + 1) + ': ' + choice.label + '. ' + (choice.effects ? Object.keys(choice.effects).map(function(k) { var v = choice.effects[k]; return RESOURCES[k] ? RESOURCES[k].label + ' ' + (v > 0 ? '+' : '') + v : ''; }).join(', ') : ''),
-                  onClick: function() { resolveEvent(activeEvent, choice); },
-                  ref: ci === 0 ? function(el) { if (el) setTimeout(function() { el.focus(); }, 150); } : undefined,
-                  className: 'w-full text-left p-3 rounded-lg border transition-all hover:scale-[1.01] active:scale-[0.98] bg-white/5 border-white/10 hover:border-amber-400/40 hover:bg-amber-500/5 focus:ring-2 focus:ring-amber-400 focus:outline-none'
+                  disabled: locked,
+                  'aria-label': (isHidden ? 'Specialist option: ' : 'Option ' + (ci + 1) + ': ') + choice.label + (showHints && choice.effects ? '. ' + Object.keys(choice.effects).map(function(k) { var v = choice.effects[k]; return RESOURCES[k] ? RESOURCES[k].label + ' ' + (v > 0 ? '+' : '') + v : ''; }).join(', ') : '') + (locked ? '. Complete spectral analysis first.' : ''),
+                  onClick: function() { if (!locked) resolveEvent(activeEvent, choice); },
+                  ref: ci === 0 ? function(el) { if (el && !locked) setTimeout(function() { el.focus(); }, 150); } : undefined,
+                  className: 'w-full text-left p-3 rounded-lg border transition-all focus:outline-none ' +
+                    (locked
+                      ? 'opacity-50 cursor-not-allowed bg-white/5 border-white/10'
+                      : (isHidden
+                        ? 'hover:scale-[1.01] active:scale-[0.98] bg-yellow-500/10 border-yellow-400/50 hover:border-yellow-300 hover:bg-yellow-500/15 focus:ring-2 focus:ring-yellow-400'
+                        : 'hover:scale-[1.01] active:scale-[0.98] bg-white/5 border-white/10 hover:border-amber-400/40 hover:bg-amber-500/5 focus:ring-2 focus:ring-amber-400'))
                 },
                   h('div', { className: 'flex items-center gap-2 mb-1' },
-                    h('span', { className: 'text-[11px] font-mono text-amber-500/60 w-4', 'aria-hidden': 'true' }, '(' + (ci + 1) + ')'),
+                    h('span', { className: 'text-[11px] font-mono w-4 ' + (isHidden ? 'text-yellow-300' : 'text-amber-500/60'), 'aria-hidden': 'true' }, isHidden ? '\u2605' : '(' + (ci + 1) + ')'),
                     h('span', { 'aria-hidden': 'true' }, choice.icon || '\u2699\uFE0F'),
-                    h('span', { className: 'text-xs font-bold text-white' }, choice.label)
+                    h('span', { className: 'text-xs font-bold text-white' }, choice.label),
+                    isHidden && h('span', { className: 'ml-auto text-[10px] font-bold text-yellow-300' }, 'SPECIALIST')
                   ),
-                  choice.effects && h('div', { className: 'flex flex-wrap gap-2 text-[11px] mt-1', 'aria-hidden': 'true' },
+                  showHints && choice.effects && h('div', { className: 'flex flex-wrap gap-2 text-[11px] mt-1', 'aria-hidden': 'true' },
                     Object.keys(choice.effects).map(function(k) {
                       var v = choice.effects[k];
                       var r = RESOURCES[k];
@@ -1013,7 +1558,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                 );
               })
             ),
-            h('p', { className: 'text-[11px] text-slate-600 mt-2 text-center', 'aria-hidden': 'true' }, 'Press 1, 2, or 3 to choose')
+            h('p', { className: 'text-[11px] text-slate-600 mt-2 text-center', 'aria-hidden': 'true' },
+              (unlockedTech.indexOf('ai_copilot') >= 0
+                ? 'AI Co-Pilot active — outcomes shown. Press 1, 2, or 3 to choose.'
+                : 'Press 1, 2, or 3 to choose')
+            )
           ),
 
           // Generating indicator
@@ -1036,13 +1585,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
             h('div', { className: 'bg-sky-500/10 rounded-lg p-3 border border-sky-500/20 mb-3' },
               h('p', { className: 'text-[11px] text-sky-100 leading-relaxed' }, '\uD83D\uDD2C ' + eventOutcome.outcome)
             ),
+            // Power Allocation payoff readout — makes pip spend visible
+            ((eventOutcome.shieldsBlocked || 0) > 0 || (eventOutcome.sciBonus || 0) > 0) && h('div', { className: 'flex flex-wrap gap-2 text-[11px] mb-3' },
+              (eventOutcome.shieldsBlocked || 0) > 0 && h('span', { className: 'px-2 py-0.5 rounded bg-green-500/15 text-green-300 border border-green-500/30' }, '\uD83D\uDEE1\uFE0F Shields absorbed ' + eventOutcome.shieldsBlocked + ' hull'),
+              (eventOutcome.sciBonus || 0) > 0 && h('span', { className: 'px-2 py-0.5 rounded bg-purple-500/15 text-purple-300 border border-purple-500/30' }, '\uD83D\uDD2C Science pips +' + eventOutcome.sciBonus)
+            ),
             turn >= maxTurns ? h('p', { className: 'text-xs text-green-300 font-bold text-center mb-2' }, '\uD83C\uDF89 Mission complete! Preparing debrief...') :
             (resources.o2 <= 0 || resources.hull <= 0) ? h('p', { className: 'text-xs text-red-300 font-bold text-center mb-2' }, '\u26A0\uFE0F Critical failure! Mission ending...') :
             h('button', {
-              onClick: function() { updAll({ eventOutcome: null, missionPhase: 'explore' }); generateEvent(); },
+              onClick: function() { updAll({ eventOutcome: null, missionPhase: 'allocate' }); },
               ref: function(el) { if (el) setTimeout(function() { el.focus(); }, 100); },
               className: 'w-full py-2.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-md transition-all focus:ring-2 focus:ring-purple-400 focus:outline-none'
-            }, '\uD83D\uDE80 Continue Exploration (Turn ' + (turn + 1) + '/' + maxTurns + ')')
+            }, '\u26A1 Allocate Power \u2192 Turn ' + (turn + 1) + '/' + maxTurns)
+          )
           ),
 
           // Mission log (collapsible)

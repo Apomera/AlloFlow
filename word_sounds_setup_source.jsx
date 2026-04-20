@@ -19,7 +19,7 @@
       has: (_, prop) => prop in (window.SIGHT_WORD_PRESETS || {})
     });
 
-    const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, callGemini, callImagen, callTTS, gradeLevel, t: tProp, preloadedWords = [], onShowReview , onMinimize, onExpand, isProbeMode}) => {
+    const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, callGemini, callImagen, callTTS, gradeLevel, t: tProp, preloadedWords = [], onShowReview , onMinimize, onExpand, isProbeMode, selectedVoice, setSelectedVoice, isCanvasEnv, ttsSpeed, onRequestKokoroOffer, wordSoundsLanguage}) => {
         const t = tProp || ((key, params) => getWordSoundsString((k) => k, key, params || {}));
         const [imageVisibilityMode, setImageVisibilityMode] = React.useState('smart');
     React.useEffect(() => {
@@ -87,7 +87,13 @@
         }
     }, []);
         const [generatedCount, setGeneratedCount] = React.useState(0);
+        const [prewarmCount, setPrewarmCount] = React.useState(0);
+        const [prewarmTotal, setPrewarmTotal] = React.useState(0);
         const [selectedIndices, setSelectedIndices] = React.useState(new Set());
+        const [kokoroRecDismissed, setKokoroRecDismissed] = React.useState(() => {
+            try { return sessionStorage.getItem('allo.kokoroRecDismissed') === '1'; }
+            catch (_) { return false; }
+        });
         const hasAutoNavigated = React.useRef(preloadedWords.length > 0);
         React.useEffect(() => {
             if (preloadedWords.length > 0 && !isProcessing && onShowReview && !hasAutoNavigated.current) {
@@ -178,6 +184,13 @@
              if (wordsToProcess.length === 0) return;
              setIsProcessing(true);
              setGeneratedCount(0);
+             setPrewarmCount(0);
+             setPrewarmTotal(0);
+             // Flag that stops TTS prewarm after a 429 is seen; reset per preload run so
+             // subsequent sessions start fresh. The Kokoro offer also resets so a user who
+             // declined last time still gets a fresh chance when a new 429 occurs.
+             let prewarmAborted = false;
+             if (typeof window !== 'undefined') window.__kokoroOfferedThisPreload = false;
              const processed = [];
 
              // Build a lookup map for already-processed preloaded words
@@ -223,6 +236,7 @@
                          • "turn" → ["t", "ur", "n"] (3 phonemes, ur is ONE sound)
                          • "fern" → ["f", "er", "n"] (3 phonemes, er is ONE sound)
                          • "rain" → ["r", "ā", "n"] (3 phonemes, ai = long a)
+                         ORTHOGRAPHY DISTRACTORS: Also return 3 plausible misspellings of the target word — letter substitutions or omissions a K-2 student might reasonably make (e.g. for "corn": ["korn", "cron", "cor"]). These are used for a spelling-choice activity so they should look visually similar to the correct word.
                          Return ONLY JSON:
                          {
                              "word": "${rawWord}",
@@ -232,6 +246,7 @@
                              "rhymeWord": "horn",
                              "rhymeDistractors": ["dog", "sun", "bed", "leg", "cup"],
                              "blendingDistractors": ["cord", "core", "born", "worn", "torn"],
+                             "orthographyDistractors": ["korn", "cron", "cor"],
                              "wordFamily": "-orn",
                              "familyEnding": "-orn",
                              "familyMembers": ["horn", "born", "worn", "torn", "morn"],
@@ -269,6 +284,7 @@
                          rhymeWord: data.rhymeWord || (data.rhymes && data.rhymes[0]) || '',
                          rhymeDistractors: data.rhymeDistractors || [],
                          blendingDistractors: data.blendingDistractors || [],
+                         orthographyDistractors: data.orthographyDistractors || [],
                          familyEnding: data.familyEnding || '',
                          familyMembers: data.familyMembers || [],
                          firstSound: data.firstSound || (data.phonemes && data.phonemes[0]) || '',
@@ -292,13 +308,41 @@
                      });
                  }
                      const lastItem = processed[processed.length - 1];
-                     if (callTTS && typeof callTTS === 'function' && lastItem && !lastItem._fallbackUsed) {
+                     if (callTTS && typeof callTTS === 'function' && lastItem && !lastItem._fallbackUsed && !prewarmAborted) {
                          const ttsTasks = new Set();
+                         const target = lastItem.targetWord || lastItem.word;
+                         if (target) ttsTasks.add(target);
                          if (lastItem.rhymeWord) ttsTasks.add(lastItem.rhymeWord);
                          (lastItem.rhymeDistractors || []).forEach(w => w && ttsTasks.add(w));
                          (lastItem.blendingDistractors || []).forEach(w => w && ttsTasks.add(w));
                          (lastItem.familyMembers || []).forEach(w => w && ttsTasks.add(w));
-                         try { await Promise.allSettled(Array.from(ttsTasks).map(w => callTTS(w))); } catch(e) { warnLog('Caught error:', e?.message || e); }
+                         (lastItem.orthographyDistractors || []).forEach(w => w && ttsTasks.add(w));
+                         const voiceForTts = selectedVoice || undefined;
+                         const speedForTts = (typeof ttsSpeed === 'number') ? ttsSpeed : undefined;
+                         const taskList = Array.from(ttsTasks);
+                         setPrewarmTotal(prev => prev + taskList.length);
+                         try {
+                             const results = await Promise.allSettled(taskList.map(async (w) => {
+                                 try {
+                                     await callTTS(w, voiceForTts, speedForTts);
+                                 } finally {
+                                     setPrewarmCount(prev => prev + 1);
+                                 }
+                             }));
+                             // If any task 429'd mid-batch, stop prewarming subsequent words
+                             // and surface the Kokoro offer (once per preload) if user is on a
+                             // cloud voice and hasn't previously declined.
+                             const hit429 = results.some(r => r.status === 'rejected'
+                                 && /429|Rate Limit/i.test(r.reason?.message || ''));
+                             if (hit429) {
+                                 prewarmAborted = true;
+                                 if (typeof window !== 'undefined' && !window.__kokoroOfferDeclined
+                                     && onRequestKokoroOffer && !window.__kokoroOfferedThisPreload) {
+                                     window.__kokoroOfferedThisPreload = true;
+                                     try { onRequestKokoroOffer('word_sounds'); } catch (_) {}
+                                 }
+                             }
+                         } catch(e) { warnLog('prewarm batch failed:', e?.message || e); }
                      }
                      setGeneratedCount(prev => prev + 1);
              }
@@ -356,6 +400,12 @@
                                      style={{ width: `${selectedIndices.size ? (generatedCount / selectedIndices.size) * 100 : 0}%` }}
                                  />
                              </div>
+                             {prewarmTotal > 0 && (
+                                 <div className="flex justify-between text-[11px] font-medium text-teal-600">
+                                     <span>🔊 Preloading voices</span>
+                                     <span>{prewarmCount} / {prewarmTotal}</span>
+                                 </div>
+                             )}
                          </div>
                      )}
                      {!isProcessing && (
@@ -418,6 +468,60 @@
                             </button>
                         </div>
                     )}
+                    {(() => {
+                        // Pre-preload Kokoro recommendation. Shows only on Canvas when the user
+                        // is on a cloud voice, Kokoro isn't already loaded, and they haven't
+                        // dismissed the tip this session. Switching now (before hitting Generate)
+                        // is the moment that actually changes the outcome — by the time prewarm
+                        // starts synthesizing ~5 clips per word, Gemini's 60s cooldown can trip.
+                        const isKokoroVoice = typeof selectedVoice === 'string' && /^[abil][fm]_/i.test(selectedVoice);
+                        const kokoroReady = typeof window !== 'undefined' && window._kokoroTTS && window._kokoroTTS.ready;
+                        const isEnglish = !wordSoundsLanguage || String(wordSoundsLanguage).toLowerCase().startsWith('en');
+                        const shouldShow = isCanvasEnv && isEnglish && !isKokoroVoice && !kokoroReady
+                            && !kokoroRecDismissed && !isProcessing;
+                        if (!shouldShow) return null;
+                        return (
+                            <div className="bg-gradient-to-r from-amber-50 to-yellow-50 border-b border-amber-200 px-6 py-3">
+                                <div className="flex items-start gap-3">
+                                    <div className="bg-amber-100 rounded-full p-2 shrink-0">
+                                        <span className="text-xl">🎤</span>
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="font-bold text-amber-900 text-sm mb-1">Recommended for Word Sounds: Kokoro local voice</p>
+                                        <p className="text-amber-800 text-xs leading-relaxed mb-2">
+                                            Preloading synthesizes ~5 audio clips per word. On Gemini this can hit the 60-second rate-limit cooldown mid-preload. Kokoro is a free on-device voice — one-time ~40 MB download, then every Word Sounds session is instant and rate-limit-free.
+                                        </p>
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={() => {
+                                                    if (typeof window === 'undefined' || !window.__loadKokoroTTS) return;
+                                                    window.__kokoroTTSDownloading = true;
+                                                    window.__loadKokoroTTS().then(ok => {
+                                                        window.__kokoroTTSDownloading = false;
+                                                        if (ok && typeof setSelectedVoice === 'function') {
+                                                            setSelectedVoice('af_heart');
+                                                        }
+                                                    }).catch(() => { window.__kokoroTTSDownloading = false; });
+                                                }}
+                                                className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-bold text-xs transition-colors shadow-sm"
+                                            >
+                                                Use Kokoro Voice
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    try { sessionStorage.setItem('allo.kokoroRecDismissed', '1'); } catch (_) {}
+                                                    setKokoroRecDismissed(true);
+                                                }}
+                                                className="px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 rounded-lg font-bold text-xs transition-colors"
+                                            >
+                                                Keep Gemini
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })()}
                     <div className="flex flex-1 overflow-hidden">
                         <div className="w-1/3 bg-slate-50 border-r border-slate-200 p-6 flex flex-col gap-6 overflow-y-auto">
                             <div className="space-y-3">
@@ -814,6 +918,23 @@
                                              ? `Building Audio: "${previewList[Array.from(selectedIndices)[generatedCount]] || '...'}"`
                                              : 'Finishing up...'}
                                      </p>
+                                     {prewarmTotal > 0 && (
+                                         <div className="mt-3 pt-3 border-t border-violet-200/60">
+                                             <div className="flex items-center justify-between mb-1.5">
+                                                 <div className="flex items-center gap-2">
+                                                     <Volume2 size={14} className="text-teal-600" />
+                                                     <span className="text-teal-700 font-bold text-xs uppercase tracking-wider">Preloading voices for instant playback</span>
+                                                 </div>
+                                                 <span className="text-teal-600 font-bold text-sm">{prewarmCount} / {prewarmTotal}</span>
+                                             </div>
+                                             <div className="w-full h-2 bg-teal-100 rounded-full overflow-hidden">
+                                                 <div
+                                                     className="h-full bg-gradient-to-r from-teal-500 to-emerald-500 rounded-full transition-all duration-300"
+                                                     style={{ width: `${prewarmTotal ? (prewarmCount / prewarmTotal) * 100 : 0}%` }}
+                                                 />
+                                             </div>
+                                         </div>
+                                     )}
                                  </div>
                              )}
                              {previewList.length > 0 ? (
