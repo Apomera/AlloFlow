@@ -65,6 +65,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
       maxPower: 500,
       desc: 'Commuter with a 250–500 W motor assisting your pedal input up to 20 mph.',
       tip: 'Motor kicks in proportional to your cadence. Heavier, but hills become trivial.'
+    },
+    {
+      id: 'cargo', name: 'Cargo Bike', icon: '📦',
+      mass: 135, crr: 0.009, cdA: 0.72, wheelR: 0.325,
+      chainringT: [38, 28], cassetteT: [34, 28, 24, 21, 18, 15, 13, 11],
+      maxPower: 220,
+      desc: 'Long-tail or front-loader built to haul groceries, kids, or 80 kg of payload. Very heavy, very stable.',
+      tip: 'Mass dominates climbing — the extra 50 kg adds nearly half a horsepower of gravity drag at a 6% grade.'
+    },
+    {
+      id: 'bmx', name: 'BMX', icon: '🤘',
+      mass: 72, crr: 0.011, cdA: 0.55, wheelR: 0.254,
+      chainringT: [25], cassetteT: [9],
+      maxPower: 180,
+      desc: 'Single-speed, 20″ wheels, super short wheelbase. Built for tricks and pump tracks, not commuting.',
+      tip: 'Single gear + tiny wheels = low top speed but insane acceleration and control at low speed.'
     }
   ];
 
@@ -311,6 +327,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
             bullets: ['Patch a flat tube · Adjust rim brakes', 'Clean & lube chain · Index derailleur', 'Swap pedals · True a wobbly wheel', 'Headset adjust · TTS narration'],
             color: 'from-amber-500 to-orange-600',
             ring: 'ring-amber-500/40'
+          },
+          {
+            id: 'ride', title: 'Neighborhood Ride', icon: '🏘️',
+            subtitle: 'Applied-physics commute demo',
+            desc: 'A scripted 600 m commute to school: flat block → stop sign → Oak Hill (7% grade) → descent → wet patch → school. Apply Sandbox + Gearing + Braking concepts in one scored run.',
+            bullets: ['Keyboard controls: ↑/↓ gears, Space brakes', 'Three scored events + coach feedback', 'Tracks personal best time', 'Reuses live bike physics engine'],
+            color: 'from-green-500 to-emerald-600',
+            ring: 'ring-green-500/40'
           }
         ];
         var miniCards = [
@@ -334,6 +358,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
             desc: 'SVG-illustrated quiz: turn signals, lane position, stop signs, helmet fit. Instant feedback with explanations.',
             color: 'from-sky-500 to-indigo-600',
             ring: 'ring-sky-500/40'
+          },
+          {
+            id: 'parts', title: 'Bike Parts Inspector', icon: '🔍',
+            subtitle: '19 parts on a clickable bike',
+            desc: 'SVG bike diagram with clickable hotspots. Each part shows its function, common failure modes, and a deep-link to the related repair job.',
+            color: 'from-slate-500 to-slate-700',
+            ring: 'ring-slate-500/40'
           }
         ];
 
@@ -373,11 +404,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
               'Physics, mechanics, and maintenance — learn the science of cycling and the real-world skills to keep a bike rolling.')
           ),
           h('div', { className: 'text-xs font-bold uppercase tracking-widest text-slate-500 mb-2 px-1' }, 'Core Modules'),
-          h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-4 mb-8' },
+          h('div', { className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8' },
             bigCards.map(function(c) { return renderCard(c, true); })
           ),
           h('div', { className: 'text-xs font-bold uppercase tracking-widest text-slate-500 mb-2 px-1' }, 'Quick Labs'),
-          h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-4' },
+          h('div', { className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4' },
             miniCards.map(function(c) { return renderCard(c, false); })
           ),
           h('div', { className: 'mt-8 text-center text-xs text-slate-500' },
@@ -420,6 +451,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
         var power = powerState[0], setPower = powerState[1];
         var gearState = useState(0.7); // gear ratio as a fraction of bike's max
         var gear = gearState[0], setGear = gearState[1];
+        // Wind: positive = headwind (m/s felt by rider above ground speed),
+        // negative = tailwind. Drag scales with |v + wind|² so students can
+        // see why a 10 mph headwind erases more power than a 10% grade.
+        var windState = useState(0);
+        var wind = windState[0], setWind = windState[1];
 
         var bike = BIKES.find(function(b) { return b.id === bikeId; }) || BIKES[1];
         var terrain = TERRAINS.find(function(t) { return t.id === terrainId; }) || TERRAINS[1];
@@ -462,7 +498,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
           var normalN = m * G * Math.cos(angle);
           var gravParallel = m * G * Math.sin(angle); // opposes motion when climbing
           var rollingF = bike.crr * crrMult * normalN;
-          var dragF = 0.5 * RHO_AIR * bike.cdA * v * Math.abs(v); // v²
+          // Drag scales with relative air velocity (headwind adds, tailwind
+          // subtracts). Keep the quadratic sign so a strong tailwind can push.
+          var vRel = v + wind;
+          var dragF = 0.5 * RHO_AIR * bike.cdA * vRel * Math.abs(vRel); // v_rel²
           // Pedal force from power: F = P/v. Floor so we don't divide by zero at rest.
           var effectivePower = Math.min(power, bike.maxPower) * gear;
           var pedalF = v > 0.3 ? effectivePower / v : effectivePower / 0.3;
@@ -482,7 +521,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
           var hist = energyHistoryRef.current;
           hist.push({ t: timeRef.current, ke: ke, pe: pe, total: ke + pe });
           if (hist.length > 600) hist.shift();
-        }, [bike, terrain, power, gear]);
+        }, [bike, terrain, power, gear, wind]);
 
         // Animation loop
         useEffect(function() {
@@ -603,6 +642,74 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
             var sy = worldToScreenY(p3.y);
             ctx2d.fillRect(sx - 1, sy - 10, 2, 10);
             ctx2d.fillText(mx + 'm', sx - 10, sy - 14);
+          }
+
+          // ── Roadside scenery (trees, signs, cones) ──
+          // Each object is anchored at a deterministic world x (every 15m) so
+          // its identity and position are stable as the camera scrolls. Sits
+          // on the terrain surface (follows the profile curve). Drawn before
+          // the bike so the bike occludes when passing.
+          for (var scX = Math.floor((camX - 60) / 15) * 15; scX <= camX + 100; scX += 15) {
+            if (scX < 5) continue;
+            var scHash = (Math.floor(scX / 15) * 2654435761) >>> 0; // unsigned hash
+            var scKind = scHash % 6; // 0-2 tree, 3 sign, 4 bench, 5 cone
+            var scP = terrain.profile(scX);
+            var scSide = (scHash & 2) ? 1 : -1; // left or right of path
+            var scBaseX = worldToScreenX(scX);
+            var scBaseY = worldToScreenY(scP.y);
+            if (scBaseX < -30 || scBaseX > W + 30) continue;
+            if (scKind <= 2) {
+              // Tree: trunk + leafy top. Size varies with hash.
+              var trH = 18 + (scHash % 12);
+              var trW = 3 + (scHash % 2);
+              ctx2d.fillStyle = '#78350f';
+              ctx2d.fillRect(scBaseX - trW / 2, scBaseY - trH, trW, trH);
+              ctx2d.fillStyle = scP.kind === 'sand' ? '#65a30d' : (scHash & 4 ? '#166534' : '#15803d');
+              ctx2d.beginPath();
+              ctx2d.arc(scBaseX, scBaseY - trH - 2, 10 + (scHash % 5), 0, 2 * Math.PI);
+              ctx2d.fill();
+              // Small highlight dot on canopy for sun
+              ctx2d.fillStyle = 'rgba(255,255,255,0.18)';
+              ctx2d.beginPath();
+              ctx2d.arc(scBaseX - 4, scBaseY - trH - 5, 3, 0, 2 * Math.PI);
+              ctx2d.fill();
+            } else if (scKind === 3) {
+              // Wooden signpost with a distance badge
+              ctx2d.fillStyle = '#57534e';
+              ctx2d.fillRect(scBaseX - 1, scBaseY - 22, 2, 22);
+              ctx2d.fillStyle = '#fde68a';
+              ctx2d.fillRect(scBaseX - 11, scBaseY - 26, 22, 10);
+              ctx2d.strokeStyle = '#78350f'; ctx2d.lineWidth = 1;
+              ctx2d.strokeRect(scBaseX - 11, scBaseY - 26, 22, 10);
+              ctx2d.fillStyle = '#78350f';
+              ctx2d.font = 'bold 7px monospace';
+              ctx2d.textAlign = 'center';
+              ctx2d.fillText(Math.round(scX) + 'm', scBaseX, scBaseY - 19);
+              ctx2d.textAlign = 'left';
+            } else if (scKind === 4) {
+              // Park bench
+              ctx2d.fillStyle = '#57534e';
+              ctx2d.fillRect(scBaseX - 9, scBaseY - 5, 18, 2);
+              ctx2d.fillRect(scBaseX - 9, scBaseY - 10, 18, 2);
+              ctx2d.fillRect(scBaseX - 8, scBaseY - 5, 1, 5);
+              ctx2d.fillRect(scBaseX + 7, scBaseY - 5, 1, 5);
+              ctx2d.fillRect(scBaseX - 9, scBaseY - 11, 1, 6);
+              ctx2d.fillRect(scBaseX + 8, scBaseY - 11, 1, 6);
+            } else {
+              // Traffic cone
+              ctx2d.fillStyle = '#f97316';
+              ctx2d.beginPath();
+              ctx2d.moveTo(scBaseX, scBaseY - 12);
+              ctx2d.lineTo(scBaseX + 4, scBaseY);
+              ctx2d.lineTo(scBaseX - 4, scBaseY);
+              ctx2d.closePath();
+              ctx2d.fill();
+              ctx2d.fillStyle = '#fff';
+              ctx2d.fillRect(scBaseX - 3, scBaseY - 8, 6, 1.5);
+            }
+            // Each scenery piece ignores scSide currently (sits on path); could
+            // be parameterized later if lateral positioning is added.
+            void scSide;
           }
 
           // Bike at world position camX (on the ground)
@@ -754,6 +861,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
           ctx2d.globalAlpha = 1;
           particlesRef.current = newP.slice(-80); // cap so memory stays bounded
 
+          // ── Speed lines at high velocity ──
+          // Thin horizontal streaks sweeping past the bike, brighter when the
+          // relative air velocity (v + headwind) is high. Gives students a
+          // visceral sense of speed and reinforces that headwind compounds
+          // with ground speed to increase drag.
+          var slVRel = Math.abs(velRef.current + wind);
+          if (slVRel > 4) {
+            var slIntensity = Math.min(1, (slVRel - 4) / 12);
+            ctx2d.save();
+            ctx2d.strokeStyle = 'rgba(255,255,255,' + (0.25 * slIntensity) + ')';
+            ctx2d.lineWidth = 1.2;
+            for (var sl = 0; sl < 10; sl++) {
+              var slPhase = (timeRef.current * slVRel * 0.8 + sl * 71) % 200;
+              var slX = W * 1.1 - slPhase;
+              var slY = by - 30 + ((sl * 37) % 70) - 35;
+              var slLen = 14 + slIntensity * 22;
+              ctx2d.beginPath();
+              ctx2d.moveTo(slX, slY);
+              ctx2d.lineTo(slX + slLen, slY + 1);
+              ctx2d.stroke();
+            }
+            ctx2d.restore();
+          }
+
           // Force vectors — scale so the longest ≈ 100 px
           if (showVectors) {
             var v = velRef.current;
@@ -767,7 +898,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
             var surf = terrain.profile(camX).kind;
             var crr = bike.crr * (SURFACE_CRR_MULT[surf] || 1);
             var rollingF = crr * normalN;
-            var dragF = 0.5 * RHO_AIR * bike.cdA * v * Math.abs(v);
+            var vRelVec = v + wind;
+            var dragF = 0.5 * RHO_AIR * bike.cdA * vRelVec * Math.abs(vRelVec);
             var pedalF = v > 0.3 ? (Math.min(power, bike.maxPower) * gear) / v : (Math.min(power, bike.maxPower) * gear) / 0.3;
             if (v < 0.3) pedalF = Math.min(pedalF, 250);
             var maxF = Math.max(50, Math.abs(pedalF), rollingF, dragF, Math.abs(gravP), normalN);
@@ -788,6 +920,64 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
           // Energy graph (top-right corner)
           if (showGraph) {
             drawEnergyGraph(ctx2d, W, H);
+          }
+
+          // ── Wind indicator (top-center) ──
+          // Large arrow showing wind direction and magnitude. Wind > 0 means
+          // the air is moving TOWARD the rider (headwind) so the arrow points
+          // left (against the direction of travel). Stronger winds get a longer
+          // arrow with visible streaks.
+          if (Math.abs(wind) > 0.1) {
+            var wiCx = W * 0.5;
+            var wiCy = 28;
+            var wiMag = Math.min(1, Math.abs(wind) / 11);
+            var wiLen = 28 + wiMag * 60;
+            var wiDir = wind > 0 ? -1 : 1; // headwind points left (against motion)
+            var wiCol = wind > 0 ? 'rgba(248,113,113,0.9)' : 'rgba(74,222,128,0.9)';
+            ctx2d.save();
+            // Box
+            ctx2d.fillStyle = 'rgba(15,23,42,0.6)';
+            ctx2d.strokeStyle = 'rgba(148,163,184,0.25)';
+            ctx2d.lineWidth = 1;
+            ctx2d.beginPath();
+            if (ctx2d.roundRect) ctx2d.roundRect(wiCx - 82, wiCy - 16, 164, 32, 6); else ctx2d.rect(wiCx - 82, wiCy - 16, 164, 32);
+            ctx2d.fill(); ctx2d.stroke();
+            // Label
+            ctx2d.fillStyle = '#cbd5e1';
+            ctx2d.font = 'bold 9px monospace';
+            ctx2d.textAlign = 'center';
+            ctx2d.fillText((wind > 0 ? 'HEADWIND ' : 'TAILWIND ') + Math.abs(wind * 2.23694).toFixed(0) + ' mph', wiCx, wiCy - 4);
+            // Arrow
+            ctx2d.strokeStyle = wiCol;
+            ctx2d.fillStyle = wiCol;
+            ctx2d.lineWidth = 2.5;
+            ctx2d.beginPath();
+            ctx2d.moveTo(wiCx - (wiLen / 2) * wiDir, wiCy + 8);
+            ctx2d.lineTo(wiCx + (wiLen / 2) * wiDir, wiCy + 8);
+            ctx2d.stroke();
+            // Arrowhead
+            ctx2d.beginPath();
+            var tipX = wiCx + (wiLen / 2) * wiDir;
+            ctx2d.moveTo(tipX, wiCy + 8);
+            ctx2d.lineTo(tipX - 6 * wiDir, wiCy + 4);
+            ctx2d.lineTo(tipX - 6 * wiDir, wiCy + 12);
+            ctx2d.closePath();
+            ctx2d.fill();
+            // Streak lines to imply speed
+            ctx2d.strokeStyle = wiCol;
+            ctx2d.lineWidth = 1;
+            ctx2d.globalAlpha = 0.6;
+            for (var ws = 0; ws < 3; ws++) {
+              var wy = wiCy + 8 + (ws - 1) * 4;
+              var wx0 = wiCx - (wiLen / 2) * wiDir + ws * 4 * wiDir;
+              ctx2d.beginPath();
+              ctx2d.moveTo(wx0, wy);
+              ctx2d.lineTo(wx0 + 10 * wiDir, wy);
+              ctx2d.stroke();
+            }
+            ctx2d.globalAlpha = 1;
+            ctx2d.textAlign = 'left';
+            ctx2d.restore();
           }
 
           // ── Telemetry HUD (top-left) ──
@@ -952,7 +1142,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                 h('input', { type: 'range', min: 0.2, max: 1.0, step: 0.05, value: gear,
                   onChange: function(e) { setGear(parseFloat(e.target.value)); },
                   className: 'w-full mt-1 accent-violet-500' }),
-                h('div', { className: 'text-[10px] text-slate-500 mt-1' }, 'Low gear = more torque, less top speed. See Gearing Lab for math.')
+                h('div', { className: 'text-[10px] text-slate-500 mt-1' }, 'Low gear = more torque, less top speed. See Gearing Lab for math.'),
+                h('label', { className: 'text-xs font-bold text-slate-500 uppercase tracking-wider flex justify-between mt-3' },
+                  h('span', null, 'Wind'),
+                  h('span', { className: wind > 0 ? 'text-rose-600' : wind < 0 ? 'text-emerald-600' : 'text-slate-500' },
+                    wind === 0 ? 'calm' : (Math.abs(wind * 2.23694).toFixed(0) + ' mph ' + (wind > 0 ? 'headwind' : 'tailwind')))),
+                h('input', { type: 'range', min: -11, max: 11, step: 0.5, value: wind,
+                  onChange: function(e) { setWind(parseFloat(e.target.value)); },
+                  className: 'w-full mt-1 accent-rose-500' }),
+                h('div', { className: 'text-[10px] text-slate-500 mt-1' }, 'Drag scales with (v + wind)² \u2014 a 10 mph headwind at 15 mph feels like 25 mph worth of drag.')
               )
             ),
             // Canvas column
@@ -1894,6 +2092,581 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
       }
 
       // ─────────────────────────────────────────────────────
+      // SUB-VIEW: NEIGHBORHOOD RIDE DEMO
+      // ─────────────────────────────────────────────────────
+      // Applied-physics capstone. Ride a scripted 600 m "commute to school"
+      // course that reuses the Sandbox physics engine. Three scored events
+      // along the way (stop sign, steep climb, wet section) teach real-world
+      // gear + braking decisions.
+      function NeighborhoodRide() {
+        var bikeState = useState(d.rideBikeId || 'hybrid');
+        var bikeId = bikeState[0], setBikeId = bikeState[1];
+        var bike = BIKES.find(function(b) { return b.id === bikeId; }) || BIKES[1];
+        var powerState = useState(150);
+        var power = powerState[0], setPower = powerState[1];
+        var gearState = useState(0.7);
+        var gear = gearState[0], setGear = gearState[1];
+        var brakingState = useState(false);
+        var braking = brakingState[0], setBraking = brakingState[1];
+        var runningState = useState(false);
+        var running = runningState[0], setRunning = runningState[1];
+        var finishedState = useState(false);
+        var finished = finishedState[0], setFinished = finishedState[1];
+
+        var COURSE_LENGTH = 600;
+        var COURSE_SEGMENTS = [
+          { from: 0,   to: 180, kind: 'pavement', label: 'Your block', elevFn: function(x) { return 0; } },
+          { from: 180, to: 220, kind: 'pavement', label: 'STOP SIGN',  elevFn: function(x) { return 0; }, stopSign: { at: 205, windowStart: 195, windowEnd: 215 } },
+          { from: 220, to: 280, kind: 'pavement', label: 'Flat run',   elevFn: function(x) { return 0; } },
+          { from: 280, to: 380, kind: 'pavement', label: 'Oak Hill',   elevFn: function(x) { return (x - 280) * 0.07; }, hill: { start: 280, end: 380 } },
+          { from: 380, to: 450, kind: 'pavement', label: 'Descent',    elevFn: function(x) { return 7 - (x - 380) * 0.03; } },
+          { from: 450, to: 520, kind: 'wet',      label: 'Wet patch',  elevFn: function(x) { return 4.9 - (x - 450) * 0.04; }, wet: { start: 450, end: 520 } },
+          { from: 520, to: 600, kind: 'pavement', label: 'School St.', elevFn: function(x) { return 2.1 - (x - 520) * 0.026; } }
+        ];
+        var DECOR = [
+          { x: 20,  emoji: '🏠', h: 3.5 }, { x: 60,  emoji: '🏡', h: 3.5 },
+          { x: 100, emoji: '🌳', h: 2.5 }, { x: 140, emoji: '🏠', h: 3.5 },
+          { x: 205, emoji: '🛑', h: 2.0 }, { x: 250, emoji: '🌳', h: 2.5 },
+          { x: 300, emoji: '🌳', h: 2.5 }, { x: 340, emoji: '🌳', h: 2.5 },
+          { x: 420, emoji: '🏡', h: 3.5 }, { x: 470, emoji: '🌧️', h: 4.0 },
+          { x: 560, emoji: '🏡', h: 3.5 }, { x: 600, emoji: '🏫', h: 4.5 }
+        ];
+
+        var scoreRef = useRef({ stopSignObeyed: null, stopSignMinV: null, hillMinSpeed: 999, hillCrawlTime: 0, wetBrakingHard: false });
+        var posRef = useRef(0);
+        var velRef = useRef(0);
+        var timeRef = useRef(0);
+        var prevVelRef = useRef(0);
+        var rafRef = useRef(null);
+        var lastTsRef = useRef(0);
+        var hudTickState = useState(0);
+        var hudTick = hudTickState[0], setHudTick = hudTickState[1];
+        var canvasRef = useRef(null);
+
+        var terrainAt = function(x) {
+          var clamped = Math.max(0, Math.min(COURSE_LENGTH, x));
+          var seg = COURSE_SEGMENTS.find(function(s) { return clamped >= s.from && clamped <= s.to; }) || COURSE_SEGMENTS[0];
+          return { y: seg.elevFn(clamped), kind: seg.kind, seg: seg };
+        };
+
+        var reset = function() {
+          posRef.current = 0; velRef.current = 0; timeRef.current = 0; prevVelRef.current = 0;
+          scoreRef.current = { stopSignObeyed: null, stopSignMinV: null, hillMinSpeed: 999, hillCrawlTime: 0, wetBrakingHard: false };
+          setFinished(false);
+          setHudTick(function(x) { return x + 1; });
+        };
+
+        useEffect(function() { reset(); }, [bikeId]);
+
+        useEffect(function() {
+          if (!running) return;
+          var onKey = function(e) {
+            if (e.key === 'ArrowUp') { setGear(function(g) { return Math.min(1, g + 0.1); }); e.preventDefault(); }
+            if (e.key === 'ArrowDown') { setGear(function(g) { return Math.max(0.2, g - 0.1); }); e.preventDefault(); }
+            if (e.key === ' ') { setBraking(true); e.preventDefault(); }
+          };
+          var onKeyUp = function(e) { if (e.key === ' ') setBraking(false); };
+          window.addEventListener('keydown', onKey);
+          window.addEventListener('keyup', onKeyUp);
+          return function() {
+            window.removeEventListener('keydown', onKey);
+            window.removeEventListener('keyup', onKeyUp);
+          };
+        }, [running]);
+
+        var step = useCallback(function(dt) {
+          var m = bike.mass;
+          var v = velRef.current;
+          var x = posRef.current;
+          var t = terrainAt(x);
+          var y0 = t.y;
+          var y1 = terrainAt(x + 0.5).y;
+          var slope = (y1 - y0) / 0.5;
+          var angle = Math.atan(slope);
+          var crrMult = SURFACE_CRR_MULT[t.kind] || 1;
+          var normalN = m * G * Math.cos(angle);
+          var gravParallel = m * G * Math.sin(angle);
+          var rollingF = bike.crr * crrMult * normalN;
+          var dragF = 0.5 * RHO_AIR * bike.cdA * v * Math.abs(v);
+          var effectivePower = braking ? 0 : Math.min(power, bike.maxPower) * gear;
+          var pedalF = v > 0.3 ? effectivePower / v : effectivePower / 0.3;
+          if (v < 0.3) pedalF = Math.min(pedalF, 250);
+          var brakeF = braking ? m * 5.5 : 0;
+          var netF = pedalF - rollingF - dragF - gravParallel - brakeF;
+          var a = netF / m;
+          var newV = v + a * dt;
+          if (newV < 0) newV = 0;
+          var newX = x + newV * dt;
+
+          var s = scoreRef.current;
+          if (t.seg.stopSign && newX >= t.seg.stopSign.windowStart && newX <= t.seg.stopSign.windowEnd) {
+            if (s.stopSignMinV == null || newV < s.stopSignMinV) s.stopSignMinV = newV;
+          }
+          if (t.seg.stopSign && newX >= t.seg.stopSign.windowEnd && s.stopSignObeyed === null) {
+            s.stopSignObeyed = (s.stopSignMinV != null && s.stopSignMinV <= 1.2);
+            if (s.stopSignObeyed) addToast('✓ Stopped at the stop sign', 'success');
+            else addToast('✗ You ran the stop sign', 'warning');
+          }
+          if (t.seg.hill && newX >= t.seg.hill.start && newX <= t.seg.hill.end) {
+            if (newV < s.hillMinSpeed) s.hillMinSpeed = newV;
+            if (newV < 2.0) s.hillCrawlTime += dt;
+          }
+          if (t.seg.wet && newX >= t.seg.wet.start && newX <= t.seg.wet.start + 5) {
+            var decel = (prevVelRef.current - newV) / dt;
+            if (decel > 4.0) s.wetBrakingHard = true;
+          }
+
+          velRef.current = newV;
+          posRef.current = newX;
+          prevVelRef.current = newV;
+          timeRef.current += dt;
+
+          if (newX >= COURSE_LENGTH) {
+            setRunning(false);
+            setFinished(true);
+            var bestT = d.rideBestTime;
+            if (!bestT || timeRef.current < bestT) upd('rideBestTime', timeRef.current);
+          }
+        }, [bike, power, gear, braking, d.rideBestTime]);
+
+        useEffect(function() {
+          if (!running) { if (rafRef.current) cancelAnimationFrame(rafRef.current); return; }
+          var loop = function(ts) {
+            if (!lastTsRef.current) lastTsRef.current = ts;
+            var dt = Math.min(0.05, (ts - lastTsRef.current) / 1000);
+            lastTsRef.current = ts;
+            var sub = 4;
+            for (var i = 0; i < sub; i++) step(dt / sub);
+            draw();
+            setHudTick(function(x) { return (x + 1) % 1000; });
+            rafRef.current = requestAnimationFrame(loop);
+          };
+          rafRef.current = requestAnimationFrame(loop);
+          return function() { if (rafRef.current) cancelAnimationFrame(rafRef.current); lastTsRef.current = 0; };
+        }, [running, step]); // eslint-disable-line
+
+        var draw = function() {
+          var cvs = canvasRef.current;
+          if (!cvs) return;
+          var ctx2d = cvs.getContext('2d');
+          var W = cvs.width, H = cvs.height;
+          var sky = ctx2d.createLinearGradient(0, 0, 0, H * 0.75);
+          sky.addColorStop(0, '#7dd3fc'); sky.addColorStop(1, '#e0f2fe');
+          ctx2d.fillStyle = sky;
+          ctx2d.fillRect(0, 0, W, H * 0.75);
+          ctx2d.fillStyle = '#cbd5e1';
+          ctx2d.fillRect(0, H * 0.55, W, H * 0.20);
+
+          var camX = posRef.current;
+          var pxPerMeter = 8;
+          var centerY = H * 0.75;
+          var w2sX = function(wx) { return W * 0.25 + (wx - camX) * pxPerMeter; };
+          var w2sY = function(wy) { return centerY - wy * pxPerMeter; };
+
+          ctx2d.beginPath();
+          ctx2d.moveTo(0, H);
+          for (var wx = camX - 50; wx <= camX + 110; wx += 2) {
+            var p = terrainAt(wx);
+            ctx2d.lineTo(w2sX(wx), w2sY(p.y));
+          }
+          ctx2d.lineTo(W, H);
+          ctx2d.closePath();
+          var tNow = terrainAt(camX);
+          ctx2d.fillStyle = tNow.kind === 'wet' ? '#475569' : tNow.kind === 'dirt' ? '#78350f' : '#334155';
+          ctx2d.fill();
+          if (tNow.kind === 'pavement') {
+            ctx2d.strokeStyle = '#fbbf24';
+            ctx2d.lineWidth = 2;
+            ctx2d.setLineDash([12, 10]);
+            ctx2d.beginPath();
+            for (var wx2 = camX - 50; wx2 <= camX + 110; wx2 += 2) {
+              var p2 = terrainAt(wx2);
+              if (wx2 === camX - 50) ctx2d.moveTo(w2sX(wx2), w2sY(p2.y));
+              else ctx2d.lineTo(w2sX(wx2), w2sY(p2.y));
+            }
+            ctx2d.stroke();
+            ctx2d.setLineDash([]);
+          }
+
+          DECOR.forEach(function(dec) {
+            var dx = w2sX(dec.x);
+            if (dx < -30 || dx > W + 30) return;
+            var dp = terrainAt(dec.x);
+            var dy = w2sY(dp.y + dec.h);
+            ctx2d.font = (dec.h * 8) + 'px serif';
+            ctx2d.fillText(dec.emoji, dx - 16, dy);
+          });
+
+          COURSE_SEGMENTS.forEach(function(seg) {
+            if (seg.stopSign) {
+              var sx1 = w2sX(seg.stopSign.windowStart);
+              var sx2 = w2sX(seg.stopSign.windowEnd);
+              if (sx2 < 0 || sx1 > W) return;
+              ctx2d.fillStyle = 'rgba(239, 68, 68, 0.15)';
+              ctx2d.fillRect(sx1, centerY - 6, sx2 - sx1, 16);
+            }
+            if (seg.wet) {
+              var wx1 = w2sX(seg.wet.start);
+              var wxE = w2sX(seg.wet.end);
+              if (wxE < 0 || wx1 > W) return;
+              ctx2d.fillStyle = 'rgba(14, 165, 233, 0.18)';
+              ctx2d.fillRect(wx1, centerY - 6, wxE - wx1, 16);
+            }
+          });
+
+          var gp = terrainAt(camX);
+          var bx = w2sX(camX);
+          var by = w2sY(gp.y);
+          var bxAhead = w2sX(camX + 0.5);
+          var byAhead = w2sY(terrainAt(camX + 0.5).y);
+          var bikeAngle = Math.atan2(byAhead - by, bxAhead - bx);
+          ctx2d.save();
+          ctx2d.translate(bx, by);
+          ctx2d.rotate(bikeAngle);
+          ctx2d.strokeStyle = '#0f172a'; ctx2d.lineWidth = 3;
+          ctx2d.beginPath(); ctx2d.arc(-14, -6, 6, 0, 2 * Math.PI); ctx2d.stroke();
+          ctx2d.beginPath(); ctx2d.arc(14, -6, 6, 0, 2 * Math.PI); ctx2d.stroke();
+          ctx2d.beginPath();
+          ctx2d.moveTo(-14, -6); ctx2d.lineTo(0, -18); ctx2d.lineTo(14, -6);
+          ctx2d.strokeStyle = '#f43f5e'; ctx2d.lineWidth = 3; ctx2d.stroke();
+          ctx2d.beginPath(); ctx2d.arc(0, -26, 4, 0, 2 * Math.PI);
+          ctx2d.fillStyle = '#fed7aa'; ctx2d.fill();
+          ctx2d.restore();
+
+          ctx2d.fillStyle = 'rgba(15, 23, 42, 0.85)';
+          ctx2d.fillRect(0, 0, W, 28);
+          var pct = Math.min(1, posRef.current / COURSE_LENGTH);
+          ctx2d.fillStyle = '#22c55e';
+          ctx2d.fillRect(0, 0, W * pct, 28);
+          ctx2d.font = 'bold 13px monospace';
+          ctx2d.fillStyle = '#fff';
+          ctx2d.fillText('🏠 ' + posRef.current.toFixed(0) + ' / ' + COURSE_LENGTH + ' m · ' + timeRef.current.toFixed(1) + 's · ' + (velRef.current * 2.237).toFixed(1) + ' mph 🏫', 12, 19);
+
+          var nextEventDist = null;
+          var nextEventLabel = '';
+          COURSE_SEGMENTS.forEach(function(seg) {
+            if (seg.stopSign && seg.stopSign.at > posRef.current && (nextEventDist == null || seg.stopSign.at - posRef.current < nextEventDist)) {
+              nextEventDist = seg.stopSign.at - posRef.current;
+              nextEventLabel = '🛑 Stop sign';
+            }
+            if (seg.hill && seg.hill.start > posRef.current && (nextEventDist == null || seg.hill.start - posRef.current < nextEventDist)) {
+              nextEventDist = seg.hill.start - posRef.current;
+              nextEventLabel = '⛰️ Steep climb';
+            }
+            if (seg.wet && seg.wet.start > posRef.current && (nextEventDist == null || seg.wet.start - posRef.current < nextEventDist)) {
+              nextEventDist = seg.wet.start - posRef.current;
+              nextEventLabel = '🌧️ Wet section';
+            }
+          });
+          if (nextEventDist != null && nextEventDist < 80) {
+            ctx2d.fillStyle = 'rgba(234, 88, 12, 0.9)';
+            ctx2d.fillRect(W - 260, 36, 250, 32);
+            ctx2d.fillStyle = '#fff';
+            ctx2d.font = 'bold 13px sans-serif';
+            ctx2d.fillText(nextEventLabel + ' in ' + nextEventDist.toFixed(0) + ' m', W - 250, 56);
+          }
+        };
+
+        useEffect(function() { draw(); }, [hudTick, bikeId, running]); // eslint-disable-line
+
+        var advice = [];
+        if (scoreRef.current.stopSignObeyed === false) advice.push('Brake earlier to fully stop at the sign (≤ 1 m/s for a moment).');
+        if (scoreRef.current.hillCrawlTime > 5) advice.push('Downshift to a lower gear before the climb — your speed dropped below 2 m/s for a while.');
+        if (scoreRef.current.wetBrakingHard) advice.push('Wet pavement has half the grip of dry. Ease off the brake before entering puddles.');
+        if (advice.length === 0 && finished) advice.push('Clean ride! You applied the physics correctly.');
+        var bestTime = d.rideBestTime;
+
+        return h('div', { className: 'flex flex-col h-full bg-slate-50' },
+          BackBar({ icon: '🏘️', title: 'Neighborhood Ride' }),
+          h('div', { className: 'p-3 max-w-7xl mx-auto w-full space-y-3' },
+            h('div', { className: 'bg-slate-900 rounded-xl overflow-hidden shadow-xl border border-slate-800' },
+              h('canvas', { ref: canvasRef, width: 1000, height: 380, className: 'w-full block' })
+            ),
+            h('div', { className: 'grid grid-cols-1 lg:grid-cols-4 gap-3' },
+              h('div', { className: 'bg-white rounded-xl shadow border border-slate-200 p-3 flex flex-col gap-2' },
+                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-500' }, 'Session'),
+                !finished && h('button', {
+                  onClick: function() { setRunning(!running); },
+                  className: 'py-2.5 px-4 rounded-lg font-bold transition-colors shadow ' + (running ? 'bg-rose-500 hover:bg-rose-600 text-white' : 'bg-emerald-500 hover:bg-emerald-600 text-white')
+                }, running ? '⏸ Pause' : (posRef.current > 0 && posRef.current < COURSE_LENGTH ? '▶ Resume' : '▶ Start Ride')),
+                finished && h('button', {
+                  onClick: function() { reset(); setRunning(true); },
+                  className: 'py-2.5 px-4 rounded-lg font-bold bg-emerald-500 hover:bg-emerald-600 text-white transition-colors shadow'
+                }, '↻ Ride Again'),
+                h('button', {
+                  onClick: function() { setRunning(false); reset(); },
+                  className: 'py-2 px-4 rounded-lg font-bold bg-slate-200 hover:bg-slate-300 text-slate-700 text-sm transition-colors'
+                }, '↺ Reset'),
+                bestTime && h('div', { className: 'text-[11px] text-slate-600 text-center border-t border-slate-200 pt-2' },
+                  '🏆 Best: ' + bestTime.toFixed(1) + 's')
+              ),
+              h('div', { className: 'bg-white rounded-xl shadow border border-slate-200 p-3' },
+                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-500 mb-2' }, 'Bike'),
+                h('div', { className: 'grid grid-cols-2 gap-1' },
+                  BIKES.map(function(b) {
+                    return h('button', {
+                      key: b.id,
+                      onClick: function() { setBikeId(b.id); upd('rideBikeId', b.id); },
+                      className: 'flex items-center gap-1 px-1.5 py-1 rounded border text-xs transition-colors ' + (bikeId === b.id ? 'border-indigo-500 bg-indigo-50 text-indigo-700 font-bold' : 'border-slate-200 text-slate-600 hover:border-slate-300')
+                    }, h('span', null, b.icon), h('span', { className: 'truncate' }, b.name.split(' ')[0]));
+                  })
+                )
+              ),
+              h('div', { className: 'bg-white rounded-xl shadow border border-slate-200 p-3' },
+                h('label', { className: 'text-xs font-bold uppercase tracking-wider text-slate-500 flex justify-between' },
+                  h('span', null, 'Gear (↑/↓)'), h('span', { className: 'text-violet-600' }, (gear * 100).toFixed(0) + '%')),
+                h('input', { type: 'range', min: 0.2, max: 1.0, step: 0.05, value: gear,
+                  onChange: function(e) { setGear(parseFloat(e.target.value)); },
+                  className: 'w-full accent-violet-500' }),
+                h('label', { className: 'text-xs font-bold uppercase tracking-wider text-slate-500 flex justify-between mt-2' },
+                  h('span', null, 'Pedal Power'), h('span', { className: 'text-cyan-600' }, power + ' W')),
+                h('input', { type: 'range', min: 0, max: 400, value: power,
+                  onChange: function(e) { setPower(parseInt(e.target.value)); },
+                  className: 'w-full accent-cyan-500' })
+              ),
+              h('div', { className: 'bg-white rounded-xl shadow border border-slate-200 p-3 flex flex-col' },
+                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-500 mb-2' }, 'Brake (Space)'),
+                h('button', {
+                  onMouseDown: function() { setBraking(true); },
+                  onMouseUp: function() { setBraking(false); },
+                  onMouseLeave: function() { setBraking(false); },
+                  onTouchStart: function() { setBraking(true); },
+                  onTouchEnd: function() { setBraking(false); },
+                  className: 'flex-1 rounded-lg font-black text-white transition-colors shadow ' + (braking ? 'bg-rose-700' : 'bg-rose-500 hover:bg-rose-600')
+                }, braking ? '🛑 BRAKING' : '🛑 Hold to Brake'),
+                h('div', { className: 'text-[10px] text-slate-500 mt-2 text-center' }, 'Hold to slow or stop')
+              )
+            ),
+            finished && h('div', { className: 'bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl shadow-lg text-white p-5' },
+              h('div', { className: 'flex items-center gap-3 mb-3' },
+                h('span', { className: 'text-5xl' }, '🏫'),
+                h('div', null,
+                  h('div', { className: 'text-[11px] font-bold uppercase tracking-wider opacity-80' }, 'You made it to school'),
+                  h('div', { className: 'text-3xl font-black font-mono' }, timeRef.current.toFixed(1) + 's'),
+                  bestTime === timeRef.current && h('div', { className: 'text-xs font-bold' }, '🏆 New personal best!')
+                )
+              ),
+              h('div', { className: 'grid grid-cols-3 gap-3 mb-3' },
+                h('div', { className: 'bg-white/15 rounded-lg p-2 text-center' },
+                  h('div', { className: 'text-[10px] uppercase opacity-80' }, 'Stop Sign'),
+                  h('div', { className: 'text-xl' }, scoreRef.current.stopSignObeyed ? '✓' : '✗')
+                ),
+                h('div', { className: 'bg-white/15 rounded-lg p-2 text-center' },
+                  h('div', { className: 'text-[10px] uppercase opacity-80' }, 'Hill Crawl'),
+                  h('div', { className: 'text-xl' }, scoreRef.current.hillCrawlTime <= 5 ? '✓' : '✗')
+                ),
+                h('div', { className: 'bg-white/15 rounded-lg p-2 text-center' },
+                  h('div', { className: 'text-[10px] uppercase opacity-80' }, 'Wet Section'),
+                  h('div', { className: 'text-xl' }, !scoreRef.current.wetBrakingHard ? '✓' : '✗')
+                )
+              ),
+              advice.length > 0 && h('div', { className: 'bg-white/20 rounded-lg p-3 text-sm' },
+                h('div', { className: 'text-[11px] font-bold uppercase tracking-wider opacity-80 mb-1' }, 'Coach'),
+                advice.map(function(a, i) { return h('div', { key: i, className: 'leading-relaxed' }, '• ' + a); })
+              )
+            ),
+            h('div', { className: 'bg-slate-100 rounded-xl p-3 text-xs text-slate-600 leading-relaxed border border-slate-200' },
+              h('span', { className: 'font-bold text-slate-700' }, '🧭 Course: '),
+              '180 m flat → 🛑 stop sign → flat run → ⛰️ Oak Hill (7% grade) → descent → 🌧️ wet patch → 🏫 school (600 m total). Use ↑/↓ to shift gears, Space to brake. Apply the physics you learned in Sandbox, Gearing, and Braking labs.'
+            )
+          )
+        );
+      }
+
+      // ─────────────────────────────────────────────────────
+      // SUB-VIEW: BIKE PARTS INSPECTOR
+      // ─────────────────────────────────────────────────────
+      function PartsInspector() {
+        var BIKE_PARTS = [
+          { id: 'top_tube',   name: 'Top Tube',        cat: 'Frame', hx: 195, hy: 80, hw: 120, hh: 20,
+            fn: 'Horizontal frame tube connecting head tube to seat tube. Defines the "standover height" — you should have 2-5 cm clearance when straddling the bike flat-footed.',
+            issues: 'Structural cracks after a crash. Dents from rack-hauling. Carbon tubes show stress as hairline fractures; aluminum shows dents.' },
+          { id: 'down_tube',  name: 'Down Tube',       cat: 'Frame', hx: 170, hy: 140, hw: 160, hh: 24,
+            fn: 'Diagonal tube from head tube to bottom bracket — the main load-bearing member. Takes pedaling forces and braking loads.',
+            issues: 'Rock strikes leave dents that can fail under stress. Inspect after any crash. Check for paint cracks around tube junctions.' },
+          { id: 'seat_tube',  name: 'Seat Tube',       cat: 'Frame', hx: 290, hy: 80, hw: 24, hh: 110,
+            fn: 'Vertical tube that holds the seatpost. Its angle determines your riding posture (steeper = more forward).',
+            issues: 'Seatpost seized from corrosion — grease the post every year. Clamp area cracks from over-tightening.' },
+          { id: 'chainstay',  name: 'Chainstay',       cat: 'Frame', hx: 300, hy: 210, hw: 120, hh: 16,
+            fn: 'Rear frame tubes running from bottom bracket to rear axle. Shorter chainstays = quicker acceleration and snappier handling.',
+            issues: 'Chain slap wears the paint. Dropout threads can strip — use a threadless hanger on aluminum frames.' },
+          { id: 'seatstay',   name: 'Seatstay',        cat: 'Frame', hx: 300, hy: 130, hw: 110, hh: 16,
+            fn: 'Tubes from seat tube top to rear axle. Form the rear triangle with chainstay and seat tube.',
+            issues: 'Carbon seatstays can crack at the dropout on impact. Rim brakes wear a groove in the mounting bosses over time.' },
+          { id: 'head_tube',  name: 'Head Tube',       cat: 'Frame', hx: 160, hy: 95, hw: 26, hh: 70,
+            fn: 'Short vertical tube at the front — houses the headset bearings that let the fork swivel. Its angle determines steering quickness.',
+            issues: 'Creaking headset = loose preload. Cracks at tube junctions after a hard front impact.',
+            repairJob: 'headset_adjust' },
+          { id: 'rim',        name: 'Rim',             cat: 'Wheels', hx: 70, hy: 210, hw: 90, hh: 90,
+            fn: 'Aluminum or carbon hoop holding the tire and transferring braking force (rim brakes) or offering a true surface (disc brakes).',
+            issues: 'Bends from pothole hits. Rim-brake wear grooves — replace when the indicator disappears.',
+            repairJob: 'wheel_true' },
+          { id: 'spokes',     name: 'Spokes',          cat: 'Wheels', hx: 420, hy: 220, hw: 70, hh: 80,
+            fn: 'Wire members connecting rim to hub in tension. Transfer weight from the hub to the ground through the rim.',
+            issues: 'A broken spoke throws the wheel out of true immediately — zip-tie it to a neighbor and ride gently home.' },
+          { id: 'hub',        name: 'Hub',             cat: 'Wheels', hx: 108, hy: 248, hw: 24, hh: 24,
+            fn: 'Wheel center containing the axle and bearings. Rear hub also holds the cassette body and ratchet mechanism.',
+            issues: 'Grinding = worn bearings. Free-hub pawls can fail — you pedal but the wheel doesn\'t move.' },
+          { id: 'tire',       name: 'Tire',            cat: 'Wheels', hx: 60, hy: 250, hw: 100, hh: 36,
+            fn: 'Rubber-and-casing air-chamber sleeve that provides grip and cushioning. Width, tread, and pressure all shape the ride.',
+            issues: 'Sidewall cuts from glass. Thread showing = replace. Low pressure invites pinch flats on potholes.',
+            repairJob: 'patch_tube' },
+          { id: 'chainring',  name: 'Chainring',       cat: 'Drivetrain', hx: 285, hy: 220, hw: 40, hh: 40,
+            fn: 'Front gear attached to the crank. Its tooth count combined with the cassette cog sets your gear ratio (see Gearing Lab).',
+            issues: 'Teeth turn into shark-fins at wear. A chain that jumps teeth under load = replace chainring AND chain together.' },
+          { id: 'cassette',   name: 'Cassette',        cat: 'Drivetrain', hx: 415, hy: 232, hw: 28, hh: 36,
+            fn: 'Cluster of rear gears. Each cog changes the gear ratio. Shifting up = smaller cog = harder, more speed per pedal stroke.',
+            issues: 'Worn cassettes cause skipping under load. Replace with chain every ~2 chain changes.',
+            repairJob: 'chain_clean' },
+          { id: 'chain',      name: 'Chain',           cat: 'Drivetrain', hx: 315, hy: 230, hw: 100, hh: 20,
+            fn: 'Roller chain that transfers power from chainring to cassette. Wears 0.5% — 1% over ~1500 miles, needs replacement when it stretches.',
+            issues: 'Use a chain-wear gauge. Clean and lube every 150 miles.',
+            repairJob: 'chain_clean' },
+          { id: 'rd',         name: 'Rear Derailleur', cat: 'Drivetrain', hx: 408, hy: 265, hw: 28, hh: 28,
+            fn: 'Spring-loaded parallelogram that guides the chain between cassette cogs and maintains chain tension.',
+            issues: 'Sluggish shifting = cable tension off. Bent hanger = shift is impossible to tune — replace the hanger.',
+            repairJob: 'derailleur_index' },
+          { id: 'shifter',    name: 'Shifter',         cat: 'Drivetrain', hx: 128, hy: 78, hw: 26, hh: 20,
+            fn: 'Handlebar-mounted lever that pulls (or releases) cable to move the derailleur. Each click = one cog.',
+            issues: 'Grit in the ratchet causes missed shifts. Replace cable every 2 years.' },
+          { id: 'handlebar',  name: 'Handlebar',       cat: 'Cockpit', hx: 80, hy: 82, hw: 80, hh: 16,
+            fn: 'Provides steering input and mounting for shifters, brake levers, and lights. Shapes: flat (MTB/hybrid), drop (road), riser.',
+            issues: 'Aluminum bars have fatigue life — replace after 5-10 years or a crash. Carbon cracks invisibly.' },
+          { id: 'stem',       name: 'Stem',            cat: 'Cockpit', hx: 136, hy: 78, hw: 30, hh: 16,
+            fn: 'Clamps handlebar to fork steerer. Length and angle change your reach and bar height — swap it for a better fit.',
+            issues: 'Over-torqued bolts crack carbon bars. Re-grease steerer clamp on every service.',
+            repairJob: 'headset_adjust' },
+          { id: 'saddle',     name: 'Saddle',          cat: 'Cockpit', hx: 282, hy: 58, hw: 46, hh: 14,
+            fn: 'Seat. Supports your weight via your "sit bones" (ischial tuberosities). Width should match your sit-bone spacing.',
+            issues: 'Wear-through at corners. Creaking rails need grease. Numbness = adjust angle slightly nose-down.' },
+          { id: 'brake_lever',name: 'Brake Lever',     cat: 'Brakes', hx: 115, hy: 82, hw: 16, hh: 22,
+            fn: 'Pulls the brake cable or hydraulic pistons. Position matters — adjust reach so you can brake without straining your fingers.',
+            issues: 'Mushy lever = air in hydraulic line (bleed) or stretched cable (tighten).',
+            repairJob: 'brake_adjust' },
+          { id: 'caliper',    name: 'Brake Caliper',   cat: 'Brakes', hx: 100, hy: 180, hw: 38, hh: 22,
+            fn: 'Clamps the pads onto the rim (rim brakes) or rotor (disc brakes) when cable is pulled. The actual braking force originates here.',
+            issues: 'Squealing = pad toe-in wrong or contamination. Grinding = worn pads or misaligned caliper.',
+            repairJob: 'brake_adjust' }
+        ];
+
+        var selectedState = useState(d.partsLastId || 'chain');
+        var selectedId = selectedState[0], setSelectedId = selectedState[1];
+        var selected = BIKE_PARTS.find(function(p) { return p.id === selectedId; }) || BIKE_PARTS[0];
+
+        var CATEGORIES = [
+          { id: 'Frame', color: 'bg-slate-500' },
+          { id: 'Wheels', color: 'bg-blue-500' },
+          { id: 'Drivetrain', color: 'bg-violet-500' },
+          { id: 'Cockpit', color: 'bg-emerald-500' },
+          { id: 'Brakes', color: 'bg-rose-500' }
+        ];
+
+        return h('div', { className: 'flex flex-col h-full bg-slate-50' },
+          BackBar({ icon: '🔍', title: 'Bike Parts Inspector' }),
+          h('div', { className: 'p-4 max-w-7xl mx-auto w-full' },
+            h('div', { className: 'grid grid-cols-1 lg:grid-cols-5 gap-4' },
+              h('div', { className: 'lg:col-span-3 bg-white rounded-xl shadow border border-slate-200 p-4' },
+                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-500 mb-2' }, 'Click any part of the bike'),
+                h('svg', { viewBox: '0 0 500 300', className: 'w-full h-auto', style: { maxHeight: '420px' } },
+                  h('line', { x1: 170, y1: 95, x2: 175, y2: 165, stroke: '#334155', strokeWidth: 3 }),
+                  h('line', { x1: 175, y1: 95, x2: 300, y2: 95, stroke: '#334155', strokeWidth: 3 }),
+                  h('line', { x1: 175, y1: 165, x2: 300, y2: 240, stroke: '#334155', strokeWidth: 3 }),
+                  h('line', { x1: 300, y1: 95, x2: 300, y2: 240, stroke: '#334155', strokeWidth: 3 }),
+                  h('line', { x1: 300, y1: 240, x2: 425, y2: 250, stroke: '#334155', strokeWidth: 3 }),
+                  h('line', { x1: 300, y1: 95, x2: 425, y2: 250, stroke: '#334155', strokeWidth: 3 }),
+                  h('line', { x1: 170, y1: 165, x2: 120, y2: 250, stroke: '#334155', strokeWidth: 3 }),
+                  h('circle', { cx: 120, cy: 250, r: 42, fill: 'none', stroke: '#1e293b', strokeWidth: 3 }),
+                  h('circle', { cx: 120, cy: 250, r: 5, fill: '#475569' }),
+                  h('line', { x1: 120, y1: 250, x2: 120, y2: 210, stroke: '#94a3b8', strokeWidth: 1 }),
+                  h('line', { x1: 120, y1: 250, x2: 154, y2: 270, stroke: '#94a3b8', strokeWidth: 1 }),
+                  h('line', { x1: 120, y1: 250, x2: 86, y2: 270, stroke: '#94a3b8', strokeWidth: 1 }),
+                  h('line', { x1: 120, y1: 250, x2: 120, y2: 290, stroke: '#94a3b8', strokeWidth: 1 }),
+                  h('circle', { cx: 425, cy: 250, r: 42, fill: 'none', stroke: '#1e293b', strokeWidth: 3 }),
+                  h('circle', { cx: 425, cy: 250, r: 5, fill: '#475569' }),
+                  h('line', { x1: 425, y1: 250, x2: 425, y2: 210, stroke: '#94a3b8', strokeWidth: 1 }),
+                  h('line', { x1: 425, y1: 250, x2: 459, y2: 270, stroke: '#94a3b8', strokeWidth: 1 }),
+                  h('line', { x1: 425, y1: 250, x2: 391, y2: 270, stroke: '#94a3b8', strokeWidth: 1 }),
+                  h('line', { x1: 425, y1: 250, x2: 425, y2: 290, stroke: '#94a3b8', strokeWidth: 1 }),
+                  h('circle', { cx: 300, cy: 240, r: 18, fill: 'none', stroke: '#7c3aed', strokeWidth: 2 }),
+                  h('circle', { cx: 425, cy: 250, r: 14, fill: 'none', stroke: '#7c3aed', strokeWidth: 2 }),
+                  h('line', { x1: 318, y1: 240, x2: 439, y2: 250, stroke: '#a78bfa', strokeWidth: 2 }),
+                  h('line', { x1: 318, y1: 250, x2: 411, y2: 258, stroke: '#a78bfa', strokeWidth: 2 }),
+                  h('ellipse', { cx: 300, cy: 62, rx: 22, ry: 6, fill: '#1e293b' }),
+                  h('line', { x1: 300, y1: 68, x2: 300, y2: 95, stroke: '#334155', strokeWidth: 2 }),
+                  h('line', { x1: 90, y1: 90, x2: 160, y2: 90, stroke: '#334155', strokeWidth: 3 }),
+                  h('line', { x1: 138, y1: 90, x2: 170, y2: 95, stroke: '#334155', strokeWidth: 3 }),
+                  h('rect', { x: 108, y: 178, width: 24, height: 8, fill: '#f43f5e', stroke: '#881337', strokeWidth: 1 }),
+                  h('rect', { x: 412, y: 270, width: 16, height: 22, fill: '#7c3aed', stroke: '#4c1d95', strokeWidth: 1 }),
+                  selected && h('rect', {
+                    x: selected.hx, y: selected.hy, width: selected.hw, height: selected.hh,
+                    fill: 'none', stroke: '#fbbf24', strokeWidth: 3, rx: 4
+                  }),
+                  BIKE_PARTS.map(function(p) {
+                    return h('rect', {
+                      key: p.id,
+                      x: p.hx, y: p.hy, width: p.hw, height: p.hh,
+                      fill: 'transparent',
+                      style: { cursor: 'pointer' },
+                      onClick: function() { setSelectedId(p.id); upd('partsLastId', p.id); }
+                    });
+                  })
+                )
+              ),
+              h('div', { className: 'lg:col-span-2 space-y-3' },
+                h('div', { className: 'bg-white rounded-xl shadow border border-slate-200 overflow-hidden' },
+                  h('div', { className: 'p-4 bg-gradient-to-br from-slate-700 to-slate-900 text-white' },
+                    h('div', { className: 'flex items-center justify-between mb-1' },
+                      h('span', { className: 'text-xs font-bold uppercase tracking-wider opacity-70' }, selected.cat),
+                      selected.repairJob && h('span', { className: 'bg-amber-500/30 text-amber-200 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider' }, 'Has repair job')
+                    ),
+                    h('h3', { className: 'text-2xl font-black' }, selected.name)
+                  ),
+                  h('div', { className: 'p-4 space-y-3' },
+                    h('div', null,
+                      h('div', { className: 'text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1' }, 'Function'),
+                      h('p', { className: 'text-sm text-slate-700 leading-relaxed' }, selected.fn)
+                    ),
+                    h('div', null,
+                      h('div', { className: 'text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1' }, 'Common Issues'),
+                      h('p', { className: 'text-sm text-slate-700 leading-relaxed' }, selected.issues)
+                    ),
+                    selected.repairJob && h('button', {
+                      onClick: function() {
+                        upd('repairJobId', selected.repairJob);
+                        goto('repair');
+                      },
+                      className: 'w-full py-2.5 px-4 rounded-lg bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm transition-colors shadow'
+                    }, '🔧 Open related repair job →')
+                  )
+                ),
+                h('div', { className: 'bg-slate-100 rounded-xl p-3' },
+                  h('div', { className: 'text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2' }, 'Parts by category'),
+                  CATEGORIES.map(function(c) {
+                    var parts = BIKE_PARTS.filter(function(p) { return p.cat === c.id; });
+                    return h('div', { key: c.id, className: 'mb-2' },
+                      h('div', { className: 'flex items-center gap-2 mb-1' },
+                        h('span', { className: 'w-3 h-3 rounded ' + c.color }),
+                        h('span', { className: 'text-xs font-bold text-slate-700' }, c.id + ' (' + parts.length + ')')
+                      ),
+                      h('div', { className: 'flex flex-wrap gap-1 pl-5' },
+                        parts.map(function(p) {
+                          return h('button', {
+                            key: p.id,
+                            onClick: function() { setSelectedId(p.id); upd('partsLastId', p.id); },
+                            className: 'text-[11px] px-2 py-0.5 rounded border transition-colors ' + (selectedId === p.id ? 'border-indigo-500 bg-indigo-500 text-white font-bold' : 'border-slate-300 bg-white text-slate-600 hover:border-slate-400')
+                          }, p.name);
+                        })
+                      )
+                    );
+                  })
+                )
+              )
+            )
+          )
+        );
+      }
+
+      // ─────────────────────────────────────────────────────
       // MAIN VIEW DISPATCH
       // ─────────────────────────────────────────────────────
       if (view === 'sandbox') return h(PhysicsSandbox);
@@ -1902,6 +2675,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
       if (view === 'fit') return h(BikeFit);
       if (view === 'braking') return h(BrakingPhysics);
       if (view === 'safety') return h(SafetyQuiz);
+      if (view === 'ride') return h(NeighborhoodRide);
+      if (view === 'parts') return h(PartsInspector);
       return h(MainMenu);
     }
   });

@@ -6283,6 +6283,23 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           if (typeof window.__clearAlloTtsCacheForWord === "function") {
             window.__clearAlloTtsCacheForWord(targetWord);
           }
+          // Also clear the reducer-backed wordSoundsAudioLibrary entry for
+          // this word. handleAudio at line ~1684 checks this library BEFORE
+          // calling callTTS — if a previous session persisted an entry, the
+          // old audio URL was served even after every other cache was
+          // cleared, so the student heard the same clip despite pressing
+          // regenerate.
+          if (typeof setWordSoundsAudioLibrary === "function" && wordSoundsAudioLibrary) {
+            try {
+              setWordSoundsAudioLibrary(function(prev) {
+                if (!prev || typeof prev !== 'object') return prev;
+                const next = Object.assign({}, prev);
+                delete next[targetWord];
+                delete next[targetWord.toLowerCase()];
+                return next;
+              });
+            } catch (e) { warnLog('Clear wordSoundsAudioLibrary failed:', e && e.message); }
+          }
           if (preloadedWordCache.current) {
             preloadedWordCache.current.delete(targetWord.toLowerCase());
           }

@@ -290,9 +290,10 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           var xR = { min: x0 - halfW_x, max: x0 + halfW_x };
 
           // Sample to find dynamic y range
+          // (fn is the CALC_FUNCS wrapper { label, f, df } — call fn.f to evaluate)
           var samples = [];
           for (var si = 0; si <= 40; si++) {
-            samples.push(fn(xR.min + (si/40) * (xR.max - xR.min)));
+            samples.push(fn.f(xR.min + (si/40) * (xR.max - xR.min)));
           }
           var yMin = Math.min.apply(null, samples), yMax = Math.max.apply(null, samples);
           var yPad = (yMax - yMin) * 0.25 + 0.05;
