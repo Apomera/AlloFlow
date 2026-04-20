@@ -60,6 +60,429 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           });
         };
 
+        // ── VISUALIZE: canvas hooks (declared at IIFE top so they fire every render) ──
+        var _vizCvRef = React.useRef(null);
+        var _vizAnimId = React.useRef(0);
+        var _vizTick = React.useRef(0);
+        var _vizLiveState = React.useRef({});
+        var _vizLoopRunning = React.useRef(false);
+
+        // ── FUNCTION REGISTRY (used by Visualize views — unlocks non-quadratics) ──
+        var CALC_FUNCS = {
+          'quadratic':  { label: 'x\u00B2 - 2',          f: function(x){ return x*x - 2; },             df: function(x){ return 2*x; } },
+          'cubic':      { label: 'x\u00B3 / 3 - x',     f: function(x){ return x*x*x/3 - x; },         df: function(x){ return x*x - 1; } },
+          'sin':        { label: 'sin(x)',               f: function(x){ return Math.sin(x); },         df: function(x){ return Math.cos(x); } },
+          'exp':        { label: 'e^(x/2)',              f: function(x){ return Math.exp(x/2); },       df: function(x){ return 0.5*Math.exp(x/2); } },
+          'bell':       { label: 'e^(-x\u00B2/2)',      f: function(x){ return Math.exp(-x*x/2); },    df: function(x){ return -x*Math.exp(-x*x/2); } },
+          'rational':   { label: '1 / (1+x\u00B2)',     f: function(x){ return 1/(1+x*x); },           df: function(x){ return -2*x/Math.pow(1+x*x,2); } }
+        };
+
+        // Pipe live state into ref so the RAF loop always reads fresh values
+        _vizLiveState.current = {
+          tab: d.tab || 'integral',
+          vizView: d.vizView || 'zoom',
+          vizFn: d.vizFn || 'quadratic',
+          vizZoom: d.vizZoom !== undefined ? d.vizZoom : 1,
+          vizX0: d.vizX0 !== undefined ? d.vizX0 : 0,
+          vizFtcX: d.vizFtcX !== undefined ? d.vizFtcX : -1,
+          vizRiemannMode: d.vizRiemannMode || 'midpoint',
+          CALC_FUNCS: CALC_FUNCS
+        };
+
+        // ── RAF LOOP FOR VISUALIZE CANVAS (attach once, dispatch per view) ──
+        React.useEffect(function() {
+          if ((d.tab || 'integral') !== 'visualize') return;
+          var tries = 0, retryTimer = null;
+          function tryInit() {
+            var cv = _vizCvRef.current;
+            if (!cv) {
+              if (tries++ < 12) { retryTimer = setTimeout(tryInit, 50); }
+              else { console.warn('[Calculus Viz] canvas ref never attached'); }
+              return;
+            }
+            var c = cv.getContext('2d');
+            if (!c) return;
+            function resize() {
+              var r = cv.getBoundingClientRect();
+              var dpr = window.devicePixelRatio || 1;
+              cv.width = Math.max(1, Math.floor(r.width * dpr));
+              cv.height = Math.max(1, Math.floor(r.height * dpr));
+              c.setTransform(dpr, 0, 0, dpr, 0, 0);
+            }
+            resize();
+            var resizeObs = null;
+            try { resizeObs = new ResizeObserver(resize); resizeObs.observe(cv); } catch(e) {}
+
+            function frame() {
+              _vizTick.current++;
+              var t = _vizTick.current;
+              var ls = _vizLiveState.current;
+              if (ls.tab !== 'visualize') { _vizAnimId.current = requestAnimationFrame(frame); return; }
+              var r = cv.getBoundingClientRect();
+              var W = r.width, H = r.height;
+              // Clear
+              var bg = c.createLinearGradient(0, 0, 0, H);
+              bg.addColorStop(0, '#0f172a'); bg.addColorStop(1, '#1e293b');
+              c.fillStyle = bg; c.fillRect(0, 0, W, H);
+
+              var fn = ls.CALC_FUNCS[ls.vizFn] || ls.CALC_FUNCS.quadratic;
+
+              if (ls.vizView === 'zoom')         { drawZoomToLinearity(c, W, H, fn, ls, t); }
+              else if (ls.vizView === 'tangent') { drawTangentExplorer(c, W, H, fn, ls, t); }
+              else if (ls.vizView === 'ftc')     { drawFTCSweep(c, W, H, fn, ls, t); }
+              else { drawComingSoon(c, W, H, ls.vizView); }
+
+              _vizAnimId.current = requestAnimationFrame(frame);
+            }
+            if (!_vizLoopRunning.current) {
+              _vizLoopRunning.current = true;
+              _vizAnimId.current = requestAnimationFrame(frame);
+            }
+            cv._vizCleanup = function() {
+              _vizLoopRunning.current = false;
+              if (_vizAnimId.current) cancelAnimationFrame(_vizAnimId.current);
+              if (resizeObs) { try { resizeObs.disconnect(); } catch(e) {} }
+            };
+          }
+          tryInit();
+          return function() {
+            if (retryTimer) clearTimeout(retryTimer);
+            var cv = _vizCvRef.current;
+            if (cv && cv._vizCleanup) cv._vizCleanup();
+          };
+        }, [d.tab]);
+
+        // ── Keyboard shortcuts Shift+1..6 for viz views ──
+        React.useEffect(function() {
+          if ((d.tab || 'integral') !== 'visualize') return;
+          function onKey(e) {
+            if (!e.shiftKey || !/^[1-6]$/.test(e.key)) return;
+            var views = ['zoom','tangent','motion','riemann','ftc','slope'];
+            e.preventDefault();
+            upd('vizView', views[parseInt(e.key, 10) - 1]);
+          }
+          window.addEventListener('keydown', onKey);
+          return function() { window.removeEventListener('keydown', onKey); };
+        }, [d.tab]);
+
+        // ── VIZ DRAW FUNCTIONS (scoped inside render — OK because IIFE runs each render) ──
+        function drawComingSoon(c, W, H, viewId) {
+          c.fillStyle = '#94a3b8'; c.textAlign = 'center';
+          c.font = 'bold 16px "Inter", sans-serif';
+          c.fillText('\u23F3 View "' + viewId + '" coming soon', W/2, H/2 - 8);
+          c.font = '11px "Inter", sans-serif'; c.fillStyle = '#64748b';
+          c.fillText('Try Zoom, Tangent, or FTC for now', W/2, H/2 + 12);
+        }
+
+        // Helper: plot a function curve onto canvas rect with axis transforms
+        function plotCurve(c, fn, xR, yR, Lx, Rx, Ty, By, color, width) {
+          c.strokeStyle = color; c.lineWidth = width || 2;
+          c.beginPath();
+          var N = 200;
+          for (var i = 0; i <= N; i++) {
+            var x = xR.min + (i / N) * (xR.max - xR.min);
+            var y = fn(x);
+            var sx = Lx + ((x - xR.min) / (xR.max - xR.min)) * (Rx - Lx);
+            var sy = By - ((y - yR.min) / (yR.max - yR.min)) * (By - Ty);
+            if (i === 0) c.moveTo(sx, sy); else c.lineTo(sx, sy);
+          }
+          c.stroke();
+        }
+        function drawAxes(c, Lx, Rx, Ty, By, xR, yR, color) {
+          color = color || 'rgba(148,163,184,0.35)';
+          c.strokeStyle = color; c.lineWidth = 1;
+          // x=0 axis
+          if (xR.min < 0 && xR.max > 0) {
+            var zeroX = Lx + ((0 - xR.min) / (xR.max - xR.min)) * (Rx - Lx);
+            c.beginPath(); c.moveTo(zeroX, Ty); c.lineTo(zeroX, By); c.stroke();
+          }
+          // y=0 axis
+          if (yR.min < 0 && yR.max > 0) {
+            var zeroY = By - ((0 - yR.min) / (yR.max - yR.min)) * (By - Ty);
+            c.beginPath(); c.moveTo(Lx, zeroY); c.lineTo(Rx, zeroY); c.stroke();
+          }
+          // Frame
+          c.strokeStyle = 'rgba(148,163,184,0.25)';
+          c.strokeRect(Lx, Ty, Rx - Lx, By - Ty);
+        }
+
+        // ── VIEW 1: Zoom to Linearity ──
+        function drawZoomToLinearity(c, W, H, fn, ls, t) {
+          // Title
+          c.fillStyle = '#e2e8f0'; c.textAlign = 'center';
+          c.font = 'bold 14px "Inter", sans-serif';
+          c.fillText('\uD83D\uDD0D Zoom to Linearity \u2014 "what IS a derivative?"', W/2, 20);
+          c.font = 'italic 10px "Inter", sans-serif'; c.fillStyle = '#94a3b8';
+          c.fillText('As you zoom, ANY smooth curve becomes a straight line. That line\u2019s slope = f\u2032(x\u2080).', W/2, 36);
+
+          var x0 = ls.vizX0;
+          // Zoom factor: slow sine ping-pong 1x .. 200x so users see motion even without interacting
+          var autoZoom = 1 + 100 * (1 - Math.cos(t / 90)) / 2;
+          var zoom = ls.vizZoom && ls.vizZoom > 1 ? ls.vizZoom : autoZoom;
+          var halfW_x = 3 / zoom;
+          var xR = { min: x0 - halfW_x, max: x0 + halfW_x };
+
+          // Sample to find dynamic y range
+          var samples = [];
+          for (var si = 0; si <= 40; si++) {
+            samples.push(fn(xR.min + (si/40) * (xR.max - xR.min)));
+          }
+          var yMin = Math.min.apply(null, samples), yMax = Math.max.apply(null, samples);
+          var yPad = (yMax - yMin) * 0.25 + 0.05;
+          var yR = { min: yMin - yPad, max: yMax + yPad };
+
+          // Plot area
+          var Lx = 60, Rx = W - 20, Ty = 56, By = H - 60;
+
+          drawAxes(c, Lx, Rx, Ty, By, xR, yR);
+
+          // The curve
+          plotCurve(c, fn.f, xR, yR, Lx, Rx, Ty, By, '#f87171', 2.5);
+
+          // The tangent line at x0 (always drawn)
+          var slope = fn.df(x0);
+          var y0 = fn.f(x0);
+          var tanFn = function(x) { return slope * (x - x0) + y0; };
+          plotCurve(c, tanFn, xR, yR, Lx, Rx, Ty, By, 'rgba(52,211,153,0.85)', 2);
+
+          // Marker at (x0, f(x0))
+          var mx = Lx + ((x0 - xR.min) / (xR.max - xR.min)) * (Rx - Lx);
+          var my = By - ((y0 - yR.min) / (yR.max - yR.min)) * (By - Ty);
+          c.fillStyle = '#fde047';
+          c.beginPath(); c.arc(mx, my, 5, 0, Math.PI * 2); c.fill();
+          c.strokeStyle = '#0f172a'; c.lineWidth = 1.5; c.stroke();
+
+          // Zoom meter
+          var zTxt = zoom.toFixed(0) + '\u00D7 zoom';
+          c.fillStyle = 'rgba(15,23,42,0.85)';
+          c.fillRect(Lx + 10, Ty + 10, 120, 40);
+          c.strokeStyle = 'rgba(59,130,246,0.5)'; c.strokeRect(Lx + 10, Ty + 10, 120, 40);
+          c.fillStyle = '#60a5fa'; c.textAlign = 'left';
+          c.font = 'bold 12px "Inter", sans-serif';
+          c.fillText(zTxt, Lx + 18, Ty + 28);
+          c.font = 'bold 10px "Inter", sans-serif'; c.fillStyle = '#34d399';
+          c.fillText('slope \u2192 ' + slope.toFixed(4), Lx + 18, Ty + 44);
+
+          // Small legend
+          c.textAlign = 'right';
+          c.fillStyle = '#f87171'; c.font = 'bold 10px "Inter", sans-serif';
+          c.fillText('\u2014 f(x)', Rx - 10, Ty + 20);
+          c.fillStyle = '#34d399';
+          c.fillText('\u2014 tangent at x\u2080', Rx - 10, Ty + 36);
+
+          // x-axis scrubber at bottom
+          var scrubY = H - 34;
+          c.fillStyle = 'rgba(148,163,184,0.2)';
+          c.fillRect(Lx, scrubY, Rx - Lx, 18);
+          c.strokeStyle = 'rgba(148,163,184,0.4)';
+          c.strokeRect(Lx, scrubY, Rx - Lx, 18);
+          // Map x0 across a fixed -3..3 global range for scrubber
+          var gx = Lx + ((x0 + 3) / 6) * (Rx - Lx);
+          c.fillStyle = '#fde047';
+          c.fillRect(gx - 3, scrubY - 2, 6, 22);
+          c.fillStyle = '#94a3b8'; c.textAlign = 'center';
+          c.font = '9px "Inter", sans-serif';
+          c.fillText('drag x\u2080 below: x\u2080 = ' + x0.toFixed(2), W/2, H - 8);
+        }
+
+        // ── VIEW 2: Tangent Explorer (curve + tangent + f'(x) trace) ──
+        function drawTangentExplorer(c, W, H, fn, ls, t) {
+          // Title
+          c.fillStyle = '#e2e8f0'; c.textAlign = 'center';
+          c.font = 'bold 14px "Inter", sans-serif';
+          c.fillText('\uD83D\uDCCD Tangent Explorer \u2014 the derivative is itself a function', W/2, 20);
+          c.font = 'italic 10px "Inter", sans-serif'; c.fillStyle = '#94a3b8';
+          c.fillText('Left: f(x) with live tangent. Right: f\u2032(x) traced as you move x\u2080.', W/2, 36);
+
+          // Two panels side by side
+          var gap = 12;
+          var panelW = (W - gap - 40) / 2;
+          var Lx1 = 20, Rx1 = Lx1 + panelW;
+          var Lx2 = Rx1 + gap, Rx2 = Lx2 + panelW;
+          var Ty = 56, By = H - 30;
+
+          var xR = { min: -3, max: 3 };
+
+          // Sample y ranges dynamically
+          var fs = [], dfs = [];
+          for (var si = 0; si <= 60; si++) {
+            var x = xR.min + (si/60) * (xR.max - xR.min);
+            fs.push(fn.f(x));
+            dfs.push(fn.df(x));
+          }
+          var yMin = Math.min.apply(null, fs), yMax = Math.max.apply(null, fs);
+          var dyMin = Math.min.apply(null, dfs), dyMax = Math.max.apply(null, dfs);
+          var yR = { min: yMin - 0.5, max: yMax + 0.5 };
+          var dyR = { min: dyMin - 0.5, max: dyMax + 0.5 };
+
+          // Left panel: f(x)
+          drawAxes(c, Lx1, Rx1, Ty, By, xR, yR);
+          plotCurve(c, fn.f, xR, yR, Lx1, Rx1, Ty, By, '#f87171', 2);
+
+          // Auto-sweep x0 (smooth ping-pong) if user hasn't interacted
+          var x0 = (ls.vizX0 !== undefined && ls.vizX0 !== 0) ? ls.vizX0 : Math.sin(t / 60) * 2.5;
+          var slope = fn.df(x0);
+          var y0 = fn.f(x0);
+
+          // Tangent at x0
+          var tanFn = function(x) { return slope * (x - x0) + y0; };
+          plotCurve(c, tanFn, xR, yR, Lx1, Rx1, Ty, By, 'rgba(52,211,153,0.85)', 2);
+
+          // Marker
+          var mx = Lx1 + ((x0 - xR.min) / (xR.max - xR.min)) * (Rx1 - Lx1);
+          var my = By - ((y0 - yR.min) / (yR.max - yR.min)) * (By - Ty);
+          c.fillStyle = '#fde047';
+          c.beginPath(); c.arc(mx, my, 5, 0, Math.PI * 2); c.fill();
+          c.strokeStyle = '#0f172a'; c.lineWidth = 1.2; c.stroke();
+
+          c.fillStyle = '#f87171'; c.textAlign = 'left';
+          c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText('f(x)', Lx1 + 8, Ty + 16);
+
+          // Right panel: f'(x) traced
+          drawAxes(c, Lx2, Rx2, Ty, By, xR, dyR);
+          plotCurve(c, fn.df, xR, dyR, Lx2, Rx2, Ty, By, 'rgba(52,211,153,0.6)', 1.5);
+
+          // A DOT on f'(x) at x0 — this is the "slope on the right matches tangent on the left"
+          var dmx = Lx2 + ((x0 - xR.min) / (xR.max - xR.min)) * (Rx2 - Lx2);
+          var dmy = By - ((slope - dyR.min) / (dyR.max - dyR.min)) * (By - Ty);
+          c.fillStyle = '#fde047';
+          c.beginPath(); c.arc(dmx, dmy, 6, 0, Math.PI * 2); c.fill();
+          c.strokeStyle = '#0f172a'; c.lineWidth = 1.5; c.stroke();
+
+          // Arrow from left marker up to right dot — visual "they're the same"
+          c.strokeStyle = 'rgba(253,224,71,0.35)'; c.lineWidth = 1; c.setLineDash([4, 4]);
+          c.beginPath(); c.moveTo(mx, my); c.lineTo(dmx, dmy); c.stroke();
+          c.setLineDash([]);
+
+          c.fillStyle = '#34d399'; c.textAlign = 'left';
+          c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText("f\u2032(x)", Lx2 + 8, Ty + 16);
+
+          // Bottom readout
+          c.fillStyle = '#fde047'; c.textAlign = 'center';
+          c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText('x\u2080 = ' + x0.toFixed(2) + '   \u2192   f(x\u2080) = ' + y0.toFixed(2) + '   \u2022   f\u2032(x\u2080) = slope = ' + slope.toFixed(2), W/2, H - 12);
+        }
+
+        // ── VIEW 5: FTC Sweep (THE payoff) ──
+        function drawFTCSweep(c, W, H, fn, ls, t) {
+          // Title
+          c.fillStyle = '#e2e8f0'; c.textAlign = 'center';
+          c.font = 'bold 14px "Inter", sans-serif';
+          c.fillText('\u2B50 Fundamental Theorem of Calculus \u2014 area\u2019s slope IS the curve', W/2, 20);
+          c.font = 'italic 10px "Inter", sans-serif'; c.fillStyle = '#94a3b8';
+          c.fillText("Left: shaded area A(x) under f. Right: plot of A(x). Its slope at any x equals f(x).", W/2, 36);
+
+          var gap = 12;
+          var panelW = (W - gap - 40) / 2;
+          var Lx1 = 20, Rx1 = Lx1 + panelW;
+          var Lx2 = Rx1 + gap, Rx2 = Lx2 + panelW;
+          var Ty = 56, By = H - 30;
+
+          var xR = { min: -3, max: 3 };
+          // Sample f and A
+          var N = 240;
+          var dxS = (xR.max - xR.min) / N;
+          var fVals = new Array(N+1), AVals = new Array(N+1);
+          var acc = 0;
+          for (var i = 0; i <= N; i++) {
+            var xi = xR.min + i * dxS;
+            fVals[i] = fn.f(xi);
+            if (i > 0) acc += (fVals[i-1] + fVals[i]) / 2 * dxS; // trapezoidal
+            AVals[i] = acc;
+          }
+          var fMin = Math.min.apply(null, fVals), fMax = Math.max.apply(null, fVals);
+          var aMin = Math.min.apply(null, AVals), aMax = Math.max.apply(null, AVals);
+          var yR = { min: Math.min(fMin - 0.3, 0), max: fMax + 0.3 };
+          var aR = { min: aMin - 0.3, max: aMax + 0.3 };
+
+          drawAxes(c, Lx1, Rx1, Ty, By, xR, yR);
+          drawAxes(c, Lx2, Rx2, Ty, By, xR, aR);
+
+          // Auto-sweep the x pointer if user hasn't touched it
+          var sweepX = (ls.vizFtcX !== undefined && ls.vizFtcX > xR.min + 0.01 && ls.vizFtcX < xR.max - 0.01)
+            ? ls.vizFtcX
+            : (xR.min + ((Math.sin(t/80) + 1) / 2) * (xR.max - xR.min));
+
+          // Shade area [xR.min .. sweepX] under f on left panel
+          var zeroY_L = By - ((0 - yR.min) / (yR.max - yR.min)) * (By - Ty);
+          c.fillStyle = 'rgba(59,130,246,0.28)';
+          c.beginPath();
+          var startSx = Lx1;
+          c.moveTo(startSx, zeroY_L);
+          for (var k = 0; k <= N; k++) {
+            var xi2 = xR.min + k * dxS;
+            if (xi2 > sweepX) break;
+            var sx = Lx1 + ((xi2 - xR.min) / (xR.max - xR.min)) * (Rx1 - Lx1);
+            var sy = By - ((fVals[k] - yR.min) / (yR.max - yR.min)) * (By - Ty);
+            c.lineTo(sx, sy);
+          }
+          // Close bottom
+          var endSx = Lx1 + ((sweepX - xR.min) / (xR.max - xR.min)) * (Rx1 - Lx1);
+          c.lineTo(endSx, zeroY_L);
+          c.closePath();
+          c.fill();
+
+          // Curve on top of shading
+          plotCurve(c, fn.f, xR, yR, Lx1, Rx1, Ty, By, '#f87171', 2.2);
+
+          // Sweep marker on left
+          c.strokeStyle = '#fde047'; c.lineWidth = 1.5;
+          c.beginPath(); c.moveTo(endSx, Ty); c.lineTo(endSx, By); c.stroke();
+          c.fillStyle = '#fde047';
+          c.beginPath(); c.arc(endSx, zeroY_L, 4, 0, Math.PI * 2); c.fill();
+
+          // Right panel: A(x) curve drawn only up to sweepX
+          // First draw full ghost curve
+          plotCurve(c, function(x){
+            var idx = Math.round((x - xR.min) / dxS);
+            if (idx < 0) idx = 0; if (idx > N) idx = N;
+            return AVals[idx];
+          }, xR, aR, Lx2, Rx2, Ty, By, 'rgba(59,130,246,0.18)', 1.5);
+          // Then draw the solid portion
+          c.strokeStyle = '#60a5fa'; c.lineWidth = 2.5;
+          c.beginPath();
+          var drawn = 0;
+          for (var j = 0; j <= N; j++) {
+            var xj = xR.min + j * dxS;
+            if (xj > sweepX) break;
+            var sx2 = Lx2 + ((xj - xR.min) / (xR.max - xR.min)) * (Rx2 - Lx2);
+            var sy2 = By - ((AVals[j] - aR.min) / (aR.max - aR.min)) * (By - Ty);
+            if (drawn === 0) c.moveTo(sx2, sy2); else c.lineTo(sx2, sy2);
+            drawn++;
+          }
+          c.stroke();
+
+          // Tangent to A(x) at sweepX — slope should equal f(sweepX)
+          var idxS = Math.max(0, Math.min(N, Math.round((sweepX - xR.min) / dxS)));
+          var fAtS = fVals[idxS], aAtS = AVals[idxS];
+          var Lx2Offset = Lx2;
+          var sxAtS = Lx2Offset + ((sweepX - xR.min) / (xR.max - xR.min)) * (Rx2 - Lx2);
+          var syAtS = By - ((aAtS - aR.min) / (aR.max - aR.min)) * (By - Ty);
+          // Draw the tangent
+          var tanA = function(x) { return fAtS * (x - sweepX) + aAtS; };
+          plotCurve(c, tanA, xR, aR, Lx2, Rx2, Ty, By, 'rgba(52,211,153,0.85)', 2);
+          // Sweep dot on right
+          c.fillStyle = '#fde047';
+          c.beginPath(); c.arc(sxAtS, syAtS, 5, 0, Math.PI * 2); c.fill();
+          c.strokeStyle = '#0f172a'; c.lineWidth = 1.2; c.stroke();
+
+          // Panel labels
+          c.fillStyle = '#f87171'; c.textAlign = 'left';
+          c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText('f(x) \u2022 shaded area = A(x)', Lx1 + 8, Ty + 16);
+          c.fillStyle = '#60a5fa';
+          c.fillText('A(x) = \u222B f(t) dt', Lx2 + 8, Ty + 16);
+          c.fillStyle = '#34d399'; c.font = 'bold 10px "Inter", sans-serif';
+          c.fillText("slope of tangent = " + fAtS.toFixed(2), Lx2 + 8, Ty + 30);
+
+          // Bottom big insight
+          c.fillStyle = '#fde047'; c.textAlign = 'center';
+          c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText("x = " + sweepX.toFixed(2) + "   \u2022   A(x) = " + aAtS.toFixed(3) + "   \u2022   A\u2032(x) = " + fAtS.toFixed(3) + "   \u2190  same as f(x)!", W/2, H - 10);
+        }
+
         // ── FUNCTION EVALUATION ─────────────────────────────────────────
         var fa = d.a !== undefined ? d.a : 1;
         var fb = d.b !== undefined ? d.b : 0;
@@ -383,7 +806,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
           // Tab bar
           h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-0 mb-3 border-b border-slate-200', role: 'tablist', 'aria-label': 'Calculus Tool sections' },
-            [['integral','\u222B Integral'],['derivative','\uD83D\uDCC8 Derivative'],['challenge','\uD83C\uDFAF Challenge'],['discover','\uD83D\uDD2C Discover']].map(function(item){
+            [['integral','\u222B Integral'],['derivative','\uD83D\uDCC8 Derivative'],['visualize','\uD83C\uDFAC Visualize'],['challenge','\uD83C\uDFAF Challenge'],['discover','\uD83D\uDD2C Discover']].map(function(item){
               return h('button',{ "aria-label": "Calculus tool action",key:item[0],onClick:function(){upd('tab',item[0]);},role:'tab','aria-selected':tab===item[0],className:'px-3 py-1.5 text-xs font-bold transition-all '+(tab===item[0]?'border-b-2 border-red-600 text-red-700 -mb-px':'text-slate-600 hover:text-slate-700')},item[1]);
             })
           ),
@@ -1045,7 +1468,157 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               );
             })()
 
-          ) // end discover tab
+          ), // end discover tab
+
+          // ══════════════════════════════════════════════════════════════
+          // TAB: VISUALIZE  (canvas-based pedagogical views)
+          // Pedagogy: show intuition BEFORE formulas.
+          // ══════════════════════════════════════════════════════════════
+          tab === 'visualize' && h('div', { key: 'visualize' },
+            (function() {
+              var vizView = d.vizView || 'zoom';
+              var vizFn   = d.vizFn   || 'quadratic';
+              var VIEWS = [
+                { id: 'zoom',    icon: '\uD83D\uDD0D', label: 'Zoom',          desc: 'Zoom to Linearity \u2014 what is a derivative? (Shift+1)' },
+                { id: 'tangent', icon: '\uD83D\uDCCD', label: 'Tangent',       desc: 'Tangent explorer \u2014 derivative as a function (Shift+2)' },
+                { id: 'motion',  icon: '\uD83D\uDE97', label: 'Motion',        desc: 'Position / Velocity / Acceleration (Shift+3)' },
+                { id: 'riemann', icon: '\uD83C\uDFAC', label: 'Riemann',       desc: 'Animated Riemann convergence (Shift+4)' },
+                { id: 'ftc',     icon: '\u2B50',       label: 'FTC',           desc: 'The Fundamental Theorem of Calculus (Shift+5)' },
+                { id: 'slope',   icon: '\uD83C\uDF0A', label: 'Slope Fields',  desc: 'Visualize ODEs without solving them (Shift+6)' }
+              ];
+              return h(React.Fragment, null,
+                // Header strip
+                h('div', { className: 'flex items-center gap-2 mb-2 text-xs text-slate-600' },
+                  h('span', { className: 'font-bold' }, 'Visualize'),
+                  h('span', { className: 'text-slate-400' }, '\u2022'),
+                  h('span', {}, 'See the ideas before you see the formulas'),
+                  h('span', { className: 'ml-auto px-2 py-0.5 bg-indigo-100 text-indigo-700 text-[10px] font-bold rounded-full' }, 'LIVE CANVAS')
+                ),
+                // Sub-view selector
+                h('div', { className: 'flex gap-1.5 flex-wrap text-xs font-bold mb-2', role: 'tablist', 'aria-label': 'Calculus visualization view' },
+                  VIEWS.map(function(v, vi) {
+                    var active = vizView === v.id;
+                    return h('button', {
+                      key: v.id, role: 'tab', 'aria-selected': active ? 'true' : 'false',
+                      onClick: function() { upd('vizView', v.id); },
+                      title: v.desc,
+                      'aria-keyshortcuts': 'Shift+' + (vi + 1),
+                      className: 'px-3 py-1.5 rounded-lg border transition-all whitespace-nowrap ' + (active
+                        ? 'bg-red-500 border-red-600 text-white shadow-md'
+                        : 'bg-white border-slate-200 text-slate-600 hover:border-red-400')
+                    }, v.icon + ' ' + v.label);
+                  })
+                ),
+                // Function picker (shown only for views that use it)
+                (vizView === 'zoom' || vizView === 'tangent' || vizView === 'ftc' || vizView === 'riemann') &&
+                h('div', { className: 'flex gap-1 flex-wrap text-[11px] mb-2' },
+                  h('span', { className: 'text-slate-500 font-semibold self-center mr-1' }, 'f(x) ='),
+                  Object.keys(CALC_FUNCS).map(function(fid) {
+                    var active = vizFn === fid;
+                    return h('button', {
+                      key: fid,
+                      onClick: function() { upd('vizFn', fid); },
+                      className: 'px-2 py-1 rounded border font-mono font-bold transition-all ' + (active
+                        ? 'bg-indigo-500 border-indigo-600 text-white'
+                        : 'bg-white border-slate-200 text-slate-600 hover:border-indigo-400')
+                    }, CALC_FUNCS[fid].label);
+                  })
+                ),
+                // Canvas wrapper (fullscreen target)
+                h('div', {
+                  id: 'calc-viz-wrap',
+                  className: 'relative rounded-xl overflow-hidden border-2 border-indigo-300',
+                  style: { height: '380px', width: '100%', background: '#0f172a' }
+                },
+                  h('canvas', {
+                    ref: _vizCvRef,
+                    role: 'img',
+                    'aria-label': 'Calculus visualization canvas: ' + (VIEWS.find(function(v){return v.id===vizView;}) || {}).desc,
+                    style: { width: '100%', height: '100%', display: 'block' }
+                  }),
+                  h('button', {
+                    onClick: function() {
+                      var el = document.getElementById('calc-viz-wrap');
+                      if (!el) return;
+                      if (document.fullscreenElement) { document.exitFullscreen(); }
+                      else if (el.requestFullscreen) { el.requestFullscreen(); }
+                    },
+                    title: 'Toggle fullscreen',
+                    'aria-label': 'Toggle fullscreen',
+                    className: 'absolute top-2 right-2 w-8 h-8 rounded-lg bg-slate-900/70 text-indigo-200 hover:bg-slate-900/90 text-sm font-bold'
+                  }, '\u26F6')
+                ),
+                // Per-view explainer strip
+                h('div', { className: 'mt-2 text-[11px] text-slate-600 leading-relaxed' },
+                  vizView === 'zoom'    && 'Drag the zoom slider. Watch any smooth curve become a straight line up close. That local slope IS the derivative.',
+                  vizView === 'tangent' && 'Drag the x-marker below. As you scan, the tangent line swings; f\u2032(x) traces itself on the right panel.',
+                  vizView === 'motion'  && 'Drag the position curve. Velocity = slope; acceleration = slope of velocity. Three panels update live.',
+                  vizView === 'riemann' && 'Watch n grow from 1 \u2192 256. All four Riemann methods converge to the true area \u2014 but at different speeds.',
+                  vizView === 'ftc'     && 'THE payoff: drag x. Accumulated area A(x) is plotted on the right \u2014 its slope at every x is exactly f(x). That\u2019s the Fundamental Theorem.',
+                  vizView === 'slope'   && 'Each arrow is the slope dy/dx at that point. Click anywhere to drop a solution curve that flows along the field.'
+                )
+              );
+            })()
+          ),
+
+          // ── AI Calculus Tutor (reading-level aware) ──
+          (function () {
+            var aiLevel = d.aiLevel || 'grade5';
+            var aiText = d.aiExplain || '';
+            var aiLoading = !!d.aiLoading;
+            var aiError = d.aiError || '';
+            var LEVELS = [
+              { id: 'plain', label: 'Plain', hint: 'using simple everyday words and short sentences, no jargon' },
+              { id: 'grade5', label: 'Grade 5', hint: 'for a 5th grade student, with a concrete everyday example' },
+              { id: 'hs', label: 'AP Calc', hint: 'for an AP Calculus student, using proper calculus terminology' }
+            ];
+            function save(k, v) {
+              setLabToolData(function (prev) { return Object.assign({}, prev, { calculus: Object.assign({}, prev.calculus, (function(){var o={};o[k]=v;return o;})()) }); });
+            }
+            function explain() {
+              if (typeof callGemini !== 'function') { save('aiError', 'AI tutor not available.'); return; }
+              save('aiLoading', true); save('aiError', ''); save('aiExplain', '');
+              var lv = LEVELS.find(function (L) { return L.id === aiLevel; }) || LEVELS[1];
+              var fnStr = (d.a || 1) + 'x\u00B2 + ' + (d.b || 0) + 'x + ' + (d.c || 0);
+              var tabLabel = tab === 'integral' ? 'Integral (Riemann sums)' : tab === 'derivative' ? 'Derivative (slope)' : tab === 'challenge' ? 'Challenge' : 'Discover';
+              var prompt = 'Explain what this calculus tool is showing ' + lv.hint + '. '
+                + 'Current tab: ' + tabLabel + '. Function: f(x) = ' + fnStr + ' on [' + (d.xMin || 0) + ', ' + (d.xMax || 3) + '] with n=' + (d.n || 20) + ' ' + (mode || 'left') + ' rectangles. '
+                + 'In 3 short sentences: (1) What the student is computing. (2) Why this method works (intuition first). (3) One real-world place this shows up. '
+                + 'No markdown, no bullets, no headings. Plain prose.';
+              callGemini(prompt, false, false, 0.5).then(function (resp) {
+                save('aiExplain', String(resp || '').trim()); save('aiLoading', false);
+                if (typeof announceToSR === 'function') announceToSR('Explanation ready.');
+              }).catch(function () {
+                save('aiLoading', false); save('aiError', 'Could not reach AI tutor. Try again in a moment.');
+              });
+            }
+            return h('div', { className: 'mt-3 p-3 rounded-xl border-2 border-purple-200 bg-purple-50', role: 'region', 'aria-label': 'AI calculus tutor' },
+              h('div', { className: 'flex items-center flex-wrap gap-2 mb-1.5' },
+                h('span', { className: 'text-sm font-bold text-purple-700' }, '\u2728 Explain at my level'),
+                h('div', { className: 'ml-auto flex gap-1', role: 'group', 'aria-label': 'Reading level' },
+                  LEVELS.map(function (L) {
+                    var active = aiLevel === L.id;
+                    return h('button', {
+                      key: L.id,
+                      onClick: function () { save('aiLevel', L.id); },
+                      'aria-label': 'Reading level: ' + L.label + (active ? ' (selected)' : ''),
+                      'aria-pressed': active,
+                      className: 'px-2 py-0.5 rounded text-[10px] font-bold ' + (active ? 'bg-purple-600 text-white' : 'bg-white text-purple-700 border border-purple-200 hover:bg-purple-100')
+                    }, L.label);
+                  })
+                ),
+                h('button', {
+                  onClick: explain,
+                  disabled: aiLoading,
+                  'aria-label': 'Generate AI explanation at ' + ((LEVELS.find(function (L) { return L.id === aiLevel; }) || {}).label || 'Grade 5') + ' level',
+                  className: 'px-3 py-1 rounded-lg text-[11px] font-bold bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50'
+                }, aiLoading ? '\u23F3 Thinking...' : (aiText ? '\uD83D\uDD04 Re-explain' : '\uD83E\uDDE0 Explain'))
+              ),
+              aiError && h('p', { className: 'text-[11px] text-rose-600', role: 'alert' }, aiError),
+              aiText && h('p', { className: 'text-xs text-slate-700 leading-relaxed bg-white rounded-lg p-2 border border-purple-100' }, aiText),
+              !aiText && !aiLoading && !aiError && h('p', { className: 'text-[11px] italic text-slate-500' }, 'Click \u201CExplain\u201D for the AI tutor to describe what you\u2019re computing right now.')
+            );
+          })()
 
         );
       })();
