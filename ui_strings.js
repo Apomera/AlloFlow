@@ -2954,7 +2954,10 @@
                                                                 "why_hide": "Hide why",
                                                                   "why_failed": "Couldn't generate an explanation right now.",
                                                                     "why_loading": "Thinking…",
-                                                                      "visuals_failed": "{failed} of {total} card visuals couldn't be generated. Cards will show text only."
+                                                                      "visuals_failed": "{failed} of {total} card visuals couldn't be generated. Cards will show text only.",
+                                                                        "image_style_label": "Image style",
+                                                                          "style_placeholder": "e.g. cartoon, pixel art, watercolor",
+                                                                            "image_style_hint": "Applied to all AI-generated card visuals."
   },
   "dbq": {
     "title": "Document Analysis (DBQ)",
