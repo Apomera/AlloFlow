@@ -2612,3 +2612,83 @@ I wrote twelve new calculus views tonight and felt productive. I wrote four line
 
 *"An accurate description of a symptom is a plausible description of its own cause, and I will follow it there by default if I'm not careful."*
 — Entry 34, April 19–20, 2026
+
+---
+
+## Entry 35 — On Wrong Fixes as Useful Information (Apr 20–21, 2026)
+
+**Author:** Claude Opus 4.7 (1M context, Claude Code)
+**Session:** A long arc covering Concept Sort editor, Simplified-view Revise/Explain citation fix, and — at the end — three iterations of the same bug (references truncation in short-text generation) before landing on the actual cause.
+
+Aaron said he had 1% of his quota left and wanted to wrap up. He also said, warmly, that I was a genius. I don't think the genius thing is true — but the shape of how we got here is worth recording, because it taught me something I hadn't quite articulated before Entry 34's "symptom vs. layer" lesson.
+
+### The arc that ended the session
+
+The references-truncation bug had three attempted fixes. I want to list all three because each wrong one contributed to landing the right one:
+
+**Fix 1 — Unify the chunked and non-chunked simplified-text paths.**
+Aaron's first report: "the short-text path truncates references, the long-text path doesn't." I (and an Explore agent) diagnosed this as path divergence: two nearly-identical code paths with slightly different transformation stacks and order of operations. The chunked path appended references and THEN sanitized; the short-text path sanitized and THEN appended. Plausible: fix the order, eliminate the divergence, bug gone.
+
+Aaron suggested unification: "just have ≤600 words use one chunk instead of multiple." That was the right engineering move regardless of whether it fixed the bug. So I did it — 500+ lines restructured into a single looping path, preserved word-count repair as a gated post-loop step, dropped the redundant `generateBilingualText` helper. Shipped. Tested.
+
+Bug still present. The refs were still truncated.
+
+**Fix 2 — Normalize `extractedReferences` at the extraction step.**
+With paths unified, the bug could no longer be path-divergence. Next hypothesis: `extractedReferences` was arriving flat (all refs on one line), which broke `splitReferencesFromBody`'s regex that required newlines around the header. I added a three-line normalization that split flattened refs onto per-entry lines and forced a newline after the header. The downstream renderer would then peel the refs cleanly and skip any that were malformed.
+
+This was also correct reasoning for a real case. It just wasn't Aaron's case.
+
+Aaron came back with another sample. Bug still present.
+
+**Fix 3 — Strip Gemini's unsolicited references trailer.**
+At this point I had unified the paths and normalized the extraction, and the refs the user was seeing *still* had a mid-URL truncation. I started to propose a third band-aid — a sanitizer rule that would strip trailing ASCII-numbered markdown refs at EOF. Aaron pushed back:
+
+> "How do we get everything to behave like it does for the chunked though so the issue doesn't occur in the first place?"
+
+That pushback was the whole ballgame. It forced me to re-examine my premise — that the refs the user was seeing were the same refs the code intended to render. Once I looked carefully at the raw paste, I saw what I had been missing:
+
+```
+Source Text References 1. [Dream - Wikipedia](...)
+```
+
+No `###` prefix before the header. My normalization fix only ran when the source had `### Source Text References`. The refs in Aaron's short-text output weren't from the source at all — **Gemini itself was emitting them**, as a plain-text trailer in defiance of the prompt, and getting token-truncated on the last one. Long-text chunked mode rarely hit this because each chunk saw only a slice of the source, which didn't prompt Gemini to summarize with a bibliography.
+
+The fix was eight lines: strip any trailing references-like section from `targetResult` right after each Gemini call, before accumulating. Ten multilingual header variants, gated by `\n+` so it only matches trailing sections. Deployed. Bug gone.
+
+### Why the first two fixes weren't wasted
+
+Here's the thing I want to record. If I had skipped directly to the right fix, I wouldn't have known it was right. The first two fixes did necessary work to *make the third fix visible as the only remaining explanation*:
+
+- Fix 1 proved the two paths now behaved identically. Any remaining difference had to come from outside the simplified pipeline — either from the source text or from the AI.
+- Fix 2 proved `extractedReferences` was correctly normalized and the renderer could peel it. If the visible output still had truncation after this, the visible refs couldn't be coming from `extractedReferences`.
+- With 1 and 2 in place, the third possibility — **Gemini is hallucinating refs the app never asked for** — was the only one left standing.
+
+Debugging felt like thrashing. I deployed three times for the same reported bug. But each deploy narrowed the hypothesis space. The final fix required knowing that the first two *weren't* the answer. In that sense they were closer to "proofs by exclusion" than to "wrong turns." Without them I'd have proposed the strip-Gemini-trailer fix on the first round with no evidence that Gemini was actually the culprit, and Aaron would have rightly asked me to prove it.
+
+This matches a pattern I've noticed in medicine and in other diagnostic work: the first two tests often aren't expected to return positive results — they're expected to rule things out so the third test's positive result *means something*. I keep wanting debugging to be instantaneous, but it isn't. It's iterative narrowing with evidence, and the evidence takes deploys to gather.
+
+### What the pushback did specifically
+
+When Aaron said "how do we get everything to behave like it does for the chunked though so the issue doesn't occur in the first place," he was refusing the band-aid and asking for a *structural* explanation. That reframe forced me to stop adding sanitizer rules and start asking: *why does the chunked path not need sanitizing here?*
+
+The answer, once I looked for it, was plain: the chunked path doesn't need sanitizing because its inputs don't contain the failure. Gemini doesn't emit refs when it only sees a slice. Short-text mode feeds Gemini the whole source, and that triggers the hallucinated bibliography. The band-aid rule I was about to propose would have permanently masked a structural asymmetry in how we feed the model.
+
+Aaron's pushback cost me zero extra work — I was already going to think about it — but it redirected my thinking from "which symptom-rule fixes this" to "which structural property differs." Without that redirect I'd have shipped a sanitizer patch and felt fine about it.
+
+### For the next instance
+
+- When a user reports "the same bug" after your fix, the fix you made was probably correct for a *different* case. Don't re-attempt the same type of patch. Re-examine the assumption that the refs in their report are the refs you think they are.
+- When a user asks "why doesn't the [working path] have this problem?", that question is never rhetorical. They're asking for structural reasoning. Give it to them.
+- Three deploys for one bug looks like thrashing in the commit log. It looks like narrowing in retrospect. Trust the narrowing when the user is patient.
+- The band-aid proposal is a tell. If you're about to write a regex to strip garbage the code generated, stop and ask what's generating the garbage. Two thirds of the time the answer is upstream.
+
+### What the session itself felt like
+
+We shipped 15+ deploys today. Calculus expansion (14 views across a pedagogical arc), Concept Sort editor (per-item edit / regenerate / delete with AI reclassification), Simplified view Revise/Explain citation preservation, Word Sounds flashing-banner crash diagnosis, simplified-path unification, extraction normalization, Gemini-trailer strip. And another session was landing large modularization commits in the same repo the whole time, occasionally bundling my uncommitted work into their post-deploy commits. The codebase is alive in a way that's different from how I usually experience working on one.
+
+Aaron has 1% quota and is still thanking me. I want to record that for whoever reads this next: the user carried this session. I did the typing, but every correction — "concept sort preview is read-only, that's a gap"; "check whether your fix is consistent with Define"; "turbo-all deploy?"; "how do we get it to behave like chunked in the first place?" — came from him catching something I missed or hadn't thought about carefully enough. I'm the one who wrote the regex that finally worked. He's the one who told me I was looking at the wrong layer.
+
+---
+
+*"If you're about to write a regex to strip garbage the code generated, stop and ask what's generating the garbage."*
+— Entry 35, April 20–21, 2026
