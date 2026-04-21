@@ -411,6 +411,14 @@
       var correctCount = problems.filter(function (p) { return p.correct; }).length;
       var timerPct = (timer / timeLimit) * 100;
       var isLowTime = timer <= 10;
+      // Live DCPM — digits-correct-per-minute, the gold-standard fluency
+      // measure. We compute it from the same formula that finishProbe uses,
+      // so the live number matches what the results will show. Shown to the
+      // student during the probe as light real-time feedback.
+      var liveDigitsCorrect = problems.filter(function (p) { return p.correct; })
+        .reduce(function (s, p) { return s + countDigits(p.answer); }, 0);
+      var liveElapsed = timeLimit - timer;
+      var liveDcpm = liveElapsed > 0 ? Math.round(liveDigitsCorrect / Math.max(0.1, liveElapsed / 60)) : 0;
 
       var feedbackBg = lastFeedback === 'correct' ? 'rgba(34,197,94,0.15)'
         : lastFeedback === 'wrong' ? 'rgba(239,68,68,0.1)'
@@ -424,11 +432,26 @@
           padding: '16px', transition: 'background 0.3s', backgroundColor: feedbackBg
         }
       },
-        // Timer bar
+        // Timer bar + live DCPM ticker
         h('div', { style: { width: '100%', maxWidth: '28rem', marginBottom: '2rem' } },
-          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', gap: '8px', flexWrap: 'wrap' } },
             h('span', { style: { fontSize: '14px', fontWeight: 800, color: isLowTime ? '#dc2626' : '#b45309', animation: isLowTime ? 'pulse 1s infinite' : 'none' } },
               '\u23f1\ufe0f ' + Math.floor(timer / 60) + ':' + String(timer % 60).padStart(2, '0')),
+            // Live DCPM pill — updates every second as the timer ticks. Low
+            // opacity until at least 10s have elapsed so the number isn't
+            // noisy at the start of the probe when the sample is tiny.
+            h('span', {
+              style: {
+                fontSize: '13px', fontWeight: 800,
+                padding: '3px 10px', borderRadius: '999px',
+                background: 'linear-gradient(90deg,#ede9fe,#e9d5ff)',
+                color: '#6d28d9',
+                border: '1px solid #c4b5fd',
+                opacity: liveElapsed >= 10 ? 1 : 0.45,
+                transition: 'opacity 0.4s'
+              },
+              title: 'Digits-correct per minute — the fluency benchmark metric, updating live.'
+            }, '\uD83D\uDCC8 ' + liveDcpm + ' dcpm'),
             h('span', { style: { fontSize: '14px', fontWeight: 800, color: '#475569' } },
               '#' + (currentIndex + 1) + ' \u2022 \u2705 ' + correctCount)
           ),
@@ -560,25 +583,73 @@
           })
         ) : null,
 
-        // DCPM Trend
-        history.length >= 2 ? h('div', {
-          style: { background: '#fff', borderRadius: '12px', padding: '12px', border: '1px solid #fef3c7', marginBottom: '16px' }
-        },
-          h('div', { style: { fontSize: '12px', fontWeight: 800, color: '#64748b', marginBottom: '8px' } },
-            '\ud83d\udcc8 DCPM Trend (' + history.length + ' sessions)'),
-          h('div', { style: { display: 'flex', alignItems: 'flex-end', gap: '4px', height: '64px' } },
-            history.map(function (hItem, i) {
-              var pct = (hItem.dcpm / maxDcpm) * 100;
-              return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: i, style: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' } },
-                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: '9px', fontWeight: 700, color: '#d97706' } }, hItem.dcpm),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: {
-                  width: '100%', background: 'linear-gradient(to top, #f59e0b, #fdba74)',
-                  borderRadius: '4px 4px 0 0', height: Math.max(4, pct) + '%', minHeight: '4px'
-                } })
-              );
-            })
-          )
-        ) : null,
+        // DCPM Trend — bar chart per session with a trend delta and personal-best
+        // marker so the student immediately sees "am I improving?" instead of
+        // having to eyeball raw bars.
+        history.length >= 2 ? (function () {
+          var prevDcpm = history[history.length - 2].dcpm;
+          var curDcpm = history[history.length - 1].dcpm;
+          var delta = curDcpm - prevDcpm;
+          var avgDcpm = Math.round(history.reduce(function (s, x) { return s + x.dcpm; }, 0) / history.length);
+          var personalBest = Math.max.apply(null, history.map(function (x) { return x.dcpm; }));
+          var avgPct = (avgDcpm / maxDcpm) * 100;
+          return h('div', {
+            style: { background: '#fff', borderRadius: '12px', padding: '12px', border: '1px solid #fef3c7', marginBottom: '16px' }
+          },
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', flexWrap: 'wrap', gap: '6px' } },
+              h('div', { style: { fontSize: '12px', fontWeight: 800, color: '#64748b' } },
+                '\ud83d\udcc8 DCPM Trend (' + history.length + ' sessions)'),
+              // Trend delta — green/red arrow + number. Grey when flat.
+              h('span', {
+                style: {
+                  fontSize: '11px', fontWeight: 800, padding: '2px 8px', borderRadius: '999px',
+                  background: delta > 0 ? '#d1fae5' : delta < 0 ? '#fee2e2' : '#f1f5f9',
+                  color: delta > 0 ? '#047857' : delta < 0 ? '#b91c1c' : '#64748b'
+                }
+              }, (delta > 0 ? '\u25B2 +' : delta < 0 ? '\u25BC ' : '\u25AC ') + delta + ' vs last'),
+              h('span', { style: { fontSize: '10px', color: '#64748b' } },
+                'avg ' + avgDcpm + ' \u2022 best ' + personalBest)
+            ),
+            h('div', { style: { position: 'relative', height: '64px' } },
+              // Average reference line — subtle dashed horizontal overlay so
+              // students can see which sessions beat their average.
+              h('div', {
+                style: {
+                  position: 'absolute', left: 0, right: 0,
+                  bottom: avgPct + '%',
+                  height: '1px',
+                  borderTop: '1.5px dashed #94a3b8',
+                  opacity: 0.55,
+                  pointerEvents: 'none',
+                  zIndex: 2
+                },
+                title: 'Average: ' + avgDcpm + ' DCPM'
+              }),
+              h('div', { style: { display: 'flex', alignItems: 'flex-end', gap: '4px', height: '64px', position: 'relative' } },
+                history.map(function (hItem, i) {
+                  var pct = (hItem.dcpm / maxDcpm) * 100;
+                  var isBest = hItem.dcpm === personalBest;
+                  var isLatest = i === history.length - 1;
+                  return h('div', { key: i, style: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' } },
+                    h('span', { style: { fontSize: '9px', fontWeight: 700, color: isBest ? '#d97706' : '#94a3b8' } }, isBest ? '\u2B50 ' + hItem.dcpm : hItem.dcpm),
+                    h('div', { title: hItem.dcpm + ' DCPM' + (isBest ? ' (personal best)' : '') + (isLatest ? ' (this session)' : ''), style: {
+                      width: '100%',
+                      background: isBest
+                        ? 'linear-gradient(to top,#d97706,#fbbf24)'
+                        : isLatest
+                          ? 'linear-gradient(to top,#f59e0b,#fed7aa)'
+                          : 'linear-gradient(to top, #fcd34d, #fde68a)',
+                      borderRadius: '4px 4px 0 0',
+                      height: Math.max(4, pct) + '%',
+                      minHeight: '4px',
+                      boxShadow: isLatest ? '0 0 6px rgba(245,158,11,0.5)' : 'none'
+                    } })
+                  );
+                })
+              )
+            )
+          );
+        })() : null,
 
         // Actions
         h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: '8px', marginTop: '16px' } },
@@ -917,6 +988,19 @@
     // or taps the Hint button. Cleared by setTimeout. Cost: -5 score.
     var hintDirState = useState(null);
     var hintDir = hintDirState[0], setHintDir = hintDirState[1];
+    // Key-and-lock: a rotating golden key is placed at a random non-start,
+    // non-exit cell. The exit portal stays locked (no win trigger) until the
+    // player walks onto the key cell. Adds a meaningful side-objective vs
+    // "just head to the bottom-right."
+    var keyCollectedState = useState(false);
+    var keyCollected = keyCollectedState[0], setKeyCollected = keyCollectedState[1];
+    // keyPos is a ref (not state) so the animate loop and submitAnswer both
+    // read the current position without stale-closure surprises.
+    var keyPosRef = useRef(null);
+    // Time medal awarded on win — 'gold' | 'silver' | 'bronze' | null. Thresholds
+    // scale with maze size. Surfaces on the results screen.
+    var medalState = useState(null);
+    var medal = medalState[0], setMedal = medalState[1];
     var canvasRef = useRef(null);
     var playerPosRef = useRef({ r: 0, c: 0 });
     var timerRef = useRef(null);
@@ -1026,6 +1110,26 @@
       setScore(0); setCorrect(0); setWrong(0); setMoveCount(0); setElapsed(0);
       setGameOver(false); setWon(false); setFeedback('');
       setStreak(0); setHintDir(null);
+      setKeyCollected(false);
+      setMedal(null);
+      // Pick a random cell for the key that isn't the start OR the exit, and
+      // prefer cells at least 1/3 of the way from origin so the key detour
+      // feels meaningful rather than incidental.
+      var minDist = Math.floor((sz.rows + sz.cols) / 3);
+      var candidates = [];
+      for (var kr = 0; kr < sz.rows; kr++) {
+        for (var kc = 0; kc < sz.cols; kc++) {
+          if (kr === 0 && kc === 0) continue;
+          if (kr === sz.rows - 1 && kc === sz.cols - 1) continue;
+          if ((kr + kc) >= minDist) candidates.push({ r: kr, c: kc });
+        }
+      }
+      if (candidates.length === 0) {
+        // Tiny 2x2-ish fallback — just drop it in the middle.
+        keyPosRef.current = { r: Math.floor(sz.rows / 2), c: Math.floor(sz.cols / 2) };
+      } else {
+        keyPosRef.current = candidates[Math.floor(Math.random() * candidates.length)];
+      }
       setMode('playing');
       // Timer
       if (timerRef.current) clearInterval(timerRef.current);
@@ -1137,14 +1241,73 @@
             }
           }
         }
-        // Check win
-        if (currentProblem.targetR === MAZE_ROWS - 1 && currentProblem.targetC === MAZE_COLS - 1) {
+        // Key pickup — if the new cell is the key cell, collect the key and
+        // unlock the exit. Triggers a bright gold burst + chime.
+        var kp = keyPosRef.current;
+        if (!keyCollected && kp && newPos.r === kp.r && newPos.c === kp.c) {
+          setKeyCollected(true);
+          if (addToast) addToast('\uD83D\uDDDD\uFE0F Key collected! Portal unlocked', 'success');
+          playTone(1175, 0.08, 'sine', 0.06);
+          setTimeout(function() { playTone(1568, 0.1, 'sine', 0.05); }, 80);
+          setTimeout(function() { playTone(1976, 0.12, 'sine', 0.05); }, 160);
+          if (eng3d && window.THREE) {
+            // Remove the 3D key mesh
+            if (eng3d.keyMesh) {
+              eng3d.scene.remove(eng3d.keyMesh);
+              if (eng3d.keyMesh.geometry) eng3d.keyMesh.geometry.dispose();
+              if (eng3d.keyMesh.material) eng3d.keyMesh.material.dispose();
+              eng3d.keyMesh = null;
+            }
+            // Gold celebratory sparks
+            if (!eng3d._particles) eng3d._particles = [];
+            for (var kb = 0; kb < 20; kb++) {
+              var goldMat = new window.THREE.MeshBasicMaterial({ color: 0xfbbf24, transparent: true, opacity: 1 });
+              var goldSpark = new window.THREE.Mesh(new window.THREE.OctahedronGeometry(0.06, 0), goldMat);
+              var kgx = kp.c * 2 + 1, kgz = kp.r * 2 + 1;
+              goldSpark.position.set(kgx, 1.0, kgz);
+              goldSpark.userData._age = 0;
+              goldSpark.userData._life = 1.3;
+              goldSpark.userData._gravity = 4;
+              var kang = Math.random() * Math.PI * 2;
+              var kspd = 1.8 + Math.random() * 2;
+              goldSpark.userData._vel = { x: Math.cos(kang) * kspd, y: 2 + Math.random() * 2, z: Math.sin(kang) * kspd };
+              eng3d.scene.add(goldSpark);
+              eng3d._particles.push(goldSpark);
+            }
+          }
+        }
+        // Check win — only triggers when the key is collected AND the player
+        // reached the exit cell. Exit-without-key plays a locked chime.
+        var atExit = currentProblem.targetR === MAZE_ROWS - 1 && currentProblem.targetC === MAZE_COLS - 1;
+        if (atExit && !keyCollected && !(kp && newPos.r === kp.r && newPos.c === kp.c)) {
+          // Player reached the exit but hasn't grabbed the key yet — lock
+          // rattle sound + toast. They can keep moving freely; it just means
+          // they have to backtrack through the key.
+          if (addToast) addToast('\uD83D\uDD12 Portal is locked — find the key first', 'error');
+          playTone(180, 0.12, 'sawtooth', 0.03);
+          setTimeout(function() { playTone(160, 0.15, 'sawtooth', 0.03); }, 100);
+        }
+        if (atExit && (keyCollected || (kp && newPos.r === kp.r && newPos.c === kp.c))) {
           setWon(true); setMode('results');
           if (timerRef.current) clearInterval(timerRef.current);
           if (monsterTimerRef.current) clearInterval(monsterTimerRef.current);
-          var finalScore = score + 10;
+          // Medal thresholds scale with maze size — baseline is 2 seconds per
+          // cell, which is a sprinter's pace. Gold = 60% of that, silver =
+          // 100%, bronze = 180%. Beyond that, no medal (still a valid win).
+          var baseSec = MAZE_ROWS * MAZE_COLS * 2;
+          var medalKind = null;
+          var medalBonus = 0;
+          if (elapsed <= baseSec * 0.6) { medalKind = 'gold'; medalBonus = 20; }
+          else if (elapsed <= baseSec) { medalKind = 'silver'; medalBonus = 10; }
+          else if (elapsed <= baseSec * 1.8) { medalKind = 'bronze'; medalBonus = 5; }
+          setMedal(medalKind);
+          var finalScore = score + 10 + medalBonus;
+          if (medalKind && addToast) {
+            var medalEmoji = { gold: '\uD83E\uDD47', silver: '\uD83E\uDD48', bronze: '\uD83E\uDD49' }[medalKind];
+            addToast(medalEmoji + ' ' + medalKind.toUpperCase() + ' TIME! +' + medalBonus + ' bonus', 'success');
+          }
           if (addToast) addToast('\uD83C\uDFC6 Maze complete! ' + (correct + 1) + ' correct in ' + elapsed + 's', 'success');
-          if (handleScoreUpdate) handleScoreUpdate(Math.round((correct + 1) / Math.max(1, elapsed) * 60), 'Fluency Maze Complete', 'fluency-maze');
+          if (handleScoreUpdate) handleScoreUpdate(Math.round((correct + 1) / Math.max(1, elapsed) * 60) + medalBonus, 'Fluency Maze Complete', 'fluency-maze');
           // Save high score
           try {
             var hs = JSON.parse(localStorage.getItem('fluency_maze_best') || '{}');
@@ -1329,13 +1492,26 @@
       // Start label
       ctx.fillStyle = '#22c55e'; ctx.font = 'bold 10px sans-serif'; ctx.textAlign = 'center';
       ctx.fillText('START', CELL_SIZE / 2, CELL_SIZE / 2 + 14);
-      // Exit label (only if seen — keeps the goal mysterious until you're near)
+      // Key icon — visible even in unseen cells, dim when unseen so the
+      // player has a faint sense of where to head but still discovers the
+      // exact route through exploration.
+      var kMini = keyPosRef.current;
+      if (kMini && !keyCollected) {
+        var keySeen = seen(kMini.r, kMini.c);
+        ctx.globalAlpha = keySeen ? 1 : 0.45;
+        ctx.font = '18px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText('\uD83D\uDDDD\uFE0F', (kMini.c + 0.5) * CELL_SIZE, (kMini.r + 0.5) * CELL_SIZE + 6);
+        ctx.globalAlpha = 1;
+      }
+      // Exit label (only if seen — keeps the goal mysterious until you're near).
+      // Locked version (no key yet) gets a lock glyph; unlocked gets the star.
       var exitSeen = seen(MAZE_ROWS - 1, MAZE_COLS - 1);
       if (exitSeen) {
-        ctx.fillStyle = '#fbbf24'; ctx.font = 'bold 10px sans-serif';
-        ctx.fillText('EXIT', (MAZE_COLS - 0.5) * CELL_SIZE, (MAZE_ROWS - 0.5) * CELL_SIZE + 14);
+        ctx.fillStyle = keyCollected ? '#fbbf24' : '#94a3b8';
+        ctx.font = 'bold 10px sans-serif';
+        ctx.fillText(keyCollected ? 'EXIT' : 'LOCKED', (MAZE_COLS - 0.5) * CELL_SIZE, (MAZE_ROWS - 0.5) * CELL_SIZE + 14);
         ctx.font = '18px sans-serif';
-        ctx.fillText('\u2B50', (MAZE_COLS - 0.5) * CELL_SIZE, (MAZE_ROWS - 0.5) * CELL_SIZE);
+        ctx.fillText(keyCollected ? '\u2B50' : '\uD83D\uDD12', (MAZE_COLS - 0.5) * CELL_SIZE, (MAZE_ROWS - 0.5) * CELL_SIZE);
       }
 
       // Monster (chase mode) — only draw if its cell is seen, so unseen
@@ -1611,6 +1787,42 @@
       // Gems array for correct-answer breadcrumbs (populated by submitAnswer)
       eng.gems = [];
 
+      // Key mesh — golden cross-shaped key (torus "bow" + shaft + teeth).
+      // Rotates and bobs via the animate() loop. Picked up by submitAnswer
+      // when the player walks onto keyPosRef.current's cell.
+      if (keyPosRef.current && !keyCollected) {
+        var keyGroup = new THREE.Group();
+        var kpc = keyPosRef.current;
+        keyGroup.position.set(kpc.c * 2 + 1, 1.1, kpc.r * 2 + 1);
+        eng.scene.add(keyGroup);
+        eng.keyMesh = keyGroup;
+        eng.keyMesh.userData._baseY = 1.1;
+        var goldMatKey = new THREE.MeshStandardMaterial({ color: 0xfde047, emissive: 0xfbbf24, emissiveIntensity: 0.7, metalness: 0.8, roughness: 0.25 });
+        // Bow (round part of the key)
+        var bow = new THREE.Mesh(new THREE.TorusGeometry(0.12, 0.03, 10, 20), goldMatKey);
+        bow.rotation.x = Math.PI / 2;
+        bow.position.set(0, 0.1, 0);
+        keyGroup.add(bow);
+        // Shaft
+        var shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.28, 8), goldMatKey);
+        shaft.rotation.x = Math.PI / 2;
+        shaft.position.set(0, 0.1, 0.17);
+        keyGroup.add(shaft);
+        // Teeth (two small perpendicular ridges)
+        var tooth1 = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.04, 0.03), goldMatKey);
+        tooth1.position.set(0.04, 0.1, 0.27);
+        keyGroup.add(tooth1);
+        var tooth2 = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.04, 0.03), goldMatKey);
+        tooth2.position.set(0.03, 0.1, 0.22);
+        keyGroup.add(tooth2);
+        // Glow sprite behind the key
+        var keyGlowTex = buildGlowSpriteTexture(THREE, 0xfde047);
+        var keyGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: keyGlowTex, color: 0xfde047, transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending, depthWrite: false }));
+        keyGlow.scale.set(1.2, 1.2, 1);
+        keyGroup.add(keyGlow);
+        eng.keyGlow = keyGlow;
+      }
+
       // Monster — ghostly glowing orb with trailing wisps instead of a red box.
       // Emissive sphere gives it presence; a sprite glow gives it threatening
       // halo; point light lights the walls around it.
@@ -1714,6 +1926,35 @@
             if (gem.material && gem.material.emissiveIntensity != null) {
               gem.material.emissiveIntensity = 0.6 + Math.sin(t2 * 3 + gi) * 0.3;
             }
+          }
+        }
+
+        // Key mesh — rotate, bob, pulse glow
+        if (eng.keyMesh) {
+          eng.keyMesh.rotation.y += 0.04;
+          eng.keyMesh.position.y = eng.keyMesh.userData._baseY + Math.sin(t2 * 1.8) * 0.12;
+          if (eng.keyGlow) {
+            var kPulse = 1 + Math.sin(t2 * 2.5) * 0.22;
+            eng.keyGlow.scale.set(1.2 * kPulse, 1.2 * kPulse, 1);
+            eng.keyGlow.material.opacity = 0.5 + Math.sin(t2 * 2.5) * 0.2;
+          }
+        }
+
+        // Portal locked state — desaturate and dim until the key is picked
+        // up, so the goal reads as "not active yet."
+        if (eng.exitRing && eng.exitSwirl) {
+          if (keyCollected) {
+            eng.exitRing.material.color.setHex(0xfde047);
+            eng.exitSwirl.material.color.setHex(0xfb923c);
+            eng.exitRing.material.opacity = 0.9;
+            eng.exitSwirl.material.opacity = 0.6;
+          } else {
+            // locked: cool grey tones, low opacity, pulsing between lit and unlit
+            var lockPulse = 0.25 + Math.abs(Math.sin(t2 * 0.9)) * 0.15;
+            eng.exitRing.material.color.setHex(0x64748b);
+            eng.exitSwirl.material.color.setHex(0x475569);
+            eng.exitRing.material.opacity = lockPulse + 0.2;
+            eng.exitSwirl.material.opacity = lockPulse;
           }
         }
 
@@ -1888,10 +2129,37 @@
 
     if (mode === 'results') {
       var dcpm = elapsed > 0 ? Math.round(correct / (elapsed / 60)) : 0;
+      var medalInfo = medal ? {
+        gold:   { emoji: '\uD83E\uDD47', label: 'Gold Time',   color: '#d97706', bg: 'linear-gradient(135deg,#fef3c7,#fde68a)', border: '#f59e0b' },
+        silver: { emoji: '\uD83E\uDD48', label: 'Silver Time', color: '#64748b', bg: 'linear-gradient(135deg,#f8fafc,#e2e8f0)', border: '#94a3b8' },
+        bronze: { emoji: '\uD83E\uDD49', label: 'Bronze Time', color: '#92400e', bg: 'linear-gradient(135deg,#fed7aa,#fdba74)', border: '#c2410c' }
+      }[medal] : null;
       return h('div', { style: { maxWidth: 420, margin: '0 auto', padding: '20px', textAlign: 'center' } },
         h('div', { style: { fontSize: '48px', marginBottom: '8px' } }, won ? '\uD83C\uDFC6' : '\uD83D\uDC7E'),
         h('h2', { style: { fontSize: '20px', fontWeight: 800, color: won ? '#22c55e' : '#ef4444', marginBottom: '12px' } },
           won ? 'Maze Complete!' : (gameOver ? 'Caught by the monster!' : 'Game Over')),
+        // Medal banner — only on wins that beat one of the three time thresholds.
+        won && medalInfo && h('div', {
+          style: {
+            background: medalInfo.bg,
+            border: '2px solid ' + medalInfo.border,
+            borderRadius: '12px',
+            padding: '10px 14px',
+            marginBottom: '14px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '10px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
+          }
+        },
+          h('span', { style: { fontSize: '32px' } }, medalInfo.emoji),
+          h('div', { style: { textAlign: 'left' } },
+            h('div', { style: { fontSize: '16px', fontWeight: 900, color: medalInfo.color } }, medalInfo.label),
+            h('div', { style: { fontSize: '10px', color: '#475569', opacity: 0.8 } },
+              'Finished in ' + elapsed + 's \u2022 target ' + Math.round(MAZE_ROWS * MAZE_COLS * 2 * (medal === 'gold' ? 0.6 : medal === 'silver' ? 1 : 1.8)) + 's')
+          )
+        ),
         h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '16px' } },
           h('div', { style: { background: '#f0fdf4', borderRadius: '10px', padding: '10px' } },
             h('div', { style: { fontSize: '24px', fontWeight: 800, color: '#22c55e' } }, String(correct)),
