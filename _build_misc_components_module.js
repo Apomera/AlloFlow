@@ -84,6 +84,7 @@ window.AlloModules.AnimatedNumber = (typeof AnimatedNumber !== 'undefined') ? An
 window.AlloModules.ClozeInput = (typeof ClozeInput !== 'undefined') ? ClozeInput : null;
 window.AlloModules.WordSoundsReviewPanel = (typeof WordSoundsReviewPanel !== 'undefined') ? WordSoundsReviewPanel : null;
 window.WordSoundsReviewPanel = (typeof WordSoundsReviewPanel !== 'undefined') ? WordSoundsReviewPanel : null;
+window.AlloModules.MiscComponents = true;  // satisfies loadModule('MiscComponents', ...) registration check
 window.AlloModules.MiscComponentsModule = true;
 console.log('[MiscComponentsModule] 3 components registered (incl. WordSoundsReviewPanel with Sound Swap)');
 })();
