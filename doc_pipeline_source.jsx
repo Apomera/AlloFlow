@@ -344,6 +344,26 @@ var createDocPipeline = function(deps) {
       .trim().length;
   };
 
+  // htmlToPlainText: same stripping as textCharCount but returns the text. Used for
+  // the diff-view feature in the remediation UI so it can compare source PDF text
+  // vs. final HTML text word-by-word.
+  const htmlToPlainText = (html) => {
+    if (!html) return '';
+    return String(html)
+      .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+      .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+      .replace(/<[^>]*>/g, ' ')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'")
+      .replace(/&[a-z]+;/gi, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  };
+
   // acceptFixedHtml: strict guard that rejects AI fix outputs that silently shrink the document.
   // Replaces the old `fixed.length > original.length * 0.5` checks which allowed 50% truncation.
   const acceptFixedHtml = (fixed, original, opts) => {
@@ -5204,7 +5224,8 @@ HTML section ${chunkNum}/${chunks.length}:
       return null;
     };
 
-    const rules = [];
+    // Collect per-node work items (selector + computed new color).
+    const items = [];
     const seenSel = new Set();
     nodes.forEach((node) => {
       const summary = String(node.failureSummary || '');
@@ -5218,20 +5239,58 @@ HTML section ${chunkNum}/${chunks.length}:
       try {
         const newRgb = fixFg(hexToRgb(fgHex), hexToRgb(bgHex));
         const newHex = rgbToHex(newRgb[0], newRgb[1], newRgb[2]);
-        if (newHex.toLowerCase() === fgHex.toLowerCase()) return; // already passing somehow
-        // Strip selector chars that could break or inject rules.
+        if (newHex.toLowerCase() === fgHex.toLowerCase()) return;
         const safeSel = targetSel.replace(/[{};<>]/g, '').trim();
         if (!safeSel || safeSel.length > 300 || seenSel.has(safeSel)) return;
         seenSel.add(safeSel);
-        rules.push(safeSel + ' { color: ' + newHex + ' !important; }');
+        items.push({ sel: safeSel, newHex });
       } catch (e) { /* skip malformed node */ }
     });
 
-    if (rules.length === 0) return { html: html, fixCount: 0 };
+    if (items.length === 0) return { html: html, fixCount: 0 };
 
-    const overrideStyle = '<style id="alloflow-contrast-overrides">\n/* Axe-guided contrast fixes — targeted ' + rules.length + ' element' + (rules.length === 1 ? '' : 's') + ' */\n' + rules.join('\n') + '\n</style>';
+    // ── Primary path: DOMParser-based inline style mutation ──
+    // Inline `color:X !important` on the actual failing element beats any parent's
+    // inline `!important` (inheritance only fills in when no explicit rule wins on
+    // the child). This is the only way to beat cases like our banner template,
+    // where nested divs carry `style="color:#ffffff !important"` by design.
+    let domFixCount = 0;
+    let domSerialized = null;
+    try {
+      if (typeof DOMParser !== 'undefined') {
+        const parser = new DOMParser();
+        const dom = parser.parseFromString(html, 'text/html');
+        items.forEach(({ sel, newHex }) => {
+          let el = null;
+          try { el = dom.querySelector(sel); } catch (e) { /* invalid selector */ }
+          if (!el) return;
+          // Strip any existing color:... from the element's own inline style, then
+          // prepend the new color with !important so declaration order + importance
+          // both favor it.
+          const prior = (el.getAttribute('style') || '').replace(/(?:^|;)\s*color\s*:[^;]*;?/gi, '').replace(/^;+/, '');
+          const next = 'color:' + newHex + ' !important' + (prior ? ';' + prior : '');
+          el.setAttribute('style', next);
+          domFixCount++;
+        });
+        if (domFixCount > 0) {
+          // Preserve doctype + html outer so downstream regex passes keep working.
+          const doctype = /^\s*<!DOCTYPE[^>]*>/i.test(html) ? (html.match(/^\s*<!DOCTYPE[^>]*>/i) || [''])[0] : '<!DOCTYPE html>';
+          domSerialized = doctype + '\n' + dom.documentElement.outerHTML;
+        }
+      }
+    } catch (e) { warnLog('[Contrast] DOMParser mutation path failed, falling back to stylesheet rules:', e && e.message); }
 
-    // Replace any prior overrides block to avoid accumulation across repeated runs.
+    if (domSerialized && domFixCount > 0) {
+      _pipeLog('Contrast', 'Axe-guided targeted fix mutated ' + domFixCount + ' inline style' + (domFixCount === 1 ? '' : 's') + ' via DOMParser');
+      return { html: domSerialized, fixCount: domFixCount };
+    }
+
+    // ── Fallback path: stylesheet rules (used only when DOMParser unavailable or
+    // all querySelector lookups failed — e.g. malformed axe selectors). Inline
+    // `!important` on the element still beats this, so this is a best-effort tail.
+    const rules = items.map(it => it.sel + ' { color: ' + it.newHex + ' !important; }');
+    const overrideStyle = '<style id="alloflow-contrast-overrides">\n/* Axe-guided contrast fixes — stylesheet fallback for ' + rules.length + ' element' + (rules.length === 1 ? '' : 's') + ' */\n' + rules.join('\n') + '\n</style>';
+
     let fixed = html.replace(/<style id="alloflow-contrast-overrides">[\s\S]*?<\/style>\s*/i, '');
     if (/<\/head>/i.test(fixed)) {
       fixed = fixed.replace(/<\/head>/i, overrideStyle + '\n</head>');
@@ -5239,7 +5298,7 @@ HTML section ${chunkNum}/${chunks.length}:
       fixed = overrideStyle + fixed;
     }
 
-    _pipeLog('Contrast', 'Axe-guided targeted fix applied to ' + rules.length + ' selector' + (rules.length === 1 ? '' : 's'));
+    _pipeLog('Contrast', 'Axe-guided targeted fix applied to ' + rules.length + ' selector' + (rules.length === 1 ? '' : 's') + ' (stylesheet fallback)');
     return { html: fixed, fixCount: rules.length };
   };
 
@@ -7119,21 +7178,62 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
               return renderWordArtHtml(block.text || block.title || '', block.preset || block.style || 'goldFoil', block.size || 'L', block.align || 'center');
             }
             case 'banner': {
-              // Enforce white text on dark gradient + text-shadow guarantees WCAG AA contrast
-              // regardless of the auto-extracted headerBg. Accent border + layered typography
-              // makes the banner feel like a proper chapter marker rather than a flat heading box.
-              // Inner divs inherit color from the wrapper (background + color live on the same
-              // style there, which keeps fixContrastViolations Pass 1 from darkening the inner
-              // color:#ffffff to gray — seen as the Academic-theme banner reading as muted navy
-              // on navy before this change. Do NOT redeclare color:#ffffff on inner nodes.
+              // Compute an AA-safe text color from the LIGHTEST stop of the header
+              // background (solid or gradient). axe-core samples one representative bg
+              // color and will fail white-on-yellow even when text-shadow makes it
+              // visually readable — so we pick a text color that meets 4.5:1 against
+              // the worst-case stop. Dark backgrounds still resolve to white (unchanged).
               const _bTitle = block.title || '';
               const _bSubtitle = block.subtitle || '';
               const _bEyebrow = block.eyebrow || '';
               const _accent = docStyle.accentColor || '#fbbf24';
-              return `<div style="position:relative;background:${docStyle.headerBg};color:#ffffff;padding:36px 40px;border-radius:14px;margin-bottom:28px;overflow:hidden;border-left:6px solid ${_accent};box-shadow:0 6px 20px rgba(15,23,42,0.18)">`
-                + (_bEyebrow ? '<div style="font-size:0.75em;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;opacity:0.95;margin-bottom:10px;text-shadow:0 1px 2px rgba(0,0,0,0.25)">' + _bEyebrow + '</div>' : '')
-                + (_bTitle ? '<div style="font-size:2.1em;font-weight:800;line-height:1.1;letter-spacing:-0.01em;text-shadow:0 2px 4px rgba(0,0,0,0.35)">' + _bTitle + '</div>' : '')
-                + (_bSubtitle ? '<div style="font-size:1.1em;font-weight:500;margin-top:10px;text-shadow:0 1px 2px rgba(0,0,0,0.3)">' + _bSubtitle + '</div>' : '')
+              const _computeBannerText = (bg) => {
+                try {
+                  const s = String(bg || '');
+                  const stops = [];
+                  const hexRe = /#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})\b/g;
+                  let m;
+                  while ((m = hexRe.exec(s)) !== null) {
+                    let h = m[1];
+                    if (h.length === 3) h = h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
+                    stops.push([parseInt(h.substr(0,2),16), parseInt(h.substr(2,2),16), parseInt(h.substr(4,2),16)]);
+                  }
+                  const rgbRe = /rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/g;
+                  while ((m = rgbRe.exec(s)) !== null) stops.push([+m[1], +m[2], +m[3]]);
+                  if (!stops.length) return '#ffffff'; // unknown → preserve prior visual
+                  const srgb = (c) => c <= 0.03928 ? c/12.92 : Math.pow((c + 0.055)/1.055, 2.4);
+                  const lumOf = ([r,g,b]) => 0.2126*srgb(r/255) + 0.7152*srgb(g/255) + 0.0722*srgb(b/255);
+                  const cr = (a, b) => { const l1 = lumOf(a), l2 = lumOf(b); return (Math.max(l1,l2)+0.05)/(Math.min(l1,l2)+0.05); };
+                  // Worst case for text is whichever stop has MAX luminance (brightest bg).
+                  let lightest = stops[0];
+                  for (let i = 1; i < stops.length; i++) if (lumOf(stops[i]) > lumOf(lightest)) lightest = stops[i];
+                  // If even the lightest stop is dark → safe to keep white.
+                  if (lumOf(lightest) < 0.35) return '#ffffff';
+                  // Otherwise drive near-black darker until >=4.5:1 against the lightest stop.
+                  let r = 31, g = 41, b = 55; // #1f2937
+                  for (let i = 0; i < 25 && cr([r,g,b], lightest) < 4.5; i++) {
+                    r = Math.max(0, Math.round(r * 0.82));
+                    g = Math.max(0, Math.round(g * 0.82));
+                    b = Math.max(0, Math.round(b * 0.82));
+                  }
+                  return '#' + [r,g,b].map(c => c.toString(16).padStart(2,'0')).join('');
+                } catch (_) { return '#ffffff'; }
+              };
+              const _bText = _computeBannerText(docStyle.headerBg);
+              // Text-shadow direction is still a nice-to-have even when color already passes;
+              // we keep it but flip to a light shadow when text is dark (preserves legibility
+              // if the lightest stop is also where the text sits).
+              const _isDarkText = _bText !== '#ffffff';
+              const _shadow = _isDarkText
+                ? '0 1px 2px rgba(255,255,255,0.35)'
+                : '0 2px 4px rgba(0,0,0,0.35)';
+              const _shadowSm = _isDarkText
+                ? '0 1px 1px rgba(255,255,255,0.3)'
+                : '0 1px 2px rgba(0,0,0,0.3)';
+              return `<div style="position:relative;background:${docStyle.headerBg};color:${_bText} !important;padding:36px 40px;border-radius:14px;margin-bottom:28px;overflow:hidden;border-left:6px solid ${_accent};box-shadow:0 6px 20px rgba(15,23,42,0.18)">`
+                + (_bEyebrow ? '<div style="color:' + _bText + ' !important;font-size:0.75em;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;opacity:0.95;margin-bottom:10px;text-shadow:' + _shadowSm + '">' + _bEyebrow + '</div>' : '')
+                + (_bTitle ? '<div style="color:' + _bText + ' !important;font-size:2.1em;font-weight:800;line-height:1.1;letter-spacing:-0.01em;text-shadow:' + _shadow + '">' + _bTitle + '</div>' : '')
+                + (_bSubtitle ? '<div style="color:' + _bText + ' !important;font-size:1.1em;font-weight:500;margin-top:10px;text-shadow:' + _shadowSm + '">' + _bSubtitle + '</div>' : '')
                 + `</div>`;
             }
             case 'rawhtml': {
@@ -8761,10 +8861,16 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       } catch(e) { /* non-blocking */ }
 
       // ── Store results ──
+      // sourceText + finalText feed the "Diff view" button in the remediation UI so
+      // the user can audit verbatim-fidelity word-by-word. They cost some memory
+      // (~2x doc size) but the UX value is high: the integrity % is only actionable
+      // if the user can see WHAT drifted.
       const _result = {
         accessibleHtml,
         integrityCoverage,
         integrityWarning,
+        sourceText: extractedText || '',
+        finalText: htmlToPlainText(accessibleHtml),
         groundTruthCharCount: window.__lastGroundTruthCharCount || 0,
         groundTruthMethod: window.__lastGroundTruthMethod || null,
         verificationAudit: verification,
