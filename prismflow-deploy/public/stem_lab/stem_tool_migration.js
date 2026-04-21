@@ -289,6 +289,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       var _vfBirdsRef = useRef(null);
       var _vfDragRef = useRef({ active: false, idx: -1, offX: 0, offY: 0 });
       var _vfTimeRef = useRef(0);
+      // Synchronous gate for "perfect V" XP award \u2014 prevents animation frames from
+      // re-firing awardXP while the async toolData write propagates.
+      var _vfPerfectRef = useRef(false);
       // Tab 2: Wind Currents refs
       var _wcCanvasRef = useRef(null);
       var _wcAnimRef = useRef(null);
@@ -331,6 +334,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         var birdCount = d.vBirdCount || 9;
         var simSpeed = d.vSpeed || 1;
         var leaderRotations = d.vLeaderRotations || 0;
+
+        // Sync the perfect-V award ref with persisted state on (re)mount.
+        // Without this, a returning user (d.perfectVFormed === true) could re-earn XP.
+        if (d.perfectVFormed) _vfPerfectRef.current = true;
 
         // Initialize birds
         function makeFlock(count) {
@@ -635,8 +642,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             c.fillText('Energy Savings: ' + Math.round(eff * 0.65) + '%', 14, 40);
             c.fillText('Leader Rotations: ' + (leaderRotations || 0), 14, 52);
 
-            // Check for perfect V
-            if (eff >= 85 && !d.perfectVFormed) {
+            // Check for perfect V \u2014 synchronous ref prevents per-frame re-award
+            // while the async setToolData write propagates (previous bug: ~60 XP/sec).
+            if (eff >= 85 && !_vfPerfectRef.current) {
+              _vfPerfectRef.current = true;
               upd('perfectVFormed', true);
               if (celebrate) celebrate();
               if (awardXP) awardXP(20);
