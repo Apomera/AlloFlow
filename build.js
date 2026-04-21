@@ -49,6 +49,16 @@ const BACKUP = path.join(ROOT, 'prismflow-deploy', 'src', 'AlloFlowANTI.txt');
 // Each module: { name, filename, cdnTemplate }
 const MODULES = [
     {
+        name: 'AlloData',
+        filename: 'allo_data_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'LargeFileModule',
+        filename: 'large_file_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         name: 'StemLab',
         filename: 'stem_lab/stem_lab_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
