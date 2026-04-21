@@ -35,7 +35,7 @@ const entry = `
 
 ${source}
 
-window.__immersiveReaderExports = { SpeedReaderOverlay, BionicChunkReader, PerspectiveCrawlOverlay, KaraokeReaderOverlay, ImmersiveToolbar };
+window.__immersiveReaderExports = { SpeedReaderOverlay, BionicChunkReader, PerspectiveCrawlOverlay, KaraokeReaderOverlay, ImmersiveToolbar, ImmersiveWord };
 `;
 
 fs.writeFileSync(TMP, entry, 'utf-8');
@@ -101,8 +101,9 @@ window.AlloModules.BionicChunkReader = (typeof BionicChunkReader !== 'undefined'
 window.AlloModules.PerspectiveCrawlOverlay = (typeof PerspectiveCrawlOverlay !== 'undefined') ? PerspectiveCrawlOverlay : null;
 window.AlloModules.KaraokeReaderOverlay = (typeof KaraokeReaderOverlay !== 'undefined') ? KaraokeReaderOverlay : null;
 window.AlloModules.ImmersiveToolbar = (typeof ImmersiveToolbar !== 'undefined') ? ImmersiveToolbar : null;
+window.AlloModules.ImmersiveWord = (typeof ImmersiveWord !== 'undefined') ? ImmersiveWord : null;
 window.AlloModules.ImmersiveReaderModule = true;
-console.log('[ImmersiveReaderModule] 5 components registered');
+console.log('[ImmersiveReaderModule] 6 components registered');
 })();
 `;
 

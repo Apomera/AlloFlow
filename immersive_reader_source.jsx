@@ -1270,3 +1270,90 @@ window.AlloModules.KaraokeReaderOverlay = KaraokeReaderOverlay;
 window.AlloModules.ImmersiveToolbar = ImmersiveToolbar;
 window.AlloModules.ImmersiveReaderModule = true;
 console.log('[ImmersiveReaderModule] Focus + Crawl + Karaoke + Toolbar registered');
+
+// ─── ImmersiveWord (merged from AlloFlowANTI.txt 2026-04-21) ─────────────
+// Atomic word unit for immersive reading — POS highlights (noun/verb/adj/adv),
+// syllables-on-demand, click handler. Pure props-driven React.memo.
+const ImmersiveWord = React.memo(({ wordData, settings, onClick, isActive }) => {
+    const { t } = useContext(LanguageContext);
+    const isSyllableMode = settings.showSyllables && wordData.pos !== 'markdown' && wordData.pos !== 'newline';
+    const isPosHighlighted = (wordData.pos === 'noun' && settings.showNouns) ||
+                             (wordData.pos === 'verb' && settings.showVerbs) ||
+                             (wordData.pos === 'adj' && settings.showAdjectives) ||
+                             (wordData.pos === 'adv' && settings.showAdverbs);
+    const getPosLabel = (posCode) => {
+        return t(`immersive.pos.${posCode}`) || posCode;
+    };
+    let content = wordData.text;
+    if (isSyllableMode) {
+        const syllables = wordData.syllables || [wordData.text];
+        if (syllables.length > 1) {
+            content = syllables.map((syl, idx) => (
+                <span key={idx}>
+                    <span className={!isPosHighlighted && idx % 2 !== 0 ? "text-rose-600" : ""}>{syl}</span>
+                    {idx < syllables.length - 1 && (
+                        <span className={`font-black mx-[2px] ${isPosHighlighted ? 'opacity-60' : 'text-slate-600'}`}>·</span>
+                    )}
+                </span>
+            ));
+        }
+    }
+    let className = "inline-block transition-all duration-200 cursor-pointer ";
+    if (isActive) {
+        className += "font-semibold ";
+    } else {
+        if (wordData.pos === 'noun' && settings.showNouns) {
+            className += "bg-blue-100 text-blue-900 rounded px-1 mx-0.5 border-b-2 border-blue-400 font-bold ";
+        } else if (wordData.pos === 'verb' && settings.showVerbs) {
+            className += "bg-red-100 text-red-900 rounded px-1 mx-0.5 border-b-2 border-red-400 font-bold ";
+        } else if (wordData.pos === 'adj' && settings.showAdjectives) {
+            className += "bg-green-100 text-green-900 rounded px-1 mx-0.5 border-b-2 border-green-400 font-bold ";
+        } else if (wordData.pos === 'adv' && settings.showAdverbs) {
+            className += "bg-purple-100 text-purple-900 rounded px-1 mx-0.5 border-b-2 border-purple-400 font-bold ";
+        }
+    }
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onClick(e);
+        }
+    };
+    if (wordData.pos === 'markdown') {
+        return null;
+    }
+    const headerMatch = wordData.pos?.match?.(/^header(\d)$/);
+    const isHeader = !!headerMatch;
+    if (headerMatch) {
+        const level = parseInt(headerMatch[1]);
+        const headerSizes = {
+            1: 'text-3xl font-bold',
+            2: 'text-2xl font-bold',
+            3: 'text-xl font-bold',
+            4: 'text-lg font-semibold',
+            5: 'text-base font-semibold',
+            6: 'text-base font-semibold italic',
+        };
+        const sizeClass = headerSizes[level] || 'font-bold';
+        className += ` ${sizeClass} text-slate-800 block mt-4 mb-2 `;
+    }
+    if (wordData.pos === 'bold') {
+        className += ' font-bold ';
+    }
+    if (wordData.pos === 'italic') {
+        className += ' italic ';
+    }
+    return (
+        <span
+            onClick={onClick}
+            title={isPosHighlighted ? getPosLabel(wordData.pos) : null}
+            className={className}
+            style={{
+                fontSize: isHeader ? `${settings.textSize * 1.15}px` : `${settings.textSize}px`,
+                lineHeight: settings.lineHeight,
+                whiteSpace: 'pre-wrap',
+            }}
+        >
+            {content}
+        </span>
+    );
+});
