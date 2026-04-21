@@ -2880,7 +2880,10 @@
         "visuals_hint": "Generates an AI icon for each item. Adds ~30-50 seconds.",
           "mode_label": "Ordering Mode",
             "mode_auto": "✨ Auto-detect (AI picks best)",
-              "mode_hint_auto": "AI examines the text and topic hint to pick the best ordering axis."
+              "mode_hint_auto": "AI examines the text and topic hint to pick the best ordering axis.",
+                "image_style_label": "Image style",
+                  "style_placeholder": "e.g. cartoon, pixel art, watercolor",
+                    "image_style_hint": "Applied to all AI-generated sequence visuals."
     },
     "visuals": {
       "generating": "Generating sequence visuals…",
@@ -2888,7 +2891,10 @@
           "regenerating_batch": "Regenerating visuals for revised items…",
             "regen_success": "Image updated.",
               "regen_failed": "Couldn't regenerate image right now.",
-                "regen_button_aria": "Regenerate image for this item"
+                "regen_button_aria": "Regenerate image for this item",
+                  "remove_text_btn": "Remove Text",
+                    "remove_text_tooltip": "Remove text/labels from this image",
+                      "refine_placeholder": "e.g., make it cuter"
     },
     "progression_label_default": "Sequential Order",
       "order_by": "Order by:",

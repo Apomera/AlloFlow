@@ -1391,54 +1391,58 @@
         black: { type: "deletion", instruction: "Say 'black'. Now say it again, but leave out the /b/ sound.", targetPhoneme: "b", answer: "lack", distractors: ["back", "hack", "pack"] },
         flat: { type: "deletion", instruction: "Say 'flat'. Now say it again, but leave out the /f/ sound.", targetPhoneme: "f", answer: "lat", distractors: ["hat", "mat", "bat"] },
       };
-      // Generates a phoneme manipulation task (deletion/substitution) for the
-      // current word using Gemini, with a static fallback for common words.
+      // Pure helper: generates a manipulation task without touching React state.
+      // Used by fetchWordData (setup preload) AND the in-activity effect via the
+      // stateful wrapper below. Three-layer fallback: static table → Gemini → algorithmic.
+      // Never throws; returns a valid task object or a minimal algorithmic fallback.
+      const generateManipulationTask = React.useCallback(
+        async (word, phonemes) => {
+          if (!word) return null;
+          const fallbackKey = word.toLowerCase();
+          if (MANIPULATION_FALLBACKS[fallbackKey]) {
+            return { ...MANIPULATION_FALLBACKS[fallbackKey] };
+          }
+          let result = null;
+          if (typeof callGemini === "function") {
+            const phonemeStr = (phonemes || []).join(", ") || "unknown";
+            const prompt =
+              `You are a speech-language pathology educator creating a phoneme manipulation exercise.\n` +
+              `Word: "${word}"\nPhonemes: ${phonemeStr}\n\n` +
+              `Choose DELETION (remove one phoneme) OR SUBSTITUTION (swap one phoneme), whichever produces a common English word.\n` +
+              `Return ONLY valid JSON — no markdown, no explanation:\n` +
+              `{"type":"deletion","instruction":"Say '${word}'. Now say it again, but leave out the /k/ sound.","targetPhoneme":"k","answer":"at","distractors":["hat","bat","mat"]}\n\n` +
+              `Rules: answer and all distractors must be real common English words; instruction must be child-friendly; targetPhoneme in plain text without slashes.`;
+            try {
+              const raw = await callGemini(prompt);
+              const jsonMatch = (raw || "").match(/\{[\s\S]*?\}/);
+              if (jsonMatch) result = JSON.parse(jsonMatch[0]);
+            } catch (geminiErr) {
+              warnLog("[Manipulation] Gemini failed:", geminiErr?.message);
+            }
+          }
+          if (!result || !result.answer || !result.distractors) {
+            const answer = word.slice(1);
+            result = {
+              type: "deletion",
+              instruction: `Say '${word}'. Now say it again, but leave out the first sound.`,
+              targetPhoneme: phonemes?.[0] || word[0],
+              answer,
+              distractors: ["at", "on", "in"].filter((d) => d !== answer),
+            };
+          }
+          return result;
+        },
+        [callGemini],
+      );
+      // Stateful wrapper: calls the pure helper and pushes the result into
+      // React state so the activity view re-renders with the new task.
       const generateManipulationData = React.useCallback(
         async (word, phonemes) => {
           if (!word) return;
           setIsGeneratingManipulation(true);
           try {
-            // 1. Static fallback table first (instant, no API call)
-            const fallbackKey = word.toLowerCase();
-            if (MANIPULATION_FALLBACKS[fallbackKey]) {
-              const fb = MANIPULATION_FALLBACKS[fallbackKey];
-              const opts = fisherYatesShuffle([fb.answer, ...fb.distractors.slice(0, 3)]);
-              setManipulationState(fb);
-              manipulationStateRef.current = fb;
-              setManipulationOptions(opts);
-              manipulationOptionsRef.current = opts;
-              return;
-            }
-            // 2. Gemini generation
-            let result = null;
-            if (typeof callGemini === "function") {
-              const phonemeStr = (phonemes || []).join(", ") || "unknown";
-              const prompt =
-                `You are a speech-language pathology educator creating a phoneme manipulation exercise.\n` +
-                `Word: "${word}"\nPhonemes: ${phonemeStr}\n\n` +
-                `Choose DELETION (remove one phoneme) OR SUBSTITUTION (swap one phoneme), whichever produces a common English word.\n` +
-                `Return ONLY valid JSON — no markdown, no explanation:\n` +
-                `{"type":"deletion","instruction":"Say '${word}'. Now say it again, but leave out the /k/ sound.","targetPhoneme":"k","answer":"at","distractors":["hat","bat","mat"]}\n\n` +
-                `Rules: answer and all distractors must be real common English words; instruction must be child-friendly; targetPhoneme in plain text without slashes.`;
-              try {
-                const raw = await callGemini(prompt);
-                const jsonMatch = (raw || "").match(/\{[\s\S]*?\}/);
-                if (jsonMatch) result = JSON.parse(jsonMatch[0]);
-              } catch (geminiErr) {
-                warnLog("[Manipulation] Gemini failed:", geminiErr?.message);
-              }
-            }
-            // 3. Algorithmic fallback — delete first letter
-            if (!result || !result.answer || !result.distractors) {
-              const answer = word.slice(1);
-              result = {
-                type: "deletion",
-                instruction: `Say '${word}'. Now say it again, but leave out the first sound.`,
-                targetPhoneme: phonemes?.[0] || word[0],
-                answer,
-                distractors: ["at", "on", "in"].filter((d) => d !== answer),
-              };
-            }
+            const result = await generateManipulationTask(word, phonemes);
+            if (!result) return;
             const opts = fisherYatesShuffle([
               result.answer,
               ...(result.distractors || []).slice(0, 3),
@@ -1453,7 +1457,7 @@
             setIsGeneratingManipulation(false);
           }
         },
-        [callGemini],
+        [generateManipulationTask],
       );
       const generateSyllableData = React.useCallback(
         async (word) => {
@@ -1553,6 +1557,10 @@
         syllableData,
       ]);
       // Trigger generation whenever the word changes while in manipulation mode.
+      // Prefers the pre-generated per-word manipulationTask from setup, so the
+      // user's QC edits in the Pre-Activity Review panel are what the student
+      // actually hears. Falls back to on-demand generation for backwards compat
+      // (e.g. words from an older session without the field).
       React.useEffect(() => {
         if (wordSoundsActivity !== "manipulation") return;
         const currentWord = currentWordSoundsWord || wordSoundsPhonemes?.word;
@@ -1563,6 +1571,23 @@
         )
           return;
         lastWordForManipulation.current = currentWord;
+        const preloadedTask = wordSoundsPhonemes?.manipulationTask;
+        if (
+          preloadedTask &&
+          preloadedTask.answer &&
+          Array.isArray(preloadedTask.distractors) &&
+          preloadedTask.distractors.length > 0
+        ) {
+          const opts = fisherYatesShuffle([
+            preloadedTask.answer,
+            ...preloadedTask.distractors.slice(0, 3),
+          ]);
+          setManipulationState(preloadedTask);
+          manipulationStateRef.current = preloadedTask;
+          setManipulationOptions(opts);
+          manipulationOptionsRef.current = opts;
+          return;
+        }
         setManipulationState(null);
         setManipulationOptions([]);
         manipulationStateRef.current = null;
@@ -5438,6 +5463,15 @@
               familyMembers: rhymeDistractors,
               mappingGraphemes: fallbackPhonemes,
             };
+            // Attach manipulationTask so the Sound Swap activity has preloaded
+            // data (instruction + answer + distractors) for this word — no
+            // mid-activity Gemini stall, and the user can edit/preview in the
+            // Pre-Activity Review before the student hears it.
+            try {
+              phonemeData.manipulationTask = await generateManipulationTask(word, fallbackPhonemes);
+            } catch (e) {
+              phonemeData.manipulationTask = null;
+            }
             debugLog(
               "📦 Generated local fallback phoneme data for:",
               word,
@@ -5451,7 +5485,7 @@
           setIsLoadingPhonemes(false);
           return phonemeData;
         },
-        [wordSoundsLanguage, callGemini],
+        [wordSoundsLanguage, callGemini, generateManipulationTask],
       );
       const generateFallbackData = (word) => {
         const phonemes = estimatePhonemesBasic
@@ -6469,6 +6503,14 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             audioInstances.current.delete(targetWord);
             audioInstances.current.delete(targetWord.toLowerCase());
           }
+          // Clear in-flight TTS promise so handleAudio's ttsInflight branch
+          // doesn't short-circuit on a stale/pending request and replay the
+          // pre-regen URL. handleRegenerateOption below already does this;
+          // this handler was missing it, which was the regenerate bug.
+          if (ttsInflight && ttsInflight.current) {
+            ttsInflight.current.delete(targetWord);
+            ttsInflight.current.delete(targetWord.toLowerCase());
+          }
           if (typeof window !== "undefined" && window._CACHE_WORD_AUDIO_BANK) {
             delete window._CACHE_WORD_AUDIO_BANK[targetWord.toLowerCase()];
           }
@@ -6553,6 +6595,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   phonemeData.orthographyDistractors || [],
                 firstSound: phonemeData.firstSound || "",
                 lastSound: phonemeData.lastSound || "",
+                manipulationTask: phonemeData.manipulationTask || null,
                 _regeneratedAt: Date.now(),
               };
               if (setWsPreloadedWords) {
@@ -6581,6 +6624,37 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           }
         },
         [preloadedWords, fetchWordData, setWsPreloadedWords],
+      );
+      // Regenerate only the Sound Swap task for a single word without touching
+      // its phonemes/rhymes/etc. Used by the "Regenerate Task" button in the
+      // Pre-Activity Review editor.
+      const handleRegenerateManipulationTask = React.useCallback(
+        async (index) => {
+          const existingWord = preloadedWords[index];
+          if (!existingWord) return;
+          const targetWord = existingWord.targetWord || existingWord.word || "";
+          if (!targetWord) return;
+          try {
+            const phonemes = Array.isArray(existingWord.phonemes)
+              ? existingWord.phonemes
+              : [];
+            const newTask = await generateManipulationTask(targetWord, phonemes);
+            if (!newTask) return;
+            if (setWsPreloadedWords) {
+              setWsPreloadedWords((prev) => {
+                const prevArray = Array.isArray(prev) ? prev : [];
+                const updated = [...prevArray];
+                if (index < updated.length) {
+                  updated[index] = { ...updated[index], manipulationTask: newTask };
+                }
+                return updated;
+              });
+            }
+          } catch (err) {
+            warnLog("[Manipulation] Regenerate task failed:", err?.message || err);
+          }
+        },
+        [preloadedWords, generateManipulationTask, setWsPreloadedWords],
       );
       // Refresh audio for a single distractor word: clear every in-memory layer
       // handleAudio would hit (audioInstances / audioCache / ttsInflight / global
@@ -7956,7 +8030,10 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               sound_sort: "inst_sound_sort",
               word_families: "inst_word_families",
               mapping: "mapping",
-              manipulation: "inst_manipulation",
+              // manipulation intentionally omitted — no inst_manipulation key
+              // exists in audio_bank.json. Its instruction is generated per-word
+              // by generateManipulationTask at setup time and pre-warmed via
+              // Gemini TTS, so the audio bank lookup path should never fire.
               syllable_blending: "inst_syllable_blending",
               syllable_counting: "inst_syllable_counting",
             };
@@ -8232,6 +8309,13 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               instructionText = null;
             } else {
               instructionText = ts(`word_sounds.${wordSoundsActivity}_prompt`);
+              // Defensive: if ts() couldn't find a translation and returned the
+              // raw key (e.g. "word_sounds.manipulation_prompt"), null it out
+              // rather than letting TTS speak the key literal. This is what
+              // produced "word sounds manipulation prompt" reports historically.
+              if (typeof instructionText === 'string' && instructionText.startsWith('word_sounds.')) {
+                instructionText = null;
+              }
             }
             if (cancelled || audioCancelledRef.current) return;
             if (instructionAudioSrc) {
@@ -13117,6 +13201,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           onReorderWords: handleReorderPreloadedWords,
           onRegenerateWord: handleRegenerateWord,
           onRegenerateOption: handleRegenerateOption,
+          onRegenerateManipulationTask: handleRegenerateManipulationTask,
           onRegenerateAll: handleRegenerateAll,
           onRetryFailedTTS: handleRetryFailedTTS,
           onGenerateImage: handleGenerateWordImage,

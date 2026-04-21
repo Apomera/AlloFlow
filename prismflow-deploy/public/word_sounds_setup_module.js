@@ -160,7 +160,8 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
     mapping: { enabled: false, count: 5 },
     sound_sort: { enabled: false, count: 5 },
     word_families: { enabled: false, count: 5 },
-    word_scramble: { enabled: false, count: 5 }
+    word_scramble: { enabled: false, count: 5 },
+    manipulation: { enabled: false, count: 5 }
   });
   const [lessonPlanOrder, setLessonPlanOrder] = React.useState([
     "isolation",
@@ -173,7 +174,8 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
     "mapping",
     "sound_sort",
     "word_families",
-    "word_scramble"
+    "word_scramble",
+    "manipulation"
   ]);
   const [draggedActivity, setDraggedActivity] = React.useState(null);
   const [imageTheme, setImageTheme] = React.useState("");
@@ -331,6 +333,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
                          \u2022 "fern" \u2192 ["f", "er", "n"] (3 phonemes, er is ONE sound)
                          \u2022 "rain" \u2192 ["r", "\u0101", "n"] (3 phonemes, ai = long a)
                          ORTHOGRAPHY DISTRACTORS: Also return 3 plausible misspellings of the target word \u2014 letter substitutions or omissions a K-2 student might reasonably make (e.g. for "corn": ["korn", "cron", "cor"]). These are used for a spelling-choice activity so they should look visually similar to the correct word.
+                         MANIPULATION TASK (Sound Swap activity): Return a phoneme deletion OR substitution task. Pick whichever yields a common English answer word. Include a child-friendly instruction line, the target phoneme in plain text (no slashes), the resulting answer word, and 3 distractor words that are also real common English words similar in length to the answer but NOT correct.
                          Return ONLY JSON:
                          {
                              "word": "${rawWord}",
@@ -347,7 +350,14 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
                              "firstSound": "k",
                              "lastSound": "n",
                              "definition": "Simple definition matching grade level",
-                             "imagePrompt": "Icon of ${rawWord}, white background"
+                             "imagePrompt": "Icon of ${rawWord}, white background",
+                             "manipulationTask": {
+                                 "type": "deletion",
+                                 "instruction": "Say '${rawWord}'. Now say it again, but leave out the /k/ sound.",
+                                 "targetPhoneme": "k",
+                                 "answer": "orn",
+                                 "distractors": ["horn", "born", "torn"]
+                             }
                          }
                       `;
         const result = await callGemini(prompt, true);
@@ -363,6 +373,16 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
           }
         }
         const validatedPhonemes = data.phonemes && data.phonemes.length > 0 ? data.phonemes : data.word.toLowerCase().split("");
+        let manipTask = null;
+        if (data.manipulationTask && data.manipulationTask.answer && Array.isArray(data.manipulationTask.distractors) && data.manipulationTask.distractors.length >= 2 && data.manipulationTask.instruction) {
+          manipTask = {
+            type: data.manipulationTask.type || "deletion",
+            instruction: data.manipulationTask.instruction,
+            targetPhoneme: data.manipulationTask.targetPhoneme || "",
+            answer: data.manipulationTask.answer,
+            distractors: data.manipulationTask.distractors.slice(0, 3)
+          };
+        }
         processed.push({
           id: Date.now() + i,
           term: data.word,
@@ -382,7 +402,8 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
           firstSound: data.firstSound || data.phonemes && data.phonemes[0] || "",
           lastSound: data.lastSound || data.phonemes && data.phonemes[data.phonemes.length - 1] || "",
           definition: data.definition,
-          image: imageUrl
+          image: imageUrl,
+          manipulationTask: manipTask
         });
       } catch (e) {
         warnLog("Word processing failed for:", rawWord, e.message);
@@ -409,6 +430,11 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
         (lastItem.blendingDistractors || []).forEach((w) => w && ttsTasks.add(w));
         (lastItem.familyMembers || []).forEach((w) => w && ttsTasks.add(w));
         (lastItem.orthographyDistractors || []).forEach((w) => w && ttsTasks.add(w));
+        if (lastItem.manipulationTask) {
+          if (lastItem.manipulationTask.instruction) ttsTasks.add(lastItem.manipulationTask.instruction);
+          if (lastItem.manipulationTask.answer) ttsTasks.add(lastItem.manipulationTask.answer);
+          (lastItem.manipulationTask.distractors || []).forEach((w) => w && ttsTasks.add(w));
+        }
         const voiceForTts = selectedVoice || void 0;
         const speedForTts = typeof ttsSpeed === "number" ? ttsSpeed : void 0;
         const taskList = Array.from(ttsTasks);
@@ -730,7 +756,8 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
       mapping: { id: "mapping", label: "Sound Mapping", icon: GitCompare },
       sound_sort: { id: "sound_sort", label: "Sound Sort", icon: Users },
       word_families: { id: "word_families", label: "Word Families", icon: Users },
-      word_scramble: { id: "word_scramble", label: "Word Scramble", icon: Shuffle }
+      word_scramble: { id: "word_scramble", label: "Word Scramble", icon: Shuffle },
+      manipulation: { id: "manipulation", label: "Sound Swap", icon: Shuffle }
     };
     const activity = activityDefs[actId];
     return /* @__PURE__ */ React.createElement(
