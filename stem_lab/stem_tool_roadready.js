@@ -14351,7 +14351,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               style: { padding: '20px', borderRadius: '12px', border: '2px solid #22d3ee', background: 'linear-gradient(135deg, #0c4a6e, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '32px' } }, '🛣️'),
               h('div', { style: { fontSize: '14px', fontWeight: 800, marginTop: '6px' } }, 'Drive Simulator'),
-              h('div', { style: { fontSize: '11px', color: '#94a3b8', marginTop: '4px' } }, '12 scenarios. Real physics. Maine roads.')
+              h('div', { style: { fontSize: '11px', color: '#94a3b8', marginTop: '4px' } }, SCENARIOS.length + ' scenarios. Real physics. Maine roads.')
             ),
             h('button', { onClick: function() { upd('view', 'permitStart'); },
               style: { padding: '20px', borderRadius: '12px', border: '2px solid #fbbf24', background: 'linear-gradient(135deg, #78350f, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
@@ -14493,12 +14493,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('div', { style: { fontSize: '28px' } }, '📚'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Rules Foundations'),
               h('div', { style: { fontSize: '10px', color: '#c7d2fe', marginTop: '2px' } }, '9 universal pillars every driver must know')
-            ),
-            h('button', { onClick: function() { upd('view', 'stopDistCalc'); },
-              style: { padding: '16px', borderRadius: '12px', border: '2px solid #06b6d4', background: 'linear-gradient(135deg, #164e63, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
-              h('div', { style: { fontSize: '28px' } }, '📐'),
-              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Stopping Distance'),
-              h('div', { style: { fontSize: '10px', color: '#a5f3fc', marginTop: '2px' } }, 'Live physics: v, μ, reaction time')
             ),
             h('button', { onClick: function() { upd('view', 'gdlTracker'); },
               style: { padding: '16px', borderRadius: '12px', border: '2px solid #10b981', background: 'linear-gradient(135deg, #064e3b, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
@@ -14646,11 +14640,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'AI Driving Coach'),
               h('div', { style: { fontSize: '10px', color: '#ddd6fe', marginTop: '2px' } }, 'Gemini analyzes your last drive')
             ) : null,
-            h('button', { onClick: function() { upd('view', 'accidentProtocol'); },
+            h('button', { onClick: function() { upd('view', 'postCrash'); },
               style: { padding: '16px', borderRadius: '12px', border: '2px solid #fb923c', background: 'linear-gradient(135deg, #7c2d12, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '📋'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'After a Crash'),
-              h('div', { style: { fontSize: '10px', color: '#fed7aa', marginTop: '2px' } }, 'What to do — step by step')
+              h('div', { style: { fontSize: '10px', color: '#fed7aa', marginTop: '2px' } }, 'Timeline-based protocol + glove-box export')
             ),
             h('button', { onClick: function() { upd('view', 'knowYourCar'); },
               style: { padding: '16px', borderRadius: '12px', border: '2px solid #e879f9', background: 'linear-gradient(135deg, #701a75, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
@@ -14712,7 +14706,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Road Test Rubric'),
               h('div', { style: { fontSize: '10px', color: '#99f6e4', marginTop: '2px' } }, 'What the examiner actually grades')
             ),
-            h('button', { onClick: function() { upd('view', 'emergencySituations'); },
+            h('button', { onClick: function() { upd('view', 'emergencyHandbook'); },
               style: { padding: '16px', borderRadius: '12px', border: '2px solid #ef4444', background: 'linear-gradient(135deg, #7f1d1d, #1e293b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '🆘'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Emergency Situations'),
@@ -18514,6 +18508,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             never: 'Never stomp the brakes or jerk the wheel. Both exceed the friction budget and make it worse.'
           },
           {
+            id: 'hood_up', icon: '🚗', title: 'Hood Flies Up at Speed',
+            urgency: 'high',
+            scenario: 'Your hood suddenly unlatches and blocks your windshield while driving.',
+            steps: [
+              'Do NOT panic-brake. Braking hard with zero forward vision = rear-end collision.',
+              'Look through the gap between the dashboard and the bottom of the hood.',
+              'Or look out the DRIVER-side window to track your lane position.',
+              'Ease off the gas, turn on hazards, slow gradually.',
+              'Pull to the shoulder as soon as safe.',
+              'Prevention: every time you close the hood, push DOWN on it to confirm the latch caught.'
+            ],
+            never: 'Never slam on the brakes with no forward vision. The hood catching wind is scary but rarely cracks the windshield — a rear-end crash is far worse.'
+          },
+          {
             id: 'exhaust', icon: '☠️', title: 'Carbon Monoxide — Headache + Dizziness',
             urgency: 'high',
             scenario: 'You\'re driving with the windows up in winter. Headache, sleepy, nauseous, confused.',
@@ -19055,128 +19063,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             answered ? h('button', { onClick: function() { updMulti({ rowIdx: rIdx + 1, rowAnswered: null }); },
               style: { width: '100%', marginTop: '10px', padding: '12px', borderRadius: '8px', border: 'none', background: '#f59e0b', color: '#0f172a', fontSize: '13px', fontWeight: 800, cursor: 'pointer' }
             }, rIdx >= rowScenarios.length - 1 ? 'See Results →' : 'Next →') : null
-          )
-        );
-      }
-
-      // ══════════════════════════════════════════════════════════
-      // STOPPING DISTANCE CALCULATOR
-      // ══════════════════════════════════════════════════════════
-      if (view === 'stopDistCalc') {
-        var sdSpeed = d.sdSpeed || 45;
-        var sdWeather = d.sdWeather || 'dry';
-        var sdReaction = d.sdReaction || 1.5;
-        var sdTires = d.sdTires || 'good';
-        // Physics
-        var muMap = { dry: 0.7, wet: 0.4, snow: 0.22, ice: 0.1 };
-        var mu = muMap[sdWeather] * (sdTires === 'worn' ? 0.75 : 1);
-        var vMs = sdSpeed * 0.44704;
-        var reactionFt = sdReaction * vMs * 3.28084;
-        var brakingFt = (vMs * vMs) / (2 * mu * 9.81) * 3.28084;
-        var totalFt = reactionFt + brakingFt;
-        return h('div', { style: { padding: '20px', maxWidth: '860px', margin: '0 auto', color: '#e2e8f0' } },
-          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
-          h('div', { style: { background: 'linear-gradient(135deg, #164e63, #0f172a)', borderRadius: '14px', padding: '20px', textAlign: 'center', marginBottom: '16px', border: '1px solid #06b6d4' } },
-            h('div', { style: { fontSize: '42px' } }, '📐'),
-            h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, 'Stopping Distance Calculator'),
-            h('div', { style: { fontSize: '12px', color: '#a5f3fc' } }, 'Real physics: reaction distance + braking distance (v² / 2μg)')
-          ),
-          // Inputs
-          h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '16px', border: '1px solid #334155', marginBottom: '12px' } },
-            h('div', { style: { marginBottom: '14px' } },
-              h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '6px' } },
-                h('span', { style: { color: '#a5f3fc', fontWeight: 700 } }, '🚗 Speed'),
-                h('span', { style: { color: '#fff', fontWeight: 900 } }, sdSpeed + ' mph')
-              ),
-              h('input', { type: 'range', min: 15, max: 80, step: 5, value: sdSpeed,
-                onChange: function(e) { upd('sdSpeed', parseInt(e.target.value)); }, style: { width: '100%' }
-              })
-            ),
-            h('div', { style: { marginBottom: '14px' } },
-              h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '6px' } },
-                h('span', { style: { color: '#a5f3fc', fontWeight: 700 } }, '🧠 Reaction time'),
-                h('span', { style: { color: '#fff', fontWeight: 900 } }, sdReaction + ' sec')
-              ),
-              h('input', { type: 'range', min: 0.5, max: 3, step: 0.1, value: sdReaction,
-                onChange: function(e) { upd('sdReaction', parseFloat(e.target.value)); }, style: { width: '100%' }
-              }),
-              h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: '9px', color: '#64748b' } },
-                h('span', null, '0.5 alert pro'), h('span', null, '1.5 typical'), h('span', null, '2.5 tired'), h('span', null, '3 drunk/texting')
-              )
-            ),
-            h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' } },
-              h('div', null,
-                h('div', { style: { fontSize: '11px', color: '#a5f3fc', fontWeight: 700, marginBottom: '6px' } }, '☁️ Weather'),
-                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '4px' } },
-                  [['dry','☀️ Dry (μ=0.7)'],['wet','🌧️ Wet (μ=0.4)'],['snow','❄️ Snow (μ=0.22)'],['ice','🧊 Ice (μ=0.10)']].map(function(w) {
-                    var sel = w[0] === sdWeather;
-                    return h('button', { key: w[0], onClick: function() { upd('sdWeather', w[0]); },
-                      style: { padding: '6px 8px', borderRadius: '5px', border: '1px solid ' + (sel ? '#06b6d4' : '#334155'), background: sel ? '#164e63' : '#1e293b', color: '#fff', fontSize: '10px', fontWeight: 700, cursor: 'pointer' } }, w[1]);
-                  })
-                )
-              ),
-              h('div', null,
-                h('div', { style: { fontSize: '11px', color: '#a5f3fc', fontWeight: 700, marginBottom: '6px' } }, '🛞 Tires'),
-                h('div', { style: { display: 'flex', gap: '4px' } },
-                  [['good','✓ Good'],['worn','⚠️ Worn (-25%)']].map(function(t) {
-                    var sel = t[0] === sdTires;
-                    return h('button', { key: t[0], onClick: function() { upd('sdTires', t[0]); },
-                      style: { padding: '6px 10px', borderRadius: '5px', border: '1px solid ' + (sel ? '#06b6d4' : '#334155'), background: sel ? '#164e63' : '#1e293b', color: '#fff', fontSize: '10px', fontWeight: 700, cursor: 'pointer' } }, t[1]);
-                  })
-                )
-              )
-            )
-          ),
-          // Result + visualization
-          h('div', { style: { background: 'linear-gradient(135deg, rgba(22,78,99,0.3), rgba(6,182,212,0.1))', borderRadius: '14px', padding: '20px', border: '2px solid #06b6d4', marginBottom: '12px', textAlign: 'center' } },
-            h('div', { style: { fontSize: '10px', color: '#a5f3fc', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '6px' } }, 'Total Stopping Distance'),
-            h('div', { style: { fontSize: '56px', fontWeight: 900, color: '#67e8f9', lineHeight: 1 } }, Math.round(totalFt) + ' ft'),
-            h('div', { style: { fontSize: '11px', color: '#a5f3fc', marginTop: '6px' } },
-              'Reaction: ' + Math.round(reactionFt) + ' ft · Braking: ' + Math.round(brakingFt) + ' ft'
-            )
-          ),
-          // SVG scale diagram
-          h('div', { style: { background: '#020617', borderRadius: '10px', padding: '14px', border: '1px solid #334155', marginBottom: '12px' } },
-            h('div', { style: { fontSize: '10px', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', marginBottom: '8px' } }, '📏 To-scale diagram'),
-            (function() {
-              var maxFt = Math.max(totalFt, 200);
-              var svgW = 780;
-              var pxPerFt = svgW / maxFt;
-              var reactX = reactionFt * pxPerFt;
-              var brakeEndX = totalFt * pxPerFt;
-              return h('svg', { viewBox: '0 0 ' + svgW + ' 120', width: '100%', height: '120' },
-                // Road
-                h('rect', { x: 0, y: 45, width: svgW, height: 30, fill: '#334155' }),
-                h('line', { x1: 0, y1: 60, x2: svgW, y2: 60, stroke: '#fde047', strokeWidth: 2, strokeDasharray: '20 20' }),
-                // Reaction zone (amber)
-                h('rect', { x: 0, y: 45, width: reactX, height: 30, fill: 'rgba(251,191,36,0.4)' }),
-                h('text', { x: reactX / 2, y: 38, textAnchor: 'middle', fontSize: '9', fill: '#fbbf24' }, 'REACTION'),
-                h('text', { x: reactX / 2, y: 28, textAnchor: 'middle', fontSize: '10', fontWeight: 'bold', fill: '#fbbf24' }, Math.round(reactionFt) + ' ft'),
-                // Braking zone (red)
-                h('rect', { x: reactX, y: 45, width: brakingFt * pxPerFt, height: 30, fill: 'rgba(239,68,68,0.4)' }),
-                h('text', { x: reactX + (brakingFt * pxPerFt) / 2, y: 38, textAnchor: 'middle', fontSize: '9', fill: '#fca5a5' }, 'BRAKING'),
-                h('text', { x: reactX + (brakingFt * pxPerFt) / 2, y: 28, textAnchor: 'middle', fontSize: '10', fontWeight: 'bold', fill: '#fca5a5' }, Math.round(brakingFt) + ' ft'),
-                // Car at start
-                h('g', { transform: 'translate(0 52)' },
-                  h('rect', { x: -14, y: -2, width: 28, height: 14, rx: 2, fill: '#22d3ee' }),
-                  h('text', { x: 0, y: 90, textAnchor: 'middle', fontSize: '9', fill: '#22d3ee' }, 'Hazard spotted')
-                ),
-                // Car at end
-                h('g', { transform: 'translate(' + brakeEndX + ' 52)' },
-                  h('rect', { x: -14, y: -2, width: 28, height: 14, rx: 2, fill: '#ef4444' }),
-                  h('text', { x: 0, y: 90, textAnchor: 'middle', fontSize: '9', fill: '#ef4444' }, 'Fully stopped')
-                )
-              );
-            })()
-          ),
-          // Interpretation
-          h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '14px', border: '1px solid #334155', fontSize: '12px', color: '#cbd5e1', lineHeight: '1.7' } },
-            h('div', { style: { fontWeight: 800, color: '#06b6d4', marginBottom: '6px' } }, '🎯 In context:'),
-            totalFt < 60 ? 'Short stopping distance — you could stop within a driveway. Conditions are ideal.' :
-            totalFt < 150 ? 'About half a football field. A typical city-driving stopping distance.' :
-            totalFt < 300 ? 'A full football field or more. You are now outdriving a typical block\'s sight line.' :
-            totalFt < 500 ? 'More than a football field. In heavy traffic, your follower may not have this much space.' :
-            'CATASTROPHIC stopping distance. At this combo you cannot respond to anything. Slow way down — the formula is v², so halving your speed quarters your stopping distance.'
           )
         );
       }
@@ -19855,12 +19741,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var helpQuery = (d.helpQuery || '').toLowerCase().trim();
         var helpGoal = d.helpGoal || 'all';
         var features = [
-          { view: 'permitStart', goal: 'permit', icon: '📝', name: 'Permit Test (20q quiz)', desc: 'Randomized 20-question practice test from 80+ Maine BMV-style questions.' },
-          { view: 'permitFlashcards', goal: 'permit', icon: '🗂️', name: 'Permit Flashcards', desc: 'Spaced-repetition study mode for all 80 permit questions.' },
+          { view: 'permitStart', goal: 'permit', icon: '📝', name: 'Permit Test (20q quiz)', desc: 'Randomized 20-question practice test from ' + PERMIT_BANK.length + ' Maine BMV-style questions.' },
+          { view: 'permitFlashcards', goal: 'permit', icon: '🗂️', name: 'Permit Flashcards', desc: 'Spaced-repetition study mode for all ' + PERMIT_BANK.length + ' permit questions.' },
           { view: 'cheatSheet', goal: 'permit', icon: '📄', name: 'Study Cheat Sheet', desc: 'Printable one-page summary of all key rules.' },
           { view: 'signsView', goal: 'permit', icon: '🪧', name: 'Road Signs Reference', desc: '20 common signs with SVG illustrations + quiz mode.' },
           { view: 'rightOfWay', goal: 'permit', icon: '↔️', name: 'Right-of-Way Scenarios', desc: '10 "who goes first?" intersection puzzles.' },
-          { view: 'scenarioSelect', goal: 'practice', icon: '🚗', name: 'Drive Simulator (14 scenarios)', desc: 'Residential, highway, snow, fog, night, downtown, and more.' },
+          { view: 'scenarioSelect', goal: 'practice', icon: '🚗', name: 'Drive Simulator (' + SCENARIOS.length + ' scenarios)', desc: 'Residential, highway, snow, fog, night, downtown, and more.' },
           { view: 'freeExploreSetup', goal: 'practice', icon: '🌎', name: 'Free Explore', desc: 'Open sandbox with landmarks, challenges, road trips, dynamic weather.' },
           { view: 'lessonPath', goal: 'practice', icon: '🎓', name: 'Lesson Path', desc: 'Guided 10-lesson progression from beginner to winter expert.' },
           { view: 'roadTestIntro', goal: 'practice', icon: '🪪', name: 'Road Test Simulator', desc: 'Full Maine BMV-style scored exam (pre-trip + 4min drive).' },
@@ -19883,7 +19769,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           { view: 'postCrash', goal: 'safety', icon: '📞', name: 'Post-Crash Protocol', desc: 'First 10 minutes after a crash.' },
           { view: 'bikeAware', goal: 'safety', icon: '🚴', name: 'Cyclist & Moto Awareness', desc: '3-ft law, shared blind spots, right-hook avoidance.' },
           { view: 'crashLab', goal: 'science', icon: '🔬', name: 'Crash Reconstruction Lab', desc: 'Physics of real crashes: rear-end, T-bone, rollover, hydroplane.' },
-          { view: 'stopDistCalc', goal: 'science', icon: '📐', name: 'Stopping Distance Calculator', desc: 'Live v² / 2μg physics visualizer.' },
+          { view: 'stoppingLab', goal: 'science', icon: '📐', name: 'Stopping Distance Lab', desc: 'Live v² / 2μg physics with weather, reaction time, and tire condition.' },
           { view: 'lessonSelect', goal: 'science', icon: '📚', name: 'Auto Science Lessons', desc: 'Formal physics: drag, friction, MPG, kinetic energy.' },
           { view: 'hypermilingLab', goal: 'science', icon: '🌿', name: 'Hypermiling Lab', desc: 'MPG vs speed graph — beat the EPA rating.' },
           { view: 'vehicleCompare', goal: 'science', icon: '🔬', name: 'Vehicle Comparison', desc: 'Compare specs (Cd, mass, MPG) across vehicle types.' },
@@ -19896,7 +19782,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           { view: 'gdlTracker', goal: 'maine', icon: '🪪', name: 'GDL Stage Tracker', desc: 'Maine Graduated Driver License timeline + restrictions.' },
           { view: 'teenGDL', goal: 'maine', icon: '📘', name: 'Teen GDL Drill', desc: 'Passenger, curfew, and phone rules teens get tested on.' },
           { view: 'insuranceCalc', goal: 'maine', icon: '💰', name: 'Insurance Calculator', desc: 'Estimate what your actual rate will be.' },
-          { view: 'accidentProtocol', goal: 'maine', icon: '⚠️', name: 'Accident Protocol', desc: 'Maine-specific crash reporting & insurance steps.' },
           { view: 'logbook', goal: 'progress', icon: '📔', name: 'Driving Logbook', desc: 'All drives logged with 70-hour Maine progress bar.' },
           { view: 'analytics', goal: 'progress', icon: '📈', name: 'Analytics Dashboard', desc: 'Trend charts of safety/eco scores, bests, achievement timeline.' },
           { view: 'achievementGallery', goal: 'progress', icon: '🏆', name: 'Achievement Gallery', desc: 'Bronze/silver/gold tiered badge collection.' },
@@ -21161,9 +21046,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var labSpeed = d.labSpeed != null ? d.labSpeed : 55;
         var labWeather = d.labWeather || 'dry';
         var labReaction = d.labReaction != null ? d.labReaction : 1.5;
+        var labTires = d.labTires || 'good';
         // Map 'dry' to 'clear' for friction lookup
         var fw = labWeather === 'dry' ? 'clear' : labWeather;
         var sd = stoppingDistance(labSpeed, fw, labReaction);
+        // Worn tires lose ~25% of available grip — μ drops, braking distance grows as 1/μ.
+        if (labTires === 'worn') {
+          var wornMu = sd.mu * 0.75;
+          var wornBrakingFt = sd.braking_ft / 0.75;
+          sd = { reaction_ft: sd.reaction_ft, braking_ft: wornBrakingFt, total_ft: sd.reaction_ft + wornBrakingFt, mu: wornMu };
+        }
         var followFt = safeFollowingFeet(labSpeed, fw);
         var cruise = cruiseMPG(labSpeed, currentVehicle, fw, true);
         var resist = resistiveForce(labSpeed * MPH_TO_MS, currentVehicle, fw, true);
@@ -21216,7 +21108,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             )
           ),
           // Weather selector
-          h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '14px', border: '1px solid #334155', marginBottom: '14px' } },
+          h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '14px', border: '1px solid #334155', marginBottom: '10px' } },
             h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#22d3ee', marginBottom: '8px' } }, 'ROAD CONDITION'),
             h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
               weatherOpts.map(function(w) {
@@ -21224,6 +21116,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 return h('button', { key: w.id, onClick: function() { upd('labWeather', w.id); },
                   style: { padding: '8px 12px', borderRadius: '8px', border: '1px solid ' + (sel ? '#22d3ee' : '#334155'), background: sel ? '#0c4a6e' : '#1e293b', color: '#fff', cursor: 'pointer', fontSize: '11px', fontWeight: 700 } },
                   w.label + ' (μ=' + w.mu + ')');
+              })
+            )
+          ),
+          // Tires selector — worn tread shaves ~25% off available grip.
+          h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '14px', border: '1px solid #334155', marginBottom: '14px' } },
+            h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#22d3ee', marginBottom: '8px' } }, 'TIRES'),
+            h('div', { style: { display: 'flex', gap: '6px' } },
+              [['good', '✓ Good tread'], ['worn', '⚠️ Worn (-25% grip)']].map(function(t) {
+                var sel = t[0] === labTires;
+                return h('button', { key: t[0], onClick: function() { upd('labTires', t[0]); },
+                  style: { padding: '8px 12px', borderRadius: '8px', border: '1px solid ' + (sel ? '#22d3ee' : '#334155'), background: sel ? '#0c4a6e' : '#1e293b', color: '#fff', cursor: 'pointer', fontSize: '11px', fontWeight: 700 } }, t[1]);
               })
             )
           ),
@@ -21956,43 +21859,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         );
       }
 
-      // ── ACCIDENT AFTERMATH PROTOCOL ──
-      if (view === 'accidentProtocol') {
-        var steps = [
-          { step: 1, title: 'STOP — Do Not Leave', icon: '🛑', desc: 'Maine law: you MUST stop at the scene of any crash you are involved in. Leaving = hit-and-run (criminal offense, even for minor damage).', action: 'Stop your vehicle. Turn on hazard lights.' },
-          { step: 2, title: 'Check for Injuries', icon: '🏥', desc: 'Check yourself, your passengers, and occupants of the other vehicle. Do NOT move an injured person unless there is immediate danger (fire, sinking vehicle).', action: 'If anyone is injured, call 911 immediately.' },
-          { step: 3, title: 'Move to Safety', icon: '⚠️', desc: 'If vehicles are drivable and blocking traffic, move them to the shoulder. If not drivable, stay in your vehicle with your seatbelt on until help arrives (especially on highways).', action: 'Turn on hazards. Set up flares/triangles if you have them.' },
-          { step: 4, title: 'Call 911 / Police', icon: '📞', desc: 'In Maine, call police if: anyone is injured, damage exceeds $1,000 (which is almost any crash), or a vehicle must be towed. A police report protects you legally.', action: 'Give location, number of vehicles, injuries, and whether vehicles are blocking traffic.' },
-          { step: 5, title: 'Exchange Information', icon: '📝', desc: 'Get from the other driver: full name, phone, address, driver\'s license number, license plate, insurance company, policy number. Give them the same.', action: 'Take photos of their license, insurance card, and license plate.' },
-          { step: 6, title: 'Document Everything', icon: '📸', desc: 'Take photos of: all vehicle damage (every angle), the crash scene, road conditions, traffic signals, skid marks, weather, and any injuries.', action: 'Take at least 20 photos. You cannot over-document.' },
-          { step: 7, title: 'Get Witnesses', icon: '👥', desc: 'If anyone saw the crash, get their name and phone number. Witness testimony can be critical if the other driver lies to insurance.', action: 'Ask: "Did you see what happened? May I get your contact info?"' },
-          { step: 8, title: 'Do NOT Admit Fault', icon: '🤐', desc: 'Say "Are you OK?" — not "I\'m sorry" or "It was my fault." Fault is determined by investigators, not at the scene. Anything you say can be used against you.', action: 'Be polite and cooperative but factual only.' },
-          { step: 9, title: 'Notify Your Insurance', icon: '📱', desc: 'Call your insurance company within 24 hours. Give them the facts, the police report number, and the other driver\'s info. They handle the rest.', action: 'Most insurers have 24/7 claims hotlines.' },
-          { step: 10, title: 'See a Doctor', icon: '🩺', desc: 'Some injuries (whiplash, concussion) do not show symptoms for 24-72 hours. Get checked even if you feel fine. Medical records link injuries to the crash for insurance.', action: 'Go within 24-48 hours. Tell them it is crash-related.' }
-        ];
-        return h('div', { style: { padding: '20px', maxWidth: '800px', margin: '0 auto', color: '#e2e8f0' } },
-          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
-          h('div', { style: { background: 'linear-gradient(135deg, #7c2d12, #0f172a)', borderRadius: '14px', padding: '20px', border: '1px solid #fb923c', marginBottom: '14px', textAlign: 'center' } },
-            h('div', { style: { fontSize: '42px' } }, '📋'),
-            h('h2', { style: { fontSize: '20px', fontWeight: 900 } }, 'What To Do After a Crash'),
-            h('div', { style: { fontSize: '11px', color: '#fed7aa' } }, '10 steps. Memorize them BEFORE you need them.')
-          ),
-          steps.map(function(s) {
-            return h('div', { key: s.step, style: { background: '#0f172a', borderRadius: '10px', padding: '14px', border: '1px solid #334155', marginBottom: '6px', display: 'flex', gap: '12px', alignItems: 'flex-start' } },
-              h('div', { style: { flexShrink: 0, width: '40px', textAlign: 'center' } },
-                h('div', { style: { fontSize: '24px' } }, s.icon),
-                h('div', { style: { fontSize: '9px', color: '#64748b', marginTop: '2px' } }, 'Step ' + s.step)
-              ),
-              h('div', null,
-                h('div', { style: { fontSize: '12px', fontWeight: 800, marginBottom: '3px' } }, s.title),
-                h('div', { style: { fontSize: '11px', color: '#cbd5e1', lineHeight: '1.5', marginBottom: '4px' } }, s.desc),
-                h('div', { style: { fontSize: '10px', color: '#fb923c', paddingLeft: '8px', borderLeft: '2px solid #fb923c' } }, '→ ' + s.action)
-              )
-            );
-          })
-        );
-      }
-
       // ── ROAD TRIP PLANNER ──
       if (view === 'roadTrip') {
         var tripDist = d.tripDist || 300;
@@ -22441,7 +22307,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           { stage: 5, title: 'All Conditions', icon: '🌧️', modes: ['scenarioSelect'], desc: 'Drive in rain, snow, fog, and night. Build confidence in every condition.', check: function() { return !!earnedBadges.all_weather; } },
           { stage: 6, title: 'Highway Skills', icon: '🛣️', modes: ['scenarioSelect'], desc: 'Highway merge, lane changes, and maintaining following distance at speed.', check: function() { return !!scenariosDriven.highway; } },
           { stage: 7, title: 'Hazard Awareness', icon: '⚡', modes: ['hazardTest'], desc: 'Test your hazard perception reaction time. Target: 8/10.', check: function() { return !!earnedBadges.hazard_ace; } },
-          { stage: 8, title: 'Emergency Response', icon: '🚨', modes: ['emergencyDrill', 'emergencySituations'], desc: 'Yield to emergency vehicles. Learn brake failure, blowout, and stuck accelerator responses.', check: function() { return !!earnedBadges.emergency_yield; } },
+          { stage: 8, title: 'Emergency Response', icon: '🚨', modes: ['emergencyDrill', 'emergencyHandbook'], desc: 'Yield to emergency vehicles. Learn brake failure, blowout, and stuck accelerator responses.', check: function() { return !!earnedBadges.emergency_yield; } },
           { stage: 9, title: 'Advanced Physics', icon: '📐', modes: ['forceDiagram', 'hypermilingLab', 'speedCompare'], desc: 'Understand the forces. See why speed kills. Optimize your MPG.', check: function() { return !!earnedBadges.hypermiler; } },
           { stage: 10, title: 'Road Test Ready', icon: '🏆', modes: ['roadTestRubric', 'freeExploreSetup'], desc: 'Know the rubric. Free explore until every maneuver is automatic. Get your certificate.', check: function() { return !!earnedBadges.a_plus; } }
         ];
@@ -22537,40 +22403,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   h('div', { style: { fontSize: '12px', flexShrink: 0, marginLeft: '8px' } }, item.weight)
                 );
               })
-            );
-          })
-        );
-      }
-
-      // ── EMERGENCY SITUATIONS GUIDE ──
-      if (view === 'emergencySituations') {
-        var emergencies = [
-          { title: 'Tire Blowout', icon: '💥', response: ['Grip the steering wheel firmly with both hands.', 'Do NOT slam the brakes (this causes loss of control).', 'Ease off the gas pedal gradually.', 'Steer straight — the car will pull toward the blown tire.', 'Let the car slow naturally, then gently brake.', 'Pull to the shoulder with hazards on.'], physics: 'A blowout instantly deflates one tire, creating asymmetric drag that pulls the car to that side. Hard braking shifts weight forward, unloading the rear = spin.' },
-          { title: 'Brake Failure', icon: '🛑', response: ['Pump the brake pedal rapidly (may restore hydraulic pressure).', 'Downshift through the gears (engine braking).', 'Apply the parking/emergency brake GRADUALLY.', 'If on a hill, steer toward an uphill slope or runaway truck ramp.', 'As a last resort, sideswipe a guardrail to slow down.', 'NEVER turn off the engine while moving (lose power steering).'], physics: 'Brake failure is usually hydraulic (fluid leak). Pumping may rebuild enough pressure for one stop. Engine braking uses compression resistance — lower gears = more braking force.' },
-          { title: 'Stuck Accelerator', icon: '⚡', response: ['Shift to NEUTRAL immediately (engine revs but wheels disengage).', 'Steer to the shoulder or a safe area.', 'Apply brakes firmly — they ARE stronger than the engine.', 'Once stopped, turn off the engine.', 'Modern cars: press and HOLD the start button for 3+ seconds to force shutdown.', 'If you have a floor mat, check if it is jamming the pedal.'], physics: 'In neutral, the engine is disconnected from the wheels via the transmission. Brakes can overpower even a stuck-open throttle — do not be afraid to brake hard.' },
-          { title: 'Hood Flies Up', icon: '🚗', response: ['Do NOT panic-brake.', 'Look through the gap between the dashboard and hood bottom.', 'Or look out the driver-side window for lane position.', 'Slow down gradually with hazards on.', 'Pull to the shoulder when safe.', 'Hood latch failure is preventable: always push down to confirm latch after closing.'], physics: 'The hood catches wind at speed and pivots upward. Your windshield may crack from the impact. Panic braking at highway speed without vision = far more dangerous than the hood itself.' },
-          { title: 'Submerging Vehicle', icon: '🌊', response: ['You have 30-60 seconds. Act IMMEDIATELY.', 'Unbuckle your seatbelt FIRST.', 'Open the window (electric windows work for ~1 minute).', 'If the window won\'t open, use a window breaker tool on the CORNER of the glass.', 'Climb out through the window. Push children out first.', 'Do NOT try to open the door until water fills the car and equalizes pressure.', 'Swim to the surface and away from the sinking car.'], physics: 'Water pressure makes doors impossible to open (up to 600 lbs/sqft of force differential). Once the car fills and pressure equalizes, the door opens easily — but you may be disoriented and running out of air.' },
-          { title: 'Engine Fire', icon: '🔥', response: ['Pull over immediately and turn off the engine.', 'Get all occupants out and move 100+ feet away.', 'Call 911.', 'Do NOT open the hood (oxygen feeds the fire).', 'If you have a fire extinguisher, aim at the base of visible flames through the grille.', 'If the fire is large or spreading to the cabin, retreat and wait for fire department.'], physics: 'Engine fires are usually fuel or electrical. Opening the hood supplies oxygen and can cause a flashover. The gas tank is at the rear but fuel lines run the length of the car.' }
-        ];
-        return h('div', { style: { padding: '20px', maxWidth: '800px', margin: '0 auto', color: '#e2e8f0' } },
-          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
-          h('div', { style: { background: 'linear-gradient(135deg, #7f1d1d, #0f172a)', borderRadius: '14px', padding: '20px', border: '1px solid #ef4444', marginBottom: '14px', textAlign: 'center' } },
-            h('div', { style: { fontSize: '42px' } }, '🆘'),
-            h('h2', { style: { fontSize: '20px', fontWeight: 900 } }, 'Emergency Situations'),
-            h('div', { style: { fontSize: '11px', color: '#fca5a5' } }, 'When things go wrong. Memorize these BEFORE you need them — there is no time to think in a real emergency.')
-          ),
-          emergencies.map(function(em) {
-            return h('div', { key: em.title, style: { background: '#0f172a', borderRadius: '10px', padding: '14px', border: '1px solid #334155', marginBottom: '8px' } },
-              h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' } },
-                h('span', { style: { fontSize: '28px' } }, em.icon),
-                h('span', { style: { fontSize: '14px', fontWeight: 800 } }, em.title)
-              ),
-              em.response.map(function(step, si) {
-                return h('div', { key: si, style: { fontSize: '11px', color: '#cbd5e1', lineHeight: '1.5', paddingLeft: '10px', borderLeft: '2px solid #ef4444', marginBottom: '4px' } }, (si + 1) + '. ' + step);
-              }),
-              h('div', { style: { marginTop: '8px', padding: '8px', background: '#020617', borderRadius: '6px', fontSize: '10px', color: '#94a3b8', lineHeight: '1.5' } },
-                h('b', { style: { color: '#818cf8' } }, '🔬 Physics: '), em.physics
-              )
             );
           })
         );
