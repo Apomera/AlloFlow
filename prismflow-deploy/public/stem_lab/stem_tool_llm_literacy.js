@@ -841,6 +841,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
       // Glossary browse-all overlay.
       var browseTuple = useState(false);
       var browseOpen = browseTuple[0]; var setBrowseOpen = browseTuple[1];
+      // In-app confirmation modal. Set to { title, body, confirmLabel,
+      // confirmColor, onConfirm } to show; null to hide.
+      var confirmTuple = useState(null);
+      var confirmState = confirmTuple[0]; var setConfirmState = confirmTuple[1];
+      function askConfirm(opts, onConfirm) {
+        setConfirmState({
+          title: opts.title || 'Are you sure?',
+          body: opts.body || '',
+          confirmLabel: opts.confirmLabel || 'Confirm',
+          cancelLabel: opts.cancelLabel || 'Cancel',
+          confirmColor: opts.confirmColor || COLORS.bad,
+          onConfirm: onConfirm
+        });
+      }
 
       // ── Global keyboard shortcuts ──
       // Attached to window so students can navigate without a mouse.
@@ -858,12 +872,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
           // Modifiers off — respect browser-reserved chords.
           if (e.ctrlKey || e.metaKey || e.altKey) return;
           var key = e.key;
+          // Escape is always handled (closes modals / goes home).
           if (key === 'Escape') {
             if (browseOpen) { setBrowseOpen(false); return; }
             if (helpOpen) { setHelpOpen(false); return; }
             if (glossTerm) { setGlossTerm(null); return; }
+            if (confirmState) { setConfirmState(null); return; }
             if (section !== 'home') { goHome(); return; }
           }
+          // Everything else is suppressed while a modal is open — the modal
+          // has its own focus trap and students shouldn't accidentally
+          // navigate the background behind a dialog.
+          var anyModalOpen = browseOpen || helpOpen || glossTerm || confirmState;
+          if (anyModalOpen) return;
           if (key === '?' || (key === '/' && e.shiftKey)) { e.preventDefault(); setHelpOpen(true); return; }
           if (key === 'h' || key === 'H') { goHome(); return; }
           if (key === 't' || key === 'T') { toggleTeacherMode(); return; }
@@ -876,7 +897,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
         }
         window.addEventListener('keydown', onKey);
         return function() { window.removeEventListener('keydown', onKey); };
-      }, [section, helpOpen, glossTerm, teacherMode, browseOpen]);
+      }, [section, helpOpen, glossTerm, teacherMode, browseOpen, confirmState]);
 
       function goHome() { setSection('home'); announceToSR('Returned to AI Literacy Lab home'); }
       function enterSection(id, title) {
@@ -941,7 +962,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
       // restore focus there when the modal closes (a11y good practice).
       var focusReturnRef = React.useRef(null);
       React.useEffect(function() {
-        if (glossTerm || helpOpen || browseOpen) {
+        if (glossTerm || helpOpen || browseOpen || confirmState) {
           if (!focusReturnRef.current) focusReturnRef.current = document.activeElement;
         } else {
           var el = focusReturnRef.current;
@@ -950,7 +971,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
           }
           focusReturnRef.current = null;
         }
-      }, [glossTerm, helpOpen, browseOpen]);
+      }, [glossTerm, helpOpen, browseOpen, confirmState]);
 
       // Keep Tab focus inside the active modal. `listener` attaches to the
       // modal's root div via a ref callback so we clean up on unmount.
@@ -1030,6 +1051,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
                   h('div', { style: { fontSize: '13px', color: COLORS.subtext, flex: 1 } }, r.label)
                 );
               })
+            )
+          )
+        );
+      }
+
+      function renderConfirmModal() {
+        if (!confirmState) return null;
+        var c = confirmState;
+        function close() { setConfirmState(null); }
+        return h('div', {
+          className: 'llm-lit-no-print',
+          role: 'alertdialog',
+          'aria-modal': 'true',
+          'aria-labelledby': 'llm-lit-confirm-title',
+          'aria-describedby': 'llm-lit-confirm-body',
+          onClick: close,
+          style: {
+            position: 'fixed', inset: 0, background: 'rgba(15,23,42,.55)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            zIndex: 10000, padding: '20px'
+          }
+        },
+          h('div', {
+            onClick: function(e) { e.stopPropagation(); },
+            onKeyDown: trapFocus,
+            className: 'llm-lit-fade-in',
+            style: {
+              background: '#fff', borderRadius: '14px', padding: '20px 22px',
+              maxWidth: '420px', width: '100%',
+              boxShadow: '0 20px 60px -10px rgba(15,23,42,.45)',
+              border: '1px solid ' + COLORS.border
+            }
+          },
+            h('div', { id: 'llm-lit-confirm-title', style: { fontSize: '17px', fontWeight: 800, color: COLORS.text, marginBottom: '8px' } }, c.title),
+            h('div', { id: 'llm-lit-confirm-body', style: { fontSize: '13px', color: COLORS.subtext, lineHeight: 1.55, marginBottom: '16px' } }, c.body),
+            h('div', { style: { display: 'flex', gap: '8px', justifyContent: 'flex-end', flexWrap: 'wrap' } },
+              h('button', {
+                onClick: close,
+                style: btn('#e2e8f0', COLORS.text, false)
+              }, c.cancelLabel),
+              h('button', {
+                ref: function(el) { if (el && c) setTimeout(function() { try { el.focus(); } catch (e) {} }, 30); },
+                onClick: function() {
+                  if (c.onConfirm) { try { c.onConfirm(); } catch (err) { console.error(err); } }
+                  close();
+                },
+                style: btn(c.confirmColor, '#fff', false)
+              }, c.confirmLabel)
             )
           )
         );
@@ -1159,15 +1228,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
         var pct = Math.round((visitedCount / tiles.length) * 100);
         function startOver() {
           if (!ctx.setToolData) return;
-          // Confirm unless the session is clearly untouched.
-          if (visitedCount > 0 && !window.confirm('Reset your AI Literacy Lab progress? This clears your visited sections and saved state. Your XP earned elsewhere in AlloFlow is not affected.')) return;
-          ctx.setToolData(function(prev) {
-            var next = Object.assign({}, prev);
-            delete next.llmLiteracy;
-            return next;
-          });
-          announceToSR('Lab state reset');
-          addToast('Lab state cleared. Fresh start.', 'info');
+          // Untouched session: reset with no prompt.
+          if (visitedCount === 0) { doReset(); return; }
+          askConfirm({
+            title: 'Start over?',
+            body: 'This clears which sections you\u2019ve visited, your saved prompt iterations, and your UDL reflections. XP you earned elsewhere in AlloFlow is not affected.',
+            confirmLabel: '\u21BA Yes, reset',
+            cancelLabel: 'Keep my progress',
+            confirmColor: COLORS.bad
+          }, doReset);
+          function doReset() {
+            ctx.setToolData(function(prev) {
+              var next = Object.assign({}, prev);
+              delete next.llmLiteracy;
+              return next;
+            });
+            announceToSR('Lab state reset');
+            addToast('Lab state cleared. Fresh start.', 'info');
+          }
         }
         return h('div', { style: { padding: '20px', maxWidth: '960px', margin: '0 auto' } },
           // Hero banner
@@ -1190,7 +1268,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
                 opacity: 0.6, pointerEvents: 'none'
               }
             }),
-            h('div', { style: { position: 'relative', display: 'flex', gap: '16px', alignItems: 'flex-start' } },
+            h('div', { style: { position: 'relative', display: 'flex', gap: '16px', alignItems: 'flex-start', flexWrap: 'wrap' } },
               h('div', {
                 style: {
                   width: '56px', height: '56px', flexShrink: 0,
@@ -1209,7 +1287,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
                 )
               ),
               // Hero utility buttons — teacher-notes toggle + keyboard help
-              h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px', flexShrink: 0 } },
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px', flexShrink: 0, alignSelf: 'flex-start' } },
                 h('button', {
                   onClick: toggleTeacherMode,
                   style: {
@@ -1891,7 +1969,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
         var abResult = abResultTuple[0]; var setAbResult = abResultTuple[1];
 
         function runAB() {
-          if (!hasLiveAI) return;
+          if (!hasLiveAI || abBusy) return; // guard: ignore re-clicks while in flight
+          var lockedPairIdx = pairIdx; // capture in case user switches tabs mid-flight
           setAbBusy(true);
           // Fire both calls in parallel so the student sees true side-by-side timing.
           // jsonMode=false for both — we want natural language, temp 0.7 balanced.
@@ -1901,7 +1980,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
           ]).then(function(results) {
             setAbResult(function(prev) {
               var next = Object.assign({}, prev);
-              next[pairIdx] = { weak: results[0], strong: results[1] };
+              next[lockedPairIdx] = { weak: results[0], strong: results[1] };
               return next;
             });
             bump('promptIterations', 1);
@@ -2146,6 +2225,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
                           onChange: function(e) { setTplSlot(s.key, e.target.value); },
                           placeholder: s.placeholder,
                           rows: 4,
+                          'aria-required': s.required ? 'true' : 'false',
+                          'aria-invalid': isMissing ? 'true' : 'false',
                           style: { width: '100%', boxSizing: 'border-box', padding: '8px 10px', fontFamily: 'monospace', fontSize: '12px', border: '1px solid ' + (isMissing ? COLORS.bad : COLORS.border), borderRadius: '8px', resize: 'vertical' }
                         })
                       );
@@ -2158,6 +2239,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
                         value: val,
                         onChange: function(e) { setTplSlot(s.key, e.target.value); },
                         placeholder: s.placeholder,
+                        'aria-required': s.required ? 'true' : 'false',
+                        'aria-invalid': isMissing ? 'true' : 'false',
                         style: { width: '100%', boxSizing: 'border-box', padding: '8px 10px', fontSize: '13px', border: '1px solid ' + (isMissing ? COLORS.bad : COLORS.border), borderRadius: '8px' }
                       })
                     );
@@ -3052,7 +3135,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
           }, renderSection()),
           renderGlossaryPopover(),
           renderHelpOverlay(),
-          renderBrowseAllGlossary()
+          renderBrowseAllGlossary(),
+          renderConfirmModal()
         );
       } catch (err) {
         console.error('[llmLiteracy] Render error:', err);

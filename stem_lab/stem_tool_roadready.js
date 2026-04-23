@@ -2966,6 +2966,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       var reflectionRef = useRef({ inFlight: false });
       // One-shot guard so the new-user tour auto-route only fires once per session.
       var tourAutoRoutedRef = useRef(false);
+      // Guard for the reactionTest waiting→react transition: stores the rtWaitUntil
+      // value we last fired for, so repeated renders don't schedule duplicate upd()
+      // calls (each would overwrite rtStartTime and skew the measured reaction time).
+      var rtTransitionFiredRef = useRef(null);
       // Parent Ride Check: a structured 2-minute eval mode. Parent taps a category
       // button each time they see an error; engine logs it with timestamp + speed.
       // On drive end (or 2-min timer), a summary screen shows error counts by category
@@ -15140,7 +15144,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           h('div', { style: { marginTop: '10px', display: 'flex', gap: '8px', alignItems: 'center', justifyContent: 'center' } },
             h('label', { style: { fontSize: '11px', color: '#94a3b8' } }, 'World Seed:'),
             h('input', { type: 'number', value: d.worldSeed || '', placeholder: 'Random',
-              onChange: function(e) { upd('worldSeed', e.target.value ? parseInt(e.target.value) : null); },
+              onChange: function(e) { upd('worldSeed', e.target.value ? parseInt(e.target.value, 10) : null); },
               style: { width: '100px', padding: '4px 8px', borderRadius: '6px', border: '1px solid #334155', background: '#0f172a', color: '#fff', fontSize: '12px', fontFamily: 'monospace', textAlign: 'center' }
             }),
             h('button', { onClick: function() { upd('worldSeed', Math.floor(Math.random() * 100000)); },
@@ -20007,9 +20011,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var isBaseline = rtMode === 'baseline';
           var simulatedLag = isBaseline ? 0 : 280;
           var trialsDone = rtTrials.length;
-          // Time-based phase transition
-          if (rtPhase === 'waiting' && Date.now() >= rtWaitUntil) {
-            // Use setTimeout because we shouldn't call upd during render
+          // Time-based phase transition. Ref-guarded against rtWaitUntil so repeated
+          // renders don't re-schedule the upd (which would overwrite rtStartTime
+          // and shave ms off the measured reaction).
+          if (rtPhase === 'waiting' && Date.now() >= rtWaitUntil && rtTransitionFiredRef.current !== rtWaitUntil) {
+            rtTransitionFiredRef.current = rtWaitUntil;
             setTimeout(function() { updMulti({ rtPhase: 'react', rtStartTime: Date.now() }); }, 0);
           }
           return h('div', { style: { padding: '20px', maxWidth: '680px', margin: '0 auto', color: '#e2e8f0', textAlign: 'center', minHeight: '500px' } },
