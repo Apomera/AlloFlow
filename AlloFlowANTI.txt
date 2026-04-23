@@ -58797,6 +58797,20 @@ Return ONLY the plain language summary in ${lang}.`, false);
                       title="Toggle accessibility inspector — shows heading hierarchy, alt text, ARIA labels, table structure, and input labels. Click any badge to edit.">
                       ♿ A11y Inspect
                     </button>
+                    {/* Diff view entry point for the remediated-PDF pathway of Document Builder.
+                        Only shown when a PDF remediation result is loaded (pdfFixResult.sourceText
+                        + finalText present). The AlloFlow-generated pathway has no source PDF to
+                        compare against, so the button stays hidden in that mode. */}
+                    {pdfFixResult && pdfFixResult.sourceText && pdfFixResult.finalText && (
+                      <button
+                        onClick={() => { _ensureDiffLib(); setDiffViewOpen(true); }}
+                        className="text-xs font-bold flex items-center gap-1 px-2 py-1 rounded text-slate-600 hover:text-indigo-600 hover:bg-slate-100 transition-all"
+                        title="Open the word-level diff view comparing the source PDF text to the remediated HTML — see every insertion, deletion, and paraphrase with click-to-reject."
+                        aria-label="Open word-level diff view between source PDF and remediated HTML"
+                      >
+                        📝 Diff
+                      </button>
+                    )}
                     <div className="w-px h-5 bg-slate-200"></div>
                                         {exportAuditResult && exportAuditResult.score >= 0 && <span className={`text-[11px] font-black px-2.5 py-1 rounded-full flex items-center gap-1 ${exportAuditResult.score >= 90 ? 'bg-green-100 text-green-700 ring-1 ring-green-300' : exportAuditResult.score >= 70 ? 'bg-amber-100 text-amber-700 ring-1 ring-amber-300' : 'bg-red-100 text-red-700 ring-1 ring-red-300'}`} title={exportAuditResult.summary || ''}>{"♿"} {exportAuditResult.score}/100</span>}
 <button onClick={updateExportPreview} className="text-xs font-bold text-slate-600 hover:text-indigo-600 flex items-center gap-1 px-2 py-1 rounded hover:bg-slate-100"><RefreshCw size={12} /> Regenerate</button>
