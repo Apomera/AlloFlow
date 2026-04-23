@@ -356,6 +356,22 @@ var createContentEngine = function(deps) {
     const chunkCapacity = 600;
     const numChunks = Math.ceil(targetWords / chunkCapacity);
     const isShortText = numChunks <= 1;
+    // Tone checks hoisted up so the multi-chunk gate below can read them.
+    // Dialogue mode uses a bespoke JSON output schema + dialogue-plan pre-step
+    // (see single-call path below) and cannot route through the multi-chunk
+    // pipeline. Narrative (prose) has no such constraint — it rides along.
+    const isDialogueMode = effTone === 'Narrative';
+    const isNarrativeMode = effTone === 'Narrative' || effTone === 'Engaging Narrative';
+    // Prompt helpers hoisted up: the single-section (N=1) branch of the
+    // multi-chunk pipeline merges these into its section prompt to preserve
+    // the reading-level / tone / structure guidance that previously only
+    // lived in the legacy single-call path.
+    const complexityGuard = `
+        - HANDLING COMPLEX TOPICS: If the topic involves abstract, religious, or advanced scientific concepts (e.g. Shintoism, Quantum Mechanics), do NOT use high-level academic definitions.
+        - ANALOGY REQUIREMENT: You MUST explain every abstract concept using a concrete analogy relatable to a ${effGrade} student immediately.
+        - VOCABULARY GUARD: If you use a domain-specific term (Tier 3), define it simply in the same sentence.
+      `;
+    const structureInstruction = getStructureForLength(targetWords);
     try {
       let researchContext = "";
       if (effIncludeCitations) {
@@ -439,25 +455,37 @@ var createContentEngine = function(deps) {
           addToast(t('toasts.research_skipped'), "info");
       }
       // targetWords, chunkCapacity, numChunks, isShortText are declared above (before the research block)
-      if (numChunks > 1) {
-           setGenerationStep(t('status_steps.designing_structure'));
-           const outlinePrompt = `
-             You are an expert curriculum designer.
-             Plan a comprehensive educational article.
-             Topic: "${effTopic}"
-             Target Audience: ${effGrade}
-             Total Target Word Count: ${targetWords} words.
-             Task: Create a structured outline with exactly ${numChunks} distinct section headings that cover the topic in depth.
-             Return ONLY a JSON array of strings (the headings).
-             Example: ${JSON.stringify(Array.from({length: numChunks}, (_, i) => `Section ${i+1} Title`))}
-           `;
-           const outlineResult = await callGemini(outlinePrompt, true);
+      // Gate: route everything except Dialogue mode through the multi-chunk pipeline
+      // (even for N=1). Dialogue mode uses a bespoke JSON output schema and must stay
+      // on the single-call path below. This unifies short + long text behind the
+      // multi-chunk post-processing infrastructure (URL repair, source filter,
+      // out-of-range citation strip, validateAndRepairCitations) that the legacy
+      // short path was missing — fixes the mid-URL-truncated refs bug.
+      if (!isDialogueMode) {
            let sections = [];
-           try {
-               sections = JSON.parse(cleanJson(outlineResult));
-               if (!Array.isArray(sections) || sections.length === 0) throw new Error("Invalid outline");
-           } catch (e) {
-               sections = Array.from({length: numChunks}, (_, i) => `Part ${i+1}`);
+           if (numChunks === 1) {
+               // Single-section shortcut: no outline call needed.
+               // Use the topic itself as the section title.
+               sections = [effTopic];
+           } else {
+               setGenerationStep(t('status_steps.designing_structure'));
+               const outlinePrompt = `
+                 You are an expert curriculum designer.
+                 Plan a comprehensive educational article.
+                 Topic: "${effTopic}"
+                 Target Audience: ${effGrade}
+                 Total Target Word Count: ${targetWords} words.
+                 Task: Create a structured outline with exactly ${numChunks} distinct section headings that cover the topic in depth.
+                 Return ONLY a JSON array of strings (the headings).
+                 Example: ${JSON.stringify(Array.from({length: numChunks}, (_, i) => `Section ${i+1} Title`))}
+               `;
+               const outlineResult = await callGemini(outlinePrompt, true);
+               try {
+                   sections = JSON.parse(cleanJson(outlineResult));
+                   if (!Array.isArray(sections) || sections.length === 0) throw new Error("Invalid outline");
+               } catch (e) {
+                   sections = Array.from({length: numChunks}, (_, i) => `Part ${i+1}`);
+               }
            }
            let fullDocument = `Title: ${effTopic}\n\n`;
            const wordsPerSection = Math.ceil(targetWords / sections.length);
@@ -497,7 +525,66 @@ var createContentEngine = function(deps) {
                const priorRecap = i === 0
                    ? ''
                    : sectionTexts.map((st, idx) => `===== SECTION ${idx + 1}: ${sections[idx]} =====\n${_trimPrior(st, 250)}`).join('\n\n');
-               const sectionPrompt = `
+               // Single-section (N=1) path takes a different prompt shape:
+               // no section-N-of-M framing, no "## SectionTitle" header (would
+               // duplicate the topic as a redundant subheading), combined
+               // first+final instructions, and the reading-level / tone /
+               // structure guidance that used to live on the legacy single-call
+               // path is merged in here so short text doesn't lose quality.
+               const isSingleSection = sections.length === 1;
+               const toneSpecificInstruction = (effTone === 'Persuasive' || effTone === 'Persuasive / Opinion')
+                   ? 'Write a compelling argumentative piece with clear claims, evidence, and a call to action.'
+                   : (effTone === 'Humorous' || effTone === 'Humorous / Engaging')
+                   ? 'Use humor, jokes, and entertaining analogies while maintaining educational accuracy.'
+                   : (effTone === 'Procedural' || effTone === 'Step-by-Step / Procedural')
+                   ? 'Write clear step-by-step instructions with numbered steps and helpful tips.'
+                   : isNarrativeMode
+                   ? 'Write an engaging narrative article that weaves facts into a story-like flow while staying factually accurate.'
+                   : 'Write in a formal, expository textbook style. Focus on factual presentation with clear definitions and explanations. Avoid narrative hooks, storytelling elements, or conversational language. Present information directly and academically.';
+               const readingLevelGuidance = `
+                   STRICT READING LEVEL GUIDELINES (COMPENSATION FOR AI BIAS):
+                   - AI models typically write 1-2 grades higher than requested. You MUST compensate for this.
+                   - If "Kindergarten" or "1st Grade": Target Pre-K complexity. Use extremely short sentences (3-5 words). No compound sentences.
+                   - If "2nd Grade" or "3rd Grade": Target 1st Grade complexity. Use short, declarative sentences. High-frequency vocabulary only.
+                   - If "4th Grade" or "5th Grade": Target 3rd Grade complexity. Mostly simple sentences, limited compound sentences.
+                   - If "6th Grade" to "8th Grade": Target 5th Grade complexity. Straightforward syntax, avoid dense academic language.
+                   - If "9th Grade" to "12th Grade": Target 8th Grade complexity. Clear, standard English without unnecessary jargon.
+                   - GENERAL RULE: If in doubt, simplify further. Shorter sentences. Simpler words.
+               `;
+               const sectionPrompt = isSingleSection ? `
+                   Write a self-contained educational article about "${effTopic}".
+                   Target Audience: ${effGrade}
+                   Tone: ${effTone}
+                   Target Length: approximately ${wordsPerSection} words (keep within 10%).
+                   ${researchContext ? `
+                   --- RESEARCH BRIEF (BACKGROUND CONTEXT ONLY) ---
+                   The following background information is available:
+                   """
+                   ${researchContext}
+                   """
+                   ------------------------------------------------
+                   IMPORTANT: This brief is for context. You MUST still use Google Search independently to verify and cite every fact you write.
+                   ` : ''}
+                   This is a single self-contained article — write an engaging opening AND a summary conclusion. No section heading — the article stands on its own.
+                   STRICT INSTRUCTIONS:
+                   ${effIncludeCitations ? `
+                   1. CITATION REQUIREMENT: Include inline citations throughout. Every paragraph should have at least one citation.
+                   2. Major facts, statistics, and claims require source attribution.
+                   3. Verify claims with web sources before including them.
+                   ` : ''}
+                   4. Write in PROSE PARAGRAPHS. Do NOT use numbered lists or bullet points for the main content. Do NOT summarize.
+                   5. Do NOT include a "Sources", "References", "Works Cited", or "Bibliography" section — the citation list is appended automatically from grounding metadata.
+                   6. Do NOT emit a "## ${effTopic}" heading or any other top-level heading — begin directly with the article prose.
+                   ${structureInstruction}
+                   ${toneSpecificInstruction}
+                   ${effVocabulary ? `Key Vocabulary to Include: ${effVocabulary}` : ''}
+                   ${effCustomInstructions ? `Custom Instructions: ${effCustomInstructions}` : ''}
+                   ${readingLevelGuidance}
+                   ${complexityGuard}
+                   ${dialectInstruction}
+                   ${bilingualInstruction}
+                   Return ONLY the article text. Do not wrap in markdown code blocks.
+               ` : `
                    Write the section "${sectionTitle}" for an educational article about "${effTopic}".
                    Target Audience: ${effGrade}
                    Tone: ${effTone}
@@ -698,14 +785,9 @@ You MUST:
       }
       const minParagraphs = Math.max(3, Math.ceil(targetWords / 60));
       const minSections = Math.max(3, Math.ceil(targetWords / 250));
-      const complexityGuard = `
-        - HANDLING COMPLEX TOPICS: If the topic involves abstract, religious, or advanced scientific concepts (e.g. Shintoism, Quantum Mechanics), do NOT use high-level academic definitions.
-        - ANALOGY REQUIREMENT: You MUST explain every abstract concept using a concrete analogy relatable to a ${effGrade} student immediately.
-        - VOCABULARY GUARD: If you use a domain-specific term (Tier 3), define it simply in the same sentence.
-      `;
-      const structureInstruction = getStructureForLength(targetWords);
-      const isDialogueMode = effTone === 'Narrative';
-      const isNarrativeMode = effTone === 'Narrative' || effTone === 'Engaging Narrative';
+      // complexityGuard, structureInstruction, isDialogueMode, isNarrativeMode
+      // are hoisted to the top of the function so the multi-chunk gate above
+      // can reference them for the N=1 single-section prompt.
       let storyOutline = '';
       if (isDialogueMode) {
         addToast(t('input.drafting_story_outline') || "Planning dialogue structure...", "info");
@@ -900,7 +982,14 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
           if (effIncludeCitations && rawText) {
               const cleanedRawText = rawText.replace(/\[cite:\s*[\d,\s]+(?:in step \d+)?\]\.?\s*/gi, '');
               const rawWithCitations = processGrounding(cleanedRawText, result.groundingMetadata, 'Links Only', false, false);
-              if (isShortText) {
+              // Gate narrowed: non-dialogue short text now routes through the
+              // multi-chunk pipeline (see !isDialogueMode branch above). Only
+              // dialogue-mode single-call output reaches this path — and only
+              // when it's short. The deterministic cleanup below is kept
+              // intact for that case; LLM-cleanup branch below handles the
+              // non-dialogue fallback if dialogue ever gets pushed into the
+              // long-form path.
+              if (isShortText && isDialogueMode) {
                   // ── Short text: deterministic citation cleanup (no lossy LLM round-trip) ──
                   setGenerationStep(t('status_steps.optimizing_citations'));
                   let processedText = rawWithCitations
