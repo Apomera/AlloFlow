@@ -5745,39 +5745,39 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     })();
     // AlloData: pure-data bundle (phoneme guide, prompts, i18n strings, shop items, timeline modes).
     // Registers window.AlloModules.AlloData and calls _upgradeAlloData() to populate monolith shim.
-    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5398c82/allo_data_module.js');
+    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@109c351/allo_data_module.js');
     // LargeFileModule: chunked audio/video transcription (LargeFileHandler + LargeFileTranscriptionModal).
-    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5398c82/large_file_module.js');
+    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@109c351/large_file_module.js');
     // KeyConceptMapModule: SVG-overlay Bezier concept map view (used by renderOutlineContent).
-    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5398c82/key_concept_map_module.js');
+    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@109c351/key_concept_map_module.js');
     // UtilsPure: 14 pure utilities (JSON, storage, network, image) — populates monolith shim via _upgradeUtilsPure().
-    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5398c82/utils_pure_module.js');
+    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@109c351/utils_pure_module.js');
     // MiscComponents: WordSoundsReviewPanel + AnimatedNumber + ClozeInput (pure-props components).
-    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5398c82/misc_components_module.js');
+    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@109c351/misc_components_module.js');
     // RemediationAudio: Web Audio feedback beeps (chunk good/bad/medium, session complete, etc).
-    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5398c82/remediation_audio_module.js');
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5398c82/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5398c82/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5398c82/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5398c82/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5398c82/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5398c82/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5398c82/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5398c82/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5398c82/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5398c82/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5398c82/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5398c82/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5398c82/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5398c82/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5398c82/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5398c82/student_interaction_module.js');
-    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5398c82/math_fluency_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5398c82/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5398c82/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5398c82/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5398c82/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5398c82/content_engine_module.js');
+    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@109c351/remediation_audio_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@109c351/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@109c351/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@109c351/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@109c351/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@109c351/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@109c351/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@109c351/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@109c351/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@109c351/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@109c351/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@109c351/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@109c351/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@109c351/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@109c351/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@109c351/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@109c351/student_interaction_module.js');
+    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@109c351/math_fluency_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@109c351/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@109c351/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@109c351/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@109c351/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@109c351/content_engine_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -5793,7 +5793,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5398c82/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@109c351/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -10940,6 +10940,112 @@ Return only the corrected version of this exact text:`;
   // jsdelivr on first open (small ~40KB, no build-step cost).
   const [diffViewOpen, setDiffViewOpen] = useState(false);
   const [diffGranularity, setDiffGranularity] = useState('words'); // 'words' | 'sentences' | 'chars'
+  // Per-hunk undo state. diffChunks is the annotated jsdiff output (each chunk carries
+  // an id, an optional pairId for adjacent del+add paraphrase pairs, and a rejected flag).
+  // Lifted out of the render IIFE so the user's click-to-reject decisions persist across
+  // re-renders, modal close/reopen, and eventually page reload (via localStorage).
+  const [diffChunks, setDiffChunks] = useState(null);
+  // diffSelection carries the active drag-selection range ({ firstId, lastId }) so the
+  // floating "Reject selection / Keep selection" toolbar knows which chunks to target.
+  const [diffSelection, setDiffSelection] = useState(null);
+  // Spinner flag for the one-shot Gemini remarkup pass triggered by "Apply & Export".
+  const [applyingRemarkup, setApplyingRemarkup] = useState(false);
+  // Persist the last completed audit to localStorage so "View Last Audit" survives
+  // a full page reload. Keyed by a short hash of the source text so re-opening the
+  // SAME document rehydrates its prior audit automatically. Fails silently if
+  // storage is full or disabled — non-fatal; the in-memory state still works.
+  useEffect(() => {
+    if (!pdfFixResult || !pdfFixResult.sourceText || !pdfFixResult.finalText) return;
+    try {
+      let h = 0;
+      const sample = pdfFixResult.sourceText.slice(0, 2000);
+      for (let i = 0; i < sample.length; i++) { h = ((h << 5) - h + sample.charCodeAt(i)) | 0; }
+      const fingerprint = Math.abs(h).toString(36);
+      const payload = JSON.stringify({
+        pdfFixResult,
+        savedAt: new Date().toISOString(),
+        fingerprint,
+      });
+      safeSetItem('allo.lastPdfAudit', payload);
+    } catch (_) { /* quota or SecurityError — non-fatal */ }
+  }, [pdfFixResult]);
+  // Hydrate on mount so "View Last Audit" is available after a reload.
+  useEffect(() => {
+    try {
+      const raw = safeGetItem('allo.lastPdfAudit');
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (parsed && parsed.pdfFixResult && parsed.pdfFixResult.sourceText) {
+        setPdfFixResult(parsed.pdfFixResult);
+      }
+    } catch (_) { /* corrupt entry — ignore */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  // Build diffChunks from jsdiff output when the modal opens, the source/final text
+  // changes, or the granularity flips. Pair-detect adjacent del→add so paraphrases
+  // toggle as one atomic unit — otherwise rejecting half a paraphrase leaves garbage.
+  useEffect(() => {
+    if (!diffViewOpen || !pdfFixResult) return;
+    if (!diffLibReady || !window.Diff) return;
+    const src = pdfFixResult.sourceText || '';
+    const fin = pdfFixResult.finalText || '';
+    try {
+      const fn = diffGranularity === 'sentences' ? window.Diff.diffSentences
+               : diffGranularity === 'chars' ? window.Diff.diffChars
+               : window.Diff.diffWordsWithSpace;
+      const raw = fn(src, fin);
+      const annotated = raw.map((c, i) => ({
+        id: i,
+        type: c.added ? 'add' : (c.removed ? 'del' : 'same'),
+        value: c.value,
+        count: c.count || 1,
+        pairId: null,
+        rejected: false,
+      }));
+      // Pair adjacent del→add pairs. jsdiff emits them in that order for a paraphrase.
+      for (let i = 0; i < annotated.length - 1; i++) {
+        if (annotated[i].type === 'del' && annotated[i + 1].type === 'add') {
+          const pid = 'p_' + i;
+          annotated[i].pairId = pid;
+          annotated[i + 1].pairId = pid;
+        }
+      }
+      setDiffChunks(annotated);
+    } catch (e) {
+      console.warn('[Diff] compute failed:', e);
+      setDiffChunks(null);
+    }
+  }, [diffViewOpen, pdfFixResult, diffGranularity, diffLibReady]);
+  // Toggle a chunk's rejected flag. If the chunk is part of a pair, both halves flip.
+  const toggleDiffChunk = React.useCallback((id) => {
+    setDiffChunks(prev => {
+      if (!prev) return prev;
+      const target = prev.find(c => c.id === id);
+      if (!target || target.type === 'same') return prev;
+      const newRejected = !target.rejected;
+      const pid = target.pairId;
+      return prev.map(c => {
+        if (c.id === id) return { ...c, rejected: newRejected };
+        if (pid && c.pairId === pid) return { ...c, rejected: newRejected };
+        return c;
+      });
+    });
+  }, []);
+  // Set rejected state across a range of chunk ids (inclusive). Used by the
+  // drag-selection toolbar for batch reject/keep.
+  const setRangeRejected = React.useCallback((firstId, lastId, rejected) => {
+    setDiffChunks(prev => {
+      if (!prev) return prev;
+      const lo = Math.min(firstId, lastId);
+      const hi = Math.max(firstId, lastId);
+      return prev.map(c => {
+        if (c.type === 'same') return c;
+        if (c.id < lo || c.id > hi) return c;
+        return { ...c, rejected };
+      });
+    });
+    setDiffSelection(null);
+  }, []);
   const [diffLibReady, setDiffLibReady] = useState(typeof window !== 'undefined' && !!window.Diff);
   const [diffLibLoading, setDiffLibLoading] = useState(false);
   // Lazy-load the jsdiff global on demand.
@@ -10974,13 +11080,28 @@ Return only the corrected version of this exact text:`;
   const [pdfPageRange, setPdfPageRange] = useState(null);
   const [pdfMultiSession, setPdfMultiSession] = useState(null);
 
-  // Resets all state the PDF audit/remediation modal depends on. Includes isExtracting +
-  // generationStep because the Source Material loader sets them true when a PDF is picked,
-  // then waits on the audit modal — cancelling without this reset left the Source Material
-  // card stuck on "Extracting text from source…" after the modal closed.
+  // Closes the PDF audit/remediation modal WITHOUT clearing the completed result.
+  // Previously this nuked pdfAuditResult + pdfFixResult, which meant the diff view and
+  // verification audit were only reachable during the active run — one modal close and
+  // hours of AI work were gone. Now we preserve the completed result so the user can
+  // re-open it from the "View Last Audit" button. Only in-flight flags are reset.
+  // Explicit reset for a fresh file happens via startNewPdfAudit() below.
   const _closePdfAuditModal = () => {
+    setPdfFixLoading(false);
+    setPdfFixStep('');
+    setPendingPdfBase64(null);
+    setPendingPdfFile(null);
+    setIsExtracting(false);
+    setGenerationStep('');
+    setPdfAuditResult(null); // close modal; result survives in pdfFixResult
+  };
+  // Explicitly clear all audit state — used when starting a fresh file or the user
+  // clicks "Start New Audit" in the complete panel.
+  const startNewPdfAudit = () => {
     setPdfAuditResult(null);
     setPdfFixResult(null);
+    setDiffChunks(null);
+    setDiffSelection(null);
     setPdfFixLoading(false);
     setPdfFixStep('');
     setPendingPdfBase64(null);
@@ -53378,25 +53499,102 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 {/* Diff View modal — word-level (or sentence/char) diff of source
                                     PDF text vs. remediated HTML text. Loaded via jsdiff from jsdelivr
                                     on first open. Verbatim-fidelity is AlloFlow's core promise, so
-                                    even paraphrases are shown as distinct insertions+deletions. */}
+                                    even paraphrases are shown as distinct insertions+deletions.
+                                    Each chunk is click-to-reject (pairs toggle together), and a
+                                    drag-selection toolbar lets the user batch-accept/reject. */}
                                 {diffViewOpen && pdfFixResult && (() => {
                                   const _src = pdfFixResult.sourceText || '';
                                   const _fin = pdfFixResult.finalText || '';
-                                  let _chunks = null;
+                                  const _chunks = diffChunks;
                                   let _ins = 0, _del = 0, _same = 0;
-                                  if (diffLibReady && window.Diff) {
-                                    try {
-                                      const fn = diffGranularity === 'sentences' ? window.Diff.diffSentences
-                                               : diffGranularity === 'chars' ? window.Diff.diffChars
-                                               : window.Diff.diffWordsWithSpace;
-                                      _chunks = fn(_src, _fin);
-                                      _chunks.forEach(c => {
-                                        if (c.added) _ins += (c.count || 1);
-                                        else if (c.removed) _del += (c.count || 1);
-                                        else _same += (c.count || 1);
-                                      });
-                                    } catch (e) { console.warn('[Diff] compute failed:', e); }
+                                  let _rejCount = 0, _effectiveText = '';
+                                  if (_chunks) {
+                                    _chunks.forEach(c => {
+                                      if (c.type === 'add') {
+                                        _ins += (c.count || 1);
+                                        if (c.rejected) { _rejCount++; } else { _effectiveText += c.value; }
+                                      } else if (c.type === 'del') {
+                                        _del += (c.count || 1);
+                                        if (c.rejected) { _rejCount++; _effectiveText += c.value; }
+                                      } else {
+                                        _same += (c.count || 1);
+                                        _effectiveText += c.value;
+                                      }
+                                    });
                                   }
+                                  const _onTryGranularityChange = (g) => {
+                                    if (_chunks && _chunks.some(c => c.rejected)) {
+                                      if (!window.confirm('Changing granularity will reset your rejections. Continue?')) return;
+                                    }
+                                    setDiffGranularity(g);
+                                    setDiffSelection(null);
+                                  };
+                                  const _undoAllRejections = () => {
+                                    setDiffChunks(prev => prev ? prev.map(c => c.rejected ? { ...c, rejected: false } : c) : prev);
+                                    setDiffSelection(null);
+                                  };
+                                  const _onDiffMouseUp = () => {
+                                    try {
+                                      const sel = window.getSelection();
+                                      if (!sel || sel.isCollapsed) { setDiffSelection(null); return; }
+                                      const startEl = sel.anchorNode?.nodeType === 3 ? sel.anchorNode.parentElement : sel.anchorNode;
+                                      const endEl = sel.focusNode?.nodeType === 3 ? sel.focusNode.parentElement : sel.focusNode;
+                                      const startChunk = startEl?.closest?.('[data-chunk-id]');
+                                      const endChunk = endEl?.closest?.('[data-chunk-id]');
+                                      if (!startChunk || !endChunk) { setDiffSelection(null); return; }
+                                      const firstId = parseInt(startChunk.getAttribute('data-chunk-id'), 10);
+                                      const lastId = parseInt(endChunk.getAttribute('data-chunk-id'), 10);
+                                      if (Number.isNaN(firstId) || Number.isNaN(lastId)) { setDiffSelection(null); return; }
+                                      if (firstId === lastId) { setDiffSelection(null); return; }
+                                      const range = sel.getRangeAt(0);
+                                      const rect = range.getBoundingClientRect();
+                                      setDiffSelection({
+                                        firstId: Math.min(firstId, lastId),
+                                        lastId: Math.max(firstId, lastId),
+                                        anchorX: rect.left + rect.width / 2,
+                                        anchorY: rect.top,
+                                      });
+                                    } catch (e) { setDiffSelection(null); }
+                                  };
+                                  const _applyAndExport = async () => {
+                                    if (!_chunks || _rejCount === 0 || applyingRemarkup) return;
+                                    setApplyingRemarkup(true);
+                                    try {
+                                      const prompt =
+                                        `You are a WCAG 2.1 AA accessibility remediator. The user has approved the following final text from a PDF remediation pass. ` +
+                                        `Wrap it in semantic HTML: <h1>/<h2>/<h3> for headings, <p> for paragraphs, <ul>/<ol>/<li> for lists, <figure>/<figcaption> for images, ` +
+                                        `<nav>/<main>/<section> landmarks where appropriate, and proper table markup with <th scope=\"col\"> when tables appear. ` +
+                                        `Do NOT add, remove, paraphrase, or reorder any words from the approved text — only add markup. Return ONLY the HTML, no commentary.\n\n` +
+                                        `Approved text:\n${_effectiveText}`;
+                                      let remarkedHtml = null;
+                                      try {
+                                        const raw = await callGemini(prompt);
+                                        remarkedHtml = (raw || '').replace(/^```(?:html)?\s*/i, '').replace(/\s*```\s*$/, '').trim();
+                                      } catch (gErr) {
+                                        warnLog('[Diff] Gemini remarkup failed:', gErr?.message || gErr);
+                                      }
+                                      if (!remarkedHtml) {
+                                        // Minimal-markup fallback so export path still works.
+                                        remarkedHtml = _effectiveText
+                                          .split(/\n{2,}/)
+                                          .map(p => `<p>${p.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').trim()}</p>`)
+                                          .join('\n');
+                                        addToast("Couldn't reapply full markup — exported plain paragraphs. Retry later if needed.", 'warning');
+                                      }
+                                      setPdfFixResult(prev => prev ? ({
+                                        ...prev,
+                                        accessibleHtml: remarkedHtml,
+                                        finalText: _effectiveText,
+                                        _userEditedAt: new Date().toISOString(),
+                                        _rejectedHunkCount: _rejCount,
+                                      }) : prev);
+                                      // Rebuild diff against the new approved text so re-opening the diff shows no rejections remaining.
+                                      setDiffChunks(null);
+                                      addToast('Edits applied. Accessible HTML updated.', 'success');
+                                    } finally {
+                                      setApplyingRemarkup(false);
+                                    }
+                                  };
                                   return (
                                     <div
                                       role="dialog"
@@ -53410,7 +53608,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                           <span className="text-lg">📝</span>
                                           <div className="flex-1 min-w-0">
                                             <h2 id="allo-diff-title" className="text-sm font-black text-slate-800 truncate">Source PDF ↔ Remediated HTML · Diff</h2>
-                                            <p className="text-[11px] text-slate-600">Every insertion, deletion, and paraphrase — AlloFlow's goal is verbatim content, just accessible.</p>
+                                            <p className="text-[11px] text-slate-600">Click any colored span to reject the change. Drag-select across spans to batch-reject. Del→Add paraphrase pairs toggle together.</p>
                                           </div>
                                           <button
                                             onClick={() => setDiffViewOpen(false)}
@@ -53423,7 +53621,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                             {['words', 'sentences', 'chars'].map(g => (
                                               <button
                                                 key={g}
-                                                onClick={() => setDiffGranularity(g)}
+                                                onClick={() => _onTryGranularityChange(g)}
                                                 className={`px-3 py-1 font-bold transition-colors ${diffGranularity === g ? 'bg-indigo-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}
                                                 aria-pressed={diffGranularity === g}
                                               >{g.charAt(0).toUpperCase() + g.slice(1)}</button>
@@ -53434,13 +53632,19 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                               <span className="inline-flex items-center gap-1"><span className="w-3 h-3 rounded-sm bg-emerald-200 border border-emerald-400" /> <span className="font-bold text-emerald-700">{_ins.toLocaleString()}</span> added</span>
                                               <span className="inline-flex items-center gap-1"><span className="w-3 h-3 rounded-sm bg-rose-200 border border-rose-400" /> <span className="font-bold text-rose-700">{_del.toLocaleString()}</span> removed</span>
                                               <span className="inline-flex items-center gap-1 text-slate-600"><span className="w-3 h-3 rounded-sm bg-slate-100 border border-slate-300" /> <span className="font-bold">{_same.toLocaleString()}</span> unchanged</span>
+                                              {_rejCount > 0 && (
+                                                <span className="inline-flex items-center gap-1 ml-1 bg-amber-100 border border-amber-300 px-1.5 py-0.5 rounded font-bold text-amber-800">
+                                                  {_rejCount.toLocaleString()} rejected
+                                                  <button onClick={_undoAllRejections} className="ml-1 underline hover:no-underline text-amber-900" title="Undo every rejection in this view">undo all</button>
+                                                </span>
+                                              )}
                                             </div>
                                           )}
                                           <div className="ml-auto text-[11px] text-slate-500">
                                             <span className="font-mono">{_src.length.toLocaleString()}</span> → <span className="font-mono">{_fin.length.toLocaleString()}</span> chars
                                           </div>
                                         </div>
-                                        <div className="flex-1 overflow-auto p-4 bg-slate-50">
+                                        <div className="flex-1 overflow-auto p-4 bg-slate-50 relative">
                                           {!diffLibReady && diffLibLoading && (
                                             <div className="flex items-center gap-2 text-sm text-slate-600">
                                               <RefreshCw size={14} className="animate-spin" /> Loading diff engine (jsdiff)…
@@ -53452,22 +53656,79 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                             </div>
                                           )}
                                           {diffLibReady && _chunks && (
-                                            <pre className="whitespace-pre-wrap font-sans text-[13px] leading-relaxed text-slate-800 bg-white rounded-lg p-4 border border-slate-200">
-                                              {_chunks.map((c, i) => {
-                                                if (c.added) return (<ins key={i} className="bg-emerald-100 text-emerald-900 no-underline rounded px-0.5" title="Added during remediation">{c.value}</ins>);
-                                                if (c.removed) return (<del key={i} className="bg-rose-100 text-rose-900 rounded px-0.5" title="Removed from source">{c.value}</del>);
-                                                return (<span key={i}>{c.value}</span>);
+                                            <pre
+                                              className="whitespace-pre-wrap font-sans text-[13px] leading-relaxed text-slate-800 bg-white rounded-lg p-4 border border-slate-200"
+                                              onMouseUp={_onDiffMouseUp}
+                                            >
+                                              {_chunks.map((c) => {
+                                                const baseCls = c.rejected ? 'opacity-40 line-through' : '';
+                                                if (c.type === 'add') {
+                                                  return (
+                                                    <ins
+                                                      key={c.id}
+                                                      data-chunk-id={c.id}
+                                                      data-pair-id={c.pairId || ''}
+                                                      onClick={() => toggleDiffChunk(c.id)}
+                                                      className={`bg-emerald-100 text-emerald-900 no-underline rounded px-0.5 cursor-pointer hover:ring-2 hover:ring-emerald-400 ${baseCls}`}
+                                                      title={c.rejected ? 'Rejected — click to keep' : 'Added during remediation — click to reject'}
+                                                    >{c.value}</ins>
+                                                  );
+                                                }
+                                                if (c.type === 'del') {
+                                                  return (
+                                                    <del
+                                                      key={c.id}
+                                                      data-chunk-id={c.id}
+                                                      data-pair-id={c.pairId || ''}
+                                                      onClick={() => toggleDiffChunk(c.id)}
+                                                      className={`bg-rose-100 text-rose-900 rounded px-0.5 cursor-pointer hover:ring-2 hover:ring-rose-400 ${baseCls}`}
+                                                      title={c.rejected ? 'Restored — click to keep removed' : 'Removed from source — click to restore'}
+                                                    >{c.value}</del>
+                                                  );
+                                                }
+                                                return (<span key={c.id} data-chunk-id={c.id}>{c.value}</span>);
                                               })}
                                             </pre>
                                           )}
                                           {diffLibReady && !_chunks && (
                                             <div className="text-sm text-slate-600">Computing diff…</div>
                                           )}
+                                          {diffSelection && (
+                                            <div
+                                              className="fixed z-[110] bg-slate-900 text-white rounded-lg shadow-2xl px-1 py-1 flex items-center gap-1 text-[11px]"
+                                              style={{ left: `${diffSelection.anchorX}px`, top: `${Math.max(8, diffSelection.anchorY - 44)}px`, transform: 'translateX(-50%)' }}
+                                              onMouseDown={(e) => e.preventDefault()}
+                                            >
+                                              <button
+                                                onClick={() => setRangeRejected(diffSelection.firstId, diffSelection.lastId, true)}
+                                                className="px-2 py-1 rounded bg-rose-600 hover:bg-rose-700 font-bold"
+                                              >Reject selection</button>
+                                              <button
+                                                onClick={() => setRangeRejected(diffSelection.firstId, diffSelection.lastId, false)}
+                                                className="px-2 py-1 rounded bg-emerald-600 hover:bg-emerald-700 font-bold"
+                                              >Keep selection</button>
+                                              <button
+                                                onClick={() => setDiffSelection(null)}
+                                                className="px-1.5 py-1 rounded hover:bg-slate-700"
+                                                aria-label="Dismiss toolbar"
+                                              >✕</button>
+                                            </div>
+                                          )}
                                         </div>
-                                        <div className="px-4 py-2 border-t border-slate-200 bg-slate-50 text-[11px] text-slate-600 flex items-center gap-3">
-                                          <span>📚 Powered by <span className="font-mono">jsdiff@5.2.0</span></span>
+                                        <div className="px-4 py-2 border-t border-slate-200 bg-slate-50 text-[11px] text-slate-600 flex items-center gap-3 flex-wrap">
+                                          <span>📚 jsdiff@5.2.0</span>
                                           <span className="text-slate-400">·</span>
-                                          <span>Word mode uses <span className="font-mono">diffWordsWithSpace</span> so spacing changes are visible too.</span>
+                                          <span>Click spans or drag-select to edit. Pairs toggle together.</span>
+                                          {_rejCount > 0 && (
+                                            <button
+                                              onClick={_applyAndExport}
+                                              disabled={applyingRemarkup}
+                                              className="ml-auto px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white rounded-md font-bold inline-flex items-center gap-1.5 shadow"
+                                              title="Apply rejections and re-generate accessible HTML"
+                                            >
+                                              {applyingRemarkup ? <><RefreshCw size={12} className="animate-spin" /> Re-applying markup…</> : <>✓ Apply &amp; Export ({_rejCount})</>}
+                                            </button>
+                                          )}
                                         </div>
                                       </div>
                                     </div>
@@ -53984,7 +54245,20 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   {/* ── Fix & Verify Results Panel ── */}
                   {pdfFixResult && (
                     <div className="mt-4 bg-gradient-to-b from-white to-emerald-50 rounded-2xl border-2 border-emerald-300 p-5 space-y-4 animate-in slide-in-from-bottom duration-300">
-                      <h4 className="text-sm font-bold text-emerald-800 flex items-center gap-2">♿ Remediation Complete</h4>
+                      <div className="flex items-center gap-2">
+                        <h4 className="text-sm font-bold text-emerald-800 flex items-center gap-2 flex-1">♿ Remediation Complete</h4>
+                        <button
+                          onClick={() => {
+                            if (window.confirm('Start a new audit? Your current audit will be cleared — make sure you have downloaded the remediated HTML if you need it.')) {
+                              startNewPdfAudit();
+                            }
+                          }}
+                          className="text-[11px] px-2.5 py-1 bg-white hover:bg-slate-100 text-slate-600 border border-slate-300 rounded-md font-bold inline-flex items-center gap-1"
+                          title="Clear this audit result and start fresh with a new PDF"
+                        >
+                          🗑️ {t('pdf_audit.start_new_audit') || 'Start New Audit'}
+                        </button>
+                      </div>
                       {pdfFixResult.pageCount && (
                         <div className="flex gap-2 flex-wrap">
                           <span className="text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-bold">📄 {pdfFixResult.pageCount} pages processed</span>
@@ -58800,6 +59074,16 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   <p className="text-xs text-teal-600 mt-1">Upload PDFs for WCAG accessibility audit & remediation with axe-core verification</p>
                 </div>
               </button>
+              {pdfFixResult && !pdfFixLoading && !pdfAuditResult && (
+                <button
+                  onClick={() => { setPdfAuditResult({ _restored: true }); }}
+                  className="flex items-center justify-center gap-2 px-3 py-2 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 rounded-xl text-xs font-bold transition-all col-span-full md:col-span-2"
+                  title="Re-open the last PDF audit — view the diff, verification, and remediated HTML without re-running the pipeline"
+                >
+                  📊 {t('pdf_audit.view_last_audit') || 'View Last Audit'}
+                  {pdfFixResult._userEditedAt && <span className="opacity-70 text-[10px]">· edited</span>}
+                </button>
+              )}
             </div>
           </div>
         </div>
