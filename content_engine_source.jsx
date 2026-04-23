@@ -812,7 +812,7 @@ ${effGrade === '6th Grade' || effGrade === '7th Grade' || effGrade === '8th Grad
 ${complexityGuard}
 Return ONLY the JSON object. Do not include any preamble, markdown code blocks, or explanation.
       ` : `
-        Write a comprehensive educational text for use as source material.
+        You are writing PART 1 of 1 of an educational text — a single self-contained segment that will be used as source material. Treat this as a segment rewrite, NOT as authoring a complete document with a bibliography at the end. The citation list will be generated automatically from grounding metadata and appended by the system.
         Topic: "${effTopic}"
         Target Reading Level: ${effGrade}
         Tone/Style: ${effTone}
@@ -838,6 +838,7 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
         CRITICAL FORMAT RULES:
         - Write in PROSE PARAGRAPHS. Do NOT use numbered lists or bullet points for the main content. Use flowing text with complete paragraphs.
         - Do NOT include any "Sources", "References", "Works Cited", "Bibliography", or similar sections. I will automatically append verified sources at the end.
+        - SPECIFICALLY FORBIDDEN: Do not write a "Source Text References" heading or any numbered list of citations like "1. [Title](url) 2. [Title](url)". These will be generated from my grounding metadata — any you write will be discarded.
         ` : (effIncludeCitations ? `
         CRITICAL: You MUST use Google Search to find, verify, and cite facts about "${effTopic}".
         Search for key facts, statistics, dates, and claims relevant to this topic. Every paragraph must include at least one cited source.
@@ -846,6 +847,7 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
         CRITICAL FORMAT RULES:
         - Write in PROSE PARAGRAPHS. Do NOT use numbered lists or bullet points for the main content. Use flowing text with complete paragraphs.
         - Do NOT include any "Sources", "References", "Works Cited", "Bibliography", or similar sections. I will automatically append verified sources at the end.
+        - SPECIFICALLY FORBIDDEN: Do not write a "Source Text References" heading or any numbered list of citations like "1. [Title](url) 2. [Title](url)". These will be generated from my grounding metadata — any you write will be discarded.
         ` : '')}
         STRICT READING LEVEL GUIDELINES (COMPENSATION FOR AI BIAS):
         - AI models typically write 1-2 grades higher than requested. You MUST compensate for this.
@@ -906,8 +908,15 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
                       .replace(/(\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\([^)]+\))\s*([.!?])/g, '$2 $1')
                       // Separate adjacent citations with comma
                       .replace(/(\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\([^)]+\))(\[⁽)/g, '$1, $2')
-                      // Strip any Sources/References/Bibliography sections (auto-generated later)
-                      .replace(/\n*(?:#{1,4}\s*)?(?:Sources?|References?|Works?\s*Cited|Bibliography)\s*[\n\r]+(?:(?:\d+\.\s+|\*\s+|-\s+)?.+[\n\r]+)*(?=\n*(?:#{1,4}\s|\Z|$))/gi, '\n')
+                      // Strip any Sources/References/Bibliography trailer at end of text
+                      // (auto-generated later by generateBibliographyString). Lookahead-gated:
+                      // only strips when the header is followed by at least one numbered
+                      // markdown link. This prevents false matches on legitimate body content
+                      // that happens to contain the word "References" or "Sources" — the
+                      // over-match that tanked the earlier simplified-pipeline strip attempt.
+                      // Supersedes the old `\s*[\n\r]+` requirement that failed when Gemini
+                      // emitted refs as a flat one-line trailer.
+                      .replace(/(?:\n|^)\s*(?:#{1,4}\s*)?(?:\*+\s*)?(?:Source\s+Text\s+References|Accuracy\s+Check\s+References|Verified\s+Sources|Works?\s+Cited|Bibliography|Citations)(?:\*+)?[\s:]*(?=\s*\d+\.\s*\[[^\]]+\]\()[\s\S]*$/i, '')
                       // Clean orphan brackets around citations
                       .replace(/\[(⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾)(?!\]\()/g, '$1')
                       .replace(/(⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾)\](?!\()/g, '$1')
@@ -952,7 +961,7 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
                       warnLog(`Citation validation: cleanup lost ${rawCitCount - cleanedCitCount}/${rawCitCount} citations. Falling back to raw.`);
                       throw new Error("Citation loss detected - using raw grounding");
                   }
-                  let strippedText = cleaned.replace(/\n*(?:#{1,4}\s*)?(?:Sources?|References?|Works?\s*Cited|Bibliography)\s*[\n\r]+(?:(?:\d+\.\s+|\*\s+|-\s+)?.+[\n\r]+)*(?=\n*(?:#{1,4}\s|\Z|$))/gi, '\n');
+                  let strippedText = cleaned.replace(/(?:\n|^)\s*(?:#{1,4}\s*)?(?:\*+\s*)?(?:Source\s+Text\s+References|Accuracy\s+Check\s+References|Verified\s+Sources|Works?\s+Cited|Bibliography|Citations)(?:\*+)?[\s:]*(?=\s*\d+\.\s*\[[^\]]+\]\()[\s\S]*$/i, '\n');
                   text = strippedText.trim();
                   if (result.groundingMetadata?.groundingChunks) {
                       const { renumberedText, reorderedChunks } = renumberCitations(text, result.groundingMetadata.groundingChunks);
@@ -970,7 +979,7 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
                   warnLog("Citation placement optimization skipped (Timeout or Error):", cleanupErr);
                   const cleanedFallback = rawText.replace(/\[cite:\s*[\d,\s]+(?:in step \d+)?\]\.?\s*/gi, '');
                   let fallbackText = processGrounding(cleanedFallback, result.groundingMetadata, 'Links Only', false, false);
-                  fallbackText = fallbackText.replace(/\n*(?:#{1,4}\s*)?(?:Sources?|References?|Works?\s*Cited|Bibliography)\s*[\n\r]+(?:(?:\d+\.\s+|\*\s+|-\s+)?.+[\n\r]+)*(?=\n*(?:#{1,4}\s|\Z|$))/gi, '\n').trim();
+                  fallbackText = fallbackText.replace(/(?:\n|^)\s*(?:#{1,4}\s*)?(?:\*+\s*)?(?:Source\s+Text\s+References|Accuracy\s+Check\s+References|Verified\s+Sources|Works?\s+Cited|Bibliography|Citations)(?:\*+)?[\s:]*(?=\s*\d+\.\s*\[[^\]]+\]\()[\s\S]*$/i, '\n').trim();
                   if (result.groundingMetadata?.groundingChunks) {
                       const { renumberedText, reorderedChunks } = renumberCitations(fallbackText, result.groundingMetadata.groundingChunks);
                       fallbackText = restoreCanonicalCitationUrls(renumberedText, reorderedChunks);
@@ -1034,7 +1043,7 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
                       retryText = retryText
                           .replace(/(\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\([^)]+\))\s*([.!?])/g, '$2 $1')
                           .replace(/(\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\([^)]+\))(\[⁽)/g, '$1, $2')
-                          .replace(/\n*(?:#{1,4}\s*)?(?:Sources?|References?|Works?\s*Cited|Bibliography)\s*[\n\r]+(?:(?:\d+\.\s+|\*\s+|-\s+)?.+[\n\r]+)*(?=\n*(?:#{1,4}\s|\Z|$))/gi, '\n')
+                          .replace(/(?:\n|^)\s*(?:#{1,4}\s*)?(?:\*+\s*)?(?:Source\s+Text\s+References|Accuracy\s+Check\s+References|Verified\s+Sources|Works?\s+Cited|Bibliography|Citations)(?:\*+)?[\s:]*(?=\s*\d+\.\s*\[[^\]]+\]\()[\s\S]*$/i, '\n')
                           .replace(/\[(⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾)(?!\]\()/g, '$1')
                           .replace(/(⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾)\](?!\()/g, '$1')
                           .replace(/\[?Sources?\s+[\d,\s]+(?:and\s+\d+)?\]?/gi, '')
