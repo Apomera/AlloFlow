@@ -1180,6 +1180,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           }
         }, [state.view, drillComplete, targetStr, typed, startTime, errorCount, errorChars, state.accommodations.errorTolerant, state.accommodations.audioCues, state.accommodations.speakWordsOnSpace, state.audioTheme, paused, sightReadLeft]);
 
+        // ── Session mutation helper — used by retrospective editing from
+        // the history-timeline detail panel. Finds a session by its unique
+        // `date` ISO string and updates one field in-place.
+        var updateSessionField = function(sessionDate, field, value) {
+          var sessions = (state.sessions || []).slice();
+          for (var i = sessions.length - 1; i >= 0; i--) {
+            if (sessions[i].date === sessionDate) {
+              var updated = Object.assign({}, sessions[i]);
+              if (value === null || value === undefined || value === '') delete updated[field];
+              else updated[field] = value;
+              sessions[i] = updated;
+              upd('sessions', sessions);
+              return;
+            }
+          }
+        };
+
         // ── Navigation helpers ──
         var go = function(view) { upd('view', view); };
         var startDrill = function(drillId) {
@@ -4214,9 +4231,115 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   ) : null,
                   d.isNewBest ? h('div', { style: { color: palette.success, fontSize: '11px', fontWeight: 600 } }, '⭐ Personal best') : null,
                   d.masteryAdvanced ? h('div', { style: { color: palette.success, fontSize: '11px', fontWeight: 600 } }, '🌟 Mastery tier advanced to ' + d.newMasteryLevel) : null,
-                  d.note ? h('div', {
-                    style: { marginTop: '8px', padding: '8px', background: palette.surface, borderRadius: '6px', borderLeft: '3px solid ' + palette.accent, color: palette.textDim, fontStyle: 'italic' }
-                  }, '"' + d.note + '"') : null
+
+                  // Retrospective editing — a clinician or student can edit
+                  // note / tag / reflection after the session ends. Useful when
+                  // reviewing a session later and wanting to add context
+                  // ("student was fighting a headache" etc.).
+                  h('div', {
+                    style: {
+                      marginTop: '10px',
+                      paddingTop: '10px',
+                      borderTop: '1px solid ' + palette.border
+                    }
+                  },
+                    h('div', { style: { fontSize: '10px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '6px', fontWeight: 700 } },
+                      'Edit session'),
+
+                    // Tag row
+                    h('div', { style: { marginBottom: '8px' } },
+                      h('div', { style: { fontSize: '10px', color: palette.textMute, marginBottom: '4px' } }, 'Clinician tag'),
+                      h('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
+                        [
+                          { id: null,             label: 'None' },
+                          { id: 'baseline',       label: '📍 Baseline' },
+                          { id: 'progress-check', label: '📈 Progress' },
+                          { id: 'assessment',     label: '📊 Assessment' },
+                          { id: 'practice',       label: '✏️ Practice' }
+                        ].map(function(opt) {
+                          var isActive = (d.tag || null) === opt.id;
+                          return h('button', {
+                            key: 'retag-' + (opt.id || 'none'),
+                            onClick: function() { updateSessionField(d.date, 'tag', opt.id); },
+                            style: {
+                              padding: '3px 8px',
+                              borderRadius: '999px',
+                              border: '1px solid ' + (isActive ? palette.accent : palette.border),
+                              background: isActive ? palette.accent : 'transparent',
+                              color: isActive ? '#0f172a' : palette.textDim,
+                              fontSize: '10px',
+                              fontWeight: isActive ? 700 : 500,
+                              cursor: 'pointer',
+                              font: 'inherit'
+                            }
+                          }, opt.label);
+                        })
+                      )
+                    ),
+
+                    // Reflection row
+                    h('div', { style: { marginBottom: '8px' } },
+                      h('div', { style: { fontSize: '10px', color: palette.textMute, marginBottom: '4px' } }, 'How it felt'),
+                      h('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
+                        [
+                          { id: null,         label: 'No tag' },
+                          { id: 'too-easy',   label: '🌱 Too easy' },
+                          { id: 'just-right', label: '😌 Just right' },
+                          { id: 'hard',       label: '💪 Hard' }
+                        ].map(function(opt) {
+                          var isActive = (d.reflection || null) === opt.id;
+                          return h('button', {
+                            key: 'rerefl-' + (opt.id || 'none'),
+                            onClick: function() { updateSessionField(d.date, 'reflection', opt.id); },
+                            style: {
+                              padding: '3px 8px',
+                              borderRadius: '999px',
+                              border: '1px solid ' + (isActive ? palette.accent : palette.border),
+                              background: isActive ? palette.accent : 'transparent',
+                              color: isActive ? '#0f172a' : palette.textDim,
+                              fontSize: '10px',
+                              fontWeight: isActive ? 700 : 500,
+                              cursor: 'pointer',
+                              font: 'inherit'
+                            }
+                          }, opt.label);
+                        })
+                      )
+                    ),
+
+                    // Note — editable inline; saves on blur or Ctrl+Enter
+                    h('div', null,
+                      h('div', { style: { fontSize: '10px', color: palette.textMute, marginBottom: '4px' } }, 'Session note'),
+                      h('textarea', {
+                        defaultValue: d.note || '',
+                        placeholder: 'Add or edit a note. Saves on blur or Ctrl+Enter.',
+                        maxLength: 400,
+                        rows: 2,
+                        onBlur: function(e) {
+                          var v = (e.target.value || '').trim();
+                          if (v !== (d.note || '')) updateSessionField(d.date, 'note', v || null);
+                        },
+                        onKeyDown: function(e) {
+                          if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                            e.target.blur();
+                          }
+                        },
+                        style: {
+                          width: '100%',
+                          padding: '6px 8px',
+                          borderRadius: '6px',
+                          background: palette.surface,
+                          border: '1px solid ' + palette.border,
+                          color: palette.text,
+                          fontSize: '11px',
+                          fontFamily: fontFamily,
+                          lineHeight: '1.5',
+                          boxSizing: 'border-box',
+                          resize: 'vertical'
+                        }
+                      })
+                    )
+                  )
                 );
               })() : null
             ) : null,
