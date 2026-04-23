@@ -53410,7 +53410,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   const _totalMissing = _integ && typeof _integ.totalMissing === 'number' ? _integ.totalMissing : null;
                                   const _method = pdfFixResult.groundTruthMethod || 'unknown';
                                   return (
-                                    <details className="mb-2 bg-slate-50 border border-slate-200 rounded-xl text-[11px]">
+                                    <details open className="mb-2 bg-slate-50 border border-slate-200 rounded-xl text-[11px]">
                                       <summary className="cursor-pointer font-bold text-slate-700 select-none px-3 py-1.5 hover:bg-slate-100 rounded-xl inline-flex items-center gap-2">
                                         <span>📋</span>
                                         <span>Verification details</span>
@@ -54823,15 +54823,16 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             </div>
                           </div>
                           <script>
-                            // The accessible HTML is base64-encoded before embedding so that
-                            // any </script> tags or JSON-escape sequences inside the
-                            // remediated content CANNOT prematurely terminate this outer
-                            // <script> block. Previously we used JSON.stringify which is
-                            // safe for escape sequences but does NOT prevent a literal
-                            // "</script>" substring in the HTML from closing the outer
-                            // script tag early — that caused the HTML to bleed out of the
-                            // iframe and render in the popup body as text ("\\n\\n\\nskip
-                            // to main content\\n" etc.).
+                            // The accessible HTML is base64-encoded before embedding so
+                            // that any closing script-tag substrings or JSON-escape
+                            // sequences inside the remediated content CANNOT prematurely
+                            // terminate this outer script block. Previously we used
+                            // JSON.stringify which is safe for escape sequences but does
+                            // NOT prevent a literal end-of-script substring in the HTML
+                            // from closing the outer script tag early — that caused the
+                            // HTML to bleed out of the iframe and render in the popup
+                            // body as text. (Comment deliberately avoids the literal
+                            // sequence that would itself terminate this script.)
                             var _b64 = "${(() => {
                               try {
                                 return btoa(unescape(encodeURIComponent(pdfFixResult.accessibleHtml || '')));
@@ -54959,6 +54960,21 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         }} className="px-4 py-2.5 bg-slate-100 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-200 transition-colors flex items-center gap-1.5">
                           🔀 Compare
                         </button>
+                        {/* Third Diff-view entry point, always visible in the action row
+                            when both sourceText + finalText are present (which is the
+                            normal state post-remediation). The other two entry points
+                            (integrity banner + Verification details accordion) can be
+                            buried by doc-specific state — this one is discoverable. */}
+                        {pdfFixResult.sourceText && pdfFixResult.finalText && (
+                          <button
+                            onClick={() => { _ensureDiffLib(); setDiffViewOpen(true); }}
+                            className="px-4 py-2.5 bg-slate-100 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-200 transition-colors flex items-center gap-1.5"
+                            aria-label="Open word-level diff view between source PDF and remediated HTML"
+                            title="Open the word-level diff modal — see every insertion, deletion, and paraphrase between the source PDF text and the remediated HTML, with click-to-reject and Apply &amp; Export."
+                          >
+                            📝 Diff
+                          </button>
+                        )}
                         <button onClick={() => downloadAccessiblePdf(pdfFixResult.accessibleHtml, (pendingPdfFile?.name || 'document').replace(/\.pdf$/i, '') + '-accessible')}
                           className="px-4 py-2.5 bg-blue-50 text-blue-700 rounded-xl font-bold text-sm hover:bg-blue-100 transition-colors flex items-center gap-1.5">
                           📥 PDF
