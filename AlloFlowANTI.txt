@@ -6052,6 +6052,11 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
   });
   React.useEffect(() => { try { localStorage.setItem('alloflow_timeline_image_style', timelineImageStyle); } catch (e) {} }, [timelineImageStyle]);
   const [isRevisingTimeline, setIsRevisingTimeline] = useState(false);
+  // Track per-item verification concerns the teacher has dismissed in the UI.
+  // Keyed by "idx:event" so changing either the item or its text re-exposes
+  // the concern. Purely UI state — underlying item.verification is preserved
+  // in generatedContent.data so re-running Verify Accuracy re-populates it.
+  const [dismissedVerifications, setDismissedVerifications] = useState(() => new Set());
   // handleTimelineRevision extracted to timeline_revision_module.js (Phase 2).
   // Delegator wrapper declared below (after _timelineRevision factory creation).
   const [showSocraticChat, setShowSocraticChat] = useState(false);
@@ -29902,10 +29907,11 @@ Return ONLY JSON:
           const prompt = `
             A ${gradeLevel} student placed the item "${item.content}" into the category "${chosenCategory?.label || 'unknown'}".
             The correct category is "${correctCategory?.label || 'unknown'}".
-            Write a brief, encouraging 2-3 sentence explanation for the student.
+            Write a brief, supportive 2-3 sentence explanation for the student.
+            IMPORTANT: The student got this WRONG. Do NOT open with "Great job", "Nice work", or any positive affirmation — those read as sarcastic when paired with corrective feedback. Open with a warm but honest framing like "Close — but actually..." or "Let's look at this one together..."
             - State which category is correct and why.
             - Point out one concrete feature of the item that signals the right category.
-            - Avoid shaming language; stay warm and instructive.
+            - Acknowledge the mistake kindly; stay warm and instructive; never shame.
             Return plain text only, no markdown, no quotes.
           `;
           const result = await callGemini(prompt, false);
@@ -45720,14 +45726,32 @@ Return only the corrected version of this exact text:`;
                                                 {item.event_en && (
                                                     <p className="text-xs text-slate-600 italic mt-1">{item.event_en}</p>
                                                 )}
-                                                {item.verification && (item.verification.factual === false || item.verification.position === false) && (
-                                                    <div className="mt-2 flex items-start gap-1.5 text-[11px] bg-red-50 border border-red-200 rounded px-2 py-1 text-red-800">
-                                                        <AlertCircle size={12} className="shrink-0 mt-0.5 text-red-600" />
-                                                        <div>
-                                                            <strong>{t('timeline.validation.flagged') || 'Flagged'}:</strong> {item.verification.concern || (item.verification.factual === false ? 'Factual concern' : 'Position may be wrong')}
+                                                {(() => {
+                                                    const _vKey = idx + ':' + (item.event || '');
+                                                    const _flagged = item.verification && (item.verification.factual === false || item.verification.position === false);
+                                                    if (!_flagged || dismissedVerifications.has(_vKey)) return null;
+                                                    return (
+                                                        <div className="mt-2 border border-red-200 rounded-lg bg-red-50 p-2 text-[11px] text-red-800">
+                                                            <div className="flex items-center gap-1.5 mb-1">
+                                                                <AlertCircle size={12} className="shrink-0 text-red-600" />
+                                                                <strong>{t('timeline.validation.flagged') || 'Flagged'}</strong>
+                                                                <span className="text-red-700/70">
+                                                                    {item.verification.factual === false ? '• factual' : ''}
+                                                                    {item.verification.position === false ? ' • position' : ''}
+                                                                </span>
+                                                                <button
+                                                                    onClick={() => setDismissedVerifications(prev => { const next = new Set(prev); next.add(_vKey); return next; })}
+                                                                    className="ml-auto text-red-400 hover:text-red-600 p-0.5 rounded"
+                                                                    aria-label={t('timeline.validation.dismiss') || 'Dismiss verification concern'}
+                                                                    title={t('timeline.validation.dismiss') || 'Dismiss'}
+                                                                ><X size={12} /></button>
+                                                            </div>
+                                                            <div className="text-red-700 leading-relaxed pl-4">
+                                                                {item.verification.concern || (item.verification.factual === false ? (t('timeline.validation.factual_concern') || 'Factual concern — review this item.') : (t('timeline.validation.position_concern') || 'Position may be wrong — check placement on the axis.'))}
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                )}
+                                                    );
+                                                })()}
                                                 {item.verification && item.verification.factual !== false && item.verification.position !== false && (
                                                     <div className="mt-2 inline-flex items-center gap-1 text-[11px] bg-emerald-50 border border-emerald-200 rounded px-2 py-0.5 text-emerald-800">
                                                         <CheckCircle2 size={11} className="text-emerald-600" /> {t('timeline.validation.verified') || 'Verified'}
@@ -45768,6 +45792,7 @@ Return only the corrected version of this exact text:`;
                                     onScoreUpdate={handleGameScoreUpdate}
                                     onGameComplete={handleGameCompletion}
                                     onExplainIncorrect={handleExplainTimelineItem}
+                                    initialImageSize={timelineImageSize}
                                 />
                             </ErrorBoundary>
                         )}

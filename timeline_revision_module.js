@@ -171,11 +171,12 @@ var createTimelineRevision = function(deps) {
         '            A ' + gradeLevel + ' student placed the item "' + item.event + '" (' + (item.date || '') + ') at position ' + (currentPosition + 1) + ', but the correct position is ' + (correctPosition + 1) + '.\n' +
         '            The ordering criterion is: ' + cleanLabel + '.\n' +
         '            ' + neighborHint + '\n' +
-        '            Write a brief, encouraging 2-3 sentence explanation for the student.\n' +
+        '            Write a brief, supportive 2-3 sentence explanation for the student.\n' +
+        '            IMPORTANT: The student got this WRONG. Do NOT open with "Great job", "Nice work", or any positive affirmation — those read as sarcastic when paired with corrective feedback. Open with a warm but honest framing like "Close — but actually..." or "Let\'s look at this one together..."\n' +
         '            - State the correct position and why.\n' +
         '            - Reference the ordering criterion (date, size, step, etc.) with specifics.\n' +
-        '            - Avoid shaming language; stay warm and instructive.\n' +
-        '            Hard limit: 280 characters.\n' +
+        '            - Acknowledge the mistake kindly; stay warm and instructive; never shame.\n' +
+        '            Hard limit: 320 characters.\n' +
         '            Return plain text only, no markdown, no quotes, no headers.\n' +
         '          ';
       var raw = await callGemini(prompt, false);

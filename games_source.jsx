@@ -1005,7 +1005,7 @@ const indexTimelineItems = (itemsArray) => itemsArray.map((item, i) => ({
     id: `evt-${i}`,
     colorIdx: Math.floor(Math.random() * TIMELINE_PASTEL_COLORS.length)
 }));
-const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete, onExplainIncorrect }) => {
+const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete, onExplainIncorrect, initialImageSize }) => {
   const { t } = useContext(LanguageContext);
   const [items, setItems] = useState([]);
   const [isWon, setIsWon] = useState(false);
@@ -1016,6 +1016,12 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
   const [announcement, setAnnouncement] = useState('');
   const [keyboardLiftedIdx, setKeyboardLiftedIdx] = useState(null);
   const [progressionLabel, setProgressionLabel] = useState('');
+  // In-game image size slider — initial value comes from teacher's preview size
+  // (passed via initialImageSize prop). Student can adjust live for accessibility.
+  const [imageSize, setImageSize] = useState(() => {
+    const n = parseInt(initialImageSize, 10);
+    return Number.isFinite(n) && n >= 64 && n <= 300 ? n : 96;
+  });
   const [progressionLabelEn, setProgressionLabelEn] = useState('');
   const [hintsUsed, setHintsUsed] = useState(0);
   const [lastCorrectCount, setLastCorrectCount] = useState(null); // null until first check
@@ -1261,6 +1267,17 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                    <Trophy size={14} className="text-yellow-400"/>
                    <span className="font-bold text-sm">{score} pts</span>
                </div>
+               <label className="hidden sm:flex items-center gap-1.5 text-[10px] text-indigo-100 bg-indigo-800/50 px-2.5 py-1.5 rounded-full border border-indigo-500 cursor-pointer" title={t('timeline.game.image_size_title') || 'Adjust card image size for accessibility'}>
+                   <span className="font-bold uppercase tracking-wider text-[9px]">{t('timeline.game.image_size_label') || 'Image'}</span>
+                   <input
+                       type="range" min={64} max={300} step={16}
+                       value={imageSize}
+                       onChange={(e) => setImageSize(parseInt(e.target.value, 10) || 96)}
+                       className="w-20 accent-yellow-400"
+                       aria-label={t('timeline.game.image_size_label') || 'Image size'}
+                   />
+                   <span className="font-bold w-7 text-right tabular-nums">{imageSize}</span>
+               </label>
                <GameThemeToggle />
                <button onClick={onClose} className="p-2 hover:bg-indigo-500 rounded-full transition-colors" aria-label={t('timeline.game.close_aria')}><X size={24}/></button>
            </div>
@@ -1369,7 +1386,8 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                                                    loading="lazy"
                                                    src={item.image}
                                                    alt={`${item.date || ''}: ${item.event || ''}`}
-                                                   className={`mx-auto mb-2 w-24 h-24 object-contain rounded-lg bg-white border ${isWon ? 'border-green-200' : 'border-slate-200'}`}
+                                                   className={`mx-auto mb-2 object-contain rounded-lg bg-white border ${isWon ? 'border-green-200' : 'border-slate-200'}`}
+                                                   style={{ width: imageSize, height: imageSize }}
                                                />
                                            )}
                                            <div className={`text-sm font-bold leading-snug flex items-center gap-1 ${isWon ? 'text-green-900' : ''}`}>
