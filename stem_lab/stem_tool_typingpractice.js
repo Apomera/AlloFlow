@@ -443,6 +443,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       samples: null,             // populated from state.customDrill at drill-start
       locked: false,
       requiresCustom: true       // routes through custom-setup view
+    },
+    // One-handed drills — left-hand-only and right-hand-only practice for
+    // students with limb differences, temporary injury, or motor-planning
+    // challenges that make bimanual coordination hard. Always unlocked,
+    // outside the mastery progression (not counted toward tier advancement).
+    // Samples deliberately stay within the hand's reach (home + adjacent keys).
+    'one-hand-left': {
+      id: 'one-hand-left',
+      name: 'Left Hand Only',
+      icon: '🫲',
+      tier: null,
+      description: 'Practice with just the left hand. Keys: q w e r t · a s d f g · z x c v b · space.',
+      samples: [
+        'asdf asdf asdf; sad fad bad; ' +
+          'a bad cat; a red car; a fast bag',
+        'bat cat sat dad fed; grass trade; ' +
+          'a vast craft; wave safe gaze',
+        'we trade a fast car; brave cats; ' +
+          'red stars; sweet bread; create',
+        'a water bear; crate; grave; verse; ' +
+          'address; stage; feast; safer; exact',
+        'start a saved draft; gather facts; ' +
+          'we saved a great seat; a secret'
+      ],
+      locked: false,
+      oneHanded: 'left'
+    },
+    'one-hand-right': {
+      id: 'one-hand-right',
+      name: 'Right Hand Only',
+      icon: '🫱',
+      tier: null,
+      description: 'Practice with just the right hand. Keys: y u i o p · h j k l ; · n m , . / · space.',
+      samples: [
+        'jkl; jkl; jkl; hi; in my mill; ' +
+          'john; moon pool; milk lily; pink hymn',
+        'phony nun hunt; loom loop; link pump; ' +
+          'monk milk; noun noon; you hum him',
+        'my pony junk; hymn hum; oily puppy; ' +
+          'pink moon; huh; look up; unhook',
+        'junk pilot; jumbo kiln; holly pooh; ' +
+          'noisy nylon; monopoly; nominally',
+        'minimum input; pup; upon; union; ' +
+          'lip ink; pop; puppy; mulch on pool'
+      ],
+      locked: false,
+      oneHanded: 'right'
     }
   };
 

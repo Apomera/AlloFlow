@@ -961,72 +961,86 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
   // Lookup keyed by lower-case term. When a student clicks a highlighted
   // word anywhere in the tool, we show this definition in a popover.
 
+  // Each term can carry a `where` field (section id) so the glossary popover
+  // can offer a one-click jump to the section that demonstrates it. The
+  // whereDemo string remains human-readable text for context.
   var TERMS = {
     'token': {
       label: 'token',
       icon: '\uD83D\uDD24',
       def: 'A token is a small chunk of text the model processes — roughly a word, part of a word, or a piece of punctuation. Common words are often one token; longer words split into pieces ("unhappy" \u2192 "un" + "happy").',
-      whereDemo: 'Section 1 has an interactive tokenizer — type anything and watch it split.'
+      whereDemo: 'Section 1 has an interactive tokenizer — type anything and watch it split.',
+      where: 'tokens'
     },
     'tokenization': {
       label: 'tokenization',
       icon: '\uD83D\uDD24',
       def: 'The process of breaking text into tokens before the model can work with it. Different tokenizers split text differently; all of them turn language into numbers the model can predict over.',
-      whereDemo: 'Section 1 \u2014 the colored pills show tokenization happening live.'
+      whereDemo: 'Section 1 \u2014 the colored pills show tokenization happening live.',
+      where: 'tokens'
     },
     'next-token prediction': {
       label: 'next-token prediction',
       icon: '\uD83C\uDFB2',
       def: 'The one thing an LLM does: given the tokens so far, predict a probability for every possible next token. Everything else — answering questions, writing poems, coding — is next-token prediction repeated many times.',
-      whereDemo: 'Section 1 shows the probability distribution for three real examples.'
+      whereDemo: 'Section 1 shows the probability distribution for three real examples.',
+      where: 'tokens'
     },
     'temperature': {
       label: 'temperature',
       icon: '\uD83C\uDF21\uFE0F',
       def: 'A number (usually 0\u20132) that controls how random the next-token pick is. Low temperature = always pick the most likely token (deterministic, good for facts). High temperature = sometimes pick less likely tokens (creative, good for stories, worse for accuracy).',
-      whereDemo: 'Section 1 lets you compare temp 0.2, 0.7, and 1.2 side by side.'
+      whereDemo: 'Section 1 lets you compare temp 0.2, 0.7, and 1.2 side by side.',
+      where: 'tokens'
     },
     'hallucination': {
       label: 'hallucination',
       icon: '\u26A0\uFE0F',
       def: 'When an LLM generates confident-sounding text that is not true \u2014 a fake citation, a wrong date, a made-up fact. The model is not lying; it has no concept of "true." It is filling in the statistically plausible next tokens.',
-      whereDemo: 'Section 2 is a gallery of real hallucination types; Section 4 is a spotter game.'
+      whereDemo: 'Section 2 is a gallery of real hallucination types; Section 4 is a spotter game.',
+      where: 'fails'
     },
     'confabulation': {
       label: 'confabulation',
       icon: '\uD83C\uDFDB\uFE0F',
       def: 'A specific kind of hallucination where the model fills a knowledge gap with an invented but internally consistent story \u2014 complete with names, dates, and cause-and-effect. Common when the user\'s question accepts a false premise.',
-      whereDemo: 'Section 2 \u2014 see the "Invented historical detail" example.'
+      whereDemo: 'Section 2 \u2014 see the "Invented historical detail" example.',
+      where: 'fails'
     },
     'knowledge cutoff': {
       label: 'knowledge cutoff',
       icon: '\u23F0',
       def: 'The latest date in the model\'s training data. The model does not know anything that happened after its cutoff, but it may still answer confidently about recent events \u2014 so always check.',
-      whereDemo: 'Section 2 has a cutoff example; you can ask any AI directly what its cutoff is.'
+      whereDemo: 'Section 2 has a cutoff example; you can ask any AI directly what its cutoff is.',
+      where: 'fails'
     },
     'prompt': {
       label: 'prompt',
       icon: '\u270F\uFE0F',
       def: 'The text you send to an LLM. The prompt sets the task, the role, the constraints, and the format \u2014 all at once. Good prompts are a learnable craft.',
-      whereDemo: 'Section 3 teaches the five patterns of strong prompts.'
+      whereDemo: 'Section 3 teaches the five patterns of strong prompts.',
+      where: 'prompt'
     },
     'context': {
       label: 'context',
       icon: '\uD83D\uDCCD',
       def: 'The information you give the AI about YOU and your task \u2014 grade level, what you already know, what you are trying to do. More context usually means more relevant output.',
-      whereDemo: 'Section 3 \u2014 "Context" is one of the five prompt patterns.'
+      whereDemo: 'Section 3 \u2014 "Context" is one of the five prompt patterns.',
+      where: 'prompt'
     },
     'scaffold': {
       label: 'scaffold',
       icon: '\uD83E\uDEA1',
       def: 'Using AI in a way that REMOVES A BARRIER without doing the thinking you need to practice. Example: asking AI to quiz you after you study, instead of asking AI to tell you the answers.',
-      whereDemo: 'Section 5 has worked examples for common student situations.'
+      whereDemo: 'Section 5 has worked examples for common student situations.',
+      where: 'udl'
     },
     'substitute': {
       label: 'substitute',
       icon: '\uD83E\uDDF1',
       def: 'Using AI in a way that REPLACES THE SKILL you are supposed to be learning. Example: asking AI to write the essay instead of using AI to help you organize your own thoughts.',
-      whereDemo: 'Section 5 contrasts this with scaffolding for the same situations.'
+      whereDemo: 'Section 5 contrasts this with scaffolding for the same situations.',
+      where: 'udl'
     }
   };
 
@@ -1890,12 +1904,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
             h('div', { style: { padding: '12px 20px', overflowY: 'auto', flex: 1 } },
               keys.map(function(k) {
                 var e = TERMS[k];
+                var target = e.where ? SECTION_ORDER.filter(function(s) { return s.id === e.where; })[0] : null;
                 return h('div', { key: k, style: { display: 'flex', gap: '12px', padding: '10px 0', borderBottom: '1px solid #f1f5f9' } },
                   h('div', { style: { width: '36px', height: '36px', flexShrink: 0, borderRadius: '10px', background: hexToRGBA(COLORS.accent, 0.1), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' } }, e.icon),
                   h('div', { style: { flex: 1, minWidth: 0 } },
                     h('div', { style: { fontSize: '14px', fontWeight: 800, color: COLORS.text, marginBottom: '2px' } }, e.label),
                     h('div', { style: { fontSize: '12.5px', color: COLORS.text, lineHeight: 1.5, marginBottom: '4px' } }, e.def),
-                    h('div', { style: { fontSize: '11px', color: COLORS.muted, fontStyle: 'italic' } }, '\uD83D\uDC49 ', e.whereDemo)
+                    h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' } },
+                      h('div', { style: { fontSize: '11px', color: COLORS.muted, fontStyle: 'italic', flex: 1, minWidth: '140px' } }, '\uD83D\uDC49 ', e.whereDemo),
+                      target && h('button', {
+                        onClick: function() {
+                          setBrowseOpen(false);
+                          enterSection(target.id, target.title);
+                        },
+                        style: {
+                          background: hexToRGBA(target.color, 0.12),
+                          color: target.color,
+                          border: '1px solid ' + hexToRGBA(target.color, 0.35),
+                          borderRadius: '999px',
+                          padding: '3px 10px',
+                          fontSize: '10px', fontWeight: 700, cursor: 'pointer',
+                          whiteSpace: 'nowrap',
+                          flexShrink: 0
+                        },
+                        title: 'Jump to ' + target.title
+                      }, 'Go \u2192')
+                    )
                   )
                 );
               })
@@ -1950,8 +1984,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
               }, '\u00D7')
             ),
             h('div', { style: { fontSize: '13px', color: COLORS.text, lineHeight: 1.6, marginBottom: '10px' } }, entry.def),
-            h('div', { style: { fontSize: '12px', color: COLORS.subtext, fontStyle: 'italic', paddingTop: '8px', borderTop: '1px solid ' + COLORS.border } },
-              '\uD83D\uDC49 ', entry.whereDemo)
+            h('div', { style: { fontSize: '12px', color: COLORS.subtext, fontStyle: 'italic', paddingTop: '8px', borderTop: '1px solid ' + COLORS.border, marginBottom: entry.where ? '10px' : '0' } },
+              '\uD83D\uDC49 ', entry.whereDemo),
+            // Jump-to-section: one-click navigation from glossary to where the
+            // term is demonstrated. Closes the popover and routes to the section.
+            entry.where && (function() {
+              var target = SECTION_ORDER.filter(function(s) { return s.id === entry.where; })[0];
+              if (!target) return null;
+              return h('button', {
+                onClick: function() {
+                  setGlossTerm(null);
+                  enterSection(target.id, target.title);
+                },
+                style: {
+                  background: target.color, color: '#fff', border: 'none',
+                  padding: '8px 14px', borderRadius: '8px',
+                  fontWeight: 700, fontSize: '12px', cursor: 'pointer',
+                  width: '100%', textAlign: 'center',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px'
+                }
+              }, 'Go to ' + target.title + ' \u2192');
+            })()
           )
         );
       }
@@ -5081,7 +5134,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
           }
         }
 
-        function refCard(color, icon, title, bodyNodes) {
+        // sectionId (optional) wires a screen-only "Go" pill that jumps to the
+        // full section in one click. Print hides the pill entirely via the
+        // llm-lit-no-print class on it.
+        function refCard(color, icon, title, bodyNodes, sectionId) {
+          var target = sectionId ? SECTION_ORDER.filter(function(s) { return s.id === sectionId; })[0] : null;
           return h('div', {
             className: 'llm-lit-print-card',
             style: {
@@ -5094,7 +5151,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
           },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' } },
               h('div', { style: { width: '30px', height: '30px', borderRadius: '8px', background: hexToRGBA(color, 0.14), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px' } }, icon),
-              h('div', { style: { fontSize: '14px', fontWeight: 800, color: color, letterSpacing: '-.01em' } }, title)
+              h('div', { style: { fontSize: '14px', fontWeight: 800, color: color, letterSpacing: '-.01em', flex: 1 } }, title),
+              target && h('button', {
+                className: 'llm-lit-no-print',
+                onClick: function() { enterSection(target.id, target.title); },
+                style: {
+                  background: 'transparent',
+                  color: color,
+                  border: '1px solid ' + hexToRGBA(color, 0.4),
+                  borderRadius: '999px',
+                  padding: '2px 8px',
+                  fontSize: '10px', fontWeight: 700, cursor: 'pointer',
+                  whiteSpace: 'nowrap'
+                },
+                title: 'Jump to ' + target.title
+              }, 'Go \u2192')
             ),
             bodyNodes
           );
@@ -5136,7 +5207,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
                 h('li', null, 'Predicts the next token by probability'),
                 h('li', null, Term('temperature', 'Temperature'), ' controls how random the pick is'),
                 h('li', null, 'It has no idea what\'s "true" \u2014 only what\'s plausible')
-              )
+              ),
+              'tokens'
             ),
             refCard('#d97706', '\u26A0\uFE0F', 'Why it gets things wrong',
               h('ul', { style: { margin: 0, paddingLeft: '18px', fontSize: '12px', color: COLORS.text, lineHeight: 1.6 } },
@@ -5145,14 +5217,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
                 h('li', null, 'Past the ', Term('knowledge cutoff', 'knowledge cutoff'), ' = may invent'),
                 h('li', null, Term('confabulation', 'Confabulation'), ': fills gaps with plausible stories'),
                 h('li', null, 'It sounds confident exactly the same whether right or wrong')
-              )
+              ),
+              'fails'
             ),
             refCard('#7c3aed', '\u270F\uFE0F', 'Five prompt patterns',
               h('ul', { style: { margin: 0, paddingLeft: '18px', fontSize: '12px', color: COLORS.text, lineHeight: 1.6 } },
                 PROMPT_PATTERNS.map(function(p, i) {
                   return h('li', { key: i }, h('strong', null, p.icon + ' ' + p.name + ': '), p.desc.split('.')[0] + '.');
                 })
-              )
+              ),
+              'prompt'
             ),
             refCard('#059669', '\uD83D\uDD0D', 'Before you trust an AI answer',
               h('ol', { style: { margin: 0, paddingLeft: '18px', fontSize: '12px', color: COLORS.text, lineHeight: 1.6 } },
@@ -5160,7 +5234,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
                 h('li', null, 'Is it past the model\'s cutoff? Use web search if so.'),
                 h('li', null, 'Any math? Redo it with a calculator.'),
                 h('li', null, 'Sound too confident? Ask "are you sure?" \u2014 watch if the answer changes.')
-              )
+              ),
+              'spotter'
             ),
             refCard('#db2777', '\uD83E\uDDED', 'Scaffold vs substitute',
               h('div', null,
@@ -5175,7 +5250,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
                 h('div', { style: { fontSize: '11px', color: COLORS.muted, marginTop: '6px', fontStyle: 'italic' } },
                   'Ask: "What skill is this assignment really testing?" Then keep that on you.'
                 )
-              )
+              ),
+              'udl'
             ),
             refCard('#0f766e', '\uD83D\uDCDD', 'Sentences you can steal',
               h('ul', { style: { margin: 0, paddingLeft: '18px', fontSize: '12px', color: COLORS.text, lineHeight: 1.6 } },
@@ -5183,7 +5259,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
                 h('li', null, h('em', null, '"Quiz me on [topic] one question at a time. Wait for my answer before the next."')),
                 h('li', null, h('em', null, '"Are you certain this event actually happened? Cite a source."')),
                 h('li', null, h('em', null, '"Explain [concept] using only middle-school vocabulary. No jargon."'))
-              )
+              ),
+              'prompt'
             )
           ),
           h('div', { style: { fontSize: '11px', color: COLORS.muted, fontStyle: 'italic', textAlign: 'center', padding: '8px 0' } },
