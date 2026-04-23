@@ -497,6 +497,82 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
         { prompt: 'The suffix \u201c-less\u201d usually means...', options: ['more', 'without / lacking', 'again', 'before'], correctIndex: 1, explain: 'Hope + less = without hope.' },
         { prompt: 'If a character says one thing but does the OPPOSITE, that\u2019s...', options: ['sarcasm', 'irony', 'alliteration', 'plagiarism'], correctIndex: 1, explain: 'Irony: a contrast between expectation and reality.' }
       ]
+    },
+
+    // ── Typing Practice spells ─────────────────────────────────
+    // Pull-based integration: predicates read d.typingPractice directly.
+    // Encourages structured-drill progression + accommodation exploration.
+    {
+      id: 'home_row_focus',
+      name: 'Home Row Focus',
+      element: 'focus',
+      icon: '\u2328\uFE0F',
+      color: '#60a5fa',
+      sourceTool: 'typingPractice',
+      sourceLabel: 'Typing Practice',
+      unlock: function(d) { return ((d.typingPractice || {}).masteryLevel || 0) >= 1; },
+      unlockHint: 'Clear the Home Row tier in Typing Practice',
+      baseDamage: 18,
+      critMultiplier: 2.0,
+      flavor: 'Steady fingers anchor to the home row, and the spell lands precisely where intended.',
+      challengeBank: [
+        { prompt: 'Which keys are the LEFT-HAND home row (resting fingers)?', options: ['q w e r', 'a s d f', 'z x c v', '1 2 3 4'], correctIndex: 1, explain: 'Left home row: a (pinky), s (ring), d (middle), f (index).' },
+        { prompt: 'Which keys are the RIGHT-HAND home row?', options: ['p o i u', 'j k l ;', 'n m , .', '7 8 9 0'], correctIndex: 1, explain: 'Right home row: j (index), k (middle), l (ring), ; (pinky).' },
+        { prompt: 'Touch typing means you...', options: ['type while tapping the screen', 'type without looking at the keys', 'type very softly', 'type only one finger at a time'], correctIndex: 1, explain: 'Eyes stay on the screen; fingers find keys by muscle memory.' },
+        { prompt: 'Which finger should press the letter F?', options: ['left middle', 'left index', 'right index', 'left thumb'], correctIndex: 1, explain: 'The left index finger rests on F (notice the small bump that helps you find it without looking).' },
+        { prompt: 'Which finger presses the space bar?', options: ['index', 'pinky', 'either thumb', 'ring finger'], correctIndex: 2, explain: 'Thumbs hover over the space bar; use whichever is free.' },
+        { prompt: 'The small bump on the F and J keys is called...', options: ['a decoration', 'a home bump', 'a finger rest ridge', 'a lock'], correctIndex: 2, explain: 'The ridges help you find the home row without looking down.' },
+        { prompt: 'WPM stands for...', options: ['Words Per Minute', 'Writing Practice Mode', 'Weight Per Millisecond', 'Word Placement Model'], correctIndex: 0, explain: 'WPM = (characters typed / 5) divided by minutes.' }
+      ]
+    },
+    {
+      id: 'fluent_keys',
+      name: 'Fluent Keys',
+      element: 'aether',
+      icon: '\uD83E\uDE84',
+      color: '#a855f7',
+      sourceTool: 'typingPractice',
+      sourceLabel: 'Typing Practice',
+      unlock: function(d) { return (((d.typingPractice || {}).sessions || []).length) >= 10; },
+      unlockHint: 'Complete 10 Typing Practice sessions',
+      baseDamage: 24,
+      critMultiplier: 2.2,
+      flavor: 'Words flow from mind to screen without friction \u2014 the enemy cannot keep up.',
+      challengeBank: [
+        { prompt: 'Which accommodation would MOST help a student with dyslexia type?', options: ['racing mode', 'OpenDyslexic font', 'louder beeps', 'a smaller keyboard'], correctIndex: 1, explain: 'Dyslexia-friendly fonts reduce letter-confusion (b/d, p/q).' },
+        { prompt: '\u201cError-tolerant mode\u201d helps most with...', options: ['dysgraphia', 'running fast', 'memory loss', 'hearing'], correctIndex: 0, explain: 'Dysgraphia can make motor output mismatch intent \u2014 auto-advance keeps progress flowing.' },
+        { prompt: 'If your accuracy is 90%, out of 100 keystrokes you got how many right?', options: ['10', '90', '100', '9'], correctIndex: 1, explain: '90% of 100 = 90 correct keystrokes.' },
+        { prompt: 'Consistent practice with LOW bars (e.g., 10 WPM at 80% accuracy) is called...', options: ['cheating', 'mastery learning', 'pressure typing', 'speed racing'], correctIndex: 1, explain: 'Mastery learning: meeting thresholds at your pace builds durable skill.' },
+        { prompt: 'Which is NOT a healthy typing habit?', options: ['look at the screen', 'rest your wrists neutrally', 'press as hard as you can', 'take breaks'], correctIndex: 2, explain: 'Light keystrokes protect your joints; hard pressing adds injury risk.' },
+        { prompt: '\u201cPersonal best\u201d tracking compares you to...', options: ['every other student', 'only yourself', 'the class average', 'a national standard'], correctIndex: 1, explain: 'Personal best = you vs. your past self. No peer ranking.' },
+        { prompt: 'In typing, a \u201cbaseline\u201d is...', options: ['the bottom of the keyboard', 'your first measured score', 'a warning light', 'the target WPM'], correctIndex: 1, explain: 'Baseline = starting measurement, so growth over time is visible.' }
+      ]
+    },
+    {
+      id: 'ready_words',
+      name: 'Ready Words',
+      element: 'word',
+      icon: '\uD83D\uDCDD',
+      color: '#34d399',
+      sourceTool: 'typingPractice',
+      sourceLabel: 'Typing Practice',
+      unlock: function(d) {
+        var pb = ((d.typingPractice || {}).personalBest || {})['common-words'];
+        return pb && pb.wpm >= 15;
+      },
+      unlockHint: 'Reach 15 WPM on Common Words in Typing Practice',
+      baseDamage: 28,
+      critMultiplier: 2.1,
+      flavor: 'Ready words strike like arrows \u2014 precise, certain, and fast.',
+      challengeBank: [
+        { prompt: 'The word \u201cthe\u201d is the MOST common word in English. True or false?', options: ['true', 'false'], correctIndex: 0, explain: '\u201cThe\u201d ranks #1 by frequency in English corpora.' },
+        { prompt: 'High-frequency words that students should read without sounding out are called...', options: ['sight words', 'rhyme words', 'silent words', 'long words'], correctIndex: 0, explain: 'Sight words are recognized instantly \u2014 speeds up reading + writing.' },
+        { prompt: 'Which is an example of a compound word?', options: ['kindness', 'playground', 'running', 'quickly'], correctIndex: 1, explain: 'Compound = two whole words combined: play + ground.' },
+        { prompt: 'Reading fluency is measured by speed AND...', options: ['volume', 'accuracy + expression', 'handwriting', 'spelling only'], correctIndex: 1, explain: 'Fluent reading = accurate + paced + expressive (prosody).' },
+        { prompt: 'If a student types \u201cteh\u201d instead of \u201cthe,\u201d that\u2019s a...', options: ['transposition error', 'missed letter', 'capital letter problem', 'space error'], correctIndex: 0, explain: 'Transposition = two letters swapped. Common in fast typing.' },
+        { prompt: 'Which punctuation usually ends a sentence?', options: ['comma', 'period', 'apostrophe', 'colon'], correctIndex: 1, explain: 'Periods end declarative statements. Questions end with ? and strong emotion with !.' },
+        { prompt: 'The word \u201cIEP\u201d in schools stands for...', options: ['Incredible Education Plan', 'Individualized Education Program', 'International Exam Panel', 'Instructional Education Project'], correctIndex: 1, explain: 'IEP = federal plan for students receiving special education services.' }
+      ]
     }
   ];
 

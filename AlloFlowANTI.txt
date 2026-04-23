@@ -11064,6 +11064,10 @@ Return only the corrected version of this exact text:`;
   React.useEffect(() => { try { localStorage.setItem('alloflow_pdf_auto_continue', String(pdfAutoContinue)); } catch (e) {} }, [pdfAutoContinue]);
   const [pdfAutoContinueRunning, setPdfAutoContinueRunning] = useState(false);
   const pdfAutoContinueAbortRef = useRef(false);
+  // AbortController paired with the flag above. The flag still drives loop-level
+  // break checks; the controller aborts the in-flight Gemini fetch itself so
+  // quota isn't burned on a response that will be thrown away after Stop.
+  const pdfAutoContinueAbortCtrlRef = useRef(null);
   // Ref tracking the latest pdfFixResult so runAutoFixLoop can read fresh state without closure staleness.
   const pdfFixResultRef = useRef(null);
   // Fingerprint of the last auto-save — prevents duplicate downloads when the initial flow and
@@ -13906,7 +13910,7 @@ const parseTaggedContent = (text) => {
   };
   const ai = AIProvider ? new AIProvider(_aiConfig) : _aiConfig;
 
-  const callGemini = async (prompt, jsonMode = false, useSearch = false, temperature = null, searchQuery = null) => {
+  const callGemini = async (prompt, jsonMode = false, useSearch = false, temperature = null, searchQuery = null, signal = null) => {
     if (!apiKey && !_isCanvasEnv) {
       console.warn('[callGemini] No API key available — skipping request.');
       if (jsonMode) return "{}";
@@ -13945,11 +13949,22 @@ const parseTaggedContent = (text) => {
         payload.tools = [{ google_search: {} }];
     }
     try {
-      const _fetchOpts = { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) };
+      // Pick up either the caller-supplied signal or the ambient pdf-autocontinue
+      // signal (set by runAutoFixLoop and read by every nested callGemini during
+      // a run, so Stop actually cancels the in-flight fetch instead of just
+      // breaking the loop after the request finishes).
+      const _signal = signal || (typeof window !== 'undefined' ? window.__alloPdfAbortSignal : null) || null;
+      const _fetchOpts = { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), ...(_signal ? { signal: _signal } : {}) };
       let response;
       try {
         response = await fetchWithExponentialBackoff(_buildUrl(GEMINI_MODELS.default), _fetchOpts);
       } catch (primaryErr) {
+        if (primaryErr?.name === 'AbortError') {
+          // Respect caller's abort — don't fall back to the secondary model
+          // (that would just burn another 30s and another quota slice).
+          console.log('[callGemini] Request aborted by caller — propagating.');
+          throw primaryErr;
+        }
         const is429 = primaryErr.message && (primaryErr.message.includes('429') || primaryErr.message.includes('RESOURCE_EXHAUSTED') || primaryErr.message.includes('Failed to fetch') || primaryErr.message.includes('403'));
         if (is429 && GEMINI_MODELS.fallback && GEMINI_MODELS.fallback !== GEMINI_MODELS.default) {
           console.warn(`[callGemini] Primary model error — falling back to ${GEMINI_MODELS.fallback}`);
@@ -17353,6 +17368,12 @@ Return ONLY valid JSON:
   // between iterations so React batching can't stall the loop.
   const runAutoFixLoop = React.useCallback(async (maxRounds = 3) => {
     pdfAutoContinueAbortRef.current = false;
+    // Fresh AbortController per run; publish the signal globally so every
+    // nested callGemini (including those deep inside autoFixAxeViolations)
+    // picks it up automatically via window.__alloPdfAbortSignal.
+    const _abortCtrl = new AbortController();
+    pdfAutoContinueAbortCtrlRef.current = _abortCtrl;
+    if (typeof window !== 'undefined') window.__alloPdfAbortSignal = _abortCtrl.signal;
     setPdfAutoContinueRunning(true);
     let cur = pdfFixResultRef.current;
     try {
@@ -17418,6 +17439,15 @@ Return ONLY valid JSON:
       setPdfFixLoading(false);
       setPdfAutoContinueRunning(false);
       setPdfFixStep('');
+      // Release the published signal so post-run callGemini calls aren't
+      // picked up by a stale aborted controller. Only clear if we still
+      // own the slot — a subsequent run may have already overwritten it.
+      if (pdfAutoContinueAbortCtrlRef.current === _abortCtrl) {
+        pdfAutoContinueAbortCtrlRef.current = null;
+      }
+      if (typeof window !== 'undefined' && window.__alloPdfAbortSignal === _abortCtrl.signal) {
+        window.__alloPdfAbortSignal = null;
+      }
       // Auto-save at the end of the loop if the user opted into it and we have a real result.
       if (pdfAutoSaveProject) { try { saveProjectToFile(true); } catch (e) { /* non-fatal */ } }
     }
@@ -17618,7 +17648,13 @@ Return ONLY valid JSON:
             if (stageA && Array.isArray(stageA.restoredViaRetry) && stageA.restoredViaRetry.length > 0 && stageA.html && stageA.html !== currentHtml) {
               stageCounts.retry = stageA.restoredViaRetry.length;
               if (typeof setPdfFixResult === 'function' && pdfFixResult) {
-                setPdfFixResult({ ...pdfFixResult, accessibleHtml: stageA.html });
+                // Functional updater — the closure's `pdfFixResult` is captured
+                // at useEffect-run time and is stale relative to `integrityVerifying:true`
+                // set at line 17638 via its own prev=> updater. Spreading the closure
+                // would overwrite integrityVerifying (+ any other field set between
+                // capture and fire) back to undefined, making the sky-blue banner
+                // flicker off for the duration of the ladder.
+                setPdfFixResult(prev => prev ? { ...prev, accessibleHtml: stageA.html } : prev);
               }
               currentMissing = Array.isArray(stageA.stillMissing) ? stageA.stillMissing : currentMissing;
             }
@@ -17631,7 +17667,8 @@ Return ONLY valid JSON:
               if (stageB && Array.isArray(stageB.restoredViaSentence) && stageB.restoredViaSentence.length > 0 && stageB.html && stageB.html !== currentHtml) {
                 stageCounts.sentence = stageB.restoredViaSentence.length;
                 if (typeof setPdfFixResult === 'function' && pdfFixResult) {
-                  setPdfFixResult({ ...pdfFixResult, accessibleHtml: stageB.html });
+                  // Functional updater — see Stage A rationale above.
+                  setPdfFixResult(prev => prev ? { ...prev, accessibleHtml: stageB.html } : prev);
                 }
                 currentMissing = Array.isArray(stageB.stillMissing) ? stageB.stillMissing : currentMissing;
               }
@@ -17657,7 +17694,8 @@ Return ONLY valid JSON:
               const dedup = detectAndHandleDuplicates(currentHtml, sourceText);
               if (dedup && dedup.html && dedup.html !== currentHtml) {
                 if (typeof setPdfFixResult === 'function' && pdfFixResult) {
-                  setPdfFixResult({ ...pdfFixResult, accessibleHtml: dedup.html });
+                  // Functional updater — see Stage A rationale above.
+                  setPdfFixResult(prev => prev ? { ...prev, accessibleHtml: dedup.html } : prev);
                 }
                 dedupResult = { autoRemoved: dedup.autoRemoved || [], highlighted: dedup.highlighted || [] };
               }
@@ -54210,7 +54248,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               </label>
                             )}
                             {pdfAutoContinueRunning && (
-                              <button onClick={() => { pdfAutoContinueAbortRef.current = true; addToast('Stopping after current pass...', 'info'); }} className="text-[11px] bg-red-100 text-red-700 border border-red-300 px-2.5 py-1 rounded-full font-bold hover:bg-red-200 transition-colors" aria-label="Stop auto-continue remediation">
+                              <button onClick={() => { pdfAutoContinueAbortRef.current = true; try { pdfAutoContinueAbortCtrlRef.current?.abort(); } catch(_) {} addToast('Stopping — aborting in-flight Gemini call…', 'info'); }} className="text-[11px] bg-red-100 text-red-700 border border-red-300 px-2.5 py-1 rounded-full font-bold hover:bg-red-200 transition-colors" aria-label="Stop auto-continue remediation">
                                 ⏸ Stop auto-continue
                               </button>
                             )}
@@ -54384,13 +54422,14 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             .scores { display: flex; gap: 12px; align-items: center; }
                             .score-badge { padding: 6px 14px; border-radius: 8px; font-weight: 800; font-size: 14px; }
                             .arrow { color: #94a3b8; font-size: 18px; }
-                            .compare { display: flex; height: calc(100vh - 56px); }
-                            .pane { flex: 1; display: flex; flex-direction: column; }
+                            .compare { display: flex; height: calc(100vh - 56px); overflow: hidden; }
+                            /* min-height/min-width: 0 break Flexbox's default min-content floor so flex:1 actually clips the iframe's content instead of letting it expand the pane past 100vh and bleed onto the dark body. overflow:hidden is the belt-and-braces clip. */
+                            .pane { flex: 1; display: flex; flex-direction: column; min-height: 0; min-width: 0; overflow: hidden; }
                             .pane-header { padding: 8px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; text-align: center; }
                             .pane-left .pane-header { background: #7f1d1d; color: #fca5a5; }
                             .pane-right .pane-header { background: #14532d; color: #86efac; }
                             .divider { width: 3px; background: #334155; cursor: col-resize; }
-                            iframe, embed { flex: 1; width: 100%; border: none; background: white; }
+                            iframe, embed { flex: 1; width: 100%; min-height: 0; border: none; background: white; }
                             @media (max-width: 768px) { .compare { flex-direction: column; } .pane { height: 50vh; } .divider { height: 3px; width: 100%; } }
                           </style></head><body>
                           <div class="header">

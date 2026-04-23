@@ -301,11 +301,55 @@ var createDocPipeline = function(deps) {
         createdAt: Date.now(),
         ranges: [],
       };
-      // Replace any existing range with the exact same [start, end]; re-running
-      // overwrites. Overlap beyond exact match is resolved at merge time.
+      // Detect overlap with existing ranges. The prior behavior only deduped
+      // exact-match [start, end] pairs and claimed "overlap beyond exact match
+      // is resolved at merge time" — but the merge step actually just
+      // concatenates, so partial overlaps (e.g. existing 5-10 plus new 8-15)
+      // produced duplicate content in the merged HTML. Fix here at save time:
+      // the newer range wins on overlapping pages, and we truncate (or drop)
+      // the older range's page metadata so merge excludes duplicates.
       var newPages = rangeData.pages;
+      var newStart = newPages[0], newEnd = newPages[1];
+      var overlappers = (record.ranges || []).filter(function(r) {
+        if (!r.pages) return false;
+        if (r.pages[0] === newStart && r.pages[1] === newEnd) return false; // exact match handled below
+        return !(r.pages[1] < newStart || r.pages[0] > newEnd);
+      });
+      if (overlappers.length > 0) {
+        warnLog('[MultiSession] New range ' + newStart + '-' + newEnd +
+          ' overlaps ' + overlappers.length + ' existing range(s): ' +
+          overlappers.map(function(r){ return r.pages[0] + '-' + r.pages[1]; }).join(', ') +
+          '. Newer range wins on overlapping pages.');
+        record.ranges = (record.ranges || []).map(function(r) {
+          if (!r.pages) return r;
+          if (r.pages[0] === newStart && r.pages[1] === newEnd) return r; // exact match handled below
+          if (r.pages[1] < newStart || r.pages[0] > newEnd) return r; // no overlap
+          // New fully contains old — drop old entirely
+          if (r.pages[0] >= newStart && r.pages[1] <= newEnd) return null;
+          // Old extends to the left of new — truncate old's end
+          if (r.pages[0] < newStart && r.pages[1] >= newStart && r.pages[1] <= newEnd) {
+            return Object.assign({}, r, { pages: [r.pages[0], newStart - 1], _truncatedBy: [newStart, newEnd] });
+          }
+          // Old extends to the right of new — truncate old's start
+          if (r.pages[0] >= newStart && r.pages[0] <= newEnd && r.pages[1] > newEnd) {
+            return Object.assign({}, r, { pages: [newEnd + 1, r.pages[1]], _truncatedBy: [newStart, newEnd] });
+          }
+          // New is strictly inside old — we'd need to split into two metadata
+          // entries to cover {old_start..new_start-1} and {new_end+1..old_end}.
+          // Page split without HTML split is fragile; drop the enclosing range
+          // and ask the user to re-upload the surrounding portions.
+          if (r.pages[0] < newStart && r.pages[1] > newEnd) {
+            warnLog('[MultiSession] New range is a strict subset of existing range ' +
+              r.pages[0] + '-' + r.pages[1] + ' — splitting at save time is not supported. ' +
+              'Dropping the enclosing range; re-upload the uncovered portions if needed.');
+            return null;
+          }
+          return r;
+        }).filter(Boolean);
+      }
+      // Replace any existing range with the exact same [start, end]; re-running overwrites.
       record.ranges = (record.ranges || []).filter(function(r) {
-        return !(r.pages && r.pages[0] === newPages[0] && r.pages[1] === newPages[1]);
+        return !(r.pages && r.pages[0] === newStart && r.pages[1] === newEnd);
       });
       record.ranges.push(Object.assign({ completedAt: Date.now() }, rangeData));
       record.lastUpdatedAt = Date.now();
@@ -366,17 +410,30 @@ var createDocPipeline = function(deps) {
       .trim();
   };
 
-  // acceptFixedHtml: strict guard that rejects AI fix outputs that silently shrink the document.
+  // acceptFixedHtmlDetailed: strict guard that rejects AI fix outputs that silently shrink
+  // the document, returning a structured result with the specific reason. Callers that just
+  // need truthy/falsy can use the acceptFixedHtml alias below.
   // Replaces the old `fixed.length > original.length * 0.5` checks which allowed 50% truncation.
-  const acceptFixedHtml = (fixed, original, opts) => {
-    if (!fixed || !original) return false;
+  const acceptFixedHtmlDetailed = (fixed, original, opts) => {
+    if (!fixed) return { accepted: false, reason: 'empty-output' };
+    if (!original) return { accepted: false, reason: 'no-original' };
     const sizeFloor = (opts && opts.sizeFloor) || 0.95;
     const textFloor = (opts && opts.textFloor) || 0.97;
-    if (fixed.length < original.length * sizeFloor) return false;
+    const sizeRatio = fixed.length / original.length;
+    if (sizeRatio < sizeFloor) {
+      return { accepted: false, reason: 'size-shrink', sizeRatio: sizeRatio, sizeLost: original.length - fixed.length };
+    }
     const origText = textCharCount(original);
-    if (origText > 0 && textCharCount(fixed) < origText * textFloor) return false;
-    return fixed.includes('<!DOCTYPE') || fixed.includes('<html') || fixed.includes('<main') || fixed.includes('<body');
+    const fixedText = textCharCount(fixed);
+    if (origText > 0 && fixedText < origText * textFloor) {
+      return { accepted: false, reason: 'text-shrink', textRatio: fixedText / origText, textLost: origText - fixedText };
+    }
+    if (!(fixed.includes('<!DOCTYPE') || fixed.includes('<html') || fixed.includes('<main') || fixed.includes('<body'))) {
+      return { accepted: false, reason: 'no-doc-markers' };
+    }
+    return { accepted: true };
   };
+  const acceptFixedHtml = (fixed, original, opts) => acceptFixedHtmlDetailed(fixed, original, opts).accepted;
 
   // sampleHtml: return a stratified sample (start + middle + end) instead of just the first N chars.
   // Gives the AI representative visibility into the full document for diagnosis prompts.
@@ -4020,6 +4077,10 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
       total: queue.length,
       succeeded: done.length,
       failed: failed.length,
+      // Surface the names + errors of failed files so the user doesn't have
+      // to scroll the queue UI to find which files need attention. Additive
+      // field — downstream consumers of pdfBatchSummary stay compatible.
+      failedFiles: failed.map(q => ({ fileName: q.fileName, error: q.error || 'unknown error' })),
       avgBefore: (function() { var valid = done.filter(q => q.result?.beforeScore != null); return valid.length ? Math.round(valid.reduce((s, q) => s + q.result.beforeScore, 0) / valid.length) : null; })(),
       avgAfter: (function() { var valid = done.filter(q => q.result?.afterScore != null); return valid.length ? Math.round(valid.reduce((s, q) => s + q.result.afterScore, 0) / valid.length) : null; })(),
       avgImprovement: (function() { var valid = done.filter(q => q.result?.afterScore != null && q.result?.beforeScore != null); return valid.length ? Math.round(valid.reduce((s, q) => s + (q.result.afterScore - q.result.beforeScore), 0) / valid.length) : null; })(),
@@ -4031,7 +4092,11 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
     setPdfBatchProcessing(false);
     setPdfBatchCurrentIndex(-1);
     setPdfBatchStep('');
-    addToast(`\u2705 Batch complete: ${done.length}/${queue.length} PDFs remediated (avg +${done.length ? Math.round(done.reduce((s, q) => s + ((q.result?.afterScore || 0) - (q.result?.beforeScore || 0)), 0) / done.length) : 0} points)`, 'success');
+    // Name up to 3 failed files in the toast; the rest stays in the summary.
+    const _failList = failed.length > 0
+      ? ` \u00b7 Failed: ${failed.slice(0, 3).map(q => q.fileName).join(', ')}${failed.length > 3 ? ` + ${failed.length - 3} more` : ''}`
+      : '';
+    addToast(`\u2705 Batch complete: ${done.length}/${queue.length} PDFs remediated (avg +${done.length ? Math.round(done.reduce((s, q) => s + ((q.result?.afterScore || 0) - (q.result?.beforeScore || 0)), 0) / done.length) : 0} points)${_failList}`, failed.length > 0 ? 'warning' : 'success');
     // Audio: triumphant chord when batch finishes
     try { window.remediationAudio && window.remediationAudio.sessionComplete(); } catch(e) {}
   };
@@ -4295,13 +4360,18 @@ Return ONLY JSON:
     if (cleaned.indexOf('```') !== -1) { const parts = cleaned.split('```'); cleaned = parts[1] || parts[0]; if (cleaned.indexOf('\n') !== -1) cleaned = cleaned.split('\n').slice(1).join('\n'); if (cleaned.lastIndexOf('```') !== -1) cleaned = cleaned.substring(0, cleaned.lastIndexOf('```')); }
     return JSON.parse(cleaned);
   };
+  // Module-level chunk constants for auditOutputAccessibility. OVERLAP doubled
+  // from 400→800 because WCAG violations in tables, code blocks, and long links
+  // can span more than 400 chars at a chunk boundary and slip past the audit.
+  const AUDIT_CHUNK_SIZE = 16000; // with maxOutputTokens=65536, well within model capacity
+  const AUDIT_CHUNK_OVERLAP = 800;
   // Audit HTML for WCAG 2.1 AA compliance
   // Short docs (≤8KB): single Gemini call. Long docs: chunked with deduplication.
   const auditOutputAccessibility = async (htmlContent) => {
     if (!callGemini || !htmlContent) return null;
     try {
-      const CHUNK_SIZE = 16000; // increased with maxOutputTokens=65536
-      const OVERLAP = 400;
+      const CHUNK_SIZE = AUDIT_CHUNK_SIZE;
+      const OVERLAP = AUDIT_CHUNK_OVERLAP;
       // Short documents: single audit pass
       if (htmlContent.length <= CHUNK_SIZE) {
         const sampleHtml = htmlContent;
@@ -4458,20 +4528,22 @@ HTML section ${chunkNum}/${chunks.length}:
   const _AXE_CDN_URL = 'https://cdn.jsdelivr.net/npm/axe-core@4.10.3/axe.min.js';
   const runAxeAudit = async (htmlContent) => {
     try {
-      // Lazy-load axe-core from CDN if not already loaded
+      // Lazy-load axe-core from CDN if not already loaded. Error messages include
+      // the CDN URL so field reports can distinguish DNS / proxy / mixed-content /
+      // adblock issues without re-running with devtools open.
       if (!window.axe) {
         await new Promise((resolve, reject) => {
           if (document.querySelector('script[data-axe-core]')) {
             // Script tag exists but axe not ready yet — wait
             const wait = setInterval(() => { if (window.axe) { clearInterval(wait); resolve(); } }, 100);
-            setTimeout(() => { clearInterval(wait); reject(new Error('axe-core load timeout')); }, 10000);
+            setTimeout(() => { clearInterval(wait); reject(new Error('axe-core load timeout after 10s from ' + _AXE_CDN_URL + ' (previous script tag exists but window.axe never appeared — CDN may have returned corrupted JS)')); }, 10000);
             return;
           }
           const script = document.createElement('script');
           script.src = _AXE_CDN_URL;
           script.setAttribute('data-axe-core', 'true');
           script.onload = () => resolve();
-          script.onerror = () => reject(new Error('Failed to load axe-core from CDN'));
+          script.onerror = () => reject(new Error('Failed to load axe-core from ' + _AXE_CDN_URL + ' (check network, corporate proxy, or adblock — jsdelivr may be blocked)'));
           document.head.appendChild(script);
         });
       }
@@ -4480,9 +4552,15 @@ HTML section ${chunkNum}/${chunks.length}:
       // De-duplicated via _axeSourcePromise so concurrent audits share a single fetch.
       if (!_axeSourceCache && !_axeSourcePromise) {
         _axeSourcePromise = fetch(_AXE_CDN_URL)
-          .then(r => r.ok ? r.text() : null)
+          .then(r => {
+            if (!r.ok) {
+              warnLog('[axe-core] CDN returned HTTP ' + r.status + ' ' + r.statusText + ' for ' + _AXE_CDN_URL + ' — inline injection disabled, falling back to script tag per iframe');
+              return null;
+            }
+            return r.text();
+          })
           .then(txt => { if (txt) _axeSourceCache = txt; return txt; })
-          .catch(() => null)
+          .catch(err => { warnLog('[axe-core] CDN fetch threw: ' + (err?.message || err) + ' (URL: ' + _AXE_CDN_URL + ')'); return null; })
           .finally(() => { _axeSourcePromise = null; });
       }
       if (_axeSourcePromise) { try { await _axeSourcePromise; } catch(e) {} }
@@ -4518,7 +4596,7 @@ HTML section ${chunkNum}/${chunks.length}:
         } else {
           axeScript.src = _AXE_CDN_URL;
           axeScript.onload = () => resolve();
-          axeScript.onerror = () => reject(new Error('Failed to inject axe-core into iframe'));
+          axeScript.onerror = () => reject(new Error('Failed to inject axe-core into iframe from ' + _AXE_CDN_URL + ' (inline cache empty AND iframe script load failed — check CORS / CSP / proxy)'));
           iframeDoc.head.appendChild(axeScript);
         }
       });
@@ -5513,6 +5591,20 @@ HTML section ${chunkNum}/${chunks.length}:
               const fullList = fixListViolations(currentHtml);
               if (fullList.fixCount > 0) { currentHtml = fullList.html; }
             } catch(e) { /* non-blocking */ }
+            // Force a fresh full-doc axe read so the NEXT loop iteration sees
+            // the reassembled document's actual violation set, not stale per-chunk
+            // snapshots. Without this, a partial chunk failure can leave currentAxe
+            // pointing at pre-reassembly state and the progress check bails "no
+            // improvement" when violations actually remain (or vice versa).
+            try {
+              const freshAxe = await runAxeAudit(currentHtml);
+              if (freshAxe) {
+                currentAxe = freshAxe;
+                warnLog(`[AutoFix] Post-selective-refix re-audit: ${freshAxe.totalViolations} violations remain`);
+              }
+            } catch (e) {
+              warnLog('[AutoFix] Post-selective re-audit failed; continuing with prior axe state: ' + (e?.message || e));
+            }
           } else if (failingChunks.length === 0) {
             usedSelectiveRefix = true; // Nothing to re-fix
             warnLog(`[AutoFix] Pass ${passCount}: all chunks score ≥80, skipping chunk-level re-fix`);
@@ -5552,10 +5644,17 @@ ${currentHtml}
 
 Return ONLY the complete fixed HTML.`, true);
 
-          if (acceptFixedHtml(fixedHtml, currentHtml)) {
+          const _singlePassDecision = acceptFixedHtmlDetailed(fixedHtml, currentHtml);
+          if (_singlePassDecision.accepted) {
             currentHtml = fixedHtml;
           } else if (fixedHtml) {
-            warnLog(`[Auto-fix] Single-pass rejected: output ${fixedHtml.length} chars (text=${textCharCount(fixedHtml)}) vs source ${currentHtml.length} chars (text=${textCharCount(currentHtml)})`);
+            const _pct = _singlePassDecision.textRatio != null
+              ? Math.round((1 - _singlePassDecision.textRatio) * 100)
+              : null;
+            warnLog(`[Auto-fix] Single-pass rejected (reason=${_singlePassDecision.reason}${_pct != null ? `, ${_pct}% text loss` : ''}): output ${fixedHtml.length} chars (text=${textCharCount(fixedHtml)}) vs source ${currentHtml.length} chars (text=${textCharCount(currentHtml)})`);
+            if (_singlePassDecision.reason === 'text-shrink' && typeof addToast === 'function') {
+              addToast(`Remediation rejected: ${_pct}% text loss detected. Falling back to chunked fix.`, 'warning');
+            }
           }
           // Emit single-pass completion so Live UI updates
           try { window.dispatchEvent(new CustomEvent('alloflow:chunk-fixed', { detail: { index: 0, total: 1, originalHtml: '', fixedHtml: currentHtml, score: 0, deterministicFixCount: 0, surgicalFixCount: 0, integrityPassed: true, aiVerified: true, wasRetried: false, usedOriginal: false, sizeKB: Math.round(currentHtml.length / 1000), timestamp: Date.now() } })); } catch(e) {}
@@ -5621,13 +5720,19 @@ Return ONLY the complete fixed HTML.`, true);
             splitPoints.push(bodyContent.length);
           }
 
-          // Create chunks from split points, filtering out empty chunks
+          // Create chunks from split points, filtering out empty chunks. Track
+          // the drop count so the log line below reflects real split geometry
+          // (otherwise "N chunks" hides the fact that some splits collapsed to
+          // whitespace — misleading during diagnosis of chunk-size issues).
           const bodyChunks = [];
           let prevEnd = 0;
+          let droppedEmptyCount = 0;
           for (let spi = 0; spi < splitPoints.length; spi++) {
             const chunkText = bodyContent.substring(prevEnd, splitPoints[spi]);
             if (chunkText.trim().length > 0) {
               bodyChunks.push(chunkText);
+            } else if (chunkText.length > 0) {
+              droppedEmptyCount++;
             }
             prevEnd = splitPoints[spi];
           }
@@ -5646,7 +5751,7 @@ Return ONLY the complete fixed HTML.`, true);
               }
             }
           }
-          warnLog(`[AutoFix] Split ${Math.round(bodyContent.length/1000)}KB body into ${bodyChunks.length} chunks (sizes: ${bodyChunks.map(c => Math.round(c.length/1000) + 'KB').join(', ')})`);
+          warnLog(`[AutoFix] Split ${Math.round(bodyContent.length/1000)}KB body into ${bodyChunks.length} chunks (sizes: ${bodyChunks.map(c => Math.round(c.length/1000) + 'KB').join(', ')})${droppedEmptyCount > 0 ? `; dropped ${droppedEmptyCount} empty/whitespace-only split(s)` : ''}`);
 
           // ── Emit session start event: tells UI to open the live review panel ──
           try {
@@ -11630,11 +11735,6 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     remediateSurgicallyThenAI: _wrapAsync(remediateSurgicallyThenAI),
   };
 };
-
-window.AlloModules = window.AlloModules || {};
-window.AlloModules.createDocPipeline = createDocPipeline;
-window.AlloModules.DocPipelineModule = true;
-console.log('[DocPipelineModule] Pipeline factory registered');
 
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.createDocPipeline = createDocPipeline;

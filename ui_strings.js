@@ -2920,6 +2920,20 @@
                                 "verified": "Verified"
     }
   },
+  "pdf_audit": {
+    "view_last_audit": "View Last Audit",
+      "start_new_audit": "Start New Audit",
+        "apply_and_export": "Apply & Export",
+          "applying_remarkup": "Re-applying accessible markup to your approved text…",
+            "rejected_count": "{n} rejected",
+              "undo_all_rejections": "undo all",
+                "granularity_warning": "Changing granularity will reset your rejections. Continue?",
+                  "remarkup_failed": "Couldn't reapply full markup — exported plain paragraphs. Retry later if needed.",
+                    "reject_selection": "Reject selection",
+                      "keep_selection": "Keep selection",
+                        "edits_applied": "Edits applied. Accessible HTML updated.",
+                          "start_new_confirm": "Start a new audit? Your current audit will be cleared — make sure you have downloaded the remediated HTML if you need it."
+  },
   "concept_sort": {
     "title": "Concept Sort",
       "subtitle": "Drag cards into the correct category.",
