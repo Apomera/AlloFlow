@@ -699,6 +699,20 @@ You MUST:
                if (i < sections.length - 1) await new Promise(r => setTimeout(r, 1000));
            }
            if (effIncludeCitations && allGroundingChunks.length > 0) {
+                // Strip any LLM-emitted bibliography trailer BEFORE we do citation
+                // repair.  Despite the prompt forbidding it, Gemini occasionally emits
+                // its own "## Source Text References\n\n1. [Title](url)..." section at
+                // the end of the generated text — and when it hits the token limit
+                // partway through, the trailer (and any inline citation near it) gets
+                // truncated mid-URL.  The authoritative bibliography is appended below
+                // via generateBibliographyString from grounding metadata, so we can
+                // safely drop Gemini's version.  Lookahead-gated by "\d+. [Title](" so
+                // it only strips actual numbered-link lists, never body prose that
+                // happens to contain the word "Sources" or "References".
+                fullDocument = fullDocument.replace(
+                    /(?:\n|^)\s*(?:#{1,4}\s*)?(?:\*+\s*)?(?:Source\s+Text\s+References|Accuracy\s+Check\s+References|Verified\s+Sources|Works?\s+Cited|Bibliography|Citations)(?:\*+)?[\s:]*(?=\s*\d+\.\s*\[[^\]]+\]\()[\s\S]*$/i,
+                    ''
+                );
                 // Strip hallucinated citations whose index is outside the collected chunks.
                 // These happen when a later section's Gemini emits a higher N than that
                 // section's chunk count — the offset then pushes it past the end of
