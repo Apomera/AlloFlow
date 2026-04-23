@@ -970,77 +970,88 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
       icon: '\uD83D\uDD24',
       def: 'A token is a small chunk of text the model processes — roughly a word, part of a word, or a piece of punctuation. Common words are often one token; longer words split into pieces ("unhappy" \u2192 "un" + "happy").',
       whereDemo: 'Section 1 has an interactive tokenizer — type anything and watch it split.',
-      where: 'tokens'
+      where: 'tokens',
+      related: ['tokenization', 'next-token prediction']
     },
     'tokenization': {
       label: 'tokenization',
       icon: '\uD83D\uDD24',
       def: 'The process of breaking text into tokens before the model can work with it. Different tokenizers split text differently; all of them turn language into numbers the model can predict over.',
       whereDemo: 'Section 1 \u2014 the colored pills show tokenization happening live.',
-      where: 'tokens'
+      where: 'tokens',
+      related: ['token', 'next-token prediction']
     },
     'next-token prediction': {
       label: 'next-token prediction',
       icon: '\uD83C\uDFB2',
       def: 'The one thing an LLM does: given the tokens so far, predict a probability for every possible next token. Everything else — answering questions, writing poems, coding — is next-token prediction repeated many times.',
       whereDemo: 'Section 1 shows the probability distribution for three real examples.',
-      where: 'tokens'
+      where: 'tokens',
+      related: ['token', 'temperature', 'hallucination']
     },
     'temperature': {
       label: 'temperature',
       icon: '\uD83C\uDF21\uFE0F',
       def: 'A number (usually 0\u20132) that controls how random the next-token pick is. Low temperature = always pick the most likely token (deterministic, good for facts). High temperature = sometimes pick less likely tokens (creative, good for stories, worse for accuracy).',
       whereDemo: 'Section 1 lets you compare temp 0.2, 0.7, and 1.2 side by side.',
-      where: 'tokens'
+      where: 'tokens',
+      related: ['next-token prediction', 'hallucination']
     },
     'hallucination': {
       label: 'hallucination',
       icon: '\u26A0\uFE0F',
       def: 'When an LLM generates confident-sounding text that is not true \u2014 a fake citation, a wrong date, a made-up fact. The model is not lying; it has no concept of "true." It is filling in the statistically plausible next tokens.',
       whereDemo: 'Section 2 is a gallery of real hallucination types; Section 4 is a spotter game.',
-      where: 'fails'
+      where: 'fails',
+      related: ['confabulation', 'knowledge cutoff', 'next-token prediction']
     },
     'confabulation': {
       label: 'confabulation',
       icon: '\uD83C\uDFDB\uFE0F',
       def: 'A specific kind of hallucination where the model fills a knowledge gap with an invented but internally consistent story \u2014 complete with names, dates, and cause-and-effect. Common when the user\'s question accepts a false premise.',
       whereDemo: 'Section 2 \u2014 see the "Invented historical detail" example.',
-      where: 'fails'
+      where: 'fails',
+      related: ['hallucination', 'knowledge cutoff']
     },
     'knowledge cutoff': {
       label: 'knowledge cutoff',
       icon: '\u23F0',
       def: 'The latest date in the model\'s training data. The model does not know anything that happened after its cutoff, but it may still answer confidently about recent events \u2014 so always check.',
       whereDemo: 'Section 2 has a cutoff example; you can ask any AI directly what its cutoff is.',
-      where: 'fails'
+      where: 'fails',
+      related: ['hallucination', 'confabulation']
     },
     'prompt': {
       label: 'prompt',
       icon: '\u270F\uFE0F',
       def: 'The text you send to an LLM. The prompt sets the task, the role, the constraints, and the format \u2014 all at once. Good prompts are a learnable craft.',
       whereDemo: 'Section 3 teaches the five patterns of strong prompts.',
-      where: 'prompt'
+      where: 'prompt',
+      related: ['context', 'temperature']
     },
     'context': {
       label: 'context',
       icon: '\uD83D\uDCCD',
       def: 'The information you give the AI about YOU and your task \u2014 grade level, what you already know, what you are trying to do. More context usually means more relevant output.',
       whereDemo: 'Section 3 \u2014 "Context" is one of the five prompt patterns.',
-      where: 'prompt'
+      where: 'prompt',
+      related: ['prompt']
     },
     'scaffold': {
       label: 'scaffold',
       icon: '\uD83E\uDEA1',
       def: 'Using AI in a way that REMOVES A BARRIER without doing the thinking you need to practice. Example: asking AI to quiz you after you study, instead of asking AI to tell you the answers.',
       whereDemo: 'Section 5 has worked examples for common student situations.',
-      where: 'udl'
+      where: 'udl',
+      related: ['substitute', 'prompt']
     },
     'substitute': {
       label: 'substitute',
       icon: '\uD83E\uDDF1',
       def: 'Using AI in a way that REPLACES THE SKILL you are supposed to be learning. Example: asking AI to write the essay instead of using AI to help you organize your own thoughts.',
       whereDemo: 'Section 5 contrasts this with scaffolding for the same situations.',
-      where: 'udl'
+      where: 'udl',
+      related: ['scaffold']
     }
   };
 
@@ -1463,6 +1474,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
       // Glossary browse-all overlay.
       var browseTuple = useState(false);
       var browseOpen = browseTuple[0]; var setBrowseOpen = browseTuple[1];
+      // Search filter for the browse-all glossary view.
+      var browseQueryTuple = useState('');
+      var browseQuery = browseQueryTuple[0]; var setBrowseQuery = browseQueryTuple[1];
       // First-run welcome overlay \u2014 shown once per browser per student,
       // flagged via localStorage so we don\'t re-annoy returning visitors.
       var welcomeTuple = useState(function() {
@@ -1864,7 +1878,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
 
       function renderBrowseAllGlossary() {
         if (!browseOpen) return null;
-        var keys = Object.keys(TERMS);
+        var allKeys = Object.keys(TERMS);
+        // Filter by search query against label + definition.
+        var q = (browseQuery || '').trim().toLowerCase();
+        var keys = q === ''
+          ? allKeys
+          : allKeys.filter(function(k) {
+              var e = TERMS[k];
+              return (e.label || '').toLowerCase().indexOf(q) >= 0
+                || (e.def || '').toLowerCase().indexOf(q) >= 0;
+            });
         return h('div', {
           className: 'llm-lit-no-print',
           role: 'dialog',
@@ -1889,19 +1912,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
               border: '1px solid ' + COLORS.border
             }
           },
-            h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid ' + COLORS.border } },
-              h('div', null,
-                h('div', { style: { fontSize: '11px', color: COLORS.accent, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.05em' } }, '\uD83D\uDCD6 Glossary'),
-                h('div', { style: { fontSize: '18px', fontWeight: 800, color: COLORS.text } }, 'All ' + keys.length + ' terms')
+            h('div', { style: { padding: '16px 20px', borderBottom: '1px solid ' + COLORS.border } },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' } },
+                h('div', null,
+                  h('div', { style: { fontSize: '11px', color: COLORS.accent, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.05em' } }, '\uD83D\uDCD6 Glossary'),
+                  h('div', { style: { fontSize: '18px', fontWeight: 800, color: COLORS.text } },
+                    q === ''
+                      ? ('All ' + allKeys.length + ' terms')
+                      : (keys.length + ' of ' + allKeys.length + ' terms'))
+                ),
+                h('button', {
+                  onClick: function() { setBrowseOpen(false); setBrowseQuery(''); },
+                  style: { background: 'transparent', border: 'none', fontSize: '22px', color: COLORS.muted, cursor: 'pointer', padding: '2px 6px' },
+                  'aria-label': 'Close glossary'
+                }, '\u00D7')
               ),
-              h('button', {
-                ref: function(el) { if (el && browseOpen) setTimeout(function() { try { el.focus(); } catch (e) {} }, 30); },
-                onClick: function() { setBrowseOpen(false); },
-                style: { background: 'transparent', border: 'none', fontSize: '22px', color: COLORS.muted, cursor: 'pointer', padding: '2px 6px' },
-                'aria-label': 'Close glossary'
-              }, '\u00D7')
+              // Search input. Auto-focuses on open so students can start typing immediately.
+              h('div', { style: { position: 'relative' } },
+                h('span', {
+                  'aria-hidden': 'true',
+                  style: { position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: COLORS.muted, fontSize: '14px', pointerEvents: 'none' }
+                }, '\uD83D\uDD0D'),
+                h('input', {
+                  ref: function(el) { if (el && browseOpen) setTimeout(function() { try { el.focus(); } catch (e) {} }, 30); },
+                  type: 'text',
+                  value: browseQuery,
+                  onChange: function(e) { setBrowseQuery(e.target.value); },
+                  placeholder: 'Search term or definition...',
+                  style: { width: '100%', boxSizing: 'border-box', padding: '8px 34px', border: '1px solid ' + COLORS.border, borderRadius: '8px', fontSize: '13px' },
+                  'aria-label': 'Search glossary'
+                }),
+                browseQuery && h('button', {
+                  onClick: function() { setBrowseQuery(''); },
+                  style: { position: 'absolute', right: '6px', top: '50%', transform: 'translateY(-50%)', background: 'transparent', border: 'none', color: COLORS.muted, cursor: 'pointer', fontSize: '14px', padding: '2px 6px' },
+                  'aria-label': 'Clear search',
+                  title: 'Clear search'
+                }, '\u00D7')
+              )
             ),
             h('div', { style: { padding: '12px 20px', overflowY: 'auto', flex: 1 } },
+              keys.length === 0 && h('div', { style: { padding: '32px 16px', textAlign: 'center', color: COLORS.muted, fontSize: '13px', fontStyle: 'italic' } },
+                'No terms match "', h('strong', null, browseQuery), '". Try a different word \u2014 or ',
+                h('button', {
+                  onClick: function() { setBrowseQuery(''); },
+                  style: { background: 'transparent', border: 'none', color: COLORS.accent, cursor: 'pointer', padding: '0', fontSize: '13px', textDecoration: 'underline' }
+                }, 'clear the search'),
+                ' to see all ' + allKeys.length + ' terms.'
+              ),
               keys.map(function(k) {
                 var e = TERMS[k];
                 var target = e.where ? SECTION_ORDER.filter(function(s) { return s.id === e.where; })[0] : null;
@@ -1984,6 +2041,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
               }, '\u00D7')
             ),
             h('div', { style: { fontSize: '13px', color: COLORS.text, lineHeight: 1.6, marginBottom: '10px' } }, entry.def),
+            // Related terms: click to switch the popover to that term without closing.
+            entry.related && entry.related.length > 0 && h('div', { style: { paddingTop: '8px', borderTop: '1px solid ' + COLORS.border, marginBottom: '10px' } },
+              h('div', { style: { fontSize: '10px', fontWeight: 800, color: COLORS.muted, textTransform: 'uppercase', letterSpacing: '.05em', marginBottom: '6px' } }, 'See also'),
+              h('div', { style: { display: 'flex', gap: '5px', flexWrap: 'wrap' } },
+                entry.related.map(function(key) {
+                  var related = TERMS[key];
+                  if (!related) return null;
+                  return h('button', {
+                    key: key,
+                    onClick: function() { setGlossTerm(key); },
+                    style: {
+                      background: '#f5f3ff',
+                      color: COLORS.accent,
+                      border: '1px solid ' + hexToRGBA(COLORS.accent, 0.3),
+                      borderRadius: '999px',
+                      padding: '4px 10px',
+                      fontSize: '11px', fontWeight: 600, cursor: 'pointer',
+                      display: 'inline-flex', alignItems: 'center', gap: '4px'
+                    }
+                  }, h('span', { 'aria-hidden': 'true' }, related.icon), related.label);
+                })
+              )
+            ),
             h('div', { style: { fontSize: '12px', color: COLORS.subtext, fontStyle: 'italic', paddingTop: '8px', borderTop: '1px solid ' + COLORS.border, marginBottom: entry.where ? '10px' : '0' } },
               '\uD83D\uDC49 ', entry.whereDemo),
             // Jump-to-section: one-click navigation from glossary to where the
