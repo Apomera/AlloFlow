@@ -5645,40 +5645,40 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     })();
     // AlloData: pure-data bundle (phoneme guide, prompts, i18n strings, shop items, timeline modes).
     // Registers window.AlloModules.AlloData and calls _upgradeAlloData() to populate monolith shim.
-    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3c2eae6/allo_data_module.js');
+    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@62efd35/allo_data_module.js');
     // LargeFileModule: chunked audio/video transcription (LargeFileHandler + LargeFileTranscriptionModal).
-    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3c2eae6/large_file_module.js');
+    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@62efd35/large_file_module.js');
     // KeyConceptMapModule: SVG-overlay Bezier concept map view (used by renderOutlineContent).
-    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3c2eae6/key_concept_map_module.js');
+    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@62efd35/key_concept_map_module.js');
     // UtilsPure: 14 pure utilities (JSON, storage, network, image) — populates monolith shim via _upgradeUtilsPure().
-    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3c2eae6/utils_pure_module.js');
+    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@62efd35/utils_pure_module.js');
     // MiscComponents: WordSoundsReviewPanel + AnimatedNumber + ClozeInput (pure-props components).
-    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3c2eae6/misc_components_module.js');
+    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@62efd35/misc_components_module.js');
     // RemediationAudio: Web Audio feedback beeps (chunk good/bad/medium, session complete, etc).
-    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3c2eae6/remediation_audio_module.js');
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3c2eae6/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3c2eae6/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3c2eae6/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3c2eae6/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3c2eae6/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3c2eae6/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3c2eae6/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3c2eae6/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3c2eae6/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3c2eae6/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3c2eae6/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3c2eae6/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3c2eae6/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3c2eae6/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3c2eae6/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3c2eae6/student_interaction_module.js');
-    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3c2eae6/math_fluency_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3c2eae6/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3c2eae6/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3c2eae6/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3c2eae6/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3c2eae6/content_engine_module.js');
-    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3c2eae6/timeline_revision_module.js');
+    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@62efd35/remediation_audio_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@62efd35/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@62efd35/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@62efd35/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@62efd35/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@62efd35/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@62efd35/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@62efd35/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@62efd35/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@62efd35/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@62efd35/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@62efd35/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@62efd35/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@62efd35/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@62efd35/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@62efd35/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@62efd35/student_interaction_module.js');
+    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@62efd35/math_fluency_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@62efd35/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@62efd35/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@62efd35/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@62efd35/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@62efd35/content_engine_module.js');
+    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@62efd35/timeline_revision_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -5694,7 +5694,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3c2eae6/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@62efd35/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -53286,10 +53286,45 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                       </div>
                                     );
                                   }
-                                  if (_pct == null) return null;
                                   // Shared action group: Re-run button + "Diff view" button.
                                   // Diff button only renders when we have both source and final text.
                                   const _hasDiffInputs = !!(pdfFixResult.sourceText && pdfFixResult.finalText);
+                                  // When the integrity check never produced a percentage (happens
+                                  // when ground-truth extraction failed or was skipped), we used
+                                  // to bail out completely — which hid the Diff view button in
+                                  // the completed-remediation state even though the user could
+                                  // otherwise use it perfectly well. Instead, render a minimal
+                                  // fallback banner that exposes at least the Diff view button
+                                  // (and Re-check, which can RE-run integrity and may populate
+                                  // _pct on the next render).
+                                  if (_pct == null) {
+                                    if (!_hasDiffInputs) return null;
+                                    return (
+                                      <div className="mb-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-700 flex items-center gap-2 flex-wrap">
+                                        <span className="text-slate-500">ℹ</span>
+                                        <span className="font-bold">Content integrity unverified</span>
+                                        <span className="text-slate-500 text-[11px]">(ground-truth extraction unavailable — use Diff view to inspect source ↔ HTML manually, or Re-check to retry)</span>
+                                        <div className="ml-auto inline-flex items-center gap-1 shrink-0">
+                                          <button
+                                            onClick={() => { _ensureDiffLib(); setDiffViewOpen(true); }}
+                                            className="text-[10px] px-2 py-1 bg-white border border-slate-300 text-slate-700 rounded-md hover:bg-slate-50 font-bold inline-flex items-center gap-1"
+                                            aria-label="Open diff view of source PDF text vs. final HTML"
+                                            title="Side-by-side word-level diff: see every insertion, deletion, and paraphrase between the source PDF and the remediated HTML."
+                                          >
+                                            📝 Diff view
+                                          </button>
+                                          <button
+                                            onClick={_runCheck}
+                                            className="text-[10px] px-2 py-1 bg-white border border-slate-300 text-slate-700 rounded-md hover:bg-slate-50 font-bold inline-flex items-center gap-1"
+                                            aria-label="Re-run pdf.js content integrity check"
+                                            title="Re-run the fidelity recovery ladder (Stages A-D) against the current remediated HTML."
+                                          >
+                                            🔍 Re-check
+                                          </button>
+                                        </div>
+                                      </div>
+                                    );
+                                  }
                                   const _reRun = (
                                     <div className="ml-auto inline-flex items-center gap-1 shrink-0">
                                       {_hasDiffInputs && (
@@ -54788,10 +54823,27 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             </div>
                           </div>
                           <script>
+                            // The accessible HTML is base64-encoded before embedding so that
+                            // any </script> tags or JSON-escape sequences inside the
+                            // remediated content CANNOT prematurely terminate this outer
+                            // <script> block. Previously we used JSON.stringify which is
+                            // safe for escape sequences but does NOT prevent a literal
+                            // "</script>" substring in the HTML from closing the outer
+                            // script tag early — that caused the HTML to bleed out of the
+                            // iframe and render in the popup body as text ("\\n\\n\\nskip
+                            // to main content\\n" etc.).
+                            var _b64 = "${(() => {
+                              try {
+                                return btoa(unescape(encodeURIComponent(pdfFixResult.accessibleHtml || '')));
+                              } catch (_) { return ''; }
+                            })()}";
+                            var html = '';
+                            try { html = decodeURIComponent(escape(atob(_b64))); }
+                            catch (e) { html = '<p style="color:#f87171;padding:20px">Failed to decode remediated HTML: ' + (e && e.message ? e.message : 'unknown') + '</p>'; }
                             var iframe = document.getElementById('after-frame');
                             var doc = iframe.contentDocument || iframe.contentWindow.document;
                             doc.open();
-                            doc.write(${JSON.stringify(pdfFixResult.accessibleHtml)});
+                            doc.write(html);
                             doc.close();
 
                             // ── Compare view toolbar functions ──
