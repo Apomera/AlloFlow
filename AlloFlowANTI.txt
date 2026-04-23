@@ -744,6 +744,24 @@ const safeSetItem = (key, value) => {
 const safeRemoveItem = (key) => {
     try { localStorage.removeItem(key); } catch(e) { /* silent */ }
 };
+// Always-revoke blob download: wraps createObjectURL + anchor click + revoke
+// in a try/finally so the blob URL is freed even if a.click() throws, the
+// browser blocks the download, or a caller early-returns after the URL is
+// created. Prevents the per-click blob leak several inline download sites
+// had (project JSON, accessible HTML, audit report, multi-session merged HTML).
+const safeDownloadBlob = (blob, filename) => {
+    const url = URL.createObjectURL(blob);
+    try {
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    } finally {
+        try { URL.revokeObjectURL(url); } catch(_) { /* noop */ }
+    }
+};
 const sanitizeHtml = (html) => {
     if (!html || typeof html !== 'string') return '';
     let clean = html.replace(/<script[\s\S]*?<\/script>/gi, '');
@@ -4236,128 +4254,10 @@ function settingsReducer(state, action) {
   if (action.type === 'SETTINGS_RESET') return { ...SETTINGS_INITIAL_STATE };
   return state;
 }
-// Sequence Builder mode definitions — ordering criterion + prompt guidance per mode.
-// Used for both explicit-mode generation and auto-detect selection.
-// Structural validation for Sequence Builder output.
-// Returns { ok: bool, issues: [{ code, itemIndex?, message }] }. Pure function.
-function validateSequenceStructure(content, mode) {
-  const issues = [];
-  if (!content || !Array.isArray(content.items) || content.items.length === 0) {
-    return { ok: false, issues: [{ code: 'NO_ITEMS', message: 'No items produced.' }] };
-  }
-  const items = content.items;
-  items.forEach((it, i) => {
-    if (!it || typeof it !== 'object') {
-      issues.push({ code: 'MALFORMED_ITEM', itemIndex: i, message: `Item ${i + 1} is not a valid object.` });
-      return;
-    }
-    if (!it.event || !String(it.event).trim()) {
-      issues.push({ code: 'EMPTY_EVENT', itemIndex: i, message: `Item ${i + 1} has no event text.` });
-    }
-    if (!it.date || !String(it.date).trim()) {
-      issues.push({ code: 'EMPTY_DATE', itemIndex: i, message: `Item ${i + 1} has no position/date value.` });
-    }
-  });
-  const dateCounts = {};
-  items.forEach((it, i) => {
-    const d = String(it?.date || '').trim().toLowerCase();
-    if (!d) return;
-    if (!dateCounts[d]) dateCounts[d] = [];
-    dateCounts[d].push(i);
-  });
-  Object.entries(dateCounts).forEach(([d, indices]) => {
-    if (indices.length > 1) {
-      issues.push({
-        code: 'DUPLICATE_DATE',
-        itemIndex: indices[0],
-        message: `Items ${indices.map(x => x + 1).join(', ')} all share the same position "${d}". Positions must be unique.`
-      });
-    }
-  });
-  const withDateEn = items.filter(it => it?.date_en).length;
-  const withEventEn = items.filter(it => it?.event_en).length;
-  if (withDateEn > 0 && withDateEn < items.length) {
-    issues.push({ code: 'PARTIAL_EN_DATE', message: `${withDateEn} of ${items.length} items have date_en — should be all or none.` });
-  }
-  if (withEventEn > 0 && withEventEn < items.length) {
-    issues.push({ code: 'PARTIAL_EN_EVENT', message: `${withEventEn} of ${items.length} items have event_en — should be all or none.` });
-  }
-  const norm = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
-  const jaccard = (a, b) => {
-    const sa = new Set(norm(a).split(/\s+/).filter(Boolean));
-    const sb = new Set(norm(b).split(/\s+/).filter(Boolean));
-    if (sa.size === 0 || sb.size === 0) return 0;
-    let inter = 0;
-    sa.forEach(t => { if (sb.has(t)) inter++; });
-    return inter / (sa.size + sb.size - inter);
-  };
-  for (let i = 0; i < items.length; i++) {
-    for (let j = i + 1; j < items.length; j++) {
-      const sim = jaccard(items[i]?.event, items[j]?.event);
-      if (sim >= 0.85) {
-        issues.push({
-          code: 'NEAR_DUPLICATE',
-          itemIndex: i,
-          message: `Items ${i + 1} and ${j + 1} are nearly identical. Students can't tell them apart.`
-        });
-      }
-    }
-  }
-  if (mode === 'chronological') {
-    const parseYear = (s) => {
-      const str = String(s || '');
-      const neg = /bce|bc\b/i.test(str) ? -1 : 1;
-      const m = str.match(/-?\d{1,5}/);
-      if (!m) return null;
-      return parseInt(m[0], 10) * neg;
-    };
-    const parsed = items.map(it => parseYear(it?.date));
-    const parsedOk = parsed.filter(x => x !== null).length;
-    if (parsedOk >= items.length - 1) {
-      let nonMono = 0;
-      for (let i = 1; i < parsed.length; i++) {
-        if (parsed[i - 1] !== null && parsed[i] !== null && parsed[i - 1] > parsed[i]) nonMono++;
-      }
-      if (nonMono > 0) {
-        issues.push({ code: 'NON_MONOTONIC_DATES', message: `${nonMono} chronological step(s) go backward in time — dates aren't in order.` });
-      }
-    }
-  }
-  if (mode === 'procedural') {
-    const stepNums = items.map(it => {
-      const m = String(it?.date || '').match(/step\s*(\d+)/i);
-      return m ? parseInt(m[1], 10) : null;
-    });
-    if (stepNums.filter(x => x !== null).length >= items.length - 1) {
-      const first = stepNums.find(x => x !== null);
-      if (first !== 1) {
-        issues.push({ code: 'STEPS_NOT_STARTING_AT_1', message: `Procedural steps should start at "Step 1".` });
-      }
-      let gap = false;
-      for (let i = 1; i < stepNums.length; i++) {
-        if (stepNums[i] !== null && stepNums[i - 1] !== null && stepNums[i] !== stepNums[i - 1] + 1) gap = true;
-      }
-      if (gap) issues.push({ code: 'STEP_GAP', message: `Procedural step numbers have gaps or repeats.` });
-    }
-  }
-  if (mode === 'narrative') {
-    const order = ['exposition', 'rising', 'climax', 'falling', 'resolution', 'denouement'];
-    const stageIdx = items.map(it => {
-      const d = String(it?.date || '').toLowerCase();
-      return order.findIndex(s => d.includes(s));
-    });
-    const labeled = stageIdx.filter(x => x !== -1);
-    if (labeled.length >= 3) {
-      for (let i = 1; i < stageIdx.length; i++) {
-        if (stageIdx[i] !== -1 && stageIdx[i - 1] !== -1 && stageIdx[i] < stageIdx[i - 1]) {
-          issues.push({ code: 'NARRATIVE_OUT_OF_ORDER', message: `Narrative stages aren't in order (exposition → rising → climax → falling → resolution).` });
-          break;
-        }
-      }
-    }
-  }
-  return { ok: issues.length === 0, issues };
-}
+// validateSequenceStructure extracted to timeline_revision_module.js
+// Exposed as const later (below _timelineRevision factory creation) so callers
+// get the CDN version. Callers at lines 27558 + 28714 are both AFTER the const
+// declaration, so const-hoisting is not a concern.
 const ADV_INITIAL_STATE = {
   isAdventureCloudEnabled: false,
   isSocialStoryMode: false,
@@ -5778,6 +5678,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@109c351/persona_ui_module.js');
     loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@109c351/doc_pipeline_module.js');
     loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@109c351/content_engine_module.js');
+    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@109c351/timeline_revision_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -5859,6 +5760,8 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
         'stem_lab/stem_tool_bikelab.js',
         'stem_lab/stem_tool_bakingscience.js',
         'stem_lab/stem_tool_allobotsage.js',
+        'stem_lab/stem_tool_typingpractice.js',
+        'stem_lab/stem_tool_llm_literacy.js',
         'sel_hub/sel_safety_layer.js',
         'sel_hub/sel_tool_advocacy.js',
         'sel_hub/sel_tool_restorativecircle.js',
@@ -10934,6 +10837,26 @@ Return only the corrected version of this exact text:`;
   const [pdfFixLoading, setPdfFixLoading] = useState(false);
   const pdfFixModeRef = useRef('');
   const [pdfFixStep, setPdfFixStep] = useState('');
+  // Dead-man switch: if pdfFixLoading stays true for >10 minutes without
+  // pdfFixStep changing, assume a handler threw below its finally block or
+  // a nested React update bailed silently — force-clear so the UI becomes
+  // usable again. Cheap to run (one timeout reset per step change); can't
+  // interfere with a healthy run since healthy runs update pdfFixStep often.
+  useEffect(() => {
+    if (!pdfFixLoading) return;
+    const stepAtStart = pdfFixStep;
+    const id = setTimeout(() => {
+      if (pdfFixStep === stepAtStart) {
+        warnLog('[PdfFix] Dead-man switch fired: pdfFixLoading stuck on "' + stepAtStart + '" for 10min — clearing.');
+        setPdfFixLoading(false);
+        setPdfFixStep('');
+        if (typeof addToast === 'function') {
+          addToast('PDF fix appears stuck — reset. Check network and try again.', 'warning');
+        }
+      }
+    }, 10 * 60 * 1000);
+    return () => clearTimeout(id);
+  }, [pdfFixLoading, pdfFixStep]);
   const [pdfAuditTab, setPdfAuditTab] = useState('results');
   // Diff View — modal that shows a word-level diff of source PDF text vs. final
   // HTML text, so the user can audit verbatim fidelity. Loaded via jsdiff from
@@ -10981,41 +10904,9 @@ Return only the corrected version of this exact text:`;
     } catch (_) { /* corrupt entry — ignore */ }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  // Build diffChunks from jsdiff output when the modal opens, the source/final text
-  // changes, or the granularity flips. Pair-detect adjacent del→add so paraphrases
-  // toggle as one atomic unit — otherwise rejecting half a paraphrase leaves garbage.
-  useEffect(() => {
-    if (!diffViewOpen || !pdfFixResult) return;
-    if (!diffLibReady || !window.Diff) return;
-    const src = pdfFixResult.sourceText || '';
-    const fin = pdfFixResult.finalText || '';
-    try {
-      const fn = diffGranularity === 'sentences' ? window.Diff.diffSentences
-               : diffGranularity === 'chars' ? window.Diff.diffChars
-               : window.Diff.diffWordsWithSpace;
-      const raw = fn(src, fin);
-      const annotated = raw.map((c, i) => ({
-        id: i,
-        type: c.added ? 'add' : (c.removed ? 'del' : 'same'),
-        value: c.value,
-        count: c.count || 1,
-        pairId: null,
-        rejected: false,
-      }));
-      // Pair adjacent del→add pairs. jsdiff emits them in that order for a paraphrase.
-      for (let i = 0; i < annotated.length - 1; i++) {
-        if (annotated[i].type === 'del' && annotated[i + 1].type === 'add') {
-          const pid = 'p_' + i;
-          annotated[i].pairId = pid;
-          annotated[i + 1].pairId = pid;
-        }
-      }
-      setDiffChunks(annotated);
-    } catch (e) {
-      console.warn('[Diff] compute failed:', e);
-      setDiffChunks(null);
-    }
-  }, [diffViewOpen, pdfFixResult, diffGranularity, diffLibReady]);
+  // (Diff chunk-building useEffect is declared below, after diffLibReady — it
+  // references diffLibReady in its dep array, so it must sit beneath that
+  // declaration to avoid a TDZ ReferenceError on first render.)
   // Toggle a chunk's rejected flag. If the chunk is part of a pair, both halves flip.
   const toggleDiffChunk = React.useCallback((id) => {
     setDiffChunks(prev => {
@@ -11048,6 +10939,43 @@ Return only the corrected version of this exact text:`;
   }, []);
   const [diffLibReady, setDiffLibReady] = useState(typeof window !== 'undefined' && !!window.Diff);
   const [diffLibLoading, setDiffLibLoading] = useState(false);
+  // Build diffChunks from jsdiff output when the modal opens, the source/final text
+  // changes, or the granularity flips. Pair-detect adjacent del→add so paraphrases
+  // toggle as one atomic unit — otherwise rejecting half a paraphrase leaves garbage.
+  // Declared here (after diffLibReady) rather than next to the other diff state
+  // above, because the dep array reads diffLibReady at render time — putting this
+  // effect above the const declaration trips a TDZ ReferenceError.
+  useEffect(() => {
+    if (!diffViewOpen || !pdfFixResult) return;
+    if (!diffLibReady || !window.Diff) return;
+    const src = pdfFixResult.sourceText || '';
+    const fin = pdfFixResult.finalText || '';
+    try {
+      const fn = diffGranularity === 'sentences' ? window.Diff.diffSentences
+               : diffGranularity === 'chars' ? window.Diff.diffChars
+               : window.Diff.diffWordsWithSpace;
+      const raw = fn(src, fin);
+      const annotated = raw.map((c, i) => ({
+        id: i,
+        type: c.added ? 'add' : (c.removed ? 'del' : 'same'),
+        value: c.value,
+        count: c.count || 1,
+        pairId: null,
+        rejected: false,
+      }));
+      for (let i = 0; i < annotated.length - 1; i++) {
+        if (annotated[i].type === 'del' && annotated[i + 1].type === 'add') {
+          const pid = 'p_' + i;
+          annotated[i].pairId = pid;
+          annotated[i + 1].pairId = pid;
+        }
+      }
+      setDiffChunks(annotated);
+    } catch (e) {
+      console.warn('[Diff] compute failed:', e);
+      setDiffChunks(null);
+    }
+  }, [diffViewOpen, pdfFixResult, diffGranularity, diffLibReady]);
   // Lazy-load the jsdiff global on demand.
   const _ensureDiffLib = React.useCallback(() => {
     if (typeof window === 'undefined') return Promise.resolve(false);
@@ -17493,6 +17421,20 @@ Return ONLY valid JSON:
   const refixChunk = _docPipeline ? _docPipeline.refixChunk : async () => {};
   const getChunkState = _docPipeline ? _docPipeline.getChunkState : () => null;
 
+  // ── Timeline / Sequence Builder module (pure validator + explain-item AI call) ──
+  const _createTimelineRevision = window.AlloModules && window.AlloModules.createTimelineRevision;
+  const _timelineRevision = _createTimelineRevision
+    ? _createTimelineRevision({ callGemini, gradeLevel })
+    : null;
+  // Delegators — used by callers later in the component. Fallbacks degrade
+  // gracefully if the CDN module hasn't loaded yet (same pattern as doc_pipeline).
+  const validateSequenceStructure = _timelineRevision
+    ? _timelineRevision.validateSequenceStructure
+    : function(content, mode) { return { ok: true, issues: [] }; };
+  const handleExplainTimelineItem = _timelineRevision
+    ? _timelineRevision.handleExplainTimelineItem
+    : async function() { return "Explanation unavailable — module still loading."; };
+
   // Keep pdfFixResultRef in sync so runAutoFixLoop can read the latest pdfFixResult without closure staleness.
   React.useEffect(() => { pdfFixResultRef.current = pdfFixResult; }, [pdfFixResult]);
 
@@ -17517,11 +17459,26 @@ Return ONLY valid JSON:
         const result = await autoFixAxeViolations(cur.accessibleHtml, cur.axeAudit, pdfAutoFixPasses);
         if (pdfAutoContinueAbortRef.current) break;
         const reVerify = await auditOutputAccessibility(result.html);
-        const newScore = reVerify ? reVerify.score : (cur.afterScore || 0);
+        // Treat null re-verify as fatal for this round. Previously this path
+        // silently reused the prior round's verificationAudit via
+        // `reVerify || cur.verificationAudit`, which commits the new HTML to
+        // state while telling the user "coverage 95%, no issues" even though
+        // coverage of the new HTML is actually unknown (AI call timed out /
+        // hit rate limit / network blocked). That's a student-facing lie.
+        // Preserve the prior committed state and stop the loop so the user
+        // can retry manually with "Fix Remaining".
+        if (!reVerify) {
+          warnLog('[AutoContinue] AI re-verification returned null; preserving prior state and stopping loop.');
+          if (typeof addToast === 'function') {
+            addToast('⚠ Accessibility verification unavailable — auto-continue paused. Try "Fix Remaining" manually.', 'warning');
+          }
+          break;
+        }
+        const newScore = reVerify.score;
         cur = Object.assign({}, cur, {
           accessibleHtml: result.html,
           axeAudit: result.axe,
-          verificationAudit: reVerify || cur.verificationAudit,
+          verificationAudit: reVerify,
           afterScore: newScore,
           autoFixPasses: (cur.autoFixPasses || 0) + (result.passes || 0),
           htmlChars: result.html.length,
@@ -17590,11 +17547,7 @@ Return ONLY valid JSON:
     }
     try {
       const blob = new Blob([JSON.stringify(project)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = (pendingPdfFile?.name || 'document').replace(/\.pdf$/i, '') + '-project.alloflow.json';
-      document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+      safeDownloadBlob(blob, (pendingPdfFile?.name || 'document').replace(/\.pdf$/i, '') + '-project.alloflow.json');
       if (isAuto) lastAutoSaveHashRef.current = hashKey;
       const rangeCount = project.multiSession ? project.multiSession.ranges.length : 0;
       const msg = isAuto
@@ -19325,15 +19278,8 @@ ${t('export.readme_json_desc')}`;
     }
   };
   const downloadHtmlBlob = (content) => {
-      const blob = new Blob([content], { type: 'text/html' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${t('export.filenames.html_pack')}.html`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+      const blob = new Blob([content], { type: 'text/html;charset=utf-8' });
+      safeDownloadBlob(blob, `${t('export.filenames.html_pack')}.html`);
       addToast(t('export_status.html_success'), "success");
   };
   const handleClearHistory = () => {
@@ -30177,36 +30123,9 @@ Return ONLY a JSON array like:
           setCsAddingText('');
       }
   }, [handleGenerateConceptItem, csUpdateData]);
-  const handleExplainTimelineItem = useCallback(async (item, correctPosition, currentPosition, progressionLabel, allItems) => {
-      try {
-          const cleanLabel = progressionLabel || 'Sequential order';
-          const neighborHint = (() => {
-              if (!Array.isArray(allItems) || correctPosition < 0) return '';
-              const before = correctPosition > 0 ? allItems[correctPosition - 1] : null;
-              const after = correctPosition < allItems.length - 1 ? allItems[correctPosition + 1] : null;
-              const parts = [];
-              if (before) parts.push(`comes AFTER "${before.event}" (${before.date || ''})`);
-              if (after) parts.push(`comes BEFORE "${after.event}" (${after.date || ''})`);
-              return parts.length ? `Context: in the correct sequence, "${item.event}" ${parts.join(' and ')}.` : '';
-          })();
-          const prompt = `
-            A ${gradeLevel} student placed the item "${item.event}" (${item.date || ''}) at position ${currentPosition + 1}, but the correct position is ${correctPosition + 1}.
-            The ordering criterion is: ${cleanLabel}.
-            ${neighborHint}
-            Write a brief, encouraging 2-3 sentence explanation for the student.
-            - State the correct position and why.
-            - Reference the ordering criterion (date, size, step, etc.) with specifics.
-            - Avoid shaming language; stay warm and instructive.
-            Hard limit: 280 characters.
-            Return plain text only, no markdown, no quotes, no headers.
-          `;
-          const raw = await callGemini(prompt, false);
-          return (raw || '').trim();
-      } catch (e) {
-          warnLog("Explain timeline item failed", e);
-          return "Couldn't generate an explanation right now. Try again in a moment.";
-      }
-  }, [gradeLevel, callGemini]);
+  // handleExplainTimelineItem extracted to timeline_revision_module.js; delegator
+  // is declared once (below the _timelineRevision factory creation) and used at
+  // the TimelineGame onExplainIncorrect prop.
   const handleExplainConceptSortItem = useCallback(async (item, correctCategory, chosenCategory) => {
       try {
           const prompt = `
@@ -52492,12 +52411,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 if (!_docPipeline || !_docPipeline.mergeRangesToFullHtml) return;
                                 const merged = _docPipeline.mergeRangesToFullHtml(pdfMultiSession.ranges, pdfAuditResult.pageCount || pdfMultiSession.pageCount || 1);
                                 const blob = new Blob([merged], { type: 'text/html;charset=utf-8' });
-                                const url = URL.createObjectURL(blob);
-                                const a = document.createElement('a');
-                                a.href = url;
-                                a.download = (pendingPdfFile?.name?.replace(/\.pdf$/i, '') || 'document') + '_multi-session.html';
-                                document.body.appendChild(a); a.click(); document.body.removeChild(a);
-                                setTimeout(() => URL.revokeObjectURL(url), 1000);
+                                safeDownloadBlob(blob, (pendingPdfFile?.name?.replace(/\.pdf$/i, '') || 'document') + '_multi-session.html');
                                 addToast('Downloaded merged HTML for completed ranges.', 'success');
                               }}
                               className="text-xs px-2 py-1 bg-indigo-600 text-white rounded font-bold hover:bg-indigo-700"
@@ -53989,11 +53903,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         </button>
                         <button onClick={() => {
                           const html = generateAuditReportHtml(pdfAuditResult, pendingPdfFile?.name || 'document.pdf');
-                          const blob = new Blob([html], { type: 'text/html' });
-                          const url = URL.createObjectURL(blob);
-                          const a = document.createElement('a'); a.href = url;
-                          a.download = `a11y-audit-${(pendingPdfFile?.name || 'document').replace(/\.pdf$/i, '')}-${new Date().toISOString().split('T')[0]}.html`;
-                          document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+                          const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+                          safeDownloadBlob(blob, `a11y-audit-${(pendingPdfFile?.name || 'document').replace(/\.pdf$/i, '')}-${new Date().toISOString().split('T')[0]}.html`);
                           if (addToast) addToast('HTML report downloaded', 'success');
                         }} className="w-full px-4 py-2.5 text-left text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors flex items-center gap-2">
                           🌐 HTML Report
