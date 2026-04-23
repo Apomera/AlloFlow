@@ -1347,6 +1347,62 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               }, 'Got it, thanks')
             ) : null,
 
+            // Week-at-a-glance card — 7-day rollup on menu. Sits above the
+            // 30-day stats strip so students see recent activity first and
+            // clinicians get a quick "how's this week going" read without
+            // opening Progress & Goals.
+            sessionCount > 0 ? (function() {
+              var sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+              var thisWeek = (state.sessions || []).filter(function(s) {
+                return new Date(s.date).getTime() >= sevenDaysAgo;
+              });
+              if (thisWeek.length === 0) return null;
+              var weekDays = {};
+              thisWeek.forEach(function(s) { weekDays[new Date(s.date).toLocaleDateString()] = true; });
+              var weekBestWpm = thisWeek.reduce(function(m, s) { return Math.max(m, s.wpm || 0); }, 0);
+              var weekAvgAcc = Math.round(
+                thisWeek.reduce(function(a, s) { return a + (s.accuracy || 0); }, 0) / thisWeek.length
+              );
+              return h('div', {
+                style: {
+                  marginBottom: '16px',
+                  padding: '12px 16px',
+                  background: palette.surface,
+                  border: '1px solid ' + palette.border,
+                  borderRadius: '10px',
+                  display: 'flex',
+                  gap: '18px',
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                  fontVariantNumeric: 'tabular-nums'
+                }
+              },
+                h('span', {
+                  style: {
+                    fontSize: '11px',
+                    color: palette.textMute,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.06em',
+                    fontWeight: 700
+                  }
+                }, '📅 This week'),
+                h('span', { style: { fontSize: '12px', color: palette.textDim } },
+                  h('strong', { style: { color: palette.text } }, thisWeek.length),
+                  ' session', thisWeek.length === 1 ? '' : 's'
+                ),
+                h('span', { style: { fontSize: '12px', color: palette.textDim } },
+                  h('strong', { style: { color: palette.text } }, Object.keys(weekDays).length),
+                  ' day', Object.keys(weekDays).length === 1 ? '' : 's', ' practiced'
+                ),
+                h('span', { style: { fontSize: '12px', color: palette.textDim } },
+                  'best ', h('strong', { style: { color: palette.success } }, weekBestWpm + ' WPM')
+                ),
+                h('span', { style: { fontSize: '12px', color: palette.textDim } },
+                  'avg ', h('strong', { style: { color: palette.text } }, weekAvgAcc + '% acc')
+                )
+              );
+            })() : null,
+
             // Quick stats strip (only if student has activity)
             sessionCount > 0 ? (function() {
               // Gentle practice-day count: unique CALENDAR DAYS in the last 30 with
