@@ -2929,6 +2929,56 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 }
               }, '🏅 Accommodations used this session: ' + s.accommodationsUsed.join(', ')) : null,
 
+              // Per-session top-missed keys — lightweight version of the
+              // all-time heatmap, scoped to JUST this session. Surfaces the
+              // 3-5 keys the student missed most during this run so they can
+              // see actionable targets while the session is still fresh.
+              (function() {
+                if (!s.errorChars) return null;
+                var keys = Object.keys(s.errorChars).filter(function(k) { return s.errorChars[k] > 0; });
+                if (keys.length === 0) return null;
+                keys.sort(function(a, b) { return s.errorChars[b] - s.errorChars[a]; });
+                var top = keys.slice(0, 5);
+                return h('div', {
+                  style: {
+                    marginBottom: '16px',
+                    padding: '10px 14px',
+                    background: palette.bg,
+                    border: '1px solid ' + palette.border,
+                    borderRadius: '8px',
+                    textAlign: 'left',
+                    fontSize: '12px',
+                    color: palette.textDim
+                  }
+                },
+                  h('div', { style: { fontSize: '11px', fontWeight: 700, color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '6px' } },
+                    '⌨️ Keys missed most this session'),
+                  h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' } },
+                    top.map(function(k) {
+                      return h('span', {
+                        key: 'tms-' + k,
+                        style: {
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          padding: '3px 8px',
+                          borderRadius: '6px',
+                          background: palette.surface,
+                          border: '1px solid ' + palette.border,
+                          fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+                          fontSize: '12px'
+                        }
+                      },
+                        h('span', { style: { color: palette.text, fontWeight: 700, textTransform: 'uppercase' } }, k),
+                        h('span', { style: { color: palette.textMute, fontSize: '10px' } }, s.errorChars[k] + '×')
+                      );
+                    })
+                  ),
+                  h('div', { style: { fontSize: '10px', color: palette.textMute, marginTop: '6px', fontStyle: 'italic' } },
+                    'These feed the all-time heatmap on the Progress view. A short retry focused on these keys can compound over time.')
+                );
+              })(),
+
               // Pace graph — chars-per-10s over the session. Shows intra-session
               // variability (did the student slow down? speed up?). Helpful for
               // attention/fatigue analysis. Only renders if we have ≥2 buckets.
