@@ -5645,40 +5645,40 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     })();
     // AlloData: pure-data bundle (phoneme guide, prompts, i18n strings, shop items, timeline modes).
     // Registers window.AlloModules.AlloData and calls _upgradeAlloData() to populate monolith shim.
-    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0234d5/allo_data_module.js');
+    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa14553/allo_data_module.js');
     // LargeFileModule: chunked audio/video transcription (LargeFileHandler + LargeFileTranscriptionModal).
-    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0234d5/large_file_module.js');
+    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa14553/large_file_module.js');
     // KeyConceptMapModule: SVG-overlay Bezier concept map view (used by renderOutlineContent).
-    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0234d5/key_concept_map_module.js');
+    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa14553/key_concept_map_module.js');
     // UtilsPure: 14 pure utilities (JSON, storage, network, image) — populates monolith shim via _upgradeUtilsPure().
-    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0234d5/utils_pure_module.js');
+    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa14553/utils_pure_module.js');
     // MiscComponents: WordSoundsReviewPanel + AnimatedNumber + ClozeInput (pure-props components).
-    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0234d5/misc_components_module.js');
+    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa14553/misc_components_module.js');
     // RemediationAudio: Web Audio feedback beeps (chunk good/bad/medium, session complete, etc).
-    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0234d5/remediation_audio_module.js');
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0234d5/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0234d5/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0234d5/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0234d5/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0234d5/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0234d5/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0234d5/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0234d5/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0234d5/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0234d5/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0234d5/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0234d5/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0234d5/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0234d5/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0234d5/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0234d5/student_interaction_module.js');
-    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0234d5/math_fluency_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0234d5/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0234d5/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0234d5/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0234d5/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0234d5/content_engine_module.js');
-    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0234d5/timeline_revision_module.js');
+    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa14553/remediation_audio_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa14553/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa14553/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa14553/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa14553/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa14553/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa14553/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa14553/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa14553/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa14553/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa14553/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa14553/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa14553/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa14553/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa14553/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa14553/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa14553/student_interaction_module.js');
+    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa14553/math_fluency_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa14553/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa14553/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa14553/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa14553/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa14553/content_engine_module.js');
+    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa14553/timeline_revision_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -5694,7 +5694,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a0234d5/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@aa14553/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -6052,6 +6052,11 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
   });
   React.useEffect(() => { try { localStorage.setItem('alloflow_timeline_image_style', timelineImageStyle); } catch (e) {} }, [timelineImageStyle]);
   const [isRevisingTimeline, setIsRevisingTimeline] = useState(false);
+  // Track per-item verification concerns the teacher has dismissed in the UI.
+  // Keyed by "idx:event" so changing either the item or its text re-exposes
+  // the concern. Purely UI state — underlying item.verification is preserved
+  // in generatedContent.data so re-running Verify Accuracy re-populates it.
+  const [dismissedVerifications, setDismissedVerifications] = useState(() => new Set());
   // handleTimelineRevision extracted to timeline_revision_module.js (Phase 2).
   // Delegator wrapper declared below (after _timelineRevision factory creation).
   const [showSocraticChat, setShowSocraticChat] = useState(false);
@@ -11064,6 +11069,10 @@ Return only the corrected version of this exact text:`;
   React.useEffect(() => { try { localStorage.setItem('alloflow_pdf_auto_continue', String(pdfAutoContinue)); } catch (e) {} }, [pdfAutoContinue]);
   const [pdfAutoContinueRunning, setPdfAutoContinueRunning] = useState(false);
   const pdfAutoContinueAbortRef = useRef(false);
+  // AbortController paired with the flag above. The flag still drives loop-level
+  // break checks; the controller aborts the in-flight Gemini fetch itself so
+  // quota isn't burned on a response that will be thrown away after Stop.
+  const pdfAutoContinueAbortCtrlRef = useRef(null);
   // Ref tracking the latest pdfFixResult so runAutoFixLoop can read fresh state without closure staleness.
   const pdfFixResultRef = useRef(null);
   // Fingerprint of the last auto-save — prevents duplicate downloads when the initial flow and
@@ -13906,7 +13915,7 @@ const parseTaggedContent = (text) => {
   };
   const ai = AIProvider ? new AIProvider(_aiConfig) : _aiConfig;
 
-  const callGemini = async (prompt, jsonMode = false, useSearch = false, temperature = null, searchQuery = null) => {
+  const callGemini = async (prompt, jsonMode = false, useSearch = false, temperature = null, searchQuery = null, signal = null) => {
     if (!apiKey && !_isCanvasEnv) {
       console.warn('[callGemini] No API key available — skipping request.');
       if (jsonMode) return "{}";
@@ -13945,11 +13954,22 @@ const parseTaggedContent = (text) => {
         payload.tools = [{ google_search: {} }];
     }
     try {
-      const _fetchOpts = { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) };
+      // Pick up either the caller-supplied signal or the ambient pdf-autocontinue
+      // signal (set by runAutoFixLoop and read by every nested callGemini during
+      // a run, so Stop actually cancels the in-flight fetch instead of just
+      // breaking the loop after the request finishes).
+      const _signal = signal || (typeof window !== 'undefined' ? window.__alloPdfAbortSignal : null) || null;
+      const _fetchOpts = { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), ...(_signal ? { signal: _signal } : {}) };
       let response;
       try {
         response = await fetchWithExponentialBackoff(_buildUrl(GEMINI_MODELS.default), _fetchOpts);
       } catch (primaryErr) {
+        if (primaryErr?.name === 'AbortError') {
+          // Respect caller's abort — don't fall back to the secondary model
+          // (that would just burn another 30s and another quota slice).
+          console.log('[callGemini] Request aborted by caller — propagating.');
+          throw primaryErr;
+        }
         const is429 = primaryErr.message && (primaryErr.message.includes('429') || primaryErr.message.includes('RESOURCE_EXHAUSTED') || primaryErr.message.includes('Failed to fetch') || primaryErr.message.includes('403'));
         if (is429 && GEMINI_MODELS.fallback && GEMINI_MODELS.fallback !== GEMINI_MODELS.default) {
           console.warn(`[callGemini] Primary model error — falling back to ${GEMINI_MODELS.fallback}`);
@@ -17353,6 +17373,12 @@ Return ONLY valid JSON:
   // between iterations so React batching can't stall the loop.
   const runAutoFixLoop = React.useCallback(async (maxRounds = 3) => {
     pdfAutoContinueAbortRef.current = false;
+    // Fresh AbortController per run; publish the signal globally so every
+    // nested callGemini (including those deep inside autoFixAxeViolations)
+    // picks it up automatically via window.__alloPdfAbortSignal.
+    const _abortCtrl = new AbortController();
+    pdfAutoContinueAbortCtrlRef.current = _abortCtrl;
+    if (typeof window !== 'undefined') window.__alloPdfAbortSignal = _abortCtrl.signal;
     setPdfAutoContinueRunning(true);
     let cur = pdfFixResultRef.current;
     try {
@@ -17418,6 +17444,15 @@ Return ONLY valid JSON:
       setPdfFixLoading(false);
       setPdfAutoContinueRunning(false);
       setPdfFixStep('');
+      // Release the published signal so post-run callGemini calls aren't
+      // picked up by a stale aborted controller. Only clear if we still
+      // own the slot — a subsequent run may have already overwritten it.
+      if (pdfAutoContinueAbortCtrlRef.current === _abortCtrl) {
+        pdfAutoContinueAbortCtrlRef.current = null;
+      }
+      if (typeof window !== 'undefined' && window.__alloPdfAbortSignal === _abortCtrl.signal) {
+        window.__alloPdfAbortSignal = null;
+      }
       // Auto-save at the end of the loop if the user opted into it and we have a real result.
       if (pdfAutoSaveProject) { try { saveProjectToFile(true); } catch (e) { /* non-fatal */ } }
     }
@@ -17618,7 +17653,13 @@ Return ONLY valid JSON:
             if (stageA && Array.isArray(stageA.restoredViaRetry) && stageA.restoredViaRetry.length > 0 && stageA.html && stageA.html !== currentHtml) {
               stageCounts.retry = stageA.restoredViaRetry.length;
               if (typeof setPdfFixResult === 'function' && pdfFixResult) {
-                setPdfFixResult({ ...pdfFixResult, accessibleHtml: stageA.html });
+                // Functional updater — the closure's `pdfFixResult` is captured
+                // at useEffect-run time and is stale relative to `integrityVerifying:true`
+                // set at line 17638 via its own prev=> updater. Spreading the closure
+                // would overwrite integrityVerifying (+ any other field set between
+                // capture and fire) back to undefined, making the sky-blue banner
+                // flicker off for the duration of the ladder.
+                setPdfFixResult(prev => prev ? { ...prev, accessibleHtml: stageA.html } : prev);
               }
               currentMissing = Array.isArray(stageA.stillMissing) ? stageA.stillMissing : currentMissing;
             }
@@ -17631,7 +17672,8 @@ Return ONLY valid JSON:
               if (stageB && Array.isArray(stageB.restoredViaSentence) && stageB.restoredViaSentence.length > 0 && stageB.html && stageB.html !== currentHtml) {
                 stageCounts.sentence = stageB.restoredViaSentence.length;
                 if (typeof setPdfFixResult === 'function' && pdfFixResult) {
-                  setPdfFixResult({ ...pdfFixResult, accessibleHtml: stageB.html });
+                  // Functional updater — see Stage A rationale above.
+                  setPdfFixResult(prev => prev ? { ...prev, accessibleHtml: stageB.html } : prev);
                 }
                 currentMissing = Array.isArray(stageB.stillMissing) ? stageB.stillMissing : currentMissing;
               }
@@ -17657,7 +17699,8 @@ Return ONLY valid JSON:
               const dedup = detectAndHandleDuplicates(currentHtml, sourceText);
               if (dedup && dedup.html && dedup.html !== currentHtml) {
                 if (typeof setPdfFixResult === 'function' && pdfFixResult) {
-                  setPdfFixResult({ ...pdfFixResult, accessibleHtml: dedup.html });
+                  // Functional updater — see Stage A rationale above.
+                  setPdfFixResult(prev => prev ? { ...prev, accessibleHtml: dedup.html } : prev);
                 }
                 dedupResult = { autoRemoved: dedup.autoRemoved || [], highlighted: dedup.highlighted || [] };
               }
@@ -29864,10 +29907,11 @@ Return ONLY JSON:
           const prompt = `
             A ${gradeLevel} student placed the item "${item.content}" into the category "${chosenCategory?.label || 'unknown'}".
             The correct category is "${correctCategory?.label || 'unknown'}".
-            Write a brief, encouraging 2-3 sentence explanation for the student.
+            Write a brief, supportive 2-3 sentence explanation for the student.
+            IMPORTANT: The student got this WRONG. Do NOT open with "Great job", "Nice work", or any positive affirmation — those read as sarcastic when paired with corrective feedback. Open with a warm but honest framing like "Close — but actually..." or "Let's look at this one together..."
             - State which category is correct and why.
             - Point out one concrete feature of the item that signals the right category.
-            - Avoid shaming language; stay warm and instructive.
+            - Acknowledge the mistake kindly; stay warm and instructive; never shame.
             Return plain text only, no markdown, no quotes.
           `;
           const result = await callGemini(prompt, false);
@@ -45682,14 +45726,32 @@ Return only the corrected version of this exact text:`;
                                                 {item.event_en && (
                                                     <p className="text-xs text-slate-600 italic mt-1">{item.event_en}</p>
                                                 )}
-                                                {item.verification && (item.verification.factual === false || item.verification.position === false) && (
-                                                    <div className="mt-2 flex items-start gap-1.5 text-[11px] bg-red-50 border border-red-200 rounded px-2 py-1 text-red-800">
-                                                        <AlertCircle size={12} className="shrink-0 mt-0.5 text-red-600" />
-                                                        <div>
-                                                            <strong>{t('timeline.validation.flagged') || 'Flagged'}:</strong> {item.verification.concern || (item.verification.factual === false ? 'Factual concern' : 'Position may be wrong')}
+                                                {(() => {
+                                                    const _vKey = idx + ':' + (item.event || '');
+                                                    const _flagged = item.verification && (item.verification.factual === false || item.verification.position === false);
+                                                    if (!_flagged || dismissedVerifications.has(_vKey)) return null;
+                                                    return (
+                                                        <div className="mt-2 border border-red-200 rounded-lg bg-red-50 p-2 text-[11px] text-red-800">
+                                                            <div className="flex items-center gap-1.5 mb-1">
+                                                                <AlertCircle size={12} className="shrink-0 text-red-600" />
+                                                                <strong>{t('timeline.validation.flagged') || 'Flagged'}</strong>
+                                                                <span className="text-red-700/70">
+                                                                    {item.verification.factual === false ? '• factual' : ''}
+                                                                    {item.verification.position === false ? ' • position' : ''}
+                                                                </span>
+                                                                <button
+                                                                    onClick={() => setDismissedVerifications(prev => { const next = new Set(prev); next.add(_vKey); return next; })}
+                                                                    className="ml-auto text-red-400 hover:text-red-600 p-0.5 rounded"
+                                                                    aria-label={t('timeline.validation.dismiss') || 'Dismiss verification concern'}
+                                                                    title={t('timeline.validation.dismiss') || 'Dismiss'}
+                                                                ><X size={12} /></button>
+                                                            </div>
+                                                            <div className="text-red-700 leading-relaxed pl-4">
+                                                                {item.verification.concern || (item.verification.factual === false ? (t('timeline.validation.factual_concern') || 'Factual concern — review this item.') : (t('timeline.validation.position_concern') || 'Position may be wrong — check placement on the axis.'))}
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                )}
+                                                    );
+                                                })()}
                                                 {item.verification && item.verification.factual !== false && item.verification.position !== false && (
                                                     <div className="mt-2 inline-flex items-center gap-1 text-[11px] bg-emerald-50 border border-emerald-200 rounded px-2 py-0.5 text-emerald-800">
                                                         <CheckCircle2 size={11} className="text-emerald-600" /> {t('timeline.validation.verified') || 'Verified'}
@@ -45730,6 +45792,7 @@ Return only the corrected version of this exact text:`;
                                     onScoreUpdate={handleGameScoreUpdate}
                                     onGameComplete={handleGameCompletion}
                                     onExplainIncorrect={handleExplainTimelineItem}
+                                    initialImageSize={timelineImageSize}
                                 />
                             </ErrorBoundary>
                         )}
@@ -54210,7 +54273,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               </label>
                             )}
                             {pdfAutoContinueRunning && (
-                              <button onClick={() => { pdfAutoContinueAbortRef.current = true; addToast('Stopping after current pass...', 'info'); }} className="text-[11px] bg-red-100 text-red-700 border border-red-300 px-2.5 py-1 rounded-full font-bold hover:bg-red-200 transition-colors" aria-label="Stop auto-continue remediation">
+                              <button onClick={() => { pdfAutoContinueAbortRef.current = true; try { pdfAutoContinueAbortCtrlRef.current?.abort(); } catch(_) {} addToast('Stopping — aborting in-flight Gemini call…', 'info'); }} className="text-[11px] bg-red-100 text-red-700 border border-red-300 px-2.5 py-1 rounded-full font-bold hover:bg-red-200 transition-colors" aria-label="Stop auto-continue remediation">
                                 ⏸ Stop auto-continue
                               </button>
                             )}
@@ -54384,13 +54447,14 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             .scores { display: flex; gap: 12px; align-items: center; }
                             .score-badge { padding: 6px 14px; border-radius: 8px; font-weight: 800; font-size: 14px; }
                             .arrow { color: #94a3b8; font-size: 18px; }
-                            .compare { display: flex; height: calc(100vh - 56px); }
-                            .pane { flex: 1; display: flex; flex-direction: column; }
+                            .compare { display: flex; height: calc(100vh - 56px); overflow: hidden; }
+                            /* min-height/min-width: 0 break Flexbox's default min-content floor so flex:1 actually clips the iframe's content instead of letting it expand the pane past 100vh and bleed onto the dark body. overflow:hidden is the belt-and-braces clip. */
+                            .pane { flex: 1; display: flex; flex-direction: column; min-height: 0; min-width: 0; overflow: hidden; }
                             .pane-header { padding: 8px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; text-align: center; }
                             .pane-left .pane-header { background: #7f1d1d; color: #fca5a5; }
                             .pane-right .pane-header { background: #14532d; color: #86efac; }
                             .divider { width: 3px; background: #334155; cursor: col-resize; }
-                            iframe, embed { flex: 1; width: 100%; border: none; background: white; }
+                            iframe, embed { flex: 1; width: 100%; min-height: 0; border: none; background: white; }
                             @media (max-width: 768px) { .compare { flex-direction: column; } .pane { height: 50vh; } .divider { height: 3px; width: 100%; } }
                           </style></head><body>
                           <div class="header">
