@@ -808,6 +808,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         var noteSaved = noteSavedTuple[0], setNoteSaved = noteSavedTuple[1];
 
         // Selected session in the progress-view sparkline (for click-to-expand detail)
+        // Session comparison mode — when true, clicking a sparkline bar adds
+        // that session to a small comparison selection (max 2). When 2 are
+        // selected, a side-by-side comparison panel renders below the timeline.
+        var compareModeTuple = useState(false);
+        var compareMode = compareModeTuple[0], setCompareMode = compareModeTuple[1];
+        var compareSelectionsTuple = useState([]);
+        var compareSelections = compareSelectionsTuple[0], setCompareSelections = compareSelectionsTuple[1];
+
         var selectedDetailTuple = useState(null);
         var selectedDetailIdx = selectedDetailTuple[0], setSelectedDetailIdx = selectedDetailTuple[1];
 
@@ -4202,7 +4210,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 border: '1px solid ' + palette.border
               }
             },
-              h('div', { style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '12px', fontWeight: 700 } }, 'Recent sessions — last ' + trend.length + ' · tap a bar for details'),
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', gap: '10px', flexWrap: 'wrap' } },
+                h('div', { style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 } },
+                  'Recent sessions — last ' + trend.length + (compareMode ? ' · tap 2 bars to compare' : ' · tap a bar for details')),
+                h('div', { style: { display: 'flex', gap: '6px', alignItems: 'center' } },
+                  compareMode && compareSelections.length > 0 ? h('span', {
+                    style: { fontSize: '10px', color: palette.textMute }
+                  }, compareSelections.length + ' / 2 picked') : null,
+                  h('button', {
+                    onClick: function() {
+                      if (compareMode) {
+                        // Exiting compare mode — clear selection
+                        setCompareMode(false);
+                        setCompareSelections([]);
+                      } else {
+                        setCompareMode(true);
+                        setSelectedDetailIdx(null); // avoid two modes at once
+                      }
+                    },
+                    style: {
+                      padding: '4px 10px',
+                      borderRadius: '999px',
+                      border: '1px solid ' + (compareMode ? palette.accent : palette.border),
+                      background: compareMode ? palette.accent : 'transparent',
+                      color: compareMode ? '#0f172a' : palette.textDim,
+                      fontSize: '10px',
+                      fontWeight: compareMode ? 700 : 500,
+                      cursor: 'pointer',
+                      font: 'inherit'
+                    }
+                  }, compareMode ? '✕ Exit compare' : '⇆ Compare')
+                )
+              ),
               h('div', {
                 style: {
                   display: 'flex',
@@ -4215,21 +4254,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 trend.map(function(s, i) {
                   var h_ = Math.max(4, Math.round((s.wpm / Math.max(trendMax, 1)) * 90));
                   var isSelected = selectedDetailIdx === i;
+                  var isComparePick = compareMode && compareSelections.indexOf(s.date) !== -1;
                   return h('button', {
                     key: 'bar-' + i,
                     onClick: function() {
+                      if (compareMode) {
+                        // Toggle this session in the comparison selection (max 2)
+                        var already = compareSelections.indexOf(s.date);
+                        if (already !== -1) {
+                          setCompareSelections(compareSelections.filter(function(d) { return d !== s.date; }));
+                        } else if (compareSelections.length < 2) {
+                          setCompareSelections(compareSelections.concat([s.date]));
+                        } else {
+                          // Replace oldest pick
+                          setCompareSelections([compareSelections[1], s.date]);
+                        }
+                        return;
+                      }
                       setSelectedDetailIdx(isSelected ? null : i);
                     },
-                    'aria-label': 'Session ' + (i + 1) + ': ' + s.drillName + ', ' + s.wpm + ' WPM, ' + s.accuracy + ' percent accuracy' + (isSelected ? ' (selected)' : ''),
+                    'aria-label': 'Session ' + (i + 1) + ': ' + s.drillName + ', ' + s.wpm + ' WPM, ' + s.accuracy + ' percent accuracy' +
+                      (isSelected ? ' (selected)' : '') + (isComparePick ? ' (chosen for comparison)' : ''),
                     title: s.drillName + ': ' + s.wpm + ' WPM / ' + s.accuracy + '%',
                     style: {
                       flex: 1,
                       minWidth: '8px',
                       height: h_ + 'px',
-                      background: isSelected ? palette.warn : palette.accent,
+                      background: isComparePick ? palette.success : (isSelected ? palette.warn : palette.accent),
                       border: 'none',
                       borderRadius: '3px 3px 0 0',
-                      opacity: isSelected ? 1 : (0.6 + (i / Math.max(trend.length - 1, 1)) * 0.4),
+                      opacity: (isSelected || isComparePick) ? 1 : (0.6 + (i / Math.max(trend.length - 1, 1)) * 0.4),
                       cursor: 'pointer',
                       padding: 0,
                       transition: 'background 120ms ease, opacity 120ms ease'
@@ -4396,6 +4450,83 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                       })
                     )
                   )
+                );
+              })() : null,
+
+              // Session A vs B comparison panel — appears when 2 sessions are
+              // selected in compare mode. Shows stats side-by-side with delta
+              // column so a clinician can paste "went from X to Y" numbers
+              // straight into a progress note.
+              (compareMode && compareSelections.length === 2) ? (function() {
+                var dateA = compareSelections[0], dateB = compareSelections[1];
+                var a = (state.sessions || []).filter(function(s) { return s.date === dateA; })[0];
+                var b = (state.sessions || []).filter(function(s) { return s.date === dateB; })[0];
+                if (!a || !b) return null;
+                // Order: older on left, newer on right (conventional "before → after")
+                if (new Date(a.date) > new Date(b.date)) { var t = a; a = b; b = t; }
+
+                var row = function(label, valueA, valueB, delta, isPercent, higherIsBetter) {
+                  var deltaColor = palette.textMute;
+                  if (delta !== null) {
+                    if (higherIsBetter === true) deltaColor = delta > 0 ? palette.success : (delta < 0 ? palette.danger : palette.textMute);
+                    else if (higherIsBetter === false) deltaColor = delta > 0 ? palette.danger : (delta < 0 ? palette.success : palette.textMute);
+                  }
+                  var deltaStr = delta === null ? '—' : (delta > 0 ? '+' : '') + delta + (isPercent ? '%' : '');
+                  return h('tr', { key: 'cmp-' + label },
+                    h('td', { style: { padding: '4px 8px', color: palette.textMute, fontSize: '11px' } }, label),
+                    h('td', { style: { padding: '4px 8px', color: palette.text, fontVariantNumeric: 'tabular-nums', textAlign: 'right' } }, valueA),
+                    h('td', { style: { padding: '4px 8px', color: palette.text, fontVariantNumeric: 'tabular-nums', textAlign: 'right' } }, valueB),
+                    h('td', { style: { padding: '4px 8px', color: deltaColor, fontVariantNumeric: 'tabular-nums', textAlign: 'right', fontWeight: 700 } }, deltaStr)
+                  );
+                };
+
+                return h('div', {
+                  style: {
+                    marginTop: '12px',
+                    padding: '14px',
+                    background: palette.bg,
+                    border: '1px solid ' + palette.success,
+                    borderRadius: '10px'
+                  }
+                },
+                  h('div', { style: { fontSize: '11px', color: palette.success, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '10px', fontWeight: 700 } },
+                    '⇆ Session comparison (older → newer)'),
+                  h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: '12px' } },
+                    h('thead', null,
+                      h('tr', null,
+                        h('th', { style: { padding: '4px 8px', textAlign: 'left', fontSize: '10px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.06em' } }, 'Metric'),
+                        h('th', { style: { padding: '4px 8px', textAlign: 'right', fontSize: '10px', color: palette.textMute } },
+                          new Date(a.date).toLocaleDateString() + (a.tag ? ' · ' + a.tag : '')),
+                        h('th', { style: { padding: '4px 8px', textAlign: 'right', fontSize: '10px', color: palette.textMute } },
+                          new Date(b.date).toLocaleDateString() + (b.tag ? ' · ' + b.tag : '')),
+                        h('th', { style: { padding: '4px 8px', textAlign: 'right', fontSize: '10px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.06em' } }, 'Δ')
+                      )
+                    ),
+                    h('tbody', null,
+                      row('Drill', (DRILLS[a.drillId] ? DRILLS[a.drillId].name : a.drillId), (DRILLS[b.drillId] ? DRILLS[b.drillId].name : b.drillId), null, false, null),
+                      row('WPM', a.wpm, b.wpm, b.wpm - a.wpm, false, true),
+                      row('Accuracy', a.accuracy + '%', b.accuracy + '%', b.accuracy - a.accuracy, true, true),
+                      row('Duration (s)', a.durationSec, b.durationSec, b.durationSec - a.durationSec, false, null),
+                      row('Errors', a.errors || 0, b.errors || 0, (b.errors || 0) - (a.errors || 0), false, false),
+                      row('Paused (s)', a.pausedSec || 0, b.pausedSec || 0, (b.pausedSec || 0) - (a.pausedSec || 0), false, null),
+                      row('Accommodations', (a.accommodationsUsed || []).length, (b.accommodationsUsed || []).length, ((b.accommodationsUsed || []).length) - ((a.accommodationsUsed || []).length), false, null)
+                    )
+                  ),
+                  (a.note || b.note) ? h('div', {
+                    style: { marginTop: '10px', paddingTop: '8px', borderTop: '1px solid ' + palette.border, fontSize: '11px', color: palette.textDim }
+                  },
+                    a.note ? h('div', { style: { marginBottom: '4px' } },
+                      h('span', { style: { color: palette.textMute, fontWeight: 600 } }, 'A note: '),
+                      h('em', null, '"' + a.note + '"')
+                    ) : null,
+                    b.note ? h('div', null,
+                      h('span', { style: { color: palette.textMute, fontWeight: 600 } }, 'B note: '),
+                      h('em', null, '"' + b.note + '"')
+                    ) : null
+                  ) : null,
+                  h('div', {
+                    style: { fontSize: '10px', color: palette.textMute, marginTop: '8px', fontStyle: 'italic' }
+                  }, 'Green Δ = improvement · red = regression · gray = no judgment applied (duration, accommodations count).')
                 );
               })() : null
             ) : null,
