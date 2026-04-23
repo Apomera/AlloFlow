@@ -5645,40 +5645,40 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     })();
     // AlloData: pure-data bundle (phoneme guide, prompts, i18n strings, shop items, timeline modes).
     // Registers window.AlloModules.AlloData and calls _upgradeAlloData() to populate monolith shim.
-    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b67fdc8/allo_data_module.js');
+    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8952ddb/allo_data_module.js');
     // LargeFileModule: chunked audio/video transcription (LargeFileHandler + LargeFileTranscriptionModal).
-    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b67fdc8/large_file_module.js');
+    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8952ddb/large_file_module.js');
     // KeyConceptMapModule: SVG-overlay Bezier concept map view (used by renderOutlineContent).
-    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b67fdc8/key_concept_map_module.js');
+    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8952ddb/key_concept_map_module.js');
     // UtilsPure: 14 pure utilities (JSON, storage, network, image) — populates monolith shim via _upgradeUtilsPure().
-    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b67fdc8/utils_pure_module.js');
+    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8952ddb/utils_pure_module.js');
     // MiscComponents: WordSoundsReviewPanel + AnimatedNumber + ClozeInput (pure-props components).
-    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b67fdc8/misc_components_module.js');
+    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8952ddb/misc_components_module.js');
     // RemediationAudio: Web Audio feedback beeps (chunk good/bad/medium, session complete, etc).
-    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b67fdc8/remediation_audio_module.js');
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b67fdc8/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b67fdc8/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b67fdc8/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b67fdc8/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b67fdc8/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b67fdc8/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b67fdc8/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b67fdc8/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b67fdc8/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b67fdc8/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b67fdc8/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b67fdc8/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b67fdc8/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b67fdc8/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b67fdc8/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b67fdc8/student_interaction_module.js');
-    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b67fdc8/math_fluency_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b67fdc8/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b67fdc8/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b67fdc8/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b67fdc8/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b67fdc8/content_engine_module.js');
-    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b67fdc8/timeline_revision_module.js');
+    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8952ddb/remediation_audio_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8952ddb/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8952ddb/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8952ddb/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8952ddb/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8952ddb/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8952ddb/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8952ddb/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8952ddb/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8952ddb/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8952ddb/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8952ddb/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8952ddb/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8952ddb/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8952ddb/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8952ddb/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8952ddb/student_interaction_module.js');
+    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8952ddb/math_fluency_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8952ddb/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8952ddb/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8952ddb/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8952ddb/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8952ddb/content_engine_module.js');
+    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8952ddb/timeline_revision_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -5694,7 +5694,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b67fdc8/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8952ddb/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -10946,6 +10946,74 @@ Return only the corrected version of this exact text:`;
     setIsExtracting(false);
     setGenerationStep('');
   };
+  // When the teacher resumes a prior session by loading a .alloflow.json project
+  // file, the file restores audit results + remediated HTML + multi-session
+  // range history — but NOT the original PDF bytes (those would balloon a
+  // project file by 10-30MB; see saveProjectToFile). If they then click
+  // "Fix Pages N–M", the downstream pipeline needs those bytes. This helper
+  // returns a usable base64 string by either (a) reading the existing
+  // pendingPdfBase64 state, or (b) opening a one-shot file picker so they
+  // re-attach the same PDF from disk, fingerprint-validated against
+  // pendingPdfFile. Returns null if the user cancels. Also calls
+  // setPendingPdfBase64 on success so subsequent clicks in the same session
+  // don't re-prompt.
+  const ensurePdfBase64 = React.useCallback(() => {
+    return new Promise((resolve) => {
+      if (pendingPdfBase64) { resolve(pendingPdfBase64); return; }
+      // Build a hidden file input on the fly; no need to live in the DOM tree.
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.pdf,application/pdf';
+      input.style.display = 'none';
+      let settled = false;
+      const finish = (val) => { if (settled) return; settled = true; try { document.body.removeChild(input); } catch {} resolve(val); };
+      // Chrome/Firefox fire neither `cancel` nor `change` on dismiss in some
+      // configurations; fall back to a focus-based timer to detect cancel.
+      input.addEventListener('cancel', () => { addToast('Re-attach cancelled.', 'info'); finish(null); });
+      input.onchange = async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) { addToast('Re-attach cancelled.', 'info'); finish(null); return; }
+        // Fingerprint check against the file that produced the existing audit.
+        // Mismatch is a warning, not a hard stop — teachers legitimately rename files.
+        if (pendingPdfFile && pendingPdfFile.name && pendingPdfFile.size) {
+          const nameMismatch = file.name !== pendingPdfFile.name;
+          const sizeMismatch = file.size !== pendingPdfFile.size;
+          if (nameMismatch || sizeMismatch) {
+            const msg = 'Re-attached PDF differs from the audited one' +
+              (nameMismatch ? ' (name: "' + file.name + '" vs "' + pendingPdfFile.name + '")' : '') +
+              (sizeMismatch ? ' (size: ' + file.size + ' vs ' + pendingPdfFile.size + ' bytes)' : '') +
+              '. Proceeding anyway — results may be inconsistent with the original audit.';
+            addToast(msg, 'warning');
+          }
+        }
+        try {
+          const reader = new FileReader();
+          reader.onload = () => {
+            const result = reader.result;
+            // FileReader.readAsDataURL yields "data:application/pdf;base64,<payload>";
+            // the pipeline accepts both forms but we strip the prefix for consistency
+            // with how the initial upload path stores it.
+            const base64 = typeof result === 'string' && result.includes(',')
+              ? result.split(',')[1]
+              : String(result || '');
+            if (!base64) { addToast('Re-attach failed: empty file.', 'error'); finish(null); return; }
+            setPendingPdfBase64(base64);
+            // Update the file record so future checks see the freshly-attached file.
+            setPendingPdfFile({ name: file.name, size: file.size });
+            addToast('📎 PDF re-attached — starting remediation.', 'info');
+            finish(base64);
+          };
+          reader.onerror = () => { addToast('Failed to read PDF: ' + (reader.error?.message || 'unknown error'), 'error'); finish(null); };
+          reader.readAsDataURL(file);
+        } catch (err) {
+          addToast('Failed to read PDF: ' + (err?.message || 'unknown error'), 'error');
+          finish(null);
+        }
+      };
+      document.body.appendChild(input);
+      input.click();
+    });
+  }, [pendingPdfBase64, pendingPdfFile, addToast]);
   // Auto-save toggle: when on, every completed range triggers a project-file
   // download so the user always has a portable artifact. Critical in Canvas,
   // where IndexedDB is wiped per session — the JSON file is the only durable
@@ -52299,6 +52367,12 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       <div className="text-xs text-indigo-900 mb-2">
                         <span className="font-bold">📖 Multi-session remediation</span> — for long PDFs you can tackle a page range now and finish later. The remediated HTML grows incrementally across sessions.
                       </div>
+                      {pendingPdfFile && !pendingPdfBase64 && (
+                        <div className="text-[11px] text-amber-800 bg-amber-50 border border-amber-200 rounded px-2 py-1.5 mb-2 flex items-start gap-1.5" role="status">
+                          <span aria-hidden="true">📎</span>
+                          <span>Original PDF isn't attached to this session — you'll be prompted to re-select it from disk when you start the fix. (Project files don't include the PDF bytes to stay small.)</span>
+                        </div>
+                      )}
                       <div className="flex items-center gap-2 flex-wrap">
                         <label className="text-xs text-indigo-900 font-bold">Pages:</label>
                         <input
@@ -52591,14 +52665,23 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           {pdfFixLoading && pdfFixModeRef.current === 'fix' ? <><span className="animate-spin">&#9203;</span> {pdfFixStep || 'Fixing...'}</> : <><Wrench size={16} /> {((pdfFixResult.verificationAudit?.issues?.length || 0) + (pdfFixResult.axeAudit?.totalViolations || 0)) > 0 ? `Fix ${(pdfFixResult.verificationAudit?.issues?.length || 0) + (pdfFixResult.axeAudit?.totalViolations || 0)} Remaining` : 'Run Additional Fix Pass'}</>}
                         </button>
                     </>) : (
-                      <button onClick={() => {
+                      <button onClick={async () => {
                         console.warn('[Fix&Verify btn] clicked — pendingPdfBase64:', !!pendingPdfBase64, 'pdfAuditResult:', !!pdfAuditResult, 'pageRange:', pdfPageRange);
+                        // Multi-session resume (project-file-loaded): PDF bytes aren't
+                        // persisted to .alloflow.json so pendingPdfBase64 is null even
+                        // though pdfFixResult + multi-session history are rehydrated.
+                        // Prompt the teacher to re-attach the same PDF; pass the fresh
+                        // bytes directly via batchOverrides.base64 so we don't wait on
+                        // a React state propagation race (fixAndVerifyPdf reads
+                        // batchOverrides?.base64 with priority over closed-over state).
+                        const freshBase64 = await ensurePdfBase64();
+                        if (!freshBase64) return; // user cancelled re-attach
                         // Pass pageRange when set (multi-session mode); otherwise call
                         // with no args for backward-compatible whole-document remediation.
                         if (pdfPageRange && pdfPageRange.start && pdfPageRange.end) {
-                          fixAndVerifyPdf({ pageRange: [pdfPageRange.start, pdfPageRange.end] });
+                          fixAndVerifyPdf({ pageRange: [pdfPageRange.start, pdfPageRange.end], base64: freshBase64, fileName: pendingPdfFile?.name });
                         } else {
-                          fixAndVerifyPdf();
+                          fixAndVerifyPdf({ base64: freshBase64, fileName: pendingPdfFile?.name });
                         }
                       }} disabled={pdfFixLoading} className="flex-1 px-5 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-bold text-sm hover:from-green-700 hover:to-emerald-700 transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-40">
                         {pdfFixLoading ? <span className="animate-spin">⏳</span> : <Sparkles size={16} />}
