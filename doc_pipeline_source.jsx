@@ -6605,8 +6605,17 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
     if (!_silentMode) { setPdfFixLoading(true); setPdfFixResult(null); }
 
     const beforeScore = (_auditResult?.score) || 0;
-    const pageCount = (_auditResult?.pageCount) || 1;
-    warnLog(`[fixAndVerifyPdf] auditResult.pageCount=${_auditResult?.pageCount}, effective pageCount=${pageCount}, auditResult keys:`, _auditResult ? Object.keys(_auditResult) : 'null');
+    const fullPageCount = (_auditResult?.pageCount) || 1;
+    // Use the selected range's length for progress labels + time estimates
+    // when partial-audit mode is active, so the teacher sees e.g. "(5 pages)"
+    // while fixing pages 1-5 of a 15-page PDF instead of the misleading
+    // "(15 pages)". The internal pipeline still knows the full count for
+    // context (e.g. prior-range awareness), but UI labels should track what
+    // the user actually asked for.
+    const pageCount = _pageRange
+      ? Math.max(1, Math.min(fullPageCount, (_pageRange[1] || fullPageCount)) - Math.max(1, (_pageRange[0] || 1)) + 1)
+      : fullPageCount;
+    warnLog(`[fixAndVerifyPdf] auditResult.pageCount=${_auditResult?.pageCount}, fullPageCount=${fullPageCount}, effective pageCount=${pageCount}${_pageRange ? ` (range ${_pageRange[0]}-${_pageRange[1]})` : ''}, auditResult keys:`, _auditResult ? Object.keys(_auditResult) : 'null');
     const totalSteps = 4;
     // Dynamic time estimates based on document length
     const isShort = pageCount <= 5;
@@ -6621,7 +6630,10 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
     };
     const updateProgress = (step, detail) => {
       const label = STEP_LABELS[step] || { emoji: '⏳', name: 'Processing', est: '' };
-      const pageNote = pageCount > 1 ? ` (${pageCount} pages)` : '';
+      // "(5 of 15 pages)" when partial, "(15 pages)" when full-document.
+      const pageNote = _pageRange
+        ? ` (${pageCount} of ${fullPageCount} pages)`
+        : (pageCount > 1 ? ` (${pageCount} pages)` : '');
       const msg = `Step ${step}/${totalSteps} ${label.emoji} ${label.name}${pageNote} — ${detail}  (typically ${label.est})`;
       if (_silentMode) { _onProgress(step, msg); } else { setPdfFixStep(msg); }
     };
