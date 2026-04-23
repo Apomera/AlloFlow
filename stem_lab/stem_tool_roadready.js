@@ -568,6 +568,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   var FT_PER_M = 3.28084;
   var AIR_DENSITY = 1.225; // kg/m³ at sea level
 
+  // Scenarios use 'clear' internally; lab views expose the friendlier 'dry' to users.
+  // Call this at the boundary to keep physics helpers working with a single canonical key.
+  function normalizeWeather(w) { return w === 'dry' ? 'clear' : w; }
+
   // Friction coefficient by weather and tire state.
   function frictionCoef(weather) {
     if (weather === 'snow') return 0.22;
@@ -1509,7 +1513,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     { id: 'defensive_drill', icon: '🛡️', name: 'Defensive Driver', desc: 'Pass 5 defensive driving scenarios.' },
     { id: 'logbook_starter', icon: '📔', name: 'Logbook Started', desc: 'Save your first 5 driving sessions to the logbook.' },
     { id: 'logbook_ten_hr', icon: '🕙', name: '10 Hours Logged', desc: 'Accumulate 10 hours of practice in the logbook.' },
-    { id: 'maintenance_master', icon: '🔧', name: 'Maintenance Master', desc: 'Diagnose 8 dashboard warning lights correctly.' }
+    { id: 'maintenance_master', icon: '🔧', name: 'Maintenance Master', desc: 'Diagnose 8 dashboard warning lights correctly.' },
+    // Drill-completion badges — granted by the scored drill views.
+    { id: 'moose_safe', icon: '🫎', name: 'Moose-Safe Mainer', desc: 'Ace the Moose Encounter Drill.' },
+    { id: 'moose_avoided', icon: '🛡️', name: 'Moose-Safe in the Field', desc: 'Brake straight (no swerve) when a moose appears in-drive.' },
+    { id: 'emg_ready', icon: '🚑', name: 'Emergency-Ready', desc: 'Ace the Emergency Vehicle Drill.' },
+    { id: 'bus_safe', icon: '🚌', name: 'Bus-Safe', desc: 'Ace the School Bus Stop Drill.' },
+    { id: 'rail_ready', icon: '🚂', name: 'Rail-Ready', desc: 'Ace the Railroad Crossing Drill.' },
+    { id: 'winter_ready', icon: '❄️', name: 'Winter-Ready', desc: 'Ace the Winter Driving Drill.' },
+    { id: 'zone_wise', icon: '🚧', name: 'Work-Zone Wise', desc: 'Ace the Construction Zone Drill.' },
+    { id: 'gdl_scholar', icon: '📘', name: 'GDL Scholar', desc: 'Ace the Teen GDL Drill.' }
   ];
 
   // ─────────────────────────────────────────────────────────
@@ -1954,6 +1967,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           newSt2.parked = true;
           setSt(newSt2);
           setFeedback(STEPS[5] + (newSt2.score) + '/100 (' + newSt2.hits + ' hits)');
+          if (props.onComplete) props.onComplete(newSt2.score);
         }
       };
 
@@ -2155,6 +2169,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           ns2.done = true;
           setSt(ns2);
           setFb(STEPS[3] + ns2.score + '/100 (' + ns2.hits + ' hits)');
+          if (props.onComplete) props.onComplete(ns2.score);
         }
       };
 
@@ -2653,6 +2668,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       var signalsRef = useRef([]);
       var wildlifeRef = useRef(null); // { kind, x, y, vx, vy, icon, mass, warn }
       var cyclistsRef = useRef([]);
+      // Foliage refs — tree canopies & bushes, swayed gently each frame so the world
+      // feels alive instead of cardboard-static. Cleared on each scene rebuild.
+      var swayablesRef = useRef([]);
+      // Skid mark history — small dark planes dropped on the road during a tire skid.
+      // Each: { mesh, spawnAt }. Fades over ~6s; capped at MAX_SKID_MARKS to prevent
+      // runaway memory if the player drifts in circles for a minute.
+      var skidMarksRef = useRef([]);
+      var _lastSkidSpawn = useRef(0);
+      // Crash FX queue — physics collision pushes impact events here; the render loop
+      // drains the queue, spawning short-lived spark/debris particles at each location.
+      // Also used by the HUD for a brief impact flash. Each event:
+      //   { x, y, severity, spawnAt, hudFlashed }
+      var crashFxRef = useRef([]);
+      // Active spark meshes from crashes — fade & remove after ~1s.
+      var crashSparksRef = useRef([]);
       var audioRef = useRef({ ctx: null, engineOsc: null, engineGain: null, started: false });
       // Two-tone horn: major-third stack (≈400 + ≈500 Hz) with a square wave for
       // bite and a tiny attack ramp. Closer to a real car than a single beep.
@@ -2914,7 +2944,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       var drivingRef = useRef(false);
       var pausedRef = useRef(false);
       var timeRef = useRef(0);
-      var statsRef = useRef({ startTime: 0, distance: 0, maxSpeed: 0, mpgSum: 0, mpgSamples: 0, hardBrakes: 0, jackrabbits: 0, speedViolations: 0, closeFollows: 0, crashes: 0, stops: 0, safetyScore: 100, efficiencyScore: 100, fuelUsed: 0, skidSeconds: 0, cyclistClose: 0 });
+      var statsRef = useRef({ startTime: 0, distance: 0, maxSpeed: 0, mpgSum: 0, mpgSamples: 0, hardBrakes: 0, jackrabbits: 0, speedViolations: 0, secondsOverLimit: 0, _wasOverLimit: false, closeFollows: 0, crashes: 0, stops: 0, safetyScore: 100, efficiencyScore: 100, fuelUsed: 0, skidSeconds: 0, cyclistClose: 0 });
       var lastStateRef = useRef({ speed: 0, accel: 0 });
       var showHUDRef = useRef(true);
       var cameraModeRef = useRef('cockpit'); // cockpit | chase | overhead
@@ -2953,8 +2983,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // Radio HUD: 4 procedural stations, plus the special "off" state. The station
       // generates audio via WebAudio (talk = pulsed pink noise, music = chord pad).
       // Weather and traffic stations are silent until they have something to announce
-      // (then they speak via callTTS). Persisted as d.radioStation so the toolbar
-      // remembers the last pick across drives.
+      // (then they speak via callTTS). Station choice is ref-only — browsers block
+      // WebAudio autoplay on page load, so cross-drive persistence was intentionally
+      // dropped (the user has to click a station once per drive to start audio anyway).
       var radioRef = useRef({ station: null, oscNodes: [], gainNode: null, lastTalkAt: 0, lastTrafficAt: 0, lastWeatherAt: 0 });
       // Coach Mode: periodic AI feedback driven by the current driving stats.
       // Sends a compact stats snapshot to callGemini every 35s with a prompt designed
@@ -3260,7 +3291,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             cy.y = startY + (cy.y >= startY ? 25 : -25);
           }
         });
-        statsRef.current = { startTime: Date.now(), distance: 0, maxSpeed: 0, mpgSum: 0, mpgSamples: 0, hardBrakes: 0, jackrabbits: 0, speedViolations: 0, closeFollows: 0, crashes: 0, stops: 0, safetyScore: 100, efficiencyScore: 100, fuelUsed: 0, skidSeconds: 0, cyclistClose: 0, unsignaledLaneChanges: 0, emergencyYields: 0, busStopCompliance: 0, pedYields: 0, wrongSideViolations: 0, childStrike: 0, aiCausedCrashes: 0 };
+        statsRef.current = { startTime: Date.now(), distance: 0, maxSpeed: 0, mpgSum: 0, mpgSamples: 0, hardBrakes: 0, jackrabbits: 0, speedViolations: 0, secondsOverLimit: 0, _wasOverLimit: false, closeFollows: 0, crashes: 0, stops: 0, safetyScore: 100, efficiencyScore: 100, fuelUsed: 0, skidSeconds: 0, cyclistClose: 0, unsignaledLaneChanges: 0, emergencyYields: 0, busStopCompliance: 0, pedYields: 0, wrongSideViolations: 0, childStrike: 0, aiCausedCrashes: 0 };
         // Reset challenge state per drive. First offer arrives ~45s in — give the driver time to settle.
         challengeRef.current = { nextOfferAt: 45, offered: null, active: null, completedCount: 0, biomesVisited: {}, lastBiome: null, photoCooldown: 0, currentTown: null };
         // Reset per-drive journal and seed the first entry.
@@ -3544,6 +3575,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             hardBrakes: s.hardBrakes,
             jackrabbits: s.jackrabbits,
             speedViolations: s.speedViolations,
+            secondsOverLimit: s.secondsOverLimit || 0,
             closeFollows: s.closeFollows,
             crashes: s.crashes,
             aiCausedCrashes: s.aiCausedCrashes || 0,
@@ -4829,11 +4861,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             statsRef.current.efficiencyScore -= 2;
             statsRef.current.safetyScore -= 1;
           }
-          // Speed violation — only in Drive, with 5-second grace period, +8 mph threshold
+          // Speed violation — only in Drive, with 5-second grace period, +8 mph threshold.
+          // speedViolations counts discrete incidents (one per entry into the over-limit state)
+          // so the AI/coach see "3 violations" not "180" when the player sustains an overage.
+          // secondsOverLimit accumulates total time over limit for the debrief copy.
           var speedMph = Math.abs(car.speed) * MS_TO_MPH;
-          if (gear === 'D' && timeRef.current > 5 && speedMph > scn.speedLimit + 8) {
-            statsRef.current.speedViolations += dt;
+          var overLimitNow = (gear === 'D' && timeRef.current > 5 && speedMph > scn.speedLimit + 8);
+          if (overLimitNow) {
+            statsRef.current.secondsOverLimit += dt;
             statsRef.current.safetyScore -= dt * 2;
+            if (!statsRef.current._wasOverLimit) {
+              statsRef.current.speedViolations += 1;
+              statsRef.current._wasOverLimit = true;
+            }
+          } else if (statsRef.current._wasOverLimit && speedMph < scn.speedLimit + 3) {
+            // Hysteresis: only "exit" the violation state once you're 3 mph under the +8 trigger,
+            // so brief dips at the threshold don't manufacture extra incident counts.
+            statsRef.current._wasOverLimit = false;
           }
           lastStateRef.current = { speed: car.speed, accel: accel };
           // Black box recording (last ~5 seconds for crash replay)
@@ -4998,18 +5042,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // ── School bus stop-arm cycle ──
             // Periodically a school bus stops to pick up/drop off kids, extending its stop arm
             // and flashing red lights. Surrounding traffic must stop (enforced in the yield block
-            // below). Cycle: 25–45s rolling, then 6s stopped, then resume. Deterministic per-bus
-            // by seeding with the traffic index.
+            // below). Cycle: 22–40s rolling, then 10s stopped (real stops average 10–20s; we
+            // shaved that for game pacing while keeping it long enough to practice a real stop).
+            // Deterministic stagger per-bus via traffic index.
             if (t.type === 'schoolbus' && !t.crossStreet) {
               if (t._busCycleTimer === undefined) {
                 // Stagger by index so all buses don't stop at the same moment
-                t._busCycleTimer = 25 + (idx * 7) % 20;
+                t._busCycleTimer = 22 + (idx * 7) % 18;
                 t._stopArmActive = false;
               }
               t._busCycleTimer -= dt;
               if (t._busCycleTimer <= 0) {
                 t._stopArmActive = !t._stopArmActive;
-                t._busCycleTimer = t._stopArmActive ? 6 : (28 + Math.random() * 18);
+                t._busCycleTimer = t._stopArmActive ? 10 : (22 + Math.random() * 18);
                 // Reset per-cycle compliance + child-spawn flags so the next stop-arm
                 // cycle is treated as a fresh event (not the same one being re-armed).
                 if (t._stopArmActive) {
@@ -5059,7 +5104,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 var signalLatFromSpline = Math.abs(s.x - splineAtSignal);
                 if (rel.ahead > 0 && rel.ahead < signalDetectRange && signalLatFromSpline < 3) {
                   if (s.type === 'stop' || s.state === 'red') {
-                    if (s.type === 'stop' && pers.rollsStops > 0 && Math.random() < pers.rollsStops * 0.05) {
+                    // Roll-stop decision is made ONCE per (car, sign) encounter — not per frame.
+                    // Per-frame randomness made the actual roll rate ~1% and the AI's behavior
+                    // wavered between "rolling" and "stopping" mid-approach. Now: rollsStops
+                    // probability applies cleanly per stop sign encountered.
+                    var sKey = (s.x | 0) + '_' + (s.y | 0);
+                    if (s.type === 'stop' && pers.rollsStops > 0) {
+                      if (!t._rollDecisions) t._rollDecisions = {};
+                      if (t._rollDecisions[sKey] === undefined) {
+                        t._rollDecisions[sKey] = Math.random() < pers.rollsStops;
+                      }
+                    }
+                    var willRoll = s.type === 'stop' && t._rollDecisions && t._rollDecisions[sKey] === true;
+                    if (willRoll) {
                       slowFor = Math.max(slowFor, 1);
                     } else {
                       slowFor = Math.max(slowFor, 2);
@@ -5453,8 +5510,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 }
                 // Approaching player — slow down
                 slowFor = Math.max(slowFor, 1);
-                // Honk if player is going much slower than the speed limit
-                if (Math.abs(playerCar.speed) < scn.speedLimit * MPH_TO_MS * 0.3 && Math.abs(playerCar.speed) > 0.5) {
+                // Honk if player is noticeably slower than the limit (below ~50%).
+                // The old 30% threshold meant honks only triggered at near-stall speeds —
+                // a real driver behind you starts honking once you're well below traffic flow.
+                if (Math.abs(playerCar.speed) < scn.speedLimit * MPH_TO_MS * 0.5 && Math.abs(playerCar.speed) > 0.5) {
                   if (!t._honkCooldown || timeRef.current - t._honkCooldown > 10) {
                     t._honkCooldown = timeRef.current;
                     addToast('📢 Car behind you is honking — you\'re going too slow!');
@@ -6844,11 +6903,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 scanVehicles(playerCar);
               }
               var canCross = signalPermits && !trafficImminent;
+              // Kid dart: small chance to step into the street WITHOUT checking traffic.
+              // Models the unpredictability lesson copy promises ("Expect children to dart").
+              // Armed when dartCooldown <= 0 (kids spawn armed), then re-armed every 8–15s.
+              if (p.kind === 'kid' && !p.crossing) {
+                p.dartCooldown = (p.dartCooldown || 0) - dt;
+                if (p.dartCooldown <= 0 && Math.random() < 0.0015) {
+                  // Force a dart even if traffic is imminent. The player MUST react.
+                  canCross = true;
+                  p.dartCooldown = 8 + Math.random() * 7;
+                  if (trafficImminent) addToast('⚠️ A kid darted into the street!');
+                }
+              }
               if (canCross && !p.crossing) {
                 // Start crossing: move straight across from one sidewalk to the other
                 p.crossing = true;
                 var targetX = p.crossDirection === -1 ? p.sidewalkRight : p.sidewalkLeft;
-                p.vx = (targetX - p.x) > 0 ? 0.6 : -0.6;
+                // Kids dart a bit faster than they walk; adults stroll.
+                var crossSpeed = p.kind === 'kid' ? 0.9 : 0.6;
+                p.vx = (targetX - p.x) > 0 ? crossSpeed : -crossSpeed;
                 p.vy = 0; // straight across, stay on crosswalk Y
                 p.y = p.crosswalkY; // snap to crosswalk line
               } else if (!canCross && p.crossing) {
@@ -6963,6 +7036,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 var pushAngle = Math.atan2(car.y - t.y, car.x - t.x);
                 car.x += Math.cos(pushAngle) * 0.5;
                 car.y += Math.sin(pushAngle) * 0.5;
+                // Queue crash FX at the contact midpoint. severity scales spark count
+                // and HUD-flash intensity (3 buckets matching the safety penalty above).
+                crashFxRef.current.push({
+                  x: (car.x + t.x) * 0.5,
+                  y: (car.y + t.y) * 0.5,
+                  severity: impactSpeed > 30 ? 3 : impactSpeed > 10 ? 2 : 1,
+                  spawnAt: timeRef.current,
+                  hudFlashed: false
+                });
               }
             }
           });
@@ -7368,8 +7450,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
           // ── Road surface ──
           var centerX = Math.floor(MAP_SIZE / 2);
-          var roadColor = isSnow ? 0x8899a6 : 0x333842;
-          var roadMat = new T.MeshLambertMaterial({ color: roadColor });
+          var isRainScene = currentScenario.weather === 'rain';
+          // Wet asphalt is noticeably darker than dry — water fills in the texture pores.
+          // We also swap to a Phong material so the directional sun/moon mesh actually
+          // creates a specular highlight that reads as "wet shine".
+          var roadColor = isSnow ? 0x8899a6 : isRainScene ? 0x1c2028 : 0x333842;
+          var roadMat = isRainScene
+            ? new T.MeshPhongMaterial({ color: roadColor, specular: 0x8aa6c8, shininess: 55 })
+            : new T.MeshLambertMaterial({ color: roadColor });
           // Needed below in multiple places — hoisted here so curved helpers see it.
           var _isRuralCurve = ['rural', 'snow', 'fog', 'dawn'].indexOf(currentScenario.id) !== -1;
           var _isHwyCurve = currentScenario.id === 'highway';
@@ -8029,12 +8117,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   bMesh.castShadow = true; bMesh.receiveShadow = true;
                   scene.add(bMesh);
                   buildingMeshes.push(bMesh);
-                  // Windows
+                  // Windows — per-window material so we can give some "lights on, some off"
+                  // variety at night instead of every window in the city glowing in unison.
                   if (bH > 3) {
                     var winGeo = new T.PlaneGeometry(0.7, 0.5);
-                    var winMat = new T.MeshBasicMaterial({ color: isNight ? 0xffeebb : 0x1a2030, transparent: true, opacity: isNight ? 0.7 : 0.6 });
+                    var darkWinMat = new T.MeshBasicMaterial({ color: 0x1a2030, transparent: true, opacity: 0.6 });
                     for (var wf = 0; wf < 4; wf++) {
                       for (var wy = 1.5; wy < bH - 1; wy += 2) {
+                        // Deterministic "lit" decision per window so the same building
+                        // looks the same on every render — no shimmering noise.
+                        var winHash = (bx * 31 + by * 53 + wf * 17 + Math.floor(wy * 10) * 7) % 100;
+                        var lit = isNight && winHash < 65;     // ~65% of windows lit
+                        var warm = winHash < 45 ? 0xffeebb     // most windows: warm white
+                                  : winHash < 55 ? 0xffd27a    // some warmer (incandescent)
+                                  : winHash < 60 ? 0xa3c4ff    // a few cool (TV/laptop glow)
+                                  : 0xffeebb;
+                        var winMat = lit
+                          ? new T.MeshBasicMaterial({ color: warm, transparent: true, opacity: 0.78 })
+                          : darkWinMat;
                         var win = new T.Mesh(winGeo, winMat);
                         var wAngle = wf * Math.PI / 2;
                         win.position.set(
@@ -8082,6 +8182,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
           // ── Trees from map (pine + deciduous mix + bushes) ──
           if (map) {
+            // Reset swayables for this scene rebuild — every canopy/bush we add below
+            // will register here so the per-frame loop can wave them in the wind.
+            swayablesRef.current = [];
+            // Skid marks accumulate during play and are tied to the previous scene's
+            // mesh tree — a fresh drive starts with a clean road.
+            skidMarksRef.current = [];
+            _lastSkidSpawn.current = 0;
+            // Crash FX too — leftover sparks from a prior drive would otherwise
+            // hang in the new scene as orphaned meshes.
+            crashFxRef.current = [];
+            crashSparksRef.current = [];
             var treeTrunkMat = new T.MeshLambertMaterial({ color: 0x5c3a1e });
             var pineLeafMat = new T.MeshLambertMaterial({ color: isSnow ? 0xc8d0d8 : 0x1a5c1a });
             var decidLeafMat = new T.MeshLambertMaterial({ color: isSnow ? 0xd4dce4 : 0x3a8a2a });
@@ -8100,6 +8211,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   trunk.position.set(tPosX, tH * 0.25, tPosZ);
                   trunk.castShadow = true;
                   scene.add(trunk);
+                  // Per-tree wind seed so neighboring trees don't sway in lockstep.
+                  var swaySeed = (tx * 0.37 + ty * 0.91) % (Math.PI * 2);
                   if (treeHash < 3) {
                     // Pine tree: tiered cones (Maine classic)
                     var tiers = 2 + (treeHash % 2);
@@ -8111,6 +8224,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       tierMesh.position.set(tPosX, tH * 0.4 + tier * tierH * 0.6, tPosZ);
                       tierMesh.castShadow = true;
                       scene.add(tierMesh);
+                      // Higher tiers sway more (lever-arm). Pine sway is subtle — they're stiff.
+                      swayablesRef.current.push({ mesh: tierMesh, seed: swaySeed, amp: 0.005 + tier * 0.003, kind: 'pine' });
                     }
                   } else if (treeHash < 5) {
                     // Deciduous tree: sphere canopy
@@ -8120,6 +8235,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     canopyMesh.position.set(tPosX, tH * 0.55 + canopyR * 0.6, tPosZ);
                     canopyMesh.castShadow = true;
                     scene.add(canopyMesh);
+                    // Deciduous canopies sway more (springier branches)
+                    swayablesRef.current.push({ mesh: canopyMesh, seed: swaySeed, amp: 0.022, kind: 'deciduous' });
                   } else {
                     // Bush (low, round, no trunk visible)
                     var bushR = 0.4 + ((tx * 29 + ty * 11) % 3) * 0.1;
@@ -8128,6 +8245,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     bushMesh.position.set(tPosX, bushR * 0.7, tPosZ);
                     bushMesh.castShadow = true;
                     scene.add(bushMesh);
+                    // Bushes barely move — too short for wind to grab.
+                    swayablesRef.current.push({ mesh: bushMesh, seed: swaySeed, amp: 0.008, kind: 'bush' });
                   }
                 }
               }
@@ -8194,7 +8313,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 var lMesh = new T.Mesh(lGeo, lMat);
                 lMesh.position.set(sx, 3.95 - li * 0.28, sz + 0.14);
                 scene.add(lMesh);
-                lamps.push({ mesh: lMesh, onColor: lc });
+                // Halo plane behind the lens — additive bloom, off by default. The per-frame
+                // updater turns it on for the active lamp at night/fog/dusk so signals are
+                // legible from a distance the way they are in real life.
+                var lhMat = new T.MeshBasicMaterial({
+                  color: lc, transparent: true, opacity: 0,
+                  blending: T.AdditiveBlending, depthWrite: false
+                });
+                var lhMesh = new T.Mesh(new T.PlaneGeometry(0.45, 0.45), lhMat);
+                lhMesh.position.set(sx, 3.95 - li * 0.28, sz + 0.16);
+                scene.add(lhMesh);
+                lamps.push({ mesh: lMesh, onColor: lc, halo: lhMesh, haloColor: lc });
               });
               // Also add a second light housing on the other side for cross-street visibility
               var housing2 = new T.Mesh(housingGeo.clone(), housingMat);
@@ -8384,6 +8513,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var brakeR = new T.Mesh(new T.SphereGeometry(0.06, 6, 6), brakeMat);
           brakeR.position.set(-0.92, 0.55, 0.3);
           playerCarGroup.add(brakeR);
+          // Brake halo planes — additive bloom behind each lens, toggled on at night/fog
+          // when braking. Symmetry with the AI car brake halos so the player's own car
+          // shows the same realistic glow when seen via mirror/replay/cockpit-look-back.
+          var pBrakeHaloMat = new T.MeshBasicMaterial({
+            color: 0xff2233, transparent: true, opacity: 0,
+            blending: T.AdditiveBlending, depthWrite: false
+          });
+          [-0.3, 0.3].forEach(function(zOff) {
+            var pHalo = new T.Mesh(new T.PlaneGeometry(0.55, 0.55), pBrakeHaloMat);
+            pHalo.position.set(-0.99, 0.55, zOff);
+            pHalo.rotation.y = -Math.PI / 2; // face out the back
+            pHalo.name = 'rr_playerBrakeHalo';
+            playerCarGroup.add(pHalo);
+          });
           // Reverse lights — white, lit only when actively reversing.
           var playerRevMat = new T.MeshBasicMaterial({ color: 0xcccccc, transparent: true, opacity: 0.15 });
           var playerRevL = new T.Mesh(new T.SphereGeometry(0.05, 6, 6), playerRevMat);
@@ -8975,8 +9118,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             }
           }
 
-          // Brake lights
-          s3.brakeMat.opacity = car.brake > 0 ? 0.9 : 0.15;
+          // Brake lights — modern Emergency Stop Signal (ESS) behavior: panic-brake at
+          // speed and the lamps flicker ~4 Hz so the driver behind you registers HARD
+          // BRAKING not just "tapping the pedal". Real cars (Mercedes, BMW, Ford after
+          // ~2014) do exactly this. Sub-panic braking stays steady at 0.9.
+          var hardPanic = car.brake > 0.85 && Math.abs(car.speed) > 7;
+          if (car.brake > 0) {
+            s3.brakeMat.opacity = hardPanic
+              ? (Math.sin(timeRef.current * 25) > 0 ? 0.98 : 0.45)
+              : 0.9;
+          } else {
+            s3.brakeMat.opacity = 0.15;
+          }
+          // Brake halo bloom — only at night/fog when actually braking, mirroring the
+          // AI car logic so the player's own brake glow looks consistent in mirrors,
+          // crash replay, and any cockpit-look-back camera.
+          if (s3.playerCarGroup && s3.playerCarGroup.children) {
+            var pNightLights = scn.time === 'night' || scn.weather === 'fog';
+            var pBraking = car.brake > 0.3;
+            s3.playerCarGroup.children.forEach(function(pchild) {
+              if (pchild.name === 'rr_playerBrakeHalo' && pchild.material) {
+                pchild.material.opacity = (pBraking && pNightLights) ? 0.55 : 0;
+              }
+            });
+          }
           // Player reverse lights: white when the car is actively moving backward.
           if (s3.playerRevMat) {
             var isPlayerReversing = car.speed < -0.3;
@@ -8997,12 +9162,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // turns them on/off cleanly instead of needing the original isNight at scene init.
           if (s3.playerCarGroup) {
             var beamActive = isNightNow || scn.weather === 'fog' || scn.weather === 'rain';
-            var beamTargetOp = beamActive ? (scn.weather === 'fog' ? 0.18 : scn.weather === 'rain' ? 0.10 : 0.14) : 0;
+            // Real fog scatters headlight forward — beams should be MUCH more visible
+            // in fog than at night-on-clear-air. Old fog opacity (0.18) was barely
+            // brighter than rain. Bumped fog to 0.34 and added a slight high-beam boost
+            // so the user sees an actual cone of light cutting through the murk.
+            var hbBoost = d.highBeams ? 1.25 : 1.0;
+            var beamTargetOp = beamActive
+              ? (scn.weather === 'fog' ? 0.34 : scn.weather === 'rain' ? 0.16 : 0.18) * hbBoost
+              : 0;
             var beamColorHex = scn.weather === 'fog' ? 0xf0e0a0 : 0xfff5cc;
             s3.playerCarGroup.children.forEach(function(child) {
               if (child.name === 'rr_playerBeam') {
-                child.material.opacity = beamTargetOp;
+                child.material.opacity = Math.min(0.55, beamTargetOp);
                 child.material.color.setHex(beamColorHex);
+                // Stretch beam slightly wider in fog (fog scatters the cone outward).
+                child.scale.x = scn.weather === 'fog' ? 1.25 : 1.0;
+                child.scale.z = scn.weather === 'fog' ? 1.25 : 1.0;
               }
             });
           }
@@ -9073,11 +9248,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           if (s3.dashboardGroup) {
             s3.dashboardGroup.visible = (camMode === 'cockpit');
             if (camMode === 'cockpit') {
-              // Speed needle: rotate from -135° (0 mph) to +135° (max mph)
+              // Speed needle: rotate from -135° (0 mph) to +135° (max mph).
+              // Real analog needles have inertia — they don't snap. Smooth toward target
+              // via a critically-damped lerp so hard accel/brake gives a natural sweep
+              // instead of an instantaneous teleport.
               var maxGauge = s3.gaugeMaxMph || 80;
               var curSpeedMph = Math.round(Math.abs(car.speed) * MS_TO_MPH);
               var speedFrac = Math.min(1, curSpeedMph / maxGauge);
-              s3.speedNeedle.rotation.z = (0.75 - speedFrac * 1.5) * Math.PI;
+              var speedTargetRot = (0.75 - speedFrac * 1.5) * Math.PI;
+              if (s3._speedNeedleRot === undefined) s3._speedNeedleRot = speedTargetRot;
+              s3._speedNeedleRot += (speedTargetRot - s3._speedNeedleRot) * 0.18;
+              s3.speedNeedle.rotation.z = s3._speedNeedleRot;
               // Digital speed readout on dashboard (updated canvas texture)
               if (!s3.digitalSpeedCanvas) {
                 s3.digitalSpeedCanvas = document.createElement('canvas');
@@ -9099,9 +9280,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 dsCtx.fillText(curSpeedMph, 64, 36);
                 s3.digitalSpeedMesh.material.map.needsUpdate = true;
               }
-              // RPM needle: approximate from speed + throttle
+              // RPM needle: approximate from speed + throttle. RPM needles are even
+              // springier than speed needles in real cars (they're driven by engine
+              // pulses, not wheel rotation) — use a slightly faster lerp for snappier feel.
               var rpmFrac = Math.min(1, (car.speed * 0.05 + car.throttle * 0.3));
-              s3.rpmNeedle.rotation.z = (0.75 - rpmFrac * 1.5) * Math.PI;
+              var rpmTargetRot = (0.75 - rpmFrac * 1.5) * Math.PI;
+              if (s3._rpmNeedleRot === undefined) s3._rpmNeedleRot = rpmTargetRot;
+              s3._rpmNeedleRot += (rpmTargetRot - s3._rpmNeedleRot) * 0.28;
+              s3.rpmNeedle.rotation.z = s3._rpmNeedleRot;
               // Steering wheel rotation
               s3.steeringWheel3d.rotation.z = -car.steering * 1.5;
             }
@@ -9154,11 +9340,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           }
 
           // Update traffic signals
+          var sigDimAmbient = scn.time === 'night' || scn.weather === 'fog' || scn.weather === 'rain' || scn.id === 'dawn';
           s3.signalObjs.forEach(function(so) {
             if (so.type === 'light' && so.lamps) {
               so.lamps.forEach(function(lamp, li) {
                 var on = (li === 0 && so.ref.state === 'red') || (li === 1 && so.ref.state === 'yellow') || (li === 2 && so.ref.state === 'green');
                 lamp.mesh.material.color.setHex(on ? lamp.onColor : 0x111111);
+                // Halo bloom only when this lens is lit AND the world is dim enough
+                // for the bloom to read (night, fog, rain, dusk). Stronger glow on red
+                // and yellow — those are the safety-critical attention-getters.
+                if (lamp.halo) {
+                  var haloAmp = on && sigDimAmbient
+                    ? (li === 0 ? 0.7 : li === 1 ? 0.6 : 0.5)
+                    : 0;
+                  lamp.halo.material.opacity = haloAmp;
+                }
               });
             }
           });
@@ -9440,6 +9636,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               cg.add(cone);
               // ── Brake lights (rear) — bigger + per-car material ──
               // Twin red lenses on each side of the trunk, plus a high-mount brake light (the CHMSL).
+              // Each lens has a soft additive halo behind it that we toggle on at night
+              // when braking — sells the "glowing red dot in the dark" look that real
+              // brake lights have on a dark road.
               [0.33, -0.33].forEach(function(z, bi) {
                 var blGeo = new T.BoxGeometry(0.04, 0.14, 0.22);
                 var blMat = new T.MeshBasicMaterial({ color: 0xcc0000, transparent: true, opacity: 0.55 });
@@ -9447,6 +9646,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 bl.position.set(-bLen / 2 + 0.02, bH / 2 + 0.22, z);
                 bl.name = bi === 0 ? 'rr_brR' : 'rr_brL';
                 cg.add(bl);
+                // Halo — a slightly larger plane sitting just behind the lens.
+                // AdditiveBlending makes it bloom in dark scenes without needing a
+                // post-processing pass. Hidden by default; the per-frame brake-light
+                // updater enables it when (isBraking && nightLights).
+                var halGeo = new T.PlaneGeometry(0.55, 0.55);
+                var halMat = new T.MeshBasicMaterial({
+                  color: 0xff2233, transparent: true, opacity: 0,
+                  blending: T.AdditiveBlending, depthWrite: false
+                });
+                var halo = new T.Mesh(halGeo, halMat);
+                halo.position.set(-bLen / 2 - 0.04, bH / 2 + 0.22, z);
+                halo.rotation.y = Math.PI / 2; // face out the back
+                halo.name = bi === 0 ? 'rr_brHaloR' : 'rr_brHaloL';
+                cg.add(halo);
               });
               // Center High-Mount Stop Lamp (CHMSL) — the third brake light every car has since ~1986.
               var chmslGeo = new T.BoxGeometry(0.04, 0.05, 0.34);
@@ -9511,6 +9724,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               }
               var tBlinkOn = t.blinker && Math.floor(timeRef.current * 2.5) % 2 === 0;
               var isBraking = (t._slowFor >= 1) || (t._prevSpeed !== undefined && t.speed < t._prevSpeed - 0.2);
+              // ESS panic-brake: AI car decelerating hard (>0.4 m/s drop in one frame)
+              // at non-trivial speed gets the same flicker the player car has. Each
+              // car's flicker phase is offset by its index so a row of braking traffic
+              // doesn't look like a synchronized stage prop.
+              var aiHardPanic = isBraking && t._prevSpeed !== undefined
+                && t.speed < t._prevSpeed - 0.4 && Math.abs(t.speed) > 7;
+              var aiBrakeFlick = aiHardPanic
+                ? (Math.sin(timeRef.current * 25 + idx * 0.7) > 0 ? 1.0 : 0.5)
+                : 1.0;
               var nightLights = scn.time === 'night' || scn.weather === 'fog';
               m.children.forEach(function(child) {
                 // Steering pivot Groups: yaw front pivots only; spin the wheel inside both.
@@ -9534,15 +9756,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   return;
                 }
                 // Brake lights (twin + CHMSL): glow bright red when braking, faint otherwise.
+                // aiBrakeFlick multiplier flickers the lamps under panic-brake (ESS).
                 if (n === 'rr_brR' || n === 'rr_brL') {
                   child.material.color.setHex(isBraking ? 0xff2a2a : 0xaa0000);
-                  child.material.opacity = isBraking ? 0.95 : 0.32;
+                  child.material.opacity = isBraking ? (0.95 * aiBrakeFlick) : 0.32;
+                  return;
+                }
+                // Brake halo — soft additive bloom only when braking AT NIGHT or in fog.
+                // In daylight this would just look like a smudge. Halo also flickers
+                // with ESS so the bloom matches the lamp it's behind.
+                if (n === 'rr_brHaloR' || n === 'rr_brHaloL') {
+                  child.material.opacity = (isBraking && nightLights) ? (0.55 * aiBrakeFlick) : 0;
                   return;
                 }
                 if (n === 'rr_chmsl') {
                   // Third brake light only lights when braking (more realistic — CHMSL doesn't do running-light mode)
                   child.material.color.setHex(isBraking ? 0xff1a1a : 0x550000);
-                  child.material.opacity = isBraking ? 0.9 : 0.12;
+                  child.material.opacity = isBraking ? (0.9 * aiBrakeFlick) : 0.12;
                   return;
                 }
                 // Reverse lights — white, on only when the vehicle is actively moving backward.
@@ -10006,7 +10236,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 onGrassDust = (dcV === 2 || dcV === 4);
               }
             }
-            if (onGrassDust && Math.abs(car.speed) > 2 && scn.weather !== 'snow') {
+            // Also fire when actively skidding on DRY pavement — the existing dust system
+            // doubles as tire smoke (vaporized rubber kicked up under heavy traction loss).
+            // Skip in rain (already handled by tireSpray) and snow (no smoke from snow).
+            var skidOnDryPaved = skidRef.current && skidRef.current.active
+              && Math.abs(car.speed) > 5
+              && scn.weather !== 'rain' && scn.weather !== 'snow';
+            if ((onGrassDust || skidOnDryPaved) && Math.abs(car.speed) > 2 && scn.weather !== 'snow') {
               var dpIdx = Math.floor(timeRef.current * 40) % dpPos.count;
               var rearXd = carWorldX - Math.cos(car.heading) * 1.0;
               var rearZd = carWorldZ - Math.sin(car.heading) * 1.0;
@@ -10023,6 +10259,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               }
               dpPos.needsUpdate = true;
               s3.dustParticles.material.opacity = Math.min(0.6, Math.abs(car.speed) * 0.035);
+              // Recolor based on what's actually being kicked up: tan-brown for grass/dirt,
+              // gray-white for vaporized rubber on a paved skid. Same particle system, two
+              // visual moods. Otherwise a skidding tire looked like it was throwing dirt.
+              if (skidOnDryPaved && !onGrassDust) {
+                s3.dustParticles.material.color.setHex(0xc8c8d0); // tire smoke (cool gray)
+              } else {
+                s3.dustParticles.material.color.setHex(0xb8a078); // dirt/grass dust (warm tan)
+              }
             } else {
               // Let existing dust finish rising/fading but don't spawn new.
               for (var dpi2 = 0; dpi2 < dpPos.count; dpi2++) {
@@ -10039,24 +10283,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
           // Exhaust particles
           if (s3.exhaustParticles && car.speed > 1) {
+            // In cold-weather scenarios (snow), tailpipe water vapor condenses into a
+            // thick white plume — way more visible than the warm gray puffs of summer.
+            // We shift color, opacity ceiling, and even spawn cadence to sell the effect.
+            var coldExhaust = scn.id === 'snow' || scn.weather === 'snow';
             var exPos = s3.exhaustParticles.geometry.attributes.position;
-            var exIdx = Math.floor(timeRef.current * 15) % exPos.count;
+            var exSpawnRate = coldExhaust ? 22 : 15; // denser plume in cold air
+            var exIdx = Math.floor(timeRef.current * exSpawnRate) % exPos.count;
             // Spawn new particle at exhaust pipe position (rear-left of car)
             var exWorldX = carWorldX - Math.cos(car.heading) * 1.0 + Math.sin(car.heading) * 0.2;
             var exWorldZ = carWorldZ - Math.sin(car.heading) * 1.0 - Math.cos(car.heading) * 0.2;
             exPos.setXYZ(exIdx, exWorldX, 0.35, exWorldZ);
-            // Drift existing particles upward and away
+            // Drift existing particles upward and away. Cold-air rise is slower (less
+            // thermal lift since the plume is closer to ambient temp).
+            var exRiseRate = coldExhaust ? 0.014 : 0.02;
             for (var epi = 0; epi < exPos.count; epi++) {
               var epy = exPos.getY(epi);
               if (epy > 0 && epy < 3) {
-                exPos.setY(epi, epy + 0.02);
+                exPos.setY(epi, epy + exRiseRate);
                 exPos.setX(epi, exPos.getX(epi) + (Math.random() - 0.5) * 0.02);
               } else if (epy >= 3) {
                 exPos.setY(epi, -999);
               }
             }
             exPos.needsUpdate = true;
-            s3.exhaustParticles.material.opacity = Math.min(0.35, car.throttle * 0.3 + 0.05);
+            // Cold exhaust is much more visible — push opacity ceiling and recolor toward
+            // cool-white (water vapor), away from warm gray (incomplete combustion soot).
+            if (coldExhaust) {
+              s3.exhaustParticles.material.color.setHex(0xddddee);
+              s3.exhaustParticles.material.opacity = Math.min(0.7, car.throttle * 0.5 + 0.25);
+            } else {
+              s3.exhaustParticles.material.color.setHex(0x888888);
+              s3.exhaustParticles.material.opacity = Math.min(0.35, car.throttle * 0.3 + 0.05);
+            }
           }
 
           // ── Weather particle update: dynamic toggle + streak/flake motion + lightning ──
@@ -10455,15 +10714,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   var door = new T.Mesh(new T.BoxGeometry(0.6, 1.2, 0.1), doorMat);
                   door.position.set(lmCenterWX + lm.side * (lt.size * 0.4), 0.6, lmCenterWZ);
                   chunkGroup.add(door);
-                  // Windows (3 across the front)
-                  var windowMat = new T.MeshLambertMaterial({ color: 0x60a5fa, emissive: 0x1e3a8a, emissiveIntensity: 0.3 });
+                  // Windows (3 across the front). Time-aware: blue sky-reflection by day,
+                  // warm-yellow interior glow at night/dusk so landmark buildings aren't
+                  // the one thing in the world that ignores the time-of-day.
+                  // Some windows are "off" deterministically by index for variety.
+                  var lmIsNight = currentScenario.time === 'night' || currentScenario.id === 'dawn';
+                  var lmDayMat = new T.MeshLambertMaterial({ color: 0x60a5fa, emissive: 0x1e3a8a, emissiveIntensity: 0.3 });
+                  var lmLitMat = new T.MeshLambertMaterial({ color: 0xffeebb, emissive: 0xffaa44, emissiveIntensity: 0.7 });
+                  var lmDarkMat = new T.MeshLambertMaterial({ color: 0x1a2030, emissive: 0x000000, emissiveIntensity: 0 });
                   for (var gwi = -1; gwi <= 1; gwi++) {
-                    var gwin = new T.Mesh(new T.BoxGeometry(0.5, 0.5, 0.05), windowMat);
+                    // Per-window deterministic "is the room lit" decision so the same
+                    // landmark looks the same on every render — no flickering noise.
+                    var lmHash1 = ((Math.floor(lmCenterWX) * 31 + gwi * 17 + lt.size * 7) % 100 + 100) % 100;
+                    var lmMat1 = !lmIsNight ? lmDayMat : (lmHash1 < 70 ? lmLitMat : lmDarkMat);
+                    var gwin = new T.Mesh(new T.BoxGeometry(0.5, 0.5, 0.05), lmMat1);
                     gwin.position.set(lmCenterWX + lm.side * (lt.size * 0.4), lt.height * 0.55, lmCenterWZ + gwi * 1.0);
                     chunkGroup.add(gwin);
                     // Second story for taller buildings
                     if (lt.height > 3.5) {
-                      var gwin2 = new T.Mesh(new T.BoxGeometry(0.5, 0.5, 0.05), windowMat);
+                      var lmHash2 = ((Math.floor(lmCenterWX) * 53 + gwi * 11 + 23) % 100 + 100) % 100;
+                      var lmMat2 = !lmIsNight ? lmDayMat : (lmHash2 < 60 ? lmLitMat : lmDarkMat);
+                      var gwin2 = new T.Mesh(new T.BoxGeometry(0.5, 0.5, 0.05), lmMat2);
                       gwin2.position.set(lmCenterWX + lm.side * (lt.size * 0.4), lt.height * 0.85, lmCenterWZ + gwi * 1.0);
                       chunkGroup.add(gwin2);
                     }
@@ -12742,6 +13013,145 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // on the scene. Cheaper than scene.traverse: skip far chunks entirely.
           var windStrength = scn.weather === 'rain' ? 0.04 : scn.weather === 'snow' ? 0.02 : scn.weather === 'fog' ? 0.01 : 0.015;
           var t_now = timeRef.current;
+          // ── Crash sparks + debris ──
+          // Drain the crash event queue: spawn a burst of additive-blended particles
+          // at each impact, animate any active sparks (gravity + fade), then evict.
+          if (crashFxRef.current.length) {
+            for (var cfi = 0; cfi < crashFxRef.current.length; cfi++) {
+              var cfx = crashFxRef.current[cfi];
+              if (cfx._spawned) continue;
+              cfx._spawned = true;
+              // Camera shake — reuse the existing bumpShake decay machinery so we
+              // don't carry a parallel system. Crash intensity is much stronger than
+              // a speed bump; severity 3 = ~0.85, sev 2 = 0.55, sev 1 = 0.3. Decay
+              // is the same exp(-t*5) sine wobble already wired into the camera pass.
+              if (!reducedMotionRef.current) {
+                var crashShakeAmp = cfx.severity === 3 ? 0.85 : cfx.severity === 2 ? 0.55 : 0.3;
+                bumpShakeRef.current.intensity = Math.max(bumpShakeRef.current.intensity, crashShakeAmp);
+                bumpShakeRef.current.startTime = timeRef.current;
+              }
+              var nSparks = cfx.severity === 3 ? 18 : cfx.severity === 2 ? 12 : 7;
+              for (var sp = 0; sp < nSparks; sp++) {
+                var spk = new T.Mesh(
+                  new T.SphereGeometry(0.04 + Math.random() * 0.03, 4, 3),
+                  new T.MeshBasicMaterial({
+                    color: cfx.severity > 1 ? (Math.random() < 0.7 ? 0xffaa33 : 0xffe080) : 0xddaa66,
+                    transparent: true, opacity: 0.95,
+                    blending: T.AdditiveBlending, depthWrite: false
+                  })
+                );
+                spk.position.set(
+                  (cfx.x - MAP_SIZE / 2) + (Math.random() - 0.5) * 0.3,
+                  0.6 + Math.random() * 0.4,
+                  (cfx.y - MAP_SIZE / 2) + (Math.random() - 0.5) * 0.3
+                );
+                s3.scene.add(spk);
+                crashSparksRef.current.push({
+                  mesh: spk,
+                  spawnAt: timeRef.current,
+                  vx: (Math.random() - 0.5) * 4,
+                  vy: 1.5 + Math.random() * 2.5, // initial upward
+                  vz: (Math.random() - 0.5) * 4
+                });
+              }
+            }
+            // Drop processed events older than 0.2s — keep recent ones around so the
+            // HUD flash trigger can read them on the canvas pass.
+            crashFxRef.current = crashFxRef.current.filter(function(e) {
+              return timeRef.current - e.spawnAt < 0.5;
+            });
+          }
+          // Animate active sparks: gravity-fall + fade, dispose when spent.
+          if (crashSparksRef.current.length) {
+            var crashFrameDt = Math.min(0.05, timeRef.current - (s3._lastCrashFrameT || timeRef.current));
+            s3._lastCrashFrameT = timeRef.current;
+            for (var ki = crashSparksRef.current.length - 1; ki >= 0; ki--) {
+              var spk2 = crashSparksRef.current[ki];
+              var spkAge = timeRef.current - spk2.spawnAt;
+              if (spkAge > 1.0) {
+                s3.scene.remove(spk2.mesh);
+                if (spk2.mesh.material) spk2.mesh.material.dispose();
+                if (spk2.mesh.geometry) spk2.mesh.geometry.dispose();
+                crashSparksRef.current.splice(ki, 1);
+                continue;
+              }
+              spk2.mesh.position.x += spk2.vx * crashFrameDt;
+              spk2.mesh.position.y += spk2.vy * crashFrameDt;
+              spk2.mesh.position.z += spk2.vz * crashFrameDt;
+              spk2.vy -= 9.8 * crashFrameDt; // gravity
+              // Stop at ground
+              if (spk2.mesh.position.y < 0.05) { spk2.mesh.position.y = 0.05; spk2.vy = 0; spk2.vx *= 0.6; spk2.vz *= 0.6; }
+              spk2.mesh.material.opacity = 0.95 * (1 - spkAge);
+            }
+          }
+
+          // ── Skid marks ──
+          // When the tire-friction model says we're skidding, drop dark planes on the
+          // road behind the rear wheels. They linger then fade over ~6s, leaving a
+          // visible record of the maneuver — satisfying feedback when you nail (or
+          // botch) a corner.
+          if (skidRef.current && skidRef.current.active && Math.abs(carRef.current.speed) > 4) {
+            var nowSk = timeRef.current;
+            if (nowSk - _lastSkidSpawn.current > 0.04) {
+              _lastSkidSpawn.current = nowSk;
+              var skCar = carRef.current;
+              // Two rear wheels — offset behind car heading.
+              var skBackDx = -Math.cos(skCar.heading) * 0.85;
+              var skBackDy = -Math.sin(skCar.heading) * 0.85;
+              // Perpendicular offset for left/right wheel.
+              var skPerpDx = -Math.sin(skCar.heading) * 0.45;
+              var skPerpDy = Math.cos(skCar.heading) * 0.45;
+              [-1, 1].forEach(function(side) {
+                var smGeo = new T.PlaneGeometry(0.16, 0.32);
+                var smMat = new T.MeshBasicMaterial({ color: 0x111111, transparent: true, opacity: 0.55, depthWrite: false });
+                var sm = new T.Mesh(smGeo, smMat);
+                sm.rotation.x = -Math.PI / 2;
+                sm.rotation.z = -skCar.heading;
+                sm.position.set(
+                  (skCar.x - MAP_SIZE / 2) + skBackDx + side * skPerpDx,
+                  0.018, // just above road plane to prevent z-fighting
+                  (skCar.y - MAP_SIZE / 2) + skBackDy + side * skPerpDy
+                );
+                s3.scene.add(sm);
+                skidMarksRef.current.push({ mesh: sm, spawnAt: nowSk });
+              });
+              // Cap memory: if more than 200 marks, evict the oldest.
+              while (skidMarksRef.current.length > 200) {
+                var ev = skidMarksRef.current.shift();
+                if (ev && ev.mesh) { s3.scene.remove(ev.mesh); if (ev.mesh.material) ev.mesh.material.dispose(); if (ev.mesh.geometry) ev.mesh.geometry.dispose(); }
+              }
+            }
+          }
+          // Fade existing skid marks over their 6-second lifetime, removing the dead ones.
+          if (skidMarksRef.current.length) {
+            for (var ski = skidMarksRef.current.length - 1; ski >= 0; ski--) {
+              var sk = skidMarksRef.current[ski];
+              var skAge = timeRef.current - sk.spawnAt;
+              if (skAge > 6) {
+                s3.scene.remove(sk.mesh);
+                if (sk.mesh.material) sk.mesh.material.dispose();
+                if (sk.mesh.geometry) sk.mesh.geometry.dispose();
+                skidMarksRef.current.splice(ski, 1);
+              } else if (skAge > 3) {
+                // Linear fade-out in the last half of life.
+                sk.mesh.material.opacity = 0.55 * (1 - (skAge - 3) / 3);
+              }
+            }
+          }
+
+          // Static-scenario foliage sway. The infinite-world chunk loop below handles
+          // chunk-loaded trees; this loop handles trees baked into the static map by
+          // the scene-init pass (which adds canopies straight to scene with no group).
+          if (swayablesRef.current && swayablesRef.current.length) {
+            for (var swi = 0; swi < swayablesRef.current.length; swi++) {
+              var sw = swayablesRef.current[swi];
+              if (!sw.mesh) continue;
+              // Two-axis sway with a faster cross-tone for rustle. amp scaled by current weather.
+              var swAmp = sw.amp * (windStrength / 0.015);
+              sw.mesh.rotation.z = Math.sin(t_now * 1.4 + sw.seed) * swAmp;
+              sw.mesh.rotation.x = Math.cos(t_now * 1.1 + sw.seed * 1.7) * swAmp * 0.6;
+            }
+          }
           if (s3._loadedChunks) {
             Object.keys(s3._loadedChunks).forEach(function(ck) {
               var cgrp = s3._loadedChunks[ck];
@@ -12855,11 +13265,68 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var drawHUD = function(W, H) {
           var gfx = canvas.getContext('2d');
           gfx.clearRect(0, 0, W, H);
+          // Impact flash: red vignette right after a collision. We look at the most
+          // recent crash event in crashFxRef and fade by age (0–0.4s window).
+          // Severity 3 = bright red, severity 1 = subtle. Reduced motion suppresses it.
+          if (crashFxRef.current.length && !reducedMotionRef.current) {
+            var latestCfx = crashFxRef.current[crashFxRef.current.length - 1];
+            var cfxAge = timeRef.current - latestCfx.spawnAt;
+            if (cfxAge < 0.4) {
+              var flashAlpha = (1 - cfxAge / 0.4) * (latestCfx.severity === 3 ? 0.55 : latestCfx.severity === 2 ? 0.35 : 0.18);
+              var flashGrad = gfx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.2, W / 2, H / 2, Math.max(W, H) * 0.6);
+              flashGrad.addColorStop(0, 'rgba(255, 60, 30, 0)');
+              flashGrad.addColorStop(0.55, 'rgba(255, 40, 30, ' + (flashAlpha * 0.4) + ')');
+              flashGrad.addColorStop(1, 'rgba(180, 20, 10, ' + flashAlpha + ')');
+              gfx.fillStyle = flashGrad;
+              gfx.fillRect(0, 0, W, H);
+            }
+          }
           var car = carRef.current;
           var scn = currentScenario;
           var veh = currentVehicle;
           var speedMph = Math.round(Math.abs(car.speed) * MS_TO_MPH);
           var stats = statsRef.current;
+          // Dawn/dusk sun glare — the lesson copy explicitly warns "Low-angle sun glare,
+          // visibility is tricky." Until now the scenario only had an orange sky; the
+          // player never actually felt the glare. Drop a soft elliptical bloom near the
+          // horizon line so the user understands viscerally why it's harder to see.
+          // Tiny scintillation pulse for atmospheric realism. Suppressed in reduced motion.
+          if (scn.id === 'dawn' && !reducedMotionRef.current) {
+            var sgPulse = 0.92 + 0.08 * Math.sin(timeRef.current * 0.9);
+            // Sun position drifts slowly across the upper-third of the screen — a fake
+            // but readable analogue for "sun is in your face for a few minutes".
+            var sgAngle = timeRef.current * 0.025;
+            var sgX = W * (0.42 + Math.sin(sgAngle) * 0.18);
+            var sgY = H * (0.32 + Math.sin(sgAngle * 0.7) * 0.04);
+            // Wide soft halo first (atmospheric scatter)
+            var sgGrad = gfx.createRadialGradient(sgX, sgY, 4, sgX, sgY, Math.min(W, H) * 0.55);
+            sgGrad.addColorStop(0,    'rgba(255, 220, 130, ' + (0.55 * sgPulse) + ')');
+            sgGrad.addColorStop(0.06, 'rgba(255, 200, 110, ' + (0.32 * sgPulse) + ')');
+            sgGrad.addColorStop(0.25, 'rgba(255, 175, 90, ' + (0.14 * sgPulse) + ')');
+            sgGrad.addColorStop(0.55, 'rgba(255, 150, 80, 0.05)');
+            sgGrad.addColorStop(1,    'rgba(255, 130, 70, 0)');
+            gfx.fillStyle = sgGrad;
+            gfx.fillRect(0, 0, W, H);
+            // Tight bright core
+            var sgCore = gfx.createRadialGradient(sgX, sgY, 0, sgX, sgY, 22);
+            sgCore.addColorStop(0, 'rgba(255, 245, 220, ' + (0.95 * sgPulse) + ')');
+            sgCore.addColorStop(1, 'rgba(255, 220, 130, 0)');
+            gfx.fillStyle = sgCore;
+            gfx.fillRect(0, 0, W, H);
+            // A couple of lens-flare ghosts along the line from sun-center to screen-center.
+            var sgCx = W / 2, sgCy = H / 2;
+            [0.35, 0.7, 1.15].forEach(function(t_g, gi) {
+              var ghostX = sgX + (sgCx - sgX) * t_g;
+              var ghostY = sgY + (sgCy - sgY) * t_g;
+              var ghostR = [18, 14, 24][gi];
+              var ghostA = [0.18, 0.13, 0.08][gi] * sgPulse;
+              var gg = gfx.createRadialGradient(ghostX, ghostY, 0, ghostX, ghostY, ghostR);
+              gg.addColorStop(0, 'rgba(255, 200, 100, ' + ghostA + ')');
+              gg.addColorStop(1, 'rgba(255, 200, 100, 0)');
+              gfx.fillStyle = gg;
+              gfx.fillRect(0, 0, W, H);
+            });
+          }
           var avgMpg = stats.mpgSamples > 0 ? (stats.mpgSum / stats.mpgSamples) : 0;
           var isNight = scn.time === 'night';
           var isFog = scn.weather === 'fog';
@@ -14197,12 +14664,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           },
           {
             icon: '🛣️', title: 'Drive Scenarios',
-            body: 'Pick from 14 scenarios — residential streets, highways, snow, fog, roundabouts, night, school zones. Each teaches specific skills. Start easy.',
+            body: 'Pick from ' + SCENARIOS.length + ' scenarios — residential streets, highways, snow, fog, roundabouts, night, school zones. Each teaches specific skills. Start easy.',
             cta: 'Next →'
           },
           {
             icon: '📝', title: 'Study the Permit Test',
-            body: '80 Maine BMV-style questions. Try the full Road Test Simulator when you are ready — includes the pre-trip vehicle inspection.',
+            body: PERMIT_BANK.length + ' Maine BMV-style questions. Try the full Road Test Simulator when you are ready — includes the pre-trip vehicle inspection.',
             cta: 'Next →'
           },
           {
@@ -14212,7 +14679,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           },
           {
             icon: '🏆', title: 'Earn Achievements',
-            body: 'Over 30 badges across bronze, silver, and gold tiers. Pass the permit, master night driving, complete road trips, diagnose warning lights.',
+            body: ACHIEVEMENTS.length + ' badges across bronze, silver, and gold tiers. Pass the permit, master night driving, complete road trips, diagnose warning lights.',
             cta: 'Start Driving! 🚗'
           }
         ];
@@ -14524,7 +14991,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Peer Pressure'),
               h('div', { style: { fontSize: '10px', color: '#fbcfe8', marginTop: '2px' } }, 'Practice saying no to "friend" pressure')
             ),
-            h('button', { onClick: function() { updMulti({ view: 'reactionTest', rtPhase: 'intro', rtScore: null }); },
+            h('button', { onClick: function() { updMulti({ view: 'reactionTest', rtPhase: 'intro', rtTrials: [], rtMode: 'baseline' }); },
               style: { padding: '16px', borderRadius: '12px', border: '2px solid #22d3ee', background: 'linear-gradient(135deg, #083344, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '⚡'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Reaction Test'),
@@ -14739,7 +15206,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           h('div', { style: { background: 'linear-gradient(135deg, #0f172a, #1e1b4b)', borderRadius: '12px', padding: '14px', border: '1px solid #334155', marginBottom: '12px' } },
             h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' } },
               h('div', { style: { fontSize: '12px', fontWeight: 800, color: '#fff' } }, '📊 Your Progress'),
-              h('div', { style: { fontSize: '10px', color: '#94a3b8' } }, (d.totalDrives || 0) + ' drives · ' + Object.keys(scenariosDriven).length + '/14 scenarios')
+              h('div', { style: { fontSize: '10px', color: '#94a3b8' } }, (d.totalDrives || 0) + ' drives · ' + Object.keys(scenariosDriven).length + '/' + SCENARIOS.length + ' scenarios')
             ),
             // Progress bars
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '8px' } },
@@ -16127,7 +16594,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '11px', color: '#cbd5e1', lineHeight: '1.5' } },
                 drivingStats.jackrabbits > 2 ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #f59e0b' } }, '🚀 ' + drivingStats.jackrabbits + ' jackrabbit starts — every hard acceleration wastes fuel. Imagine an egg between your foot and the pedal.') : null,
                 drivingStats.hardBrakes > 2 ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #ef4444' } }, '🛑 ' + drivingStats.hardBrakes + ' hard brakes — hard braking means you were not reading the road ahead. Look 15 seconds down the road, not at the car in front of you.') : null,
-                drivingStats.speedViolations > 2 ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #ef4444' } }, '⚠️ Speed limit exceeded for ' + Math.round(drivingStats.speedViolations) + 's total. Remember: braking distance grows with v². A little faster = a lot more stopping distance.') : null,
+                drivingStats.secondsOverLimit > 2 ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #ef4444' } }, '⚠️ Speed limit exceeded for ' + Math.round(drivingStats.secondsOverLimit) + 's total (' + drivingStats.speedViolations + ' separate incident' + (drivingStats.speedViolations === 1 ? '' : 's') + '). Remember: braking distance grows with v². A little faster = a lot more stopping distance.') : null,
                 drivingStats.closeFollows > 5 ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #f59e0b' } }, '👀 Following too close. Use the 3-second rule. Pick a fixed point ahead. Count after the car in front passes it.') : null,
                 drivingStats.crashes === 0 ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #4ade80' } }, '✅ Zero crashes! That is the baseline real drivers are measured against.') : null,
                 drivingStats.aiCausedCrashes > 0 ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #60a5fa' } }, 'ℹ️ ' + drivingStats.aiCausedCrashes + ' of your ' + drivingStats.crashes + ' crashes were caused by other drivers (mostly tailgating). In real life you\'d file an insurance claim — your safety score was only lightly penalized.') : null,
@@ -19748,7 +20215,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           { view: 'permitStart', goal: 'permit', icon: '📝', name: 'Permit Test (20q quiz)', desc: 'Randomized 20-question practice test from ' + PERMIT_BANK.length + ' Maine BMV-style questions.' },
           { view: 'permitFlashcards', goal: 'permit', icon: '🗂️', name: 'Permit Flashcards', desc: 'Spaced-repetition study mode for all ' + PERMIT_BANK.length + ' permit questions.' },
           { view: 'cheatSheet', goal: 'permit', icon: '📄', name: 'Study Cheat Sheet', desc: 'Printable one-page summary of all key rules.' },
-          { view: 'signsView', goal: 'permit', icon: '🪧', name: 'Road Signs Reference', desc: '20 common signs with SVG illustrations + quiz mode.' },
+          { view: 'signsView', goal: 'permit', icon: '🪧', name: 'Road Signs Reference', desc: '19 common signs with SVG illustrations + quiz mode.' },
           { view: 'rightOfWay', goal: 'permit', icon: '↔️', name: 'Right-of-Way Scenarios', desc: '10 "who goes first?" intersection puzzles.' },
           { view: 'scenarioSelect', goal: 'practice', icon: '🚗', name: 'Drive Simulator (' + SCENARIOS.length + ' scenarios)', desc: 'Residential, highway, snow, fog, night, downtown, and more.' },
           { view: 'freeExploreSetup', goal: 'practice', icon: '🌎', name: 'Free Explore', desc: 'Open sandbox with landmarks, challenges, road trips, dynamic weather.' },
@@ -19778,7 +20245,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           { view: 'hypermilingLab', goal: 'science', icon: '🌿', name: 'Hypermiling Lab', desc: 'MPG vs speed graph — beat the EPA rating.' },
           { view: 'vehicleCompare', goal: 'science', icon: '🔬', name: 'Vehicle Comparison', desc: 'Compare specs (Cd, mass, MPG) across vehicle types.' },
           { view: 'seatSetup', goal: 'pre-drive', icon: '🪑', name: 'Seat & Mirror Setup', desc: '7-step ergonomics guide for before-drive setup.' },
-          { view: 'preTrip', goal: 'pre-drive', icon: '✅', name: 'Pre-Trip Inspection', desc: 'Interactive 27-point vehicle walkaround checklist.' },
+          { view: 'preTrip', goal: 'pre-drive', icon: '✅', name: 'Pre-Trip Inspection', desc: 'Interactive 28-point vehicle walkaround checklist.' },
           { view: 'maintenanceGuide', goal: 'pre-drive', icon: '🔧', name: 'Maintenance Guide', desc: 'Oil changes, tire rotation, essential upkeep schedules.' },
           { view: 'maintenanceGame', goal: 'pre-drive', icon: '🔧', name: 'Warning Lights Quiz', desc: '10 dashboard lights — diagnose and respond correctly.' },
           { view: 'maineWinter', goal: 'maine', icon: '❄️', name: 'Maine Winter Guide', desc: 'Moose warnings, black ice, winter kit, studded tires.' },
@@ -19791,7 +20258,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           { view: 'achievementGallery', goal: 'progress', icon: '🏆', name: 'Achievement Gallery', desc: 'Bronze/silver/gold tiered badge collection.' },
           { view: 'dailyChallenge', goal: 'progress', icon: '⭐', name: 'Daily Challenge', desc: 'One task per day, streak tracker.' },
           { view: 'customize', goal: 'fun', icon: '🎨', name: 'My Ride', desc: 'Paint color, driver name, license plate.' },
-          { view: 'driverPledge', goal: 'fun', icon: '📜', name: "Driver's Pledge", desc: 'Sign your commitment to safe driving.' }
+          { view: 'driverPledge', goal: 'fun', icon: '📜', name: "Driver's Pledge", desc: 'Sign your commitment to safe driving.' },
+          // Additions — these views were reachable from the menu but missing from the directory.
+          { view: 'rulesFoundations', goal: 'permit', icon: '📚', name: 'Rules Foundations', desc: '9 universal pillars every driver must know.' },
+          { view: 'hazardTest', goal: 'safety', icon: '⚡', name: 'Hazard Perception Test', desc: 'Reaction-time test under real driving hazards. Target 8/10.' },
+          { view: 'emergencyDrill', goal: 'safety', icon: '🚨', name: 'Emergency Vehicle Live Drill', desc: 'Suburban drive with siren events every 20–30 seconds.' },
+          { view: 'blindSpotGuide', goal: 'safety', icon: '👁️', name: 'Blind Spots & Mirrors', desc: 'Where you cannot see — and how to fix it.' },
+          { view: 'weatherCompare', goal: 'safety', icon: '🌦️', name: 'Weather Impact Chart', desc: 'Side-by-side stopping distance across conditions.' },
+          { view: 'nightVision', goal: 'safety', icon: '🔦', name: 'Night Vision Math', desc: 'Can you stop within your headlight range?' },
+          { view: 'reactionTrainer', goal: 'safety', icon: '⏱️', name: 'Reaction Time Trainer', desc: 'Traffic-light reaction drill — measure your actual speed.' },
+          { view: 'intersectionGuide', goal: 'safety', icon: '🚦', name: 'Intersection Guide', desc: 'Every intersection type and how to handle it.' },
+          { view: 'forceDiagram', goal: 'science', icon: '📐', name: 'Live Force Diagram', desc: 'Drag, roll, thrust, and weight vectors in real time.' },
+          { view: 'speedCompare', goal: 'science', icon: '🏎️', name: 'Speed Comparison', desc: 'Side-by-side stopping distance at 2 different speeds.' },
+          { view: 'fuelCalc', goal: 'science', icon: '⛽', name: 'Fuel Cost Calculator', desc: 'Distance × MPG × gas price — plan any trip.' },
+          { view: 'threePoint', goal: 'practice', icon: '↩️', name: '3-Point Turn', desc: 'K-turn practice (2D top-down with step guidance).' },
+          { view: 'backingDrill', goal: 'practice', icon: '⬅️', name: 'Straight Backing', desc: 'Backing drill for lane-straightness control.' },
+          { view: 'roadTestRubric', goal: 'practice', icon: '📋', name: 'Road Test Rubric', desc: 'What the examiner actually grades on.' },
+          { view: 'dashLights', goal: 'pre-drive', icon: '💡', name: 'Dashboard Lights Reference', desc: 'Every warning light — what it means and what to do.' },
+          { view: 'knowYourCar', goal: 'pre-drive', icon: '🔍', name: 'Know Your Car', desc: 'Every part explained — engine to tires.' },
+          { view: 'keyboardCheatSheet', goal: 'pre-drive', icon: '⌨️', name: 'Keyboard Shortcuts', desc: 'All in-drive controls at a glance.' },
+          { view: 'learningPath', goal: 'progress', icon: '🎯', name: 'Learning Path', desc: 'Step-by-step guided progression.' },
+          { view: 'aiCoach', goal: 'progress', icon: '🤖', name: 'AI Driving Coach', desc: 'Gemini reviews your last drive.' },
+          { view: 'roadTrip', goal: 'fun', icon: '🗺️', name: 'Road Trip Planner', desc: 'Distance, fuel cost, and stop planning.' },
+          { view: 'carBuying', goal: 'fun', icon: '💵', name: 'First Car Guide', desc: 'What to look for, what to avoid.' }
         ];
         var goals = [
           { id: 'all', label: 'All', icon: '🧭' },
@@ -19972,7 +20461,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           answered ? h('div', { style: { marginTop: '12px', padding: '12px', background: '#020617', borderRadius: '6px', borderLeft: '3px solid ' + (pickedChoice.safe ? '#4ade80' : '#ef4444'), fontSize: '11px', color: '#cbd5e1', lineHeight: '1.7' } },
             h('b', { style: { color: pickedChoice.safe ? '#4ade80' : '#fca5a5' } }, (pickedChoice.safe ? '✓ Safe choice. ' : '✗ Risky choice. ')), pickedChoice.reply
           ) : null,
-          answered ? h('button', { onClick: function() { updMulti({ ppIdx: ppIdx + 1, ppAnswered: null }); },
+          answered ? h('button', { onClick: function() {
+              var newIdx = ppIdx + 1;
+              updMulti({ ppIdx: newIdx, ppAnswered: null });
+              // Grant Peer Pressure Pro on completion with 6+/8 safe choices. Guarded
+              // against repeat grants if the user retakes the drill.
+              if (newIdx >= ppScenarios.length && ppScore >= 6 && !(d.badges && d.badges.peer_pro)) {
+                var ppBadges = Object.assign({}, d.badges || {});
+                ppBadges.peer_pro = true;
+                upd('badges', ppBadges);
+                addToast('🏅 Achievement: Peer Pressure Pro');
+              }
+            },
             style: { width: '100%', marginTop: '10px', padding: '12px', borderRadius: '8px', border: 'none', background: '#f472b6', color: '#0f172a', fontSize: '13px', fontWeight: 800, cursor: 'pointer' }
           }, ppIdx >= ppScenarios.length - 1 ? 'See Results →' : 'Next Scenario →') : null
         );
@@ -20691,7 +21191,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     logbook_starter: 'UNCOMMON', safe_return: 'RARE', daily_streak_7: 'RARE',
                     ten_landmarks: 'LEGENDARY', maintenance_master: 'LEGENDARY',
                     civic_scholar: 'LEGENDARY', maine_explorer: 'LEGENDARY',
-                    logbook_ten_hr: 'LEGENDARY', daily_streak_30: 'LEGENDARY'
+                    logbook_ten_hr: 'LEGENDARY', daily_streak_30: 'LEGENDARY',
+                    // Drill-completion badges.
+                    moose_safe: 'RARE', moose_avoided: 'RARE', winter_ready: 'RARE',
+                    emg_ready: 'UNCOMMON', bus_safe: 'UNCOMMON', rail_ready: 'UNCOMMON',
+                    zone_wise: 'UNCOMMON', gdl_scholar: 'UNCOMMON'
                   };
                   var rarity = rarityMap[ach.id] || 'COMMON';
                   var rarityColors = {
@@ -20922,7 +21426,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   upd('badges', pBadges);
                   addToast('🏅 Achievement: Pre-Trip Pro');
                 }
-                upd('preTripCompletedAt', Date.now());
                 addToast('✅ Pre-trip inspection complete!');
                 if (fromRoadTest) {
                   // Advance road test to driving stage.
@@ -21054,7 +21557,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var labReaction = d.labReaction != null ? d.labReaction : 1.5;
         var labTires = d.labTires || 'good';
         // Map 'dry' to 'clear' for friction lookup
-        var fw = labWeather === 'dry' ? 'clear' : labWeather;
+        var fw = normalizeWeather(labWeather);
         var sd = stoppingDistance(labSpeed, fw, labReaction);
         // Worn tires lose ~25% of available grip — μ drops, braking distance grows as 1/μ.
         if (labTires === 'worn') {
@@ -21193,12 +21696,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
       // ── PARALLEL PARKING (2D) ──
       if (view === 'parking') {
-        return h(ParkingMode, { key: 'parking-mode', ctx: ctx, h: h, React: React, onExit: function() { upd('view', 'menu'); } });
+        return h(ParkingMode, { key: 'parking-mode', ctx: ctx, h: h, React: React,
+          onExit: function() { upd('view', 'menu'); },
+          onComplete: function(score) {
+            if (score >= 80 && !(d.badges && d.badges.park_master)) {
+              var pkBadges = Object.assign({}, d.badges || {});
+              pkBadges.park_master = true;
+              upd('badges', pkBadges);
+              addToast('🏅 Achievement: Park Master');
+            }
+          }
+        });
       }
 
       // ── 3-POINT TURN (2D) ──
       if (view === 'threePoint') {
-        return h(ThreePointMode, { key: 'threepoint-mode', h: h, React: React, onExit: function() { upd('view', 'menu'); } });
+        return h(ThreePointMode, { key: 'threepoint-mode', h: h, React: React,
+          onExit: function() { upd('view', 'menu'); },
+          onComplete: function(score) {
+            if (score >= 80 && !(d.badges && d.badges.three_point)) {
+              var tpBadges = Object.assign({}, d.badges || {});
+              tpBadges.three_point = true;
+              upd('badges', tpBadges);
+              addToast('🏅 Achievement: K-Turn Pro');
+            }
+          }
+        });
       }
 
       // ── BACKING DRILL (2D) ──
@@ -21285,12 +21808,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       if (view === 'hypermilingLab') {
         // MPG-vs-speed curve for the selected vehicle, plus annotated sweet spot
         var weatherChoice = d.hyperWeather || 'dry';
-        var fwh = weatherChoice === 'dry' ? 'clear' : weatherChoice;
+        var fwh = normalizeWeather(weatherChoice);
         var speeds = [];
         for (var sp = 15; sp <= 85; sp += 5) speeds.push(sp);
         var mpgs = speeds.map(function(s) { return cruiseMPG(s, currentVehicle, fwh, true); });
-        var maxMpg = Math.max.apply(null, mpgs.filter(function(m) { return m < 999; }));
-        var bestSpeedIdx = mpgs.indexOf(maxMpg);
+        var validMpgs = mpgs.filter(function(m) { return m < 999; });
+        // Fallback to first speed if every MPG is sentinel-clamped (shouldn't happen with
+        // realistic vehicles, but guards against -Infinity → indexOf → undefined bestSpeed).
+        var maxMpg = validMpgs.length ? Math.max.apply(null, validMpgs) : 0;
+        var bestSpeedIdx = validMpgs.length ? mpgs.indexOf(maxMpg) : 0;
         var bestSpeed = speeds[bestSpeedIdx];
         // Drag share at 65 mph
         var v65 = 65 * MPH_TO_MS;
@@ -21939,7 +22465,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var fdWeather = d.fdWeather || 'dry';
         var fdVehicle = d.fdVehicle || 'sedan';
         var fdVeh = VEHICLES.find(function(v) { return v.id === fdVehicle; }) || VEHICLES[0];
-        var fwfd = fdWeather === 'dry' ? 'clear' : fdWeather;
+        var fwfd = normalizeWeather(fdWeather);
         var v_ms = fdSpeed * MPH_TO_MS;
         var Fd = dragForce(v_ms, fdVeh.cd, fdVeh.area);
         var Fr = rollingForce(fdVeh.mass, rollingCoef(fwfd, true));
@@ -22060,7 +22586,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var sc1 = d.scSpeed1 || 30;
         var sc2 = d.scSpeed2 || 60;
         var scWeather = d.scWeather || 'dry';
-        var scFw = scWeather === 'dry' ? 'clear' : scWeather;
+        var scFw = normalizeWeather(scWeather);
         var sd1 = stoppingDistance(sc1, scFw, 1.5);
         var sd2 = stoppingDistance(sc2, scFw, 1.5);
         var maxDist = Math.max(sd1.total_ft, sd2.total_ft, 100);
@@ -22260,7 +22786,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               ),
               h('tbody', null,
                 weatherTypes.map(function(w) {
-                  var fwc = w.id === 'dry' ? 'clear' : w.id;
+                  var fwc = normalizeWeather(w.id);
                   var sd = stoppingDistance(wcSpeed, fwc, 1.5);
                   var drySD = stoppingDistance(wcSpeed, 'clear', 1.5);
                   var ratio = sd.total_ft / drySD.total_ft;
@@ -22280,7 +22806,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           h('div', { style: { background: '#020617', borderRadius: '10px', padding: '14px', border: '1px solid #1e293b', marginTop: '10px' } },
             h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#38bdf8', marginBottom: '8px' } }, 'Stopping Distance at ' + wcSpeed + ' mph'),
             weatherTypes.map(function(w) {
-              var fwc = w.id === 'dry' ? 'clear' : w.id;
+              var fwc = normalizeWeather(w.id);
               var sd = stoppingDistance(wcSpeed, fwc, 1.5);
               var maxAll = stoppingDistance(wcSpeed, 'ice', 1.5).total_ft;
               return h('div', { key: w.id, style: { marginBottom: '8px' } },
