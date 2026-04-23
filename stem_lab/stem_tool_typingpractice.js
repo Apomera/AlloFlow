@@ -45,7 +45,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       sightReadSeconds: null,  // null = off; read-first preview count-in before capture
       assessmentMode: false,   // when true: hide in-drill WPM/acc/timer for clean baseline
       focusKeyboard: false,    // when true (AND largeKeys on): heavily dim non-target keys
-      speakWordsOnSpace: false // TTS announces each completed word on space press
+      speakWordsOnSpace: false, // TTS announces each completed word on space press
+      sampleLength: null       // null/any | 'short' | 'medium' | 'long' — preferred sample size
     },
     accommodationBadges: [],   // badge ids earned for TRYING an accommodation
     masteryLevel: 0,           // progression tier: 0=home-row, 1=top-row, 2=bottom-row, 3=words, 4=passages
@@ -502,12 +503,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
   // when the student starts a fresh drill from the menu. "Drill again" from
   // summary keeps drillRunId the same so the retry uses identical text —
   // fair before/after comparison is the whole point of retrying.
-  function pickDrillSample(drill, drillRunId) {
+  // Optional lengthPref narrows the pool to samples in a preferred range:
+  // 'short' = <40 chars, 'medium' = 40–70, 'long' = >70. If no samples match
+  // the preference, falls back to the full pool (don't leave the student with
+  // no drill just because they picked a mode that doesn't match this drill).
+  function pickDrillSample(drill, drillRunId, lengthPref) {
     if (!drill || !drill.samples || drill.samples.length === 0) return '';
-    // xorshift-lite for a tiny bit of variety without a real RNG import
+    var pool = drill.samples;
+    if (lengthPref === 'short')       pool = pool.filter(function(s) { return s.length < 40; });
+    else if (lengthPref === 'medium') pool = pool.filter(function(s) { return s.length >= 40 && s.length <= 70; });
+    else if (lengthPref === 'long')   pool = pool.filter(function(s) { return s.length > 70; });
+    if (pool.length === 0) pool = drill.samples; // fallback
     var seed = (drillRunId || 0) + drill.id.length * 7;
-    var idx = Math.abs(seed ^ (seed >> 3)) % drill.samples.length;
-    return drill.samples[idx];
+    var idx = Math.abs(seed ^ (seed >> 3)) % pool.length;
+    return pool[idx];
   }
 
   // ─────────────────────────────────────────────────────────
@@ -868,7 +877,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         } else if (activeDrill) {
           // Seeded on drillRunId — same text on "Drill again" retries,
           // different text when student re-enters the drill from the menu.
-          targetStr = pickDrillSample(activeDrill, state.drillRunId);
+          targetStr = pickDrillSample(activeDrill, state.drillRunId, state.accommodations.sampleLength);
         } else {
           targetStr = '';
         }
@@ -3481,6 +3490,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                       font: 'inherit'
                     }
                   }, opt === null ? 'Off' : (opt + ' min'));
+                })
+              )
+            ),
+
+            // ── Sample length preference — filters drill.samples by length ──
+            h('div', {
+              style: { padding: '14px 0', borderBottom: '1px solid ' + palette.border }
+            },
+              h('div', { style: { fontSize: '14px', fontWeight: 600, color: palette.text, marginBottom: '2px' } }, 'Sample length preference'),
+              h('div', { style: { fontSize: '11px', color: palette.textMute, lineHeight: '1.4', marginBottom: '10px' } },
+                'Prefer shorter or longer drill texts. "Short" helps students with attention or fatigue; "Long" is for students building endurance. If a drill has no samples matching the preference, falls back to any.'),
+              h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' } },
+                [
+                  { id: null,      label: 'Any' },
+                  { id: 'short',   label: '✂️ Short (<40 chars)' },
+                  { id: 'medium',  label: '📄 Medium (40-70)' },
+                  { id: 'long',    label: '📜 Long (>70)' }
+                ].map(function(opt) {
+                  var isActive = acc.sampleLength === opt.id;
+                  return h('button', {
+                    key: 'slen-' + (opt.id || 'any'),
+                    onClick: function() {
+                      var newAcc = Object.assign({}, acc);
+                      newAcc.sampleLength = opt.id;
+                      upd('accommodations', newAcc);
+                    },
+                    style: {
+                      padding: '6px 12px',
+                      borderRadius: '999px',
+                      border: '1px solid ' + (isActive ? palette.accent : palette.border),
+                      background: isActive ? palette.accent : 'transparent',
+                      color: isActive ? '#0f172a' : palette.textDim,
+                      fontSize: '12px',
+                      fontWeight: isActive ? 700 : 500,
+                      cursor: 'pointer',
+                      font: 'inherit'
+                    }
+                  }, opt.label);
                 })
               )
             ),
