@@ -5645,40 +5645,40 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     })();
     // AlloData: pure-data bundle (phoneme guide, prompts, i18n strings, shop items, timeline modes).
     // Registers window.AlloModules.AlloData and calls _upgradeAlloData() to populate monolith shim.
-    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a546067/allo_data_module.js');
+    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3c2eae6/allo_data_module.js');
     // LargeFileModule: chunked audio/video transcription (LargeFileHandler + LargeFileTranscriptionModal).
-    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a546067/large_file_module.js');
+    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3c2eae6/large_file_module.js');
     // KeyConceptMapModule: SVG-overlay Bezier concept map view (used by renderOutlineContent).
-    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a546067/key_concept_map_module.js');
+    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3c2eae6/key_concept_map_module.js');
     // UtilsPure: 14 pure utilities (JSON, storage, network, image) — populates monolith shim via _upgradeUtilsPure().
-    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a546067/utils_pure_module.js');
+    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3c2eae6/utils_pure_module.js');
     // MiscComponents: WordSoundsReviewPanel + AnimatedNumber + ClozeInput (pure-props components).
-    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a546067/misc_components_module.js');
+    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3c2eae6/misc_components_module.js');
     // RemediationAudio: Web Audio feedback beeps (chunk good/bad/medium, session complete, etc).
-    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a546067/remediation_audio_module.js');
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a546067/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a546067/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a546067/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a546067/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a546067/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a546067/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a546067/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a546067/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a546067/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a546067/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a546067/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a546067/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a546067/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a546067/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a546067/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a546067/student_interaction_module.js');
-    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a546067/math_fluency_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a546067/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a546067/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a546067/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a546067/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a546067/content_engine_module.js');
-    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a546067/timeline_revision_module.js');
+    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3c2eae6/remediation_audio_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3c2eae6/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3c2eae6/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3c2eae6/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3c2eae6/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3c2eae6/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3c2eae6/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3c2eae6/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3c2eae6/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3c2eae6/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3c2eae6/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3c2eae6/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3c2eae6/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3c2eae6/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3c2eae6/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3c2eae6/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3c2eae6/student_interaction_module.js');
+    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3c2eae6/math_fluency_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3c2eae6/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3c2eae6/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3c2eae6/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3c2eae6/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3c2eae6/content_engine_module.js');
+    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3c2eae6/timeline_revision_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -5694,7 +5694,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a546067/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3c2eae6/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -10848,6 +10848,12 @@ Return only the corrected version of this exact text:`;
   }, []);
   const [diffLibReady, setDiffLibReady] = useState(typeof window !== 'undefined' && !!window.Diff);
   const [diffLibLoading, setDiffLibLoading] = useState(false);
+  // Fingerprint of the last-built diff inputs. When the user closes and
+  // reopens the modal without changing anything, this lets us skip the
+  // rebuild and preserve their click-to-reject decisions. Rebuild is still
+  // forced when source/final text changes (Apply & Export bumps finalText)
+  // or granularity flips.
+  const _lastDiffFingerprintRef = React.useRef(null);
   // Build diffChunks from jsdiff output when the modal opens, the source/final text
   // changes, or the granularity flips. Pair-detect adjacent del→add so paraphrases
   // toggle as one atomic unit — otherwise rejecting half a paraphrase leaves garbage.
@@ -10859,6 +10865,21 @@ Return only the corrected version of this exact text:`;
     if (!diffLibReady || !window.Diff) return;
     const src = pdfFixResult.sourceText || '';
     const fin = pdfFixResult.finalText || '';
+    // Lightweight fingerprint — length + first/last 40 chars of each side +
+    // granularity. Collisions are functionally impossible for normal PDFs;
+    // the worst-case false positive is keeping a stale diff for a doc that
+    // happens to have identical endpoints AND identical char count as a
+    // different doc, which would only happen after the user switched PDFs
+    // mid-session (extremely rare and non-destructive).
+    const _fp = diffGranularity + ':' + src.length + '/' + fin.length + ':' +
+      (src.slice(0, 40) + '|' + src.slice(-40)) + ':' +
+      (fin.slice(0, 40) + '|' + fin.slice(-40));
+    if (_lastDiffFingerprintRef.current === _fp && diffChunks) {
+      // Same inputs AND we already have chunks in memory — skip rebuild so
+      // the user's rejections survive modal close/reopen.
+      return;
+    }
+    _lastDiffFingerprintRef.current = _fp;
     try {
       const fn = diffGranularity === 'sentences' ? window.Diff.diffSentences
                : diffGranularity === 'chars' ? window.Diff.diffChars
@@ -10879,12 +10900,43 @@ Return only the corrected version of this exact text:`;
           annotated[i + 1].pairId = pid;
         }
       }
+      // Try to rehydrate rejections from localStorage — same fingerprint key
+      // as the one used to save them. If the user rejected chunks last
+      // session and reloaded, their decisions come back automatically.
+      try {
+        const savedRaw = safeGetItem('allo.diffRejections__' + _fp);
+        if (savedRaw) {
+          const saved = JSON.parse(savedRaw);
+          // saved is { rejectedIds: [...], savedAt: ... } — apply to chunks by id.
+          if (saved && Array.isArray(saved.rejectedIds) && saved.rejectedIds.length > 0) {
+            const rejectedSet = new Set(saved.rejectedIds);
+            for (const c of annotated) { if (rejectedSet.has(c.id)) c.rejected = true; }
+          }
+        }
+      } catch (_) { /* corrupt entry — ignore */ }
       setDiffChunks(annotated);
     } catch (e) {
       console.warn('[Diff] compute failed:', e);
       setDiffChunks(null);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [diffViewOpen, pdfFixResult, diffGranularity, diffLibReady]);
+  // Persist rejection decisions to localStorage keyed by the same fingerprint
+  // as the rebuild gate. Debounced via ref so rapid click-rejects don't thrash
+  // disk. Saved as a thin {rejectedIds, savedAt} payload — the chunks
+  // themselves are regenerated from source/final on open.
+  useEffect(() => {
+    if (!diffChunks || !_lastDiffFingerprintRef.current) return;
+    try {
+      const rejectedIds = diffChunks.filter(c => c.rejected).map(c => c.id);
+      const key = 'allo.diffRejections__' + _lastDiffFingerprintRef.current;
+      if (rejectedIds.length === 0) {
+        safeRemoveItem(key);
+      } else {
+        safeSetItem(key, JSON.stringify({ rejectedIds, savedAt: new Date().toISOString() }));
+      }
+    } catch (_) { /* quota or disabled — non-fatal */ }
+  }, [diffChunks]);
   // Lazy-load the jsdiff global on demand.
   const _ensureDiffLib = React.useCallback(() => {
     if (typeof window === 'undefined') return Promise.resolve(false);
@@ -53400,14 +53452,29 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   const _chunks = diffChunks;
                                   let _ins = 0, _del = 0, _same = 0;
                                   let _rejCount = 0, _effectiveText = '';
+                                  // Pair-aware rejection counter: a paraphrase pair (adjacent
+                                  // del→add sharing a pairId) is one user decision, not two.
+                                  // Track pairIds already counted so the badge shows
+                                  // "Apply & Export (3)" when the user rejected 3 paraphrases,
+                                  // not 6.
+                                  const _countedPairs = new Set();
                                   if (_chunks) {
                                     _chunks.forEach(c => {
                                       if (c.type === 'add') {
                                         _ins += (c.count || 1);
-                                        if (c.rejected) { _rejCount++; } else { _effectiveText += c.value; }
+                                        if (c.rejected) {
+                                          if (c.pairId && _countedPairs.has(c.pairId)) { /* already counted */ }
+                                          else { _rejCount++; if (c.pairId) _countedPairs.add(c.pairId); }
+                                        } else {
+                                          _effectiveText += c.value;
+                                        }
                                       } else if (c.type === 'del') {
                                         _del += (c.count || 1);
-                                        if (c.rejected) { _rejCount++; _effectiveText += c.value; }
+                                        if (c.rejected) {
+                                          if (c.pairId && _countedPairs.has(c.pairId)) { /* already counted */ }
+                                          else { _rejCount++; if (c.pairId) _countedPairs.add(c.pairId); }
+                                          _effectiveText += c.value;
+                                        }
                                       } else {
                                         _same += (c.count || 1);
                                         _effectiveText += c.value;
@@ -53415,6 +53482,20 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                     });
                                   }
                                   const _onTryGranularityChange = (g) => {
+                                    // Chars granularity is O(n²) in jsdiff. For a 15-page PDF
+                                    // with ~50KB of text on each side, that's ~2.5 billion
+                                    // comparisons — the browser tab will hang and may trigger
+                                    // Chrome's "page unresponsive" dialog.  Guard with a
+                                    // size threshold + explicit confirm.
+                                    if (g === 'chars') {
+                                      const combined = (_src.length || 0) + (_fin.length || 0);
+                                      const CHARS_GUARD_THRESHOLD = 20000; // ~8-10 PDF pages
+                                      if (combined > CHARS_GUARD_THRESHOLD) {
+                                        const approxSec = Math.round((combined * combined) / 1e9);
+                                        const warn = `Character-level diff on this document (${combined.toLocaleString()} chars total) is very slow and may freeze the browser for ~${Math.max(5, approxSec)}s or more.\n\nConsider Words or Sentences granularity instead.\n\nContinue with Chars anyway?`;
+                                        if (!window.confirm(warn)) return;
+                                      }
+                                    }
                                     if (_chunks && _chunks.some(c => c.rejected)) {
                                       if (!window.confirm('Changing granularity will reset your rejections. Continue?')) return;
                                     }
@@ -53452,12 +53533,36 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                     if (!_chunks || _rejCount === 0 || applyingRemarkup) return;
                                     setApplyingRemarkup(true);
                                     try {
+                                      // Count the preservation-critical structural elements in the
+                                      // existing accessible HTML so we can verify the re-markup
+                                      // preserves them.  Losing images or tables would silently
+                                      // undo earlier accessibility work — the whole point of the
+                                      // tool is that the teacher's remediation effort is durable.
+                                      const _prevHtml = pdfFixResult?.accessibleHtml || '';
+                                      const _countTag = (html, re) => (html.match(re) || []).length;
+                                      const _baselineImg = _countTag(_prevHtml, /<img\b[^>]*>/gi);
+                                      const _baselineTable = _countTag(_prevHtml, /<table\b[^>]*>/gi);
+                                      const _baselineFig = _countTag(_prevHtml, /<figure\b[^>]*>/gi);
+                                      // Pass the existing HTML as the starting point and instruct
+                                      // Gemini to edit TEXT ONLY (keeping all images, tables,
+                                      // figures, landmarks, IDs, attributes intact). This is a
+                                      // stricter ask than "re-markup from scratch" — it gives
+                                      // Gemini a verbatim structural target to preserve.
                                       const prompt =
-                                        `You are a WCAG 2.1 AA accessibility remediator. The user has approved the following final text from a PDF remediation pass. ` +
-                                        `Wrap it in semantic HTML: <h1>/<h2>/<h3> for headings, <p> for paragraphs, <ul>/<ol>/<li> for lists, <figure>/<figcaption> for images, ` +
-                                        `<nav>/<main>/<section> landmarks where appropriate, and proper table markup with <th scope=\"col\"> when tables appear. ` +
-                                        `Do NOT add, remove, paraphrase, or reorder any words from the approved text — only add markup. Return ONLY the HTML, no commentary.\n\n` +
-                                        `Approved text:\n${_effectiveText}`;
+                                        `You are a WCAG 2.1 AA accessibility remediator. Below is the CURRENT accessible HTML for a document. ` +
+                                        `The teacher has reviewed the text and approved a revised version (APPROVED_TEXT). ` +
+                                        `Your job: produce a new HTML that has the same structure as CURRENT_HTML (same <img>, <table>, <figure>, <figcaption>, landmark tags, ids, alt text, class attributes, and overall DOM layout) ` +
+                                        `but whose TEXT content matches APPROVED_TEXT. ` +
+                                        `MANDATORY RULES:\n` +
+                                        `1. PRESERVE every <img> tag with its src, alt, and other attributes UNCHANGED. Do not invent new images. Do not drop existing images.\n` +
+                                        `2. PRESERVE every <table>, <thead>, <tbody>, <tr>, <th>, <td> with attributes. Table cell text may be updated to match APPROVED_TEXT only if the corresponding sentence appears in APPROVED_TEXT.\n` +
+                                        `3. PRESERVE every <figure> and <figcaption> pair.\n` +
+                                        `4. PRESERVE <nav>, <main>, <header>, <footer>, <section>, and skip-to-content links.\n` +
+                                        `5. PRESERVE id="..." and role="..." attributes.\n` +
+                                        `6. Do NOT add, remove, paraphrase, or reorder any words in APPROVED_TEXT beyond what's already there.\n` +
+                                        `7. Return ONLY the updated HTML — no commentary, no code fences.\n\n` +
+                                        `CURRENT_HTML:\n${_prevHtml}\n\n` +
+                                        `APPROVED_TEXT:\n${_effectiveText}`;
                                       let remarkedHtml = null;
                                       try {
                                         const raw = await callGemini(prompt);
@@ -53465,24 +53570,65 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                       } catch (gErr) {
                                         warnLog('[Diff] Gemini remarkup failed:', gErr?.message || gErr);
                                       }
-                                      if (!remarkedHtml) {
-                                        // Minimal-markup fallback so export path still works.
-                                        remarkedHtml = _effectiveText
-                                          .split(/\n{2,}/)
-                                          .map(p => `<p>${p.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').trim()}</p>`)
-                                          .join('\n');
-                                        addToast("Couldn't reapply full markup — exported plain paragraphs. Retry later if needed.", 'warning');
+                                      // VERIFICATION: Gemini may not comply perfectly. Before we
+                                      // accept the new HTML, check that (a) at least 90% of the
+                                      // approved text is present in the result, and (b) the counts
+                                      // of <img>/<table>/<figure> tags didn't drop. If either
+                                      // check fails, we keep the prior accessibleHtml and only
+                                      // update finalText — so the teacher's curation is recorded
+                                      // but no structural loss is silently committed.
+                                      let verified = false;
+                                      let verifyFailReason = '';
+                                      if (remarkedHtml) {
+                                        const newImg = _countTag(remarkedHtml, /<img\b[^>]*>/gi);
+                                        const newTable = _countTag(remarkedHtml, /<table\b[^>]*>/gi);
+                                        const newFig = _countTag(remarkedHtml, /<figure\b[^>]*>/gi);
+                                        if (newImg < _baselineImg) verifyFailReason = `images dropped (${_baselineImg} → ${newImg})`;
+                                        else if (newTable < _baselineTable) verifyFailReason = `tables dropped (${_baselineTable} → ${newTable})`;
+                                        else if (newFig < _baselineFig) verifyFailReason = `figures dropped (${_baselineFig} → ${newFig})`;
+                                        else {
+                                          // Extract text from remarked HTML (strip tags) and check
+                                          // that a reasonable fraction of the approved text survives.
+                                          // Uses a lightweight tokenization for the comparison —
+                                          // we don't need a perfect match, just a sanity threshold.
+                                          const _stripTags = (h) => h.replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, ' ').trim();
+                                          const newText = _stripTags(remarkedHtml);
+                                          const approvedTokens = _effectiveText.split(/\s+/).filter(t => t.length > 2);
+                                          const newLower = newText.toLowerCase();
+                                          let found = 0;
+                                          for (const tok of approvedTokens) { if (newLower.includes(tok.toLowerCase())) found++; }
+                                          const coverage = approvedTokens.length > 0 ? found / approvedTokens.length : 1;
+                                          if (coverage < 0.9) verifyFailReason = `approved-text coverage too low (${Math.round(coverage * 100)}%)`;
+                                          else verified = true;
+                                        }
+                                      } else {
+                                        verifyFailReason = 'Gemini returned empty';
                                       }
-                                      setPdfFixResult(prev => prev ? ({
-                                        ...prev,
-                                        accessibleHtml: remarkedHtml,
-                                        finalText: _effectiveText,
-                                        _userEditedAt: new Date().toISOString(),
-                                        _rejectedHunkCount: _rejCount,
-                                      }) : prev);
-                                      // Rebuild diff against the new approved text so re-opening the diff shows no rejections remaining.
-                                      setDiffChunks(null);
-                                      addToast('Edits applied. Accessible HTML updated.', 'success');
+                                      if (verified && remarkedHtml) {
+                                        setPdfFixResult(prev => prev ? ({
+                                          ...prev,
+                                          accessibleHtml: remarkedHtml,
+                                          finalText: _effectiveText,
+                                          _userEditedAt: new Date().toISOString(),
+                                          _rejectedHunkCount: _rejCount,
+                                        }) : prev);
+                                        setDiffChunks(null);
+                                        addToast('Edits applied. Accessible HTML updated.', 'success');
+                                      } else {
+                                        // Verification failed — roll back to the PRIOR accessibleHtml
+                                        // so no structural loss occurs. Still record the approved
+                                        // finalText + user's rejection metadata so the decisions
+                                        // aren't lost; they can retry or export the text-only form.
+                                        warnLog('[Diff] Apply & Export rejected re-markup:', verifyFailReason);
+                                        setPdfFixResult(prev => prev ? ({
+                                          ...prev,
+                                          finalText: _effectiveText,
+                                          _userEditedAt: new Date().toISOString(),
+                                          _rejectedHunkCount: _rejCount,
+                                          _applyVerificationFailed: verifyFailReason,
+                                        }) : prev);
+                                        addToast('⚠ Apply kept original HTML — re-markup verification failed (' + verifyFailReason + '). Your text edits are saved; structure was preserved.', 'warning');
+                                      }
                                     } finally {
                                       setApplyingRemarkup(false);
                                     }
@@ -53536,7 +53682,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                             <span className="font-mono">{_src.length.toLocaleString()}</span> → <span className="font-mono">{_fin.length.toLocaleString()}</span> chars
                                           </div>
                                         </div>
-                                        <div className="flex-1 overflow-auto p-4 bg-slate-50 relative">
+                                        <div
+                                          className="flex-1 overflow-auto p-4 bg-slate-50 relative"
+                                          onScroll={diffSelection ? () => setDiffSelection(null) : undefined}
+                                        >
                                           {!diffLibReady && diffLibLoading && (
                                             <div className="flex items-center gap-2 text-sm text-slate-600">
                                               <RefreshCw size={14} className="animate-spin" /> Loading diff engine (jsdiff)…
