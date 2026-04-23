@@ -686,6 +686,40 @@ var createDocPipeline = function(deps) {
     return _restoreImages(fixed.join(''));
   };
 
+  // Strip Markdown triple-backtick code fences from a Gemini response so the
+  // inner content (typically JSON or HTML) can be parsed. Previously this was
+  // inlined at 7+ call sites with subtly different edge-case handling; each
+  // copy mishandled at least one of these common variants:
+  //   - Uppercase/mixed-case fence hints (```JSON, ```Json) left "JSON\n" as
+  //     a prefix that breaks downstream JSON.parse
+  //   - Windows line endings (\r\n) leave a lone \r at the top of the body
+  //   - Leading/trailing whitespace inside the fence
+  //   - Nested backticks (rare but seen in code-sample responses)
+  // This helper centralizes the logic. Input unchanged if no fence found.
+  const _stripCodeFence = (text) => {
+    if (!text || typeof text !== 'string') return text || '';
+    let s = text.replace(/\r\n/g, '\n').trim();
+    if (s.indexOf('```') === -1) return s;
+    // Prefer a clean opener match: ```[hint]\n ... \n```
+    // Capture the content between the first fence-open and the last fence-close.
+    const openRe = /^\s*```[\w]*[ \t]*\r?\n?/;
+    const hasOpen = openRe.test(s);
+    if (hasOpen) s = s.replace(openRe, '');
+    const lastFence = s.lastIndexOf('```');
+    if (lastFence !== -1) s = s.substring(0, lastFence);
+    s = s.trim();
+    // Defensive: if the first line looks like a bare language hint that
+    // slipped past the opener regex (e.g. `json` on its own line from a
+    // malformed fence), strip it.
+    const firstNewline = s.indexOf('\n');
+    if (firstNewline > 0 && firstNewline < 12) {
+      const firstLine = s.substring(0, firstNewline).trim().toLowerCase();
+      if (/^(json|html|xml|yaml|yml|js|javascript|ts|typescript)$/.test(firstLine)) {
+        s = s.substring(firstNewline + 1).trim();
+      }
+    }
+    return s;
+  };
   // Strip JSON array/object wrapper artifacts (`[ "`, `"]`, `<p>[ "</p>` etc.) that leak
   // when Gemini wraps its HTML output as a JSON string or when the response is truncated
   // mid-wrapper. Applied to final HTML in all paths (single-chunk, multi-chunk, heuristic).
@@ -2620,7 +2654,7 @@ Return ONLY valid JSON:
       // Run N independent audits for high-reliability triangulation (user-configurable)
       const parseAudit = (raw) => {
         let c = raw.trim();
-        if (c.indexOf('```') !== -1) { const parts = c.split('```'); c = parts[1] || parts[0]; if (c.indexOf('\n') !== -1) c = c.split('\n').slice(1).join('\n'); if (c.lastIndexOf('```') !== -1) c = c.substring(0, c.lastIndexOf('```')); }
+        c = _stripCodeFence(c);
         return JSON.parse(c);
       };
       const allVariants = [
@@ -4384,8 +4418,7 @@ Return ONLY JSON:
   "passes": ["List EVERY checklist item (1-11) that passes. Be thorough — for each item that IS accessible, include a specific description of what was found. A longer passes list is better than a short one."]
 }`;
   const parseAuditJson = (raw) => {
-    let cleaned = raw.trim();
-    if (cleaned.indexOf('```') !== -1) { const parts = cleaned.split('```'); cleaned = parts[1] || parts[0]; if (cleaned.indexOf('\n') !== -1) cleaned = cleaned.split('\n').slice(1).join('\n'); if (cleaned.lastIndexOf('```') !== -1) cleaned = cleaned.substring(0, cleaned.lastIndexOf('```')); }
+    const cleaned = _stripCodeFence(raw);
     return JSON.parse(cleaned);
   };
   // Module-level chunk constants for auditOutputAccessibility. OVERLAP doubled
@@ -6584,7 +6617,8 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
     // Multi-session: when the UI passes pageRange [start, end], we limit extraction to those
     // pages and auto-save the remediated HTML to the multi-session store keyed by doc fingerprint.
     // Lets teachers tackle long PDFs across days without re-remediating earlier pages each session.
-    const _pageRange = batchOverrides?.pageRange || null;
+    // (Mutable: we normalize to null below if the range covers the full doc.)
+    let _pageRange = batchOverrides?.pageRange || null;
     const _startTime = Date.now();
 
     // Reset pipeline telemetry for this run
@@ -6606,6 +6640,19 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
 
     const beforeScore = (_auditResult?.score) || 0;
     const fullPageCount = (_auditResult?.pageCount) || 1;
+    // Normalize pageRange: if the user's selected range exactly covers the
+    // whole document, fall through to the no-range code path. Avoids:
+    //   - a spurious multi-session auto-save record for what's really a
+    //     one-shot full run
+    //   - "Multi-session remediation" UI banner artifacts when no multi-
+    //     session is actually happening
+    //   - cosmetic drift in det.pages.filter() if pages are missing from
+    //     the extraction map
+    // The internal code path is identical to just not passing pageRange.
+    if (_pageRange && _pageRange[0] === 1 && _pageRange[1] === fullPageCount && fullPageCount > 0) {
+      warnLog(`[fixAndVerifyPdf] Full-doc range [1, ${fullPageCount}] normalized to null (no partial-audit overhead needed)`);
+      _pageRange = null;
+    }
     // Use the selected range's length for progress labels + time estimates
     // when partial-audit mode is active, so the teacher sees e.g. "(5 pages)"
     // while fixing pages 1-5 of a 15-page PDF instead of the misleading
@@ -6756,7 +6803,19 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           // content. Without this, partial remediation on scanned PDFs
           // silently processed the whole document.
           const _rangeStart = (_pageRange && _pageRange[0]) ? _pageRange[0] : 1;
-          const _rangeEnd = (_pageRange && _pageRange[1]) ? _pageRange[1] : (_rangeStart + effectivePageCount - 1);
+          const _rangeEndRaw = (_pageRange && _pageRange[1]) ? _pageRange[1] : (_rangeStart + effectivePageCount - 1);
+          // Clamp the end page to the actual document bounds. The UI lets the
+          // teacher type arbitrary numbers, and audit sometimes mis-reports
+          // pageCount (e.g. underestimates for multi-column layouts) — asking
+          // Gemini Vision to extract pages that don't exist either returns
+          // empty blocks or triggers hallucination, both of which silently
+          // corrupt the output. Cap at _rangeStart + effectivePageCount - 1
+          // since effectivePageCount is our best guess at available pages.
+          const _rangeMax = _rangeStart + effectivePageCount - 1;
+          const _rangeEnd = Math.min(_rangeEndRaw, _rangeMax);
+          if (_rangeEnd < _rangeEndRaw) {
+            warnLog(`[Vision] Range end clamped ${_rangeEndRaw} → ${_rangeEnd} (document only has ${effectivePageCount} page(s) from start)`);
+          }
           if (numChunks <= 1 && effectivePageCount <= 2) {
             const rangeInstr = _pageRange
               ? `Extract ALL text content from pages ${_rangeStart} through ${_rangeEnd} of this document ONLY. Do not include any other pages. This range contains approximately ${effectivePageCount} page(s).`
@@ -6918,14 +6977,20 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       // ── Step 1b: Auto-extract images from PDF ──
       updateProgress(1, 'Extracting images...');
       let extractedImages = [];
+      // Track image-step failures (outer Vision refusal, PDF.js extraction
+      // errors, per-image regen errors). If 3 or more pile up, we emit a
+      // single aggregate warning toast at the end of the step so the teacher
+      // doesn't discover broken alt-text stubs in the final HTML only by
+      // reading the output. Small counts (0-2) stay quiet — occasional
+      // decorative failures are expected and already surfaced in imgReport.
+      let _imageFailureCount = 0;
       try {
         const imgResult = await callGeminiVision(
           `Identify and extract ALL images from this PDF document. For each image:\n1. Describe it in detail (what it shows, any text in the image, educational purpose)\n2. Note its approximate location (page number, position)\n3. Indicate if it's decorative (borders, backgrounds) or meaningful (diagrams, photos, charts)\n\nReturn ONLY JSON:\n{"images": [{"id": 1, "description": "detailed description", "page": 1, "position": "top/middle/bottom", "type": "photo|diagram|chart|illustration|logo|decorative", "educationalPurpose": "what it teaches or communicates"}]}`,
           _base64, _mimeType
         );
         if (imgResult) {
-          let cleaned = imgResult.trim();
-          if (cleaned.indexOf('```') !== -1) { const ps = cleaned.split('```'); cleaned = ps[1] || ps[0]; if (cleaned.indexOf('\n') !== -1) cleaned = cleaned.split('\n').slice(1).join('\n'); if (cleaned.lastIndexOf('```') !== -1) cleaned = cleaned.substring(0, cleaned.lastIndexOf('```')); }
+          const cleaned = _stripCodeFence(imgResult);
           const parsed = JSON.parse(cleaned);
           extractedImages = (parsed.images || []).filter(img => img.type !== 'decorative');
           warnLog(`[PDF Fix] Found ${extractedImages.length} meaningful images`);
@@ -7054,9 +7119,10 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                       warnLog(`[PDF Fix] Fallback crop for image on page ${pg} (${pos})`);
                     }
                   }
-                } catch(pgErr) { warnLog(`[PDF Fix] Page ${pageNum} extraction failed:`, pgErr); }
+                } catch(pgErr) { _imageFailureCount++; warnLog(`[PDF Fix] Page ${pageNum} extraction failed:`, pgErr); }
               }
             } catch(pdfJsErr) {
+              _imageFailureCount++;
               warnLog('[PDF Fix] PDF.js extraction failed, trying Imagen fallback:', pdfJsErr?.message);
               // Fallback: use Imagen to regenerate from descriptions
               if (callImagen && extractedImages.length <= 5) {
@@ -7069,14 +7135,27 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                       300, 0.8
                     );
                     if (imgUrl) { extractedImages[imgI].generatedSrc = imgUrl; extractedImages[imgI].isRegenerated = true; }
-                  } catch(genErr) {}
+                    else { _imageFailureCount++; }
+                  } catch(genErr) { _imageFailureCount++; }
                 }
               }
             }
           }
         }
       } catch (imgErr) {
+        // Catastrophic failure of the whole image step (Vision refusal, JSON
+        // parse, network). Treat as a large failure count so the aggregate
+        // toast below fires regardless of how many individual images the
+        // teacher expected.
+        _imageFailureCount += 99;
         warnLog('[PDF Fix] Image extraction failed (non-blocking):', imgErr);
+      }
+      // Aggregate user-visible warning. Stays quiet for small counts so
+      // occasional decorative-image failures don't nag. The UI's per-image
+      // regenerate buttons (imgReport panel) still cover detailed recovery.
+      if (_imageFailureCount >= 3 && !_silentMode && typeof addToast === 'function') {
+        const _displayCount = _imageFailureCount >= 99 ? 'all' : String(_imageFailureCount);
+        addToast(`⚠ ${_displayCount} image${_imageFailureCount === 1 ? '' : 's'} couldn't be extracted or regenerated — the final HTML may have missing images. Check the image review panel to retry individually.`, 'warning');
       }
 
       _pipeStepEnd(1, extractedText.length + ' chars extracted');
@@ -7169,8 +7248,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
             _base64, _mimeType
           );
           if (styleResult) {
-            let sc = styleResult.trim();
-            if (sc.indexOf('```') !== -1) { const ps = sc.split('```'); sc = ps[1] || ps[0]; if (sc.indexOf('\n') !== -1) sc = sc.split('\n').slice(1).join('\n'); if (sc.lastIndexOf('```') !== -1) sc = sc.substring(0, sc.lastIndexOf('```')); }
+            const sc = _stripCodeFence(styleResult);
             const parsed = JSON.parse(sc);
             docStyle = { ...docStyle, ...parsed };
             warnLog('[PDF Fix] Extracted doc style:', docStyle);
@@ -7475,8 +7553,7 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
         updateProgress(2, 'Extracting document structure...');
         try {
           const jsonResult = await callGeminiVision(jsonPrompt, _base64, _mimeType);
-          let cleaned = jsonResult.trim();
-          if (cleaned.indexOf('```') !== -1) { const ps = cleaned.split('```'); cleaned = ps[1] || ps[0]; if (cleaned.indexOf('\n') !== -1) cleaned = cleaned.split('\n').slice(1).join('\n'); if (cleaned.lastIndexOf('```') !== -1) cleaned = cleaned.substring(0, cleaned.lastIndexOf('```')); }
+          let cleaned = _stripCodeFence(jsonResult);
           // JSON self-repair for single-pass extraction
           const repairSingle = (raw) => {
             let s = raw.trim();
@@ -7549,8 +7626,7 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
               _base64, _mimeType
             );
             if (chunkResult) {
-              let cleaned = chunkResult.trim();
-              if (cleaned.indexOf('```') !== -1) { const ps = cleaned.split('```'); cleaned = ps[1] || ps[0]; if (cleaned.indexOf('\n') !== -1) cleaned = cleaned.split('\n').slice(1).join('\n'); if (cleaned.lastIndexOf('```') !== -1) cleaned = cleaned.substring(0, cleaned.lastIndexOf('```')); }
+              let cleaned = _stripCodeFence(chunkResult);
 
               // ── JSON self-repair pipeline ──
               const repairAndParseJson = (raw) => {
@@ -7655,8 +7731,7 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
                   // Parse structure map and merge with extracted text
                   let structBlocks = [];
                   try {
-                    let cleaned = structureMap.trim();
-                    if (cleaned.indexOf('```') !== -1) { const ps = cleaned.split('```'); cleaned = ps[1] || ps[0]; if (cleaned.indexOf('\n') !== -1) cleaned = cleaned.split('\n').slice(1).join('\n'); }
+                    let cleaned = _stripCodeFence(structureMap);
                     const fi = cleaned.indexOf('['); if (fi >= 0) cleaned = cleaned.substring(fi);
                     const li = cleaned.lastIndexOf(']'); if (li > 0) cleaned = cleaned.substring(0, li + 1);
                     const parsed = JSON.parse(cleaned);
@@ -9131,8 +9206,25 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
             afterScore: finalAfterScore,
           }).then(function(saved) {
             if (saved) warnLog('[MultiSession] Saved range ' + _pageRange[0] + '-' + _pageRange[1] + ' to ' + _msSessionId);
+            else warnLog('[MultiSession] saveMultiSessionRange returned falsy for range ' + _pageRange[0] + '-' + _pageRange[1]);
+          }).catch(function(saveErr) {
+            // Without this, IndexedDB quota/permission failures were invisible.
+            // On Canvas LMS (where IndexedDB is the only durable store across
+            // sessions per the doc comment at AlloFlowANTI.txt:10949) this was
+            // a real data-loss vector — the teacher believes their multi-session
+            // progress is saved when it isn't. Surface a toast so they know to
+            // manually export the project file.
+            warnLog('[MultiSession] Auto-save rejected:', saveErr && saveErr.message, saveErr);
+            if (!_silentMode && typeof addToast === 'function') {
+              addToast("⚠ Couldn't save progress for pages " + _pageRange[0] + '-' + _pageRange[1] + " to browser storage (" + (saveErr && saveErr.message ? saveErr.message : 'quota or permission error') + "). Please export the project file manually so you don't lose this range.", 'warning');
+            }
           });
-        } catch (e) { warnLog('[MultiSession] Auto-save failed:', e && e.message); }
+        } catch (e) {
+          warnLog('[MultiSession] Auto-save failed:', e && e.message);
+          if (!_silentMode && typeof addToast === 'function') {
+            addToast("⚠ Couldn't save progress for pages " + _pageRange[0] + '-' + _pageRange[1] + " (" + (e && e.message ? e.message : 'unknown error') + "). Export the project file manually to preserve this range.", 'warning');
+          }
+        }
       }
 
       // Dual-engine guarantee broken: surface clearly so users don't think an AI-only score is blended.
