@@ -757,6 +757,34 @@ You MUST:
                 var masterMetadata = { groundingChunks: _renum.reorderedChunks };
                 fullDocument += generateBibliographyString(masterMetadata, 'Links Only', "Source Text References");
                 fullDocument = validateAndRepairCitations(fullDocument, _renum.reorderedChunks);
+                // Citation spacing normalization (mirrors the former short-path cleanup).
+                // Multi-chunk per-section processing only moved trailing periods; it did
+                // NOT split adjacent citations or clean up stray whitespace. Result: text
+                // like "asleep  . [⁽¹⁾](url)" (double-space before period) and
+                // "[⁽²⁾](url) . [⁽³⁾](url)" (period floating between two citations).
+                // This pass normalizes the citation group into its canonical form:
+                // "sentence. [⁽A⁾](url), [⁽B⁾](url)" — period before the group, comma
+                // between adjacent citations, no double spaces. The patterns only match
+                // superscript-containing links (body citations); bibliography entries
+                // don't have superscripts so they are never affected.
+                fullDocument = fullDocument
+                    // 1. Strip stray tabs/spaces immediately before punctuation —
+                    //    catches "asleep  . [cite]" → "asleep. [cite]".
+                    .replace(/[ \t]+([.,;:!?])/g, '$1')
+                    // 2. Drop interstitial periods between adjacent citations —
+                    //    "[cite1] . [cite2]" is formatting junk (both citations support
+                    //    the same claim, the period is a scrambled sentence-end
+                    //    artifact). Replace with comma-separator, using lookahead so
+                    //    chains of 3+ citations collapse in one pass.
+                    .replace(/(\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\([^)]+\))\s*[.!?]\s+(?=\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\()/g, '$1, ')
+                    // 3. Adjacent citation comma separator — no-space variant that
+                    //    Gemini sometimes emits ("[cite1][cite2]").
+                    .replace(/(\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\([^)]+\))(?=\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\()/g, '$1, ')
+                    // 4. Adjacent citation comma separator — space-separated variant.
+                    //    Lookahead lets chains collapse in one pass.
+                    .replace(/(\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\([^)]+\))[ \t]+(?=\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\()/g, '$1, ')
+                    // 5. Final collapse of 2+ tabs/spaces (preserve newlines).
+                    .replace(/[ \t]{2,}/g, ' ');
            }
            if (effIncludeCitations) {
                 const finalCitCount = (fullDocument.match(/\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\(/g) || []).length;
