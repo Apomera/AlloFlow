@@ -41,17 +41,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       audioCues: false,
       errorTolerant: false,
       predictiveAssist: false, // emerging-typist scaffold: highlight next 1-3 chars
-      restBreakMinutes: null   // null = no nudge; otherwise toast after N active minutes
+      restBreakMinutes: null,  // null = no nudge; otherwise toast after N active minutes
+      sightReadSeconds: null,  // null = off; read-first preview count-in before capture
+      assessmentMode: false,   // when true: hide in-drill WPM/acc/timer for clean baseline
+      focusKeyboard: false,    // when true (AND largeKeys on): heavily dim non-target keys
+      speakWordsOnSpace: false // TTS announces each completed word on space press
     },
     accommodationBadges: [],   // badge ids earned for TRYING an accommodation
     masteryLevel: 0,           // progression tier: 0=home-row, 1=top-row, 2=bottom-row, 3=words, 4=passages
     baseline: null,            // first-ever session snapshot — anchor for IEP trend
     iepGoal: null,             // { targetWpm, targetAccuracy, notes } set by clinician
-    aiPassage: null,           // { text, gradeLevel, topic, generatedAt }
+    dailyGoal: null,           // { targetSessions, targetWpm, date } — expires next day
+    motivationStatement: '',   // student-authored "why I'm practicing" shown on menu + IEP
+    aiPassage: null,           // { text, gradeLevel, topic, generatedAt } — currently active
+    aiPassageLibrary: [],      // array of saved passages for reuse (capped at MAX_PASSAGE_LIBRARY)
     passagePrefs: {            // remembered choices for next generation
       gradeLevel: '2-3',       // K, 1, 2-3, 4-5, 6-8, 9-12
       topic: '',
-      difficulty: 'on-level'   // 'easier' | 'on-level' | 'stretch'
+      difficulty: 'on-level',  // 'easier' | 'on-level' | 'stretch'
+      language: 'en'           // 'en' | 'es' | 'fr' | 'pt' | 'zh' | ...
     },
     studentName: '',           // optional; appears on IEP report when set
     // drillRunId increments when student STARTS a fresh drill from the menu
@@ -63,13 +71,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     // Lifetime totals survive session-array capping, so the IEP report stays
     // accurate for long-term students even after the 200-session cap trims
     // the oldest records.
-    lifetime: { totalSessions: 0, totalCharsTyped: 0, totalErrorsLogged: 0 },
+    lifetime: { totalSessions: 0, totalCharsTyped: 0, totalErrorsLogged: 0, abandonments: 0 },
     onboardingSeen: false,
     // aggregateErrors: { 'a': 5, 'd': 12, ... } — all-time per-char error counts
     // for the heatmap. Updated at session save so we don't recompute from the
     // capped sessions array.
-    aggregateErrors: {}
+    aggregateErrors: {},
+    // milestonesEarned — array of milestone IDs the student has crossed.
+    // Additive only; we never un-earn to avoid guilt patterns.
+    milestonesEarned: [],
+    // Custom drill — teacher or student can author their own practice text
+    // (spelling list, IEP-goal words, science vocab, etc.). Does NOT feed
+    // mastery progression. `customDrill` is retained for backward compat with
+    // earlier state shapes; new canonical field is the library.
+    customDrill: null,         // (legacy) single-slot, auto-migrated into library
+    customDrillLibrary: [],    // canonical: array of { id, text, label, savedAt }
+    activeCustomDrillId: null  // which library entry is currently being drilled
   };
+
+  // Max custom drills kept at once. Matches the passage library size — both are
+  // per-student curated collections of authored content.
+  var MAX_CUSTOM_LIBRARY = 5;
+
+  // Lifetime milestones — positive-framing celebrations for cumulative work.
+  // Each has a check(state) predicate that returns true when earned. Deliberately
+  // not streak-based (avoids guilt patterns) and not visible as a "progress
+  // toward" bar (avoids pressure). Student simply earns them by showing up.
+  var MILESTONES = [
+    { id: 'first',       label: '🌱 First session',         check: function(lt, ud) { return lt.totalSessions >= 1; } },
+    { id: 'ten',         label: '📚 10 sessions',           check: function(lt, ud) { return lt.totalSessions >= 10; } },
+    { id: 'fifty',       label: '📖 50 sessions',           check: function(lt, ud) { return lt.totalSessions >= 50; } },
+    { id: 'hundred',     label: '🎓 100 sessions',          check: function(lt, ud) { return lt.totalSessions >= 100; } },
+    { id: 'thousand',    label: '🏆 1000 characters typed', check: function(lt, ud) { return lt.totalCharsTyped >= 1000; } },
+    { id: 'tenk',        label: '🗝 10000 characters typed',check: function(lt, ud) { return lt.totalCharsTyped >= 10000; } },
+    { id: 'fiftyk',      label: '⭐ 50000 characters typed',check: function(lt, ud) { return lt.totalCharsTyped >= 50000; } },
+    { id: 'days7',       label: '🌻 7 days of practice',    check: function(lt, ud) { return ud >= 7; } },
+    { id: 'days30',      label: '🌳 30 days of practice',   check: function(lt, ud) { return ud >= 30; } }
+  ];
+
+  // Maximum size of the saved-passage library. Keep low to avoid clutter —
+  // students who want more have Custom Drill for arbitrary text.
+  var MAX_PASSAGE_LIBRARY = 8;
 
   // Accommodation presets — single-click bundles of common accommodation combos.
   // Applying a preset overwrites the student's current accommodation settings.
@@ -142,6 +184,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         restBreakMinutes: 10
       }
     }
+  ];
+
+  // Language options for AI-generated passages. Code + human-facing label +
+  // note for the prompt. English is the default; other languages support ELL
+  // students and families practicing in a shared language. Keep the list
+  // short and common — the LLM handles most of the language matter.
+  var PASSAGE_LANGUAGES = [
+    { code: 'en', label: 'English',         promptHint: 'Write the passage in English.' },
+    { code: 'es', label: 'Español',         promptHint: 'Escribe el pasaje en español. Usa vocabulario apropiado para el nivel escolar indicado. SOLO usa caracteres ASCII estándar — NO uses tildes (á é í ó ú ñ) ni otros diacríticos; reemplázalos con las letras base correspondientes. Sin comillas especiales.' },
+    { code: 'fr', label: 'Français',        promptHint: 'Écris le passage en français. Utilise du vocabulaire adapté au niveau scolaire. UTILISE UNIQUEMENT des caractères ASCII standard — PAS d\'accents (é è à ç etc.) ni de diacritiques; remplace-les par les lettres de base. Pas de guillemets spéciaux.' },
+    { code: 'pt', label: 'Português',       promptHint: 'Escreva o texto em português. Use vocabulário apropriado para o nível escolar. USE APENAS caracteres ASCII padrão — NÃO use acentos (á ã ç etc.) nem diacríticos; substitua-os pelas letras base. Sem aspas especiais.' },
+    { code: 'zh', label: '简体中文',         promptHint: 'Write the passage mostly in English but with 2-4 common Simplified Chinese vocabulary words integrated naturally for typing practice. Keep Chinese chars simple and common.' }
   ];
 
   // Grade-level complexity guides lifted from AlloFlowANTI.txt's handleGenerate
@@ -379,6 +433,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       requiresAI: true,
       masteryWpm: 20,
       masteryAcc: 90
+    },
+    'custom': {
+      id: 'custom',
+      name: 'Custom Text',
+      icon: '📋',
+      tier: null,                // sits outside the mastery progression
+      description: 'Your teacher or you can enter any text — spelling lists, IEP goals, science vocab. Not scored for mastery.',
+      samples: null,             // populated from state.customDrill at drill-start
+      locked: false,
+      requiresCustom: true       // routes through custom-setup view
     }
   };
 
@@ -614,6 +678,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         var state = Object.assign({}, DEFAULT_STATE, rawState);
         state.accommodations = Object.assign({}, DEFAULT_STATE.accommodations, rawState.accommodations || {});
 
+        // Migrate legacy single-slot customDrill into customDrillLibrary.
+        // Non-destructive: only runs when library is empty and legacy slot has content.
+        if ((!state.customDrillLibrary || state.customDrillLibrary.length === 0) &&
+            state.customDrill && state.customDrill.text) {
+          state.customDrillLibrary = [{
+            id: 'cd' + (state.customDrill.savedAt ? new Date(state.customDrill.savedAt).getTime() : Date.now()),
+            text: state.customDrill.text,
+            label: state.customDrill.label || '',
+            savedAt: state.customDrill.savedAt || new Date().toISOString()
+          }];
+        }
+
         var upd = function(key, val) { ctx.update('typingPractice', key, val); };
         var updMulti = function(obj) { ctx.updateMulti ? ctx.updateMulti('typingPractice', obj) : Object.keys(obj).forEach(function(k) { upd(k, obj[k]); }); };
         var addToast = ctx.addToast || function(msg) { console.log('[TypingPractice]', msg); };
@@ -650,6 +726,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         // Per-character error counts for this drill (reset on drill entry)
         var errorCharsTuple = useState({});
         var errorChars = errorCharsTuple[0], setErrorChars = errorCharsTuple[1];
+
+        // Per-keystroke timestamps (ms offsets from startTime). Used to compute
+        // intra-session pace graph on summary. Uses a ref to avoid one
+        // setState per keystroke (which would also re-trigger the onKeyDown
+        // useCallback's dependency chain). Reset on drill entry.
+        var keystrokeTimesRef = useRef([]);
+
+        // Sight-read countdown: when on, a N-second count-in shows the full
+        // passage before typing is accepted. Reading-first scaffold.
+        var sightReadLeftTuple = useState(0);
+        var sightReadLeft = sightReadLeftTuple[0], setSightReadLeft = sightReadLeftTuple[1];
+
+        // Warmup mode: this session will NOT be saved. Student checks the box
+        // on drill-intro to practice without recording. Reduces all-or-nothing
+        // stress. Flag lives in local state because it's per-drill-entry only.
+        var isWarmupTuple = useState(false);
+        var isWarmup = isWarmupTuple[0], setIsWarmup = isWarmupTuple[1];
         var pauseStartedAtTuple = useState(null);
         var pauseStartedAt = pauseStartedAtTuple[0], setPauseStartedAt = pauseStartedAtTuple[1];
 
@@ -690,6 +783,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         var draftGrade = draftGradeTuple[0], setDraftGrade = draftGradeTuple[1];
         var draftDifficultyTuple = useState((state.passagePrefs && state.passagePrefs.difficulty) || 'on-level');
         var draftDifficulty = draftDifficultyTuple[0], setDraftDifficulty = draftDifficultyTuple[1];
+        var draftLanguageTuple = useState((state.passagePrefs && state.passagePrefs.language) || 'en');
+        var draftLanguage = draftLanguageTuple[0], setDraftLanguage = draftLanguageTuple[1];
+        var customTextDraftTuple = useState((state.customDrill && state.customDrill.text) || '');
+        var customTextDraft = customTextDraftTuple[0], setCustomTextDraft = customTextDraftTuple[1];
+        var customLabelDraftTuple = useState((state.customDrill && state.customDrill.label) || '');
+        var customLabelDraft = customLabelDraftTuple[0], setCustomLabelDraft = customLabelDraftTuple[1];
         var genLoadingTuple = useState(false);
         var genLoading = genLoadingTuple[0], setGenLoading = genLoadingTuple[1];
         var genErrorTuple = useState(null);
@@ -703,6 +802,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         var targetStr;
         if (activeDrill && activeDrill.id === 'passage' && state.aiPassage && state.aiPassage.text) {
           targetStr = state.aiPassage.text;
+        } else if (activeDrill && activeDrill.id === 'custom') {
+          // Look up the active custom entry from the library; fall back to
+          // the legacy singular slot if no id is set (e.g., right after migration).
+          var lib = state.customDrillLibrary || [];
+          var activeEntry = state.activeCustomDrillId
+            ? lib.filter(function(e) { return e.id === state.activeCustomDrillId; })[0]
+            : lib[0];
+          targetStr = (activeEntry && activeEntry.text) || (state.customDrill && state.customDrill.text) || '';
         } else if (activeDrill) {
           // Seeded on drillRunId — same text on "Drill again" retries,
           // different text when student re-enters the drill from the menu.
@@ -726,9 +833,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             setPauseStartedAt(null);
             completionSavedRef.current = false;
             restNudgeShownRef.current = false;
+            keystrokeTimesRef.current = [];
             // Clear any stale note draft from a prior summary
             setNoteDraft('');
             setNoteSaved(false);
+            // Kick off sight-read countdown if accommodation is enabled.
+            // Keystroke handler will reject input while sightReadLeft > 0.
+            var sr = state.accommodations && state.accommodations.sightReadSeconds;
+            setSightReadLeft(sr ? sr : 0);
             // Focus the capture surface so keystrokes flow in
             setTimeout(function() {
               if (captureRef.current && captureRef.current.focus) captureRef.current.focus();
@@ -745,12 +857,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           return function() { clearInterval(iv); };
         }, [state.view, drillComplete]);
 
+        // ── Sight-read countdown tick: count down by 1 each second until 0 ──
+        useEffect(function() {
+          if (state.view !== 'drill' || sightReadLeft <= 0 || drillComplete) return;
+          var iv = setInterval(function() {
+            setSightReadLeft(function(prev) { return prev > 1 ? prev - 1 : 0; });
+          }, 1000);
+          return function() { clearInterval(iv); };
+        }, [state.view, sightReadLeft, drillComplete]);
+
         // ── Handle drill completion: save session, update best, route to summary ──
         useEffect(function() {
           if (!drillComplete || !startTime) return;
           if (completionSavedRef.current) return;
           completionSavedRef.current = true;
           var endMs = Date.now();
+
+          // Warmup mode: skip all persistence. Show summary with a notice
+          // that nothing was saved, then route back to menu.
+          if (isWarmup) {
+            var wmPausedTotal = pausedMs + (pauseStartedAt ? (endMs - pauseStartedAt) : 0);
+            var wmActiveMs = Math.max(endMs - startTime - wmPausedTotal, 1000);
+            var wmMinutes = wmActiveMs / 60000;
+            var wmWpm = Math.round((typed.length / 5) / wmMinutes);
+            var wmTotalKs = typed.length + errorCount;
+            var wmAcc = wmTotalKs > 0 ? Math.round((typed.length / wmTotalKs) * 100) : 100;
+            setLastSummary({
+              drillId: activeDrill.id,
+              drillName: activeDrill.name,
+              wpm: wmWpm,
+              accuracy: wmAcc,
+              durationSec: Math.round(wmActiveMs / 1000),
+              errors: errorCount,
+              charCount: typed.length,
+              date: new Date().toISOString(),
+              isWarmup: true,
+              accommodationsUsed: []
+            });
+            upd('view', 'summary');
+            return;
+          }
+
+
           // Subtract any accumulated paused time so breaks don't tank WPM.
           // If the student is currently paused (unusual at completion), include
           // that final pause-so-far too.
@@ -760,6 +908,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           var wpm = Math.round((typed.length / 5) / minutes);
           var totalKeystrokes = typed.length + errorCount;
           var accuracy = totalKeystrokes > 0 ? Math.round((typed.length / totalKeystrokes) * 100) : 100;
+          // Compute 10-second-bucket pace (chars-per-10s) for intra-session
+          // visualization. Keeps only the bucket counts; ms offsets aren't
+          // serialized to save storage for long-term students.
+          var BUCKET_MS = 10000;
+          var numBuckets = Math.max(1, Math.ceil(activeMs / BUCKET_MS));
+          var paceBuckets = new Array(numBuckets).fill(0);
+          keystrokeTimesRef.current.forEach(function(tMs) {
+            var idx = Math.min(numBuckets - 1, Math.floor(tMs / BUCKET_MS));
+            paceBuckets[idx]++;
+          });
+
           var summary = {
             drillId: activeDrill.id,
             drillName: activeDrill.name,
@@ -769,6 +928,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             pausedSec: Math.round(pausedTotal / 1000),
             errors: errorCount,
             errorChars: errorChars,  // per-char error map: { 'a': 2, 'd': 1, ... }
+            paceBuckets: paceBuckets, // chars typed per 10-second bucket
             charCount: typed.length,
             date: new Date().toISOString(),
             accommodationsUsed: Object.keys(state.accommodations).filter(function(k) { return state.accommodations[k] === true || (state.accommodations[k] && state.accommodations[k] !== false); })
@@ -886,6 +1046,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
 
           if (key === 'Escape') {
             e.preventDefault();
+            // If the student had actually started typing (startTime set) AND
+            // hadn't completed, count this as an abandonment. Diagnostic for
+            // drills that are too hard or sessions that were set up wrong.
+            // Fire-and-forget — does not block or prompt the student.
+            if (startTime !== null && !drillComplete && !isWarmup) {
+              var lt = state.lifetime || {};
+              upd('lifetime', Object.assign({}, lt, { abandonments: (lt.abandonments || 0) + 1 }));
+            }
             upd('view', 'menu');
             return;
           }
@@ -899,6 +1067,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
 
           // If paused, swallow all keystrokes so breaks are true breaks
           if (paused) { e.preventDefault(); return; }
+
+          // Sight-read count-in: swallow keystrokes until countdown ends.
+          // Escape still works (handled above) so student can abort.
+          if (sightReadLeft > 0) { e.preventDefault(); return; }
 
           if (key === 'Backspace') {
             e.preventDefault();
@@ -920,7 +1092,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           if (key === expected) {
             setTyped(typed + key);
             setLastWasWrong(false);
+            // Record timestamp relative to start for pace-graph computation.
+            // Push via ref to avoid per-keystroke re-renders from state updates.
+            if (startTime !== null) keystrokeTimesRef.current.push(Date.now() - startTime);
+            else keystrokeTimesRef.current.push(0);
             if (state.accommodations.audioCues) audioCorrect(state.audioTheme);
+            // Speak-words accommodation: when student completes a word (types
+            // a space), speak the just-completed word. Rate-limited by space
+            // presses so TTS doesn't spam on rapid typing.
+            if (state.accommodations.speakWordsOnSpace && key === ' ' && ctx.callTTS) {
+              // Walk backwards from the just-typed position to find the word
+              var endIdx = typed.length;        // index after inserting new char
+              var startIdx = endIdx - 1;        // position of the new space
+              while (startIdx > 0 && typed[startIdx - 1] !== ' ') startIdx--;
+              var word = typed.slice(startIdx, endIdx).trim();
+              if (word && word.length >= 2) {
+                try { ctx.callTTS(word, null, 1.1, { force: false }).catch(function() {}); }
+                catch (e) { /* ignore */ }
+              }
+            }
           } else {
             // Wrong key: count error. In error-tolerant mode, we STILL advance
             // so dysgraphic students don't get stuck — the error is logged but
@@ -941,7 +1131,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               setTyped(typed + expected); // auto-advance with the correct char
             }
           }
-        }, [state.view, drillComplete, targetStr, typed, startTime, errorCount, errorChars, state.accommodations.errorTolerant, state.accommodations.audioCues, state.audioTheme, paused]);
+        }, [state.view, drillComplete, targetStr, typed, startTime, errorCount, errorChars, state.accommodations.errorTolerant, state.accommodations.audioCues, state.accommodations.speakWordsOnSpace, state.audioTheme, paused, sightReadLeft]);
 
         // ── Navigation helpers ──
         var go = function(view) { upd('view', view); };
@@ -955,6 +1145,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           // AI passages go through setup first (grade + topic), then generate, then drill.
           if (drill.requiresAI) {
             updMulti({ view: 'passage-setup', currentDrill: drillId });
+            return;
+          }
+          // Custom drill: route to custom-setup for authoring text. If already
+          // saved, setup offers "drill this" vs "edit" options.
+          if (drill.requiresCustom) {
+            updMulti({ view: 'custom-setup', currentDrill: drillId });
             return;
           }
           // Increment drillRunId so a fresh text is picked. Route to the intro
@@ -1009,6 +1205,58 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               }, 'Built for learners with dysgraphia, dyslexia, ADHD, motor-planning differences, and low vision. Go at your own pace — there are no timers, leaderboards, or streak punishments here.')
             ),
 
+            // Motivation statement — student's own "why I'm practicing" shown on menu.
+            // Renders as a personal anchor. Displays above recommendations so
+            // the student sees their own purpose before any system nudge.
+            state.motivationStatement ? h('div', {
+              style: {
+                marginBottom: '16px',
+                padding: '10px 14px',
+                background: 'transparent',
+                borderLeft: '3px solid ' + palette.success,
+                fontSize: '13px',
+                color: palette.textDim,
+                fontStyle: 'italic',
+                lineHeight: '1.5'
+              }
+            }, '"' + state.motivationStatement + '"') : null,
+
+            // Daily goal banner — today-only micro-target; expires at midnight.
+            (function() {
+              var dg = state.dailyGoal;
+              if (!dg) return null;
+              // Expire if set for a different calendar day
+              var today = new Date().toLocaleDateString();
+              var dgDate = dg.date ? new Date(dg.date).toLocaleDateString() : null;
+              if (dgDate && dgDate !== today) return null;
+              // Count today's sessions toward the target
+              var todaySessions = (state.sessions || []).filter(function(s) {
+                return new Date(s.date).toLocaleDateString() === today;
+              });
+              var progress = todaySessions.length;
+              var target = dg.targetSessions || 1;
+              var bestTodayWpm = todaySessions.reduce(function(m, s) { return Math.max(m, s.wpm || 0); }, 0);
+              var met = progress >= target && (!dg.targetWpm || bestTodayWpm >= dg.targetWpm);
+              return h('div', {
+                style: {
+                  marginBottom: '16px',
+                  padding: '10px 14px',
+                  background: palette.surface,
+                  border: '1px solid ' + palette.border,
+                  borderLeft: '3px solid ' + (met ? palette.success : palette.accent),
+                  borderRadius: '8px',
+                  fontSize: '12px',
+                  color: palette.textDim
+                }
+              },
+                h('span', { style: { color: met ? palette.success : palette.accent, fontWeight: 700 } },
+                  met ? '✓ Daily goal met: ' : '☀️ Today\'s goal: '),
+                target + ' session' + (target === 1 ? '' : 's') +
+                (dg.targetWpm ? ' @ ' + dg.targetWpm + '+ WPM' : '') +
+                ' · progress ' + progress + '/' + target
+              );
+            })(),
+
             // First-run welcome card — dismissible, once-only.
             !state.onboardingSeen && sessionCount === 0 ? h('div', {
               role: 'region',
@@ -1036,27 +1284,106 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             ) : null,
 
             // Quick stats strip (only if student has activity)
-            sessionCount > 0 ? h('div', {
-              style: {
-                display: 'flex',
-                gap: '12px',
-                marginBottom: '20px',
-                flexWrap: 'wrap'
-              }
-            },
-              h('div', { style: statCardStyle(palette) },
-                h('div', { style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Sessions'),
-                h('div', { style: { fontSize: '22px', fontWeight: 700, color: palette.accent } }, sessionCount)
-              ),
-              h('div', { style: statCardStyle(palette) },
-                h('div', { style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Mastery Tier'),
-                h('div', { style: { fontSize: '22px', fontWeight: 700, color: palette.success } }, state.masteryLevel + ' / 7')
-              ),
-              badgeCount > 0 ? h('div', { style: statCardStyle(palette) },
-                h('div', { style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Badges'),
-                h('div', { style: { fontSize: '22px', fontWeight: 700, color: palette.warn } }, badgeCount)
-              ) : null
-            ) : null,
+            sessionCount > 0 ? (function() {
+              // Gentle practice-day count: unique CALENDAR DAYS in the last 30 with
+              // at least one session. No guilt framing — missed days aren't surfaced,
+              // only days practiced. "X days of practice" not "X/30 days".
+              var now = Date.now();
+              var thirtyDaysAgo = now - 30 * 24 * 60 * 60 * 1000;
+              var uniqueDays = {};
+              (state.sessions || []).forEach(function(s) {
+                var t = new Date(s.date).getTime();
+                if (t >= thirtyDaysAgo) {
+                  var dayKey = new Date(s.date).toLocaleDateString();
+                  uniqueDays[dayKey] = true;
+                }
+              });
+              var practiceDays = Object.keys(uniqueDays).length;
+
+              return h('div', {
+                style: {
+                  display: 'flex',
+                  gap: '12px',
+                  marginBottom: '20px',
+                  flexWrap: 'wrap'
+                }
+              },
+                h('div', { style: statCardStyle(palette) },
+                  h('div', { style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Sessions'),
+                  h('div', { style: { fontSize: '22px', fontWeight: 700, color: palette.accent } }, sessionCount)
+                ),
+                h('div', { style: statCardStyle(palette) },
+                  h('div', { style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Mastery Tier'),
+                  h('div', { style: { fontSize: '22px', fontWeight: 700, color: palette.success } }, state.masteryLevel + ' / 7')
+                ),
+                // Positive-framing practice-days counter — "days you showed up"
+                practiceDays > 0 ? h('div', { style: statCardStyle(palette), title: 'Unique calendar days with at least one session in the last 30 days. No guilt for days off.' },
+                  h('div', { style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Practice days · 30d'),
+                  h('div', { style: { fontSize: '22px', fontWeight: 700, color: palette.textDim } },
+                    '🗓 ' + practiceDays
+                  )
+                ) : null,
+                badgeCount > 0 ? h('div', { style: statCardStyle(palette) },
+                  h('div', { style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Badges'),
+                  h('div', { style: { fontSize: '22px', fontWeight: 700, color: palette.warn } }, badgeCount)
+                ) : null
+              );
+            })() : null,
+
+            // Quick-resume card — surfaces the last drill the student did so
+            // they can re-enter with one click instead of hunting on the grid.
+            (function() {
+              var all = state.sessions || [];
+              if (all.length === 0) return null;
+              var last = all[all.length - 1];
+              var lastDrill = DRILLS[last.drillId];
+              if (!lastDrill) return null;
+              // Skip resume card if it's a locked drill (can happen after
+              // discarding a session that caused mastery advancement)
+              var unlocked = !lastDrill.locked || state.masteryLevel >= lastDrill.tier;
+              if (!unlocked) return null;
+              var ageMins = Math.round((Date.now() - new Date(last.date).getTime()) / 60000);
+              var ageLabel = ageMins < 1 ? 'moments ago'
+                          : ageMins < 60 ? ageMins + ' min ago'
+                          : ageMins < 1440 ? Math.round(ageMins / 60) + ' hr ago'
+                          : Math.round(ageMins / 1440) + ' day' + (ageMins >= 2880 ? 's' : '') + ' ago';
+              var resumeLabel = last.drillId === 'passage' && state.aiPassage
+                ? state.aiPassage.topic ? 'Passage · ' + state.aiPassage.topic : 'Personalized passage'
+                : last.drillId === 'custom' && state.activeCustomDrillId
+                ? (function() {
+                    var lib = state.customDrillLibrary || [];
+                    var entry = lib.filter(function(e) { return e.id === state.activeCustomDrillId; })[0];
+                    return entry && entry.label ? entry.label : 'Custom drill';
+                  })()
+                : lastDrill.name;
+              return h('div', {
+                role: 'region',
+                'aria-label': 'Quick resume',
+                style: {
+                  marginBottom: '16px',
+                  padding: '14px 16px',
+                  background: palette.surface,
+                  border: '1px solid ' + palette.border,
+                  borderRadius: '10px',
+                  display: 'flex',
+                  gap: '14px',
+                  alignItems: 'center',
+                  flexWrap: 'wrap'
+                }
+              },
+                h('span', { style: { fontSize: '28px', flexShrink: 0 } }, lastDrill.icon),
+                h('div', { style: { flex: '1 1 220px', minWidth: 0 } },
+                  h('div', { style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700, marginBottom: '2px' } }, 'Last session · ' + ageLabel),
+                  h('div', { style: { fontSize: '14px', fontWeight: 600, color: palette.text, lineHeight: '1.3' } }, resumeLabel),
+                  h('div', { style: { fontSize: '11px', color: palette.textMute, marginTop: '2px', fontVariantNumeric: 'tabular-nums' } },
+                    last.wpm + ' WPM · ' + last.accuracy + '% acc')
+                ),
+                h('button', {
+                  onClick: function() { startDrill(last.drillId); },
+                  style: Object.assign({}, primaryBtnStyle(palette), { fontSize: '12px', padding: '8px 16px' })
+                }, '▶ Continue')
+              );
+            })(),
 
             // Practice recommendations — pattern-based nudges (no guilt, just hints)
             (function() {
@@ -1108,7 +1435,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 Object.keys(DRILLS).map(function(drillId) {
                   var drill = DRILLS[drillId];
                   var unlocked = !drill.locked || state.masteryLevel >= drill.tier;
-                  return renderDrillCard(drill, unlocked, palette, startDrill);
+                  // Compute the "needed-to-unlock" hint: which previous drill to clear
+                  var unlockHint = null;
+                  if (!unlocked) {
+                    for (var ti = 0; ti < TIER_ORDER.length; ti++) {
+                      var prevId = TIER_ORDER[ti];
+                      var prevDrill = DRILLS[prevId];
+                      if (prevDrill && prevDrill.tier === state.masteryLevel) {
+                        unlockHint = 'Clear ' + prevDrill.name + ' first (' + prevDrill.masteryWpm + ' WPM @ ' + prevDrill.masteryAcc + '%)';
+                        break;
+                      }
+                    }
+                  }
+                  // Inline per-drill stats for unlocked drills: best WPM + session count
+                  var stats = null;
+                  if (unlocked) {
+                    var drillSessions = (state.sessions || []).filter(function(s) { return s.drillId === drillId; });
+                    var pb = (state.personalBest || {})[drillId];
+                    if (drillSessions.length > 0 || pb) {
+                      stats = {
+                        sessionCount: drillSessions.length,
+                        bestWpm: pb ? pb.wpm : null,
+                        bestAcc: pb ? pb.accuracy : null,
+                        lastDate: drillSessions.length > 0 ? drillSessions[drillSessions.length - 1].date : null
+                      };
+                    }
+                  }
+                  return renderDrillCard(drill, unlocked, palette, startDrill, unlockHint, stats);
                 })
               )
             ),
@@ -1125,6 +1478,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             },
               renderNavButton('📊 Progress & Goals', function() { go('progress'); }, palette, (state.sessions || []).length === 0),
               renderNavButton('⚙️ Accommodations', function() { go('settings'); }, palette, false),
+              renderNavButton('? Shortcuts', function() { go('shortcuts'); }, palette, false),
               state.iepGoal ? h('div', {
                 style: {
                   marginLeft: 'auto',
@@ -1134,6 +1488,220 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   fontStyle: 'italic'
                 }
               }, '🎯 IEP goal active') : null
+            )
+          );
+        }
+
+        // ═════════════════════════════════════════════════════
+        // VIEW: CUSTOM-SETUP — author your own drill text (spelling list,
+        // IEP-goal words, science vocab, etc.). Single-slot. Not scored for
+        // mastery. Useful for clinicians adapting the tool to curriculum.
+        // ═════════════════════════════════════════════════════
+        function renderCustomSetup() {
+          var library = state.customDrillLibrary || [];
+          var draftTrimmed = (customTextDraft || '').trim();
+          var isValidDraft = draftTrimmed.length >= 5 && draftTrimmed.length <= 500;
+          var atCapacity = library.length >= MAX_CUSTOM_LIBRARY;
+
+          return h('div', {
+            style: {
+              padding: '20px',
+              maxWidth: '720px',
+              margin: '0 auto',
+              color: palette.text,
+              fontFamily: fontFamily,
+              background: palette.bg,
+              minHeight: '60vh'
+            }
+          },
+            renderBackButton(function() { go('menu'); }, palette),
+            h('h3', { style: { margin: '16px 0 4px 0', color: palette.text } },
+              '📋  Custom drills · ' + library.length + '/' + MAX_CUSTOM_LIBRARY),
+            h('p', {
+              style: { margin: '0 0 20px 0', fontSize: '12px', color: palette.textMute, lineHeight: '1.5' }
+            }, 'Teacher- or student-authored practice text. Save spelling lists, IEP sight words, science vocabulary, poems — whatever your curriculum needs. Not scored for mastery; sessions still get recorded.'),
+
+            // Saved library list
+            library.length > 0 ? h('div', {
+              role: 'list',
+              style: { display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }
+            },
+              library.map(function(entry) {
+                var preview = entry.text.length > 80 ? entry.text.slice(0, 80) + '…' : entry.text;
+                return h('div', {
+                  key: 'cdlib-' + entry.id,
+                  role: 'listitem',
+                  style: {
+                    padding: '12px 14px',
+                    background: palette.surface,
+                    border: '1px solid ' + palette.border,
+                    borderRadius: '10px',
+                    display: 'flex',
+                    gap: '10px',
+                    alignItems: 'flex-start'
+                  }
+                },
+                  h('div', { style: { flex: 1, minWidth: 0 } },
+                    h('div', { style: { fontSize: '12px', fontWeight: 700, color: palette.text, marginBottom: '4px' } },
+                      entry.label || '(untitled)'),
+                    h('div', { style: { fontSize: '11px', color: palette.textDim, fontStyle: 'italic', lineHeight: '1.5' } },
+                      '"' + preview + '"'),
+                    h('div', { style: { fontSize: '10px', color: palette.textMute, marginTop: '4px' } },
+                      'saved ' + new Date(entry.savedAt).toLocaleDateString() + ' · ' + entry.text.length + ' chars')
+                  ),
+                  h('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px', flexShrink: 0 } },
+                    h('button', {
+                      onClick: function() {
+                        updMulti({
+                          activeCustomDrillId: entry.id,
+                          view: 'drill-intro',
+                          currentDrill: 'custom',
+                          drillRunId: (state.drillRunId || 0) + 1
+                        });
+                      },
+                      style: Object.assign({}, primaryBtnStyle(palette), { fontSize: '11px', padding: '5px 10px' })
+                    }, 'Drill'),
+                    h('button', {
+                      onClick: function() {
+                        setCustomTextDraft(entry.text);
+                        setCustomLabelDraft(entry.label || '');
+                        // Focus the editor by scrolling it into view — best-effort
+                        setTimeout(function() {
+                          var el = document.getElementById('tp-custom-text');
+                          if (el && el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                          if (el && el.focus) el.focus();
+                        }, 50);
+                      },
+                      style: Object.assign({}, secondaryBtnStyle(palette), { fontSize: '11px', padding: '5px 10px' })
+                    }, 'Edit'),
+                    h('button', {
+                      onClick: function() {
+                        if (typeof window !== 'undefined' && window.confirm &&
+                            !window.confirm('Remove "' + (entry.label || 'this custom drill') + '" from the library?')) return;
+                        var filtered = library.filter(function(x) { return x.id !== entry.id; });
+                        var updates = { customDrillLibrary: filtered };
+                        if (state.activeCustomDrillId === entry.id) updates.activeCustomDrillId = null;
+                        updMulti(updates);
+                        addToast('Custom drill removed.');
+                      },
+                      'aria-label': 'Delete',
+                      style: Object.assign({}, secondaryBtnStyle(palette), { fontSize: '11px', padding: '5px 10px', color: palette.danger, borderColor: palette.border })
+                    }, '🗑')
+                  )
+                );
+              })
+            ) : null,
+
+            // New / edit form
+            h('div', {
+              style: {
+                padding: '14px',
+                background: palette.surface,
+                border: '1px solid ' + palette.border,
+                borderRadius: '10px'
+              }
+            },
+              h('div', { style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '10px', fontWeight: 700 } },
+                customTextDraft || customLabelDraft ? '✏️ Draft' : '➕ Add a custom drill'),
+
+              h('div', { style: { marginBottom: '12px' } },
+                h('label', {
+                  htmlFor: 'tp-custom-label',
+                  style: { display: 'block', fontSize: '12px', fontWeight: 600, color: palette.text, marginBottom: '6px' }
+                }, 'Label (optional)'),
+                h('input', {
+                  id: 'tp-custom-label',
+                  type: 'text',
+                  value: customLabelDraft,
+                  onChange: function(e) { setCustomLabelDraft(e.target.value); },
+                  placeholder: 'e.g., "Week 4 spelling list", "IEP sight words"',
+                  maxLength: 60,
+                  style: {
+                    width: '100%',
+                    padding: '8px 10px',
+                    borderRadius: '6px',
+                    background: palette.bg,
+                    border: '1px solid ' + palette.border,
+                    color: palette.text,
+                    fontSize: '13px',
+                    fontFamily: fontFamily,
+                    boxSizing: 'border-box'
+                  }
+                })
+              ),
+
+              h('div', { style: { marginBottom: '12px' } },
+                h('label', {
+                  htmlFor: 'tp-custom-text',
+                  style: { display: 'block', fontSize: '12px', fontWeight: 600, color: palette.text, marginBottom: '6px' }
+                }, 'Practice text  ', h('span', { style: { fontSize: '10px', color: palette.textMute, fontWeight: 400 } },
+                  draftTrimmed.length + ' / 500 chars — minimum 5')),
+                h('textarea', {
+                  id: 'tp-custom-text',
+                  value: customTextDraft,
+                  onChange: function(e) { setCustomTextDraft(e.target.value); },
+                  placeholder: 'Type or paste the text. Plain letters, numbers, and common punctuation work best.',
+                  maxLength: 500,
+                  rows: 5,
+                  style: {
+                    width: '100%',
+                    padding: '10px 12px',
+                    borderRadius: '8px',
+                    background: palette.bg,
+                    border: '1px solid ' + palette.border,
+                    color: palette.text,
+                    fontSize: '13px',
+                    fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+                    lineHeight: '1.5',
+                    boxSizing: 'border-box',
+                    resize: 'vertical'
+                  }
+                })
+              ),
+
+              (atCapacity && !isValidDraft) ? h('div', {
+                style: { fontSize: '11px', color: palette.warn, marginBottom: '10px', fontStyle: 'italic' }
+              }, 'Library is at capacity (' + MAX_CUSTOM_LIBRARY + '). Delete one above before adding another.') : null,
+
+              h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
+                h('button', {
+                  disabled: !isValidDraft || atCapacity,
+                  onClick: function() {
+                    var clean = (customTextDraft || '').replace(/[\r\n\t]+/g, ' ').replace(/\s{2,}/g, ' ').trim();
+                    if (clean.length < 5) return;
+                    var entry = {
+                      id: 'cd' + Date.now(),
+                      text: clean,
+                      label: (customLabelDraft || '').trim(),
+                      savedAt: new Date().toISOString()
+                    };
+                    // Dedupe by text — replace any entry with identical text
+                    var filtered = library.filter(function(x) { return x.text !== entry.text; });
+                    var nextLib = [entry].concat(filtered).slice(0, MAX_CUSTOM_LIBRARY);
+                    updMulti({
+                      customDrillLibrary: nextLib,
+                      activeCustomDrillId: entry.id,
+                      view: 'drill-intro',
+                      currentDrill: 'custom',
+                      drillRunId: (state.drillRunId || 0) + 1
+                    });
+                    setCustomTextDraft('');
+                    setCustomLabelDraft('');
+                  },
+                  style: Object.assign({}, primaryBtnStyle(palette), {
+                    opacity: (isValidDraft && !atCapacity) ? 1 : 0.5,
+                    cursor: (isValidDraft && !atCapacity) ? 'pointer' : 'not-allowed'
+                  })
+                }, '💾 Save & drill'),
+
+                (customTextDraft || customLabelDraft) ? h('button', {
+                  onClick: function() {
+                    setCustomTextDraft('');
+                    setCustomLabelDraft('');
+                  },
+                  style: secondaryBtnStyle(palette)
+                }, 'Clear draft') : null
+              )
             )
           );
         }
@@ -1220,7 +1788,83 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 state.iepGoal.targetWpm + ' WPM at ' + state.iepGoal.targetAccuracy + '%'
               ) : null,
 
-              // Active accommodations chip row
+              // Pre-drill quick-toggles: high-frequency accommodations as
+              // compact chips so clinicians / students can adjust without
+              // round-tripping through the Accommodations page. Tapping a chip
+              // toggles the underlying setting immediately.
+              h('div', {
+                style: {
+                  marginBottom: '14px',
+                  padding: '10px 12px',
+                  background: palette.bg,
+                  border: '1px solid ' + palette.border,
+                  borderRadius: '8px'
+                }
+              },
+                h('div', { style: { fontSize: '10px', color: palette.textMute, marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700, textAlign: 'left' } },
+                  'Quick adjust'),
+                h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap', justifyContent: 'center' } },
+                  [
+                    { key: 'dyslexiaFont',  label: '🔤 Font' },
+                    { key: 'largeKeys',     label: '⌨️ Keyboard' },
+                    { key: 'highContrast',  label: '🌓 Contrast' },
+                    { key: 'audioCues',     label: '🔔 Audio' },
+                    { key: 'errorTolerant', label: '🤝 Error-tolerant' },
+                    { key: 'predictiveAssist', label: '🪄 Predict' }
+                  ].map(function(opt) {
+                    var isOn = !!acc[opt.key];
+                    return h('button', {
+                      key: 'qt-' + opt.key,
+                      'aria-pressed': isOn ? 'true' : 'false',
+                      onClick: function() {
+                        var newAcc = Object.assign({}, acc);
+                        newAcc[opt.key] = !acc[opt.key];
+                        upd('accommodations', newAcc);
+                      },
+                      style: {
+                        padding: '5px 10px',
+                        borderRadius: '999px',
+                        border: '1px solid ' + (isOn ? palette.accent : palette.border),
+                        background: isOn ? palette.accent : 'transparent',
+                        color: isOn ? '#0f172a' : palette.textDim,
+                        fontSize: '11px',
+                        fontWeight: isOn ? 700 : 500,
+                        cursor: 'pointer',
+                        font: 'inherit'
+                      }
+                    }, opt.label);
+                  })
+                )
+              ),
+
+              // Warmup checkbox — "this one doesn't count"
+              h('label', {
+                htmlFor: 'tp-warmup',
+                style: {
+                  display: 'flex',
+                  gap: '8px',
+                  alignItems: 'center',
+                  marginBottom: '16px',
+                  fontSize: '12px',
+                  color: palette.textDim,
+                  cursor: 'pointer',
+                  userSelect: 'none'
+                }
+              },
+                h('input', {
+                  id: 'tp-warmup',
+                  type: 'checkbox',
+                  checked: isWarmup,
+                  onChange: function(e) { setIsWarmup(e.target.checked); },
+                  style: { cursor: 'pointer' }
+                }),
+                h('span', null,
+                  h('strong', null, '🤸 Warmup mode'),
+                  ' — this session won\'t be saved. No pressure, no record.'
+                )
+              ),
+
+              // Active accommodations chip row (readonly summary)
               activeAccLabels.length > 0 ? h('div', {
                 style: {
                   fontSize: '11px',
@@ -1235,17 +1879,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   marginBottom: '18px',
                   fontStyle: 'italic'
                 }
-              }, 'Tip: Visit Accommodations from the menu to turn on supports that help you.'),
+              }, 'Tip: Visit Accommodations from the menu for more advanced supports.'),
 
-              // Start button (primary) + hint — useEffect below auto-focuses
-              h('button', {
-                ref: startBtnRef,
-                onClick: startNow,
-                style: Object.assign({}, primaryBtnStyle(palette), {
-                  padding: '14px 32px',
-                  fontSize: '16px'
-                })
-              }, '▶ Start drill'),
+              // Action row — Start (primary) + Listen (TTS) if available
+              h('div', { style: { display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center' } },
+                h('button', {
+                  ref: startBtnRef,
+                  onClick: startNow,
+                  style: Object.assign({}, primaryBtnStyle(palette), {
+                    padding: '14px 32px',
+                    fontSize: '16px'
+                  })
+                }, '▶ Start drill'),
+
+                // "Listen first" — for students who benefit from hearing the
+                // text before seeing/typing it. Uses ctx.callTTS if the hub
+                // provides it; silently absent if not.
+                (ctx.callTTS && preview) ? h('button', {
+                  onClick: function() {
+                    try {
+                      ctx.callTTS(targetStr, null, 1.0, { force: true }).catch(function() { /* ignore */ });
+                      addToast('🔊 Reading the passage aloud…');
+                    } catch (e) { console.warn('[TypingPractice] TTS failed:', e); }
+                  },
+                  style: Object.assign({}, secondaryBtnStyle(palette), {
+                    padding: '14px 20px',
+                    fontSize: '14px'
+                  })
+                }, '🔊 Listen first') : null
+              ),
 
               h('div', {
                 style: { fontSize: '11px', color: palette.textMute, marginTop: '14px' }
@@ -1253,6 +1915,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             )
           );
         }
+
+        // ── Reset warmup flag when entering a new drill-intro (not on retries) ──
+        useEffect(function() {
+          if (state.view === 'drill-intro') setIsWarmup(false);
+        // eslint-disable-next-line
+        }, [state.view, state.currentDrill, state.drillRunId]);
 
         // ── Keyboard shortcut: space/enter on the intro screen starts the drill ──
         useEffect(function() {
@@ -1295,7 +1963,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           var grade = draftGrade;
           var topic = (draftTopic || '').trim();
           var difficulty = draftDifficulty || 'on-level';
+          var language = draftLanguage || 'en';
           var complexityLine = GRADE_COMPLEXITY[grade] || GRADE_COMPLEXITY['2-3'];
+          var langEntry = PASSAGE_LANGUAGES.filter(function(l) { return l.code === language; })[0]
+                          || PASSAGE_LANGUAGES[0];
 
           // Within-grade difficulty modifier appended to the base grade guidance.
           // Easier = more scaffolded than the grade default; Stretch = reaching up.
@@ -1312,6 +1983,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
 
           var prompt = [
             'You are generating a typing-practice passage for a student.',
+            '',
+            'LANGUAGE: ' + langEntry.promptHint,
             '',
             'Student grade level guidance: ' + complexityLine,
             '',
@@ -1349,15 +2022,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 .replace(/[\u2013\u2014]/g, '-')
                 .replace(/\u2026/g, '...');
               var passage = {
+                id: 'p' + Date.now(),
                 text: text,
                 gradeLevel: grade,
                 topic: topic,
                 difficulty: difficulty,
+                language: language,
                 generatedAt: new Date().toISOString()
               };
+              // Save into library — prepend newest, drop oldest past the cap.
+              // Don't duplicate identical text (e.g., regenerating the same prompt).
+              var existingLib = (state.aiPassageLibrary || []).slice();
+              var dedup = existingLib.filter(function(p) { return p.text !== passage.text; });
+              var nextLib = [passage].concat(dedup).slice(0, MAX_PASSAGE_LIBRARY);
               updMulti({
                 aiPassage: passage,
-                passagePrefs: { gradeLevel: grade, topic: topic, difficulty: difficulty },
+                aiPassageLibrary: nextLib,
+                passagePrefs: { gradeLevel: grade, topic: topic, difficulty: difficulty, language: language },
                 view: 'drill',
                 currentDrill: 'passage'
               });
@@ -1419,8 +2100,70 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               )
             ),
 
+            // Language picker — supports ELL students and bilingual homes.
+            // Prompt notes request ASCII-only output (no accents) so keys
+            // remain standard typing-practice targets.
+            h('div', { style: { marginBottom: '18px' } },
+              h('div', { style: { fontSize: '13px', fontWeight: 600, marginBottom: '8px', color: palette.text } }, 'Language'),
+              h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
+                PASSAGE_LANGUAGES.map(function(lang) {
+                  var isActive = draftLanguage === lang.code;
+                  return h('button', {
+                    key: 'lang-' + lang.code,
+                    onClick: function() { setDraftLanguage(lang.code); },
+                    style: {
+                      padding: '8px 14px',
+                      borderRadius: '999px',
+                      border: '1px solid ' + (isActive ? palette.accent : palette.border),
+                      background: isActive ? palette.accent : 'transparent',
+                      color: isActive ? '#0f172a' : palette.textDim,
+                      fontSize: '12px',
+                      fontWeight: isActive ? 700 : 500,
+                      cursor: 'pointer',
+                      font: 'inherit'
+                    }
+                  }, lang.label);
+                })
+              ),
+              draftLanguage !== 'en' ? h('div', { style: { fontSize: '10px', color: palette.textMute, marginTop: '6px', fontStyle: 'italic' } },
+                'Non-English passages use ASCII only (no accents / tildes) so standard keyboard keys remain the practice target.') : null
+            ),
+
             // Within-grade difficulty picker — fine-tune the prompt beyond
             // the grade band. Keeps options few; on-level is the default.
+            (function() {
+              // Adaptive suggestion: look at recent passage-drill sessions and
+              // quietly recommend a direction. Doesn't auto-apply — just hints
+              // so the student/clinician stays in control.
+              var passageSessions = (state.sessions || []).filter(function(s) { return s.drillId === 'passage'; });
+              var recent = passageSessions.slice(-3);
+              var suggestion = null;
+              if (recent.length >= 2) {
+                var avgAcc = recent.reduce(function(a, s) { return a + (s.accuracy || 0); }, 0) / recent.length;
+                var avgWpm = recent.reduce(function(a, s) { return a + (s.wpm || 0); }, 0) / recent.length;
+                if (avgAcc < 80)      suggestion = { to: 'easier',  reason: 'Recent accuracy has dipped below 80% — a lighter passage may rebuild confidence.' };
+                else if (avgAcc >= 95 && avgWpm >= 18) suggestion = { to: 'stretch', reason: 'Recent accuracy ≥95% and WPM steady — you\'re ready for a gentle reach up.' };
+              }
+              return suggestion ? h('div', {
+                style: {
+                  marginBottom: '10px',
+                  padding: '8px 12px',
+                  background: palette.surface,
+                  border: '1px solid ' + palette.border,
+                  borderLeft: '3px solid ' + palette.accent,
+                  borderRadius: '6px',
+                  fontSize: '11px',
+                  color: palette.textDim,
+                  lineHeight: '1.5'
+                }
+              },
+                h('span', { style: { color: palette.accent, fontWeight: 700 } }, '💡 Adaptive suggestion: '),
+                'try ',
+                h('strong', null, suggestion.to === 'easier' ? '🌱 Easier' : '🌿 Stretch'),
+                ' — ', suggestion.reason
+              ) : null;
+            })(),
+
             h('div', { style: { marginBottom: '18px' } },
               h('div', { style: { fontSize: '13px', fontWeight: 600, marginBottom: '8px', color: palette.text } }, 'Difficulty within grade'),
               h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
@@ -1520,6 +2263,92 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 'Last passage: grade ' + cached.gradeLevel + (cached.topic ? ' · ' + cached.topic : '')),
               h('div', { style: { fontSize: '13px', color: palette.textDim, fontStyle: 'italic', lineHeight: '1.5' } },
                 '"' + (cached.text.length > 140 ? cached.text.slice(0, 140) + '…' : cached.text) + '"')
+            ) : null,
+
+            // Saved passages library — reusable stash of previously generated
+            // passages. Students/clinicians can drill against the same passage
+            // over multiple sessions (fair comparison) or keep themed passages
+            // for a curriculum unit.
+            ((state.aiPassageLibrary || []).length > 1 && !genLoading) ? h('div', {
+              style: {
+                marginTop: '20px',
+                padding: '14px',
+                background: palette.surface,
+                border: '1px solid ' + palette.border,
+                borderRadius: '10px'
+              }
+            },
+              h('div', { style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '10px', fontWeight: 700 } },
+                '📚 Saved passages · ' + state.aiPassageLibrary.length + '/' + MAX_PASSAGE_LIBRARY),
+              h('p', { style: { fontSize: '11px', color: palette.textMute, margin: '0 0 10px 0', lineHeight: '1.5' } },
+                'Recently generated passages. Drill any of them to reuse. Oldest drops when you generate a 9th.'),
+              h('div', {
+                role: 'list',
+                style: {
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '6px',
+                  maxHeight: '260px',
+                  overflowY: 'auto'
+                }
+              },
+                state.aiPassageLibrary.map(function(p) {
+                  var langLabel = '';
+                  if (p.language && p.language !== 'en') {
+                    var lang = PASSAGE_LANGUAGES.filter(function(l) { return l.code === p.language; })[0];
+                    langLabel = lang ? ' · ' + lang.label : '';
+                  }
+                  var isActive = state.aiPassage && state.aiPassage.id === p.id;
+                  return h('div', {
+                    key: 'lib-' + p.id,
+                    role: 'listitem',
+                    style: {
+                      padding: '10px 12px',
+                      background: palette.bg,
+                      border: '1px solid ' + (isActive ? palette.accent : palette.border),
+                      borderRadius: '8px',
+                      display: 'flex',
+                      gap: '10px',
+                      alignItems: 'flex-start'
+                    }
+                  },
+                    h('div', { style: { flex: 1, minWidth: 0 } },
+                      h('div', { style: { fontSize: '11px', color: palette.textMute, marginBottom: '4px' } },
+                        'grade ' + p.gradeLevel + (p.topic ? ' · ' + p.topic : '') + langLabel +
+                        (isActive ? ' · current' : '')),
+                      h('div', { style: { fontSize: '12px', color: palette.textDim, lineHeight: '1.4', overflow: 'hidden', textOverflow: 'ellipsis' } },
+                        '"' + (p.text.length > 100 ? p.text.slice(0, 100) + '…' : p.text) + '"')
+                    ),
+                    h('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px', flexShrink: 0 } },
+                      h('button', {
+                        onClick: function() {
+                          updMulti({
+                            aiPassage: p,
+                            view: 'drill',
+                            currentDrill: 'passage',
+                            drillRunId: (state.drillRunId || 0) + 1
+                          });
+                        },
+                        style: Object.assign({}, primaryBtnStyle(palette), { fontSize: '11px', padding: '5px 10px' })
+                      }, 'Drill'),
+                      h('button', {
+                        onClick: function() {
+                          if (typeof window !== 'undefined' && window.confirm &&
+                              !window.confirm('Remove this passage from the library?')) return;
+                          var filtered = (state.aiPassageLibrary || []).filter(function(x) { return x.id !== p.id; });
+                          var updates = { aiPassageLibrary: filtered };
+                          // If we're deleting the currently-active passage, clear it too
+                          if (state.aiPassage && state.aiPassage.id === p.id) updates.aiPassage = null;
+                          updMulti(updates);
+                          addToast('Passage removed.');
+                        },
+                        'aria-label': 'Delete this passage',
+                        style: Object.assign({}, secondaryBtnStyle(palette), { fontSize: '11px', padding: '5px 10px', color: palette.danger, borderColor: palette.border })
+                      }, '🗑')
+                    )
+                  );
+                })
+              )
             ) : null
           );
         }
@@ -1653,6 +2482,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               h('div', { style: { fontSize: '16px', fontWeight: 700, color: palette.text } },
                 drill.icon + '  ' + drill.name
               ),
+              // Warmup chip — obvious visual indicator that this session won't save.
+              isWarmup ? h('span', {
+                'aria-label': 'Warmup mode — session will not be saved',
+                style: {
+                  fontSize: '10px',
+                  padding: '3px 8px',
+                  borderRadius: '999px',
+                  background: palette.warn,
+                  color: '#0f172a',
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em'
+                }
+              }, '🤸 warmup · not saving') : null,
               // Pause / Resume button. Disability-aware: paused time doesn't
               // count against WPM, and keystrokes are ignored while paused.
               startTime ? h('button', {
@@ -1670,7 +2513,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   font: 'inherit'
                 }
               }, paused ? '▶ Resume' : '⏸ Pause') : null,
-              h('div', {
+              // Live metrics — HIDDEN in assessment mode so clock-watching
+              // doesn't affect the baseline measurement. Still computed and
+              // saved into the session record; just not shown until summary.
+              state.accommodations.assessmentMode ? h('div', {
+                style: {
+                  marginLeft: 'auto',
+                  fontSize: '11px',
+                  color: palette.warn,
+                  fontWeight: 600,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em'
+                }
+              }, '📊 Assessment · metrics hidden') : h('div', {
                 style: {
                   marginLeft: 'auto',
                   display: 'flex',
@@ -1688,6 +2543,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 h('span', null, formatDuration(liveSec))
               )
             ),
+
+            // Sight-read count-in overlay: large number with "Reading…" label.
+            // Keystroke handler is already blocking input while sightReadLeft > 0.
+            sightReadLeft > 0 ? h('div', {
+              role: 'status',
+              'aria-live': 'polite',
+              style: {
+                marginBottom: '12px',
+                padding: '12px 16px',
+                background: palette.surface,
+                border: '1px solid ' + palette.accent,
+                borderRadius: '10px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '14px',
+                textAlign: 'left'
+              }
+            },
+              h('span', { style: { fontSize: '28px', fontWeight: 800, color: palette.accent, fontVariantNumeric: 'tabular-nums', minWidth: '36px', textAlign: 'center' } },
+                sightReadLeft),
+              h('div', null,
+                h('div', { style: { fontSize: '13px', fontWeight: 600, color: palette.text } }, '📖 Reading time'),
+                h('div', { style: { fontSize: '11px', color: palette.textMute, lineHeight: '1.4' } },
+                  'Take a moment to read through. Typing starts in ' + sightReadLeft + ' second' + (sightReadLeft === 1 ? '' : 's') + '.')
+              ),
+              h('button', {
+                onClick: function() { setSightReadLeft(0); },
+                style: Object.assign({}, secondaryBtnStyle(palette), {
+                  marginLeft: 'auto', fontSize: '11px', padding: '6px 12px'
+                })
+              }, 'Skip')
+            ) : null,
 
             // Paused overlay notice — non-modal, student can still click Resume
             paused ? h('div', {
@@ -1811,7 +2698,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             ),
 
             // On-screen keyboard (large-keys accommodation)
-            state.accommodations.largeKeys ? renderOnScreenKeyboard(nextKeyMeta, palette) : null
+            state.accommodations.largeKeys ? renderOnScreenKeyboard(nextKeyMeta, palette, state.accommodations.focusKeyboard) : null
           );
         }
 
@@ -1827,13 +2714,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           }
           if (!s) { go('menu'); return null; }
 
-          var headline = s.masteryAdvanced
-            ? '🌟 Mastery tier cleared! Reached tier ' + s.newMasteryLevel + '.'
-            : (s.isBaseline
-                ? 'First session saved — this is your baseline.'
-                : (s.isNewBest
-                    ? 'New personal best!'
-                    : 'Session saved.'));
+          var headline = s.isWarmup
+            ? '🤸 Warmup complete — not saved.'
+            : (s.masteryAdvanced
+                ? '🌟 Mastery tier cleared! Reached tier ' + s.newMasteryLevel + '.'
+                : (s.isBaseline
+                    ? 'First session saved — this is your baseline.'
+                    : (s.isNewBest
+                        ? 'New personal best!'
+                        : 'Session saved.')));
+
+          // Specific next-step message on mastery advancement — names the new
+          // tier that just unlocked so the student knows what they earned.
+          // Dignified, not Nitrotype-style fanfare.
+          var nextStepHint = null;
+          if (s.masteryAdvanced && s.newMasteryLevel) {
+            var nextDrillId = null;
+            for (var ti = 0; ti < TIER_ORDER.length; ti++) {
+              if (DRILLS[TIER_ORDER[ti]] && DRILLS[TIER_ORDER[ti]].tier === s.newMasteryLevel) {
+                nextDrillId = TIER_ORDER[ti];
+                break;
+              }
+            }
+            if (nextDrillId && DRILLS[nextDrillId]) {
+              nextStepHint = DRILLS[nextDrillId].icon + ' ' + DRILLS[nextDrillId].name + ' is now unlocked. When you\'re ready, it\'s waiting on the menu.';
+            } else if (s.newMasteryLevel >= 7) {
+              nextStepHint = 'You\'ve cleared every structured tier. Try generating a personalized passage at your grade level — that\'s where typing meets real reading.';
+            }
+          } else if (s.isNewBest && !s.isBaseline) {
+            // Tiny context-aware nudge on personal best
+            var drill = DRILLS[s.drillId];
+            if (drill && drill.masteryWpm && s.wpm < drill.masteryWpm) {
+              var gap = drill.masteryWpm - s.wpm;
+              nextStepHint = 'You\'re ' + gap + ' WPM from clearing this tier. Keep at it.';
+            }
+          } else if (s.isBaseline) {
+            nextStepHint = 'Your baseline is saved. Every future session is compared against today.';
+          }
 
           return h('div', {
             style: {
@@ -1856,7 +2773,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               }
             },
               h('div', { style: { fontSize: '13px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px' } }, s.drillName),
-              h('div', { style: { fontSize: '20px', fontWeight: 700, color: s.isNewBest || s.isBaseline ? palette.success : palette.text, marginBottom: '20px' } }, headline),
+              h('div', { style: { fontSize: '20px', fontWeight: 700, color: s.isNewBest || s.isBaseline || s.masteryAdvanced ? palette.success : palette.text, marginBottom: nextStepHint ? '6px' : '20px' } }, headline),
+              nextStepHint ? h('div', {
+                style: { fontSize: '13px', color: palette.textDim, marginBottom: '20px', lineHeight: '1.5' }
+              }, nextStepHint) : null,
 
               h('div', {
                 style: {
@@ -1880,6 +2800,101 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   lineHeight: '1.5'
                 }
               }, '🏅 Accommodations used this session: ' + s.accommodationsUsed.join(', ')) : null,
+
+              // Pace graph — chars-per-10s over the session. Shows intra-session
+              // variability (did the student slow down? speed up?). Helpful for
+              // attention/fatigue analysis. Only renders if we have ≥2 buckets.
+              (s.paceBuckets && s.paceBuckets.length >= 2) ? h('div', {
+                style: {
+                  marginBottom: '16px',
+                  padding: '12px 14px',
+                  background: palette.bg,
+                  border: '1px solid ' + palette.border,
+                  borderRadius: '10px',
+                  textAlign: 'left'
+                }
+              },
+                h('div', { style: { fontSize: '11px', fontWeight: 700, color: palette.textMute, marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.06em' } },
+                  'Pace over time · 10-second buckets'),
+                (function() {
+                  var maxBucket = Math.max.apply(null, s.paceBuckets.concat([1]));
+                  return h('div', {
+                    style: { display: 'flex', alignItems: 'flex-end', gap: '2px', height: '60px', padding: '2px 0' }
+                  },
+                    s.paceBuckets.map(function(count, i) {
+                      var h_ = Math.max(2, Math.round((count / maxBucket) * 56));
+                      // Approximate WPM for this bucket: (count/5 chars-per-word) * 6 (10s → 60s)
+                      var bucketWpm = Math.round((count / 5) * 6);
+                      return h('div', {
+                        key: 'pb-' + i,
+                        title: 'Seconds ' + (i * 10) + '–' + ((i + 1) * 10) + ': ~' + bucketWpm + ' WPM',
+                        style: {
+                          flex: 1,
+                          height: h_ + 'px',
+                          background: palette.accent,
+                          borderRadius: '2px 2px 0 0',
+                          minWidth: '6px'
+                        }
+                      });
+                    })
+                  );
+                })(),
+                h('div', { style: { fontSize: '10px', color: palette.textMute, marginTop: '4px', fontStyle: 'italic' } },
+                  'Each bar = chars typed in a 10-second window. Hover for approx WPM.')
+              ) : null,
+
+              // Clinical session tag — lets a teacher/psych label this session
+              // ("baseline" / "progress check" / "assessment" / "practice") so
+              // the CSV + IEP can filter and aggregate by role. Saved into the
+              // session record on click.
+              h('div', {
+                style: {
+                  marginBottom: '12px',
+                  padding: '12px 14px',
+                  background: palette.bg,
+                  border: '1px solid ' + palette.border,
+                  borderRadius: '10px',
+                  textAlign: 'left'
+                }
+              },
+                h('div', { style: { fontSize: '11px', fontWeight: 700, color: palette.textMute, marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.06em' } }, 'Session tag (for clinicians)'),
+                h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
+                  [
+                    { id: null,             label: 'Untagged' },
+                    { id: 'baseline',       label: '📍 Baseline' },
+                    { id: 'progress-check', label: '📈 Progress check' },
+                    { id: 'assessment',     label: '📊 Assessment' },
+                    { id: 'practice',       label: '✏️ Practice' }
+                  ].map(function(opt) {
+                    var isActive = (s.tag || null) === opt.id;
+                    return h('button', {
+                      key: 'tag-' + (opt.id || 'none'),
+                      onClick: function() {
+                        var sessions = (state.sessions || []).slice();
+                        for (var i = sessions.length - 1; i >= 0; i--) {
+                          if (sessions[i].date === s.date) {
+                            sessions[i] = Object.assign({}, sessions[i], { tag: opt.id });
+                            break;
+                          }
+                        }
+                        upd('sessions', sessions);
+                        setLastSummary(Object.assign({}, s, { tag: opt.id }));
+                      },
+                      style: {
+                        padding: '4px 10px',
+                        borderRadius: '999px',
+                        border: '1px solid ' + (isActive ? palette.accent : palette.border),
+                        background: isActive ? palette.accent : 'transparent',
+                        color: isActive ? '#0f172a' : palette.textDim,
+                        fontSize: '11px',
+                        fontWeight: isActive ? 700 : 500,
+                        cursor: 'pointer',
+                        font: 'inherit'
+                      }
+                    }, opt.label);
+                  })
+                )
+              ),
 
               // Session reflection — student voice in their own progress.
               // Tagging how a session FELT is qualitatively valuable and loops
@@ -2015,6 +3030,60 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   style: primaryBtnStyle(palette),
                   title: 'Retry the same text to beat your score'
                 }, 'Drill again'),
+                // Discard: lets the student undo an accidental session. Removes
+                // the latest session, rewinds lifetime totals + mastery advance
+                // + personal-best if it was set by this session. Only visible
+                // for the most-recent session to keep the fix surgical.
+                (state.sessions && state.sessions.length > 0 && state.sessions[state.sessions.length - 1].date === s.date) ? h('button', {
+                  onClick: function() {
+                    if (typeof window !== 'undefined' && window.confirm && !window.confirm('Discard this session? WPM, accuracy, and any mastery advancement from this run will be removed.')) return;
+                    var sessions = (state.sessions || []).slice(0, -1);
+                    var lifetime = Object.assign({}, state.lifetime || {});
+                    lifetime.totalSessions = Math.max(0, (lifetime.totalSessions || 1) - 1);
+                    lifetime.totalCharsTyped = Math.max(0, (lifetime.totalCharsTyped || 0) - (s.charCount || 0));
+                    lifetime.totalErrorsLogged = Math.max(0, (lifetime.totalErrorsLogged || 0) - (s.errors || 0));
+                    // Roll back aggregateErrors for this session's errorChars
+                    var agg = Object.assign({}, state.aggregateErrors || {});
+                    if (s.errorChars) {
+                      Object.keys(s.errorChars).forEach(function(k) {
+                        agg[k] = Math.max(0, (agg[k] || 0) - s.errorChars[k]);
+                        if (agg[k] === 0) delete agg[k];
+                      });
+                    }
+                    var updates = { sessions: sessions, lifetime: lifetime, aggregateErrors: agg, view: 'menu' };
+                    // Roll back mastery advancement if this session caused it
+                    if (s.masteryAdvanced && state.masteryLevel === s.newMasteryLevel) {
+                      updates.masteryLevel = Math.max(0, state.masteryLevel - 1);
+                    }
+                    // Roll back personal best only if this session set it and it's the current best
+                    if (s.isNewBest && state.personalBest && state.personalBest[s.drillId] &&
+                        state.personalBest[s.drillId].date === s.date) {
+                      // Recompute personal best from remaining sessions for this drill
+                      var drillSessions = sessions.filter(function(x) { return x.drillId === s.drillId; });
+                      var newPB = null;
+                      drillSessions.forEach(function(x) {
+                        if (!newPB || x.wpm > newPB.wpm || (x.wpm === newPB.wpm && x.accuracy > newPB.accuracy)) {
+                          newPB = { wpm: x.wpm, accuracy: x.accuracy, date: x.date };
+                        }
+                      });
+                      var pbCopy = Object.assign({}, state.personalBest);
+                      if (newPB) pbCopy[s.drillId] = newPB;
+                      else delete pbCopy[s.drillId];
+                      updates.personalBest = pbCopy;
+                    }
+                    // Roll back baseline if this was the first-ever session
+                    if (s.isBaseline) updates.baseline = null;
+                    updMulti(updates);
+                    addToast('Session discarded.');
+                  },
+                  style: Object.assign({}, secondaryBtnStyle(palette), {
+                    borderColor: palette.danger,
+                    color: palette.danger,
+                    fontSize: '11px',
+                    padding: '10px 14px'
+                  }),
+                  title: 'Undo this session entirely'
+                }, '🗑 Discard this session') : null,
                 // Structured drills (not AI passages): let the student shuffle
                 // to a different sample if they want variety instead of retry.
                 s.drillId !== 'passage' ? h('button', {
@@ -2130,8 +3199,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
 
             renderToggleRow('Dyslexia-friendly font', 'Switches to a font designed to reduce letter-confusion (b/d, p/q).', acc.dyslexiaFont, function() { toggle('dyslexiaFont'); }, palette),
             renderToggleRow('Large-key visual keyboard', 'Shows an on-screen keyboard with finger-color coding and the next-key highlighted.', acc.largeKeys, function() { toggle('largeKeys'); }, palette),
+            // Focus-mode is a child toggle of largeKeys — only meaningful when
+            // the keyboard is shown. Hide it otherwise to reduce clutter.
+            acc.largeKeys ? renderToggleRow('Focus mode on keyboard', 'When the on-screen keyboard is on, heavily dims all keys except the next target. Same-finger keys stay slightly visible as a motor-planning hint.', acc.focusKeyboard, function() { toggle('focusKeyboard'); }, palette) : null,
             renderToggleRow('High-contrast mode', 'Black / yellow / white palette that works for low vision.', acc.highContrast, function() { toggle('highContrast'); }, palette),
             renderToggleRow('Audio cues', 'Soft chime on correct keypress, low tone on errors. Non-alarming.', acc.audioCues, function() { toggle('audioCues'); }, palette),
+            renderToggleRow('Speak words as you type', 'After each space, the tool reads the just-completed word aloud. Supports auditory learners and low-vision typists. Requires the hub\'s text-to-speech to be available.', acc.speakWordsOnSpace, function() { toggle('speakWordsOnSpace'); }, palette),
 
             // Audio theme picker — only visible when audio cues are on.
             acc.audioCues ? h('div', {
@@ -2166,6 +3239,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             ) : null,
             renderToggleRow('Error-tolerant mode', 'Errors don\'t block progress — great for dysgraphia. The target advances with the correct character so the student can keep going.', acc.errorTolerant, function() { toggle('errorTolerant'); }, palette),
             renderToggleRow('Predictive assist', 'Shows the next 1–3 characters with a soft highlight so emerging typists can plan the next move. Auto-fades as your accuracy on this drill improves.', acc.predictiveAssist, function() { toggle('predictiveAssist'); }, palette),
+            renderToggleRow('Assessment mode', 'Hides WPM, accuracy, and timer during the drill. For clinicians running a clean baseline where clock-watching would affect the measurement. Metrics are still saved and shown at the end.', acc.assessmentMode, function() { toggle('assessmentMode'); }, palette),
+
+            // ── Sight-read count-in: read the passage first, then type ──
+            h('div', {
+              style: { padding: '14px 0', borderBottom: '1px solid ' + palette.border }
+            },
+              h('div', { style: { fontSize: '14px', fontWeight: 600, color: palette.text, marginBottom: '2px' } }, 'Sight-read count-in'),
+              h('div', { style: { fontSize: '11px', color: palette.textMute, lineHeight: '1.4', marginBottom: '10px' } },
+                'Shows the full passage for this many seconds before typing starts. Helps students who benefit from reading first, then producing. The student can skip the countdown at any time.'),
+              h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' } },
+                [null, 3, 5, 8, 12].map(function(opt) {
+                  var isActive = acc.sightReadSeconds === opt;
+                  return h('button', {
+                    key: 'sight-' + opt,
+                    onClick: function() {
+                      var newAcc = Object.assign({}, acc);
+                      newAcc.sightReadSeconds = opt;
+                      upd('accommodations', newAcc);
+                    },
+                    style: {
+                      padding: '6px 12px',
+                      borderRadius: '999px',
+                      border: '1px solid ' + (isActive ? palette.accent : palette.border),
+                      background: isActive ? palette.accent : 'transparent',
+                      color: isActive ? '#0f172a' : palette.textDim,
+                      fontSize: '12px',
+                      fontWeight: isActive ? 700 : 500,
+                      cursor: 'pointer',
+                      font: 'inherit'
+                    }
+                  }, opt === null ? 'Off' : (opt + ' sec'));
+                })
+              )
+            ),
 
             // ── Rest-break nudge: non-intrusive toast after N active minutes ──
             h('div', {
@@ -2230,6 +3337,129 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                     }
                   }, opt === null ? 'Off' : (opt + ' WPM'));
                 })
+              )
+            ),
+
+            // ═══ Student agency: personal motivation + daily goal ═══
+            // Separate from the clinician-set IEP goal so it's clear which
+            // targets are externally imposed vs student-owned.
+            h('div', {
+              style: {
+                marginTop: '24px',
+                padding: '16px',
+                background: palette.surface,
+                borderRadius: '10px',
+                border: '1px solid ' + palette.border
+              }
+            },
+              h('div', {
+                style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '10px', fontWeight: 700 }
+              }, 'Your goals (student)'),
+              h('p', {
+                style: { fontSize: '11px', color: palette.textMute, margin: '0 0 14px 0', lineHeight: '1.5' }
+              }, 'This is your space. Why are you practicing? What\'s your target for today? Separate from the clinician\'s IEP goal.'),
+
+              // Motivation statement
+              h('div', { style: { marginBottom: '16px' } },
+                h('label', {
+                  htmlFor: 'tp-motivation',
+                  style: { display: 'block', fontSize: '12px', fontWeight: 600, color: palette.text, marginBottom: '6px' }
+                }, 'Why I\'m practicing (shown on menu)'),
+                h('textarea', {
+                  id: 'tp-motivation',
+                  value: state.motivationStatement || '',
+                  onChange: function(e) { upd('motivationStatement', e.target.value); },
+                  placeholder: 'e.g., "Typing feels hard now, but I\'m going to be able to write my own stories." · "I want to email my grandma without my mom helping." · "Faster typing = less homework time."',
+                  maxLength: 200,
+                  rows: 2,
+                  style: {
+                    width: '100%',
+                    padding: '8px 10px',
+                    borderRadius: '6px',
+                    background: palette.bg,
+                    border: '1px solid ' + palette.border,
+                    color: palette.text,
+                    fontSize: '12px',
+                    fontFamily: fontFamily,
+                    lineHeight: '1.5',
+                    boxSizing: 'border-box',
+                    resize: 'vertical'
+                  }
+                })
+              ),
+
+              // Daily goal
+              h('div', null,
+                h('label', {
+                  style: { display: 'block', fontSize: '12px', fontWeight: 600, color: palette.text, marginBottom: '6px' }
+                }, 'Today\'s goal (resets tomorrow)'),
+                h('div', { style: { display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'flex-end' } },
+                  h('div', { style: { flex: '0 0 130px' } },
+                    h('label', { htmlFor: 'tp-daily-sessions', style: { fontSize: '10px', color: palette.textMute, display: 'block', marginBottom: '2px' } }, 'Sessions'),
+                    h('input', {
+                      id: 'tp-daily-sessions',
+                      type: 'number',
+                      min: 1, max: 20,
+                      value: (state.dailyGoal && state.dailyGoal.targetSessions) || '',
+                      onChange: function(e) {
+                        var v = parseInt(e.target.value, 10);
+                        if (isNaN(v) || v < 1) { upd('dailyGoal', null); return; }
+                        var cur = state.dailyGoal || {};
+                        upd('dailyGoal', Object.assign({}, cur, { targetSessions: v, date: cur.date || new Date().toISOString() }));
+                      },
+                      placeholder: '3',
+                      style: {
+                        width: '100%',
+                        padding: '8px 10px',
+                        borderRadius: '6px',
+                        background: palette.bg,
+                        border: '1px solid ' + palette.border,
+                        color: palette.text,
+                        fontSize: '13px',
+                        fontFamily: fontFamily,
+                        boxSizing: 'border-box'
+                      }
+                    })
+                  ),
+                  h('div', { style: { flex: '0 0 130px' } },
+                    h('label', { htmlFor: 'tp-daily-wpm', style: { fontSize: '10px', color: palette.textMute, display: 'block', marginBottom: '2px' } }, 'Hit WPM ≥'),
+                    h('input', {
+                      id: 'tp-daily-wpm',
+                      type: 'number',
+                      min: 1, max: 150,
+                      value: (state.dailyGoal && state.dailyGoal.targetWpm) || '',
+                      onChange: function(e) {
+                        var v = parseInt(e.target.value, 10);
+                        var cur = state.dailyGoal || {};
+                        var newGoal = Object.assign({}, cur, {
+                          targetWpm: isNaN(v) ? null : v,
+                          date: cur.date || new Date().toISOString()
+                        });
+                        // Don't save an empty daily goal
+                        if (!newGoal.targetSessions && !newGoal.targetWpm) { upd('dailyGoal', null); return; }
+                        upd('dailyGoal', newGoal);
+                      },
+                      placeholder: '(optional)',
+                      style: {
+                        width: '100%',
+                        padding: '8px 10px',
+                        borderRadius: '6px',
+                        background: palette.bg,
+                        border: '1px solid ' + palette.border,
+                        color: palette.text,
+                        fontSize: '13px',
+                        fontFamily: fontFamily,
+                        boxSizing: 'border-box'
+                      }
+                    })
+                  ),
+                  state.dailyGoal ? h('button', {
+                    onClick: function() { upd('dailyGoal', null); },
+                    style: Object.assign({}, secondaryBtnStyle(palette), { fontSize: '11px', padding: '8px 12px' })
+                  }, 'Clear') : null
+                ),
+                h('div', { style: { fontSize: '10px', color: palette.textMute, marginTop: '6px', fontStyle: 'italic' } },
+                  'Today\'s goal is yours — not counted against you if you miss it. Resets automatically tomorrow.')
               )
             ),
 
@@ -2384,6 +3614,206 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   marginTop: '10px', fontSize: '11px', padding: '6px 10px'
                 })
               }, 'Clear IEP goal') : null
+            ),
+
+            // ═══ Profile import/export ═══
+            // Lets a clinician move an accommodation profile across devices
+            // or between students. Exports settings + IEP goal + audio theme.
+            // Does NOT export sessions, personalBest, or aggregate errors —
+            // those are per-student data, not portable profile config.
+            h('div', {
+              style: {
+                marginTop: '16px',
+                padding: '16px',
+                background: palette.surface,
+                borderRadius: '10px',
+                border: '1px solid ' + palette.border
+              }
+            },
+              h('div', {
+                style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '10px', fontWeight: 700 }
+              }, 'Profile import / export'),
+              h('p', {
+                style: { fontSize: '11px', color: palette.textMute, margin: '0 0 14px 0', lineHeight: '1.5' }
+              }, 'Save the accommodations + IEP goal + audio theme to JSON, or load a profile from another device. Does NOT copy session history — that stays per student.'),
+
+              h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '12px' } },
+                h('button', {
+                  onClick: function() {
+                    var profile = {
+                      _format: 'alloflow-typing-practice-profile',
+                      _version: 1,
+                      _exported: new Date().toISOString(),
+                      studentName: state.studentName || '',
+                      accommodations: state.accommodations || {},
+                      audioTheme: state.audioTheme || 'chime',
+                      iepGoal: state.iepGoal || null,
+                      passagePrefs: state.passagePrefs || {}
+                    };
+                    var json = JSON.stringify(profile, null, 2);
+                    try {
+                      var blob = new Blob([json], { type: 'application/json' });
+                      var url = URL.createObjectURL(blob);
+                      var a = document.createElement('a');
+                      a.href = url;
+                      var stu = (state.studentName || 'student').replace(/[^a-z0-9_-]/gi, '_');
+                      a.download = 'typing_profile_' + stu + '_' + new Date().toISOString().slice(0, 10) + '.json';
+                      document.body.appendChild(a);
+                      a.click();
+                      document.body.removeChild(a);
+                      setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+                      addToast('Profile exported.');
+                    } catch (e) {
+                      // Fallback: copy JSON to clipboard
+                      copyTextToClipboard(json, addToast);
+                    }
+                  },
+                  style: Object.assign({}, secondaryBtnStyle(palette), { fontSize: '11px', padding: '7px 12px' })
+                }, '📤 Export profile'),
+
+                h('button', {
+                  onClick: function() {
+                    // Use an invisible file input for the import
+                    var inp = document.createElement('input');
+                    inp.type = 'file';
+                    inp.accept = '.json,application/json';
+                    inp.onchange = function(e) {
+                      var file = e.target.files && e.target.files[0];
+                      if (!file) return;
+                      var reader = new FileReader();
+                      reader.onload = function(ev) {
+                        try {
+                          var parsed = JSON.parse(ev.target.result);
+                          if (parsed && parsed._format !== 'alloflow-typing-practice-profile') {
+                            addToast('⚠️ Not a Typing Practice profile file.');
+                            return;
+                          }
+                          if (typeof window !== 'undefined' && window.confirm &&
+                              !window.confirm('Apply imported profile? Current accommodations, IEP goal, and audio theme will be replaced. Session history will NOT be affected.')) return;
+                          var updates = {};
+                          if (parsed.accommodations) updates.accommodations = Object.assign({}, DEFAULT_STATE.accommodations, parsed.accommodations);
+                          if (parsed.audioTheme) updates.audioTheme = parsed.audioTheme;
+                          if (parsed.iepGoal !== undefined) updates.iepGoal = parsed.iepGoal;
+                          if (parsed.passagePrefs) updates.passagePrefs = Object.assign({}, DEFAULT_STATE.passagePrefs, parsed.passagePrefs);
+                          if (typeof parsed.studentName === 'string') updates.studentName = parsed.studentName;
+                          updMulti(updates);
+                          addToast('✓ Profile imported.');
+                        } catch (err) {
+                          addToast('⚠️ Could not read profile: ' + (err.message || 'invalid JSON'));
+                        }
+                      };
+                      reader.onerror = function() { addToast('⚠️ Could not read file.'); };
+                      reader.readAsText(file);
+                    };
+                    inp.click();
+                  },
+                  style: Object.assign({}, secondaryBtnStyle(palette), { fontSize: '11px', padding: '7px 12px' })
+                }, '📥 Import profile')
+              ),
+
+              // Full backup / restore — includes ALL data (sessions, bests,
+              // aggregate errors, custom library, passage library, lifetime
+              // totals). Distinct from profile which is just the settings.
+              // Critical for localStorage disaster recovery and device moves.
+              h('div', {
+                style: {
+                  marginTop: '8px',
+                  paddingTop: '12px',
+                  borderTop: '1px solid ' + palette.border
+                }
+              },
+                h('div', { style: { fontSize: '11px', color: palette.textMute, marginBottom: '8px', fontStyle: 'italic', lineHeight: '1.5' } },
+                  'Full backup includes sessions, personal best, mastery, error heatmap, and both libraries — the whole student record. Use this before clearing browser data or switching devices.'),
+                h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
+                  h('button', {
+                    onClick: function() {
+                      var backup = {
+                        _format: 'alloflow-typing-practice-backup',
+                        _version: 1,
+                        _exported: new Date().toISOString(),
+                        state: Object.assign({}, state)
+                      };
+                      try {
+                        var json = JSON.stringify(backup, null, 2);
+                        var blob = new Blob([json], { type: 'application/json' });
+                        var url = URL.createObjectURL(blob);
+                        var a = document.createElement('a');
+                        a.href = url;
+                        var stu = (state.studentName || 'student').replace(/[^a-z0-9_-]/gi, '_');
+                        a.download = 'typing_backup_' + stu + '_' + new Date().toISOString().slice(0, 10) + '.json';
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+                        addToast('Full backup exported.');
+                      } catch (e) {
+                        addToast('⚠️ Backup failed: ' + (e.message || 'unknown error'));
+                      }
+                    },
+                    style: Object.assign({}, secondaryBtnStyle(palette), { fontSize: '11px', padding: '7px 12px' })
+                  }, '💾 Full backup'),
+
+                  h('button', {
+                    onClick: function() {
+                      var inp = document.createElement('input');
+                      inp.type = 'file';
+                      inp.accept = '.json,application/json';
+                      inp.onchange = function(e) {
+                        var file = e.target.files && e.target.files[0];
+                        if (!file) return;
+                        var reader = new FileReader();
+                        reader.onload = function(ev) {
+                          try {
+                            var parsed = JSON.parse(ev.target.result);
+                            if (parsed && parsed._format !== 'alloflow-typing-practice-backup') {
+                              addToast('⚠️ Not a Typing Practice backup file.');
+                              return;
+                            }
+                            if (!parsed.state) { addToast('⚠️ Backup is empty or corrupted.'); return; }
+                            var n = (parsed.state.sessions || []).length;
+                            if (typeof window !== 'undefined' && window.confirm &&
+                                !window.confirm('Restore backup? This will REPLACE the current student\'s data with the backup (' + n + ' sessions). You cannot undo this.')) return;
+                            // Apply each key individually via updMulti so React state updates batch cleanly.
+                            var safeKeys = Object.keys(DEFAULT_STATE);
+                            var updates = {};
+                            safeKeys.forEach(function(k) {
+                              if (parsed.state.hasOwnProperty(k)) updates[k] = parsed.state[k];
+                            });
+                            // Reset the view to menu so student lands somewhere coherent
+                            updates.view = 'menu';
+                            updMulti(updates);
+                            addToast('✓ Backup restored · ' + n + ' sessions loaded.');
+                          } catch (err) {
+                            addToast('⚠️ Could not read backup: ' + (err.message || 'invalid JSON'));
+                          }
+                        };
+                        reader.onerror = function() { addToast('⚠️ Could not read file.'); };
+                        reader.readAsText(file);
+                      };
+                      inp.click();
+                    },
+                    style: Object.assign({}, secondaryBtnStyle(palette), { fontSize: '11px', padding: '7px 12px' })
+                  }, '♻ Restore backup'),
+
+                  // Clear all — last option, guarded.
+                  h('button', {
+                    onClick: function() {
+                      if (typeof window !== 'undefined' && window.confirm) {
+                        if (!window.confirm('Clear ALL typing practice data for this student? This erases sessions, personal best, mastery, error heatmap, both libraries, IEP goal, and motivation — everything. This cannot be undone. Export a backup first if you may want the data back.')) return;
+                        if (!window.confirm('Are you absolutely sure? Last chance.')) return;
+                      }
+                      var wiped = Object.assign({}, DEFAULT_STATE);
+                      wiped.view = 'menu';
+                      updMulti(wiped);
+                      addToast('All data cleared.');
+                    },
+                    style: Object.assign({}, secondaryBtnStyle(palette), {
+                      fontSize: '11px', padding: '7px 12px',
+                      borderColor: palette.danger, color: palette.danger
+                    })
+                  }, '🗑 Clear all data')
+                )
+              )
             )
           );
         }
@@ -2513,6 +3943,59 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             },
               h('div', { style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px', fontWeight: 700 } },
                 'Report filters ' + (filterActive ? ('(' + sessions.length + ' of ' + allSessions.length + ' sessions)') : '(all sessions)')),
+
+              // Quick-date preset chips — one-click ranges for common IEP windows
+              h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '10px' } },
+                [
+                  { id: 'all',   label: 'All', compute: function() { return { s: '', e: '' }; } },
+                  { id: 'today', label: 'Today', compute: function() {
+                      var t = new Date(); var iso = t.toISOString().slice(0, 10);
+                      return { s: iso, e: iso };
+                  }},
+                  { id: 'week',  label: 'This week', compute: function() {
+                      var t = new Date(); var day = t.getDay(); // 0 = Sunday
+                      var start = new Date(t); start.setDate(t.getDate() - day);
+                      return { s: start.toISOString().slice(0, 10), e: t.toISOString().slice(0, 10) };
+                  }},
+                  { id: 'month', label: 'This month', compute: function() {
+                      var t = new Date();
+                      var start = new Date(t.getFullYear(), t.getMonth(), 1);
+                      return { s: start.toISOString().slice(0, 10), e: t.toISOString().slice(0, 10) };
+                  }},
+                  { id: 'last30',label: 'Last 30 days', compute: function() {
+                      var t = new Date(); var start = new Date(t.getTime() - 30*24*60*60*1000);
+                      return { s: start.toISOString().slice(0, 10), e: t.toISOString().slice(0, 10) };
+                  }},
+                  { id: 'last90',label: 'Last 90 days', compute: function() {
+                      var t = new Date(); var start = new Date(t.getTime() - 90*24*60*60*1000);
+                      return { s: start.toISOString().slice(0, 10), e: t.toISOString().slice(0, 10) };
+                  }}
+                ].map(function(preset) {
+                  // Detect if this preset is currently active by comparing computed vs filter state
+                  var r = preset.compute();
+                  var isActive = filterStart === r.s && filterEnd === r.e;
+                  return h('button', {
+                    key: 'fpreset-' + preset.id,
+                    onClick: function() {
+                      setFilterStart(r.s);
+                      setFilterEnd(r.e);
+                      setSelectedDetailIdx(null);
+                    },
+                    style: {
+                      padding: '5px 10px',
+                      borderRadius: '999px',
+                      border: '1px solid ' + (isActive ? palette.accent : palette.border),
+                      background: isActive ? palette.accent : 'transparent',
+                      color: isActive ? '#0f172a' : palette.textDim,
+                      fontSize: '11px',
+                      fontWeight: isActive ? 700 : 500,
+                      cursor: 'pointer',
+                      font: 'inherit'
+                    }
+                  }, preset.label);
+                })
+              ),
+
               h('div', { style: { display: 'flex', gap: '10px', alignItems: 'flex-end', flexWrap: 'wrap' } },
                 h('div', { style: { display: 'flex', flexDirection: 'column', gap: '2px' } },
                   h('label', { htmlFor: 'tp-filter-start', style: { fontSize: '10px', color: palette.textMute } }, 'From'),
@@ -2691,12 +4174,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               })() : null
             ) : null,
 
-            // Per-key error heatmap — surfaces which keys need practice
+            // Per-key error heatmap + finger-group breakdown + coaching
             (function() {
               var agg = state.aggregateErrors || {};
               var keys = Object.keys(agg);
               if (keys.length === 0) return null;
               var maxErr = keys.reduce(function(m, k) { return Math.max(m, agg[k] || 0); }, 1);
+              var analysis = analyzeErrorPatterns(agg);
               return h('div', {
                 style: {
                   marginBottom: '24px',
@@ -2707,12 +4191,175 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 }
               },
                 h('div', { style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '10px', fontWeight: 700 } },
-                  'Error heatmap · all-time'),
+                  'Error heatmap · all-time · ' + analysis.totalErrors + ' total errors'),
                 h('p', { style: { fontSize: '11px', color: palette.textMute, margin: '0 0 10px 0', lineHeight: '1.5' } },
                   'Darker red = more errors on that key. This isn\'t shame data — it\'s the map that shows where practice pays off.'),
-                renderErrorHeatmap(agg, maxErr, palette)
+                renderErrorHeatmap(agg, maxErr, palette),
+
+                // Finger-group stacked bar: shows which finger owns the errors
+                analysis.totalErrors > 0 ? h('div', {
+                  style: { marginTop: '16px' }
+                },
+                  h('div', { style: { fontSize: '11px', color: palette.textMute, marginBottom: '6px', fontWeight: 600 } }, 'Errors by finger'),
+                  renderFingerErrorBar(analysis.fingerCounts, analysis.totalErrors, palette)
+                ) : null,
+
+                // Coaching hints — specific, actionable, non-judgmental
+                analysis.hints.length > 0 ? h('div', {
+                  style: {
+                    marginTop: '16px',
+                    padding: '12px 14px',
+                    background: palette.bg,
+                    border: '1px solid ' + palette.border,
+                    borderLeft: '3px solid ' + palette.accent,
+                    borderRadius: '8px'
+                  }
+                },
+                  h('div', { style: { fontSize: '11px', color: palette.accent, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px' } }, '🧭 Coaching'),
+                  h('ul', { style: { margin: 0, padding: '0 0 0 18px', fontSize: '12px', color: palette.textDim, lineHeight: '1.6' } },
+                    analysis.hints.map(function(hint, idx) {
+                      return h('li', { key: 'hint-' + idx, style: { marginBottom: '4px' } }, hint);
+                    })
+                  ),
+                  // Recommended drill — closes diagnosis → intervention loop
+                  analysis.recommendedDrill && DRILLS[analysis.recommendedDrill.id] ? h('div', {
+                    style: {
+                      marginTop: '10px',
+                      paddingTop: '10px',
+                      borderTop: '1px solid ' + palette.border,
+                      display: 'flex',
+                      gap: '10px',
+                      alignItems: 'center',
+                      flexWrap: 'wrap'
+                    }
+                  },
+                    h('div', { style: { fontSize: '11px', color: palette.textDim, flex: '1 1 200px' } },
+                      h('strong', { style: { color: palette.text } }, '🎯 Recommended drill: '),
+                      DRILLS[analysis.recommendedDrill.id].name + ' — ' + analysis.recommendedDrill.reason
+                    ),
+                    // Only enable the button if the recommended drill is unlocked
+                    (function() {
+                      var recDrill = DRILLS[analysis.recommendedDrill.id];
+                      var recUnlocked = !recDrill.locked || state.masteryLevel >= recDrill.tier;
+                      return h('button', {
+                        disabled: !recUnlocked,
+                        onClick: function() { if (recUnlocked) startDrill(analysis.recommendedDrill.id); },
+                        style: Object.assign({}, primaryBtnStyle(palette), {
+                          fontSize: '11px', padding: '6px 12px',
+                          opacity: recUnlocked ? 1 : 0.5,
+                          cursor: recUnlocked ? 'pointer' : 'not-allowed'
+                        }),
+                        title: recUnlocked ? 'Start this drill now' : 'Unlock it by clearing earlier tiers first'
+                      }, recUnlocked ? 'Try it' : '🔒 Locked');
+                    })()
+                  ) : null
+                ) : null
               );
             })(),
+
+            // Practice calendar — 30-day grid colored by session intensity.
+            // Uses ALL sessions (not filtered) because "when did I practice"
+            // is inherently calendar-scoped, not filter-scoped.
+            allSessions.length > 0 ? h('div', {
+              style: {
+                marginBottom: '24px',
+                padding: '16px',
+                background: palette.surface,
+                borderRadius: '12px',
+                border: '1px solid ' + palette.border
+              }
+            },
+              h('div', { style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '10px', fontWeight: 700 } },
+                'Practice calendar · last 30 days'),
+              renderPracticeCalendar(allSessions, palette)
+            ) : null,
+
+            // Scrollable drill history — every filtered session, newest first.
+            // Shows drill name, WPM/acc, duration, reflection emoji, and the
+            // first ~60 chars of any note. Clinical audit trail in one place.
+            sessions.length > 0 ? h('div', {
+              style: {
+                marginBottom: '24px',
+                padding: '16px',
+                background: palette.surface,
+                borderRadius: '12px',
+                border: '1px solid ' + palette.border
+              }
+            },
+              h('div', { style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '10px', fontWeight: 700 } },
+                'Drill history · ' + sessions.length + (filterActive ? ' filtered' : ' sessions')),
+              h('div', {
+                role: 'list',
+                style: {
+                  maxHeight: '320px',
+                  overflowY: 'auto',
+                  border: '1px solid ' + palette.border,
+                  borderRadius: '8px',
+                  background: palette.bg
+                }
+              },
+                sessions.slice().reverse().map(function(s, idx) {
+                  var reflectionEmoji = s.reflection === 'hard' ? '💪'
+                                      : s.reflection === 'just-right' ? '😌'
+                                      : s.reflection === 'too-easy' ? '🌱'
+                                      : '';
+                  var badges = [];
+                  if (s.tag === 'baseline')       badges.push('📍 baseline tag');
+                  if (s.tag === 'progress-check') badges.push('📈 progress');
+                  if (s.tag === 'assessment')     badges.push('📊 assessment');
+                  if (s.tag === 'practice')       badges.push('✏️ practice');
+                  if (s.isBaseline) badges.push('📍 baseline');
+                  if (s.isNewBest) badges.push('⭐ PB');
+                  if (s.masteryAdvanced) badges.push('🌟 tier ↑');
+                  return h('div', {
+                    key: 'hist-' + idx,
+                    role: 'listitem',
+                    style: {
+                      padding: '10px 12px',
+                      borderBottom: idx === sessions.length - 1 ? 'none' : '1px solid ' + palette.border,
+                      display: 'flex',
+                      gap: '10px',
+                      alignItems: 'flex-start',
+                      fontSize: '12px'
+                    }
+                  },
+                    // Left: drill + date
+                    h('div', { style: { flex: '0 0 140px', color: palette.textDim } },
+                      h('div', { style: { fontWeight: 600, color: palette.text, lineHeight: '1.4' } },
+                        (DRILLS[s.drillId] ? DRILLS[s.drillId].icon + ' ' : '') + (s.drillName || s.drillId)),
+                      h('div', { style: { fontSize: '10px', color: palette.textMute } },
+                        new Date(s.date).toLocaleDateString() + ' · ' + new Date(s.date).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }))
+                    ),
+                    // Middle: metrics
+                    h('div', {
+                      style: {
+                        flex: '0 0 130px',
+                        fontVariantNumeric: 'tabular-nums',
+                        color: palette.textDim
+                      }
+                    },
+                      h('div', null,
+                        h('span', { style: { fontWeight: 700, color: palette.text } }, s.wpm + ' WPM'),
+                        ' · ', s.accuracy + '%'
+                      ),
+                      h('div', { style: { fontSize: '10px', color: palette.textMute } },
+                        formatDuration(s.durationSec) +
+                        (s.pausedSec ? ' · paused ' + formatDuration(s.pausedSec) : '') +
+                        (s.errors ? ' · ' + s.errors + ' err' : '')
+                      )
+                    ),
+                    // Right: badges + reflection + note preview
+                    h('div', { style: { flex: 1, color: palette.textDim, lineHeight: '1.5' } },
+                      badges.length > 0 ? h('div', { style: { fontSize: '10px', color: palette.success, marginBottom: '2px' } }, badges.join(' · ')) : null,
+                      reflectionEmoji ? h('span', { style: { marginRight: '4px' }, title: 'felt: ' + s.reflection }, reflectionEmoji) : null,
+                      s.note ? h('span', { style: { fontStyle: 'italic', color: palette.textMute } },
+                        '"' + (s.note.length > 70 ? s.note.slice(0, 70) + '…' : s.note) + '"') : null,
+                      (!badges.length && !reflectionEmoji && !s.note) ? h('span', { style: { color: palette.textMute, fontStyle: 'italic' } }, '—') : null
+                    )
+                  );
+                })
+              )
+            ) : null,
 
             // Accommodation badges
             (state.accommodationBadges && state.accommodationBadges.length > 0) ? h('div', {
@@ -2799,6 +4446,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   })
                 }, '📋 Copy report'),
                 h('button', {
+                  onClick: function() {
+                    var report = buildIEPReport(state, filterOpts);
+                    printIEPReport(report, state.studentName || '');
+                  },
+                  style: Object.assign({}, secondaryBtnStyle(palette), {
+                    fontSize: '11px',
+                    padding: '7px 12px'
+                  })
+                }, '🖨 Print report'),
+                h('button', {
                   onClick: function() { downloadSessionsCSV(state, filterOpts); },
                   style: Object.assign({}, secondaryBtnStyle(palette), {
                     fontSize: '11px',
@@ -2808,7 +4465,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               )
             ) : null,
 
-            sessions.length === 0 ? h('div', {
+            // Empty states: no sessions at all vs. sessions exist but filter excludes them all
+            (sessions.length === 0 && allSessions.length === 0) ? h('div', {
               style: {
                 background: palette.surface,
                 border: '1px dashed ' + palette.border,
@@ -2818,7 +4476,115 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 fontSize: '13px',
                 textAlign: 'center'
               }
-            }, 'Complete your first drill to see your baseline, trend, and IEP report here.') : null
+            }, 'Complete your first drill to see your baseline, trend, and IEP report here.') : null,
+
+            (sessions.length === 0 && allSessions.length > 0) ? h('div', {
+              style: {
+                background: palette.surface,
+                border: '1px dashed ' + palette.border,
+                borderRadius: '10px',
+                padding: '20px',
+                color: palette.textMute,
+                fontSize: '13px',
+                textAlign: 'center',
+                lineHeight: '1.5'
+              }
+            },
+              h('div', { style: { marginBottom: '10px' } }, '🔎 No sessions match the current filter.'),
+              h('div', { style: { fontSize: '12px' } }, 'All ' + allSessions.length + ' sessions are outside this date range or drill filter.'),
+              h('button', {
+                onClick: function() { setFilterStart(''); setFilterEnd(''); setFilterDrill(''); setSelectedDetailIdx(null); },
+                style: Object.assign({}, secondaryBtnStyle(palette), { marginTop: '10px', fontSize: '11px', padding: '6px 12px' })
+              }, '✕ Clear filters')
+            ) : null
+          );
+        }
+
+        // ═════════════════════════════════════════════════════
+        // VIEW: SHORTCUTS — keyboard-navigation reference card.
+        // ═════════════════════════════════════════════════════
+        function renderShortcuts() {
+          var rows = [
+            { heading: 'On the menu', items: [
+              { keys: ['Tab', 'Shift+Tab'], desc: 'Move between drill cards and nav buttons' },
+              { keys: ['Enter', 'Space'],   desc: 'Activate the focused drill card' }
+            ]},
+            { heading: 'On the drill intro screen', items: [
+              { keys: ['Space', 'Enter'], desc: 'Start the drill' },
+              { keys: ['Esc'],            desc: 'Back to menu' }
+            ]},
+            { heading: 'While drilling', items: [
+              { keys: ['Any letter/number/symbol'], desc: 'Types the next character' },
+              { keys: ['Backspace'],               desc: 'Undo last character' },
+              { keys: ['Esc'],                     desc: 'Abandon drill (progress won\'t save)' }
+            ]},
+            { heading: 'On any screen with a form', items: [
+              { keys: ['Tab'],   desc: 'Move to next field / button' },
+              { keys: ['Enter'], desc: 'Activate focused button (context-dependent)' }
+            ]}
+          ];
+          return h('div', {
+            style: {
+              padding: '20px',
+              maxWidth: '720px',
+              margin: '0 auto',
+              color: palette.text,
+              fontFamily: fontFamily,
+              background: palette.bg,
+              minHeight: '60vh'
+            }
+          },
+            renderBackButton(function() { go('menu'); }, palette),
+            h('h3', { style: { margin: '16px 0 4px 0', color: palette.text } }, '⌨️  Keyboard shortcuts'),
+            h('p', {
+              style: { margin: '0 0 20px 0', fontSize: '12px', color: palette.textMute, lineHeight: '1.5' }
+            }, 'Everything in Typing Practice can be reached with the keyboard — that\'s by design for screen-reader users and motor-planning accommodations.'),
+
+            rows.map(function(section, sidx) {
+              return h('div', {
+                key: 'sh-' + sidx,
+                style: {
+                  marginBottom: '18px',
+                  padding: '14px',
+                  background: palette.surface,
+                  borderRadius: '10px',
+                  border: '1px solid ' + palette.border
+                }
+              },
+                h('div', { style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '10px', fontWeight: 700 } },
+                  section.heading),
+                h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
+                  section.items.map(function(item, i) {
+                    return h('div', {
+                      key: 'sh-' + sidx + '-' + i,
+                      style: { display: 'flex', gap: '10px', fontSize: '12px', alignItems: 'flex-start' }
+                    },
+                      h('div', { style: { flex: '0 0 180px', display: 'flex', gap: '4px', flexWrap: 'wrap' } },
+                        item.keys.map(function(k, ki) {
+                          return h('kbd', {
+                            key: 'k-' + ki,
+                            style: {
+                              padding: '2px 8px',
+                              background: palette.bg,
+                              border: '1px solid ' + palette.border,
+                              borderRadius: '4px',
+                              fontFamily: 'ui-monospace, monospace',
+                              fontSize: '11px',
+                              color: palette.text
+                            }
+                          }, k);
+                        })
+                      ),
+                      h('div', { style: { flex: 1, color: palette.textDim, lineHeight: '1.5' } }, item.desc)
+                    );
+                  })
+                )
+              );
+            }),
+
+            h('p', {
+              style: { fontSize: '11px', color: palette.textMute, lineHeight: '1.5', marginTop: '20px', fontStyle: 'italic' }
+            }, 'Accommodation toggles on the drill-intro screen are fully keyboard-reachable via Tab — no mouse required for any part of this tool.')
           );
         }
 
@@ -2833,6 +4599,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           case 'settings':       viewContent = renderSettings(); break;
           case 'progress':       viewContent = renderProgress(); break;
           case 'passage-setup':  viewContent = renderPassageSetup(); break;
+          case 'custom-setup':   viewContent = renderCustomSetup(); break;
+          case 'shortcuts':      viewContent = renderShortcuts(); break;
           case 'menu':
           default:               viewContent = renderMenu();
         }
@@ -2935,10 +4703,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
   // Rendered below the drill target when large-keys accommodation is on.
   // Teaches motor planning through consistent finger-key color mapping.
   // ─────────────────────────────────────────────────────────
-  function renderOnScreenKeyboard(nextKeyMeta, palette) {
+  function renderOnScreenKeyboard(nextKeyMeta, palette, focusMode) {
     var React = window.React;
     var h = React.createElement;
     var highlightKey = nextKeyMeta ? nextKeyMeta.k : null;
+    var highlightFinger = nextKeyMeta ? nextKeyMeta.f : null;
 
     return h('div', {
       'aria-hidden': 'true',  // keyboard is visual-only; real typing is via real keys
@@ -2972,6 +4741,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             var isNext = keyObj.k === highlightKey;
             var finger = keyObj.f;
             var fingerColor = FINGER_COLOR[finger] || palette.textMute;
+            // Focus-mode dims non-target keys aggressively. Same-finger keys
+            // stay a bit more visible (they're "primed" for the finger that's
+            // about to act) — that's a light motor-planning hint.
+            var dimOpacity = 1;
+            if (focusMode && !isNext) {
+              dimOpacity = (finger === highlightFinger) ? 0.55 : 0.2;
+            }
             return h('div', {
               key: 'k-' + keyObj.k,
               style: {
@@ -2991,13 +4767,114 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 boxShadow: isNext ? '0 0 0 2px ' + fingerColor + '66' : 'none',
                 // Left border slim color-band shows finger color even when not next
                 borderLeft: '3px solid ' + fingerColor,
-                transition: 'background 120ms ease, box-shadow 120ms ease'
+                opacity: dimOpacity,
+                transition: 'background 120ms ease, box-shadow 120ms ease, opacity 120ms ease'
               }
             }, keyObj.label ? keyObj.label : keyObj.k);
           })
         );
       })
     );
+  }
+
+  // Analyze per-key error aggregates to produce finger-level counts and
+  // rule-based coaching hints. Hints deliberately use plain, non-judgmental
+  // language ("Both keys are left-index — check your wrist angle") rather than
+  // "you keep messing up." The coaching is a mechanical observation, not a
+  // commentary on effort.
+  function analyzeErrorPatterns(aggregateErrors) {
+    var out = { fingerCounts: {}, hints: [], topKeys: [], totalErrors: 0 };
+    if (!aggregateErrors) return out;
+    var keys = Object.keys(aggregateErrors);
+    if (keys.length === 0) return out;
+
+    // Group errors by finger
+    keys.forEach(function(k) {
+      var err = aggregateErrors[k] || 0;
+      out.totalErrors += err;
+      var meta = findKeyMeta(k);
+      var f = meta ? meta.f : 'UN';
+      out.fingerCounts[f] = (out.fingerCounts[f] || 0) + err;
+    });
+    if (out.totalErrors === 0) return out;
+
+    // Top error keys (sorted desc)
+    out.topKeys = keys
+      .filter(function(k) { return aggregateErrors[k] > 0; })
+      .sort(function(a, b) { return aggregateErrors[b] - aggregateErrors[a]; })
+      .slice(0, 6);
+
+    // Identify dominant finger(s) — any finger holding > 25% of errors
+    var fingerTotal = 0;
+    Object.keys(out.fingerCounts).forEach(function(f) { fingerTotal += out.fingerCounts[f]; });
+    var dominantFingers = Object.keys(out.fingerCounts).filter(function(f) {
+      return fingerTotal > 0 && (out.fingerCounts[f] / fingerTotal) >= 0.25;
+    });
+
+    // Rule-based coaching hints. Keep them SPECIFIC and ACTIONABLE.
+    // Each rule checks for a pattern and pushes a hint.
+    var topSet = {};
+    out.topKeys.forEach(function(k) { topSet[k] = true; });
+
+    // Pinky pattern — weakest finger, typically slows first
+    if (dominantFingers.indexOf('LP') !== -1 || dominantFingers.indexOf('RP') !== -1) {
+      out.hints.push('Your pinky fingers are your weakest — they miss more than others. That\'s normal. Slow down on q, a, z (left) and p, ;, / (right). Precision first, speed follows.');
+    }
+
+    // Left-index vs right-index confusion: b/v, n/m cluster
+    if ((topSet['b'] && topSet['v']) || (topSet['n'] && topSet['m'])) {
+      out.hints.push('b and v are both left-index; n and m are both right-index. If both in a pair are missing, check which finger is reaching past its home.');
+    }
+
+    // Top-row reach errors — students often don\'t return to home row
+    var topRowErrors = ['q','w','e','r','t','y','u','i','o','p'].reduce(function(a, k) {
+      return a + (aggregateErrors[k] || 0);
+    }, 0);
+    if (topRowErrors > 0 && (topRowErrors / out.totalErrors) >= 0.35) {
+      out.hints.push('A lot of your errors are on the top row (q-p). After reaching up, let your fingers come back to home row (asdf jkl;) before the next keystroke. Anchoring helps accuracy.');
+    }
+
+    // Bottom-row stretches — hardest reach for most students
+    var bottomRowErrors = ['z','x','c','v','b','n','m'].reduce(function(a, k) {
+      return a + (aggregateErrors[k] || 0);
+    }, 0);
+    if (bottomRowErrors > 0 && (bottomRowErrors / out.totalErrors) >= 0.35) {
+      out.hints.push('Bottom row (z-m) is a stretch for everyone. The fix is counter-intuitive: ANCHOR the other hand on home row while the reaching hand moves. Stability on one side makes the other side accurate.');
+    }
+
+    // Home row dominance means keyboard basics are off — rare but real
+    var homeRowErrors = ['a','s','d','f','g','h','j','k','l',';'].reduce(function(a, k) {
+      return a + (aggregateErrors[k] || 0);
+    }, 0);
+    if (homeRowErrors > 0 && (homeRowErrors / out.totalErrors) >= 0.4) {
+      out.hints.push('Most of your errors are on the home row itself — check your starting position. Left fingers on a-s-d-f, right fingers on j-k-l-; with the small bumps on F and J as guides.');
+    }
+
+    // Fallback general advice when no specific pattern dominates
+    if (out.hints.length === 0 && out.topKeys.length > 0) {
+      out.hints.push('Your errors are spread across the keyboard with no single pattern dominating — that usually means general practice volume, not a specific weakness. Keep going.');
+    }
+
+    // Recommended drill — closes the loop between diagnosis and practice.
+    // Map the dominant error pattern to the drill that targets it.
+    if (topRowErrors > 0 && (topRowErrors / out.totalErrors) >= 0.35) {
+      out.recommendedDrill = { id: 'top-row', reason: 'Top-row errors dominate — drill q-p reach stability.' };
+    } else if (bottomRowErrors > 0 && (bottomRowErrors / out.totalErrors) >= 0.35) {
+      out.recommendedDrill = { id: 'bottom-row', reason: 'Bottom-row stretches are where you miss — drill z-m specifically.' };
+    } else if (homeRowErrors > 0 && (homeRowErrors / out.totalErrors) >= 0.4) {
+      out.recommendedDrill = { id: 'home-row', reason: 'Home-row positioning looks off — reset fundamentals.' };
+    } else {
+      // Check shift-key errors via capitalization drill relevance
+      var capsErrors = 0;
+      keys.forEach(function(k) {
+        if (/[A-Z]/.test(k)) capsErrors += aggregateErrors[k] || 0;
+      });
+      if (capsErrors > 0 && (capsErrors / out.totalErrors) >= 0.2) {
+        out.recommendedDrill = { id: 'capitalization', reason: 'Shift-key timing needs work — capitalization drill targets this.' };
+      }
+    }
+
+    return out;
   }
 
   // Render a mini-keyboard heatmap showing per-key error counts. Intensity of
@@ -3053,6 +4930,166 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     );
   }
 
+  // Render a 30-day practice calendar (GitHub-contribution-style). Each cell
+  // is one day; color intensity scales with session count. No pressure to fill
+  // every day — days with 0 sessions stay neutral, not red.
+  function renderPracticeCalendar(sessions, palette) {
+    var React = window.React;
+    var h = React.createElement;
+    var today = new Date();
+    today.setHours(0, 0, 0, 0);
+    var DAYS = 30;
+    // Build a map of local-date-key → session summary for that day
+    var bucket = {};
+    sessions.forEach(function(s) {
+      var d = new Date(s.date);
+      var key = d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+      if (!bucket[key]) bucket[key] = { count: 0, best: 0, totalChars: 0 };
+      bucket[key].count++;
+      bucket[key].best = Math.max(bucket[key].best, s.wpm || 0);
+      bucket[key].totalChars += (s.charCount || 0);
+    });
+    // Build the ordered list of the last 30 days (oldest first)
+    var days = [];
+    for (var i = DAYS - 1; i >= 0; i--) {
+      var d = new Date(today);
+      d.setDate(today.getDate() - i);
+      var key = d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+      days.push({
+        date: d,
+        key: key,
+        count: bucket[key] ? bucket[key].count : 0,
+        best: bucket[key] ? bucket[key].best : 0,
+        totalChars: bucket[key] ? bucket[key].totalChars : 0
+      });
+    }
+    // Intensity → color: 0 = bg/dim, 1 = light, 2-3 = medium, 4+ = full
+    var intensity = function(count) {
+      if (count === 0) return 0;
+      if (count === 1) return 0.35;
+      if (count <= 3) return 0.65;
+      return 1;
+    };
+
+    return h('div', null,
+      h('div', {
+        role: 'img',
+        'aria-label': 'Last 30 days of practice calendar',
+        style: {
+          display: 'grid',
+          gridTemplateColumns: 'repeat(15, 1fr)',
+          gap: '3px'
+        }
+      },
+        // Group into 2 rows of 15 days each — simpler than a week-grid and
+        // keeps it compact horizontally.
+        days.map(function(day, idx) {
+          var op = intensity(day.count);
+          var bg = op === 0 ? palette.bg : mixColor(palette.surface, palette.accent, op);
+          var dateLabel = day.date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+          return h('div', {
+            key: 'cal-' + idx,
+            title: dateLabel + ' · ' + day.count + ' session' + (day.count === 1 ? '' : 's') +
+                   (day.best > 0 ? ' · best ' + day.best + ' WPM' : ''),
+            style: {
+              aspectRatio: '1',
+              borderRadius: '3px',
+              background: bg,
+              border: '1px solid ' + (day.count > 0 ? palette.border : 'transparent'),
+              minHeight: '18px'
+            }
+          });
+        })
+      ),
+      h('div', {
+        style: {
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginTop: '8px',
+          fontSize: '10px',
+          color: palette.textMute
+        }
+      },
+        h('span', null, days[0].date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })),
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: '4px' } },
+          h('span', null, 'Less'),
+          [0, 0.35, 0.65, 1].map(function(op, i) {
+            return h('div', {
+              key: 'legend-' + i,
+              style: {
+                width: '10px',
+                height: '10px',
+                borderRadius: '2px',
+                background: op === 0 ? palette.bg : mixColor(palette.surface, palette.accent, op),
+                border: '1px solid ' + palette.border
+              }
+            });
+          }),
+          h('span', null, 'More')
+        ),
+        h('span', null, 'Today')
+      )
+    );
+  }
+
+  // Horizontal stacked bar showing what fraction of errors belong to each finger.
+  // Reuses FINGER_COLOR so the finger colors match the on-screen-keyboard
+  // accommodation — visual consistency helps students connect the two.
+  function renderFingerErrorBar(fingerCounts, total, palette) {
+    var React = window.React;
+    var h = React.createElement;
+    if (!total || total === 0) return null;
+
+    // Order fingers left-to-right as they appear on the keyboard
+    var order = ['LP', 'LR', 'LM', 'LI', 'T', 'RI', 'RM', 'RR', 'RP'];
+    var segments = order
+      .filter(function(f) { return (fingerCounts[f] || 0) > 0; })
+      .map(function(f) {
+        var pct = (fingerCounts[f] / total) * 100;
+        return { finger: f, count: fingerCounts[f], pct: pct };
+      });
+
+    return h('div', null,
+      h('div', {
+        role: 'img',
+        'aria-label': 'Errors by finger: ' + segments.map(function(s) { return fingerLabel(s.finger) + ' ' + Math.round(s.pct) + ' percent'; }).join(', '),
+        style: {
+          display: 'flex',
+          height: '18px',
+          borderRadius: '999px',
+          overflow: 'hidden',
+          border: '1px solid ' + palette.border
+        }
+      },
+        segments.map(function(seg) {
+          return h('div', {
+            key: 'seg-' + seg.finger,
+            title: fingerLabel(seg.finger) + ': ' + seg.count + ' error' + (seg.count === 1 ? '' : 's') + ' (' + Math.round(seg.pct) + '%)',
+            style: {
+              flexBasis: seg.pct + '%',
+              background: FINGER_COLOR[seg.finger] || palette.textMute
+            }
+          });
+        })
+      ),
+      // Legend
+      h('div', {
+        style: { display: 'flex', gap: '10px', flexWrap: 'wrap', marginTop: '8px', fontSize: '10px', color: palette.textMute }
+      },
+        segments.map(function(seg) {
+          return h('span', {
+            key: 'leg-' + seg.finger,
+            style: { display: 'inline-flex', alignItems: 'center', gap: '4px' }
+          },
+            h('span', { style: { display: 'inline-block', width: '10px', height: '10px', borderRadius: '2px', background: FINGER_COLOR[seg.finger] || palette.textMute } }),
+            fingerLabel(seg.finger) + ' ' + Math.round(seg.pct) + '%'
+          );
+        })
+      )
+    );
+  }
+
   // Simple hex-color blend. Expects "#rrggbb" strings. t=0 returns a, t=1 returns b.
   function mixColor(a, b, t) {
     var pa = parseHex(a);
@@ -3104,6 +5141,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     var recent = sessions.slice(-5);
     var sum = recent.reduce(function(acc, s) { return acc + (s[key] || 0); }, 0);
     return Math.round(sum / recent.length);
+  }
+
+  // Open a print-friendly window with the IEP report and invoke the browser
+  // print dialog. Uses a minimal standalone HTML so page breaks, margins, and
+  // font stay clinical-looking. The opened window closes after print.
+  function printIEPReport(reportText, studentName) {
+    try {
+      var w = window.open('', '_blank', 'width=720,height=900');
+      if (!w) {
+        alert('Please allow popups to print the report, or use Copy and paste into a document.');
+        return;
+      }
+      var title = 'Typing Practice — Progress Summary' + (studentName ? ' — ' + studentName : '');
+      // Minimal print-friendly CSS: monospace so alignment of the line-based
+      // report is preserved.
+      var html = [
+        '<!doctype html><html><head><meta charset="utf-8"><title>' +
+          title.replace(/[<>&]/g, function(c) { return ({'<':'&lt;','>':'&gt;','&':'&amp;'})[c]; }) +
+          '</title>',
+        '<style>',
+        '  body { font: 11pt/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;',
+        '         color: #111; background: #fff; margin: 0.75in; }',
+        '  h1 { font-size: 14pt; margin: 0 0 0.2in 0; border-bottom: 1px solid #333; padding-bottom: 4pt; }',
+        '  pre { white-space: pre-wrap; font: inherit; margin: 0; }',
+        '  .meta { font-size: 9pt; color: #555; margin-bottom: 0.3in; }',
+        '  @media print {',
+        '    body { margin: 0.5in; }',
+        '    button { display: none; }',
+        '  }',
+        '  button { position: fixed; top: 8pt; right: 8pt; padding: 6pt 12pt; font: 10pt sans-serif; cursor: pointer; }',
+        '</style>',
+        '</head><body>',
+        '<button onclick="window.print()">🖨 Print now</button>',
+        '<h1>' + title.replace(/[<>&]/g, function(c) { return ({'<':'&lt;','>':'&gt;','&':'&amp;'})[c]; }) + '</h1>',
+        '<div class="meta">Generated by AlloFlow Typing Practice · ' + new Date().toLocaleString() + '</div>',
+        '<pre>' + reportText.replace(/[<>&]/g, function(c) { return ({'<':'&lt;','>':'&gt;','&':'&amp;'})[c]; }) + '</pre>',
+        '<script>setTimeout(function(){ try { window.print(); } catch(e){} }, 300);</script>',
+        '</body></html>'
+      ].join('\n');
+      w.document.open();
+      w.document.write(html);
+      w.document.close();
+    } catch (e) {
+      console.warn('[TypingPractice] print failed:', e);
+      alert('Print failed. Use Copy and paste into your preferred document.');
+    }
   }
 
   // Filter sessions by date range (ISO strings) and/or drill id.
@@ -3173,7 +5256,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       if (/[",\n]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
       return s;
     };
-    var headers = ['date', 'drill_id', 'drill_name', 'wpm', 'accuracy_pct', 'duration_sec', 'paused_sec', 'errors', 'chars_typed', 'accommodations_used', 'is_new_best', 'is_baseline', 'mastery_advanced', 'new_mastery_level', 'reflection', 'error_chars', 'note'];
+    var headers = ['date', 'drill_id', 'drill_name', 'wpm', 'accuracy_pct', 'duration_sec', 'paused_sec', 'errors', 'chars_typed', 'accommodations_used', 'tag', 'is_new_best', 'is_baseline', 'mastery_advanced', 'new_mastery_level', 'reflection', 'error_chars', 'note'];
     var rows = sessions.map(function(s) {
       // Serialize per-char errors as "a:2|d:1|k:3" for compact CSV consumption
       var errorChars = s.errorChars ? Object.keys(s.errorChars).map(function(k) {
@@ -3183,6 +5266,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         s.date, s.drillId, s.drillName, s.wpm, s.accuracy,
         s.durationSec, (s.pausedSec || 0), s.errors, s.charCount,
         (s.accommodationsUsed || []).join('|'),
+        s.tag || '',
         s.isNewBest ? 'yes' : '', s.isBaseline ? 'yes' : '',
         s.masteryAdvanced ? 'yes' : '', (s.newMasteryLevel || ''),
         s.reflection || '', errorChars,
@@ -3288,6 +5372,103 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     return null;
   }
 
+  // Group sessions into rough parts of the day based on local hour, and
+  // return an array of buckets with session counts + average WPM/accuracy.
+  // Returns null if there's not enough data to be interesting (< 5 sessions).
+  function computeTimeOfDayPerformance(sessions) {
+    if (!sessions || sessions.length < 5) return null;
+    var buckets = [
+      { id: 'early',     label: 'Early morning (5–8am)',  match: function(h) { return h >= 5 && h < 8; },  count: 0, wpmSum: 0, accSum: 0 },
+      { id: 'morning',   label: 'Morning (8am–12pm)',     match: function(h) { return h >= 8 && h < 12; }, count: 0, wpmSum: 0, accSum: 0 },
+      { id: 'afternoon', label: 'Afternoon (12–4pm)',     match: function(h) { return h >= 12 && h < 16; },count: 0, wpmSum: 0, accSum: 0 },
+      { id: 'evening',   label: 'Evening (4–8pm)',        match: function(h) { return h >= 16 && h < 20; },count: 0, wpmSum: 0, accSum: 0 },
+      { id: 'night',     label: 'Night (8pm–5am)',        match: function(h) { return h >= 20 || h < 5; }, count: 0, wpmSum: 0, accSum: 0 }
+    ];
+    sessions.forEach(function(s) {
+      var hr = new Date(s.date).getHours();
+      for (var i = 0; i < buckets.length; i++) {
+        if (buckets[i].match(hr)) {
+          buckets[i].count++;
+          buckets[i].wpmSum += (s.wpm || 0);
+          buckets[i].accSum += (s.accuracy || 0);
+          break;
+        }
+      }
+    });
+    var result = buckets
+      .filter(function(b) { return b.count > 0; })
+      .map(function(b) {
+        return {
+          label: b.label,
+          count: b.count,
+          avgWpm: Math.round(b.wpmSum / b.count),
+          avgAcc: Math.round(b.accSum / b.count)
+        };
+      });
+    // Only emit if there's meaningful spread — at least 2 non-empty buckets
+    if (result.length < 2) return null;
+    return result;
+  }
+
+  // Per-drill efficacy: same as aggregate but grouped by drill, so drill
+  // difficulty is held constant. Produces a matrix of { drillId, drillName,
+  // rows: [{ key, label, sessionsWith, sessionsWithout, wpmDelta, accDelta }] }.
+  // Only emits rows where the student has 2+ sessions BOTH with AND without
+  // that accommodation on that specific drill — anything less is noise.
+  function computePerDrillEfficacy(sessions) {
+    if (!sessions || sessions.length < 4) return [];
+    var KEYS = [
+      { key: 'dyslexiaFont',   label: 'dyslexia font' },
+      { key: 'largeKeys',      label: 'on-screen keyboard' },
+      { key: 'highContrast',   label: 'high contrast' },
+      { key: 'audioCues',      label: 'audio cues' },
+      { key: 'errorTolerant',  label: 'error-tolerant' },
+      { key: 'paceTargetWpm',  label: 'pace target' },
+      { key: 'predictiveAssist', label: 'predictive assist' }
+    ];
+    var avg = function(arr, k) {
+      if (arr.length === 0) return 0;
+      return arr.reduce(function(a, s) { return a + (s[k] || 0); }, 0) / arr.length;
+    };
+
+    // Group sessions by drillId
+    var byDrill = {};
+    sessions.forEach(function(s) {
+      if (!byDrill[s.drillId]) byDrill[s.drillId] = [];
+      byDrill[s.drillId].push(s);
+    });
+
+    var out = [];
+    Object.keys(byDrill).forEach(function(drillId) {
+      var drillSessions = byDrill[drillId];
+      if (drillSessions.length < 4) return; // too few to split meaningfully
+      var drillName = drillSessions[0].drillName ||
+                      (DRILLS[drillId] ? DRILLS[drillId].name : drillId);
+      var rows = [];
+      KEYS.forEach(function(k) {
+        var withIt = drillSessions.filter(function(s) {
+          return (s.accommodationsUsed || []).indexOf(k.key) !== -1;
+        });
+        var withoutIt = drillSessions.filter(function(s) {
+          return (s.accommodationsUsed || []).indexOf(k.key) === -1;
+        });
+        if (withIt.length < 2 || withoutIt.length < 2) return;
+        rows.push({
+          key: k.key,
+          label: k.label,
+          sessionsWith: withIt.length,
+          sessionsWithout: withoutIt.length,
+          wpmDelta: Math.round(avg(withIt, 'wpm') - avg(withoutIt, 'wpm')),
+          accDelta: Math.round(avg(withIt, 'accuracy') - avg(withoutIt, 'accuracy'))
+        });
+      });
+      if (rows.length > 0) {
+        out.push({ drillId: drillId, drillName: drillName, rows: rows });
+      }
+    });
+    return out;
+  }
+
   // Aggregate WPM/accuracy delta per accommodation. Only returns rows where
   // the student has at least one session with AND one session without that
   // accommodation — otherwise a delta is meaningless.
@@ -3379,13 +5560,49 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       lines.push('');
     }
 
-    // Top error-prone keys — concrete coaching target for the clinician
+    // Top error-prone keys + coaching hints — concrete target for the clinician
     var agg = state.aggregateErrors || {};
     var sortedErrorKeys = Object.keys(agg).sort(function(a, b) { return agg[b] - agg[a]; }).slice(0, 5);
     if (sortedErrorKeys.length > 0 && agg[sortedErrorKeys[0]] > 0) {
       lines.push('TOP ERROR-PRONE KEYS (all-time)');
       sortedErrorKeys.forEach(function(k) {
         if (agg[k] > 0) lines.push('  ' + k.toUpperCase() + ': ' + agg[k] + ' error' + (agg[k] === 1 ? '' : 's'));
+      });
+      // Finger breakdown
+      var analysis = analyzeErrorPatterns(agg);
+      if (analysis.totalErrors > 0) {
+        var fingerSummary = Object.keys(analysis.fingerCounts)
+          .sort(function(a, b) { return analysis.fingerCounts[b] - analysis.fingerCounts[a]; })
+          .slice(0, 4)
+          .map(function(f) {
+            var pct = Math.round((analysis.fingerCounts[f] / analysis.totalErrors) * 100);
+            return fingerLabel(f) + ' ' + pct + '%';
+          })
+          .join(', ');
+        lines.push('  Finger breakdown: ' + fingerSummary);
+      }
+      // Coaching hints
+      if (analysis.hints && analysis.hints.length > 0) {
+        lines.push('');
+        lines.push('COACHING HINTS (based on error pattern)');
+        analysis.hints.forEach(function(hint) {
+          lines.push('  - ' + hint);
+        });
+      }
+      if (analysis.recommendedDrill && DRILLS[analysis.recommendedDrill.id]) {
+        lines.push('  Recommended practice: ' + DRILLS[analysis.recommendedDrill.id].name + ' — ' + analysis.recommendedDrill.reason);
+      }
+      lines.push('');
+    }
+
+    // Time-of-day performance — groups sessions into rough parts of the day
+    // and computes average WPM per part. Reveals whether the student performs
+    // best in the morning, afternoon, etc. Useful for scheduling decisions.
+    var todReport = computeTimeOfDayPerformance(sessions);
+    if (todReport) {
+      lines.push('TIME-OF-DAY PERFORMANCE');
+      todReport.forEach(function(b) {
+        lines.push('  ' + b.label + ' (' + b.count + ' session' + (b.count === 1 ? '' : 's') + '): avg ' + b.avgWpm + ' WPM · ' + b.avgAcc + '% acc');
       });
       lines.push('');
     }
@@ -3403,6 +5620,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     if (state.lifetime && state.lifetime.totalSessions) {
       lines.push('  Lifetime sessions: ' + state.lifetime.totalSessions);
       lines.push('  Lifetime characters typed: ' + state.lifetime.totalCharsTyped);
+      // Completion rate — completed sessions vs abandoned starts. Useful signal
+      // for whether drill difficulty is calibrated right; a low rate suggests
+      // the student is getting stuck and bailing.
+      var ab = state.lifetime.abandonments || 0;
+      var totalStarts = state.lifetime.totalSessions + ab;
+      if (totalStarts > 0) {
+        var rate = Math.round((state.lifetime.totalSessions / totalStarts) * 100);
+        lines.push('  Drill completion rate: ' + rate + '% (' + state.lifetime.totalSessions + ' completed, ' + ab + ' abandoned)');
+      }
     }
     lines.push('');
 
@@ -3429,7 +5655,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     // NOTE: aggregates across all drill types; drill mix can confound.
     var efficacy = computeAccommodationEfficacy(sessions);
     if (efficacy.length > 0) {
-      lines.push('ACCOMMODATION EFFICACY (data-only, no clinical interpretation)');
+      lines.push('ACCOMMODATION EFFICACY — AGGREGATE (data-only, no clinical interpretation)');
       lines.push('  Format: with-vs-without sessions; WPM delta; accuracy delta');
       efficacy.forEach(function(row) {
         lines.push('  ' + row.label + ': ' +
@@ -3439,12 +5665,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       });
       lines.push('  Caveat: aggregate across drill types. Drill mix may confound.');
       lines.push('');
+
+      // Per-drill efficacy matrix — same analysis but within each drill type.
+      // Less confounding because drill difficulty is held constant per row.
+      // Only emit rows where at least one accommodation has comparable data.
+      var perDrillMatrix = computePerDrillEfficacy(sessions);
+      if (perDrillMatrix.length > 0) {
+        lines.push('ACCOMMODATION EFFICACY — PER DRILL (less confounded than aggregate)');
+        lines.push('  Only drill+accommodation pairs with 2+ sessions both with and without appear.');
+        perDrillMatrix.forEach(function(drillRow) {
+          lines.push('  ' + drillRow.drillName + ':');
+          drillRow.rows.forEach(function(r) {
+            lines.push('    - ' + r.label + ': ' +
+              r.sessionsWith + '/' + r.sessionsWithout + ' · ' +
+              (r.wpmDelta >= 0 ? '+' : '') + r.wpmDelta + ' WPM · ' +
+              (r.accDelta >= 0 ? '+' : '') + r.accDelta + '% acc');
+          });
+        });
+        lines.push('');
+      }
     }
 
     if (state.iepGoal) {
       lines.push('IEP GOAL');
       lines.push('  Target: ' + state.iepGoal.targetWpm + ' WPM at ' + state.iepGoal.targetAccuracy + '% accuracy');
       if (state.iepGoal.notes) lines.push('  Notes: ' + state.iepGoal.notes);
+      lines.push('');
+    }
+
+    if (state.motivationStatement) {
+      lines.push('STUDENT MOTIVATION (self-authored)');
+      lines.push('  "' + state.motivationStatement + '"');
       lines.push('');
     }
 
@@ -3459,6 +5710,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         lines.push('  ' + new Date(s.date).toLocaleDateString() + ' · ' + (s.drillName || s.drillId) +
                    ' (' + s.wpm + ' WPM, ' + s.accuracy + '%' + reflTag + ')');
         lines.push('    ' + s.note);
+      });
+      lines.push('');
+    }
+
+    // Clinician session-tag roll-up — counts of each tag type in the window
+    var withTags = sessions.filter(function(s) { return s.tag; });
+    if (withTags.length > 0) {
+      var tagCounts = {};
+      withTags.forEach(function(s) { tagCounts[s.tag] = (tagCounts[s.tag] || 0) + 1; });
+      lines.push('SESSION TAG BREAKDOWN (clinician-assigned)');
+      Object.keys(tagCounts).sort().forEach(function(t) {
+        lines.push('  ' + t + ': ' + tagCounts[t]);
       });
       lines.push('');
     }
@@ -3485,14 +5748,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     return lines.join('\n');
   }
 
-  function renderDrillCard(drill, unlocked, palette, startDrill) {
+  function renderDrillCard(drill, unlocked, palette, startDrill, unlockHint, stats) {
     var React = window.React;
     var h = React.createElement;
     return h('button', {
       key: drill.id,
       onClick: unlocked ? function() { startDrill(drill.id); } : null,
       disabled: !unlocked,
-      'aria-label': drill.name + (unlocked ? '' : ' (locked)'),
+      'aria-label': drill.name + (unlocked ? '' : ' (locked: ' + (unlockHint || 'reach required mastery tier') + ')'),
       style: {
         textAlign: 'left',
         background: unlocked ? palette.surface : palette.bg,
@@ -3500,7 +5763,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         borderRadius: '12px',
         padding: '16px',
         cursor: unlocked ? 'pointer' : 'not-allowed',
-        opacity: unlocked ? 1 : 0.5,
+        opacity: unlocked ? 1 : 0.6,
         color: palette.text,
         font: 'inherit',
         transition: 'border-color 120ms ease',
@@ -3527,7 +5790,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         }, unlocked ? ('Tier ' + drill.tier) : '🔒 Locked')
       ),
       h('div', { style: { fontSize: '15px', fontWeight: 600, color: palette.text } }, drill.name),
-      h('div', { style: { fontSize: '12px', color: palette.textMute, lineHeight: '1.4' } }, drill.description)
+      h('div', { style: { fontSize: '12px', color: palette.textMute, lineHeight: '1.4' } }, drill.description),
+      // Inline stats on unlocked cards that have session history
+      (unlocked && stats) ? h('div', {
+        style: { fontSize: '11px', color: palette.textDim, marginTop: 'auto', fontVariantNumeric: 'tabular-nums' }
+      },
+        stats.bestWpm !== null ? h('span', null,
+          h('span', { style: { color: palette.success, fontWeight: 700 } }, stats.bestWpm + ' WPM'),
+          ' best · ', stats.sessionCount, ' session', stats.sessionCount === 1 ? '' : 's'
+        ) : h('span', { style: { color: palette.textMute } }, stats.sessionCount + ' session' + (stats.sessionCount === 1 ? '' : 's'))
+      ) : null,
+      // On locked cards: surface the specific threshold needed to unlock.
+      (!unlocked && unlockHint) ? h('div', {
+        style: { fontSize: '11px', color: palette.warn, marginTop: 'auto', fontStyle: 'italic' }
+      }, '→ ' + unlockHint) : null
     );
   }
 

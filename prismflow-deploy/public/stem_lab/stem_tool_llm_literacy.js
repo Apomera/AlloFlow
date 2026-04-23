@@ -209,6 +209,60 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
   ];
 
   // ─────────────────────────────────────────────────────────
+  // ERROR CLASSIFIER: friendly + teaching messages for Gemini failures
+  // ─────────────────────────────────────────────────────────
+  // When a live call fails, we do two jobs: (1) tell the student what went
+  // wrong in plain language and (2) use the failure as a teaching moment
+  // about how commercial AI services actually work \u2014 rate limits, safety
+  // filters, auth keys, network reality. Errors come in many shapes
+  // (Error objects, promise rejections, bare strings), so normalize to text
+  // first and match against canonical tokens.
+
+  function classifyGeminiError(err) {
+    var raw = '';
+    if (err) {
+      if (typeof err === 'string') raw = err;
+      else if (err.message) raw = err.message;
+      else { try { raw = JSON.stringify(err); } catch (e) { raw = String(err); } }
+    }
+    var low = raw.toLowerCase();
+    if (low.indexOf('429') >= 0 || low.indexOf('resource_exhausted') >= 0 || low.indexOf('rate limit') >= 0 || low.indexOf('quota') >= 0) {
+      return { kind: 'rate', emoji: '\u23F3',
+        friendly: 'Rate-limited \u2014 the AI service is asking us to slow down.',
+        teaching: 'Commercial AI APIs cap requests per minute and per day. When lots of users hit them at once, the provider throttles new calls to stay stable. This is why apps sometimes say "try again later."',
+        retryable: true };
+    }
+    if (low.indexOf('401') >= 0 || low.indexOf('403') >= 0 || low.indexOf('unauthorized') >= 0 || low.indexOf('api key') >= 0 || low.indexOf('permission_denied') >= 0) {
+      return { kind: 'auth', emoji: '\uD83D\uDD12',
+        friendly: 'The AI provider didn\u2019t accept the key.',
+        teaching: 'Live AI calls need an API key, and schools sometimes restrict them. If this tool is on a locked-down or air-gapped device, expect this \u2014 the static demos still work.',
+        retryable: false };
+    }
+    if ((low.indexOf('block') >= 0 && (low.indexOf('safety') >= 0 || low.indexOf('harm') >= 0)) || low.indexOf('safety_block') >= 0) {
+      return { kind: 'safety', emoji: '\uD83D\uDEA7',
+        friendly: 'The safety filter blocked this response.',
+        teaching: 'AI providers screen outputs for harmful content. Sometimes the filter is over-aggressive and blocks harmless prompts containing trigger words. Try rephrasing.',
+        retryable: true };
+    }
+    if (low.indexOf('failed to fetch') >= 0 || low.indexOf('networkerror') >= 0 || low.indexOf('network error') >= 0 || low.indexOf('timeout') >= 0 || low.indexOf('offline') >= 0) {
+      return { kind: 'network', emoji: '\uD83D\uDCF6',
+        friendly: 'Couldn\u2019t reach the AI service over the network.',
+        teaching: 'AI calls go over the internet to a datacenter. School wifi sometimes blocks AI domains, or the connection drops mid-request. Check your network.',
+        retryable: true };
+    }
+    if (low.indexOf('500') >= 0 || low.indexOf('502') >= 0 || low.indexOf('503') >= 0 || low.indexOf('504') >= 0) {
+      return { kind: 'server', emoji: '\uD83D\uDEE0\uFE0F',
+        friendly: 'The AI service returned a server error.',
+        teaching: 'The provider\u2019s own servers had a problem. Not your fault. A short wait usually fixes it.',
+        retryable: true };
+    }
+    return { kind: 'unknown', emoji: '\u2753',
+      friendly: 'Live call failed for an unknown reason.',
+      teaching: 'AI APIs can fail for dozens of reasons. The fact that you need a backup plan \u2014 like a static demo or a recorded example \u2014 is part of literate AI use.',
+      retryable: true };
+  }
+
+  // ─────────────────────────────────────────────────────────
   // VOICE INPUT: Web Speech API for dictation
   // ─────────────────────────────────────────────────────────
   // Not all browsers support SpeechRecognition (Safari iOS is limited,
@@ -1453,6 +1507,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
           if (key === '?' || (key === '/' && e.shiftKey)) { e.preventDefault(); setHelpOpen(true); return; }
           if (key === 'h' || key === 'H') { goHome(); return; }
           if (key === 't' || key === 'T') { toggleTeacherMode(); return; }
+          if (key === 'g' || key === 'G') { setBrowseOpen(true); return; }
           // Numeric shortcuts 1..6
           var idx = ['1','2','3','4','5','6'].indexOf(key);
           if (idx >= 0) {
@@ -1593,6 +1648,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
         var rows = [
           { keys: ['1','\u20132','\u20133','\u20134','\u20135','6'], label: 'Jump to section 1\u20136' },
           { keys: ['H'], label: 'Back to home' },
+          { keys: ['G'], label: 'Open the glossary' },
           { keys: ['T'], label: 'Toggle teacher notes' },
           { keys: ['?'], label: 'Show this help' },
           { keys: ['Esc'], label: 'Close overlays / back to home' }
@@ -2384,7 +2440,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
             awardXP(10, 'Compared temperatures live');
           } catch (e) {
             console.error('[llmLiteracy] Live temperature run failed:', e);
-            addToast('Live call failed — recorded example shown instead.', 'warn');
+            var info = classifyGeminiError(e);
+            addToast(info.emoji + ' ' + info.friendly + ' Showing recorded examples.', 'warn');
           } finally {
             setTempBusy(false);
           }
@@ -2422,7 +2479,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
             upd('tempCompared', true);
           } catch (e) {
             console.error('[llmLiteracy] Temperature playground failed:', e);
-            addToast('Call failed. Try a lower temperature.', 'warn');
+            var info = classifyGeminiError(e);
+            addToast(info.emoji + ' ' + info.friendly, 'warn');
           } finally {
             setPlayBusy(false);
           }
@@ -2843,7 +2901,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
             });
           }).catch(function(err) {
             console.error('[llmLiteracy] Live ask failed:', err);
-            addToast('Live ask failed \u2014 see console.', 'warn');
+            var info = classifyGeminiError(err);
+            setLiveAsk(function(prev) {
+              var next = Object.assign({}, prev);
+              next[g.category] = '[' + info.emoji + ' ' + info.friendly + ']\n\nWhy this happens: ' + info.teaching;
+              return next;
+            });
+            addToast(info.emoji + ' ' + info.friendly, 'warn');
           }).then(function() {
             setAskBusy(false);
           });
@@ -3430,7 +3494,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
             journalAdd(userPrompt, trimmed);
           } catch (e) {
             console.error('[llmLiteracy] Prompt live run failed:', e);
-            addToast('Live call failed. Check console.', 'warn');
+            var info = classifyGeminiError(e);
+            setLiveOutput('[' + info.emoji + ' ' + info.friendly + ']\n\nWhy this happens: ' + info.teaching);
+            addToast(info.emoji + ' ' + info.friendly, 'warn');
           } finally {
             setLiveBusy(false);
           }
@@ -4579,7 +4645,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
             setMyCoach((out || '').trim() || '(no response)');
           }).catch(function(err) {
             console.error('[llmLiteracy] UDL coach failed:', err);
-            addToast('Live coach failed. Heuristic below is still valid.', 'warn');
+            var info = classifyGeminiError(err);
+            setMyCoach('[' + info.emoji + ' ' + info.friendly + ']\n\nWhy this happens: ' + info.teaching + '\n\nThe heuristic direction below is still valid.');
+            addToast(info.emoji + ' Live coach unavailable. Heuristic below still works.', 'warn');
           }).then(function() {
             setMyCoachBusy(false);
           });
