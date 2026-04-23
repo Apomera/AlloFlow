@@ -69,6 +69,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     // text is the point of a retry.
     drillRunId: 0,
     audioTheme: 'chime',       // 'chime' (default) | 'soft' | 'mute'
+    accentColor: 'blue',       // 'blue' (default) | 'teal' | 'violet' | 'amber' | 'rose'
     // Lifetime totals survive session-array capping, so the IEP report stays
     // accurate for long-term students even after the 200-session cap trims
     // the oldest records.
@@ -666,8 +667,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     danger:    '#ff4444'
   };
 
-  function getPalette(accommodations) {
-    return (accommodations && accommodations.highContrast) ? HIGH_CONTRAST_PALETTE : PALETTE;
+  // Accent themes — swap just the accent pair (accent + accentDim) so the
+  // base dark surface stays consistent. Some students find the default blue
+  // too cold, some find warm tones easier to focus on. This isn't pure
+  // aesthetic polish — for students with color-sensitivity or visual-
+  // processing differences, swapping the accent meaningfully affects the
+  // readability of highlighted characters.
+  var ACCENT_THEMES = {
+    blue:   { accent: '#60a5fa', accentDim: '#3b82f6' }, // default
+    teal:   { accent: '#2dd4bf', accentDim: '#0d9488' },
+    violet: { accent: '#a78bfa', accentDim: '#7c3aed' },
+    amber:  { accent: '#fbbf24', accentDim: '#d97706' },
+    rose:   { accent: '#fb7185', accentDim: '#e11d48' }
+  };
+
+  function getPalette(accommodations, accentChoice) {
+    if (accommodations && accommodations.highContrast) return HIGH_CONTRAST_PALETTE;
+    // Start from the default palette, then swap accents if the student picked
+    // a non-default theme.
+    var theme = ACCENT_THEMES[accentChoice] || ACCENT_THEMES.blue;
+    if (theme === ACCENT_THEMES.blue) return PALETTE;
+    return Object.assign({}, PALETTE, { accent: theme.accent, accentDim: theme.accentDim });
   }
 
   function getFontFamily(accommodations) {
@@ -750,7 +770,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         var updMulti = function(obj) { ctx.updateMulti ? ctx.updateMulti('typingPractice', obj) : Object.keys(obj).forEach(function(k) { upd(k, obj[k]); }); };
         var addToast = ctx.addToast || function(msg) { console.log('[TypingPractice]', msg); };
 
-        var palette = getPalette(state.accommodations);
+        var palette = getPalette(state.accommodations, state.accentColor);
         var fontFamily = getFontFamily(state.accommodations);
 
         // ── Drill-local state (hooks must be called unconditionally every render) ──
@@ -3511,6 +3531,63 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 })
               )
             ),
+
+            // ── Accent color — cosmetic + accessibility (color-sensitivity) ──
+            // Overrides only while high-contrast mode is OFF. In high-contrast,
+            // the palette is intentionally fixed black/yellow/white.
+            !acc.highContrast ? h('div', {
+              style: { padding: '14px 0', borderBottom: '1px solid ' + palette.border }
+            },
+              h('div', { style: { fontSize: '14px', fontWeight: 600, color: palette.text, marginBottom: '2px' } }, 'Accent color'),
+              h('div', { style: { fontSize: '11px', color: palette.textMute, lineHeight: '1.4', marginBottom: '10px' } },
+                'Swap the highlight color used for the current character, buttons, and milestones. For students who find blue too cold or want warmer tones for focus. High-contrast mode overrides this.'),
+              h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' } },
+                [
+                  { id: 'blue',   label: 'Blue' },
+                  { id: 'teal',   label: 'Teal' },
+                  { id: 'violet', label: 'Violet' },
+                  { id: 'amber',  label: 'Amber' },
+                  { id: 'rose',   label: 'Rose' }
+                ].map(function(opt) {
+                  var isActive = (state.accentColor || 'blue') === opt.id;
+                  var swatch = ACCENT_THEMES[opt.id].accent;
+                  return h('button', {
+                    key: 'accent-' + opt.id,
+                    onClick: function() { upd('accentColor', opt.id); },
+                    title: opt.label,
+                    'aria-label': opt.label + ' accent',
+                    'aria-pressed': isActive ? 'true' : 'false',
+                    style: {
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      padding: '6px 10px',
+                      borderRadius: '999px',
+                      border: '1px solid ' + (isActive ? palette.text : palette.border),
+                      background: 'transparent',
+                      color: palette.textDim,
+                      fontSize: '12px',
+                      fontWeight: isActive ? 700 : 500,
+                      cursor: 'pointer',
+                      font: 'inherit'
+                    }
+                  },
+                    h('span', {
+                      'aria-hidden': 'true',
+                      style: {
+                        display: 'inline-block',
+                        width: '14px',
+                        height: '14px',
+                        borderRadius: '50%',
+                        background: swatch,
+                        border: isActive ? '2px solid ' + palette.text : '1px solid ' + palette.border
+                      }
+                    }),
+                    opt.label
+                  );
+                })
+              )
+            ) : null,
 
             // ── Sample length preference — filters drill.samples by length ──
             h('div', {
