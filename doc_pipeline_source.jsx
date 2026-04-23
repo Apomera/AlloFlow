@@ -6749,23 +6749,37 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         if (typeof addToast === 'function') addToast('Running Tesseract + Vision OCR for maximum accuracy on this scanned PDF…', 'info');
 
         const _visionChunkedExtract = async () => {
+          // Page-range-aware prompts: when the teacher selected a partial
+          // range (e.g. pages 6-10 of a 15-page scanned PDF), ask Gemini to
+          // extract ONLY those pages — not pages 1-effectivePageCount, which
+          // would map to pages 1-5 of the full PDF and produce the wrong
+          // content. Without this, partial remediation on scanned PDFs
+          // silently processed the whole document.
+          const _rangeStart = (_pageRange && _pageRange[0]) ? _pageRange[0] : 1;
+          const _rangeEnd = (_pageRange && _pageRange[1]) ? _pageRange[1] : (_rangeStart + effectivePageCount - 1);
           if (numChunks <= 1 && effectivePageCount <= 2) {
+            const rangeInstr = _pageRange
+              ? `Extract ALL text content from pages ${_rangeStart} through ${_rangeEnd} of this document ONLY. Do not include any other pages. This range contains approximately ${effectivePageCount} page(s).`
+              : `Extract ALL text content from this document. This document has approximately ${effectivePageCount} page(s) — extract EVERY page completely.`;
             const single = await callGeminiVision(
-              `Extract ALL text content from this document. This document has approximately ${effectivePageCount} page(s) — extract EVERY page completely.\n\nRULES:\n- Use # for titles, ## for sections, ### for subsections\n- Preserve tables as markdown tables with | pipes and --- dividers\n- Describe images as: [Image: detailed description]\n- Use * for bullet lists, 1. for numbered lists\n- LINKS: Preserve ALL hyperlinks. Format as [link text](URL). If text is hyperlinked but you can see the URL destination, include it. If you can only see blue/underlined text without a visible URL, format as [link text](#) to indicate a link exists.\n- Keep ALL content — every paragraph, heading, list item, table row\n\nIMPORTANT: Return ONLY plain text with markdown formatting. Do NOT wrap in JSON. Do NOT use \\n escape sequences — use actual line breaks. Just the document text.`,
+              `${rangeInstr}\n\nRULES:\n- Use # for titles, ## for sections, ### for subsections\n- Preserve tables as markdown tables with | pipes and --- dividers\n- Describe images as: [Image: detailed description]\n- Use * for bullet lists, 1. for numbered lists\n- LINKS: Preserve ALL hyperlinks. Format as [link text](URL). If text is hyperlinked but you can see the URL destination, include it. If you can only see blue/underlined text without a visible URL, format as [link text](#) to indicate a link exists.\n- Keep ALL content — every paragraph, heading, list item, table row\n\nIMPORTANT: Return ONLY plain text with markdown formatting. Do NOT wrap in JSON. Do NOT use \\n escape sequences — use actual line breaks. Just the document text.`,
               _base64, _mimeType
             );
-            return { fullText: single || '', pages: [{ pageNum: 1, text: single || '' }] };
+            return { fullText: single || '', pages: [{ pageNum: _rangeStart, text: single || '' }] };
           }
           const MAX_PARALLEL = 5;
           const chunkPromises = [];
           for (let i = 0; i < numChunks; i++) {
-            const startPage = i * PAGES_PER_CHUNK + 1;
-            const endPage = Math.min((i + 1) * PAGES_PER_CHUNK, effectivePageCount);
+            // Chunk's absolute page range in the full PDF: start at _rangeStart
+            // + i*PAGES_PER_CHUNK, cap at _rangeEnd. When no range is set,
+            // _rangeStart=1 so this reduces to the original 1-based chunking.
+            const startPage = _rangeStart + i * PAGES_PER_CHUNK;
+            const endPage = Math.min(_rangeStart + (i + 1) * PAGES_PER_CHUNK - 1, _rangeEnd);
             chunkPromises.push(
               callGeminiVision(
-                `Extract ALL text content from pages ${startPage} through ${endPage} of this document.\n\nRULES:\n- Use # for titles, ## for sections, ### for subsections\n- Preserve tables as markdown tables with | pipes and --- dividers\n- Describe images as: [Image: detailed description]\n- Use * for bullet lists, 1. for numbered lists\n- LINKS: Preserve ALL hyperlinks as [link text](URL). If you can see blue/underlined text with a visible URL, include it. If the URL destination isn't visible, use [link text](#).\n- Keep ALL content — do not skip any paragraphs or details\n- READING ORDER: If the page has multiple text columns, return content in correct reading order — finish the left column top-to-bottom before starting the right column. Two-column academic layouts and newspaper layouts MUST be linearized, not interleaved.\n\nIMPORTANT: Return ONLY plain text with markdown formatting. Do NOT wrap in JSON. Do NOT use \\n escape sequences — use actual line breaks. Just the document text.`,
+                `Extract ALL text content from pages ${startPage} through ${endPage} of this document${_pageRange ? ' ONLY (do not include pages outside this range)' : ''}.\n\nRULES:\n- Use # for titles, ## for sections, ### for subsections\n- Preserve tables as markdown tables with | pipes and --- dividers\n- Describe images as: [Image: detailed description]\n- Use * for bullet lists, 1. for numbered lists\n- LINKS: Preserve ALL hyperlinks as [link text](URL). If you can see blue/underlined text with a visible URL, include it. If the URL destination isn't visible, use [link text](#).\n- Keep ALL content — do not skip any paragraphs or details\n- READING ORDER: If the page has multiple text columns, return content in correct reading order — finish the left column top-to-bottom before starting the right column. Two-column academic layouts and newspaper layouts MUST be linearized, not interleaved.\n\nIMPORTANT: Return ONLY plain text with markdown formatting. Do NOT wrap in JSON. Do NOT use \\n escape sequences — use actual line breaks. Just the document text.`,
                 _base64, _mimeType
-              ).catch(err => { warnLog(`[PDF Fix] Chunk ${i + 1} extraction failed:`, err); return null; })
+              ).catch(err => { warnLog(`[PDF Fix] Chunk ${i + 1} (pages ${startPage}-${endPage}) extraction failed:`, err); return null; })
             );
           }
           let chunkResults = [];
