@@ -4003,6 +4003,19 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
     const queue = [...pdfBatchQueue];
     const startTime = Date.now();
 
+    // Batch AbortController — separate global from auto-continue so the Stop
+    // Batch button doesn't interfere with a single-file auto-continue run if
+    // it happens to overlap. Also publish into __alloPdfAbortSignal so the
+    // nested callGemini calls inside each _processOne honor the abort
+    // immediately (instead of finishing a mid-flight request and only breaking
+    // the loop on the next iteration check).
+    const _batchAbortCtrl = new AbortController();
+    if (typeof window !== 'undefined') {
+      window.__alloPdfBatchAbortCtrl = _batchAbortCtrl;
+      window.__alloPdfBatchAbortSignal = _batchAbortCtrl.signal;
+      window.__alloPdfAbortSignal = _batchAbortCtrl.signal;
+    }
+
     // ── Per-file processing via fixAndVerifyPdf (unifies with single-file pipeline) ──
     // Each file: audit (UI-quiet) → fixAndVerifyPdf with batch overrides → collect result
     // This gives batch mode all the single-file improvements: deterministic text extraction,
@@ -4027,6 +4040,10 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
     };
 
     for (let i = 0; i < queue.length; i++) {
+      if (_batchAbortCtrl.signal.aborted) {
+        setPdfBatchStep('Stopped by user · ' + i + '/' + queue.length + ' processed');
+        break;
+      }
       setPdfBatchCurrentIndex(i);
       const item = queue[i];
       setPdfBatchStep(`Processing ${i + 1}/${queue.length}: ${item.fileName}`);
@@ -4050,10 +4067,11 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
 
     // ── Retry failed files once ──
     const failedFiles = queue.filter(q => q.status === 'failed');
-    if (failedFiles.length > 0 && failedFiles.length < queue.length) {
+    if (!_batchAbortCtrl.signal.aborted && failedFiles.length > 0 && failedFiles.length < queue.length) {
       setPdfBatchStep(`Retrying ${failedFiles.length} failed file(s)...`);
       await new Promise(r => setTimeout(r, 5000)); // longer cooldown before retry
       for (const failedItem of failedFiles) {
+        if (_batchAbortCtrl.signal.aborted) break;
         const idx = queue.indexOf(failedItem);
         setPdfBatchCurrentIndex(idx);
         setPdfBatchStep(`Retrying: ${failedItem.fileName}`);
@@ -4092,6 +4110,18 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
     setPdfBatchProcessing(false);
     setPdfBatchCurrentIndex(-1);
     setPdfBatchStep('');
+    // Release batch abort signal so post-batch Gemini calls aren't picked up
+    // by a stale aborted controller. Guard against a subsequent run having
+    // already overwritten the slot.
+    if (typeof window !== 'undefined') {
+      if (window.__alloPdfBatchAbortCtrl === _batchAbortCtrl) {
+        window.__alloPdfBatchAbortCtrl = null;
+        window.__alloPdfBatchAbortSignal = null;
+      }
+      if (window.__alloPdfAbortSignal === _batchAbortCtrl.signal) {
+        window.__alloPdfAbortSignal = null;
+      }
+    }
     // Name up to 3 failed files in the toast; the rest stays in the summary.
     const _failList = failed.length > 0
       ? ` \u00b7 Failed: ${failed.slice(0, 3).map(q => q.fileName).join(', ')}${failed.length > 3 ? ` + ${failed.length - 3} more` : ''}`
@@ -6566,8 +6596,15 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
     warnLog('[fixAndVerifyPdf] Starting — batch:', _isBatch, 'base64:', !!_base64, 'audit:', !!_auditResult, 'file:', _fileName);
 
     if (!_base64) { addToast('Cannot fix: PDF data not found in memory. Please re-upload the PDF.', 'error'); return null; }
-    if (!_isBatch && !_auditResult) { addToast('Cannot fix: No audit results found. Please run the audit first.', 'error'); return null; }
-    if (!_isBatch) { setPdfFixLoading(true); setPdfFixResult(null); }
+    // "Silent mode" = caller is doing its own UI via an onProgress callback
+    // (multi-file batch). Partial single-file audits (pageRange only, no
+    // onProgress) still need the single-file UI state — otherwise the teacher
+    // never sees loading, never sees the result, and multi-session auto-save
+    // at the bottom never fires. Previously this gate was `_isBatch` (== any
+    // batchOverrides), which over-suppressed the UI whenever pageRange was set.
+    const _silentMode = !!_onProgress;
+    if (!_silentMode && !_auditResult) { addToast('Cannot fix: No audit results found. Please run the audit first.', 'error'); return null; }
+    if (!_silentMode) { setPdfFixLoading(true); setPdfFixResult(null); }
 
     const beforeScore = (_auditResult?.score) || 0;
     const pageCount = (_auditResult?.pageCount) || 1;
@@ -6588,7 +6625,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       const label = STEP_LABELS[step] || { emoji: '⏳', name: 'Processing', est: '' };
       const pageNote = pageCount > 1 ? ` (${pageCount} pages)` : '';
       const msg = `Step ${step}/${totalSteps} ${label.emoji} ${label.name}${pageNote} — ${detail}  (typically ${label.est})`;
-      if (_isBatch) { _onProgress?.(step, msg); } else { setPdfFixStep(msg); }
+      if (_silentMode) { _onProgress(step, msg); } else { setPdfFixStep(msg); }
     };
 
     try {
@@ -8806,6 +8843,32 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       } catch(finalAuditErr) {
         warnLog('[PDF Fix] Final audit failed (using loop result):', finalAuditErr);
       }
+      // Last-resort fallback: when the loop's verify AND the final audit both
+      // return null (Gemini timeout / quota on both), verification ends up
+      // undefined and the UI verification panel has nothing to render.
+      // Synthesize a minimal verification from axe-core so the panel always
+      // shows something; flag as synthesized so the panel can indicate "AI
+      // unavailable — issues derived from axe-core automated audit only."
+      if (!verification && axeResults) {
+        const axeViolations = Array.isArray(axeResults.violations) ? axeResults.violations : [];
+        verification = {
+          score: (typeof axeResults.score === 'number') ? axeResults.score : null,
+          summary: 'AI verification unavailable — issues below derived from axe-core automated audit.',
+          issues: axeViolations.slice(0, 20).map(function(v) {
+            var tagArr = Array.isArray(v.tags) ? v.tags : [];
+            var wcagTag = null;
+            for (var ti = 0; ti < tagArr.length; ti++) { if (/^wcag/i.test(tagArr[ti])) { wcagTag = tagArr[ti]; break; } }
+            return {
+              wcag: wcagTag || 'unknown',
+              issue: v.help || v.description || v.id || 'axe violation',
+              severity: v.impact || 'moderate',
+            };
+          }),
+          passes: [],
+          synthesized: true,
+        };
+        warnLog('[PDF Fix] Synthesized verification from axe-core (AI verify + final audit both returned null).');
+      }
 
       // ── Post-AI safety-net: re-run deterministic fixers in case AI introduced new issues ──
       if (autoFixPasses > 0) {
@@ -8861,9 +8924,9 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           warnLog(`[Integrity] Final HTML text: ${finalText} chars / source: ${groundTruth} chars (${integrityCoverage}% coverage, method=${groundTruthMethod})`);
           if (finalText < groundTruth * 0.97) {
             integrityWarning = `Output contains ${finalText.toLocaleString()} chars but source had ${groundTruth.toLocaleString()} (${integrityCoverage}% coverage). Some content may be missing.`;
-            if (!_isBatch) addToast('⚠ Integrity: ' + integrityWarning, 'error');
+            if (!_silentMode) addToast('⚠ Integrity: ' + integrityWarning, 'error');
             warnLog('[Integrity] COVERAGE SHORT — ' + integrityWarning);
-          } else if (!_isBatch && integrityCoverage >= 98) {
+          } else if (!_silentMode && integrityCoverage >= 98) {
             addToast(`✅ Content integrity: ${integrityCoverage}% coverage verified`, 'success');
           }
         }
@@ -9015,8 +9078,11 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         htmlSize: Math.round(accessibleHtml.length / 1000) + 'KB',
       });
 
-      // Batch mode: return result without touching React state
-      if (_isBatch) return _result;
+      // Silent mode (multi-file batch with onProgress): return without
+      // touching React state — caller is managing UI. Partial single-file
+      // audits still need the UI updates AND the multi-session auto-save
+      // at the bottom, so they fall through.
+      if (_silentMode) return _result;
 
       // Single-file mode: update UI state
       setPdfFixResult(_result);
@@ -9091,7 +9157,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       } catch(logErr) { /* non-blocking */ }
     } catch (err) {
       warnLog('[PDF Fix] Error:', err);
-      if (_isBatch) throw err; // Let batch caller handle it
+      if (_silentMode) throw err; // Let batch caller handle it
       setPdfFixLoading(false);
       setPdfFixStep('');
       addToast('PDF remediation failed: ' + (err.message || 'Unknown error'), 'error');
