@@ -1632,7 +1632,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                       };
                     }
                   }
-                  return renderDrillCard(drill, unlocked, palette, startDrill, unlockHint, stats);
+                  // Preview snippet — first ~40 chars of the sample the student
+                  // would see next (using current drillRunId + length pref) so
+                  // they can see what they'd be typing before clicking.
+                  // Only for structured drills; passage/custom show their own UI.
+                  var preview = null;
+                  if (unlocked && drill.samples && drill.samples.length > 0) {
+                    var nextText = pickDrillSample(drill, state.drillRunId, state.accommodations.sampleLength);
+                    if (nextText) {
+                      preview = nextText.length > 42 ? nextText.slice(0, 42) + '…' : nextText;
+                    }
+                  }
+                  return renderDrillCard(drill, unlocked, palette, startDrill, unlockHint, stats, preview);
                 })
               )
             ),
@@ -6311,7 +6322,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     return lines.join('\n');
   }
 
-  function renderDrillCard(drill, unlocked, palette, startDrill, unlockHint, stats) {
+  function renderDrillCard(drill, unlocked, palette, startDrill, unlockHint, stats, preview) {
     var React = window.React;
     var h = React.createElement;
     return h('button', {
@@ -6354,6 +6365,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       ),
       h('div', { style: { fontSize: '15px', fontWeight: 600, color: palette.text } }, drill.name),
       h('div', { style: { fontSize: '12px', color: palette.textMute, lineHeight: '1.4' } }, drill.description),
+      // Preview snippet — first ~40 chars of the sample the student would
+      // see next if they tap this card. Monospace, dim, so it reads as
+      // quoted text rather than navigation UI.
+      (unlocked && preview) ? h('div', {
+        style: {
+          fontSize: '11px',
+          color: palette.textMute,
+          fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+          padding: '4px 8px',
+          background: palette.bg,
+          borderRadius: '4px',
+          border: '1px dashed ' + palette.border,
+          fontStyle: 'italic',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap'
+        },
+        title: preview
+      }, '"' + preview + '"') : null,
       // Inline stats on unlocked cards that have session history
       (unlocked && stats) ? h('div', {
         style: { fontSize: '11px', color: palette.textDim, marginTop: 'auto', fontVariantNumeric: 'tabular-nums' }
