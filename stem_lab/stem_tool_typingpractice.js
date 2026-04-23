@@ -1039,6 +1039,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           summary.isNewBest = isNewBest;
           summary.isBaseline = !state.baseline;
 
+          // ── IEP goal met tracking ──
+          // When both WPM and accuracy thresholds from the clinician-set IEP
+          // goal are met, flag the session. Also tag whether this is the
+          // FIRST time the student has ever met the goal — dignified milestone.
+          if (state.iepGoal && state.iepGoal.targetWpm && state.iepGoal.targetAccuracy) {
+            var metNow = wpm >= state.iepGoal.targetWpm && accuracy >= state.iepGoal.targetAccuracy;
+            if (metNow) {
+              summary.goalMet = true;
+              // First-ever goal-met across all sessions?
+              var anyPriorMet = (state.sessions || []).some(function(s) { return s.goalMet; });
+              summary.firstGoalMet = !anyPriorMet;
+            }
+          }
+
           // ── Mastery advancement ──
           // If this drill's mastery threshold is met AND the student is currently
           // at a mastery level equal to this drill's tier, advance their mastery.
@@ -2853,13 +2867,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
 
           var headline = s.isWarmup
             ? '🤸 Warmup complete — not saved.'
-            : (s.masteryAdvanced
-                ? '🌟 Mastery tier cleared! Reached tier ' + s.newMasteryLevel + '.'
-                : (s.isBaseline
-                    ? 'First session saved — this is your baseline.'
-                    : (s.isNewBest
-                        ? 'New personal best!'
-                        : 'Session saved.')));
+            : (s.firstGoalMet
+                ? '🎯 IEP goal met for the first time!'
+                : (s.masteryAdvanced
+                    ? '🌟 Mastery tier cleared! Reached tier ' + s.newMasteryLevel + '.'
+                    : (s.isBaseline
+                        ? 'First session saved — this is your baseline.'
+                        : (s.isNewBest
+                            ? 'New personal best!'
+                            : (s.goalMet
+                                ? '🎯 IEP goal met this session.'
+                                : 'Session saved.')))));
 
           // Specific next-step message on mastery advancement — names the new
           // tier that just unlocked so the student knows what they earned.
@@ -4438,6 +4456,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   ) : null,
                   d.isNewBest ? h('div', { style: { color: palette.success, fontSize: '11px', fontWeight: 600 } }, '⭐ Personal best') : null,
                   d.masteryAdvanced ? h('div', { style: { color: palette.success, fontSize: '11px', fontWeight: 600 } }, '🌟 Mastery tier advanced to ' + d.newMasteryLevel) : null,
+                  d.goalMet ? h('div', { style: { color: palette.success, fontSize: '11px', fontWeight: 600 } }, '🎯 IEP goal met' + (d.firstGoalMet ? ' (first time)' : '')) : null,
 
                   // Retrospective editing — a clinician or student can edit
                   // note / tag / reflection after the session ends. Useful when
@@ -4763,6 +4782,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   if (s.tag === 'assessment')     badges.push('📊 assessment');
                   if (s.tag === 'practice')       badges.push('✏️ practice');
                   if (s.isBaseline) badges.push('📍 baseline');
+                  if (s.goalMet) badges.push(s.firstGoalMet ? '🎯 1st goal met' : '🎯 goal met');
                   if (s.isNewBest) badges.push('⭐ PB');
                   if (s.masteryAdvanced) badges.push('🌟 tier ↑');
                   return h('div', {
@@ -6144,6 +6164,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       lines.push('IEP GOAL');
       lines.push('  Target: ' + state.iepGoal.targetWpm + ' WPM at ' + state.iepGoal.targetAccuracy + '% accuracy');
       if (state.iepGoal.notes) lines.push('  Notes: ' + state.iepGoal.notes);
+      // Goal-met aggregation — defensible stat for IEP progress notes.
+      var goalMetTotal = sessions.filter(function(s) { return s.goalMet; }).length;
+      if (goalMetTotal > 0) {
+        var last10 = sessions.slice(-10);
+        var goalMetLast10 = last10.filter(function(s) { return s.goalMet; }).length;
+        var firstMet = sessions.filter(function(s) { return s.firstGoalMet; })[0];
+        lines.push('  Goal met: ' + goalMetTotal + ' of ' + sessions.length + ' sessions' +
+          (sessions.length >= 10 ? ' · ' + goalMetLast10 + ' of last 10' : ''));
+        if (firstMet) lines.push('  First met: ' + new Date(firstMet.date).toLocaleDateString());
+      } else if (sessions.length > 0) {
+        lines.push('  Goal met: not yet (' + sessions.length + ' sessions tracked)');
+      }
       lines.push('');
     }
 
