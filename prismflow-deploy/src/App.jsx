@@ -5645,40 +5645,40 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     })();
     // AlloData: pure-data bundle (phoneme guide, prompts, i18n strings, shop items, timeline modes).
     // Registers window.AlloModules.AlloData and calls _upgradeAlloData() to populate monolith shim.
-    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2a61695/allo_data_module.js');
+    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b67fdc8/allo_data_module.js');
     // LargeFileModule: chunked audio/video transcription (LargeFileHandler + LargeFileTranscriptionModal).
-    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2a61695/large_file_module.js');
+    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b67fdc8/large_file_module.js');
     // KeyConceptMapModule: SVG-overlay Bezier concept map view (used by renderOutlineContent).
-    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2a61695/key_concept_map_module.js');
+    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b67fdc8/key_concept_map_module.js');
     // UtilsPure: 14 pure utilities (JSON, storage, network, image) — populates monolith shim via _upgradeUtilsPure().
-    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2a61695/utils_pure_module.js');
+    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b67fdc8/utils_pure_module.js');
     // MiscComponents: WordSoundsReviewPanel + AnimatedNumber + ClozeInput (pure-props components).
-    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2a61695/misc_components_module.js');
+    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b67fdc8/misc_components_module.js');
     // RemediationAudio: Web Audio feedback beeps (chunk good/bad/medium, session complete, etc).
-    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2a61695/remediation_audio_module.js');
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2a61695/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2a61695/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2a61695/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2a61695/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2a61695/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2a61695/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2a61695/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2a61695/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2a61695/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2a61695/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2a61695/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2a61695/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2a61695/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2a61695/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2a61695/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2a61695/student_interaction_module.js');
-    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2a61695/math_fluency_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2a61695/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2a61695/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2a61695/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2a61695/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2a61695/content_engine_module.js');
-    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2a61695/timeline_revision_module.js');
+    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b67fdc8/remediation_audio_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b67fdc8/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b67fdc8/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b67fdc8/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b67fdc8/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b67fdc8/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b67fdc8/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b67fdc8/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b67fdc8/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b67fdc8/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b67fdc8/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b67fdc8/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b67fdc8/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b67fdc8/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b67fdc8/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b67fdc8/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b67fdc8/student_interaction_module.js');
+    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b67fdc8/math_fluency_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b67fdc8/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b67fdc8/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b67fdc8/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b67fdc8/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b67fdc8/content_engine_module.js');
+    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b67fdc8/timeline_revision_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -5694,7 +5694,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2a61695/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b67fdc8/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -10756,28 +10756,55 @@ Return only the corrected version of this exact text:`;
   // Spinner flag for the one-shot Gemini remarkup pass triggered by "Apply & Export".
   const [applyingRemarkup, setApplyingRemarkup] = useState(false);
   // Persist the last completed audit to localStorage so "View Last Audit" survives
-  // a full page reload. Keyed by a short hash of the source text so re-opening the
-  // SAME document rehydrates its prior audit automatically. Fails silently if
-  // storage is full or disabled — non-fatal; the in-memory state still works.
+  // a full page reload. Keyed by filename + filesize + djb2 hash of the FULL source
+  // text (prior version hashed first 2000 chars, which collided across textbook
+  // chapters sharing a boilerplate preamble). A separate `latest` pointer lets the
+  // hydrate useEffect find the most recent audit without scanning. Caps at 5
+  // entries to bound localStorage usage. Fails silently on quota / storage disabled.
   useEffect(() => {
     if (!pdfFixResult || !pdfFixResult.sourceText || !pdfFixResult.finalText) return;
     try {
       let h = 0;
-      const sample = pdfFixResult.sourceText.slice(0, 2000);
-      for (let i = 0; i < sample.length; i++) { h = ((h << 5) - h + sample.charCodeAt(i)) | 0; }
+      const full = pdfFixResult.sourceText;
+      for (let i = 0; i < full.length; i++) { h = ((h << 5) - h + full.charCodeAt(i)) | 0; }
       const fingerprint = Math.abs(h).toString(36);
+      const fname = (pendingPdfFile?.name || 'unknown').replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 64);
+      const fsize = pendingPdfFile?.size || full.length;
+      const storageKey = `allo.lastPdfAudit__${fname}__${fsize}__${fingerprint}`;
       const payload = JSON.stringify({
         pdfFixResult,
         savedAt: new Date().toISOString(),
         fingerprint,
+        storageKey,
       });
-      safeSetItem('allo.lastPdfAudit', payload);
+      safeSetItem(storageKey, payload);
+      safeSetItem('allo.lastPdfAudit.latest', storageKey);
+      // Cap at 5 entries — evict oldest by savedAt.
+      try {
+        const keys = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          if (k && k.indexOf('allo.lastPdfAudit__') === 0) keys.push(k);
+        }
+        if (keys.length > 5) {
+          const items = keys.map(k => {
+            let t = '';
+            try { t = JSON.parse(safeGetItem(k) || '{}').savedAt || ''; } catch (_) {}
+            return { k, t };
+          });
+          items.sort((a, b) => String(a.t).localeCompare(String(b.t)));
+          items.slice(0, items.length - 5).forEach(it => { try { safeRemoveItem(it.k); } catch(_){} });
+        }
+      } catch (_) { /* eviction is best-effort */ }
     } catch (_) { /* quota or SecurityError — non-fatal */ }
-  }, [pdfFixResult]);
+  }, [pdfFixResult, pendingPdfFile]);
   // Hydrate on mount so "View Last Audit" is available after a reload.
   useEffect(() => {
     try {
-      const raw = safeGetItem('allo.lastPdfAudit');
+      const latestKey = safeGetItem('allo.lastPdfAudit.latest');
+      // Fall back to the legacy flat key for users who last ran before the
+      // namespaced scheme shipped.
+      const raw = (latestKey && safeGetItem(latestKey)) || safeGetItem('allo.lastPdfAudit');
       if (!raw) return;
       const parsed = JSON.parse(raw);
       if (parsed && parsed.pdfFixResult && parsed.pdfFixResult.sourceText) {
@@ -17644,6 +17671,11 @@ Return ONLY valid JSON:
           }
         } catch (e) { /* non-blocking */ }
         (async () => {
+          // Belt-and-braces guard: if anything below throws before the final
+          // pinning at ~:17729 can fire, release integrityVerifying so the
+          // sky-blue "Verifying content integrity…" banner doesn't spin forever.
+          // Skipped when the success path already pinned integrityFinal.
+          try {
           const stageCounts = { retry: 0, sentence: 0 };
           let currentMissing = missing1;
           // Stage A
@@ -17682,6 +17714,9 @@ Return ONLY valid JSON:
           // Give React a tick to commit the updated accessibleHtml into the iframe before
           // Stage C reads it back via the preview-iframe-authoritative path in applyWordRestorationInPlace.
           setTimeout(() => {
+            // Release guard inside the Stage C/D timer (the outer IIFE has already
+            // returned by the time this fires, so its finally can't catch throws here).
+            try {
             let restoreResult = { restored: [], unplaceable: currentMissing };
             if (currentMissing.length > 0) {
               try { restoreResult = applyWordRestorationInPlace(currentMissing, sourceText) || restoreResult; }
@@ -17707,6 +17742,9 @@ Return ONLY valid JSON:
             } catch (eD) { /* non-blocking */ }
             // Final fidelity measurement after all four stages applied + iframe re-rendered.
             setTimeout(() => {
+              // Release guard for the final-pin timer — catches any throw in the
+              // fidelity measurement or pin-writer that escapes the inner try/catch.
+              try {
               try {
                 const remText2 = extractText();
                 const pass2 = _buildMissingList(sourceText, remText2);
@@ -17761,8 +17799,20 @@ Return ONLY valid JSON:
                   addToast(msg, afterFidelity >= 99.5 ? 'success' : 'info');
                 }
               } catch (e) { /* non-blocking */ }
+              } finally {
+                // Final-pin timer release guard — see comment at the timer start.
+                setPdfFixResult(prev => prev && (!prev.integrityFinal || !prev.integrityFinal.verifiedAt) ? { ...prev, integrityVerifying: false } : prev);
+              }
             }, 500);
+            } finally {
+              // Stage C/D timer release guard — see comment at the timer start.
+              setPdfFixResult(prev => prev && (!prev.integrityFinal || !prev.integrityFinal.verifiedAt) ? { ...prev, integrityVerifying: false } : prev);
+            }
           }, 200);
+          } finally {
+            // Outer-IIFE release guard — see comment at IIFE start.
+            setPdfFixResult(prev => prev && (!prev.integrityFinal || !prev.integrityFinal.verifiedAt) ? { ...prev, integrityVerifying: false } : prev);
+          }
         })();
       } catch (outerErr) { /* non-blocking */ }
     }, 200);
@@ -51339,7 +51389,23 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                         <div className="w-full bg-indigo-200 rounded-full h-2 mb-2" role="progressbar" aria-label="Batch remediation progress" aria-valuenow={pdfBatchCurrentIndex + 1} aria-valuemin={0} aria-valuemax={pdfBatchQueue.length}>
                           <div className="bg-indigo-600 h-2 rounded-full transition-all duration-500" style={{width: `${((pdfBatchCurrentIndex + 1) / pdfBatchQueue.length * 100)}%`}}></div>
                         </div>
-                        <p className="text-xs text-indigo-600" role="status" aria-live="polite">{pdfBatchStep}</p>
+                        <div className="flex items-start justify-between gap-3">
+                          <p className="text-xs text-indigo-600 flex-1" role="status" aria-live="polite">{pdfBatchStep}</p>
+                          <button
+                            onClick={() => {
+                              try {
+                                if (typeof window !== 'undefined' && window.__alloPdfBatchAbortCtrl) {
+                                  window.__alloPdfBatchAbortCtrl.abort();
+                                }
+                              } catch (_) { /* noop */ }
+                              addToast('Stopping batch — finishing current file then halting…', 'info');
+                            }}
+                            className="shrink-0 px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded-md text-[11px] font-bold"
+                            aria-label="Stop batch remediation"
+                          >
+                            ⏸ Stop
+                          </button>
+                        </div>
                       </div>
                     )}
 
