@@ -27,12 +27,19 @@ File: [content_engine_source.jsx:870-925](content_engine_source.jsx#L870)
 
 ## The actual root cause
 
-**Gemini's response body is token-truncated while it's emitting an unsolicited inline bibliography trailer at the end.**
+**Important clarification:** BOTH paths already call `generateBibliographyString` from structured `chunk.web.uri` metadata, and that call is never token-truncatable. Short-text at [content_engine_source.jsx:921](content_engine_source.jsx#L921) appends an app-owned clean `### Source Text References` block exactly like long-text at line 671. The bibliography-generation step is NOT the bug and already works identically in both paths.
+
+**The bug is Gemini's behavior in single-call mode combined with a strip regex that fails on its output format.**
 
 Specifically:
-1. The prompt at [content_engine_source.jsx:840 and 848](content_engine_source.jsx#L840) says "Do NOT include any Sources, References, Works Cited, Bibliography sections." Gemini complies about 70% of the time; for short-text (single-call mode), compliance is much lower because the model "sees" the whole document task in one pass and instinctively appends a footer.
-2. When Gemini DOES emit a footer, it often does so at the very end of its output-token budget. The final URL in the footer is the last thing being generated — if the budget runs out mid-URL, that URL is truncated on the wire.
-3. Long-text (multi-chunk) mode **doesn't hit this** because each chunk is framed as "PART i of N of a text" — Gemini treats each call as a segment rewrite, not a complete-document task, and rarely emits a footer per section. The final bibliography is always built by the app from `generateBibliographyString(masterMetadata)` which uses structured URIs.
+1. The prompt at [content_engine_source.jsx:840 and 848](content_engine_source.jsx#L840) says "Do NOT include any Sources, References, Works Cited, Bibliography sections." Compliance is reasonable for multi-chunk (each call is framed as "PART i of N of a text," so Gemini treats it as a segment rewrite and rarely emits a footer per section). Compliance drops significantly for **single-call short-text mode** because Gemini sees the whole-document task in one pass and instinctively appends its own inline bibliography.
+2. When Gemini DOES emit a footer, it often does so at the very end of its output-token budget. The final URL is the last thing being generated — if the budget runs out mid-URL, that URL is truncated on the wire.
+3. The short-text path tries to strip Gemini's unsolicited trailer at line 910 BEFORE the app's own bibliography is appended at line 921. **But the strip regex fails for flat one-line trailers** (see next section). So Gemini's truncated trailer survives, and the final text contains TWO refs blocks:
+   - Gemini's inline one (possibly truncated mid-URL)
+   - The app's clean `### Source Text References` from `generateBibliographyString` (always complete)
+4. At render time, `splitReferencesFromBody` peels the SECOND one (the one with `###` prefix) into `SourceReferencesPanel`. The first one stays inline in the body where the markdown renderer partially renders the truncated entry. **That's what the user sees** — Gemini's garbage inline, sometimes alongside and sometimes instead of the clean panel (depending on whether `splitReferencesFromBody` matches).
+
+**Why long-text avoids it:** Gemini rarely emits a footer per chunk (the "PART i of N" framing works), so the line 910 strip rarely has anything to catch — it's a no-op in practice for long-text. Same structured-data bibliography step, same broken strip regex — but Gemini's more compliant behavior means the broken strip never fires, and the only refs in the final output are the clean ones from `generateBibliographyString`.
 
 ## Why the line 910 strip fails to catch it
 
@@ -58,13 +65,66 @@ Then line 921 appends the app's own clean `### Source Text References\n\n1. [tit
 
 At render time, `splitReferencesFromBody` peels the SECOND one (the one with `###` prefix) into `SourceReferencesPanel`, leaving Gemini's truncated one inline in the body where it renders as partial markdown. That's the visible symptom.
 
-## Proposed fix for next session
+## Proposed fix for next session — FULL UNIFICATION (recommended)
 
-**Two complementary changes** to `content_engine_source.jsx`, short-text path only. Do not touch the long-text path.
+**Goal (user-framed):** make short-text use the exact same logic as multi-chunk — remove the branch entirely, always run the looping path, skip the outline call when `numChunks === 1`.
 
-### Fix 1: Replace the line 910 strip with a looser but safer variant
+This is the same strategy we applied to the simplified pipeline earlier this session, which worked cleanly. The result for Generate Source would be: a single code path that can never drift between short and long text, with Gemini's "PART i of N" framing applied to EVERY call, structurally preventing the unsolicited-trailer behavior that currently only afflicts the single-call branch.
 
-The current regex's strict "newline after header" requirement is the bug. A better approach — strip from the header position to end-of-string **only when the header is followed by at least one reference-shaped entry** (numbered markdown link). Proposed:
+### Why this is the right move (not the regex patch)
+
+The regex-patch approach treats a symptom. The unification approach removes the divergence that causes the symptom. Long-text doesn't have this bug specifically because Gemini treats its "PART i of N" calls as segment rewrites — that's a structural property we can extend to short-text for free by just using the same prompt framing.
+
+After unification, both paths end with exactly one `### Source Text References` block from `generateBibliographyString(masterMetadata)` built from structured chunk.web.uri data. The format is identical by construction; Gemini cannot inject a different format because every call is framed as a segment rewrite.
+
+### Complications to handle during the refactor
+
+1. **Outline-generation step** — multi-chunk starts by calling Gemini to generate section titles ([content_engine_source.jsx:444-461](content_engine_source.jsx#L444)). For `numChunks === 1`, an outline call would just ask Gemini for one title (silly + extra API cost). **Fix:** gate the outline call on `numChunks > 1`. Use a synthetic "Part 1" title or `effTopic` itself for the single-chunk case.
+
+2. **Short-text has custom prompt logic not in multi-chunk** — dialogue mode, narrative mode, `complexityGuard` reading-level compensation, DOK level, vocabulary tuning, custom instructions. The per-section prompt in multi-chunk doesn't include these. **Fix:** port these into the per-section prompt so short-text doesn't lose its current quality controls.
+
+3. **Short-text retry-for-citations logic** ([content_engine_source.jsx:1024-1059](content_engine_source.jsx#L1024)) — if the first call returns 0 citations, it retries once. Multi-chunk has no equivalent. **Fix:** keep it as a post-loop check gated on `chunks.length === 1`, matching the pattern we used for `repairGeneratedText` in the simplified unification.
+
+4. **Dialogue mode** (lines 707-762) generates a JSON dialogue script, not an article. Completely different output type. **Decision:** do NOT unify dialogue mode — keep it on its own branch. Unify only standard/narrative/informational modes.
+
+### Smaller fallback if full unification is too big
+
+If the next session wants a smaller change, the two-step patch (prompt framing + regex fix) below is a valid interim. But full unification is the better engineering move for the same reasons the simplified unification was worth doing.
+
+---
+
+## Fallback (smaller) — patch only, keep the branch
+
+If not doing full unification, the two-step patch is:
+
+### Fix 1 (PRIMARY) — Re-frame the short-text prompt as a segment, not a document
+
+Multi-chunk is reliable because each call's prompt is framed as:
+> "Write the section '${sectionTitle}' for an educational article about '${effTopic}'. You are writing section ${i + 1} of ${sections.length}..."
+
+That "you are writing section i of N" framing is the structural signal that tells Gemini "this is a sub-task, not a complete document." Gemini respects the framing and rarely emits a bibliography.
+
+The short-text prompt at [content_engine_source.jsx:764+](content_engine_source.jsx#L764) has no equivalent framing — it just says "Topic: X. Write an educational article." Gemini treats it as a complete-document task and appends its own refs.
+
+**Fix:** add parallel framing to the short-text prompt. Even "You are writing a single-segment educational passage" is enough to shift Gemini's mental model. Example addition near the top of the prompt body:
+
+```js
+const prompt = `
+  You are writing an educational passage about "${effTopic}".
+  This is a self-contained segment rewrite. The citation list will be
+  generated automatically and appended by the system — do not write one.
+  Target reader level: ${effGrade}
+  ...
+`;
+```
+
+The specific phrasing matters less than the structural signal. Key words that work: "segment," "passage," "excerpt," "section." Key words to avoid: "complete article," "full document," "finished text" (these invite the bibliography reflex).
+
+**Verification:** after applying, regenerate short text ~5 times. Count how often Gemini emits its own inline `Source Text References` trailer. Before the fix: frequent. After the fix: should be rare (<20%).
+
+### Fix 2 (SAFETY NET) — Replace the line 910 strip with a safer variant
+
+Even with better prompt framing, Gemini will occasionally slip in a trailer. The current strip regex at line 910 requires `[\n\r]+` after the header word, which fails when Gemini emits the refs as a flat one-line trailer. Fix it to match any trailer that starts with a reference header AND is followed by a numbered markdown link (lookahead gate):
 
 ```js
 .replace(
@@ -73,22 +133,17 @@ The current regex's strict "newline after header" requirement is the bug. A bett
 )
 ```
 
-Breakdown of why this is safer than my reverted simplified-pipeline strip:
+Breakdown of why this is safer than my earlier reverted simplified-pipeline strip:
 - `(?:\n|^)` — must be at line start or start of string
-- Uses **specific** header variants only (no bare `Sources` or `References` that could false-match body content)
-- `(?=\s*\d+\.\s*\[[^\]]+\]\()` — **lookahead gate**: only matches if followed by what actually looks like a numbered markdown link. This is the key safety mechanism — prevents the "legitimate paragraph starting with 'References' as a word" over-match that tanked my earlier attempt.
+- Uses **specific** header variants only (no bare `Sources` or `References` that could false-match body content like "Sources of freshwater include…")
+- `(?=\s*\d+\.\s*\[[^\]]+\]\()` — **lookahead gate**: only strips when followed by what actually looks like a numbered markdown link. This was the missing safety mechanism in the earlier simplified strip.
 - Anchored to `$` (end of string) so it only strips trailing sections, not mid-doc ones.
 
-### Fix 2: Strengthen the prompt instruction
+### Why the two fixes complement each other
 
-Lines 840 and 848 already tell Gemini "Do NOT include any Sources…". Add a **negative example** to make the instruction more sticky:
-
-```js
-- Do NOT include any "Sources", "References", "Works Cited", "Bibliography", or similar sections. I will automatically append verified sources at the end.
-- SPECIFICALLY FORBIDDEN: Do not write any line that starts with "Source Text References" or any numbered list of citations like "1. [Title](url)". These will be generated from my grounding metadata.
-```
-
-This won't make Gemini 100% compliant (nothing does), but raises compliance meaningfully and serves as a belt-and-suspenders with Fix 1.
+- Fix 1 reduces the *frequency* of Gemini emitting a trailer (addresses the behavioral root cause).
+- Fix 2 ensures that when Gemini *does* slip one in, the app removes it cleanly (addresses the surface bug).
+- Together, the visible output format from single-call matches multi-chunk: body text → exactly one app-built `### Source Text References` panel. No inline Gemini junk.
 
 ## Files & line references for next session
 
