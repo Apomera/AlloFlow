@@ -9,15 +9,6 @@ if (!cleanJson) cleanJson = function(t) { try { return JSON.parse(t); } catch(e)
 var processGrounding = window.__alloUtils && window.__alloUtils.processGrounding;
 if (!processGrounding) processGrounding = function(t) { return t; };
 
-// content_engine_source.jsx — Content Generation + Text Revision handlers
-// Pure function extraction — no hooks. Uses factory + window state bag pattern.
-
-var warnLog = window.warnLog || function() { console.warn.apply(console, arguments); };
-var cleanJson = window.__alloUtils && window.__alloUtils.cleanJson;
-if (!cleanJson) cleanJson = function(t) { try { return JSON.parse(t); } catch(e) { return null; } };
-var processGrounding = window.__alloUtils && window.__alloUtils.processGrounding;
-if (!processGrounding) processGrounding = function(t) { return t; };
-
 var createContentEngine = function(deps) {
   var callGemini = deps.callGemini;
   var addToast = deps.addToast;
@@ -78,6 +69,31 @@ var createContentEngine = function(deps) {
       warnLog('[Citations] restored ' + fixed + '/' + total + ' corrupt URLs from canonical grounding metadata');
     }
     return result;
+  };
+  // Belt-and-suspenders defensive second pass, called AFTER restoreCanonicalCitationUrls.
+  // The primary function uses a strict regex that requires `\u207d`/`\u207e` superscript
+  // brackets and matches `[⁽N⁾](url)` with optional closing paren. Several look-alike
+  // chars (ASCII `(` / `)`, or no bracket at all around the digit) slip past it. This
+  // second pass accepts a more permissive bracket set, still keyed by the superscript
+  // digit, and forces a rebuild when the URL doesn't match the canonical chunk URL.
+  // Idempotent: when the citation is already well-formed with the canonical URL, the
+  // replacement callback returns the match unchanged so no churn.
+  var defensiveLastCitationRepair = function(text, chunks) {
+    if (!text || !chunks || !chunks.length) return text;
+    var superMap = {'\u2070':'0','\u00b9':'1','\u00b2':'2','\u00b3':'3','\u2074':'4','\u2075':'5','\u2076':'6','\u2077':'7','\u2078':'8','\u2079':'9'};
+    var decodeSup = function(s) { var n = ''; for (var i = 0; i < s.length; i++) n += superMap[s[i]] || ''; return n; };
+    var rewrites = 0;
+    var out = text.replace(/\[(?:[\u207d(]?)([\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079]+)(?:[\u207e)]?)\]\(([^)\n]*)(\))?/g, function(match, digits, urlInMatch, closing) {
+      var n = parseInt(decodeSup(digits), 10);
+      if (!n || n < 1 || n > chunks.length) return match;
+      var canonical = chunks[n - 1] && chunks[n - 1].web && chunks[n - 1].web.uri;
+      if (!canonical) return match;
+      if (closing === ')' && urlInMatch === canonical) return match;
+      rewrites++;
+      return '[\u207d' + digits + '\u207e](' + canonical + ')';
+    });
+    if (rewrites > 0) warnLog('[Citations] defensive pass rebuilt ' + rewrites + ' citation(s) (primary restoreCanonicalCitationUrls missed them — likely bracket variant or truncated URL without closing paren)');
+    return out;
   };
   var repairSourceMarkdown = function(rawText) {
     if (!rawText) return rawText;
@@ -772,11 +788,24 @@ You MUST:
                 var _renum = renumberCitations(fullDocument, allGroundingChunks);
                 fullDocument = _renum.renumberedText;
 
+                // Diagnostic: capture the document tail + last-3 citation parses BEFORE
+                // canonical URL repair runs. If the "last .com stripped" bug persists
+                // after the defensive pass below, this log tells us whether the truncated
+                // shape is even present at this stage (vs. corrupted later).
+                try {
+                  var _tail = fullDocument.slice(-400);
+                  var _citRegex = /\[(?:[\u207d(]?)([\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079]+)(?:[\u207e)]?)\]\(([^)\n]*)(\))?/g;
+                  var _lastCites = (_tail.match(_citRegex) || []).slice(-3);
+                  warnLog('[Citations pre-repair] tail(-120) ends: ' + JSON.stringify(_tail.slice(-120)) + ' | last citations: ' + JSON.stringify(_lastCites));
+                } catch (_diagErr) { /* non-fatal */ }
                 // Restore any URLs Gemini corrupted (truncation at end of section,
                 // space injection at dots like "webmd. com", dropped https://) using
                 // the canonical URIs from the reordered chunks. Deterministic because
                 // after renumber, citation N is exactly reorderedChunks[N-1].
                 fullDocument = restoreCanonicalCitationUrls(fullDocument, _renum.reorderedChunks);
+                // Belt-and-suspenders: catch citations with look-alike brackets or
+                // truncated URLs that the primary regex missed.
+                fullDocument = defensiveLastCitationRepair(fullDocument, _renum.reorderedChunks);
 
                 // Generate bibliography from reordered chunks so its numbers match body.
                 var masterMetadata = { groundingChunks: _renum.reorderedChunks };
@@ -1050,8 +1079,15 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
                       .replace(/(\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\([^)]+\))\s*([.!?])/g, '$2 $1')
                       // Separate adjacent citations with comma
                       .replace(/(\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\([^)]+\))(\[⁽)/g, '$1, $2')
-                      // Strip any Sources/References/Bibliography sections (auto-generated later)
-                      .replace(/(?:\n|^)\s*(?:#{1,4}\s*)?(?:\*+\s*)?(?:Source\s+Text\s+References|Accuracy\s+Check\s+References|Verified\s+Sources|Works?\s+Cited|Bibliography|Citations)(?:\*+)?[\s:]*(?=\s*\d+\.\s*\[[^\]]+\]\()[\s\S]*$/i, '\n')
+                      // Strip any Sources/References/Bibliography trailer at end of text
+                      // (auto-generated later by generateBibliographyString). Lookahead-gated:
+                      // only strips when the header is followed by at least one numbered
+                      // markdown link. This prevents false matches on legitimate body content
+                      // that happens to contain the word "References" or "Sources" — the
+                      // over-match that tanked the earlier simplified-pipeline strip attempt.
+                      // Supersedes the old `\s*[\n\r]+` requirement that failed when Gemini
+                      // emitted refs as a flat one-line trailer.
+                      .replace(/(?:\n|^)\s*(?:#{1,4}\s*)?(?:\*+\s*)?(?:Source\s+Text\s+References|Accuracy\s+Check\s+References|Verified\s+Sources|Works?\s+Cited|Bibliography|Citations)(?:\*+)?[\s:]*(?=\s*\d+\.\s*\[[^\]]+\]\()[\s\S]*$/i, '')
                       // Clean orphan brackets around citations
                       .replace(/\[(⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾)(?!\]\()/g, '$1')
                       .replace(/(⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾)\](?!\()/g, '$1')
@@ -1061,6 +1097,7 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
                   if (result.groundingMetadata?.groundingChunks) {
                       const { renumberedText, reorderedChunks } = renumberCitations(text, result.groundingMetadata.groundingChunks);
                       text = restoreCanonicalCitationUrls(renumberedText, reorderedChunks);
+                      text = defensiveLastCitationRepair(text, reorderedChunks);
                       const tempMeta = { ...result.groundingMetadata, groundingChunks: reorderedChunks };
                       text += generateBibliographyString(tempMeta, 'Links Only', "Source Text References");
                   } else {
@@ -1105,6 +1142,7 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
                       // the protocol). Rebuild every [⁽N⁾](url) using the canonical web.uri
                       // from reorderedChunks[N-1] — after renumber, N is a deterministic index.
                       text = restoreCanonicalCitationUrls(renumberedText, reorderedChunks);
+                      text = defensiveLastCitationRepair(text, reorderedChunks);
                       const tempMeta = { ...result.groundingMetadata, groundingChunks: reorderedChunks };
                       text += generateBibliographyString(tempMeta, 'Links Only', "Source Text References");
                   } else {
@@ -1118,6 +1156,7 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
                   if (result.groundingMetadata?.groundingChunks) {
                       const { renumberedText, reorderedChunks } = renumberCitations(fallbackText, result.groundingMetadata.groundingChunks);
                       fallbackText = restoreCanonicalCitationUrls(renumberedText, reorderedChunks);
+                      fallbackText = defensiveLastCitationRepair(fallbackText, reorderedChunks);
                       const tempMeta = { ...result.groundingMetadata, groundingChunks: reorderedChunks };
                       fallbackText += generateBibliographyString(tempMeta, 'Links Only', "Source Text References");
                   } else {
@@ -1186,6 +1225,7 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
                       if (retryResult.groundingMetadata?.groundingChunks) {
                           const { renumberedText, reorderedChunks } = renumberCitations(retryText, retryResult.groundingMetadata.groundingChunks);
                           retryText = restoreCanonicalCitationUrls(renumberedText, reorderedChunks);
+                          retryText = defensiveLastCitationRepair(retryText, reorderedChunks);
                           const tempMeta = { ...retryResult.groundingMetadata, groundingChunks: reorderedChunks };
                           retryText += generateBibliographyString(tempMeta, 'Links Only', "Source Text References");
                       }
@@ -1375,10 +1415,13 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
           urlToMarker.set(m[2], m[1]);
       }
       let fixed = result;
+      // Re-wrap known bare URLs
       urlToMarker.forEach((marker, url) => {
           const urlEsc = url.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          // If the URL is already inside a markdown link in the result, skip.
           const alreadyLinked = new RegExp('\\]\\(' + urlEsc + '\\)');
           if (alreadyLinked.test(fixed)) return;
+          // Replace the bare URL (not already inside ](...)) with a citation.
           const bareUrl = new RegExp('(^|[^(\\[])' + urlEsc, 'g');
           fixed = fixed.replace(bareUrl, '$1[' + marker + '](' + url + ')');
       });
@@ -1443,6 +1486,10 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
           let prompt;
           const outputLang = leveledTextLanguage === 'All Selected Languages' ? 'English' : leveledTextLanguage;
           const dialectInstruction = outputLang !== 'English' ? `STRICT DIALECT ADHERENCE: If a specific dialect is named (e.g. 'Brazilian Portuguese' vs 'European Portuguese'), explicitly use that region's vocabulary, spelling, and grammar conventions.` : '';
+          // Shared preservation rules injected into Revise/Simplify prompts so
+          // Gemini keeps citation chips like [⁽1⁾](url) and markdown structure
+          // intact. Without this, the model drops citation wrappers and
+          // re-emits raw URLs inline, breaking the simplified view's renderer.
           const preservationRules = `
                 PRESERVATION RULES (follow EXACTLY):
                 1. If the input contains citation markers in the form [⁽N⁾](url)
@@ -1493,6 +1540,8 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
               `;
           }
           const result = await callGemini(prompt);
+          // Safety net: if Gemini still dropped citation wrappers and emitted
+          // bare URLs that were cited in the original, re-wrap them as [⁽N⁾](url).
           const restoredResult = _restoreCitations(result, originalText);
           setRevisionData(prev => ({
               ...prev,
@@ -1829,8 +1878,4 @@ window.AlloModules.createContentEngine = createContentEngine;
 window.AlloModules.ContentEngineModule = true;
 console.log('[ContentEngineModule] Content engine factory registered');
 
-window.AlloModules = window.AlloModules || {};
-window.AlloModules.createContentEngine = createContentEngine;
-window.AlloModules.ContentEngineModule = true;
-console.log('[ContentEngineModule] Content engine factory registered');
 })();
