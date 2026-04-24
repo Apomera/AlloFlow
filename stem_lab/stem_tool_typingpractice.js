@@ -1882,6 +1882,155 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               }
             }, '"' + state.motivationStatement + '"') : null,
 
+            // Strength-based note — evidence-framed one-liner tailored to the
+            // student's recent pattern. Priority order: first-timer welcome →
+            // return-from-absence → first-goal-met recency → recent PB → tier-
+            // just-cleared → steady cadence → accuracy-dip normalization →
+            // default cadence-compounds. Theme-voiced. One card, no state,
+            // rotates organically as the session history evolves.
+            (function() {
+              var sessionsAll = state.sessions || [];
+              var tm = state.theme || 'default';
+              var now = Date.now();
+              var dayMs = 24 * 60 * 60 * 1000;
+
+              var daysSince = function(ts) { return Math.floor((now - ts) / dayMs); };
+
+              var daysSinceLast = sessionsAll.length > 0
+                ? daysSince(new Date(sessionsAll[sessionsAll.length - 1].date).getTime())
+                : null;
+
+              // Was there a PB in the last 7 days? (check by finding newest session
+              // whose wpm equals the personalBest for that drill)
+              var recentPbDays = null;
+              var pb = state.personalBest || {};
+              for (var i = sessionsAll.length - 1; i >= 0 && i >= sessionsAll.length - 14; i--) {
+                var s = sessionsAll[i];
+                var pbEntry = pb[s.drillId];
+                if (pbEntry && s.wpm === pbEntry.wpm) {
+                  recentPbDays = daysSince(new Date(s.date).getTime());
+                  break;
+                }
+              }
+
+              // Any firstGoalMet in the last 14 days?
+              var firstGoalDays = null;
+              for (var j = sessionsAll.length - 1; j >= 0 && j >= sessionsAll.length - 20; j--) {
+                if (sessionsAll[j].firstGoalMet) {
+                  firstGoalDays = daysSince(new Date(sessionsAll[j].date).getTime());
+                  break;
+                }
+              }
+
+              // Mastery tier: days since last masteryAdvanced
+              var masteryDays = null;
+              for (var k = sessionsAll.length - 1; k >= 0 && k >= sessionsAll.length - 20; k--) {
+                if (sessionsAll[k].masteryAdvanced) {
+                  masteryDays = daysSince(new Date(sessionsAll[k].date).getTime());
+                  break;
+                }
+              }
+
+              // Sessions in last 7 days
+              var last7 = sessionsAll.filter(function(s) { return now - new Date(s.date).getTime() <= 7 * dayMs; });
+              var uniqDays = {};
+              last7.forEach(function(s) { uniqDays[new Date(s.date).toLocaleDateString()] = true; });
+              var daysThisWeek = Object.keys(uniqDays).length;
+
+              // Accuracy dip: recent 3 sessions avg vs. baseline
+              var accDip = false;
+              if (state.baseline && sessionsAll.length >= 4) {
+                var recent3 = sessionsAll.slice(-3);
+                var recAvg = recent3.reduce(function(m, s) { return m + (s.accuracy || 0); }, 0) / recent3.length;
+                if (recAvg < (state.baseline.accuracy || 0) - 3 && recAvg > 0) accDip = true;
+              }
+
+              // Pick the most apt message (priority-ordered)
+              var emoji, text;
+
+              if (sessionsAll.length === 0) {
+                emoji = tm === 'cyberpunk' ? '▮' : tm === 'steampunk' ? '⚙' : tm === 'kawaii' ? '🌱' : '🌱';
+                if (tm === 'steampunk')      text = 'Every master once held the tools for the first time. Begin wherever suits you — there is no wrong workbench.';
+                else if (tm === 'cyberpunk') text = '[FIRST BOOT] every operator started here :: pick any node :: no wrong path';
+                else if (tm === 'kawaii')    text = 'Every expert started with their very first session! 💕 Start anywhere — there\'s no wrong drill. ✨';
+                else if (tm === 'neutral')   text = 'First session. Start anywhere; no wrong choice.';
+                else                         text = 'Every expert was once a first-timer. Start anywhere — there\'s no wrong drill.';
+              } else if (daysSinceLast !== null && daysSinceLast >= 5) {
+                emoji = tm === 'cyberpunk' ? '▯' : tm === 'steampunk' ? '⚙' : '🌿';
+                if (tm === 'steampunk')      text = 'Welcome back. The gearwork in your hands has not rusted — muscle memory is patient.';
+                else if (tm === 'cyberpunk') text = '[RECONNECT] ' + daysSinceLast + 'd :: neural cache intact :: patterns persist across downtime';
+                else if (tm === 'kawaii')    text = 'Welcome back! 💕 Your fingers remember — muscle memory doesn\'t forget just because life got busy. ✨';
+                else if (tm === 'neutral')   text = 'Return after ' + daysSinceLast + ' days. Muscle memory persists.';
+                else                         text = 'Welcome back — the muscle memory you built didn\'t disappear. It\'s just been resting.';
+              } else if (firstGoalDays !== null && firstGoalDays <= 7) {
+                emoji = tm === 'cyberpunk' ? '[!]' : '🎯';
+                if (tm === 'steampunk')      text = 'You crossed your IEP goal for the first time ' + (firstGoalDays === 0 ? 'today' : firstGoalDays + ' days hence') + '. Your clinician will wish to know.';
+                else if (tm === 'cyberpunk') text = '[ACHIEVEMENT] IEP-goal first-cross :: T-' + firstGoalDays + 'd :: notify clinician';
+                else if (tm === 'kawaii')    text = '🎯✨ You crossed your IEP goal for the first time ' + (firstGoalDays === 0 ? 'today' : firstGoalDays + ' days ago') + '! 💕 That\'s a big deal!';
+                else if (tm === 'neutral')   text = 'IEP goal first-met: T-' + firstGoalDays + 'd. Worth documenting.';
+                else                         text = 'You crossed your IEP goal for the first time ' + (firstGoalDays === 0 ? 'today' : firstGoalDays + ' days ago') + '. Your clinician will want to know.';
+              } else if (masteryDays !== null && masteryDays <= 3) {
+                emoji = tm === 'cyberpunk' ? '▮' : tm === 'steampunk' ? '⚙' : '🌟';
+                if (tm === 'steampunk')      text = 'You ascended a rank on the mastery ladder just ' + (masteryDays === 0 ? 'today' : masteryDays + ' days back') + '. Compounding gains follow.';
+                else if (tm === 'cyberpunk') text = '[TIER UP] T-' + masteryDays + 'd :: compounding gain window :: continue stream';
+                else if (tm === 'kawaii')    text = '🌟💕 You cleared a tier ' + (masteryDays === 0 ? 'today' : masteryDays + ' days ago') + '! That momentum is magical. ✨ Keep going!';
+                else if (tm === 'neutral')   text = 'Tier cleared T-' + masteryDays + 'd. Compounding phase.';
+                else                         text = 'You cleared a mastery tier ' + (masteryDays === 0 ? 'today' : masteryDays + ' days ago') + '. Tier-clears unlock compounding gains — keep going.';
+              } else if (recentPbDays !== null && recentPbDays <= 5) {
+                emoji = tm === 'cyberpunk' ? '[↑]' : '📈';
+                if (tm === 'steampunk')      text = 'Your most recent personal best was ' + (recentPbDays === 0 ? 'today' : recentPbDays + ' days back') + '. The gearwork is finding its rhythm.';
+                else if (tm === 'cyberpunk') text = '[NEW PEAK] T-' + recentPbDays + 'd :: trajectory positive';
+                else if (tm === 'kawaii')    text = '📈✨ Your last personal best was ' + (recentPbDays === 0 ? 'today' : recentPbDays + ' days ago') + '! You\'re on a roll! 💕';
+                else if (tm === 'neutral')   text = 'Last PB: T-' + recentPbDays + 'd.';
+                else                         text = 'Your last personal best was ' + (recentPbDays === 0 ? 'today' : recentPbDays + ' days ago') + '. Nice work.';
+              } else if (daysThisWeek >= 3) {
+                emoji = tm === 'cyberpunk' ? '▰' : '📅';
+                if (tm === 'steampunk')      text = 'You\'ve tended the workshop ' + daysThisWeek + ' day' + (daysThisWeek === 1 ? '' : 's') + ' this week. Cadence is the craft.';
+                else if (tm === 'cyberpunk') text = '[WEEKLY CADENCE] ' + daysThisWeek + ' days online :: consistency > intensity';
+                else if (tm === 'kawaii')    text = 'You\'ve shown up ' + daysThisWeek + ' days this week! 💕 That cadence IS the skill — showing up wins. ✨';
+                else if (tm === 'neutral')   text = daysThisWeek + ' days active this week. Cadence > intensity.';
+                else                         text = 'You\'ve shown up ' + daysThisWeek + ' days this week. That cadence IS the skill.';
+              } else if (accDip) {
+                emoji = tm === 'cyberpunk' ? '∿' : '🌊';
+                if (tm === 'steampunk')      text = 'Accuracy dips while new patterns are being forged. Steady hands — the gearwork will catch up.';
+                else if (tm === 'cyberpunk') text = '[SIGNAL] accuracy dip :: substrate reconfiguring :: expected during learning';
+                else if (tm === 'kawaii')    text = '🌊 Accuracy dips happen and that\'s totally okay! 💕 It usually means a new pattern is being built underneath. ✨';
+                else if (tm === 'neutral')   text = 'Accuracy dip noted. Often signals substrate relearning.';
+                else                         text = 'Accuracy dips happen. They\'re often signal that a new pattern is being built under the surface.';
+              } else {
+                emoji = tm === 'cyberpunk' ? '▸' : tm === 'steampunk' ? '⚙' : '🌱';
+                if (tm === 'steampunk')      text = 'Steady hands compound. The workshop rewards the hand that returns, not the one that strikes hardest.';
+                else if (tm === 'cyberpunk') text = '[INFO] reliable gains emerge around session-10 :: trust the cadence';
+                else if (tm === 'kawaii')    text = '🌱 Every session adds up — reliable gains usually show up around session 10. 💕 You\'re growing! ✨';
+                else if (tm === 'neutral')   text = 'Reliable gains emerge around session 10. Cadence compounds.';
+                else                         text = 'Reliable gains show up around session 10. Keep at it — cadence compounds.';
+              }
+
+              return h('div', {
+                role: 'note',
+                style: {
+                  marginBottom: '16px',
+                  padding: '10px 14px',
+                  background: palette.surface,
+                  border: '1px solid ' + palette.border,
+                  borderLeft: '3px solid ' + palette.accent,
+                  borderRadius: '8px',
+                  fontSize: '12px',
+                  color: palette.textDim,
+                  lineHeight: '1.55',
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '10px'
+                }
+              },
+                h('span', {
+                  'aria-hidden': 'true',
+                  style: { fontSize: '14px', lineHeight: '1.3', flexShrink: 0 }
+                }, emoji),
+                h('span', null, text)
+              );
+            })(),
+
             // Daily goal prompt — gentle nudge to set a goal for today when
             // one isn't set (or yesterday's has expired). Only shows AFTER
             // the student has at least one session recorded (first-timers see
