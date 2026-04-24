@@ -4700,6 +4700,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   style: primaryBtnStyle(palette),
                   title: 'Retry the same text to beat your score'
                 }, 'Drill again'),
+                // Retry-the-tricky-keys: one-tap launch of the auto-generated
+                // focused-practice drill whenever this session logged errors
+                // on ≥3 unique characters. Skips the menu round-trip so the
+                // student can hit the keys they just missed while muscle
+                // memory is hot. Theme-voiced label.
+                (function() {
+                  if (!s.errorChars) return null;
+                  var uniqueErrKeys = Object.keys(s.errorChars).filter(function(k) { return s.errorChars[k] > 0; });
+                  if (uniqueErrKeys.length < 3) return null;
+                  var tm = state.theme || 'default';
+                  var label;
+                  if (tm === 'steampunk')      label = '⚙ Practice the snags';
+                  else if (tm === 'cyberpunk') label = '[RETRY :: KEYS]';
+                  else if (tm === 'kawaii')    label = '💕 Retry tricky keys ✨';
+                  else if (tm === 'neutral')   label = 'Practice missed keys';
+                  else                         label = '🎯 Practice the tricky keys';
+                  return h('button', {
+                    onClick: function() {
+                      updMulti({
+                        view: 'drill-intro',
+                        currentDrill: 'focus-errors',
+                        drillRunId: (state.drillRunId || 0) + 1
+                      });
+                    },
+                    style: Object.assign({}, secondaryBtnStyle(palette), {
+                      borderColor: palette.accent,
+                      color: palette.accent
+                    }),
+                    title: 'Auto-build a short drill from the ' + uniqueErrKeys.length + ' keys you missed this session'
+                  }, label);
+                })(),
                 // Discard: lets the student undo an accidental session. Removes
                 // the latest session, rewinds lifetime totals + mastery advance
                 // + personal-best if it was set by this session. Only visible
