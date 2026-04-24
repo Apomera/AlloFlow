@@ -9878,9 +9878,74 @@ tr { page-break-inside: avoid; }
       h1: 'H1', h2: 'H2', h3: 'H3', h4: 'H4', h5: 'H5', h6: 'H6',
       p: 'P', ul: 'L', ol: 'L', li: 'LI', img: 'Figure', figure: 'Figure',
       table: 'Table', tr: 'TR', th: 'TH', td: 'TD', caption: 'Caption',
+      thead: 'THead', tbody: 'TBody', tfoot: 'TFoot',
       blockquote: 'BlockQuote', a: 'Link', header: 'Sect', footer: 'Sect',
       section: 'Sect', nav: 'Sect', aside: 'Sect', main: 'Sect',
     };
+    // ── Stage 5: table semantic pre-pass ──
+    // Runs BEFORE the outline walker so downstream code sees a DOM where
+    // tables carry proper <th> + scope attributes. Two passes:
+    //   1. If <th> cells exist without scope, infer scope from position
+    //      (full-TH first row → col, first cell in other rows if TH → row).
+    //   2. If NO <th> exists, high-confidence-only promote first-row <td>
+    //      → <th scope=col> (≥3 cols, ≥3 rows, all first-row cells text).
+    // Low-confidence tables stay flat — the Stage 3/4 flat fallback handles
+    // them fine and "didn't enhance" is safer than "enhanced wrong".
+    const _stage5_isNumericCell = (t) => {
+      const s = (t || '').trim();
+      if (!s) return false;
+      return /^[-$]?\d+([.,]\d+)?%?$/.test(s) || /^\d+\s*[-\u2013]\s*\d+$/.test(s);
+    };
+    try {
+      const tables = Array.from(htmlDoc.querySelectorAll('table'));
+      for (const table of tables) {
+        const trs = Array.from(table.querySelectorAll('tr'));
+        if (trs.length === 0) continue;
+        // Pass 1a: full-TH first row → scope=col (column-header row pattern).
+        if (trs[0]) {
+          const firstRowCells = Array.from(trs[0].children);
+          const allThs = firstRowCells.length > 0 && firstRowCells.every(c => c.tagName && c.tagName.toLowerCase() === 'th');
+          if (allThs) {
+            for (const th of firstRowCells) {
+              if (!th.getAttribute('scope')) th.setAttribute('scope', 'col');
+            }
+          }
+        }
+        // Pass 1b: first cell of any row, if TH, → scope=row (row-header
+        // pattern). Doesn't overwrite scope=col from Pass 1a.
+        for (const tr of trs) {
+          const firstCell = tr.firstElementChild;
+          if (firstCell && firstCell.tagName && firstCell.tagName.toLowerCase() === 'th' && !firstCell.getAttribute('scope')) {
+            firstCell.setAttribute('scope', 'row');
+          }
+        }
+        // Pass 2: no <th> anywhere → high-confidence promotion only.
+        const hasAnyTh = trs.some(tr => tr.querySelector('th'));
+        if (!hasAnyTh && trs.length >= 3) {
+          const firstRow = trs[0];
+          const firstRowTds = Array.from(firstRow.querySelectorAll('td'));
+          if (firstRowTds.length >= 3) {
+            const allTextual = firstRowTds.every(td => {
+              const t = (td.textContent || '').trim();
+              return t.length > 0 && !_stage5_isNumericCell(t);
+            });
+            if (allTextual) {
+              for (const td of firstRowTds) {
+                const th = htmlDoc.createElement('th');
+                th.setAttribute('scope', 'col');
+                while (td.firstChild) th.appendChild(td.firstChild);
+                for (const attr of Array.from(td.attributes)) {
+                  try { th.setAttribute(attr.name, attr.value); } catch(_) {}
+                }
+                td.parentNode.replaceChild(th, td);
+              }
+            }
+          }
+        }
+      }
+    } catch(tableErr) {
+      try { warnLog('[createTaggedPdf] Stage 5 table pre-pass failed (non-fatal): ' + (tableErr && tableErr.message)); } catch(_) {}
+    }
     const HEADING_LEVEL = { h1: 1, h2: 2, h3: 3, h4: 4, h5: 5, h6: 6 };
     const structRootRef = context.nextRef();
     // _buildOutlineStructElems — minimal refactor: isolates HTML-DOM walk
@@ -9904,6 +9969,11 @@ tr { page-break-inside: avoid; }
           alt: tag === 'img' ? (el.getAttribute('alt') || '') : null,
           isDecorative: tag === 'img' && (el.getAttribute('role') === 'presentation' || el.getAttribute('aria-hidden') === 'true'),
           level: HEADING_LEVEL[tag] || 0,
+          // Stage 5: capture scope on TH cells so we can emit /Scope on the
+          // resulting StructElem. "col" → /Column, "row" → /Row. Other
+          // scope values (colgroup/rowgroup) are spec-valid but rarely used
+          // in educational content; we pass them through unchanged.
+          scope: tag === 'th' ? (el.getAttribute('scope') || '') : '',
         });
       }
       // Build a leaf StructElem (not a Sect) and register it. The parentRef
@@ -9924,6 +9994,18 @@ tr { page-break-inside: avoid; }
         }
         if (['H1','H2','H3','H4','H5','H6','P','LI','Caption','BlockQuote'].includes(item.role) && item.text) {
           d.ActualText = PDFString.of(item.text);
+        }
+        // Stage 5: emit /A << /O /Table /Scope /Column >> on TH StructElems.
+        // PDF spec §14.8.5.7 puts /Scope inside the /A (attributes) dict with
+        // owner /Table. Readers that honor this announce "column header" /
+        // "row header" when a TD in that column/row is focused.
+        if (item.role === 'TH' && item.scope) {
+          const scopeVal = item.scope.toLowerCase() === 'col' || item.scope.toLowerCase() === 'colgroup' ? 'Column'
+                         : item.scope.toLowerCase() === 'row' || item.scope.toLowerCase() === 'rowgroup' ? 'Row'
+                         : null;
+          if (scopeVal) {
+            d.A = context.obj({ O: PDFName.of('Table'), Scope: PDFName.of(scopeVal) });
+          }
         }
         return context.register(context.obj(d));
       };
