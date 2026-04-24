@@ -1218,11 +1218,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '@keyframes tp-tier-current-cyber   { 0%, 100% { box-shadow: 0 0 8px rgba(255,0,168,0.25); } 50% { box-shadow: 0 0 14px rgba(255,0,168,0.45), 0 0 0 2px rgba(255,0,168,0.15); } }',
       '@keyframes tp-tier-current-kawaii  { 0%, 100% { box-shadow: 0 3px 8px rgba(232,90,138,0.18); } 50% { box-shadow: 0 4px 12px rgba(232,90,138,0.32); } }',
       '@keyframes tp-tier-current-neutral { 0%, 100% { box-shadow: 0 0 0 0 rgba(184,160,128,0.1); } 50% { box-shadow: 0 0 0 3px rgba(184,160,128,0.08); } }',
-      '.tp-root .tp-tier-current { animation: tp-tier-current-default 2800ms ease-in-out infinite; }',
-      '.tp-root.tp-theme-steampunk .tp-tier-current { animation: tp-tier-current-steam 3000ms ease-in-out infinite; }',
-      '.tp-root.tp-theme-cyberpunk .tp-tier-current { animation: tp-tier-current-cyber 2200ms ease-in-out infinite; }',
-      '.tp-root.tp-theme-kawaii    .tp-tier-current { animation: tp-tier-current-kawaii 2600ms ease-in-out infinite; }',
-      '.tp-root.tp-theme-neutral   .tp-tier-current { animation: tp-tier-current-neutral 3200ms ease-in-out infinite; }',
+      '.tp-root .tp-tier-current { animation: tp-tier-current-default 2800ms ease-in-out 4; }',
+      '.tp-root.tp-theme-steampunk .tp-tier-current { animation: tp-tier-current-steam 3000ms ease-in-out 4; }',
+      '.tp-root.tp-theme-cyberpunk .tp-tier-current { animation: tp-tier-current-cyber 2200ms ease-in-out 4; }',
+      '.tp-root.tp-theme-kawaii    .tp-tier-current { animation: tp-tier-current-kawaii 2600ms ease-in-out 4; }',
+      '.tp-root.tp-theme-neutral   .tp-tier-current { animation: tp-tier-current-neutral 3200ms ease-in-out 4; }',
 
       /* ── Progress-bar shimmer — a soft diagonal highlight sweeps across
          the in-progress fill every ~2.4s, giving the bar a sense of motion
