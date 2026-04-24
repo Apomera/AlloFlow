@@ -2586,13 +2586,48 @@ var createDocPipeline = function(deps) {
     return { bytes: combined, filter };
   };
 
+  // ── Stage 6b: conservative artifact detection ──
+  // Identifies text strings that appear on ≥95% of pages in a ≥5-page doc —
+  // typical signatures of running headers, footers, and legal boilerplate.
+  // Those strings get tagged /Artifact BMC (no MCID, no StructElem) so SR
+  // readers skip them instead of reading "Physics Textbook — Grade 8" on
+  // every page transition. Threshold is strict on purpose: false positives
+  // silently hide content, which is worse than repeated reading.
+  const _stage6b_normalizeArtifactText = (s) => {
+    return (s || '').trim().toLowerCase().replace(/\s+/g, ' ');
+  };
+  const _stage6b_detectArtifactHashes = (pagesItems, opts) => {
+    opts = opts || {};
+    const threshold = opts.threshold != null ? opts.threshold : 0.95;
+    const minPages = opts.minPages != null ? opts.minPages : 5;
+    if (!Array.isArray(pagesItems) || pagesItems.length < minPages) return new Set();
+    const perPageHits = new Map();
+    for (const items of pagesItems) {
+      if (!Array.isArray(items)) continue;
+      const seenThisPage = new Set();
+      for (const it of items) {
+        const norm = _stage6b_normalizeArtifactText(it && it.str);
+        if (!norm || norm.length < 2) continue;
+        if (seenThisPage.has(norm)) continue;
+        seenThisPage.add(norm);
+        perPageHits.set(norm, (perPageHits.get(norm) || 0) + 1);
+      }
+    }
+    const requiredHits = Math.ceil(pagesItems.length * threshold);
+    const artifacts = new Set();
+    for (const [text, count] of perPageHits.entries()) {
+      if (count >= requiredHits) artifacts.add(text);
+    }
+    return artifacts;
+  };
+
   // _stage4_tryWrapPage — orchestrates per-page Stage 4. Reads the content
   // stream, inflates if needed, parses BT/ET, pairs segments with pdf.js
   // items, infers per-block roles, splices BDC/EMC per segment, re-deflates,
   // replaces the Contents entry, and builds a per-page Sect StructElem
   // containing one typed StructElem per block. Throws on any failure;
   // caller catches and falls back to Stage 3.
-  const _stage4_tryWrapPage = async (page, pi, pdfjsDoc, outlineItems, context, libs, structRootRef) => {
+  const _stage4_tryWrapPage = async (page, pi, pdfjsDoc, outlineItems, context, libs, structRootRef, artifactHashSet) => {
     const { PDFName, PDFString, PDFNumber } = libs;
     if (!window.pako || typeof window.pako.inflate !== 'function') throw new Error('pako unavailable');
     const streamInfo = _stage4_getStreamBytesAndFilter(page, PDFName, context);
@@ -2608,13 +2643,28 @@ var createDocPipeline = function(deps) {
     const matched = _stage4_matchSegmentsToItems(segments, items);
     const scales = items.map(it => it.fontScale).filter(n => n > 0).sort((a, b) => a - b);
     const fontScaleMedian = scales.length > 0 ? scales[Math.floor(scales.length / 2)] : 12;
+    // Stage 6b: build wraps with two categories — artifacts get /Artifact BMC
+    // (no MCID, no StructElem), content gets /<role> <</MCID n>> BDC. Content
+    // MCIDs are assigned from an independent counter so we don't gap the
+    // sequence when artifacts are interspersed. Only content segments
+    // produce StructElems / ParentTree entries.
     const wraps = [];
     const blockInfo = [];
+    let contentMcid = 0;
+    const hasArtifacts = artifactHashSet instanceof Set && artifactHashSet.size > 0;
     for (let i = 0; i < segments.length; i++) {
       const item = matched[i] || { str: '', fontScale: fontScaleMedian, fontName: '' };
-      const role = _stage4_inferRole(item, fontScaleMedian, outlineItems);
-      wraps.push({ bdc: '/' + role + ' <</MCID ' + i + '>> BDC\n', emc: '\nEMC\n' });
-      blockInfo.push({ role, text: (item.str || '').substring(0, 400) });
+      const norm = hasArtifacts ? _stage6b_normalizeArtifactText(item.str) : '';
+      const isArtifact = hasArtifacts && norm && artifactHashSet.has(norm);
+      if (isArtifact) {
+        wraps.push({ bdc: '/Artifact BMC\n', emc: '\nEMC\n' });
+        blockInfo.push({ isArtifact: true });
+      } else {
+        const role = _stage4_inferRole(item, fontScaleMedian, outlineItems);
+        wraps.push({ bdc: '/' + role + ' <</MCID ' + contentMcid + '>> BDC\n', emc: '\nEMC\n' });
+        blockInfo.push({ isArtifact: false, role, text: (item.str || '').substring(0, 400), mcid: contentMcid });
+        contentMcid++;
+      }
     }
     let newBytes = _stage4_rewriteStream(bytes, segments, wraps);
     if (streamInfo.filter === 'FlateDecode') {
@@ -2627,11 +2677,13 @@ var createDocPipeline = function(deps) {
     const newStreamRef = context.register(newStream);
     page.node.set(PDFName.of('Contents'), newStreamRef);
     page.node.set(PDFName.of('StructParents'), PDFNumber.of(pi));
+    // Only content segments produce StructElems (artifacts have no tag-tree
+    // entry by design — that's what makes SR readers skip them).
     const pageSectRef = context.nextRef();
     const blockElemRefs = [];
-    for (let i = 0; i < blockInfo.length; i++) {
-      const info = blockInfo[i];
-      const mcr = context.obj({ Type: PDFName.of('MCR'), Pg: page.ref, MCID: PDFNumber.of(i) });
+    for (const info of blockInfo) {
+      if (info.isArtifact) continue;
+      const mcr = context.obj({ Type: PDFName.of('MCR'), Pg: page.ref, MCID: PDFNumber.of(info.mcid) });
       const d = {
         Type: PDFName.of('StructElem'),
         S: PDFName.of(info.role),
@@ -2650,7 +2702,7 @@ var createDocPipeline = function(deps) {
       K: context.obj(blockElemRefs),
     }));
     const parentArrayRef = context.register(context.obj(blockElemRefs.slice()));
-    return { pageSectRef, blockElemRefs, parentArrayRef, mcidCount: blockInfo.length };
+    return { pageSectRef, blockElemRefs, parentArrayRef, mcidCount: contentMcid };
   };
 
   // Lazy-load Tesseract.js from CDN. Zero cost until first call (scanned-PDF path only).
@@ -9943,6 +9995,80 @@ tr { page-break-inside: avoid; }
           }
         }
       }
+      // ── Stage 5b full: Gemini classification for ambiguous tables ──
+      // Tables that made it through Stage 5a's heuristics WITHOUT any
+      // scope-bearing TH are candidates. For each (≥3 rows × ≥3 cols), we
+      // ask Gemini to classify the layout and, if high-confidence, apply
+      // the resulting scope attrs. Stage 5b lite (next pass) then picks
+      // them up and adds /Headers + /IDTree linkage automatically. Any
+      // Gemini failure (network, timeout, malformed JSON) → leave the
+      // table flat (Stage 5a behavior preserved). No new failure surface
+      // beyond the API call we already depend on for remediation.
+      const _stage5bfull_applyClassification = (table, classification) => {
+        if (!classification || typeof classification.confidence !== 'number' || classification.confidence < 0.7) return false;
+        const layout = classification.layout;
+        if (layout !== 'standard' && layout !== 'transposed' && layout !== 'crosstab') return false;
+        const trs = Array.from(table.querySelectorAll('tr'));
+        if (trs.length === 0) return false;
+        const promote = (cell, scope) => {
+          const th = htmlDoc.createElement('th');
+          th.setAttribute('scope', scope);
+          while (cell.firstChild) th.appendChild(cell.firstChild);
+          for (const attr of Array.from(cell.attributes)) {
+            try { th.setAttribute(attr.name, attr.value); } catch(_) {}
+          }
+          cell.parentNode.replaceChild(th, cell);
+        };
+        if (layout === 'standard' || layout === 'crosstab') {
+          for (const td of Array.from(trs[0].querySelectorAll('td'))) promote(td, 'col');
+        }
+        if (layout === 'transposed' || layout === 'crosstab') {
+          for (const tr of trs) {
+            const first = tr.firstElementChild;
+            if (first && first.tagName && first.tagName.toLowerCase() === 'td') promote(first, 'row');
+          }
+        }
+        return true;
+      };
+      if (typeof callGemini === 'function') {
+        for (const table of Array.from(htmlDoc.querySelectorAll('table'))) {
+          const trs = Array.from(table.querySelectorAll('tr'));
+          if (trs.length < 3) continue;
+          const maxCols = trs.reduce((m, tr) => Math.max(m, tr.children.length), 0);
+          if (maxCols < 3) continue;
+          // Skip if Stage 5a already handled this table
+          const hasScoped = Array.from(table.querySelectorAll('th')).some(th => {
+            const sc = (th.getAttribute('scope') || '').toLowerCase();
+            return sc === 'col' || sc === 'row';
+          });
+          if (hasScoped) continue;
+          let classification = null;
+          try {
+            const tableHtml = (table.outerHTML || '').substring(0, 2000);
+            const prompt = 'You are classifying an HTML table for screen-reader accessibility. Determine its layout.\n\n' +
+              'Options:\n' +
+              '- "standard" — first row is column headers, remaining rows are data\n' +
+              '- "transposed" — first column is row headers, remaining columns are data\n' +
+              '- "crosstab" — first row is column headers AND first column is row headers\n' +
+              '- "complex-skip" — ambiguous, irregular, merged cells, or multi-level headers\n\n' +
+              'Be conservative: return "complex-skip" with low confidence if uncertain. We only apply your classification when confidence >= 0.7.\n\n' +
+              'Return ONLY JSON (no markdown fences, no commentary): {"layout":"standard|transposed|crosstab|complex-skip","confidence":0.0}\n\n' +
+              'Table HTML:\n' + tableHtml;
+            const raw = await callGemini(prompt, true);
+            const text = typeof raw === 'string' ? raw : (raw && raw.text) || '';
+            const cleaned = text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+            const jsonS = cleaned.indexOf('{');
+            const jsonE = cleaned.lastIndexOf('}');
+            if (jsonS >= 0 && jsonE > jsonS) {
+              classification = JSON.parse(cleaned.substring(jsonS, jsonE + 1));
+            }
+          } catch(geminiErr) {
+            try { warnLog('[createTaggedPdf] Stage 5b full Gemini classification failed (non-fatal): ' + (geminiErr && geminiErr.message)); } catch(_) {}
+            classification = null;
+          }
+          if (classification) _stage5bfull_applyClassification(table, classification);
+        }
+      }
       // ── Stage 5b lite: /Headers + /IDTree linkage ──
       // Third pass. For each table with at least one scope-bearing TH,
       // assign each TH a unique data-struct-id and mark each TD with the
@@ -10226,6 +10352,10 @@ tr { page-break-inside: avoid; }
     // Stage 4 pdf.js doc load (text-layer PDFs only — scanned PDFs use the
     // Stage 3 single-MCID wrap because pdf.js on original bytes sees no text).
     let pdfjsDocForTagging = null;
+    // Stage 6b: set of normalized-text hashes considered artifacts (running
+    // headers / footers / legal boilerplate). Populated once after the
+    // pdf.js load; passed to every per-page Stage 4 call.
+    let artifactHashSet = new Set();
     if (!isScanned) {
       try {
         await ensurePdfJsLoaded();
@@ -10233,6 +10363,16 @@ tr { page-break-inside: avoid; }
         if (window.pdfjsLib) {
           const _srcBytes = originalPdfBytes instanceof Uint8Array ? originalPdfBytes : new Uint8Array(originalPdfBytes);
           pdfjsDocForTagging = await window.pdfjsLib.getDocument({ data: _srcBytes.slice() }).promise;
+          // Pre-compute per-page items (only once) → detect artifacts. We
+          // avoid re-extracting in each _stage4_tryWrapPage call by passing
+          // the hash set down.
+          try {
+            const allPagesItems = [];
+            for (let _pi = 0; _pi < pdfjsDocForTagging.numPages; _pi++) {
+              allPagesItems.push(await _stage4_extractPdfjsItems(pdfjsDocForTagging, _pi));
+            }
+            artifactHashSet = _stage6b_detectArtifactHashes(allPagesItems);
+          } catch(_) { artifactHashSet = new Set(); }
         }
       } catch(s4prepErr) {
         try { warnLog('[createTaggedPdf] Stage 4 pdf.js/pako load failed, using Stage 3 for all pages: ' + (s4prepErr && s4prepErr.message)); } catch(_) {}
@@ -10282,7 +10422,7 @@ tr { page-break-inside: avoid; }
         try {
           const s4 = await _stage4_tryWrapPage(
             page, pi, pdfjsDocForTagging, stage4OutlineItems,
-            context, { PDFName, PDFString, PDFNumber }, structRootRef
+            context, { PDFName, PDFString, PDFNumber }, structRootRef, artifactHashSet
           );
           if (s4 && s4.pageSectRef) {
             pageElemRefs.push(s4.pageSectRef);
