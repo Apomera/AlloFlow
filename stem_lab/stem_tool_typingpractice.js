@@ -492,8 +492,61 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       ],
       locked: false,
       oneHanded: 'right'
+    },
+    // Focused practice — auto-generates a drill targeting the student's
+    // current top-6 error keys (from state.aggregateErrors). samples: null
+    // at registration time; populated dynamically by buildFocusedPracticeText()
+    // at drill-start time so the content always reflects the latest error
+    // pattern. Only surfaces on the menu when the student has error data.
+    'focus-errors': {
+      id: 'focus-errors',
+      name: 'Focused Practice',
+      icon: '🎯',
+      tier: null,
+      description: 'Auto-generated practice for YOUR top error keys. Updates after every session based on the heatmap.',
+      samples: null,
+      locked: false,
+      requiresErrorData: true  // hidden from menu until aggregateErrors has entries
     }
   };
+
+  // Build a dynamic practice text from aggregate error data. Interleaves the
+  // top-N missed characters in short bursts so the student gets repeated
+  // exposure without a single character dominating unrealistically.
+  // Deterministic — same inputs always produce same output, so "Drill again"
+  // on focus-errors gives a fair retry on identical text.
+  function buildFocusedPracticeText(aggregateErrors, drillRunId) {
+    if (!aggregateErrors) return '';
+    var keys = Object.keys(aggregateErrors)
+      .filter(function(k) { return aggregateErrors[k] > 0 && /^[a-z0-9;,\./\-']$/i.test(k); })
+      .sort(function(a, b) { return aggregateErrors[b] - aggregateErrors[a]; })
+      .slice(0, 6);
+    if (keys.length === 0) return '';
+    // Pad to at least 4 keys so the drill doesn't feel repetitive
+    while (keys.length < 4) keys.push(['a','s','d','f','j','k','l'][keys.length]);
+    // Emit burst groups — each group is "kkk " where k is one of the top keys.
+    // Rotate through keys and adjust burst length based on error frequency
+    // so the MOST-missed key gets slightly more practice.
+    var maxErrors = Math.max.apply(null, keys.map(function(k) { return aggregateErrors[k] || 1; }));
+    var chunks = [];
+    keys.forEach(function(k) {
+      var freq = aggregateErrors[k] || 1;
+      var burstLen = Math.max(3, Math.round((freq / maxErrors) * 5)); // 3-5 chars per burst
+      chunks.push(new Array(burstLen + 1).join(k));
+    });
+    // Add a second pass with pair combos (top 2 chars interleaved) so students
+    // practice the transitions, not just isolated key presses.
+    if (keys.length >= 2) {
+      chunks.push(keys[0] + keys[1] + keys[0] + keys[1] + keys[0] + keys[1]);
+      if (keys.length >= 4) {
+        chunks.push(keys[2] + keys[3] + keys[2] + keys[3]);
+      }
+    }
+    // xorshift-lite rotation so drillRunId varies the order slightly
+    var seed = ((drillRunId || 0) * 7) % chunks.length;
+    var rotated = chunks.slice(seed).concat(chunks.slice(0, seed));
+    return rotated.join(' ');
+  }
 
   // Tier progression ordering for the skill tree and mastery-advance logic.
   // Change this list if you reorder tiers; don't compute from Object.keys(DRILLS)
@@ -894,6 +947,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             ? lib.filter(function(e) { return e.id === state.activeCustomDrillId; })[0]
             : lib[0];
           targetStr = (activeEntry && activeEntry.text) || (state.customDrill && state.customDrill.text) || '';
+        } else if (activeDrill && activeDrill.id === 'focus-errors') {
+          // Generated fresh each time from the student's current aggregateErrors.
+          // drillRunId threaded in so retries are deterministic but menu-entry
+          // reflects the latest error pattern.
+          targetStr = buildFocusedPracticeText(state.aggregateErrors, state.drillRunId);
         } else if (activeDrill) {
           // Seeded on drillRunId — same text on "Drill again" retries,
           // different text when student re-enters the drill from the menu.
@@ -1603,7 +1661,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   gap: '12px'
                 }
               },
-                Object.keys(DRILLS).map(function(drillId) {
+                Object.keys(DRILLS).filter(function(drillId) {
+                  // Hide focus-errors until the student has error data — it'd
+                  // be an empty drill otherwise.
+                  if (drillId === 'focus-errors') {
+                    var agg = state.aggregateErrors || {};
+                    return Object.keys(agg).some(function(k) { return agg[k] > 0; });
+                  }
+                  return true;
+                }).map(function(drillId) {
                   var drill = DRILLS[drillId];
                   var unlocked = !drill.locked || state.masteryLevel >= drill.tier;
                   // Compute the "needed-to-unlock" hint: which previous drill to clear
@@ -1642,6 +1708,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                     if (nextText) {
                       preview = nextText.length > 42 ? nextText.slice(0, 42) + '…' : nextText;
                     }
+                  } else if (unlocked && drillId === 'focus-errors') {
+                    // Dynamic preview for the auto-generated focused-practice drill
+                    var focusText = buildFocusedPracticeText(state.aggregateErrors, state.drillRunId);
+                    if (focusText) preview = focusText.length > 42 ? focusText.slice(0, 42) + '…' : focusText;
                   }
                   return renderDrillCard(drill, unlocked, palette, startDrill, unlockHint, stats, preview);
                 })
