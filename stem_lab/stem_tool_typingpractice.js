@@ -1672,11 +1672,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             // context is a different experience from a cold menu.
             (function() {
               var hr = new Date().getHours();
-              var timeOfDay = hr < 5 ? 'Working late'
-                            : hr < 12 ? 'Good morning'
-                            : hr < 17 ? 'Good afternoon'
-                            : hr < 22 ? 'Good evening'
-                            : 'Working late';
               var firstName = state.studentName ? state.studentName.split(' ')[0] : null;
               var allSessions = state.sessions || [];
               var daysSinceLast = null;
@@ -1684,16 +1679,61 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 var lastMs = new Date(allSessions[allSessions.length - 1].date).getTime();
                 daysSinceLast = Math.round((Date.now() - lastMs) / (24 * 60 * 60 * 1000));
               }
-              var contextLine = null;
-              if (daysSinceLast === null) {
-                contextLine = 'Ready to start your first session?';
-              } else if (daysSinceLast >= 7) {
-                contextLine = 'Welcome back — it\'s been ' + daysSinceLast + ' days. Glad you\'re here.';
-              } else if (daysSinceLast >= 2) {
-                contextLine = 'Welcome back — ' + daysSinceLast + ' days since your last session.';
+              // Theme-voiced greeting + context line. Same underlying facts
+              // (time of day, recency); different register per theme. Names
+              // get appended in the theme's punctuation style.
+              var theme = state.theme || 'default';
+              var timeOfDay, contextLine;
+              if (theme === 'cyberpunk') {
+                timeOfDay = hr < 5 ? '[SYSTEM] night-shift'
+                          : hr < 12 ? '[SYSTEM] morning'
+                          : hr < 17 ? '[SYSTEM] afternoon'
+                          : hr < 22 ? '[SYSTEM] evening'
+                          : '[SYSTEM] late';
+                contextLine = daysSinceLast === null ? '// session.count = 0 :: ready to initialize'
+                            : daysSinceLast >= 7   ? '// absent ' + daysSinceLast + 'd :: rejoining network'
+                            : daysSinceLast >= 2   ? '// last.session = T-' + daysSinceLast + 'd'
+                            :                        '// system nominal :: awaiting input';
+              } else if (theme === 'steampunk') {
+                timeOfDay = hr < 5 ? 'Burning the midnight oil'
+                          : hr < 12 ? 'Good morrow'
+                          : hr < 17 ? 'Good day'
+                          : hr < 22 ? 'Good evening'
+                          : 'Burning the midnight oil';
+                contextLine = daysSinceLast === null ? 'Ready to begin your apprenticeship?'
+                            : daysSinceLast >= 7   ? 'Welcome back to the workshop — ' + daysSinceLast + ' days hence.'
+                            : daysSinceLast >= 2   ? '' + daysSinceLast + ' days since your last entry in the ledger.'
+                            :                        'Shall we resume?';
+              } else if (theme === 'kawaii') {
+                timeOfDay = hr < 5 ? '🌙 Working late'
+                          : hr < 12 ? '☀️ Good morning'
+                          : hr < 17 ? '🌸 Good afternoon'
+                          : hr < 22 ? '✨ Good evening'
+                          : '🌙 Working late';
+                contextLine = daysSinceLast === null ? 'Let\'s start your very first session! 💕'
+                            : daysSinceLast >= 7   ? 'You\'re BACK! We missed you 💕 (' + daysSinceLast + ' days)'
+                            : daysSinceLast >= 2   ? 'Hi again! ' + daysSinceLast + ' days since last time ✨'
+                            :                        'Ready to practice? 🌱';
+              } else if (theme === 'neutral') {
+                timeOfDay = hr < 12 ? 'Morning'
+                          : hr < 17 ? 'Afternoon'
+                          : hr < 22 ? 'Evening'
+                          : 'Late hours';
+                contextLine = daysSinceLast === null ? 'First session.'
+                            : daysSinceLast >= 7   ? '' + daysSinceLast + ' days since last.'
+                            : daysSinceLast >= 2   ? 'Last session ' + daysSinceLast + ' days ago.'
+                            :                        'Continuing.';
               } else {
-                // Same-day or yesterday
-                contextLine = 'Ready for today?';
+                // default
+                timeOfDay = hr < 5 ? 'Working late'
+                          : hr < 12 ? 'Good morning'
+                          : hr < 17 ? 'Good afternoon'
+                          : hr < 22 ? 'Good evening'
+                          : 'Working late';
+                contextLine = daysSinceLast === null ? 'Ready to start your first session?'
+                            : daysSinceLast >= 7   ? 'Welcome back — it\'s been ' + daysSinceLast + ' days. Glad you\'re here.'
+                            : daysSinceLast >= 2   ? 'Welcome back — ' + daysSinceLast + ' days since your last session.'
+                            :                        'Ready for today?';
               }
               return h('div', {
                 style: {
@@ -2620,7 +2660,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                     padding: '14px 32px',
                     fontSize: '16px'
                   })
-                }, '▶ Start drill'),
+                }, (function() {
+                    // Theme-voiced Start button label. Kept short enough that
+                    // layout doesn't shift between themes.
+                    var tm = state.theme || 'default';
+                    if (tm === 'cyberpunk') return '▶ ENGAGE';
+                    if (tm === 'steampunk') return '⚙ Begin';
+                    if (tm === 'kawaii')    return '✨ Let\'s go!';
+                    if (tm === 'neutral')   return '▶ Start';
+                    return '▶ Start drill';
+                  })()),
 
                 // "Listen first" — for students who benefit from hearing the
                 // text before seeing/typing it. Uses ctx.callTTS if the hub
