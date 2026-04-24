@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For Districts | AlloFlow</title>
+    <meta name="description"
+        content="The $26,000 question: why your district is paying for 6 EdTech subscriptions it could replace with one free, open-source, privacy-first platform. A one-page brief for district decision-makers.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://apomera.github.io/AlloFlow/for-districts.html">
+    <meta property="og:title" content="AlloFlow for Districts — The $26,000 Question">
+    <meta property="og:description"
+        content="100+ integrated tools, zero cost, FERPA-compatible by architecture. A one-pager for superintendents, directors of special education, and district IT.">
+    <link rel="stylesheet" href="shared.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="navbar-inner">
+            <a href="index.html" class="nav-logo"><i data-lucide="layers" style="width:28px;height:28px"></i>
+                AlloFlow</a>
+            <div class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="features.html">Features</a>
+                <a href="library.html">Library</a>
+                <a href="students.html">Students</a>
+                <a href="for-districts.html" style="color:var(--indigo)">For Districts</a>
+                <a href="index.html#pricing">Pricing</a>
+                <a href="https://github.com/Apomera/AlloFlow" target="_blank" class="cta-btn"><i data-lucide="github"
+                        style="width:16px;height:16px"></i> Get Code</a>
+            </div>
+            <button class="mobile-menu-btn" onclick="document.getElementById('mobileNav').classList.add('open')"
+                aria-label="Open menu"><i data-lucide="menu" style="width:24px;height:24px"></i></button>
+        </div>
+    </nav>
+    <div id="mobileNav" class="mobile-nav">
+        <button class="close-btn" onclick="this.parentElement.classList.remove('open')"
+            aria-label="Close">&times;</button>
+        <a href="index.html">Home</a><a href="features.html">Features</a><a href="library.html">Library</a><a
+            href="students.html">Students</a><a href="for-districts.html">For Districts</a><a
+            href="accessibility_demo.html">Accessibility</a><a href="https://github.com/Apomera/AlloFlow"
+            target="_blank">GitHub</a>
+    </div>
+
+    <!-- Page Header -->
+    <header class="section"
+        style="background:linear-gradient(135deg,#eef2ff,#faf5ff);padding-top:100px;padding-bottom:40px;text-align:center;border-bottom:1px solid #e0e7ff">
+        <h1 style="font-size:2.75rem;font-weight:900;margin-bottom:12px">The <span
+                class="gradient-text">$26,000</span> Question</h1>
+        <p style="font-size:1.05rem;color:#64748b;max-width:640px;margin:0 auto">
+            A one-page brief for district decision-makers. Cost comparison, privacy &amp; compliance, and the pilot path.
+        </p>
+        <p style="font-size:0.85rem;color:#94a3b8;margin-top:10px">Updated April 2026</p>
+    </header>
+
+    <!-- Jump Navigation -->
+    <div class="jump-nav">
+        <div class="jump-nav-inner">
+            <a href="#problem" class="jump-pill">The Problem</a>
+            <a href="#solution" class="jump-pill">Cost Comparison</a>
+            <a href="#free" class="jump-pill">Why It's Free</a>
+            <a href="#privacy" class="jump-pill">Privacy &amp; FERPA</a>
+            <a href="#included" class="jump-pill">What's Included</a>
+            <a href="#deploy" class="jump-pill">Deployment</a>
+            <a href="#access" class="jump-pill">Accessibility</a>
+            <a href="#ask" class="jump-pill">The Ask</a>
+            <a href="#contact" class="jump-pill">Contact</a>
+        </div>
+    </div>
+
+    <main>
+        <!-- Problem -->
+        <section id="problem" class="section reveal" style="background:#fff;border-bottom:1px solid #e2e8f0">
+            <div class="section-inner">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:24px">
+                    <div style="width:6px;height:32px;background:#dc2626;border-radius:4px"></div>
+                    <h2 style="font-size:1.75rem;font-weight:900">The Problem</h2>
+                </div>
+                <p style="font-size:1rem;color:#475569;line-height:1.7;max-width:800px;margin-bottom:20px">
+                    Your teachers are juggling 5&ndash;7 different EdTech subscriptions:
+                </p>
+                <div class="grid-3" style="margin-bottom:24px">
+                    <div class="card"><strong>Text leveling</strong><br><span style="font-size:0.85rem;color:#64748b">Newsela,
+                            Diffit</span></div>
+                    <div class="card"><strong>Gamified quizzes</strong><br><span
+                            style="font-size:0.85rem;color:#64748b">Kahoot, Quizizz</span></div>
+                    <div class="card"><strong>Interactive lessons</strong><br><span
+                            style="font-size:0.85rem;color:#64748b">Nearpod, Pear Deck</span></div>
+                    <div class="card"><strong>Accessibility tools</strong><br><span
+                            style="font-size:0.85rem;color:#64748b">Read&amp;Write, Immersive Reader</span></div>
+                    <div class="card"><strong>Reading assessment</strong><br><span
+                            style="font-size:0.85rem;color:#64748b">Amira, Literably</span></div>
+                    <div class="card"><strong>AI content generation</strong><br><span
+                            style="font-size:0.85rem;color:#64748b">MagicSchool, School AI</span></div>
+                </div>
+                <p
+                    style="font-size:1.1rem;font-weight:800;color:#1e293b;background:#fef3c7;padding:14px 18px;border-radius:10px;border-left:4px solid #f59e0b;max-width:800px">
+                    Annual cost for a typical school site: <span style="color:#b45309">$20,000&ndash;$30,000</span>.
+                </p>
+                <p style="font-size:0.95rem;color:#64748b;line-height:1.7;margin-top:16px;max-width:800px">
+                    Each tool requires separate logins, separate training, separate data-sharing agreements, and
+                    separate renewal negotiations. Most collect student data your district is already struggling to
+                    govern.
+                </p>
+            </div>
+        </section>
+
+        <!-- Solution -->
+        <section id="solution" class="section reveal"
+            style="background:#f8fafc;border-bottom:1px solid #e2e8f0">
+            <div class="section-inner">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:24px">
+                    <div style="width:6px;height:32px;background:#059669;border-radius:4px"></div>
+                    <h2 style="font-size:1.75rem;font-weight:900">The Solution: One Open Platform</h2>
+                </div>
+                <p style="font-size:1rem;color:#475569;line-height:1.7;max-width:800px;margin-bottom:20px">
+                    <strong>AlloFlow</strong> is a single, open-source platform that combines all six categories &mdash;
+                    plus specialty clinical tools that typically aren't even part of the subscription stack because
+                    districts can't afford them.
+                </p>
+                <div style="overflow-x:auto">
+                    <table
+                        style="width:100%;border-collapse:collapse;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(15,23,42,0.08);font-size:0.95rem">
+                        <thead>
+                            <tr style="background:linear-gradient(135deg,#eef2ff,#faf5ff)">
+                                <th style="text-align:left;padding:14px 16px;font-weight:800;color:#1e293b">Capability</th>
+                                <th style="text-align:left;padding:14px 16px;font-weight:800;color:#1e293b">Typical Tool</th>
+                                <th style="text-align:left;padding:14px 16px;font-weight:800;color:#1e293b">Typical Cost</th>
+                                <th style="text-align:left;padding:14px 16px;font-weight:800;color:#059669">AlloFlow</th>
+                            </tr>
+                        </thead>
+                        <tbody style="color:#334155">
+                            <tr style="border-top:1px solid #e2e8f0">
+                                <td style="padding:12px 16px">Text leveling</td>
+                                <td style="padding:12px 16px">Diffit</td>
+                                <td style="padding:12px 16px">$3,000/yr</td>
+                                <td style="padding:12px 16px;color:#059669;font-weight:700">&check; Included</td>
+                            </tr>
+                            <tr style="border-top:1px solid #e2e8f0;background:#f8fafc">
+                                <td style="padding:12px 16px">Gamification</td>
+                                <td style="padding:12px 16px">Kahoot</td>
+                                <td style="padding:12px 16px">$3,000/yr</td>
+                                <td style="padding:12px 16px;color:#059669;font-weight:700">&check; Included</td>
+                            </tr>
+                            <tr style="border-top:1px solid #e2e8f0">
+                                <td style="padding:12px 16px">Interactive lessons</td>
+                                <td style="padding:12px 16px">Nearpod</td>
+                                <td style="padding:12px 16px">$5,000/yr</td>
+                                <td style="padding:12px 16px;color:#059669;font-weight:700">&check; Included</td>
+                            </tr>
+                            <tr style="border-top:1px solid #e2e8f0;background:#f8fafc">
+                                <td style="padding:12px 16px">Accessibility suite</td>
+                                <td style="padding:12px 16px">Read&amp;Write</td>
+                                <td style="padding:12px 16px">$4,500/yr</td>
+                                <td style="padding:12px 16px;color:#059669;font-weight:700">&check; Included</td>
+                            </tr>
+                            <tr style="border-top:1px solid #e2e8f0">
+                                <td style="padding:12px 16px">Oral fluency assessment</td>
+                                <td style="padding:12px 16px">Amira</td>
+                                <td style="padding:12px 16px">$3,000/yr</td>
+                                <td style="padding:12px 16px;color:#059669;font-weight:700">&check; Included</td>
+                            </tr>
+                            <tr style="border-top:1px solid #e2e8f0;background:#f8fafc">
+                                <td style="padding:12px 16px">AI content generation</td>
+                                <td style="padding:12px 16px">MagicSchool</td>
+                                <td style="padding:12px 16px">$5,000/yr</td>
+                                <td style="padding:12px 16px;color:#059669;font-weight:700">&check; Included</td>
+                            </tr>
+                            <tr style="border-top:2px solid #cbd5e1;background:#eef2ff;font-weight:800">
+                                <td style="padding:14px 16px">TOTAL (top 6 rows)</td>
+                                <td style="padding:14px 16px"></td>
+                                <td style="padding:14px 16px;color:#b45309">~$26,000/yr</td>
+                                <td style="padding:14px 16px;color:#059669;font-size:1.15rem">$0</td>
+                            </tr>
+                            <tr style="border-top:1px solid #e2e8f0">
+                                <td colspan="4"
+                                    style="padding:14px 16px;font-size:0.85rem;color:#64748b;font-style:italic;background:#fff">
+                                    The rows below are <strong>additive value</strong> &mdash; clinical tools most
+                                    districts can't afford in the first place, not subscription replacements:
+                                </td>
+                            </tr>
+                            <tr style="border-top:1px solid #e2e8f0">
+                                <td style="padding:12px 16px">AAC / symbol boards</td>
+                                <td style="padding:12px 16px">Boardmaker</td>
+                                <td style="padding:12px 16px">$500+/student</td>
+                                <td style="padding:12px 16px;color:#059669;font-weight:700">&check; Symbol Studio</td>
+                            </tr>
+                            <tr style="border-top:1px solid #e2e8f0;background:#f8fafc">
+                                <td style="padding:12px 16px">PDF accessibility remediation</td>
+                                <td style="padding:12px 16px">Human services</td>
+                                <td style="padding:12px 16px">$5&ndash;25/page</td>
+                                <td style="padding:12px 16px;color:#059669;font-weight:700">&check; AI pipeline + Knowbility referral</td>
+                            </tr>
+                            <tr style="border-top:1px solid #e2e8f0">
+                                <td style="padding:12px 16px">Psychoeducational report writing</td>
+                                <td style="padding:12px 16px">Q-Global / Q-interactive</td>
+                                <td style="padding:12px 16px">$500+/clinician</td>
+                                <td style="padding:12px 16px;color:#059669;font-weight:700">&check; Report Writer</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Why Free -->
+        <section id="free" class="section reveal" style="background:#fff;border-bottom:1px solid #e2e8f0">
+            <div class="section-inner">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:24px">
+                    <div style="width:6px;height:32px;background:#7c3aed;border-radius:4px"></div>
+                    <h2 style="font-size:1.75rem;font-weight:900">Why It's Free</h2>
+                </div>
+                <p style="font-size:1rem;color:#475569;line-height:1.7;max-width:800px;margin-bottom:20px">
+                    AlloFlow is licensed under <strong>AGPL v3</strong> &mdash; the same license as Linux.
+                </p>
+                <div class="grid-3" style="margin-bottom:20px">
+                    <div class="card">
+                        <div style="font-weight:700;color:#7c3aed;margin-bottom:6px">No subscription fees</div>
+                        <p style="font-size:0.85rem;color:#64748b">Zero cost forever. Not freemium, not a trial.</p>
+                    </div>
+                    <div class="card">
+                        <div style="font-weight:700;color:#7c3aed;margin-bottom:6px">Public, auditable code</div>
+                        <p style="font-size:0.85rem;color:#64748b">Your IT or security team can read every line on
+                            GitHub.</p>
+                    </div>
+                    <div class="card">
+                        <div style="font-weight:700;color:#7c3aed;margin-bottom:6px">No vendor lock-in</div>
+                        <p style="font-size:0.85rem;color:#64748b">Self-host, fork, or walk away. The code is yours.</p>
+                    </div>
+                </div>
+                <p style="font-size:0.95rem;color:#64748b;line-height:1.7;max-width:800px;font-style:italic">
+                    Built by a school psychologist, for educators. The catch? There isn't one.
+                </p>
+            </div>
+        </section>
+
+        <!-- Privacy -->
+        <section id="privacy" class="section reveal"
+            style="background:#f8fafc;border-bottom:1px solid #e2e8f0">
+            <div class="section-inner">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:24px">
+                    <div style="width:6px;height:32px;background:#0891b2;border-radius:4px"></div>
+                    <h2 style="font-size:1.75rem;font-weight:900">Privacy &amp; Compliance</h2>
+                </div>
+                <div style="overflow-x:auto;margin-bottom:20px">
+                    <table
+                        style="width:100%;border-collapse:collapse;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(15,23,42,0.08);font-size:0.95rem">
+                        <thead>
+                            <tr style="background:linear-gradient(135deg,#ecfeff,#eff6ff)">
+                                <th style="text-align:left;padding:14px 16px;font-weight:800;color:#1e293b;width:40%">Concern</th>
+                                <th style="text-align:left;padding:14px 16px;font-weight:800;color:#1e293b">Answer</th>
+                            </tr>
+                        </thead>
+                        <tbody style="color:#334155">
+                            <tr style="border-top:1px solid #e2e8f0">
+                                <td style="padding:12px 16px;font-weight:700">Where does student data go?</td>
+                                <td style="padding:12px 16px">Nowhere. All data stays on-device in the browser's local
+                                    storage.</td>
+                            </tr>
+                            <tr style="border-top:1px solid #e2e8f0;background:#f8fafc">
+                                <td style="padding:12px 16px;font-weight:700">Do students need accounts?</td>
+                                <td style="padding:12px 16px">No. Join via 4-character session codes. No PII ever required.
+                                </td>
+                            </tr>
+                            <tr style="border-top:1px solid #e2e8f0">
+                                <td style="padding:12px 16px;font-weight:700">Is it FERPA-compatible?</td>
+                                <td style="padding:12px 16px">Yes. No PII collection, no external databases, no third-party
+                                    data brokers.</td>
+                            </tr>
+                            <tr style="border-top:1px solid #e2e8f0;background:#f8fafc">
+                                <td style="padding:12px 16px;font-weight:700">Google Workspace for Education integration?
+                                </td>
+                                <td style="padding:12px 16px">Runs inside Gemini Canvas with your district's existing
+                                    Workspace DPA covering it. No new data-processor relationship.</td>
+                            </tr>
+                            <tr style="border-top:1px solid #e2e8f0">
+                                <td style="padding:12px 16px;font-weight:700">Can we self-host?</td>
+                                <td style="padding:12px 16px">Yes &mdash; three deployment paths (see below).</td>
+                            </tr>
+                            <tr style="border-top:1px solid #e2e8f0;background:#f8fafc">
+                                <td style="padding:12px 16px;font-weight:700">What AI model powers it?</td>
+                                <td style="padding:12px 16px">Google Gemini via your district's Workspace account. District
+                                    controls the key; no shared API billing.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p
+                    style="font-size:1rem;color:#1e293b;background:#ecfeff;padding:14px 18px;border-radius:10px;border-left:4px solid #0891b2;max-width:900px">
+                    <strong>Your IT department can deploy AlloFlow on district infrastructure</strong> &mdash; no vendor
+                    servers, no new data agreements, no procurement gridlock.
+                </p>
+            </div>
+        </section>
+
+        <!-- What's Included -->
+        <section id="included" class="section reveal" style="background:#fff;border-bottom:1px solid #e2e8f0">
+            <div class="section-inner">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:24px">
+                    <div style="width:6px;height:32px;background:#818cf8;border-radius:4px"></div>
+                    <h2 style="font-size:1.75rem;font-weight:900">What's Included</h2>
+                </div>
+                <p style="font-size:1rem;color:#475569;line-height:1.7;max-width:800px;margin-bottom:24px">
+                    <strong>100+ integrated tools on a single UDL-aligned platform</strong>, spanning:
+                </p>
+                <div class="grid-3" style="margin-bottom:8px">
+                    <div class="card">
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#2563eb">
+                            <i data-lucide="graduation-cap" style="width:18px;height:18px"></i> For teachers
+                        </div>
+                        <p style="font-size:0.85rem;color:#475569;line-height:1.6">
+                            <strong>Fullpack</strong> generates leveled text, glossary, quiz, visual organizer, lesson plan,
+                            and scaffolds from any source text in one click. <strong>Live Session</strong> pushes resources
+                            to student devices with per-group differentiation. 18-language UI + offline TTS in 40+
+                            languages.
+                        </p>
+                    </div>
+                    <div class="card">
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#7c3aed">
+                            <i data-lucide="swords" style="width:18px;height:18px"></i> For students
+                        </div>
+                        <p style="font-size:0.85rem;color:#475569;line-height:1.6">
+                            Adventure Mode RPG with XP + AI-illustrated scenes. Boss Battle / Escape Room /
+                            Democracy / Jeopardy cooperative learning games. Immersive Reader with RSVP, karaoke
+                            highlighting, bionic reading, oral fluency coach.
+                        </p>
+                    </div>
+                    <div class="card">
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#db2777">
+                            <i data-lucide="heart-pulse" style="width:18px;height:18px"></i> For SPED, SLPs, BCBAs
+                        </div>
+                        <p style="font-size:0.85rem;color:#475569;line-height:1.6">
+                            <strong>Symbol Studio</strong> (AAC): AI-generated PCS symbols, board builder, Carol Gray
+                            social stories, 14-language boards. <strong>BehaviorLens</strong>: full FBA/BIP suite with 6
+                            IOA methods, 5 sampling types, preference assessments. Word Sounds, StoryForge.
+                        </p>
+                    </div>
+                    <div class="card">
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#059669">
+                            <i data-lucide="brain" style="width:18px;height:18px"></i> For school psychologists
+                        </div>
+                        <p style="font-size:0.85rem;color:#475569;line-height:1.6">
+                            <strong>Report Writer</strong> with 17 assessment presets (WISC-V, WIAT-4, BASC-3,
+                            Vineland-3, BRIEF-2, Conners-4, WJ-IV, KABC-II, DAS-II, CELF-5, KTEA-3, SRS-2, GARS-3,
+                            BOT-2), fact-chunk PII scrubbing, self-healing accuracy audit.
+                            <strong>Student Analytics</strong>: RTI tier classification, CBM probes. <strong>PDF
+                                Accessibility Pipeline</strong>: 5-auditor triangulated AI audit with ICC/Cronbach's-α.
+                        </p>
+                    </div>
+                    <div class="card">
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#d97706">
+                            <i data-lucide="flask-conical" style="width:18px;height:18px"></i> STEM Lab
+                        </div>
+                        <p style="font-size:0.85rem;color:#475569;line-height:1.6">
+                            <strong>77 simulations</strong> across math, life/earth/space science, physics/chemistry,
+                            CS/tech, and creative/applied labs. Includes RoadReady driver's ed, Space Explorer
+                            roguelike, LLM Literacy Lab, AppLab generative-AI mini-app builder.
+                        </p>
+                    </div>
+                    <div class="card">
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#10b981">
+                            <i data-lucide="heart-handshake" style="width:18px;height:18px"></i> SEL Hub
+                        </div>
+                        <p style="font-size:0.85rem;color:#475569;line-height:1.6">
+                            <strong>27 tools</strong> aligned to CASEL's 5 competencies: self-awareness,
+                            self-management, social awareness, relationship skills, responsible decision-making. Growth
+                            Mindset Workshop, Restorative Circle, Ethical Reasoning Lab, Culture Explorer.
+                        </p>
+                    </div>
+                </div>
+                <p style="font-size:0.9rem;color:#64748b;margin-top:24px;text-align:center">
+                    See the <a href="features.html" style="color:var(--indigo);font-weight:700">full feature
+                        index</a> for every tool, grouped by UDL guideline.
+                </p>
+            </div>
+        </section>
+
+        <!-- Deployment -->
+        <section id="deploy" class="section reveal"
+            style="background:#f8fafc;border-bottom:1px solid #e2e8f0">
+            <div class="section-inner">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:24px">
+                    <div style="width:6px;height:32px;background:#0d9488;border-radius:4px"></div>
+                    <h2 style="font-size:1.75rem;font-weight:900">Deployment Options</h2>
+                </div>
+                <div class="grid-3">
+                    <div class="card">
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#0d9488">
+                            <i data-lucide="cloud" style="width:18px;height:18px"></i> 1. Gemini Canvas
+                        </div>
+                        <p style="font-size:0.85rem;color:#475569;line-height:1.6;margin-bottom:6px">
+                            <strong>Zero install.</strong> Teachers launch AlloFlow in Google's Gemini Canvas on
+                            their Workspace account.
+                        </p>
+                        <p style="font-size:0.75rem;color:#64748b">No IT ticket required. Simplest path.</p>
+                    </div>
+                    <div class="card">
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#0d9488">
+                            <i data-lucide="server" style="width:18px;height:18px"></i> 2. Self-hosted Firebase
+                        </div>
+                        <p style="font-size:0.85rem;color:#475569;line-height:1.6;margin-bottom:6px">
+                            <strong>District-controlled cloud.</strong> Hosts as a static site on your district's
+                            Google Cloud.
+                        </p>
+                        <p style="font-size:0.75rem;color:#64748b">
+                            <a href="https://github.com/Apomera/AlloFlow/blob/main/DEPLOY_YOUR_OWN.md"
+                                style="color:#0d9488" target="_blank">Deploy guide</a> on GitHub.
+                        </p>
+                    </div>
+                    <div class="card">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#0d9488">
+                            <i data-lucide="shield" style="width:18px;height:18px"></i> 3. School Box (air-gap)
+                        </div>
+                        <p style="font-size:0.85rem;color:#475569;line-height:1.6;margin-bottom:6px">
+                            <strong>Fully offline.</strong> Ollama LLM + local DB + local TTS + SearXNG on district
+                            hardware. Zero external API calls.
+                        </p>
+                        <p style="font-size:0.75rem;color:#64748b">
+                            In development with <a href="https://physher.com" target="_blank" style="color:#0d9488">Tyler
+                                Despain of Physher</a>. For the strictest data-sovereignty requirements.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Accessibility -->
+        <section id="access" class="section reveal" style="background:#fff;border-bottom:1px solid #e2e8f0">
+            <div class="section-inner">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:24px">
+                    <div style="width:6px;height:32px;background:#2563eb;border-radius:4px"></div>
+                    <h2 style="font-size:1.75rem;font-weight:900">Accessibility</h2>
+                </div>
+                <div class="grid-3">
+                    <div class="card">
+                        <div style="font-weight:700;color:#2563eb;margin-bottom:6px">WCAG 2.1 AA</div>
+                        <p style="font-size:0.85rem;color:#475569;line-height:1.6">
+                            5,608+ aria-labels across 97 files at 98%+ code-level coverage. VPAT published
+                            April 2026. Runtime verification with screen-reader users in progress via partnership
+                            conversations with <strong>Knowbility</strong>.
+                        </p>
+                    </div>
+                    <div class="card">
+                        <div style="font-weight:700;color:#2563eb;margin-bottom:6px">Offline TTS</div>
+                        <p style="font-size:0.85rem;color:#475569;line-height:1.6">
+                            Two engines: Kokoro (English) and Piper (40+ languages). Audio never hits cloud APIs.
+                        </p>
+                    </div>
+                    <div class="card">
+                        <div style="font-weight:700;color:#2563eb;margin-bottom:6px">Reading supports</div>
+                        <p style="font-size:0.85rem;color:#475569;line-height:1.6">
+                            Dyslexia fonts (OpenDyslexic, Lexend), color overlays (Irlen), bionic reading, reading
+                            ruler, RSVP speed reader.
+                        </p>
+                    </div>
+                    <div class="card">
+                        <div style="font-weight:700;color:#2563eb;margin-bottom:6px">Keyboard + multilingual</div>
+                        <p style="font-size:0.85rem;color:#475569;line-height:1.6">
+                            Full keyboard accessibility; no mouse-required interactions. 18-language UI with
+                            community-contributed translations.
+                        </p>
+                    </div>
+                </div>
+                <p style="font-size:0.9rem;color:#64748b;margin-top:20px">
+                    Documents: <a href="https://github.com/Apomera/AlloFlow/blob/main/VPAT-2.5-WCAG-AlloFlow.md"
+                        target="_blank" style="color:var(--indigo);font-weight:700">VPAT 2.5</a> &middot;
+                    <a href="https://github.com/Apomera/AlloFlow/blob/main/alloflow_wcag_aa_audit_report.md"
+                        target="_blank" style="color:var(--indigo);font-weight:700">WCAG AA Audit Report</a>
+                </p>
+            </div>
+        </section>
+
+        <!-- The Ask -->
+        <section id="ask" class="section reveal"
+            style="background:linear-gradient(135deg,#eef2ff,#faf5ff);border-bottom:1px solid #e2e8f0">
+            <div class="section-inner" style="text-align:center">
+                <h2 style="font-size:2rem;font-weight:900;margin-bottom:16px">The Ask</h2>
+                <p
+                    style="font-size:1.15rem;color:#1e293b;line-height:1.7;max-width:700px;margin:0 auto 24px;font-weight:600">
+                    Pilot AlloFlow in 3&ndash;5 classrooms for one semester.
+                </p>
+                <div class="grid-3" style="max-width:800px;margin:0 auto 28px">
+                    <div class="card" style="text-align:center">
+                        <div style="font-size:1.75rem;font-weight:900;color:#059669;margin-bottom:4px">$0</div>
+                        <div style="font-size:0.85rem;color:#64748b">cost to try</div>
+                    </div>
+                    <div class="card" style="text-align:center">
+                        <div style="font-size:1.75rem;font-weight:900;color:#7c3aed;margin-bottom:4px">0</div>
+                        <div style="font-size:0.85rem;color:#64748b">procurement paperwork (it's open-source)</div>
+                    </div>
+                    <div class="card" style="text-align:center">
+                        <div style="font-size:1.75rem;font-weight:900;color:#0891b2;margin-bottom:4px">0</div>
+                        <div style="font-size:0.85rem;color:#64748b">IT burden (runs in browser via Canvas)</div>
+                    </div>
+                </div>
+                <p style="font-size:1rem;color:#475569;line-height:1.7;max-width:650px;margin:0 auto 28px">
+                    If it works, expand. If it doesn't, you've lost nothing. <strong>Pilots launching Fall 2026</strong>
+                    &mdash; early-pilot districts receive direct support from the creator and help shape the roadmap.
+                </p>
+                <a href="mailto:aaron.pomeranz@maine.edu?subject=AlloFlow%20pilot%20interest" class="btn-primary"><i
+                        data-lucide="mail" style="width:18px;height:18px"></i> <span>Email about a pilot</span></a>
+            </div>
+        </section>
+
+        <!-- Contact -->
+        <section id="contact" class="section reveal" style="background:#fff">
+            <div class="section-inner" style="text-align:center">
+                <h2 style="font-size:1.5rem;font-weight:900;margin-bottom:8px">Who's behind it</h2>
+                <p style="font-size:1.1rem;font-weight:700;color:#1e293b;margin-bottom:4px">Aaron Pomeranz, PsyD</p>
+                <p style="font-size:0.95rem;color:#64748b;margin-bottom:16px">School Psychologist, Portland Public
+                    Schools (ME) &amp; Developer</p>
+                <ul
+                    style="list-style:none;padding:0;max-width:700px;margin:0 auto 24px;font-size:0.9rem;color:#475569;line-height:1.7;text-align:left">
+                    <li style="margin-bottom:6px">&bull; Clinical focus: students with executive-function, attention,
+                        and learning differences</li>
+                    <li style="margin-bottom:6px">&bull; 117 passing clinical-logic tests verifying scoring, PII
+                        scrubbing, RTI tier classification, assessment-preset integrity</li>
+                    <li style="margin-bottom:6px">&bull; Active partnership conversations: Knowbility (WCAG +
+                        AccessWorks usability testing), Holly Clark (AI-integration PD), Physher (School Box
+                        deployment)</li>
+                </ul>
+                <p style="font-size:0.95rem;color:#475569;line-height:1.9">
+                    <strong>Email:</strong> <a href="mailto:aaron.pomeranz@maine.edu"
+                        style="color:var(--indigo)">aaron.pomeranz@maine.edu</a><br>
+                    <strong>GitHub:</strong> <a href="https://github.com/Apomera/AlloFlow"
+                        style="color:var(--indigo)" target="_blank">github.com/Apomera/AlloFlow</a><br>
+                    <strong>License:</strong> <a href="https://www.gnu.org/licenses/agpl-3.0.html"
+                        style="color:var(--indigo)" target="_blank">AGPL v3 (open source)</a>
+                </p>
+                <p style="font-size:0.85rem;color:#94a3b8;font-style:italic;margin-top:24px">
+                    "Differentiation shouldn't depend on budget."
+                </p>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-inner">
+            <div class="footer-logo"><i data-lucide="layers" style="width:22px;height:22px;color:var(--indigo)"></i>
+                AlloFlow</div>
+            <p>An open-source project for educators. Not affiliated with Google.</p>
+            <div class="footer-links">
+                <a href="index.html">Home</a>
+                <a href="features.html">Features</a>
+                <a href="library.html">Library</a>
+                <a href="for-districts.html">For Districts</a>
+                <a href="https://github.com/Apomera/AlloFlow">GitHub</a>
+                <a href="https://www.youtube.com/@AlloFlow" target="_blank">YouTube</a>
+                <a href="mailto:aaron.pomeranz@maine.edu">Contact</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Back to Top Button -->
+    <button class="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">
+        <i data-lucide="chevron-up" style="width:20px;height:20px"></i>
+    </button>
+
+    <script>
+        // Initialize Lucide icons
+        if (typeof lucide !== 'undefined') { lucide.createIcons(); }
+
+        // Reveal-on-scroll
+        const revealObserver = new IntersectionObserver(entries => {
+            entries.forEach(e => {
+                if (e.isIntersecting) { e.target.classList.add('active'); revealObserver.unobserve(e.target); }
+            });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+        // Back to Top visibility
+        const backBtn = document.querySelector('.back-to-top');
+        window.addEventListener('scroll', () => {
+            backBtn.classList.toggle('visible', window.scrollY > 600);
+        }, { passive: true });
+    </script>
+</body>
+
+</html>
