@@ -5645,40 +5645,40 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     })();
     // AlloData: pure-data bundle (phoneme guide, prompts, i18n strings, shop items, timeline modes).
     // Registers window.AlloModules.AlloData and calls _upgradeAlloData() to populate monolith shim.
-    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@569d822/allo_data_module.js');
+    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@34aef1d/allo_data_module.js');
     // LargeFileModule: chunked audio/video transcription (LargeFileHandler + LargeFileTranscriptionModal).
-    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@569d822/large_file_module.js');
+    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@34aef1d/large_file_module.js');
     // KeyConceptMapModule: SVG-overlay Bezier concept map view (used by renderOutlineContent).
-    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@569d822/key_concept_map_module.js');
+    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@34aef1d/key_concept_map_module.js');
     // UtilsPure: 14 pure utilities (JSON, storage, network, image) — populates monolith shim via _upgradeUtilsPure().
-    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@569d822/utils_pure_module.js');
+    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@34aef1d/utils_pure_module.js');
     // MiscComponents: WordSoundsReviewPanel + AnimatedNumber + ClozeInput (pure-props components).
-    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@569d822/misc_components_module.js');
+    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@34aef1d/misc_components_module.js');
     // RemediationAudio: Web Audio feedback beeps (chunk good/bad/medium, session complete, etc).
-    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@569d822/remediation_audio_module.js');
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@569d822/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@569d822/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@569d822/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@569d822/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@569d822/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@569d822/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@569d822/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@569d822/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@569d822/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@569d822/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@569d822/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@569d822/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@569d822/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@569d822/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@569d822/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@569d822/student_interaction_module.js');
-    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@569d822/math_fluency_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@569d822/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@569d822/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@569d822/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@569d822/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@569d822/content_engine_module.js');
-    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@569d822/timeline_revision_module.js');
+    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@34aef1d/remediation_audio_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@34aef1d/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@34aef1d/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@34aef1d/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@34aef1d/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@34aef1d/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@34aef1d/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@34aef1d/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@34aef1d/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@34aef1d/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@34aef1d/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@34aef1d/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@34aef1d/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@34aef1d/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@34aef1d/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@34aef1d/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@34aef1d/student_interaction_module.js');
+    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@34aef1d/math_fluency_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@34aef1d/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@34aef1d/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@34aef1d/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@34aef1d/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@34aef1d/content_engine_module.js');
+    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@34aef1d/timeline_revision_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -5694,7 +5694,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@569d822/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@34aef1d/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -10861,10 +10861,24 @@ Return only the corrected version of this exact text:`;
   // above, because the dep array reads diffLibReady at render time — putting this
   // effect above the const declaration trips a TDZ ReferenceError.
   useEffect(() => {
-    if (!diffViewOpen || !pdfFixResult) return;
-    if (!diffLibReady || !window.Diff) return;
+    // Diagnostic logs: each early-return path emits one console.debug so
+    // future "the Diff doesn't show" reports can be triaged from the
+    // browser console without reopening this file. Debug level keeps them
+    // quiet unless the user has DevTools set to Verbose.
+    if (!diffViewOpen || !pdfFixResult) {
+      if (diffViewOpen && !pdfFixResult) console.debug('[Diff] effect skipped — modal open but pdfFixResult is null');
+      return;
+    }
+    if (!diffLibReady || !window.Diff) {
+      console.debug('[Diff] effect skipped — jsdiff library not ready yet (diffLibReady=' + diffLibReady + ', window.Diff=' + !!window.Diff + ')');
+      return;
+    }
     const src = pdfFixResult.sourceText || '';
     const fin = pdfFixResult.finalText || '';
+    if (!src || !fin) {
+      console.debug('[Diff] effect skipped — sourceText or finalText is empty (src=' + src.length + ' chars, fin=' + fin.length + ' chars)');
+      return;
+    }
     // Lightweight fingerprint — length + first/last 40 chars of each side +
     // granularity. Collisions are functionally impossible for normal PDFs;
     // the worst-case false positive is keeping a stale diff for a doc that
@@ -10877,6 +10891,7 @@ Return only the corrected version of this exact text:`;
     if (_lastDiffFingerprintRef.current === _fp && diffChunks) {
       // Same inputs AND we already have chunks in memory — skip rebuild so
       // the user's rejections survive modal close/reopen.
+      console.debug('[Diff] effect skipped — cache hit for fingerprint (' + diffChunks.length + ' chunks preserved)');
       return;
     }
     _lastDiffFingerprintRef.current = _fp;
@@ -10915,6 +10930,10 @@ Return only the corrected version of this exact text:`;
         }
       } catch (_) { /* corrupt entry — ignore */ }
       setDiffChunks(annotated);
+      const _nAdd = annotated.filter(c => c.type === 'add').length;
+      const _nDel = annotated.filter(c => c.type === 'del').length;
+      const _nRehydrated = annotated.filter(c => c.rejected).length;
+      console.debug(`[Diff] Built ${annotated.length} chunks (${_nAdd} add, ${_nDel} del${_nRehydrated > 0 ? `, ${_nRehydrated} rejection(s) rehydrated from storage` : ''})`);
     } catch (e) {
       console.warn('[Diff] compute failed:', e);
       setDiffChunks(null);
@@ -53673,7 +53692,13 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                       role="dialog"
                                       aria-modal="true"
                                       aria-labelledby="allo-diff-title"
-                                      className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4"
+                                      /* z-[300] stacks above Document Builder (z-[200]) so the
+                                         diff modal is visible when opened from the Document
+                                         Builder toolbar. Matches other top-layer modals
+                                         (Focus Mode, Cinematic Crawl, Info Modal). Stays
+                                         below toast container (z-[400]) so Apply & Export
+                                         success/warning toasts remain visible. */
+                                      className="fixed inset-0 z-[300] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4"
                                       onClick={(e) => { if (e.target === e.currentTarget) setDiffViewOpen(false); }}
                                     >
                                       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden">
