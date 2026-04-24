@@ -2643,22 +2643,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               },
                 h('div', { style: statCardStyle(palette, state.theme) },
                   h('div', { style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Sessions'),
-                  h('div', { style: { fontSize: '22px', fontWeight: 700, color: palette.accent } }, sessionCount)
+                  h('div', { key: 'msc-s-' + sessionCount, className: 'tp-live-tick', style: { fontSize: '22px', fontWeight: 700, color: palette.accent } }, sessionCount)
                 ),
                 h('div', { style: statCardStyle(palette, state.theme) },
                   h('div', { style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Mastery Tier'),
-                  h('div', { style: { fontSize: '22px', fontWeight: 700, color: palette.success } }, state.masteryLevel + ' / 7')
+                  h('div', { key: 'msc-m-' + state.masteryLevel, className: 'tp-live-tick', style: { fontSize: '22px', fontWeight: 700, color: palette.success } }, state.masteryLevel + ' / 7')
                 ),
                 // Positive-framing practice-days counter — "days you showed up"
                 practiceDays > 0 ? h('div', { style: statCardStyle(palette, state.theme), title: 'Unique calendar days with at least one session in the last 30 days. No guilt for days off.' },
                   h('div', { style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Practice days · 30d'),
-                  h('div', { style: { fontSize: '22px', fontWeight: 700, color: palette.textDim } },
+                  h('div', { key: 'msc-p-' + practiceDays, className: 'tp-live-tick', style: { fontSize: '22px', fontWeight: 700, color: palette.textDim } },
                     '🗓 ' + practiceDays
                   )
                 ) : null,
                 badgeCount > 0 ? h('div', { style: statCardStyle(palette, state.theme) },
                   h('div', { style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Badges'),
-                  h('div', { style: { fontSize: '22px', fontWeight: 700, color: palette.warn } }, badgeCount)
+                  h('div', { key: 'msc-b-' + badgeCount, className: 'tp-live-tick', style: { fontSize: '22px', fontWeight: 700, color: palette.warn } }, badgeCount)
                 ) : null
               );
             })() : null,
