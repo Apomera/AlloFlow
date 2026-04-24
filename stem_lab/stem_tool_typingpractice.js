@@ -4034,10 +4034,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   marginBottom: '24px'
                 }
               },
-                renderMetric('WPM', s.wpm, palette),
-                renderMetric('Accuracy', s.accuracy + '%', palette),
-                renderMetric('Time', formatDuration(s.durationSec), palette),
-                renderMetric('Errors', s.errors, palette)
+                renderMetric('WPM', s.wpm, palette, state.theme),
+                renderMetric('Accuracy', s.accuracy + '%', palette, state.theme),
+                renderMetric('Time', formatDuration(s.durationSec), palette, state.theme),
+                renderMetric('Errors', s.errors, palette, state.theme)
               ),
 
               (s.accommodationsUsed && s.accommodationsUsed.length > 0) ? h('div', {
@@ -5691,10 +5691,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               },
                 h('div', { style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '12px', fontWeight: 700 } }, 'Baseline → current · all-time'),
                 h('div', { style: { display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: thisWk.length > 0 ? '12px' : 0 } },
-                  renderMetric('Baseline WPM', state.baseline.wpm, palette),
-                  renderMetric('Best WPM', getBestWpm(state), palette),
-                  renderMetric('Recent avg', getRecentAvg(allSessions, 'wpm'), palette),
-                  renderMetric('Recent acc', getRecentAvg(allSessions, 'accuracy') + '%', palette)
+                  renderMetric('Baseline WPM', state.baseline.wpm, palette, state.theme),
+                  renderMetric('Best WPM', getBestWpm(state), palette, state.theme),
+                  renderMetric('Recent avg', getRecentAvg(allSessions, 'wpm'), palette, state.theme),
+                  renderMetric('Recent acc', getRecentAvg(allSessions, 'accuracy') + '%', palette, state.theme)
                 ),
                 // Week-over-week trend strip — only renders when there's
                 // this-week activity to compare against.
@@ -6980,19 +6980,57 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     return m + ':' + (s < 10 ? '0' : '') + s;
   }
 
-  function renderMetric(label, value, palette) {
+  function renderMetric(label, value, palette, themeName) {
     var React = window.React;
     var h = React.createElement;
-    return h('div', {
-      style: {
-        background: palette.bg,
-        border: '1px solid ' + palette.border,
-        borderRadius: '10px',
-        padding: '14px 10px'
-      }
-    },
-      h('div', { style: { fontSize: '10px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px' } }, label),
-      h('div', { style: { fontSize: '22px', fontWeight: 700, color: palette.text, fontVariantNumeric: 'tabular-nums' } }, value)
+    var tm = themeName || 'default';
+    // Theme-flavored visual vocabulary for the summary stat cards. Mirrors
+    // the menu stats-strip treatment (cf17f9a) so the tool feels consistent
+    // across screens. Clinical numbers unchanged; only chrome varies.
+    var cardStyle = {
+      background: palette.bg,
+      border: '1px solid ' + palette.border,
+      borderRadius: '10px',
+      padding: '14px 10px',
+      position: 'relative'
+    };
+    var labelStyle = {
+      fontSize: '10px',
+      color: palette.textMute,
+      textTransform: 'uppercase',
+      letterSpacing: '0.08em',
+      marginBottom: '4px'
+    };
+    var valueStyle = {
+      fontSize: '22px',
+      fontWeight: 700,
+      color: palette.text,
+      fontVariantNumeric: 'tabular-nums'
+    };
+    if (tm === 'steampunk') {
+      cardStyle.background = 'linear-gradient(180deg, ' + palette.surface + ' 0%, ' + palette.bg + ' 100%)';
+      cardStyle.borderColor = palette.accentDim || palette.border;
+      cardStyle.boxShadow = 'inset 0 1px 0 rgba(255,255,255,0.06)';
+      labelStyle.letterSpacing = '0.12em';
+    } else if (tm === 'cyberpunk') {
+      cardStyle.background = palette.bg;
+      cardStyle.borderLeft = '3px solid ' + palette.accent;
+      cardStyle.borderRadius = '2px';
+      valueStyle.fontFamily = 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace';
+      labelStyle.fontFamily = 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace';
+      labelStyle.color = palette.accent;
+    } else if (tm === 'kawaii') {
+      cardStyle.borderRadius = '16px';
+      cardStyle.boxShadow = '0 2px 8px rgba(0,0,0,0.05)';
+      labelStyle.textTransform = 'none';
+      labelStyle.letterSpacing = '0.02em';
+      labelStyle.fontWeight = 600;
+    } else if (tm === 'neutral') {
+      cardStyle.borderRadius = '6px';
+    }
+    return h('div', { style: cardStyle },
+      h('div', { style: labelStyle }, label),
+      h('div', { style: valueStyle }, value)
     );
   }
 
