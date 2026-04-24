@@ -46,7 +46,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       assessmentMode: false,   // when true: hide in-drill WPM/acc/timer for clean baseline
       focusKeyboard: false,    // when true (AND largeKeys on): heavily dim non-target keys
       speakWordsOnSpace: false, // TTS announces each completed word on space press
-      sampleLength: null       // null/any | 'short' | 'medium' | 'long' — preferred sample size
+      sampleLength: null,      // null/any | 'short' | 'medium' | 'long' — preferred sample size
+      // Visual-reward modes — opt-in image generation after certain drill types.
+      storyModeImage: false,   // passage drills: generate an illustration of the passage
+      promptModeImage: false   // custom drills: treat the text as an image prompt, refine on retry
     },
     accommodationBadges: [],   // badge ids earned for TRYING an accommodation
     masteryLevel: 0,           // progression tier: 0=home-row, 1=top-row, 2=bottom-row, 3=words, 4=passages
@@ -81,6 +84,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     // for the heatmap. Updated at session save so we don't recompute from the
     // capped sessions array.
     aggregateErrors: {},
+    // Last generated visual-mode image. Single slot (base64 blobs are heavy —
+    // 200 capped sessions × ~80 KB each would blow localStorage). Stores the
+    // most recent one so refine-via-image-to-image has a reference.
+    //   { base64: 'data:image/png;base64,...', prompt, sessionDate, refinedCount }
+    lastGeneratedImage: null,
     // milestonesEarned — array of milestone IDs the student has crossed.
     // Additive only; we never un-earn to avoid guilt patterns.
     milestonesEarned: [],
@@ -1061,6 +1069,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         var _nowTick = nowTickTuple[0], setNowTick = nowTickTuple[1];
 
         var lastSummaryTuple = useState(null);
+
+        // Visual-mode image-generation state. Kept local so loading flags
+        // and errors don't bloat persistent state. The generated image itself
+        // still saves into state.lastGeneratedImage on success.
+        var imgLoadingTuple = useState(false);
+        var imgLoading = imgLoadingTuple[0], setImgLoading = imgLoadingTuple[1];
+        var imgErrorTuple = useState(null);
+        var imgError = imgErrorTuple[0], setImgError = imgErrorTuple[1];
         var lastSummary = lastSummaryTuple[0], setLastSummary = lastSummaryTuple[1];
 
         // Pause/resume — disability-aware. Paused time doesn't count against
@@ -3465,6 +3481,72 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         }
 
         // ═════════════════════════════════════════════════════
+        // VISUAL MODE helpers — image generation via ctx.callImagen and
+        // image-to-image refinement via ctx.callGeminiImageEdit.
+        // ═════════════════════════════════════════════════════
+        var stripBase64Prefix = function(url) {
+          if (!url) return '';
+          var m = ('' + url).match(/^data:image\/[a-z]+;base64,(.*)$/);
+          return m ? m[1] : ('' + url);
+        };
+
+        // Generate or refine an image based on the drill text.
+        // - If we already have a prior image for this session context AND the
+        //   caller asked for refinement, use callGeminiImageEdit.
+        // - Otherwise use callImagen for a fresh generation.
+        var generateVisualForSession = function(promptText, mode, allowRefine) {
+          if (!ctx.callImagen) {
+            setImgError('Image generation is not available in this context.');
+            return;
+          }
+          if (!promptText || promptText.trim().length === 0) {
+            setImgError('No text to illustrate.');
+            return;
+          }
+          setImgLoading(true);
+          setImgError(null);
+
+          // Build the prompt with mode-specific framing so the model
+          // produces child/school-appropriate, clinician-safe imagery.
+          var fullPrompt;
+          if (mode === 'story') {
+            fullPrompt = 'A warm, illustrative scene that captures this passage for a student. ' +
+              'Children\'s-book / editorial-illustration style, gentle colors, no text inside the image, no logos, no violence, no disturbing content, no real-person likenesses. ' +
+              'Passage: "' + promptText + '"';
+          } else {
+            // prompt mode — student-authored text is the direct prompt.
+            fullPrompt = promptText +
+              '. Gentle, student-friendly style. No text inside the image. No real-person likenesses. No violence or disturbing content.';
+          }
+
+          var priorImage = state.lastGeneratedImage;
+          var doRefine = allowRefine && priorImage && priorImage.base64;
+
+          var run = doRefine && ctx.callGeminiImageEdit
+            ? ctx.callGeminiImageEdit(fullPrompt, stripBase64Prefix(priorImage.base64), 512, 0.85)
+            : ctx.callImagen(fullPrompt, 512, 0.85);
+
+          Promise.resolve(run).then(function(result) {
+            if (!result) throw new Error('Image generation returned nothing.');
+            // Normalize to data-URL so <img src> works directly.
+            var dataUrl = ('' + result).indexOf('data:') === 0
+              ? result
+              : 'data:image/png;base64,' + stripBase64Prefix(result);
+            upd('lastGeneratedImage', {
+              base64: dataUrl,
+              prompt: fullPrompt,
+              sessionDate: lastSummary ? lastSummary.date : new Date().toISOString(),
+              refinedCount: doRefine ? ((priorImage && priorImage.refinedCount) || 0) + 1 : 0,
+              mode: mode
+            });
+            setImgLoading(false);
+          }).catch(function(err) {
+            setImgLoading(false);
+            setImgError('Could not generate image: ' + (err && err.message ? err.message : 'unknown error'));
+          });
+        };
+
+        // ═════════════════════════════════════════════════════
         // VIEW: SUMMARY — session summary + baseline / personal-best framing
         // ═════════════════════════════════════════════════════
         function renderSummary() {
@@ -3840,6 +3922,95 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 )
               ),
 
+              // Visual mode panel — shows only when the relevant accommodation
+              // is on AND the drill type matches. Story mode illustrates a
+              // passage on demand; prompt mode treats custom-drill text as
+              // an image prompt and offers refine-via-image-to-image on retry.
+              (function() {
+                if (s.isWarmup) return null;
+                var storyEligible = s.drillId === 'passage' && state.accommodations.storyModeImage;
+                var promptEligible = s.drillId === 'custom' && state.accommodations.promptModeImage;
+                if (!storyEligible && !promptEligible) return null;
+                var mode = storyEligible ? 'story' : 'prompt';
+                // Resolve the drill text that was typed — for passages that's
+                // state.aiPassage.text; for custom it's the active library entry.
+                var drillText = '';
+                if (mode === 'story' && state.aiPassage) drillText = state.aiPassage.text || '';
+                if (mode === 'prompt') {
+                  var lib = state.customDrillLibrary || [];
+                  var entry = state.activeCustomDrillId
+                    ? lib.filter(function(e) { return e.id === state.activeCustomDrillId; })[0]
+                    : lib[0];
+                  drillText = (entry && entry.text) || (state.customDrill && state.customDrill.text) || '';
+                }
+                var existing = state.lastGeneratedImage;
+                var existingMatchesSession = existing && existing.sessionDate === s.date;
+                return h('div', {
+                  style: {
+                    marginBottom: '16px',
+                    padding: '12px 14px',
+                    background: palette.bg,
+                    border: '1px solid ' + palette.border,
+                    borderRadius: '10px',
+                    textAlign: 'left'
+                  }
+                },
+                  h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '6px' } },
+                    h('div', { style: { fontSize: '11px', fontWeight: 700, color: palette.accent, textTransform: 'uppercase', letterSpacing: '0.06em' } },
+                      mode === 'story' ? '🎨 Story mode · illustrate this passage' : '🎨 Prompt mode · generate from your text'),
+                    existingMatchesSession && existing.refinedCount ? h('span', {
+                      style: { fontSize: '10px', color: palette.textMute }
+                    }, 'refined ' + existing.refinedCount + '×') : null
+                  ),
+
+                  // Image display area
+                  imgLoading ? h('div', {
+                    style: { padding: '40px 0', textAlign: 'center', color: palette.textMute, fontSize: '12px' }
+                  }, '✨ Generating…') : null,
+
+                  (!imgLoading && existing && existing.base64) ? h('div', null,
+                    h('img', {
+                      src: existing.base64,
+                      alt: 'Generated ' + (mode === 'story' ? 'illustration' : 'image') + ' based on the drill text',
+                      style: {
+                        maxWidth: '100%',
+                        height: 'auto',
+                        borderRadius: '8px',
+                        border: '1px solid ' + palette.border,
+                        display: 'block'
+                      }
+                    })
+                  ) : null,
+
+                  imgError ? h('div', {
+                    role: 'alert',
+                    style: { color: palette.danger, fontSize: '11px', marginTop: '8px' }
+                  }, '⚠️ ' + imgError) : null,
+
+                  // Actions
+                  !imgLoading ? h('div', {
+                    style: { display: 'flex', gap: '8px', marginTop: '10px', flexWrap: 'wrap' }
+                  },
+                    h('button', {
+                      onClick: function() { generateVisualForSession(drillText, mode, false); },
+                      style: Object.assign({}, primaryBtnStyle(palette), { fontSize: '11px', padding: '6px 12px' })
+                    }, existing && existingMatchesSession ? '↻ New image' : '✨ Generate image'),
+
+                    // Refine only available when we have a prior image AND the hub offers the edit API
+                    (ctx.callGeminiImageEdit && existing && existing.base64) ? h('button', {
+                      onClick: function() { generateVisualForSession(drillText, mode, true); },
+                      style: Object.assign({}, secondaryBtnStyle(palette), { fontSize: '11px', padding: '6px 12px' }),
+                      title: 'Refine the last image using image-to-image instead of starting from scratch'
+                    }, '🎨 Refine') : null
+                  ) : null,
+
+                  h('div', { style: { fontSize: '10px', color: palette.textMute, marginTop: '6px', fontStyle: 'italic' } },
+                    mode === 'story'
+                      ? 'Imagery reflects your passage. Educational illustration style.'
+                      : 'Your drill text is the prompt. Refine reuses the last image as a starting point.')
+                );
+              })(),
+
               h('div', { style: { display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' } },
                 h('button', {
                   onClick: function() { updMulti({ view: 'drill', currentDrill: s.drillId }); },
@@ -4110,6 +4281,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             ) : null,
             renderToggleRow('Error-tolerant mode', 'Errors don\'t block progress — great for dysgraphia. The target advances with the correct character so the student can keep going.', acc.errorTolerant, function() { toggle('errorTolerant'); }, palette),
             renderToggleRow('Predictive assist', 'Shows the next 1–3 characters with a soft highlight so emerging typists can plan the next move. Auto-fades as your accuracy on this drill improves.', acc.predictiveAssist, function() { toggle('predictiveAssist'); }, palette),
+            renderToggleRow('🎨 Story mode (illustrate passages)', 'After you finish a personalized-passage drill, offer a button to illustrate the passage with an AI-generated image. Educational-illustration style, student-friendly. Off by default.', acc.storyModeImage, function() { toggle('storyModeImage'); }, palette),
+            renderToggleRow('🎨 Prompt mode (art from custom drills)', 'After you finish a custom-drill session, your drill text becomes an AI image prompt. Drill again and the image refines via image-to-image — typing becomes the brushstroke. Off by default.', acc.promptModeImage, function() { toggle('promptModeImage'); }, palette),
             renderToggleRow('Assessment mode', 'Hides WPM, accuracy, and timer during the drill. For clinicians running a clean baseline where clock-watching would affect the measurement. Metrics are still saved and shown at the end.', acc.assessmentMode, function() { toggle('assessmentMode'); }, palette),
 
             h('div', { id: 'tp-s-sight', style: { scrollMarginTop: '20px' } }),
