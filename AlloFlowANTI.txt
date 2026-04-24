@@ -14972,30 +14972,8 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
       leveledTextLanguage, currentUiLanguage, _aiUserConfig, ai,
       setShowKokoroOfferModal,
   };
-  // Personas extraction: mirror all component-scoped state/setters/refs/helpers
-  // into _personasLiveRef so the 16 extracted handlers can read current values
-  // on every call. Same pattern as _ttsLiveRef above.
-  _personasLiveRef.current = {
-      // State reads
-      personaState, personaInput, isGeneratingPersona, generatedContent,
-      history, inputText, sourceTopic, gradeLevel, leveledTextLanguage,
-      personaCustomInstructions, selectedLanguages, currentUiLanguage,
-      personaTurnHintsViewed, isPersonaFreeResponse, apiKey,
-      // Setters
-      setPersonaState, setPersonaInput, setIsGeneratingPersona,
-      setGeneratedContent, setHistory, setIsPersonaChatOpen, setIsProcessing,
-      setPersonaReflectionInput, setReflectionFeedback, setIsPersonaDefining,
-      setIsGradingReflection, setIsGeneratingReflectionPrompt, setPanelTtsPending,
-      setShowPersonaHints, setPersonaTurnHintsViewed, setIsPersonaReflectionOpen,
-      setPlayingContentId, setPlaybackState,
-      // Refs
-      alloBotRef, personaDefinitionCache, lastReadPersonaIndexRef, showPersonaHintsRef,
-      // Component-scoped helpers (injected because they close over state/refs)
-      callImagen, addToast, playSound, handleScoreUpdate, handleAiSafetyFlag,
-      resilientJsonParse,
-      // i18n
-      t,
-  };
+  // Personas _personasLiveRef.current = {...} mirror moved below callImagen
+  // declaration to avoid TDZ on `callImagen`. See post-callImagen section.
   // Chunk Reader read-along effect — placed after callTTS so its TDZ is resolved.
   // When enabled, plays the current sentence via Gemini (callTTS) and animates
   // chunkReaderSweepPct based on audio.currentTime / audio.duration. On ended,
@@ -15141,6 +15119,30 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     }
   };
   // generateCharacterPortrait moved to personas_module.js (via _upgradePersonas shim).
+  // Personas live-ref mirror — placed AFTER callImagen declaration above (TDZ-safe).
+  // Factory's 16 extracted handlers read state/setters/refs/helpers through this
+  // object on every call, so React re-renders automatically propagate fresh values.
+  _personasLiveRef.current = {
+      // State reads
+      personaState, personaInput, isGeneratingPersona, generatedContent,
+      history, inputText, sourceTopic, gradeLevel, leveledTextLanguage,
+      personaCustomInstructions, selectedLanguages, currentUiLanguage,
+      personaTurnHintsViewed, isPersonaFreeResponse, apiKey,
+      // Setters
+      setPersonaState, setPersonaInput, setIsGeneratingPersona,
+      setGeneratedContent, setHistory, setIsPersonaChatOpen, setIsProcessing,
+      setPersonaReflectionInput, setReflectionFeedback, setIsPersonaDefining,
+      setIsGradingReflection, setIsGeneratingReflectionPrompt, setPanelTtsPending,
+      setShowPersonaHints, setPersonaTurnHintsViewed, setIsPersonaReflectionOpen,
+      setPlayingContentId, setPlaybackState,
+      // Refs
+      alloBotRef, personaDefinitionCache, lastReadPersonaIndexRef, showPersonaHintsRef,
+      // Component-scoped helpers (injected because they close over state/refs)
+      callImagen, addToast, playSound, handleScoreUpdate, handleAiSafetyFlag,
+      resilientJsonParse,
+      // i18n
+      t,
+  };
   const generatePixelArtItem = useCallback(async (itemName, itemDescription) => {
       try {
           const context = itemDescription ? ` matching this description: "${itemDescription}"` : "";
