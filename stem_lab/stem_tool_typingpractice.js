@@ -1137,6 +1137,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '.tp-root.tp-theme-kawaii    .tp-view-enter { animation: tp-view-in-kawaii 300ms cubic-bezier(0.34,1.56,0.64,1) 1; }',
       '.tp-root.tp-theme-neutral   .tp-view-enter { animation: tp-view-in-neutral 180ms ease-out 1; }',
 
+      /* ── Per-theme drill card hover lift ─────────────────────────
+         Unlocked cards gain a theme-specific elevation treatment on hover
+         (and keyboard focus). Complements the existing inline border-color
+         swap rather than replacing it — the inline handler still manages
+         the border, while :hover/:focus-visible here own the lift + glow. */
+      '.tp-root .tp-drill-card:hover,',
+      '.tp-root .tp-drill-card:focus-visible {',
+      '  transform: translateY(-2px);',
+      '  box-shadow: 0 6px 18px rgba(0,0,0,0.18);',
+      '}',
+      '.tp-root.tp-theme-steampunk .tp-drill-card:hover,',
+      '.tp-root.tp-theme-steampunk .tp-drill-card:focus-visible {',
+      '  transform: translateY(-1px);',
+      '  box-shadow: 0 4px 12px rgba(60,30,10,0.45), inset 0 1px 0 rgba(255,220,150,0.15);',
+      '}',
+      '.tp-root.tp-theme-cyberpunk .tp-drill-card:hover,',
+      '.tp-root.tp-theme-cyberpunk .tp-drill-card:focus-visible {',
+      '  transform: translateY(-1px);',
+      '  box-shadow: 0 0 0 1px rgba(255,0,168,0.5), 0 0 14px rgba(255,0,168,0.35);',
+      '}',
+      '.tp-root.tp-theme-kawaii .tp-drill-card:hover,',
+      '.tp-root.tp-theme-kawaii .tp-drill-card:focus-visible {',
+      '  transform: translateY(-3px) scale(1.01);',
+      '  box-shadow: 0 8px 20px rgba(232,90,138,0.18), 0 2px 4px rgba(0,0,0,0.04);',
+      '}',
+      '.tp-root.tp-theme-neutral .tp-drill-card:hover,',
+      '.tp-root.tp-theme-neutral .tp-drill-card:focus-visible {',
+      '  transform: translateY(-1px);',
+      '  box-shadow: 0 3px 8px rgba(0,0,0,0.15);',
+      '}',
+
       '@media (prefers-reduced-motion: reduce) {',
       '  .tp-root .tp-current-char,',
       '  .tp-root .tp-loading-icon,',
@@ -1144,6 +1175,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '  .tp-root .tp-wrong-flash,',
       '  .tp-root .tp-view-enter { animation: none !important; }',
       '  .tp-root button { transition: none !important; }',
+      '  .tp-root .tp-drill-card:hover,',
+      '  .tp-root .tp-drill-card:focus-visible { transform: none !important; }',
       '}'
     ].join('\n');
     document.head.appendChild(style);
@@ -9153,6 +9186,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       style: { position: 'relative' }
     },
       h('button', {
+      className: unlocked ? 'tp-drill-card' : undefined,
       onClick: unlocked ? function() { startDrill(drill.id); } : null,
       disabled: !unlocked,
       'aria-label': drill.name + (unlocked ? '' : ' (locked: ' + (unlockHint || 'reach required mastery tier') + ')') + (isFavorite ? ' (favorite)' : ''),
@@ -9167,7 +9201,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         opacity: unlocked ? 1 : 0.6,
         color: palette.text,
         fontFamily: 'inherit',
-        transition: 'border-color 120ms ease',
+        transition: 'border-color 120ms ease, transform 160ms ease, box-shadow 180ms ease',
         display: 'flex',
         flexDirection: 'column',
         gap: '6px',
