@@ -8154,6 +8154,71 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var med = new T.Mesh(medGeo, medianMat);
             med.position.set(centerX - MAP_SIZE / 2, 0.4, 0);
             scene.add(med);
+            // ── Overhead exit-sign gantries ──
+            // Big green cantilevered panels over the right lane — the single
+            // most iconic "this is an interstate" visual. Three placed along
+            // the map length with different exit numbers. Pole + horizontal
+            // arm + green panel; the sign text is simplified (just a white
+            // box representing where "EXIT 12 · PORTLAND" would be printed)
+            // to avoid the canvas-texture allocation on every render.
+            var gantryMat = new T.MeshLambertMaterial({ color: 0x3a3a3a });
+            var panelMat = new T.MeshLambertMaterial({ color: 0x0b5e2c }); // interstate green
+            var panelTextMat = new T.MeshLambertMaterial({ color: 0xf4f4f2 });
+            var panelBorderMat = new T.MeshLambertMaterial({ color: 0xf4f4f2 });
+            [-30, 0, 30].forEach(function(gzOff) {
+              var gantryX = centerX - MAP_SIZE / 2;
+              var gantryZ = gzOff;
+              // Right-side vertical pole
+              var gPole = new T.Mesh(new T.CylinderGeometry(0.14, 0.18, 7, 8), gantryMat);
+              gPole.position.set(gantryX + 8.2, 3.5, gantryZ);
+              gPole.castShadow = true;
+              scene.add(gPole);
+              // Horizontal arm spanning over the right lane (about 5m out)
+              var gArm = new T.Mesh(new T.BoxGeometry(0.16, 0.2, 5.5), gantryMat);
+              gArm.position.set(gantryX + 5.8, 6.6, gantryZ);
+              gArm.rotation.y = Math.PI / 2; // horizontal
+              scene.add(gArm);
+              // Wait — BoxGeometry defaults to x-axis long. Rotate correctly:
+              // actually box is 0.16×0.2×5.5 so the long axis is Z (depth).
+              // We want it spanning X (across the road), so rotate 90° around Y:
+              gArm.rotation.set(0, Math.PI / 2, 0);
+              // Green exit panel (2.5 wide × 1.2 tall, hanging under the arm)
+              var gPanel = new T.Mesh(new T.BoxGeometry(2.5, 1.2, 0.1), panelMat);
+              gPanel.position.set(gantryX + 4.5, 5.7, gantryZ);
+              scene.add(gPanel);
+              // White border strip along bottom of panel — approximates the
+              // classic "white hairline border" on interstate signs.
+              var gBorder = new T.Mesh(new T.BoxGeometry(2.4, 0.06, 0.11), panelBorderMat);
+              gBorder.position.set(gantryX + 4.5, 5.15, gantryZ);
+              scene.add(gBorder);
+              // Fake "text" — two white rectangles as placeholder for
+              // "EXIT · number" that drivers read at distance as: "sign says something."
+              var gText1 = new T.Mesh(new T.BoxGeometry(1.6, 0.22, 0.12), panelTextMat);
+              gText1.position.set(gantryX + 4.5, 5.95, gantryZ);
+              scene.add(gText1);
+              var gText2 = new T.Mesh(new T.BoxGeometry(1.2, 0.16, 0.12), panelTextMat);
+              gText2.position.set(gantryX + 4.5, 5.6, gantryZ);
+              scene.add(gText2);
+            });
+            // ── I-295 interstate shield markers every ~12m on the shoulder ──
+            // Small blue-shield roadside posts that say "you're on the interstate."
+            var shieldMat = new T.MeshLambertMaterial({ color: 0x1e3a8a });
+            var shieldWhiteMat = new T.MeshLambertMaterial({ color: 0xffffff });
+            for (var shZ = -MAP_SIZE + 10; shZ < MAP_SIZE; shZ += 24) {
+              var shX = centerX - MAP_SIZE / 2 + 8.0;
+              // Short post
+              var shPost = new T.Mesh(new T.CylinderGeometry(0.04, 0.04, 1.8, 6), gantryMat);
+              shPost.position.set(shX, 0.9, shZ);
+              scene.add(shPost);
+              // Shield shape (box — close enough for the silhouette)
+              var shShield = new T.Mesh(new T.BoxGeometry(0.55, 0.7, 0.05), shieldMat);
+              shShield.position.set(shX, 1.95, shZ);
+              scene.add(shShield);
+              // White top strip (where "INTERSTATE" reads)
+              var shTop = new T.Mesh(new T.BoxGeometry(0.5, 0.14, 0.06), shieldWhiteMat);
+              shTop.position.set(shX, 2.2, shZ);
+              scene.add(shTop);
+            }
           }
 
           // ── Roadside props: mailboxes, hydrants (residential/suburban) ──
