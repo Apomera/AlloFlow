@@ -10512,7 +10512,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               var aiHardPanic = isBraking && t._prevSpeed !== undefined
                 && t.speed < t._prevSpeed - 0.4 && Math.abs(t.speed) > 7;
               var aiBrakeFlick = aiHardPanic
-                ? (Math.sin(timeRef.current * 25 + idx * 0.7) > 0 ? 1.0 : 0.5)
+                ? (Math.sin(timeRef.current * 25 + ti * 0.7) > 0 ? 1.0 : 0.5)
                 : 1.0;
               var nightLights = scn.time === 'night' || scn.weather === 'fog';
               m.children.forEach(function(child) {
