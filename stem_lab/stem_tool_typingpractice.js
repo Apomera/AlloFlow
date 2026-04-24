@@ -1891,6 +1891,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           }
         };
 
+        // ── Auto-pause on window blur ──
+        // When a student alt-tabs to another window or switches browser
+        // tabs mid-drill, auto-pause so their WPM isn't artificially
+        // deflated by time-away-from-keyboard. Only fires during an active
+        // drill where typing has started. Does NOT auto-resume on focus
+        // return — student explicitly clicks Resume so they can mentally
+        // re-engage before keystrokes start counting again. Skip when
+        // already paused (user is in a manual pause).
+        useEffect(function() {
+          if (state.view !== 'drill' || drillComplete) return;
+          if (!startTime) return; // haven't started typing yet — no pause needed
+          var onBlur = function() {
+            if (paused) return;
+            setPauseStartedAt(Date.now());
+            setPaused(true);
+          };
+          window.addEventListener('blur', onBlur);
+          return function() { window.removeEventListener('blur', onBlur); };
+        }, [state.view, drillComplete, startTime, paused]);
+
         // ── Keystroke handler ──
         var onKeyDown = useCallback(function(e) {
           if (state.view !== 'drill' || drillComplete || !targetStr) return;

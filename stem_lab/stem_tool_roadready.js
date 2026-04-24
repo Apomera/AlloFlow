@@ -7733,7 +7733,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Subdivided + vertex-colored so the grass reads as a real meadow with
           // patchy variation instead of a flat green rectangle. Light-frequency
           // sine displacement adds gentle rolling even in scenario mode.
+          //
+          // FREE EXPLORE EXCEPTION: the scenario ground plane sits at Y≈0 and
+          // cannot follow the procedural spline's terrain height (rural amp = ±1.6).
+          // When the road ribbon dips below Y=0 in a rural chunk, this flat green
+          // plane appeared ABOVE the road surface, producing visible green patches
+          // on the asphalt. In Free Explore we skip this plane entirely and instead
+          // rely on per-chunk grass ribbons that track spline.heightAt() per row
+          // (added further down in the chunk-generation block).
           var map = mapRef.current;
+          var isFreeExploreInit = !!d.freeExplore;
           var groundGeo = new T.PlaneGeometry(MAP_SIZE * 2, MAP_SIZE * 2, 48, 48);
           var grassBase = isSnow ? [0xd0d8e0, 0xe8ecf0, 0xb8c4d0]
                                  : [0x2d6a1e, 0x3a7a26, 0x1f5a16, 0x4a8a2e];
@@ -7758,6 +7767,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var ground = new T.Mesh(groundGeo, groundMat);
           ground.rotation.x = -Math.PI / 2;
           ground.receiveShadow = true;
+          // Drop well below minimum road dip in Free Explore so even if the
+          // per-chunk grass ribbons have gaps (e.g. during chunk unload), the
+          // fallback plane can never appear above a road surface.
+          if (isFreeExploreInit) ground.position.y = -4;
           scene.add(ground);
 
           // ── Road surface ──
@@ -11203,6 +11216,73 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               var chunkGroup = new T.Group();
               chunkGroup.name = 'chunk_' + ci;
               var chunkWorldZ = ci * CHUNK_SIZE - MAP_SIZE / 2;
+              // ── Per-chunk grass ribbon (terrain surface under the road) ──
+              // The scenario ground plane is flat at Y=0 and doesn't cover the
+              // spline's varying heightAt() in rural biomes (amp ±1.6). Without
+              // this per-chunk grass, the flat ground plane appeared ABOVE the
+              // road ribbon wherever the terrain dipped below Y=0, painting
+              // green across the asphalt.
+              //
+              // This is a BufferGeometry strip spanning the full MAP_SIZE width
+              // with verts at y = heightAt(row) - 0.01 for every row in the chunk.
+              // Sits just below the road ribbon (which is at heightAt + 0.011)
+              // so the road always wins the depth test on the asphalt, and the
+              // grass is visible everywhere else.
+              {
+                var grassRows = CHUNK_SIZE + 1;
+                var grassVerts = new Float32Array(grassRows * 2 * 3);
+                var grassCols = new Float32Array(grassRows * 2 * 3);
+                var grassIdx = new Uint16Array((grassRows - 1) * 6);
+                var grassSnowPalette = [0xd0d8e0, 0xe8ecf0, 0xb8c4d0];
+                var grassGreenPalette = [0x2d6a1e, 0x3a7a26, 0x1f5a16, 0x4a8a2e];
+                var grassPalette = scn.weather === 'snow' ? grassSnowPalette : grassGreenPalette;
+                var halfMap = MAP_SIZE / 2;
+                for (var grR = 0; grR < grassRows; grR++) {
+                  var grSampleY = ci * CHUNK_SIZE + grR;
+                  var grRowH = iw.spline ? iw.spline.heightAt(grSampleY) : 0;
+                  var grWorldZ = chunkWorldZ + grR;
+                  // Left + right edges of the grass strip. Use -0.01 so the
+                  // grass sits just below the road ribbon (which is at +0.011).
+                  grassVerts[(grR * 2 + 0) * 3 + 0] = -halfMap;
+                  grassVerts[(grR * 2 + 0) * 3 + 1] = grRowH - 0.01;
+                  grassVerts[(grR * 2 + 0) * 3 + 2] = grWorldZ;
+                  grassVerts[(grR * 2 + 1) * 3 + 0] =  halfMap;
+                  grassVerts[(grR * 2 + 1) * 3 + 1] = grRowH - 0.01;
+                  grassVerts[(grR * 2 + 1) * 3 + 2] = grWorldZ;
+                  // Vertex color: pick from palette via spatial hash so the
+                  // meadow reads as patchy instead of flat green.
+                  var grPIdx = ((ci * 37 + grR * 29) % grassPalette.length + grassPalette.length) % grassPalette.length;
+                  var grHex = grassPalette[grPIdx];
+                  var grR8 = ((grHex >> 16) & 0xff) / 255;
+                  var grG8 = ((grHex >>  8) & 0xff) / 255;
+                  var grB8 = ( grHex        & 0xff) / 255;
+                  grassCols[(grR * 2 + 0) * 3 + 0] = grR8;
+                  grassCols[(grR * 2 + 0) * 3 + 1] = grG8;
+                  grassCols[(grR * 2 + 0) * 3 + 2] = grB8;
+                  grassCols[(grR * 2 + 1) * 3 + 0] = grR8;
+                  grassCols[(grR * 2 + 1) * 3 + 1] = grG8;
+                  grassCols[(grR * 2 + 1) * 3 + 2] = grB8;
+                }
+                for (var grI = 0; grI < grassRows - 1; grI++) {
+                  var grBase = grI * 6;
+                  var grV0 = grI * 2;
+                  grassIdx[grBase + 0] = grV0 + 0;
+                  grassIdx[grBase + 1] = grV0 + 2;
+                  grassIdx[grBase + 2] = grV0 + 1;
+                  grassIdx[grBase + 3] = grV0 + 1;
+                  grassIdx[grBase + 4] = grV0 + 2;
+                  grassIdx[grBase + 5] = grV0 + 3;
+                }
+                var grassGeo = new T.BufferGeometry();
+                grassGeo.setAttribute('position', new T.BufferAttribute(grassVerts, 3));
+                grassGeo.setAttribute('color', new T.BufferAttribute(grassCols, 3));
+                grassGeo.setIndex(new T.BufferAttribute(grassIdx, 1));
+                grassGeo.computeVertexNormals();
+                var grassMat = new T.MeshLambertMaterial({ vertexColors: true });
+                var grass = new T.Mesh(grassGeo, grassMat);
+                grass.receiveShadow = true;
+                chunkGroup.add(grass);
+              }
               // Build 3D objects for this chunk
               var buildMats = [new T.MeshLambertMaterial({ color: 0xb08c64 }), new T.MeshLambertMaterial({ color: 0xa09078 }), new T.MeshLambertMaterial({ color: 0x8c7a62 })];
               // Tree palette varies by species. Materials reused across all trees
