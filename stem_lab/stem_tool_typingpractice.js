@@ -5372,24 +5372,69 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   var locked  = state.masteryLevel < drill.tier && drill.locked;
                   var pb = (state.personalBest || {})[drillId];
                   var nodeColor = cleared ? palette.success : (current ? palette.accent : palette.border);
-                  return h('div', {
-                    key: 'tier-node-' + drillId,
-                    style: {
-                      flex: '1 1 110px',
-                      minWidth: '110px',
-                      padding: '12px',
-                      borderRadius: '10px',
-                      border: '2px solid ' + nodeColor,
-                      background: cleared || current ? palette.bg : 'transparent',
-                      opacity: locked ? 0.55 : 1,
-                      position: 'relative'
-                    }
-                  },
+                  var tm = state.theme || 'default';
+
+                  // Theme-flavored tier node styling. Same structural layout
+                  // (flex column: icon, name, status, best, goal) but the
+                  // decoration — border, shadow, shape, status-emoji — shifts
+                  // per theme. Cleared/current nodes get the brightest look
+                  // so the progression narrative reads at a glance.
+                  var nodeStyle = {
+                    flex: '1 1 110px',
+                    minWidth: '110px',
+                    padding: '12px',
+                    borderRadius: '10px',
+                    border: '2px solid ' + nodeColor,
+                    background: cleared || current ? palette.bg : 'transparent',
+                    opacity: locked ? 0.55 : 1,
+                    position: 'relative',
+                    transition: 'box-shadow 160ms ease'
+                  };
+                  var statusText = cleared ? '✓ cleared' : (current ? 'in progress' : (locked ? 'locked' : 'available'));
+
+                  if (tm === 'cyberpunk') {
+                    // Chip-like: sharp corners, neon glow when cleared
+                    nodeStyle.borderRadius = '2px';
+                    if (cleared) nodeStyle.boxShadow = '0 0 12px rgba(255,0,168,0.35), inset 0 0 8px rgba(255,0,168,0.15)';
+                    if (current) nodeStyle.boxShadow = '0 0 8px rgba(255,0,168,0.25)';
+                    statusText = cleared ? '[✓] COMPLETE'
+                               : current ? '[>] ACTIVE'
+                               : locked  ? '[x] LOCKED'
+                               :           '[ ] AVAILABLE';
+                  } else if (tm === 'steampunk') {
+                    // Double-border like a brass plate; inset highlight
+                    nodeStyle.boxShadow = cleared
+                      ? 'inset 0 1px 0 rgba(255,220,150,0.25), 0 2px 6px rgba(60,30,10,0.4)'
+                      : 'inset 0 1px 0 rgba(255,220,150,0.1)';
+                    nodeStyle.borderStyle = cleared ? 'double' : 'solid';
+                    nodeStyle.borderRadius = '6px';
+                    statusText = cleared ? '⚙ forged'
+                               : current ? '⚙ crafting'
+                               : locked  ? '🔒 sealed'
+                               :           '◯ ready';
+                  } else if (tm === 'kawaii') {
+                    // Very rounded like a sticker; soft pink glow
+                    nodeStyle.borderRadius = '18px';
+                    if (cleared) nodeStyle.boxShadow = '0 4px 12px rgba(232,90,138,0.25)';
+                    if (current) nodeStyle.boxShadow = '0 3px 8px rgba(232,90,138,0.18)';
+                    statusText = cleared ? '💕 done!'
+                               : current ? '🌸 working'
+                               : locked  ? '🔒 soon'
+                               :           '✨ open';
+                  } else if (tm === 'neutral') {
+                    // Minimal — thin border, no shadow, square-ish
+                    nodeStyle.borderRadius = '4px';
+                    nodeStyle.border = '1px solid ' + nodeColor;
+                    statusText = cleared ? 'cleared'
+                               : current ? 'current'
+                               : locked  ? 'locked'
+                               :           'available';
+                  }
+
+                  return h('div', { key: 'tier-node-' + drillId, style: nodeStyle },
                     h('div', { style: { fontSize: '18px', marginBottom: '4px' } }, drill.icon),
                     h('div', { style: { fontSize: '11px', fontWeight: 700, color: palette.text, marginBottom: '2px' } }, drill.name),
-                    h('div', { style: { fontSize: '10px', color: palette.textMute } },
-                      cleared ? '✓ cleared' : (current ? 'in progress' : (locked ? 'locked' : 'available'))
-                    ),
+                    h('div', { style: { fontSize: '10px', color: palette.textMute } }, statusText),
                     pb ? h('div', {
                       style: { fontSize: '10px', color: palette.textDim, marginTop: '4px', fontVariantNumeric: 'tabular-nums' }
                     }, 'best: ' + pb.wpm + ' WPM · ' + pb.accuracy + '%') : null,
