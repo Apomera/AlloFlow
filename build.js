@@ -207,6 +207,11 @@ const MODULES = [
         name: 'TTS',
         filename: 'tts_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'Personas',
+        filename: 'personas_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     }
 ];
 
@@ -431,6 +436,30 @@ const COMPILE_PAIRS = [
                 '(function() {\n'
                 + "'use strict';\n"
                 + "if (window.AlloModules && window.AlloModules.TTS) { console.log('[CDN] TTS already loaded, skipping'); return; }\n"
+                + compiled
+                + '\n})();\n'
+            );
+        },
+    },
+    {
+        // ── personas ── Historical character interview subsystem (16 handlers).
+        // Pairs with persona_ui_module.js (which handles presentational components).
+        // Factory: createPersonas({liveRef, warnLog, debugLog, cleanJson, safeJsonParse,
+        // fisherYatesShuffle, SafetyContentChecker}) -> {16 handlers}.
+        // liveRef pattern: component updates liveRef.current every render with state,
+        // setters, refs, and component-scoped helpers (callImagen, addToast, etc.).
+        // window.callGemini / window.callGeminiImageEdit used directly (avoids closure
+        // capture of fallback if Personas module loads before GeminiAPI module).
+        name: 'Personas',
+        srcPath: path.join(ROOT, 'personas_source.jsx'),
+        modPath: path.join(ROOT, 'personas_module.js'),
+        publicPath: path.join(ROOT, 'prismflow-deploy', 'public', 'personas_module.js'),
+        wrap(src) {
+            const compiled = compileJsx(src);
+            return (
+                '(function() {\n'
+                + "'use strict';\n"
+                + "if (window.AlloModules && window.AlloModules.Personas) { console.log('[CDN] Personas already loaded, skipping'); return; }\n"
                 + compiled
                 + '\n})();\n'
             );
