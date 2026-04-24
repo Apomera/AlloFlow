@@ -10879,6 +10879,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       pHalo.position.set(lmCenterWX, lt.height + 0.7, lmCenterWZ - 0.06);
                       chunkGroup.add(pHalo);
                     }
+                  } else if (lt.id === 'diner') {
+                    // Rooftop neon marquee — the iconic Maine roadside diner look.
+                    // A long horizontal box reading as a lit marquee, plus an additive
+                    // halo behind it. By day: warm orange Lambert. By night/fog/dawn:
+                    // saturated emissive orange + bigger halo so it can be seen down
+                    // the road. Sits on top of the pitched roof.
+                    var dinerLit = currentScenario.time === 'night' || currentScenario.id === 'dawn' || currentScenario.weather === 'fog';
+                    var dnMarqueeMat = dinerLit
+                      ? new T.MeshBasicMaterial({ color: 0xff8b3a })
+                      : new T.MeshLambertMaterial({ color: 0xc8651e });
+                    var dnMarquee = new T.Mesh(new T.BoxGeometry(2.2, 0.55, 0.15), dnMarqueeMat);
+                    dnMarquee.position.set(lmCenterWX, lt.height + 0.9, lmCenterWZ);
+                    chunkGroup.add(dnMarquee);
+                    if (dinerLit) {
+                      // Hot-orange halo bloom — neon scatter
+                      var dnHaloMat = new T.MeshBasicMaterial({
+                        color: 0xff7a2a, transparent: true, opacity: 0.7,
+                        blending: T.AdditiveBlending, depthWrite: false
+                      });
+                      var dnHalo = new T.Mesh(new T.PlaneGeometry(3.0, 1.1), dnHaloMat);
+                      dnHalo.position.set(lmCenterWX, lt.height + 0.9, lmCenterWZ - 0.1);
+                      chunkGroup.add(dnHalo);
+                      // Tiny PointLight so the rooftop edge picks up some warm wash
+                      var dnLight = new T.PointLight(0xff8b3a, 0.8, 4, 2);
+                      dnLight.position.set(lmCenterWX, lt.height + 0.5, lmCenterWZ);
+                      chunkGroup.add(dnLight);
+                    }
                   } else if (lt.id === 'fire') {
                     // Garage door (larger)
                     var fdMat = new T.MeshLambertMaterial({ color: 0xfef3c7 });
