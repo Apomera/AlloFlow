@@ -11376,8 +11376,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
                 if (lt.id === 'park') {
                   // Park: grass, trees, bench, sign
-                  var parkBase = new T.Mesh(new T.BoxGeometry(lt.size * 0.9, 0.1, lt.size * 0.9), new T.MeshLambertMaterial({ color: 0x4ade80 }));
-                  parkBase.position.set(lmCenterWX, 0.05, lmCenterWZ);
+                  // Grass slab is narrower than lt.size and shifted AWAY from the
+                  // road so it can't bleed onto the asphalt on curved chunks —
+                  // the spline can bend up to tan(0.55)≈0.61 per row, so over the
+                  // park's 7-row Z extent the road could drift ~2-3 units toward
+                  // the landmark. Keeping the slab at 0.55·size + pushing it out
+                  // by lm.side·1.5 guarantees clearance on both sides.
+                  var parkBaseSize = lt.size * 0.55;
+                  var parkBaseOffset = lm.side * 1.5;
+                  var parkBase = new T.Mesh(new T.BoxGeometry(parkBaseSize, 0.1, parkBaseSize), new T.MeshLambertMaterial({ color: 0x4ade80 }));
+                  parkBase.position.set(lmCenterWX + parkBaseOffset, 0.05, lmCenterWZ);
                   chunkGroup.add(parkBase);
                   // Three trees inside park
                   for (var pti = 0; pti < 3; pti++) {
