@@ -15004,6 +15004,81 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           gfx.fillStyle = '#475569'; gfx.font = '7px system-ui'; gfx.textAlign = 'center';
           gfx.fillText('MAP', mmX + mmSize / 2, mmY + mmSize + 8);
 
+          // ── Rideshare HUD panel ──
+          // Top-right pill showing passenger + destination + live star preview
+          // + accumulated fare estimate. Only visible when a ride is active.
+          // The live star meter is the key pedagogical hook: the driver SEES
+          // stars tick down in real time as they slam brakes or swerve, so
+          // the "smooth drive = better tip" lesson lands in the moment.
+          var rsHud = rideshareRef.current;
+          if (d && d.rideshareMode && rsHud && rsHud.phase !== 'completed') {
+            var rsPhaseLabel = rsHud.phase === 'pickup' ? 'PICKUP' : 'ENROUTE';
+            var rsTarget = rsHud.phase === 'pickup' ? rsHud.pickup : rsHud.dropoff;
+            if (rsTarget) {
+              // Compute live comfort + star preview from current snapshot delta.
+              // Only meaningful in 'enroute' phase (pickup hasn't committed snapshot).
+              var liveStars = 5, liveComfort = 100;
+              if (rsHud.phase === 'enroute' && rsHud.startSnapshot) {
+                var now = statsRef.current;
+                var hb = (now.hardBrakes || 0) - rsHud.startSnapshot.hardBrakes;
+                var jr = (now.jackrabbits || 0) - rsHud.startSnapshot.jackrabbits;
+                var skid = (now.skidSeconds || 0) - rsHud.startSnapshot.skidSeconds;
+                var cr = (now.crashes || 0) - rsHud.startSnapshot.crashes;
+                var vio = (now.speedViolations || 0) - rsHud.startSnapshot.speedViolations;
+                liveComfort = Math.max(0, Math.min(100, 100 - hb * 8 - jr * 6 - Math.min(40, skid * 4) - cr * 50));
+                var liveSafety = Math.max(0, Math.min(100, 100 - Math.min(30, vio * 2) - cr * 50));
+                var liveCombined = (liveComfort + liveSafety) / 2;
+                liveStars = liveCombined >= 90 ? 5 : liveCombined >= 75 ? 4 : liveCombined >= 55 ? 3 : liveCombined >= 35 ? 2 : 1;
+              }
+              var rsX = W - 240, rsY = 26;
+              var rsW = 230, rsH = 72;
+              // Panel backdrop
+              gfx.fillStyle = 'rgba(12,10,30,0.78)';
+              gfx.fillRect(rsX, rsY, rsW, rsH);
+              gfx.strokeStyle = rsHud.phase === 'pickup' ? '#fbbf24' : '#2dd4bf';
+              gfx.lineWidth = 1.5;
+              gfx.strokeRect(rsX, rsY, rsW, rsH);
+              // Phase label + passenger
+              gfx.fillStyle = rsHud.phase === 'pickup' ? '#fbbf24' : '#2dd4bf';
+              gfx.font = 'bold 9px system-ui, sans-serif'; gfx.textAlign = 'left';
+              gfx.fillText('🚕 ' + rsPhaseLabel + ' · ' + rsHud.passenger, rsX + 8, rsY + 14);
+              // Destination
+              gfx.fillStyle = '#e2e8f0';
+              gfx.font = '10px system-ui, sans-serif';
+              var destText = rsHud.phase === 'pickup' ? 'Going to pick them up' : ('→ ' + rsTarget.icon + ' ' + rsTarget.name);
+              var clipDest = destText.length > 28 ? destText.substring(0, 26) + '…' : destText;
+              gfx.fillText(clipDest, rsX + 8, rsY + 28);
+              // Star meter — always 5 slots, filled by current stars. During pickup
+              // we just show 5 bright stars as a promise.
+              var starBaseY = rsY + 44;
+              for (var si = 0; si < 5; si++) {
+                var starLit = (rsHud.phase === 'pickup') ? true : si < liveStars;
+                gfx.fillStyle = starLit ? '#fbbf24' : '#3b3742';
+                gfx.font = 'bold 14px monospace';
+                gfx.fillText('★', rsX + 8 + si * 14, starBaseY);
+              }
+              // Comfort text + fare estimate (enroute only)
+              if (rsHud.phase === 'enroute' && rsHud.startSnapshot) {
+                gfx.fillStyle = liveComfort > 70 ? '#4ade80' : liveComfort > 40 ? '#f59e0b' : '#ef4444';
+                gfx.font = 'bold 10px monospace'; gfx.textAlign = 'right';
+                gfx.fillText('Comfort ' + Math.round(liveComfort), rsX + rsW - 8, starBaseY);
+                // Distance remaining + fare preview
+                var rsRemaining = Math.hypot(carRef.current.x - rsTarget.x, carRef.current.y - rsTarget.y) * 0.1;
+                var distSoFar = ((statsRef.current.distance || 0) - rsHud.startSnapshot.distance) / 1609;
+                var estFare = 3.5 + Math.max(0.3, distSoFar) * 1.2;
+                gfx.fillStyle = '#94a3b8';
+                gfx.font = '9px monospace'; gfx.textAlign = 'right';
+                gfx.fillText('~$' + estFare.toFixed(2) + ' · ' + rsRemaining.toFixed(0) + ' ft left', rsX + rsW - 8, rsY + 64);
+              } else {
+                // Pickup phase — show distance + a little guidance
+                var pickRem = Math.hypot(carRef.current.x - rsTarget.x, carRef.current.y - rsTarget.y) * 0.1;
+                gfx.fillStyle = '#94a3b8';
+                gfx.font = '9px monospace'; gfx.textAlign = 'right';
+                gfx.fillText(pickRem.toFixed(0) + ' ft to pickup', rsX + rsW - 8, rsY + 64);
+              }
+            }
+          }
+
           // Compass heading indicator (top center)
           var headingDeg = ((car.heading * 180 / Math.PI) % 360 + 360) % 360;
           var compassDirs = [
