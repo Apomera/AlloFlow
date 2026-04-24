@@ -1108,10 +1108,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '.tp-root.tp-theme-kawaii    .tp-celebrate { animation: tp-celebrate-kawaii 1.1s ease-in-out 1; }',
       '.tp-root.tp-theme-neutral   .tp-celebrate { animation: tp-celebrate-pulse 0.8s ease-out 1; }',
 
+      /* ── Error-flash on wrong keystroke ────────────────────────
+         Applied to the current character span whenever the last keystroke
+         was wrong. Forces a remount via key=errorCount so the CSS animation
+         retriggers on successive misses. Short shake + red ring so the
+         feedback is visible but not violent. prefers-reduced-motion falls
+         back to no animation (the existing danger-colored bg is still there
+         as the primary signal). */
+      '@keyframes tp-wrong-shake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-3px); } 40% { transform: translateX(3px); } 60% { transform: translateX(-2px); } 80% { transform: translateX(1px); } }',
+      '@keyframes tp-wrong-ring  { 0% { box-shadow: 0 0 0 0 rgba(239,68,68,0.55); } 80% { box-shadow: 0 0 0 10px rgba(239,68,68,0); } 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); } }',
+      '.tp-root .tp-wrong-flash { display: inline-block; animation: tp-wrong-shake 0.28s ease-out 1, tp-wrong-ring 0.42s ease-out 1; }',
+
+      /* ── Per-view entry transition ────────────────────────────
+         Wrapping viewContent with key={view} re-mounts this div on every
+         navigation, replaying the CSS animation. Each theme gets its own
+         motion signature — default fade-up, Steampunk gear-assemble scale,
+         Cyberpunk glitch-wipe, Kawaii bouncy arrival, Neutral plain fade.
+         Duration stays under 300ms so nav feels responsive. */
+      '@keyframes tp-view-in-default { 0% { opacity: 0; transform: translateY(8px); } 100% { opacity: 1; transform: translateY(0); } }',
+      '@keyframes tp-view-in-steam   { 0% { opacity: 0; transform: scale(0.985) translateY(4px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }',
+      '@keyframes tp-view-in-cyber   { 0% { opacity: 0; clip-path: inset(0 100% 0 0); } 60% { opacity: 1; clip-path: inset(0 0 0 0); } 65% { opacity: 0.7; } 100% { opacity: 1; clip-path: inset(0 0 0 0); } }',
+      '@keyframes tp-view-in-kawaii  { 0% { opacity: 0; transform: scale(0.96) translateY(10px); } 60% { opacity: 1; transform: scale(1.01) translateY(-1px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }',
+      '@keyframes tp-view-in-neutral { 0% { opacity: 0; } 100% { opacity: 1; } }',
+
+      '.tp-root .tp-view-enter { animation: tp-view-in-default 240ms ease-out 1; }',
+      '.tp-root.tp-theme-steampunk .tp-view-enter { animation: tp-view-in-steam 260ms ease-out 1; }',
+      '.tp-root.tp-theme-cyberpunk .tp-view-enter { animation: tp-view-in-cyber 260ms ease-out 1; }',
+      '.tp-root.tp-theme-kawaii    .tp-view-enter { animation: tp-view-in-kawaii 300ms cubic-bezier(0.34,1.56,0.64,1) 1; }',
+      '.tp-root.tp-theme-neutral   .tp-view-enter { animation: tp-view-in-neutral 180ms ease-out 1; }',
+
       '@media (prefers-reduced-motion: reduce) {',
       '  .tp-root .tp-current-char,',
       '  .tp-root .tp-loading-icon,',
-      '  .tp-root .tp-celebrate { animation: none !important; }',
+      '  .tp-root .tp-celebrate,',
+      '  .tp-root .tp-wrong-flash,',
+      '  .tp-root .tp-view-enter { animation: none !important; }',
       '  .tp-root button { transition: none !important; }',
       '}'
     ].join('\n');
@@ -3847,10 +3878,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             }
             // tp-current-char class on the active character — theme CSS
             // hooks this for pulse/breathe animations (respecting
-            // prefers-reduced-motion).
+            // prefers-reduced-motion). On wrong-current, also add
+            // tp-wrong-flash AND change the span key to include errorCount
+            // so React remounts the element on every miss, retriggering
+            // the shake+ring animation.
+            var isCur   = charState === 'current';
+            var isWrong = charState === 'wrong-current';
+            var chClass = '';
+            if (isCur || isWrong) chClass = 'tp-current-char';
+            if (isWrong) chClass += ' tp-wrong-flash';
             chars.push(h('span', {
-              key: 'c' + i,
-              className: (charState === 'current' || charState === 'wrong-current') ? 'tp-current-char' : '',
+              key: isWrong ? ('c' + i + '-e' + errorCount) : ('c' + i),
+              className: chClass,
               style: charStyle
             }, display));
           }
@@ -7685,7 +7724,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               overflow: 'hidden'
             }
           }, announceText),
-          viewContent
+          // key={state.view} forces React to remount this wrapper on every
+          // navigation so the tp-view-enter CSS animation retriggers.
+          // Skip the animation during an active drill (view === 'drill') so
+          // the entry motion doesn't collide with the typing surface —
+          // typing starts immediately; no polish-over-function.
+          h('div', {
+            key: 'view-' + state.view,
+            className: state.view === 'drill' ? undefined : 'tp-view-enter'
+          }, viewContent)
         );
 
       } catch (err) {
