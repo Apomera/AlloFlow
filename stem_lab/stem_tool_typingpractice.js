@@ -998,7 +998,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     // .tp-root.tp-theme-<name> class selectors so they apply only to
     // the theme that opted in. Default + neutral stay clean by design.
     style.textContent = [
-      /* ── Focus ring (WCAG AA) ─────────────────────────────────── */
+      /* ── Focus ring (WCAG AA) ───────────────────────────────────
+         Theme-specific outline color so the ring has sufficient 3:1
+         contrast against each palette's background + adjacent surface.
+         Amber (#fbbf24) works on dark themes; Kawaii's light cream-pink
+         needs a dark ring; Cyberpunk gets electric yellow; Steampunk
+         brass-amber; Neutral warm tan-amber. */
       '.tp-root button:focus-visible,',
       '.tp-root [tabindex]:focus-visible,',
       '.tp-root input:focus-visible,',
@@ -1008,6 +1013,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '  outline-offset: 2px;',
       '  border-radius: 8px;',
       '}',
+      '.tp-root.tp-theme-steampunk button:focus-visible,',
+      '.tp-root.tp-theme-steampunk [tabindex]:focus-visible,',
+      '.tp-root.tp-theme-steampunk input:focus-visible,',
+      '.tp-root.tp-theme-steampunk textarea:focus-visible,',
+      '.tp-root.tp-theme-steampunk [role="switch"]:focus-visible { outline-color: #e8a040; }',
+      '.tp-root.tp-theme-cyberpunk button:focus-visible,',
+      '.tp-root.tp-theme-cyberpunk [tabindex]:focus-visible,',
+      '.tp-root.tp-theme-cyberpunk input:focus-visible,',
+      '.tp-root.tp-theme-cyberpunk textarea:focus-visible,',
+      '.tp-root.tp-theme-cyberpunk [role="switch"]:focus-visible { outline-color: #ffd700; }',
+      '.tp-root.tp-theme-kawaii button:focus-visible,',
+      '.tp-root.tp-theme-kawaii [tabindex]:focus-visible,',
+      '.tp-root.tp-theme-kawaii input:focus-visible,',
+      '.tp-root.tp-theme-kawaii textarea:focus-visible,',
+      '.tp-root.tp-theme-kawaii [role="switch"]:focus-visible { outline-color: #4a2838; }',
+      '.tp-root.tp-theme-neutral button:focus-visible,',
+      '.tp-root.tp-theme-neutral [tabindex]:focus-visible,',
+      '.tp-root.tp-theme-neutral input:focus-visible,',
+      '.tp-root.tp-theme-neutral textarea:focus-visible,',
+      '.tp-root.tp-theme-neutral [role="switch"]:focus-visible { outline-color: #d4a060; }',
       '.tp-root button:focus:not(:focus-visible),',
       '.tp-root [tabindex]:focus:not(:focus-visible) { outline: none; }',
 
@@ -1137,6 +1162,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '.tp-root.tp-theme-kawaii    .tp-view-enter { animation: tp-view-in-kawaii 300ms cubic-bezier(0.34,1.56,0.64,1) 1; }',
       '.tp-root.tp-theme-neutral   .tp-view-enter { animation: tp-view-in-neutral 180ms ease-out 1; }',
 
+      /* ── Word-complete glow — applied to each char of the just-finished
+         word when the student types a terminal space. Subtle theme-
+         colored text-shadow that fades in/out over ~520ms. Key-retriggered
+         per completed word. Purely decorative; no clinical meaning. */
+      '@keyframes tp-word-pulse-default { 0% { text-shadow: 0 0 0 transparent; color: inherit; } 30% { text-shadow: 0 0 8px rgba(96,165,250,0.6); } 100% { text-shadow: 0 0 0 transparent; } }',
+      '@keyframes tp-word-pulse-steam   { 0% { text-shadow: 0 0 0 transparent; } 30% { text-shadow: 0 0 8px rgba(212,136,76,0.55); } 100% { text-shadow: 0 0 0 transparent; } }',
+      '@keyframes tp-word-pulse-cyber   { 0% { text-shadow: 0 0 0 transparent; } 30% { text-shadow: 0 0 10px rgba(255,0,168,0.6), 0 0 4px rgba(0,255,200,0.3); } 100% { text-shadow: 0 0 0 transparent; } }',
+      '@keyframes tp-word-pulse-kawaii  { 0% { text-shadow: 0 0 0 transparent; transform: translateY(0); } 30% { text-shadow: 0 0 8px rgba(232,90,138,0.55); transform: translateY(-1px); } 100% { text-shadow: 0 0 0 transparent; transform: translateY(0); } }',
+      '@keyframes tp-word-pulse-neutral { 0% { text-shadow: 0 0 0 transparent; } 30% { text-shadow: 0 0 6px rgba(184,160,128,0.5); } 100% { text-shadow: 0 0 0 transparent; } }',
+      '.tp-root .tp-word-pulse { display: inline-block; animation: tp-word-pulse-default 520ms ease-out 1; }',
+      '.tp-root.tp-theme-steampunk .tp-word-pulse { animation: tp-word-pulse-steam 520ms ease-out 1; }',
+      '.tp-root.tp-theme-cyberpunk .tp-word-pulse { animation: tp-word-pulse-cyber 480ms ease-out 1; }',
+      '.tp-root.tp-theme-kawaii    .tp-word-pulse { animation: tp-word-pulse-kawaii 560ms ease-out 1; }',
+      '.tp-root.tp-theme-neutral   .tp-word-pulse { animation: tp-word-pulse-neutral 420ms ease-out 1; }',
+
       /* ── Live-HUD tick: subtle pulse when live WPM/accuracy updates ──
          Value span is keyed on the current number so React remounts it
          whenever the number flips, retriggering this short animation. Very
@@ -1181,6 +1221,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '  .tp-root .tp-celebrate,',
       '  .tp-root .tp-wrong-flash,',
       '  .tp-root .tp-live-tick,',
+      '  .tp-root .tp-word-pulse,',
       '  .tp-root .tp-view-enter { animation: none !important; }',
       '  .tp-root button { transition: none !important; }',
       '  .tp-root .tp-drill-card:hover,',
@@ -1250,6 +1291,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
 
         var nowTickTuple = useState(0);  // forces re-render for live WPM clock
         var _nowTick = nowTickTuple[0], setNowTick = nowTickTuple[1];
+
+        // Visual pulse on word-completion: tracks the [startIdx, endIdx)
+        // range of the just-completed word so those spans can animate.
+        // `pulseKey` increments on each completion so React re-mounts the
+        // animated spans (retriggering the CSS animation) even if the range
+        // happens to repeat. Cleared when a drill restarts.
+        var wordPulseTuple = useState({ start: -1, end: -1, key: 0 });
+        var wordPulse = wordPulseTuple[0], setWordPulse = wordPulseTuple[1];
 
         var lastSummaryTuple = useState(null);
 
@@ -1397,6 +1446,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             setPaused(false);
             setPausedMs(0);
             setPauseStartedAt(null);
+            setWordPulse({ start: -1, end: -1, key: 0 });
             completionSavedRef.current = false;
             restNudgeShownRef.current = false;
             keystrokeTimesRef.current = [];
@@ -1741,15 +1791,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             if (startTime !== null) keystrokeTimesRef.current.push(Date.now() - startTime);
             else keystrokeTimesRef.current.push(0);
             if (state.accommodations.audioCues) audioCorrect(state.audioTheme);
+            // Word-complete visual pulse — when student types a space that
+            // ends a word, flash the just-completed word with a theme-
+            // appropriate glow. Pure visual juice; doesn't affect scoring.
+            // Also computes the word range used by speak-words below.
+            var _endIdx = typed.length;        // index after inserting new char
+            var _startIdx = _endIdx - 1;        // position of the new space
+            if (key === ' ') {
+              while (_startIdx > 0 && typed[_startIdx - 1] !== ' ') _startIdx--;
+              if (_endIdx - _startIdx >= 2) { // at least one real char + the space
+                setWordPulse(function(prev) {
+                  return { start: _startIdx, end: _endIdx - 1, key: prev.key + 1 };
+                });
+              }
+            }
             // Speak-words accommodation: when student completes a word (types
             // a space), speak the just-completed word. Rate-limited by space
             // presses so TTS doesn't spam on rapid typing.
             if (state.accommodations.speakWordsOnSpace && key === ' ' && ctx.callTTS) {
-              // Walk backwards from the just-typed position to find the word
-              var endIdx = typed.length;        // index after inserting new char
-              var startIdx = endIdx - 1;        // position of the new space
-              while (startIdx > 0 && typed[startIdx - 1] !== ' ') startIdx--;
-              var word = typed.slice(startIdx, endIdx).trim();
+              var word = typed.slice(_startIdx, _endIdx - 1);
               if (word && word.length >= 2) {
                 try { ctx.callTTS(word, null, 1.1, { force: false }).catch(function() {}); }
                 catch (e) { /* ignore */ }
@@ -3922,14 +3982,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             // prefers-reduced-motion). On wrong-current, also add
             // tp-wrong-flash AND change the span key to include errorCount
             // so React remounts the element on every miss, retriggering
-            // the shake+ring animation.
-            var isCur   = charState === 'current';
-            var isWrong = charState === 'wrong-current';
+            // the shake+ring animation. On chars that fall in the just-
+            // completed word range, add tp-word-pulse with a key that
+            // includes wordPulse.key so each completed word retriggers
+            // the word-glow independently.
+            var isCur    = charState === 'current';
+            var isWrong  = charState === 'wrong-current';
+            var isInWord = wordPulse.start >= 0 && i >= wordPulse.start && i <= wordPulse.end;
             var chClass = '';
             if (isCur || isWrong) chClass = 'tp-current-char';
             if (isWrong) chClass += ' tp-wrong-flash';
+            if (isInWord && !isCur && !isWrong) chClass += ' tp-word-pulse';
+            var chKey;
+            if (isWrong) chKey = 'c' + i + '-e' + errorCount;
+            else if (isInWord) chKey = 'c' + i + '-w' + wordPulse.key;
+            else chKey = 'c' + i;
             chars.push(h('span', {
-              key: isWrong ? ('c' + i + '-e' + errorCount) : ('c' + i),
+              key: chKey,
               className: chClass,
               style: charStyle
             }, display));
