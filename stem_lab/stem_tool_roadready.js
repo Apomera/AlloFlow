@@ -8046,6 +8046,95 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               stripe.position.set(centerX - MAP_SIZE / 2 + (ci % 2 === 0 ? 2.5 : -2.5), 0.35, coneZ);
               scene.add(stripe);
             }
+            // ── Striped safety barrels along the lane-closure taper ──
+            // Bigger than cones; the high-visibility drums with alternating
+            // orange/white bands you see at every real MaineDOT work zone.
+            var barrelBandOrangeMat = new T.MeshLambertMaterial({ color: 0xf97316 });
+            var barrelBandWhiteMat = new T.MeshLambertMaterial({ color: 0xf0f0f0 });
+            for (var bri = 0; bri < 6; bri++) {
+              var brZ = -MAP_SIZE / 2 + 14 + bri * 2.4;
+              var brX = centerX - MAP_SIZE / 2 - 3.2; // closing off the left lane
+              // Three horizontal bands — bottom orange, middle white, top orange
+              [
+                { y: 0.15, mat: barrelBandOrangeMat },
+                { y: 0.38, mat: barrelBandWhiteMat },
+                { y: 0.60, mat: barrelBandOrangeMat },
+                { y: 0.82, mat: barrelBandWhiteMat }
+              ].forEach(function(bd) {
+                var band = new T.Mesh(new T.CylinderGeometry(0.17, 0.17, 0.22, 12), bd.mat);
+                band.position.set(brX, bd.y, brZ);
+                scene.add(band);
+              });
+              // Base plate (wider, black)
+              var basePlate = new T.Mesh(new T.CylinderGeometry(0.26, 0.26, 0.03, 12), new T.MeshLambertMaterial({ color: 0x1a1a1a }));
+              basePlate.position.set(brX, 0.015, brZ);
+              scene.add(basePlate);
+            }
+            // ── Flagger (simple standing figure with a yellow hi-vis vest) ──
+            // Human silhouette with body, head, arms. Hi-vis vest color says
+            // "road worker, slow down." Positioned at the start of the taper.
+            var vestMat = new T.MeshLambertMaterial({ color: 0xfacc15 });
+            var pantsMat = new T.MeshLambertMaterial({ color: 0x444444 });
+            var skinMat = new T.MeshLambertMaterial({ color: 0xd4a373 });
+            var helmetMat = new T.MeshLambertMaterial({ color: 0xf97316 });
+            var flaggerX = centerX - MAP_SIZE / 2 - 2.5;
+            var flaggerZ = -MAP_SIZE / 2 + 10;
+            // Torso
+            var flTorso = new T.Mesh(new T.BoxGeometry(0.3, 0.55, 0.22), vestMat);
+            flTorso.position.set(flaggerX, 1.15, flaggerZ);
+            flTorso.castShadow = true;
+            scene.add(flTorso);
+            // Legs
+            var flLegs = new T.Mesh(new T.BoxGeometry(0.3, 0.7, 0.22), pantsMat);
+            flLegs.position.set(flaggerX, 0.5, flaggerZ);
+            scene.add(flLegs);
+            // Head
+            var flHead = new T.Mesh(new T.SphereGeometry(0.12, 8, 6), skinMat);
+            flHead.position.set(flaggerX, 1.55, flaggerZ);
+            scene.add(flHead);
+            // Hard hat
+            var flHelmet = new T.Mesh(new T.SphereGeometry(0.14, 8, 5, 0, Math.PI * 2, 0, Math.PI * 0.5), helmetMat);
+            flHelmet.position.set(flaggerX, 1.62, flaggerZ);
+            scene.add(flHelmet);
+            // Raised arm holding a STOP paddle — extends toward the road
+            var flArm = new T.Mesh(new T.BoxGeometry(0.06, 0.35, 0.06), skinMat);
+            flArm.rotation.z = Math.PI / 4; // arm angled up-and-out
+            flArm.position.set(flaggerX + 0.25, 1.25, flaggerZ);
+            scene.add(flArm);
+            // STOP paddle (small red octagon-ish box at hand height)
+            var paddleMat = new T.MeshBasicMaterial({ color: 0xdc2626 });
+            var paddle = new T.Mesh(new T.BoxGeometry(0.04, 0.3, 0.3), paddleMat);
+            paddle.position.set(flaggerX + 0.45, 1.5, flaggerZ);
+            scene.add(paddle);
+            // ── Flashing arrow board — point-the-way chevron ──
+            // A trailered electronic arrow board on the shoulder. Black panel
+            // + a row of amber lamps that pulse in sequence to "point" right.
+            // Registered as 'rr_chunkFlag' so... no wait, that doesn't work
+            // for this. Just a static static bright panel for now — pulsing
+            // arrows would need its own per-frame handler.
+            var abPoleMat = new T.MeshLambertMaterial({ color: 0x333333 });
+            var abBoardMat = new T.MeshLambertMaterial({ color: 0x1a1a1a });
+            var abLampMat = new T.MeshBasicMaterial({ color: 0xfbbf24 });
+            var abX = centerX - MAP_SIZE / 2 - 3.8;
+            var abZ = -MAP_SIZE / 2 + 6;
+            var abFrame = new T.Mesh(new T.BoxGeometry(0.1, 0.1, 2.2), abPoleMat);
+            abFrame.position.set(abX, 1.6, abZ);
+            scene.add(abFrame);
+            var abBoard = new T.Mesh(new T.BoxGeometry(0.12, 1.0, 2.0), abBoardMat);
+            abBoard.position.set(abX, 1.6, abZ);
+            scene.add(abBoard);
+            // Arrow of lamps — 5 dots in an arrow shape pointing right
+            // (toward +Z which is "road ahead"). Simple static arrangement;
+            // good enough as a work-zone signature from distance.
+            [
+              [1.6, 0], [1.15, 0.12], [0.7, 0.25],
+              [1.15, -0.12], [0.7, -0.25], [0.25, 0.38], [0.25, -0.38],
+              [-0.2, 0], [-0.65, 0]
+            ].forEach(function(ab) {
+              var lamp = new T.Mesh(new T.SphereGeometry(0.06, 6, 5), abLampMat);
+              lamp.position.set(abX + (abX < 0 ? 0.07 : -0.07), 1.6 + ab[1], abZ + ab[0] - 0.5);
+              scene.add(lamp);
+            });
           }
 
           // ── Turn arrows painted on road at intersections ──
