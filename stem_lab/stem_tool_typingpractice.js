@@ -2433,10 +2433,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           },
             renderBackButton(function() { go('menu'); }, palette),
             h('h3', { style: { margin: '16px 0 4px 0', color: palette.text } },
-              '📋  Custom drills · ' + library.length + '/' + MAX_CUSTOM_LIBRARY),
+              (function() {
+                var tm = state.theme || 'default';
+                var counter = ' · ' + library.length + '/' + MAX_CUSTOM_LIBRARY;
+                if (tm === 'steampunk') return '⚙  Custom drills' + counter;
+                if (tm === 'cyberpunk') return '[CUSTOM DRILLS :: ' + library.length + '/' + MAX_CUSTOM_LIBRARY + ']';
+                if (tm === 'kawaii')    return '📋💕 Custom drills' + counter;
+                if (tm === 'neutral')   return 'Custom drills' + counter;
+                return '📋  Custom drills' + counter;
+              })()),
             h('p', {
               style: { margin: '0 0 20px 0', fontSize: '12px', color: palette.textMute, lineHeight: '1.5' }
-            }, 'Teacher- or student-authored practice text. Save spelling lists, IEP sight words, science vocabulary, poems — whatever your curriculum needs. Not scored for mastery; sessions still get recorded.'),
+            }, (function() {
+              var tm = state.theme || 'default';
+              if (tm === 'steampunk') return 'Enter your own practice text — spelling ledgers, IEP sight words, verse, science lexicon — whatever the curriculum demands. Not judged against mastery; runs still enter the ledger.';
+              if (tm === 'cyberpunk') return '[USER-TEXT] spelling :: IEP sight words :: sci-vocab :: verse :: any string → drill. [UNSCORED ON MASTERY] :: sessions still logged.';
+              if (tm === 'kawaii')    return 'Your own words go here! 💕 Spelling lists, sight words, vocabulary, poems — anything you want to practice. ✨ Not graded for mastery, but sessions still get saved!';
+              if (tm === 'neutral')   return 'User-authored practice text. Not mastery-scored; sessions recorded.';
+              return 'Teacher- or student-authored practice text. Save spelling lists, IEP sight words, science vocabulary, poems — whatever your curriculum needs. Not scored for mastery; sessions still get recorded.';
+            })()),
 
             // Saved library list
             library.length > 0 ? h('div', {
@@ -3023,10 +3038,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             }
           },
             renderBackButton(function() { go('menu'); }, palette),
-            h('h3', { style: { margin: '16px 0 4px 0', color: palette.text } }, '✨  Personalized Passage'),
+            h('h3', { style: { margin: '16px 0 4px 0', color: palette.text } }, (function() {
+              var tm = state.theme || 'default';
+              if (tm === 'steampunk') return '⚙  Bespoke Passage';
+              if (tm === 'cyberpunk') return '[AI PASSAGE :: PERSONALIZED]';
+              if (tm === 'kawaii')    return '✨💕 Personalized Passage 💕✨';
+              if (tm === 'neutral')   return 'Personalized Passage';
+              return '✨  Personalized Passage';
+            })()),
             h('p', {
               style: { margin: '0 0 20px 0', fontSize: '12px', color: palette.textMute, lineHeight: '1.5' }
-            }, 'Generate a passage at your grade level about something you care about. Passages are always age-appropriate and disability-aware.'),
+            }, (function() {
+              var tm = state.theme || 'default';
+              if (tm === 'steampunk') return 'Have the workshop compose a passage in your grade and to your interests. Every draft is age-fitting and disability-aware.';
+              if (tm === 'cyberpunk') return '[GEN] grade-pinned :: interest-weighted :: age-safe :: disability-aware by default';
+              if (tm === 'kawaii')    return 'Let\'s make a passage just for you! 💕 At your grade level, about something you love. Always age-friendly and thoughtfully written. ✨';
+              if (tm === 'neutral')   return 'Grade-pinned, interest-driven, age-appropriate, disability-aware.';
+              return 'Generate a passage at your grade level about something you care about. Passages are always age-appropriate and disability-aware.';
+            })()),
 
             // Grade selector
             h('div', { style: { marginBottom: '18px' } },
@@ -3042,7 +3071,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                       borderRadius: '999px',
                       border: '1px solid ' + (isActive ? palette.accent : palette.border),
                       background: isActive ? palette.accent : 'transparent',
-                      color: isActive ? '#0f172a' : palette.textDim,
+                      color: isActive ? (palette.onAccent || '#0f172a') : palette.textDim,
                       fontSize: '12px',
                       fontWeight: isActive ? 700 : 500,
                       cursor: 'pointer',
@@ -3069,7 +3098,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                       borderRadius: '999px',
                       border: '1px solid ' + (isActive ? palette.accent : palette.border),
                       background: isActive ? palette.accent : 'transparent',
-                      color: isActive ? '#0f172a' : palette.textDim,
+                      color: isActive ? (palette.onAccent || '#0f172a') : palette.textDim,
                       fontSize: '12px',
                       fontWeight: isActive ? 700 : 500,
                       cursor: 'pointer',
@@ -3138,7 +3167,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                       borderRadius: '999px',
                       border: '1px solid ' + (isActive ? palette.accent : palette.border),
                       background: isActive ? palette.accent : 'transparent',
-                      color: isActive ? '#0f172a' : palette.textDim,
+                      color: isActive ? (palette.onAccent || '#0f172a') : palette.textDim,
                       fontSize: '12px',
                       fontWeight: isActive ? 700 : 500,
                       cursor: 'pointer',
@@ -3167,7 +3196,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                       borderRadius: '999px',
                       border: '1px solid ' + (isActive ? palette.accent : palette.border),
                       background: isActive ? palette.accent : 'transparent',
-                      color: isActive ? '#0f172a' : palette.textDim,
+                      color: isActive ? (palette.onAccent || '#0f172a') : palette.textDim,
                       fontSize: '12px',
                       fontWeight: isActive ? 700 : 500,
                       cursor: 'pointer',
@@ -3505,7 +3534,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 'aria-pressed': paused ? 'true' : 'false',
                 style: {
                   background: paused ? palette.warn : 'transparent',
-                  color: paused ? '#0f172a' : palette.textDim,
+                  color: paused ? (palette.onAccent || '#0f172a') : palette.textDim,
                   border: '1px solid ' + (paused ? palette.warn : palette.border),
                   borderRadius: '8px',
                   padding: '6px 12px',
@@ -4205,7 +4234,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                         borderRadius: '999px',
                         border: '1px solid ' + (isActive ? palette.accent : palette.border),
                         background: isActive ? palette.accent : 'transparent',
-                        color: isActive ? '#0f172a' : palette.textDim,
+                        color: isActive ? (palette.onAccent || '#0f172a') : palette.textDim,
                         fontSize: '11px',
                         fontWeight: isActive ? 700 : 500,
                         cursor: 'pointer',
@@ -4256,7 +4285,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                         borderRadius: '999px',
                         border: '1px solid ' + (isActive ? palette.accent : palette.border),
                         background: isActive ? palette.accent : 'transparent',
-                        color: isActive ? '#0f172a' : palette.textDim,
+                        color: isActive ? (palette.onAccent || '#0f172a') : palette.textDim,
                         fontSize: '12px',
                         fontWeight: isActive ? 700 : 500,
                         cursor: 'pointer',
@@ -4785,7 +4814,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                     borderRadius: '999px',
                     border: '1px solid ' + (isActive ? palette.accent : palette.border),
                     background: isActive ? palette.accent : 'transparent',
-                    color: isActive ? '#0f172a' : palette.textDim,
+                    color: isActive ? (palette.onAccent || '#0f172a') : palette.textDim,
                     fontSize: '12px',
                     fontWeight: isActive ? 700 : 500,
                     cursor: 'pointer',
@@ -4823,7 +4852,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                       borderRadius: '999px',
                       border: '1px solid ' + (isActive ? palette.accent : palette.border),
                       background: isActive ? palette.accent : 'transparent',
-                      color: isActive ? '#0f172a' : palette.textDim,
+                      color: isActive ? (palette.onAccent || '#0f172a') : palette.textDim,
                       fontSize: '12px',
                       fontWeight: isActive ? 700 : 500,
                       cursor: 'pointer',
@@ -4857,7 +4886,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                       borderRadius: '999px',
                       border: '1px solid ' + (isActive ? palette.accent : palette.border),
                       background: isActive ? palette.accent : 'transparent',
-                      color: isActive ? '#0f172a' : palette.textDim,
+                      color: isActive ? (palette.onAccent || '#0f172a') : palette.textDim,
                       fontSize: '12px',
                       fontWeight: isActive ? 700 : 500,
                       cursor: 'pointer',
@@ -5019,7 +5048,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                       borderRadius: '999px',
                       border: '1px solid ' + (isActive ? palette.accent : palette.border),
                       background: isActive ? palette.accent : 'transparent',
-                      color: isActive ? '#0f172a' : palette.textDim,
+                      color: isActive ? (palette.onAccent || '#0f172a') : palette.textDim,
                       fontSize: '12px',
                       fontWeight: isActive ? 700 : 500,
                       cursor: 'pointer',
@@ -5053,7 +5082,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                       borderRadius: '999px',
                       border: '1px solid ' + (isActive ? palette.accent : palette.border),
                       background: isActive ? palette.accent : 'transparent',
-                      color: isActive ? '#0f172a' : palette.textDim,
+                      color: isActive ? (palette.onAccent || '#0f172a') : palette.textDim,
                       fontSize: '12px',
                       fontWeight: isActive ? 700 : 500,
                       cursor: 'pointer',
@@ -5866,7 +5895,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                       borderRadius: '999px',
                       border: '1px solid ' + (isActive ? palette.accent : palette.border),
                       background: isActive ? palette.accent : 'transparent',
-                      color: isActive ? '#0f172a' : palette.textDim,
+                      color: isActive ? (palette.onAccent || '#0f172a') : palette.textDim,
                       fontSize: '11px',
                       fontWeight: isActive ? 700 : 500,
                       cursor: 'pointer',
@@ -5993,7 +6022,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                       borderRadius: '999px',
                       border: '1px solid ' + (compareMode ? palette.accent : palette.border),
                       background: compareMode ? palette.accent : 'transparent',
-                      color: compareMode ? '#0f172a' : palette.textDim,
+                      color: compareMode ? (palette.onAccent || '#0f172a') : palette.textDim,
                       fontSize: '10px',
                       fontWeight: compareMode ? 700 : 500,
                       cursor: 'pointer',
@@ -6137,7 +6166,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                               borderRadius: '999px',
                               border: '1px solid ' + (isActive ? palette.accent : palette.border),
                               background: isActive ? palette.accent : 'transparent',
-                              color: isActive ? '#0f172a' : palette.textDim,
+                              color: isActive ? (palette.onAccent || '#0f172a') : palette.textDim,
                               fontSize: '10px',
                               fontWeight: isActive ? 700 : 500,
                               cursor: 'pointer',
@@ -6167,7 +6196,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                               borderRadius: '999px',
                               border: '1px solid ' + (isActive ? palette.accent : palette.border),
                               background: isActive ? palette.accent : 'transparent',
-                              color: isActive ? '#0f172a' : palette.textDim,
+                              color: isActive ? (palette.onAccent || '#0f172a') : palette.textDim,
                               fontSize: '10px',
                               fontWeight: isActive ? 700 : 500,
                               cursor: 'pointer',
@@ -7243,7 +7272,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 borderRadius: '6px',
                 background: isNext ? fingerColor : palette.bg,
                 border: '1.5px solid ' + (isNext ? '#ffffff' : palette.border),
-                color: isNext ? '#0f172a' : palette.textDim,
+                color: isNext ? (palette.onAccent || '#0f172a') : palette.textDim,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
