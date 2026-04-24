@@ -1547,6 +1547,49 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               }, 'Built for learners with dysgraphia, dyslexia, ADHD, motor-planning differences, and low vision. Go at your own pace — there are no timers, leaderboards, or streak punishments here.')
             ),
 
+            // Personalized greeting — reads the time of day, any absence gap,
+            // and the student's first name (if set). Small but real engagement
+            // lift: arriving at the tool and being acknowledged by name +
+            // context is a different experience from a cold menu.
+            (function() {
+              var hr = new Date().getHours();
+              var timeOfDay = hr < 5 ? 'Working late'
+                            : hr < 12 ? 'Good morning'
+                            : hr < 17 ? 'Good afternoon'
+                            : hr < 22 ? 'Good evening'
+                            : 'Working late';
+              var firstName = state.studentName ? state.studentName.split(' ')[0] : null;
+              var allSessions = state.sessions || [];
+              var daysSinceLast = null;
+              if (allSessions.length > 0) {
+                var lastMs = new Date(allSessions[allSessions.length - 1].date).getTime();
+                daysSinceLast = Math.round((Date.now() - lastMs) / (24 * 60 * 60 * 1000));
+              }
+              var contextLine = null;
+              if (daysSinceLast === null) {
+                contextLine = 'Ready to start your first session?';
+              } else if (daysSinceLast >= 7) {
+                contextLine = 'Welcome back — it\'s been ' + daysSinceLast + ' days. Glad you\'re here.';
+              } else if (daysSinceLast >= 2) {
+                contextLine = 'Welcome back — ' + daysSinceLast + ' days since your last session.';
+              } else {
+                // Same-day or yesterday
+                contextLine = 'Ready for today?';
+              }
+              return h('div', {
+                style: {
+                  marginBottom: state.motivationStatement ? '8px' : '16px',
+                  fontSize: '14px',
+                  color: palette.textDim,
+                  lineHeight: '1.5'
+                }
+              },
+                h('strong', { style: { color: palette.text } }, timeOfDay + (firstName ? ', ' + firstName : '') + '.'),
+                ' ',
+                h('span', { style: { color: palette.textMute } }, contextLine)
+              );
+            })(),
+
             // Motivation statement — student's own "why I'm practicing" shown on menu.
             // Renders as a personal anchor. Displays above recommendations so
             // the student sees their own purpose before any system nudge.
@@ -1792,6 +1835,67 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 ) : null
               );
             })() : null,
+
+            // Drill of the day — deterministic daily rotation through unlocked
+            // structured drills. Gives the student a 'there's something fresh
+            // to try today' nudge without forcing it. Same pick for all visits
+            // on the same day; rotates at midnight.
+            (function() {
+              // Build list of unlocked + structured drills the student CAN do.
+              // Exclude passage (needs AI) and custom (needs setup) — we want
+              // a drill the student can one-click-start.
+              var todayStr = new Date().toLocaleDateString();
+              var pool = TIER_ORDER.filter(function(id) {
+                var d = DRILLS[id];
+                if (!d) return false;
+                if (id === 'passage') return false;
+                if (d.locked && state.masteryLevel < d.tier) return false;
+                return true;
+              });
+              if (pool.length === 0) return null;
+              // Seed on calendar day: MM-DD-YYYY collapsed to integer
+              var t = new Date();
+              var seed = t.getFullYear() * 372 + (t.getMonth() + 1) * 31 + t.getDate();
+              var pick = pool[seed % pool.length];
+              var drill = DRILLS[pick];
+              if (!drill) return null;
+              // Don't show if this is the same drill the Continue card is already showing
+              // (the Continue card appears separately below, no need to double-surface).
+              var sessionsToday = (state.sessions || []).filter(function(s) {
+                return new Date(s.date).toLocaleDateString() === todayStr && s.drillId === pick;
+              });
+              // Show different flavor if they've already done it today
+              var done = sessionsToday.length > 0;
+              return h('div', {
+                role: 'region',
+                'aria-label': 'Drill of the day',
+                style: {
+                  marginBottom: '16px',
+                  padding: '14px 16px',
+                  background: palette.surface,
+                  border: '1px solid ' + palette.border,
+                  borderLeft: '3px solid ' + palette.warn,
+                  borderRadius: '10px',
+                  display: 'flex',
+                  gap: '14px',
+                  alignItems: 'center',
+                  flexWrap: 'wrap'
+                }
+              },
+                h('span', { style: { fontSize: '28px', flexShrink: 0 } }, drill.icon),
+                h('div', { style: { flex: '1 1 220px', minWidth: 0 } },
+                  h('div', { style: { fontSize: '11px', color: palette.warn, textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700, marginBottom: '2px' } },
+                    done ? '🌟 Today\'s drill · done!' : '🌟 Drill of the day'),
+                  h('div', { style: { fontSize: '14px', fontWeight: 600, color: palette.text, lineHeight: '1.3' } }, drill.name),
+                  h('div', { style: { fontSize: '11px', color: palette.textMute, marginTop: '2px', lineHeight: '1.4' } },
+                    done ? 'You already did this drill today. Try it again or pick another from the menu.' : drill.description)
+                ),
+                h('button', {
+                  onClick: function() { startDrill(drill.id); },
+                  style: Object.assign({}, primaryBtnStyle(palette), { fontSize: '12px', padding: '8px 16px' })
+                }, done ? '↻ Retry' : '▶ Start')
+              );
+            })(),
 
             // Quick-resume card — surfaces the last drill the student did so
             // they can re-enter with one click instead of hunting on the grid.
