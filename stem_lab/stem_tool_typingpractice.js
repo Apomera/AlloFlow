@@ -3570,17 +3570,71 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             renderBackButton(function() { go('menu'); }, palette),
             h('h3', { style: { margin: '16px 0 4px 0', color: palette.text } }, '⚙️  Accommodations'),
             h('p', {
-              style: { margin: '0 0 20px 0', fontSize: '12px', color: palette.textMute, lineHeight: '1.5' }
+              style: { margin: '0 0 14px 0', fontSize: '12px', color: palette.textMute, lineHeight: '1.5' }
             }, 'These aren\'t fallbacks — they\'re the design. Using them is the point.'),
+
+            // Quick-jump table of contents — anchors to each major section of
+            // the (long) Settings page. Small but real UX win: clinicians
+            // configuring multi-accommodation profiles stop scrolling.
+            h('div', {
+              style: {
+                marginBottom: '20px',
+                padding: '10px 14px',
+                background: 'transparent',
+                border: '1px dashed ' + palette.border,
+                borderRadius: '8px',
+                display: 'flex',
+                gap: '8px',
+                flexWrap: 'wrap',
+                alignItems: 'center',
+                fontSize: '11px'
+              }
+            },
+              h('span', { style: { color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700 } }, 'Jump to'),
+              [
+                { id: 'tp-s-presets',     label: '✨ Presets' },
+                { id: 'tp-s-toggles',     label: 'Toggles' },
+                { id: 'tp-s-appearance',  label: '🎨 Appearance' },
+                { id: 'tp-s-sample-len',  label: '✂️ Sample length' },
+                { id: 'tp-s-rest',        label: '☕ Rest break' },
+                { id: 'tp-s-pace',        label: '🎯 Pace' },
+                { id: 'tp-s-sight',       label: '📖 Sight-read' },
+                { id: 'tp-s-student',     label: '🌱 Student goals' },
+                { id: 'tp-s-clinician',   label: '👩‍⚕️ Clinician + IEP' },
+                { id: 'tp-s-profile',     label: '📁 Profile + backup' }
+              ].map(function(entry) {
+                return h('a', {
+                  key: 'toc-' + entry.id,
+                  href: '#' + entry.id,
+                  onClick: function(e) {
+                    e.preventDefault();
+                    var el = document.getElementById(entry.id);
+                    if (el && el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  },
+                  style: {
+                    padding: '3px 8px',
+                    borderRadius: '999px',
+                    border: '1px solid ' + palette.border,
+                    background: 'transparent',
+                    color: palette.textDim,
+                    fontSize: '10px',
+                    textDecoration: 'none',
+                    cursor: 'pointer'
+                  }
+                }, entry.label);
+              })
+            ),
 
             // Presets: one-click bundles of typical disability-profile combinations
             h('div', {
+              id: 'tp-s-presets',
               style: {
                 marginBottom: '20px',
                 padding: '12px 14px',
                 background: palette.surface,
                 border: '1px solid ' + palette.border,
-                borderRadius: '10px'
+                borderRadius: '10px',
+                scrollMarginTop: '20px'
               }
             },
               h('div', { style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px', fontWeight: 700 } },
@@ -3620,6 +3674,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               )
             ),
 
+            h('div', { id: 'tp-s-toggles', style: { scrollMarginTop: '20px' } }),
             renderToggleRow('Dyslexia-friendly font', 'Switches to a font designed to reduce letter-confusion (b/d, p/q).', acc.dyslexiaFont, function() { toggle('dyslexiaFont'); }, palette),
             renderToggleRow('Large-key visual keyboard', 'Shows an on-screen keyboard with finger-color coding and the next-key highlighted.', acc.largeKeys, function() { toggle('largeKeys'); }, palette),
             // Focus-mode is a child toggle of largeKeys — only meaningful when
@@ -3664,6 +3719,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             renderToggleRow('Predictive assist', 'Shows the next 1–3 characters with a soft highlight so emerging typists can plan the next move. Auto-fades as your accuracy on this drill improves.', acc.predictiveAssist, function() { toggle('predictiveAssist'); }, palette),
             renderToggleRow('Assessment mode', 'Hides WPM, accuracy, and timer during the drill. For clinicians running a clean baseline where clock-watching would affect the measurement. Metrics are still saved and shown at the end.', acc.assessmentMode, function() { toggle('assessmentMode'); }, palette),
 
+            h('div', { id: 'tp-s-sight', style: { scrollMarginTop: '20px' } }),
             // ── Sight-read count-in: read the passage first, then type ──
             h('div', {
               style: { padding: '14px 0', borderBottom: '1px solid ' + palette.border }
@@ -3697,6 +3753,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               )
             ),
 
+            h('div', { id: 'tp-s-rest', style: { scrollMarginTop: '20px' } }),
             // ── Rest-break nudge: non-intrusive toast after N active minutes ──
             h('div', {
               style: { padding: '14px 0', borderBottom: '1px solid ' + palette.border }
@@ -3730,6 +3787,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               )
             ),
 
+            h('div', { id: 'tp-s-appearance', style: { scrollMarginTop: '20px' } }),
             // ── Accent color — cosmetic + accessibility (color-sensitivity) ──
             // Overrides only while high-contrast mode is OFF. In high-contrast,
             // the palette is intentionally fixed black/yellow/white.
@@ -3787,6 +3845,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               )
             ) : null,
 
+            h('div', { id: 'tp-s-sample-len', style: { scrollMarginTop: '20px' } }),
             // ── Sample length preference — filters drill.samples by length ──
             h('div', {
               style: { padding: '14px 0', borderBottom: '1px solid ' + palette.border }
@@ -3825,6 +3884,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               )
             ),
 
+            h('div', { id: 'tp-s-pace', style: { scrollMarginTop: '20px' } }),
             // ── Pace target: stepper, NOT a timer ──
             h('div', {
               style: { padding: '14px 0', borderBottom: '1px solid ' + palette.border }
@@ -3858,6 +3918,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               )
             ),
 
+            h('div', { id: 'tp-s-student', style: { scrollMarginTop: '20px' } }),
             // ═══ Student agency: personal motivation + daily goal ═══
             // Separate from the clinician-set IEP goal so it's clear which
             // targets are externally imposed vs student-owned.
@@ -3981,6 +4042,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               )
             ),
 
+            h('div', { id: 'tp-s-clinician', style: { scrollMarginTop: '20px' } }),
             // ═══ Clinician section: student identity + IEP goal ═══
             h('div', {
               style: {
@@ -4134,6 +4196,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               }, 'Clear IEP goal') : null
             ),
 
+            h('div', { id: 'tp-s-profile', style: { scrollMarginTop: '20px' } }),
             // ═══ Profile import/export ═══
             // Lets a clinician move an accommodation profile across devices
             // or between students. Exports settings + IEP goal + audio theme.
