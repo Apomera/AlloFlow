@@ -1420,6 +1420,71 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               }
             }, '"' + state.motivationStatement + '"') : null,
 
+            // Daily goal prompt — gentle nudge to set a goal for today when
+            // one isn't set (or yesterday's has expired). Only shows AFTER
+            // the student has at least one session recorded (first-timers see
+            // the welcome card instead). One-click chips for common session
+            // counts; "Custom" jumps to Settings for the full form.
+            (function() {
+              var todayStr = new Date().toLocaleDateString();
+              var dg = state.dailyGoal;
+              var dgIsForToday = dg && dg.date && new Date(dg.date).toLocaleDateString() === todayStr;
+              if (dgIsForToday) return null;
+              if (sessionCount === 0) return null;
+              return h('div', {
+                style: {
+                  marginBottom: '16px',
+                  padding: '10px 14px',
+                  background: 'transparent',
+                  border: '1px dashed ' + palette.border,
+                  borderRadius: '8px',
+                  display: 'flex',
+                  gap: '10px',
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                  fontSize: '12px',
+                  color: palette.textDim
+                }
+              },
+                h('span', null, '☀️ Set a goal for today?'),
+                [1, 3, 5].map(function(n) {
+                  return h('button', {
+                    key: 'dgp-' + n,
+                    onClick: function() {
+                      upd('dailyGoal', { targetSessions: n, targetWpm: null, date: new Date().toISOString() });
+                      addToast('Daily goal set · ' + n + ' session' + (n === 1 ? '' : 's') + '.');
+                    },
+                    style: {
+                      padding: '4px 10px',
+                      borderRadius: '999px',
+                      border: '1px solid ' + palette.border,
+                      background: 'transparent',
+                      color: palette.textDim,
+                      fontSize: '11px',
+                      cursor: 'pointer',
+                      font: 'inherit'
+                    }
+                  }, n + ' session' + (n === 1 ? '' : 's'));
+                }),
+                h('button', {
+                  onClick: function() { go('settings'); },
+                  style: {
+                    padding: '4px 10px',
+                    borderRadius: '999px',
+                    border: '1px solid ' + palette.border,
+                    background: 'transparent',
+                    color: palette.textDim,
+                    fontSize: '11px',
+                    cursor: 'pointer',
+                    font: 'inherit'
+                  }
+                }, 'Custom…'),
+                h('span', {
+                  style: { fontSize: '10px', color: palette.textMute, fontStyle: 'italic', marginLeft: 'auto' }
+                }, 'Or skip — no pressure.')
+              );
+            })(),
+
             // Daily goal banner — today-only micro-target; expires at midnight.
             (function() {
               var dg = state.dailyGoal;
