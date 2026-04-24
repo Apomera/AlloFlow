@@ -3251,22 +3251,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               h('h3', { style: { margin: '0 0 6px 0', color: palette.text, fontSize: '22px', fontWeight: 700 } }, drill.name),
               h('p', { style: { margin: '0 0 20px 0', fontSize: '12px', color: palette.textMute, lineHeight: '1.5' } }, drill.description),
 
-              // Preview pane
-              preview ? h('div', {
-                style: {
-                  background: palette.bg,
-                  border: '1px solid ' + palette.border,
-                  borderRadius: '10px',
-                  padding: '18px',
-                  fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
-                  fontSize: state.accommodations.largeKeys ? '20px' : '16px',
-                  color: palette.textDim,
-                  letterSpacing: '0.04em',
-                  lineHeight: '1.8',
-                  marginBottom: '20px',
-                  textAlign: 'left'
-                }
-              }, preview) : null,
+              // Preview pane — theme-flavored quote marks bracket the sample
+              // text so the pane reads as 'quoted passage' rather than 'UI
+              // chrome'. Each theme picks its own bracket set.
+              preview ? (function() {
+                var tm = state.theme || 'default';
+                var lq, rq;
+                if (tm === 'steampunk')      { lq = '« '; rq = ' »'; }
+                else if (tm === 'cyberpunk') { lq = '[ '; rq = ' ]'; }
+                else if (tm === 'kawaii')    { lq = '💕 '; rq = ' 💕'; }
+                else if (tm === 'neutral')   { lq = '';    rq = '';    }
+                else                         { lq = '"';   rq = '"';   }
+                return h('div', {
+                  style: {
+                    background: palette.bg,
+                    border: '1px solid ' + palette.border,
+                    borderRadius: '10px',
+                    padding: '18px',
+                    fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
+                    fontSize: state.accommodations.largeKeys ? '20px' : '16px',
+                    color: palette.textDim,
+                    letterSpacing: '0.04em',
+                    lineHeight: '1.8',
+                    marginBottom: '20px',
+                    textAlign: 'left'
+                  }
+                },
+                  lq ? h('span', { 'aria-hidden': 'true', style: { color: palette.accent, fontWeight: 700, marginRight: '2px' } }, lq) : null,
+                  preview,
+                  rq ? h('span', { 'aria-hidden': 'true', style: { color: palette.accent, fontWeight: 700, marginLeft: '2px' } }, rq) : null
+                );
+              })() : null,
 
               // IEP goal reminder (if set)
               state.iepGoal && state.iepGoal.targetWpm ? h('div', {
