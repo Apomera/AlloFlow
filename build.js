@@ -202,6 +202,11 @@ const MODULES = [
         name: 'GeminiAPI',
         filename: 'gemini_api_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'TTS',
+        filename: 'tts_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     }
 ];
 
@@ -403,6 +408,29 @@ const COMPILE_PAIRS = [
                 '(function() {\n'
                 + "'use strict';\n"
                 + "if (window.AlloModules && window.AlloModules.GeminiAPI) { console.log('[CDN] GeminiAPI already loaded, skipping'); return; }\n"
+                + compiled
+                + '\n})();\n'
+            );
+        },
+    },
+    {
+        // ── tts ── Text-to-speech orchestration: fetchTTSBytes + callTTS + callTTSDirect.
+        // Factory pattern: createTTS({state, apiKey, GEMINI_MODELS, AVAILABLE_VOICES,
+        // _isCanvasEnv, pcmToWav, languageToTTSCode, isGlobalMuted, warnLog, debugLog,
+        // getLeveledTextLanguage, getCurrentUiLanguage, getAiUserConfig, getAi,
+        // setShowKokoroOfferModal}) -> {fetchTTSBytes, callTTS, callTTSDirect}.
+        // Module-level state (queue/botQueue/urlCache/rateLimitedUntil) passed by reference
+        // so window.__clearAlloTtsCacheForWord in monolith can still touch the same cache.
+        name: 'TTS',
+        srcPath: path.join(ROOT, 'tts_source.jsx'),
+        modPath: path.join(ROOT, 'tts_module.js'),
+        publicPath: path.join(ROOT, 'prismflow-deploy', 'public', 'tts_module.js'),
+        wrap(src) {
+            const compiled = compileJsx(src);
+            return (
+                '(function() {\n'
+                + "'use strict';\n"
+                + "if (window.AlloModules && window.AlloModules.TTS) { console.log('[CDN] TTS already loaded, skipping'); return; }\n"
                 + compiled
                 + '\n})();\n'
             );

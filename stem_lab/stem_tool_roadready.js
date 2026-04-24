@@ -11384,24 +11384,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   // by lm.side·1.5 guarantees clearance on both sides.
                   var parkBaseSize = lt.size * 0.55;
                   var parkBaseOffset = lm.side * 1.5;
+                  var parkCenterX = lmCenterWX + parkBaseOffset;
                   var parkBase = new T.Mesh(new T.BoxGeometry(parkBaseSize, 0.1, parkBaseSize), new T.MeshLambertMaterial({ color: 0x4ade80 }));
-                  parkBase.position.set(lmCenterWX + parkBaseOffset, 0.05, lmCenterWZ);
+                  parkBase.position.set(parkCenterX, 0.05, lmCenterWZ);
                   chunkGroup.add(parkBase);
-                  // Three trees inside park
+                  // Short flagstone walkway from the road-facing edge to the bench
+                  // so the park reads as a place people actually enter (real town
+                  // parks always have a path in from the sidewalk).
+                  var walkMat = new T.MeshLambertMaterial({ color: 0xa8a29e });
+                  var walkLen = Math.abs(parkBaseOffset) + parkBaseSize * 0.3;
+                  var walk = new T.Mesh(new T.BoxGeometry(walkLen, 0.08, 0.5), walkMat);
+                  walk.position.set(lmCenterWX + lm.side * (walkLen / 2 - 0.3), 0.09, lmCenterWZ);
+                  chunkGroup.add(walk);
+                  // Three trees inside park — anchored to the shifted park center
+                  // so they stay on the grass slab, not floating on the road side.
                   for (var pti = 0; pti < 3; pti++) {
                     var ptAngle = (pti / 3) * Math.PI * 2;
+                    var ptRadius = parkBaseSize * 0.38;
                     var ptTrunk = new T.Mesh(new T.CylinderGeometry(0.12, 0.18, 1.2, 6), new T.MeshLambertMaterial({ color: 0x5c3a1e }));
-                    ptTrunk.position.set(lmCenterWX + Math.cos(ptAngle) * 1.5, 0.6, lmCenterWZ + Math.sin(ptAngle) * 1.5);
+                    ptTrunk.position.set(parkCenterX + Math.cos(ptAngle) * ptRadius, 0.6, lmCenterWZ + Math.sin(ptAngle) * ptRadius);
                     chunkGroup.add(ptTrunk);
                     var ptLeaf = new T.Mesh(new T.SphereGeometry(0.9, 8, 6), new T.MeshLambertMaterial({ color: 0x16a34a }));
-                    ptLeaf.position.set(lmCenterWX + Math.cos(ptAngle) * 1.5, 1.7, lmCenterWZ + Math.sin(ptAngle) * 1.5);
+                    ptLeaf.position.set(parkCenterX + Math.cos(ptAngle) * ptRadius, 1.7, lmCenterWZ + Math.sin(ptAngle) * ptRadius);
                     chunkGroup.add(ptLeaf);
                   }
-                  // Bench
+                  // Bench — on the grass, oriented parallel to the road
                   var benchMat = new T.MeshLambertMaterial({ color: 0x78350f });
-                  var bench = new T.Mesh(new T.BoxGeometry(1.5, 0.15, 0.4), benchMat);
-                  bench.position.set(lmCenterWX, 0.4, lmCenterWZ);
+                  var bench = new T.Mesh(new T.BoxGeometry(0.4, 0.15, 1.5), benchMat);
+                  bench.position.set(parkCenterX, 0.4, lmCenterWZ);
                   chunkGroup.add(bench);
+                  // Bench backrest (road-facing so the seated figure would look at traffic)
+                  var benchBack = new T.Mesh(new T.BoxGeometry(0.08, 0.5, 1.5), benchMat);
+                  benchBack.position.set(parkCenterX + lm.side * 0.18, 0.75, lmCenterWZ);
+                  chunkGroup.add(benchBack);
                   // ── Decorative path lamps at twilight/night/fog ──
                   // Two short antique-style lamp posts at the front corners of the
                   // park. Glow warm white at night so the park reads as a destination
@@ -11415,24 +11430,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       blending: T.AdditiveBlending, depthWrite: false
                     });
                     var ppBulbMat = new T.MeshBasicMaterial({ color: 0xfff0cc });
-                    [-1.6, 1.6].forEach(function(ppOff) {
+                    // Lamps anchored to the shifted park center so they sit on
+                    // the grass corners (walkway-side), not on the asphalt.
+                    [-1.2, 1.2].forEach(function(ppOff) {
                       // Pole (slim cast-iron style)
                       var ppPole = new T.Mesh(new T.CylinderGeometry(0.04, 0.06, 2.2, 6), ppMat);
-                      ppPole.position.set(lmCenterWX + ppOff, 1.1, lmCenterWZ - lt.size * 0.4);
+                      ppPole.position.set(parkCenterX + ppOff, 1.1, lmCenterWZ - parkBaseSize * 0.4);
                       chunkGroup.add(ppPole);
                       // Lantern (small box)
                       var ppLantern = new T.Mesh(new T.BoxGeometry(0.18, 0.22, 0.18), ppBulbMat);
-                      ppLantern.position.set(lmCenterWX + ppOff, 2.25, lmCenterWZ - lt.size * 0.4);
+                      ppLantern.position.set(parkCenterX + ppOff, 2.25, lmCenterWZ - parkBaseSize * 0.4);
                       chunkGroup.add(ppLantern);
                       // Soft halo (not facing — additive plane reads from any angle)
                       var ppHalo = new T.Mesh(new T.PlaneGeometry(0.6, 0.6), ppGlowMat);
-                      ppHalo.position.set(lmCenterWX + ppOff, 2.25, lmCenterWZ - lt.size * 0.4 + 0.02);
+                      ppHalo.position.set(parkCenterX + ppOff, 2.25, lmCenterWZ - parkBaseSize * 0.4 + 0.02);
                       chunkGroup.add(ppHalo);
                     });
                     // One soft PointLight centered between the two lamps so the park
                     // benches/grass actually pick up some warm illumination.
                     var ppCenterLight = new T.PointLight(0xfff0cc, 0.7, 4, 2);
-                    ppCenterLight.position.set(lmCenterWX, 2.0, lmCenterWZ - lt.size * 0.3);
+                    ppCenterLight.position.set(parkCenterX, 2.0, lmCenterWZ - parkBaseSize * 0.3);
                     chunkGroup.add(ppCenterLight);
                   }
                 } else if (lt.id === 'lighthouse') {
