@@ -10861,10 +10861,24 @@ Return only the corrected version of this exact text:`;
   // above, because the dep array reads diffLibReady at render time — putting this
   // effect above the const declaration trips a TDZ ReferenceError.
   useEffect(() => {
-    if (!diffViewOpen || !pdfFixResult) return;
-    if (!diffLibReady || !window.Diff) return;
+    // Diagnostic logs: each early-return path emits one console.debug so
+    // future "the Diff doesn't show" reports can be triaged from the
+    // browser console without reopening this file. Debug level keeps them
+    // quiet unless the user has DevTools set to Verbose.
+    if (!diffViewOpen || !pdfFixResult) {
+      if (diffViewOpen && !pdfFixResult) console.debug('[Diff] effect skipped — modal open but pdfFixResult is null');
+      return;
+    }
+    if (!diffLibReady || !window.Diff) {
+      console.debug('[Diff] effect skipped — jsdiff library not ready yet (diffLibReady=' + diffLibReady + ', window.Diff=' + !!window.Diff + ')');
+      return;
+    }
     const src = pdfFixResult.sourceText || '';
     const fin = pdfFixResult.finalText || '';
+    if (!src || !fin) {
+      console.debug('[Diff] effect skipped — sourceText or finalText is empty (src=' + src.length + ' chars, fin=' + fin.length + ' chars)');
+      return;
+    }
     // Lightweight fingerprint — length + first/last 40 chars of each side +
     // granularity. Collisions are functionally impossible for normal PDFs;
     // the worst-case false positive is keeping a stale diff for a doc that
@@ -10877,6 +10891,7 @@ Return only the corrected version of this exact text:`;
     if (_lastDiffFingerprintRef.current === _fp && diffChunks) {
       // Same inputs AND we already have chunks in memory — skip rebuild so
       // the user's rejections survive modal close/reopen.
+      console.debug('[Diff] effect skipped — cache hit for fingerprint (' + diffChunks.length + ' chunks preserved)');
       return;
     }
     _lastDiffFingerprintRef.current = _fp;
@@ -10915,6 +10930,10 @@ Return only the corrected version of this exact text:`;
         }
       } catch (_) { /* corrupt entry — ignore */ }
       setDiffChunks(annotated);
+      const _nAdd = annotated.filter(c => c.type === 'add').length;
+      const _nDel = annotated.filter(c => c.type === 'del').length;
+      const _nRehydrated = annotated.filter(c => c.rejected).length;
+      console.debug(`[Diff] Built ${annotated.length} chunks (${_nAdd} add, ${_nDel} del${_nRehydrated > 0 ? `, ${_nRehydrated} rejection(s) rehydrated from storage` : ''})`);
     } catch (e) {
       console.warn('[Diff] compute failed:', e);
       setDiffChunks(null);
@@ -53673,7 +53692,13 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                       role="dialog"
                                       aria-modal="true"
                                       aria-labelledby="allo-diff-title"
-                                      className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4"
+                                      /* z-[300] stacks above Document Builder (z-[200]) so the
+                                         diff modal is visible when opened from the Document
+                                         Builder toolbar. Matches other top-layer modals
+                                         (Focus Mode, Cinematic Crawl, Info Modal). Stays
+                                         below toast container (z-[400]) so Apply & Export
+                                         success/warning toasts remain visible. */
+                                      className="fixed inset-0 z-[300] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4"
                                       onClick={(e) => { if (e.target === e.currentTarget) setDiffViewOpen(false); }}
                                     >
                                       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden">
