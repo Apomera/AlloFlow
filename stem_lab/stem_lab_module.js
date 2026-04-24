@@ -3158,7 +3158,7 @@
             // Category filter (from chip buttons)
             var _catFilter = d._categoryFilter || '';
             if (_catFilter && !_activeStation) {
-              var _catMap = { science: ['Science', 'Biology', 'Life Science', 'science'], math: ['Math', 'math'], engineering: ['Engineering', 'tech', 'cs', 'engineering'], creative: ['Creative', 'creative', 'Art'], applied: ['Applied', 'applied', 'geo'], strategy: ['Strategy', 'strategy'] };
+              var _catMap = { science: ['Science', 'Biology', 'Life Science', 'science'], math: ['Math', 'math'], engineering: ['Engineering', 'tech', 'cs', 'engineering'], creative: ['Creative', 'creative', 'Art'], applied: ['Applied', 'applied', 'geo', 'life-skills', 'life skills', 'economics', 'social studies'], strategy: ['Strategy', 'strategy'] };
               var _catKeys = _catMap[_catFilter] || [_catFilter];
               _filteredTools = _filteredTools.filter(function(tool) {
                 if (tool.category) {
