@@ -8157,32 +8157,74 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           }
 
           // ── Roadside props: mailboxes, hydrants (residential/suburban) ──
+          // Mailboxes get the classic silver/dark-green body, a curved half-cylinder
+          // top (not a flat box), and a red signal flag — raised on some boxes
+          // (outgoing mail) and lowered on others. Per-box deterministic hash
+          // controls color + flag state so the same map looks the same every render.
           if (currentScenario.id === 'residential' || currentScenario.id === 'suburban' || currentScenario.id === 'school_zone') {
             var hydrantMat = new T.MeshLambertMaterial({ color: 0xef4444 });
-            var mailboxMat = new T.MeshLambertMaterial({ color: 0x3b82f6 });
-            var mailboxPostMat2 = new T.MeshLambertMaterial({ color: 0x666666 });
+            var mbPostMat = new T.MeshLambertMaterial({ color: 0x666666 });
+            var mbBodyMats = [
+              new T.MeshLambertMaterial({ color: 0xa0a4a8 }), // galvanized silver
+              new T.MeshLambertMaterial({ color: 0x2d4a2d }), // dark green
+              new T.MeshLambertMaterial({ color: 0x4a4a4a }), // slate
+              new T.MeshLambertMaterial({ color: 0x8c5a2a })  // rustic brown
+            ];
+            var mbFlagMat = new T.MeshLambertMaterial({ color: 0xdc2626 });
             for (var pi = 6; pi < MAP_SIZE; pi += 12) {
-              // Fire hydrant (right side)
+              // Fire hydrant (right side) — unchanged
               var hyGeo = new T.CylinderGeometry(0.12, 0.14, 0.5, 8);
               var hy = new T.Mesh(hyGeo, hydrantMat);
               hy.position.set(centerX - MAP_SIZE / 2 + 4.2, 0.25, pi - MAP_SIZE / 2);
               hy.castShadow = true;
               scene.add(hy);
-              // Cap
               var hcGeo = new T.SphereGeometry(0.13, 8, 8);
               var hc = new T.Mesh(hcGeo, hydrantMat);
               hc.position.set(centerX - MAP_SIZE / 2 + 4.2, 0.55, pi - MAP_SIZE / 2);
               scene.add(hc);
-              // Mailbox (left side, offset)
-              var mbPostGeo = new T.CylinderGeometry(0.04, 0.04, 1.0, 6);
-              var mbPost = new T.Mesh(mbPostGeo, mailboxPostMat2);
-              mbPost.position.set(centerX - MAP_SIZE / 2 - 4.5, 0.5, pi + 3 - MAP_SIZE / 2);
-              scene.add(mbPost);
-              var mbBoxGeo = new T.BoxGeometry(0.35, 0.25, 0.2);
-              var mbBox = new T.Mesh(mbBoxGeo, mailboxMat);
-              mbBox.position.set(centerX - MAP_SIZE / 2 - 4.5, 1.05, pi + 3 - MAP_SIZE / 2);
-              mbBox.castShadow = true;
-              scene.add(mbBox);
+              // Mailboxes on BOTH sides (each house has one). Offset positions
+              // and per-box hashes give each a stable color + flag state.
+              [{ side: -4.5, offZ: 3, hashSeed: pi * 13 }, { side: 4.5, offZ: 6, hashSeed: pi * 17 + 1 }].forEach(function(mb) {
+                var mbHash = ((mb.hashSeed % 100) + 100) % 100;
+                var bodyMat = mbBodyMats[mbHash % 4];
+                var flagUp = mbHash % 5 === 0; // ~20% have flag raised (outgoing mail)
+                var mbX = centerX - MAP_SIZE / 2 + mb.side;
+                var mbZ = pi + mb.offZ - MAP_SIZE / 2;
+                // Post
+                var mbPost2 = new T.Mesh(new T.CylinderGeometry(0.04, 0.04, 1.0, 6), mbPostMat);
+                mbPost2.position.set(mbX, 0.5, mbZ);
+                scene.add(mbPost2);
+                // Body — rectangular base box + curved half-cylinder top
+                var mbBodyGeo = new T.BoxGeometry(0.38, 0.18, 0.22);
+                var mbBody = new T.Mesh(mbBodyGeo, bodyMat);
+                mbBody.position.set(mbX, 1.03, mbZ);
+                mbBody.castShadow = true;
+                scene.add(mbBody);
+                // Curved top — half-cylinder lying on its side, rotated so the
+                // flat side is down and the curve faces up.
+                var mbTopGeo = new T.CylinderGeometry(0.11, 0.11, 0.38, 10, 1, false, 0, Math.PI);
+                var mbTop = new T.Mesh(mbTopGeo, bodyMat);
+                mbTop.rotation.z = Math.PI / 2; // curve arcs up
+                mbTop.position.set(mbX, 1.21, mbZ);
+                scene.add(mbTop);
+                // Red flag on the road-facing side. Up = vertical rectangle,
+                // down = horizontal nub tucked against the body.
+                if (flagUp) {
+                  var flagG = new T.Mesh(new T.BoxGeometry(0.02, 0.16, 0.12), mbFlagMat);
+                  flagG.position.set(mbX + (mb.side > 0 ? -0.12 : 0.12), 1.2, mbZ + 0.12);
+                  scene.add(flagG);
+                  // Thin flag arm
+                  var flagArm = new T.Mesh(new T.CylinderGeometry(0.01, 0.01, 0.14, 4), mbFlagMat);
+                  flagArm.position.set(mbX + (mb.side > 0 ? -0.12 : 0.12), 1.12, mbZ + 0.06);
+                  flagArm.rotation.x = Math.PI / 2;
+                  scene.add(flagArm);
+                } else {
+                  // Flag down — small horizontal nub
+                  var flagDown = new T.Mesh(new T.BoxGeometry(0.02, 0.04, 0.12), mbFlagMat);
+                  flagDown.position.set(mbX + (mb.side > 0 ? -0.12 : 0.12), 1.03, mbZ + 0.12);
+                  scene.add(flagDown);
+                }
+              });
             }
           }
 
