@@ -725,6 +725,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     playTone(theme.error.freq, theme.error.ms, theme.error.type);
   }
 
+  // Short celebratory arpeggio for mastery tier clears / first-goal-met /
+  // first personal-best-of-the-session moments. Uses the same wave type as
+  // the student's current audio theme so it sounds like "this tool" not
+  // "some other tool". Volume envelope inherits playTone's gentle ramp.
+  // Silent when audioCues are off or theme is mute; mirrors the existing
+  // audioCorrect / audioError gate at the call sites.
+  function audioCelebrate(themeName) {
+    var theme = AUDIO_THEMES[themeName || 'chime'];
+    if (!theme) return; // mute
+    var waveType = theme.correct.type || 'sine';
+    // Ascending major triad over ~320ms total — perceived as 'up + resolved'.
+    // Frequencies relative to the theme's correct tone so each audio theme
+    // ends up with its own celebration flavor.
+    var base = theme.correct.freq;
+    // Cap the top so chime (880Hz base → would land at 1760Hz) stays warm.
+    var safe = function(f) { return Math.min(f, 1600); };
+    playTone(safe(base),         70, waveType);
+    setTimeout(function() { playTone(safe(base * 1.25), 70, waveType); }, 90);
+    setTimeout(function() { playTone(safe(base * 1.5),  110, waveType); }, 180);
+  }
+
   // ─────────────────────────────────────────────────────────
   // SECTION 3: STYLE HELPERS
   // ─────────────────────────────────────────────────────────
@@ -1517,6 +1538,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           setLastSummary(summary);
 
           var _tm = state.theme || 'default';
+          // Celebration arpeggio — plays once per save, at most. Mastery and
+          // first-goal-met take priority over plain milestone so a single
+          // triumphal sound marks the biggest thing that happened.
+          // Silent when audioCues off or theme is mute.
+          var _shouldCelebrate = masteryAdvanced || summary.firstGoalMet || newMilestones.length > 0;
+          if (_shouldCelebrate && state.accommodations.audioCues) {
+            audioCelebrate(state.audioTheme);
+          }
           if (newMilestones.length > 0) {
             var _mLabels = newMilestones.map(function(m) { return m.label; }).join(' · ');
             var _mToast;
