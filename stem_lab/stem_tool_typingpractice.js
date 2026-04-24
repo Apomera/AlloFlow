@@ -682,7 +682,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
   }
 
   // Audio themes — each maps a "correct" and "error" tone spec.
-  // Themes are procedural (Web Audio) so no external assets load.
+  // Themes are procedural (Web Audio) so no external assets load. Three of
+  // these pair with specific visual themes (clack ↔ steampunk, beep ↔
+  // cyberpunk, pop ↔ kawaii) but students can mix any combo.
   var AUDIO_THEMES = {
     chime: {
       correct: { freq: 880, ms: 40,  type: 'sine' },     // bright A5 chime
@@ -691,6 +693,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     soft: {
       correct: { freq: 523, ms: 55,  type: 'sine' },     // C5 gentle
       error:   { freq: 330, ms: 70,  type: 'sine' }      // E4 gentle, no contrast alarm
+    },
+    clack: {
+      correct: { freq: 160, ms: 28,  type: 'square' },   // low mechanical tick — typewriter key
+      error:   { freq: 80,  ms: 60,  type: 'square' }    // deeper thud — jam
+    },
+    beep: {
+      correct: { freq: 1400, ms: 32, type: 'square' },   // crisp high digital beep
+      error:   { freq: 120,  ms: 90, type: 'sawtooth' }  // low buzzed error — terminal alarm
+    },
+    pop: {
+      correct: { freq: 660, ms: 45,  type: 'sine' },     // soft mid-range pop
+      error:   { freq: 440, ms: 60,  type: 'triangle' }  // kinder low tone, not alarming
     },
     mute: null
   };
@@ -4395,10 +4409,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               style: { padding: '10px 0 14px 0', borderBottom: '1px solid ' + palette.border, display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }
             },
               h('div', { style: { fontSize: '12px', color: palette.textMute, marginRight: '6px' } }, 'Sound theme:'),
-              ['chime', 'soft', 'mute'].map(function(themeId) {
+              ['chime', 'soft', 'clack', 'beep', 'pop', 'mute'].map(function(themeId) {
                 var isActive = (state.audioTheme || 'chime') === themeId;
                 var themeLabel = themeId === 'chime' ? '🔔 Chime (default)'
                               : themeId === 'soft'  ? '🎵 Soft'
+                              : themeId === 'clack' ? '⌨️ Clack (typewriter)'
+                              : themeId === 'beep'  ? '🖥 Beep (digital)'
+                              : themeId === 'pop'   ? '🍬 Pop (soft)'
                               : '🔇 Mute';
                 return h('button', {
                   key: 'theme-' + themeId,
