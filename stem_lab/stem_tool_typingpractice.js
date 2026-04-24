@@ -1644,17 +1644,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               minHeight: '60vh'
             }
           },
-            // Header
+            // Header — theme-flavored title decoration. Same core text
+            // ('Typing Practice') but theme-specific ornamental framing
+            // around it. Keeps the identity while letting the theme speak.
             h('div', { style: { marginBottom: '24px' } },
-              h('h2', {
-                style: {
+              (function() {
+                var tm = state.theme || 'default';
+                var core = h('span', { style: { color: palette.text } }, ' Typing Practice ');
+                var titleStyle = {
                   margin: '0 0 6px 0',
                   fontSize: '24px',
                   fontWeight: 700,
                   color: palette.text,
                   letterSpacing: '-0.01em'
+                };
+                if (tm === 'cyberpunk') {
+                  // [ NEON BRACKETS ]
+                  return h('h2', { style: Object.assign({}, titleStyle, { letterSpacing: '0.08em', textTransform: 'uppercase', fontSize: '20px' }) },
+                    h('span', { style: { color: palette.accent, fontWeight: 700 } }, '[ '),
+                    '⌨ TYPING_PRACTICE',
+                    h('span', { style: { color: palette.accent, fontWeight: 700 } }, ' ]')
+                  );
                 }
-              }, '⌨️  Typing Practice'),
+                if (tm === 'steampunk') {
+                  // ornamental flourishes on either side
+                  return h('h2', { style: titleStyle },
+                    h('span', { style: { color: palette.accent, fontSize: '18px', marginRight: '6px' } }, '❦ ⚙'),
+                    '⌨  Typing Practice',
+                    h('span', { style: { color: palette.accent, fontSize: '18px', marginLeft: '6px' } }, '⚙ ❦')
+                  );
+                }
+                if (tm === 'kawaii') {
+                  // sparkles + heart (feel like a stickered badge)
+                  return h('h2', { style: Object.assign({}, titleStyle, { fontSize: '26px' }) },
+                    h('span', { style: { color: palette.accent, fontSize: '22px' } }, '✨ '),
+                    '⌨️  Typing Practice',
+                    h('span', { style: { color: palette.accent, fontSize: '22px' } }, ' ✨')
+                  );
+                }
+                if (tm === 'neutral') {
+                  // minimal — no decoration, just tighter tracking
+                  return h('h2', { style: Object.assign({}, titleStyle, { fontWeight: 500 }) }, 'Typing Practice');
+                }
+                return h('h2', { style: titleStyle }, '⌨️  Typing Practice');
+              })(),
               h('p', {
                 style: {
                   margin: 0,
@@ -2141,16 +2174,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
 
             // Drill cards
             h('div', { style: { marginBottom: '24px' } },
-              h('div', {
-                style: {
+              (function() {
+                // Theme-flavored section header with ornamental divider.
+                var tm = state.theme || 'default';
+                var baseStyle = {
                   fontSize: '11px',
                   color: palette.textMute,
                   textTransform: 'uppercase',
                   letterSpacing: '0.08em',
                   marginBottom: '10px',
-                  fontWeight: 700
+                  fontWeight: 700,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                };
+                var lineStyle = {
+                  flex: 1,
+                  height: '1px',
+                  background: palette.border
+                };
+                var prefix, label, suffix;
+                if (tm === 'cyberpunk') {
+                  prefix = h('span', { style: { color: palette.accent, fontFamily: 'ui-monospace, monospace' } }, '::');
+                  label = 'drills.available';
+                  suffix = h('span', { style: Object.assign({}, lineStyle, { background: palette.accent, opacity: 0.5 }) });
+                } else if (tm === 'steampunk') {
+                  prefix = h('span', { style: { color: palette.accent, fontSize: '13px' } }, '⚙');
+                  label = 'Choose Thy Drill';
+                  suffix = h('span', { style: { color: palette.accent, fontSize: '13px' } }, '❦');
+                } else if (tm === 'kawaii') {
+                  prefix = h('span', { style: { color: palette.accent } }, '✿');
+                  label = 'pick a drill';
+                  suffix = h('span', { style: { color: palette.accent } }, '✿');
+                } else if (tm === 'neutral') {
+                  prefix = null;
+                  label = 'drills';
+                  suffix = null;
+                } else {
+                  prefix = null;
+                  label = 'Choose a drill';
+                  suffix = null;
                 }
-              }, 'Choose a drill'),
+                return h('div', { style: baseStyle },
+                  prefix,
+                  h('span', null, label),
+                  suffix || h('span', { style: lineStyle })
+                );
+              })(),
               h('div', {
                 style: {
                   display: 'grid',
