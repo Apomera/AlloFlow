@@ -9166,7 +9166,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // in fog than at night-on-clear-air. Old fog opacity (0.18) was barely
             // brighter than rain. Bumped fog to 0.34 and added a slight high-beam boost
             // so the user sees an actual cone of light cutting through the murk.
-            var hbBoost = d.highBeams ? 1.25 : 1.0;
+            // Defensive `d &&` — this runs inside the requestAnimationFrame step,
+            // which can fire once after unmount when `d` has already been cleared.
+            // Same pattern as the headlight spotlight code ~50 lines below.
+            var hbBoost = (d && d.highBeams) ? 1.25 : 1.0;
             var beamTargetOp = beamActive
               ? (scn.weather === 'fog' ? 0.34 : scn.weather === 'rain' ? 0.16 : 0.18) * hbBoost
               : 0;
@@ -13343,7 +13346,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // This layer is purely visual — the scoring/physics system reads d.highBeams
           // separately for the night-vision drill and speeding-in-dark checks.
           if (isNight || scn.id === 'dawn') {
-            var hb = !!d.highBeams;
+            // Defensive `d &&` — drawHUD runs through the rAF step which can fire
+            // once after unmount when `d` has been cleared. Same race as the
+            // fog-beam check at line ~9172 and the headlight spotlight at ~9219.
+            var hb = !!(d && d.highBeams);
             var coneCenterX = W / 2;
             // Cone "lands" slightly below the horizon — this is where a real headlight beam
             // would illuminate the road surface in a cockpit / chase view.
@@ -13564,12 +13570,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Warning light strip — shows active indicator lights like a real car
           var warnX = 10, warnY = H - 54, warnW = 100, warnH = 18;
           var warnIcons = [];
-          if (d.highBeams) warnIcons.push({ icon: '🔆', color: '#3b82f6', title: 'High beams' });
+          if (d && d.highBeams) warnIcons.push({ icon: '🔆', color: '#3b82f6', title: 'High beams' });
           if (blinkerRef.current === -1 && (Math.floor(timeRef.current * 2) % 2 === 0)) warnIcons.push({ icon: '◄', color: '#22c55e', title: 'Left signal' });
           if (blinkerRef.current === 1 && (Math.floor(timeRef.current * 2) % 2 === 0)) warnIcons.push({ icon: '►', color: '#22c55e', title: 'Right signal' });
           if (car.brake > 0.3) warnIcons.push({ icon: '🛑', color: '#ef4444', title: 'Braking' });
           if (skidRef.current && skidRef.current.active) warnIcons.push({ icon: '⚠', color: '#f59e0b', title: 'Traction loss' });
-          if (scn.weather === 'fog' && !d.highBeams) warnIcons.push({ icon: '🌫', color: '#94a3b8', title: 'Fog — low beams OK' });
+          if (scn.weather === 'fog' && !(d && d.highBeams)) warnIcons.push({ icon: '🌫', color: '#94a3b8', title: 'Fog — low beams OK' });
           warnIcons.forEach(function(wi, widx) {
             gfx.fillStyle = wi.color;
             gfx.font = 'bold 14px system-ui';

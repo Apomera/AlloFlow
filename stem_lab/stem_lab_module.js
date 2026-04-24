@@ -3053,6 +3053,11 @@
                 desc: 'Tax & paycheck calculator, data literacy, decision matrix, contract reader, health insurance navigator, and applied science for daily life.',
                 color: 'cyan', ready: true
               },
+              {
+                id: 'typingPractice', icon: '\u2328\uFE0F', label: 'Typing Practice',
+                desc: 'Disability-first keyboarding — dyslexia font, high-contrast, audio cues, error-tolerant mode, pace reference, on-screen keyboard. 8+ drill tiers, AI-personalized passages, IEP-ready progress reports.',
+                color: 'violet', ready: true
+              },
 
               {
                 id: 'flightSim', icon: '✈️', label: 'SkySchool',
@@ -4139,6 +4144,7 @@
             // Applied
             a11yAuditor: true, lifeSkills: true, physics: true, wave: true,
             worldBuilder: true,
+            typingPractice: true,
             flightSim: true,
             roadReady: true,
             bikeLab: true,

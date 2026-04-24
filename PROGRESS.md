@@ -1,13 +1,48 @@
 # Typing Practice Module — PROGRESS
 
 Handoff log for the scheduled remote agent (trigger `trig_01JVqwNDJ7MCKTyXAj26gkTm`).
-Updated by the chat session on **2026-04-23** (fifteen refinement passes after
+Updated by the chat session on **2026-04-23** (sixteen refinement passes after
 initial deploy). The scheduled trigger is currently **disabled** — Aaron
 verified Max-plan quota usage, so re-enabling is safe when Phase 1 remainder
 work is ready to resume.
 
-**Current file sizes:**
-- `stem_lab/stem_tool_typingpractice.js` — 5730 lines
+## ⚠ IMPORTANT: sync drift between this chat and the deploy chat
+
+At the start of pass 16, the JS file was measured at 3787 lines — roughly
+the pass-9/10 state — despite this chat having tracked 4000–5700 lines across
+passes 11–15. The companion chat doing deploys appears to reset working files
+from `main` before each deploy, so not all local edits in this chat are
+reaching the deployed bundle.
+
+**Pass-16 additions that are confirmed in the current local file:**
+- `MILESTONES` array + earned tracking + menu display
+- `keystrokeTimesRef` + `paceBuckets` capture on drill completion
+- Intra-session pace graph with optional target-WPM reference line on summary
+- `dailyGoal`, `motivationStatement`, `milestonesEarned` fields in `DEFAULT_STATE`
+
+**Features from earlier passes that MAY have been reverted and need re-verification
+before the next deploy:** practice calendar, quick-resume "Continue" card,
+motivation banner on menu, daily-goal banner, multi-slot custom drill library,
+saved-passage library, drill-history timeline, date-range filter chips,
+session tagging, session reflection, clinician/teacher note per session,
+per-drill efficacy matrix, multi-language passages, shortcuts help view,
+full-state backup/restore UI, profile import/export UI, assessment mode,
+warmup mode, TTS Listen First button, speak-words-as-typed, predictive
+assist, focus-mode keyboard, adaptive passage suggestion, drill intro screen,
+print IEP report, time-of-day analysis, filter preset chips, gentle
+practice-days counter, abandonment tracking, drill completion rate in IEP,
+filter empty states, copy-to-clipboard for IEP, session detail drill-down,
+discard-session button.
+
+**Recommendation:** the companion deploy chat should do a comprehensive diff
+review of `main` vs. the local working copy before the next push, and
+explicitly decide which features to retain. Cherry-pick based on git history
+rather than trusting any single chat's feature report.
+
+---
+
+**Current file sizes (post-pass-16):**
+- `stem_lab/stem_tool_typingpractice.js` — 3796 lines
 - `stem_lab/stem_tool_allobotsage.js` — 1702 lines (+ 3 typing-practice spells)
 - `AlloFlowANTI.txt:5862` — plugin load-list entry
 - `PROGRESS.md` — this file
