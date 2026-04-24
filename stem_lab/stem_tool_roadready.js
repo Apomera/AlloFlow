@@ -2976,6 +2976,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // Beam + ground ring meshes for the active pickup/dropoff marker. Created
       // lazily on first rideshare ride; position updated each frame.
       var rideshareMarkerRef = useRef(null);
+      // Timestamp of last dropoff — drives the summary card visibility (8s window).
+      var rideshareSummaryRef = useRef({ shownAt: 0, ride: null });
       // Challenge cards: spawner state + active challenge. offered = waiting for Accept/Decline.
       // active = running; null when no challenge. completedCount accrues per-session for the
       // five_challenges achievement. biomesVisited tracks unique biomes for biome_tourist.
@@ -3985,6 +3987,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       // Mirror to persistent state so the menu / debrief can show totals.
                       upd('rideshareLast', rsArr.lastRide);
                       upd('rideshareTotal', { rides: rsArr.ridesCompleted, earnings: rsArr.totalEarnings });
+                      // Kick off the summary card overlay for 8 seconds.
+                      rideshareSummaryRef.current = {
+                        shownAt: timeRef.current,
+                        ride: rsArr.lastRide,
+                        totalEarnings: rsArr.totalEarnings,
+                        ridesCompleted: rsArr.ridesCompleted
+                      };
                       return;
                     }
                   }
@@ -15003,6 +15012,88 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           gfx.closePath(); gfx.fill();
           gfx.fillStyle = '#475569'; gfx.font = '7px system-ui'; gfx.textAlign = 'center';
           gfx.fillText('MAP', mmX + mmSize / 2, mmY + mmSize + 8);
+
+          // ── Rideshare ride-summary card ──
+          // Centered card that pops after each dropoff for ~8s. Shows the star
+          // rating, the single biggest deduction (the "why" the player lost
+          // stars), earnings breakdown, and running totals. Auto-fades by age
+          // so the player can dismiss by just driving through it. The point
+          // is PEDAGOGICAL: "your hard braking cost you $0.50 of tip."
+          var rsSumm = rideshareSummaryRef.current;
+          if (rsSumm && rsSumm.shownAt > 0 && rsSumm.ride) {
+            var rsSAge = timeRef.current - rsSumm.shownAt;
+            if (rsSAge < 8) {
+              var rsSR = rsSumm.ride;
+              // Alpha: fade in 0→0.15s, hold to 6.5s, fade out 6.5→8s.
+              var rsSAlpha = rsSAge < 0.15 ? (rsSAge / 0.15)
+                : rsSAge < 6.5 ? 1
+                : Math.max(0, 1 - (rsSAge - 6.5) / 1.5);
+              if (rsSAlpha > 0) {
+                var cardW = 340, cardH = 180;
+                var cardX = W / 2 - cardW / 2, cardY = H / 2 - cardH / 2 - 40;
+                // Backdrop + frame (color by star rating)
+                var frameHex = rsSR.stars >= 5 ? '#fbbf24' : rsSR.stars >= 4 ? '#4ade80' : rsSR.stars >= 3 ? '#60a5fa' : rsSR.stars >= 2 ? '#f59e0b' : '#ef4444';
+                gfx.save();
+                gfx.globalAlpha = rsSAlpha;
+                gfx.fillStyle = 'rgba(10,14,28,0.92)';
+                gfx.fillRect(cardX, cardY, cardW, cardH);
+                gfx.strokeStyle = frameHex;
+                gfx.lineWidth = 2;
+                gfx.strokeRect(cardX, cardY, cardW, cardH);
+                // Header — passenger + "rated you"
+                gfx.fillStyle = frameHex;
+                gfx.font = 'bold 13px system-ui, sans-serif'; gfx.textAlign = 'center';
+                gfx.fillText('🚕 ' + rsSR.passenger + ' rated your ride', cardX + cardW / 2, cardY + 20);
+                // Big stars
+                gfx.font = 'bold 30px monospace';
+                for (var rsSi = 0; rsSi < 5; rsSi++) {
+                  gfx.fillStyle = rsSi < rsSR.stars ? frameHex : '#3b3742';
+                  gfx.fillText('★', cardX + cardW / 2 - 62 + rsSi * 28, cardY + 55);
+                }
+                // Route line
+                gfx.fillStyle = '#cbd5e1';
+                gfx.font = '11px system-ui, sans-serif';
+                gfx.fillText(rsSR.from + ' → ' + rsSR.to, cardX + cardW / 2, cardY + 78);
+                // Biggest deduction (the WHY). Sort deduction types by magnitude.
+                var deductions = [];
+                if (rsSR.crashes > 0) deductions.push({ label: rsSR.crashes + ' crash' + (rsSR.crashes === 1 ? '' : 'es'), cost: rsSR.crashes * 50 });
+                if (rsSR.hardBrakes > 0) deductions.push({ label: rsSR.hardBrakes + ' hard brake' + (rsSR.hardBrakes === 1 ? '' : 's'), cost: rsSR.hardBrakes * 8 });
+                if (rsSR.jackrabbits > 0) deductions.push({ label: rsSR.jackrabbits + ' jackrabbit start' + (rsSR.jackrabbits === 1 ? '' : 's'), cost: rsSR.jackrabbits * 6 });
+                if (rsSR.skidSec > 0) deductions.push({ label: rsSR.skidSec + 's skidding', cost: Math.min(40, rsSR.skidSec * 4) });
+                deductions.sort(function(a, b) { return b.cost - a.cost; });
+                gfx.fillStyle = '#94a3b8';
+                gfx.font = '10px system-ui, sans-serif';
+                if (deductions.length === 0) {
+                  gfx.fillText('✨ Perfectly smooth ride. No deductions.', cardX + cardW / 2, cardY + 96);
+                } else {
+                  gfx.fillText('Top deductions: ' + deductions.slice(0, 2).map(function(dd) { return '−' + dd.cost + ' (' + dd.label + ')'; }).join('  ·  '), cardX + cardW / 2, cardY + 96);
+                }
+                // Earnings breakdown
+                gfx.textAlign = 'left';
+                gfx.fillStyle = '#cbd5e1';
+                gfx.font = '11px monospace';
+                gfx.fillText('Base fare',   cardX + 28, cardY + 120);
+                gfx.fillText('Tip (' + Math.round(100 * rsSR.tip / Math.max(0.01, rsSR.baseFare)) + '%)', cardX + 28, cardY + 136);
+                gfx.fillText('Total',       cardX + 28, cardY + 152);
+                gfx.textAlign = 'right';
+                gfx.fillText('$' + rsSR.baseFare.toFixed(2), cardX + cardW - 28, cardY + 120);
+                gfx.fillStyle = rsSR.tip > 0 ? '#4ade80' : '#94a3b8';
+                gfx.fillText('$' + rsSR.tip.toFixed(2),      cardX + cardW - 28, cardY + 136);
+                gfx.fillStyle = '#fff';
+                gfx.font = 'bold 11px monospace';
+                gfx.fillText('$' + rsSR.total.toFixed(2),    cardX + cardW - 28, cardY + 152);
+                // Footer — lifetime running totals
+                gfx.fillStyle = '#64748b';
+                gfx.font = '9px system-ui, sans-serif';
+                gfx.textAlign = 'center';
+                gfx.fillText(rsSumm.ridesCompleted + ' rides · $' + rsSumm.totalEarnings.toFixed(2) + ' earned lifetime', cardX + cardW / 2, cardY + cardH - 8);
+                gfx.restore();
+              }
+            } else if (rsSumm.shownAt > 0) {
+              // Expired — clear so we don't re-evaluate every frame
+              rideshareSummaryRef.current = { shownAt: 0, ride: null };
+            }
+          }
 
           // ── Rideshare HUD panel ──
           // Top-right pill showing passenger + destination + live star preview
