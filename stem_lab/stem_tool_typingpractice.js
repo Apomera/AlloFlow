@@ -1133,6 +1133,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '.tp-root.tp-theme-kawaii    .tp-celebrate { animation: tp-celebrate-kawaii 1.1s ease-in-out 1; }',
       '.tp-root.tp-theme-neutral   .tp-celebrate { animation: tp-celebrate-pulse 0.8s ease-out 1; }',
 
+      /* ── Sparkle particle burst on summary celebration ────────────
+         Eight particles fly out from center + fade over 1.2s. Each
+         particle takes a different angle by class. CSS-only so no JS
+         timers or canvas. Key on summary.date in JSX remounts them per
+         new summary. Kawaii drifts a bit higher + slower; Neutral omits
+         the animation entirely (no noise for that palette). */
+      '@keyframes tp-sparkle-0 { 0% { transform: translate(0,0) scale(0.2); opacity: 0; } 20% { opacity: 1; } 100% { transform: translate(0,-60px) scale(1); opacity: 0; } }',
+      '@keyframes tp-sparkle-1 { 0% { transform: translate(0,0) scale(0.2); opacity: 0; } 20% { opacity: 1; } 100% { transform: translate(42px,-42px) scale(1); opacity: 0; } }',
+      '@keyframes tp-sparkle-2 { 0% { transform: translate(0,0) scale(0.2); opacity: 0; } 20% { opacity: 1; } 100% { transform: translate(60px,0) scale(1); opacity: 0; } }',
+      '@keyframes tp-sparkle-3 { 0% { transform: translate(0,0) scale(0.2); opacity: 0; } 20% { opacity: 1; } 100% { transform: translate(42px,42px) scale(1); opacity: 0; } }',
+      '@keyframes tp-sparkle-4 { 0% { transform: translate(0,0) scale(0.2); opacity: 0; } 20% { opacity: 1; } 100% { transform: translate(0,60px) scale(1); opacity: 0; } }',
+      '@keyframes tp-sparkle-5 { 0% { transform: translate(0,0) scale(0.2); opacity: 0; } 20% { opacity: 1; } 100% { transform: translate(-42px,42px) scale(1); opacity: 0; } }',
+      '@keyframes tp-sparkle-6 { 0% { transform: translate(0,0) scale(0.2); opacity: 0; } 20% { opacity: 1; } 100% { transform: translate(-60px,0) scale(1); opacity: 0; } }',
+      '@keyframes tp-sparkle-7 { 0% { transform: translate(0,0) scale(0.2); opacity: 0; } 20% { opacity: 1; } 100% { transform: translate(-42px,-42px) scale(1); opacity: 0; } }',
+      '.tp-root .tp-sparkle-0 { animation: tp-sparkle-0 1200ms ease-out 1 forwards; }',
+      '.tp-root .tp-sparkle-1 { animation: tp-sparkle-1 1200ms ease-out 1 forwards; }',
+      '.tp-root .tp-sparkle-2 { animation: tp-sparkle-2 1200ms ease-out 1 forwards; }',
+      '.tp-root .tp-sparkle-3 { animation: tp-sparkle-3 1200ms ease-out 1 forwards; }',
+      '.tp-root .tp-sparkle-4 { animation: tp-sparkle-4 1200ms ease-out 1 forwards; }',
+      '.tp-root .tp-sparkle-5 { animation: tp-sparkle-5 1200ms ease-out 1 forwards; }',
+      '.tp-root .tp-sparkle-6 { animation: tp-sparkle-6 1200ms ease-out 1 forwards; }',
+      '.tp-root .tp-sparkle-7 { animation: tp-sparkle-7 1200ms ease-out 1 forwards; }',
+      '.tp-root.tp-theme-kawaii .tp-sparkle { animation-duration: 1500ms !important; }',
+      '.tp-root.tp-theme-neutral .tp-sparkle { display: none; }',
+
       /* ── Error-flash on wrong keystroke ────────────────────────
          Applied to the current character span whenever the last keystroke
          was wrong. Forces a remount via key=errorCount so the CSS animation
@@ -1259,6 +1284,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '  .tp-root .tp-current-char,',
       '  .tp-root .tp-loading-icon,',
       '  .tp-root .tp-celebrate,',
+      '  .tp-root .tp-sparkle,',
       '  .tp-root .tp-wrong-flash,',
       '  .tp-root .tp-live-tick,',
       '  .tp-root .tp-streak-chip,',
@@ -2904,7 +2930,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                     var focusText = buildFocusedPracticeText(state.aggregateErrors, state.drillRunId);
                     if (focusText) preview = focusText.length > 42 ? focusText.slice(0, 42) + '…' : focusText;
                   }
-                  return renderDrillCard(drill, unlocked, palette, startDrill, unlockHint, stats, preview, isFavorite, toggleFavorite);
+                  return renderDrillCard(drill, unlocked, palette, startDrill, unlockHint, stats, preview, isFavorite, toggleFavorite, state.theme);
                 })
               )
             ),
@@ -4655,13 +4681,60 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 border: '1px solid ' + palette.border,
                 borderRadius: '14px',
                 padding: '28px',
-                textAlign: 'center'
+                textAlign: 'center',
+                position: 'relative',
+                overflow: 'hidden'
               }
             },
-              h('div', { style: { fontSize: '13px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px' } }, s.drillName),
+              // Sparkle particle burst — only mounts when the session was
+              // a celebrated event. Eight theme-colored particles rise and
+              // fade over ~1.2s via CSS. Key on drill date so React re-mounts
+              // on each new summary (avoids re-firing on simple re-renders).
+              (s.isNewBest || s.isBaseline || s.masteryAdvanced || s.firstGoalMet) ? h('div', {
+                key: 'sparkle-' + s.date,
+                'aria-hidden': 'true',
+                className: 'tp-sparkle-burst',
+                style: {
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  width: 0,
+                  height: 0,
+                  pointerEvents: 'none',
+                  transform: 'translate(-50%, -50%)',
+                  zIndex: 0
+                }
+              },
+                (function() {
+                  var tm = state.theme || 'default';
+                  var glyph;
+                  if (tm === 'steampunk')      glyph = '⚙';
+                  else if (tm === 'cyberpunk') glyph = '▮';
+                  else if (tm === 'kawaii')    glyph = '✿';
+                  else if (tm === 'neutral')   glyph = '·';
+                  else                         glyph = '✦';
+                  // Eight particles, evenly spaced in a ring
+                  var particles = [];
+                  for (var pI = 0; pI < 8; pI++) {
+                    particles.push(h('span', {
+                      key: 'spk-' + pI,
+                      className: 'tp-sparkle tp-sparkle-' + pI,
+                      style: {
+                        position: 'absolute',
+                        left: 0, top: 0,
+                        color: pI % 2 === 0 ? palette.accent : palette.success,
+                        fontSize: tm === 'kawaii' ? '14px' : '12px',
+                        fontWeight: 700
+                      }
+                    }, glyph));
+                  }
+                  return particles;
+                })()
+              ) : null,
+              h('div', { style: { fontSize: '13px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px', position: 'relative', zIndex: 1 } }, s.drillName),
               h('div', {
                 className: (s.isNewBest || s.isBaseline || s.masteryAdvanced || s.firstGoalMet) ? 'tp-celebrate' : undefined,
-                style: { fontSize: '20px', fontWeight: 700, color: s.isNewBest || s.isBaseline || s.masteryAdvanced ? palette.success : palette.text, marginBottom: nextStepHint ? '6px' : '20px' }
+                style: { fontSize: '20px', fontWeight: 700, color: s.isNewBest || s.isBaseline || s.masteryAdvanced ? palette.success : palette.text, marginBottom: nextStepHint ? '6px' : '20px', position: 'relative', zIndex: 1 }
               }, headline),
               nextStepHint ? h('div', {
                 style: { fontSize: '13px', color: palette.textDim, marginBottom: '20px', lineHeight: '1.5' }
@@ -9344,7 +9417,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     return lines.join('\n');
   }
 
-  function renderDrillCard(drill, unlocked, palette, startDrill, unlockHint, stats, preview, isFavorite, toggleFavorite) {
+  function renderDrillCard(drill, unlocked, palette, startDrill, unlockHint, stats, preview, isFavorite, toggleFavorite, themeName) {
     var React = window.React;
     var h = React.createElement;
     // Wrap the entire card in a relative-positioned div so the ★ pinning
@@ -9415,15 +9488,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         },
         title: preview
       }, '"' + preview + '"') : null,
-      // Inline stats on unlocked cards that have session history
-      (unlocked && stats) ? h('div', {
-        style: { fontSize: '11px', color: palette.textDim, marginTop: 'auto', fontVariantNumeric: 'tabular-nums' }
-      },
-        stats.bestWpm !== null ? h('span', null,
-          h('span', { style: { color: palette.success, fontWeight: 700 } }, stats.bestWpm + ' WPM'),
-          ' best · ', stats.sessionCount, ' session', stats.sessionCount === 1 ? '' : 's'
-        ) : h('span', { style: { color: palette.textMute } }, stats.sessionCount + ' session' + (stats.sessionCount === 1 ? '' : 's'))
-      ) : null,
+      // Inline stats on unlocked cards that have session history. Unlocked
+      // drills with ZERO sessions show a theme-voiced 'never tried' tag
+      // instead — gentle nudge to try something new without being pushy.
+      (unlocked && stats) ? (function() {
+        if (stats.sessionCount === 0) {
+          var tm = themeName || 'default';
+          var label;
+          if (tm === 'steampunk')      label = '◯ untouched — a new workbench';
+          else if (tm === 'cyberpunk') label = '[UNEXPLORED]';
+          else if (tm === 'kawaii')    label = '🌱 never tried yet';
+          else if (tm === 'neutral')   label = 'not yet attempted';
+          else                         label = '🌱 never tried';
+          return h('div', {
+            style: {
+              fontSize: '11px',
+              color: palette.accent,
+              marginTop: 'auto',
+              fontWeight: 600,
+              fontStyle: 'italic',
+              opacity: 0.85
+            }
+          }, label);
+        }
+        return h('div', {
+          style: { fontSize: '11px', color: palette.textDim, marginTop: 'auto', fontVariantNumeric: 'tabular-nums' }
+        },
+          stats.bestWpm !== null ? h('span', null,
+            h('span', { style: { color: palette.success, fontWeight: 700 } }, stats.bestWpm + ' WPM'),
+            ' best · ', stats.sessionCount, ' session', stats.sessionCount === 1 ? '' : 's'
+          ) : h('span', { style: { color: palette.textMute } }, stats.sessionCount + ' session' + (stats.sessionCount === 1 ? '' : 's'))
+        );
+      })() : null,
       // On locked cards: surface the specific threshold needed to unlock.
       (!unlocked && unlockHint) ? h('div', {
         style: { fontSize: '11px', color: palette.warn, marginTop: 'auto', fontStyle: 'italic' }
