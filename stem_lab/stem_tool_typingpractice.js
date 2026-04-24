@@ -6962,9 +6962,75 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   alignItems: 'flex-end',
                   gap: '4px',
                   height: '100px',
-                  padding: '6px 0'
+                  padding: '6px 0',
+                  position: 'relative'
                 }
               },
+                // Reference lines — baseline and IEP goal targets drawn as
+                // dashed horizontal lines over the bar chart. Gives the
+                // trend immediate clinical meaning: students + clinicians
+                // see at a glance how each session compares to both anchor
+                // points. Positioned via absolute bottom offset keyed to
+                // the same trendMax scale as the bars.
+                state.baseline && state.baseline.wpm ? (function() {
+                  var y = Math.min(90, Math.round((state.baseline.wpm / Math.max(trendMax, 1)) * 90));
+                  return h('div', {
+                    'aria-label': 'Baseline reference: ' + state.baseline.wpm + ' WPM',
+                    title: 'Baseline · ' + state.baseline.wpm + ' WPM',
+                    style: {
+                      position: 'absolute',
+                      left: 0, right: 0,
+                      bottom: (6 + y) + 'px',
+                      borderTop: '1px dashed ' + palette.textMute,
+                      opacity: 0.55,
+                      pointerEvents: 'none',
+                      zIndex: 1
+                    }
+                  },
+                    h('span', {
+                      style: {
+                        position: 'absolute',
+                        right: 0,
+                        top: '-7px',
+                        fontSize: '9px',
+                        color: palette.textMute,
+                        background: palette.surface,
+                        padding: '0 4px',
+                        letterSpacing: '0.04em'
+                      }
+                    }, 'baseline ' + state.baseline.wpm)
+                  );
+                })() : null,
+                (state.iepGoal && state.iepGoal.targetWpm) ? (function() {
+                  var y = Math.min(90, Math.round((state.iepGoal.targetWpm / Math.max(trendMax, 1)) * 90));
+                  return h('div', {
+                    'aria-label': 'IEP goal reference: ' + state.iepGoal.targetWpm + ' WPM',
+                    title: 'IEP goal · ' + state.iepGoal.targetWpm + ' WPM',
+                    style: {
+                      position: 'absolute',
+                      left: 0, right: 0,
+                      bottom: (6 + y) + 'px',
+                      borderTop: '1px dashed ' + palette.success,
+                      opacity: 0.8,
+                      pointerEvents: 'none',
+                      zIndex: 1
+                    }
+                  },
+                    h('span', {
+                      style: {
+                        position: 'absolute',
+                        left: 0,
+                        top: '-7px',
+                        fontSize: '9px',
+                        color: palette.success,
+                        background: palette.surface,
+                        padding: '0 4px',
+                        fontWeight: 700,
+                        letterSpacing: '0.04em'
+                      }
+                    }, '🎯 goal ' + state.iepGoal.targetWpm)
+                  );
+                })() : null,
                 trend.map(function(s, i) {
                   var h_ = Math.max(4, Math.round((s.wpm / Math.max(trendMax, 1)) * 90));
                   var isSelected = selectedDetailIdx === i;
