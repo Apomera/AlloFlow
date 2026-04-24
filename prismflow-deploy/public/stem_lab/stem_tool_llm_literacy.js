@@ -1180,6 +1180,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
         });
       };
 
+      // Track which TOC-anchored sub-cards a student has scrolled past. Used
+      // by the in-section TOC to render a small checkmark on seen chips.
+      // One-way: once seen, stays seen (across sessions, via toolData).
+      var markAnchorSeen = function(anchorId) {
+        if (!ctx.setToolData || !anchorId) return;
+        ctx.setToolData(function(prev) {
+          var existing = (prev && prev.llmLiteracy) || {};
+          var seen = existing.seenAnchors || {};
+          if (seen[anchorId]) return prev;
+          var next = Object.assign({}, seen); next[anchorId] = true;
+          return Object.assign({}, prev, { llmLiteracy: Object.assign({}, existing, { seenAnchors: next }) });
+        });
+      };
+      function anchorIsSeen(anchorId) {
+        return !!((d.seenAnchors || {})[anchorId]);
+      }
+
       var hasLiveAI = typeof callGemini === 'function';
 
       // ── Shared styles ──
@@ -1549,6 +1566,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
         window.addEventListener('keydown', onKey);
         return function() { window.removeEventListener('keydown', onKey); };
       }, [section, helpOpen, glossTerm, teacherMode, browseOpen, confirmState, welcomeOpen]);
+
+      // ── Anchor-visibility observer ──
+      // When the student scrolls a section, mark each TOC-anchored card as
+      // "seen" the first time it's >=50% visible. Runs per section change;
+      // cleans up on unmount. Gracefully no-ops if IntersectionObserver is
+      // unavailable (very old browsers) or if we're on the home screen.
+      React.useEffect(function() {
+        if (typeof IntersectionObserver === 'undefined') return;
+        if (section === 'home') return;
+        // Small delay to let the DOM paint the section.
+        var observer = null;
+        var timer = setTimeout(function() {
+          try {
+            observer = new IntersectionObserver(function(entries) {
+              entries.forEach(function(e) {
+                if (e.isIntersecting && e.intersectionRatio >= 0.5) {
+                  var id = e.target && e.target.id;
+                  if (id) markAnchorSeen(id);
+                }
+              });
+            }, { threshold: [0.5] });
+            var anchors = document.querySelectorAll('.llm-lit-anchor');
+            anchors.forEach(function(el) { observer.observe(el); });
+          } catch (err) { /* best-effort; don't break the section if this fails */ }
+        }, 80);
+        return function() {
+          clearTimeout(timer);
+          if (observer) { try { observer.disconnect(); } catch (err) {} }
+        };
+      }, [section]);
 
       function goHome() { setSection('home'); announceToSR('Returned to AI Literacy Lab home'); }
       function enterSection(id, title) {
@@ -5509,8 +5556,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
       // In-section table of contents. Pass a color (section accent) and an
       // array of { id, icon?, label } entries. Each chip smooth-scrolls to an
       // element with a matching id + `llm-lit-anchor` class. Hidden in print.
+      // Chips show a small ✓ after their anchor has been scrolled into view
+      // (via the IntersectionObserver in the main render effect).
       function sectionTOC(color, items) {
         if (!items || items.length === 0) return null;
+        var seenCount = items.reduce(function(n, it) { return n + (anchorIsSeen(it.id) ? 1 : 0); }, 0);
         return h('div', {
           className: 'llm-lit-no-print',
           role: 'navigation',
@@ -5529,28 +5579,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
             style: { fontSize: '11px', fontWeight: 700, color: color, textTransform: 'uppercase', letterSpacing: '.05em', marginRight: '2px' }
           }, 'On this page'),
           items.map(function(item) {
+            var seen = anchorIsSeen(item.id);
             return h('button', {
               key: item.id,
               onClick: function() {
                 var el = document.getElementById(item.id);
                 if (el && el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                // Clicking counts as "seen" too, in case the student\'s viewport
+                // is short and the observer doesn\'t register 50% intersection.
+                markAnchorSeen(item.id);
               },
+              'aria-label': item.label + (seen ? ' (visited)' : ''),
               style: {
-                background: '#fff',
+                background: seen ? hexToRGBA(color, 0.12) : '#fff',
                 color: color,
-                border: '1px solid ' + hexToRGBA(color, 0.35),
+                border: '1px solid ' + hexToRGBA(color, seen ? 0.55 : 0.35),
                 borderRadius: '999px',
                 padding: '3px 10px',
                 fontSize: '11px', fontWeight: 600, cursor: 'pointer',
                 display: 'inline-flex', alignItems: 'center', gap: '4px',
-                whiteSpace: 'nowrap'
+                whiteSpace: 'nowrap',
+                transition: 'background .18s ease, border-color .18s ease'
               },
-              title: 'Jump to: ' + item.label
+              title: 'Jump to: ' + item.label + (seen ? ' (already visited)' : '')
             },
-              item.icon && h('span', { 'aria-hidden': 'true' }, item.icon),
+              seen
+                ? h('span', { 'aria-hidden': 'true', style: { fontSize: '10px' } }, '\u2713')
+                : (item.icon && h('span', { 'aria-hidden': 'true' }, item.icon)),
               item.label
             );
-          })
+          }),
+          // Small inline progress readout at the end of the chip row.
+          items.length > 1 && seenCount > 0 && h('span', {
+            'aria-hidden': 'true',
+            style: { fontSize: '10px', color: COLORS.muted, fontWeight: 600, marginLeft: '2px', whiteSpace: 'nowrap' }
+          }, seenCount + '/' + items.length)
         );
       }
 

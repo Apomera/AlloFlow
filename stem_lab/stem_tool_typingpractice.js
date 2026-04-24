@@ -5143,7 +5143,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                     fontSize: '11px',
                     padding: '7px 12px'
                   })
-                }, '📥 Download CSV')
+                }, '📥 Download CSV'),
+                h('button', {
+                  onClick: function() {
+                    var summary = buildParentSummary(state);
+                    copyTextToClipboard(summary, addToast);
+                  },
+                  style: Object.assign({}, secondaryBtnStyle(palette), {
+                    fontSize: '11px',
+                    padding: '7px 12px'
+                  }),
+                  title: 'Copy a 2-4 sentence plain-language summary for a parent email'
+                }, '📧 Parent summary')
               )
             ) : null,
 
@@ -6193,6 +6204,75 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
   // any report template, IEP drafting tool, or parent email. Deliberately avoids
   // claiming growth that isn't there — reports only what the data shows.
   // Optional `opts` = { startDate, endDate, drillId } filters the session set.
+  // Parent-friendly plain-language summary. 2–4 sentences, positive framing,
+  // concrete numbers where helpful, no jargon ("mastery tier" → "first
+  // skill level"). Designed to be pasted into a parent email without
+  // editing. Not a replacement for the IEP report — it's for the weekly
+  // "how's your kid doing" message home.
+  function buildParentSummary(state) {
+    var sessions = state.sessions || [];
+    if (sessions.length === 0) {
+      return 'Your student has not yet completed a typing-practice session in the tool. They can start any time from the Home Row drill.';
+    }
+    var name = state.studentName ? state.studentName.split(' ')[0] : 'Your student';
+    var now = Date.now();
+    var sevenDaysAgo = now - 7 * 24 * 60 * 60 * 1000;
+    var thisWeek = sessions.filter(function(s) { return new Date(s.date).getTime() >= sevenDaysAgo; });
+    var bestWpm = sessions.reduce(function(m, s) { return Math.max(m, s.wpm || 0); }, 0);
+    var bestWpmThisWeek = thisWeek.reduce(function(m, s) { return Math.max(m, s.wpm || 0); }, 0);
+    var uniqueDays = {};
+    thisWeek.forEach(function(s) { uniqueDays[new Date(s.date).toLocaleDateString()] = true; });
+    var daysThisWeek = Object.keys(uniqueDays).length;
+
+    var parts = [];
+
+    // Opener — effort + cadence
+    if (thisWeek.length > 0) {
+      parts.push(name + ' practiced typing ' + thisWeek.length + ' time' + (thisWeek.length === 1 ? '' : 's') +
+        ' this week (across ' + daysThisWeek + ' day' + (daysThisWeek === 1 ? '' : 's') + ').');
+    } else {
+      parts.push(name + ' has ' + sessions.length + ' typing-practice session' + (sessions.length === 1 ? '' : 's') + ' recorded, with no practice in the last 7 days.');
+    }
+
+    // Personal best
+    if (bestWpmThisWeek > 0 && bestWpmThisWeek >= bestWpm - 2) {
+      parts.push('Their best speed this week was ' + bestWpmThisWeek + ' WPM' +
+        (bestWpm === bestWpmThisWeek ? ' — a personal best.' : '.'));
+    } else if (bestWpm > 0) {
+      parts.push('Their all-time best is ' + bestWpm + ' WPM.');
+    }
+
+    // IEP goal progress
+    if (state.iepGoal && state.iepGoal.targetWpm) {
+      var lastN = Math.min(10, sessions.length);
+      var lastSlice = sessions.slice(-lastN);
+      var metCount = lastSlice.filter(function(s) { return s.goalMet; }).length;
+      if (metCount > 0) {
+        parts.push('Working toward their goal of ' + state.iepGoal.targetWpm + ' WPM at ' +
+          state.iepGoal.targetAccuracy + '%, they met it on ' + metCount +
+          ' of the last ' + lastN + ' session' + (lastN === 1 ? '' : 's') + '.');
+      } else if (sessions.length >= 3) {
+        var currentAvg = getRecentAvg(sessions, 'wpm');
+        parts.push('They are working toward a goal of ' + state.iepGoal.targetWpm + ' WPM and currently averaging ' + currentAvg + ' WPM — steady practice will close that gap.');
+      }
+    }
+
+    // Mastery or drill-variety note
+    if (state.masteryLevel > 0) {
+      var clearedName = (DRILLS[TIER_ORDER[state.masteryLevel - 1]] || {}).name;
+      if (clearedName) {
+        parts.push('They have cleared the ' + clearedName + ' tier in the structured drill progression.');
+      }
+    }
+
+    // Student motivation (self-authored) — lovely if available
+    if (state.motivationStatement) {
+      parts.push('In their own words: "' + state.motivationStatement + '"');
+    }
+
+    return parts.join(' ');
+  }
+
   function buildIEPReport(state, opts) {
     var allSessions = state.sessions || [];
     var sessions = opts ? applySessionFilters(allSessions, opts) : allSessions;
