@@ -8186,28 +8186,56 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             }
           }
 
-          // ── Telephone poles + power lines (residential/suburban) ──
-          if (currentScenario.id === 'residential' || currentScenario.id === 'suburban' || currentScenario.id === 'school_zone' || currentScenario.id === 'night') {
+          // ── Telephone poles + power lines (residential/suburban/rural) ──
+          // Rural Maine back roads are DEFINED by the rhythm of wooden poles and
+          // sagging wires — if a rural scenario doesn't have them, it reads as a
+          // generic two-lane, not as rural Maine. Rural variant uses taller poles,
+          // wider spacing, and curve-aware X positioning so the poles follow the
+          // sine-wave road instead of drifting into the woods.
+          var _poleScenarios = ['residential', 'suburban', 'school_zone', 'night', 'rural', 'fog', 'snow', 'dawn'];
+          if (_poleScenarios.indexOf(currentScenario.id) !== -1) {
             var telPoleMat = new T.MeshLambertMaterial({ color: 0x6b5b4b });
             var wireMat = new T.MeshBasicMaterial({ color: 0x333333 });
-            for (var tpi = -MAP_SIZE + 4; tpi < MAP_SIZE; tpi += 10) {
+            var _isRuralPole = ['rural', 'fog', 'snow', 'dawn'].indexOf(currentScenario.id) !== -1;
+            var _isHwyPole = currentScenario.id === 'highway'; // not currently hit, but structured for future
+            var poleStep = _isRuralPole ? 12 : 10; // rural poles slightly more spread
+            var poleHeight = _isRuralPole ? 6 : 5;
+            var crossY = _isRuralPole ? 5.7 : 4.8;
+            var wireY = _isRuralPole ? 5.65 : 4.75;
+            // Edge offset beyond the cat's-eye reflector line so poles sit on the
+            // shoulder shoulder/treeline, not at the road edge.
+            var poleOff = 6.5;
+            for (var tpi = -MAP_SIZE + 4; tpi < MAP_SIZE; tpi += poleStep) {
+              var tpMY = tpi + MAP_SIZE / 2;
+              var tpCX = _isRuralPole ? centerX + Math.sin(tpMY * 0.12) * 5
+                                      : _isHwyPole ? centerX + Math.sin(tpMY * 0.06) * 3
+                                      : centerX;
+              var tpWX = tpCX - MAP_SIZE / 2 + poleOff;
               // Pole on right side
-              var tpGeo = new T.CylinderGeometry(0.06, 0.08, 5, 6);
+              var tpGeo = new T.CylinderGeometry(0.06, 0.08, poleHeight, 6);
               var tp = new T.Mesh(tpGeo, telPoleMat);
-              tp.position.set(centerX - MAP_SIZE / 2 + 6.5, 2.5, tpi);
+              tp.position.set(tpWX, poleHeight / 2, tpi);
               tp.castShadow = true;
               scene.add(tp);
               // Cross arm
               var caGeo = new T.BoxGeometry(0.04, 0.04, 1.2);
               var ca = new T.Mesh(caGeo, telPoleMat);
-              ca.position.set(centerX - MAP_SIZE / 2 + 6.5, 4.8, tpi);
+              ca.position.set(tpWX, crossY, tpi);
               scene.add(ca);
-              // Wires (thin cylinders between poles)
+              // Wires (thin cylinders between consecutive poles). Centered between
+              // this pole and the previous one — because we curve the poles, the
+              // midpoint X must curve too.
               if (tpi > -MAP_SIZE + 4) {
+                var midY = tpi - poleStep / 2;
+                var midMY = midY + MAP_SIZE / 2;
+                var midCX = _isRuralPole ? centerX + Math.sin(midMY * 0.12) * 5
+                                         : _isHwyPole ? centerX + Math.sin(midMY * 0.06) * 3
+                                         : centerX;
+                var midWX = midCX - MAP_SIZE / 2 + poleOff;
                 [-0.5, 0, 0.5].forEach(function(wOff) {
-                  var wireGeo = new T.CylinderGeometry(0.01, 0.01, 10.1, 4);
+                  var wireGeo = new T.CylinderGeometry(0.01, 0.01, poleStep + 0.1, 4);
                   var wire = new T.Mesh(wireGeo, wireMat);
-                  wire.position.set(centerX - MAP_SIZE / 2 + 6.5, 4.75, tpi - 5);
+                  wire.position.set(midWX, wireY, midY);
                   wire.rotation.x = Math.PI / 2;
                   wire.position.z += wOff * 0.1; // slight offset per wire
                   scene.add(wire);
