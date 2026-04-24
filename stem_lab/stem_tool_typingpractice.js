@@ -1773,7 +1773,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   lineHeight: '1.5',
                   maxWidth: '640px'
                 }
-              }, 'Built for learners with dysgraphia, dyslexia, ADHD, motor-planning differences, and low vision. Go at your own pace — there are no timers, leaderboards, or streak punishments here.')
+              }, (function() {
+                var tm = state.theme || 'default';
+                if (tm === 'steampunk') return 'A workshop for learners with dysgraphia, dyslexia, ADHD, motor-planning differences, and low vision. Set your own cadence — no hourglass, no ranks, no punishment for missed days.';
+                if (tm === 'cyberpunk') return '[BUILT FOR] dysgraphia :: dyslexia :: ADHD :: motor-planning :: low-vision. [OFF] timers :: leaderboards :: streak-punish :: ads. user-pace :: always.';
+                if (tm === 'kawaii')    return 'Made with love for learners with dysgraphia, dyslexia, ADHD, motor-planning differences, and low vision. 💕 Go at YOUR pace — no timers, no rankings, no streak guilt. Just you, being you. ✨';
+                if (tm === 'neutral')   return 'For learners with dysgraphia, dyslexia, ADHD, motor-planning differences, low vision. Self-paced. No timers, rankings, or streak penalties.';
+                return 'Built for learners with dysgraphia, dyslexia, ADHD, motor-planning differences, and low vision. Go at your own pace — there are no timers, leaderboards, or streak punishments here.';
+              })())
             ),
 
             // Personalized greeting — reads the time of day, any absence gap,
@@ -4642,7 +4649,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               if (earned.indexOf(badgeId) === -1) {
                 var updated = earned.concat([badgeId]);
                 upd('accommodationBadges', updated);
-                addToast('🏅 Badge earned: tried ' + key + ' — these tools are your teammates.');
+                var _bTm = state.theme || 'default';
+                var _bToast;
+                if (_bTm === 'steampunk')      _bToast = '⚙ Instrument logged: first use of ' + key + '. The workshop rewards every hand that reaches.';
+                else if (_bTm === 'cyberpunk') _bToast = '[BADGE] ' + key.toUpperCase() + ' :: first-use logged :: mods are allies';
+                else if (_bTm === 'kawaii')    _bToast = '🏅✨ Badge earned! You tried ' + key + ' — helpful friends are the best! 💕';
+                else if (_bTm === 'neutral')   _bToast = 'Badge: first use of ' + key + '.';
+                else                           _bToast = '🏅 Badge earned: tried ' + key + ' — these tools are your teammates.';
+                addToast(_bToast);
               }
             }
           };
