@@ -5950,7 +5950,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             },
               h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', gap: '10px', flexWrap: 'wrap' } },
                 h('div', { style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 } },
-                  'Recent sessions — last ' + trend.length + (compareMode ? ' · tap 2 bars to compare' : ' · tap a bar for details')),
+                  (function() {
+                    var tm = state.theme || 'default';
+                    var tail = compareMode ? ' · tap 2 bars to compare' : ' · tap a bar for details';
+                    if (tm === 'steampunk') return 'Workshop ledger — last ' + trend.length + tail;
+                    if (tm === 'cyberpunk') return '[RECENT RUNS · ' + trend.length + ']' + tail;
+                    if (tm === 'kawaii')    return '🌸 Recent sessions · last ' + trend.length + tail;
+                    if (tm === 'neutral')   return 'Last ' + trend.length + ' sessions' + tail;
+                    return 'Recent sessions — last ' + trend.length + tail;
+                  })()),
                 h('div', { style: { display: 'flex', gap: '6px', alignItems: 'center' } },
                   compareMode && compareSelections.length > 0 ? h('span', {
                     style: { fontSize: '10px', color: palette.textMute }
@@ -6287,9 +6295,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 }
               },
                 h('div', { style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '10px', fontWeight: 700 } },
-                  'Error heatmap · all-time · ' + analysis.totalErrors + ' total errors'),
+                  (function() {
+                    var tm = state.theme || 'default';
+                    if (tm === 'steampunk') return '⚙ Grand gear-snag atlas · all-time · ' + analysis.totalErrors + ' total';
+                    if (tm === 'cyberpunk') return '[ERROR HEATMAP · ALL-TIME · ' + analysis.totalErrors + ']';
+                    if (tm === 'kawaii')    return '🌸 Tricky-key map · all-time · ' + analysis.totalErrors + ' total 💕';
+                    if (tm === 'neutral')   return 'Error heatmap · all-time · ' + analysis.totalErrors;
+                    return 'Error heatmap · all-time · ' + analysis.totalErrors + ' total errors';
+                  })()),
                 h('p', { style: { fontSize: '11px', color: palette.textMute, margin: '0 0 10px 0', lineHeight: '1.5' } },
-                  'Darker red = more errors on that key. This isn\'t shame data — it\'s the map that shows where practice pays off.'),
+                  (function() {
+                    var tm = state.theme || 'default';
+                    if (tm === 'steampunk') return 'Deeper shades mark the snags. This is no reproach — it is the workshop map that shows where effort earns its return.';
+                    if (tm === 'cyberpunk') return '[LEGEND] deeper shade :: higher error density :: targeted practice → delta ↓';
+                    if (tm === 'kawaii')    return 'Darker = more practice needed — and that\'s okay! 💕 This map just shows where you\'ll grow the fastest. ✨';
+                    if (tm === 'neutral')   return 'Darker = higher error rate. Targeted practice yields compounding gains.';
+                    return 'Darker red = more errors on that key. This isn\'t shame data — it\'s the map that shows where practice pays off.';
+                  })()),
                 renderErrorHeatmap(agg, maxErr, palette),
 
                 // Finger-group stacked bar: shows which finger owns the errors
