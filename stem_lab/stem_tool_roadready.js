@@ -8186,6 +8186,67 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             }
           }
 
+          // ── Fieldstone walls along rural / coastal / snow roads ──
+          // THE quintessential New England back road marker. Moss-grown stacked
+          // fieldstone walls run along every rural property line in Maine.
+          // Without them, a rural road reads as "generic forest road" — with
+          // them it's unmistakably New England. Segment-based so the wall looks
+          // tumbled and hand-built (gaps, irregular heights), not like a concrete
+          // barrier. Curves with the road just like the utility poles do.
+          var _wallScenarios = ['rural', 'fog', 'snow', 'dawn'];
+          if (_wallScenarios.indexOf(currentScenario.id) !== -1) {
+            var stoneMats = [
+              new T.MeshLambertMaterial({ color: 0x7a6e5c }),
+              new T.MeshLambertMaterial({ color: 0x6a6058 }),
+              new T.MeshLambertMaterial({ color: 0x5e5448 })
+            ];
+            // Mossy stones in snow get paler (frost + snow dusting); in clear
+            // rural they keep a hint of green.
+            var mossyMat = new T.MeshLambertMaterial({ color: isSnow ? 0xd0d6dc : 0x7c8872 });
+            var wallOff = 4.4; // just inside utility pole line (pole=6.5)
+            for (var swY = -MAP_SIZE + 2; swY < MAP_SIZE; swY += 3) {
+              // Leave occasional gaps — real walls tumble and crumble
+              var gapHash = ((swY + MAP_SIZE) * 37) % 100;
+              if (gapHash < 18) continue; // ~18% gap rate
+              var swMY = swY + MAP_SIZE / 2;
+              var swCX = centerX + Math.sin(swMY * 0.12) * 5;
+              // Build a 3m-long, 0.5m-tall, 0.35m-deep wall segment as 4 stacked
+              // small boxes — variable widths and slight jitter so it reads as
+              // stones, not a solid slab.
+              [-1, 1].forEach(function(swSide) {
+                var baseX = swCX - MAP_SIZE / 2 + swSide * wallOff;
+                // Bottom course — four stones
+                for (var stI = 0; stI < 4; stI++) {
+                  var stMat = stoneMats[(gapHash + stI) % 3];
+                  var stW = 0.55 + ((gapHash + stI * 7) % 20) * 0.01;
+                  var stH = 0.22 + ((gapHash + stI * 11) % 8) * 0.015;
+                  var stone = new T.Mesh(new T.BoxGeometry(0.34, stH, stW), stMat);
+                  stone.position.set(baseX + ((gapHash + stI * 3) % 5 - 2) * 0.02, stH / 2, swY - 1 + stI * 0.7);
+                  stone.rotation.y = ((gapHash + stI * 13) % 20 - 10) * 0.01; // tiny random yaw
+                  scene.add(stone);
+                }
+                // Top course — three slightly-smaller stones offset
+                for (var stJ = 0; stJ < 3; stJ++) {
+                  var stMat2 = stoneMats[(gapHash + stJ + 1) % 3];
+                  var stW2 = 0.5 + ((gapHash + stJ * 9) % 15) * 0.012;
+                  var stH2 = 0.2 + ((gapHash + stJ * 17) % 6) * 0.012;
+                  var stone2 = new T.Mesh(new T.BoxGeometry(0.32, stH2, stW2), stMat2);
+                  stone2.position.set(baseX + ((gapHash + stJ * 5) % 5 - 2) * 0.02, 0.28 + stH2 / 2, swY - 0.65 + stJ * 0.8);
+                  stone2.rotation.y = ((gapHash + stJ * 19) % 24 - 12) * 0.01;
+                  scene.add(stone2);
+                }
+                // Rare moss flash — a small plane on one bottom stone every ~5 segments
+                if (gapHash % 5 === 0) {
+                  var mossGeo = new T.PlaneGeometry(0.28, 0.14);
+                  var moss = new T.Mesh(mossGeo, mossyMat);
+                  moss.rotation.y = swSide < 0 ? Math.PI / 2 : -Math.PI / 2;
+                  moss.position.set(baseX + swSide * -0.17, 0.12, swY + 0.1);
+                  scene.add(moss);
+                }
+              });
+            }
+          }
+
           // ── Telephone poles + power lines (residential/suburban/rural) ──
           // Rural Maine back roads are DEFINED by the rhythm of wooden poles and
           // sagging wires — if a rural scenario doesn't have them, it reads as a
