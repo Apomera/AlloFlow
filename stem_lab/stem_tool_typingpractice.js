@@ -2690,7 +2690,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               // Pre-drill quick-toggles: high-frequency accommodations as
               // compact chips so clinicians / students can adjust without
               // round-tripping through the Accommodations page. Tapping a chip
-              // toggles the underlying setting immediately.
+              // toggles the underlying setting immediately. Header label is
+              // theme-voiced; `onAccent` so Kawaii light theme stays legible.
               h('div', {
                 style: {
                   marginBottom: '14px',
@@ -2701,7 +2702,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 }
               },
                 h('div', { style: { fontSize: '10px', color: palette.textMute, marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700, textAlign: 'left' } },
-                  'Quick adjust'),
+                  (function() {
+                    var tm = state.theme || 'default';
+                    if (tm === 'steampunk') return '⚙ Workshop controls';
+                    if (tm === 'cyberpunk') return '[QUICK CONFIG]';
+                    if (tm === 'kawaii')    return '💕 Quick adjust';
+                    if (tm === 'neutral')   return 'Quick adjust';
+                    return 'Quick adjust';
+                  })()),
                 h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap', justifyContent: 'center' } },
                   [
                     { key: 'dyslexiaFont',  label: '🔤 Font' },
@@ -2725,7 +2733,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                         borderRadius: '999px',
                         border: '1px solid ' + (isOn ? palette.accent : palette.border),
                         background: isOn ? palette.accent : 'transparent',
-                        color: isOn ? '#0f172a' : palette.textDim,
+                        color: isOn ? (palette.onAccent || '#0f172a') : palette.textDim,
                         fontSize: '11px',
                         fontWeight: isOn ? 700 : 500,
                         cursor: 'pointer',
@@ -2763,7 +2771,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 )
               ),
 
-              // Active accommodations chip row (readonly summary)
+              // Active accommodations chip row (readonly summary) — theme-voiced
               activeAccLabels.length > 0 ? h('div', {
                 style: {
                   fontSize: '11px',
@@ -2771,14 +2779,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   marginBottom: '18px',
                   lineHeight: '1.6'
                 }
-              }, '🏅 On: ' + activeAccLabels.join(' · ')) : h('div', {
+              }, (function() {
+                var tm = state.theme || 'default';
+                if (tm === 'steampunk') return '⚙ Instruments engaged: ' + activeAccLabels.join(' · ');
+                if (tm === 'cyberpunk') return '[LOADOUT] ' + activeAccLabels.join(' :: ');
+                if (tm === 'kawaii')    return '🏅 Helpful friends on: ' + activeAccLabels.join(' · ') + ' 💕';
+                if (tm === 'neutral')   return 'Active: ' + activeAccLabels.join(', ');
+                return '🏅 On: ' + activeAccLabels.join(' · ');
+              })()) : h('div', {
                 style: {
                   fontSize: '11px',
                   color: palette.textMute,
                   marginBottom: '18px',
                   fontStyle: 'italic'
                 }
-              }, 'Tip: Visit Accommodations from the menu for more advanced supports.'),
+              }, (function() {
+                var tm = state.theme || 'default';
+                if (tm === 'steampunk') return 'Additional workshop instruments await in Accommodations.';
+                if (tm === 'cyberpunk') return '[INFO] extended mods available via Accommodations menu';
+                if (tm === 'kawaii')    return '✨ Need more support? Peek at Accommodations from the menu! 💕';
+                if (tm === 'neutral')   return 'More supports available in Accommodations.';
+                return 'Tip: Visit Accommodations from the menu for more advanced supports.';
+              })()),
 
               // Action row — Start (primary) + Listen (TTS) if available
               h('div', { style: { display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center' } },

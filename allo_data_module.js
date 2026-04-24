@@ -628,7 +628,7 @@ const ADVENTURE_SHOP_ITEMS = [
 // === INTENT_SYSTEM_PROMPT (originally AlloFlowANTI.txt:5682-5731) ===
 const INTENT_SYSTEM_PROMPT = `
 Analyze the user's request.
-If they are asking to change settings (like grade level, topic, interests, language, instructions, tone, length, format, cognitive rigor, or visual style), return a JSON object with keys:
+If they are asking to change settings (like grade level, topic, interests, language, instructions, tone, length, format, cognitive rigor, visual style, roster group, or differentiation spread), return a JSON object with keys:
 {
   "intent": "UPDATE_SETTINGS",
   "gradeLevel": "string (optional - e.g. '3rd Grade', 'High School')",
@@ -641,12 +641,31 @@ If they are asking to change settings (like grade level, topic, interests, langu
   "format": "string (optional - one of: 'prose', 'bullets', 'numbered')",
   "dokLevel": "string (optional - DOK rigor level, one of: 'Level 1', 'Level 2', 'Level 3', 'Level 4')",
   "imageStyle": "string (optional - one of: 'Default', 'Pixel Art', 'Isometric Diagram', 'Watercolor', 'Realistic', 'Cartoon')",
-  "includeCitations": "boolean (optional - true if user wants inline source citations)"
+  "includeCitations": "boolean (optional - true if user wants inline source citations)",
+  "targetGroup": "string (optional - roster group key for Full Pack, e.g. 'ell-students', 'tier-2', or 'none' to clear)",
+  "differentiationRange": "string (optional - multi-grade spread for leveled text, e.g. 'None', 'Grade 2-4', 'Grade 5-7')"
 }
-If they are explicitly asking to create, generate, start, or build the lesson/resources (e.g., "Create the lesson now", "Generate it", "Let's go", "Make a quiz", "Build the timeline"), return:
+If they are explicitly asking to create, generate, start, or build the lesson/resources (e.g., "Create the lesson now", "Generate it", "Let's go", "Make a quiz", "Build the timeline", "Generate a 10-resource full pack"), return:
 {
   "intent": "GENERATE",
-  "resourceType": "string (optional - one of: 'simplified', 'glossary', 'quiz', 'outline', 'image', 'timeline', 'concept-sort', 'sentence-frames', 'brainstorm', 'adventure', 'faq', 'lesson-plan', 'analysis', 'persona'). Omit for full-pack / guided flow.)"
+  "resourceType": "string (optional - one of: 'simplified', 'glossary', 'quiz', 'outline', 'image', 'timeline', 'concept-sort', 'sentence-frames', 'brainstorm', 'adventure', 'faq', 'lesson-plan', 'analysis', 'persona'). Omit for full-pack / guided flow.",
+  "mode": "string (optional - 'single' | 'full-pack'. Use 'full-pack' when the user asks for a full resource pack or lesson pack. Omit for single-resource generation.)",
+  "count": "number (optional - only meaningful when mode='full-pack'; 1-20 or omit for 'Auto')",
+  "targetGroup": "string (optional - for mode='full-pack', roster group key)",
+  "config": "object (optional - transient settings to apply before generating: any subset of {tone, length, format, dokLevel, imageStyle, includeCitations, gradeLevel})"
+}
+If they want to regenerate an existing resource with modifications (e.g., "regenerate the image without text labels", "make the quiz harder", "redo the glossary with more examples", "rewrite the simplified text to be more conversational"), return:
+{
+  "intent": "REVISE_RESOURCE",
+  "target": "string (one of: 'image', 'quiz', 'glossary', 'simplified', 'outline', 'timeline', 'adventure', 'brainstorm', 'faq', 'sentence-frames', 'concept-sort', 'analysis', 'lesson-plan')",
+  "instruction": "string (the revision request — will be passed as customInstructions to the generator)"
+}
+If they want to ADD MORE items to an existing resource (e.g., "add 3 more quiz questions", "add more glossary terms", "extend the timeline with two more events"), return:
+{
+  "intent": "EXTEND_RESOURCE",
+  "target": "string (one of: 'quiz', 'glossary', 'timeline', 'concept-sort', 'brainstorm', 'faq', 'sentence-frames')",
+  "count": "number (how many additional items to add, default 3)",
+  "theme": "string (optional - focus/theme for the new items, e.g. 'application-level DOK' or 'ecosystems')"
 }
 If they are asking "Where is..." or "How do I find..." a specific feature (e.g. "Where is the glossary?", "How do I export?"), return:
 {
