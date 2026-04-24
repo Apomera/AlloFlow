@@ -10693,13 +10693,51 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   var chSpire = new T.Mesh(new T.ConeGeometry(0.7, 2.0, 4), lmRoofMat);
                   chSpire.position.set(lmCenterWX, lt.height * 1.15, lmCenterWZ - lt.size * 0.3);
                   chunkGroup.add(chSpire);
-                  // Cross
-                  var chCrossV = new T.Mesh(new T.BoxGeometry(0.08, 0.6, 0.08), new T.MeshLambertMaterial({ color: 0xfacc15 }));
+                  // Cross — brass-gold by day, glowing warm-white at night/fog/dawn
+                  // so the steeple reads as a destination from blocks away.
+                  var chCrossLit = currentScenario.time === 'night' || currentScenario.id === 'dawn' || currentScenario.weather === 'fog';
+                  var chCrossMat = chCrossLit
+                    ? new T.MeshBasicMaterial({ color: 0xfff4c0 })
+                    : new T.MeshLambertMaterial({ color: 0xfacc15 });
+                  var chCrossV = new T.Mesh(new T.BoxGeometry(0.08, 0.6, 0.08), chCrossMat);
                   chCrossV.position.set(lmCenterWX, lt.height * 1.15 + 1.3, lmCenterWZ - lt.size * 0.3);
                   chunkGroup.add(chCrossV);
-                  var chCrossH = new T.Mesh(new T.BoxGeometry(0.4, 0.08, 0.08), new T.MeshLambertMaterial({ color: 0xfacc15 }));
+                  var chCrossH = new T.Mesh(new T.BoxGeometry(0.4, 0.08, 0.08), chCrossMat);
                   chCrossH.position.set(lmCenterWX, lt.height * 1.15 + 1.4, lmCenterWZ - lt.size * 0.3);
                   chunkGroup.add(chCrossH);
+                  if (chCrossLit) {
+                    // Glow halo behind the cross
+                    var chHaloMat = new T.MeshBasicMaterial({
+                      color: 0xfff0c0, transparent: true, opacity: 0.45,
+                      blending: T.AdditiveBlending, depthWrite: false
+                    });
+                    var chHalo = new T.Mesh(new T.PlaneGeometry(0.9, 1.1), chHaloMat);
+                    chHalo.position.set(lmCenterWX, lt.height * 1.15 + 1.35, lmCenterWZ - lt.size * 0.3 + 0.06);
+                    chunkGroup.add(chHalo);
+                    // Stained-glass windows along the long sides of the nave. Three
+                    // tall narrow windows per side, alternating warm tones. Pale
+                    // emissive — congregations leave a few lights on for security
+                    // and visibility, and the colors carry through the cathedral
+                    // glass to read as warm jewels in the dark.
+                    var sgPalette = [0xffd060, 0xff8a40, 0xffb070]; // amber, copper, peach
+                    var navHalfW = lt.size * 0.6 / 2; // half-width of the main hall
+                    var navHalfL = lt.size * 0.8 / 2;
+                    var navMidY = lt.height * 0.3; // near vertical center of the hall
+                    for (var sgi = -1; sgi <= 1; sgi++) {
+                      var sgZ = lmCenterWZ + sgi * (navHalfL * 0.55);
+                      var sgColor = sgPalette[(sgi + 1) % 3];
+                      var sgMat = new T.MeshBasicMaterial({ color: sgColor, transparent: true, opacity: 0.92 });
+                      // East face
+                      var sgE = new T.Mesh(new T.BoxGeometry(0.06, 0.7, 0.18), sgMat);
+                      sgE.position.set(lmCenterWX + navHalfW + 0.005, navMidY, sgZ);
+                      chunkGroup.add(sgE);
+                      // West face — same color so each pair of windows reads as one
+                      // color across the church.
+                      var sgW = new T.Mesh(new T.BoxGeometry(0.06, 0.7, 0.18), sgMat);
+                      sgW.position.set(lmCenterWX - navHalfW - 0.005, navMidY, sgZ);
+                      chunkGroup.add(sgW);
+                    }
+                  }
                 } else if (lt.id === 'gas') {
                   // Gas station: small building + canopy with pumps
                   var gsBldg = new T.Mesh(new T.BoxGeometry(lt.size * 0.5, lt.height, lt.size * 0.5), lmMainMat);
