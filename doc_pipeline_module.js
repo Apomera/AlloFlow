@@ -9579,14 +9579,16 @@ tr { page-break-inside: avoid; }
     // ── Build the StructTreeRoot from fixResult.accessibleHtml ──
     // Parse the remediated HTML to get the semantic outline (headings,
     // images with alt, tables, lists), then map those to PDF StructElems.
-    // This is a FLAT tree in this pass — headings and their descendants
-    // live as siblings under the root, not as a nested outline. A nested
-    // tree is the Stage 2 upgrade that needs MCID linkage anyway to be
-    // meaningful, so we avoid the complexity for now.
+    // Stage 3 upgrade: build a NESTED tree. Headings open implicit /Sect
+    // containers whose K kids are the heading itself plus any following
+    // paragraphs/tables/etc until the next peer-or-higher heading closes
+    // the section. Nested H2/H3 sections live as K children of their
+    // parent H1 section. This gives SR readers real structural hierarchy
+    // for heading navigation. If the nested walk throws at any point we
+    // fall back to the Stage 1 flat shape — net-safe.
     const html = (fixResult && fixResult.accessibleHtml) || '';
     const parser = new DOMParser();
     const htmlDoc = parser.parseFromString(html, 'text/html');
-    const body = htmlDoc.body || htmlDoc.documentElement;
     // StructElem "role" mapping from HTML tag → PDF standard structure type.
     // See ISO 32000-1 §14.8.4 "Standard Structure Types".
     const TAG_TO_PDF_ROLE = {
@@ -9596,57 +9598,109 @@ tr { page-break-inside: avoid; }
       blockquote: 'BlockQuote', a: 'Link', header: 'Sect', footer: 'Sect',
       section: 'Sect', nav: 'Sect', aside: 'Sect', main: 'Sect',
     };
-    // Walk the body to collect elements we want to tag. Order-preserving —
-    // reflects document reading order as it exists in the HTML.
-    const outline = [];
-    const walker = htmlDoc.createTreeWalker(body, NodeFilter.SHOW_ELEMENT, null);
-    while (walker.nextNode()) {
-      const el = walker.currentNode;
-      const tag = (el.tagName || '').toLowerCase();
-      const pdfRole = TAG_TO_PDF_ROLE[tag];
-      if (!pdfRole) continue;
-      // Skip empty text containers to avoid clutter in the structure tree.
-      if (['h1','h2','h3','h4','h5','h6','p','li','caption','blockquote'].includes(tag) && !(el.textContent || '').trim()) continue;
-      outline.push({
-        role: pdfRole,
-        text: (el.textContent || '').trim().substring(0, 400),
-        alt: tag === 'img' ? (el.getAttribute('alt') || '') : null,
-        isDecorative: tag === 'img' && (el.getAttribute('role') === 'presentation' || el.getAttribute('aria-hidden') === 'true'),
-      });
-    }
-    // Build StructElem PDFDict objects. Each StructElem needs:
-    //   Type: /StructElem
-    //   S: /<role>
-    //   P: <ref to parent StructTreeRoot>  (filled after root is created)
-    //   Alt: for Figure — the alt text
-    //   ActualText: for substitution (not used here)
-    // For real PDF/UA linkage we'd also need K (kids) pointing at MCIDs in
-    // content streams; omitted here by design (see function-top comment).
+    const HEADING_LEVEL = { h1: 1, h2: 2, h3: 3, h4: 4, h5: 5, h6: 6 };
     const structRootRef = context.nextRef();
-    const structElemRefs = [];
-    for (const item of outline) {
-      const elemDict = { Type: PDFName.of('StructElem'), S: PDFName.of(item.role), P: structRootRef };
-      if (item.role === 'Figure') {
-        // Alt text is required for Figure when not decorative; Artifact
-        // marking would be more correct for decorative images but needs
-        // content-stream work. Use empty Alt as a fallback for now.
-        if (item.isDecorative) {
-          elemDict.S = PDFName.of('Span'); // decorative → span, de-emphasize
-          elemDict.Alt = PDFString.of('');
-        } else {
-          elemDict.Alt = PDFString.of(item.alt || '(image)');
+    // _buildOutlineStructElems — minimal refactor: isolates HTML-DOM walk
+    // from PDF-building. Returns either the nested tree's root K (array
+    // of refs, some of which are Sect containers) or the flat list (Stage
+    // 1 shape) if nesting throws.
+    const _buildOutlineStructElems = () => {
+      const body = htmlDoc.body || htmlDoc.documentElement;
+      // Walk once collecting ordered {role, text, alt, isDecorative, level}.
+      const items = [];
+      const walker = htmlDoc.createTreeWalker(body, NodeFilter.SHOW_ELEMENT, null);
+      while (walker.nextNode()) {
+        const el = walker.currentNode;
+        const tag = (el.tagName || '').toLowerCase();
+        const pdfRole = TAG_TO_PDF_ROLE[tag];
+        if (!pdfRole) continue;
+        if (['h1','h2','h3','h4','h5','h6','p','li','caption','blockquote'].includes(tag) && !(el.textContent || '').trim()) continue;
+        items.push({
+          role: pdfRole,
+          text: (el.textContent || '').trim().substring(0, 400),
+          alt: tag === 'img' ? (el.getAttribute('alt') || '') : null,
+          isDecorative: tag === 'img' && (el.getAttribute('role') === 'presentation' || el.getAttribute('aria-hidden') === 'true'),
+          level: HEADING_LEVEL[tag] || 0,
+        });
+      }
+      // Build a leaf StructElem (not a Sect) and register it. The parentRef
+      // is the immediate parent — Sect or the StructTreeRoot.
+      const buildLeaf = (item, parentRef) => {
+        const d = { Type: PDFName.of('StructElem'), S: PDFName.of(item.role), P: parentRef };
+        if (item.role === 'Figure') {
+          if (item.isDecorative) {
+            // Stage 3 E-lite: decorative images become /NonStruct instead of
+            // /Span so validators treat them as pure chrome with no content
+            // contribution. Equivalent SR behavior to artifact marking
+            // without the content-stream rewrite artifact-BMC would require.
+            d.S = PDFName.of('NonStruct');
+            d.Alt = PDFString.of('');
+          } else {
+            d.Alt = PDFString.of(item.alt || '(image)');
+          }
         }
+        if (['H1','H2','H3','H4','H5','H6','P','LI','Caption','BlockQuote'].includes(item.role) && item.text) {
+          d.ActualText = PDFString.of(item.text);
+        }
+        return context.register(context.obj(d));
+      };
+      // Attempt NESTED build with a section stack. Each stack entry is
+      // { ref, level, kids: [] } representing an open Sect. On a heading
+      // we close stack entries whose level >= the incoming level, then
+      // open a new Sect at the new level. Leaf items (p/li/table/figure)
+      // go into the top-of-stack's kids, or the root-kids list if no
+      // section is open.
+      const tryNested = () => {
+        const rootKids = [];
+        const sectStack = [];
+        const pushChild = (ref) => {
+          if (sectStack.length > 0) sectStack[sectStack.length - 1].kids.push(ref);
+          else rootKids.push(ref);
+        };
+        const closeTo = (level) => {
+          while (sectStack.length > 0 && sectStack[sectStack.length - 1].level >= level) {
+            const s = sectStack.pop();
+            const parentRef = sectStack.length > 0 ? sectStack[sectStack.length - 1].ref : structRootRef;
+            context.assign(s.ref, context.obj({
+              Type: PDFName.of('StructElem'),
+              S: PDFName.of('Sect'),
+              P: parentRef,
+              K: context.obj(s.kids),
+            }));
+          }
+        };
+        const openSect = (level) => {
+          const s = { ref: context.nextRef(), level, kids: [] };
+          pushChild(s.ref);
+          sectStack.push(s);
+          return s;
+        };
+        for (const it of items) {
+          if (it.level > 0) {
+            closeTo(it.level);
+            const s = openSect(it.level);
+            s.kids.push(buildLeaf(it, s.ref));
+          } else {
+            const parentRef = sectStack.length > 0 ? sectStack[sectStack.length - 1].ref : structRootRef;
+            pushChild(buildLeaf(it, parentRef));
+          }
+        }
+        closeTo(0);
+        return rootKids;
+      };
+      // Flat fallback — identical to Stage 1 behavior. Used only when
+      // tryNested throws (edge-case HTML we didn't anticipate).
+      const tryFlat = () => items.map(it => buildLeaf(it, structRootRef));
+      try {
+        const nested = tryNested();
+        if (nested.length === 0 && items.length > 0) return tryFlat();
+        return nested;
+      } catch(nestErr) {
+        try { warnLog('[createTaggedPdf] nested tree failed, falling back to flat: ' + (nestErr && nestErr.message)); } catch(_) {}
+        return tryFlat();
       }
-      if (['H1','H2','H3','H4','H5','H6','P','LI','Caption','BlockQuote'].includes(item.role) && item.text) {
-        // ActualText lets SR read a substituted string if the MCID-linked
-        // content isn't present. This at least gives something to read when
-        // a reader does use the tag tree without MCID fallback.
-        elemDict.ActualText = PDFString.of(item.text);
-      }
-      const elemObj = context.obj(elemDict);
-      const elemRef = context.register(elemObj);
-      structElemRefs.push(elemRef);
-    }
+    };
+    const structElemRefs = _buildOutlineStructElems();
     // ── Stage 2: content-stream MCID wrapping + per-page StructElems ──
     // For every page we (a) optionally inject an invisible OCR text layer
     // (scanned PDFs), (b) wrap the full content stream with BDC/EMC so a
@@ -9763,20 +9817,92 @@ tr { page-break-inside: avoid; }
         parentTreeNums.push(pageElemRef);
       } catch(elemErr) { try { warnLog('[createTaggedPdf] page StructElem build failed p' + (pi+1) + ': ' + (elemErr && elemErr.message)); } catch(_) {} }
     }
+    // ── Stage 3: AcroForm field tagging ──
+    // Scan each page's Annots for widget annotations (Subtype=/Widget),
+    // create a /Form StructElem per widget with an OBJR child linking
+    // back to the annotation, assign a unique StructParent key, and set
+    // that key on the annotation's dict so readers can walk from widget
+    // to tag tree. No-op when the PDF has no form (the common case).
+    const fieldElemRefs = [];
+    let nextStructParentKey = pages.length;
+    try {
+      let form = null;
+      try { form = doc.getForm(); } catch(_) { form = null; }
+      let fields = [];
+      if (form) { try { fields = form.getFields() || []; } catch(_) { fields = []; } }
+      if (fields.length > 0) {
+        // Map widget ref string → { annotRef, annotDict, page } by scanning
+        // each page once.
+        const widgetInfo = new Map();
+        for (let pi = 0; pi < pages.length; pi++) {
+          const page = pages[pi];
+          const annots = page.node.get(PDFName.of('Annots'));
+          if (!annots || typeof annots.size !== 'function') continue;
+          for (let a = 0; a < annots.size(); a++) {
+            const annotRef = annots.get(a);
+            let annotDict;
+            try { annotDict = context.lookup(annotRef); } catch(_) { continue; }
+            if (!annotDict || typeof annotDict.get !== 'function') continue;
+            const subtype = annotDict.get(PDFName.of('Subtype'));
+            if (!subtype || String(subtype) !== '/Widget') continue;
+            widgetInfo.set(annotRef.toString(), { annotRef, annotDict, page });
+          }
+        }
+        for (const field of fields) {
+          let fieldName = 'form field';
+          try { fieldName = field.getName() || fieldName; } catch(_) {}
+          // Collect widget refs for this field (Kids array, or the field
+          // itself in the merged-widget case).
+          const widgetRefs = [];
+          try {
+            const kids = field.acroField.dict.get(PDFName.of('Kids'));
+            if (kids && typeof kids.size === 'function' && kids.size() > 0) {
+              for (let k = 0; k < kids.size(); k++) widgetRefs.push(kids.get(k));
+            } else {
+              widgetRefs.push(field.acroField.ref);
+            }
+          } catch(_) { continue; }
+          for (const wRef of widgetRefs) {
+            const info = widgetInfo.get(wRef.toString());
+            if (!info) continue;
+            const key = nextStructParentKey++;
+            const objrDict = context.obj({
+              Type: PDFName.of('OBJR'),
+              Pg: info.page.ref,
+              Obj: info.annotRef,
+            });
+            const fieldElemDict = context.obj({
+              Type: PDFName.of('StructElem'),
+              S: PDFName.of('Form'),
+              P: structRootRef,
+              Pg: info.page.ref,
+              Alt: PDFString.of(fieldName),
+              K: context.obj([objrDict]),
+            });
+            const fieldElemRef = context.register(fieldElemDict);
+            fieldElemRefs.push(fieldElemRef);
+            try { info.annotDict.set(PDFName.of('StructParent'), PDFNumber.of(key)); } catch(_) {}
+            parentTreeNums.push(PDFNumber.of(key));
+            parentTreeNums.push(fieldElemRef);
+          }
+        }
+      }
+    } catch(formErr) { try { warnLog('[createTaggedPdf] AcroForm tagging failed: ' + (formErr && formErr.message)); } catch(_) {} }
     // ParentTree — number tree mapping StructParents key → StructElem ref.
     // Stage 1 left this empty; validators need it populated for MCID linkage.
     const parentTreeDict = context.obj({ Nums: context.obj(parentTreeNums) });
     const parentTreeRef = context.register(parentTreeDict);
-    // StructTreeRoot.K holds outline elems first (heading navigation) and
-    // per-page elems after (content-stream linkage). Order matters: outline
-    // first gives SR readers the semantic reading order when they traverse
-    // the tag tree depth-first.
-    const combinedK = structElemRefs.concat(pageElemRefs);
+    // StructTreeRoot.K holds outline elems first (heading navigation),
+    // per-page elems next (content-stream linkage), then form-field elems
+    // last (AcroForm widgets). Order matters: outline first gives SR
+    // readers the semantic reading order when they traverse the tag tree
+    // depth-first.
+    const combinedK = structElemRefs.concat(pageElemRefs).concat(fieldElemRefs);
     const structRootDict = context.obj({
       Type: PDFName.of('StructTreeRoot'),
       K: context.obj(combinedK),
       ParentTree: parentTreeRef,
-      ParentTreeNextKey: PDFNumber.of(pages.length),
+      ParentTreeNextKey: PDFNumber.of(nextStructParentKey),
       RoleMap: context.obj({}),
     });
     context.assign(structRootRef, structRootDict);
