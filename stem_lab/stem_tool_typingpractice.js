@@ -104,7 +104,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     // earlier state shapes; new canonical field is the library.
     customDrill: null,         // (legacy) single-slot, auto-migrated into library
     customDrillLibrary: [],    // canonical: array of { id, text, label, savedAt }
-    activeCustomDrillId: null  // which library entry is currently being drilled
+    activeCustomDrillId: null, // which library entry is currently being drilled
+    // ISO timestamp of the last time the user exported a full backup.
+    // Drives the menu's gentle 'consider backing up' nudge. Null until first
+    // backup is exported; then the nudge backs off until enough new activity
+    // has accrued to make it worth re-exporting.
+    lastBackupDate: null
   };
 
   // Max custom drills kept at once. Matches the passage library size — both are
@@ -2028,6 +2033,76 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   style: { fontSize: '14px', lineHeight: '1.3', flexShrink: 0 }
                 }, emoji),
                 h('span', null, text)
+              );
+            })(),
+
+            // Backup nudge — one of the only "go do something" cards the menu
+            // ever shows. Appears only when:
+            //   (a) student has ≥20 sessions (meaningful amount to lose), AND
+            //   (b) no backup ever exported OR last backup ≥30 days ago
+            // localStorage can be cleared by the browser, a shared-computer
+            // sweep, or a device move; the tool lives fully client-side, so
+            // backup is the only disaster-recovery path. Theme-voiced.
+            // Dismissible by going to Settings and exporting.
+            (function() {
+              if (sessionCount < 20) return null;
+              var lastBackup = state.lastBackupDate ? new Date(state.lastBackupDate).getTime() : null;
+              if (lastBackup !== null) {
+                var daysSince = Math.floor((Date.now() - lastBackup) / (24 * 60 * 60 * 1000));
+                if (daysSince < 30) return null;
+              }
+              var tm = state.theme || 'default';
+              var body, label;
+              if (tm === 'steampunk') {
+                body = '⚙ The ledger grows thick. Consider exporting a full backup — the workshop keeps no copies beyond this machine.';
+                label = 'To the backup bench';
+              } else if (tm === 'cyberpunk') {
+                body = '[NOTE] ' + sessionCount + ' sessions logged :: local-only storage :: recommend export → avoid data loss on browser sweep';
+                label = '[EXPORT NOW]';
+              } else if (tm === 'kawaii') {
+                body = '💕 You\'ve built up so much progress! ✨ It only lives on this computer — let\'s save a backup so you never lose it. 🌸';
+                label = '💕 Save a backup';
+              } else if (tm === 'neutral') {
+                body = sessionCount + ' sessions. Local-only storage. Recommend a backup export.';
+                label = 'Open backup';
+              } else {
+                body = 'You\'ve logged ' + sessionCount + ' sessions — all stored only on this computer. A quick backup export protects your record against a browser sweep or device change.';
+                label = '💾 Go to backup';
+              }
+              return h('div', {
+                role: 'note',
+                style: {
+                  marginBottom: '16px',
+                  padding: '10px 14px',
+                  background: palette.surface,
+                  border: '1px dashed ' + palette.warn,
+                  borderRadius: '8px',
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  gap: '10px',
+                  alignItems: 'center',
+                  fontSize: '12px',
+                  color: palette.textDim,
+                  lineHeight: '1.55'
+                }
+              },
+                h('span', { style: { flex: '1 1 260px' } }, body),
+                h('button', {
+                  onClick: function() {
+                    go('settings');
+                    // Scroll to profile+backup after state updates render
+                    setTimeout(function() {
+                      var el = document.getElementById('tp-s-profile');
+                      if (el && el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 120);
+                  },
+                  style: Object.assign({}, secondaryBtnStyle(palette), {
+                    fontSize: '11px',
+                    padding: '6px 12px',
+                    borderColor: palette.warn,
+                    color: palette.warn
+                  })
+                }, label)
               );
             })(),
 
@@ -5796,10 +5871,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
                   h('button', {
                     onClick: function() {
+                      var nowIso = new Date().toISOString();
                       var backup = {
                         _format: 'alloflow-typing-practice-backup',
                         _version: 1,
-                        _exported: new Date().toISOString(),
+                        _exported: nowIso,
                         state: Object.assign({}, state)
                       };
                       try {
@@ -5814,6 +5890,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                         a.click();
                         document.body.removeChild(a);
                         setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+                        // Record the timestamp so the menu nudge can back off
+                        // until a meaningful amount of new activity accrues.
+                        upd('lastBackupDate', nowIso);
                         addToast('Full backup exported.');
                       } catch (e) {
                         addToast('⚠️ Backup failed: ' + (e.message || 'unknown error'));
