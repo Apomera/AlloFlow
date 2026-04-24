@@ -10744,21 +10744,58 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   }
                   // Special touches per landmark type
                   if (lt.id === 'hospital') {
-                    // Big red cross on roof
-                    var hcV = new T.Mesh(new T.BoxGeometry(0.3, 1.2, 0.1), new T.MeshLambertMaterial({ color: 0xdc2626 }));
+                    // Big red cross on roof. At night/fog/dawn the cross switches to
+                    // emissive + gets an additive halo — real hospitals backlight the
+                    // cross so it reads as "EMERGENCY" from blocks away. A small red
+                    // PointLight below wakes the cross to throw color onto the roof.
+                    var hospLit = currentScenario.time === 'night' || currentScenario.id === 'dawn' || currentScenario.weather === 'fog';
+                    var hcMatType = hospLit
+                      ? new T.MeshBasicMaterial({ color: 0xff3a3a })
+                      : new T.MeshLambertMaterial({ color: 0xdc2626 });
+                    var hcV = new T.Mesh(new T.BoxGeometry(0.3, 1.2, 0.1), hcMatType);
                     hcV.position.set(lmCenterWX, lt.height + 0.9, lmCenterWZ);
                     chunkGroup.add(hcV);
-                    var hcH = new T.Mesh(new T.BoxGeometry(1.2, 0.3, 0.1), new T.MeshLambertMaterial({ color: 0xdc2626 }));
+                    var hcH = new T.Mesh(new T.BoxGeometry(1.2, 0.3, 0.1), hcMatType);
                     hcH.position.set(lmCenterWX, lt.height + 0.9, lmCenterWZ);
                     chunkGroup.add(hcH);
+                    if (hospLit) {
+                      // Halo plane — additive red bloom behind the cross.
+                      var hcHaloMat = new T.MeshBasicMaterial({
+                        color: 0xff4040, transparent: true, opacity: 0.55,
+                        blending: T.AdditiveBlending, depthWrite: false
+                      });
+                      var hcHalo = new T.Mesh(new T.PlaneGeometry(1.6, 1.6), hcHaloMat);
+                      hcHalo.position.set(lmCenterWX, lt.height + 0.9, lmCenterWZ - 0.08);
+                      chunkGroup.add(hcHalo);
+                      // PointLight for real roof illumination — red wash on the
+                      // building's upper walls so the hospital carries a distinctive
+                      // color signature in any night driving scene.
+                      var hcLight = new T.PointLight(0xff3a3a, 1.2, 6, 2);
+                      hcLight.position.set(lmCenterWX, lt.height + 0.5, lmCenterWZ);
+                      chunkGroup.add(hcLight);
+                    }
                   } else if (lt.id === 'school') {
-                    // Flagpole with American flag
+                    // Flagpole with American flag (waves in wind via chunk-walk loop)
                     var flagPole = new T.Mesh(new T.CylinderGeometry(0.06, 0.06, 4, 6), new T.MeshLambertMaterial({ color: 0xd1d5db }));
                     flagPole.position.set(lmCenterWX + lm.side * 2, 2, lmCenterWZ + 1.5);
                     chunkGroup.add(flagPole);
                     var flag = new T.Mesh(new T.BoxGeometry(0.8, 0.5, 0.02), new T.MeshLambertMaterial({ color: 0xef4444 }));
                     flag.position.set(lmCenterWX + lm.side * 2 + lm.side * 0.4, 3.5, lmCenterWZ + 1.5);
+                    flag.name = 'rr_chunkFlag';
+                    flag._flagSeed = (ci * 37.3 + lm.centerY * 0.91) % 6.28;
+                    flag._flagBaseY = 0;
                     chunkGroup.add(flag);
+                  } else if (lt.id === 'post') {
+                    // Small American flag out front — real US post offices always have one.
+                    var poFlagPole = new T.Mesh(new T.CylinderGeometry(0.05, 0.05, 3.2, 6), new T.MeshLambertMaterial({ color: 0xd1d5db }));
+                    poFlagPole.position.set(lmCenterWX + lm.side * 1.8, 1.6, lmCenterWZ + 1.2);
+                    chunkGroup.add(poFlagPole);
+                    var poFlag = new T.Mesh(new T.BoxGeometry(0.7, 0.42, 0.02), new T.MeshLambertMaterial({ color: 0x1e3a5f }));
+                    poFlag.position.set(lmCenterWX + lm.side * 1.8 + lm.side * 0.35, 2.85, lmCenterWZ + 1.2);
+                    poFlag.name = 'rr_chunkFlag';
+                    poFlag._flagSeed = (ci * 19.7 + lm.centerY * 0.73 + 3.14) % 6.28;
+                    poFlag._flagBaseY = 0;
+                    chunkGroup.add(poFlag);
                     // ── Flashing yellow school-zone beacons on both sides of the road ──
                     // Two poles with twin flashing amber lamps — alternating at ~1.2 Hz.
                     // Placed on the APPROACH side of the school (~6m before the landmark Z).
@@ -10786,12 +10823,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                         s3.flashingBeacons.push({ mesh: lampMesh, phase: (bi + (bSide > 0 ? 1 : 0)) % 2 });
                       });
                     });
+                  } else if (lt.id === 'pharmacy') {
+                    // Rooftop green plus — iconic pharmacy symbol. Lambert by day,
+                    // emissive + halo at night/fog/dawn so the green glow is a
+                    // landmark signature like the hospital red cross.
+                    var pharmLit = currentScenario.time === 'night' || currentScenario.id === 'dawn' || currentScenario.weather === 'fog';
+                    var pharmMat = pharmLit
+                      ? new T.MeshBasicMaterial({ color: 0x4ade80 })
+                      : new T.MeshLambertMaterial({ color: 0x16a34a });
+                    var pV = new T.Mesh(new T.BoxGeometry(0.22, 0.9, 0.08), pharmMat);
+                    pV.position.set(lmCenterWX, lt.height + 0.7, lmCenterWZ);
+                    chunkGroup.add(pV);
+                    var pH = new T.Mesh(new T.BoxGeometry(0.9, 0.22, 0.08), pharmMat);
+                    pH.position.set(lmCenterWX, lt.height + 0.7, lmCenterWZ);
+                    chunkGroup.add(pH);
+                    if (pharmLit) {
+                      var pHaloMat = new T.MeshBasicMaterial({
+                        color: 0x4ade80, transparent: true, opacity: 0.5,
+                        blending: T.AdditiveBlending, depthWrite: false
+                      });
+                      var pHalo = new T.Mesh(new T.PlaneGeometry(1.2, 1.2), pHaloMat);
+                      pHalo.position.set(lmCenterWX, lt.height + 0.7, lmCenterWZ - 0.06);
+                      chunkGroup.add(pHalo);
+                    }
                   } else if (lt.id === 'fire') {
                     // Garage door (larger)
                     var fdMat = new T.MeshLambertMaterial({ color: 0xfef3c7 });
                     var fd = new T.Mesh(new T.BoxGeometry(1.5, 1.8, 0.1), fdMat);
                     fd.position.set(lmCenterWX + lm.side * (lt.size * 0.4) - 0.5, 0.9, lmCenterWZ);
                     chunkGroup.add(fd);
+                    // Red warning strip above the bay door — glows at night/fog/dawn.
+                    // Real fire stations have a red accent light bar so they're
+                    // instantly identifiable as emergency buildings in the dark.
+                    var fireLit = currentScenario.time === 'night' || currentScenario.id === 'dawn' || currentScenario.weather === 'fog';
+                    if (fireLit) {
+                      var fsStripMat = new T.MeshBasicMaterial({ color: 0xff2020 });
+                      var fsStrip = new T.Mesh(new T.BoxGeometry(1.6, 0.15, 0.08), fsStripMat);
+                      fsStrip.position.set(lmCenterWX + lm.side * (lt.size * 0.4) - 0.5, 1.92, lmCenterWZ);
+                      chunkGroup.add(fsStrip);
+                      // Additive halo behind the strip for the bloom.
+                      var fsHaloMat = new T.MeshBasicMaterial({
+                        color: 0xff4040, transparent: true, opacity: 0.55,
+                        blending: T.AdditiveBlending, depthWrite: false
+                      });
+                      var fsHalo = new T.Mesh(new T.PlaneGeometry(1.9, 0.5), fsHaloMat);
+                      fsHalo.position.set(lmCenterWX + lm.side * (lt.size * 0.4) - 0.5, 1.92, lmCenterWZ - 0.06);
+                      chunkGroup.add(fsHalo);
+                    }
                   }
                 }
                 // ─── LANDMARK SIGN (always visible from road) ───
@@ -10806,6 +10884,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   var sign = new T.Mesh(new T.BoxGeometry(1.4, 0.6, 0.08), signMat);
                   sign.position.set(lmCenterWX - lm.side * (lt.size * 0.55), 2.2, lmCenterWZ);
                   chunkGroup.add(sign);
+                  // Neon/illuminated sign glow at night/fog/dawn — diners, gas stations,
+                  // markets, bars, etc. Real Americana landmarks light their signs so
+                  // they're visible from blocks away. Additive halo plane behind the
+                  // sign, sized and colored per landmark. Diners/gas/market get the
+                  // brightest glow (commercial neon); civic buildings get a softer one.
+                  var signLit = currentScenario.time === 'night' || currentScenario.id === 'dawn' || currentScenario.weather === 'fog';
+                  if (signLit) {
+                    var isNeonKind = lt.id === 'diner' || lt.id === 'gas' || lt.id === 'market' || lt.id === 'pharmacy';
+                    var signHaloOp = isNeonKind ? 0.75 : 0.45;
+                    var signHaloSize = isNeonKind ? 2.2 : 1.8;
+                    var signHaloMat = new T.MeshBasicMaterial({
+                      color: lt.signColor, transparent: true, opacity: signHaloOp,
+                      blending: T.AdditiveBlending, depthWrite: false
+                    });
+                    var signHalo = new T.Mesh(new T.PlaneGeometry(signHaloSize, signHaloSize * 0.55), signHaloMat);
+                    // Position behind the panel on the road-facing side so both
+                    // approach directions see the glow.
+                    signHalo.position.set(lmCenterWX - lm.side * (lt.size * 0.55), 2.2, lmCenterWZ + (lm.side * 0.04));
+                    signHalo.rotation.y = lm.side === 1 ? 0 : Math.PI;
+                    chunkGroup.add(signHalo);
+                  }
                   // Sign text via canvas texture
                   try {
                     var signCan = document.createElement('canvas');
@@ -13161,6 +13260,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               if (!cgrp) return;
               cgrp.children.forEach(function(child) {
                 if (!child.isMesh || !child.geometry) return;
+                // Flag cloth on school / post-office landmark meshes — wave on Y-axis
+                // with per-pole seed so neighboring flags don't flap in lockstep.
+                // Handled BEFORE the geometry-type branches since flags are BoxGeometry
+                // which would otherwise fall through to no handler.
+                if (child.name === 'rr_chunkFlag') {
+                  var chFlagSeed = child._flagSeed || 0;
+                  var chFlagBase = child._flagBaseY || 0;
+                  var chFlagAmp = (windStrength / 0.015) * 0.5;
+                  child.rotation.y = chFlagBase + Math.sin(t_now * 2.6 + chFlagSeed) * chFlagAmp;
+                  child.rotation.z = Math.sin(t_now * 3.2 + chFlagSeed * 1.3) * chFlagAmp * 0.3;
+                  return;
+                }
                 var gt = child.geometry.type;
                 if (gt === 'ConeGeometry' && child.position.y > 1.5) {
                   // Tree canopy / pine cone — main rocking motion.
