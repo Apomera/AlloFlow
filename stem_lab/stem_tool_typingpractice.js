@@ -1493,11 +1493,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           updMulti(nextUpdates);
           setLastSummary(summary);
 
+          var _tm = state.theme || 'default';
           if (newMilestones.length > 0) {
-            addToast('🎉 Milestone: ' + newMilestones.map(function(m) { return m.label; }).join(' · '));
+            var _mLabels = newMilestones.map(function(m) { return m.label; }).join(' · ');
+            var _mToast;
+            if (_tm === 'steampunk')      _mToast = '⚙ Achievement inscribed: ' + _mLabels;
+            else if (_tm === 'cyberpunk') _mToast = '[MILESTONE ACQUIRED] ' + _mLabels;
+            else if (_tm === 'kawaii')    _mToast = '🎉✨ New milestone unlocked! ' + _mLabels + ' 💕';
+            else if (_tm === 'neutral')   _mToast = 'Milestone earned: ' + _mLabels;
+            else                          _mToast = '🎉 Milestone: ' + _mLabels;
+            addToast(_mToast);
           }
           if (masteryAdvanced) {
-            addToast('🌟 Mastery tier advanced! ' + DRILLS[activeDrill.id].name + ' cleared.');
+            var _drillName = DRILLS[activeDrill.id].name;
+            var _masteryToast;
+            if (_tm === 'steampunk')      _masteryToast = '⚙ Tier mastered: ' + _drillName + '. The next workbench awaits.';
+            else if (_tm === 'cyberpunk') _masteryToast = '[TIER CLEARED] ' + _drillName.toUpperCase() + ' :: next node unlocked';
+            else if (_tm === 'kawaii')    _masteryToast = '🌟✨ Yay! ' + _drillName + ' tier cleared — so proud! 💖';
+            else if (_tm === 'neutral')   _masteryToast = 'Mastery tier advanced: ' + _drillName + '.';
+            else                          _masteryToast = '🌟 Mastery tier advanced! ' + _drillName + ' cleared.';
+            addToast(_masteryToast);
             setAnnounceText('Mastery tier advanced. ' + DRILLS[activeDrill.id].name + ' cleared. New tier: ' + nextUpdates.masteryLevel + ' of 7.');
           } else if (isNewBest) {
             setAnnounceText('New personal best on ' + activeDrill.name + '. ' + wpm + ' words per minute at ' + accuracy + ' percent accuracy.');
@@ -3874,7 +3889,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
 
           // Specific next-step message on mastery advancement — names the new
           // tier that just unlocked so the student knows what they earned.
-          // Dignified, not Nitrotype-style fanfare.
+          // Dignified, not Nitrotype-style fanfare. Theme-voiced per palette.
+          var _hintTm = state.theme || 'default';
           var nextStepHint = null;
           if (s.masteryAdvanced && s.newMasteryLevel) {
             var nextDrillId = null;
@@ -3885,19 +3901,60 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               }
             }
             if (nextDrillId && DRILLS[nextDrillId]) {
-              nextStepHint = DRILLS[nextDrillId].icon + ' ' + DRILLS[nextDrillId].name + ' is now unlocked. When you\'re ready, it\'s waiting on the menu.';
+              var _nd = DRILLS[nextDrillId];
+              if (_hintTm === 'steampunk') {
+                nextStepHint = _nd.icon + ' ' + _nd.name + ' — a new workbench has opened. Visit it from the menu when the hour suits you.';
+              } else if (_hintTm === 'cyberpunk') {
+                nextStepHint = '[UNLOCK] ' + _nd.icon + ' ' + _nd.name.toUpperCase() + ' :: node online :: jack in via menu when ready';
+              } else if (_hintTm === 'kawaii') {
+                nextStepHint = _nd.icon + ' ' + _nd.name + ' is unlocked! ✨ Pop by whenever you\'re ready — it\'ll be waiting on the menu! 💕';
+              } else if (_hintTm === 'neutral') {
+                nextStepHint = _nd.name + ' unlocked. Available from the menu.';
+              } else {
+                nextStepHint = _nd.icon + ' ' + _nd.name + ' is now unlocked. When you\'re ready, it\'s waiting on the menu.';
+              }
             } else if (s.newMasteryLevel >= 7) {
-              nextStepHint = 'You\'ve cleared every structured tier. Try generating a personalized passage at your grade level — that\'s where typing meets real reading.';
+              if (_hintTm === 'steampunk') {
+                nextStepHint = 'Every tier on the mastery ladder stands cleared. Generate a personalised passage at your grade — the bridge between the workshop and real prose.';
+              } else if (_hintTm === 'cyberpunk') {
+                nextStepHint = '[ALL TIERS CLEARED] :: next-step :: AI-passage @ grade-level :: typing meets live reading';
+              } else if (_hintTm === 'kawaii') {
+                nextStepHint = '🏆✨ You cleared EVERY tier! Try generating a personalized passage at your grade level — where typing meets stories you actually want to read! 💕';
+              } else if (_hintTm === 'neutral') {
+                nextStepHint = 'All structured tiers cleared. Try an AI-generated grade-level passage next.';
+              } else {
+                nextStepHint = 'You\'ve cleared every structured tier. Try generating a personalized passage at your grade level — that\'s where typing meets real reading.';
+              }
             }
           } else if (s.isNewBest && !s.isBaseline) {
             // Tiny context-aware nudge on personal best
             var drill = DRILLS[s.drillId];
             if (drill && drill.masteryWpm && s.wpm < drill.masteryWpm) {
               var gap = drill.masteryWpm - s.wpm;
-              nextStepHint = 'You\'re ' + gap + ' WPM from clearing this tier. Keep at it.';
+              if (_hintTm === 'steampunk') {
+                nextStepHint = gap + ' WPM from the next tier. Steady hands — the gearwork turns in your favour.';
+              } else if (_hintTm === 'cyberpunk') {
+                nextStepHint = '[Δ ' + gap + ' WPM] :: tier-clear within range :: push on';
+              } else if (_hintTm === 'kawaii') {
+                nextStepHint = 'You\'re just ' + gap + ' WPM from clearing this tier! 💪✨ Almost there!';
+              } else if (_hintTm === 'neutral') {
+                nextStepHint = gap + ' WPM below tier-clear threshold.';
+              } else {
+                nextStepHint = 'You\'re ' + gap + ' WPM from clearing this tier. Keep at it.';
+              }
             }
           } else if (s.isBaseline) {
-            nextStepHint = 'Your baseline is saved. Every future session is compared against today.';
+            if (_hintTm === 'steampunk') {
+              nextStepHint = 'Your baseline is entered in the ledger. Every future run shall be measured against this first page.';
+            } else if (_hintTm === 'cyberpunk') {
+              nextStepHint = '[BASELINE SET] :: all future runs :: Δ from this reference';
+            } else if (_hintTm === 'kawaii') {
+              nextStepHint = '🌸 Your baseline is saved! Every session from now on is just about YOUR growth — no comparisons needed! 💕';
+            } else if (_hintTm === 'neutral') {
+              nextStepHint = 'Baseline recorded. All future sessions compared against it.';
+            } else {
+              nextStepHint = 'Your baseline is saved. Every future session is compared against today.';
+            }
           }
 
           return h('div', {
