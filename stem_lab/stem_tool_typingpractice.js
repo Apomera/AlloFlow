@@ -60,7 +60,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       gradeLevel: '2-3',       // K, 1, 2-3, 4-5, 6-8, 9-12
       topic: '',
       difficulty: 'on-level',  // 'easier' | 'on-level' | 'stretch'
-      language: 'en'           // 'en' | 'es' | 'fr' | 'pt' | 'zh' | ...
+      language: 'en',          // 'en' | 'es' | 'fr' | 'pt' | 'zh' | ...
+      length: 'medium'         // 'short' (20-35 words) | 'medium' (35-55) | 'long' (55-80)
     },
     studentName: '',           // optional; appears on IEP report when set
     // drillRunId increments when student STARTS a fresh drill from the menu
@@ -926,6 +927,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         var draftGradeTuple = useState((state.passagePrefs && state.passagePrefs.gradeLevel) || '2-3');
         var draftGrade = draftGradeTuple[0], setDraftGrade = draftGradeTuple[1];
         var draftDifficultyTuple = useState((state.passagePrefs && state.passagePrefs.difficulty) || 'on-level');
+        var draftLengthTuple = useState((state.passagePrefs && state.passagePrefs.length) || 'medium');
+        var draftLength = draftLengthTuple[0], setDraftLength = draftLengthTuple[1];
         var draftDifficulty = draftDifficultyTuple[0], setDraftDifficulty = draftDifficultyTuple[1];
         var draftLanguageTuple = useState((state.passagePrefs && state.passagePrefs.language) || 'en');
         var draftLanguage = draftLanguageTuple[0], setDraftLanguage = draftLanguageTuple[1];
@@ -2364,7 +2367,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               : 'The student did not choose a topic. Pick a wholesome, age-appropriate topic suitable for this grade (animals, weather, space, sports, a story about a character doing something kind, etc.).',
             '',
             'CRITICAL RULES FOR A TYPING-PRACTICE PASSAGE:',
-            '- Length: 30 to 55 words total. Count your words.',
+            (function() {
+              var len = draftLength || 'medium';
+              if (len === 'short') return '- Length: 20 to 35 words total. Count your words. Short and focused.';
+              if (len === 'long')  return '- Length: 55 to 80 words total. Count your words. Fuller practice text — expect 3-4 sentences.';
+              return '- Length: 35 to 55 words total. Count your words.';
+            })(),
             '- Use ONLY standard ASCII punctuation: period, comma, question mark, exclamation mark, apostrophe, and hyphen. NO curly/smart quotes. NO em-dashes. NO ellipsis character (use three periods). NO accented letters. NO emoji.',
             '- Lowercase is fine. Capital letters only at the start of sentences or for proper nouns.',
             '- No numbers unless essential (typing digits requires reaching up to the number row, which is advanced).',
@@ -2407,7 +2415,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               updMulti({
                 aiPassage: passage,
                 aiPassageLibrary: nextLib,
-                passagePrefs: { gradeLevel: grade, topic: topic, difficulty: difficulty, language: language },
+                passagePrefs: { gradeLevel: grade, topic: topic, difficulty: difficulty, language: language, length: draftLength || 'medium' },
                 view: 'drill',
                 currentDrill: 'passage'
               });
@@ -2532,6 +2540,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 ' — ', suggestion.reason
               ) : null;
             })(),
+
+            // Passage length preference — word-count range for the generated
+            // passage. Complements the sample-length preference that affects
+            // structured drills.
+            h('div', { style: { marginBottom: '18px' } },
+              h('div', { style: { fontSize: '13px', fontWeight: 600, marginBottom: '8px', color: palette.text } }, 'Passage length'),
+              h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
+                [
+                  { id: 'short',  label: '✂️ Short',  hint: '20-35 words · quick focus' },
+                  { id: 'medium', label: '📄 Medium', hint: '35-55 words · default' },
+                  { id: 'long',   label: '📜 Long',   hint: '55-80 words · endurance' }
+                ].map(function(opt) {
+                  var isActive = draftLength === opt.id;
+                  return h('button', {
+                    key: 'plen-' + opt.id,
+                    onClick: function() { setDraftLength(opt.id); },
+                    title: opt.hint,
+                    style: {
+                      padding: '8px 14px',
+                      borderRadius: '999px',
+                      border: '1px solid ' + (isActive ? palette.accent : palette.border),
+                      background: isActive ? palette.accent : 'transparent',
+                      color: isActive ? '#0f172a' : palette.textDim,
+                      fontSize: '12px',
+                      fontWeight: isActive ? 700 : 500,
+                      cursor: 'pointer',
+                      font: 'inherit'
+                    }
+                  }, opt.label);
+                })
+              )
+            ),
 
             h('div', { style: { marginBottom: '18px' } },
               h('div', { style: { fontSize: '13px', fontWeight: 600, marginBottom: '8px', color: palette.text } }, 'Difficulty within grade'),
