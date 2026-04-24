@@ -60,24 +60,9 @@ const createExport = (deps) => {
 
     const cleanTextForPptx = (text) => text ? String(text).replace(/\*\*/g, '').replace(/\*/g, '') : '';
 
-    // ─── exportLanguagePack ────────────────────────────────────────────
-    const exportLanguagePack = () => {
-        const { languagePack, targetLanguage, t } = liveRef.current;
-        if (!languagePack) {
-            alert(t('language_selector.no_data_export'));
-            return;
-        }
-        const dataStr = JSON.stringify(languagePack, null, 2);
-        const blob = new Blob([dataStr], { type: "application/json" });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `alloflow_${targetLanguage || 'custom'}_pack.json`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-    };
+    // exportLanguagePack NOT extracted — it stays inside useTranslation hook
+    // because it closes over languagePack + targetLanguage state that aren't
+    // accessible from AlloFlowContent's scope.
 
     // ─── handleExportResearchJSON ──────────────────────────────────────
     const handleExportResearchJSON = () => {
@@ -986,7 +971,6 @@ const createExport = (deps) => {
     };
 
     return {
-        exportLanguagePack,
         handleExportResearchJSON,
         handleExportProfiles,
         handleExportQTI,

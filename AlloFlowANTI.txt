@@ -330,7 +330,8 @@ if (typeof window !== 'undefined') window._upgradePersonas = _upgradePersonas;
 // (where parseMarkdownToHTML / generateResourceHTML are declared) so the 8
 // extracted handlers always read fresh state + component-scoped helpers.
 let _exportLiveRef = { current: {} };
-let exportLanguagePack = () => { console.warn('[exportLanguagePack] Fallback — Export module not loaded'); };
+// Note: exportLanguagePack is NOT here — it stays inside useTranslation hook
+// (line ~2385) because it closes over languagePack + targetLanguage state.
 let handleExportResearchJSON = () => { console.warn('[handleExportResearchJSON] Fallback'); };
 let handleExportProfiles = () => { console.warn('[handleExportProfiles] Fallback'); };
 let handleExportQTI = async () => { console.warn('[handleExportQTI] Fallback'); };
@@ -346,7 +347,6 @@ function _upgradeExport() {
         warnLog, debugLog,
         escapeXml, generateUUID,
     });
-    exportLanguagePack = api.exportLanguagePack;
     handleExportResearchJSON = api.handleExportResearchJSON;
     handleExportProfiles = api.handleExportProfiles;
     handleExportQTI = api.handleExportQTI;
@@ -2381,7 +2381,26 @@ const useTranslation = (targetLanguage, apiKey) => {
   const regenerateLanguage = useCallback(() => {
       setTrigger(prev => prev + 1);
   }, []);
-  // exportLanguagePack moved to export_module.js (via _upgradeExport shim).
+  // exportLanguagePack stays inside useTranslation because it closes over
+  // languagePack + targetLanguage which are state-local to this hook — not
+  // accessible from AlloFlowContent's scope. Attempting to extract it broke
+  // the Export module's factory with a "languagePack is not defined" TDZ.
+  const exportLanguagePack = useCallback(() => {
+    if (!languagePack) {
+      alert(t('language_selector.no_data_export'));
+      return;
+    }
+    const dataStr = JSON.stringify(languagePack, null, 2);
+    const blob = new Blob([dataStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `alloflow_${targetLanguage || 'custom'}_pack.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }, [languagePack, targetLanguage]);
   const importLanguagePack = useCallback((file) => {
     if (!file) return;
     const reader = new FileReader();
@@ -6073,6 +6092,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
         'sel_hub/sel_tool_voicedetective.js',
         'sel_hub/sel_tool_sociallab.js',
         'sel_hub/sel_tool_peersupport.js',
+        'sel_hub/sel_tool_selfadvocacy.js',
       ];
       // Wait for StemLab registry to be available before loading plugins
       var waitForRegistry = function(cb) {
@@ -17321,9 +17341,11 @@ Return ONLY valid JSON:
   // declarations above (they're component-scoped consts from _docPipeline). 8
   // extracted export handlers read state + helpers through this on every call.
   _exportLiveRef.current = {
-      // State reads
+      // State reads (languagePack + targetLanguage intentionally omitted — they're
+      // scoped to useTranslation hook, not AlloFlowContent; exportLanguagePack stays
+      // inside useTranslation for that reason)
       history, sourceTopic, gradeLevel, generatedContent, studentResponses,
-      profiles, languagePack, targetLanguage, adventureState,
+      profiles, adventureState,
       probeHistory, surveyResponses, fidelityLog, sessionCounter,
       externalCBMScores, interventionLogs,
       // Setters
