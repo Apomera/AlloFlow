@@ -840,12 +840,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     return base;
   }
 
-  function getFontFamily(accommodations) {
+  // Theme-specific font stacks. Each theme's flavor extends to typography:
+  // steampunk reads as formal serif, cyberpunk as monospace terminal, kawaii
+  // as rounded friendly. Dyslexia-font accommodation still wins over theme
+  // choice — accessibility beats aesthetics.
+  var THEME_FONT_STACKS = {
+    'default':   'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
+    'steampunk': '"Georgia", "Palatino Linotype", "Book Antiqua", "Hoefler Text", serif',
+    'cyberpunk': '"JetBrains Mono", "Fira Code", "Source Code Pro", "Courier New", ui-monospace, monospace',
+    'kawaii':    '"Nunito", "Varela Round", "Quicksand", "Comic Sans MS", ui-rounded, sans-serif',
+    'neutral':   '"Inter", "Helvetica Neue", system-ui, sans-serif'
+  };
+
+  function getFontFamily(accommodations, themeName) {
     if (accommodations && accommodations.dyslexiaFont) {
       // OpenDyslexic preferred; fallback to system safe-list with increased letter spacing.
       return '"OpenDyslexic", "Comic Sans MS", "Lexend", system-ui, sans-serif';
     }
-    return 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
+    return THEME_FONT_STACKS[themeName] || THEME_FONT_STACKS['default'];
+  }
+
+  // Subtle theme-specific background texture. Returned as a CSS string that
+  // goes into the tool root's background property. Each theme gets a flavor
+  // effect that reads as ambiance, not noise.
+  function getThemeBackgroundTexture(palette, themeName) {
+    switch (themeName) {
+      case 'steampunk':
+        // Warm radial: brighter at center, darker at edges. Evokes a
+        // candle-lit workshop or the glow around a single reading lamp.
+        return 'radial-gradient(ellipse at center, ' + palette.surface + ' 0%, ' + palette.bg + ' 75%)';
+      case 'cyberpunk':
+        // Faint scan-line overlay — thin horizontal lines like CRT / terminal.
+        // 3px line spacing at 4% opacity keeps it subtle; stops short of being
+        // a motion/accessibility problem.
+        return 'repeating-linear-gradient(0deg, ' + palette.bg + ' 0px, ' + palette.bg + ' 2px, ' +
+               palette.surface + ' 2px, ' + palette.surface + ' 3px)';
+      case 'kawaii':
+        // Soft vertical gradient from bg to surface (pale cream-pink to
+        // slightly-pinker-cream). Gives depth without fighting the content.
+        return 'linear-gradient(180deg, ' + palette.bg + ' 0%, ' + palette.surface + ' 100%)';
+      case 'neutral':
+        // No texture — neutral means quiet.
+        return palette.bg;
+      case 'default':
+      default:
+        return palette.bg;
+    }
   }
 
   // ─────────────────────────────────────────────────────────
@@ -921,7 +961,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         var addToast = ctx.addToast || function(msg) { console.log('[TypingPractice]', msg); };
 
         var palette = getPalette(state.accommodations, state.accentColor, state.theme);
-        var fontFamily = getFontFamily(state.accommodations);
+        var fontFamily = getFontFamily(state.accommodations, state.theme);
+        var rootBackground = getThemeBackgroundTexture(palette, state.theme);
 
         // ── Drill-local state (hooks must be called unconditionally every render) ──
         var typedTuple = useState('');
@@ -5970,7 +6011,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         // Derive lang for the tool root from the active AI-passage language,
         // or default to 'en'. Matters for screen-reader pronunciation.
         var rootLang = (state.aiPassage && state.aiPassage.language) || 'en';
-        return h('div', { className: 'tp-root', lang: rootLang },
+        return h('div', {
+          className: 'tp-root',
+          lang: rootLang,
+          style: {
+            background: rootBackground,
+            minHeight: '100%',
+            color: palette.text,
+            fontFamily: fontFamily
+          }
+        },
           h('div', {
             role: 'status',
             'aria-live': 'polite',
