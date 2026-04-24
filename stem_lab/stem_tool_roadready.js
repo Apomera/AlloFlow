@@ -8028,6 +8028,84 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             scene.add(szSign);
           }
 
+          // ── Roundabout: yield signs + painted directional arrows ──
+          // The lesson content on roundabouts hinges on two things students
+          // must see: (1) a YIELD triangle on each approach, and (2) painted
+          // arrows showing the counterclockwise circulation direction. Both
+          // were missing — making the scenario read as "circular road" rather
+          // than "yield-controlled intersection."
+          if (currentScenario.id === 'roundabout') {
+            var cyRA = Math.floor(MAP_SIZE / 2);
+            // 4 approach directions (N, S, E, W) with yield signs
+            // Each entry: [approachPos, signPos, rotY] relative to the center
+            var approaches = [
+              { sx: centerX + 1.8, sz: cyRA - 11, rotY: 0 },             // N approach (car coming from +Z direction)
+              { sx: centerX - 1.8, sz: cyRA + 11, rotY: Math.PI },       // S approach
+              { sx: centerX + 11, sz: cyRA + 1.8, rotY: -Math.PI / 2 },  // E approach
+              { sx: centerX - 11, sz: cyRA - 1.8, rotY: Math.PI / 2 }    // W approach
+            ];
+            var yieldRedMat = new T.MeshBasicMaterial({ color: 0xdc2626, side: T.DoubleSide });
+            var yieldWhiteMat = new T.MeshBasicMaterial({ color: 0xffffff, side: T.DoubleSide });
+            var yieldPoleMat = new T.MeshLambertMaterial({ color: 0x888888 });
+            approaches.forEach(function(ap) {
+              var apX = ap.sx - MAP_SIZE / 2;
+              var apZ = ap.sz - MAP_SIZE / 2;
+              // Pole
+              var yPole = new T.Mesh(new T.CylinderGeometry(0.05, 0.05, 2.2, 6), yieldPoleMat);
+              yPole.position.set(apX, 1.1, apZ);
+              scene.add(yPole);
+              // Inverted triangle sign (red with white center). Three-point
+              // shape via two stacked triangles: outer red larger, inner
+              // white slightly smaller.
+              var yShape = new T.Shape();
+              yShape.moveTo(-0.42, 0.35);
+              yShape.lineTo(0.42, 0.35);
+              yShape.lineTo(0, -0.37);
+              yShape.closePath();
+              var yOuter = new T.Mesh(new T.ShapeGeometry(yShape), yieldRedMat);
+              yOuter.position.set(apX, 2.3, apZ);
+              yOuter.rotation.y = ap.rotY;
+              scene.add(yOuter);
+              var yInnerShape = new T.Shape();
+              yInnerShape.moveTo(-0.32, 0.26);
+              yInnerShape.lineTo(0.32, 0.26);
+              yInnerShape.lineTo(0, -0.27);
+              yInnerShape.closePath();
+              var yInner = new T.Mesh(new T.ShapeGeometry(yInnerShape), yieldWhiteMat);
+              yInner.position.set(apX, 2.3, apZ + 0.01);
+              yInner.rotation.y = ap.rotY;
+              scene.add(yInner);
+            });
+            // ── Painted directional arrows on the circulating road ──
+            // 8 curved arrows around the circle showing counterclockwise flow.
+            // Each arrow is a thin elongated triangle pointing along the
+            // tangent direction at that angle on the circle.
+            var arrowPaintMat = new T.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.75 });
+            for (var arA = 0; arA < 8; arA++) {
+              var arAng = (arA / 8) * Math.PI * 2;
+              var arR = 8; // middle of the road ring
+              var arX = centerX - MAP_SIZE / 2 + Math.cos(arAng) * arR;
+              var arZ = cyRA - MAP_SIZE / 2 + Math.sin(arAng) * arR;
+              // Counterclockwise tangent = angle + π/2 (around +Y)
+              var arTangent = arAng + Math.PI / 2;
+              // Arrow body (elongated triangle pointing +local-Z)
+              var arShape = new T.Shape();
+              arShape.moveTo(-0.15, -0.5);
+              arShape.lineTo(0.15, -0.5);
+              arShape.lineTo(0.15, 0.2);
+              arShape.lineTo(0.3, 0.2);
+              arShape.lineTo(0, 0.55);
+              arShape.lineTo(-0.3, 0.2);
+              arShape.lineTo(-0.15, 0.2);
+              arShape.closePath();
+              var arMesh = new T.Mesh(new T.ShapeGeometry(arShape), arrowPaintMat);
+              arMesh.rotation.x = -Math.PI / 2; // flat on road
+              arMesh.rotation.z = -arTangent + Math.PI; // point along CCW tangent
+              arMesh.position.set(arX, 0.025, arZ);
+              scene.add(arMesh);
+            }
+          }
+
           // ── Construction cones (if construction scenario) ──
           if (currentScenario.id === 'construction') {
             var coneMat = new T.MeshLambertMaterial({ color: 0xf97316 });
