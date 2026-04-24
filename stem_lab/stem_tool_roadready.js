@@ -11567,6 +11567,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     var siloCap = new T.Mesh(new T.SphereGeometry(0.72, 10, 6, 0, Math.PI * 2, 0, Math.PI * 0.45), siloCapMat);
                     siloCap.position.set(siloX, 4.55, barnZ - 0.2);
                     chunkGroup.add(siloCap);
+                    // Weathervane on the barn roof peak — thin vertical rod +
+                    // horizontal N/S/E/W cross + a tiny rooster silhouette on top.
+                    // Classic Maine barn detail; weather sway registered with the
+                    // chunk flag system so it waves like the other cloth-in-wind
+                    // meshes without needing its own handler.
+                    var wvMat = new T.MeshLambertMaterial({ color: 0x3a3a3a });
+                    var wvRod = new T.Mesh(new T.CylinderGeometry(0.02, 0.02, 0.6, 6), wvMat);
+                    wvRod.position.set(barnX, 3.3, barnZ);
+                    chunkGroup.add(wvRod);
+                    // Compass cross at the base
+                    var wvCrossA = new T.Mesh(new T.BoxGeometry(0.6, 0.02, 0.02), wvMat);
+                    wvCrossA.position.set(barnX, 3.1, barnZ);
+                    chunkGroup.add(wvCrossA);
+                    var wvCrossB = new T.Mesh(new T.BoxGeometry(0.02, 0.02, 0.6), wvMat);
+                    wvCrossB.position.set(barnX, 3.1, barnZ);
+                    chunkGroup.add(wvCrossB);
+                    // Rooster vane — a flat silhouette that rotates with wind.
+                    // Tagged 'rr_chunkFlag' so the existing wind handler spins it
+                    // on Y (flags happen to use the right axis for this).
+                    var wvRoosterMat = new T.MeshLambertMaterial({ color: 0x2a2a2a, side: T.DoubleSide });
+                    var wvRooster = new T.Mesh(new T.BoxGeometry(0.5, 0.32, 0.02), wvRoosterMat);
+                    wvRooster.position.set(barnX, 3.65, barnZ);
+                    wvRooster.name = 'rr_chunkFlag';
+                    wvRooster._flagSeed = (ci * 7.1 + 4.2) % 6.28;
+                    wvRooster._flagBaseY = 0;
+                    chunkGroup.add(wvRooster);
+                    // ── Round hay bales scattered in the side yard ──
+                    // Three big round bales (the modern white-wrapped kind is
+                    // common too, but we go with the classic golden straw look).
+                    var hayMat = new T.MeshLambertMaterial({ color: 0xc8a760 });
+                    [
+                      { x: barnX - 2.8, z: barnZ + 2.0 },
+                      { x: barnX - 3.6, z: barnZ + 1.3 },
+                      { x: barnX - 2.3, z: barnZ + 2.9 }
+                    ].forEach(function(hp) {
+                      var hay = new T.Mesh(new T.CylinderGeometry(0.55, 0.55, 1.1, 14), hayMat);
+                      // Round bales roll on their side — rotate X 90° so they lie flat.
+                      hay.rotation.x = Math.PI / 2;
+                      hay.position.set(hp.x, 0.55, hp.z);
+                      hay.castShadow = true;
+                      chunkGroup.add(hay);
+                    });
                     // White split-rail fence along the road-facing edge — two rails on short posts
                     var fencePostMat = new T.MeshLambertMaterial({ color: 0xe0d8c0 });
                     var fenceRailMat = new T.MeshLambertMaterial({ color: 0xe8e0c8 });
