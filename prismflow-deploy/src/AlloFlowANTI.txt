@@ -5913,46 +5913,46 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     })();
     // AlloData: pure-data bundle (phoneme guide, prompts, i18n strings, shop items, timeline modes).
     // Registers window.AlloModules.AlloData and calls _upgradeAlloData() to populate monolith shim.
-    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e15c16c/allo_data_module.js');
+    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@494c167/allo_data_module.js');
     // LargeFileModule: chunked audio/video transcription (LargeFileHandler + LargeFileTranscriptionModal).
-    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e15c16c/large_file_module.js');
+    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@494c167/large_file_module.js');
     // KeyConceptMapModule: SVG-overlay Bezier concept map view (used by renderOutlineContent).
-    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e15c16c/key_concept_map_module.js');
+    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@494c167/key_concept_map_module.js');
     // UtilsPure: 14 pure utilities (JSON, storage, network, image) — populates monolith shim via _upgradeUtilsPure().
-    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e15c16c/utils_pure_module.js');
+    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@494c167/utils_pure_module.js');
     // GeminiAPI: callGemini + callGeminiVision + callGeminiImageEdit — populates monolith shim via _upgradeGeminiAPI().
-    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e15c16c/gemini_api_module.js');
+    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@494c167/gemini_api_module.js');
     // TTS: fetchTTSBytes + callTTS + callTTSDirect — populates monolith shim via _upgradeTTS().
-    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e15c16c/tts_module.js');
+    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@494c167/tts_module.js');
     // Personas: 16 handlers for historical character interview subsystem — populates monolith shim via _upgradePersonas().
-    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e15c16c/personas_module.js');
+    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@494c167/personas_module.js');
     // MiscComponents: WordSoundsReviewPanel + AnimatedNumber + ClozeInput (pure-props components).
-    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e15c16c/misc_components_module.js');
+    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@494c167/misc_components_module.js');
     // RemediationAudio: Web Audio feedback beeps (chunk good/bad/medium, session complete, etc).
-    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e15c16c/remediation_audio_module.js');
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e15c16c/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e15c16c/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e15c16c/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e15c16c/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e15c16c/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e15c16c/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e15c16c/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e15c16c/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e15c16c/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e15c16c/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e15c16c/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e15c16c/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e15c16c/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e15c16c/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e15c16c/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e15c16c/student_interaction_module.js');
-    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e15c16c/math_fluency_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e15c16c/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e15c16c/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e15c16c/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e15c16c/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e15c16c/content_engine_module.js');
-    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e15c16c/timeline_revision_module.js');
+    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@494c167/remediation_audio_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@494c167/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@494c167/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@494c167/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@494c167/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@494c167/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@494c167/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@494c167/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@494c167/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@494c167/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@494c167/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@494c167/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@494c167/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@494c167/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@494c167/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@494c167/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@494c167/student_interaction_module.js');
+    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@494c167/math_fluency_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@494c167/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@494c167/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@494c167/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@494c167/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@494c167/content_engine_module.js');
+    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@494c167/timeline_revision_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -5968,7 +5968,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e15c16c/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@494c167/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -14972,30 +14972,8 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
       leveledTextLanguage, currentUiLanguage, _aiUserConfig, ai,
       setShowKokoroOfferModal,
   };
-  // Personas extraction: mirror all component-scoped state/setters/refs/helpers
-  // into _personasLiveRef so the 16 extracted handlers can read current values
-  // on every call. Same pattern as _ttsLiveRef above.
-  _personasLiveRef.current = {
-      // State reads
-      personaState, personaInput, isGeneratingPersona, generatedContent,
-      history, inputText, sourceTopic, gradeLevel, leveledTextLanguage,
-      personaCustomInstructions, selectedLanguages, currentUiLanguage,
-      personaTurnHintsViewed, isPersonaFreeResponse, apiKey,
-      // Setters
-      setPersonaState, setPersonaInput, setIsGeneratingPersona,
-      setGeneratedContent, setHistory, setIsPersonaChatOpen, setIsProcessing,
-      setPersonaReflectionInput, setReflectionFeedback, setIsPersonaDefining,
-      setIsGradingReflection, setIsGeneratingReflectionPrompt, setPanelTtsPending,
-      setShowPersonaHints, setPersonaTurnHintsViewed, setIsPersonaReflectionOpen,
-      setPlayingContentId, setPlaybackState,
-      // Refs
-      alloBotRef, personaDefinitionCache, lastReadPersonaIndexRef, showPersonaHintsRef,
-      // Component-scoped helpers (injected because they close over state/refs)
-      callImagen, addToast, playSound, handleScoreUpdate, handleAiSafetyFlag,
-      resilientJsonParse,
-      // i18n
-      t,
-  };
+  // Personas _personasLiveRef.current = {...} mirror moved below callImagen
+  // declaration to avoid TDZ on `callImagen`. See post-callImagen section.
   // Chunk Reader read-along effect — placed after callTTS so its TDZ is resolved.
   // When enabled, plays the current sentence via Gemini (callTTS) and animates
   // chunkReaderSweepPct based on audio.currentTime / audio.duration. On ended,
@@ -15141,6 +15119,30 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     }
   };
   // generateCharacterPortrait moved to personas_module.js (via _upgradePersonas shim).
+  // Personas live-ref mirror — placed AFTER callImagen declaration above (TDZ-safe).
+  // Factory's 16 extracted handlers read state/setters/refs/helpers through this
+  // object on every call, so React re-renders automatically propagate fresh values.
+  _personasLiveRef.current = {
+      // State reads
+      personaState, personaInput, isGeneratingPersona, generatedContent,
+      history, inputText, sourceTopic, gradeLevel, leveledTextLanguage,
+      personaCustomInstructions, selectedLanguages, currentUiLanguage,
+      personaTurnHintsViewed, isPersonaFreeResponse, apiKey,
+      // Setters
+      setPersonaState, setPersonaInput, setIsGeneratingPersona,
+      setGeneratedContent, setHistory, setIsPersonaChatOpen, setIsProcessing,
+      setPersonaReflectionInput, setReflectionFeedback, setIsPersonaDefining,
+      setIsGradingReflection, setIsGeneratingReflectionPrompt, setPanelTtsPending,
+      setShowPersonaHints, setPersonaTurnHintsViewed, setIsPersonaReflectionOpen,
+      setPlayingContentId, setPlaybackState,
+      // Refs
+      alloBotRef, personaDefinitionCache, lastReadPersonaIndexRef, showPersonaHintsRef,
+      // Component-scoped helpers (injected because they close over state/refs)
+      callImagen, addToast, playSound, handleScoreUpdate, handleAiSafetyFlag,
+      resilientJsonParse,
+      // i18n
+      t,
+  };
   const generatePixelArtItem = useCallback(async (itemName, itemDescription) => {
       try {
           const context = itemDescription ? ` matching this description: "${itemDescription}"` : "";
