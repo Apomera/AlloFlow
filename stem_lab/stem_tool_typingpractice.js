@@ -1162,6 +1162,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '.tp-root.tp-theme-kawaii    .tp-view-enter { animation: tp-view-in-kawaii 300ms cubic-bezier(0.34,1.56,0.64,1) 1; }',
       '.tp-root.tp-theme-neutral   .tp-view-enter { animation: tp-view-in-neutral 180ms ease-out 1; }',
 
+      /* ── Progress-bar shimmer — a soft diagonal highlight sweeps across
+         the in-progress fill every ~2.4s, giving the bar a sense of motion
+         while the student types. Static-complete state (done=true) drops
+         the class so the finished bar is solid. Suppressed under reduced-
+         motion. Uses ::after so it doesn't replace the themed bg. */
+      '@keyframes tp-progress-shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }',
+      '.tp-root .tp-progress-fill::after {',
+      '  content: "";',
+      '  position: absolute;',
+      '  top: 0; left: 0; bottom: 0;',
+      '  width: 60%;',
+      '  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.22) 50%, transparent 100%);',
+      '  animation: tp-progress-shimmer 2400ms linear infinite;',
+      '  pointer-events: none;',
+      '}',
+      '.tp-root.tp-theme-cyberpunk .tp-progress-fill::after { background: linear-gradient(90deg, transparent 0%, rgba(0,255,200,0.28) 50%, transparent 100%); animation-duration: 1600ms; }',
+      '.tp-root.tp-theme-kawaii    .tp-progress-fill::after { background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.45) 50%, transparent 100%); animation-duration: 2800ms; }',
+
       /* ── Word-complete glow — applied to each char of the just-finished
          word when the student types a terminal space. Subtle theme-
          colored text-shadow that fades in/out over ~520ms. Key-retriggered
@@ -1222,6 +1240,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '  .tp-root .tp-wrong-flash,',
       '  .tp-root .tp-live-tick,',
       '  .tp-root .tp-word-pulse,',
+      '  .tp-root .tp-progress-fill::after,',
       '  .tp-root .tp-view-enter { animation: none !important; }',
       '  .tp-root button { transition: none !important; }',
       '  .tp-root .tp-drill-card:hover,',
@@ -4292,7 +4311,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 width: Math.min(100, (typed.length / targetStr.length) * 100) + '%',
                 height: '100%',
                 background: fill,
-                transition: 'width 80ms ease, background 200ms ease'
+                transition: 'width 80ms ease, background 200ms ease',
+                position: 'relative',
+                overflow: 'hidden'
               };
               if (tm === 'cyberpunk') {
                 // Scan-line texture on top of accent fill — reads as terminal
@@ -4317,7 +4338,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   overflow: 'hidden',
                   border: tm === 'steampunk' ? '1px solid rgba(90,69,40,0.6)' : 'none'
                 }
-              }, h('div', { style: fillStyle }));
+              }, h('div', {
+                // tp-progress-fill hooks a CSS shimmer overlay layer so the
+                // bar feels alive while the user types. Suppressed when done
+                // (static success fill is the intended final state).
+                className: done ? undefined : 'tp-progress-fill',
+                style: fillStyle
+              }));
             })() : null,
 
             // On-screen keyboard (large-keys accommodation)
