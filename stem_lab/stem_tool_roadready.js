@@ -8026,6 +8026,49 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             szSign.position.set(centerX - MAP_SIZE / 2 + 4.2, 2.5, -8);
             szSign.rotation.z = Math.PI;
             scene.add(szSign);
+            // ── Crossing guard at the school crosswalk ──
+            // The single most recognizable "active school zone" figure. Placed
+            // on the crosswalk line near the school (roughly where the big
+            // school landmark would be). Yellow safety vest + handheld STOP
+            // paddle held upright (different from the construction flagger's
+            // 45° angled STOP). Reads as "civilian authority figure — slow
+            // down now." Students who play this in class remember.
+            var cgVestMat = new T.MeshLambertMaterial({ color: 0xfde047 });
+            var cgPantsMat = new T.MeshLambertMaterial({ color: 0x1e293b });
+            var cgSkinMat = new T.MeshLambertMaterial({ color: 0xd4a373 });
+            var cgHatMat = new T.MeshLambertMaterial({ color: 0xfcd34d });
+            var cgX = centerX - MAP_SIZE / 2 - 1.2; // on the crosswalk line
+            var cgZ = -8;
+            // Torso (yellow hi-vis)
+            var cgTorso = new T.Mesh(new T.BoxGeometry(0.32, 0.55, 0.24), cgVestMat);
+            cgTorso.position.set(cgX, 1.15, cgZ);
+            cgTorso.castShadow = true;
+            scene.add(cgTorso);
+            // Legs (dark navy)
+            var cgLegs = new T.Mesh(new T.BoxGeometry(0.32, 0.7, 0.24), cgPantsMat);
+            cgLegs.position.set(cgX, 0.5, cgZ);
+            scene.add(cgLegs);
+            // Head + yellow cap
+            var cgHead = new T.Mesh(new T.SphereGeometry(0.12, 8, 6), cgSkinMat);
+            cgHead.position.set(cgX, 1.55, cgZ);
+            scene.add(cgHead);
+            var cgCap = new T.Mesh(new T.SphereGeometry(0.14, 8, 5, 0, Math.PI * 2, 0, Math.PI * 0.5), cgHatMat);
+            cgCap.position.set(cgX, 1.62, cgZ);
+            scene.add(cgCap);
+            // Straight-up arm with STOP paddle — held vertically, classic
+            // school-crossing-guard posture
+            var cgArm = new T.Mesh(new T.BoxGeometry(0.06, 0.4, 0.06), cgSkinMat);
+            cgArm.position.set(cgX + 0.22, 1.4, cgZ);
+            scene.add(cgArm);
+            // Red octagonal STOP paddle held at top of the arm
+            var cgPaddleMat = new T.MeshBasicMaterial({ color: 0xdc2626 });
+            var cgPaddle = new T.Mesh(new T.BoxGeometry(0.04, 0.32, 0.32), cgPaddleMat);
+            cgPaddle.position.set(cgX + 0.22, 1.78, cgZ);
+            scene.add(cgPaddle);
+            // White "STOP" accent — thin white strip across paddle face
+            var cgPaddleText = new T.Mesh(new T.BoxGeometry(0.045, 0.07, 0.24), new T.MeshBasicMaterial({ color: 0xffffff }));
+            cgPaddleText.position.set(cgX + 0.22, 1.78, cgZ);
+            scene.add(cgPaddleText);
           }
 
           // ── Roundabout: yield signs + painted directional arrows ──
