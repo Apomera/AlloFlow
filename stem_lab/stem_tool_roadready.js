@@ -11397,23 +11397,75 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       chunkGroup.add(mktHalo);
                     }
                   } else if (lt.id === 'farm') {
-                    // Farm: tall yard lamp on a pole near the farmhouse — the kind of
-                    // fixed-on photoelectric lamp every Maine farm has. Real farm
-                    // yards in the dark are anchored by this single warm point of
-                    // light visible from way off. Comes on at dusk; persists until
-                    // dawn (which we approximate as: any non-clear-day time).
+                    // ── Farm outbuildings — barn + silo + split-rail fence ──
+                    // A Maine farm that's just a house doesn't read as a farm. Real
+                    // farms have a red barn (gambrel-ish roof, white trim door), a
+                    // metal grain silo, and white-painted split-rail fencing along
+                    // the road. All day-active so the farm looks like a farm even
+                    // in bright daylight.
+                    // Red barn off to one side of the farmhouse
+                    var barnMat = new T.MeshLambertMaterial({ color: 0xa02018 });
+                    var barnRoofMat = new T.MeshLambertMaterial({ color: 0x2a1a10 });
+                    var barnTrimMat = new T.MeshLambertMaterial({ color: 0xf1e8d6 });
+                    var barnX = lmCenterWX - lt.size * 0.55;
+                    var barnZ = lmCenterWZ + lt.size * 0.15;
+                    var barn = new T.Mesh(new T.BoxGeometry(2.4, 2.4, 3.2), barnMat);
+                    barn.position.set(barnX, 1.2, barnZ);
+                    barn.castShadow = true;
+                    chunkGroup.add(barn);
+                    // Gambrel-ish roof — two angled slabs rising to a ridge
+                    var barnRoof1 = new T.Mesh(new T.BoxGeometry(2.55, 0.12, 3.3), barnRoofMat);
+                    barnRoof1.position.set(barnX, 2.5, barnZ);
+                    chunkGroup.add(barnRoof1);
+                    var barnRoof2 = new T.Mesh(new T.BoxGeometry(1.4, 0.12, 3.3), barnRoofMat);
+                    barnRoof2.position.set(barnX, 2.95, barnZ);
+                    chunkGroup.add(barnRoof2);
+                    // White-trim sliding door on the road-facing side (big rectangle)
+                    var barnDoor = new T.Mesh(new T.BoxGeometry(0.08, 1.6, 1.2), barnTrimMat);
+                    barnDoor.position.set(barnX + 1.22, 0.85, barnZ);
+                    chunkGroup.add(barnDoor);
+                    // Grain silo next to the barn
+                    var siloMat = new T.MeshLambertMaterial({ color: 0xb8bec8 });
+                    var siloCapMat = new T.MeshLambertMaterial({ color: 0x1a1a1a });
+                    var siloX = barnX - 1.6;
+                    var silo = new T.Mesh(new T.CylinderGeometry(0.7, 0.75, 4.5, 12), siloMat);
+                    silo.position.set(siloX, 2.25, barnZ - 0.2);
+                    silo.castShadow = true;
+                    chunkGroup.add(silo);
+                    // Domed silo cap
+                    var siloCap = new T.Mesh(new T.SphereGeometry(0.72, 10, 6, 0, Math.PI * 2, 0, Math.PI * 0.45), siloCapMat);
+                    siloCap.position.set(siloX, 4.55, barnZ - 0.2);
+                    chunkGroup.add(siloCap);
+                    // White split-rail fence along the road-facing edge — two rails on short posts
+                    var fencePostMat = new T.MeshLambertMaterial({ color: 0xe0d8c0 });
+                    var fenceRailMat = new T.MeshLambertMaterial({ color: 0xe8e0c8 });
+                    var fenceZ = lmCenterWZ + lt.size * 0.55;
+                    for (var fenceI = -2; fenceI <= 2; fenceI++) {
+                      var fpX = lmCenterWX + fenceI * 1.1;
+                      var fPost = new T.Mesh(new T.BoxGeometry(0.1, 0.9, 0.1), fencePostMat);
+                      fPost.position.set(fpX, 0.45, fenceZ);
+                      chunkGroup.add(fPost);
+                    }
+                    // Horizontal rails spanning the post row (top + middle)
+                    var fRailTop = new T.Mesh(new T.BoxGeometry(4.6, 0.08, 0.06), fenceRailMat);
+                    fRailTop.position.set(lmCenterWX, 0.75, fenceZ);
+                    chunkGroup.add(fRailTop);
+                    var fRailMid = new T.Mesh(new T.BoxGeometry(4.6, 0.08, 0.06), fenceRailMat);
+                    fRailMid.position.set(lmCenterWX, 0.42, fenceZ);
+                    chunkGroup.add(fRailMid);
+                    // ── Farm yard lamp (existing night lighting) ──
+                    // The single warm point of light every Maine farm yard has. Pole,
+                    // bulb, halo, and a PointLight so the farmhouse + ground pick up
+                    // real color. Active dusk through dawn (any non-clear-day time).
                     var farmLit = currentScenario.time === 'night' || currentScenario.id === 'dawn' || currentScenario.weather === 'fog';
                     if (farmLit) {
-                      // Pole
                       var fyPoleMat = new T.MeshLambertMaterial({ color: 0x444444 });
                       var fyPole = new T.Mesh(new T.CylinderGeometry(0.06, 0.08, 5, 6), fyPoleMat);
                       fyPole.position.set(lmCenterWX + lt.size * 0.45, 2.5, lmCenterWZ - lt.size * 0.3);
                       chunkGroup.add(fyPole);
-                      // Lamp head (bright incandescent)
                       var fyHead = new T.Mesh(new T.SphereGeometry(0.18, 8, 6), new T.MeshBasicMaterial({ color: 0xfff0c8 }));
                       fyHead.position.set(lmCenterWX + lt.size * 0.45, 5.0, lmCenterWZ - lt.size * 0.3);
                       chunkGroup.add(fyHead);
-                      // Big halo since it's the only farm light source
                       var fyHaloMat = new T.MeshBasicMaterial({
                         color: 0xfff0c8, transparent: true, opacity: 0.7,
                         blending: T.AdditiveBlending, depthWrite: false
@@ -11421,7 +11473,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       var fyHalo = new T.Mesh(new T.PlaneGeometry(1.2, 1.2), fyHaloMat);
                       fyHalo.position.set(lmCenterWX + lt.size * 0.45, 5.0, lmCenterWZ - lt.size * 0.3 + 0.04);
                       chunkGroup.add(fyHalo);
-                      // Real PointLight pours warm color onto the farmhouse + nearby ground
                       var fyLight = new T.PointLight(0xfff0c8, 1.0, 6, 2);
                       fyLight.position.set(lmCenterWX + lt.size * 0.45, 4.8, lmCenterWZ - lt.size * 0.3);
                       chunkGroup.add(fyLight);
