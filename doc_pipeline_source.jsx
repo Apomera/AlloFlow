@@ -9941,6 +9941,65 @@ tr { page-break-inside: avoid; }
           }
         }
       }
+      // ── Stage 5b lite: /Headers + /IDTree linkage ──
+      // Third pass. For each table with at least one scope-bearing TH,
+      // assign each TH a unique data-struct-id and mark each TD with the
+      // space-separated list of TH IDs that apply (column headers from
+      // earlier rows at same column index + row headers earlier in same
+      // row). The walker and buildLeaf consume these attributes to emit
+      // /ID on TH StructElems and /A << /Headers [...] >> on TDs.
+      let tableIndex = 0;
+      for (const table of Array.from(htmlDoc.querySelectorAll('table'))) {
+        const trs = Array.from(table.querySelectorAll('tr'));
+        if (trs.length === 0) continue;
+        const hasScopedTh = Array.from(table.querySelectorAll('th')).some(th => {
+          const sc = (th.getAttribute('scope') || '').toLowerCase();
+          return sc === 'col' || sc === 'row';
+        });
+        if (!hasScopedTh) { tableIndex++; continue; }
+        let thIdCounter = 0;
+        const thIdMap = new Map();
+        for (const tr of trs) {
+          for (const cell of Array.from(tr.children)) {
+            const tag = cell.tagName && cell.tagName.toLowerCase();
+            if (tag !== 'th') continue;
+            const scope = (cell.getAttribute('scope') || '').toLowerCase();
+            if (scope !== 'col' && scope !== 'row') continue;
+            const id = 'hdr_' + tableIndex + '_' + (thIdCounter++);
+            cell.setAttribute('data-struct-id', id);
+            thIdMap.set(cell, id);
+          }
+        }
+        const grid = trs.map(tr => Array.from(tr.children));
+        for (let r = 0; r < grid.length; r++) {
+          for (let c = 0; c < grid[r].length; c++) {
+            const cell = grid[r][c];
+            if (!cell || !cell.tagName) continue;
+            if (cell.tagName.toLowerCase() !== 'td') continue;
+            const applicable = [];
+            // Column headers (scope=col THs in earlier rows at same column idx)
+            for (let r2 = 0; r2 < r; r2++) {
+              const above = grid[r2][c];
+              if (!above || !above.tagName) continue;
+              if (above.tagName.toLowerCase() === 'th' && (above.getAttribute('scope') || '').toLowerCase() === 'col') {
+                const id = thIdMap.get(above);
+                if (id) applicable.push(id);
+              }
+            }
+            // Row headers (scope=row THs earlier in same row)
+            for (let c2 = 0; c2 < c; c2++) {
+              const left = grid[r][c2];
+              if (!left || !left.tagName) continue;
+              if (left.tagName.toLowerCase() === 'th' && (left.getAttribute('scope') || '').toLowerCase() === 'row') {
+                const id = thIdMap.get(left);
+                if (id) applicable.push(id);
+              }
+            }
+            if (applicable.length > 0) cell.setAttribute('data-headers', applicable.join(' '));
+          }
+        }
+        tableIndex++;
+      }
     } catch(tableErr) {
       try { warnLog('[createTaggedPdf] Stage 5 table pre-pass failed (non-fatal): ' + (tableErr && tableErr.message)); } catch(_) {}
     }
@@ -9950,6 +10009,10 @@ tr { page-break-inside: avoid; }
     // from PDF-building. Returns either the nested tree's root K (array
     // of refs, some of which are Sect containers) or the flat list (Stage
     // 1 shape) if nesting throws.
+    // Stage 5b lite: buildLeaf pushes {id, ref} entries here when it emits
+    // a TH with a data-struct-id. We read this after the tree is built to
+    // construct the StructTreeRoot /IDTree name tree.
+    const idTreeEntries = [];
     const _buildOutlineStructElems = () => {
       const body = htmlDoc.body || htmlDoc.documentElement;
       // Walk once collecting ordered {role, text, alt, isDecorative, level}.
@@ -9972,6 +10035,11 @@ tr { page-break-inside: avoid; }
           // scope values (colgroup/rowgroup) are spec-valid but rarely used
           // in educational content; we pass them through unchanged.
           scope: tag === 'th' ? (el.getAttribute('scope') || '') : '',
+          // Stage 5b lite: carry data-struct-id (on TH) and data-headers
+          // (on TD) set by the pre-pass so buildLeaf can emit /ID and
+          // /Headers on the resulting StructElems.
+          structId: tag === 'th' ? (el.getAttribute('data-struct-id') || '') : '',
+          headers: tag === 'td' ? (el.getAttribute('data-headers') || '') : '',
         });
       }
       // Build a leaf StructElem (not a Sect) and register it. The parentRef
@@ -9997,15 +10065,41 @@ tr { page-break-inside: avoid; }
         // PDF spec §14.8.5.7 puts /Scope inside the /A (attributes) dict with
         // owner /Table. Readers that honor this announce "column header" /
         // "row header" when a TD in that column/row is focused.
+        const attrDict = { O: PDFName.of('Table') };
+        let attrDirty = false;
         if (item.role === 'TH' && item.scope) {
           const scopeVal = item.scope.toLowerCase() === 'col' || item.scope.toLowerCase() === 'colgroup' ? 'Column'
                          : item.scope.toLowerCase() === 'row' || item.scope.toLowerCase() === 'rowgroup' ? 'Row'
                          : null;
           if (scopeVal) {
-            d.A = context.obj({ O: PDFName.of('Table'), Scope: PDFName.of(scopeVal) });
+            attrDict.Scope = PDFName.of(scopeVal);
+            attrDirty = true;
           }
         }
-        return context.register(context.obj(d));
+        // Stage 5b lite: /Headers on TDs — references applicable TH IDs so
+        // SR readers can announce "column header X, row header Y, value".
+        if (item.role === 'TD' && item.headers) {
+          const ids = item.headers.split(/\s+/).filter(Boolean);
+          if (ids.length > 0) {
+            attrDict.Headers = context.obj(ids.map(id => PDFString.of(id)));
+            attrDirty = true;
+          }
+        }
+        if (attrDirty) d.A = context.obj(attrDict);
+        const elemRef = context.register(context.obj(d));
+        // Stage 5b lite: TH /ID is an indirect spec entry (not inside /A).
+        // We collect {id, ref} entries for the /IDTree built after the
+        // tree is assembled.
+        if (item.role === 'TH' && item.structId) {
+          try {
+            const lookup = context.lookup(elemRef);
+            if (lookup && typeof lookup.set === 'function') {
+              lookup.set(PDFName.of('ID'), PDFString.of(item.structId));
+            }
+          } catch(_) {}
+          idTreeEntries.push({ id: item.structId, ref: elemRef });
+        }
+        return elemRef;
       };
       // Attempt NESTED build with a section stack. Each stack entry is
       // { ref, level, kids: [] } representing an open Sect. On a heading
@@ -10319,13 +10413,30 @@ tr { page-break-inside: avoid; }
     // readers the semantic reading order when they traverse the tag tree
     // depth-first.
     const combinedK = structElemRefs.concat(pageElemRefs).concat(fieldElemRefs);
-    const structRootDict = context.obj({
+    // Stage 5b lite: /IDTree name tree. Required by readers that resolve TD
+    // /Headers [(id)] back to the referenced TH StructElem. Name tree keys
+    // must be sorted lexicographically (PDF spec §7.9.6).
+    let idTreeRef = null;
+    if (idTreeEntries.length > 0) {
+      try {
+        const sorted = idTreeEntries.slice().sort((a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
+        const names = [];
+        for (const entry of sorted) {
+          names.push(PDFString.of(entry.id));
+          names.push(entry.ref);
+        }
+        idTreeRef = context.register(context.obj({ Names: context.obj(names) }));
+      } catch(idtErr) { try { warnLog('[createTaggedPdf] Stage 5b /IDTree build failed (non-fatal): ' + (idtErr && idtErr.message)); } catch(_) {} }
+    }
+    const structRootDictBody = {
       Type: PDFName.of('StructTreeRoot'),
       K: context.obj(combinedK),
       ParentTree: parentTreeRef,
       ParentTreeNextKey: PDFNumber.of(nextStructParentKey),
       RoleMap: context.obj({}),
-    });
+    };
+    if (idTreeRef) structRootDictBody.IDTree = idTreeRef;
+    const structRootDict = context.obj(structRootDictBody);
     context.assign(structRootRef, structRootDict);
     catalog.set(PDFName.of('StructTreeRoot'), structRootRef);
     // ── ViewerPreferences: DisplayDocTitle ──
