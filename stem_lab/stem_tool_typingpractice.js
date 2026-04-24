@@ -4314,23 +4314,81 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
 
             // Baseline + current snapshot (ALL-TIME, not filter-affected — the
             // baseline is a milestone anchor and shouldn't move with a filter).
-            state.baseline ? h('div', {
-              style: {
-                marginBottom: '24px',
-                padding: '16px',
-                background: palette.surface,
-                borderRadius: '12px',
-                border: '1px solid ' + palette.border
-              }
-            },
-              h('div', { style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '12px', fontWeight: 700 } }, 'Baseline → current · all-time'),
-              h('div', { style: { display: 'flex', gap: '12px', flexWrap: 'wrap' } },
-                renderMetric('Baseline WPM', state.baseline.wpm, palette),
-                renderMetric('Best WPM', getBestWpm(state), palette),
-                renderMetric('Recent avg', getRecentAvg(allSessions, 'wpm'), palette),
-                renderMetric('Recent acc', getRecentAvg(allSessions, 'accuracy') + '%', palette)
-              )
-            ) : null,
+            state.baseline ? (function() {
+              // Week-over-week trend: compare this-7-days avg to prior-7-days avg
+              var now = Date.now();
+              var d7 = 7 * 24 * 60 * 60 * 1000;
+              var thisWk = allSessions.filter(function(s) { return now - new Date(s.date).getTime() < d7; });
+              var prevWk = allSessions.filter(function(s) {
+                var age = now - new Date(s.date).getTime();
+                return age >= d7 && age < 2 * d7;
+              });
+              var avg = function(arr, k) {
+                if (!arr || arr.length === 0) return null;
+                return arr.reduce(function(a, s) { return a + (s[k] || 0); }, 0) / arr.length;
+              };
+              var wpmNow = avg(thisWk, 'wpm');
+              var wpmPrev = avg(prevWk, 'wpm');
+              var accNow = avg(thisWk, 'accuracy');
+              var accPrev = avg(prevWk, 'accuracy');
+              var wpmDelta = (wpmNow !== null && wpmPrev !== null) ? Math.round(wpmNow - wpmPrev) : null;
+              var accDelta = (accNow !== null && accPrev !== null) ? Math.round(accNow - accPrev) : null;
+
+              var renderDelta = function(delta, unit) {
+                if (delta === null) return h('span', { style: { fontSize: '10px', color: palette.textMute, fontStyle: 'italic', marginLeft: '6px' } }, 'no prior week');
+                var arrow = delta > 1 ? '↑' : (delta < -1 ? '↓' : '→');
+                var color = delta > 1 ? palette.success : (delta < -1 ? palette.warn : palette.textMute);
+                var sign = delta > 0 ? '+' : '';
+                return h('span', {
+                  style: { fontSize: '10px', color: color, fontWeight: 700, marginLeft: '6px', fontVariantNumeric: 'tabular-nums' },
+                  title: 'vs prior 7 days'
+                }, arrow + ' ' + sign + delta + unit);
+              };
+
+              return h('div', {
+                style: {
+                  marginBottom: '24px',
+                  padding: '16px',
+                  background: palette.surface,
+                  borderRadius: '12px',
+                  border: '1px solid ' + palette.border
+                }
+              },
+                h('div', { style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '12px', fontWeight: 700 } }, 'Baseline → current · all-time'),
+                h('div', { style: { display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: thisWk.length > 0 ? '12px' : 0 } },
+                  renderMetric('Baseline WPM', state.baseline.wpm, palette),
+                  renderMetric('Best WPM', getBestWpm(state), palette),
+                  renderMetric('Recent avg', getRecentAvg(allSessions, 'wpm'), palette),
+                  renderMetric('Recent acc', getRecentAvg(allSessions, 'accuracy') + '%', palette)
+                ),
+                // Week-over-week trend strip — only renders when there's
+                // this-week activity to compare against.
+                thisWk.length > 0 ? h('div', {
+                  style: {
+                    fontSize: '11px',
+                    color: palette.textDim,
+                    paddingTop: '12px',
+                    borderTop: '1px solid ' + palette.border,
+                    display: 'flex',
+                    gap: '16px',
+                    flexWrap: 'wrap',
+                    alignItems: 'center'
+                  }
+                },
+                  h('span', { style: { color: palette.textMute, textTransform: 'uppercase', fontSize: '10px', letterSpacing: '0.06em', fontWeight: 700 } }, 'Week vs prior week'),
+                  h('span', null,
+                    'WPM ', h('strong', { style: { color: palette.text, fontVariantNumeric: 'tabular-nums' } }, Math.round(wpmNow)),
+                    renderDelta(wpmDelta, ' WPM')
+                  ),
+                  h('span', null,
+                    'Accuracy ', h('strong', { style: { color: palette.text, fontVariantNumeric: 'tabular-nums' } }, Math.round(accNow) + '%'),
+                    renderDelta(accDelta, '%')
+                  ),
+                  h('span', { style: { color: palette.textMute, fontSize: '10px' } },
+                    thisWk.length + ' this week · ' + prevWk.length + ' last week')
+                ) : null
+              );
+            })() : null,
 
             // IEP-goal hit-rate sparkline — one dot per session (up to 20),
             // green when the session met the goal, neutral when not. Gives a
