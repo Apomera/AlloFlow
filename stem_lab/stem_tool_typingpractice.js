@@ -4972,6 +4972,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 renderMetric('Errors', s.errors, palette, state.theme)
               ),
 
+              // 'vs baseline' quiet win chip — shows when the session
+              // improved on baseline by ≥2 WPM or ≥2 accuracy points AND
+              // isn't already a celebrated event (PB / baseline / mastery /
+              // goal). Surfaces small-but-real progress that would otherwise
+              // get lost in 'just another session' framing. Silent when
+              // numbers dipped (compassion card handles that path) or when
+              // baseline doesn't exist yet.
+              (function() {
+                if (s.isWarmup) return null;
+                if (s.isNewBest || s.isBaseline || s.masteryAdvanced || s.firstGoalMet || s.goalMet) return null;
+                if (!state.baseline || !state.baseline.wpm) return null;
+                var wpmDelta = s.wpm - state.baseline.wpm;
+                var accDelta = s.accuracy - state.baseline.accuracy;
+                // Need at least one ≥2 gain AND no regression >3 in the other dim
+                var meaningfulGain = (wpmDelta >= 2 && accDelta >= -3) || (accDelta >= 2 && wpmDelta >= -3);
+                if (!meaningfulGain) return null;
+                var tm = state.theme || 'default';
+                var lead;
+                if (tm === 'steampunk')      lead = '⚙ Against your baseline: ';
+                else if (tm === 'cyberpunk') lead = '[Δ BASELINE] ';
+                else if (tm === 'kawaii')    lead = '✨ Since your baseline: ';
+                else if (tm === 'neutral')   lead = 'vs baseline: ';
+                else                         lead = '📊 Since your baseline: ';
+                var parts = [];
+                if (wpmDelta > 0)      parts.push('+' + wpmDelta + ' WPM');
+                else if (wpmDelta < 0) parts.push(wpmDelta + ' WPM');
+                if (accDelta > 0)      parts.push('+' + accDelta + '% accuracy');
+                else if (accDelta < 0) parts.push(accDelta + '% accuracy');
+                return h('div', {
+                  role: 'note',
+                  style: {
+                    marginBottom: '16px',
+                    padding: '8px 14px',
+                    background: 'transparent',
+                    border: '1px solid ' + palette.success,
+                    borderLeft: '3px solid ' + palette.success,
+                    borderRadius: '8px',
+                    fontSize: '12px',
+                    color: palette.textDim,
+                    textAlign: 'left',
+                    fontVariantNumeric: 'tabular-nums'
+                  }
+                },
+                  h('span', { style: { color: palette.success, fontWeight: 700 } }, lead),
+                  h('span', null, parts.join(' · '))
+                );
+              })(),
+
               // Compassion card — rough-session reframe. Only shows when the
               // session wasn't a celebrated event AND one of these holds:
               //   1) accuracy is below 70% (absolute low)
