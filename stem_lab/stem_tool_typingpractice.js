@@ -4314,6 +4314,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               }, state.iepGoal.notes) : null
             ) : null,
 
+            // Stuck-key finger hint — when the current expected char has
+            // ≥3 errors THIS drill, surface a brief finger-ownership tip
+            // above the target. Motor-planning assistance: naming the
+            // finger often unblocks a stuck pattern without needing the
+            // full on-screen keyboard. Hidden when keyboard is already on
+            // (redundant). Theme-voiced. Clears automatically when the
+            // student moves past the stuck char.
+            (function() {
+              if (state.accommodations.largeKeys) return null; // already visible on keyboard
+              if (!targetStr || typed.length >= targetStr.length) return null;
+              var expected = targetStr[typed.length];
+              if (!expected || expected === ' ') return null;
+              var stuckCount = errorChars[expected.toLowerCase()] || 0;
+              if (stuckCount < 3) return null;
+              var meta = findKeyMeta(expected);
+              if (!meta) return null;
+              var tm = state.theme || 'default';
+              var finger = fingerLabel(meta.f);
+              var charLabel = expected.toUpperCase();
+              var body;
+              if (tm === 'steampunk')      body = '⚙ The key ' + charLabel + ' has snagged ' + stuckCount + '× — reach with your ' + finger + '. Steady hands.';
+              else if (tm === 'cyberpunk') body = '[STUCK :: ' + charLabel + ' × ' + stuckCount + '] :: target :: ' + finger.toUpperCase();
+              else if (tm === 'kawaii')    body = '💕 The key ' + charLabel + ' has been tricky (' + stuckCount + '×) — try your ' + finger + '! ✨';
+              else if (tm === 'neutral')   body = charLabel + ' missed ' + stuckCount + '×. Use ' + finger + '.';
+              else                         body = '🎯 You\'ve missed ' + charLabel + ' ' + stuckCount + '× this drill — try using your ' + finger + '.';
+              return h('div', {
+                role: 'status',
+                'aria-live': 'polite',
+                style: {
+                  marginBottom: '12px',
+                  padding: '8px 12px',
+                  background: palette.surface,
+                  border: '1px solid ' + palette.warn,
+                  borderLeft: '3px solid ' + palette.warn,
+                  borderRadius: '8px',
+                  fontSize: '12px',
+                  color: palette.textDim,
+                  lineHeight: '1.5'
+                }
+              }, body);
+            })(),
+
             // Target text surface (focusable capture div)
             h('div', {
               ref: captureRef,
