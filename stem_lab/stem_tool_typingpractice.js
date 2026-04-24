@@ -903,7 +903,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     // Scoped to .tp-root so we don't affect the rest of AlloFlow.
     // :focus-visible means mouse clicks don't leave persistent outlines,
     // but keyboard tab always shows a clear accessible ring.
+    //
+    // Also contains per-theme visual "juice" — button shadows, hover
+    // effects, drill-current-character treatments — all gated behind
+    // .tp-root.tp-theme-<name> class selectors so they apply only to
+    // the theme that opted in. Default + neutral stay clean by design.
     style.textContent = [
+      /* ── Focus ring (WCAG AA) ─────────────────────────────────── */
       '.tp-root button:focus-visible,',
       '.tp-root [tabindex]:focus-visible,',
       '.tp-root input:focus-visible,',
@@ -914,7 +920,83 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '  border-radius: 8px;',
       '}',
       '.tp-root button:focus:not(:focus-visible),',
-      '.tp-root [tabindex]:focus:not(:focus-visible) { outline: none; }'
+      '.tp-root [tabindex]:focus:not(:focus-visible) { outline: none; }',
+
+      /* ── Steampunk: brass-embossed buttons + warm hover glow ──── */
+      '.tp-root.tp-theme-steampunk button:not([disabled]) {',
+      '  box-shadow: 0 2px 0 rgba(60, 30, 10, 0.5), inset 0 1px 0 rgba(255, 220, 150, 0.18);',
+      '  transition: box-shadow 120ms ease, transform 60ms ease, filter 120ms ease;',
+      '}',
+      '.tp-root.tp-theme-steampunk button:not([disabled]):hover {',
+      '  box-shadow: 0 3px 10px rgba(212, 136, 76, 0.28), inset 0 1px 0 rgba(255, 220, 150, 0.28);',
+      '  filter: brightness(1.06);',
+      '}',
+      '.tp-root.tp-theme-steampunk button:not([disabled]):active {',
+      '  transform: translateY(1px);',
+      '  box-shadow: 0 1px 0 rgba(60, 30, 10, 0.5);',
+      '}',
+
+      /* ── Cyberpunk: neon glow on hover, current-char pulse ───── */
+      '.tp-root.tp-theme-cyberpunk button:not([disabled]) {',
+      '  transition: box-shadow 160ms ease, text-shadow 160ms ease, filter 120ms ease;',
+      '}',
+      '.tp-root.tp-theme-cyberpunk button:not([disabled]):hover {',
+      '  box-shadow: 0 0 14px rgba(255, 0, 168, 0.35), 0 0 24px rgba(255, 0, 168, 0.15);',
+      '  text-shadow: 0 0 6px rgba(255, 0, 168, 0.4);',
+      '  filter: brightness(1.1);',
+      '}',
+      '@keyframes tp-cyber-pulse {',
+      '  0%, 100% { box-shadow: 0 0 6px rgba(255, 0, 168, 0.4); }',
+      '  50%      { box-shadow: 0 0 14px rgba(255, 0, 168, 0.7); }',
+      '}',
+      '.tp-root.tp-theme-cyberpunk .tp-current-char {',
+      '  animation: tp-cyber-pulse 1.4s ease-in-out infinite;',
+      '}',
+
+      /* ── Kawaii: soft lift on hover, gentle bounce on click ──── */
+      '.tp-root.tp-theme-kawaii button:not([disabled]) {',
+      '  box-shadow: 0 2px 5px rgba(232, 90, 138, 0.15);',
+      '  transition: transform 140ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 140ms ease;',
+      '}',
+      '.tp-root.tp-theme-kawaii button:not([disabled]):hover {',
+      '  transform: translateY(-1px);',
+      '  box-shadow: 0 5px 10px rgba(232, 90, 138, 0.28);',
+      '}',
+      '.tp-root.tp-theme-kawaii button:not([disabled]):active {',
+      '  transform: translateY(0) scale(0.98);',
+      '}',
+      '@keyframes tp-kawaii-breathe {',
+      '  0%, 100% { transform: scale(1); }',
+      '  50%      { transform: scale(1.04); }',
+      '}',
+      '.tp-root.tp-theme-kawaii .tp-current-char {',
+      '  display: inline-block;',
+      '  animation: tp-kawaii-breathe 1.8s ease-in-out infinite;',
+      '  transform-origin: center;',
+      '}',
+
+      /* ── Steampunk drill-target: inset paper-roller feel ─────── */
+      '.tp-root.tp-theme-steampunk [role="textbox"] {',
+      '  box-shadow: inset 0 3px 10px rgba(0, 0, 0, 0.4), inset 0 -1px 0 rgba(255, 200, 120, 0.12);',
+      '}',
+
+      /* ── Cyberpunk drill-target: thin neon underline + inner glow ── */
+      '.tp-root.tp-theme-cyberpunk [role="textbox"] {',
+      '  box-shadow: inset 0 0 20px rgba(255, 0, 168, 0.08), 0 1px 0 rgba(255, 0, 168, 0.3);',
+      '}',
+
+      /* ── Kawaii drill-target: soft lifted card feel ──────────── */
+      '.tp-root.tp-theme-kawaii [role="textbox"] {',
+      '  box-shadow: 0 4px 14px rgba(232, 90, 138, 0.18);',
+      '  border-radius: 18px !important;',
+      '}',
+
+      /* ── Reduced-motion override: drop animations for users with ',
+      '     prefers-reduced-motion, consistent with WCAG 2.3.3 ─── */',
+      '@media (prefers-reduced-motion: reduce) {',
+      '  .tp-root .tp-current-char { animation: none !important; }',
+      '  .tp-root button { transition: none !important; }',
+      '}'
     ].join('\n');
     document.head.appendChild(style);
   })();
@@ -3092,7 +3174,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             } else {
               display = ch;
             }
-            chars.push(h('span', { key: 'c' + i, style: charStyle }, display));
+            // tp-current-char class on the active character — theme CSS
+            // hooks this for pulse/breathe animations (respecting
+            // prefers-reduced-motion).
+            chars.push(h('span', {
+              key: 'c' + i,
+              className: (charState === 'current' || charState === 'wrong-current') ? 'tp-current-char' : '',
+              style: charStyle
+            }, display));
           }
 
           var paceHint = state.accommodations.paceTargetWpm
@@ -6116,7 +6205,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         // or default to 'en'. Matters for screen-reader pronunciation.
         var rootLang = (state.aiPassage && state.aiPassage.language) || 'en';
         return h('div', {
-          className: 'tp-root',
+          className: 'tp-root tp-theme-' + (state.theme || 'default'),
           lang: rootLang,
           style: {
             background: rootBackground,
