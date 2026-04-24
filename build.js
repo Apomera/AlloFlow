@@ -197,6 +197,11 @@ const MODULES = [
         name: 'ContentEngineModule',
         filename: 'content_engine_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'GeminiAPI',
+        filename: 'gemini_api_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     }
 ];
 
@@ -378,6 +383,26 @@ const COMPILE_PAIRS = [
                 + '  // WCAG 2.1 AA: Accessibility CSS\n'
                 + '  if (!document.getElementById("persona-ui-module-a11y")) { var _s = document.createElement("style"); _s.id = "persona-ui-module-a11y"; _s.textContent = "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .text-slate-600 { color: #64748b !important; }"; document.head.appendChild(_s); }\n'
                 + "if (window.AlloModules && window.AlloModules.PersonaUIModule) { console.log('[CDN] PersonaUIModule already loaded, skipping'); return; }\n"
+                + compiled
+                + '\n})();\n'
+            );
+        },
+    },
+    {
+        // ── gemini_api ── Pure HTTP wrappers for Gemini text/vision/image-edit calls.
+        // Factory pattern: createGeminiAPI({apiKey, GEMINI_MODELS, fetchWithExponentialBackoff,
+        // optimizeImage, warnLog, debugLog, _isCanvasEnv, getAbortSignal}) -> {callGemini,
+        // callGeminiImageEdit, callGeminiVision}. No React state, no module-level mutable state.
+        name: 'GeminiAPI',
+        srcPath: path.join(ROOT, 'gemini_api_source.jsx'),
+        modPath: path.join(ROOT, 'gemini_api_module.js'),
+        publicPath: path.join(ROOT, 'prismflow-deploy', 'public', 'gemini_api_module.js'),
+        wrap(src) {
+            const compiled = compileJsx(src);
+            return (
+                '(function() {\n'
+                + "'use strict';\n"
+                + "if (window.AlloModules && window.AlloModules.GeminiAPI) { console.log('[CDN] GeminiAPI already loaded, skipping'); return; }\n"
                 + compiled
                 + '\n})();\n'
             );
