@@ -5148,6 +5148,80 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               )
             ) : null,
 
+            // Per-drill error breakdown — splits the global heatmap by drill
+            // so clinicians see which keys miss on which drill specifically.
+            // Only shows drills with ≥3 sessions (avoids single-session noise).
+            (function() {
+              var perDrill = computePerDrillErrors(allSessions);
+              var drillIds = Object.keys(perDrill).sort(function(a, b) {
+                return perDrill[b].total - perDrill[a].total;
+              });
+              if (drillIds.length < 2) return null; // skip if only 1 drill has data
+              return h('div', {
+                style: {
+                  marginBottom: '24px',
+                  padding: '16px',
+                  background: palette.surface,
+                  borderRadius: '12px',
+                  border: '1px solid ' + palette.border
+                }
+              },
+                h('div', { style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '10px', fontWeight: 700 } },
+                  'Top error keys by drill · all-time'),
+                h('p', { style: { fontSize: '11px', color: palette.textMute, margin: '0 0 10px 0', lineHeight: '1.5' } },
+                  'Different drills surface different weaknesses. Use this to pick drills that target specific problem keys.'),
+                h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
+                  drillIds.map(function(drillId) {
+                    var drill = DRILLS[drillId];
+                    var rec = perDrill[drillId];
+                    var topKeys = Object.keys(rec.chars)
+                      .filter(function(k) { return rec.chars[k] > 0; })
+                      .sort(function(a, b) { return rec.chars[b] - rec.chars[a]; })
+                      .slice(0, 5);
+                    return h('div', {
+                      key: 'pderr-' + drillId,
+                      style: {
+                        padding: '10px 12px',
+                        background: palette.bg,
+                        border: '1px solid ' + palette.border,
+                        borderRadius: '8px',
+                        display: 'flex',
+                        gap: '12px',
+                        alignItems: 'center',
+                        flexWrap: 'wrap'
+                      }
+                    },
+                      h('div', { style: { fontSize: '12px', fontWeight: 600, color: palette.text, flex: '0 0 160px' } },
+                        (drill ? drill.icon + '  ' + drill.name : drillId) + ' ',
+                        h('span', { style: { fontSize: '10px', color: palette.textMute, fontWeight: 400 } },
+                          '· ' + rec.sessionCount + 'x · ' + rec.total + ' errors')
+                      ),
+                      h('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
+                        topKeys.map(function(k) {
+                          return h('span', {
+                            key: 'pdk-' + drillId + '-' + k,
+                            style: {
+                              padding: '3px 7px',
+                              borderRadius: '4px',
+                              background: palette.surface,
+                              border: '1px solid ' + palette.border,
+                              fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+                              fontSize: '11px',
+                              color: palette.text
+                            }
+                          },
+                            h('strong', { style: { textTransform: 'uppercase' } }, k),
+                            h('span', { style: { color: palette.textMute, marginLeft: '4px', fontSize: '10px' } },
+                              rec.chars[k])
+                          );
+                        })
+                      )
+                    );
+                  })
+                )
+              );
+            })(),
+
             // Accommodation badges
             (state.accommodationBadges && state.accommodationBadges.length > 0) ? h('div', {
               style: {
@@ -5680,6 +5754,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
   // language ("Both keys are left-index — check your wrist angle") rather than
   // "you keep messing up." The coaching is a mechanical observation, not a
   // commentary on effort.
+  // Aggregate per-drill error counts from the session array. Unlike the global
+  // aggregateErrors (which sums across all drills), this splits errors by
+  // drillId so clinicians can see "on home-row you miss F most, on top-row
+  // you miss Y most." Returns { drillId: { charKey: count, ... }, ... }
+  // Only includes drills with at least 3 sessions so single-session noise
+  // doesn't look like a pattern.
+  function computePerDrillErrors(sessions) {
+    if (!sessions || sessions.length === 0) return {};
+    var byDrill = {};
+    sessions.forEach(function(s) {
+      if (!s.errorChars) return;
+      var id = s.drillId;
+      if (!byDrill[id]) byDrill[id] = { total: 0, sessionCount: 0, chars: {} };
+      byDrill[id].sessionCount++;
+      Object.keys(s.errorChars).forEach(function(k) {
+        byDrill[id].chars[k] = (byDrill[id].chars[k] || 0) + (s.errorChars[k] || 0);
+        byDrill[id].total += (s.errorChars[k] || 0);
+      });
+    });
+    // Filter: require ≥3 sessions and ≥1 error to emit a row
+    var out = {};
+    Object.keys(byDrill).forEach(function(id) {
+      if (byDrill[id].sessionCount >= 3 && byDrill[id].total > 0) out[id] = byDrill[id];
+    });
+    return out;
+  }
+
   function analyzeErrorPatterns(aggregateErrors) {
     var out = { fingerCounts: {}, hints: [], topKeys: [], totalErrors: 0 };
     if (!aggregateErrors) return out;
