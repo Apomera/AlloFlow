@@ -4187,7 +4187,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               },
                 h('span', { key: 'lwpm-' + liveWpm, className: 'tp-live-tick' }, liveWpm + ' WPM'),
                 h('span', { style: { color: palette.textMute } }, '·'),
-                h('span', { key: 'lacc-' + liveAcc, className: 'tp-live-tick' }, liveAcc + '% acc'),
+                // Live accuracy gets color-graded by threshold so drift toward
+                // trouble is immediately legible without adding UI. Applied
+                // only after the student has typed enough to matter (≥15
+                // chars) — early-drill accuracy bounces too much to color.
+                (function() {
+                  var accColor = palette.textDim;
+                  if (typed.length >= 15) {
+                    if (liveAcc >= 95)      accColor = palette.success;
+                    else if (liveAcc >= 85) accColor = palette.text;
+                    else if (liveAcc >= 70) accColor = palette.warn;
+                    else                    accColor = palette.danger;
+                  }
+                  return h('span', {
+                    key: 'lacc-' + liveAcc,
+                    className: 'tp-live-tick',
+                    style: { color: accColor, fontWeight: liveAcc < 85 && typed.length >= 15 ? 700 : 'inherit', transition: 'color 200ms ease' }
+                  }, liveAcc + '% acc');
+                })(),
                 // Live streak chip — consecutive correct keystrokes. Only
                 // appears at ≥5 so the HUD isn't noisy at start. Theme-voiced
                 // label + icon. Not punitive (no "lost streak" shame on reset).
