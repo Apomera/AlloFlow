@@ -8293,6 +8293,63 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             }
           }
 
+          // ── Downtown street furniture: parking meters + bike racks ──
+          // Portland's Old Port is built around metered street parking and
+          // racks of locked bikes by every storefront. Without these props
+          // the Downtown scenario reads as "dense residential" rather than
+          // urban. Placed along both curbs with enough density to catch the
+          // eye from the cockpit.
+          if (currentScenario.id === 'downtown') {
+            var pmPostMat = new T.MeshLambertMaterial({ color: 0x3a3a3a });
+            var pmHeadMat = new T.MeshLambertMaterial({ color: 0x5a5a5a });
+            var pmDisplayMat = new T.MeshBasicMaterial({ color: 0x2a2a2a });
+            for (var pmZ = -MAP_SIZE + 2; pmZ < MAP_SIZE; pmZ += 3.2) {
+              // Skip occasional spots (crosswalks, fire hydrants — the meter
+              // "zone" isn't continuous in real life).
+              var pmSkip = ((pmZ + MAP_SIZE) * 17) % 100;
+              if (pmSkip < 20) continue;
+              [-1, 1].forEach(function(pmSide) {
+                var pmX = centerX - MAP_SIZE / 2 + pmSide * 4.2;
+                // Slim post
+                var pmPost = new T.Mesh(new T.CylinderGeometry(0.04, 0.04, 1.3, 6), pmPostMat);
+                pmPost.position.set(pmX, 0.65, pmZ);
+                scene.add(pmPost);
+                // Rounded meter head — two stacked boxes for the classic
+                // top-heavy silhouette
+                var pmHead = new T.Mesh(new T.BoxGeometry(0.18, 0.3, 0.14), pmHeadMat);
+                pmHead.position.set(pmX, 1.42, pmZ);
+                scene.add(pmHead);
+                // LCD display — tiny dark face on the road-facing side
+                var pmDisp = new T.Mesh(new T.BoxGeometry(0.02, 0.12, 0.1), pmDisplayMat);
+                pmDisp.position.set(pmX + (pmSide > 0 ? -0.1 : 0.1), 1.44, pmZ);
+                scene.add(pmDisp);
+              });
+            }
+            // Bike racks in clusters of 3 at ~15m spacing — each rack is
+            // the classic inverted-U shape, in a tight row of three.
+            var brMat = new T.MeshLambertMaterial({ color: 0x4a4a4a });
+            for (var brZ = -MAP_SIZE + 8; brZ < MAP_SIZE; brZ += 18) {
+              [-1, 1].forEach(function(brSide) {
+                var brX = centerX - MAP_SIZE / 2 + brSide * 5.1;
+                for (var brI = 0; brI < 3; brI++) {
+                  // Left post
+                  var brPL = new T.Mesh(new T.CylinderGeometry(0.03, 0.03, 0.8, 6), brMat);
+                  brPL.position.set(brX - 0.28, 0.4, brZ + brI * 0.45);
+                  scene.add(brPL);
+                  // Right post
+                  var brPR = new T.Mesh(new T.CylinderGeometry(0.03, 0.03, 0.8, 6), brMat);
+                  brPR.position.set(brX + 0.28, 0.4, brZ + brI * 0.45);
+                  scene.add(brPR);
+                  // Top cross rail
+                  var brTop = new T.Mesh(new T.CylinderGeometry(0.03, 0.03, 0.6, 6), brMat);
+                  brTop.rotation.z = Math.PI / 2;
+                  brTop.position.set(brX, 0.8, brZ + brI * 0.45);
+                  scene.add(brTop);
+                }
+              });
+            }
+          }
+
           // ── Fieldstone walls along rural / coastal / snow roads ──
           // THE quintessential New England back road marker. Moss-grown stacked
           // fieldstone walls run along every rural property line in Maine.
