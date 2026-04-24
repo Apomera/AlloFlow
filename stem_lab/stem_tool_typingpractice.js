@@ -1162,6 +1162,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '.tp-root.tp-theme-kawaii    .tp-view-enter { animation: tp-view-in-kawaii 300ms cubic-bezier(0.34,1.56,0.64,1) 1; }',
       '.tp-root.tp-theme-neutral   .tp-view-enter { animation: tp-view-in-neutral 180ms ease-out 1; }',
 
+      /* ── Current-tier pulse on the Progress skill tree ──────────
+         'You are here' signal for the in-progress mastery tier node.
+         Slow (2.8s) soft-breathing glow in the theme's accent color so
+         the eye lands on it without feeling nagged. Suppressed under
+         prefers-reduced-motion. */
+      '@keyframes tp-tier-current-default { 0%, 100% { box-shadow: 0 0 0 0 rgba(96,165,250,0.15); } 50% { box-shadow: 0 0 0 6px rgba(96,165,250,0.02); } }',
+      '@keyframes tp-tier-current-steam   { 0%, 100% { box-shadow: inset 0 1px 0 rgba(255,220,150,0.1), 0 0 0 0 rgba(212,136,76,0.15); } 50% { box-shadow: inset 0 1px 0 rgba(255,220,150,0.2), 0 0 0 4px rgba(212,136,76,0.08); } }',
+      '@keyframes tp-tier-current-cyber   { 0%, 100% { box-shadow: 0 0 8px rgba(255,0,168,0.25); } 50% { box-shadow: 0 0 14px rgba(255,0,168,0.45), 0 0 0 2px rgba(255,0,168,0.15); } }',
+      '@keyframes tp-tier-current-kawaii  { 0%, 100% { box-shadow: 0 3px 8px rgba(232,90,138,0.18); } 50% { box-shadow: 0 4px 12px rgba(232,90,138,0.32); } }',
+      '@keyframes tp-tier-current-neutral { 0%, 100% { box-shadow: 0 0 0 0 rgba(184,160,128,0.1); } 50% { box-shadow: 0 0 0 3px rgba(184,160,128,0.08); } }',
+      '.tp-root .tp-tier-current { animation: tp-tier-current-default 2800ms ease-in-out infinite; }',
+      '.tp-root.tp-theme-steampunk .tp-tier-current { animation: tp-tier-current-steam 3000ms ease-in-out infinite; }',
+      '.tp-root.tp-theme-cyberpunk .tp-tier-current { animation: tp-tier-current-cyber 2200ms ease-in-out infinite; }',
+      '.tp-root.tp-theme-kawaii    .tp-tier-current { animation: tp-tier-current-kawaii 2600ms ease-in-out infinite; }',
+      '.tp-root.tp-theme-neutral   .tp-tier-current { animation: tp-tier-current-neutral 3200ms ease-in-out infinite; }',
+
       /* ── Progress-bar shimmer — a soft diagonal highlight sweeps across
          the in-progress fill every ~2.4s, giving the bar a sense of motion
          while the student types. Static-complete state (done=true) drops
@@ -1202,6 +1218,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '@keyframes tp-live-tick-pulse { 0% { opacity: 0.55; transform: scale(0.96); } 40% { opacity: 1; transform: scale(1.04); } 100% { opacity: 1; transform: scale(1); } }',
       '.tp-root .tp-live-tick { display: inline-block; animation: tp-live-tick-pulse 180ms ease-out 1; }',
 
+      /* ── Streak chip — keyed on current count so React re-mounts the
+         chip each time the streak advances. Slightly stronger pulse than
+         the live-HUD tick so the chip feels rewarding. */
+      '@keyframes tp-streak-pop { 0% { transform: scale(0.85); opacity: 0.6; } 35% { transform: scale(1.08); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }',
+      '.tp-root .tp-streak-chip { display: inline-block; animation: tp-streak-pop 220ms ease-out 1; }',
+
       /* ── Per-theme drill card hover lift ─────────────────────────
          Unlocked cards gain a theme-specific elevation treatment on hover
          (and keyboard focus). Complements the existing inline border-color
@@ -1239,8 +1261,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '  .tp-root .tp-celebrate,',
       '  .tp-root .tp-wrong-flash,',
       '  .tp-root .tp-live-tick,',
+      '  .tp-root .tp-streak-chip,',
       '  .tp-root .tp-word-pulse,',
       '  .tp-root .tp-progress-fill::after,',
+      '  .tp-root .tp-tier-current,',
       '  .tp-root .tp-view-enter { animation: none !important; }',
       '  .tp-root button { transition: none !important; }',
       '  .tp-root .tp-drill-card:hover,',
@@ -1318,6 +1342,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         // happens to repeat. Cleared when a drill restarts.
         var wordPulseTuple = useState({ start: -1, end: -1, key: 0 });
         var wordPulse = wordPulseTuple[0], setWordPulse = wordPulseTuple[1];
+
+        // Consecutive-correct streak counter for live HUD feedback. NOT a
+        // clinical metric; NOT persisted. Resets silently on any wrong
+        // keystroke and on drill-enter. Only surfaces in the HUD when ≥5,
+        // to avoid busy visual noise early in the drill.
+        var streakTuple = useState(0);
+        var streak = streakTuple[0], setStreak = streakTuple[1];
 
         var lastSummaryTuple = useState(null);
 
@@ -1466,6 +1497,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             setPausedMs(0);
             setPauseStartedAt(null);
             setWordPulse({ start: -1, end: -1, key: 0 });
+            setStreak(0);
             completionSavedRef.current = false;
             restNudgeShownRef.current = false;
             keystrokeTimesRef.current = [];
@@ -1805,6 +1837,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           if (key === expected) {
             setTyped(typed + key);
             setLastWasWrong(false);
+            setStreak(streak + 1);
             // Record timestamp relative to start for pace-graph computation.
             // Push via ref to avoid per-keystroke re-renders from state updates.
             if (startTime !== null) keystrokeTimesRef.current.push(Date.now() - startTime);
@@ -1840,6 +1873,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             // progress continues. Default mode blocks.
             setErrorCount(errorCount + 1);
             setLastWasWrong(true);
+            // Reset the live streak counter silently — no toast, no shame.
+            if (streak > 0) setStreak(0);
             // Track per-character error: index by the EXPECTED char (lowercased)
             // so 'A' and 'a' aggregate together. Skip space — errors on space
             // aren't about a specific key needing practice.
@@ -1854,7 +1889,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               setTyped(typed + expected); // auto-advance with the correct char
             }
           }
-        }, [state.view, drillComplete, targetStr, typed, startTime, errorCount, errorChars, state.accommodations.errorTolerant, state.accommodations.audioCues, state.accommodations.speakWordsOnSpace, state.audioTheme, paused, sightReadLeft]);
+        }, [state.view, drillComplete, targetStr, typed, startTime, errorCount, errorChars, state.accommodations.errorTolerant, state.accommodations.audioCues, state.accommodations.speakWordsOnSpace, state.audioTheme, paused, sightReadLeft, streak]);
 
         // ── Session mutation helper — used by retrospective editing from
         // the history-timeline detail panel. Finds a session by its unique
@@ -4115,6 +4150,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 h('span', { key: 'lwpm-' + liveWpm, className: 'tp-live-tick' }, liveWpm + ' WPM'),
                 h('span', { style: { color: palette.textMute } }, '·'),
                 h('span', { key: 'lacc-' + liveAcc, className: 'tp-live-tick' }, liveAcc + '% acc'),
+                // Live streak chip — consecutive correct keystrokes. Only
+                // appears at ≥5 so the HUD isn't noisy at start. Theme-voiced
+                // label + icon. Not punitive (no "lost streak" shame on reset).
+                (!state.accommodations.assessmentMode && streak >= 5) ? h('span', {
+                  key: 'streak-' + streak,
+                  className: 'tp-streak-chip',
+                  style: {
+                    marginLeft: '6px',
+                    padding: '2px 8px',
+                    borderRadius: '999px',
+                    background: palette.surface2,
+                    border: '1px solid ' + palette.accent,
+                    color: palette.accent,
+                    fontSize: '11px',
+                    fontWeight: 700
+                  }
+                }, (function() {
+                  var tm = state.theme || 'default';
+                  if (tm === 'steampunk') return '⚙ ' + streak + ' clean';
+                  if (tm === 'cyberpunk') return '[STREAK :: ' + streak + ']';
+                  if (tm === 'kawaii')    return '✨ ' + streak + ' in a row 💕';
+                  if (tm === 'neutral')   return streak + ' clean';
+                  return '🔥 ' + streak + ' in a row';
+                })()) : null,
                 h('span', { style: { color: palette.textMute } }, '·'),
                 h('span', null, formatDuration(liveSec))
               )
@@ -6375,7 +6434,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                                :           'available';
                   }
 
-                  return h('div', { key: 'tier-node-' + drillId, style: nodeStyle },
+                  return h('div', {
+                    key: 'tier-node-' + drillId,
+                    // tp-tier-current on the in-progress node gets a soft
+                    // theme-colored pulse so the eye lands on 'you are here'.
+                    className: current ? 'tp-tier-current' : undefined,
+                    style: nodeStyle
+                  },
                     h('div', { style: { fontSize: '18px', marginBottom: '4px' } }, drill.icon),
                     h('div', { style: { fontSize: '11px', fontWeight: 700, color: palette.text, marginBottom: '2px' } }, drill.name),
                     h('div', { style: { fontSize: '10px', color: palette.textMute } }, statusText),
