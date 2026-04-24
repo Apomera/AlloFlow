@@ -4047,7 +4047,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   marginBottom: '16px',
                   lineHeight: '1.5'
                 }
-              }, '🏅 Accommodations used this session: ' + s.accommodationsUsed.join(', ')) : null,
+              }, (function() {
+                var tm = state.theme || 'default';
+                var list = s.accommodationsUsed.join(', ');
+                if (tm === 'steampunk') return '⚙ Instruments engaged this session: ' + list;
+                if (tm === 'cyberpunk') return '[LOADOUT THIS RUN] ' + s.accommodationsUsed.join(' :: ');
+                if (tm === 'kawaii')    return '🏅 Helpful friends that came along: ' + list + ' 💕';
+                if (tm === 'neutral')   return 'Accommodations this session: ' + list;
+                return '🏅 Accommodations used this session: ' + list;
+              })()) : null,
 
               // Per-session top-missed keys — lightweight version of the
               // all-time heatmap, scoped to JUST this session. Surfaces the
@@ -4072,7 +4080,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   }
                 },
                   h('div', { style: { fontSize: '11px', fontWeight: 700, color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '6px' } },
-                    '⌨️ Keys missed most this session'),
+                    (function() {
+                      var tm = state.theme || 'default';
+                      if (tm === 'steampunk') return '⚙ Gearwork snags — keys that gave you pause';
+                      if (tm === 'cyberpunk') return '[KEY ERRORS] this run';
+                      if (tm === 'kawaii')    return '🌸 Tricky keys from this session 💕';
+                      if (tm === 'neutral')   return 'Keys missed this session';
+                      return '⌨️ Keys missed most this session';
+                    })()),
                   h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' } },
                     top.map(function(k) {
                       return h('span', {
@@ -4095,7 +4110,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                     })
                   ),
                   h('div', { style: { fontSize: '10px', color: palette.textMute, marginTop: '6px', fontStyle: 'italic' } },
-                    'These feed the all-time heatmap on the Progress view. A short retry focused on these keys can compound over time.')
+                    (function() {
+                      var tm = state.theme || 'default';
+                      if (tm === 'steampunk') return 'These entries join the grand heatmap on the Progress ledger. A short pass on each tightens the gearwork.';
+                      if (tm === 'cyberpunk') return '[INFO] aggregates into all-time heatmap :: targeted retry → compounding gain';
+                      if (tm === 'kawaii')    return '💕 These add to your Progress heatmap. A quick retry with these keys adds up over time! ✨';
+                      if (tm === 'neutral')   return 'Aggregated into all-time heatmap on Progress view.';
+                      return 'These feed the all-time heatmap on the Progress view. A short retry focused on these keys can compound over time.';
+                    })())
                 );
               })(),
 
@@ -6798,6 +6820,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               var earnedIds = earned.map(function(e) { return e.id; });
               var remaining = MILESTONES.filter(function(m) { return earnedIds.indexOf(m.id) === -1; });
               if (remaining.length === 0) return null;
+              var tm = state.theme || 'default';
+              var headerText;
+              if (tm === 'steampunk') headerText = 'On the horizon · ' + remaining.length + ' honour' + (remaining.length === 1 ? '' : 's') + ' awaiting';
+              else if (tm === 'cyberpunk') headerText = '[QUEUED] ' + remaining.length + ' node' + (remaining.length === 1 ? '' : 's') + ' :: pending unlock';
+              else if (tm === 'kawaii') headerText = '✨ Coming up · ' + remaining.length + ' milestone' + (remaining.length === 1 ? '' : 's') + ' waiting to be yours 💕';
+              else if (tm === 'neutral') headerText = 'Pending: ' + remaining.length + ' milestone' + (remaining.length === 1 ? '' : 's');
+              else headerText = 'Coming up · ' + remaining.length + ' milestone' + (remaining.length === 1 ? '' : 's') + ' ahead';
+
+              var footerText;
+              if (tm === 'steampunk') footerText = 'No hourglass, no tolls. Each honour is inscribed when the figures warrant it.';
+              else if (tm === 'cyberpunk') footerText = '[NO-CLOCK] :: [NO-STREAK] :: nodes trigger on threshold match';
+              else if (tm === 'kawaii') footerText = '🌸 No deadlines, no streaks — just you being you. They unlock when they unlock! 💕';
+              else if (tm === 'neutral') footerText = 'Threshold-triggered. No time pressure.';
+              else footerText = 'No deadlines. No streak required. They unlock whenever the numbers add up.';
+
+              var chipBase = {
+                padding: '4px 10px',
+                borderRadius: '999px',
+                background: 'transparent',
+                border: '1px dashed ' + palette.border,
+                color: palette.textMute,
+                fontSize: '11px'
+              };
+              if (tm === 'cyberpunk') { chipBase.borderRadius = '2px'; chipBase.fontFamily = 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace'; }
+              else if (tm === 'kawaii') { chipBase.borderStyle = 'solid'; chipBase.borderRadius = '999px'; }
+              else if (tm === 'steampunk') { chipBase.borderStyle = 'solid'; chipBase.borderColor = palette.accentDim || palette.border; }
+
               return h('div', {
                 style: {
                   marginTop: '24px',
@@ -6806,24 +6855,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 }
               },
                 h('div', { style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '10px', fontWeight: 700 } },
-                  'Coming up · ' + remaining.length + ' milestone' + (remaining.length === 1 ? '' : 's') + ' ahead'),
+                  headerText),
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px' } },
                   remaining.map(function(m) {
                     return h('span', {
                       key: 'up-' + m.id,
-                      style: {
-                        padding: '4px 10px',
-                        borderRadius: '999px',
-                        background: 'transparent',
-                        border: '1px dashed ' + palette.border,
-                        color: palette.textMute,
-                        fontSize: '11px'
-                      }
+                      style: chipBase
                     }, m.label);
                   })
                 ),
                 h('div', { style: { fontSize: '10px', color: palette.textMute, marginTop: '10px', fontStyle: 'italic' } },
-                  'No deadlines. No streak required. They unlock whenever the numbers add up.')
+                  footerText)
               );
             })()
           );
