@@ -10674,6 +10674,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   var lhRoof = new T.Mesh(new T.ConeGeometry(0.8, 1.0, 10), lmRoofMat);
                   lhRoof.position.set(lmCenterWX, lt.height + 1.3, lmCenterWZ);
                   chunkGroup.add(lhRoof);
+                  // ── Rotating beam (lit at night / dawn / fog) ──
+                  // Real Maine lighthouses (Portland Head, Pemaquid, etc.) sweep a
+                  // beam every ~5 seconds. A long additive cone anchored to a Group
+                  // at the lamp position; the per-frame chunk-walk loop spins it on Y.
+                  var lhBeamLit = currentScenario.time === 'night' || currentScenario.id === 'dawn' || currentScenario.weather === 'fog';
+                  if (lhBeamLit) {
+                    var beamPivot = new T.Group();
+                    beamPivot.position.set(lmCenterWX, lt.height + 0.4, lmCenterWZ);
+                    beamPivot.name = 'rr_lighthouseBeam';
+                    var beamMat = new T.MeshBasicMaterial({
+                      color: 0xfff8d8, transparent: true, opacity: 0.45,
+                      blending: T.AdditiveBlending, depthWrite: false, side: T.DoubleSide
+                    });
+                    // Long thin cone (12m reach)
+                    var beamGeo = new T.ConeGeometry(0.75, 12, 8, 1, true);
+                    var beam = new T.Mesh(beamGeo, beamMat);
+                    // Cone tip is at origin pointing +Y by default. Rotate horizontal,
+                    // shift forward so the tip stays at the lamp.
+                    beam.rotation.z = -Math.PI / 2;
+                    beam.position.x = 6;
+                    beamPivot.add(beam);
+                    chunkGroup.add(beamPivot);
+                  }
                 } else if (lt.id === 'church') {
                   // Church: main hall + steeple
                   var chBase = new T.Mesh(new T.BoxGeometry(lt.size * 0.6, lt.height * 0.5, lt.size * 0.8), lmMainMat);
@@ -10762,6 +10785,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     var pump = new T.Mesh(new T.BoxGeometry(0.4, 1.2, 0.3), pumpMat);
                     pump.position.set(lmCenterWX + 1, 0.6, lmCenterWZ + pmi * 0.6);
                     chunkGroup.add(pump);
+                  }
+                  // ── Canopy underglow at night/dusk/fog ──
+                  // Real gas stations have bright fluorescent tubes under the canopy
+                  // that make them iconic landmarks at night. Horizontal additive
+                  // plane facing down + a PointLight so pumps + ground actually
+                  // pick up real warm illumination.
+                  var canopyIsLit = currentScenario.time === 'night' || currentScenario.id === 'dawn' || currentScenario.weather === 'fog';
+                  if (canopyIsLit) {
+                    var underglowMat = new T.MeshBasicMaterial({
+                      color: 0xfff8d8, transparent: true, opacity: 0.85,
+                      blending: T.AdditiveBlending, depthWrite: false, side: T.DoubleSide
+                    });
+                    var underglow = new T.Mesh(new T.PlaneGeometry(lt.size * 0.65, lt.size * 0.45), underglowMat);
+                    underglow.rotation.x = Math.PI / 2;
+                    underglow.position.set(lmCenterWX + 1, lt.height * 0.9 - 0.16, lmCenterWZ);
+                    chunkGroup.add(underglow);
+                    var canopyLight = new T.PointLight(0xfff8d8, 1.0, 5, 2);
+                    canopyLight.position.set(lmCenterWX + 1, lt.height * 0.6, lmCenterWZ);
+                    chunkGroup.add(canopyLight);
                   }
                 } else {
                   // GENERIC LANDMARK (school, library, hospital, police, fire, etc.)
@@ -13458,6 +13500,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               var cgrp = s3._loadedChunks[ck];
               if (!cgrp) return;
               cgrp.children.forEach(function(child) {
+                // Lighthouse beam is a Group (not a Mesh) so check it BEFORE the
+                // isMesh gate would skip it. Sweeps a full circle every ~5s.
+                if (child.name === 'rr_lighthouseBeam') {
+                  child.rotation.y = (t_now * 1.25) % (Math.PI * 2);
+                  return;
+                }
                 if (!child.isMesh || !child.geometry) return;
                 // Flag cloth on school / post-office landmark meshes — wave on Y-axis
                 // with per-pole seed so neighboring flags don't flap in lockstep.
