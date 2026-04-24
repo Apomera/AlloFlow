@@ -6717,11 +6717,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             }
           },
             renderBackButton(function() { go('menu'); }, palette),
-            h('h3', { style: { margin: '16px 0 4px 0', color: palette.text } }, '🏅  Achievements'),
+            h('h3', { style: { margin: '16px 0 4px 0', color: palette.text } }, (function() {
+              var tm = state.theme || 'default';
+              if (tm === 'steampunk') return '⚙  Workshop Honours';
+              if (tm === 'cyberpunk') return '[ACHIEVEMENTS]';
+              if (tm === 'kawaii')    return '🏅✨ Achievements';
+              if (tm === 'neutral')   return 'Achievements';
+              return '🏅  Achievements';
+            })()),
             h('p', { style: { margin: '0 0 20px 0', fontSize: '12px', color: palette.textMute, lineHeight: '1.5' } },
-              earned.length > 0
-                ? 'You\'ve earned ' + earned.length + ' milestone' + (earned.length === 1 ? '' : 's') + '. Additive only — achievements are never taken away.'
-                : 'No milestones earned yet — your first session will unlock one. Consistent practice compounds.'
+              (function() {
+                var tm = state.theme || 'default';
+                if (earned.length > 0) {
+                  if (tm === 'steampunk') return 'You\'ve been inscribed in the ledger for ' + earned.length + ' milestone' + (earned.length === 1 ? '' : 's') + '. Once entered, never struck.';
+                  if (tm === 'cyberpunk') return '[EARNED] ' + earned.length + ' milestone' + (earned.length === 1 ? '' : 's') + ' :: write-once :: no rollback';
+                  if (tm === 'kawaii')    return 'You\'ve earned ' + earned.length + ' milestone' + (earned.length === 1 ? '' : 's') + '! 💕 Once earned, always yours. ✨';
+                  if (tm === 'neutral')   return earned.length + ' milestone' + (earned.length === 1 ? '' : 's') + ' earned. Additive; not revoked.';
+                  return 'You\'ve earned ' + earned.length + ' milestone' + (earned.length === 1 ? '' : 's') + '. Additive only — achievements are never taken away.';
+                }
+                if (tm === 'steampunk') return 'The ledger stands blank — your first session shall inscribe the opening entry. Steady hands compound.';
+                if (tm === 'cyberpunk') return '[EMPTY] :: first session unlocks first node :: cadence > speed';
+                if (tm === 'kawaii')    return '🌸 No milestones yet — your first session will unlock one! Small steps, big hearts. 💕';
+                if (tm === 'neutral')   return 'No milestones yet. First session unlocks one.';
+                return 'No milestones earned yet — your first session will unlock one. Consistent practice compounds.';
+              })()
             ),
 
             earned.length > 0 ? h('div', {
@@ -6731,20 +6750,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               earned.map(function(entry) {
                 var ms = MILESTONES.filter(function(x) { return x.id === entry.id; })[0];
                 if (!ms) return null;
+                var tm = state.theme || 'default';
+                var rowStyle = {
+                  padding: '12px 14px',
+                  background: palette.surface,
+                  border: '1px solid ' + palette.success,
+                  borderLeft: '3px solid ' + palette.success,
+                  borderRadius: '10px',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  gap: '12px'
+                };
+                if (tm === 'steampunk') {
+                  rowStyle.background = 'linear-gradient(90deg, ' + palette.surface + ' 0%, ' + palette.surface2 + ' 100%)';
+                  rowStyle.borderLeftWidth = '4px';
+                  rowStyle.boxShadow = 'inset 0 1px 0 rgba(255,255,255,0.05)';
+                } else if (tm === 'cyberpunk') {
+                  rowStyle.background = palette.bg;
+                  rowStyle.border = '1px solid ' + palette.accent;
+                  rowStyle.borderLeft = '3px solid ' + palette.success;
+                  rowStyle.borderRadius = '2px';
+                } else if (tm === 'kawaii') {
+                  rowStyle.borderRadius = '18px';
+                  rowStyle.border = '1px solid ' + palette.success;
+                  rowStyle.borderLeft = '1px solid ' + palette.success;
+                  rowStyle.boxShadow = '0 2px 10px rgba(0,0,0,0.04)';
+                } else if (tm === 'neutral') {
+                  rowStyle.borderRadius = '6px';
+                }
                 return h('div', {
                   key: 'ach-' + entry.id,
                   role: 'listitem',
-                  style: {
-                    padding: '12px 14px',
-                    background: palette.surface,
-                    border: '1px solid ' + palette.success,
-                    borderLeft: '3px solid ' + palette.success,
-                    borderRadius: '10px',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    gap: '12px'
-                  }
+                  style: rowStyle
                 },
                   h('div', { style: { fontSize: '14px', color: palette.text, fontWeight: 600 } }, ms.label),
                   h('div', { style: { fontSize: '11px', color: palette.textMute, fontVariantNumeric: 'tabular-nums' } },
