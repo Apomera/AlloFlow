@@ -1134,11 +1134,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '.tp-root.tp-theme-neutral   .tp-celebrate { animation: tp-celebrate-pulse 0.8s ease-out 1; }',
 
       /* ── Fresh-PB shimmer — applied to the 'X WPM' text on drill cards
-         whose current personal-best is from the last 3 days. Soft repeating
-         green glow draws the eye without the violence of tp-celebrate.
-         Auto-expires when the PB ages past 72h. */
-      '@keyframes tp-fresh-pb-glow { 0%, 100% { text-shadow: 0 0 0 transparent; } 50% { text-shadow: 0 0 10px currentColor; } }',
-      '.tp-root .tp-fresh-pb { animation: tp-fresh-pb-glow 2400ms ease-in-out infinite; }',
+         whose current personal-best is from the last 3 days. Three pulses
+         (7.2s total) then stops, so it reads as 'fresh marker' rather than
+         a perpetual attention draw — important for ADHD / autistic
+         learners for whom continuous motion is dysregulating. A subtle
+         lasting text-shadow remains after the pulses end so the visual
+         signal is still there. Class auto-expires as PB ages past 72h. */
+      '@keyframes tp-fresh-pb-glow { 0%, 100% { text-shadow: 0 0 2px rgba(136,168,80,0.3); } 50% { text-shadow: 0 0 10px currentColor; } }',
+      '.tp-root .tp-fresh-pb { animation: tp-fresh-pb-glow 2400ms ease-in-out 3; text-shadow: 0 0 2px rgba(136,168,80,0.3); }',
 
       /* ── Stat card stagger — summary metric cards fade + translate in
          with a 60ms stagger so the 4 stats 'arrive' after the headline
