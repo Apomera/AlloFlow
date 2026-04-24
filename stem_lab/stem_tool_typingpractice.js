@@ -1133,6 +1133,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '.tp-root.tp-theme-kawaii    .tp-celebrate { animation: tp-celebrate-kawaii 1.1s ease-in-out 1; }',
       '.tp-root.tp-theme-neutral   .tp-celebrate { animation: tp-celebrate-pulse 0.8s ease-out 1; }',
 
+      /* ── Stat card stagger — summary metric cards fade + translate in
+         with a 60ms stagger so the 4 stats 'arrive' after the headline
+         instead of all showing at once. CSS-only, uses nth-child on a
+         container with the tp-stat-stagger class. */
+      '@keyframes tp-stat-fade { 0% { opacity: 0; transform: translateY(6px); } 100% { opacity: 1; transform: translateY(0); } }',
+      '.tp-root .tp-stat-stagger > * { opacity: 0; animation: tp-stat-fade 280ms ease-out forwards; }',
+      '.tp-root .tp-stat-stagger > *:nth-child(1) { animation-delay: 120ms; }',
+      '.tp-root .tp-stat-stagger > *:nth-child(2) { animation-delay: 180ms; }',
+      '.tp-root .tp-stat-stagger > *:nth-child(3) { animation-delay: 240ms; }',
+      '.tp-root .tp-stat-stagger > *:nth-child(4) { animation-delay: 300ms; }',
+
       /* ── Sparkle particle burst on summary celebration ────────────
          Eight particles fly out from center + fade over 1.2s. Each
          particle takes a different angle by class. CSS-only so no JS
@@ -1292,6 +1303,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '  .tp-root .tp-progress-fill::after,',
       '  .tp-root .tp-tier-current,',
       '  .tp-root .tp-view-enter { animation: none !important; }',
+      '  .tp-root .tp-stat-stagger > * { opacity: 1 !important; transform: none !important; animation: none !important; }',
       '  .tp-root button { transition: none !important; }',
       '  .tp-root .tp-drill-card:hover,',
       '  .tp-root .tp-drill-card:focus-visible { transform: none !important; }',
@@ -4741,11 +4753,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               }, nextStepHint) : null,
 
               h('div', {
+                className: 'tp-stat-stagger',
                 style: {
                   display: 'grid',
                   gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
                   gap: '12px',
-                  marginBottom: '24px'
+                  marginBottom: '24px',
+                  position: 'relative',
+                  zIndex: 1
                 }
               },
                 renderMetric('WPM', s.wpm, palette, state.theme),
