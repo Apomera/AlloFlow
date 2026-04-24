@@ -3917,6 +3917,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                           y: pickedDropoff.lmY
                         };
                         rsArr.startSnapshot = snapshotStats();
+                        // ── Rush-hour passengers ──
+                        // ~30% of rides now carry a soft deadline. On-time = $3 flat
+                        // bonus. Late = no bonus (but no star penalty — the system
+                        // still rewards SAFE driving above all else). Creates a real
+                        // tradeoff: you CAN push a little, but comfort deductions
+                        // scale faster than the time savings. The best move is the
+                        // same as real driving: leave earlier next time, not drive faster.
+                        var hasDeadline = Math.random() < 0.30;
+                        if (hasDeadline) {
+                          // Give 1 minute per ~0.25 miles, minimum 60s, rounded for display.
+                          var targetFt = Math.hypot(carRef.current.x - rsArr.dropoff.x, carRef.current.y - rsArr.dropoff.y) * 0.1;
+                          var targetMin = Math.max(1.0, targetFt / 2500); // ~2500 ft per "minute" of generosity
+                          // Add 20% slack so smooth driving can still make it.
+                          var deadlineSec = Math.round(targetMin * 60 * 1.2);
+                          rsArr.hasDeadline = true;
+                          rsArr.deadlineAt = timeRef.current + deadlineSec;
+                          rsArr.deadlineStart = timeRef.current;
+                          rsArr.deadlineSec = deadlineSec;
+                        } else {
+                          rsArr.hasDeadline = false;
+                        }
                         questRef.current = {
                           name: rsArr.passenger + ' → ' + rsArr.dropoff.name,
                           icon: rsArr.dropoff.icon,
@@ -3968,6 +3989,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                           : 'home';
                         var linePool = passengerLines[dropKey] || passengerLines.home;
                         rsArr.passengerLine = linePool[Math.floor(Math.random() * linePool.length)];
+                        // Override with a deadline-flavored line when a timer is on —
+                        // the passenger's tone shifts to mild urgency but still leans
+                        // toward "safely" rather than "speed please". The math honors
+                        // that: you DON'T get rewarded for reckless speed, just for
+                        // being reasonably efficient.
+                        if (rsArr.hasDeadline) {
+                          var rushLines = [
+                            'I\'ve got about ' + Math.round(rsArr.deadlineSec / 60) + ' minutes. Safe but steady, please.',
+                            'Running behind — ' + Math.round(rsArr.deadlineSec / 60) + ' min window. Don\'t drive crazy, just don\'t drift.',
+                            'Meeting in ' + Math.round(rsArr.deadlineSec / 60) + '. Would appreciate timely but smooth.',
+                            'Time\'s a bit tight. Take the straight route, not a wild one.'
+                          ];
+                          rsArr.passengerLine = rushLines[Math.floor(Math.random() * rushLines.length)];
+                        }
                         // Async personalization via callGemini — fire-and-forget; the
                         // canned line stays visible if the call fails or is slow.
                         if (typeof callGemini === 'function') {
@@ -4037,7 +4072,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       var baseFare = (3.5 + Math.max(0.3, rideDistMi) * 1.2) * surge;
                       var tipPct = stars >= 5 ? 0.25 : stars >= 4 ? 0.18 : stars >= 3 ? 0.10 : stars >= 2 ? 0.03 : 0;
                       var tip = baseFare * tipPct;
-                      var total = baseFare + tip;
+                      // ── On-time bonus for rush passengers ──
+                      // Flat $3 if the player made the deadline. No penalty if late —
+                      // the system refuses to reward reckless hurry. A late-but-smooth
+                      // ride still earns full base+tip.
+                      var onTimeBonus = 0;
+                      var onTime = false;
+                      if (rsArr.hasDeadline && rsArr.deadlineAt) {
+                        onTime = endSnap.t <= rsArr.deadlineAt;
+                        onTimeBonus = onTime ? 3.0 : 0;
+                      }
+                      var total = baseFare + tip + onTimeBonus;
                       rsArr.ridesCompleted = (rsArr.ridesCompleted || 0) + 1;
                       rsArr.totalEarnings = (rsArr.totalEarnings || 0) + total;
                       rsArr.lastRide = {
@@ -4049,7 +4094,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                         durationSec: Math.round(rideDur), distMi: rideDistMi.toFixed(2),
                         hardBrakes: rideHardBrakes, jackrabbits: rideJackrabs,
                         crashes: rideCrashes, skidSec: Math.round(rideSkidSec),
-                        surge: surge, weather: rsW
+                        surge: surge, weather: rsW,
+                        hadDeadline: !!rsArr.hasDeadline, onTime: onTime, onTimeBonus: onTimeBonus
                       };
                       rsArr.phase = 'completed';
                       var starStr = '★'.repeat(stars) + '☆'.repeat(5 - stars);
@@ -15101,7 +15147,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 : rsSAge < 6.5 ? 1
                 : Math.max(0, 1 - (rsSAge - 6.5) / 1.5);
               if (rsSAlpha > 0) {
-                var cardW = 340, cardH = 180;
+                var cardW = 340, cardH = rsSR.hadDeadline ? 200 : 180;
                 var cardX = W / 2 - cardW / 2, cardY = H / 2 - cardH / 2 - 40;
                 // Backdrop + frame (color by star rating)
                 var frameHex = rsSR.stars >= 5 ? '#fbbf24' : rsSR.stars >= 4 ? '#4ade80' : rsSR.stars >= 3 ? '#60a5fa' : rsSR.stars >= 2 ? '#f59e0b' : '#ef4444';
@@ -15153,14 +15199,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 gfx.font = '11px monospace';
                 gfx.fillText('Base fare',   cardX + 28, cardY + 120);
                 gfx.fillText('Tip (' + Math.round(100 * rsSR.tip / Math.max(0.01, rsSR.baseFare)) + '%)', cardX + 28, cardY + 136);
-                gfx.fillText('Total',       cardX + 28, cardY + 152);
+                if (rsSR.hadDeadline) {
+                  // Show on-time line just before total; shift total + footer down.
+                  gfx.fillStyle = rsSR.onTime ? '#4ade80' : '#94a3b8';
+                  gfx.fillText(rsSR.onTime ? 'On-time bonus' : 'On-time (missed)', cardX + 28, cardY + 152);
+                  gfx.fillStyle = '#fff';
+                  gfx.font = 'bold 11px monospace';
+                  gfx.fillText('Total', cardX + 28, cardY + 170);
+                } else {
+                  gfx.fillStyle = '#fff';
+                  gfx.font = 'bold 11px monospace';
+                  gfx.fillText('Total', cardX + 28, cardY + 152);
+                }
                 gfx.textAlign = 'right';
+                gfx.fillStyle = '#cbd5e1';
+                gfx.font = '11px monospace';
                 gfx.fillText('$' + rsSR.baseFare.toFixed(2), cardX + cardW - 28, cardY + 120);
                 gfx.fillStyle = rsSR.tip > 0 ? '#4ade80' : '#94a3b8';
                 gfx.fillText('$' + rsSR.tip.toFixed(2),      cardX + cardW - 28, cardY + 136);
-                gfx.fillStyle = '#fff';
-                gfx.font = 'bold 11px monospace';
-                gfx.fillText('$' + rsSR.total.toFixed(2),    cardX + cardW - 28, cardY + 152);
+                if (rsSR.hadDeadline) {
+                  gfx.fillStyle = rsSR.onTime ? '#4ade80' : '#64748b';
+                  gfx.fillText((rsSR.onTime ? '+$' : '$') + (rsSR.onTimeBonus || 0).toFixed(2), cardX + cardW - 28, cardY + 152);
+                  gfx.fillStyle = '#fff';
+                  gfx.font = 'bold 11px monospace';
+                  gfx.fillText('$' + rsSR.total.toFixed(2), cardX + cardW - 28, cardY + 170);
+                } else {
+                  gfx.fillStyle = '#fff';
+                  gfx.font = 'bold 11px monospace';
+                  gfx.fillText('$' + rsSR.total.toFixed(2), cardX + cardW - 28, cardY + 152);
+                }
                 // Footer — lifetime running totals
                 gfx.fillStyle = '#64748b';
                 gfx.font = '9px system-ui, sans-serif';
@@ -15202,9 +15269,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               }
               // If we have a passenger line during enroute, grow the pill so
               // there's room for the speech bubble below the destination row.
+              // Add another 14px when there's a rush-hour deadline timer.
               var hasLine = rsHud.phase === 'enroute' && rsHud.passengerLine;
+              var hasRush = rsHud.phase === 'enroute' && rsHud.hasDeadline && rsHud.deadlineAt;
               var rsX = W - 260, rsY = 26;
-              var rsW = 250, rsH = hasLine ? 112 : 72;
+              var rsW = 250, rsH = (hasLine ? 112 : 72) + (hasRush ? 14 : 0);
               // Panel backdrop
               gfx.fillStyle = 'rgba(12,10,30,0.78)';
               gfx.fillRect(rsX, rsY, rsW, rsH);
@@ -15245,6 +15314,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 gfx.font = '9px monospace'; gfx.textAlign = 'right';
                 var surgeTag = rsSurgeHud > 1 ? (' · ' + rsSurgeHud.toFixed(1) + '× surge') : '';
                 gfx.fillText('~$' + estFare.toFixed(2) + ' · ' + rsRemaining.toFixed(0) + ' ft left' + surgeTag, rsX + rsW - 8, rsY + 64);
+                // Rush-hour countdown: green → amber → red as deadline approaches.
+                // "EXPIRED" in red (but ride still scoreable — on-time bonus is the
+                // only thing at stake; stars aren't penalized for being late-but-smooth).
+                if (hasRush) {
+                  var timeLeft = rsHud.deadlineAt - timeRef.current;
+                  var frac = rsHud.deadlineSec ? Math.max(0, Math.min(1, timeLeft / rsHud.deadlineSec)) : 1;
+                  var rushColor = timeLeft < 0 ? '#ef4444' : frac > 0.5 ? '#4ade80' : frac > 0.25 ? '#f59e0b' : '#ef4444';
+                  gfx.fillStyle = rushColor;
+                  gfx.font = 'bold 10px monospace'; gfx.textAlign = 'left';
+                  var rushLabel;
+                  if (timeLeft < 0) {
+                    rushLabel = '⏰ late (still safe) — no bonus';
+                  } else {
+                    var rm = Math.floor(timeLeft / 60);
+                    var rs_ = Math.floor(timeLeft % 60);
+                    rushLabel = '⏰ ' + rm + ':' + String(rs_).padStart(2, '0') + ' for +$3 bonus';
+                  }
+                  gfx.fillText(rushLabel, rsX + 8, rsY + rsH - 6);
+                }
                 // Passenger speech bubble (wrapped to pill width)
                 if (hasLine) {
                   gfx.fillStyle = 'rgba(251,191,36,0.12)';
