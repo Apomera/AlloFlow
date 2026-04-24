@@ -167,7 +167,46 @@ const InteractiveBlueprintCard = React.memo(({
     size: 14
   }) : /*#__PURE__*/React.createElement(Pencil, {
     size: 14
-  }), isEditing ? t('blueprint.done_editing') : t('blueprint.edit_plan'))), isEditing ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+  }), isEditing ? t('blueprint.done_editing') : t('blueprint.edit_plan'))), (() => {
+    const dna = config && config.lessonDNA;
+    if (!dna) return null;
+    const hasEQ = dna.essentialQuestion && typeof dna.essentialQuestion === 'string' && dna.essentialQuestion.trim();
+    const hasGT = Array.isArray(dna.goldenThread) && dna.goldenThread.length > 0;
+    const hasKT = Array.isArray(dna.keyTerms) && dna.keyTerms.length > 0;
+    if (!hasEQ && !hasGT && !hasKT) return null;
+    return /*#__PURE__*/React.createElement("div", {
+      className: "mb-4 p-3 rounded-lg bg-gradient-to-br from-amber-50 to-yellow-50 border border-amber-200"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center gap-2 mb-2"
+    }, /*#__PURE__*/React.createElement(Sparkles, {
+      size: 14,
+      className: "text-amber-500 fill-current"
+    }), /*#__PURE__*/React.createElement("h5", {
+      className: "text-xs font-bold text-amber-900 uppercase tracking-wider"
+    }, "Golden Thread")), hasEQ && /*#__PURE__*/React.createElement("div", {
+      className: "mb-2"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-[11px] font-bold text-amber-800 uppercase tracking-wider mb-0.5"
+    }, "Essential Question"), /*#__PURE__*/React.createElement("p", {
+      className: "text-sm text-slate-700 italic leading-relaxed"
+    }, "\"", dna.essentialQuestion, "\"")), hasGT && /*#__PURE__*/React.createElement("div", {
+      className: "mb-2"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-[11px] font-bold text-amber-800 uppercase tracking-wider mb-1"
+    }, "Core Concepts"), /*#__PURE__*/React.createElement("div", {
+      className: "flex flex-wrap gap-1"
+    }, dna.goldenThread.map((c, i) => /*#__PURE__*/React.createElement("span", {
+      key: i,
+      className: "text-[11px] px-2 py-0.5 bg-white border border-amber-200 text-amber-900 rounded-full"
+    }, c)))), hasKT && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
+      className: "text-[11px] font-bold text-amber-800 uppercase tracking-wider mb-1"
+    }, "Key Vocabulary"), /*#__PURE__*/React.createElement("div", {
+      className: "flex flex-wrap gap-1"
+    }, dna.keyTerms.map((term, i) => /*#__PURE__*/React.createElement("span", {
+      key: i,
+      className: "text-[11px] px-2 py-0.5 bg-white border border-indigo-200 text-indigo-900 rounded-full font-medium"
+    }, term)))));
+  })(), isEditing ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "space-y-2 mb-4 max-h-[300px] overflow-y-auto custom-scrollbar pr-1"
   }, items.map((item, idx) => /*#__PURE__*/React.createElement("div", {
     key: item.id,

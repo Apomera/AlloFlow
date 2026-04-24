@@ -3053,6 +3053,11 @@
                 desc: 'Tax & paycheck calculator, data literacy, decision matrix, contract reader, health insurance navigator, and applied science for daily life.',
                 color: 'cyan', ready: true
               },
+              {
+                id: 'typingPractice', icon: '\u2328\uFE0F', label: 'Typing Practice',
+                desc: 'Disability-first keyboarding — dyslexia font, high-contrast, audio cues, error-tolerant mode, pace reference, on-screen keyboard. 8+ drill tiers, AI-personalized passages, IEP-ready progress reports.',
+                color: 'violet', ready: true
+              },
 
               {
                 id: 'flightSim', icon: '✈️', label: 'SkySchool',
@@ -3153,7 +3158,7 @@
             // Category filter (from chip buttons)
             var _catFilter = d._categoryFilter || '';
             if (_catFilter && !_activeStation) {
-              var _catMap = { science: ['Science', 'Biology', 'Life Science', 'science'], math: ['Math', 'math'], engineering: ['Engineering', 'tech', 'cs', 'engineering'], creative: ['Creative', 'creative', 'Art'], applied: ['Applied', 'applied', 'geo'], strategy: ['Strategy', 'strategy'] };
+              var _catMap = { science: ['Science', 'Biology', 'Life Science', 'science'], math: ['Math', 'math'], engineering: ['Engineering', 'tech', 'cs', 'engineering'], creative: ['Creative', 'creative', 'Art'], applied: ['Applied', 'applied', 'geo', 'life-skills', 'life skills', 'economics', 'social studies'], strategy: ['Strategy', 'strategy'] };
               var _catKeys = _catMap[_catFilter] || [_catFilter];
               _filteredTools = _filteredTools.filter(function(tool) {
                 if (tool.category) {
@@ -4139,6 +4144,7 @@
             // Applied
             a11yAuditor: true, lifeSkills: true, physics: true, wave: true,
             worldBuilder: true,
+            typingPractice: true,
             flightSim: true,
             roadReady: true,
             bikeLab: true,

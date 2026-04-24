@@ -122,6 +122,48 @@ const InteractiveBlueprintCard = React.memo(({ config, onUpdate, onConfirm, onCa
             {isEditing ? t('blueprint.done_editing') : t('blueprint.edit_plan')}
         </button>
       </div>
+      {(() => {
+          const dna = config && config.lessonDNA;
+          if (!dna) return null;
+          const hasEQ = dna.essentialQuestion && typeof dna.essentialQuestion === 'string' && dna.essentialQuestion.trim();
+          const hasGT = Array.isArray(dna.goldenThread) && dna.goldenThread.length > 0;
+          const hasKT = Array.isArray(dna.keyTerms) && dna.keyTerms.length > 0;
+          if (!hasEQ && !hasGT && !hasKT) return null;
+          return (
+            <div className="mb-4 p-3 rounded-lg bg-gradient-to-br from-amber-50 to-yellow-50 border border-amber-200">
+                <div className="flex items-center gap-2 mb-2">
+                    <Sparkles size={14} className="text-amber-500 fill-current" />
+                    <h5 className="text-xs font-bold text-amber-900 uppercase tracking-wider">Golden Thread</h5>
+                </div>
+                {hasEQ && (
+                    <div className="mb-2">
+                        <p className="text-[11px] font-bold text-amber-800 uppercase tracking-wider mb-0.5">Essential Question</p>
+                        <p className="text-sm text-slate-700 italic leading-relaxed">"{dna.essentialQuestion}"</p>
+                    </div>
+                )}
+                {hasGT && (
+                    <div className="mb-2">
+                        <p className="text-[11px] font-bold text-amber-800 uppercase tracking-wider mb-1">Core Concepts</p>
+                        <div className="flex flex-wrap gap-1">
+                            {dna.goldenThread.map((c, i) => (
+                                <span key={i} className="text-[11px] px-2 py-0.5 bg-white border border-amber-200 text-amber-900 rounded-full">{c}</span>
+                            ))}
+                        </div>
+                    </div>
+                )}
+                {hasKT && (
+                    <div>
+                        <p className="text-[11px] font-bold text-amber-800 uppercase tracking-wider mb-1">Key Vocabulary</p>
+                        <div className="flex flex-wrap gap-1">
+                            {dna.keyTerms.map((term, i) => (
+                                <span key={i} className="text-[11px] px-2 py-0.5 bg-white border border-indigo-200 text-indigo-900 rounded-full font-medium">{term}</span>
+                            ))}
+                        </div>
+                    </div>
+                )}
+            </div>
+          );
+      })()}
       {isEditing ? (
           <>
             <div className="space-y-2 mb-4 max-h-[300px] overflow-y-auto custom-scrollbar pr-1">
