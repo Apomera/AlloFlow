@@ -1137,6 +1137,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '.tp-root.tp-theme-kawaii    .tp-view-enter { animation: tp-view-in-kawaii 300ms cubic-bezier(0.34,1.56,0.64,1) 1; }',
       '.tp-root.tp-theme-neutral   .tp-view-enter { animation: tp-view-in-neutral 180ms ease-out 1; }',
 
+      /* ── Live-HUD tick: subtle pulse when live WPM/accuracy updates ──
+         Value span is keyed on the current number so React remounts it
+         whenever the number flips, retriggering this short animation. Very
+         brief + small — the HUD should feel alive, not distracting. */
+      '@keyframes tp-live-tick-pulse { 0% { opacity: 0.55; transform: scale(0.96); } 40% { opacity: 1; transform: scale(1.04); } 100% { opacity: 1; transform: scale(1); } }',
+      '.tp-root .tp-live-tick { display: inline-block; animation: tp-live-tick-pulse 180ms ease-out 1; }',
+
       /* ── Per-theme drill card hover lift ─────────────────────────
          Unlocked cards gain a theme-specific elevation treatment on hover
          (and keyboard focus). Complements the existing inline border-color
@@ -1173,6 +1180,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '  .tp-root .tp-loading-icon,',
       '  .tp-root .tp-celebrate,',
       '  .tp-root .tp-wrong-flash,',
+      '  .tp-root .tp-live-tick,',
       '  .tp-root .tp-view-enter { animation: none !important; }',
       '  .tp-root button { transition: none !important; }',
       '  .tp-root .tp-drill-card:hover,',
@@ -4016,9 +4024,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   fontVariantNumeric: 'tabular-nums'
                 }
               },
-                h('span', null, liveWpm + ' WPM'),
+                h('span', { key: 'lwpm-' + liveWpm, className: 'tp-live-tick' }, liveWpm + ' WPM'),
                 h('span', { style: { color: palette.textMute } }, '·'),
-                h('span', null, liveAcc + '% acc'),
+                h('span', { key: 'lacc-' + liveAcc, className: 'tp-live-tick' }, liveAcc + '% acc'),
                 h('span', { style: { color: palette.textMute } }, '·'),
                 h('span', null, formatDuration(liveSec))
               )
