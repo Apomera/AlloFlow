@@ -4008,11 +4008,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       var rideCrashes = endSnap.crashes - rsArr.startSnapshot.crashes;
                       var rideDistMi = (endSnap.distance - rsArr.startSnapshot.distance) / 1609;
                       var rideDur = endSnap.t - rsArr.startSnapshot.t;
+                      // ── Weather surge + comfort penalty multipliers ──
+                      // Real rideshare economics: bad weather = higher base fare (demand
+                      // spikes, drivers scarce). But we also make passengers MORE sensitive
+                      // to harsh maneuvers in bad weather — a hard brake on ice feels much
+                      // more alarming than one on dry pavement. So you earn more in snow,
+                      // but you have to drive EVEN smoother to keep the stars. Reward
+                      // perfectly aligned with careful driving.
+                      var rsW = (currentScenario && currentScenario.weather) || 'clear';
+                      var surge = rsW === 'snow' ? 1.5 : rsW === 'fog' ? 1.3 : rsW === 'rain' ? 1.2 : 1.0;
+                      var comfortSensitivity = rsW === 'snow' ? 1.5 : rsW === 'fog' ? 1.3 : rsW === 'rain' ? 1.2 : 1.0;
                       // Comfort score: harsh maneuvers cost. 100 baseline, deductions stack.
                       var comfort = 100;
-                      comfort -= rideHardBrakes * 8;
-                      comfort -= rideJackrabs * 6;
-                      comfort -= Math.min(40, rideSkidSec * 4);
+                      comfort -= rideHardBrakes * 8 * comfortSensitivity;
+                      comfort -= rideJackrabs * 6 * comfortSensitivity;
+                      comfort -= Math.min(40, rideSkidSec * 4) * comfortSensitivity;
                       comfort -= rideCrashes * 50;
                       comfort = Math.max(0, Math.min(100, comfort));
                       // Safety score: speed violations + crashes
@@ -4023,8 +4033,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       // Star rating based on combined comfort + safety
                       var combined = (comfort + safety) / 2;
                       var stars = combined >= 90 ? 5 : combined >= 75 ? 4 : combined >= 55 ? 3 : combined >= 35 ? 2 : 1;
-                      // Base fare ~$3.50 + $1.20/mile + tip based on stars (real Lyft economics)
-                      var baseFare = 3.5 + Math.max(0.3, rideDistMi) * 1.2;
+                      // Base fare ~$3.50 + $1.20/mile × surge; tip based on stars (real Lyft economics)
+                      var baseFare = (3.5 + Math.max(0.3, rideDistMi) * 1.2) * surge;
                       var tipPct = stars >= 5 ? 0.25 : stars >= 4 ? 0.18 : stars >= 3 ? 0.10 : stars >= 2 ? 0.03 : 0;
                       var tip = baseFare * tipPct;
                       var total = baseFare + tip;
@@ -4038,7 +4048,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                         baseFare: baseFare, tip: tip, total: total,
                         durationSec: Math.round(rideDur), distMi: rideDistMi.toFixed(2),
                         hardBrakes: rideHardBrakes, jackrabbits: rideJackrabs,
-                        crashes: rideCrashes, skidSec: Math.round(rideSkidSec)
+                        crashes: rideCrashes, skidSec: Math.round(rideSkidSec),
+                        surge: surge, weather: rsW
                       };
                       rsArr.phase = 'completed';
                       var starStr = '★'.repeat(stars) + '☆'.repeat(5 - stars);
@@ -15115,6 +15126,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 gfx.fillStyle = '#cbd5e1';
                 gfx.font = '11px system-ui, sans-serif';
                 gfx.fillText(rsSR.from + ' → ' + rsSR.to, cardX + cardW / 2, cardY + 78);
+                // Surge banner (only if weather triggered a multiplier)
+                if (rsSR.surge && rsSR.surge > 1) {
+                  gfx.fillStyle = '#fbbf24';
+                  gfx.font = 'bold 10px monospace';
+                  var wIcon = rsSR.weather === 'snow' ? '❄️' : rsSR.weather === 'fog' ? '🌫️' : '🌧️';
+                  gfx.fillText(wIcon + ' ' + rsSR.surge.toFixed(1) + '× weather surge', cardX + cardW / 2, cardY + 108);
+                }
                 // Biggest deduction (the WHY). Sort deduction types by magnitude.
                 var deductions = [];
                 if (rsSR.crashes > 0) deductions.push({ label: rsSR.crashes + ' crash' + (rsSR.crashes === 1 ? '' : 'es'), cost: rsSR.crashes * 50 });
@@ -15217,13 +15235,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 gfx.fillStyle = liveComfort > 70 ? '#4ade80' : liveComfort > 40 ? '#f59e0b' : '#ef4444';
                 gfx.font = 'bold 10px monospace'; gfx.textAlign = 'right';
                 gfx.fillText('Comfort ' + Math.round(liveComfort), rsX + rsW - 8, starBaseY);
-                // Distance remaining + fare preview
+                // Distance remaining + fare preview. Surge mirrors dropoff math.
                 var rsRemaining = Math.hypot(carRef.current.x - rsTarget.x, carRef.current.y - rsTarget.y) * 0.1;
                 var distSoFar = ((statsRef.current.distance || 0) - rsHud.startSnapshot.distance) / 1609;
-                var estFare = 3.5 + Math.max(0.3, distSoFar) * 1.2;
+                var rsWHud = (scn && scn.weather) || 'clear';
+                var rsSurgeHud = rsWHud === 'snow' ? 1.5 : rsWHud === 'fog' ? 1.3 : rsWHud === 'rain' ? 1.2 : 1.0;
+                var estFare = (3.5 + Math.max(0.3, distSoFar) * 1.2) * rsSurgeHud;
                 gfx.fillStyle = '#94a3b8';
                 gfx.font = '9px monospace'; gfx.textAlign = 'right';
-                gfx.fillText('~$' + estFare.toFixed(2) + ' · ' + rsRemaining.toFixed(0) + ' ft left', rsX + rsW - 8, rsY + 64);
+                var surgeTag = rsSurgeHud > 1 ? (' · ' + rsSurgeHud.toFixed(1) + '× surge') : '';
+                gfx.fillText('~$' + estFare.toFixed(2) + ' · ' + rsRemaining.toFixed(0) + ' ft left' + surgeTag, rsX + rsW - 8, rsY + 64);
                 // Passenger speech bubble (wrapped to pill width)
                 if (hasLine) {
                   gfx.fillStyle = 'rgba(251,191,36,0.12)';
