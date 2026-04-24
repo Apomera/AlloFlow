@@ -2165,6 +2165,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               }
             }, '"' + state.motivationStatement + '"') : null,
 
+            // Today's micro-strip — compact 1-line summary of today's
+            // activity: count · best WPM · approximate minutes. Only shows
+            // when ≥1 session was recorded today; disappears at midnight.
+            // Sits below the greeting + motivation so the student sees
+            // 'here's what you did today' before system nudges.
+            (function() {
+              var todayStr = new Date().toLocaleDateString();
+              var todaySessions = (state.sessions || []).filter(function(s) {
+                return new Date(s.date).toLocaleDateString() === todayStr;
+              });
+              if (todaySessions.length === 0) return null;
+              var bestTodayWpm = todaySessions.reduce(function(m, s) { return Math.max(m, s.wpm || 0); }, 0);
+              var totalSec = todaySessions.reduce(function(m, s) { return m + (s.durationSec || 0); }, 0);
+              var approxMin = Math.max(1, Math.round(totalSec / 60));
+              var tm = state.theme || 'default';
+              var parts = [];
+              parts.push(todaySessions.length + ' session' + (todaySessions.length === 1 ? '' : 's'));
+              if (bestTodayWpm > 0) parts.push(bestTodayWpm + ' WPM best');
+              if (approxMin > 0) parts.push('~' + approxMin + ' min');
+              var lead;
+              if (tm === 'steampunk')      lead = '⚙ Today\'s shift: ';
+              else if (tm === 'cyberpunk') lead = '[TODAY] ';
+              else if (tm === 'kawaii')    lead = '✨ Today so far: ';
+              else if (tm === 'neutral')   lead = 'Today: ';
+              else                         lead = '☀️ Today so far: ';
+              return h('div', {
+                'aria-label': 'Today\'s practice summary',
+                style: {
+                  marginBottom: '16px',
+                  padding: '8px 14px',
+                  background: palette.surface,
+                  border: '1px solid ' + palette.border,
+                  borderRadius: '999px',
+                  fontSize: '12px',
+                  color: palette.textDim,
+                  display: 'inline-flex',
+                  gap: '4px',
+                  alignItems: 'center',
+                  lineHeight: '1.4',
+                  fontVariantNumeric: 'tabular-nums'
+                }
+              },
+                h('span', { style: { color: palette.accent, fontWeight: 700 } }, lead),
+                h('span', null, parts.join(' · '))
+              );
+            })(),
+
             // Strength-based note — evidence-framed one-liner tailored to the
             // student's recent pattern. Priority order: first-timer welcome →
             // return-from-absence → first-goal-met recency → recent PB → tier-
