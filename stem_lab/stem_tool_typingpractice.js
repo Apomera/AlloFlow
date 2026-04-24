@@ -89,6 +89,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     // most recent one so refine-via-image-to-image has a reference.
     //   { base64: 'data:image/png;base64,...', prompt, sessionDate, refinedCount }
     lastGeneratedImage: null,
+    // Small gallery of prior visual-mode images (up to VISUAL_GALLERY_MAX).
+    // Lets students see a history of their drill-driven image generation
+    // without the infinite-growth risk of per-session storage. Newest first.
+    visualGallery: [],
     // milestonesEarned — array of milestone IDs the student has crossed.
     // Additive only; we never un-earn to avoid guilt patterns.
     milestonesEarned: [],
@@ -126,6 +130,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
   // Maximum size of the saved-passage library. Keep low to avoid clutter —
   // students who want more have Custom Drill for arbitrary text.
   var MAX_PASSAGE_LIBRARY = 8;
+
+  // Visual-mode gallery cap. 3 images × ~80 KB base64 PNG = ~240 KB, well
+  // within localStorage comfort. More than 3 and students lose track of
+  // which image goes with which drill run; 3 is "recent work" without noise.
+  var VISUAL_GALLERY_MAX = 3;
 
   // Accommodation presets — single-click bundles of common accommodation combos.
   // Applying a preset overwrites the student's current accommodation settings.
@@ -3532,12 +3541,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             var dataUrl = ('' + result).indexOf('data:') === 0
               ? result
               : 'data:image/png;base64,' + stripBase64Prefix(result);
-            upd('lastGeneratedImage', {
+            var newImage = {
               base64: dataUrl,
               prompt: fullPrompt,
               sessionDate: lastSummary ? lastSummary.date : new Date().toISOString(),
               refinedCount: doRefine ? ((priorImage && priorImage.refinedCount) || 0) + 1 : 0,
-              mode: mode
+              mode: mode,
+              drillText: promptText
+            };
+            // Gallery: newest first, dedupe by base64, cap at VISUAL_GALLERY_MAX.
+            var prevGallery = (state.visualGallery || []).filter(function(g) {
+              return g && g.base64 !== dataUrl;
+            });
+            var nextGallery = [newImage].concat(prevGallery).slice(0, VISUAL_GALLERY_MAX);
+            updMulti({
+              lastGeneratedImage: newImage,
+              visualGallery: nextGallery
             });
             setImgLoading(false);
           }).catch(function(err) {
@@ -4001,8 +4020,76 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                       onClick: function() { generateVisualForSession(drillText, mode, true); },
                       style: Object.assign({}, secondaryBtnStyle(palette), { fontSize: '11px', padding: '6px 12px' }),
                       title: 'Refine the last image using image-to-image instead of starting from scratch'
-                    }, '🎨 Refine') : null
+                    }, '🎨 Refine') : null,
+
+                    // Download — students should be able to save their work
+                    (existing && existing.base64) ? h('button', {
+                      onClick: function() {
+                        try {
+                          var a = document.createElement('a');
+                          a.href = existing.base64;
+                          var stu = (state.studentName || 'student').replace(/[^a-z0-9_-]/gi, '_');
+                          a.download = 'typing_' + mode + '_' + stu + '_' +
+                            new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19) + '.png';
+                          document.body.appendChild(a);
+                          a.click();
+                          document.body.removeChild(a);
+                          addToast('Image saved to downloads.');
+                        } catch (e) {
+                          addToast('⚠️ Download failed — try right-click → Save image instead.');
+                        }
+                      },
+                      style: Object.assign({}, secondaryBtnStyle(palette), { fontSize: '11px', padding: '6px 12px' }),
+                      title: 'Download this image as a PNG file'
+                    }, '📥 Save') : null
                   ) : null,
+
+                  // Gallery strip — up to VISUAL_GALLERY_MAX-1 PRIOR images
+                  // shown as small thumbnails. Tapping a thumbnail restores
+                  // it as the active image (so refine reuses it).
+                  (function() {
+                    var gallery = (state.visualGallery || []).filter(function(g) {
+                      return !existing || g.base64 !== existing.base64;
+                    });
+                    if (gallery.length === 0) return null;
+                    return h('div', {
+                      style: { marginTop: '10px', paddingTop: '10px', borderTop: '1px solid ' + palette.border }
+                    },
+                      h('div', {
+                        style: { fontSize: '10px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '6px', fontWeight: 700 }
+                      }, 'Recent · tap to restore'),
+                      h('div', {
+                        style: { display: 'flex', gap: '6px', flexWrap: 'wrap' }
+                      },
+                        gallery.map(function(g, i) {
+                          return h('button', {
+                            key: 'gal-' + i,
+                            onClick: function() {
+                              upd('lastGeneratedImage', g);
+                              addToast('Restored prior image. Refine works from here now.');
+                            },
+                            'aria-label': 'Restore earlier image from ' + new Date(g.sessionDate).toLocaleString(),
+                            title: new Date(g.sessionDate).toLocaleString() +
+                                   (g.refinedCount ? ' · refined ' + g.refinedCount + '×' : ''),
+                            style: {
+                              padding: 0,
+                              border: '1px solid ' + palette.border,
+                              borderRadius: '6px',
+                              cursor: 'pointer',
+                              background: 'transparent',
+                              overflow: 'hidden'
+                            }
+                          },
+                            h('img', {
+                              src: g.base64,
+                              alt: '',
+                              style: { width: '72px', height: '72px', objectFit: 'cover', display: 'block' }
+                            })
+                          );
+                        })
+                      )
+                    );
+                  })(),
 
                   h('div', { style: { fontSize: '10px', color: palette.textMute, marginTop: '6px', fontStyle: 'italic' } },
                     mode === 'story'
