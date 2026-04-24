@@ -28,6 +28,157 @@ var RefreshCw = _lazyIcon('RefreshCw');
 var Search = _lazyIcon('Search');
 var Sparkles = _lazyIcon('Sparkles');
 var Trash2 = _lazyIcon('Trash2');
+const GoldenThreadPanel = ({
+  config,
+  isEditing,
+  onUpdate
+}) => {
+  const [newConcept, setNewConcept] = useState('');
+  const [newTerm, setNewTerm] = useState('');
+  const dna = config && config.lessonDNA || null;
+  if (!dna && !isEditing) return null;
+  const eq = dna && dna.essentialQuestion || '';
+  const concepts = dna && Array.isArray(dna.goldenThread) ? dna.goldenThread : [];
+  const terms = dna && Array.isArray(dna.keyTerms) ? dna.keyTerms : [];
+  const hasAny = eq.trim() || concepts.length > 0 || terms.length > 0;
+  if (!hasAny && !isEditing) return null;
+  const writeDNA = patch => {
+    const nextDNA = Object.assign({
+      essentialQuestion: '',
+      goldenThread: [],
+      keyTerms: []
+    }, dna || {}, patch);
+    onUpdate(Object.assign({}, config, {
+      lessonDNA: nextDNA
+    }));
+  };
+  const addConcept = () => {
+    const v = (newConcept || '').trim();
+    if (!v) return;
+    if (concepts.indexOf(v) !== -1) {
+      setNewConcept('');
+      return;
+    }
+    writeDNA({
+      goldenThread: concepts.concat([v])
+    });
+    setNewConcept('');
+  };
+  const removeConcept = idx => {
+    writeDNA({
+      goldenThread: concepts.filter(function (_, i) {
+        return i !== idx;
+      })
+    });
+  };
+  const addTerm = () => {
+    const v = (newTerm || '').trim();
+    if (!v) return;
+    if (terms.indexOf(v) !== -1) {
+      setNewTerm('');
+      return;
+    }
+    writeDNA({
+      keyTerms: terms.concat([v])
+    });
+    setNewTerm('');
+  };
+  const removeTerm = idx => {
+    writeDNA({
+      keyTerms: terms.filter(function (_, i) {
+        return i !== idx;
+      })
+    });
+  };
+  return /*#__PURE__*/React.createElement("div", {
+    className: "mb-4 p-3 rounded-lg bg-gradient-to-br from-amber-50 to-yellow-50 border border-amber-200"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-2 mb-2"
+  }, /*#__PURE__*/React.createElement(Sparkles, {
+    size: 14,
+    className: "text-amber-500 fill-current"
+  }), /*#__PURE__*/React.createElement("h5", {
+    className: "text-xs font-bold text-amber-900 uppercase tracking-wider"
+  }, "Golden Thread"), isEditing && /*#__PURE__*/React.createElement("span", {
+    className: "text-[10px] text-amber-700 italic ml-auto"
+  }, "Edits apply before generation")), /*#__PURE__*/React.createElement("div", {
+    className: "mb-2"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-[11px] font-bold text-amber-800 uppercase tracking-wider mb-0.5"
+  }, "Essential Question"), isEditing ? /*#__PURE__*/React.createElement("textarea", {
+    value: eq,
+    onChange: e => writeDNA({
+      essentialQuestion: e.target.value
+    }),
+    placeholder: "The ONE main learning question students will answer...",
+    rows: 2,
+    className: "w-full text-sm text-slate-700 italic bg-white border border-amber-200 rounded p-1.5 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none resize-none"
+  }) : eq ? /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-slate-700 italic leading-relaxed"
+  }, "\"", eq, "\"") : /*#__PURE__*/React.createElement("p", {
+    className: "text-xs text-slate-500 italic"
+  }, "(none set)")), /*#__PURE__*/React.createElement("div", {
+    className: "mb-2"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-[11px] font-bold text-amber-800 uppercase tracking-wider mb-1"
+  }, "Core Concepts"), /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap gap-1 items-center"
+  }, concepts.map(function (c, i) {
+    return /*#__PURE__*/React.createElement("span", {
+      key: i,
+      className: "inline-flex items-center gap-1 text-[11px] px-2 py-0.5 bg-white border border-amber-200 text-amber-900 rounded-full"
+    }, c, isEditing && /*#__PURE__*/React.createElement("button", {
+      onClick: () => removeConcept(i),
+      "aria-label": 'Remove concept ' + c,
+      className: "ml-1 text-amber-600 hover:text-red-500 font-bold leading-none"
+    }, "\xD7"));
+  }), isEditing && /*#__PURE__*/React.createElement("span", {
+    className: "inline-flex items-center gap-1"
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "text",
+    value: newConcept,
+    onChange: e => setNewConcept(e.target.value),
+    onKeyDown: e => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        addConcept();
+      }
+    },
+    placeholder: "+ add concept",
+    className: "text-[11px] px-2 py-0.5 bg-white border border-amber-200 rounded-full focus:border-amber-500 outline-none w-28"
+  })), !isEditing && concepts.length === 0 && /*#__PURE__*/React.createElement("span", {
+    className: "text-xs text-slate-500 italic"
+  }, "(none set)"))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
+    className: "text-[11px] font-bold text-amber-800 uppercase tracking-wider mb-1"
+  }, "Key Vocabulary"), /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap gap-1 items-center"
+  }, terms.map(function (term, i) {
+    return /*#__PURE__*/React.createElement("span", {
+      key: i,
+      className: "inline-flex items-center gap-1 text-[11px] px-2 py-0.5 bg-white border border-indigo-200 text-indigo-900 rounded-full font-medium"
+    }, term, isEditing && /*#__PURE__*/React.createElement("button", {
+      onClick: () => removeTerm(i),
+      "aria-label": 'Remove term ' + term,
+      className: "ml-1 text-indigo-600 hover:text-red-500 font-bold leading-none"
+    }, "\xD7"));
+  }), isEditing && /*#__PURE__*/React.createElement("span", {
+    className: "inline-flex items-center gap-1"
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "text",
+    value: newTerm,
+    onChange: e => setNewTerm(e.target.value),
+    onKeyDown: e => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        addTerm();
+      }
+    },
+    placeholder: "+ add term",
+    className: "text-[11px] px-2 py-0.5 bg-white border border-indigo-200 rounded-full focus:border-indigo-500 outline-none w-28"
+  })), !isEditing && terms.length === 0 && /*#__PURE__*/React.createElement("span", {
+    className: "text-xs text-slate-500 italic"
+  }, "(none set)"))));
+};
 const InteractiveBlueprintCard = React.memo(({
   config,
   onUpdate,
@@ -167,46 +318,11 @@ const InteractiveBlueprintCard = React.memo(({
     size: 14
   }) : /*#__PURE__*/React.createElement(Pencil, {
     size: 14
-  }), isEditing ? t('blueprint.done_editing') : t('blueprint.edit_plan'))), (() => {
-    const dna = config && config.lessonDNA;
-    if (!dna) return null;
-    const hasEQ = dna.essentialQuestion && typeof dna.essentialQuestion === 'string' && dna.essentialQuestion.trim();
-    const hasGT = Array.isArray(dna.goldenThread) && dna.goldenThread.length > 0;
-    const hasKT = Array.isArray(dna.keyTerms) && dna.keyTerms.length > 0;
-    if (!hasEQ && !hasGT && !hasKT) return null;
-    return /*#__PURE__*/React.createElement("div", {
-      className: "mb-4 p-3 rounded-lg bg-gradient-to-br from-amber-50 to-yellow-50 border border-amber-200"
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "flex items-center gap-2 mb-2"
-    }, /*#__PURE__*/React.createElement(Sparkles, {
-      size: 14,
-      className: "text-amber-500 fill-current"
-    }), /*#__PURE__*/React.createElement("h5", {
-      className: "text-xs font-bold text-amber-900 uppercase tracking-wider"
-    }, "Golden Thread")), hasEQ && /*#__PURE__*/React.createElement("div", {
-      className: "mb-2"
-    }, /*#__PURE__*/React.createElement("p", {
-      className: "text-[11px] font-bold text-amber-800 uppercase tracking-wider mb-0.5"
-    }, "Essential Question"), /*#__PURE__*/React.createElement("p", {
-      className: "text-sm text-slate-700 italic leading-relaxed"
-    }, "\"", dna.essentialQuestion, "\"")), hasGT && /*#__PURE__*/React.createElement("div", {
-      className: "mb-2"
-    }, /*#__PURE__*/React.createElement("p", {
-      className: "text-[11px] font-bold text-amber-800 uppercase tracking-wider mb-1"
-    }, "Core Concepts"), /*#__PURE__*/React.createElement("div", {
-      className: "flex flex-wrap gap-1"
-    }, dna.goldenThread.map((c, i) => /*#__PURE__*/React.createElement("span", {
-      key: i,
-      className: "text-[11px] px-2 py-0.5 bg-white border border-amber-200 text-amber-900 rounded-full"
-    }, c)))), hasKT && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
-      className: "text-[11px] font-bold text-amber-800 uppercase tracking-wider mb-1"
-    }, "Key Vocabulary"), /*#__PURE__*/React.createElement("div", {
-      className: "flex flex-wrap gap-1"
-    }, dna.keyTerms.map((term, i) => /*#__PURE__*/React.createElement("span", {
-      key: i,
-      className: "text-[11px] px-2 py-0.5 bg-white border border-indigo-200 text-indigo-900 rounded-full font-medium"
-    }, term)))));
-  })(), isEditing ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+  }), isEditing ? t('blueprint.done_editing') : t('blueprint.edit_plan'))), /*#__PURE__*/React.createElement(GoldenThreadPanel, {
+    config: config,
+    isEditing: isEditing,
+    onUpdate: onUpdate
+  }), isEditing ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "space-y-2 mb-4 max-h-[300px] overflow-y-auto custom-scrollbar pr-1"
   }, items.map((item, idx) => /*#__PURE__*/React.createElement("div", {
     key: item.id,

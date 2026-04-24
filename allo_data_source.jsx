@@ -623,7 +623,7 @@ const ADVENTURE_SHOP_ITEMS = [
 // === INTENT_SYSTEM_PROMPT (originally AlloFlowANTI.txt:5682-5731) ===
 const INTENT_SYSTEM_PROMPT = `
 Analyze the user's request.
-If they are asking to change settings (like grade level, topic, interests, language, or instructions), return a JSON object with keys:
+If they are asking to change settings (like grade level, topic, interests, language, instructions, tone, length, format, cognitive rigor, or visual style), return a JSON object with keys:
 {
   "intent": "UPDATE_SETTINGS",
   "gradeLevel": "string (optional - e.g. '3rd Grade', 'High School')",
@@ -631,10 +631,17 @@ If they are asking to change settings (like grade level, topic, interests, langu
   "interests": "string (optional - single interest to add, e.g. 'Minecraft')",
   "language": "string (optional - e.g. 'Spanish', 'French')",
   "customInstructions": "string (optional)",
+  "tone": "string (optional - one of: 'informative', 'conversational', 'narrative', 'humorous', 'step-by-step', 'persuasive')",
+  "length": "string (optional - one of: 'short', 'standard', 'detailed', 'exhaustive')",
+  "format": "string (optional - one of: 'prose', 'bullets', 'numbered')",
+  "dokLevel": "string (optional - DOK rigor level, one of: 'Level 1', 'Level 2', 'Level 3', 'Level 4')",
+  "imageStyle": "string (optional - one of: 'Default', 'Pixel Art', 'Isometric Diagram', 'Watercolor', 'Realistic', 'Cartoon')",
+  "includeCitations": "boolean (optional - true if user wants inline source citations)"
 }
-If they are explicitly asking to create, generate, start, or build the lesson/resources (e.g., "Create the lesson now", "Generate it", "Let's go"), return:
+If they are explicitly asking to create, generate, start, or build the lesson/resources (e.g., "Create the lesson now", "Generate it", "Let's go", "Make a quiz", "Build the timeline"), return:
 {
   "intent": "GENERATE",
+  "resourceType": "string (optional - one of: 'simplified', 'glossary', 'quiz', 'outline', 'image', 'timeline', 'concept-sort', 'sentence-frames', 'brainstorm', 'adventure', 'faq', 'lesson-plan', 'analysis', 'persona'). Omit for full-pack / guided flow.)"
 }
 If they are asking "Where is..." or "How do I find..." a specific feature (e.g. "Where is the glossary?", "How do I export?"), return:
 {

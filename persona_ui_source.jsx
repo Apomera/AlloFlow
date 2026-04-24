@@ -15,6 +15,129 @@ var Search = _lazyIcon('Search');
 var Sparkles = _lazyIcon('Sparkles');
 var Trash2 = _lazyIcon('Trash2');
 
+const GoldenThreadPanel = ({ config, isEditing, onUpdate }) => {
+    const [newConcept, setNewConcept] = useState('');
+    const [newTerm, setNewTerm] = useState('');
+    const dna = (config && config.lessonDNA) || null;
+    if (!dna && !isEditing) return null;
+    const eq = (dna && dna.essentialQuestion) || '';
+    const concepts = (dna && Array.isArray(dna.goldenThread)) ? dna.goldenThread : [];
+    const terms = (dna && Array.isArray(dna.keyTerms)) ? dna.keyTerms : [];
+    const hasAny = eq.trim() || concepts.length > 0 || terms.length > 0;
+    if (!hasAny && !isEditing) return null;
+    const writeDNA = (patch) => {
+        const nextDNA = Object.assign({ essentialQuestion: '', goldenThread: [], keyTerms: [] }, dna || {}, patch);
+        onUpdate(Object.assign({}, config, { lessonDNA: nextDNA }));
+    };
+    const addConcept = () => {
+        const v = (newConcept || '').trim();
+        if (!v) return;
+        if (concepts.indexOf(v) !== -1) { setNewConcept(''); return; }
+        writeDNA({ goldenThread: concepts.concat([v]) });
+        setNewConcept('');
+    };
+    const removeConcept = (idx) => {
+        writeDNA({ goldenThread: concepts.filter(function(_, i) { return i !== idx; }) });
+    };
+    const addTerm = () => {
+        const v = (newTerm || '').trim();
+        if (!v) return;
+        if (terms.indexOf(v) !== -1) { setNewTerm(''); return; }
+        writeDNA({ keyTerms: terms.concat([v]) });
+        setNewTerm('');
+    };
+    const removeTerm = (idx) => {
+        writeDNA({ keyTerms: terms.filter(function(_, i) { return i !== idx; }) });
+    };
+    return (
+        <div className="mb-4 p-3 rounded-lg bg-gradient-to-br from-amber-50 to-yellow-50 border border-amber-200">
+            <div className="flex items-center gap-2 mb-2">
+                <Sparkles size={14} className="text-amber-500 fill-current" />
+                <h5 className="text-xs font-bold text-amber-900 uppercase tracking-wider">Golden Thread</h5>
+                {isEditing && <span className="text-[10px] text-amber-700 italic ml-auto">Edits apply before generation</span>}
+            </div>
+            <div className="mb-2">
+                <p className="text-[11px] font-bold text-amber-800 uppercase tracking-wider mb-0.5">Essential Question</p>
+                {isEditing ? (
+                    <textarea
+                        value={eq}
+                        onChange={(e) => writeDNA({ essentialQuestion: e.target.value })}
+                        placeholder="The ONE main learning question students will answer..."
+                        rows={2}
+                        className="w-full text-sm text-slate-700 italic bg-white border border-amber-200 rounded p-1.5 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none resize-none"
+                    />
+                ) : (
+                    eq ? <p className="text-sm text-slate-700 italic leading-relaxed">"{eq}"</p> : <p className="text-xs text-slate-500 italic">(none set)</p>
+                )}
+            </div>
+            <div className="mb-2">
+                <p className="text-[11px] font-bold text-amber-800 uppercase tracking-wider mb-1">Core Concepts</p>
+                <div className="flex flex-wrap gap-1 items-center">
+                    {concepts.map(function(c, i) {
+                        return (
+                            <span key={i} className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 bg-white border border-amber-200 text-amber-900 rounded-full">
+                                {c}
+                                {isEditing && (
+                                    <button
+                                        onClick={() => removeConcept(i)}
+                                        aria-label={'Remove concept ' + c}
+                                        className="ml-1 text-amber-600 hover:text-red-500 font-bold leading-none"
+                                    >×</button>
+                                )}
+                            </span>
+                        );
+                    })}
+                    {isEditing && (
+                        <span className="inline-flex items-center gap-1">
+                            <input
+                                type="text"
+                                value={newConcept}
+                                onChange={(e) => setNewConcept(e.target.value)}
+                                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addConcept(); } }}
+                                placeholder="+ add concept"
+                                className="text-[11px] px-2 py-0.5 bg-white border border-amber-200 rounded-full focus:border-amber-500 outline-none w-28"
+                            />
+                        </span>
+                    )}
+                    {!isEditing && concepts.length === 0 && <span className="text-xs text-slate-500 italic">(none set)</span>}
+                </div>
+            </div>
+            <div>
+                <p className="text-[11px] font-bold text-amber-800 uppercase tracking-wider mb-1">Key Vocabulary</p>
+                <div className="flex flex-wrap gap-1 items-center">
+                    {terms.map(function(term, i) {
+                        return (
+                            <span key={i} className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 bg-white border border-indigo-200 text-indigo-900 rounded-full font-medium">
+                                {term}
+                                {isEditing && (
+                                    <button
+                                        onClick={() => removeTerm(i)}
+                                        aria-label={'Remove term ' + term}
+                                        className="ml-1 text-indigo-600 hover:text-red-500 font-bold leading-none"
+                                    >×</button>
+                                )}
+                            </span>
+                        );
+                    })}
+                    {isEditing && (
+                        <span className="inline-flex items-center gap-1">
+                            <input
+                                type="text"
+                                value={newTerm}
+                                onChange={(e) => setNewTerm(e.target.value)}
+                                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addTerm(); } }}
+                                placeholder="+ add term"
+                                className="text-[11px] px-2 py-0.5 bg-white border border-indigo-200 rounded-full focus:border-indigo-500 outline-none w-28"
+                            />
+                        </span>
+                    )}
+                    {!isEditing && terms.length === 0 && <span className="text-xs text-slate-500 italic">(none set)</span>}
+                </div>
+            </div>
+        </div>
+    );
+};
+
 const InteractiveBlueprintCard = React.memo(({ config, onUpdate, onConfirm, onCancel }) => {
   const { t } = useContext(LanguageContext);
   const [items, setItems] = useState([]);
@@ -122,48 +245,7 @@ const InteractiveBlueprintCard = React.memo(({ config, onUpdate, onConfirm, onCa
             {isEditing ? t('blueprint.done_editing') : t('blueprint.edit_plan')}
         </button>
       </div>
-      {(() => {
-          const dna = config && config.lessonDNA;
-          if (!dna) return null;
-          const hasEQ = dna.essentialQuestion && typeof dna.essentialQuestion === 'string' && dna.essentialQuestion.trim();
-          const hasGT = Array.isArray(dna.goldenThread) && dna.goldenThread.length > 0;
-          const hasKT = Array.isArray(dna.keyTerms) && dna.keyTerms.length > 0;
-          if (!hasEQ && !hasGT && !hasKT) return null;
-          return (
-            <div className="mb-4 p-3 rounded-lg bg-gradient-to-br from-amber-50 to-yellow-50 border border-amber-200">
-                <div className="flex items-center gap-2 mb-2">
-                    <Sparkles size={14} className="text-amber-500 fill-current" />
-                    <h5 className="text-xs font-bold text-amber-900 uppercase tracking-wider">Golden Thread</h5>
-                </div>
-                {hasEQ && (
-                    <div className="mb-2">
-                        <p className="text-[11px] font-bold text-amber-800 uppercase tracking-wider mb-0.5">Essential Question</p>
-                        <p className="text-sm text-slate-700 italic leading-relaxed">"{dna.essentialQuestion}"</p>
-                    </div>
-                )}
-                {hasGT && (
-                    <div className="mb-2">
-                        <p className="text-[11px] font-bold text-amber-800 uppercase tracking-wider mb-1">Core Concepts</p>
-                        <div className="flex flex-wrap gap-1">
-                            {dna.goldenThread.map((c, i) => (
-                                <span key={i} className="text-[11px] px-2 py-0.5 bg-white border border-amber-200 text-amber-900 rounded-full">{c}</span>
-                            ))}
-                        </div>
-                    </div>
-                )}
-                {hasKT && (
-                    <div>
-                        <p className="text-[11px] font-bold text-amber-800 uppercase tracking-wider mb-1">Key Vocabulary</p>
-                        <div className="flex flex-wrap gap-1">
-                            {dna.keyTerms.map((term, i) => (
-                                <span key={i} className="text-[11px] px-2 py-0.5 bg-white border border-indigo-200 text-indigo-900 rounded-full font-medium">{term}</span>
-                            ))}
-                        </div>
-                    </div>
-                )}
-            </div>
-          );
-      })()}
+      <GoldenThreadPanel config={config} isEditing={isEditing} onUpdate={onUpdate} />
       {isEditing ? (
           <>
             <div className="space-y-2 mb-4 max-h-[300px] overflow-y-auto custom-scrollbar pr-1">
