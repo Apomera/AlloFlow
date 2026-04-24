@@ -11417,6 +11417,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   var benchBack = new T.Mesh(new T.BoxGeometry(0.08, 0.5, 1.5), benchMat);
                   benchBack.position.set(parkCenterX + lm.side * 0.18, 0.75, lmCenterWZ);
                   chunkGroup.add(benchBack);
+                  // Flower beds at two far corners of the grass — cheerful color
+                  // dots (red / yellow / purple) so the park reads as tended in
+                  // daylight instead of an undecorated green rectangle. Small
+                  // spheres clustered in a 2x2 grid per bed.
+                  var flowerPalette = [0xef4444, 0xfacc15, 0xa855f7, 0xf97316, 0xec4899];
+                  [
+                    { dx: lm.side * (parkBaseSize * 0.35), dz: -parkBaseSize * 0.35 },
+                    { dx: lm.side * (parkBaseSize * 0.35), dz:  parkBaseSize * 0.35 }
+                  ].forEach(function(fb, fbi) {
+                    for (var fbj = 0; fbj < 4; fbj++) {
+                      var fbCol = flowerPalette[(fbi * 2 + fbj) % flowerPalette.length];
+                      var fbDx = fb.dx + ((fbj & 1) ? 0.18 : -0.18);
+                      var fbDz = fb.dz + ((fbj & 2) ? 0.18 : -0.18);
+                      var fbMat = new T.MeshLambertMaterial({ color: fbCol });
+                      var fbMesh = new T.Mesh(new T.SphereGeometry(0.12, 6, 5), fbMat);
+                      fbMesh.position.set(parkCenterX + fbDx, 0.22, lmCenterWZ + fbDz);
+                      chunkGroup.add(fbMesh);
+                    }
+                  });
                   // ── Decorative path lamps at twilight/night/fog ──
                   // Two short antique-style lamp posts at the front corners of the
                   // park. Glow warm white at night so the park reads as a destination
