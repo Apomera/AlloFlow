@@ -1151,6 +1151,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           summary.masteryAdvanced = masteryAdvanced;
           summary.newMasteryLevel = masteryAdvanced ? state.masteryLevel + 1 : state.masteryLevel;
 
+          // ── Milestone earning — scan MILESTONES predicates, append newly-earned ──
+          // Stored as { id, date } objects so the achievement log can show when
+          // each was earned. Backward-compatible with the old string-only format
+          // via normalizeMilestonesEarned() at read time.
+          var uniqueDays = {};
+          sessions.forEach(function(s) { uniqueDays[new Date(s.date).toLocaleDateString()] = true; });
+          var udCount = Object.keys(uniqueDays).length;
+          var earnedList = normalizeMilestonesEarned(state.milestonesEarned);
+          var earnedIds = earnedList.map(function(e) { return e.id; });
+          var newMilestones = [];
+          MILESTONES.forEach(function(m) {
+            if (earnedIds.indexOf(m.id) === -1 && m.check(lifetime, udCount)) {
+              newMilestones.push(m);
+              earnedList.push({ id: m.id, date: summary.date });
+            }
+          });
+          if (newMilestones.length > 0) {
+            nextUpdates.milestonesEarned = earnedList;
+            summary.newMilestones = newMilestones.map(function(m) { return m.label; });
+          }
+
           // ── AlloBot Sage spell unlocks: no push hook needed ──
           // AlloBot Sage uses a PULL architecture: each spell declares an
           // `unlock(d)` predicate that reads `toolData` directly (see
@@ -1166,6 +1187,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           updMulti(nextUpdates);
           setLastSummary(summary);
 
+          if (newMilestones.length > 0) {
+            addToast('🎉 Milestone: ' + newMilestones.map(function(m) { return m.label; }).join(' · '));
+          }
           if (masteryAdvanced) {
             addToast('🌟 Mastery tier advanced! ' + DRILLS[activeDrill.id].name + ' cleared.');
             setAnnounceText('Mastery tier advanced. ' + DRILLS[activeDrill.id].name + ' cleared. New tier: ' + nextUpdates.masteryLevel + ' of 7.');
@@ -1752,6 +1776,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             },
               renderNavButton('📊 Progress & Goals', function() { go('progress'); }, palette, (state.sessions || []).length === 0),
               renderNavButton('⚙️ Accommodations', function() { go('settings'); }, palette, false),
+              renderNavButton('🏅 Achievements', function() { go('achievements'); }, palette, false),
               renderNavButton('? Shortcuts', function() { go('shortcuts'); }, palette, false),
               state.iepGoal ? h('div', {
                 style: {
@@ -5276,6 +5301,105 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         // ═════════════════════════════════════════════════════
         // VIEW: SHORTCUTS — keyboard-navigation reference card.
         // ═════════════════════════════════════════════════════
+        // ═════════════════════════════════════════════════════
+        // VIEW: ACHIEVEMENTS — scrollable log of earned lifetime milestones
+        // with dates where available. Read-only; purely celebratory.
+        // ═════════════════════════════════════════════════════
+        function renderAchievements() {
+          var earned = normalizeMilestonesEarned(state.milestonesEarned);
+          // Sort newest-first when dates exist; legacy (no date) entries go last.
+          earned.sort(function(a, b) {
+            if (a.date && b.date) return b.date.localeCompare(a.date);
+            if (a.date) return -1;
+            if (b.date) return 1;
+            return 0;
+          });
+          return h('div', {
+            style: {
+              padding: '20px',
+              maxWidth: '720px',
+              margin: '0 auto',
+              color: palette.text,
+              fontFamily: fontFamily,
+              background: palette.bg,
+              minHeight: '60vh'
+            }
+          },
+            renderBackButton(function() { go('menu'); }, palette),
+            h('h3', { style: { margin: '16px 0 4px 0', color: palette.text } }, '🏅  Achievements'),
+            h('p', { style: { margin: '0 0 20px 0', fontSize: '12px', color: palette.textMute, lineHeight: '1.5' } },
+              earned.length > 0
+                ? 'You\'ve earned ' + earned.length + ' milestone' + (earned.length === 1 ? '' : 's') + '. Additive only — achievements are never taken away.'
+                : 'No milestones earned yet — your first session will unlock one. Consistent practice compounds.'
+            ),
+
+            earned.length > 0 ? h('div', {
+              role: 'list',
+              style: { display: 'flex', flexDirection: 'column', gap: '8px' }
+            },
+              earned.map(function(entry) {
+                var ms = MILESTONES.filter(function(x) { return x.id === entry.id; })[0];
+                if (!ms) return null;
+                return h('div', {
+                  key: 'ach-' + entry.id,
+                  role: 'listitem',
+                  style: {
+                    padding: '12px 14px',
+                    background: palette.surface,
+                    border: '1px solid ' + palette.success,
+                    borderLeft: '3px solid ' + palette.success,
+                    borderRadius: '10px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    gap: '12px'
+                  }
+                },
+                  h('div', { style: { fontSize: '14px', color: palette.text, fontWeight: 600 } }, ms.label),
+                  h('div', { style: { fontSize: '11px', color: palette.textMute, fontVariantNumeric: 'tabular-nums' } },
+                    entry.date ? new Date(entry.date).toLocaleDateString() : 'earned'
+                  )
+                );
+              })
+            ) : null,
+
+            // Not-yet-earned preview — positive-framed ("coming up") so students
+            // see what's achievable without it being a guilt-based checklist.
+            (function() {
+              var earnedIds = earned.map(function(e) { return e.id; });
+              var remaining = MILESTONES.filter(function(m) { return earnedIds.indexOf(m.id) === -1; });
+              if (remaining.length === 0) return null;
+              return h('div', {
+                style: {
+                  marginTop: '24px',
+                  paddingTop: '16px',
+                  borderTop: '1px solid ' + palette.border
+                }
+              },
+                h('div', { style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '10px', fontWeight: 700 } },
+                  'Coming up · ' + remaining.length + ' milestone' + (remaining.length === 1 ? '' : 's') + ' ahead'),
+                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px' } },
+                  remaining.map(function(m) {
+                    return h('span', {
+                      key: 'up-' + m.id,
+                      style: {
+                        padding: '4px 10px',
+                        borderRadius: '999px',
+                        background: 'transparent',
+                        border: '1px dashed ' + palette.border,
+                        color: palette.textMute,
+                        fontSize: '11px'
+                      }
+                    }, m.label);
+                  })
+                ),
+                h('div', { style: { fontSize: '10px', color: palette.textMute, marginTop: '10px', fontStyle: 'italic' } },
+                  'No deadlines. No streak required. They unlock whenever the numbers add up.')
+              );
+            })()
+          );
+        }
+
         function renderShortcuts() {
           var rows = [
             { heading: 'On the menu', items: [
@@ -5374,6 +5498,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           case 'passage-setup':  viewContent = renderPassageSetup(); break;
           case 'custom-setup':   viewContent = renderCustomSetup(); break;
           case 'shortcuts':      viewContent = renderShortcuts(); break;
+          case 'achievements':   viewContent = renderAchievements(); break;
           case 'menu':
           default:               viewContent = renderMenu();
         }
@@ -6289,6 +6414,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
   // skill level"). Designed to be pasted into a parent email without
   // editing. Not a replacement for the IEP report — it's for the weekly
   // "how's your kid doing" message home.
+  // Normalize the milestonesEarned array to a consistent shape. Supports both:
+  //   old format: ['first', 'ten', 'days7']            — strings (no dates)
+  //   new format: [{id: 'first', date: '2026-...'}]    — objects with dates
+  // Returns [{id, date|null}]. Legacy entries get date:null so the UI can
+  // render them as "earned" without a timestamp.
+  function normalizeMilestonesEarned(raw) {
+    if (!raw || !raw.length) return [];
+    return raw.map(function(entry) {
+      if (typeof entry === 'string') return { id: entry, date: null };
+      if (entry && typeof entry === 'object' && entry.id) return { id: entry.id, date: entry.date || null };
+      return null;
+    }).filter(Boolean);
+  }
+
   function buildParentSummary(state) {
     var sessions = state.sessions || [];
     if (sessions.length === 0) {
