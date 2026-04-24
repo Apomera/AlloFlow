@@ -2152,6 +2152,63 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               );
             })(),
 
+            // Practice-variety nudge — when the student has ≥8 sessions AND
+            // one drill accounts for ≥80% of them AND there are ≥3 unlocked
+            // non-special drills, suggest rotating. Clinical basis: variable
+            // practice yields better motor-skill transfer than massed (block)
+            // practice. Not an alarm — the card is softly-bordered and links
+            // to the drill grid below for easy rotation. Appears infrequently
+            // by design, so doesn't become noise.
+            (function() {
+              var sess = state.sessions || [];
+              if (sess.length < 8) return null;
+              // Count unlocked non-special drills (exclude passage + custom +
+              // focus-errors since those are meta; compare-able 'real' drills).
+              var unlockedPool = TIER_ORDER.filter(function(id) {
+                var d = DRILLS[id];
+                if (!d) return false;
+                if (id === 'passage') return false;
+                if (d.locked && state.masteryLevel < d.tier) return false;
+                return true;
+              });
+              if (unlockedPool.length < 3) return null;
+              // Count sessions per drill. A single dominant drill = mono-
+              // practice pattern.
+              var byDrill = {};
+              sess.forEach(function(s) {
+                byDrill[s.drillId] = (byDrill[s.drillId] || 0) + 1;
+              });
+              var topDrill = null, topCount = 0;
+              Object.keys(byDrill).forEach(function(id) {
+                if (byDrill[id] > topCount) { topCount = byDrill[id]; topDrill = id; }
+              });
+              if (!topDrill) return null;
+              var pct = topCount / sess.length;
+              if (pct < 0.8) return null;
+              var topDrillName = DRILLS[topDrill] ? DRILLS[topDrill].name : topDrill;
+              var tm = state.theme || 'default';
+              var body;
+              if (tm === 'steampunk')      body = '⚙ ' + Math.round(pct * 100) + '% of your bench time has been on ' + topDrillName + '. Varying the drills trains the hand more broadly — even one other workbench today helps.';
+              else if (tm === 'cyberpunk') body = '[PATTERN] ' + Math.round(pct * 100) + '% sessions :: ' + topDrillName.toUpperCase() + ' :: variable-practice > blocked-practice :: rotate recommended';
+              else if (tm === 'kawaii')    body = '🌸 You\'ve practiced ' + topDrillName + ' a LOT — like ' + Math.round(pct * 100) + '% of your sessions! 💕 Mixing in a different drill every now and then helps your skills grow wider. ✨';
+              else if (tm === 'neutral')   body = Math.round(pct * 100) + '% of sessions on ' + topDrillName + '. Variable practice yields better transfer than blocked.';
+              else                         body = 'About ' + Math.round(pct * 100) + '% of your sessions are on ' + topDrillName + '. Mixing in other drills builds broader skill — try a different card today.';
+              return h('div', {
+                role: 'note',
+                style: {
+                  marginBottom: '16px',
+                  padding: '10px 14px',
+                  background: 'transparent',
+                  border: '1px dashed ' + palette.border,
+                  borderLeft: '3px solid ' + palette.accent,
+                  borderRadius: '8px',
+                  fontSize: '12px',
+                  color: palette.textDim,
+                  lineHeight: '1.55'
+                }
+              }, body);
+            })(),
+
             // Daily goal prompt — gentle nudge to set a goal for today when
             // one isn't set (or yesterday's has expired). Only shows AFTER
             // the student has at least one session recorded (first-timers see
