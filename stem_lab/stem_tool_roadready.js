@@ -3928,6 +3928,67 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                           isLandmark: false,
                           isRideshare: true
                         };
+                        // ── Passenger line ──
+                        // Canned Maine-flavored lines keyed by destination type.
+                        // Gives the ride character + tiny story beat. If callGemini is
+                        // available we fire an async request to personalize it; the
+                        // canned line fills in meanwhile and remains if the AI call fails.
+                        var passengerLines = {
+                          school: ['Running late to pick up my kid. Please don\'t stress the speed.', 'Parent-teacher conference. Getting there smooth means I\'m less frazzled walking in.', 'I\'m a sub today. Smooth ride = settled teacher.'],
+                          library: ['Got a stack of returns in my bag. Please take corners gently.', 'Book club at 6. No rush — prefer smooth to fast.', 'I read on the ride. Every hard brake is a lost paragraph.'],
+                          hospital: ['My mom\'s in recovery. Smooth ride matters more than fast.', 'Nothing urgent — just visiting. Easy driving, please.', 'I\'m a nurse starting shift. I\'d appreciate arriving calm.'],
+                          police: ['Going to file a report. Drive like you would past a parked cruiser.', 'Paperwork at the station. No rush.', 'Just picking up some records. Smooth ride appreciated.'],
+                          fire: ['Community meeting at the firehouse tonight. Easy drive.', 'Volunteer firefighter. I know hard braking — please don\'t.', 'Just dropping off cookies for the crew. No rush.'],
+                          gas: ['Meeting a friend for coffee at the pumps. Easy drive.', 'Need to grab a lottery ticket. Fuel\'s running low too.', 'Quick snack stop. Smooth ride = settled stomach.'],
+                          diner: ['Blueberry pie is calling. Don\'t make me carsick before it.', 'Best breakfast in Maine. Please don\'t shake up my appetite.', 'Meeting someone for lunch. Prefer arriving relaxed.'],
+                          park: ['Taking the dog for a walk. A gentle ride helps her ride along.', 'Meeting friends for a picnic. No jerky stops, please.', 'Just needed fresh air. Smooth driving helps settle the mind.'],
+                          church: ['Late for service. But I\'d rather be late than arrive rattled.', 'Choir practice. I need to warm up my voice, not my stomach.', 'Just picking up my elder. Please drive like they\'re in the car.'],
+                          market: ['Got a shopping list a mile long. Don\'t wear me out before I get there.', 'Fresh eggs in the bag I\'m carrying. Careful, please.', 'Grandma\'s expecting me home with groceries. Smooth ride.'],
+                          pharmacy: ['Need to pick up a prescription. No rush — just get me there calm.', 'Daughter\'s waiting on meds. Prefer smooth driving.', 'Small errand. Smoothness trumps speed.'],
+                          post: ['Got a package to mail. Don\'t let it rattle around.', 'Tax papers. They\'re organized in a folder — please keep them that way.', 'Quick stop. Easy driving appreciated.'],
+                          farm: ['I\'ve got eggs for the market in the back. Gentle, please.', 'My neighbor\'s farm — dropping off a tool. Smooth ride.', 'Checking on the barn cats. No rush.'],
+                          lighthouse: ['Taking the tourists out today. Smooth ride = good tips for me too.', 'Photography trip — my lenses don\'t love hard brakes.', 'Acadia\'s beautiful from up there. Prefer arriving calm.'],
+                          home: ['Just trying to get home. Long day. Easy driving, please.', 'Kids are waiting. I\'d rather arrive late and calm than fast and flustered.', 'Home sweet home. No rush — I just need a smooth ride.']
+                        };
+                        var dropType = rsArr.dropoff.name.toLowerCase();
+                        var dropKey = dropType.indexOf('school') >= 0 ? 'school'
+                          : dropType.indexOf('library') >= 0 ? 'library'
+                          : dropType.indexOf('hospital') >= 0 ? 'hospital'
+                          : dropType.indexOf('police') >= 0 ? 'police'
+                          : dropType.indexOf('fire') >= 0 ? 'fire'
+                          : dropType.indexOf('gas') >= 0 ? 'gas'
+                          : dropType.indexOf('diner') >= 0 ? 'diner'
+                          : dropType.indexOf('park') >= 0 ? 'park'
+                          : dropType.indexOf('church') >= 0 ? 'church'
+                          : dropType.indexOf('market') >= 0 ? 'market'
+                          : dropType.indexOf('pharmacy') >= 0 ? 'pharmacy'
+                          : dropType.indexOf('post') >= 0 ? 'post'
+                          : dropType.indexOf('farm') >= 0 ? 'farm'
+                          : dropType.indexOf('lighthouse') >= 0 ? 'lighthouse'
+                          : 'home';
+                        var linePool = passengerLines[dropKey] || passengerLines.home;
+                        rsArr.passengerLine = linePool[Math.floor(Math.random() * linePool.length)];
+                        // Async personalization via callGemini — fire-and-forget; the
+                        // canned line stays visible if the call fails or is slow.
+                        if (typeof callGemini === 'function') {
+                          try {
+                            var rsPrompt = 'You are ' + rsArr.passenger + ', a passenger in a rideshare in rural Maine. '
+                              + 'The driver just picked you up and is taking you to the ' + rsArr.dropoff.name + '. '
+                              + 'Say ONE short line (max 16 words) about why you\'re going there or how you want to be driven. '
+                              + 'Prefer "smooth/safe/calm" over "fast/rushed". First-person only. No quotes, no preamble.';
+                            var reqRide = rsArr; // capture for closure safety
+                            callGemini(rsPrompt, { tier: 'flash', system: 'You write short natural passenger dialogue.' })
+                              .then(function(line) {
+                                if (typeof line === 'string' && line.trim().length > 0 && line.length < 160) {
+                                  // Only update if this ride is still the active one
+                                  if (rideshareRef.current === reqRide && reqRide.phase === 'enroute') {
+                                    reqRide.passengerLine = line.trim().replace(/^["'`]+|["'`]+$/g, '');
+                                  }
+                                }
+                              })
+                              .catch(function() { /* silent — canned line stays */ });
+                          } catch (geErr) { /* silent */ }
+                        }
                         addToast('🚕 ' + rsArr.passenger + ' boarded. Take them to ' + rsArr.dropoff.icon + ' ' + rsArr.dropoff.name);
                         speak(rsArr.passenger + ' is in. Drive them to the ' + rsArr.dropoff.name + '. Drive smooth.');
                         journalLog('rideshare_pickup', '🚕', 'Picked up ' + rsArr.passenger + ' at ' + rsArr.pickup.name);
@@ -15121,8 +15182,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 var liveCombined = (liveComfort + liveSafety) / 2;
                 liveStars = liveCombined >= 90 ? 5 : liveCombined >= 75 ? 4 : liveCombined >= 55 ? 3 : liveCombined >= 35 ? 2 : 1;
               }
-              var rsX = W - 240, rsY = 26;
-              var rsW = 230, rsH = 72;
+              // If we have a passenger line during enroute, grow the pill so
+              // there's room for the speech bubble below the destination row.
+              var hasLine = rsHud.phase === 'enroute' && rsHud.passengerLine;
+              var rsX = W - 260, rsY = 26;
+              var rsW = 250, rsH = hasLine ? 112 : 72;
               // Panel backdrop
               gfx.fillStyle = 'rgba(12,10,30,0.78)';
               gfx.fillRect(rsX, rsY, rsW, rsH);
@@ -15160,6 +15224,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 gfx.fillStyle = '#94a3b8';
                 gfx.font = '9px monospace'; gfx.textAlign = 'right';
                 gfx.fillText('~$' + estFare.toFixed(2) + ' · ' + rsRemaining.toFixed(0) + ' ft left', rsX + rsW - 8, rsY + 64);
+                // Passenger speech bubble (wrapped to pill width)
+                if (hasLine) {
+                  gfx.fillStyle = 'rgba(251,191,36,0.12)';
+                  gfx.fillRect(rsX + 6, rsY + 72, rsW - 12, 36);
+                  gfx.fillStyle = '#fde68a';
+                  gfx.font = 'italic 10px system-ui, sans-serif'; gfx.textAlign = 'left';
+                  // Simple word-wrap to fit the pill (~38 chars per line).
+                  var wrapWords = rsHud.passengerLine.split(' ');
+                  var wrapLines = []; var wrapCur = '';
+                  wrapWords.forEach(function(w) {
+                    if ((wrapCur + ' ' + w).trim().length > 38) {
+                      if (wrapCur) wrapLines.push(wrapCur);
+                      wrapCur = w;
+                    } else {
+                      wrapCur = (wrapCur + ' ' + w).trim();
+                    }
+                  });
+                  if (wrapCur) wrapLines.push(wrapCur);
+                  for (var wli = 0; wli < Math.min(3, wrapLines.length); wli++) {
+                    gfx.fillText(wrapLines[wli], rsX + 12, rsY + 86 + wli * 12);
+                  }
+                }
               } else {
                 // Pickup phase — show distance + a little guidance
                 var pickRem = Math.hypot(carRef.current.x - rsTarget.x, carRef.current.y - rsTarget.y) * 0.1;
