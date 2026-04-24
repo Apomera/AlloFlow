@@ -2193,25 +2193,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               else if (tm === 'kawaii')    lead = '✨ Today so far: ';
               else if (tm === 'neutral')   lead = 'Today: ';
               else                         lead = '☀️ Today so far: ';
-              return h('div', {
-                'aria-label': 'Today\'s practice summary',
-                style: {
-                  marginBottom: '16px',
-                  padding: '8px 14px',
-                  background: palette.surface,
-                  border: '1px solid ' + palette.border,
-                  borderRadius: '999px',
-                  fontSize: '12px',
-                  color: palette.textDim,
-                  display: 'inline-flex',
-                  gap: '4px',
-                  alignItems: 'center',
-                  lineHeight: '1.4',
-                  fontVariantNumeric: 'tabular-nums'
-                }
-              },
-                h('span', { style: { color: palette.accent, fontWeight: 700 } }, lead),
-                h('span', null, parts.join(' · '))
+              // Wrap the inline-flex pill in a block div so marginBottom
+              // applies cleanly in every browser (inline-flex can lose
+              // block-level vertical margins in some layout contexts).
+              return h('div', { style: { marginBottom: '16px' } },
+                h('div', {
+                  'aria-label': 'Today\'s practice summary',
+                  style: {
+                    padding: '8px 14px',
+                    background: palette.surface,
+                    border: '1px solid ' + palette.border,
+                    borderRadius: '999px',
+                    fontSize: '12px',
+                    color: palette.textDim,
+                    display: 'inline-flex',
+                    gap: '4px',
+                    alignItems: 'center',
+                    lineHeight: '1.4',
+                    fontVariantNumeric: 'tabular-nums'
+                  }
+                },
+                  h('span', { style: { color: palette.accent, fontWeight: 700 } }, lead),
+                  h('span', null, parts.join(' · '))
+                )
               );
             })(),
 
