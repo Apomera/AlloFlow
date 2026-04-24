@@ -4275,6 +4275,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               h('div', { style: { fontSize: '16px', fontWeight: 700, color: palette.text } },
                 drill.icon + '  ' + drill.name
               ),
+              // 'Word N of T' micro-indicator — present only when the drill
+              // text is a real sentence (≥3 words), not a symbol/key drill.
+              // Helps students with motor-planning / dyslexia track where
+              // they are in the passage without counting spaces manually.
+              // Hidden in assessment mode to keep the HUD minimal.
+              (function() {
+                if (state.accommodations.assessmentMode) return null;
+                if (!targetStr) return null;
+                var totalWords = targetStr.split(/\s+/).filter(function(w) { return w.length > 0; }).length;
+                if (totalWords < 3) return null;
+                // Current word index = number of complete spaces typed + 1.
+                // Complete space = a space that has at least one non-space
+                // character before it in typed. (Avoids counting leading
+                // spaces as a 'word'.)
+                var typedWords = 0;
+                var inWord = false;
+                for (var wi = 0; wi < typed.length; wi++) {
+                  if (typed[wi] === ' ') { if (inWord) { typedWords++; inWord = false; } }
+                  else inWord = true;
+                }
+                var current = Math.min(typedWords + (inWord ? 1 : 0), totalWords);
+                if (current === 0) current = 1; // before-first-keystroke state
+                return h('span', {
+                  'aria-label': 'Word ' + current + ' of ' + totalWords,
+                  style: {
+                    fontSize: '11px',
+                    color: palette.textMute,
+                    padding: '2px 8px',
+                    borderRadius: '999px',
+                    border: '1px solid ' + palette.border,
+                    fontVariantNumeric: 'tabular-nums',
+                    letterSpacing: '0.02em'
+                  }
+                }, 'word ' + current + ' / ' + totalWords);
+              })(),
               // Warmup chip — obvious visual indicator that this session won't save.
               isWarmup ? h('span', {
                 'aria-label': 'Warmup mode — session will not be saved',
