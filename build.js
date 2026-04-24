@@ -212,6 +212,11 @@ const MODULES = [
         name: 'Personas',
         filename: 'personas_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'Export',
+        filename: 'export_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     }
 ];
 
@@ -460,6 +465,31 @@ const COMPILE_PAIRS = [
                 '(function() {\n'
                 + "'use strict';\n"
                 + "if (window.AlloModules && window.AlloModules.Personas) { console.log('[CDN] Personas already loaded, skipping'); return; }\n"
+                + compiled
+                + '\n})();\n'
+            );
+        },
+    },
+    {
+        // ── export ── Export pipeline (8 handlers): JSON bundles (language pack,
+        // research, profiles), standards-compliant packages (QTI, IMS), slide decks
+        // (PPTX via window.PptxGenJS), flashcard HTML, adventure storybook (HTML
+        // print window). Skipped: handleExport / handleExportPDF /
+        // executeExportFromPreview / generateExportAudio — tightly coupled to the
+        // preview-modal iframe system.
+        // Factory: createExport({liveRef, warnLog, debugLog, escapeXml, generateUUID})
+        // -> {8 handlers}. Inline helpers: getDefaultTitle, cleanTextForPptx.
+        // window.callGemini accessed directly from inside handleExportStorybook.
+        name: 'Export',
+        srcPath: path.join(ROOT, 'export_source.jsx'),
+        modPath: path.join(ROOT, 'export_module.js'),
+        publicPath: path.join(ROOT, 'prismflow-deploy', 'public', 'export_module.js'),
+        wrap(src) {
+            const compiled = compileJsx(src);
+            return (
+                '(function() {\n'
+                + "'use strict';\n"
+                + "if (window.AlloModules && window.AlloModules.Export) { console.log('[CDN] Export already loaded, skipping'); return; }\n"
                 + compiled
                 + '\n})();\n'
             );
