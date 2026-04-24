@@ -1470,7 +1470,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                       color: palette.textDim,
                       fontSize: '11px',
                       cursor: 'pointer',
-                      font: 'inherit'
+                      fontFamily: 'inherit'
                     }
                   }, n + ' session' + (n === 1 ? '' : 's'));
                 }),
@@ -1484,7 +1484,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                     color: palette.textDim,
                     fontSize: '11px',
                     cursor: 'pointer',
-                    font: 'inherit'
+                    fontFamily: 'inherit'
                   }
                 }, 'Custom…'),
                 h('span', {
@@ -2202,7 +2202,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                         fontSize: '11px',
                         fontWeight: isOn ? 700 : 500,
                         cursor: 'pointer',
-                        font: 'inherit'
+                        fontFamily: 'inherit'
                       }
                     }, opt.label);
                   })
@@ -2470,7 +2470,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                       fontSize: '12px',
                       fontWeight: isActive ? 700 : 500,
                       cursor: 'pointer',
-                      font: 'inherit'
+                      fontFamily: 'inherit'
                     }
                   }, g);
                 })
@@ -2497,7 +2497,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                       fontSize: '12px',
                       fontWeight: isActive ? 700 : 500,
                       cursor: 'pointer',
-                      font: 'inherit'
+                      fontFamily: 'inherit'
                     }
                   }, lang.label);
                 })
@@ -2566,7 +2566,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                       fontSize: '12px',
                       fontWeight: isActive ? 700 : 500,
                       cursor: 'pointer',
-                      font: 'inherit'
+                      fontFamily: 'inherit'
                     }
                   }, opt.label);
                 })
@@ -2595,7 +2595,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                       fontSize: '12px',
                       fontWeight: isActive ? 700 : 500,
                       cursor: 'pointer',
-                      font: 'inherit'
+                      fontFamily: 'inherit'
                     }
                   }, opt.label);
                 })
@@ -2919,7 +2919,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   fontSize: '12px',
                   fontWeight: paused ? 700 : 500,
                   cursor: 'pointer',
-                  font: 'inherit'
+                  fontFamily: 'inherit'
                 }
               }, paused ? '▶ Resume' : '⏸ Pause') : null,
               // Live metrics — HIDDEN in assessment mode so clock-watching
@@ -3376,7 +3376,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                         fontSize: '11px',
                         fontWeight: isActive ? 700 : 500,
                         cursor: 'pointer',
-                        font: 'inherit'
+                        fontFamily: 'inherit'
                       }
                     }, opt.label);
                   })
@@ -3427,7 +3427,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                         fontSize: '12px',
                         fontWeight: isActive ? 700 : 500,
                         cursor: 'pointer',
-                        font: 'inherit'
+                        fontFamily: 'inherit'
                       }
                     }, opt.label);
                   })
@@ -3728,7 +3728,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                       fontSize: '12px',
                       fontWeight: 600,
                       cursor: 'pointer',
-                      font: 'inherit',
+                      fontFamily: 'inherit',
                       textAlign: 'left'
                     },
                     onMouseOver: function(e) { e.currentTarget.style.borderColor = palette.accent; e.currentTarget.style.color = palette.text; },
@@ -3774,7 +3774,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                     fontSize: '12px',
                     fontWeight: isActive ? 700 : 500,
                     cursor: 'pointer',
-                    font: 'inherit'
+                    fontFamily: 'inherit'
                   }
                 }, themeLabel);
               })
@@ -3810,7 +3810,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                       fontSize: '12px',
                       fontWeight: isActive ? 700 : 500,
                       cursor: 'pointer',
-                      font: 'inherit'
+                      fontFamily: 'inherit'
                     }
                   }, opt === null ? 'Off' : (opt + ' sec'));
                 })
@@ -3844,7 +3844,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                       fontSize: '12px',
                       fontWeight: isActive ? 700 : 500,
                       cursor: 'pointer',
-                      font: 'inherit'
+                      fontFamily: 'inherit'
                     }
                   }, opt === null ? 'Off' : (opt + ' min'));
                 })
@@ -3889,7 +3889,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                       fontSize: '12px',
                       fontWeight: isActive ? 700 : 500,
                       cursor: 'pointer',
-                      font: 'inherit'
+                      fontFamily: 'inherit'
                     }
                   },
                     h('span', {
@@ -3941,7 +3941,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                       fontSize: '12px',
                       fontWeight: isActive ? 700 : 500,
                       cursor: 'pointer',
-                      font: 'inherit'
+                      fontFamily: 'inherit'
                     }
                   }, opt.label);
                 })
@@ -3975,7 +3975,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                       fontSize: '12px',
                       fontWeight: isActive ? 700 : 500,
                       cursor: 'pointer',
-                      font: 'inherit'
+                      fontFamily: 'inherit'
                     }
                   }, opt === null ? 'Off' : (opt + ' WPM'));
                 })
@@ -4743,7 +4743,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                       fontSize: '11px',
                       fontWeight: isActive ? 700 : 500,
                       cursor: 'pointer',
-                      font: 'inherit'
+                      fontFamily: 'inherit'
                     }
                   }, preset.label);
                 })
@@ -4862,7 +4862,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                       fontSize: '10px',
                       fontWeight: compareMode ? 700 : 500,
                       cursor: 'pointer',
-                      font: 'inherit'
+                      fontFamily: 'inherit'
                     }
                   }, compareMode ? '✕ Exit compare' : '⇆ Compare')
                 )
@@ -4945,7 +4945,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                         cursor: 'pointer',
                         padding: '0 4px',
                         lineHeight: 1,
-                        font: 'inherit'
+                        fontFamily: 'inherit'
                       }
                     }, '✕')
                   ),
@@ -5006,7 +5006,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                               fontSize: '10px',
                               fontWeight: isActive ? 700 : 500,
                               cursor: 'pointer',
-                              font: 'inherit'
+                              fontFamily: 'inherit'
                             }
                           }, opt.label);
                         })
@@ -5036,7 +5036,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                               fontSize: '10px',
                               fontWeight: isActive ? 700 : 500,
                               cursor: 'pointer',
-                              font: 'inherit'
+                              fontFamily: 'inherit'
                             }
                           }, opt.label);
                         })
@@ -5878,7 +5878,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       fontSize: '13px',
       fontWeight: 700,
       cursor: 'pointer',
-      font: 'inherit'
+      fontFamily: 'inherit'
     };
   }
 
@@ -5892,7 +5892,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       fontSize: '13px',
       fontWeight: 600,
       cursor: 'pointer',
-      font: 'inherit'
+      fontFamily: 'inherit'
     };
   }
 
@@ -7092,7 +7092,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         cursor: unlocked ? 'pointer' : 'not-allowed',
         opacity: unlocked ? 1 : 0.6,
         color: palette.text,
-        font: 'inherit',
+        fontFamily: 'inherit',
         transition: 'border-color 120ms ease',
         display: 'flex',
         flexDirection: 'column',
@@ -7195,7 +7195,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         fontSize: '12px',
         cursor: disabled ? 'not-allowed' : 'pointer',
         opacity: disabled ? 0.5 : 1,
-        font: 'inherit'
+        fontFamily: 'inherit'
       }
     }, label);
   }
