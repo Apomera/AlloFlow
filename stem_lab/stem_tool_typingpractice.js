@@ -4332,6 +4332,56 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               )
             ) : null,
 
+            // IEP-goal hit-rate sparkline — one dot per session (up to 20),
+            // green when the session met the goal, neutral when not. Gives a
+            // clinician an instant read of "has the student been hitting the
+            // goal consistently?" that's more defensible than a single
+            // aggregate number.
+            (state.iepGoal && state.iepGoal.targetWpm && allSessions.length > 0) ? (function() {
+              var recent = allSessions.slice(-20);
+              var metCount = recent.filter(function(s) { return s.goalMet; }).length;
+              var rate = Math.round((metCount / recent.length) * 100);
+              return h('div', {
+                style: {
+                  marginBottom: '24px',
+                  padding: '16px',
+                  background: palette.surface,
+                  borderRadius: '12px',
+                  border: '1px solid ' + palette.border
+                }
+              },
+                h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', flexWrap: 'wrap', gap: '8px' } },
+                  h('div', { style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 } },
+                    '🎯 IEP goal hit rate · last ' + recent.length + ' sessions'),
+                  h('div', { style: { fontSize: '14px', color: palette.text, fontVariantNumeric: 'tabular-nums' } },
+                    h('strong', { style: { color: rate >= 60 ? palette.success : (rate >= 30 ? palette.warn : palette.textDim) } },
+                      metCount + '/' + recent.length),
+                    ' · ',
+                    h('strong', { style: { color: rate >= 60 ? palette.success : (rate >= 30 ? palette.warn : palette.textDim) } },
+                      rate + '%')
+                  )
+                ),
+                h('p', { style: { fontSize: '11px', color: palette.textMute, margin: '0 0 10px 0', lineHeight: '1.5' } },
+                  'Target: ' + state.iepGoal.targetWpm + ' WPM @ ' + state.iepGoal.targetAccuracy + '% · green dot = met, gray = not met. Oldest on the left.'),
+                h('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
+                  recent.map(function(s, i) {
+                    return h('div', {
+                      key: 'ghr-' + i,
+                      title: new Date(s.date).toLocaleDateString() + ': ' + s.wpm + ' WPM / ' + s.accuracy + '% — ' + (s.goalMet ? 'met' : 'not met'),
+                      'aria-label': 'Session ' + (i + 1) + ': ' + (s.goalMet ? 'goal met' : 'goal not met'),
+                      style: {
+                        width: '14px',
+                        height: '14px',
+                        borderRadius: '50%',
+                        background: s.goalMet ? palette.success : palette.surface2,
+                        border: '1px solid ' + (s.goalMet ? palette.success : palette.border)
+                      }
+                    });
+                  })
+                )
+              );
+            })() : null,
+
             // Filter bar — affects trend sparkline, IEP report, CSV export.
             allSessions.length > 0 ? h('div', {
               style: {
