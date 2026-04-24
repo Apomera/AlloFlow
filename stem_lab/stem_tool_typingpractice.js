@@ -1584,6 +1584,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           return function() { clearInterval(iv); };
         }, [state.view, drillComplete]);
 
+        // ── Menu-level keyboard shortcuts ──
+        // Power-user keys. Active ONLY when on the menu view and no
+        // input/textarea/button has focus (let those own their keystrokes).
+        //   R  : repeat last drill (skip menu → drill-intro)
+        //   D  : today's deterministic drill-of-the-day
+        //   ?  : jump to shortcuts help
+        // Escape bindings are view-local elsewhere; don't add another here.
+        useEffect(function() {
+          if (state.view !== 'menu') return;
+          var handler = function(e) {
+            if (e.ctrlKey || e.metaKey || e.altKey) return;
+            var tag = e.target && e.target.tagName;
+            if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+            var key = e.key;
+            if (key === 'r' || key === 'R') {
+              var all = state.sessions || [];
+              if (all.length === 0) return;
+              var last = all[all.length - 1];
+              var lastDrill = DRILLS[last.drillId];
+              if (!lastDrill) return;
+              if (lastDrill.locked && state.masteryLevel < lastDrill.tier) return;
+              e.preventDefault();
+              startDrill(last.drillId);
+            } else if (key === 'd' || key === 'D') {
+              // Pick daily drill deterministically (same logic as menu card)
+              var pool = TIER_ORDER.filter(function(id) {
+                var d = DRILLS[id];
+                if (!d) return false;
+                if (id === 'passage') return false;
+                if (d.locked && state.masteryLevel < d.tier) return false;
+                return true;
+              });
+              if (pool.length === 0) return;
+              var t = new Date();
+              var seed = t.getFullYear() * 372 + (t.getMonth() + 1) * 31 + t.getDate();
+              var pick = pool[seed % pool.length];
+              e.preventDefault();
+              startDrill(pick);
+            } else if (key === '?') {
+              e.preventDefault();
+              upd('view', 'shortcuts');
+            }
+          };
+          window.addEventListener('keydown', handler);
+          return function() { window.removeEventListener('keydown', handler); };
+          // eslint-disable-next-line
+        }, [state.view, state.sessions, state.masteryLevel]);
+
         // ── Track menu stats-strip previous values for the tp-live-tick
         // 'only pulse on actual change' gating. Runs after every render;
         // the nulls-on-first-mount path suppresses the initial pulse so
@@ -8239,7 +8287,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           var rows = [
             { heading: 'On the menu', items: [
               { keys: ['Tab', 'Shift+Tab'], desc: 'Move between drill cards and nav buttons' },
-              { keys: ['Enter', 'Space'],   desc: 'Activate the focused drill card' }
+              { keys: ['Enter', 'Space'],   desc: 'Activate the focused drill card' },
+              { keys: ['R'],                desc: 'Repeat your last drill (fast jump)' },
+              { keys: ['D'],                desc: 'Start today\'s drill of the day' },
+              { keys: ['?'],                desc: 'Open this shortcuts reference' }
             ]},
             { heading: 'On the drill intro screen', items: [
               { keys: ['Space', 'Enter'], desc: 'Start the drill' },
