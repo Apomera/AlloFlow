@@ -2050,22 +2050,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   flexWrap: 'wrap'
                 }
               },
-                h('div', { style: statCardStyle(palette) },
+                h('div', { style: statCardStyle(palette, state.theme) },
                   h('div', { style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Sessions'),
                   h('div', { style: { fontSize: '22px', fontWeight: 700, color: palette.accent } }, sessionCount)
                 ),
-                h('div', { style: statCardStyle(palette) },
+                h('div', { style: statCardStyle(palette, state.theme) },
                   h('div', { style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Mastery Tier'),
                   h('div', { style: { fontSize: '22px', fontWeight: 700, color: palette.success } }, state.masteryLevel + ' / 7')
                 ),
                 // Positive-framing practice-days counter — "days you showed up"
-                practiceDays > 0 ? h('div', { style: statCardStyle(palette), title: 'Unique calendar days with at least one session in the last 30 days. No guilt for days off.' },
+                practiceDays > 0 ? h('div', { style: statCardStyle(palette, state.theme), title: 'Unique calendar days with at least one session in the last 30 days. No guilt for days off.' },
                   h('div', { style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Practice days · 30d'),
                   h('div', { style: { fontSize: '22px', fontWeight: 700, color: palette.textDim } },
                     '🗓 ' + practiceDays
                   )
                 ) : null,
-                badgeCount > 0 ? h('div', { style: statCardStyle(palette) },
+                badgeCount > 0 ? h('div', { style: statCardStyle(palette, state.theme) },
                   h('div', { style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Badges'),
                   h('div', { style: { fontSize: '22px', fontWeight: 700, color: palette.warn } }, badgeCount)
                 ) : null
@@ -6799,14 +6799,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
   // SECTION 5: RENDER HELPERS (pure functions — no hooks, no ctx needed)
   // ─────────────────────────────────────────────────────────
 
-  function statCardStyle(palette) {
-    return {
+  // Stat card style — accepts optional themeName so menu stat cards can pick
+  // up theme personality (squared + border-y for cyberpunk, rounded with
+  // soft shadow for kawaii, brass-plate for steampunk, etc.). Default and
+  // neutral keep the existing minimal look.
+  function statCardStyle(palette, themeName) {
+    var base = {
       flex: '1 1 120px',
       background: palette.surface,
       border: '1px solid ' + palette.border,
       borderRadius: '10px',
-      padding: '12px 16px'
+      padding: '12px 16px',
+      position: 'relative'
     };
+    if (themeName === 'steampunk') {
+      // brass plate — double-style border + inset warm highlight
+      base.borderStyle = 'double';
+      base.borderWidth = '3px';
+      base.boxShadow = 'inset 0 1px 0 rgba(255,220,150,0.12)';
+      base.borderRadius = '6px';
+    } else if (themeName === 'cyberpunk') {
+      // chip / terminal readout — sharper corners + accent side-bar
+      base.borderRadius = '2px';
+      base.borderLeft = '3px solid ' + palette.accent;
+    } else if (themeName === 'kawaii') {
+      // sticker card — extra rounded + soft colored shadow
+      base.borderRadius = '18px';
+      base.boxShadow = '0 3px 10px rgba(232,90,138,0.12)';
+    } else if (themeName === 'neutral') {
+      // minimal — thinner border, less padding
+      base.borderRadius = '4px';
+      base.padding = '10px 12px';
+    }
+    return base;
   }
 
   function formatDuration(sec) {
