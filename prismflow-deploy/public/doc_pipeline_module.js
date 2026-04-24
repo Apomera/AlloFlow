@@ -10042,6 +10042,11 @@ tr { page-break-inside: avoid; }
           // /Headers on the resulting StructElems.
           structId: tag === 'th' ? (el.getAttribute('data-struct-id') || '') : '',
           headers: tag === 'td' ? (el.getAttribute('data-headers') || '') : '',
+          // Stage 6a: /Lang on StructElem — PDF spec §14.9.2 lets an element
+          // override the document-level /Lang for SR voice/pronunciation
+          // switching on multilingual content (bilingual worksheets,
+          // loanwords, quoted foreign passages).
+          lang: (el.getAttribute('lang') || '').trim(),
         });
       }
       // Build a leaf StructElem (not a Sect) and register it. The parentRef
@@ -10063,6 +10068,10 @@ tr { page-break-inside: avoid; }
         if (['H1','H2','H3','H4','H5','H6','P','LI','Caption','BlockQuote'].includes(item.role) && item.text) {
           d.ActualText = PDFString.of(item.text);
         }
+        // Stage 6a: /Lang overrides the document-level language for this
+        // StructElem. SR readers use this to switch pronunciation voice
+        // on foreign-language passages.
+        if (item.lang) d.Lang = PDFString.of(item.lang);
         // Stage 5: emit /A << /O /Table /Scope /Column >> on TH StructElems.
         // PDF spec §14.8.5.7 puts /Scope inside the /A (attributes) dict with
         // owner /Table. Readers that honor this announce "column header" /
