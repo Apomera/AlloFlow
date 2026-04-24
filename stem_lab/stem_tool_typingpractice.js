@@ -1065,9 +1065,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '.tp-root.tp-theme-kawaii    .tp-loading-icon { display: inline-block; animation: tp-kawaii-bounce 0.8s ease-in-out infinite; }',
       '.tp-root.tp-theme-neutral   .tp-loading-icon { display: inline-block; animation: tp-neutral-dots 1.2s ease-in-out infinite; }',
 
+      /* ── Summary celebration animation (one-shot, not infinite) ─────────
+         Applied to the summary headline when a PB / mastery / baseline /
+         firstGoalMet event fires. Subtle — no confetti, no strobe.
+         Each theme gets its own motion signature consistent with the
+         broader palette personality. Reduced-motion users get nothing. */
+      '@keyframes tp-celebrate-pulse { 0% { transform: scale(1); } 40% { transform: scale(1.04); } 100% { transform: scale(1); } }',
+      '@keyframes tp-celebrate-glow  { 0% { text-shadow: 0 0 0 transparent; } 50% { text-shadow: 0 0 12px currentColor; } 100% { text-shadow: 0 0 0 transparent; } }',
+      '@keyframes tp-celebrate-steam { 0% { transform: translateX(0) rotate(0); } 25% { transform: translateX(-2px) rotate(-0.5deg); } 75% { transform: translateX(2px) rotate(0.5deg); } 100% { transform: translateX(0) rotate(0); } }',
+      '@keyframes tp-celebrate-cyber { 0%, 20%, 40% { opacity: 1; transform: translateX(0); } 25% { opacity: 0.3; transform: translateX(2px); } 30% { opacity: 1; transform: translateX(-2px); } 60%, 100% { opacity: 1; transform: translateX(0); } }',
+      '@keyframes tp-celebrate-kawaii { 0% { transform: scale(1) rotate(0); } 20% { transform: scale(1.08) rotate(-2deg); } 40% { transform: scale(1.06) rotate(2deg); } 60% { transform: scale(1.04) rotate(-1deg); } 100% { transform: scale(1) rotate(0); } }',
+
+      '.tp-root .tp-celebrate { display: inline-block; animation: tp-celebrate-pulse 0.9s ease-out 1, tp-celebrate-glow 1.4s ease-out 1; }',
+      '.tp-root.tp-theme-steampunk .tp-celebrate { animation: tp-celebrate-steam 0.8s ease-in-out 1, tp-celebrate-glow 1.4s ease-out 1; }',
+      '.tp-root.tp-theme-cyberpunk .tp-celebrate { animation: tp-celebrate-cyber 0.7s steps(8, jump-none) 1; }',
+      '.tp-root.tp-theme-kawaii    .tp-celebrate { animation: tp-celebrate-kawaii 1.1s ease-in-out 1; }',
+      '.tp-root.tp-theme-neutral   .tp-celebrate { animation: tp-celebrate-pulse 0.8s ease-out 1; }',
+
       '@media (prefers-reduced-motion: reduce) {',
       '  .tp-root .tp-current-char,',
-      '  .tp-root .tp-loading-icon { animation: none !important; }',
+      '  .tp-root .tp-loading-icon,',
+      '  .tp-root .tp-celebrate { animation: none !important; }',
       '  .tp-root button { transition: none !important; }',
       '}'
     ].join('\n');
@@ -4000,7 +4018,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               }
             },
               h('div', { style: { fontSize: '13px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px' } }, s.drillName),
-              h('div', { style: { fontSize: '20px', fontWeight: 700, color: s.isNewBest || s.isBaseline || s.masteryAdvanced ? palette.success : palette.text, marginBottom: nextStepHint ? '6px' : '20px' } }, headline),
+              h('div', {
+                className: (s.isNewBest || s.isBaseline || s.masteryAdvanced || s.firstGoalMet) ? 'tp-celebrate' : undefined,
+                style: { fontSize: '20px', fontWeight: 700, color: s.isNewBest || s.isBaseline || s.masteryAdvanced ? palette.success : palette.text, marginBottom: nextStepHint ? '6px' : '20px' }
+              }, headline),
               nextStepHint ? h('div', {
                 style: { fontSize: '13px', color: palette.textDim, marginBottom: '20px', lineHeight: '1.5' }
               }, nextStepHint) : null,
