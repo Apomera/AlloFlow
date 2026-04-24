@@ -7784,11 +7784,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
   }
 
   function buildParentSummary(state) {
+    var tm = state.theme || 'default';
     var sessions = state.sessions || [];
+    var name = state.studentName ? state.studentName.split(' ')[0] : 'Your student';
+
+    // Empty-state — theme-voiced so parents get the same personality
     if (sessions.length === 0) {
+      if (tm === 'steampunk') {
+        return name + ' has not yet begun their apprenticeship at the typing bench. The Home Row drill stands ready whenever they wish to take up the keys.';
+      }
+      if (tm === 'cyberpunk') {
+        return '[STATUS] ' + name.toUpperCase() + ' :: 0 sessions logged :: awaiting first run — Home Row drill available on boot.';
+      }
+      if (tm === 'kawaii') {
+        return '🌸 ' + name + ' hasn\'t tried a typing practice session yet — but that\'s totally okay! ✨ The Home Row drill is waiting whenever they feel like saying hi. 💕';
+      }
+      if (tm === 'neutral') {
+        return name + ' has not completed a typing-practice session. The Home Row drill is available at any time.';
+      }
       return 'Your student has not yet completed a typing-practice session in the tool. They can start any time from the Home Row drill.';
     }
-    var name = state.studentName ? state.studentName.split(' ')[0] : 'Your student';
+
     var now = Date.now();
     var sevenDaysAgo = now - 7 * 24 * 60 * 60 * 1000;
     var thisWeek = sessions.filter(function(s) { return new Date(s.date).getTime() >= sevenDaysAgo; });
@@ -7800,48 +7816,130 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
 
     var parts = [];
 
-    // Opener — effort + cadence
+    // Opener — effort + cadence (per-theme voice)
     if (thisWeek.length > 0) {
-      parts.push(name + ' practiced typing ' + thisWeek.length + ' time' + (thisWeek.length === 1 ? '' : 's') +
-        ' this week (across ' + daysThisWeek + ' day' + (daysThisWeek === 1 ? '' : 's') + ').');
+      if (tm === 'steampunk') {
+        parts.push(name + ' logged ' + thisWeek.length + ' practice session' + (thisWeek.length === 1 ? '' : 's') +
+          ' in the workshop this week, across ' + daysThisWeek + ' distinct day' + (daysThisWeek === 1 ? '' : 's') + '.');
+      } else if (tm === 'cyberpunk') {
+        parts.push('[WEEK] ' + thisWeek.length + ' run' + (thisWeek.length === 1 ? '' : 's') + ' :: ' + daysThisWeek + ' day' + (daysThisWeek === 1 ? '' : 's') + ' online.');
+      } else if (tm === 'kawaii') {
+        parts.push('💕 ' + name + ' showed up for ' + thisWeek.length + ' practice session' + (thisWeek.length === 1 ? '' : 's') +
+          ' this week across ' + daysThisWeek + ' day' + (daysThisWeek === 1 ? '' : 's') + ' — so proud of them! ✨');
+      } else if (tm === 'neutral') {
+        parts.push(name + ': ' + thisWeek.length + ' session' + (thisWeek.length === 1 ? '' : 's') + ' across ' + daysThisWeek + ' day' + (daysThisWeek === 1 ? '' : 's') + ' this week.');
+      } else {
+        parts.push(name + ' practiced typing ' + thisWeek.length + ' time' + (thisWeek.length === 1 ? '' : 's') +
+          ' this week (across ' + daysThisWeek + ' day' + (daysThisWeek === 1 ? '' : 's') + ').');
+      }
     } else {
-      parts.push(name + ' has ' + sessions.length + ' typing-practice session' + (sessions.length === 1 ? '' : 's') + ' recorded, with no practice in the last 7 days.');
+      if (tm === 'steampunk') {
+        parts.push(name + ' has ' + sessions.length + ' session' + (sessions.length === 1 ? '' : 's') + ' on the ledger, though the workshop has been quiet this past week.');
+      } else if (tm === 'cyberpunk') {
+        parts.push('[TOTAL] ' + sessions.length + ' session' + (sessions.length === 1 ? '' : 's') + ' :: [7D] no activity.');
+      } else if (tm === 'kawaii') {
+        parts.push('🌸 ' + name + ' has ' + sessions.length + ' practice session' + (sessions.length === 1 ? '' : 's') + ' recorded — they haven\'t stopped by in the last 7 days, and that\'s okay! 💕');
+      } else if (tm === 'neutral') {
+        parts.push(name + ': ' + sessions.length + ' total session' + (sessions.length === 1 ? '' : 's') + '; no practice in the last 7 days.');
+      } else {
+        parts.push(name + ' has ' + sessions.length + ' typing-practice session' + (sessions.length === 1 ? '' : 's') + ' recorded, with no practice in the last 7 days.');
+      }
     }
 
-    // Personal best
+    // Personal best (per-theme voice)
     if (bestWpmThisWeek > 0 && bestWpmThisWeek >= bestWpm - 2) {
-      parts.push('Their best speed this week was ' + bestWpmThisWeek + ' WPM' +
-        (bestWpm === bestWpmThisWeek ? ' — a personal best.' : '.'));
+      var isPB = (bestWpm === bestWpmThisWeek);
+      if (tm === 'steampunk') {
+        parts.push('Their finest velocity this week was ' + bestWpmThisWeek + ' WPM' + (isPB ? ' — a new entry in the record book.' : '.'));
+      } else if (tm === 'cyberpunk') {
+        parts.push('[PEAK 7D] ' + bestWpmThisWeek + ' WPM' + (isPB ? ' :: NEW RECORD' : '') + '.');
+      } else if (tm === 'kawaii') {
+        parts.push('✨ Their best speed this week was ' + bestWpmThisWeek + ' WPM' + (isPB ? ' — a brand-new personal best! 🎉💕' : '.'));
+      } else if (tm === 'neutral') {
+        parts.push('Best WPM this week: ' + bestWpmThisWeek + (isPB ? ' (personal best).' : '.'));
+      } else {
+        parts.push('Their best speed this week was ' + bestWpmThisWeek + ' WPM' + (isPB ? ' — a personal best.' : '.'));
+      }
     } else if (bestWpm > 0) {
-      parts.push('Their all-time best is ' + bestWpm + ' WPM.');
+      if (tm === 'steampunk') {
+        parts.push('Their all-time peak stands at ' + bestWpm + ' WPM.');
+      } else if (tm === 'cyberpunk') {
+        parts.push('[ALL-TIME PEAK] ' + bestWpm + ' WPM.');
+      } else if (tm === 'kawaii') {
+        parts.push('🌟 All-time best: ' + bestWpm + ' WPM — that\'s amazing! 💖');
+      } else if (tm === 'neutral') {
+        parts.push('All-time best WPM: ' + bestWpm + '.');
+      } else {
+        parts.push('Their all-time best is ' + bestWpm + ' WPM.');
+      }
     }
 
-    // IEP goal progress
+    // IEP goal progress (per-theme voice)
     if (state.iepGoal && state.iepGoal.targetWpm) {
       var lastN = Math.min(10, sessions.length);
       var lastSlice = sessions.slice(-lastN);
       var metCount = lastSlice.filter(function(s) { return s.goalMet; }).length;
       if (metCount > 0) {
-        parts.push('Working toward their goal of ' + state.iepGoal.targetWpm + ' WPM at ' +
-          state.iepGoal.targetAccuracy + '%, they met it on ' + metCount +
-          ' of the last ' + lastN + ' session' + (lastN === 1 ? '' : 's') + '.');
+        if (tm === 'steampunk') {
+          parts.push('Their appointed goal is ' + state.iepGoal.targetWpm + ' WPM at ' + state.iepGoal.targetAccuracy + '% accuracy, met in ' + metCount + ' of the last ' + lastN + ' attempt' + (lastN === 1 ? '' : 's') + '.');
+        } else if (tm === 'cyberpunk') {
+          parts.push('[GOAL] ' + state.iepGoal.targetWpm + ' WPM @ ' + state.iepGoal.targetAccuracy + '% :: hit ' + metCount + '/' + lastN + ' recent runs.');
+        } else if (tm === 'kawaii') {
+          parts.push('🎯 They\'re working toward ' + state.iepGoal.targetWpm + ' WPM at ' + state.iepGoal.targetAccuracy + '% and reached it in ' + metCount + ' of the last ' + lastN + ' session' + (lastN === 1 ? '' : 's') + ' — go go go! 💪✨');
+        } else if (tm === 'neutral') {
+          parts.push('IEP goal: ' + state.iepGoal.targetWpm + ' WPM / ' + state.iepGoal.targetAccuracy + '%. Met ' + metCount + '/' + lastN + ' recent sessions.');
+        } else {
+          parts.push('Working toward their goal of ' + state.iepGoal.targetWpm + ' WPM at ' +
+            state.iepGoal.targetAccuracy + '%, they met it on ' + metCount +
+            ' of the last ' + lastN + ' session' + (lastN === 1 ? '' : 's') + '.');
+        }
       } else if (sessions.length >= 3) {
         var currentAvg = getRecentAvg(sessions, 'wpm');
-        parts.push('They are working toward a goal of ' + state.iepGoal.targetWpm + ' WPM and currently averaging ' + currentAvg + ' WPM — steady practice will close that gap.');
+        if (tm === 'steampunk') {
+          parts.push('The goal of ' + state.iepGoal.targetWpm + ' WPM stands ahead — they average ' + currentAvg + ' WPM at present, and steady practice shall close the distance.');
+        } else if (tm === 'cyberpunk') {
+          parts.push('[GOAL] ' + state.iepGoal.targetWpm + ' WPM :: [CURRENT AVG] ' + currentAvg + ' WPM :: delta closing with session volume.');
+        } else if (tm === 'kawaii') {
+          parts.push('🌱 Goal: ' + state.iepGoal.targetWpm + ' WPM. Right now they\'re averaging ' + currentAvg + ' — every session gets them closer! 💕');
+        } else if (tm === 'neutral') {
+          parts.push('IEP goal: ' + state.iepGoal.targetWpm + ' WPM. Current avg: ' + currentAvg + ' WPM.');
+        } else {
+          parts.push('They are working toward a goal of ' + state.iepGoal.targetWpm + ' WPM and currently averaging ' + currentAvg + ' WPM — steady practice will close that gap.');
+        }
       }
     }
 
-    // Mastery or drill-variety note
+    // Mastery or drill-variety note (per-theme voice)
     if (state.masteryLevel > 0) {
       var clearedName = (DRILLS[TIER_ORDER[state.masteryLevel - 1]] || {}).name;
       if (clearedName) {
-        parts.push('They have cleared the ' + clearedName + ' tier in the structured drill progression.');
+        if (tm === 'steampunk') {
+          parts.push('They have earned passage beyond the ' + clearedName + ' tier of the mastery ladder.');
+        } else if (tm === 'cyberpunk') {
+          parts.push('[TIER CLEARED] ' + clearedName.toUpperCase() + '.');
+        } else if (tm === 'kawaii') {
+          parts.push('🏆 They cleared the ' + clearedName + ' tier — so cool! ✨');
+        } else if (tm === 'neutral') {
+          parts.push('Cleared tier: ' + clearedName + '.');
+        } else {
+          parts.push('They have cleared the ' + clearedName + ' tier in the structured drill progression.');
+        }
       }
     }
 
     // Student motivation (self-authored) — lovely if available
     if (state.motivationStatement) {
-      parts.push('In their own words: "' + state.motivationStatement + '"');
+      if (tm === 'steampunk') {
+        parts.push('In their own hand: "' + state.motivationStatement + '"');
+      } else if (tm === 'cyberpunk') {
+        parts.push('[PILOT LOG] "' + state.motivationStatement + '"');
+      } else if (tm === 'kawaii') {
+        parts.push('💬 In their own words: "' + state.motivationStatement + '" 💕');
+      } else if (tm === 'neutral') {
+        parts.push('Student note: "' + state.motivationStatement + '"');
+      } else {
+        parts.push('In their own words: "' + state.motivationStatement + '"');
+      }
     }
 
     return parts.join(' ');
