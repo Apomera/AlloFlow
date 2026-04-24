@@ -11282,6 +11282,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 var grass = new T.Mesh(grassGeo, grassMat);
                 grass.receiveShadow = true;
                 chunkGroup.add(grass);
+                // ── Wildflowers on rural/residential grass (daylight only) ──
+                // Tiny colored points scattered on the shoulder so the new
+                // grass ribbon isn't a flat green plane. Skip on snow weather
+                // (buried) and skip when a landmark occupies the same stretch
+                // (those rows already have park/farm furniture).
+                var isDayForFlowers = scn.time === 'day' || scn.time === 'afternoon';
+                var wildflowerBiome = chunk.biome === 'rural' || chunk.biome === 'residential' || chunk.biome === 'suburban';
+                if (isDayForFlowers && scn.weather !== 'snow' && wildflowerBiome) {
+                  var wfRng = seededRandom(chunk.index * 71933 + 19);
+                  var wfPalette = chunk.biome === 'rural'
+                    ? [0xffffff, 0xfde047, 0xa855f7, 0xdb2777] // daisy, dandelion, aster, clover
+                    : [0xef4444, 0xfacc15, 0xf472b6, 0xfb923c]; // garden-bed shades
+                  var wfCount = chunk.biome === 'rural' ? 18 : 10;
+                  for (var wfI = 0; wfI < wfCount; wfI++) {
+                    var wfR = wfRng();
+                    var wfSide = wfRng() < 0.5 ? -1 : 1;
+                    // Place in the shoulder band (between road edge and chunk outer edge)
+                    var wfOffset = 3.5 + wfRng() * 30; // 3.5-33.5m from road center
+                    var wfLocalZ = wfRng() * (CHUNK_SIZE - 2) + 1;
+                    var wfSampleY = ci * CHUNK_SIZE + wfLocalZ;
+                    var wfRoadX = iw.spline ? (iw.spline.centerAt(wfSampleY) - MAP_SIZE / 2) : 0;
+                    var wfX = wfRoadX + wfSide * wfOffset;
+                    if (wfX < -halfMap + 1 || wfX > halfMap - 1) continue;
+                    // Skip if landmark footprint occupies this Z
+                    if (chunk.landmark) {
+                      var wfLmDZ = Math.abs(wfLocalZ - chunk.landmark.centerY);
+                      if (wfLmDZ < chunk.landmark.type.size * 0.6) continue;
+                    }
+                    var wfY = (iw.spline ? iw.spline.heightAt(wfSampleY) : 0) + 0.04;
+                    var wfColor = wfPalette[Math.floor(wfR * wfPalette.length)];
+                    var wfMat = new T.MeshBasicMaterial({ color: wfColor });
+                    var wfMesh = new T.Mesh(new T.SphereGeometry(0.06 + wfRng() * 0.04, 5, 4), wfMat);
+                    wfMesh.position.set(wfX, wfY, chunkWorldZ + wfLocalZ);
+                    chunkGroup.add(wfMesh);
+                  }
+                }
               }
               // Build 3D objects for this chunk
               var buildMats = [new T.MeshLambertMaterial({ color: 0xb08c64 }), new T.MeshLambertMaterial({ color: 0xa09078 }), new T.MeshLambertMaterial({ color: 0x8c7a62 })];
