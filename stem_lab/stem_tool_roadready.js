@@ -2973,6 +2973,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // pickupSnapshot/dropoffSnapshot: { hardBrakes, jackrabbits, speedViolations,
       //   skidSeconds, crashes, distance, t } captured at phase transitions.
       var rideshareRef = useRef(null);
+      // Beam + ground ring meshes for the active pickup/dropoff marker. Created
+      // lazily on first rideshare ride; position updated each frame.
+      var rideshareMarkerRef = useRef(null);
       // Challenge cards: spawner state + active challenge. offered = waiting for Accept/Decline.
       // active = running; null when no challenge. completedCount accrues per-session for the
       // five_challenges achievement. biomesVisited tracks unique biomes for biome_tourist.
@@ -8375,6 +8378,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // hang in the new scene as orphaned meshes.
             crashFxRef.current = [];
             crashSparksRef.current = [];
+            // Rideshare marker — detaches with the old scene; ref would point at
+            // a disposed mesh. Clearing forces lazy re-creation on next frame.
+            rideshareMarkerRef.current = null;
             var treeTrunkMat = new T.MeshLambertMaterial({ color: 0x5c3a1e });
             var pineLeafMat = new T.MeshLambertMaterial({ color: isSnow ? 0xc8d0d8 : 0x1a5c1a });
             var decidLeafMat = new T.MeshLambertMaterial({ color: isSnow ? 0xd4dce4 : 0x3a8a2a });
@@ -13778,6 +13784,69 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               });
             }
           }
+
+          // ── Rideshare pickup/dropoff marker ──
+          // A tall vertical beam + glowing ground ring anchored at the active
+          // pickup or dropoff. Colors: gold for pickup (something to see/come
+          // get), teal for dropoff (a destination). Pulses slightly so it
+          // stays visible even against a bright landmark. Cleaned up when the
+          // player leaves rideshare mode or a ride transitions phase.
+          (function updateRideshareMarker() {
+            var rsNow = rideshareRef.current;
+            if (!d.rideshareMode || !rsNow || rsNow.phase === 'completed') {
+              if (rideshareMarkerRef.current) rideshareMarkerRef.current.visible = false;
+              return;
+            }
+            var target = rsNow.phase === 'pickup' ? rsNow.pickup : rsNow.dropoff;
+            if (!target) {
+              if (rideshareMarkerRef.current) rideshareMarkerRef.current.visible = false;
+              return;
+            }
+            // Lazy-create: one Group with a beam mesh + ground ring.
+            if (!rideshareMarkerRef.current) {
+              var rsGroup = new window.THREE.Group();
+              rsGroup.name = 'rr_rideshareMarker';
+              var beamMat = new window.THREE.MeshBasicMaterial({
+                color: 0xfbbf24, transparent: true, opacity: 0.55,
+                blending: window.THREE.AdditiveBlending, depthWrite: false, side: window.THREE.DoubleSide
+              });
+              var beamGeo = new window.THREE.CylinderGeometry(0.35, 0.15, 18, 8, 1, true);
+              var beam = new window.THREE.Mesh(beamGeo, beamMat);
+              beam.position.y = 9; // half-height so base sits at y=0
+              beam.name = 'rr_rideshareBeam';
+              rsGroup.add(beam);
+              var ringMat = new window.THREE.MeshBasicMaterial({
+                color: 0xfbbf24, transparent: true, opacity: 0.8,
+                blending: window.THREE.AdditiveBlending, depthWrite: false
+              });
+              var ringGeo = new window.THREE.RingGeometry(0.7, 1.4, 24);
+              var ring = new window.THREE.Mesh(ringGeo, ringMat);
+              ring.rotation.x = -Math.PI / 2;
+              ring.position.y = 0.03;
+              ring.name = 'rr_rideshareRing';
+              rsGroup.add(ring);
+              s3.scene.add(rsGroup);
+              rideshareMarkerRef.current = rsGroup;
+            }
+            var marker = rideshareMarkerRef.current;
+            marker.visible = true;
+            // Color by phase: gold = pickup, teal = destination.
+            var hex = rsNow.phase === 'pickup' ? 0xfbbf24 : 0x2dd4bf;
+            marker.children.forEach(function(ch) {
+              if (ch.material) ch.material.color.setHex(hex);
+            });
+            // Pulse: opacity oscillates 0.4 → 0.7 at ~1.3 Hz.
+            var rsPulse = 0.55 + 0.15 * Math.sin(timeRef.current * 2.7);
+            if (marker.children[0] && marker.children[0].material) marker.children[0].material.opacity = rsPulse; // beam
+            if (marker.children[1] && marker.children[1].material) marker.children[1].material.opacity = 0.5 + rsPulse * 0.45; // ring
+            // Ring also rotates to catch the eye.
+            if (marker.children[1]) marker.children[1].rotation.z = (timeRef.current * 0.7) % (Math.PI * 2);
+            // Position: world-space is (X - MAP_SIZE/2, 0, Y - MAP_SIZE/2).
+            // Spline height lifts it if the landmark is on a hill.
+            var mHt = (infiniteWorldRef.current && infiniteWorldRef.current.spline)
+              ? infiniteWorldRef.current.spline.heightAt(target.y) : 0;
+            marker.position.set(target.x - MAP_SIZE / 2, mHt, target.y - MAP_SIZE / 2);
+          })();
 
           // Render
           s3.renderer.render(s3.scene, s3.camera);
