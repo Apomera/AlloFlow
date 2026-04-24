@@ -2964,6 +2964,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       var drivePathRef = useRef([]); // full drive path for debrief map (sampled every 0.5s)
       var infiniteWorldRef = useRef(null); // procedural infinite world (Free Explore only)
       var questRef = useRef(null); // { destination: {name, x, y, icon}, distanceMi, completed, reward }
+      // ── Rideshare mode (grounded "Crazy Taxi" — anti-arcade) ──
+      // When d.rideshareMode is set, the quest system stops auto-picking landmarks
+      // and instead runs a pickup → dropoff loop with passenger comfort + safety
+      // scoring. Each ride snapshots statsRef counters at pickup, diffs at dropoff,
+      // and tips based on smoothness rather than speed.
+      // Phase: 'idle' | 'pickup' | 'enroute' | 'completed'
+      // pickupSnapshot/dropoffSnapshot: { hardBrakes, jackrabbits, speedViolations,
+      //   skidSeconds, crashes, distance, t } captured at phase transitions.
+      var rideshareRef = useRef(null);
       // Challenge cards: spawner state + active challenge. offered = waiting for Accept/Decline.
       // active = running; null when no challenge. completedCount accrues per-session for the
       // five_challenges achievement. biomesVisited tracks unique biomes for biome_tourist.
@@ -3735,8 +3744,92 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // the destination. Students literally drive TO a building they can see.
             if (d.freeExplore) {
               var q = questRef.current;
-              // Generate a new quest if none active
-              if ((!q || q.completed) && infiniteWorldRef.current) {
+              // ── Rideshare mode helpers (hoisted so the arrival handler can use them) ──
+              // pickNearbyLandmark: pick a random nearby landmark from loaded chunks.
+              // skipChunkCi: optional, ensures the dropoff isn't the same building as
+              // the pickup. Picks from the middle of the candidate range so rides have
+              // meaningful drive time (not 50ft hops, not impossible 5-mile slogs).
+              var pickNearbyLandmark = function(skipChunkCi) {
+                if (!infiniteWorldRef.current) return null;
+                var carCi = Math.floor(carRef.current.y / CHUNK_SIZE);
+                var pool = [];
+                for (var pci = carCi - 14; pci <= carCi - 2; pci++) {
+                  if (pci === skipChunkCi) continue;
+                  var pchunk = infiniteWorldRef.current.getChunk(pci);
+                  if (pchunk && pchunk.landmark) {
+                    pool.push({
+                      chunkCi: pci,
+                      chunk: pchunk,
+                      lmY: pci * CHUNK_SIZE + pchunk.landmark.centerY
+                    });
+                  }
+                }
+                if (!pool.length) return null;
+                pool.sort(function(a, b) { return a.lmY - b.lmY; });
+                var midSlice = pool.slice(Math.max(0, Math.floor(pool.length * 0.25)), Math.ceil(pool.length * 0.75));
+                if (!midSlice.length) midSlice = pool;
+                return midSlice[Math.floor(Math.random() * midSlice.length)];
+              };
+              var snapshotStats = function() {
+                var s = statsRef.current;
+                return {
+                  hardBrakes: s.hardBrakes || 0,
+                  jackrabbits: s.jackrabbits || 0,
+                  speedViolations: s.speedViolations || 0,
+                  skidSeconds: s.skidSeconds || 0,
+                  crashes: s.crashes || 0,
+                  distance: s.distance || 0,
+                  t: timeRef.current
+                };
+              };
+              // ── Rideshare mode override ──
+              // When the player toggles rideshare on, the quest system runs a
+              // pickup → dropoff loop instead of the normal "drive to landmark"
+              // single-step quest. Each ride snapshots safety counters at pickup
+              // and dropoff so we can grade comfort/smoothness — the OPPOSITE of
+              // an arcade taxi game where reckless driving wins.
+              if (d.rideshareMode && infiniteWorldRef.current) {
+                var rs = rideshareRef.current;
+                if (!rs || rs.phase === 'completed') {
+                  // Start a new ride — pick pickup
+                  var pickedPickup = pickNearbyLandmark(null);
+                  if (pickedPickup) {
+                    var passengerNames = ['Mira', 'Jordan', 'Sam', 'Casey', 'Riley', 'Alex', 'Pat', 'Robin', 'Taylor', 'Avery'];
+                    var pName = passengerNames[Math.floor(Math.random() * passengerNames.length)];
+                    rideshareRef.current = {
+                      phase: 'pickup',
+                      pickup: {
+                        chunkCi: pickedPickup.chunkCi,
+                        name: pickedPickup.chunk.landmark.type.name,
+                        icon: pickedPickup.chunk.landmark.type.icon,
+                        x: pickedPickup.chunk.landmark.centerX,
+                        y: pickedPickup.lmY
+                      },
+                      dropoff: null,
+                      passenger: pName,
+                      ridesCompleted: rs ? (rs.ridesCompleted || 0) : 0,
+                      totalEarnings: rs ? (rs.totalEarnings || 0) : 0,
+                      startSnapshot: null
+                    };
+                    // Point the existing quest arrow at the pickup so the player
+                    // gets the same nav HUD they're used to.
+                    questRef.current = {
+                      name: pName + ' wants a pickup at ' + rideshareRef.current.pickup.name,
+                      icon: '👤',
+                      x: rideshareRef.current.pickup.x,
+                      y: rideshareRef.current.pickup.y,
+                      startDist: Math.hypot(carRef.current.x - rideshareRef.current.pickup.x, carRef.current.y - rideshareRef.current.pickup.y),
+                      completed: false, announced: false,
+                      questsCompleted: 0,
+                      isLandmark: false,
+                      isRideshare: true
+                    };
+                    addToast('🚕 ' + pName + ' is waiting at ' + rideshareRef.current.pickup.icon + ' ' + rideshareRef.current.pickup.name);
+                    speak('New ride. ' + pName + ' is waiting.');
+                  }
+                }
+                // Skip the rest of the block — rideshare manages its own questRef.
+              } else if ((!q || q.completed) && infiniteWorldRef.current) {
                 var carCi = Math.floor(carRef.current.y / CHUNK_SIZE);
                 // Search for the nearest landmark ahead of the player (negative Z = ahead)
                 var candidates = [];
@@ -3795,14 +3888,103 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               if (q && !q.completed) {
                 var qdist = Math.hypot(carRef.current.x - q.x, carRef.current.y - q.y);
                 // Larger arrival radius for landmarks since they're real buildings with footprint
-                var arrivalRadius = q.isLandmark ? 8 : 5;
+                // Rideshare uses an even tighter radius — pickup/dropoff is "right at the door"
+                var arrivalRadius = q.isRideshare ? 6 : (q.isLandmark ? 8 : 5);
                 if (qdist < arrivalRadius) {
                   q.completed = true;
                   q.questsCompleted = (q.questsCompleted || 0) + 1;
-                  addToast('✅ Arrived at ' + q.icon + ' ' + q.name + '! Quest #' + q.questsCompleted + ' complete.');
-                  speak('You arrived at ' + q.name + '. Nice driving!');
-                  journalLog('landmark', q.icon, 'Reached ' + q.name);
-                  statsRef.current.safetyScore = Math.min(100, statsRef.current.safetyScore + 3);
+                  // ── Rideshare phase advancement ──
+                  // On pickup arrival: passenger boards, pick a dropoff, snapshot stats.
+                  // On dropoff arrival: score the ride, push to ride history, return
+                  // to phase 'completed' so the next ride auto-starts on next frame.
+                  if (q.isRideshare && rideshareRef.current) {
+                    var rsArr = rideshareRef.current;
+                    if (rsArr.phase === 'pickup') {
+                      // Pick a dropoff that's NOT the same chunk as pickup.
+                      var pickedDropoff = pickNearbyLandmark(rsArr.pickup.chunkCi);
+                      if (pickedDropoff) {
+                        rsArr.phase = 'enroute';
+                        rsArr.dropoff = {
+                          chunkCi: pickedDropoff.chunkCi,
+                          name: pickedDropoff.chunk.landmark.type.name,
+                          icon: pickedDropoff.chunk.landmark.type.icon,
+                          x: pickedDropoff.chunk.landmark.centerX,
+                          y: pickedDropoff.lmY
+                        };
+                        rsArr.startSnapshot = snapshotStats();
+                        questRef.current = {
+                          name: rsArr.passenger + ' → ' + rsArr.dropoff.name,
+                          icon: rsArr.dropoff.icon,
+                          x: rsArr.dropoff.x,
+                          y: rsArr.dropoff.y,
+                          startDist: Math.hypot(carRef.current.x - rsArr.dropoff.x, carRef.current.y - rsArr.dropoff.y),
+                          completed: false, announced: false,
+                          questsCompleted: 0,
+                          isLandmark: false,
+                          isRideshare: true
+                        };
+                        addToast('🚕 ' + rsArr.passenger + ' boarded. Take them to ' + rsArr.dropoff.icon + ' ' + rsArr.dropoff.name);
+                        speak(rsArr.passenger + ' is in. Drive them to the ' + rsArr.dropoff.name + '. Drive smooth.');
+                        journalLog('rideshare_pickup', '🚕', 'Picked up ' + rsArr.passenger + ' at ' + rsArr.pickup.name);
+                      } else {
+                        // No dropoff available — abort this ride.
+                        rsArr.phase = 'completed';
+                        addToast('🚕 No nearby dropoff destination. Drive a bit, then we\'ll find one.');
+                      }
+                      return;
+                    } else if (rsArr.phase === 'enroute' && rsArr.startSnapshot) {
+                      // Score the ride: comfort + safety + on-time. Tip in dollars.
+                      var endSnap = snapshotStats();
+                      var rideHardBrakes = endSnap.hardBrakes - rsArr.startSnapshot.hardBrakes;
+                      var rideJackrabs = endSnap.jackrabbits - rsArr.startSnapshot.jackrabbits;
+                      var rideViolSec = endSnap.speedViolations - rsArr.startSnapshot.speedViolations;
+                      var rideSkidSec = endSnap.skidSeconds - rsArr.startSnapshot.skidSeconds;
+                      var rideCrashes = endSnap.crashes - rsArr.startSnapshot.crashes;
+                      var rideDistMi = (endSnap.distance - rsArr.startSnapshot.distance) / 1609;
+                      var rideDur = endSnap.t - rsArr.startSnapshot.t;
+                      // Comfort score: harsh maneuvers cost. 100 baseline, deductions stack.
+                      var comfort = 100;
+                      comfort -= rideHardBrakes * 8;
+                      comfort -= rideJackrabs * 6;
+                      comfort -= Math.min(40, rideSkidSec * 4);
+                      comfort -= rideCrashes * 50;
+                      comfort = Math.max(0, Math.min(100, comfort));
+                      // Safety score: speed violations + crashes
+                      var safety = 100;
+                      safety -= Math.min(30, rideViolSec * 2);
+                      safety -= rideCrashes * 50;
+                      safety = Math.max(0, Math.min(100, safety));
+                      // Star rating based on combined comfort + safety
+                      var combined = (comfort + safety) / 2;
+                      var stars = combined >= 90 ? 5 : combined >= 75 ? 4 : combined >= 55 ? 3 : combined >= 35 ? 2 : 1;
+                      // Base fare ~$3.50 + $1.20/mile + tip based on stars (real Lyft economics)
+                      var baseFare = 3.5 + Math.max(0.3, rideDistMi) * 1.2;
+                      var tipPct = stars >= 5 ? 0.25 : stars >= 4 ? 0.18 : stars >= 3 ? 0.10 : stars >= 2 ? 0.03 : 0;
+                      var tip = baseFare * tipPct;
+                      var total = baseFare + tip;
+                      rsArr.ridesCompleted = (rsArr.ridesCompleted || 0) + 1;
+                      rsArr.totalEarnings = (rsArr.totalEarnings || 0) + total;
+                      rsArr.lastRide = {
+                        passenger: rsArr.passenger,
+                        from: rsArr.pickup.name,
+                        to: rsArr.dropoff.name,
+                        comfort: comfort, safety: safety, stars: stars,
+                        baseFare: baseFare, tip: tip, total: total,
+                        durationSec: Math.round(rideDur), distMi: rideDistMi.toFixed(2),
+                        hardBrakes: rideHardBrakes, jackrabbits: rideJackrabs,
+                        crashes: rideCrashes, skidSec: Math.round(rideSkidSec)
+                      };
+                      rsArr.phase = 'completed';
+                      var starStr = '★'.repeat(stars) + '☆'.repeat(5 - stars);
+                      addToast('🚕 Dropped off ' + rsArr.passenger + ' — ' + starStr + ' · $' + total.toFixed(2) + ' (tip $' + tip.toFixed(2) + ')');
+                      speak(rsArr.passenger + ' rated you ' + stars + ' stars. ' + (stars >= 4 ? 'Smooth ride.' : stars >= 3 ? 'Could be smoother.' : 'They felt unsafe.'));
+                      journalLog('rideshare_drop', '🚕', 'Dropped ' + rsArr.passenger + ' (' + stars + '★, $' + total.toFixed(2) + ')');
+                      // Mirror to persistent state so the menu / debrief can show totals.
+                      upd('rideshareLast', rsArr.lastRide);
+                      upd('rideshareTotal', { rides: rsArr.ridesCompleted, earnings: rsArr.totalEarnings });
+                      return;
+                    }
+                  }
                   // ── Track landmark visits for achievements ──
                   if (q.isLandmark) {
                     if (!statsRef.current.landmarkVisits) statsRef.current.landmarkVisits = {};
@@ -15965,6 +16147,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               })
             )
           ),
+          // ── Rideshare mode toggle ──
+          // Grounded "Crazy Taxi" — pickup → dropoff loop where the score rewards
+          // SAFETY and COMFORT rather than reckless speed. Tip math mirrors real
+          // Lyft economics so the lesson lands.
+          h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '14px', border: '1px solid ' + (d.rideshareMode ? '#fbbf24' : '#334155'), marginBottom: '10px' } },
+            h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' } },
+              h('div', { style: { fontSize: '11px', fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: '0.05em' } }, '🚕 Rideshare Mode'),
+              h('button', { onClick: function() { upd('rideshareMode', !d.rideshareMode); },
+                style: { padding: '4px 12px', borderRadius: '6px', border: '1px solid ' + (d.rideshareMode ? '#fbbf24' : '#334155'), background: d.rideshareMode ? 'rgba(251,191,36,0.2)' : '#1e293b', color: '#fff', fontSize: '10px', fontWeight: 800, cursor: 'pointer' }
+              }, d.rideshareMode ? 'ON' : 'OFF')
+            ),
+            h('div', { style: { fontSize: '11px', color: '#94a3b8', lineHeight: '1.5' } },
+              'Pick up passengers and drive them where they need to go. ',
+              h('b', { style: { color: '#fbbf24' } }, 'Comfort + safety beat speed.'),
+              ' Tips scale with smoothness — hard brakes, jackrabbits, and skids cost stars.'
+            ),
+            d.rideshareTotal ? h('div', { style: { fontSize: '10px', color: '#fde68a', marginTop: '6px' } },
+              'Lifetime: ' + d.rideshareTotal.rides + ' rides · $' + (d.rideshareTotal.earnings || 0).toFixed(2) + ' earned'
+            ) : null
+          ),
           h('button', { onClick: function() {
             // Build a virtual scenario from the user's choices
             var feScenario = {
@@ -15978,7 +16180,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             startDriving(feMap, selectedVehicle);
           },
             style: { width: '100%', padding: '14px', borderRadius: '12px', border: 'none', background: 'linear-gradient(135deg, #7c3aed, #2563eb)', color: '#fff', fontSize: '15px', fontWeight: 900, cursor: 'pointer' }
-          }, '🌎 Start Exploring'),
+          }, d.rideshareMode ? '🚕 Start Driving (Rideshare)' : '🌎 Start Exploring'),
           // Seed input
           h('div', { style: { marginTop: '10px', display: 'flex', gap: '8px', alignItems: 'center', justifyContent: 'center' } },
             h('label', { style: { fontSize: '11px', color: '#94a3b8' } }, 'World Seed:'),
