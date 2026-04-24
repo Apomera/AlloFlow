@@ -3577,19 +3577,74 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           }
           if (!s) { go('menu'); return null; }
 
-          var headline = s.isWarmup
-            ? '🤸 Warmup complete — not saved.'
-            : (s.firstGoalMet
-                ? '🎯 IEP goal met for the first time!'
-                : (s.masteryAdvanced
-                    ? '🌟 Mastery tier cleared! Reached tier ' + s.newMasteryLevel + '.'
-                    : (s.isBaseline
-                        ? 'First session saved — this is your baseline.'
-                        : (s.isNewBest
-                            ? 'New personal best!'
-                            : (s.goalMet
-                                ? '🎯 IEP goal met this session.'
-                                : 'Session saved.')))));
+          // Theme-flavored success messages. Each theme has its own voice for
+          // the same underlying event; falls back to neutral when the theme
+          // doesn't define a specific category. Keeps content identity clear
+          // (icons + numbers) while letting each theme bring personality.
+          var THEMED_PHRASES = {
+            'default': {
+              warmup:       '🤸 Warmup complete — not saved.',
+              firstGoalMet: '🎯 IEP goal met for the first time!',
+              masteryUp:    '🌟 Mastery tier cleared! Reached tier ${tier}.',
+              baseline:     'First session saved — this is your baseline.',
+              personalBest: 'New personal best!',
+              goalMet:      '🎯 IEP goal met this session.',
+              plain:        'Session saved.'
+            },
+            'steampunk': {
+              warmup:       '🤸 Warmup complete. Nothing entered into the ledger.',
+              firstGoalMet: '🎯 By Jove — IEP goal reached for the first time!',
+              masteryUp:    '⚙️ Mastery advanced to rank ${tier}. Well earned, apprentice.',
+              baseline:     'Baseline entered into the ledger. All future runs compare against this page.',
+              personalBest: '⚙️ A new personal best — your gearwork hums.',
+              goalMet:      '🎯 IEP goal met. Duly noted in the books.',
+              plain:        'Session committed to the ledger.'
+            },
+            'cyberpunk': {
+              warmup:       '[SYSTEM] Warmup phase complete :: not logged',
+              firstGoalMet: '[ACHIEVEMENT] First IEP-goal threshold crossed :: confirmed',
+              masteryUp:    '[TIER-UP] mastery::${tier} :: level increased',
+              baseline:     '[BASELINE] initial metrics captured :: reference set',
+              personalBest: '[HIGHSCORE] pb.wpm overwritten :: new record',
+              goalMet:      '[ACHIEVEMENT] IEP-goal :: met',
+              plain:        '[LOG] session committed'
+            },
+            'kawaii': {
+              warmup:       '🤸 Warmup done! This one doesn\'t count — just wiggly fingers ✨',
+              firstGoalMet: '🎯✨ FIRST TIME hitting your goal! So proud of you! 💖',
+              masteryUp:    '🌟 TIER ${tier} UNLOCKED! You did that! 💕',
+              baseline:     '🌸 Your first session is saved as baseline — ready to grow!',
+              personalBest: '✨ NEW PERSONAL BEST ✨ Yay!',
+              goalMet:      '🎯 Goal met this session! Nicely done! 💕',
+              plain:        '🌸 Session saved — nice work.'
+            },
+            'neutral': {
+              warmup:       'Warmup complete. Not recorded.',
+              firstGoalMet: 'IEP goal met for the first time.',
+              masteryUp:    'Mastery tier ${tier} reached.',
+              baseline:     'Baseline session recorded.',
+              personalBest: 'Personal best.',
+              goalMet:      'IEP goal met.',
+              plain:        'Session recorded.'
+            }
+          };
+          var phrases = THEMED_PHRASES[state.theme] || THEMED_PHRASES['default'];
+          var headline;
+          if (s.isWarmup) {
+            headline = phrases.warmup;
+          } else if (s.firstGoalMet) {
+            headline = phrases.firstGoalMet;
+          } else if (s.masteryAdvanced) {
+            headline = phrases.masteryUp.replace('${tier}', s.newMasteryLevel);
+          } else if (s.isBaseline) {
+            headline = phrases.baseline;
+          } else if (s.isNewBest) {
+            headline = phrases.personalBest;
+          } else if (s.goalMet) {
+            headline = phrases.goalMet;
+          } else {
+            headline = phrases.plain;
+          }
 
           // Specific next-step message on mastery advancement — names the new
           // tier that just unlocked so the student knows what they earned.
