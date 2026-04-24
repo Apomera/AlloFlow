@@ -5998,6 +5998,115 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               );
             })() : null,
 
+            // "How you've grown" — plain-language narrative of baseline-to-now
+            // deltas. Only surfaces after ≥10 sessions so the numbers are
+            // clinically stable. Built for students + parents skimming the
+            // page: translates the stat-strip numbers into sentences, names
+            // the absolute gain + its unit, and stays positive-framed without
+            // fabricating gains that aren't there. Header is theme-voiced;
+            // the clinical facts stay in plain language.
+            (state.baseline && allSessions.length >= 10) ? (function() {
+              var baselineDate = new Date(state.baseline.date);
+              var firstSessionDate = allSessions.length > 0 ? new Date(allSessions[0].date) : baselineDate;
+              var lastSessionDate = new Date(allSessions[allSessions.length - 1].date);
+              var dayMs = 24 * 60 * 60 * 1000;
+              var daysSpan = Math.max(1, Math.round((lastSessionDate.getTime() - firstSessionDate.getTime()) / dayMs));
+
+              var recentWpm = getRecentAvg(allSessions, 'wpm');
+              var recentAcc = getRecentAvg(allSessions, 'accuracy');
+              var wpmGain  = recentWpm - (state.baseline.wpm || 0);
+              var accGain  = recentAcc - (state.baseline.accuracy || 0);
+
+              var uniqueDays = {};
+              allSessions.forEach(function(s) { uniqueDays[new Date(s.date).toLocaleDateString()] = true; });
+              var practiceDays = Object.keys(uniqueDays).length;
+
+              var lifetime = state.lifetime || {};
+              var totalChars = lifetime.totalCharsTyped || 0;
+              var approxWords = Math.round(totalChars / 5); // typing convention: 5 chars ≈ 1 word
+
+              // Total practice time, approximated from session durations.
+              var totalSec = allSessions.reduce(function(m, s) { return m + (s.durationSec || 0); }, 0);
+              var totalMin = Math.round(totalSec / 60);
+
+              var bullets = [];
+              if (wpmGain > 0) {
+                bullets.push({
+                  icon: wpmGain >= 5 ? '🚀' : '📈',
+                  text: 'Your WPM went from ' + state.baseline.wpm + ' to ' + recentWpm + ' — a gain of ' + wpmGain + ' words per minute.'
+                });
+              } else if (wpmGain === 0) {
+                bullets.push({ icon: '📊', text: 'Your WPM is steady at ' + recentWpm + '. Consistency is its own win.' });
+              } else {
+                // Dip — reframe neutrally without shaming
+                bullets.push({ icon: '🌊', text: 'Your recent WPM is averaging ' + recentWpm + '. Dips are part of learning, especially if accommodations have changed.' });
+              }
+              if (accGain >= 1) {
+                bullets.push({ icon: '🎯', text: 'Accuracy improved from ' + state.baseline.accuracy + '% to ' + recentAcc + '% (+' + accGain + ' points).' });
+              } else if (Math.abs(accGain) < 1) {
+                bullets.push({ icon: '✅', text: 'Accuracy holding near ' + recentAcc + '% — the muscle memory is stable.' });
+              }
+              bullets.push({
+                icon: '📅',
+                text: 'You\'ve shown up ' + practiceDays + ' different day' + (practiceDays === 1 ? '' : 's') + ' over ' + daysSpan + ' day' + (daysSpan === 1 ? '' : 's') + '.'
+              });
+              if (totalMin >= 5) {
+                bullets.push({
+                  icon: '⏱',
+                  text: 'About ' + totalMin + ' minute' + (totalMin === 1 ? '' : 's') + ' of focused typing in total' + (approxWords > 0 ? ' — roughly ' + approxWords.toLocaleString() + ' words practiced.' : '.')
+                });
+              }
+
+              var tm = state.theme || 'default';
+              var header;
+              if (tm === 'steampunk')      header = '⚙ The ledger since you began';
+              else if (tm === 'cyberpunk') header = '[DELTA REPORT :: BASELINE → NOW]';
+              else if (tm === 'kawaii')    header = '✨ How you\'ve grown 💕';
+              else if (tm === 'neutral')   header = 'Baseline → current summary';
+              else                         header = '🌱 How you\'ve grown';
+
+              return h('div', {
+                style: {
+                  marginBottom: '24px',
+                  padding: '16px 18px',
+                  background: palette.surface,
+                  borderRadius: '12px',
+                  border: '1px solid ' + palette.border,
+                  borderLeft: '3px solid ' + palette.success
+                }
+              },
+                h('div', { style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '10px', fontWeight: 700 } },
+                  header),
+                h('ul', {
+                  style: {
+                    margin: 0,
+                    padding: 0,
+                    listStyle: 'none',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '8px'
+                  }
+                },
+                  bullets.map(function(b, i) {
+                    return h('li', {
+                      key: 'grew-' + i,
+                      style: {
+                        fontSize: '13px',
+                        color: palette.text,
+                        lineHeight: '1.5',
+                        display: 'flex',
+                        gap: '10px',
+                        alignItems: 'flex-start'
+                      }
+                    },
+                      h('span', { 'aria-hidden': 'true', style: { flexShrink: 0, fontSize: '14px', lineHeight: '1.3' } }, b.icon),
+                      h('span', null, b.text)
+                    );
+                  })
+                )
+              );
+            })() : null,
+
             // IEP-goal hit-rate sparkline — one dot per session (up to 20),
             // green when the session met the goal, neutral when not. Gives a
             // clinician an instant read of "has the student been hitting the
