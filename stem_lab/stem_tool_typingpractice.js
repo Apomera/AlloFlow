@@ -3523,21 +3523,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               }, 'Skip')
             ) : null,
 
-            // Paused overlay notice — non-modal, student can still click Resume
-            paused ? h('div', {
-              role: 'status',
-              'aria-live': 'polite',
-              style: {
-                marginBottom: '12px',
-                padding: '12px 16px',
-                background: palette.warn,
-                color: palette.onAccent,
-                borderRadius: '10px',
-                fontSize: '13px',
-                fontWeight: 600,
-                textAlign: 'center'
+            // Paused overlay notice — theme-voiced copy + styling, still
+            // aria-live='polite' so the pause state announces for screen
+            // readers. Non-modal: student clicks Resume to continue.
+            paused ? (function() {
+              var tm = state.theme || 'default';
+              var msg, extraStyle = {};
+              if (tm === 'cyberpunk') {
+                msg = '[PAUSE] :: input suspended :: click resume to rejoin stream';
+                extraStyle = { fontFamily: 'ui-monospace, monospace', letterSpacing: '0.04em', borderRadius: '2px', borderLeft: '3px solid ' + palette.onAccent };
+              } else if (tm === 'steampunk') {
+                msg = '⏸ The gears are still, apprentice. Take your time — the ledger awaits your return.';
+                extraStyle = { borderStyle: 'double', borderWidth: '3px', borderColor: palette.onAccent, borderRadius: '6px' };
+              } else if (tm === 'kawaii') {
+                msg = '💕 Break time! ✨ No rush, we\'ll wait for you 💕';
+                extraStyle = { borderRadius: '18px', boxShadow: '0 3px 10px rgba(232,90,138,0.2)' };
+              } else if (tm === 'neutral') {
+                msg = 'Paused. WPM unaffected.';
+                extraStyle = { borderRadius: '4px', fontWeight: 500 };
+              } else {
+                msg = '⏸ Paused — take your time. Your WPM won\'t be affected. Click Resume when ready.';
               }
-            }, '⏸ Paused — take your time. Your WPM won\'t be affected. Click Resume when ready.') : null,
+              return h('div', {
+                role: 'status',
+                'aria-live': 'polite',
+                style: Object.assign({
+                  marginBottom: '12px',
+                  padding: '12px 16px',
+                  background: palette.warn,
+                  color: palette.onAccent,
+                  borderRadius: '10px',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  textAlign: 'center'
+                }, extraStyle)
+              }, msg);
+            })() : null,
 
             // Description
             h('p', {
@@ -3648,28 +3669,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             ),
 
             // Thin progress bar — visual feedback on how far through the drill
-            // text the student has typed. Intentionally minimal (2px, dim) so
-            // it doesn't compete with the live WPM/acc metrics or the typing
-            // surface. Hidden in assessment mode (along with other metrics).
-            !state.accommodations.assessmentMode && targetStr.length > 0 ? h('div', {
-              'aria-hidden': 'true',
-              style: {
-                marginTop: '6px',
-                height: '3px',
-                background: palette.surface2,
-                borderRadius: '2px',
-                overflow: 'hidden'
+            // text the student has typed. Theme-specific fill pattern adds
+            // personality without getting in the way. Hidden in assessment
+            // mode (along with other metrics).
+            !state.accommodations.assessmentMode && targetStr.length > 0 ? (function() {
+              var tm = state.theme || 'default';
+              var done = typed.length >= targetStr.length;
+              // Base fill color
+              var fill = done ? palette.success : palette.accent;
+              // Theme-specific fill treatment
+              var fillStyle = {
+                width: Math.min(100, (typed.length / targetStr.length) * 100) + '%',
+                height: '100%',
+                background: fill,
+                transition: 'width 80ms ease, background 200ms ease'
+              };
+              if (tm === 'cyberpunk') {
+                // Scan-line texture on top of accent fill — reads as terminal
+                fillStyle.background = 'repeating-linear-gradient(90deg, ' +
+                  fill + ' 0px, ' + fill + ' 4px, ' +
+                  'rgba(255,255,255,0.25) 4px, rgba(255,255,255,0.25) 5px), ' + fill;
+              } else if (tm === 'steampunk') {
+                // Brass gradient — warm vertical sheen
+                fillStyle.background = 'linear-gradient(180deg, ' + fill + ' 0%, #8a5024 100%)';
+              } else if (tm === 'kawaii') {
+                // Pastel rainbow — cream-pink to rose gradient
+                fillStyle.background = 'linear-gradient(90deg, #ffd6e5 0%, ' + fill + ' 60%, #ff90b8 100%)';
               }
-            },
-              h('div', {
+              // Neutral and default: solid fill (unchanged)
+              return h('div', {
+                'aria-hidden': 'true',
                 style: {
-                  width: Math.min(100, (typed.length / targetStr.length) * 100) + '%',
-                  height: '100%',
-                  background: typed.length >= targetStr.length ? palette.success : palette.accent,
-                  transition: 'width 80ms ease, background 200ms ease'
+                  marginTop: '6px',
+                  height: tm === 'steampunk' ? '4px' : '3px',
+                  background: palette.surface2,
+                  borderRadius: tm === 'cyberpunk' ? '0' : (tm === 'kawaii' ? '999px' : '2px'),
+                  overflow: 'hidden',
+                  border: tm === 'steampunk' ? '1px solid rgba(90,69,40,0.6)' : 'none'
                 }
-              })
-            ) : null,
+              }, h('div', { style: fillStyle }));
+            })() : null,
 
             // On-screen keyboard (large-keys accommodation)
             state.accommodations.largeKeys ? renderOnScreenKeyboard(nextKeyMeta, palette, state.accommodations.focusKeyboard) : null
