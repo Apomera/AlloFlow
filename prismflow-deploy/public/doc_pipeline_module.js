@@ -9554,7 +9554,7 @@ tr { page-break-inside: avoid; }
     if (!window.PDFLib || !window.PDFLib.PDFDocument) {
       throw new Error('pdf-lib not loaded — call _ensurePdfLib() first');
     }
-    const { PDFDocument, PDFName, PDFString, PDFHexString } = window.PDFLib;
+    const { PDFDocument, PDFName, PDFString, PDFHexString, PDFNumber, StandardFonts } = window.PDFLib;
     const doc = await PDFDocument.load(originalPdfBytes, { updateMetadata: false });
     const context = doc.context;
     const catalog = doc.catalog;
@@ -9647,16 +9647,136 @@ tr { page-break-inside: avoid; }
       const elemRef = context.register(elemObj);
       structElemRefs.push(elemRef);
     }
-    // ParentTree is required even if empty. We don't populate it in this
-    // pass (no MCIDs), but PDF/UA validators want a dict with /Nums.
-    const parentTreeDict = context.obj({ Nums: context.obj([]) });
+    // ── Stage 2: content-stream MCID wrapping + per-page StructElems ──
+    // For every page we (a) optionally inject an invisible OCR text layer
+    // (scanned PDFs), (b) wrap the full content stream with BDC/EMC so a
+    // single MCID covers the page, (c) build a per-page StructElem whose K
+    // points at the page's MCID 0 via a Marked Content Reference (MCR), and
+    // (d) populate the ParentTree entry for the page. This satisfies the
+    // PDF/UA-1 §7.1 requirement that all content be tagged — strict
+    // validators (Acrobat Pro Accessibility Checker, PAC 2024) want the
+    // MCID linkage that Stage 1 omitted.
+    const pages = doc.getPages();
+    const isScanned = !!(fixResult && (fixResult.groundTruthMethod === 'tesseract' || fixResult.groundTruthMethod === 'vision'));
+    // Tesseract extraction (line 2400) only preserves page-level {pageNum,text},
+    // no word bboxes. So Path B falls back to a single invisible run per page
+    // at top-left — visually clipped but SR reads the actual text instead of
+    // announcing "paragraph" over a picture.
+    const ocrPages = isScanned
+      ? ((fixResult && fixResult.groundTruthPages)
+          || (typeof window !== 'undefined' ? window.__lastGroundTruthPageMap : null)
+          || [])
+      : [];
+    let _helvFont = null;
+    const _getHelv = async () => {
+      if (_helvFont) return _helvFont;
+      try { _helvFont = await doc.embedFont(StandardFonts.Helvetica); } catch(_) { _helvFont = null; }
+      return _helvFont;
+    };
+    // Helvetica only supports WinAnsiEncoding. OCR may return curly quotes /
+    // em-dashes / accented letters. Swap the common ones and drop anything
+    // else outside 0x20–0xFF so drawText doesn't throw mid-document.
+    const _toWinAnsi = (s) => (s || '')
+      .replace(/[\u2018\u2019\u201A\u2032]/g, "'")
+      .replace(/[\u201C\u201D\u201E\u2033]/g, '"')
+      .replace(/[\u2013\u2014]/g, '-')
+      .replace(/\u2026/g, '...')
+      .replace(/\u00A0/g, ' ')
+      .replace(/[^\x20-\xFF\n\r\t]/g, '');
+
+    const pageElemRefs = [];
+    const parentTreeNums = [];
+    for (let pi = 0; pi < pages.length; pi++) {
+      const page = pages[pi];
+      // Path B — invisible OCR text layer for scanned PDFs. opacity:0 keeps
+      // it invisible to sighted users while SR readers still pick it up via
+      // the content stream. Wrapped later by the BDC/EMC pass below.
+      if (isScanned) {
+        let ocrEntry = null;
+        if (Array.isArray(ocrPages)) {
+          ocrEntry = ocrPages.find(p => p && (p.pageNum === pi + 1 || p.page === pi + 1 || p.pageIndex === pi));
+        }
+        const ocrText = (ocrEntry && (ocrEntry.text || ocrEntry.content || ocrEntry.fullText || '')) || '';
+        if (ocrText && ocrText.trim()) {
+          try {
+            const helv = await _getHelv();
+            if (helv) {
+              const sz = page.getSize();
+              page.drawText(_toWinAnsi(ocrText), {
+                x: 36,
+                y: (sz && sz.height ? sz.height : 792) - 36,
+                size: 1,
+                font: helv,
+                opacity: 0,
+                lineHeight: 1,
+                maxWidth: (sz && sz.width ? sz.width : 612) - 72,
+              });
+            }
+          } catch(textErr) { try { warnLog('[createTaggedPdf] invisible OCR text layer failed p' + (pi+1) + ': ' + (textErr && textErr.message)); } catch(_) {} }
+        }
+      }
+      // Path A — wrap the entire page content stream with BDC/EMC. pdf-lib
+      // 1.17.1 has no page.prependOperators, so we manipulate the Contents
+      // entry directly. PDF readers concatenate an array of content streams,
+      // so [bdcStream, ...existing, emcStream] is a valid shape regardless
+      // of whether the original was a single stream or already an array.
+      try {
+        const bdcBytes = new TextEncoder().encode('/P <</MCID 0>> BDC\n');
+        const emcBytes = new TextEncoder().encode('\nEMC\n');
+        const bdcStream = context.stream(bdcBytes);
+        const emcStream = context.stream(emcBytes);
+        const bdcRef = context.register(bdcStream);
+        const emcRef = context.register(emcStream);
+        const node = page.node;
+        const rawContents = node.get(PDFName.of('Contents'));
+        const newArr = [bdcRef];
+        if (rawContents && typeof rawContents.size === 'function' && typeof rawContents.get === 'function') {
+          for (let k = 0; k < rawContents.size(); k++) newArr.push(rawContents.get(k));
+        } else if (rawContents) {
+          newArr.push(rawContents);
+        }
+        newArr.push(emcRef);
+        node.set(PDFName.of('Contents'), context.obj(newArr));
+        node.set(PDFName.of('StructParents'), PDFNumber.of(pi));
+      } catch(wrapErr) { try { warnLog('[createTaggedPdf] BDC/EMC wrap failed p' + (pi+1) + ': ' + (wrapErr && wrapErr.message)); } catch(_) {} }
+
+      // Per-page StructElem (type /P) with a single MCR K-child pointing at
+      // the page's MCID 0. This is the link validators walk from content →
+      // tag tree. Parent P is the root ref; Pg anchors the element to this
+      // specific page so readers don't have to guess.
+      try {
+        const mcrDict = context.obj({
+          Type: PDFName.of('MCR'),
+          Pg: page.ref,
+          MCID: PDFNumber.of(0),
+        });
+        const pageElemDict = context.obj({
+          Type: PDFName.of('StructElem'),
+          S: PDFName.of('P'),
+          P: structRootRef,
+          Pg: page.ref,
+          K: context.obj([mcrDict]),
+        });
+        const pageElemRef = context.register(pageElemDict);
+        pageElemRefs.push(pageElemRef);
+        parentTreeNums.push(PDFNumber.of(pi));
+        parentTreeNums.push(pageElemRef);
+      } catch(elemErr) { try { warnLog('[createTaggedPdf] page StructElem build failed p' + (pi+1) + ': ' + (elemErr && elemErr.message)); } catch(_) {} }
+    }
+    // ParentTree — number tree mapping StructParents key → StructElem ref.
+    // Stage 1 left this empty; validators need it populated for MCID linkage.
+    const parentTreeDict = context.obj({ Nums: context.obj(parentTreeNums) });
     const parentTreeRef = context.register(parentTreeDict);
-    // StructTreeRoot dict. K = array of all our StructElem refs.
+    // StructTreeRoot.K holds outline elems first (heading navigation) and
+    // per-page elems after (content-stream linkage). Order matters: outline
+    // first gives SR readers the semantic reading order when they traverse
+    // the tag tree depth-first.
+    const combinedK = structElemRefs.concat(pageElemRefs);
     const structRootDict = context.obj({
       Type: PDFName.of('StructTreeRoot'),
-      K: context.obj(structElemRefs),
+      K: context.obj(combinedK),
       ParentTree: parentTreeRef,
-      ParentTreeNextKey: 0,
+      ParentTreeNextKey: PDFNumber.of(pages.length),
       RoleMap: context.obj({}),
     });
     context.assign(structRootRef, structRootDict);
