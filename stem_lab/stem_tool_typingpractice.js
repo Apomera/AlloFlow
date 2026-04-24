@@ -2933,6 +2933,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 )
               ),
 
+              // Gentle warmup suggestion — only if the student hasn't
+              // practiced in ≥3 days AND isn't already in warmup mode. Motor-
+              // planning research: the first session back after a break
+              // often underperforms baseline and can feel demoralizing.
+              // A warmup runs the same drill but doesn't record — takes the
+              // edge off. No nag; no red. Dismissible by just hitting Start.
+              (function() {
+                if (isWarmup) return null;
+                var sess = state.sessions || [];
+                if (sess.length === 0) return null;
+                var lastMs = new Date(sess[sess.length - 1].date).getTime();
+                var daysSince = Math.floor((Date.now() - lastMs) / (24 * 60 * 60 * 1000));
+                if (daysSince < 3) return null;
+                var tm = state.theme || 'default';
+                var body;
+                if (tm === 'steampunk')      body = '⚙ ' + daysSince + ' days since your last bench shift. A warmup run — below — is a kindness to the gearwork; it will not enter the ledger.';
+                else if (tm === 'cyberpunk') body = '[NOTE] ' + daysSince + 'd since last run :: warmup mode below :: no log-impact :: recommended';
+                else if (tm === 'kawaii')    body = '🌸 It\'s been ' + daysSince + ' days — a warmup first might feel nice! 💕 Just check the box below; this one won\'t count toward your stats. ✨';
+                else if (tm === 'neutral')   body = 'Last session ' + daysSince + 'd ago. Warmup mode below is off-record.';
+                else                         body = '💡 ' + daysSince + ' days since your last session — consider checking warmup mode below so this first one back doesn\'t affect your stats.';
+                return h('div', {
+                  role: 'note',
+                  style: {
+                    marginBottom: '10px',
+                    padding: '10px 12px',
+                    background: palette.bg,
+                    border: '1px dashed ' + palette.accent,
+                    borderRadius: '8px',
+                    fontSize: '12px',
+                    color: palette.textDim,
+                    lineHeight: '1.55',
+                    textAlign: 'left'
+                  }
+                }, body);
+              })(),
+
               // Warmup checkbox — "this one doesn't count"
               h('label', {
                 htmlFor: 'tp-warmup',
@@ -4224,6 +4260,75 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 renderMetric('Time', formatDuration(s.durationSec), palette, state.theme),
                 renderMetric('Errors', s.errors, palette, state.theme)
               ),
+
+              // Compassion card — rough-session reframe. Only shows when the
+              // session wasn't a celebrated event AND one of these holds:
+              //   1) accuracy is below 70% (absolute low)
+              //   2) accuracy is ≥10 points below baseline (relative dip)
+              //   3) errors are ≥15 and accuracy is below 80%
+              // Dignified reframe, not toxic positivity — names the data, then
+              // reframes what it means. Theme-voiced. Purpose: students with
+              // dysgraphia / motor-planning difficulty WILL have rough sessions;
+              // the tool's job is to let those exist without shame.
+              (function() {
+                if (s.isWarmup) return null;
+                if (s.isNewBest || s.isBaseline || s.masteryAdvanced || s.firstGoalMet || s.goalMet) return null;
+                var acc = s.accuracy || 0;
+                var baselineAcc = state.baseline ? (state.baseline.accuracy || 0) : 0;
+                var isLowAbs = acc > 0 && acc < 70;
+                var isDip = baselineAcc > 0 && (baselineAcc - acc) >= 10 && acc < 90;
+                var isErrHeavy = (s.errors || 0) >= 15 && acc < 80;
+                if (!isLowAbs && !isDip && !isErrHeavy) return null;
+
+                var tm = state.theme || 'default';
+                var title, body;
+                if (tm === 'steampunk') {
+                  title = '⚙ A rough shift at the bench';
+                  body = 'Not every day at the workshop turns out finely. The gearwork was unsteady; the effort still counts. Your baseline stands. Your progress stands. Tomorrow is another session.';
+                } else if (tm === 'cyberpunk') {
+                  title = '[SIGNAL] rough run logged';
+                  body = '[INFO] accuracy low this run :: not a regression :: prior peaks intact :: baseline unchanged :: next run = clean slate';
+                } else if (tm === 'kawaii') {
+                  title = '🌧 A tricky session — and that\'s okay 💕';
+                  body = 'Some days are wobbly days, and that\'s 100% allowed. ✨ Your progress isn\'t gone. Your baseline didn\'t move. You showed up — that\'s already the win. 🌱';
+                } else if (tm === 'neutral') {
+                  title = 'Rough session';
+                  body = 'Accuracy low this run. Baseline + prior bests unaffected. Next session is independent.';
+                } else {
+                  title = '💛 Rough session — that\'s allowed';
+                  body = 'The numbers were harder this time. That doesn\'t erase your baseline or prior bests — every session stands on its own. Showing up through a hard one is the skill.';
+                }
+
+                return h('div', {
+                  role: 'note',
+                  style: {
+                    marginBottom: '20px',
+                    padding: '14px 16px',
+                    background: palette.bg,
+                    border: '1px solid ' + palette.warn,
+                    borderLeft: '3px solid ' + palette.warn,
+                    borderRadius: '10px',
+                    textAlign: 'left'
+                  }
+                },
+                  h('div', {
+                    style: {
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      color: palette.warn,
+                      marginBottom: '6px',
+                      letterSpacing: '0.02em'
+                    }
+                  }, title),
+                  h('div', {
+                    style: {
+                      fontSize: '12px',
+                      color: palette.textDim,
+                      lineHeight: '1.55'
+                    }
+                  }, body)
+                );
+              })(),
 
               (s.accommodationsUsed && s.accommodationsUsed.length > 0) ? h('div', {
                 style: {

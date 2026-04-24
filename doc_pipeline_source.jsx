@@ -2368,6 +2368,289 @@ var createDocPipeline = function(deps) {
     }
   };
 
+  // Lazy-load pako (zlib inflate/deflate) for Stage 4 PDF tagging's content-stream
+  // surgery. Most PDFs ship their content streams FlateDecode-compressed so per-block
+  // BDC/EMC injection requires inflate-edit-deflate. Loaded from CDN only on first
+  // tagged-PDF export; no cost for any other code path.
+  let _pakoLoadPromise = null;
+  const ensurePakoLoaded = async () => {
+    if (window.pako && typeof window.pako.inflate === 'function') return window.pako;
+    if (_pakoLoadPromise) return _pakoLoadPromise;
+    _pakoLoadPromise = new Promise((resolve, reject) => {
+      const existing = document.querySelector('script[data-docpipe-pako]');
+      if (existing) {
+        const wait = setInterval(() => { if (window.pako) { clearInterval(wait); resolve(window.pako); } }, 50);
+        setTimeout(() => { clearInterval(wait); reject(new Error('pako load timeout')); }, 10000);
+        return;
+      }
+      const s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js';
+      s.setAttribute('data-docpipe-pako', 'true');
+      s.onload = () => { if (window.pako) resolve(window.pako); else reject(new Error('pako loaded but not on window')); };
+      s.onerror = () => { _pakoLoadPromise = null; reject(new Error('pako CDN load failed')); };
+      document.head.appendChild(s);
+    });
+    return _pakoLoadPromise;
+  };
+
+  // ── Stage 4 PDF tagging: pure helpers ──
+  // These are pure (no closure state) so they're testable in isolation and
+  // easy to reason about. createTaggedPdf orchestrates them per-page with
+  // try/catch fallback to Stage 3 behavior on any failure.
+
+  // _stage4_maskStrings — replace literal (...) strings, hex <...> strings, and
+  // PDF `%` comments with same-length space padding so we can regex for
+  // operators on the masked copy without false hits from string content.
+  // Dict brackets `<<` / `>>` are preserved. Byte offsets are unchanged
+  // because every replacement is equal-length.
+  const _stage4_maskStrings = (s) => {
+    let out = ''; let i = 0; const N = s.length;
+    while (i < N) {
+      const c = s[i];
+      if (c === '%') {
+        let j = i;
+        while (j < N && s[j] !== '\n' && s[j] !== '\r') j++;
+        out += ' '.repeat(j - i); i = j; continue;
+      }
+      if (c === '(') {
+        let depth = 1, j = i + 1;
+        while (j < N && depth > 0) {
+          if (s[j] === '\\') { j += 2; continue; }
+          if (s[j] === '(') depth++;
+          else if (s[j] === ')') depth--;
+          j++;
+        }
+        out += ' '.repeat(j - i); i = j; continue;
+      }
+      if (c === '<' && s[i+1] === '<') { out += '<<'; i += 2; continue; }
+      if (c === '<') {
+        let j = i + 1;
+        while (j < N && s[j] !== '>') j++;
+        if (j < N) j++;
+        out += ' '.repeat(j - i); i = j; continue;
+      }
+      if (c === '>' && s[i+1] === '>') { out += '>>'; i += 2; continue; }
+      out += c; i++;
+    }
+    return out;
+  };
+
+  // _stage4_parseBTSegments — find all BT...ET text-object spans in a content
+  // stream (decompressed). Returns byte offsets + the (x,y) position set by
+  // Tm or Td inside each span so we can match each span to a pdf.js text
+  // item by coordinate.
+  const _stage4_parseBTSegments = (streamBytes) => {
+    let s = '';
+    for (let i = 0; i < streamBytes.length; i++) s += String.fromCharCode(streamBytes[i]);
+    const masked = _stage4_maskStrings(s);
+    const segments = [];
+    const re = /\bBT\b([\s\S]*?)\bET\b/g;
+    let m;
+    while ((m = re.exec(masked)) !== null) {
+      const btStart = m.index;
+      const etEnd = m.index + m[0].length;
+      const inside = m[1];
+      let x = 0, y = 0;
+      const tmMatch = /([-\d.eE+]+)\s+([-\d.eE+]+)\s+([-\d.eE+]+)\s+([-\d.eE+]+)\s+([-\d.eE+]+)\s+([-\d.eE+]+)\s+Tm\b/.exec(inside);
+      if (tmMatch) { x = parseFloat(tmMatch[5]); y = parseFloat(tmMatch[6]); }
+      else {
+        const tdMatch = /([-\d.eE+]+)\s+([-\d.eE+]+)\s+T[dD]\b/.exec(inside);
+        if (tdMatch) { x = parseFloat(tdMatch[1]); y = parseFloat(tdMatch[2]); }
+      }
+      segments.push({ btStart, etEnd, x, y });
+    }
+    return segments;
+  };
+
+  // _stage4_rewriteStream — splice /<role> <</MCID i>> BDC before each BT and
+  // EMC after each ET. Processes segments last-to-first so earlier offsets
+  // stay valid as later splices shift the tail.
+  const _stage4_rewriteStream = (streamBytes, segments, wraps) => {
+    if (segments.length === 0) return streamBytes;
+    const enc = new TextEncoder();
+    const out = Array.from(streamBytes);
+    for (let i = segments.length - 1; i >= 0; i--) {
+      const seg = segments[i];
+      const w = wraps[i] || { bdc: '/P <</MCID ' + i + '>> BDC\n', emc: '\nEMC\n' };
+      const emcBytes = enc.encode(w.emc);
+      const bdcBytes = enc.encode(w.bdc);
+      out.splice(seg.etEnd, 0, ...emcBytes);
+      out.splice(seg.btStart, 0, ...bdcBytes);
+    }
+    return new Uint8Array(out);
+  };
+
+  // _stage4_extractPdfjsItems — return a normalised per-page list of text
+  // items from pdf.js. Filters empty strings (pdf.js emits positioning-only
+  // items with empty str that would confuse matching).
+  const _stage4_extractPdfjsItems = async (pdfjsDoc, pageIdx) => {
+    try {
+      const page = await pdfjsDoc.getPage(pageIdx + 1);
+      const tc = await page.getTextContent();
+      return (tc.items || [])
+        .filter(it => it && typeof it.str === 'string' && it.str.trim().length > 0)
+        .map(it => ({
+          str: it.str,
+          x: it.transform ? it.transform[4] : 0,
+          y: it.transform ? it.transform[5] : 0,
+          fontScale: it.transform ? Math.abs(it.transform[0] || it.transform[3] || 12) : 12,
+          fontName: it.fontName || '',
+          width: it.width || 0,
+          height: it.height || 0,
+        }));
+    } catch (_) { return []; }
+  };
+
+  // _stage4_matchSegmentsToItems — pair BT segments with pdf.js text items.
+  // Happy path: equal counts → index-order pairing (both are usually in
+  // stream/reading order). Fallback: nearest-neighbour by (x,y) distance.
+  const _stage4_matchSegmentsToItems = (segments, items) => {
+    const matched = new Array(segments.length);
+    if (segments.length === items.length && items.length > 0) {
+      for (let i = 0; i < segments.length; i++) matched[i] = items[i];
+      return matched;
+    }
+    for (let i = 0; i < segments.length; i++) {
+      const seg = segments[i];
+      let best = null, bestDist = Infinity;
+      for (const it of items) {
+        const dx = it.x - seg.x, dy = it.y - seg.y;
+        const d = dx * dx + dy * dy;
+        if (d < bestDist) { bestDist = d; best = it; }
+      }
+      matched[i] = best || { str: '', fontScale: 12, fontName: '' };
+    }
+    return matched;
+  };
+
+  // _stage4_inferRole — pick a PDF structure role for a matched text item.
+  // Priority: fuzzy match against the HTML outline (semantically accurate),
+  // then a font-scale heuristic as a last resort.
+  const _stage4_inferRole = (item, fontScaleMedian, outlineItems) => {
+    const norm = (s) => (s || '').toLowerCase().replace(/\s+/g, ' ').trim();
+    const itemText = norm(item && item.str);
+    if (itemText.length >= 4 && Array.isArray(outlineItems)) {
+      for (const oi of outlineItems) {
+        const ot = norm(oi && oi.text);
+        if (ot.length < 4) continue;
+        if (ot.startsWith(itemText) || itemText.startsWith(ot) || ot.includes(itemText) || itemText.includes(ot)) {
+          return oi.role;
+        }
+      }
+    }
+    if (fontScaleMedian > 0 && item && item.fontScale > 0) {
+      const ratio = item.fontScale / fontScaleMedian;
+      if (ratio >= 1.6) return 'H1';
+      if (ratio >= 1.3) return 'H2';
+      if (ratio >= 1.1) return 'H3';
+      if (ratio <= 0.85) return 'Caption';
+    }
+    return 'P';
+  };
+
+  // _stage4_getStreamBytesAndFilter — pull a page's content-stream bytes out
+  // of the Contents entry (handling single-stream or array-of-streams shapes)
+  // and indicate whether it's FlateDecode-compressed.
+  const _stage4_getStreamBytesAndFilter = (page, PDFName, context) => {
+    const node = page.node;
+    const contents = node.get(PDFName.of('Contents'));
+    if (!contents) return null;
+    let filter = null;
+    const chunks = [];
+    const consume = (ref) => {
+      const stream = context.lookup(ref);
+      if (!stream) return;
+      const raw = stream.getContents ? stream.getContents() : null;
+      if (!raw) return;
+      const dict = stream.dict || null;
+      const f = dict && dict.get ? dict.get(PDFName.of('Filter')) : null;
+      if (f) { const fs = String(f); if (fs.includes('FlateDecode')) filter = 'FlateDecode'; }
+      chunks.push(raw);
+    };
+    if (contents && typeof contents.size === 'function') {
+      for (let k = 0; k < contents.size(); k++) consume(contents.get(k));
+    } else {
+      consume(contents);
+    }
+    if (chunks.length === 0) return null;
+    let total = 0;
+    for (const c of chunks) total += c.byteLength || c.length || 0;
+    const combined = new Uint8Array(total);
+    let off = 0;
+    for (const c of chunks) {
+      const u = c instanceof Uint8Array ? c : new Uint8Array(c);
+      combined.set(u, off); off += u.byteLength;
+    }
+    return { bytes: combined, filter };
+  };
+
+  // _stage4_tryWrapPage — orchestrates per-page Stage 4. Reads the content
+  // stream, inflates if needed, parses BT/ET, pairs segments with pdf.js
+  // items, infers per-block roles, splices BDC/EMC per segment, re-deflates,
+  // replaces the Contents entry, and builds a per-page Sect StructElem
+  // containing one typed StructElem per block. Throws on any failure;
+  // caller catches and falls back to Stage 3.
+  const _stage4_tryWrapPage = async (page, pi, pdfjsDoc, outlineItems, context, libs, structRootRef) => {
+    const { PDFName, PDFString, PDFNumber } = libs;
+    if (!window.pako || typeof window.pako.inflate !== 'function') throw new Error('pako unavailable');
+    const streamInfo = _stage4_getStreamBytesAndFilter(page, PDFName, context);
+    if (!streamInfo || streamInfo.bytes.length === 0) throw new Error('no content stream');
+    let bytes = streamInfo.bytes;
+    if (streamInfo.filter === 'FlateDecode') {
+      bytes = window.pako.inflate(bytes);
+    }
+    const segments = _stage4_parseBTSegments(bytes);
+    if (segments.length === 0) throw new Error('no BT segments');
+    const items = await _stage4_extractPdfjsItems(pdfjsDoc, pi);
+    if (items.length === 0) throw new Error('no pdf.js items');
+    const matched = _stage4_matchSegmentsToItems(segments, items);
+    const scales = items.map(it => it.fontScale).filter(n => n > 0).sort((a, b) => a - b);
+    const fontScaleMedian = scales.length > 0 ? scales[Math.floor(scales.length / 2)] : 12;
+    const wraps = [];
+    const blockInfo = [];
+    for (let i = 0; i < segments.length; i++) {
+      const item = matched[i] || { str: '', fontScale: fontScaleMedian, fontName: '' };
+      const role = _stage4_inferRole(item, fontScaleMedian, outlineItems);
+      wraps.push({ bdc: '/' + role + ' <</MCID ' + i + '>> BDC\n', emc: '\nEMC\n' });
+      blockInfo.push({ role, text: (item.str || '').substring(0, 400) });
+    }
+    let newBytes = _stage4_rewriteStream(bytes, segments, wraps);
+    if (streamInfo.filter === 'FlateDecode') {
+      newBytes = window.pako.deflate(newBytes);
+    }
+    const streamDict = streamInfo.filter === 'FlateDecode'
+      ? { Filter: PDFName.of('FlateDecode'), Length: PDFNumber.of(newBytes.length) }
+      : { Length: PDFNumber.of(newBytes.length) };
+    const newStream = context.stream(newBytes, streamDict);
+    const newStreamRef = context.register(newStream);
+    page.node.set(PDFName.of('Contents'), newStreamRef);
+    page.node.set(PDFName.of('StructParents'), PDFNumber.of(pi));
+    const pageSectRef = context.nextRef();
+    const blockElemRefs = [];
+    for (let i = 0; i < blockInfo.length; i++) {
+      const info = blockInfo[i];
+      const mcr = context.obj({ Type: PDFName.of('MCR'), Pg: page.ref, MCID: PDFNumber.of(i) });
+      const d = {
+        Type: PDFName.of('StructElem'),
+        S: PDFName.of(info.role),
+        P: pageSectRef,
+        Pg: page.ref,
+        K: context.obj([mcr]),
+      };
+      if (info.text) d.ActualText = PDFString.of(info.text);
+      blockElemRefs.push(context.register(context.obj(d)));
+    }
+    context.assign(pageSectRef, context.obj({
+      Type: PDFName.of('StructElem'),
+      S: PDFName.of('Sect'),
+      P: structRootRef,
+      Pg: page.ref,
+      K: context.obj(blockElemRefs),
+    }));
+    const parentArrayRef = context.register(context.obj(blockElemRefs.slice()));
+    return { pageSectRef, blockElemRefs, parentArrayRef, mcidCount: blockInfo.length };
+  };
+
   // Lazy-load Tesseract.js from CDN. Zero cost until first call (scanned-PDF path only).
   // Tesseract gives deterministic client-side OCR — no hallucination, no server roundtrip —
   // which pairs with Vision OCR for a reconciled "both" pass on scanned PDFs.
@@ -9699,6 +9982,23 @@ tr { page-break-inside: avoid; }
       }
     };
     const structElemRefs = _buildOutlineStructElems();
+    // ── Stage 4 prep: flat outline-items list for per-block role matching.
+    // We rewalk the DOM here rather than plumb state out of
+    // _buildOutlineStructElems because the walk is cheap (~ms) and keeps
+    // that helper's return shape unchanged.
+    const stage4OutlineItems = [];
+    try {
+      const _b = htmlDoc.body || htmlDoc.documentElement;
+      const _w = htmlDoc.createTreeWalker(_b, NodeFilter.SHOW_ELEMENT, null);
+      while (_w.nextNode()) {
+        const _el = _w.currentNode;
+        const _tag = (_el.tagName || '').toLowerCase();
+        const _role = TAG_TO_PDF_ROLE[_tag];
+        if (!_role) continue;
+        if (['h1','h2','h3','h4','h5','h6','p','li','caption','blockquote'].includes(_tag) && !(_el.textContent || '').trim()) continue;
+        stage4OutlineItems.push({ role: _role, text: (_el.textContent || '').trim().substring(0, 400) });
+      }
+    } catch(_) {}
     // ── Stage 2: content-stream MCID wrapping + per-page StructElems ──
     // For every page we (a) optionally inject an invisible OCR text layer
     // (scanned PDFs), (b) wrap the full content stream with BDC/EMC so a
@@ -9736,6 +10036,23 @@ tr { page-break-inside: avoid; }
       .replace(/\u00A0/g, ' ')
       .replace(/[^\x20-\xFF\n\r\t]/g, '');
 
+    // Stage 4 pdf.js doc load (text-layer PDFs only — scanned PDFs use the
+    // Stage 3 single-MCID wrap because pdf.js on original bytes sees no text).
+    let pdfjsDocForTagging = null;
+    if (!isScanned) {
+      try {
+        await ensurePdfJsLoaded();
+        await ensurePakoLoaded();
+        if (window.pdfjsLib) {
+          const _srcBytes = originalPdfBytes instanceof Uint8Array ? originalPdfBytes : new Uint8Array(originalPdfBytes);
+          pdfjsDocForTagging = await window.pdfjsLib.getDocument({ data: _srcBytes.slice() }).promise;
+        }
+      } catch(s4prepErr) {
+        try { warnLog('[createTaggedPdf] Stage 4 pdf.js/pako load failed, using Stage 3 for all pages: ' + (s4prepErr && s4prepErr.message)); } catch(_) {}
+        pdfjsDocForTagging = null;
+      }
+    }
+
     const pageElemRefs = [];
     const parentTreeNums = [];
     for (let pi = 0; pi < pages.length; pi++) {
@@ -9767,53 +10084,77 @@ tr { page-break-inside: avoid; }
           } catch(textErr) { try { warnLog('[createTaggedPdf] invisible OCR text layer failed p' + (pi+1) + ': ' + (textErr && textErr.message)); } catch(_) {} }
         }
       }
-      // Path A — wrap the entire page content stream with BDC/EMC. pdf-lib
-      // 1.17.1 has no page.prependOperators, so we manipulate the Contents
-      // entry directly. PDF readers concatenate an array of content streams,
-      // so [bdcStream, ...existing, emcStream] is a valid shape regardless
-      // of whether the original was a single stream or already an array.
-      try {
-        const bdcBytes = new TextEncoder().encode('/P <</MCID 0>> BDC\n');
-        const emcBytes = new TextEncoder().encode('\nEMC\n');
-        const bdcStream = context.stream(bdcBytes);
-        const emcStream = context.stream(emcBytes);
-        const bdcRef = context.register(bdcStream);
-        const emcRef = context.register(emcStream);
-        const node = page.node;
-        const rawContents = node.get(PDFName.of('Contents'));
-        const newArr = [bdcRef];
-        if (rawContents && typeof rawContents.size === 'function' && typeof rawContents.get === 'function') {
-          for (let k = 0; k < rawContents.size(); k++) newArr.push(rawContents.get(k));
-        } else if (rawContents) {
-          newArr.push(rawContents);
+      // ── Stage 4 attempt ── Per-block MCID wrapping with proper /H1, /P,
+      // /Caption, etc. roles. Reads the content stream, parses BT...ET text
+      // objects, matches each to a pdf.js text item to infer the role, and
+      // splices per-block BDC/EMC markers. Throws on any mismatch or parse
+      // error; we fall back to the Stage 3 single-MCID wrap below. Scanned
+      // PDFs skip Stage 4 because pdf.js on original bytes sees no text.
+      let stage4Success = false;
+      if (pdfjsDocForTagging && !isScanned && window.pako) {
+        try {
+          const s4 = await _stage4_tryWrapPage(
+            page, pi, pdfjsDocForTagging, stage4OutlineItems,
+            context, { PDFName, PDFString, PDFNumber }, structRootRef
+          );
+          if (s4 && s4.pageSectRef) {
+            pageElemRefs.push(s4.pageSectRef);
+            parentTreeNums.push(PDFNumber.of(pi));
+            parentTreeNums.push(s4.parentArrayRef);
+            stage4Success = true;
+          }
+        } catch (s4err) {
+          try { warnLog('[createTaggedPdf] Stage 4 p' + (pi+1) + ' → Stage 3 fallback: ' + (s4err && s4err.message)); } catch(_) {}
         }
-        newArr.push(emcRef);
-        node.set(PDFName.of('Contents'), context.obj(newArr));
-        node.set(PDFName.of('StructParents'), PDFNumber.of(pi));
-      } catch(wrapErr) { try { warnLog('[createTaggedPdf] BDC/EMC wrap failed p' + (pi+1) + ': ' + (wrapErr && wrapErr.message)); } catch(_) {} }
+      }
 
-      // Per-page StructElem (type /P) with a single MCR K-child pointing at
-      // the page's MCID 0. This is the link validators walk from content →
-      // tag tree. Parent P is the root ref; Pg anchors the element to this
-      // specific page so readers don't have to guess.
-      try {
-        const mcrDict = context.obj({
-          Type: PDFName.of('MCR'),
-          Pg: page.ref,
-          MCID: PDFNumber.of(0),
-        });
-        const pageElemDict = context.obj({
-          Type: PDFName.of('StructElem'),
-          S: PDFName.of('P'),
-          P: structRootRef,
-          Pg: page.ref,
-          K: context.obj([mcrDict]),
-        });
-        const pageElemRef = context.register(pageElemDict);
-        pageElemRefs.push(pageElemRef);
-        parentTreeNums.push(PDFNumber.of(pi));
-        parentTreeNums.push(pageElemRef);
-      } catch(elemErr) { try { warnLog('[createTaggedPdf] page StructElem build failed p' + (pi+1) + ': ' + (elemErr && elemErr.message)); } catch(_) {} }
+      if (!stage4Success) {
+        // ── Stage 3 fallback (Path A) ── Wrap the entire page content
+        // stream with one BDC/EMC and tag it as a single /P. Keeps Stage 3
+        // output exactly as it was when Stage 4 isn't applicable (scanned
+        // PDFs, Stage 4 parse failures, pdf.js load failures).
+        try {
+          const bdcBytes = new TextEncoder().encode('/P <</MCID 0>> BDC\n');
+          const emcBytes = new TextEncoder().encode('\nEMC\n');
+          const bdcStream = context.stream(bdcBytes);
+          const emcStream = context.stream(emcBytes);
+          const bdcRef = context.register(bdcStream);
+          const emcRef = context.register(emcStream);
+          const node = page.node;
+          const rawContents = node.get(PDFName.of('Contents'));
+          const newArr = [bdcRef];
+          if (rawContents && typeof rawContents.size === 'function' && typeof rawContents.get === 'function') {
+            for (let k = 0; k < rawContents.size(); k++) newArr.push(rawContents.get(k));
+          } else if (rawContents) {
+            newArr.push(rawContents);
+          }
+          newArr.push(emcRef);
+          node.set(PDFName.of('Contents'), context.obj(newArr));
+          node.set(PDFName.of('StructParents'), PDFNumber.of(pi));
+        } catch(wrapErr) { try { warnLog('[createTaggedPdf] BDC/EMC wrap failed p' + (pi+1) + ': ' + (wrapErr && wrapErr.message)); } catch(_) {} }
+
+        // Per-page StructElem (type /P) with a single MCR K-child pointing
+        // at the page's MCID 0. Validators walk this from content → tag
+        // tree.
+        try {
+          const mcrDict = context.obj({
+            Type: PDFName.of('MCR'),
+            Pg: page.ref,
+            MCID: PDFNumber.of(0),
+          });
+          const pageElemDict = context.obj({
+            Type: PDFName.of('StructElem'),
+            S: PDFName.of('P'),
+            P: structRootRef,
+            Pg: page.ref,
+            K: context.obj([mcrDict]),
+          });
+          const pageElemRef = context.register(pageElemDict);
+          pageElemRefs.push(pageElemRef);
+          parentTreeNums.push(PDFNumber.of(pi));
+          parentTreeNums.push(pageElemRef);
+        } catch(elemErr) { try { warnLog('[createTaggedPdf] page StructElem build failed p' + (pi+1) + ': ' + (elemErr && elemErr.message)); } catch(_) {} }
+      }
     }
     // ── Stage 3: AcroForm field tagging ──
     // Scan each page's Annots for widget annotations (Subtype=/Widget),
