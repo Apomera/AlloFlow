@@ -912,6 +912,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         var filterEnd = filterEndTuple[0], setFilterEnd = filterEndTuple[1];
         var filterDrillTuple = useState('');
         var filterDrill = filterDrillTuple[0], setFilterDrill = filterDrillTuple[1];
+        // Note-search query — filters drill-history timeline by substring
+        // match in session.note (case-insensitive). Useful for clinicians
+        // finding specific past sessions: "when did I mention headache?"
+        var noteQueryTuple = useState('');
+        var noteQuery = noteQueryTuple[0], setNoteQuery = noteQueryTuple[1];
         var restNudgeShownRef = useRef(false);
 
         // Passage-generation-local state (separate from persistent state so
@@ -5128,17 +5133,45 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             // Scrollable drill history — every filtered session, newest first.
             // Shows drill name, WPM/acc, duration, reflection emoji, and the
             // first ~60 chars of any note. Clinical audit trail in one place.
-            sessions.length > 0 ? h('div', {
-              style: {
-                marginBottom: '24px',
-                padding: '16px',
-                background: palette.surface,
-                borderRadius: '12px',
-                border: '1px solid ' + palette.border
-              }
-            },
-              h('div', { style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '10px', fontWeight: 700 } },
-                'Drill history · ' + sessions.length + (filterActive ? ' filtered' : ' sessions')),
+            sessions.length > 0 ? (function() {
+              // Apply note-query filter on top of the main filter set.
+              var q = (noteQuery || '').trim().toLowerCase();
+              var historySessions = q
+                ? sessions.filter(function(s) {
+                    return (s.note || '').toLowerCase().indexOf(q) !== -1;
+                  })
+                : sessions;
+              return h('div', {
+                style: {
+                  marginBottom: '24px',
+                  padding: '16px',
+                  background: palette.surface,
+                  borderRadius: '12px',
+                  border: '1px solid ' + palette.border
+                }
+              },
+              h('div', { style: { display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '10px', flexWrap: 'wrap' } },
+                h('div', { style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 } },
+                  'Drill history · ' + historySessions.length + (q ? ' matching' : (filterActive ? ' filtered' : ' sessions'))),
+                h('input', {
+                  type: 'search',
+                  value: noteQuery,
+                  onChange: function(e) { setNoteQuery(e.target.value); },
+                  placeholder: '🔎 Search notes…',
+                  style: {
+                    padding: '4px 8px',
+                    borderRadius: '6px',
+                    background: palette.bg,
+                    border: '1px solid ' + palette.border,
+                    color: palette.text,
+                    fontSize: '11px',
+                    fontFamily: fontFamily,
+                    minWidth: '160px',
+                    flex: '0 1 auto'
+                  }
+                }),
+                q && historySessions.length === 0 ? h('span', { style: { fontSize: '10px', color: palette.warn, fontStyle: 'italic' } }, 'No matches') : null
+              ),
               h('div', {
                 role: 'list',
                 style: {
@@ -5149,7 +5182,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   background: palette.bg
                 }
               },
-                sessions.slice().reverse().map(function(s, idx) {
+                historySessions.slice().reverse().map(function(s, idx) {
                   var reflectionEmoji = s.reflection === 'hard' ? '💪'
                                       : s.reflection === 'just-right' ? '😌'
                                       : s.reflection === 'too-easy' ? '🌱'
@@ -5168,7 +5201,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                     role: 'listitem',
                     style: {
                       padding: '10px 12px',
-                      borderBottom: idx === sessions.length - 1 ? 'none' : '1px solid ' + palette.border,
+                      borderBottom: idx === historySessions.length - 1 ? 'none' : '1px solid ' + palette.border,
                       display: 'flex',
                       gap: '10px',
                       alignItems: 'flex-start',
@@ -5211,7 +5244,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   );
                 })
               )
-            ) : null,
+              );
+            })() : null,
 
             // Per-drill error breakdown — splits the global heatmap by drill
             // so clinicians see which keys miss on which drill specifically.
