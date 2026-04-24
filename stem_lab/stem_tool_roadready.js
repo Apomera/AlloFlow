@@ -10616,6 +10616,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   var bench = new T.Mesh(new T.BoxGeometry(1.5, 0.15, 0.4), benchMat);
                   bench.position.set(lmCenterWX, 0.4, lmCenterWZ);
                   chunkGroup.add(bench);
+                  // ── Decorative path lamps at twilight/night/fog ──
+                  // Two short antique-style lamp posts at the front corners of the
+                  // park. Glow warm white at night so the park reads as a destination
+                  // even in low light — real town parks do this with cast-iron lamp
+                  // posts spaced along walkways.
+                  var parkLit = currentScenario.time === 'night' || currentScenario.id === 'dawn' || currentScenario.weather === 'fog';
+                  if (parkLit) {
+                    var ppMat = new T.MeshLambertMaterial({ color: 0x2a2a2a });
+                    var ppGlowMat = new T.MeshBasicMaterial({
+                      color: 0xfff0cc, transparent: true, opacity: 0.75,
+                      blending: T.AdditiveBlending, depthWrite: false
+                    });
+                    var ppBulbMat = new T.MeshBasicMaterial({ color: 0xfff0cc });
+                    [-1.6, 1.6].forEach(function(ppOff) {
+                      // Pole (slim cast-iron style)
+                      var ppPole = new T.Mesh(new T.CylinderGeometry(0.04, 0.06, 2.2, 6), ppMat);
+                      ppPole.position.set(lmCenterWX + ppOff, 1.1, lmCenterWZ - lt.size * 0.4);
+                      chunkGroup.add(ppPole);
+                      // Lantern (small box)
+                      var ppLantern = new T.Mesh(new T.BoxGeometry(0.18, 0.22, 0.18), ppBulbMat);
+                      ppLantern.position.set(lmCenterWX + ppOff, 2.25, lmCenterWZ - lt.size * 0.4);
+                      chunkGroup.add(ppLantern);
+                      // Soft halo (not facing — additive plane reads from any angle)
+                      var ppHalo = new T.Mesh(new T.PlaneGeometry(0.6, 0.6), ppGlowMat);
+                      ppHalo.position.set(lmCenterWX + ppOff, 2.25, lmCenterWZ - lt.size * 0.4 + 0.02);
+                      chunkGroup.add(ppHalo);
+                    });
+                    // One soft PointLight centered between the two lamps so the park
+                    // benches/grass actually pick up some warm illumination.
+                    var ppCenterLight = new T.PointLight(0xfff0cc, 0.7, 4, 2);
+                    ppCenterLight.position.set(lmCenterWX, 2.0, lmCenterWZ - lt.size * 0.3);
+                    chunkGroup.add(ppCenterLight);
+                  }
                 } else if (lt.id === 'lighthouse') {
                   // Lighthouse: tall cylindrical tower with red top
                   var lhBase = new T.Mesh(new T.CylinderGeometry(0.9, 1.1, lt.height, 10), lmMainMat);
