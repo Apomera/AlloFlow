@@ -991,8 +991,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '  border-radius: 18px !important;',
       '}',
 
-      /* ── Reduced-motion override: drop animations for users with ',
-      '     prefers-reduced-motion, consistent with WCAG 2.3.3 ─── */',
       '@media (prefers-reduced-motion: reduce) {',
       '  .tp-root .tp-current-char { animation: none !important; }',
       '  .tp-root button { transition: none !important; }',
