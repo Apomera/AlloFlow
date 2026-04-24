@@ -109,7 +109,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     // Drives the menu's gentle 'consider backing up' nudge. Null until first
     // backup is exported; then the nudge backs off until enough new activity
     // has accrued to make it worth re-exporting.
-    lastBackupDate: null
+    lastBackupDate: null,
+    // Per-nudge dismissal flags for the AI-activity discovery cards on
+    // drill-intro (Story Mode for Passage, Prompt Mode for Custom).
+    // Once 'Maybe later' is clicked, the nudge stops appearing for that
+    // activity — no re-nag. Toggling the underlying accommodation ON from
+    // Settings also implicitly satisfies the goal; the nudge checks both.
+    aiHintDismissed: { story: false, prompt: false }
   };
 
   // Max custom drills kept at once. Matches the passage library size — both are
@@ -909,6 +915,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     'neutral':   '"Inter", "Helvetica Neue", system-ui, sans-serif'
   };
 
+  // Theme metadata — shared between the Settings 'Appearance' section and
+  // the menu quick-switcher. Each entry has a visual swatch pair (bg +
+  // accent color for preview chips) and labels used by the full picker.
+  // Single source of truth so the two surfaces can't drift apart.
+  var THEME_OPTIONS = [
+    { id: 'default',   label: 'Default',   sub: 'cool dark blue',    bgSample: '#0f172a', accentSample: '#60a5fa' },
+    { id: 'steampunk', label: '🔩 Steampunk', sub: 'brass + leather',  bgSample: '#1a1108', accentSample: '#d4884c' },
+    { id: 'cyberpunk', label: '🌃 Cyberpunk', sub: 'neon magenta',     bgSample: '#0a0514', accentSample: '#ff00a8' },
+    { id: 'kawaii',    label: '🍓 Kawaii',    sub: 'pastel · LIGHT',   bgSample: '#fff5fa', accentSample: '#e85a8a' },
+    { id: 'neutral',   label: '🪨 Neutral',   sub: 'warm gray',        bgSample: '#1a1a1a', accentSample: '#b8a080' }
+  ];
+
   function getFontFamily(accommodations, themeName) {
     if (accommodations && accommodations.dyslexiaFont) {
       // OpenDyslexic preferred; fallback to system safe-list with increased letter spacing.
@@ -1625,12 +1643,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             } else if (key === '?') {
               e.preventDefault();
               upd('view', 'shortcuts');
+            } else if (key === 't' || key === 'T') {
+              // Cycle through THEME_OPTIONS in order. Skipped when
+              // high-contrast mode is on (high-contrast overrides themes
+              // anyway, so the cycle would be visually invisible).
+              if (state.accommodations && state.accommodations.highContrast) return;
+              var cur = state.theme || 'default';
+              var idx = 0;
+              for (var ti = 0; ti < THEME_OPTIONS.length; ti++) {
+                if (THEME_OPTIONS[ti].id === cur) { idx = ti; break; }
+              }
+              var next = THEME_OPTIONS[(idx + 1) % THEME_OPTIONS.length];
+              e.preventDefault();
+              upd('theme', next.id);
             }
           };
           window.addEventListener('keydown', handler);
           return function() { window.removeEventListener('keydown', handler); };
           // eslint-disable-next-line
-        }, [state.view, state.sessions, state.masteryLevel]);
+        }, [state.view, state.sessions, state.masteryLevel, state.theme, state.accommodations]);
 
         // ── Track menu stats-strip previous values for the tp-live-tick
         // 'only pulse on actual change' gating. Runs after every render;
@@ -2166,6 +2197,99 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 return 'Built for learners with dysgraphia, dyslexia, ADHD, motor-planning differences, and low vision. Go at your own pace — there are no timers, leaderboards, or streak punishments here.';
               })())
             ),
+
+            // Menu theme quick-switcher — fast-path for the 5-palette chooser
+            // that used to live only deep in Settings. Horizontal strip of
+            // circular swatches + a small 'T cycles' hint. Active theme gets
+            // an accent ring + bold border + a text label under it (the label
+            // is the non-color indicator for high-contrast mode and
+            // color-vision differences, so the active state isn't color-only).
+            // Full picker (with accent-color control) still lives in Settings.
+            !state.accommodations.highContrast ? h('div', {
+              role: 'group',
+              'aria-label': 'Visual theme quick-switcher',
+              style: {
+                marginBottom: '20px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                flexWrap: 'wrap'
+              }
+            },
+              h('div', {
+                style: {
+                  fontSize: '11px',
+                  color: palette.textMute,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.08em',
+                  fontWeight: 700
+                }
+              }, (function() {
+                var tm = state.theme || 'default';
+                if (tm === 'steampunk') return '⚙ Palette';
+                if (tm === 'cyberpunk') return '[PALETTE]';
+                if (tm === 'kawaii')    return '💕 Look';
+                if (tm === 'neutral')   return 'Theme';
+                return '🎨 Look';
+              })()),
+              h('div', { style: { display: 'flex', gap: '8px', alignItems: 'center' } },
+                THEME_OPTIONS.map(function(opt) {
+                  var isActive = (state.theme || 'default') === opt.id;
+                  return h('button', {
+                    key: 'tpqs-' + opt.id,
+                    onClick: function() { upd('theme', opt.id); },
+                    'aria-pressed': isActive ? 'true' : 'false',
+                    'aria-label': 'Switch to ' + opt.label.replace(/^\S+\s/, '') + ' theme (' + opt.sub + ')' + (isActive ? ', currently active' : ''),
+                    title: opt.label + ' — ' + opt.sub,
+                    style: {
+                      width: isActive ? '28px' : '24px',
+                      height: isActive ? '28px' : '24px',
+                      borderRadius: '50%',
+                      border: isActive ? ('2px solid ' + palette.accent) : ('1px solid ' + palette.border),
+                      background: opt.bgSample,
+                      position: 'relative',
+                      cursor: 'pointer',
+                      padding: 0,
+                      transition: 'transform 140ms ease, border-color 140ms ease, width 140ms ease, height 140ms ease',
+                      boxShadow: isActive ? ('0 0 0 2px ' + palette.bg + ', 0 0 0 4px ' + palette.accent) : 'none'
+                    }
+                  },
+                    // Inner accent dot — shows the theme's accent color so
+                    // the swatch conveys two dimensions at a glance.
+                    h('span', {
+                      'aria-hidden': 'true',
+                      style: {
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        width: '10px',
+                        height: '10px',
+                        borderRadius: '50%',
+                        background: opt.accentSample,
+                        transform: 'translate(-50%, -50%)',
+                        pointerEvents: 'none'
+                      }
+                    })
+                  );
+                })
+              ),
+              // Active theme name + keyboard hint — the text label is the
+              // color-independent indicator of which theme is active,
+              // critical for color-vision differences + high-contrast users.
+              h('div', {
+                style: {
+                  fontSize: '11px',
+                  color: palette.textDim,
+                  fontStyle: 'italic',
+                  marginLeft: 'auto'
+                }
+              },
+                (function() {
+                  var active = THEME_OPTIONS.filter(function(o) { return o.id === (state.theme || 'default'); })[0];
+                  return (active ? active.label : 'Default') + ' · press T to cycle';
+                })()
+              )
+            ) : null,
 
             // Personalized greeting — reads the time of day, any absence gap,
             // and the student's first name (if set). Small but real engagement
@@ -2712,6 +2836,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 h('li', null, 'Pick a drill below. ', h('strong', null, 'Home Row'), ' is where most people start — fingers rest on a, s, d, f  ·  j, k, l, ;'),
                 h('li', null, 'Turn on accommodations from the ', h('strong', null, 'Accommodations'), ' button. Dyslexia font, audio cues, high-contrast, large-key keyboard, and more — they\'re the product, not a fallback.'),
                 h('li', null, 'No timers, no races, no streak punishments. Go at your pace. Pause whenever.'),
+                h('li', null, 'Try the ', h('strong', null, '✨ Personalized Passage'), ' drill — AI writes practice text at your grade level about anything you care about. Turn on ', h('strong', null, 'Story Mode'), ' and it will illustrate what you type.'),
+                h('li', null, 'The ', h('strong', null, 'look'), ' can change — the row of colored swatches above switches between 5 visual themes. Or press ', h('strong', null, 'T'), ' to cycle.'),
                 h('li', null, 'A clinician or teacher can set an IEP goal and export progress from the ', h('strong', null, 'Progress & Goals'), ' view.')
               ),
               h('button', {
@@ -3479,6 +3605,100 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   rq ? h('span', { 'aria-hidden': 'true', style: { color: palette.accent, fontWeight: 700, marginLeft: '2px' } }, rq) : null
                 );
               })() : null,
+
+              // AI-activity discovery nudge — Story Mode for Passage,
+              // Prompt Mode for Custom. Dismissible (state.aiHintDismissed).
+              // Suppressed when the underlying accommodation is already on,
+              // or when the student previously tapped 'Maybe later'. One
+              // inline card, themed border, two buttons: enable + dismiss.
+              (function() {
+                var hints = state.aiHintDismissed || {};
+                var isPassage = drill.id === 'passage';
+                var isCustom  = drill.id === 'custom';
+                if (!isPassage && !isCustom) return null;
+                var accKey = isPassage ? 'storyModeImage' : 'promptModeImage';
+                var hintKey = isPassage ? 'story' : 'prompt';
+                if (state.accommodations && state.accommodations[accKey]) return null;
+                if (hints[hintKey]) return null;
+                var tm = state.theme || 'default';
+                var title, body, enableLabel, dismissLabel;
+                if (isPassage) {
+                  if (tm === 'steampunk') {
+                    title = '⚙ Illuminated scrolls are available';
+                    body = 'Have the workshop illustrate your passage as you type it. Drawings appear on the summary page.';
+                  } else if (tm === 'cyberpunk') {
+                    title = '[STORY MODE :: AVAILABLE]';
+                    body = '[AI-ILLUSTRATION] passage text → image :: surfaces on session summary';
+                  } else if (tm === 'kawaii') {
+                    title = '✨💕 Story Mode is available here';
+                    body = 'Let AI draw a picture to go with your passage! 🎨 It shows up at the end of the session. 🌸';
+                  } else if (tm === 'neutral') {
+                    title = 'Story Mode available';
+                    body = 'AI illustration of the passage renders on the summary page.';
+                  } else {
+                    title = '✨ Story Mode is available here';
+                    body = 'AI can illustrate your passage as you type it — the image shows up on the session summary.';
+                  }
+                } else {
+                  if (tm === 'steampunk') {
+                    title = '⚙ Prompt-Mode refinement';
+                    body = 'Complete the drill, and the workshop shall refine a custom illustration from your drill text — image-to-image, shaped by what you type.';
+                  } else if (tm === 'cyberpunk') {
+                    title = '[PROMPT MODE :: AVAILABLE]';
+                    body = '[I2I-REFINE] drill text → seed prompt :: post-completion image reward';
+                  } else if (tm === 'kawaii') {
+                    title = '🖼💕 Prompt Mode is available!';
+                    body = 'Finish your custom drill and get an AI picture based on what you typed — refine it again and again! ✨';
+                  } else if (tm === 'neutral') {
+                    title = 'Prompt Mode available';
+                    body = 'Post-completion image generation + image-to-image refinement from drill text.';
+                  } else {
+                    title = '🖼 Prompt Mode is available';
+                    body = 'Finish this drill to generate — and then refine — an image based on what you typed. Image-to-image so each pass builds on the last.';
+                  }
+                }
+                if (tm === 'steampunk')      { enableLabel = 'Engage'; dismissLabel = 'Not today'; }
+                else if (tm === 'cyberpunk') { enableLabel = '[ENABLE]'; dismissLabel = '[DISMISS]'; }
+                else if (tm === 'kawaii')    { enableLabel = '💕 Turn it on!'; dismissLabel = 'Maybe later'; }
+                else if (tm === 'neutral')   { enableLabel = 'Enable'; dismissLabel = 'Dismiss'; }
+                else                         { enableLabel = '✨ Enable ' + (isPassage ? 'Story' : 'Prompt') + ' Mode'; dismissLabel = 'Maybe later'; }
+                return h('div', {
+                  role: 'note',
+                  style: {
+                    marginBottom: '16px',
+                    padding: '12px 14px',
+                    background: palette.bg,
+                    border: '1px dashed ' + palette.accent,
+                    borderRadius: '10px',
+                    textAlign: 'left'
+                  }
+                },
+                  h('div', { style: { fontSize: '12px', fontWeight: 700, color: palette.accent, marginBottom: '4px', letterSpacing: '0.02em' } }, title),
+                  h('div', { style: { fontSize: '12px', color: palette.textDim, lineHeight: '1.55', marginBottom: '10px' } }, body),
+                  h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
+                    h('button', {
+                      onClick: function() {
+                        // Enable the accommodation + mark the hint dismissed
+                        // so it doesn't re-nag even if toggled off later.
+                        var newAcc = Object.assign({}, state.accommodations || {});
+                        newAcc[accKey] = true;
+                        var newHints = Object.assign({}, hints);
+                        newHints[hintKey] = true;
+                        updMulti({ accommodations: newAcc, aiHintDismissed: newHints });
+                      },
+                      style: Object.assign({}, primaryBtnStyle(palette), { fontSize: '11px', padding: '6px 12px' })
+                    }, enableLabel),
+                    h('button', {
+                      onClick: function() {
+                        var newHints = Object.assign({}, hints);
+                        newHints[hintKey] = true;
+                        upd('aiHintDismissed', newHints);
+                      },
+                      style: Object.assign({}, secondaryBtnStyle(palette), { fontSize: '11px', padding: '6px 12px' })
+                    }, dismissLabel)
+                  )
+                );
+              })(),
 
               // IEP goal reminder (if set)
               state.iepGoal && state.iepGoal.targetWpm ? h('div', {
@@ -5871,19 +6091,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
 
             // Quick-jump table of contents — anchors to each major section of
             // the (long) Settings page. Small but real UX win: clinicians
-            // configuring multi-accommodation profiles stop scrolling.
+            // configuring multi-accommodation profiles stop scrolling. Now
+            // sticky-positioned so it stays reachable from anywhere in the
+            // page — before, students with ADHD lost their place because
+            // returning to top required a scroll-back.
             h('div', {
               style: {
+                position: 'sticky',
+                top: '0',
+                zIndex: 2,
                 marginBottom: '20px',
                 padding: '10px 14px',
-                background: 'transparent',
+                background: palette.bg,
                 border: '1px dashed ' + palette.border,
                 borderRadius: '8px',
                 display: 'flex',
                 gap: '8px',
                 flexWrap: 'wrap',
                 alignItems: 'center',
-                fontSize: '11px'
+                fontSize: '11px',
+                // Subtle drop-shadow only appears when the bar is
+                // 'floating' over scrolled content beneath it.
+                boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
               }
             },
               h('span', { style: { color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700 } }, 'Jump to'),
@@ -6114,13 +6343,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               h('div', { style: { fontSize: '11px', color: palette.textMute, lineHeight: '1.4', marginBottom: '10px' } },
                 'Swap the whole look of the tool. High-contrast mode overrides themes. Kawaii is a light theme; the others are dark variants.'),
               h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' } },
-                [
-                  { id: 'default',   label: 'Default',   sub: 'cool dark blue',    bgSample: '#0f172a', accentSample: '#60a5fa' },
-                  { id: 'steampunk', label: '🔩 Steampunk', sub: 'brass + leather',  bgSample: '#1a1108', accentSample: '#d4884c' },
-                  { id: 'cyberpunk', label: '🌃 Cyberpunk', sub: 'neon magenta',     bgSample: '#0a0514', accentSample: '#ff00a8' },
-                  { id: 'kawaii',    label: '🍓 Kawaii',    sub: 'pastel · LIGHT',   bgSample: '#fff5fa', accentSample: '#e85a8a' },
-                  { id: 'neutral',   label: '🪨 Neutral',   sub: 'warm gray',        bgSample: '#1a1a1a', accentSample: '#b8a080' }
-                ].map(function(opt) {
+                THEME_OPTIONS.map(function(opt) {
                   var isActive = (state.theme || 'default') === opt.id;
                   return h('button', {
                     key: 'theme-' + opt.id,
@@ -8340,6 +8563,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               { keys: ['Enter', 'Space'],   desc: 'Activate the focused drill card' },
               { keys: ['R'],                desc: 'Repeat your last drill (fast jump)' },
               { keys: ['D'],                desc: 'Start today\'s drill of the day' },
+              { keys: ['T'],                desc: 'Cycle through the 5 visual themes' },
               { keys: ['?'],                desc: 'Open this shortcuts reference' }
             ]},
             { heading: 'On the drill intro screen', items: [
@@ -9920,20 +10144,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       onMouseOver: function(e) { if (unlocked) e.currentTarget.style.borderColor = palette.accent; },
       onMouseOut: function(e) { if (unlocked) e.currentTarget.style.borderColor = isFavorite ? palette.accent : palette.border; }
     },
-      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '6px' } },
         h('span', { style: { fontSize: '24px' } }, drill.icon),
-        h('span', {
-          style: {
-            fontSize: '10px',
-            padding: '2px 8px',
-            borderRadius: '999px',
-            background: unlocked ? palette.surface2 : 'transparent',
-            color: palette.textMute,
-            textTransform: 'uppercase',
-            letterSpacing: '0.05em',
-            marginRight: '20px'  // leave space for overlaid ★ button
-          }
-        }, unlocked ? (drill.tier !== null && drill.tier !== undefined ? 'Tier ' + drill.tier : 'Open') : '🔒 Locked')
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: '4px', marginRight: '20px' } },
+          // Theme-voiced AI chip — surfaces only on drills that route
+          // through the AI pipeline (currently just 'passage'). Visually
+          // differentiates AI content from structured drills in the grid.
+          drill.requiresAI ? h('span', {
+            'aria-label': 'This is an AI-generated drill',
+            style: {
+              fontSize: '10px',
+              padding: '2px 7px',
+              borderRadius: '999px',
+              background: palette.accent,
+              color: palette.onAccent || '#0f172a',
+              fontWeight: 700,
+              letterSpacing: '0.04em'
+            }
+          }, (function() {
+            var tm = themeName || 'default';
+            if (tm === 'steampunk') return '⚙ AI';
+            if (tm === 'cyberpunk') return '[AI]';
+            if (tm === 'kawaii')    return '✨ AI 💕';
+            if (tm === 'neutral')   return 'AI';
+            return '✨ AI';
+          })()) : null,
+          h('span', {
+            style: {
+              fontSize: '10px',
+              padding: '2px 8px',
+              borderRadius: '999px',
+              background: unlocked ? palette.surface2 : 'transparent',
+              color: palette.textMute,
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em'
+            }
+          }, unlocked ? (drill.tier !== null && drill.tier !== undefined ? 'Tier ' + drill.tier : 'Open') : '🔒 Locked')
+        )
       ),
       h('div', { style: { fontSize: '15px', fontWeight: 600, color: palette.text } }, drill.name),
       h('div', { style: { fontSize: '12px', color: palette.textMute, lineHeight: '1.4' } }, drill.description),
