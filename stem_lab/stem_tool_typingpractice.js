@@ -927,6 +927,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
   // clear ring. Scoped via a data attribute so it doesn't affect the rest
   // of AlloFlow.
 
+  // Theme-voiced loading copy used for AI passage generation + image
+  // generation. Returns the label to show WHILE loading. Short enough that
+  // it fits in a button.
+  function getLoadingLabel(themeName, context) {
+    var t = themeName || 'default';
+    var c = context || 'generic';
+    // context can be 'passage', 'image', or 'generic'
+    if (t === 'cyberpunk') {
+      return c === 'image'   ? '[RENDER] ...'
+           : c === 'passage' ? '[GEN] ...'
+           :                   '[PROC] ...';
+    }
+    if (t === 'steampunk') {
+      return c === 'image'   ? '⚙ Etching…'
+           : c === 'passage' ? '⚙ Composing…'
+           :                   '⚙ Working…';
+    }
+    if (t === 'kawaii') {
+      return c === 'image'   ? '✨ Drawing... 💕'
+           : c === 'passage' ? '✨ Writing... 💕'
+           :                   '✨ Making magic... 💕';
+    }
+    if (t === 'neutral') {
+      return c === 'image'   ? 'Rendering.'
+           : c === 'passage' ? 'Generating.'
+           :                   'Working.';
+    }
+    return c === 'image'   ? '✨ Generating image…'
+         : c === 'passage' ? '✨ Generating passage…'
+         :                   '✨ Generating…';
+  }
+
   (function injectFocusStyles() {
     if (document.getElementById('tp-focus-styles')) return;
     var style = document.createElement('style');
@@ -1022,8 +1054,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '  border-radius: 18px !important;',
       '}',
 
+      /* ── Loading spinner keyframes per theme ──────────────────── */
+      '@keyframes tp-spin-gear { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }',
+      '@keyframes tp-cyber-blink { 0%, 60% { opacity: 1; } 61%, 100% { opacity: 0.35; } }',
+      '@keyframes tp-kawaii-bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }',
+      '@keyframes tp-neutral-dots { 0%, 25% { opacity: 0.3; } 50% { opacity: 1; } 75%, 100% { opacity: 0.3; } }',
+
+      '.tp-root.tp-theme-steampunk .tp-loading-icon { display: inline-block; animation: tp-spin-gear 2.4s linear infinite; }',
+      '.tp-root.tp-theme-cyberpunk .tp-loading-icon { display: inline-block; animation: tp-cyber-blink 0.9s steps(2, jump-none) infinite; font-family: ui-monospace, monospace; }',
+      '.tp-root.tp-theme-kawaii    .tp-loading-icon { display: inline-block; animation: tp-kawaii-bounce 0.8s ease-in-out infinite; }',
+      '.tp-root.tp-theme-neutral   .tp-loading-icon { display: inline-block; animation: tp-neutral-dots 1.2s ease-in-out infinite; }',
+
       '@media (prefers-reduced-motion: reduce) {',
-      '  .tp-root .tp-current-char { animation: none !important; }',
+      '  .tp-root .tp-current-char,',
+      '  .tp-root .tp-loading-icon { animation: none !important; }',
       '  .tp-root button { transition: none !important; }',
       '}'
     ].join('\n');
@@ -3127,7 +3171,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   opacity: genLoading ? 0.6 : 1,
                   cursor: genLoading ? 'wait' : 'pointer'
                 })
-              }, genLoading ? '✨ Generating…' : (cached ? 'Generate a NEW passage' : 'Generate my passage')),
+              }, genLoading
+                  ? [
+                      h('span', { key: 'ico', className: 'tp-loading-icon', 'aria-hidden': 'true', style: { marginRight: '6px' } },
+                        (state.theme === 'steampunk') ? '⚙'
+                        : (state.theme === 'cyberpunk') ? '▮'
+                        : (state.theme === 'kawaii')    ? '💕'
+                        : (state.theme === 'neutral')   ? '•'
+                        : '✨'),
+                      h('span', { key: 'lbl' }, getLoadingLabel(state.theme, 'passage'))
+                    ]
+                  : (cached ? 'Generate a NEW passage' : 'Generate my passage')),
 
               (cached && !genLoading) ? h('button', {
                 onClick: function() { updMulti({ view: 'drill', currentDrill: 'passage' }); },
@@ -4170,10 +4224,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                     }, 'refined ' + existing.refinedCount + '×') : null
                   ),
 
-                  // Image display area
+                  // Image display area — theme-voiced loading indicator.
                   imgLoading ? h('div', {
-                    style: { padding: '40px 0', textAlign: 'center', color: palette.textMute, fontSize: '12px' }
-                  }, '✨ Generating…') : null,
+                    style: { padding: '40px 0', textAlign: 'center', color: palette.textMute, fontSize: '14px' }
+                  },
+                    h('div', { className: 'tp-loading-icon', 'aria-hidden': 'true', style: { fontSize: '28px', marginBottom: '8px' } },
+                      (state.theme === 'steampunk') ? '⚙'
+                      : (state.theme === 'cyberpunk') ? '▮▯▮'
+                      : (state.theme === 'kawaii')    ? '💕'
+                      : (state.theme === 'neutral')   ? '•••'
+                      : '✨'),
+                    h('div', null, getLoadingLabel(state.theme, 'image'))
+                  ) : null,
 
                   (!imgLoading && existing && existing.base64) ? h('div', null,
                     h('img', {
