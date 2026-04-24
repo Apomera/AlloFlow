@@ -330,7 +330,8 @@ if (typeof window !== 'undefined') window._upgradePersonas = _upgradePersonas;
 // (where parseMarkdownToHTML / generateResourceHTML are declared) so the 8
 // extracted handlers always read fresh state + component-scoped helpers.
 let _exportLiveRef = { current: {} };
-let exportLanguagePack = () => { console.warn('[exportLanguagePack] Fallback — Export module not loaded'); };
+// Note: exportLanguagePack is NOT here — it stays inside useTranslation hook
+// (line ~2385) because it closes over languagePack + targetLanguage state.
 let handleExportResearchJSON = () => { console.warn('[handleExportResearchJSON] Fallback'); };
 let handleExportProfiles = () => { console.warn('[handleExportProfiles] Fallback'); };
 let handleExportQTI = async () => { console.warn('[handleExportQTI] Fallback'); };
@@ -346,7 +347,6 @@ function _upgradeExport() {
         warnLog, debugLog,
         escapeXml, generateUUID,
     });
-    exportLanguagePack = api.exportLanguagePack;
     handleExportResearchJSON = api.handleExportResearchJSON;
     handleExportProfiles = api.handleExportProfiles;
     handleExportQTI = api.handleExportQTI;
@@ -2381,7 +2381,26 @@ const useTranslation = (targetLanguage, apiKey) => {
   const regenerateLanguage = useCallback(() => {
       setTrigger(prev => prev + 1);
   }, []);
-  // exportLanguagePack moved to export_module.js (via _upgradeExport shim).
+  // exportLanguagePack stays inside useTranslation because it closes over
+  // languagePack + targetLanguage which are state-local to this hook — not
+  // accessible from AlloFlowContent's scope. Attempting to extract it broke
+  // the Export module's factory with a "languagePack is not defined" TDZ.
+  const exportLanguagePack = useCallback(() => {
+    if (!languagePack) {
+      alert(t('language_selector.no_data_export'));
+      return;
+    }
+    const dataStr = JSON.stringify(languagePack, null, 2);
+    const blob = new Blob([dataStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `alloflow_${targetLanguage || 'custom'}_pack.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }, [languagePack, targetLanguage]);
   const importLanguagePack = useCallback((file) => {
     if (!file) return;
     const reader = new FileReader();
@@ -5933,48 +5952,48 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     })();
     // AlloData: pure-data bundle (phoneme guide, prompts, i18n strings, shop items, timeline modes).
     // Registers window.AlloModules.AlloData and calls _upgradeAlloData() to populate monolith shim.
-    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7a547ce/allo_data_module.js');
+    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38c45f4/allo_data_module.js');
     // LargeFileModule: chunked audio/video transcription (LargeFileHandler + LargeFileTranscriptionModal).
-    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7a547ce/large_file_module.js');
+    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38c45f4/large_file_module.js');
     // KeyConceptMapModule: SVG-overlay Bezier concept map view (used by renderOutlineContent).
-    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7a547ce/key_concept_map_module.js');
+    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38c45f4/key_concept_map_module.js');
     // UtilsPure: 14 pure utilities (JSON, storage, network, image) — populates monolith shim via _upgradeUtilsPure().
-    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7a547ce/utils_pure_module.js');
+    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38c45f4/utils_pure_module.js');
     // GeminiAPI: callGemini + callGeminiVision + callGeminiImageEdit — populates monolith shim via _upgradeGeminiAPI().
-    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7a547ce/gemini_api_module.js');
+    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38c45f4/gemini_api_module.js');
     // TTS: fetchTTSBytes + callTTS + callTTSDirect — populates monolith shim via _upgradeTTS().
-    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7a547ce/tts_module.js');
+    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38c45f4/tts_module.js');
     // Personas: 16 handlers for historical character interview subsystem — populates monolith shim via _upgradePersonas().
-    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7a547ce/personas_module.js');
+    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38c45f4/personas_module.js');
     // Export: 8 export-pipeline handlers (QTI/IMS/PPTX/flashcards/storybook/JSON) — populates monolith shim via _upgradeExport().
-    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7a547ce/export_module.js');
+    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38c45f4/export_module.js');
     // MiscComponents: WordSoundsReviewPanel + AnimatedNumber + ClozeInput (pure-props components).
-    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7a547ce/misc_components_module.js');
+    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38c45f4/misc_components_module.js');
     // RemediationAudio: Web Audio feedback beeps (chunk good/bad/medium, session complete, etc).
-    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7a547ce/remediation_audio_module.js');
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7a547ce/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7a547ce/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7a547ce/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7a547ce/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7a547ce/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7a547ce/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7a547ce/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7a547ce/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7a547ce/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7a547ce/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7a547ce/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7a547ce/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7a547ce/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7a547ce/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7a547ce/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7a547ce/student_interaction_module.js');
-    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7a547ce/math_fluency_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7a547ce/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7a547ce/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7a547ce/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7a547ce/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7a547ce/content_engine_module.js');
-    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7a547ce/timeline_revision_module.js');
+    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38c45f4/remediation_audio_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38c45f4/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38c45f4/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38c45f4/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38c45f4/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38c45f4/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38c45f4/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38c45f4/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38c45f4/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38c45f4/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38c45f4/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38c45f4/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38c45f4/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38c45f4/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38c45f4/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38c45f4/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38c45f4/student_interaction_module.js');
+    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38c45f4/math_fluency_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38c45f4/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38c45f4/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38c45f4/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38c45f4/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38c45f4/content_engine_module.js');
+    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38c45f4/timeline_revision_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -5990,7 +6009,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7a547ce/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38c45f4/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -6073,6 +6092,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
         'sel_hub/sel_tool_voicedetective.js',
         'sel_hub/sel_tool_sociallab.js',
         'sel_hub/sel_tool_peersupport.js',
+        'sel_hub/sel_tool_selfadvocacy.js',
       ];
       // Wait for StemLab registry to be available before loading plugins
       var waitForRegistry = function(cb) {
@@ -17321,9 +17341,11 @@ Return ONLY valid JSON:
   // declarations above (they're component-scoped consts from _docPipeline). 8
   // extracted export handlers read state + helpers through this on every call.
   _exportLiveRef.current = {
-      // State reads
+      // State reads (languagePack + targetLanguage intentionally omitted — they're
+      // scoped to useTranslation hook, not AlloFlowContent; exportLanguagePack stays
+      // inside useTranslation for that reason)
       history, sourceTopic, gradeLevel, generatedContent, studentResponses,
-      profiles, languagePack, targetLanguage, adventureState,
+      profiles, adventureState,
       probeHistory, surveyResponses, fidelityLog, sessionCounter,
       externalCBMScores, interventionLogs,
       // Setters
