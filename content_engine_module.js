@@ -129,11 +129,31 @@ var createContentEngine = function(deps) {
     var bib = bibMatch ? rawText.substring(bibMatch.index) : '';
     var trimmedBody = body.trimEnd();
     if (trimmedBody.length > 50) {
-      var lastSentenceEnd = Math.max(trimmedBody.lastIndexOf('.'), trimmedBody.lastIndexOf('!'), trimmedBody.lastIndexOf('?'));
+      // Mask markdown link tokens [text](url) with spaces of equal length so
+      // lastIndexOf('.') can only find sentence-ending periods in PROSE, not
+      // domain-name dots inside citation URLs (e.g., the '.' in
+      // 'online.utpb.edu'). Without this mask: when Gemini emits the last
+      // sentence without a terminal '.', the trim below would locate a URL
+      // domain dot as the "last sentence end" and truncate the body mid-URL —
+      // the exact symptom that has persisted through every prior citation fix.
+      // Length-preserving replacement so positions still map 1:1 to trimmedBody.
+      var bodyForSearch = trimmedBody.replace(/\[[^\]]*\]\([^)]*\)/g, function(m) { return ' '.repeat(m.length); });
+      var lastSentenceEnd = Math.max(bodyForSearch.lastIndexOf('.'), bodyForSearch.lastIndexOf('!'), bodyForSearch.lastIndexOf('?'));
       if (lastSentenceEnd > 0 && (trimmedBody.length - lastSentenceEnd) < 120) {
         var afterPunctuation = trimmedBody.substring(lastSentenceEnd + 1).trim();
         if (afterPunctuation.length > 5 && !/[.!?]/.test(afterPunctuation)) body = trimmedBody.substring(0, lastSentenceEnd + 1);
       }
+    }
+    // Terminal-punctuation safety net: if body ends with a well-formed citation
+    // or plain prose letter but lacks terminal punctuation, append '.'. Covers
+    // Gemini's occasional habit of emitting the final sentence without a period
+    // (the upstream cause of every "last sentence looks truncated" report).
+    // Regex guard restricts to endings that plausibly need a period: closing
+    // paren ')' (end of citation link), superscript digit + ')' (bare citation),
+    // or a letter (raw prose). Avoids appending to lists, headings, or code.
+    var _tailCheck = body.trimEnd();
+    if (_tailCheck.length > 50 && !/[.!?]\s*$/.test(_tailCheck) && /(?:\)|[\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079]\u207e|[a-zA-Z])\s*$/.test(_tailCheck)) {
+      body = _tailCheck + '.';
     }
     rawText = body + bib;
     // Ensure headings always start on a new line with a blank line before them
