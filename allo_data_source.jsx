@@ -638,7 +638,11 @@ If they are asking to change settings (like grade level, topic, interests, langu
   "imageStyle": "string (optional - one of: 'Default', 'Pixel Art', 'Isometric Diagram', 'Watercolor', 'Realistic', 'Cartoon')",
   "includeCitations": "boolean (optional - true if user wants inline source citations)",
   "targetGroup": "string (optional - roster group key for Full Pack, e.g. 'ell-students', 'tier-2', or 'none' to clear)",
-  "differentiationRange": "string (optional - multi-grade spread for leveled text, e.g. 'None', 'Grade 2-4', 'Grade 5-7')"
+  "differentiationRange": "string (optional - multi-grade spread for leveled text, e.g. 'None', 'Grade 2-4', 'Grade 5-7')",
+  "addStandard": "string (optional - a single standard code + description to ADD to the target standards list, e.g. 'CCSS.ELA.4.3: Describe in depth a character, setting, or event')",
+  "voiceSpeed": "number (optional - TTS speech rate, 0.5 to 2.0)",
+  "voiceVolume": "number (optional - TTS volume, 0 to 1)",
+  "selectedVoice": "string (optional - voice name from the system voice list)"
 }
 If they are explicitly asking to create, generate, start, or build the lesson/resources (e.g., "Create the lesson now", "Generate it", "Let's go", "Make a quiz", "Build the timeline", "Generate a 10-resource full pack"), return:
 {
@@ -690,6 +694,15 @@ If they are asking about a specific feature, button, or capability they can't fi
 {
   "intent": "FIND_FEATURE",
   "query": "string (the user's question about the feature they're looking for)",
+}
+If they want to undo / revert / take back / reverse their last AlloBot command (e.g., "undo that", "wait, go back", "revert", "undo the last change"), return:
+{
+  "intent": "UNDO"
+}
+If they are asking what a current setting or configuration value IS (e.g., "what's my DOK level?", "what grade is set?", "show my current settings", "what tone are we using?", "what standards am I aligned to?"), return:
+{
+  "intent": "STATE_QUERY",
+  "field": "string (optional - one of: 'grade', 'topic', 'tone', 'length', 'format', 'dok', 'imageStyle', 'citations', 'interests', 'language', 'languages', 'standards', 'group', 'differentiation', 'voiceSpeed', 'voiceVolume', 'voice'). Omit to get a summary of all settings.)"
 }
 If it is a normal question or conversation, return:
 {
