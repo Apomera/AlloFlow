@@ -3066,6 +3066,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               h('div', null, typed.length + ' / ' + targetStr.length + ' chars')
             ),
 
+            // Thin progress bar — visual feedback on how far through the drill
+            // text the student has typed. Intentionally minimal (2px, dim) so
+            // it doesn't compete with the live WPM/acc metrics or the typing
+            // surface. Hidden in assessment mode (along with other metrics).
+            !state.accommodations.assessmentMode && targetStr.length > 0 ? h('div', {
+              'aria-hidden': 'true',
+              style: {
+                marginTop: '6px',
+                height: '3px',
+                background: palette.surface2,
+                borderRadius: '2px',
+                overflow: 'hidden'
+              }
+            },
+              h('div', {
+                style: {
+                  width: Math.min(100, (typed.length / targetStr.length) * 100) + '%',
+                  height: '100%',
+                  background: typed.length >= targetStr.length ? palette.success : palette.accent,
+                  transition: 'width 80ms ease, background 200ms ease'
+                }
+              })
+            ) : null,
+
             // On-screen keyboard (large-keys accommodation)
             state.accommodations.largeKeys ? renderOnScreenKeyboard(nextKeyMeta, palette, state.accommodations.focusKeyboard) : null
           );
