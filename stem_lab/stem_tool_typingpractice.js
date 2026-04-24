@@ -1133,6 +1133,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '.tp-root.tp-theme-kawaii    .tp-celebrate { animation: tp-celebrate-kawaii 1.1s ease-in-out 1; }',
       '.tp-root.tp-theme-neutral   .tp-celebrate { animation: tp-celebrate-pulse 0.8s ease-out 1; }',
 
+      /* ── Fresh-PB shimmer — applied to the 'X WPM' text on drill cards
+         whose current personal-best is from the last 3 days. Soft repeating
+         green glow draws the eye without the violence of tp-celebrate.
+         Auto-expires when the PB ages past 72h. */
+      '@keyframes tp-fresh-pb-glow { 0%, 100% { text-shadow: 0 0 0 transparent; } 50% { text-shadow: 0 0 10px currentColor; } }',
+      '.tp-root .tp-fresh-pb { animation: tp-fresh-pb-glow 2400ms ease-in-out infinite; }',
+
       /* ── Stat card stagger — summary metric cards fade + translate in
          with a 60ms stagger so the 4 stats 'arrive' after the headline
          instead of all showing at once. CSS-only, uses nth-child on a
@@ -1302,6 +1309,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '  .tp-root .tp-word-pulse,',
       '  .tp-root .tp-progress-fill::after,',
       '  .tp-root .tp-tier-current,',
+      '  .tp-root .tp-fresh-pb,',
       '  .tp-root .tp-view-enter { animation: none !important; }',
       '  .tp-root .tp-stat-stagger > * { opacity: 1 !important; transform: none !important; animation: none !important; }',
       '  .tp-root button { transition: none !important; }',
@@ -2919,11 +2927,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                     var drillSessions = (state.sessions || []).filter(function(s) { return s.drillId === drillId; });
                     var pb = (state.personalBest || {})[drillId];
                     if (drillSessions.length > 0 || pb) {
+                      var todayKey = new Date().toLocaleDateString();
+                      var hadToday = drillSessions.some(function(s) {
+                        return new Date(s.date).toLocaleDateString() === todayKey;
+                      });
+                      // Is the current PB from within the last 3 days? If so
+                      // the card gets a 'fresh PB' shimmer overlay. Resets
+                      // naturally as the PB ages.
+                      var freshPb = false;
+                      if (pb && pb.date) {
+                        var pbAge = Date.now() - new Date(pb.date).getTime();
+                        freshPb = pbAge < 3 * 24 * 60 * 60 * 1000;
+                      }
                       stats = {
                         sessionCount: drillSessions.length,
                         bestWpm: pb ? pb.wpm : null,
                         bestAcc: pb ? pb.accuracy : null,
-                        lastDate: drillSessions.length > 0 ? drillSessions[drillSessions.length - 1].date : null
+                        lastDate: drillSessions.length > 0 ? drillSessions[drillSessions.length - 1].date : null,
+                        hadToday: hadToday,
+                        freshPb: freshPb
                       };
                     }
                   }
@@ -9667,12 +9689,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           }, label);
         }
         return h('div', {
-          style: { fontSize: '11px', color: palette.textDim, marginTop: 'auto', fontVariantNumeric: 'tabular-nums' }
+          style: { fontSize: '11px', color: palette.textDim, marginTop: 'auto', fontVariantNumeric: 'tabular-nums', display: 'flex', flexWrap: 'wrap', gap: '6px', alignItems: 'center' }
         },
           stats.bestWpm !== null ? h('span', null,
-            h('span', { style: { color: palette.success, fontWeight: 700 } }, stats.bestWpm + ' WPM'),
+            h('span', {
+              className: stats.freshPb ? 'tp-fresh-pb' : undefined,
+              style: { color: palette.success, fontWeight: 700 }
+            }, stats.bestWpm + ' WPM'),
             ' best · ', stats.sessionCount, ' session', stats.sessionCount === 1 ? '' : 's'
-          ) : h('span', { style: { color: palette.textMute } }, stats.sessionCount + ' session' + (stats.sessionCount === 1 ? '' : 's'))
+          ) : h('span', { style: { color: palette.textMute } }, stats.sessionCount + ' session' + (stats.sessionCount === 1 ? '' : 's')),
+          // 'Today' chip — reinforces the daily-cadence pattern by showing
+          // on drill cards that already have a recorded session today.
+          // Not a streak-badge; disappears at midnight.
+          stats.hadToday ? h('span', {
+            style: {
+              padding: '1px 7px',
+              borderRadius: '999px',
+              background: 'transparent',
+              border: '1px solid ' + palette.accent,
+              color: palette.accent,
+              fontSize: '10px',
+              fontWeight: 700,
+              letterSpacing: '0.04em'
+            }
+          }, (function() {
+            var tm = themeName || 'default';
+            if (tm === 'steampunk') return '⚙ today';
+            if (tm === 'cyberpunk') return '[TODAY]';
+            if (tm === 'kawaii')    return '💕 today';
+            if (tm === 'neutral')   return 'today';
+            return '✓ today';
+          })()) : null
         );
       })() : null,
       // On locked cards: surface the specific threshold needed to unlock.
