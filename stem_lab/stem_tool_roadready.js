@@ -10870,6 +10870,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       fsHalo.position.set(lmCenterWX + lm.side * (lt.size * 0.4) - 0.5, 1.92, lmCenterWZ - 0.06);
                       chunkGroup.add(fsHalo);
                     }
+                  } else if (lt.id === 'police') {
+                    // Rooftop blue beacon — pairs with hospital red and fire red so all
+                    // three emergency landmarks have distinctive night signatures.
+                    // The mesh is tagged 'rr_policeBeacon' so the chunk-walk loop can
+                    // pulse its opacity at ~1.5 Hz (real cruiser-style).
+                    var policeLit = currentScenario.time === 'night' || currentScenario.id === 'dawn' || currentScenario.weather === 'fog';
+                    if (policeLit) {
+                      // Beacon dome on the roof
+                      var pbMat = new T.MeshBasicMaterial({ color: 0x60a5fa });
+                      var pbDome = new T.Mesh(new T.SphereGeometry(0.18, 8, 6), pbMat);
+                      pbDome.position.set(lmCenterWX, lt.height + 0.5, lmCenterWZ);
+                      chunkGroup.add(pbDome);
+                      // Pulsing additive halo — chunk-walk loop sets opacity each frame
+                      var pbHaloMat = new T.MeshBasicMaterial({
+                        color: 0x60a5fa, transparent: true, opacity: 0.5,
+                        blending: T.AdditiveBlending, depthWrite: false
+                      });
+                      var pbHalo = new T.Mesh(new T.PlaneGeometry(1.4, 1.4), pbHaloMat);
+                      pbHalo.position.set(lmCenterWX, lt.height + 0.5, lmCenterWZ);
+                      pbHalo.name = 'rr_policeBeacon';
+                      chunkGroup.add(pbHalo);
+                      // Subtle blue PointLight throws color onto the building roof
+                      var pbLight = new T.PointLight(0x60a5fa, 0.9, 5, 2);
+                      pbLight.position.set(lmCenterWX, lt.height + 0.4, lmCenterWZ);
+                      chunkGroup.add(pbLight);
+                    }
                   }
                 }
                 // ─── LANDMARK SIGN (always visible from road) ───
@@ -13270,6 +13296,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   var chFlagAmp = (windStrength / 0.015) * 0.5;
                   child.rotation.y = chFlagBase + Math.sin(t_now * 2.6 + chFlagSeed) * chFlagAmp;
                   child.rotation.z = Math.sin(t_now * 3.2 + chFlagSeed * 1.3) * chFlagAmp * 0.3;
+                  return;
+                }
+                // Police beacon halo — pulses at ~1.5 Hz, opacity 0.15 → 0.7. Triangle
+                // wave for a sharp ON/OFF feel (cop strobes don't fade smoothly).
+                if (child.name === 'rr_policeBeacon') {
+                  var pbT = (t_now * 1.5) % 1;
+                  var pbPulse = pbT < 0.5 ? (pbT * 2) : (2 - pbT * 2);
+                  child.material.opacity = 0.15 + pbPulse * 0.55;
                   return;
                 }
                 var gt = child.geometry.type;
