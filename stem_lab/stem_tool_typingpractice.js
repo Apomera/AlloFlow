@@ -4757,9 +4757,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               }
             },
               h('div', { style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px', fontWeight: 700 } },
-                '✨ Quick presets'),
+                (function() {
+                  var tm = state.theme || 'default';
+                  if (tm === 'steampunk') return '⚙ Bench-ready rigs';
+                  if (tm === 'cyberpunk') return '[PRESET LOADOUTS]';
+                  if (tm === 'kawaii')    return '✨💕 Quick presets';
+                  if (tm === 'neutral')   return 'Presets';
+                  return '✨ Quick presets';
+                })()),
               h('p', { style: { fontSize: '11px', color: palette.textMute, margin: '0 0 10px 0', lineHeight: '1.5' } },
-                'One-click common combos. Tap any toggle below to customize after applying.'),
+                (function() {
+                  var tm = state.theme || 'default';
+                  if (tm === 'steampunk') return 'Pre-assembled instrument sets for common profiles. Adjust any lever after fitting.';
+                  if (tm === 'cyberpunk') return '[PRE-BUILT] common-profile bundles :: mutable post-apply :: no lock-in';
+                  if (tm === 'kawaii')    return 'Pre-picked combos for you! 💕 Tap one, then tweak anything you like. ✨';
+                  if (tm === 'neutral')   return 'Common-profile bundles. Editable after applying.';
+                  return 'One-click common combos. Tap any toggle below to customize after applying.';
+                })()),
               h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
                 ACC_PRESETS.map(function(preset) {
                   return h('button', {
