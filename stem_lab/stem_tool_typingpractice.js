@@ -4477,7 +4477,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   return '🔥 ' + streak + ' in a row';
                 })()) : null,
                 h('span', { style: { color: palette.textMute } }, '·'),
-                h('span', null, formatDuration(liveSec))
+                h('span', null, formatDuration(liveSec)),
+                // Completion ETA — only meaningful for longer drills (≥100
+                // chars remaining) where the estimate is stable. Uses the
+                // student's live WPM to project seconds-to-finish. Hidden
+                // in assessment mode and for short drills. Gentle coloring
+                // so it reads as information, not pressure.
+                (function() {
+                  if (state.accommodations.assessmentMode) return null;
+                  if (!targetStr) return null;
+                  var remaining = targetStr.length - typed.length;
+                  if (remaining < 100) return null;
+                  if (liveWpm < 5) return null; // too unstable / not enough data
+                  // Chars per minute ≈ WPM × 5. Seconds to finish ≈ remaining / cpm × 60
+                  var cpm = liveWpm * 5;
+                  var etaSec = Math.round((remaining / cpm) * 60);
+                  if (etaSec < 20) return null; // too close to finish to matter
+                  var etaLabel;
+                  if (etaSec < 60) etaLabel = '~' + etaSec + 's';
+                  else etaLabel = '~' + Math.round(etaSec / 60) + 'm';
+                  return h('span', {
+                    'aria-label': 'Estimated ' + etaSec + ' seconds remaining',
+                    style: {
+                      color: palette.textMute,
+                      fontSize: '11px',
+                      padding: '1px 7px',
+                      borderRadius: '999px',
+                      border: '1px solid ' + palette.border,
+                      marginLeft: '4px'
+                    }
+                  }, etaLabel + ' left');
+                })()
               )
             ),
 
