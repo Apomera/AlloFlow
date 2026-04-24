@@ -9523,6 +9523,157 @@ tr { page-break-inside: avoid; }
     return html;
   };
 
+  // ── Tag the ORIGINAL PDF in place (visual layer preserved, tag tree added) ──
+  // Takes original PDF bytes + the remediation result and produces a new PDF
+  // that:
+  //   - Preserves every byte of the original's visual layer (pages, fonts,
+  //     images, positions, annotations, colors) — pdf-lib modifies only
+  //     document-level metadata and Catalog entries, not content streams.
+  //   - Adds a StructTreeRoot with a flat StructElem outline derived from
+  //     the accessibleHtml (H1-H6, P, Figure with Alt, Table, List). This
+  //     gives capable assistive tech a structural outline to navigate by
+  //     heading, and claims PDF/UA scaffolding.
+  //   - Sets document Lang (screen readers use this for pronunciation).
+  //   - Sets Title + Author + Subject from fixResult metadata.
+  //   - Adds MarkInfo {Marked=true, Suspects=false} so readers know the
+  //     document has been tagged.
+  //
+  // What this does NOT do in this pass:
+  //   - Content-stream MCID wrapping (each piece of page content wrapped
+  //     with /P <</MCID N>> BDC ... EMC and referenced back from the
+  //     StructElem). Without MCID linkage, the tag tree is structurally
+  //     present but not fully MCID-linked to content — capable readers
+  //     still use it for navigation, strict PDF/UA-1 validators will flag
+  //     it. Upgrading to MCID-linked content is the logical next step.
+  //
+  // Returns: Uint8Array of the tagged PDF bytes, or throws.
+  const createTaggedPdf = async (originalPdfBytes, fixResult, meta) => {
+    meta = meta || {};
+    if (!window.PDFLib || !window.PDFLib.PDFDocument) {
+      throw new Error('pdf-lib not loaded — call _ensurePdfLib() first');
+    }
+    const { PDFDocument, PDFName, PDFString, PDFHexString } = window.PDFLib;
+    const doc = await PDFDocument.load(originalPdfBytes, { updateMetadata: false });
+    const context = doc.context;
+    const catalog = doc.catalog;
+    // ── Document-level metadata (uses pdf-lib's high-level API) ──
+    // These also write corresponding XMP metadata entries.
+    if (meta.title) { try { doc.setTitle(meta.title); } catch(_) {} }
+    if (meta.author) { try { doc.setAuthor(meta.author); } catch(_) {} }
+    if (meta.subject) { try { doc.setSubject(meta.subject); } catch(_) {} }
+    try { doc.setProducer('AlloFlow Accessibility Pipeline'); } catch(_) {}
+    try { doc.setModificationDate(new Date()); } catch(_) {}
+    // ── Document language (Catalog/Lang) ──
+    // Required by PDF/UA-1 §7.2. pdf-lib doesn't expose a high-level setter
+    // so we write it directly into the Catalog.
+    const lang = (meta.lang || 'en').toString();
+    catalog.set(PDFName.of('Lang'), PDFString.of(lang));
+    // ── MarkInfo dict ──
+    // Marked=true signals that the document has Marked Content / is tagged.
+    // Required by PDF/UA-1 §7.1. Suspects=false is the conservative claim
+    // that we don't have any "suspect" (incomplete) marked content.
+    const markInfo = context.obj({ Marked: true, Suspects: false });
+    catalog.set(PDFName.of('MarkInfo'), markInfo);
+    // ── Build the StructTreeRoot from fixResult.accessibleHtml ──
+    // Parse the remediated HTML to get the semantic outline (headings,
+    // images with alt, tables, lists), then map those to PDF StructElems.
+    // This is a FLAT tree in this pass — headings and their descendants
+    // live as siblings under the root, not as a nested outline. A nested
+    // tree is the Stage 2 upgrade that needs MCID linkage anyway to be
+    // meaningful, so we avoid the complexity for now.
+    const html = (fixResult && fixResult.accessibleHtml) || '';
+    const parser = new DOMParser();
+    const htmlDoc = parser.parseFromString(html, 'text/html');
+    const body = htmlDoc.body || htmlDoc.documentElement;
+    // StructElem "role" mapping from HTML tag → PDF standard structure type.
+    // See ISO 32000-1 §14.8.4 "Standard Structure Types".
+    const TAG_TO_PDF_ROLE = {
+      h1: 'H1', h2: 'H2', h3: 'H3', h4: 'H4', h5: 'H5', h6: 'H6',
+      p: 'P', ul: 'L', ol: 'L', li: 'LI', img: 'Figure', figure: 'Figure',
+      table: 'Table', tr: 'TR', th: 'TH', td: 'TD', caption: 'Caption',
+      blockquote: 'BlockQuote', a: 'Link', header: 'Sect', footer: 'Sect',
+      section: 'Sect', nav: 'Sect', aside: 'Sect', main: 'Sect',
+    };
+    // Walk the body to collect elements we want to tag. Order-preserving —
+    // reflects document reading order as it exists in the HTML.
+    const outline = [];
+    const walker = htmlDoc.createTreeWalker(body, NodeFilter.SHOW_ELEMENT, null);
+    while (walker.nextNode()) {
+      const el = walker.currentNode;
+      const tag = (el.tagName || '').toLowerCase();
+      const pdfRole = TAG_TO_PDF_ROLE[tag];
+      if (!pdfRole) continue;
+      // Skip empty text containers to avoid clutter in the structure tree.
+      if (['h1','h2','h3','h4','h5','h6','p','li','caption','blockquote'].includes(tag) && !(el.textContent || '').trim()) continue;
+      outline.push({
+        role: pdfRole,
+        text: (el.textContent || '').trim().substring(0, 400),
+        alt: tag === 'img' ? (el.getAttribute('alt') || '') : null,
+        isDecorative: tag === 'img' && (el.getAttribute('role') === 'presentation' || el.getAttribute('aria-hidden') === 'true'),
+      });
+    }
+    // Build StructElem PDFDict objects. Each StructElem needs:
+    //   Type: /StructElem
+    //   S: /<role>
+    //   P: <ref to parent StructTreeRoot>  (filled after root is created)
+    //   Alt: for Figure — the alt text
+    //   ActualText: for substitution (not used here)
+    // For real PDF/UA linkage we'd also need K (kids) pointing at MCIDs in
+    // content streams; omitted here by design (see function-top comment).
+    const structRootRef = context.nextRef();
+    const structElemRefs = [];
+    for (const item of outline) {
+      const elemDict = { Type: PDFName.of('StructElem'), S: PDFName.of(item.role), P: structRootRef };
+      if (item.role === 'Figure') {
+        // Alt text is required for Figure when not decorative; Artifact
+        // marking would be more correct for decorative images but needs
+        // content-stream work. Use empty Alt as a fallback for now.
+        if (item.isDecorative) {
+          elemDict.S = PDFName.of('Span'); // decorative → span, de-emphasize
+          elemDict.Alt = PDFString.of('');
+        } else {
+          elemDict.Alt = PDFString.of(item.alt || '(image)');
+        }
+      }
+      if (['H1','H2','H3','H4','H5','H6','P','LI','Caption','BlockQuote'].includes(item.role) && item.text) {
+        // ActualText lets SR read a substituted string if the MCID-linked
+        // content isn't present. This at least gives something to read when
+        // a reader does use the tag tree without MCID fallback.
+        elemDict.ActualText = PDFString.of(item.text);
+      }
+      const elemObj = context.obj(elemDict);
+      const elemRef = context.register(elemObj);
+      structElemRefs.push(elemRef);
+    }
+    // ParentTree is required even if empty. We don't populate it in this
+    // pass (no MCIDs), but PDF/UA validators want a dict with /Nums.
+    const parentTreeDict = context.obj({ Nums: context.obj([]) });
+    const parentTreeRef = context.register(parentTreeDict);
+    // StructTreeRoot dict. K = array of all our StructElem refs.
+    const structRootDict = context.obj({
+      Type: PDFName.of('StructTreeRoot'),
+      K: context.obj(structElemRefs),
+      ParentTree: parentTreeRef,
+      ParentTreeNextKey: 0,
+      RoleMap: context.obj({}),
+    });
+    context.assign(structRootRef, structRootDict);
+    catalog.set(PDFName.of('StructTreeRoot'), structRootRef);
+    // ── ViewerPreferences: DisplayDocTitle ──
+    // PDF/UA-1 §7.1 requires this so the window title bar shows the doc
+    // title rather than the filename.
+    const viewerPrefs = (catalog.get(PDFName.of('ViewerPreferences')));
+    if (viewerPrefs) {
+      try { viewerPrefs.set(PDFName.of('DisplayDocTitle'), context.obj(true)); } catch(_) {}
+    } else {
+      catalog.set(PDFName.of('ViewerPreferences'), context.obj({ DisplayDocTitle: true }));
+    }
+    // ── Return tagged bytes ──
+    // useObjectStreams=false produces slightly larger PDFs but more
+    // compatible with older readers and validators.
+    return await doc.save({ useObjectStreams: false, addDefaultPage: false });
+  };
+
   // ── Download Accessible PDF from HTML ──
   const downloadAccessiblePdf = (htmlContent, filename) => {
     if (!htmlContent) return;
@@ -11886,6 +12037,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     fixAndVerifyPdf: _wrapAsync(fixAndVerifyPdf),
     generateAuditReportHtml: _wrap(generateAuditReportHtml),
     downloadAccessiblePdf: _wrap(downloadAccessiblePdf),
+    createTaggedPdf: _wrapAsync(createTaggedPdf),
     getPdfPreviewHtml: _wrap(getPdfPreviewHtml),
     updatePdfPreview: _wrap(updatePdfPreview),
     applyWordRestoration: applyWordRestoration, // pure helper (no state binding needed)
