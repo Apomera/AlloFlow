@@ -82,6 +82,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     // milestonesEarned — array of milestone IDs the student has crossed.
     // Additive only; we never un-earn to avoid guilt patterns.
     milestonesEarned: [],
+    // favoriteDrills — drill IDs the student has starred. Sort first on menu.
+    favoriteDrills: [],
     // Custom drill — teacher or student can author their own practice text
     // (spelling list, IEP-goal words, science vocab, etc.). Does NOT feed
     // mastery progression. `customDrill` is retained for backward compat with
@@ -1661,17 +1663,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   gap: '12px'
                 }
               },
-                Object.keys(DRILLS).filter(function(drillId) {
-                  // Hide focus-errors until the student has error data — it'd
-                  // be an empty drill otherwise.
-                  if (drillId === 'focus-errors') {
-                    var agg = state.aggregateErrors || {};
-                    return Object.keys(agg).some(function(k) { return agg[k] > 0; });
-                  }
-                  return true;
-                }).map(function(drillId) {
+                (function() {
+                  var favoriteIds = state.favoriteDrills || [];
+                  return Object.keys(DRILLS).filter(function(drillId) {
+                    // Hide focus-errors until the student has error data — it'd
+                    // be an empty drill otherwise.
+                    if (drillId === 'focus-errors') {
+                      var agg = state.aggregateErrors || {};
+                      return Object.keys(agg).some(function(k) { return agg[k] > 0; });
+                    }
+                    return true;
+                  }).sort(function(aId, bId) {
+                    // Favorites first, preserving favorite-order; then default.
+                    var aFav = favoriteIds.indexOf(aId);
+                    var bFav = favoriteIds.indexOf(bId);
+                    if (aFav !== -1 && bFav === -1) return -1;
+                    if (aFav === -1 && bFav !== -1) return 1;
+                    if (aFav !== -1 && bFav !== -1) return aFav - bFav;
+                    return 0;
+                  });
+                })().map(function(drillId) {
                   var drill = DRILLS[drillId];
                   var unlocked = !drill.locked || state.masteryLevel >= drill.tier;
+                  var isFavorite = (state.favoriteDrills || []).indexOf(drillId) !== -1;
+                  var toggleFavorite = function(e) {
+                    e.stopPropagation();
+                    var favs = (state.favoriteDrills || []).slice();
+                    var idx = favs.indexOf(drillId);
+                    if (idx === -1) favs.unshift(drillId);
+                    else favs.splice(idx, 1);
+                    upd('favoriteDrills', favs);
+                  };
                   // Compute the "needed-to-unlock" hint: which previous drill to clear
                   var unlockHint = null;
                   if (!unlocked) {
@@ -1713,7 +1735,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                     var focusText = buildFocusedPracticeText(state.aggregateErrors, state.drillRunId);
                     if (focusText) preview = focusText.length > 42 ? focusText.slice(0, 42) + '…' : focusText;
                   }
-                  return renderDrillCard(drill, unlocked, palette, startDrill, unlockHint, stats, preview);
+                  return renderDrillCard(drill, unlocked, palette, startDrill, unlockHint, stats, preview, isFavorite, toggleFavorite);
                 })
               )
             ),
@@ -6580,18 +6602,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     return lines.join('\n');
   }
 
-  function renderDrillCard(drill, unlocked, palette, startDrill, unlockHint, stats, preview) {
+  function renderDrillCard(drill, unlocked, palette, startDrill, unlockHint, stats, preview, isFavorite, toggleFavorite) {
     var React = window.React;
     var h = React.createElement;
-    return h('button', {
+    // Wrap the entire card in a relative-positioned div so the ★ pinning
+    // control can overlay on top without being nested inside the <button>
+    // (which would be invalid HTML — buttons can't contain buttons).
+    return h('div', {
       key: drill.id,
+      style: { position: 'relative' }
+    },
+      h('button', {
       onClick: unlocked ? function() { startDrill(drill.id); } : null,
       disabled: !unlocked,
-      'aria-label': drill.name + (unlocked ? '' : ' (locked: ' + (unlockHint || 'reach required mastery tier') + ')'),
+      'aria-label': drill.name + (unlocked ? '' : ' (locked: ' + (unlockHint || 'reach required mastery tier') + ')') + (isFavorite ? ' (favorite)' : ''),
       style: {
+        width: '100%',
         textAlign: 'left',
         background: unlocked ? palette.surface : palette.bg,
-        border: '1px solid ' + (unlocked ? palette.border : palette.surface2),
+        border: '1px solid ' + (unlocked ? (isFavorite ? palette.accent : palette.border) : palette.surface2),
         borderRadius: '12px',
         padding: '16px',
         cursor: unlocked ? 'pointer' : 'not-allowed',
@@ -6605,7 +6634,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         minHeight: '120px'
       },
       onMouseOver: function(e) { if (unlocked) e.currentTarget.style.borderColor = palette.accent; },
-      onMouseOut: function(e) { if (unlocked) e.currentTarget.style.borderColor = palette.border; }
+      onMouseOut: function(e) { if (unlocked) e.currentTarget.style.borderColor = isFavorite ? palette.accent : palette.border; }
     },
       h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
         h('span', { style: { fontSize: '24px' } }, drill.icon),
@@ -6617,9 +6646,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             background: unlocked ? palette.surface2 : 'transparent',
             color: palette.textMute,
             textTransform: 'uppercase',
-            letterSpacing: '0.05em'
+            letterSpacing: '0.05em',
+            marginRight: '20px'  // leave space for overlaid ★ button
           }
-        }, unlocked ? ('Tier ' + drill.tier) : '🔒 Locked')
+        }, unlocked ? (drill.tier !== null && drill.tier !== undefined ? 'Tier ' + drill.tier : 'Open') : '🔒 Locked')
       ),
       h('div', { style: { fontSize: '15px', fontWeight: 600, color: palette.text } }, drill.name),
       h('div', { style: { fontSize: '12px', color: palette.textMute, lineHeight: '1.4' } }, drill.description),
@@ -6655,6 +6685,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       (!unlocked && unlockHint) ? h('div', {
         style: { fontSize: '11px', color: palette.warn, marginTop: 'auto', fontStyle: 'italic' }
       }, '→ ' + unlockHint) : null
+      ), // close the inner <button>
+      // ★ Favorite toggle — overlaid in the top-right of the card, outside
+      // the <button> so it doesn't nest buttons (invalid HTML).
+      toggleFavorite ? h('span', {
+        role: 'button',
+        tabIndex: 0,
+        'aria-label': (isFavorite ? 'Unpin' : 'Pin') + ' ' + drill.name + ' as favorite',
+        'aria-pressed': isFavorite ? 'true' : 'false',
+        onClick: toggleFavorite,
+        onKeyDown: function(e) {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleFavorite(e); }
+        },
+        title: isFavorite ? 'Unpin from favorites' : 'Pin as favorite',
+        style: {
+          position: 'absolute',
+          top: '10px',
+          right: '14px',
+          fontSize: '16px',
+          color: isFavorite ? palette.warn : palette.textMute,
+          cursor: 'pointer',
+          userSelect: 'none',
+          lineHeight: 1,
+          padding: '2px 4px',
+          borderRadius: '4px'
+        }
+      }, isFavorite ? '★' : '☆') : null
     );
   }
 
