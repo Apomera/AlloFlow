@@ -10994,6 +10994,81 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       pbLight.position.set(lmCenterWX, lt.height + 0.4, lmCenterWZ);
                       chunkGroup.add(pbLight);
                     }
+                  } else if (lt.id === 'library') {
+                    // Library: warm reading-room glow at night/fog/dawn. Real public
+                    // libraries leave the reading-room lights on for evening hours;
+                    // a row of warm window slits along the road-facing side reads as
+                    // "open, cozy, lights inside" from the street.
+                    var libLit = currentScenario.time === 'night' || currentScenario.id === 'dawn' || currentScenario.weather === 'fog';
+                    if (libLit) {
+                      var libWinMat = new T.MeshBasicMaterial({ color: 0xffe8b0, transparent: true, opacity: 0.92 });
+                      // 4 tall narrow windows centered on the road-facing side
+                      for (var lwi = -1.5; lwi <= 1.5; lwi += 1) {
+                        var libWin = new T.Mesh(new T.BoxGeometry(0.06, 0.85, 0.32), libWinMat);
+                        libWin.position.set(lmCenterWX + lm.side * (lt.size * 0.4) + lm.side * 0.005, lt.height * 0.5, lmCenterWZ + lwi * 0.6);
+                        chunkGroup.add(libWin);
+                      }
+                      // Soft warm halo plane along the row
+                      var libHaloMat = new T.MeshBasicMaterial({
+                        color: 0xffe8b0, transparent: true, opacity: 0.3,
+                        blending: T.AdditiveBlending, depthWrite: false
+                      });
+                      var libHalo = new T.Mesh(new T.PlaneGeometry(2.6, 1.2), libHaloMat);
+                      libHalo.position.set(lmCenterWX + lm.side * (lt.size * 0.4) + lm.side * 0.05, lt.height * 0.5, lmCenterWZ);
+                      libHalo.rotation.y = lm.side > 0 ? -Math.PI / 2 : Math.PI / 2;
+                      chunkGroup.add(libHalo);
+                    }
+                  } else if (lt.id === 'market') {
+                    // Market / grocery: bright fluorescent storefront band on the
+                    // road-facing wall — that pure-white "freezer-aisle" glow you see
+                    // from a parking lot at night. Visible day or night because
+                    // markets typically have these lights on all daylight hours too,
+                    // but only get a halo at night.
+                    var mktBandMat = new T.MeshBasicMaterial({ color: 0xffffff });
+                    var mktBand = new T.Mesh(new T.BoxGeometry(0.06, 0.55, lt.size * 0.7), mktBandMat);
+                    mktBand.position.set(lmCenterWX + lm.side * (lt.size * 0.4) + lm.side * 0.005, lt.height * 0.7, lmCenterWZ);
+                    chunkGroup.add(mktBand);
+                    var mktLit = currentScenario.time === 'night' || currentScenario.id === 'dawn' || currentScenario.weather === 'fog';
+                    if (mktLit) {
+                      var mktHaloMat = new T.MeshBasicMaterial({
+                        color: 0xeaf3ff, transparent: true, opacity: 0.55,
+                        blending: T.AdditiveBlending, depthWrite: false
+                      });
+                      var mktHalo = new T.Mesh(new T.PlaneGeometry(lt.size * 0.85, 1.4), mktHaloMat);
+                      mktHalo.position.set(lmCenterWX + lm.side * (lt.size * 0.4) + lm.side * 0.05, lt.height * 0.7, lmCenterWZ);
+                      mktHalo.rotation.y = lm.side > 0 ? -Math.PI / 2 : Math.PI / 2;
+                      chunkGroup.add(mktHalo);
+                    }
+                  } else if (lt.id === 'farm') {
+                    // Farm: tall yard lamp on a pole near the farmhouse — the kind of
+                    // fixed-on photoelectric lamp every Maine farm has. Real farm
+                    // yards in the dark are anchored by this single warm point of
+                    // light visible from way off. Comes on at dusk; persists until
+                    // dawn (which we approximate as: any non-clear-day time).
+                    var farmLit = currentScenario.time === 'night' || currentScenario.id === 'dawn' || currentScenario.weather === 'fog';
+                    if (farmLit) {
+                      // Pole
+                      var fyPoleMat = new T.MeshLambertMaterial({ color: 0x444444 });
+                      var fyPole = new T.Mesh(new T.CylinderGeometry(0.06, 0.08, 5, 6), fyPoleMat);
+                      fyPole.position.set(lmCenterWX + lt.size * 0.45, 2.5, lmCenterWZ - lt.size * 0.3);
+                      chunkGroup.add(fyPole);
+                      // Lamp head (bright incandescent)
+                      var fyHead = new T.Mesh(new T.SphereGeometry(0.18, 8, 6), new T.MeshBasicMaterial({ color: 0xfff0c8 }));
+                      fyHead.position.set(lmCenterWX + lt.size * 0.45, 5.0, lmCenterWZ - lt.size * 0.3);
+                      chunkGroup.add(fyHead);
+                      // Big halo since it's the only farm light source
+                      var fyHaloMat = new T.MeshBasicMaterial({
+                        color: 0xfff0c8, transparent: true, opacity: 0.7,
+                        blending: T.AdditiveBlending, depthWrite: false
+                      });
+                      var fyHalo = new T.Mesh(new T.PlaneGeometry(1.2, 1.2), fyHaloMat);
+                      fyHalo.position.set(lmCenterWX + lt.size * 0.45, 5.0, lmCenterWZ - lt.size * 0.3 + 0.04);
+                      chunkGroup.add(fyHalo);
+                      // Real PointLight pours warm color onto the farmhouse + nearby ground
+                      var fyLight = new T.PointLight(0xfff0c8, 1.0, 6, 2);
+                      fyLight.position.set(lmCenterWX + lt.size * 0.45, 4.8, lmCenterWZ - lt.size * 0.3);
+                      chunkGroup.add(fyLight);
+                    }
                   }
                 }
                 // ─── LANDMARK SIGN (always visible from road) ───
