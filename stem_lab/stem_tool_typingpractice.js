@@ -4630,10 +4630,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             }
           },
             renderBackButton(function() { go('menu'); }, palette),
-            h('h3', { style: { margin: '16px 0 4px 0', color: palette.text } }, '⚙️  Accommodations'),
+            h('h3', { style: { margin: '16px 0 4px 0', color: palette.text } }, (function() {
+              var tm = state.theme || 'default';
+              if (tm === 'steampunk') return '⚙  Workshop Instruments';
+              if (tm === 'cyberpunk') return '[ACCOMMODATIONS]';
+              if (tm === 'kawaii')    return '💕 Accommodations ✨';
+              if (tm === 'neutral')   return 'Accommodations';
+              return '⚙️  Accommodations';
+            })()),
             h('p', {
               style: { margin: '0 0 14px 0', fontSize: '12px', color: palette.textMute, lineHeight: '1.5' }
-            }, 'These aren\'t fallbacks — they\'re the design. Using them is the point.'),
+            }, (function() {
+              var tm = state.theme || 'default';
+              if (tm === 'steampunk') return 'These are not spare parts — they are the instruments themselves. Reaching for them is the craft.';
+              if (tm === 'cyberpunk') return '[MODS] not fallbacks :: core rig :: equipping them = intended workflow';
+              if (tm === 'kawaii')    return '✨ These aren\'t extra — they\'re the whole point! Using them is the best thing you can do. 💕';
+              if (tm === 'neutral')   return 'Core supports, not fallbacks. Designed to be used.';
+              return 'These aren\'t fallbacks — they\'re the design. Using them is the point.';
+            })()),
 
             // Quick-jump table of contents — anchors to each major section of
             // the (long) Settings page. Small but real UX win: clinicians
@@ -6318,7 +6332,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 analysis.totalErrors > 0 ? h('div', {
                   style: { marginTop: '16px' }
                 },
-                  h('div', { style: { fontSize: '11px', color: palette.textMute, marginBottom: '6px', fontWeight: 600 } }, 'Errors by finger'),
+                  h('div', { style: { fontSize: '11px', color: palette.textMute, marginBottom: '6px', fontWeight: 600 } }, (function() {
+                    var tm = state.theme || 'default';
+                    if (tm === 'steampunk') return 'Snags by finger';
+                    if (tm === 'cyberpunk') return '[ERR-BY-FINGER]';
+                    if (tm === 'kawaii')    return '🌸 Errors by finger';
+                    if (tm === 'neutral')   return 'Errors by finger';
+                    return 'Errors by finger';
+                  })()),
                   renderFingerErrorBar(analysis.fingerCounts, analysis.totalErrors, palette)
                 ) : null,
 
