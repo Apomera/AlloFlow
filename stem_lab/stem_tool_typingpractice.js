@@ -1399,6 +1399,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         var streakTuple = useState(0);
         var streak = streakTuple[0], setStreak = streakTuple[1];
 
+        // Refs tracking previous values of the menu stats-strip numbers.
+        // Used to gate the tp-live-tick pulse: fire it only when a number
+        // has actually changed since last render (not on every menu mount).
+        // ADHD / autistic learners find mount-only animation noisy when
+        // it fires without a value change. We still want the pulse on
+        // real changes (session saved, tier cleared, etc.).
+        var prevSessionsRef  = useRef(null);
+        var prevMasteryRef   = useRef(null);
+        var prevPracticeRef  = useRef(null);
+        var prevBadgesRef    = useRef(null);
+
         var lastSummaryTuple = useState(null);
 
         // Visual-mode image-generation state. Kept local so loading flags
@@ -1572,6 +1583,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           var iv = setInterval(function() { setNowTick(Date.now()); }, 100);
           return function() { clearInterval(iv); };
         }, [state.view, drillComplete]);
+
+        // ── Track menu stats-strip previous values for the tp-live-tick
+        // 'only pulse on actual change' gating. Runs after every render;
+        // the nulls-on-first-mount path suppresses the initial pulse so
+        // menu entry is silent when nothing changed.
+        useEffect(function() {
+          prevSessionsRef.current = (state.sessions || []).length;
+          prevMasteryRef.current  = state.masteryLevel;
+          prevBadgesRef.current   = (state.accommodationBadges || []).length;
+          // Practice days recomputed here to match the renderMenu formula.
+          var now = Date.now();
+          var thirtyDaysAgo = now - 30 * 24 * 60 * 60 * 1000;
+          var uniq = {};
+          (state.sessions || []).forEach(function(s) {
+            var t = new Date(s.date).getTime();
+            if (t >= thirtyDaysAgo) uniq[new Date(s.date).toLocaleDateString()] = true;
+          });
+          prevPracticeRef.current = Object.keys(uniq).length;
+        });
 
         // ── Sight-read countdown tick: count down by 1 each second until 0 ──
         useEffect(function() {
@@ -2695,6 +2725,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               });
               var practiceDays = Object.keys(uniqueDays).length;
 
+              // tp-live-tick is applied ONLY when the underlying number
+              // has changed since the last render — not on every menu
+              // re-entry. prevXRef is null on first mount (suppresses the
+              // initial pulse), then updated in a useEffect below.
+              var sessionsChanged = prevSessionsRef.current !== null && prevSessionsRef.current !== sessionCount;
+              var masteryChanged  = prevMasteryRef.current  !== null && prevMasteryRef.current  !== state.masteryLevel;
+              var practiceChanged = prevPracticeRef.current !== null && prevPracticeRef.current !== practiceDays;
+              var badgesChanged   = prevBadgesRef.current   !== null && prevBadgesRef.current   !== badgeCount;
+
               return h('div', {
                 style: {
                   display: 'flex',
@@ -2705,22 +2744,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               },
                 h('div', { style: statCardStyle(palette, state.theme) },
                   h('div', { style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Sessions'),
-                  h('div', { key: 'msc-s-' + sessionCount, className: 'tp-live-tick', style: { fontSize: '22px', fontWeight: 700, color: palette.accent } }, sessionCount)
+                  h('div', {
+                    key: sessionsChanged ? ('msc-s-' + sessionCount) : 'msc-s-static',
+                    className: sessionsChanged ? 'tp-live-tick' : undefined,
+                    style: { fontSize: '22px', fontWeight: 700, color: palette.accent }
+                  }, sessionCount)
                 ),
                 h('div', { style: statCardStyle(palette, state.theme) },
                   h('div', { style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Mastery Tier'),
-                  h('div', { key: 'msc-m-' + state.masteryLevel, className: 'tp-live-tick', style: { fontSize: '22px', fontWeight: 700, color: palette.success } }, state.masteryLevel + ' / 7')
+                  h('div', {
+                    key: masteryChanged ? ('msc-m-' + state.masteryLevel) : 'msc-m-static',
+                    className: masteryChanged ? 'tp-live-tick' : undefined,
+                    style: { fontSize: '22px', fontWeight: 700, color: palette.success }
+                  }, state.masteryLevel + ' / 7')
                 ),
                 // Positive-framing practice-days counter — "days you showed up"
                 practiceDays > 0 ? h('div', { style: statCardStyle(palette, state.theme), title: 'Unique calendar days with at least one session in the last 30 days. No guilt for days off.' },
                   h('div', { style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Practice days · 30d'),
-                  h('div', { key: 'msc-p-' + practiceDays, className: 'tp-live-tick', style: { fontSize: '22px', fontWeight: 700, color: palette.textDim } },
-                    '🗓 ' + practiceDays
-                  )
+                  h('div', {
+                    key: practiceChanged ? ('msc-p-' + practiceDays) : 'msc-p-static',
+                    className: practiceChanged ? 'tp-live-tick' : undefined,
+                    style: { fontSize: '22px', fontWeight: 700, color: palette.textDim }
+                  }, '🗓 ' + practiceDays)
                 ) : null,
                 badgeCount > 0 ? h('div', { style: statCardStyle(palette, state.theme) },
                   h('div', { style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Badges'),
-                  h('div', { key: 'msc-b-' + badgeCount, className: 'tp-live-tick', style: { fontSize: '22px', fontWeight: 700, color: palette.warn } }, badgeCount)
+                  h('div', {
+                    key: badgesChanged ? ('msc-b-' + badgeCount) : 'msc-b-static',
+                    className: badgesChanged ? 'tp-live-tick' : undefined,
+                    style: { fontSize: '22px', fontWeight: 700, color: palette.warn }
+                  }, badgeCount)
                 ) : null
               );
             })() : null,
