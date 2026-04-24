@@ -1605,9 +1605,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             // hadn't completed, count this as an abandonment. Diagnostic for
             // drills that are too hard or sessions that were set up wrong.
             // Fire-and-forget — does not block or prompt the student.
-            if (startTime !== null && !drillComplete && !isWarmup) {
+            var midDrill = (startTime !== null && !drillComplete && !isWarmup);
+            if (midDrill) {
               var lt = state.lifetime || {};
               upd('lifetime', Object.assign({}, lt, { abandonments: (lt.abandonments || 0) + 1 }));
+            }
+            // Mercy toast — dignified acknowledgment when a student aborts
+            // mid-drill. Silent for pre-typing Esc (no startTime) and for
+            // warmup exits (don't need extra reassurance; warmup already
+            // signals 'no stakes'). Theme-voiced. No judgement, no shame —
+            // dropping a drill is legitimate self-regulation for kids with
+            // ADHD / motor fatigue / sensory overload.
+            if (midDrill) {
+              var _aTm = state.theme || 'default';
+              var _aToast;
+              if (_aTm === 'steampunk')      _aToast = '⚙ The bench remains. Stop when the gearwork tires — no fault in it.';
+              else if (_aTm === 'cyberpunk') _aToast = '[DRILL ABORTED] :: no log :: self-regulation registered :: respect';
+              else if (_aTm === 'kawaii')    _aToast = '💕 It\'s okay to stop when you need to. ✨ You\'ll be back when you\'re ready. 🌸';
+              else if (_aTm === 'neutral')   _aToast = 'Drill exited. Not saved.';
+              else                           _aToast = 'Drill exited — knowing when to stop is a skill too.';
+              addToast(_aToast);
             }
             upd('view', 'menu');
             return;
@@ -2414,7 +2431,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 h('span', { style: { fontSize: '28px', flexShrink: 0 } }, drill.icon),
                 h('div', { style: { flex: '1 1 220px', minWidth: 0 } },
                   h('div', { style: { fontSize: '11px', color: palette.warn, textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700, marginBottom: '2px' } },
-                    done ? '🌟 Today\'s drill · done!' : '🌟 Drill of the day'),
+                    (function() {
+                      var tm = state.theme || 'default';
+                      if (tm === 'steampunk') return done ? '⚙ Today\'s bench · done' : '⚙ Today\'s bench';
+                      if (tm === 'cyberpunk') return done ? '[DAILY DRILL · COMPLETE]' : '[DAILY DRILL · ONLINE]';
+                      if (tm === 'kawaii')    return done ? '🌸✨ Today\'s pick · done! 💕' : '🌸 Today\'s pick ✨';
+                      if (tm === 'neutral')   return done ? 'Daily drill · done' : 'Daily drill';
+                      return done ? '🌟 Today\'s drill · done!' : '🌟 Drill of the day';
+                    })()),
                   h('div', { style: { fontSize: '14px', fontWeight: 600, color: palette.text, lineHeight: '1.3' } }, drill.name),
                   h('div', { style: { fontSize: '11px', color: palette.textMute, marginTop: '2px', lineHeight: '1.4' } },
                     done ? 'You already did this drill today. Try it again or pick another from the menu.' : drill.description)
