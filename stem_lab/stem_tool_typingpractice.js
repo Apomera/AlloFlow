@@ -3034,8 +3034,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               ref: captureRef,
               tabIndex: 0,
               role: 'textbox',
-              'aria-label': 'Typing target. Focus and begin typing.',
-              'aria-multiline': 'false',
+              'aria-label': 'Typing target: ' + (drill.name || 'drill') +
+                '. Focus this area and begin typing. ' +
+                (state.accommodations.errorTolerant ? 'Error-tolerant mode is on — wrong keystrokes advance anyway. ' : '') +
+                'Press Escape to exit without saving.',
+              'aria-multiline': targetStr && targetStr.length > 60 ? 'true' : 'false',
               onKeyDown: onKeyDown,
               onBlur: function(e) {
                 // Only re-focus if focus went nowhere (e.g., user clicked on
@@ -5805,7 +5808,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         // Single .tp-root wrapper so CSS focus-ring targeting hits every
         // interactive descendant without per-element annotation. Also hosts
         // a visually-hidden aria-live region for milestone announcements.
-        return h('div', { className: 'tp-root' },
+        // Derive lang for the tool root from the active AI-passage language,
+        // or default to 'en'. Matters for screen-reader pronunciation.
+        var rootLang = (state.aiPassage && state.aiPassage.language) || 'en';
+        return h('div', { className: 'tp-root', lang: rootLang },
           h('div', {
             role: 'status',
             'aria-live': 'polite',
@@ -7166,14 +7172,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         title: isFavorite ? 'Unpin from favorites' : 'Pin as favorite',
         style: {
           position: 'absolute',
-          top: '10px',
-          right: '14px',
-          fontSize: '16px',
+          top: '6px',
+          right: '8px',
+          minWidth: '28px',
+          minHeight: '28px',
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: '18px',
           color: isFavorite ? palette.warn : palette.textMute,
           cursor: 'pointer',
           userSelect: 'none',
           lineHeight: 1,
-          padding: '2px 4px',
           borderRadius: '4px'
         }
       }, isFavorite ? '★' : '☆') : null
