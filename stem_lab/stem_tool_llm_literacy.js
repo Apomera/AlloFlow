@@ -42,6 +42,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
       // Skip-link: visually hidden until focused, then jumps to main content.
       '.llm-lit-skip { position: absolute; top: -40px; left: 8px; background: #7c3aed; color: #fff; padding: 8px 14px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 13px; z-index: 10000; transition: top .2s ease; }',
       '.llm-lit-skip:focus { top: 8px; outline: 2px solid #fff; outline-offset: 2px; }',
+      // TOC anchors: add breathing room above each target card when scrolled to.
+      '.llm-lit-anchor { scroll-margin-top: 16px; }',
+      '.llm-lit-anchor:target { animation: llmLitFadeIn .4s ease-out; }',
       // Respect user motion preferences — disable transforms and fades entirely.
       '@media (prefers-reduced-motion: reduce) {',
       '  .llm-lit-fade-in, .llm-lit-pulse { animation: none !important; }',
@@ -2648,7 +2651,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
             { icon: '\uD83C\uDF9B\uFE0F', color: '#d97706', title: 'Sample one', body: 'Temperature picks how random the choice is (see the playground below).' },
             { icon: '\u2795', color: '#059669', title: 'Append, repeat', body: 'Add the new token. Feed it back in. Do this hundreds of times.' }
           ];
-          return h('div', { style: Object.assign({}, cardStyle, { borderLeft: 'none', background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)', padding: '16px 18px' }) },
+          return h('div', { id: 'llm-lit-s1-loop', className: 'llm-lit-anchor', style: Object.assign({}, cardStyle, { borderLeft: 'none', background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)', padding: '16px 18px' }) },
             h('h3', { style: { margin: '0 0 4px', fontSize: '16px', color: COLORS.text, fontWeight: 800, letterSpacing: '-.01em' } }, '\uD83D\uDD01 The generation loop'),
             h('p', { style: { margin: '0 0 14px', fontSize: '12.5px', color: COLORS.subtext, lineHeight: 1.5 } },
               'Everything an LLM does is a loop of these 5 steps. Not "thinking" \u2014 pattern matching on tokens, over and over.'
@@ -2693,10 +2696,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
         return h('div', { style: { padding: '20px', maxWidth: '960px', margin: '0 auto' } },
           topBar('1. How LLMs Work'),
           teacherNote('tokens'),
+          sectionTOC('#2563eb', [
+            { id: 'llm-lit-s1-loop',      icon: '\uD83D\uDD01',     label: 'Generation loop' },
+            { id: 'llm-lit-s1-tokens',    icon: '\uD83D\uDD24',     label: 'Tokenization' },
+            { id: 'llm-lit-s1-nexttok',   icon: '\uD83C\uDFB2',     label: 'Next-token' },
+            { id: 'llm-lit-s1-tempcompare', icon: '\uD83C\uDF21\uFE0F', label: 'Temperature' },
+            { id: 'llm-lit-s1-playground',  icon: '\uD83C\uDF9B\uFE0F', label: 'Playground' }
+          ]),
           renderGenerationLoop(),
 
           // ── Part A: Tokenization ──
-          h('div', { style: Object.assign({}, cardStyle, { borderLeft: '4px solid ' + COLORS.accent2 }) },
+          h('div', { id: 'llm-lit-s1-tokens', className: 'llm-lit-anchor', style: Object.assign({}, cardStyle, { borderLeft: '4px solid ' + COLORS.accent2 }) },
             h('h3', { style: { margin: '0 0 6px', fontSize: '17px', color: COLORS.accent2 } }, '\uD83D\uDD24 ', Term('tokenization', 'Tokenization')),
             h('p', { style: { margin: '0 0 10px', fontSize: '13px', color: COLORS.subtext, lineHeight: 1.5 } },
               'An LLM never sees "words" \u2014 it sees ', Term('token', 'tokens'), ', which are pieces of words. Type a sentence and watch it split.'
@@ -2780,7 +2790,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
           ),
 
           // ── Part B: Next-token prediction ──
-          h('div', { style: Object.assign({}, cardStyle, { borderLeft: '4px solid ' + COLORS.accent }) },
+          h('div', { id: 'llm-lit-s1-nexttok', className: 'llm-lit-anchor', style: Object.assign({}, cardStyle, { borderLeft: '4px solid ' + COLORS.accent }) },
             h('h3', { style: { margin: '0 0 6px', fontSize: '17px', color: COLORS.accent } }, '\uD83C\uDFB2 ', Term('next-token prediction', 'Next-Token Prediction')),
             h('p', { style: { margin: '0 0 10px', fontSize: '13px', color: COLORS.subtext, lineHeight: 1.5 } },
               'All the LLM is really doing: guessing what token comes next. Given the same context, it has a PROBABILITY for every possible next token.'
@@ -2819,7 +2829,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
           ),
 
           // ── Part C: Temperature ──
-          h('div', { style: Object.assign({}, cardStyle, { borderLeft: '4px solid ' + COLORS.warn }) },
+          h('div', { id: 'llm-lit-s1-tempcompare', className: 'llm-lit-anchor', style: Object.assign({}, cardStyle, { borderLeft: '4px solid ' + COLORS.warn }) },
             h('h3', { style: { margin: '0 0 6px', fontSize: '17px', color: COLORS.warn } }, '\uD83C\uDF21\uFE0F ', Term('temperature', 'Temperature')),
             h('p', { style: { margin: '0 0 10px', fontSize: '13px', color: COLORS.subtext, lineHeight: 1.5 } },
               Term('temperature', 'Temperature'), ' controls how RANDOM the next-token choice is. Low (0.2) = pick the highest-probability token almost always. High (1.2) = sample from the long tail, including unlikely tokens. Same prompt, three temperatures:'
@@ -2922,7 +2932,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
           ),
 
           // ── Part D: Continuous temperature playground ──
-          h('div', { style: Object.assign({}, cardStyle, { borderLeft: '4px solid ' + playColor }) },
+          h('div', { id: 'llm-lit-s1-playground', className: 'llm-lit-anchor', style: Object.assign({}, cardStyle, { borderLeft: '4px solid ' + playColor }) },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' } },
               h('div', { style: { width: '32px', height: '32px', borderRadius: '8px', background: hexToRGBA(playColor, 0.15), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', transition: 'background .3s ease' } }, '\uD83C\uDF9B\uFE0F'),
               h('h3', { style: { margin: 0, fontSize: '17px', color: playColor, transition: 'color .3s ease' } }, 'Temperature playground')
@@ -3053,13 +3063,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
             'LLMs don\'t know what they don\'t know. They generate the most plausible-sounding next token even when the plausible answer is wrong \u2014 this is called ', Term('hallucination', 'hallucination'),
             ' (or sometimes ', Term('confabulation', 'confabulation'), '). Here are seven failure modes every student should recognize.'
           ),
+          sectionTOC('#d97706', [
+            { id: 'llm-lit-s2-cutoff',    icon: '\u23F0',     label: 'Cutoff' },
+            { id: 'llm-lit-s2-mechanism', icon: '\u2699\uFE0F', label: 'Why it happens' },
+            { id: 'llm-lit-s2-models',    icon: '\uD83E\uDD16', label: 'Model comparison' },
+            { id: 'llm-lit-s2-gallery',   icon: '\uD83D\uDDC2\uFE0F', label: 'Failure gallery' },
+            { id: 'llm-lit-s2-scatter',   icon: '\uD83D\uDCCA', label: 'Confidence chart' },
+            { id: 'llm-lit-s2-paste',     icon: '\uD83D\uDD0E', label: 'Analyze AI text' }
+          ]),
 
           // Knowledge-cutoff timeline: shows WHERE on the time axis the model
           // genuinely knows things vs where it is guessing.
           (function() {
             var now = new Date();
             var nowLabel = now.toLocaleString('en-US', { month: 'short', year: 'numeric' });
-            return h('div', { style: Object.assign({}, cardStyle, { borderLeft: '4px solid ' + COLORS.accent2 }) },
+            return h('div', { id: 'llm-lit-s2-cutoff', className: 'llm-lit-anchor', style: Object.assign({}, cardStyle, { borderLeft: '4px solid ' + COLORS.accent2 }) },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' } },
                 h('div', { style: { width: '32px', height: '32px', borderRadius: '8px', background: hexToRGBA(COLORS.accent2, 0.14), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px' } }, '\u23F3'),
                 h('h3', { style: { margin: 0, fontSize: '16px', color: COLORS.accent2, fontWeight: 800 } }, 'Where the AI\u2019s knowledge ends')
@@ -3098,7 +3116,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
           // Mechanism diagram: why hallucinations happen. Shows that the same
           // pipeline produces both right and wrong answers with the same tone.
           (function() {
-            return h('div', { style: Object.assign({}, cardStyle, { borderLeft: '4px solid ' + COLORS.bad }) },
+            return h('div', { id: 'llm-lit-s2-mechanism', className: 'llm-lit-anchor', style: Object.assign({}, cardStyle, { borderLeft: '4px solid ' + COLORS.bad }) },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' } },
                 h('div', { style: { width: '32px', height: '32px', borderRadius: '8px', background: hexToRGBA(COLORS.bad, 0.14), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px' } }, '\u2699\uFE0F'),
                 h('h3', { style: { margin: 0, fontSize: '16px', color: COLORS.bad, fontWeight: 800 } }, 'Why hallucination even happens')
@@ -3148,7 +3166,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
 
           // Model comparison: same prompt, three different LLMs. Shows that
           // "the AI" is plural \u2014 each model has its own defaults and voice.
-          h('div', { style: Object.assign({}, cardStyle, { borderLeft: '4px solid ' + COLORS.accent }) },
+          h('div', { id: 'llm-lit-s2-models', className: 'llm-lit-anchor', style: Object.assign({}, cardStyle, { borderLeft: '4px solid ' + COLORS.accent }) },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' } },
               h('div', { style: { width: '32px', height: '32px', borderRadius: '8px', background: hexToRGBA(COLORS.accent, 0.14), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px' } }, '\uD83E\uDD16'),
               h('h3', { style: { margin: 0, fontSize: '16px', color: COLORS.accent, fontWeight: 800 } }, '"The AI" is not one thing')
@@ -3201,7 +3219,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
             )
           ),
 
-          h('div', { style: { display: 'flex', gap: '6px', marginBottom: '14px', flexWrap: 'wrap' } },
+          h('div', { id: 'llm-lit-s2-gallery', className: 'llm-lit-anchor', style: { display: 'flex', gap: '6px', marginBottom: '14px', flexWrap: 'wrap' } },
             HALLUCINATION_GALLERY.map(function(item, i) {
               var on = i === idx;
               return h('button', {
@@ -3325,7 +3343,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
             ];
             function px(x) { return padL + x * plotW; }
             function py(y) { return padT + (1 - y) * plotH; }
-            return h('div', { style: Object.assign({}, cardStyle, { borderLeft: '4px solid ' + COLORS.warn }) },
+            return h('div', { id: 'llm-lit-s2-scatter', className: 'llm-lit-anchor', style: Object.assign({}, cardStyle, { borderLeft: '4px solid ' + COLORS.warn }) },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' } },
                 h('div', { style: { width: '32px', height: '32px', borderRadius: '8px', background: hexToRGBA(COLORS.warn, 0.14), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px' } }, '\uD83D\uDCCA'),
                 h('h3', { style: { margin: 0, fontSize: '16px', color: COLORS.warn, fontWeight: 800 } }, 'Confidence is NOT calibration')
@@ -3408,7 +3426,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
               return { kind: k, label: entry && entry.label, color: entry && entry.color, count: flagCounts[k] };
             });
             var totalFlags = flagSummary.reduce(function(n, s) { return n + s.count; }, 0);
-            return h('div', { style: Object.assign({}, cardStyle, { borderLeft: '4px solid #0284c7' }) },
+            return h('div', { id: 'llm-lit-s2-paste', className: 'llm-lit-anchor', style: Object.assign({}, cardStyle, { borderLeft: '4px solid #0284c7' }) },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' } },
                 h('div', { style: { width: '32px', height: '32px', borderRadius: '8px', background: hexToRGBA('#0284c7', 0.14), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px' } }, '\uD83D\uDD0E'),
                 h('h3', { style: { margin: 0, fontSize: '16px', color: '#0284c7', fontWeight: 800 } }, 'Analyze any AI output')
@@ -3801,11 +3819,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
           topBar('3. Prompt Craft'),
           teacherNote('prompt'),
           h('p', { style: { fontSize: '13px', color: COLORS.subtext, lineHeight: 1.5, marginTop: 0 } },
-            'A weak prompt gives you a shallow answer, fast. A strong prompt gives you a useful answer, still fast. The difference is craft — and it is very learnable.'
+            'A weak prompt gives you a shallow answer, fast. A strong prompt gives you a useful answer, still fast. The difference is craft \u2014 and it is very learnable.'
           ),
+          sectionTOC('#7c3aed', [
+            { id: 'llm-lit-s3-patterns', icon: '\uD83C\uDFAD',     label: 'Five patterns' },
+            { id: 'llm-lit-s3-anatomy',  icon: '\uD83D\uDD2C',     label: 'Anatomy' },
+            { id: 'llm-lit-s3-cookbook', icon: '\uD83D\uDCD6',     label: 'Cookbook' },
+            { id: 'llm-lit-s3-template', icon: '\uD83E\uDDF0',     label: 'Template builder' },
+            { id: 'llm-lit-s3-pairs',    icon: '\u2696\uFE0F',     label: 'Weak vs strong' },
+            { id: 'llm-literacy-workshop', icon: '\u270F\uFE0F',   label: 'Workshop' }
+          ]),
 
           // Pattern cards
-          h('div', { style: Object.assign({}, cardStyle, { borderLeft: '4px solid ' + COLORS.accent }) },
+          h('div', { id: 'llm-lit-s3-patterns', className: 'llm-lit-anchor', style: Object.assign({}, cardStyle, { borderLeft: '4px solid ' + COLORS.accent }) },
             h('h3', { style: { margin: '0 0 8px', fontSize: '16px', color: COLORS.accent } }, 'The five patterns'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(170px, 1fr))', gap: '8px' } },
               PROMPT_PATTERNS.map(function(p) {
@@ -3839,7 +3865,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
               { k: 'examples',   t: 'For example, a good first question would be: "In one sentence, what is the main purpose of mitosis?"' }
             ];
             var keys = Object.keys(PAT_COLORS);
-            return h('div', { style: Object.assign({}, cardStyle, { borderLeft: '4px solid ' + COLORS.accent2 }) },
+            return h('div', { id: 'llm-lit-s3-anatomy', className: 'llm-lit-anchor', style: Object.assign({}, cardStyle, { borderLeft: '4px solid ' + COLORS.accent2 }) },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' } },
                 h('div', { style: { width: '32px', height: '32px', borderRadius: '8px', background: hexToRGBA(COLORS.accent2, 0.14), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px' } }, '\uD83D\uDD2C'),
                 h('h3', { style: { margin: 0, fontSize: '16px', color: COLORS.accent2, fontWeight: 800 } }, 'Prompt anatomy')
@@ -3885,7 +3911,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
 
           // Prompt cookbook — ready-to-use recipes for specific student tasks.
           // Collapsed by default so it doesn't overwhelm; expands to a grid.
-          h('div', { style: Object.assign({}, cardStyle, { borderLeft: '4px solid #0d9488' }) },
+          h('div', { id: 'llm-lit-s3-cookbook', className: 'llm-lit-anchor', style: Object.assign({}, cardStyle, { borderLeft: '4px solid #0d9488' }) },
             h('button', {
               onClick: function() { setCookbookOpen(!cookbookOpen); },
               style: {
@@ -3989,7 +4015,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
             var composed = assembleTemplate(tpl, tplVals);
             var missing = missingRequired(tpl, tplVals);
             var ready = tpl && missing.length === 0;
-            return h('div', { style: Object.assign({}, cardStyle, { borderLeft: '4px solid #f59e0b' }) },
+            return h('div', { id: 'llm-lit-s3-template', className: 'llm-lit-anchor', style: Object.assign({}, cardStyle, { borderLeft: '4px solid #f59e0b' }) },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' } },
                 h('div', { style: { width: '36px', height: '36px', borderRadius: '10px', background: hexToRGBA('#f59e0b', 0.15), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' } }, '\uD83E\uDDF0'),
                 h('h3', { style: { margin: 0, fontSize: '16px', color: '#b45309' } }, 'Prompt template builder')
@@ -4125,7 +4151,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
           })(),
 
           // Before / after pairs
-          h('div', { style: Object.assign({}, cardStyle, { borderLeft: '4px solid ' + COLORS.accent2 }) },
+          h('div', { id: 'llm-lit-s3-pairs', className: 'llm-lit-anchor', style: Object.assign({}, cardStyle, { borderLeft: '4px solid ' + COLORS.accent2 }) },
             h('h3', { style: { margin: '0 0 6px', fontSize: '16px', color: COLORS.accent2 } }, 'Weak vs. strong: three examples'),
             h('div', { style: { display: 'flex', gap: '6px', marginBottom: '10px', flexWrap: 'wrap' } },
               PROMPT_PAIRS.map(function(_, i) {
@@ -4209,7 +4235,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
           ),
 
           // Live iteration workshop
-          h('div', { id: 'llm-literacy-workshop', style: Object.assign({}, cardStyle, { borderLeft: '4px solid ' + COLORS.good }) },
+          h('div', { id: 'llm-literacy-workshop', className: 'llm-lit-anchor', style: Object.assign({}, cardStyle, { borderLeft: '4px solid ' + COLORS.good }) },
             h('h3', { style: { margin: '0 0 6px', fontSize: '16px', color: COLORS.good } }, 'Your turn: iterate a prompt live'),
             h('p', { style: { margin: '0 0 10px', fontSize: '12px', color: COLORS.subtext, lineHeight: 1.5 } },
               'Write a prompt below. Run it. Look at the output. Edit the prompt using the five patterns. Run again. You\'re looking for the output to improve — or for you to understand WHY the output is shaped the way it is.'
@@ -4832,11 +4858,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
             Term('scaffold', 'Scaffold'), ' = the first. ',
             Term('substitute', 'Substitute'), ' = the second.'
           ),
+          sectionTOC('#db2777', [
+            { id: 'llm-lit-s5-flowchart', icon: '\uD83E\uDDED', label: 'Decision chart' },
+            { id: 'llm-lit-s5-scenarios', icon: '\uD83D\uDCDD', label: 'Scenarios' },
+            { id: 'llm-lit-s5-byos',      icon: '\uD83C\uDFAF', label: 'Your situation' }
+          ]),
 
           // Scaffold vs Substitute decision flowchart.
           // Branching: Q1 identifies the target skill, Q2 asks whether the
           // proposed AI use removes-a-barrier or does-the-thing-itself.
-          h('div', { style: Object.assign({}, cardStyle, { borderLeft: '4px solid #db2777' }) },
+          h('div', { id: 'llm-lit-s5-flowchart', className: 'llm-lit-anchor', style: Object.assign({}, cardStyle, { borderLeft: '4px solid #db2777' }) },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' } },
               h('div', { style: { width: '32px', height: '32px', borderRadius: '8px', background: hexToRGBA('#db2777', 0.14), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px' } }, '\uD83E\uDDED'),
               h('h3', { style: { margin: 0, fontSize: '16px', color: '#db2777', fontWeight: 800 } }, 'The decision, visualized')
@@ -4914,7 +4945,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
             )
           ),
 
-          h('div', { style: { display: 'flex', gap: '6px', marginBottom: '14px', flexWrap: 'wrap' } },
+          h('div', { id: 'llm-lit-s5-scenarios', className: 'llm-lit-anchor', style: { display: 'flex', gap: '6px', marginBottom: '14px', flexWrap: 'wrap' } },
             UDL_SCENARIOS.map(function(_, i) {
               var on = i === idx;
               return h('button', {
@@ -5013,7 +5044,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
           ),
 
           // ── Bring your own scenario ──
-          h('div', { style: Object.assign({}, cardStyle, { marginTop: '18px', borderLeft: '4px solid #0d9488', background: 'linear-gradient(180deg, #ffffff, #f0fdfa)' }) },
+          h('div', { id: 'llm-lit-s5-byos', className: 'llm-lit-anchor', style: Object.assign({}, cardStyle, { marginTop: '18px', borderLeft: '4px solid #0d9488', background: 'linear-gradient(180deg, #ffffff, #f0fdfa)' }) },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' } },
               h('div', { style: { width: '36px', height: '36px', borderRadius: '10px', background: hexToRGBA('#0d9488', 0.15), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' } }, '\uD83C\uDFAF'),
               h('h3', { style: { margin: 0, fontSize: '16px', color: '#0d9488' } }, 'Bring your own situation')
@@ -5472,6 +5503,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
             pickedOpt.why,
             !pickedOpt.correct && !done && h('div', { style: { marginTop: '6px', fontSize: '11px', color: COLORS.muted, fontStyle: 'italic' } }, 'Pick another answer to try again.')
           )
+        );
+      }
+
+      // In-section table of contents. Pass a color (section accent) and an
+      // array of { id, icon?, label } entries. Each chip smooth-scrolls to an
+      // element with a matching id + `llm-lit-anchor` class. Hidden in print.
+      function sectionTOC(color, items) {
+        if (!items || items.length === 0) return null;
+        return h('div', {
+          className: 'llm-lit-no-print',
+          role: 'navigation',
+          'aria-label': 'Sub-sections',
+          style: {
+            display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center',
+            padding: '8px 12px',
+            background: hexToRGBA(color, 0.04),
+            border: '1px solid ' + hexToRGBA(color, 0.2),
+            borderRadius: '10px',
+            marginBottom: '14px'
+          }
+        },
+          h('span', {
+            'aria-hidden': 'true',
+            style: { fontSize: '11px', fontWeight: 700, color: color, textTransform: 'uppercase', letterSpacing: '.05em', marginRight: '2px' }
+          }, 'On this page'),
+          items.map(function(item) {
+            return h('button', {
+              key: item.id,
+              onClick: function() {
+                var el = document.getElementById(item.id);
+                if (el && el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              },
+              style: {
+                background: '#fff',
+                color: color,
+                border: '1px solid ' + hexToRGBA(color, 0.35),
+                borderRadius: '999px',
+                padding: '3px 10px',
+                fontSize: '11px', fontWeight: 600, cursor: 'pointer',
+                display: 'inline-flex', alignItems: 'center', gap: '4px',
+                whiteSpace: 'nowrap'
+              },
+              title: 'Jump to: ' + item.label
+            },
+              item.icon && h('span', { 'aria-hidden': 'true' }, item.icon),
+              item.label
+            );
+          })
         );
       }
 
