@@ -71,6 +71,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     drillRunId: 0,
     audioTheme: 'chime',       // 'chime' (default) | 'soft' | 'mute'
     accentColor: 'blue',       // 'blue' (default) | 'teal' | 'violet' | 'amber' | 'rose'
+    theme: 'default',          // named visual theme: default | steampunk | cyberpunk | kawaii | neutral
     // Lifetime totals survive session-array capping, so the IEP report stays
     // accurate for long-term students even after the 200-session cap trims
     // the oldest records.
@@ -705,7 +706,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     accentDim: '#3b82f6',
     success:   '#34d399',
     warn:      '#fbbf24',
-    danger:    '#f87171'
+    danger:    '#f87171',
+    // onAccent = text color used when placed on top of accent/success/warn
+    // backgrounds. For dark themes this is the bg color (creates inverse).
+    // For light themes it's the darkest text color.
+    onAccent:  '#0f172a'
   };
 
   var HIGH_CONTRAST_PALETTE = {
@@ -720,7 +725,88 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     accentDim: '#ffee00',
     success:   '#00ff00',
     warn:      '#ffaa00',
-    danger:    '#ff4444'
+    danger:    '#ff4444',
+    onAccent:  '#000000'
+  };
+
+  // Named visual themes — each is a full palette override. High-contrast
+  // still trumps them (it's an accessibility mode, not a style preference).
+  // accentColor picker can further override accent + accentDim within a theme.
+  var THEMES = {
+    // Default · existing cool-dark palette.
+    'default': PALETTE,
+
+    // 🔩 Steampunk · warm brass + leather + copper + patina-green.
+    // Evokes gears, typewriters, and Victorian industrial feel.
+    'steampunk': {
+      bg:        '#1a1108',   // deep espresso
+      surface:   '#2d1f12',   // dark leather
+      surface2:  '#3d2d1c',
+      border:    '#5a4528',
+      text:      '#f0e0c0',   // warm cream — parchment
+      textDim:   '#d4bc8a',
+      textMute:  '#a08868',
+      accent:    '#d4884c',   // copper / brass
+      accentDim: '#a66a35',
+      success:   '#88a850',   // oxidized patina green
+      warn:      '#e8a040',   // amber brass
+      danger:    '#c85030',   // rust
+      onAccent:  '#1a1108'
+    },
+
+    // 🌃 Cyberpunk · neon magenta + cyan + deep violet-black.
+    // Evokes neon-lit night, terminal glow, retro-future.
+    'cyberpunk': {
+      bg:        '#0a0514',
+      surface:   '#1a0f2a',
+      surface2:  '#2a1f3a',
+      border:    '#3d2a5a',
+      text:      '#e0d8ff',
+      textDim:   '#c0b0e8',
+      textMute:  '#8070a0',
+      accent:    '#ff00a8',   // neon magenta
+      accentDim: '#c00080',
+      success:   '#00ffc8',   // neon cyan-green
+      warn:      '#ffd700',   // electric yellow
+      danger:    '#ff4060',   // neon red
+      onAccent:  '#0a0514'
+    },
+
+    // 🍓 Kawaii · pastel pink + cream + soft plum. LIGHT theme.
+    // Explicitly-chosen text colors keep 4.5:1 contrast against a light bg.
+    'kawaii': {
+      bg:        '#fff5fa',   // warm cream-pink
+      surface:   '#ffe8f2',   // pale pink
+      surface2:  '#ffd6e5',
+      border:    '#f5c2d7',
+      text:      '#4a2838',   // warm dark plum — 4.5:1+ against bg
+      textDim:   '#6a4858',
+      textMute:  '#8a7080',
+      accent:    '#e85a8a',   // saturated rose (not pastel — needs enough contrast)
+      accentDim: '#c03868',
+      success:   '#4a9a6a',   // mint-forest (saturated — contrast)
+      warn:      '#d4740a',   // saturated peach
+      danger:    '#c84038',
+      onAccent:  '#ffffff'    // white text on accent in light themes
+    },
+
+    // 🪨 Neutral · warm gray dark palette, no blue cast.
+    // For students/clinicians who find blue tones cool or overstimulating.
+    'neutral': {
+      bg:        '#1a1a1a',
+      surface:   '#262626',
+      surface2:  '#363636',
+      border:    '#444444',
+      text:      '#e8e8e8',
+      textDim:   '#c8c8c8',
+      textMute:  '#989898',
+      accent:    '#b8a080',   // warm tan
+      accentDim: '#8a7860',
+      success:   '#8aa078',   // sage
+      warn:      '#c89860',   // warm gold
+      danger:    '#b07870',   // dusty rose
+      onAccent:  '#1a1a1a'
+    }
   };
 
   // Accent themes — swap just the accent pair (accent + accentDim) so the
@@ -737,13 +823,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     rose:   { accent: '#fb7185', accentDim: '#e11d48' }
   };
 
-  function getPalette(accommodations, accentChoice) {
+  function getPalette(accommodations, accentChoice, themeName) {
+    // Accessibility first: high-contrast mode trumps all style choices.
     if (accommodations && accommodations.highContrast) return HIGH_CONTRAST_PALETTE;
-    // Start from the default palette, then swap accents if the student picked
-    // a non-default theme.
-    var theme = ACCENT_THEMES[accentChoice] || ACCENT_THEMES.blue;
-    if (theme === ACCENT_THEMES.blue) return PALETTE;
-    return Object.assign({}, PALETTE, { accent: theme.accent, accentDim: theme.accentDim });
+
+    // Base palette from selected named theme (default if unknown).
+    var base = THEMES[themeName] || THEMES['default'];
+
+    // Accent override: if the student has also picked an accent color,
+    // overlay just the accent pair on top of the theme. This stacks so
+    // they can pick 'Steampunk' + 'Violet' if they want (unusual but valid).
+    var accent = ACCENT_THEMES[accentChoice];
+    if (accent && accent !== ACCENT_THEMES.blue) {
+      return Object.assign({}, base, { accent: accent.accent, accentDim: accent.accentDim });
+    }
+    return base;
   }
 
   function getFontFamily(accommodations) {
@@ -826,7 +920,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         var updMulti = function(obj) { ctx.updateMulti ? ctx.updateMulti('typingPractice', obj) : Object.keys(obj).forEach(function(k) { upd(k, obj[k]); }); };
         var addToast = ctx.addToast || function(msg) { console.log('[TypingPractice]', msg); };
 
-        var palette = getPalette(state.accommodations, state.accentColor);
+        var palette = getPalette(state.accommodations, state.accentColor, state.theme);
         var fontFamily = getFontFamily(state.accommodations);
 
         // ── Drill-local state (hooks must be called unconditionally every render) ──
@@ -2899,7 +2993,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   padding: '3px 8px',
                   borderRadius: '999px',
                   background: palette.warn,
-                  color: '#0f172a',
+                  color: palette.onAccent,
                   fontWeight: 700,
                   textTransform: 'uppercase',
                   letterSpacing: '0.05em'
@@ -2993,7 +3087,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 marginBottom: '12px',
                 padding: '12px 16px',
                 background: palette.warn,
-                color: '#0f172a',
+                color: palette.onAccent,
                 borderRadius: '10px',
                 fontSize: '13px',
                 fontWeight: 600,
@@ -3855,6 +3949,71 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             ),
 
             h('div', { id: 'tp-s-appearance', style: { scrollMarginTop: '20px' } }),
+
+            // ── Visual theme — full-palette override ──
+            // High-contrast mode trumps themes. accentColor picker still works
+            // within any theme. Kawaii is a LIGHT theme; others are dark.
+            !acc.highContrast ? h('div', {
+              style: { padding: '14px 0', borderBottom: '1px solid ' + palette.border }
+            },
+              h('div', { style: { fontSize: '14px', fontWeight: 600, color: palette.text, marginBottom: '2px' } }, 'Visual theme'),
+              h('div', { style: { fontSize: '11px', color: palette.textMute, lineHeight: '1.4', marginBottom: '10px' } },
+                'Swap the whole look of the tool. High-contrast mode overrides themes. Kawaii is a light theme; the others are dark variants.'),
+              h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' } },
+                [
+                  { id: 'default',   label: 'Default',   sub: 'cool dark blue',    bgSample: '#0f172a', accentSample: '#60a5fa' },
+                  { id: 'steampunk', label: '🔩 Steampunk', sub: 'brass + leather',  bgSample: '#1a1108', accentSample: '#d4884c' },
+                  { id: 'cyberpunk', label: '🌃 Cyberpunk', sub: 'neon magenta',     bgSample: '#0a0514', accentSample: '#ff00a8' },
+                  { id: 'kawaii',    label: '🍓 Kawaii',    sub: 'pastel · LIGHT',   bgSample: '#fff5fa', accentSample: '#e85a8a' },
+                  { id: 'neutral',   label: '🪨 Neutral',   sub: 'warm gray',        bgSample: '#1a1a1a', accentSample: '#b8a080' }
+                ].map(function(opt) {
+                  var isActive = (state.theme || 'default') === opt.id;
+                  return h('button', {
+                    key: 'theme-' + opt.id,
+                    onClick: function() { upd('theme', opt.id); },
+                    'aria-pressed': isActive ? 'true' : 'false',
+                    'aria-label': opt.label + ' theme — ' + opt.sub,
+                    style: {
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '6px 10px',
+                      borderRadius: '8px',
+                      border: '2px solid ' + (isActive ? palette.text : palette.border),
+                      background: 'transparent',
+                      color: palette.textDim,
+                      fontSize: '12px',
+                      fontWeight: isActive ? 700 : 500,
+                      cursor: 'pointer',
+                      fontFamily: 'inherit',
+                      textAlign: 'left'
+                    }
+                  },
+                    // Swatch showing bg + accent for the theme
+                    h('span', {
+                      'aria-hidden': 'true',
+                      style: {
+                        display: 'inline-flex',
+                        width: '32px',
+                        height: '32px',
+                        borderRadius: '6px',
+                        border: '1px solid ' + palette.border,
+                        overflow: 'hidden',
+                        flexShrink: 0
+                      }
+                    },
+                      h('span', { style: { flex: 1, background: opt.bgSample } }),
+                      h('span', { style: { flex: 1, background: opt.accentSample } })
+                    ),
+                    h('span', null,
+                      h('div', { style: { fontSize: '12px', fontWeight: isActive ? 700 : 600 } }, opt.label),
+                      h('div', { style: { fontSize: '10px', color: palette.textMute, fontWeight: 400 } }, opt.sub)
+                    )
+                  );
+                })
+              )
+            ) : null,
+
             // ── Accent color — cosmetic + accessibility (color-sensitivity) ──
             // Overrides only while high-contrast mode is OFF. In high-contrast,
             // the palette is intentionally fixed black/yellow/white.
@@ -5473,7 +5632,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                       padding: '4px 10px',
                       borderRadius: '999px',
                       background: palette.warn,
-                      color: '#0f172a',
+                      color: palette.onAccent,
                       fontWeight: 600
                     }
                   }, '🏅 ' + b.replace('tried-', '').replace(/([A-Z])/g, ' $1').toLowerCase());
@@ -5877,7 +6036,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
   function primaryBtnStyle(palette) {
     return {
       background: palette.accent,
-      color: '#0f172a',
+      color: palette.onAccent,
       border: 'none',
       borderRadius: '8px',
       padding: '10px 18px',
