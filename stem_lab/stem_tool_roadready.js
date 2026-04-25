@@ -12327,6 +12327,66 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       dnLight.position.set(lmCenterWX, lt.height + 0.5, lmCenterWZ);
                       chunkGroup.add(dnLight);
                     }
+                    // ── Customer parking lot: sedan + pickup (the Maine pair) ──
+                    // Real Maine roadside diners always have a sedan + a pickup
+                    // out front. Add both, deterministic per-chunk seed for the
+                    // sedan color. Pickup is the rusted-blue working-truck type.
+                    var dnRng = seededRandom(chunk.index * 41597 + 13);
+                    var dnSedanColors = [0xdc2626, 0x059669, 0x4b5563, 0xfef3c7, 0x7c3aed];
+                    var dnSedanColor = dnSedanColors[Math.floor(dnRng() * dnSedanColors.length)];
+                    var dnWheelMat = new T.MeshLambertMaterial({ color: 0x1a1a1a });
+                    var dnWinMat = new T.MeshLambertMaterial({ color: 0x1e293b });
+                    // Sedan
+                    var dnSedanX = lmCenterWX + lm.side * (lt.size * 0.5);
+                    var dnSedanZ = lmCenterWZ - 1.0;
+                    var dnSedanBodyMat = new T.MeshLambertMaterial({ color: dnSedanColor });
+                    var dnSedanCabMat = new T.MeshLambertMaterial({ color: Math.max(0, dnSedanColor - 0x202020) });
+                    var dnSedanBody = new T.Mesh(new T.BoxGeometry(0.85, 0.55, 1.7), dnSedanBodyMat);
+                    dnSedanBody.position.set(dnSedanX, 0.5, dnSedanZ);
+                    dnSedanBody.castShadow = true;
+                    chunkGroup.add(dnSedanBody);
+                    var dnSedanCab = new T.Mesh(new T.BoxGeometry(0.65, 0.45, 0.95), dnSedanCabMat);
+                    dnSedanCab.position.set(dnSedanX, 1.05, dnSedanZ - 0.05);
+                    chunkGroup.add(dnSedanCab);
+                    var dnSedanWinF = new T.Mesh(new T.BoxGeometry(0.5, 0.35, 0.06), dnWinMat);
+                    dnSedanWinF.position.set(dnSedanX, 1.05, dnSedanZ + 0.45);
+                    chunkGroup.add(dnSedanWinF);
+                    [[-0.35, -0.6], [0.35, -0.6], [-0.35, 0.6], [0.35, 0.6]].forEach(function(dnwp) {
+                      var dnSWheel = new T.Mesh(new T.CylinderGeometry(0.18, 0.18, 0.12, 8), dnWheelMat);
+                      dnSWheel.rotation.x = Math.PI / 2;
+                      dnSWheel.position.set(dnSedanX + dnwp[0], 0.22, dnSedanZ + dnwp[1]);
+                      chunkGroup.add(dnSWheel);
+                    });
+                    // Pickup truck (rusted blue, open bed)
+                    var dnPickupX = lmCenterWX + lm.side * (lt.size * 0.5);
+                    var dnPickupZ = lmCenterWZ + 1.0;
+                    var dnPickupBodyMat = new T.MeshLambertMaterial({ color: 0x2d5078 });
+                    var dnPickupCabMat = new T.MeshLambertMaterial({ color: 0x1e3a5f });
+                    var dnPickupBedMat = new T.MeshLambertMaterial({ color: 0x1a3050 });
+                    // Cab (front 50% of length, taller)
+                    var dnPickupCab = new T.Mesh(new T.BoxGeometry(0.85, 0.95, 0.95), dnPickupCabMat);
+                    dnPickupCab.position.set(dnPickupX, 0.7, dnPickupZ + 0.4);
+                    dnPickupCab.castShadow = true;
+                    chunkGroup.add(dnPickupCab);
+                    // Hood (lower than cab)
+                    var dnPickupHood = new T.Mesh(new T.BoxGeometry(0.85, 0.55, 0.6), dnPickupBodyMat);
+                    dnPickupHood.position.set(dnPickupX, 0.5, dnPickupZ - 0.2);
+                    chunkGroup.add(dnPickupHood);
+                    // Bed (open box behind cab)
+                    var dnPickupBed = new T.Mesh(new T.BoxGeometry(0.85, 0.45, 0.85), dnPickupBedMat);
+                    dnPickupBed.position.set(dnPickupX, 0.5, dnPickupZ + 1.05);
+                    chunkGroup.add(dnPickupBed);
+                    // Windshield (front of cab)
+                    var dnPickupWin = new T.Mesh(new T.BoxGeometry(0.5, 0.45, 0.06), dnWinMat);
+                    dnPickupWin.position.set(dnPickupX, 0.95, dnPickupZ - 0.06);
+                    chunkGroup.add(dnPickupWin);
+                    // Wheels — slightly larger (pickup tires)
+                    [[-0.35, -0.4], [0.35, -0.4], [-0.35, 0.85], [0.35, 0.85]].forEach(function(dnpwp) {
+                      var dnPWheel = new T.Mesh(new T.CylinderGeometry(0.22, 0.22, 0.13, 8), dnWheelMat);
+                      dnPWheel.rotation.x = Math.PI / 2;
+                      dnPWheel.position.set(dnPickupX + dnpwp[0], 0.24, dnPickupZ + dnpwp[1]);
+                      chunkGroup.add(dnPWheel);
+                    });
                   } else if (lt.id === 'fire') {
                     // Garage door (larger)
                     var fdMat = new T.MeshLambertMaterial({ color: 0xfef3c7 });
