@@ -75,6 +75,10 @@ DEPS_RENDER_INTERACTIVE_MAP = [
     # useState val added in G.2 hotfix (gates disabled state on lots of UI;
     # missed by the JSX-attribute stripper).
     'isMapLocked',
+    # useState val added in G.2 hotfix #3 (referenced as `connectingSourceId`
+    # inside JSX attribute curly expressions; my classifier had only the
+    # setter side).
+    'connectingSourceId',
     # useReducer-derived bindings (destructured from csState at L3775,
     # in scope in the React component body — manually added since the
     # audit classifier doesn't trace destructure patterns).

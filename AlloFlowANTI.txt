@@ -8465,6 +8465,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
         letterSpacing,
         nodeInputText,
         isMapLocked,
+        connectingSourceId,
         conceptMapNodes,
         conceptMapEdges,
         draggedNodeId,
