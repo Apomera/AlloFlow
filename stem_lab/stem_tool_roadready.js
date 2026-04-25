@@ -12087,6 +12087,63 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     var fd = new T.Mesh(new T.BoxGeometry(1.5, 1.8, 0.1), fdMat);
                     fd.position.set(lmCenterWX + lm.side * (lt.size * 0.4) - 0.5, 0.9, lmCenterWZ);
                     chunkGroup.add(fd);
+                    // ── Parked engine out front (companion to police cruiser) ──
+                    // Big red rectangular truck body + dark cab + white ladder
+                    // along the top + 6 wheels (dual rear axle). Positioned on
+                    // the apron in front of the bay so the silhouette reads as
+                    // "fire engine ready to roll" from the road.
+                    var ftBodyMat = new T.MeshLambertMaterial({ color: 0xc1121f });
+                    var ftCabMat = new T.MeshLambertMaterial({ color: 0x8a0e16 });
+                    var ftWheelMat = new T.MeshLambertMaterial({ color: 0x1a1a1a });
+                    var ftLadderMat = new T.MeshLambertMaterial({ color: 0xe5e7eb });
+                    var ftX = lmCenterWX + lm.side * (lt.size * 0.5);
+                    var ftZ = lmCenterWZ + lt.size * 0.3;
+                    // Body — long rectangle (2.6m), wider than the cruiser
+                    var ftBody = new T.Mesh(new T.BoxGeometry(2.6, 1.0, 1.1), ftBodyMat);
+                    ftBody.position.set(ftX, 0.65, ftZ);
+                    ftBody.castShadow = true;
+                    chunkGroup.add(ftBody);
+                    // Cab section (front 35%, slightly taller)
+                    var ftCab = new T.Mesh(new T.BoxGeometry(0.95, 0.8, 1.05), ftCabMat);
+                    ftCab.position.set(ftX + 0.85, 1.5, ftZ);
+                    chunkGroup.add(ftCab);
+                    // Black windshield panel
+                    var ftWinMat = new T.MeshLambertMaterial({ color: 0x1e293b });
+                    var ftWin = new T.Mesh(new T.BoxGeometry(0.08, 0.45, 0.95), ftWinMat);
+                    ftWin.position.set(ftX + 1.32, 1.55, ftZ);
+                    chunkGroup.add(ftWin);
+                    // White ladder along the top — long thin rectangle + two
+                    // cross rails for the silhouette to read as a ladder
+                    var ftLadder = new T.Mesh(new T.BoxGeometry(2.0, 0.08, 0.35), ftLadderMat);
+                    ftLadder.position.set(ftX - 0.3, 1.22, ftZ);
+                    chunkGroup.add(ftLadder);
+                    [-0.6, 0.0, 0.6].forEach(function(rgX) {
+                      var ftRung = new T.Mesh(new T.BoxGeometry(0.03, 0.04, 0.4), ftLadderMat);
+                      ftRung.position.set(ftX - 0.3 + rgX, 1.27, ftZ);
+                      chunkGroup.add(ftRung);
+                    });
+                    // 6 wheels — two front, four rear (dual axle)
+                    [
+                      { x: 0.95, z: -0.55 }, { x: 0.95, z: 0.55 },
+                      { x: -0.55, z: -0.55 }, { x: -0.55, z: 0.55 },
+                      { x: -1.05, z: -0.55 }, { x: -1.05, z: 0.55 }
+                    ].forEach(function(ftwp) {
+                      var ftWheel = new T.Mesh(new T.CylinderGeometry(0.22, 0.22, 0.14, 8), ftWheelMat);
+                      ftWheel.rotation.x = Math.PI / 2;
+                      ftWheel.position.set(ftX + ftwp.x, 0.22, ftZ + ftwp.z);
+                      chunkGroup.add(ftWheel);
+                    });
+                    // Light bar on top of the cab — red, tagged for the same
+                    // chunk-walk animator (rr_policeBeacon already pulses red
+                    // / blue beacons; we reuse it for fire too).
+                    var ftBarMat = new T.MeshBasicMaterial({
+                      color: 0xff2020, transparent: true, opacity: 0.55,
+                      blending: T.AdditiveBlending, depthWrite: false
+                    });
+                    var ftBar = new T.Mesh(new T.BoxGeometry(0.7, 0.08, 0.18), ftBarMat);
+                    ftBar.position.set(ftX + 0.85, 1.94, ftZ);
+                    ftBar.name = 'rr_policeBeacon';
+                    chunkGroup.add(ftBar);
                     // Red warning strip above the bay door — glows at night/fog/dawn.
                     // Real fire stations have a red accent light bar so they're
                     // instantly identifiable as emergency buildings in the dark.
