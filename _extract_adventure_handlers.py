@@ -47,6 +47,7 @@ DEPS_VERIFIED = [
     'factionResourceMode', 'enableFactionResources',
     'selectedLanguages', 'currentUiLanguage',
     'apiKey', 'appId', 'activeSessionAppId', 'activeSessionCode',
+    'globalPoints', 'sessionData', 'user',
     # Refs
     'alloBotRef', 'lastTurnSnapshot', 'lastReadTurnRef',
     'pdfPreviewRef', 'exportPreviewRef',
@@ -62,7 +63,11 @@ DEPS_VERIFIED = [
     'handleScoreUpdate', 'getAdventureGlossaryTerms',
     'generateAdventureImage', 'generateNarrativeLedger', 'generatePixelArtItem',
     'detectClimaxArchetype', 'flyToElement', 'resilientJsonParse',
-    'storageDB', 'updateDoc',
+    'storageDB', 'updateDoc', 'doc', 'db',
+    # AlloData prompt-prefix constants (registered via window.AlloModules.AlloData
+    # and upgraded into closure scope by _upgradeAlloData()).
+    'ADVENTURE_GUARDRAIL', 'DEBATE_INVISIBLE_INSTRUCTIONS', 'INVISIBLE_NARRATOR_INSTRUCTIONS',
+    'NARRATIVE_GUARDRAILS', 'SYSTEM_INVISIBLE_INSTRUCTIONS', 'SYSTEM_STATE_EXAMPLES',
 ]
 
 # Uncertain — may be defined in some build configurations or only via property
