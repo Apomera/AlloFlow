@@ -11216,6 +11216,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               var chunkGroup = new T.Group();
               chunkGroup.name = 'chunk_' + ci;
               var chunkWorldZ = ci * CHUNK_SIZE - MAP_SIZE / 2;
+              // Hoisted weather-state flags shared by everything below
+              // (grass / wildflowers / leaves / tree palette). Previously
+              // `fallTinted` was defined down at the tree palette, so the
+              // wildflower block (which runs first) saw it as undefined and
+              // never picked the autumn-leaf colors.
+              var snowy = scn.weather === 'snow';
+              var fallTinted = !snowy && (scn.id === 'dawn' || scn.weather === 'fog');
               // ── Per-chunk grass ribbon (terrain surface under the road) ──
               // The scenario ground plane is flat at Y=0 and doesn't cover the
               // spline's varying heightAt() in rural biomes (amp ±1.6). Without
@@ -11291,10 +11298,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 var wildflowerBiome = chunk.biome === 'rural' || chunk.biome === 'residential' || chunk.biome === 'suburban';
                 if (isDayForFlowers && scn.weather !== 'snow' && wildflowerBiome) {
                   var wfRng = seededRandom(chunk.index * 71933 + 19);
-                  var wfPalette = chunk.biome === 'rural'
-                    ? [0xffffff, 0xfde047, 0xa855f7, 0xdb2777] // daisy, dandelion, aster, clover
-                    : [0xef4444, 0xfacc15, 0xf472b6, 0xfb923c]; // garden-bed shades
-                  var wfCount = chunk.biome === 'rural' ? 18 : 10;
+                  // FALL VARIANT: when the trees are tinted (dawn / fog), the
+                  // shoulder gets fallen leaves instead of summer wildflowers.
+                  // Colors match the maple / sugar-maple / birch palette so the
+                  // ground reads as an extension of the canopy above.
+                  var wfPalette = fallTinted
+                    ? (chunk.biome === 'rural'
+                        ? [0xc62828, 0xed7d31, 0xfbbf24, 0xb45309] // red maple, orange, yellow, rust
+                        : [0xed7d31, 0xfbbf24, 0xb45309, 0xa16207])
+                    : (chunk.biome === 'rural'
+                        ? [0xffffff, 0xfde047, 0xa855f7, 0xdb2777] // daisy, dandelion, aster, clover
+                        : [0xef4444, 0xfacc15, 0xf472b6, 0xfb923c]); // garden-bed shades
+                  var wfCount = chunk.biome === 'rural' ? (fallTinted ? 28 : 18) : (fallTinted ? 16 : 10);
                   for (var wfI = 0; wfI < wfCount; wfI++) {
                     var wfR = wfRng();
                     var wfSide = wfRng() < 0.5 ? -1 : 1;
@@ -11327,8 +11342,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               // colors — red maple, orange maple2, yellow birch — since those
               // moody-light scenarios are most evocative of October mornings.
               // Pines stay dark green (conifers don't turn).
-              var snowy = scn.weather === 'snow';
-              var fallTinted = !snowy && (scn.id === 'dawn' || scn.weather === 'fog');
+              // (snowy + fallTinted are hoisted at the top of the chunk loop.)
               var pineLeaf = new T.MeshLambertMaterial({ color: snowy ? 0xb8c4d0 : 0x1f5d2c });
               var maple    = new T.MeshLambertMaterial({ color: snowy ? 0xc8d0d8 : (fallTinted ? 0xc62828 : 0x3a8a3a) });
               var maple2   = new T.MeshLambertMaterial({ color: snowy ? 0xc8d0d8 : (fallTinted ? 0xed7d31 : 0x6ba84f) });
