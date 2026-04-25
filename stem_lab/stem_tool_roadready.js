@@ -15237,7 +15237,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // player leaves rideshare mode or a ride transitions phase.
           (function updateRideshareMarker() {
             var rsNow = rideshareRef.current;
-            if (!d.rideshareMode || !rsNow || rsNow.phase === 'completed') {
+            // Defensive `d &&` — same race as the d.highBeams crash earlier:
+            // updateThreeScene runs through the rAF step, which can fire once
+            // after unmount when `d` has been cleared. Without this guard the
+            // tool throws "Cannot read properties of undefined (reading
+            // 'rideshareMode')" and the whole frame loop dies.
+            if (!d || !d.rideshareMode || !rsNow || rsNow.phase === 'completed') {
               if (rideshareMarkerRef.current) rideshareMarkerRef.current.visible = false;
               return;
             }
