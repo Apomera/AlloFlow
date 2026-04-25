@@ -2482,6 +2482,31 @@ const AdventureAmbience = React.memo((props) => {
     if (Ext) return <Ext {...props} />;
     return null;
 });
+// Math problem taskType -> directive prefix.
+// Renderer prepends `<directive>: ` to the question text. Word_problem is
+// intentionally empty (the prose IS the directive). Unknown / missing
+// taskType falls through to '' (no prefix), matching the pre-taskType
+// rendering for backward-compat with old history items.
+const MATH_TASK_DIRECTIVES = {
+    simplify: 'Simplify',
+    solve: 'Solve for x',
+    evaluate: 'Evaluate',
+    factor: 'Factor',
+    graph: 'Graph',
+    compute: 'Calculate',
+    word_problem: '',
+    prove: 'Prove',
+    convert: 'Convert',
+};
+const formatMathQuestion = (problem) => {
+    const baseText = (problem && (problem.question || problem.problem)) || '';
+    const directive = MATH_TASK_DIRECTIVES[problem && problem.taskType];
+    if (!directive) return baseText;
+    // Don't double-prepend if the AI happened to include the directive anyway.
+    const alreadyHas = /^(simplify|solve|evaluate|factor|graph|calculate|find|determine|compute|factor|prove|convert)\b/i.test(baseText.trim());
+    return alreadyHas ? baseText : `${directive}: ${baseText}`;
+};
+
 const sanitizeTruncatedCitations = (text) => {
     const _m = window.AlloModules && window.AlloModules.TextPipelineHelpers;
     if (_m && typeof _m.sanitizeTruncatedCitations === 'function') return _m.sanitizeTruncatedCitations(text);
@@ -11111,33 +11136,35 @@ Return only the corrected version of this exact text:`;
       setIsMathEditingChat(true);
       try {
           const currentProblems = generatedContent.data.problems.map((p, i) =>
-              `Problem ${i+1}: ${p.question} (Answer: ${p.answer})`
+              `Problem ${i+1} [${p.taskType || 'simplify'}]: ${p.question} (Answer: ${p.answer})`
           ).join("\n");
           const prompt = `
               You are an Expert Math Curriculum Designer.
               ${leveledTextLanguage && leveledTextLanguage !== 'English' ? 'IMPORTANT: Generate ALL text content (questions, explanations, steps, real-world applications) in ' + leveledTextLanguage + '. After each text field, include an English translation in parentheses. Keep mathematical expressions and JSON keys in English.' : ''}
               A teacher has an existing problem set and wants to modify it.
-              
-              CURRENT PROBLEMS:
+
+              CURRENT PROBLEMS (the [bracket] tag is the taskType — preserve unless edit specifically changes the action):
               ${currentProblems}
-              
+
               TEACHER'S EDIT REQUEST: "${editInstruction}"
               Grade Level: ${gradeLevel}
               Subject: ${mathSubject}
-              
+
               INSTRUCTIONS:
               Apply the teacher's requested changes to the problem set.
               This may include: making problems easier/harder, adding more problems,
               changing topics, adjusting difficulty, adding specific problem types,
               changing the theme/context, or any other modification.
               Keep problems the teacher didn't mention unchanged unless the edit applies to all.
-              
+              The "question" field must NOT include a leading directive verb (no "Simplify:" / "Solve:") — the renderer prepends it from taskType.
+
               Return ONLY the MODIFIED problem set as JSON:
               {
                 "title": "Modified Problem Set",
                 "problems": [
                   {
-                    "question": "Problem text...",
+                    "question": "Problem text without leading directive...",
+                    "taskType": "simplify | solve | evaluate | factor | graph | compute | word_problem | prove | convert",
                     "expression": "Math expression",
                     "answer": "The answer",
                     "steps": [{ "explanation": "Clear step-by-step explanation", "latex": "Math expression" }],
@@ -11170,9 +11197,19 @@ Return only the corrected version of this exact text:`;
               if (!Array.isArray(steps)) return [];
               return steps.map(s => typeof s === "string" ? { explanation: s, latex: "" } : s);
           };
+          const VALID_TT = new Set(['simplify','solve','evaluate','factor','graph','compute','word_problem','prove','convert']);
+          const normTaskType = (raw, fallback) => {
+              const t = (raw || '').toString().trim().toLowerCase();
+              if (VALID_TT.has(t)) return t;
+              return VALID_TT.has(fallback) ? fallback : 'simplify';
+          };
           const normalizedContent = {
               title: rawContent.title || generatedContent.data.title || "Modified Problems",
-              problems: (rawContent.problems || []).map(p => ({ ...p, steps: normalizeSteps(p.steps) })),
+              problems: (rawContent.problems || []).map((p, i) => ({
+                  ...p,
+                  taskType: normTaskType(p.taskType, generatedContent.data.problems?.[i]?.taskType),
+                  steps: normalizeSteps(p.steps)
+              })),
               graphData: rawContent.graphData || generatedContent.data.graphData || null
           };
           setGeneratedContent(prev => ({ ...prev, data: normalizedContent }));
@@ -20924,7 +20961,7 @@ ${t('export.readme_json_desc')}`;
                        return `${t('export.categories_label')} ${d.categories.map(c => c.label).join(', ')}. ${t('export.items_label')} ${d.items.map(i => i.content).join(', ')}`;
                  case 'math':
                        const probs = d.problems || [d];
-                       return probs.map(p => `${t('export.problem_label')} ${p.question || p.problem}. ${t('export.answer_label')} ${p.answer}`).join('\n');
+                       return probs.map(p => `${t('export.problem_label')} ${formatMathQuestion(p)}. ${t('export.answer_label')} ${p.answer}`).join('\n');
                  case 'brainstorm':
                        if (!Array.isArray(d)) return t('export.no_ideas');
                        return d.map(b => `${t('export.activity_label')} ${b.title} - ${b.description}`).join('\n');
@@ -38626,7 +38663,7 @@ Return only the corrected version of this exact text:`;
                                     <button
                                         aria-label={t('common.copy')}
                                         onClick={() => {
-                                            const text = generatedContent?.data.problems.map((p, i) => `${i+1}. ${p.question}\nAnswer: ${p.answer}`).join('\n\n');
+                                            const text = generatedContent?.data.problems.map((p, i) => `${i+1}. ${formatMathQuestion(p)}\nAnswer: ${p.answer}`).join('\n\n');
                                             copyToClipboard(text);
                                         }}
                                         className="text-indigo-600 hover:text-indigo-600 p-1.5 rounded-md hover:bg-indigo-100 transition-colors"
@@ -38674,7 +38711,7 @@ Return only the corrected version of this exact text:`;
                                             />
                                         ) : (
                                             <div className="text-lg font-medium text-slate-800 font-serif">
-                                                {formatInlineText(problem.question || problem.problem, false)}
+                                                {formatInlineText(formatMathQuestion(problem), false)}
                                             </div>
                                         )}
                                         {problem._verification && <span style={{ fontSize: "11px", marginLeft: "6px", opacity: 0.8 }} title={problem._verification.verified ? "Answer computationally verified" : problem._verification.autoCorrected ? "Answer auto-corrected by evaluator" : ""}>{problem._verification.verified ? "✅" : problem._verification.autoCorrected ? "🔧" : problem._verification.edited ? "✏️" : ""}</span>}

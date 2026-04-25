@@ -90,7 +90,8 @@ const handleGenerateMath = async (inputOverride = null, switchView = true, modeO
                   "title": "Custom Problem Set: [brief description]",
                   "problems": [
                     {
-                      "question": "Problem text...",
+                      "question": "Problem text WITHOUT any leading directive verb (the renderer prepends it from taskType). For 'simplify' tasks the question is just the expression like '3x + 8 - 15'. For 'solve' tasks the question is the equation like '3x + 8 = 15'. For word_problem tasks the question is the full natural-language prose.",
+                      "taskType": "REQUIRED. One of: 'simplify' (combine like terms / reduce; answer is an expression), 'solve' (find the unknown; answer is x = ...), 'evaluate' (compute at given inputs; answer is a number), 'factor' (factor a polynomial), 'graph' (sketch/plot), 'compute' (straight calculation like 5*7), 'word_problem' (natural-language problem; question already reads as a sentence), 'prove' (geometric/mathematical proof), 'convert' (unit conversion). Pick the action the student is being asked to perform.",
                       "expression": "Math expression (e.g. 3 * 4 + 5)",
                       "answer": "The answer",
                       "steps": [{ "explanation": "Clear step-by-step explanation", "latex": "Math expression for this step" }],
@@ -114,7 +115,8 @@ const handleGenerateMath = async (inputOverride = null, switchView = true, modeO
                 Output Format:
                 Return a JSON object with a "problems" array.
                 Each item in the array must have:
-                - "question": The problem text.
+                - "question": The problem text WITHOUT any leading directive verb (no "Simplify:" / "Solve:" prefix — the renderer prepends it from taskType). For simplify tasks the question is just the expression like "3x + 8 - 15"; for solve tasks it's the equation like "3x + 8 = 15"; for word_problem tasks the question is the full natural-language prose.
+                - "taskType": REQUIRED. One of: "simplify" (combine like terms / reduce), "solve" (find the unknown), "evaluate" (compute at given inputs), "factor" (factor a polynomial), "graph" (sketch/plot), "compute" (straight calculation like 5*7), "word_problem" (natural-language; question reads as a sentence), "prove", "convert". Pick the action the student is asked to perform.
                 - "expression": The math expression that solves this (standard notation: +, -, *, /, ^, parentheses). Example: "15 - (3 * 4)"
                 - "answer": The numeric solution (a number).
                 - "steps": An array of 2-5 step objects { "explanation": "Clear explanation of what to do in this step", "latex": "The math expression for this step", "expression": "The computed sub-expression" }. CRITICAL: Every problem MUST have detailed steps showing the complete solution process. Students see these after attempting the problem. Make explanations clear and educational.
@@ -124,6 +126,7 @@ const handleGenerateMath = async (inputOverride = null, switchView = true, modeO
                   "problems": [
                     {
                       "question": "Problem 1 text...",
+                      "taskType": "simplify",
                       "answer": "Answer 1",
                       "steps": [{ "explanation": "First...", "latex": "x=..." }],
                       "realWorld": "1-2 sentence real-life connection — name a specific career or everyday situation where this skill is used. Do NOT restate the problem as a word problem.",
@@ -158,7 +161,8 @@ const handleGenerateMath = async (inputOverride = null, switchView = true, modeO
                 ` : ''}
                 Return ONLY JSON in the following format:
                 {
-                  "problem": "Clean Latex string of the input",
+                  "problem": "Clean Latex string of the input WITHOUT any leading directive verb (no 'Simplify:' / 'Solve:' prefix — the renderer prepends from taskType).",
+                  "taskType": "REQUIRED. One of: 'simplify', 'solve', 'evaluate', 'factor', 'graph', 'compute', 'word_problem', 'prove', 'convert'. Pick the action the student is being asked to perform on this single problem.",
                   "answer": "Final Answer string",
                   "steps": [{ "explanation": "Step explanation", "latex": "Step math in Latex" }],
                   "graphData": "SVG string or null",
@@ -209,14 +213,25 @@ const handleGenerateMath = async (inputOverride = null, switchView = true, modeO
                   return s;
               });
           };
+          // Normalize taskType: default missing/invalid to 'simplify' (most common).
+          // The renderer's directive map has fallback handling, but defaulting here
+          // makes downstream logic (analytics, validators, manipulative auto-attach)
+          // simpler since they can assume the field exists.
+          const VALID_TASK_TYPES = new Set(['simplify','solve','evaluate','factor','graph','compute','word_problem','prove','convert']);
+          const normalizeTaskType = (raw) => {
+              const t = (raw || '').toString().trim().toLowerCase();
+              return VALID_TASK_TYPES.has(t) ? t : 'simplify';
+          };
           if (Array.isArray(rawContent.problems)) {
               normalizedContent.problems = rawContent.problems.map(p => ({
                   ...p,
+                  taskType: normalizeTaskType(p.taskType),
                   steps: normalizeSteps(p.steps)
               }));
           } else {
               normalizedContent.problems = [{
                   question: rawContent.problem || problemToSolve,
+                  taskType: normalizeTaskType(rawContent.taskType),
                   answer: rawContent.answer,
                   steps: normalizeSteps(rawContent.steps || (Array.isArray(rawContent.steps) ? rawContent.steps : [])),
                   realWorld: rawContent.realWorld
