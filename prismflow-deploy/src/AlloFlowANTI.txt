@@ -5009,48 +5009,49 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/allo_data_module.js');
-    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/large_file_module.js');
-    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/key_concept_map_module.js');
-    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/utils_pure_module.js');
-    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/gemini_api_module.js');
-    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/tts_module.js');
-    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/personas_module.js');
-    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/export_module.js');
-    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/misc_components_module.js');
-    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/remediation_audio_module.js');
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/student_interaction_module.js');
-    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/math_fluency_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/content_engine_module.js');
-    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/timeline_revision_module.js');
-    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/prompts_library_module.js');
-    loadModule('TextPipelineHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/text_pipeline_helpers_module.js');
-    loadModule('AdaptiveControllerModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/adaptive_controller_module.js');
-    loadModule('UdlChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/udl_chat_module.js');
-    loadModule('AdventureHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/adventure_handlers_module.js');
-    loadModule('GlossaryHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/glossary_helpers_module.js');
-    loadModule('ViewRenderersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/view_renderers_module.js');
-    loadModule('AudioHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/audio_helpers_module.js');
-    loadModule('GenerationHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/generation_helpers_module.js');
+    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9440457/allo_data_module.js');
+    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9440457/large_file_module.js');
+    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9440457/key_concept_map_module.js');
+    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9440457/utils_pure_module.js');
+    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9440457/gemini_api_module.js');
+    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9440457/tts_module.js');
+    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9440457/personas_module.js');
+    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9440457/export_module.js');
+    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9440457/misc_components_module.js');
+    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9440457/remediation_audio_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9440457/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9440457/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9440457/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9440457/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9440457/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9440457/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9440457/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9440457/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9440457/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9440457/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9440457/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9440457/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9440457/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9440457/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9440457/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9440457/student_interaction_module.js');
+    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9440457/math_fluency_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9440457/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9440457/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9440457/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9440457/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9440457/content_engine_module.js');
+    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9440457/timeline_revision_module.js');
+    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9440457/prompts_library_module.js');
+    loadModule('TextPipelineHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9440457/text_pipeline_helpers_module.js');
+    loadModule('AdaptiveControllerModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9440457/adaptive_controller_module.js');
+    loadModule('UdlChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9440457/udl_chat_module.js');
+    loadModule('AdventureHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9440457/adventure_handlers_module.js');
+    loadModule('GlossaryHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9440457/glossary_helpers_module.js');
+    loadModule('ViewRenderersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9440457/view_renderers_module.js');
+    loadModule('AudioHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9440457/audio_helpers_module.js');
+    loadModule('GenerationHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9440457/generation_helpers_module.js');
+    loadModule('MiscHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9440457/misc_handlers_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     (function() {
       var s = document.createElement('script');
@@ -5061,7 +5062,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       document.head.appendChild(s);
     })();
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9440457/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -13126,150 +13127,24 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
       }
   };
   const handleFileUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    if (LargeFileHandler.needsChunking(file)) {
-        const fileType = LargeFileHandler.getFileType(file);
-        if (fileType === 'audio') {
-            setShowLargeFileModal(true);
-            setPendingLargeFile(file);
-            return;
-        } else if (fileType === 'video') {
-            setShowLargeFileModal(true);
-            setPendingLargeFile(file);
-            return;
-        } else if (fileType === 'pdf') {
-            if (file.size > 30 * 1024 * 1024) {
-                setError(t('toasts.file_large') || 'PDF is too large (>30MB). Try splitting into smaller sections.');
-                return;
-            }
-            addToast('Processing large PDF — this may take a moment...', 'info');
-        } else {
-            setError(t('toasts.file_large'));
-            return;
-        }
-    }
-    setIsExtracting(true);
-    setGenerationStep(t('status_steps.extracting_text'));
-    setError(null);
-    const textMimeTypes = [
-        'text/plain', 'text/markdown', 'text/csv', 'text/html', 'application/json',
-        'application/xml', 'text/javascript', 'text/css'
-    ];
-    const isTextFile = textMimeTypes.includes(file.type) ||
-                       /\.(txt|md|csv|json|html|xml|js|css|py)$/i.test(file.name);
-    if (isTextFile) {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            setInputText(event.target.result);
-            setIsExtracting(false);
-        };
-        reader.onerror = () => {
-            setError(t('quick_start.error_read_file'));
-            setIsExtracting(false);
-        };
-        reader.readAsText(file);
-        return;
-    }
-    const DOCUMENT_TYPES = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.openxmlformats-officedocument.presentationml.presentation'];
-    const isDocx = file.name.endsWith('.docx');
-    const isPptx = file.name.endsWith('.pptx');
-    if (DOCUMENT_TYPES.includes(file.type) || isDocx || isPptx) {
-        const auditReader = new FileReader();
-        auditReader.onloadend = async () => {
-            const base64 = auditReader.result.split(',')[1];
-            setPendingPdfBase64(base64);
-            setPendingPdfFile(file);
-            setPdfAuditResult({ _choosing: true, fileName: file.name, fileSize: file.size });
-        };
-        auditReader.readAsDataURL(file);
-        return;
-    }
-    if (file.type.startsWith('image/') || file.type.startsWith('video/') || file.type.startsWith('audio/')) {
-        try {
-            if (false) { // PDF handling now goes through audit route above
-                const pdfReader = new FileReader();
-                pdfReader.onloadend = async () => {
-                    const base64Full = pdfReader.result.split(',')[1];
-                    const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
-                    setGenerationStep(`Processing ${sizeMB}MB PDF in sections...`);
-                    addToast(`Large PDF detected (${sizeMB}MB) — processing in sections for best results`, 'info');
-                    try {
-                        const sectionPrompts = [
-                            `You are an OCR expert for educators. Extract all readable text from the FIRST HALF of this document. Preserve structure (headers, paragraphs) using markdown. If there are images, describe them briefly in [brackets]. If there are tables, preserve them as markdown tables. Return ONLY the extracted text.`,
-                            `You are an OCR expert for educators. Extract all readable text from the SECOND HALF of this document (everything after the midpoint). Preserve structure using markdown. If there are images, describe them briefly in [brackets]. If there are tables, preserve them as markdown tables. Return ONLY the extracted text.`
-                        ];
-                        const chunks = [];
-                        for (let i = 0; i < sectionPrompts.length; i++) {
-                            setGenerationStep(`Extracting section ${i + 1} of ${sectionPrompts.length}...`);
-                            try {
-                                const chunkText = await callGeminiVision(sectionPrompts[i], base64Full, 'application/pdf');
-                                if (chunkText && chunkText.trim().length > 20) chunks.push(chunkText);
-                            } catch (chunkErr) {
-                                warnLog(`[PDF Chunk ${i + 1}] Failed:`, chunkErr?.message);
-                                if (i === 0) throw chunkErr; // First chunk failing = total failure
-                            }
-                        }
-                        const fullText = chunks.join('\n\n---\n\n');
-                        if (fullText.trim().length < 50) throw new Error('PDF extraction returned insufficient text');
-                        setInputText(fullText);
-                        setIsExtracting(false);
-                        addToast(`PDF extracted successfully (${chunks.length} sections)`, 'success');
-                    } catch (pdfErr) {
-                        warnLog('[PDF Chunked] All extraction failed:', pdfErr);
-                        setError('PDF extraction failed — the document may be too complex or image-heavy. Try copying and pasting the text directly.');
-                        setIsExtracting(false);
-                    }
-                };
-                pdfReader.readAsDataURL(file);
-                return;
-            }
-            const reader = new FileReader();
-            reader.onloadend = async () => {
-                const base64String = reader.result.split(',')[1];
-                const mimeType = file.type;
-                let prompt = "";
-                if (mimeType.startsWith('image/') || mimeType === 'application/pdf') {
-                    prompt = `
-                        You are an Optical Character Recognition (OCR) expert for educators.
-                        Extract all readable text from this educational document.
-                        - Preserve the original structure (headers, paragraphs) where possible using markdown.
-                        - If there are images, describe them briefly in [brackets].
-                        - If there are tables, preserve them as markdown tables.
-                        - Ignore irrelevant UI elements, page numbers, or watermarks if they disrupt the flow.
-                        - If it is a worksheet, transcribe the questions clearly.
-                        Return ONLY the extracted text.
-                    `;
-                } else if (mimeType.startsWith('video/')) {
-                    prompt = `
-                        You are an expert educational transcriber.
-                        Watch this video file.
-                        1. Provide a comprehensive transcript of the spoken content.
-                        2. Describe any critical visual diagrams, text overlays, or demonstrations shown on screen that are necessary for understanding the topic.
-                        Combine this into a coherent source text for a lesson.
-                    `;
-                } else if (mimeType.startsWith('audio/')) {
-                    prompt = `
-                        You are an expert educational transcriber.
-                        Listen to this audio file.
-                        Provide a comprehensive, accurate transcript of the spoken content.
-                        Format it as clear text suitable for use as source material.
-                    `;
-                }
-                const text = await callGeminiVision(prompt, base64String, mimeType);
-                setInputText(text);
-                setIsExtracting(false);
-            };
-            reader.readAsDataURL(file);
-        } catch (err) {
-            warnLog("Unhandled error:", err);
-            setError(t('toasts.file_process_error'));
-            setIsExtracting(false);
-        }
-        return;
-    }
-    setError(t('toasts.unsupported_file_type'));
-    setIsExtracting(false);
+    const _m = window.AlloModules && window.AlloModules.MiscHandlers;
+    if (_m && typeof _m.handleFileUpload === "function") return _m.handleFileUpload(e, {
+        LargeFileHandler,
+        callGeminiVision,
+        addToast,
+        t,
+        warnLog,
+        setShowLargeFileModal,
+        setPendingLargeFile,
+        setError,
+        setIsExtracting,
+        setGenerationStep,
+        setInputText,
+        setPendingPdfBase64,
+        setPendingPdfFile,
+        setPdfAuditResult,
+      });
+    throw new Error("[handleFileUpload] MiscHandlers module not loaded - reload the page");
   };
   const repairGeneratedText = async (originalText, issue, targetLength, context, preserveCitations = false) => {
       debugLog(`Repairing text: ${issue} (Target: ~${targetLength} words)`);
@@ -16088,175 +15963,59 @@ ${t('export.readme_json_desc')}`;
       setShowSaveModal(true);
   };
   const handleLoadProject = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (event) => {
-        try {
-            const rawData = JSON.parse(event.target.result);
-            if (rawData.progressLog && Array.isArray(rawData.progressLog)) {
-                setStudentProgressLog(rawData.progressLog);
-            }
-            let loadedHistory = [];
-            let isStudentSave = false;
-            if (Array.isArray(rawData)) {
-                loadedHistory = rawData;
-            } else if (rawData.history && Array.isArray(rawData.history)) {
-                loadedHistory = rawData.history;
-                if (rawData.mode === 'student') {
-                    isStudentSave = true;
-                } else if (rawData.mode === 'independent') {
-                    setIsIndependentMode(true);
-                    setIsTeacherMode(true);
-                    setIsParentMode(false);
-                    setIsStudentLinkMode(false);
-                    addToast(t('toasts.independent_project_loaded'), "success");
-                }
-                if (rawData.settings) {
-                    setStudentProjectSettings({
-                        allowDictation: rawData.settings.allowDictation ?? true,
-                        allowSocraticTutor: rawData.settings.allowSocraticTutor ?? true,
-                        allowFreeResponse: rawData.settings.allowFreeResponse ?? true,
-                        allowPersonaFreeResponse: rawData.settings.allowPersonaFreeResponse ?? true,
-                        adventureMinXP: rawData.settings.adventureMinXP ?? 0,
-                        adventureUnlockXP: rawData.settings.adventureUnlockXP ?? 0,
-                        nickname: rawData.settings.nickname || '',
-                        baseXP: rawData.settings.baseXP ?? 100,
-                        adventurePermissions: {
-                            allowCustomInstructions: rawData.settings.adventurePermissions?.allowCustomInstructions ?? false,
-                            allowModeSwitch: rawData.settings.adventurePermissions?.allowModeSwitch ?? false,
-                            allowDifficultySwitch: rawData.settings.adventurePermissions?.allowDifficultySwitch ?? true,
-                            allowLanguageSwitch: rawData.settings.adventurePermissions?.allowLanguageSwitch ?? true,
-                            allowVisualsToggle: rawData.settings.adventurePermissions?.allowVisualsToggle ?? true,
-                            lockAllSettings: rawData.settings.adventurePermissions?.lockAllSettings ?? false
-                        }
-                    });
-                    if (rawData.settings.defaultAdventureConfig) {
-                        const defs = rawData.settings.defaultAdventureConfig;
-                        if (defs.difficulty) setAdventureDifficulty(defs.difficulty);
-                        if (defs.mode) setAdventureInputMode(defs.mode);
-                        if (defs.language) setAdventureLanguageMode(defs.language);
-                        if (defs.instructions) setAdventureCustomInstructions(defs.instructions);
-                        if (defs.chanceMode !== undefined) setAdventureChanceMode(defs.chanceMode);
-                        if (defs.freeResponse !== undefined) setAdventureFreeResponseEnabled(defs.freeResponse);
-                    }
-                } else {
-                    setStudentProjectSettings({
-                        allowDictation: true,
-                        allowSocraticTutor: true,
-                        allowFreeResponse: true,
-                        allowPersonaFreeResponse: true,
-                        adventureMinXP: 0,
-                        adventureUnlockXP: 0,
-                        nickname: '',
-                        baseXP: 100,
-                        adventurePermissions: {
-                            allowCustomInstructions: false,
-                            allowModeSwitch: false,
-                            allowDifficultySwitch: true,
-                            allowLanguageSwitch: true,
-                            allowVisualsToggle: true,
-                            lockAllSettings: false
-                        }
-                    });
-                }
-                const savedNickname = rawData.studentNickname || rawData.settings?.nickname;
-                if (savedNickname) {
-                    setStudentNickname(savedNickname);
-                    setStudentProjectSettings(prev => ({ ...prev, nickname: savedNickname }));
-                    addToast(`Welcome back, ${savedNickname}!`, "success");
-                }
-                if (isStudentSave) {
-                     if (rawData.adventureSnapshot && rawData.adventureSnapshot.turnCount > 0) {
-                         const snapshot = rawData.adventureSnapshot;
-                         setAdventureState(prev => ({
-                             ...prev,
-                             xp: snapshot.xp || 0,
-                             gold: snapshot.gold || 0,
-                             energy: snapshot.energy || 100,
-                             level: snapshot.level || 1,
-                             xpToNextLevel: snapshot.xpToNextLevel || 100,
-                             inventory: snapshot.inventory || [],
-                             narrativeLedger: snapshot.narrativeLedger || '',
-                             stats: snapshot.stats || { successes: 0, failures: 0, decisions: 0, conceptsFound: [] },
-                             currentScene: snapshot.currentScene,
-                             history: snapshot.history || [],
-                             turnCount: snapshot.turnCount || 0,
-                             climax: snapshot.climax || { isActive: false, archetype: 'Auto', masteryScore: 0, attempts: 0 },
-                             debateMomentum: snapshot.debateMomentum ?? 50,
-                             missionReportDismissed: snapshot.missionReportDismissed || false,
-                             isGameOver: false,
-                             isLoading: false
-                         }));
-                         setHasSavedAdventure(true);
-                         addToast(t('student.adventure_restored'), "success");
-                     }
-                     if (rawData.escapeRoomStats && rawData.escapeRoomStats.xpEarned > 0) {
-                         addToast(t('escape_room.stats_restored', { xp: rawData.escapeRoomStats.xpEarned }), "info");
-                     }
-                     if (rawData.gameCompletions) setGameCompletions(rawData.gameCompletions);
-                     if (rawData.labelChallengeResults) setLabelChallengeResults(rawData.labelChallengeResults);
-                     if (rawData.socraticChatHistory?.messages) setSocraticMessages(rawData.socraticChatHistory.messages);
-                     if (rawData.wordSoundsState) {
-                         if (rawData.wordSoundsState.history) setWordSoundsHistory(rawData.wordSoundsState.history);
-                         if (rawData.wordSoundsState.families) setWordSoundsFamilies(rawData.wordSoundsState.families);
-                         if (rawData.wordSoundsState.audioLibrary) setWordSoundsAudioLibrary(rawData.wordSoundsState.audioLibrary);
-                         if (rawData.wordSoundsState.badges) setWordSoundsBadges(rawData.wordSoundsState.badges);
-                         if (rawData.wordSoundsState.phonemeMastery) setPhonemeMastery(rawData.wordSoundsState.phonemeMastery);
-                         if (rawData.wordSoundsState.dailyProgress) setWordSoundsDailyProgress(rawData.wordSoundsState.dailyProgress);
-                         if (rawData.wordSoundsState.confusionPatterns) setWordSoundsConfusionPatterns(rawData.wordSoundsState.confusionPatterns);
-                     }
-                     if (rawData.fluencyAssessments) setFluencyAssessments(rawData.fluencyAssessments);
-                     if (rawData.flashcardEngagement) setFlashcardEngagement(rawData.flashcardEngagement);
-                     if (rawData.timeOnTask) setTimeOnTask(rawData.timeOnTask);
-                     if (rawData.globalPoints !== undefined) setGlobalPoints(rawData.globalPoints);
-                     if (rawData.pointHistory) setPointHistory(rawData.pointHistory);
-                     if (rawData.completedActivities) {
-                          try {
-                              setCompletedActivities(new Map(rawData.completedActivities));
-                          } catch(e) { warnLog("Failed to restore completed activities", e); }
-                     }
-                }
-                if (rawData.probeHistory) setProbeHistory(rawData.probeHistory);
-                if (rawData.interventionLogs) setInterventionLogs(rawData.interventionLogs);
-                if (rawData.surveyResponses) setSurveyResponses(rawData.surveyResponses);
-                if (rawData.fidelityLog) setFidelityLog(rawData.fidelityLog);
-                if (rawData.sessionCounter !== undefined) setSessionCounter(rawData.sessionCounter);
-                if (rawData.externalCBMScores) setExternalCBMScores(rawData.externalCBMScores);
-                if (rawData.settings?.researchMode) setResearchMode(rawData.settings.researchMode);
-            }
-            if (Array.isArray(loadedHistory)) {
-                setHistory(hydrateHistory(loadedHistory));
-                if (isStudentSave) {
-                    setIsStudentLinkMode(true);
-                    setIsTeacherMode(false);
-                    setIsFullscreen(true);
-                    setLeftWidth(0);
-                    if (!rawData.studentNickname) addToast(t('toasts.loaded_student_view'), "info");
-                } else {
-                     addToast(t('toasts.project_loaded'), "success");
-                }
-                if (loadedHistory.length > 0) {
-                    const lastItem = loadedHistory[loadedHistory.length - 1];
-                    setGeneratedContent({ type: lastItem.type, data: lastItem.data, id: lastItem.id });
-                    setActiveView(lastItem.type);
-                    setIsMapLocked(false);
-                } else {
-                    setGeneratedContent(null);
-                    setActiveView('input');
-                }
-            } else {
-                alert(t('errors.project_file_invalid'));
-                addToast(t('toasts.invalid_project_file'), "error");
-            }
-        } catch (err) {
-            warnLog("Failed to parse project file", err);
-            alert(t('errors.project_file_load_failed'));
-            addToast(t('toasts.project_load_failed'), "error");
-        }
-        if (projectFileInputRef.current) projectFileInputRef.current.value = '';
-    };
-    reader.readAsText(file);
+    const _m = window.AlloModules && window.AlloModules.MiscHandlers;
+    if (_m && typeof _m.handleLoadProject === "function") return _m.handleLoadProject(e, {
+        setStudentProgressLog,
+        setStudentProjectSettings,
+        setIsIndependentMode,
+        setIsTeacherMode,
+        setIsParentMode,
+        setIsStudentLinkMode,
+        setAdventureDifficulty,
+        setAdventureInputMode,
+        setAdventureLanguageMode,
+        setAdventureCustomInstructions,
+        setAdventureChanceMode,
+        setAdventureFreeResponseEnabled,
+        setStudentNickname,
+        setAdventureState,
+        setHasSavedAdventure,
+        setGameCompletions,
+        setLabelChallengeResults,
+        setSocraticMessages,
+        setWordSoundsHistory,
+        setWordSoundsFamilies,
+        setWordSoundsAudioLibrary,
+        setWordSoundsBadges,
+        setPhonemeMastery,
+        setWordSoundsDailyProgress,
+        setWordSoundsConfusionPatterns,
+        setFluencyAssessments,
+        setFlashcardEngagement,
+        setTimeOnTask,
+        setGlobalPoints,
+        setPointHistory,
+        setCompletedActivities,
+        setProbeHistory,
+        setInterventionLogs,
+        setSurveyResponses,
+        setFidelityLog,
+        setSessionCounter,
+        setExternalCBMScores,
+        setResearchMode,
+        setHistory,
+        setGeneratedContent,
+        setActiveView,
+        setIsMapLocked,
+        setIsFullscreen,
+        setLeftWidth,
+        projectFileInputRef,
+        t,
+        addToast,
+        warnLog,
+        hydrateHistory,
+      });
+    throw new Error("[handleLoadProject] MiscHandlers module not loaded - reload the page");
   };
   const handleRestoreView = (item) => {
       console.error("[WS-DBG] handleRestoreView CALLED with type:", item?.type, "data length:", item?.data?.length || 0);
@@ -17587,32 +17346,12 @@ ${t('export.readme_json_desc')}`;
       setPendingAdventureUpdate(null);
   }, [pendingAdventureUpdate, playSound, generatePixelArtItem, generateAdventureImage, generateNarrativeLedger, adventureChanceMode, adventureDifficulty]);
   const detectClimaxArchetype = async (text, instructions) => {
-    try {
-        const prompt = `
-            Analyze the following educational content and categorize it into one of 4 Dramatic Climax Archetypes for a game.
-            Source Text: "${text.substring(0, 1500)}..."
-            ${instructions ? `Custom Instructions: ${instructions}` : ''}
-            Archetypes:
-            1. Antagonist: A specific villain, rival, or entity opposing the player (e.g. History wars, Biography of a leader, specific debates).
-            2. Catastrophe: A natural disaster, system failure, or survival situation (e.g. Volcanoes, Climate Change, Engineering failure).
-            3. Masterpiece: Creating art, building a structure, or solving a complex proof (e.g. Poetry, Geometry, Architecture).
-            4. Discovery: Uncovering a secret, exploring the unknown, or scientific research (e.g. Space, Deep Sea, Archeology).
-            Return ONLY the archetype name (Antagonist, Catastrophe, Masterpiece, or Discovery).
-        `;
-        const result = await callGemini(prompt);
-        const clean = result.trim().replace(/['"]/g, '');
-        if (['Antagonist', 'Catastrophe', 'Masterpiece', 'Discovery'].includes(clean)) {
-            return clean;
-        }
-        if (clean.includes('Antagonist')) return 'Antagonist';
-        if (clean.includes('Catastrophe')) return 'Catastrophe';
-        if (clean.includes('Masterpiece')) return 'Masterpiece';
-        if (clean.includes('Discovery')) return 'Discovery';
-        return 'Catastrophe';
-    } catch (e) {
-        warnLog("Archetype detection failed", e);
-        return 'Catastrophe';
-    }
+    const _m = window.AlloModules && window.AlloModules.MiscHandlers;
+    if (_m && typeof _m.detectClimaxArchetype === "function") return _m.detectClimaxArchetype(text, instructions, {
+        callGemini,
+        warnLog,
+      });
+    throw new Error("[detectClimaxArchetype] MiscHandlers module not loaded - reload the page");
   };
   const handleStartSequel = () => {
       const previousSummary = adventureState.narrativeLedger || "A successful journey completed.";
