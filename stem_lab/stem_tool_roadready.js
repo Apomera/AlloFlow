@@ -12980,8 +12980,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               // Vertex-colored asphalt: each row gets a slightly different shade
               // seeded by world Y, so the road reads as patched/weathered instead
               // of a single flat gray. Snow biomes desaturate the palette.
-              var roadMat = new T.MeshLambertMaterial({ vertexColors: true });
-              var asphaltBase = scn.weather === 'snow' ? [0x8c9ba8, 0x7d8c9a, 0x9aa7b4] : [0x333842, 0x2a2f38, 0x3c424c, 0x2e333d];
+              // RAIN exception: swap to Phong + specular so the directional
+              // sun/moon catches a wet-asphalt highlight on the road ribbon
+              // (mirrors what the scenario-mode code at ~7770 already does).
+              // Without this, only the puddles read as wet — the road itself
+              // stayed matte even though the wipers were on.
+              var roadMat = scn.weather === 'rain'
+                ? new T.MeshPhongMaterial({ vertexColors: true, specular: 0x8aa6c8, shininess: 55 })
+                : new T.MeshLambertMaterial({ vertexColors: true });
+              var asphaltBase = scn.weather === 'snow' ? [0x8c9ba8, 0x7d8c9a, 0x9aa7b4]
+                              : scn.weather === 'rain' ? [0x1c2028, 0x141820, 0x222830, 0x181c24]
+                              : [0x333842, 0x2a2f38, 0x3c424c, 0x2e333d];
               var ribbonRows = CHUNK_SIZE + 1;
               var ribbonVerts = new Float32Array(ribbonRows * 2 * 3);
               var ribbonUvs = new Float32Array(ribbonRows * 2 * 2);
