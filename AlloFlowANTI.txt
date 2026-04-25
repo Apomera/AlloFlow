@@ -4665,93 +4665,18 @@ const AlloFlowContent = () => {
   };
   const [mathCheckResults, setMathCheckResults] = useState({});
   const handleCheckMathWork = async (resourceId, problemIdx, question, correctAnswer, steps, studentWork) => {
-      if (!studentWork || studentWork.trim().length < 5) {
-          addToast(t('math.check.too_short') || 'Please write more before checking!', 'info');
-          return;
-      }
-      const existing = mathCheckResults[resourceId]?.[problemIdx];
-      if (existing?.checking) return;
-      const studentNumericMatch = parseFloat(studentWork.replace(/[^0-9.\-]/g, ''));
-      const correctNumericMatch = parseFloat(String(correctAnswer).replace(/[^0-9.\-]/g, ''));
-      if (!isNaN(studentNumericMatch) && !isNaN(correctNumericMatch) && Math.abs(studentNumericMatch - correctNumericMatch) < 0.01) {
-        setMathCheckResults(prev => ({
-            ...prev,
-            [resourceId]: {
-                ...(prev[resourceId] || {}),
-                [problemIdx]: { checking: false, verdict: 'correct', score: 100, feedback: 'Perfect! Your answer is exactly right. ✅', checked: true, xpAwarded: true, fastPath: true }
-            }
-        }));
-        addToast(t('math.check.correct') || 'Correct! Great work! 🎉', 'success');
-        return;
-      }
-      setMathCheckResults(prev => ({
-          ...prev,
-          [resourceId]: {
-              ...(prev[resourceId] || {}),
-              [problemIdx]: { checking: true, verdict: null, score: 0, feedback: '' }
-          }
-      }));
-      try {
-          const stepsText = (steps || []).map((s, i) => `Step ${i+1}: ${s.explanation}${s.latex ? ' (' + s.latex + ')' : ''}`).join('\n');
-          const prompt = `You are a patient, encouraging math teacher evaluating a student's work.
-PROBLEM: ${question}
-CORRECT ANSWER: ${correctAnswer}
-${stepsText ? 'SOLUTION STEPS:\n' + stepsText : ''}
-STUDENT'S RESPONSE:
-${studentWork}
-Evaluate the student's work. Consider:
-1. Is the final answer correct or close?
-2. Did the student show reasonable work/reasoning?
-3. Are there any conceptual misunderstandings?
-Return ONLY valid JSON:
-{
-  "verdict": "correct" | "partial" | "incorrect",
-  "score": <number 0-100>,
-  "feedback": "<2-3 sentences of encouraging, specific feedback. If incorrect, hint at the right approach without giving the answer. If partial, acknowledge what's right and guide toward completion.>"
-}`;
-          const result = await callGemini(prompt, true);
-          let parsed;
-          try {
-              const cleaned = result.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-              parsed = JSON.parse(cleaned);
-          } catch (parseErr) {
-              const jsonMatch = result.match(/\{[\s\S]*\}/);
-              if (jsonMatch) {
-                  parsed = JSON.parse(jsonMatch[0]);
-              } else {
-                  throw new Error('Could not parse evaluation response');
-              }
-          }
-          const verdict = parsed.verdict || 'incorrect';
-          const score = Math.max(0, Math.min(100, parsed.score || 0));
-          const feedback = parsed.feedback || 'Keep trying!';
-          setMathCheckResults(prev => ({
-              ...prev,
-              [resourceId]: {
-                  ...(prev[resourceId] || {}),
-                  [problemIdx]: { checking: false, verdict, score, feedback, checked: true, hintsUsed: (mathHintData[`${resourceId}_${problemIdx}`]?.count || 0), xpAwarded: (!mathCheckResults[resourceId]?.[problemIdx]?.xpAwarded && Math.round(score / 10) > 0) || mathCheckResults[resourceId]?.[problemIdx]?.xpAwarded || false }
-              }
-          }));
-          const hintKey = `${resourceId}_${problemIdx}`; const hintsUsed = (mathHintData[hintKey]?.count || 0); const hintMultiplier = Math.max(0.25, 1 - (hintsUsed * 0.25)); const xpAwarded = Math.round((score / 10) * hintMultiplier);
-          const alreadyAwarded = mathCheckResults[resourceId]?.[problemIdx]?.xpAwarded;
-          if (xpAwarded > 0 && !alreadyAwarded) {
-              handleScoreUpdate(xpAwarded, "Math Problem", resourceId);
-          }
-          const toastMsg = verdict === 'correct' ? (t('math.check.correct') || 'Excellent work! ✨')
-              : verdict === 'partial' ? (t('math.check.partial') || 'Good effort, keep going! 🟡')
-              : (t('math.check.incorrect') || 'Not quite right — try again! 💪');
-          addToast(toastMsg, verdict === 'correct' ? 'success' : verdict === 'partial' ? 'info' : 'warning');
-      } catch (err) {
-          warnLog("Math check failed:", err);
-          setMathCheckResults(prev => ({
-              ...prev,
-              [resourceId]: {
-                  ...(prev[resourceId] || {}),
-                  [problemIdx]: { checking: false, verdict: 'error', score: 0, feedback: t('math.check.error') || 'Could not evaluate — please try again.', checked: false }
-              }
-          }));
-          addToast(t('math.check.error') || 'Evaluation failed — try again', 'error');
-      }
+    const _m = window.AlloModules && window.AlloModules.MathHelpers;
+    if (_m && typeof _m.handleCheckMathWork === "function") return _m.handleCheckMathWork(resourceId, problemIdx, question, correctAnswer, steps, studentWork, {
+        mathCheckResults,
+        mathHintData,
+        setMathCheckResults,
+        addToast,
+        t,
+        callGemini,
+        warnLog,
+        handleScoreUpdate,
+      });
+    throw new Error("[handleCheckMathWork] MathHelpers module not loaded - reload the page");
   };
   const handleResetMathCheck = (resourceId, problemIdx) => {
       setMathCheckResults(prev => ({
@@ -4764,41 +4689,16 @@ Return ONLY valid JSON:
   };
 const [mathHintData, setMathHintData] = useState({});
 const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer, steps) => {
-    const hintKey = `${resourceId}_${problemIdx}`;
-    const existing = mathHintData[hintKey] || { hints: [], loading: false, count: 0 };
-    if (existing.loading || existing.count >= 3) return;
-    setMathHintData(prev => ({ ...prev, [hintKey]: { ...existing, loading: true } }));
-    try {
-        const hintLevel = existing.count + 1;
-        const prevHints = existing.hints.map((h, i) => `Hint ${i + 1}: ${h}`).join('\n');
-        const studentWork = studentResponses[resourceId]?.[problemIdx] || '';
-        const prompt = `You are a patient math tutor giving a hint for a problem.
-PROBLEM: ${question}
-CORRECT ANSWER: ${correctAnswer}
-${steps ? 'SOLUTION STEPS:\n' + steps.map((s, i) => 'Step ' + (i + 1) + ': ' + s.explanation).join('\n') : ''}
-${studentWork ? 'STUDENT WORK SO FAR: ' + studentWork : 'Student has not started yet.'}
-${prevHints ? 'PREVIOUS HINTS GIVEN:\n' + prevHints : ''}
-Give HINT #${hintLevel} of 3 (progressive difficulty):
-- Hint 1: A gentle nudge about what strategy or concept to use. Do NOT reveal numbers or the answer.
-- Hint 2: More specific guidance â€” point to the key step or operation needed. Still don't give the answer.
-- Hint 3: Walk through the first step explicitly and set up the equation. Stop just before the final answer.
-Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it under 2 sentences. Be encouraging.`;
-        const hintText = await callGemini(prompt, true);
-        const cleanHint = hintText.replace(/```/g, '').replace(/^["']|["']$/g, '').trim();
-        setMathHintData(prev => ({
-            ...prev,
-            [hintKey]: {
-                hints: [...existing.hints, cleanHint],
-                loading: false,
-                count: existing.count + 1
-            }
-        }));
-        addToast(existing.count === 0 ? 'Hint unlocked! 💡 (-25% max XP)' : existing.count === 1 ? 'Second hint! 💡 (-50% max XP)' : 'Final hint! 💡 (-75% max XP)', 'info');
-    } catch (err) {
-        warnLog("Hint generation failed:", err);
-        setMathHintData(prev => ({ ...prev, [hintKey]: { ...existing, loading: false } }));
-        addToast('Could not generate hint â€” try again', 'error');
-    }
+  const _m = window.AlloModules && window.AlloModules.MathHelpers;
+  if (_m && typeof _m.handleGetMathHint === "function") return _m.handleGetMathHint(resourceId, problemIdx, question, correctAnswer, steps, {
+      mathHintData,
+      studentResponses,
+      setMathHintData,
+      addToast,
+      callGemini,
+      warnLog,
+    });
+  throw new Error("[handleGetMathHint] MathHelpers module not loaded - reload the page");
 };
   const handleResetScaffolds = () => {
       if (!generatedContent?.id) return;
@@ -5052,6 +4952,9 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     loadModule('AudioHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9440457/audio_helpers_module.js');
     loadModule('GenerationHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9440457/generation_helpers_module.js');
     loadModule('MiscHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9440457/misc_handlers_module.js');
+    loadModule('PureHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@MAIN/pure_helpers_module.js');
+    loadModule('MathHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@MAIN/math_helpers_module.js');
+    loadModule('CmapHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@MAIN/concept_map_handlers_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     (function() {
       var s = document.createElement('script');
@@ -8077,218 +7980,43 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     });
   };
   const handleInitializeMap = async () => {
-      try {
-          if (!generatedContent?.data) return;
-          const { main, branches, structureType } = generatedContent?.data;
-          if (structureType === 'Venn Diagram') {
-              const newNodes = [];
-              const colors = ['yellow', 'green', 'blue', 'orange', 'purple', 'pink', 'teal', 'rose'];
-              if (Array.isArray(branches)) {
-                  branches.forEach((branch, bIdx) => {
-                      if (Array.isArray(branch.items)) {
-                          branch.items.forEach((item, iIdx) => {
-                              const itemId = `venn-${bIdx}-${iIdx}`;
-                              newNodes.push({
-                                  id: itemId,
-                                  x: 50 + Math.random() * 700,
-                                  y: 520 + Math.random() * 60,
-                                  text: item,
-                                  type: 'venn-token',
-                                  colorVariant: colors[Math.floor(Math.random() * colors.length)]
-                              });
-                          });
-                      }
-                  });
-              }
-              setConceptMapNodes(newNodes);
-              setConceptMapEdges([]);
-              setIsConceptMapReady(true);
-              return;
-          }
-          if (structureType === 'Flow Chart' || structureType === 'Process Flow / Sequence') {
-              const flowData = parseFlowChartData(generatedContent?.data);
-              setConceptMapNodes(flowData.nodes);
-              setConceptMapEdges(flowData.edges);
-              setIsConceptMapReady(true);
-              hasAutoLayoutRunRef.current = true;
-              return;
-          }
-          if (structureType === 'Structured Outline') {
-              const newNodes = [];
-              const newEdges = [];
-              const canvasWidth = mapContainerRef.current ? mapContainerRef.current.offsetWidth : 800;
-              const centerX = canvasWidth / 2;
-              const rootId = 'root';
-              newNodes.push({
-                  id: rootId,
-                  x: centerX,
-                  y: 50,
-                  text: main,
-                  type: 'outline-main',
-              });
-              if (Array.isArray(branches)) {
-                  const branchCount = branches.length;
-                  const slice = canvasWidth / Math.max(1, branchCount);
-                  branches.forEach((branch, bIdx) => {
-                      const branchId = `b-${bIdx}`;
-                      const bx = (slice * bIdx) + (slice / 2);
-                      const by = 200;
-                      newNodes.push({
-                          id: branchId,
-                          x: bx,
-                          y: by,
-                          text: branch.title,
-                          type: 'outline-branch'
-                      });
-                      newEdges.push({ id: `e-${rootId}-${branchId}`, fromId: rootId, toId: branchId });
-                      if (Array.isArray(branch.items)) {
-                          branch.items.forEach((item, iIdx) => {
-                              const itemId = `i-${bIdx}-${iIdx}`;
-                              newNodes.push({
-                                  id: itemId,
-                                  x: bx,
-                                  y: by + 120 + (iIdx * 100),
-                                  text: item,
-                                  type: 'outline-item'
-                              });
-                              newEdges.push({ id: `e-${branchId}-${itemId}`, fromId: branchId, toId: itemId });
-                          });
-                      }
-                  });
-              }
-              setConceptMapNodes(newNodes);
-              setConceptMapEdges(newEdges);
-              setIsConceptMapReady(true);
-              hasAutoLayoutRunRef.current = true;
-              return;
-          }
-          const newNodes = [];
-          const newEdges = [];
-          const rootId = 'root';
-          newNodes.push({
-              id: rootId,
-              x: 350,
-              y: 50,
-              text: main,
-              type: 'main',
-          });
-          if (Array.isArray(branches)) {
-              branches.forEach((branch, bIdx) => {
-                  const branchId = `b-${bIdx}`;
-                  const bx = 50 + (bIdx * 200) % 700;
-                  const by = 200 + Math.floor(bIdx / 4) * 150;
-                  newNodes.push({
-                      id: branchId,
-                      x: bx,
-                      y: by,
-                      text: branch.title,
-                      type: 'branch'
-                  });
-                  newEdges.push({ id: `e-${rootId}-${branchId}`, fromId: rootId, toId: branchId });
-                  if (Array.isArray(branch.items)) {
-                      branch.items.forEach((item, iIdx) => {
-                          const itemId = `i-${bIdx}-${iIdx}`;
-                          newNodes.push({
-                              id: itemId,
-                              x: bx + (Math.random() * 40 - 20),
-                              y: by + 120 + (iIdx * 60),
-                              text: item,
-                              type: 'item'
-                          });
-                          newEdges.push({ id: `e-${branchId}-${itemId}`, fromId: branchId, toId: itemId });
-                      });
-                  }
-              });
-          }
-          setConceptMapNodes(newNodes);
-          setConceptMapEdges(newEdges);
-          await handleAutoLayout(newNodes, newEdges);
-          setIsConceptMapReady(true);
-      } catch (e) { warnLog("Unhandled error in handleInitializeMap:", e); }
+    const _m = window.AlloModules && window.AlloModules.CmapHandlers;
+    if (_m && typeof _m.handleInitializeMap === "function") return _m.handleInitializeMap({
+        generatedContent,
+        conceptMapNodes,
+        conceptMapEdges,
+        mapContainerRef,
+        hasAutoLayoutRunRef,
+        setConceptMapNodes,
+        setConceptMapEdges,
+        setIsConceptMapReady,
+        parseFlowChartData,
+        handleAutoLayout,
+        warnLog,
+      });
+    throw new Error("[handleInitializeMap] CmapHandlers module not loaded - reload the page");
   };
   const handleAutoLayout = async (nodesInput, edgesInput) => {
-      const currentNodes = Array.isArray(nodesInput) ? nodesInput : conceptMapNodes;
-      const currentEdges = Array.isArray(edgesInput) ? edgesInput : conceptMapEdges;
-      if (currentNodes.length === 0) return;
-      const isFlowChart = generatedContent?.data?.structureType === 'Flow Chart' || generatedContent?.data?.structureType === 'Process Flow / Sequence';
-      let width = 1000;
-      let height = 800;
-      if (mapContainerRef.current) {
-          width = mapContainerRef.current.offsetWidth;
-          height = mapContainerRef.current.offsetHeight;
-      } else {
-          const isWide = isFullscreen || !isTeacherMode;
-          const availableWidth = window.innerWidth * (isWide ? 0.9 : 0.6);
-          width = Math.floor(availableWidth);
-          height = Math.floor(window.innerHeight * 0.75);
-      }
-      if (isFlowChart) {
-          const layoutNodes = calculateFlowLayout(currentNodes, width);
-          setConceptMapNodes(layoutNodes);
-          addToast(t('concept_map.auto_layout.toast_flow_applied'), "success");
-          return;
-      }
-      setIsProcessing(true);
-      setGenerationStep(t('concept_map.auto_layout.analyzing'));
-      addToast(t('concept_map.auto_layout.toast_organizing'), "info");
-      const centerX = Math.floor(width / 2);
-      const centerY = Math.floor(height / 2);
-      try {
-          const nodesJson = JSON.stringify(currentNodes.map(n => ({ id: n.id, text: n.text, type: n.type })));
-          const edgesJson = JSON.stringify(currentEdges);
-          const prompt = `
-            You are an expert Information Designer and Graph Layout Engine.
-            Goal: Analyze the semantic relationships in the provided Concept Map data and determine the optimal 2D spatial arrangement for the nodes.
-            Canvas Dimensions: ${width}px width x ${height}px height.
-            Center Point: ${centerX}, ${centerY}.
-            Input Data:
-            Nodes: ${nodesJson}
-            Edges: ${edgesJson}
-            Instructions:
-            1. Analyze the content. Determine the logical structure (Hierarchy, Hub-and-Spoke, Process Flow, or Cluster).
-            2. Assign (x, y) coordinates to every node ID to create a visually balanced, non-overlapping layout.
-            3. Rules:
-               - Keep the main/root topic near the top (y=50-100) or center (y=${centerY}) depending on the structure.
-               - Space nodes out to avoid crowding (minimum 150px distance).
-               - Keep within bounds: x (50-${width-50}), y (50-${height-50}).
-            Return ONLY a JSON object mapping Node IDs to coordinates:
-            {
-                "node_id_1": { "x": 100, "y": 200 },
-                "node_id_2": { "x": 350, "y": 400 }
-            }
-          `;
-          const result = await callGemini(prompt, true);
-          let layoutMap = safeJsonParse(result);
-          if (!layoutMap) {
-             warnLog("Auto-layout JSON parse failed. Attempting AI repair...");
-             const repairPrompt = `
-                The following JSON is malformed (likely missing commas or braces). Fix the syntax and return valid JSON.
-                ${result}
-             `;
-             const repairResult = await callGemini(repairPrompt, true);
-             layoutMap = safeJsonParse(repairResult);
-          }
-          if (!layoutMap) {
-              throw new Error("Could not parse layout coordinates.");
-          }
-          setConceptMapNodes(prev => prev.map(node => {
-              if (layoutMap[node.id]) {
-                  return {
-                      ...node,
-                      x: Math.max(50, Math.min(width - 50, layoutMap[node.id].x)),
-                      y: Math.max(50, Math.min(height - 50, layoutMap[node.id].y))
-                  };
-              }
-              return node;
-          }));
-          addToast(t('concept_map.auto_layout.toast_optimized'), "success");
-          if (playSound) playSound('reveal');
-      } catch (e) {
-          warnLog("Auto-layout failed", e);
-          addToast(t('concept_map.auto_layout.toast_failed'), "error");
-      } finally {
-          setIsProcessing(false);
-      }
+    const _m = window.AlloModules && window.AlloModules.CmapHandlers;
+    if (_m && typeof _m.handleAutoLayout === "function") return _m.handleAutoLayout(nodesInput, edgesInput, {
+        generatedContent,
+        conceptMapNodes,
+        conceptMapEdges,
+        isFullscreen,
+        isTeacherMode,
+        mapContainerRef,
+        setConceptMapNodes,
+        setIsProcessing,
+        setGenerationStep,
+        calculateFlowLayout,
+        callGemini,
+        safeJsonParse,
+        t,
+        addToast,
+        playSound,
+        warnLog,
+      });
+    throw new Error("[handleAutoLayout] CmapHandlers module not loaded - reload the page");
   };
   const evaluateMapWithAI = async (studentNodes, studentEdges, teacherEdges) => {
       if (!teacherEdges || studentEdges.length === 0) return { score: 0, feedback: t('concept_map.notifications.no_connections') };
@@ -10178,71 +9906,14 @@ Return only the corrected version of this exact text:`;
   const playbackRateRef = useRef(1.0);
   const playbackSessionRef = useRef(0);
   const diffWords = (oldText, newText) => {
-      if (!oldText || !newText) return [];
-      const oldWords = oldText.trim().split(/\s+/);
-      const newWords = newText.trim().split(/\s+/);
-      const m = oldWords.length;
-      const n = newWords.length;
-      const dp = Array(m + 1).fill(null).map(() => Array(n + 1).fill(0));
-      for (let i = 1; i <= m; i++) {
-          for (let j = 1; j <= n; j++) {
-              if (oldWords[i-1] === newWords[j-1]) {
-                  dp[i][j] = dp[i-1][j-1] + 1;
-              } else {
-                  dp[i][j] = Math.max(dp[i-1][j], dp[i][j-1]);
-              }
-          }
-      }
-      let i = m, j = n;
-      const diff = [];
-      while (i > 0 && j > 0) {
-          if (oldWords[i-1] === newWords[j-1]) {
-              diff.push({ type: 'same', value: oldWords[i-1] });
-              i--; j--;
-          } else if (dp[i-1][j] >= dp[i][j-1]) {
-              diff.push({ type: 'del', value: oldWords[i-1] });
-              i--;
-          } else {
-              diff.push({ type: 'add', value: newWords[j-1] });
-              j--;
-          }
-      }
-      while (i > 0) { diff.push({ type: 'del', value: oldWords[i-1] }); i--; }
-      while (j > 0) { diff.push({ type: 'add', value: newWords[j-1] }); j--; }
-      return diff.reverse();
+    const _m = window.AlloModules && window.AlloModules.PureHelpers;
+    if (_m && typeof _m.diffWords === "function") return _m.diffWords(oldText, newText, {});
+    throw new Error("[diffWords] PureHelpers module not loaded - reload the page");
   };
   const splitTextToSentences = (text) => {
-      if (!text) return [];
-      const linkMap = [];
-      let protectedText = text.replace(/(\[.*?\]\(.*?\))/g, (match) => {
-          linkMap.push(match);
-          return `{{LINK_${linkMap.length - 1}}}`;
-      });
-      const latexMap = [];
-      protectedText = protectedText.replace(/(\$\$[\s\S]+?\$\$|\$[^\$]+?\$)/g, (match) => {
-          latexMap.push(match);
-          return `{{LATEX_${latexMap.length - 1}}}`;
-      });
-      protectedText = protectedText.replace(/(^|\s)([A-Z])\.(\s)/g, "$1$2{{DOT}}$3");
-      const honorifics = ['Mr', 'Mrs', 'Ms', 'Dr', 'Prof', 'St', 'Gen', 'Rep', 'Sen'];
-      honorifics.forEach(h => {
-          protectedText = protectedText.replace(new RegExp(`(b${h}).(s)`, 'g'), `$1{{DOT}}$2`);
-      });
-      const sentences = protectedText
-        .replace(/([.!?]+["']?)(\s+|$)/g, "$1|")
-        .split("|")
-        .map(s => {
-            let restored = s.replace(/{{DOT}}/g, ".").trim();
-            restored = restored.replace(/{{LATEX_(\d+)}}/g, (_, index) => {
-                return latexMap[parseInt(index, 10)] || "";
-            });
-            restored = restored.replace(/{{LINK_(\d+)}}/g, (_, index) => {
-                return linkMap[parseInt(index, 10)] || "";
-            });
-            return restored;
-        })
-        .filter(s => s.length > 0);
-      return sentences;
+    const _m = window.AlloModules && window.AlloModules.PureHelpers;
+    if (_m && typeof _m.splitTextToSentences === "function") return _m.splitTextToSentences(text, {});
+    throw new Error("[splitTextToSentences] PureHelpers module not loaded - reload the page");
   };
   const addBlobUrl = (url) => {
       if (url && url.startsWith('blob:')) {
@@ -10843,87 +10514,38 @@ Return only the corrected version of this exact text:`;
       addToast(t('roster.applied', { name: group.name }) || `Applied "${group.name}" settings to generator`, "info");
   };
   const handleBatchGenerateForRoster = async (resourceTypes = ['simplified']) => {
-      if (!rosterKey?.groups || Object.keys(rosterKey.groups).length === 0) {
-          addToast(t('roster.no_groups_to_generate') || 'Add groups to your roster key first', 'warning');
-          return;
-      }
-      const textToProcess = (() => {
-          const latestAnalysis = history.slice().reverse().find(h => h && h.type === 'analysis');
-          if (latestAnalysis?.data?.originalText) {
-              const raw = latestAnalysis.data.originalText;
-              const sep = "### Accuracy Check References";
-              return raw.includes(sep) ? raw.split(sep)[0].trim() : raw;
-          }
-          return inputText;
-      })();
-      if (!textToProcess || !textToProcess.trim()) {
-          addToast(t('process.enter_text') || 'Please enter or paste text first', 'warning');
-          return;
-      }
-      const groupEntries = Object.entries(rosterKey.groups);
-      const totalSteps = groupEntries.length * resourceTypes.length;
-      setIsProcessing(true);
-      let successCount = 0;
-      let currentStep = 0;
-      try {
-          for (let i = 0; i < groupEntries.length; i++) {
-              const [groupId, group] = groupEntries[i];
-              const profile = group.profile || {};
-              const saved = {
-                  grade: gradeLevel, lang: leveledTextLanguage,
-                  interests: studentInterests, dok: dokLevel,
-                  custom: leveledTextCustomInstructions,
-                  selectedLangs: selectedLanguages,
-                  standards: targetStandards,
-                  emojis: useEmojis,
-                  fmt: textFormat
-              };
-              if (profile.gradeLevel) setGradeLevel(profile.gradeLevel);
-              if (profile.leveledTextLanguage) setLeveledTextLanguage(profile.leveledTextLanguage);
-              if (profile.studentInterests) {
-                  const interests = Array.isArray(profile.studentInterests) ? profile.studentInterests : profile.studentInterests.split(',').map(s => s.trim()).filter(Boolean);
-                  setStudentInterests(interests);
-              }
-              if (profile.dokLevel) setDokLevel(profile.dokLevel);
-              if (profile.leveledTextCustomInstructions) setLeveledTextCustomInstructions(profile.leveledTextCustomInstructions);
-              if (profile.selectedLanguages && Array.isArray(profile.selectedLanguages)) setSelectedLanguages(profile.selectedLanguages);
-              if (profile.targetStandards && Array.isArray(profile.targetStandards)) { setTargetStandards(profile.targetStandards); setStandardInputValue(''); }
-              if (profile.useEmojis !== undefined) setUseEmojis(profile.useEmojis);
-              if (profile.textFormat) setTextFormat(profile.textFormat);
-              await new Promise(r => setTimeout(r, 100));
-              for (let j = 0; j < resourceTypes.length; j++) {
-                  const type = resourceTypes[j];
-                  currentStep++;
-                  const isLast = currentStep === totalSteps;
-                  const typeLabel = type === 'simplified' ? 'Adapted Text' : type === 'glossary' ? 'Glossary' : type === 'quiz' ? 'Quiz' : type === 'sentence-frames' ? 'Sentence Frames' : type;
-                  setGenerationStep(`${typeLabel} for "${group.name}" (${currentStep}/${totalSteps})`);
-                  await handleGenerate(type, profile.leveledTextLanguage || null, !isLast, textToProcess, {
-                      grade: profile.gradeLevel || gradeLevel,
-                      rosterGroupId: groupId,
-                      rosterGroupName: group.name,
-                      rosterGroupColor: group.color || '#4F46E5'
-                  }, false);
-                  successCount++;
-                  if (!isLast) await new Promise(r => setTimeout(r, 1000));
-              }
-              setGradeLevel(saved.grade);
-              setLeveledTextLanguage(saved.lang);
-              setStudentInterests(saved.interests);
-              setDokLevel(saved.dok);
-              setLeveledTextCustomInstructions(saved.custom);
-              setSelectedLanguages(saved.selectedLangs);
-              setTargetStandards(saved.standards);
-              setUseEmojis(saved.emojis);
-              setTextFormat(saved.fmt);
-          }
-          addToast(`Generated ${successCount} resources for ${groupEntries.length} groups!`, 'success');
-      } catch (e) {
-          warnLog("Roster batch generation error:", e);
-          addToast(t('roster.batch_failed') || 'Batch generation failed', 'error');
-      } finally {
-          setIsProcessing(false);
-          setGenerationStep('');
-      }
+    const _m = window.AlloModules && window.AlloModules.CmapHandlers;
+    if (_m && typeof _m.handleBatchGenerateForRoster === "function") return _m.handleBatchGenerateForRoster(resourceTypes, {
+        rosterKey,
+        history,
+        inputText,
+        gradeLevel,
+        leveledTextLanguage,
+        studentInterests,
+        dokLevel,
+        leveledTextCustomInstructions,
+        selectedLanguages,
+        targetStandards,
+        useEmojis,
+        textFormat,
+        setGradeLevel,
+        setLeveledTextLanguage,
+        setStudentInterests,
+        setDokLevel,
+        setLeveledTextCustomInstructions,
+        setSelectedLanguages,
+        setTargetStandards,
+        setStandardInputValue,
+        setUseEmojis,
+        setTextFormat,
+        setIsProcessing,
+        setGenerationStep,
+        addToast,
+        t,
+        warnLog,
+        handleGenerate,
+      });
+    throw new Error("[handleBatchGenerateForRoster] CmapHandlers module not loaded - reload the page");
   };
   const handleSyncRosterToSession = async () => {
       if (!activeSessionCode || !rosterKey?.groups) return;
@@ -11133,117 +10755,36 @@ Return only the corrected version of this exact text:`;
     throw new Error("[handleGenerateMath] GenerationHelpers module not loaded - reload the page");
   };
   const handleMathEdit = async (editInstruction) => {
-      if (!editInstruction.trim() || !generatedContent?.data?.problems) return;
-      setIsMathEditingChat(true);
-      try {
-          const currentProblems = generatedContent.data.problems.map((p, i) =>
-              `Problem ${i+1} [${p.taskType || 'simplify'}]: ${p.question} (Answer: ${p.answer})`
-          ).join("\n");
-          const prompt = `
-              You are an Expert Math Curriculum Designer.
-              ${leveledTextLanguage && leveledTextLanguage !== 'English' ? 'IMPORTANT: Generate ALL text content (questions, explanations, steps, real-world applications) in ' + leveledTextLanguage + '. After each text field, include an English translation in parentheses. Keep mathematical expressions and JSON keys in English.' : ''}
-              A teacher has an existing problem set and wants to modify it.
-
-              CURRENT PROBLEMS (the [bracket] tag is the taskType — preserve unless edit specifically changes the action):
-              ${currentProblems}
-
-              TEACHER'S EDIT REQUEST: "${editInstruction}"
-              Grade Level: ${gradeLevel}
-              Subject: ${mathSubject}
-
-              INSTRUCTIONS:
-              Apply the teacher's requested changes to the problem set.
-              This may include: making problems easier/harder, adding more problems,
-              changing topics, adjusting difficulty, adding specific problem types,
-              changing the theme/context, or any other modification.
-              Keep problems the teacher didn't mention unchanged unless the edit applies to all.
-              The "question" field must NOT include a leading directive verb (no "Simplify:" / "Solve:") — the renderer prepends it from taskType.
-
-              Return ONLY the MODIFIED problem set as JSON:
-              {
-                "title": "Modified Problem Set",
-                "problems": [
-                  {
-                    "question": "Problem text without leading directive...",
-                    "taskType": "simplify | solve | evaluate | factor | graph | compute | word_problem | prove | convert",
-                    "expression": "Math expression",
-                    "answer": "The answer",
-                    "steps": [{ "explanation": "Clear step-by-step explanation", "latex": "Math expression" }],
-                    "realWorld": "1-2 sentence real-life connection — name a specific career or situation, NOT a word problem restatement"
-                  }
-                ],
-                "graphData": null
-              }
-          `;
-          const result = await callGemini(prompt, true);
-          let cleaned = cleanJson(result);
-          let rawContent = safeJsonParse(result);
-          if (!rawContent) {
-            try { rawContent = JSON.parse(cleaned); } catch (_) {}
-          }
-          if (!rawContent) {
-            const jsonMatch = result.match(/[\[{][\s\S]*[\]}]/);
-            if (jsonMatch) {
-              const extracted = jsonMatch[0];
-              if (typeof window !== 'undefined' && window.jsonrepair) {
-                try { rawContent = JSON.parse(window.jsonrepair(extracted)); } catch (_) {}
-              }
-              if (!rawContent) {
-                try { rawContent = JSON.parse(extracted); } catch (_) {}
-              }
-            }
-          }
-          if (!rawContent) throw new Error("Parse failed after all strategies");
-          const normalizeSteps = (steps) => {
-              if (!Array.isArray(steps)) return [];
-              return steps.map(s => typeof s === "string" ? { explanation: s, latex: "" } : s);
-          };
-          const VALID_TT = new Set(['simplify','solve','evaluate','factor','graph','compute','word_problem','prove','convert']);
-          const normTaskType = (raw, fallback) => {
-              const t = (raw || '').toString().trim().toLowerCase();
-              if (VALID_TT.has(t)) return t;
-              return VALID_TT.has(fallback) ? fallback : 'simplify';
-          };
-          const normalizedContent = {
-              title: rawContent.title || generatedContent.data.title || "Modified Problems",
-              problems: (rawContent.problems || []).map((p, i) => ({
-                  ...p,
-                  taskType: normTaskType(p.taskType, generatedContent.data.problems?.[i]?.taskType),
-                  steps: normalizeSteps(p.steps)
-              })),
-              graphData: rawContent.graphData || generatedContent.data.graphData || null
-          };
-          setGeneratedContent(prev => ({ ...prev, data: normalizedContent }));
-          addToast(`✏️ Problems updated: "${editInstruction.substring(0, 40)}..."`, "success");
-          setMathEditInput("");
-      } catch (e) {
-          warnLog("Math Edit Error:", e);
-          addToast("Failed to modify problems — try rephrasing your request", "error");
-      } finally {
-          setIsMathEditingChat(false);
-      }
+    const _m = window.AlloModules && window.AlloModules.MathHelpers;
+    if (_m && typeof _m.handleMathEdit === "function") return _m.handleMathEdit(editInstruction, {
+        generatedContent,
+        leveledTextLanguage,
+        gradeLevel,
+        mathSubject,
+        setIsMathEditingChat,
+        setGeneratedContent,
+        setMathEditInput,
+        callGemini,
+        cleanJson,
+        safeJsonParse,
+        addToast,
+        warnLog,
+      });
+    throw new Error("[handleMathEdit] MathHelpers module not loaded - reload the page");
   };
   const handleGenerateSimilar = async () => {
-      const firstProblem = generatedContent?.data?.problems?.[0]?.question;
-      if (!firstProblem) return;
-      setIsProcessing(true);
-      addToast(t('math.creating_variation'), "info");
-      try {
-          const prompt = `
-            Create a single new math problem that is a variation of this one with different numbers.
-            Keep the difficulty and concept identical.
-            Original Problem: "${firstProblem}",
-            Return ONLY the raw text of the new problem. No intro/outro.
-          `;
-          const newProblem = await callGemini(prompt);
-          const cleanProblem = newProblem.trim();
-          setMathInput(cleanProblem);
-          await handleGenerateMath(cleanProblem);
-      } catch (e) {
-          warnLog("Similar Problem Error:", e);
-          addToast(t('math.error_variation'), "error");
-          setIsProcessing(false);
-      }
+    const _m = window.AlloModules && window.AlloModules.MathHelpers;
+    if (_m && typeof _m.handleGenerateSimilar === "function") return _m.handleGenerateSimilar({
+        generatedContent,
+        setIsProcessing,
+        setMathInput,
+        addToast,
+        t,
+        callGemini,
+        warnLog,
+        handleGenerateMath,
+      });
+    throw new Error("[handleGenerateSimilar] MathHelpers module not loaded - reload the page");
   };
   useEffect(() => {
     if (showUDLGuide && udlScrollRef.current) {
@@ -12804,35 +12345,13 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
       }
   }, []);
   const generateBingoCards = (glossaryData, count, size) => {
-      const totalCells = size * size;
-      const centerIndex = size % 2 !== 0 ? Math.floor(totalCells / 2) : -1;
-      const termsNeeded = centerIndex !== -1 ? totalCells - 1 : totalCells;
-      let pool = [...glossaryData];
-      if (!pool || pool.length === 0) {
-          addToast(t('toasts.no_glossary_terms'), "error");
-          return null;
-      }
-      if (pool.length < termsNeeded) {
-          addToast(`Repeating terms to fill ${size}x${size} grid.`, "info");
-          while (pool.length < termsNeeded) {
-              pool = [...pool, ...glossaryData];
-          }
-      }
-      const newCards = [];
-      for (let i = 0; i < count; i++) {
-          const shuffled = fisherYatesShuffle(pool);
-          const cardContent = shuffled.slice(0, termsNeeded).map(item => ({ ...item, type: 'term' }));
-          if (centerIndex !== -1) {
-              cardContent.splice(centerIndex, 0, {
-                  type: 'free',
-                  term: 'FREE SPACE',
-                  def: t('bingo.free_space'),
-                  image: null
-              });
-          }
-          newCards.push(cardContent);
-      }
-      return newCards;
+    const _m = window.AlloModules && window.AlloModules.PureHelpers;
+    if (_m && typeof _m.generateBingoCards === "function") return _m.generateBingoCards(glossaryData, count, size, {
+        addToast,
+        t,
+        fisherYatesShuffle,
+      });
+    throw new Error("[generateBingoCards] PureHelpers module not loaded - reload the page");
   };
   const handleGenerateBingo = () => {
       if (!generatedContent || generatedContent.type !== 'glossary') return;
@@ -13484,33 +13003,19 @@ Return ONLY valid JSON:
       return { ...plan, panels: completedPanels };
   };
   const handleRefinePanel = async (panelIdx, editInstruction) => {
-      if (!generatedContent?.data?.visualPlan) return;
-      const plan = generatedContent?.data.visualPlan;
-      const panel = plan.panels[panelIdx];
-      if (!panel?.imageUrl) return;
-      setIsProcessing(true);
-      setGenerationStep(t('visual_director.refining_panel') || 'Refining panel...');
-      try {
-          const rawBase64 = panel.imageUrl.split(',')[1];
-          const refinedUrl = await callGeminiImageEdit(editInstruction, rawBase64);
-          if (refinedUrl) {
-              const updatedPanels = [...plan.panels];
-              updatedPanels[panelIdx] = { ...panel, imageUrl: refinedUrl };
-              const updatedPlan = { ...plan, panels: updatedPanels };
-              const updatedContent = {
-                  ...generatedContent,
-                  data: { ...generatedContent?.data, visualPlan: updatedPlan, imageUrl: updatedPanels[0].imageUrl }
-              };
-              setGeneratedContent(updatedContent);
-              setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
-              addToast(t('visual_director.panel_refined') || 'Panel refined!', 'success');
-          }
-      } catch (e) {
-          warnLog('[ArtDirector] Panel refinement failed:', e);
-          addToast(t('visual_director.refine_failed') || 'Refinement failed', 'error');
-      } finally {
-          setIsProcessing(false);
-      }
+    const _m = window.AlloModules && window.AlloModules.CmapHandlers;
+    if (_m && typeof _m.handleRefinePanel === "function") return _m.handleRefinePanel(panelIdx, editInstruction, {
+        generatedContent,
+        setIsProcessing,
+        setGenerationStep,
+        setGeneratedContent,
+        setHistory,
+        addToast,
+        t,
+        warnLog,
+        callGeminiImageEdit,
+      });
+    throw new Error("[handleRefinePanel] CmapHandlers module not loaded - reload the page");
   };
   const handleUpdateVisualLabel = (panelIdx, labelIdx, newText) => {
       if (!generatedContent?.data?.visualPlan) return;
@@ -13533,66 +13038,9 @@ Return ONLY valid JSON:
   };
   
   const repairSourceMarkdown = (rawText) => {
-    if (!rawText) return rawText;
-
-    const bibMatch = rawText.match(/(\n---\n|\n#{2,3} Source Text References)/s);
-    let body = bibMatch ? rawText.substring(0, bibMatch.index) : rawText;
-    const bib = bibMatch ? rawText.substring(bibMatch.index) : '';
-    const trimmedBody = body.trimEnd();
-    if (trimmedBody.length > 50) {
-        const lastSentenceEnd = Math.max(
-            trimmedBody.lastIndexOf('.'),
-            trimmedBody.lastIndexOf('!'),
-            trimmedBody.lastIndexOf('?')
-        );
-        if (lastSentenceEnd > 0 && (trimmedBody.length - lastSentenceEnd) < 120) {
-            const afterPunctuation = trimmedBody.substring(lastSentenceEnd + 1).trim();
-            if (afterPunctuation.length > 5 && !/[.!?]/.test(afterPunctuation)) {
-                body = trimmedBody.substring(0, lastSentenceEnd + 1);
-            }
-        }
-    }
-    rawText = body + bib;
-
-    rawText = rawText.replace(/([.!?])\s*(#{1,6}\s+)/g, '$1\n\n$2');
-
-    let lines = rawText.split('\n');
-    let titleProcessed = false;
-    const repairedLines = lines.map((line, index) => {
-        let trimmed = line.trim();
-        
-        if (!titleProcessed && trimmed.length > 0) {
-            if (/^Title:\s*/i.test(trimmed)) {
-                titleProcessed = true;
-                return trimmed.replace(/^Title:\s*/i, '# ');
-            }
-            if (!/^[#\-*]/.test(trimmed) && !/^\*\*/.test(trimmed) && !/^\[/.test(trimmed) && !/^\d+\.\s/.test(trimmed) && trimmed.length < 80 && index < 3) {
-                titleProcessed = true;
-                return '# ' + trimmed;
-            }
-        }
-        
-        if (titleProcessed === false && trimmed.length >= 80) {
-            titleProcessed = true;
-        }
-        if (/^#{1,6}\s+/.test(trimmed) && trimmed.length > 150) {
-            return line.replace(/^#{1,6}\s+/, '');
-        }
-        return line;
-    });
-
-    const finalLines = [];
-    for (let i = 0; i < repairedLines.length; i++) {
-        const line = repairedLines[i];
-        if (/^#{1,6}\s+/.test(line.trim()) && i > 0) {
-            const prevLine = finalLines[finalLines.length - 1];
-            if (prevLine && prevLine.trim().length > 0) {
-                finalLines.push('');
-            }
-        }
-        finalLines.push(line);
-    }
-    return finalLines.join('\n');
+    const _m = window.AlloModules && window.AlloModules.PureHelpers;
+    if (_m && typeof _m.repairSourceMarkdown === "function") return _m.repairSourceMarkdown(rawText, {});
+    throw new Error("[repairSourceMarkdown] PureHelpers module not loaded - reload the page");
   };
   window.__alloCallTTS = callTTS;
   window.__alloSelectedVoice = selectedVoice;
@@ -16264,77 +15712,36 @@ ${t('export.readme_json_desc')}`;
       throw new Error('[buildStudyGuidePrompt] PromptsLibrary module not loaded — reload the page');
   };
   const handleGenerateLessonPlan = async (switchView = true) => {
-        if (!inputText.trim()) return;
-        setIsProcessing(true);
-        if (alloBotRef.current) {
-             const feedback = t('bot_events.feedback_lesson_generic').replace('{grade}', gradeLevel || "general");
-             alloBotRef.current.speak(feedback);
-        }
-        let stepLabelKey = 'lesson_plan.status_synthesizing';
-        if (isIndependentMode) stepLabelKey = 'lesson_plan.status_creating_study';
-        else if (isParentMode) stepLabelKey = 'lesson_plan.status_creating_family';
-        setGenerationStep(t(stepLabelKey));
-        let startToastKey = 'lesson_plan.toast_drafting_plan';
-        if (isIndependentMode) startToastKey = 'lesson_plan.toast_drafting_study';
-        else if (isParentMode) startToastKey = 'lesson_plan.toast_drafting_family';
-        addToast(t(startToastKey), "info");
-        try {
-            const context = getLessonContext();
-            const assetManifest = getAssetManifest(history);
-            let prompt;
-            if (isIndependentMode) {
-                prompt = buildStudyGuidePrompt(context, currentUiLanguage);
-            } else if (isParentMode) {
-                prompt = buildParentGuidePrompt(context, currentUiLanguage);
-            } else {
-                prompt = buildLessonPlanPrompt(context, assetManifest, currentUiLanguage, lessonCustomAdditions);
-            }
-            const result = await callGemini(prompt, true);
-            let content;
-            try {
-                content = safeJsonParse(result);
-                if (!content) {
-                     const cleaned = cleanJson(result);
-                     content = JSON.parse(cleaned);
-                }
-            } catch (parseErr) {
-                warnLog("Lesson Plan Parse Error:", parseErr);
-                throw new Error("Failed to parse Lesson Plan JSON. The AI response was not valid.");
-            }
-            if (!content.extensions) content.extensions = [];
-            if (!Array.isArray(content.extensions)) {
-                if (content.extensions) {
-                    content.extensions = [content.extensions];
-                } else {
-                    content.extensions = [];
-                }
-            }
-            const newItem = {
-                id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-                type: 'lesson-plan',
-                data: content,
-                meta: `${gradeLevel} - ${isIndependentMode ? t('common.study_guide') : (isParentMode ? t('common.family_guide') : t('common.udl_aligned'))}`,
-                title: isIndependentMode ? t('common.study_guide') : (isParentMode ? t('common.family_learning_guide') : t('common.udl_lesson_plan')),
-                timestamp: new Date(),
-                config: {}
-            };
-            if (switchView) {
-                setGeneratedContent({ type: 'lesson-plan', data: content, id: newItem.id });
-                setActiveView('lesson-plan');
-            }
-            setHistory(prev => [...prev, newItem]);
-            let successToastKey = 'lesson_plan.success_plan';
-            if (isIndependentMode) successToastKey = 'lesson_plan.success_study';
-            else if (isParentMode) successToastKey = 'lesson_plan.success_family';
-            addToast(t(successToastKey), "success");
-            flyToElement('tour-tool-lesson-plan');
-        } catch (e) {
-            warnLog("Unhandled error:", e);
-            setError(t('lesson_plan.error_gen_failed'));
-            addToast(t('lesson_plan.toast_gen_failed'), "error");
-        } finally {
-            setIsProcessing(false);
-        }
+    const _m = window.AlloModules && window.AlloModules.CmapHandlers;
+    if (_m && typeof _m.handleGenerateLessonPlan === "function") return _m.handleGenerateLessonPlan(switchView, {
+        inputText,
+        gradeLevel,
+        isIndependentMode,
+        isParentMode,
+        currentUiLanguage,
+        lessonCustomAdditions,
+        history,
+        alloBotRef,
+        setIsProcessing,
+        setGenerationStep,
+        setGeneratedContent,
+        setActiveView,
+        setHistory,
+        setError,
+        addToast,
+        t,
+        callGemini,
+        cleanJson,
+        safeJsonParse,
+        warnLog,
+        getLessonContext,
+        getAssetManifest,
+        buildStudyGuidePrompt,
+        buildParentGuidePrompt,
+        buildLessonPlanPrompt,
+        flyToElement,
+      });
+    throw new Error("[handleGenerateLessonPlan] CmapHandlers module not loaded - reload the page");
   };
   const handleGenerateExtensionGuide = async (index) => {
     if (!generatedContent || !Array.isArray(generatedContent?.data.extensions)) return;
@@ -21661,51 +21068,23 @@ Return ONLY JSON:
     throw new Error("[handleGenerateFullPack] GenerationHelpers module not loaded - reload the page");
   };
   const handleAutoCorrectSource = async () => {
-      if (!generatedContent || !generatedContent?.data || !generatedContent?.data.accuracy?.discrepancies) return;
-      const allDiscrepancies = generatedContent?.data.accuracy.discrepancies;
-      const discrepanciesToFix = allDiscrepancies.filter((_, index) => selectedDiscrepancies.has(index));
-      if (discrepanciesToFix.length === 0) {
-          addToast(t('process.select_error'), "info");
-          return;
-      }
-      const sourceText = generatedContent?.data.originalText || inputText;
-      setIsProcessing(true);
-      setGenerationStep(t('process.correcting'));
-      addToast(t('process.fixing', { count: discrepanciesToFix.length }), "info");
-      try {
-          const chunks = chunkText(sourceText, 8000);
-          let correctedParts = [];
-          for (let i = 0; i < chunks.length; i++) {
-              setGenerationStep(`${t('process.correcting')} (${i+1}/${chunks.length})...`);
-              const chunk = chunks[i];
-              const fixPrompt = `
-                You are an expert educational editor.
-                Task: Review the following text segment (${i+1}/${chunks.length}) and correct factual errors based strictly on the list below.
-                List of Known Discrepancies to Fix:
-                ${discrepanciesToFix.map(d => `- ${d}`).join('\n')}
-                Text Segment to Review:
-                "${chunk}",
-                Instructions:
-                1. Check if any of the "Discrepancies" appear in this specific text segment.
-                2. If found, rewrite the specific sentence/paragraph to be factually accurate.
-                3. If NO discrepancies are found in this segment, return the text EXACTLY as is.
-                4. Preserve original markdown formatting, citations [⁽¹⁾](url), and structure.
-                5. Do NOT add conversational filler ("Here is the fixed text"). Return ONLY the text content.
-              `;
-              const partResult = await callGemini(fixPrompt);
-              correctedParts.push(partResult || chunk);
-              if (i < chunks.length - 1) await new Promise(r => setTimeout(r, 500));
-          }
-          const finalCorrectedText = correctedParts.map(p => p.trim()).join('\n\n');
-          setInputText(finalCorrectedText);
-          addToast(t('process.correction_success'), "success");
-          await handleGenerate('analysis', null, false, finalCorrectedText);
-      } catch (e) {
-          warnLog("Auto-correct failed", e);
-          setError(t('process.correction_failed_msg'));
-          addToast(t('process.correction_error'), "error");
-          setIsProcessing(false);
-      }
+    const _m = window.AlloModules && window.AlloModules.CmapHandlers;
+    if (_m && typeof _m.handleAutoCorrectSource === "function") return _m.handleAutoCorrectSource({
+        generatedContent,
+        selectedDiscrepancies,
+        inputText,
+        setIsProcessing,
+        setGenerationStep,
+        setInputText,
+        setError,
+        addToast,
+        t,
+        callGemini,
+        warnLog,
+        chunkText,
+        handleGenerate,
+      });
+    throw new Error("[handleAutoCorrectSource] CmapHandlers module not loaded - reload the page");
   };
   const handleAddToMapList = (text) => {
     if (!text || !text.trim()) return;
@@ -21782,43 +21161,19 @@ Return ONLY JSON:
     setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
   };
   const handleGenerateOutcome = async () => {
-      if (!generatedContent || generatedContent.type !== 'outline') return;
-      const branches = generatedContent?.data?.branches || [];
-      const problems = branches.filter(b => b.title.toLowerCase().includes('problem') || b.title.toLowerCase().includes('challenge'));
-      const solutions = branches.filter(b => !b.title.toLowerCase().includes('problem') && !b.title.toLowerCase().includes('challenge') && !b.title.toLowerCase().includes('outcome'));
-      const problemText = problems.map(b => `${b.title}: ${b.items.join(', ')}`).join('\n');
-      const solutionText = solutions.map(b => `Solution: ${b.title} (${b.items.join(', ')})`).join('\n');
-      if (!problemText && !solutionText) {
-          addToast(t('errors.no_context_for_outcome'), "error");
-          return;
-      }
-      setIsProcessing(true);
-      setGenerationStep("Analyzing solutions & generating outcome...");
-      const prompt = `
-        You are analyzing a Problem Solving scenario.
-        CONTEXT:
-        ${problemText}
-        PROPOSED SOLUTIONS:
-        ${solutionText}
-        TASK:
-        Generate a realistic 'Outcome & Evaluation' step.
-        1. Briefly describe the likely result of implementing these solutions.
-        2. Evaluate the success (e.g., 'The immediate issue was resolved, but...').
-        3. Mention one trade-off or lesson learned.
-        Return ONLY the text of the outcome (max 50 words). Do not include "Outcome:" prefix.
-      `;
-      try {
-          const result = await callGemini(prompt);
-          if (result) {
-              const cleanResult = result.replace(/^Outcome:\s*/i, '').replace(/['"]/g, '').trim();
-              handleAddToMapList(cleanResult);
-          }
-      } catch (error) {
-          warnLog("Outcome Generation Failed", error);
-          setError(t('errors.generation_failed'));
-      } finally {
-          setIsProcessing(false);
-      }
+    const _m = window.AlloModules && window.AlloModules.MathHelpers;
+    if (_m && typeof _m.handleGenerateOutcome === "function") return _m.handleGenerateOutcome({
+        generatedContent,
+        setIsProcessing,
+        setGenerationStep,
+        setError,
+        addToast,
+        t,
+        callGemini,
+        warnLog,
+        handleAddToMapList,
+      });
+    throw new Error("[handleGenerateOutcome] MathHelpers module not loaded - reload the page");
   };
   const handleTimelineDragStart = (e, index) => {
     setDraggedTimelineIndex(index);
