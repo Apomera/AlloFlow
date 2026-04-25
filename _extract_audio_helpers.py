@@ -79,7 +79,19 @@ HANDLERS_INFO = [
     ('handleCardAudioSequence', DEPS_HANDLE_CARD_AUDIO_SEQUENCE),
 ]
 
-BODY_REWRITES = {}  # None needed.
+# Body rewrites — applied to extracted source bodies before write.
+# (regex_pattern, replacement) tuples; word-boundary handling on caller.
+BODY_REWRITES_REGEX = [
+    # Pre-existing bug fix: fetchTTSBytes returns { bytes, base64 } object,
+    # NOT raw Uint8Array. The original handleDownloadAudio code in the monolith
+    # treats the return value as raw bytes, producing empty/silent audio
+    # downloads. Unwrap .bytes at every call site so the PCM concat works.
+    # Three call sites: chunked-large-segment, trailing chunk, and short segment.
+    (
+        r'const bytes = await fetchTTSBytes\(([^)]+)\);\n(\s*)pcmChunks\.push\(bytes\);',
+        r'const result = await fetchTTSBytes(\1);\n\2if (result && result.bytes) pcmChunks.push(result.bytes);',
+    ),
+]
 
 
 def find_end(lines, start_1based):
@@ -132,16 +144,15 @@ def main():
         new_opener = f'const {hname} = {async_kw + " " if async_kw else ""}({new_args}) => {{\n'
         destructure = f'  const {{ {", ".join(deps)} }} = deps;\n'
         body_inner = body_lines[1:-1]
-        rewritten_body = []
-        for ln in body_inner:
-            new_ln = ln
-            for old, new in BODY_REWRITES.items():
-                new_ln = re.sub(r'\b' + re.escape(old) + r'\b', new, new_ln)
-            rewritten_body.append(new_ln)
+        # Apply BODY_REWRITES_REGEX across the joined body (some patterns span
+        # multiple lines; can't go line-by-line).
+        body_joined = ''.join(body_inner)
+        for pattern, replacement in BODY_REWRITES_REGEX:
+            body_joined = re.sub(pattern, replacement, body_joined)
         src_parts.append(new_opener)
         src_parts.append(destructure)
         src_parts.append(f'  try {{ if (window._DEBUG_AUDIO_HELPERS) console.log("[AudioHelpers] {hname} fired"); }} catch(_) {{}}\n')
-        src_parts.extend(rewritten_body)
+        src_parts.append(body_joined)
         src_parts.append('};\n\n')
 
     src_parts.append('window.AlloModules = window.AlloModules || {};\n')

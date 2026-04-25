@@ -91,8 +91,8 @@ const handleDownloadAudio = async (rawText, filename, contentId, deps) => {
                 let currentChunk = "";
                 for (const s of sentences) {
                     if ((currentChunk.length + s.length) > CHUNK_SIZE) {
-                        const bytes = await fetchTTSBytes(currentChunk.trim(), targetVoice);
-                        pcmChunks.push(bytes);
+                        const result = await fetchTTSBytes(currentChunk.trim(), targetVoice);
+                        if (result && result.bytes) pcmChunks.push(result.bytes);
                         currentChunk = s;
                         await new Promise(r => setTimeout(r, 100));
                     } else {
@@ -100,12 +100,12 @@ const handleDownloadAudio = async (rawText, filename, contentId, deps) => {
                     }
                 }
                 if (currentChunk.trim()) {
-                    const bytes = await fetchTTSBytes(currentChunk.trim(), targetVoice);
-                    pcmChunks.push(bytes);
+                    const result = await fetchTTSBytes(currentChunk.trim(), targetVoice);
+                    if (result && result.bytes) pcmChunks.push(result.bytes);
                 }
             } else {
-                const bytes = await fetchTTSBytes(segment.text, targetVoice);
-                pcmChunks.push(bytes);
+                const result = await fetchTTSBytes(segment.text, targetVoice);
+                if (result && result.bytes) pcmChunks.push(result.bytes);
                 await new Promise(r => setTimeout(r, 100));
             }
         }

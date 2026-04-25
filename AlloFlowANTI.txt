@@ -33048,7 +33048,7 @@ Return only the corrected version of this exact text:`;
                                                                 if (validRoots.length === 0) return null;
                                                                 return (
                                                                     <div className="space-y-1.5" aria-label={t('glossary.etymology_roots_label') || 'Source roots'}>
-                                                                        <div className="flex flex-wrap gap-1.5">
+                                                                        <div className="flex flex-wrap gap-1.5 justify-center">
                                                                         {validRoots.map((r, ri) => {
                                                                             const related = Array.isArray(r.related) ? r.related.filter(w => typeof w === 'string' && w.trim()) : [];
                                                                             return (
