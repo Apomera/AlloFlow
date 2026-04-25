@@ -202,7 +202,7 @@ window.SelHub = window.SelHub || {
             return h('button', {
               key: t.id, role: 'tab', className: 'sel-tab' + (active ? ' sel-tab-active' : ''), 'aria-selected': active ? 'true' : 'false',
               onClick: function() { upd('activeTab', t.id); if (soundEnabled) sfxClick(); },
-              style: { padding: '6px 14px', borderRadius: '10px', border: active ? 'none' : '1px solid ' + (explored ? '#fde68a' : 'transparent'), background: active ? 'linear-gradient(135deg, ' + AMBER + ', #b45309)' : explored ? 'rgba(217,119,6,0.06)' : 'transparent', color: active ? '#fff' : explored ? '#78350f' : '#6b7280', fontWeight: active ? 700 : 500, fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', whiteSpace: 'nowrap', boxShadow: active ? '0 3px 12px rgba(217,119,6,0.35), inset 0 1px 0 rgba(255,255,255,0.2)' : 'none' }
+              style: { padding: '6px 14px', borderRadius: '10px', border: active ? 'none' : '1px solid ' + (explored ? '#fde68a' : 'transparent'), background: active ? 'linear-gradient(135deg, ' + AMBER + ', #b45309)' : explored ? 'rgba(217,119,6,0.06)' : 'transparent', color: active ? '#fff' : explored ? '#78350f' : '#94a3b8', fontWeight: active ? 700 : 500, fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', whiteSpace: 'nowrap', boxShadow: active ? '0 3px 12px rgba(217,119,6,0.35), inset 0 1px 0 rgba(255,255,255,0.2)' : 'none' }
             }, h('span', { className: active ? 'sel-hero-icon' : '', 'aria-hidden': 'true' }, t.icon), t.label,
               explored && !active ? h('span', { style: { width: '5px', height: '5px', borderRadius: '50%', background: '#fbbf24', marginLeft: '2px' } }) : null
             );
@@ -219,7 +219,7 @@ window.SelHub = window.SelHub || {
           h('div', { className: 'sel-hero', style: { textAlign: 'center', marginBottom: '20px' } },
             h('div', { className: 'sel-hero-icon', style: { fontSize: '52px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(217,119,6,0.3))' } }, '\uD83E\uDDED'),
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: AMBER_DARK, margin: '0 0 4px' } }, 'What Kind of Friend Am I?'),
-            h('p', { style: { fontSize: '13px', color: '#6b7280', margin: 0 } }, 'Everyone has a friendship style \u2014 the way they naturally show they care. Which one sounds most like you?')
+            h('p', { style: { fontSize: '13px', color: '#94a3b8', margin: 0 } }, 'Everyone has a friendship style \u2014 the way they naturally show they care. Which one sounds most like you?')
           ),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '10px' } },
             FRIEND_STYLES.map(function(fs) {
@@ -232,7 +232,7 @@ window.SelHub = window.SelHub || {
               },
                 h('div', { style: { fontSize: '28px', marginBottom: '6px' } }, fs.icon),
                 h('div', { style: { fontSize: '13px', fontWeight: 700, color: selected ? AMBER : '#374151' } }, fs.label),
-                h('div', { style: { fontSize: '11px', color: '#6b7280', marginTop: '4px', lineHeight: 1.4 } }, fs.desc)
+                h('div', { style: { fontSize: '11px', color: '#94a3b8', marginTop: '4px', lineHeight: 1.4 } }, fs.desc)
               );
             })
           ),
@@ -242,7 +242,7 @@ window.SelHub = window.SelHub || {
             return h('div', { style: { marginTop: '16px', background: AMBER_LIGHT, borderRadius: '14px', padding: '16px', border: '2px solid #fde68a' } },
               h('div', { style: { fontSize: '14px', fontWeight: 700, color: AMBER_DARK, marginBottom: '8px' } }, style.icon + ' You\u2019re ' + style.label + '!'),
               h('div', { style: { fontSize: '13px', color: '#374151', marginBottom: '6px' } }, '\u2728 Superpower: ' + style.strength),
-              h('div', { style: { fontSize: '13px', color: '#6b7280' } }, '\uD83D\uDCA1 Growth edge: ' + style.watchFor)
+              h('div', { style: { fontSize: '13px', color: '#94a3b8' } }, '\uD83D\uDCA1 Growth edge: ' + style.watchFor)
             );
           })()
         );
@@ -257,7 +257,7 @@ window.SelHub = window.SelHub || {
           h('div', { className: 'sel-hero', style: { textAlign: 'center', marginBottom: '20px' } },
             h('div', { className: 'sel-hero-icon', style: { fontSize: '52px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(217,119,6,0.3))' } }, '\uD83D\uDCAC'),
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: AMBER_DARK, margin: '0 0 4px' } }, 'Starting a Friendship'),
-            h('p', { style: { fontSize: '13px', color: '#6b7280', margin: 0 } }, band === 'elementary' ? 'The hardest part is the first words. Here\u2019s what to say.' : 'Specific words for specific situations. Practice makes natural.')
+            h('p', { style: { fontSize: '13px', color: '#94a3b8', margin: 0 } }, band === 'elementary' ? 'The hardest part is the first words. Here\u2019s what to say.' : 'Specific words for specific situations. Practice makes natural.')
           ),
           // Scenario card
           h('div', { style: { background: '#fff', borderRadius: '16px', padding: '20px', border: '1px solid #e5e7eb', boxShadow: '0 4px 20px rgba(0,0,0,0.06)', marginBottom: '16px' } },
@@ -267,11 +267,11 @@ window.SelHub = window.SelHub || {
               h('div', { style: { fontSize: '10px', fontWeight: 700, color: AMBER, marginBottom: '4px' } }, '\uD83D\uDDE3\uFE0F You could say:'),
               h('p', { style: { fontSize: '15px', fontWeight: 700, color: AMBER_DARK, margin: 0, fontStyle: 'italic' } }, '"' + cur.say + '"')
             ),
-            h('div', { style: { fontSize: '12px', color: '#6b7280', lineHeight: 1.5 } }, '\uD83D\uDCA1 Why it works: ' + cur.why)
+            h('div', { style: { fontSize: '12px', color: '#94a3b8', lineHeight: 1.5 } }, '\uD83D\uDCA1 Why it works: ' + cur.why)
           ),
           h('div', { style: { display: 'flex', justifyContent: 'center', gap: '8px' } },
             h('button', { onClick: function() { upd('starterIdx', (starterIdx - 1 + starters.length) % starters.length); }, 'aria-label': 'Previous starter', style: { padding: '8px 16px', background: '#fff', border: '2px solid #e5e7eb', borderRadius: '10px', cursor: 'pointer', fontWeight: 600, fontSize: '13px', color: '#374151' } }, '\u2190 Prev'),
-            h('span', { style: { display: 'flex', alignItems: 'center', fontSize: '12px', color: '#6b7280' } }, (starterIdx % starters.length + 1) + ' / ' + starters.length),
+            h('span', { style: { display: 'flex', alignItems: 'center', fontSize: '12px', color: '#94a3b8' } }, (starterIdx % starters.length + 1) + ' / ' + starters.length),
             h('button', { onClick: function() { upd('starterIdx', (starterIdx + 1) % starters.length); if (soundEnabled) sfxClick(); }, 'aria-label': 'Next starter', style: { padding: '8px 16px', background: AMBER, border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 600, fontSize: '13px', color: '#fff' } }, 'Next \u2192')
           )
         );
@@ -288,7 +288,7 @@ window.SelHub = window.SelHub || {
           h('div', { className: 'sel-hero', style: { textAlign: 'center', marginBottom: '20px' } },
             h('div', { className: 'sel-hero-icon', style: { fontSize: '52px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(217,119,6,0.3))' } }, '\uD83D\uDC9B'),
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: AMBER_DARK, margin: '0 0 4px' } }, 'Keeping Friends'),
-            h('p', { style: { fontSize: '13px', color: '#6b7280', margin: 0 } }, 'Friendships need care. Small, consistent actions matter more than grand gestures.')
+            h('p', { style: { fontSize: '13px', color: '#94a3b8', margin: 0 } }, 'Friendships need care. Small, consistent actions matter more than grand gestures.')
           ),
           // Tips
           h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' } },
@@ -302,7 +302,7 @@ window.SelHub = window.SelHub || {
           // Friendship journal
           h('div', { style: { background: AMBER_LIGHT, borderRadius: '14px', padding: '16px', border: '1px solid #fde68a' } },
             h('div', { style: { fontSize: '13px', fontWeight: 700, color: AMBER_DARK, marginBottom: '8px' } }, '\uD83D\uDCDD Friendship Journal'),
-            h('p', { style: { fontSize: '11px', color: '#6b7280', margin: '0 0 8px' } }, 'Write about a friendship moment \u2014 something kind someone did, a fun memory, or something you\u2019re grateful for.'),
+            h('p', { style: { fontSize: '11px', color: '#94a3b8', margin: '0 0 8px' } }, 'Write about a friendship moment \u2014 something kind someone did, a fun memory, or something you\u2019re grateful for.'),
             h('div', { style: { display: 'flex', gap: '6px', marginBottom: '8px' } },
               h('input', {
                 type: 'text', value: newNote,
@@ -327,7 +327,7 @@ window.SelHub = window.SelHub || {
             friendNotes.length > 0 && h('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px', maxHeight: '150px', overflowY: 'auto' } },
               friendNotes.slice(0, 10).map(function(note) {
                 return h('div', { key: note.id, style: { fontSize: '12px', color: '#374151', padding: '4px 0', borderBottom: '1px solid #fef3c7' } },
-                  h('span', { style: { color: '#6b7280', fontSize: '10px' } }, note.date + ' \u2014 '),
+                  h('span', { style: { color: '#94a3b8', fontSize: '10px' } }, note.date + ' \u2014 '),
                   note.text
                 );
               })
@@ -345,7 +345,7 @@ window.SelHub = window.SelHub || {
           h('div', { className: 'sel-hero', style: { textAlign: 'center', marginBottom: '20px' } },
             h('div', { className: 'sel-hero-icon', style: { fontSize: '52px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(217,119,6,0.3))' } }, '\uD83E\uDE79'),
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: AMBER_DARK, margin: '0 0 4px' } }, 'Friendship Repair'),
-            h('p', { style: { fontSize: '13px', color: '#6b7280', margin: 0 } }, band === 'elementary' ? 'When friends hurt each other, here\u2019s how to fix it.' : 'Conflict doesn\u2019t have to mean the end. These steps help you navigate back to each other.')
+            h('p', { style: { fontSize: '13px', color: '#94a3b8', margin: 0 } }, band === 'elementary' ? 'When friends hurt each other, here\u2019s how to fix it.' : 'Conflict doesn\u2019t have to mean the end. These steps help you navigate back to each other.')
           ),
           // Step progress
           h('div', { style: { display: 'flex', gap: '6px', justifyContent: 'center', marginBottom: '16px' } },
@@ -365,7 +365,7 @@ window.SelHub = window.SelHub || {
             h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' } },
               h('span', { style: { fontSize: '28px' } }, curStep.icon),
               h('div', null,
-                h('div', { style: { fontSize: '10px', color: '#6b7280' } }, 'Step ' + ((repairIdx % steps.length) + 1) + ' of ' + steps.length),
+                h('div', { style: { fontSize: '10px', color: '#94a3b8' } }, 'Step ' + ((repairIdx % steps.length) + 1) + ' of ' + steps.length),
                 h('h4', { style: { fontSize: '16px', fontWeight: 800, color: '#1f2937', margin: 0 } }, curStep.step)
               )
             ),
@@ -389,7 +389,7 @@ window.SelHub = window.SelHub || {
           h('div', { className: 'sel-hero', style: { textAlign: 'center', marginBottom: '20px' } },
             h('div', { className: 'sel-hero-icon', style: { fontSize: '52px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(217,119,6,0.3))' } }, '\uD83C\uDF43'),
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: AMBER_DARK, margin: '0 0 4px' } }, 'When Friendships Change'),
-            h('p', { style: { fontSize: '13px', color: '#6b7280', margin: 0 } }, 'Sometimes friendships end or change shape. That\u2019s one of the hardest parts of growing up.')
+            h('p', { style: { fontSize: '13px', color: '#94a3b8', margin: 0 } }, 'Sometimes friendships end or change shape. That\u2019s one of the hardest parts of growing up.')
           ),
           h('div', { style: { display: 'flex', flexDirection: 'column', gap: '12px' } },
             truths.map(function(truth, i) {
@@ -400,7 +400,7 @@ window.SelHub = window.SelHub || {
               );
             })
           ),
-          h('p', { style: { fontSize: '12px', color: '#6b7280', textAlign: 'center', marginTop: '16px', fontStyle: 'italic' } },
+          h('p', { style: { fontSize: '12px', color: '#94a3b8', textAlign: 'center', marginTop: '16px', fontStyle: 'italic' } },
             band === 'elementary' ? 'It\u2019s okay to feel sad. It\u2019s also okay to feel relieved. All feelings are allowed.'
             : 'Letting go of a friendship can be one of the most mature things you ever do. Honor what was, and make space for what\u2019s coming.')
         );
@@ -421,7 +421,7 @@ window.SelHub = window.SelHub || {
           h('div', { className: 'sel-hero', style: { textAlign: 'center', marginBottom: '20px' } },
             h('div', { className: 'sel-hero-icon', style: { fontSize: '52px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(217,119,6,0.3))' } }, '\uD83E\uDD16'),
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: AMBER_DARK, margin: '0 0 4px' } }, 'Friendship Practice'),
-            h('p', { style: { fontSize: '13px', color: '#6b7280', margin: 0 } }, 'Describe a friendship situation. This space is monitored for your safety.')
+            h('p', { style: { fontSize: '13px', color: '#94a3b8', margin: 0 } }, 'Describe a friendship situation. This space is monitored for your safety.')
           ),
           coachHistory.length > 0 && h('div', { role: 'log', 'aria-label': 'Friendship practice conversation', 'aria-live': 'polite', style: { maxHeight: '300px', overflowY: 'auto', marginBottom: '12px', display: 'flex', flexDirection: 'column', gap: '8px' } },
             coachHistory.map(function(msg, i) {
@@ -475,7 +475,7 @@ window.SelHub = window.SelHub || {
             }, coachLoading ? '\u23F3' : '\u2728')
           ),
           coachHistory.length === 0 && h('div', { style: { marginTop: '16px' } },
-            h('div', { style: { fontSize: '11px', fontWeight: 600, color: '#6b7280', marginBottom: '6px' } }, 'Try:'),
+            h('div', { style: { fontSize: '11px', fontWeight: 600, color: '#94a3b8', marginBottom: '6px' } }, 'Try:'),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px' } },
               [
                 band === 'elementary' ? 'Nobody wants to play with me at recess' : 'My best friend started hanging out with someone else',

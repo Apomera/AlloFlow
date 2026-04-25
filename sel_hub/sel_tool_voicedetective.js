@@ -57,7 +57,7 @@ window.SelHub = window.SelHub || {
     { id: 'sarcastic', label: 'Sarcastic', emoji: '😏', color: '#ec4899', voice: 'Zephyr', desc: 'Flat, exaggerated, opposite meaning' },
     { id: 'nervous', label: 'Nervous', emoji: '😰', color: '#06b6d4', voice: 'Leda', desc: 'Hesitant, fast, unsteady' },
     { id: 'excited', label: 'Excited', emoji: '🤩', color: '#f97316', voice: 'Kore', desc: 'Fast, high, lots of energy' },
-    { id: 'bored', label: 'Bored', emoji: '😑', color: '#6b7280', voice: 'Charon', desc: 'Flat, slow, monotone' },
+    { id: 'bored', label: 'Bored', emoji: '😑', color: '#94a3b8', voice: 'Charon', desc: 'Flat, slow, monotone' },
   ]);
 
   // Sentences that work well for emotion discrimination
@@ -388,7 +388,7 @@ window.SelHub = window.SelHub || {
           h('div', { style: { textAlign: 'center', marginBottom: '24px' } },
             h('div', { style: { fontSize: '48px', marginBottom: '8px' } }, '🔊'),
             h('h2', { style: { fontSize: '24px', fontWeight: 900, color: '#1e293b' } }, 'Voice Detective'),
-            h('p', { style: { color: '#64748b', fontSize: '14px', maxWidth: '400px', margin: '0 auto' } },
+            h('p', { style: { color: '#94a3b8', fontSize: '14px', maxWidth: '400px', margin: '0 auto' } },
               'Listen carefully to how people say things — not just what they say. Can you tell how someone feels just from their voice?')
           ),
           // Difficulty selector
@@ -396,7 +396,7 @@ window.SelHub = window.SelHub || {
             [['basic', '3 Emotions', '😊😢😠'], ['intermediate', '6 Emotions', '+ 😮😨🤢'], ['advanced', '10 Emotions', '+ 😏😰🤩😑']].map(function(d) {
               return h('button', { key: d[0], onClick: function() { setDifficulty(d[0]); },
                 role: 'radio', 'aria-checked': difficulty === d[0], 'aria-label': d[1] + ' difficulty',
-                style: { padding: '8px 16px', borderRadius: '10px', border: '2px solid ' + (difficulty === d[0] ? PURPLE : '#d1d5db'), background: difficulty === d[0] ? '#f5f3ff' : '#fff', color: difficulty === d[0] ? PURPLE : '#6b7280', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }
+                style: { padding: '8px 16px', borderRadius: '10px', border: '2px solid ' + (difficulty === d[0] ? PURPLE : '#d1d5db'), background: difficulty === d[0] ? '#f5f3ff' : '#fff', color: difficulty === d[0] ? PURPLE : '#94a3b8', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }
               }, h('div', null, d[1]), h('div', { style: { fontSize: '16px', marginTop: '2px' } }, d[2]));
             })
           ),
@@ -404,11 +404,11 @@ window.SelHub = window.SelHub || {
           (toolData._totalTrials || 0) > 0 && h('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center', marginBottom: '20px' } },
             h('div', { style: { background: '#f0fdf4', borderRadius: '10px', padding: '10px 16px', textAlign: 'center' } },
               h('div', { style: { fontSize: '20px', fontWeight: 900, color: '#16a34a' } }, toolData._totalCorrect || 0),
-              h('div', { style: { fontSize: '10px', color: '#6b7280' } }, 'all-time correct')
+              h('div', { style: { fontSize: '10px', color: '#94a3b8' } }, 'all-time correct')
             ),
             h('div', { style: { background: '#f5f3ff', borderRadius: '10px', padding: '10px 16px', textAlign: 'center' } },
               h('div', { style: { fontSize: '20px', fontWeight: 900, color: PURPLE } }, allTimeAcc + '%'),
-              h('div', { style: { fontSize: '10px', color: '#6b7280' } }, 'accuracy')
+              h('div', { style: { fontSize: '10px', color: '#94a3b8' } }, 'accuracy')
             )
           ),
           // Badges
@@ -428,7 +428,7 @@ window.SelHub = window.SelHub || {
                 return h('div', { key: em.id, style: { background: '#fff', borderRadius: '10px', padding: '8px', border: '2px solid ' + em.color + '33', textAlign: 'center' } },
                   h('div', { style: { fontSize: '24px', marginBottom: '2px' } }, em.emoji),
                   h('div', { style: { fontSize: '11px', fontWeight: 700, color: em.color } }, em.label),
-                  h('div', { style: { fontSize: '9px', color: '#6b7280', lineHeight: 1.3 } },
+                  h('div', { style: { fontSize: '9px', color: '#94a3b8', lineHeight: 1.3 } },
                     em.id === 'happy' ? 'Voice goes UP. Fast & bright. Smiling sound.' :
                     em.id === 'sad' ? 'Voice goes DOWN. Slow & quiet. Like sighing.' :
                     em.id === 'angry' ? 'LOUD & sharp. Words come fast. Tight sound.' :
@@ -448,7 +448,7 @@ window.SelHub = window.SelHub || {
           // Confusion Matrix (if has data)
           Object.keys(confusionMatrix).length > 5 && h('div', { style: { marginBottom: '20px', background: '#fff', border: '1px solid #e5e7eb', borderRadius: '14px', padding: '14px' } },
             h('div', { style: { fontSize: '12px', fontWeight: 700, color: '#374151', marginBottom: '8px' } }, '📊 Your Emotion Confusion Patterns'),
-            h('p', { style: { fontSize: '10px', color: '#6b7280', marginBottom: '8px' } }, 'Shows which emotions you mix up most often. Brighter = more frequent.'),
+            h('p', { style: { fontSize: '10px', color: '#94a3b8', marginBottom: '8px' } }, 'Shows which emotions you mix up most often. Brighter = more frequent.'),
             h('div', { style: { overflowX: 'auto' } },
               h('table', { style: { borderCollapse: 'collapse', fontSize: '10px', width: '100%' } },
                 h('thead', null,
@@ -478,7 +478,7 @@ window.SelHub = window.SelHub || {
             (() => {
               var confusions = Object.entries(confusionMatrix).filter(function(p) { return !p[0].includes('→' + p[0].split('→')[0]) && p[1] > 0; }).sort(function(a, b) { return b[1] - a[1]; }).slice(0, 3);
               if (confusions.length === 0) return null;
-              return h('div', { style: { marginTop: '8px', fontSize: '10px', color: '#6b7280' } },
+              return h('div', { style: { marginTop: '8px', fontSize: '10px', color: '#94a3b8' } },
                 h('strong', null, 'Most common mix-ups: '),
                 confusions.map(function(c, i) {
                   var parts = c[0].split('→');
@@ -507,7 +507,7 @@ window.SelHub = window.SelHub || {
                 h('div', { style: { fontSize: '32px' } }, m[3]),
                 h('div', null,
                   h('div', { style: { fontWeight: 800, fontSize: '15px', color: '#1e293b' } }, m[1]),
-                  h('div', { style: { fontSize: '12px', color: '#6b7280', marginTop: '2px' } }, m[2])
+                  h('div', { style: { fontSize: '12px', color: '#94a3b8', marginTop: '2px' } }, m[2])
                 )
               );
             })
@@ -528,7 +528,7 @@ window.SelHub = window.SelHub || {
           style: btn('#f1f5f9', '#374151', false) }, '← Back'),
         h('span', { style: { fontWeight: 700, color: '#16a34a', fontSize: '13px' } }, '✅ ' + score + '/' + total),
         streak >= 3 && h('span', { style: { fontWeight: 700, color: '#f97316', fontSize: '13px' } }, '🔥 ' + streak + 'x streak'),
-        h('span', { style: { fontSize: '12px', color: '#6b7280', marginLeft: 'auto' } }, 'Round ' + round)
+        h('span', { style: { fontSize: '12px', color: '#94a3b8', marginLeft: 'auto' } }, 'Round ' + round)
       );
 
       var feedbackBar = feedback && h('div', { role: 'status', 'aria-live': 'assertive',
@@ -542,7 +542,7 @@ window.SelHub = window.SelHub || {
           scoreBar,
           // Audio prompt
           h('div', { style: { textAlign: 'center', padding: '24px', background: 'linear-gradient(135deg, #f5f3ff, #ede9fe)', borderRadius: '16px', border: '2px solid #c4b5fd', marginBottom: '16px' } },
-            h('div', { style: { fontSize: '11px', fontWeight: 600, color: '#6b7280', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' } }, 'Listen carefully...'),
+            h('div', { style: { fontSize: '11px', fontWeight: 600, color: '#94a3b8', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' } }, 'Listen carefully...'),
             h('button', { onClick: function() { speakEmotion(target.sentence, target.emotion.id, target.voice); }, disabled: speaking,
               style: { padding: '16px 32px', fontSize: '28px', background: speaking ? '#e5e7eb' : PURPLE, color: '#fff', border: 'none', borderRadius: '50%', cursor: speaking ? 'wait' : 'pointer', boxShadow: speaking ? 'none' : '0 4px 16px rgba(124,58,237,0.3)', width: '80px', height: '80px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }
             }, speaking ? '🔊' : '▶'),
@@ -588,7 +588,7 @@ window.SelHub = window.SelHub || {
           scoreBar,
           h('div', { style: { textAlign: 'center', marginBottom: '16px' } },
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: '#1e293b' } }, '🔀 Same Words, Different Feelings'),
-            h('p', { style: { color: '#64748b', fontSize: '13px' } }, 'Each voice says the same sentence — but with a different emotion. Match each one!')
+            h('p', { style: { color: '#94a3b8', fontSize: '13px' } }, 'Each voice says the same sentence — but with a different emotion. Match each one!')
           ),
           h('p', { style: { textAlign: 'center', fontSize: '14px', color: '#475569', fontStyle: 'italic', marginBottom: '16px', background: '#f8fafc', padding: '10px', borderRadius: '10px' } }, '"' + (variants[0] || {}).sentence + '"'),
           feedbackBar,
@@ -622,7 +622,7 @@ window.SelHub = window.SelHub || {
           scoreBar,
           h('div', { style: { textAlign: 'center', marginBottom: '16px' } },
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: '#1e293b' } }, '🎬 Match the Scene'),
-            h('p', { style: { color: '#64748b', fontSize: '13px' } }, 'Read what happened, then pick the voice that matches how the person would feel.')
+            h('p', { style: { color: '#94a3b8', fontSize: '13px' } }, 'Read what happened, then pick the voice that matches how the person would feel.')
           ),
           // Scene description
           h('div', { style: { background: 'linear-gradient(135deg, #fef3c7, #fef9c3)', border: '2px solid #fde68a', borderRadius: '14px', padding: '20px', marginBottom: '16px', textAlign: 'center' } },
@@ -630,7 +630,7 @@ window.SelHub = window.SelHub || {
             h('p', { style: { fontSize: '15px', color: '#1e293b', lineHeight: 1.6, fontWeight: 500 } }, scene.text)
           ),
           feedbackBar,
-          h('p', { style: { textAlign: 'center', fontSize: '13px', color: '#6b7280', marginBottom: '12px' } }, 'Which voice matches how this person would sound?'),
+          h('p', { style: { textAlign: 'center', fontSize: '13px', color: '#94a3b8', marginBottom: '12px' } }, 'Which voice matches how this person would sound?'),
           h('div', { style: { display: 'flex', gap: '12px', justifyContent: 'center' } },
             sceneVoices.map(function(sv, vi) {
               return h('div', { key: sv.id, style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' } },
@@ -647,7 +647,7 @@ window.SelHub = window.SelHub || {
       }
 
       // Fallback
-      return h('div', { style: { textAlign: 'center', padding: '40px', color: '#6b7280' } }, 'Loading...');
+      return h('div', { style: { textAlign: 'center', padding: '40px', color: '#94a3b8' } }, 'Loading...');
     }
   });
 

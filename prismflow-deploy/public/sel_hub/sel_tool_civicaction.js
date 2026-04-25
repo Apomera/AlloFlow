@@ -35,7 +35,7 @@ window.SelHub = window.SelHub || {
     { id: 'planner', label: '\ud83d\udcdd Plan', desc: 'Build a civic action plan' },
     { id: 'simulation', label: '\ud83c\udfdb\ufe0f Simulate', desc: 'Civic decision-making simulation' },
     { id: 'survey', label: '\ud83d\udcca Survey', desc: 'Build a community survey' },
-    { id: 'rights', label: '\ud83d\udcdc Rights', desc: 'Explore rights and responsibilities' },
+    { id: 'rights', label: '\ud83d\udcdc Rights & Dissent', desc: 'Rights frameworks, history of peaceful dissent, and reflection' },
     { id: 'service', label: '\ud83e\udd1d Service', desc: 'Plan a service learning project' },
     { id: 'quiz', label: '\ud83c\udfc6 Quiz', desc: 'Test your civic knowledge' },
     { id: 'scenarios', label: '\ud83c\udfad Scenarios', desc: 'Community change scenarios' },
@@ -52,7 +52,7 @@ window.SelHub = window.SelHub || {
     { id: 'sad', label: 'Sad about the state of things', emoji: '\ud83d\ude22', color: '#3b82f6',
       validation: 'Sadness about the world shows that you have empathy and compassion. It is OK to grieve for things that are broken, even if you did not break them.',
       reframe: 'Sadness and hope can exist at the same time. You can hold grief for what is while working toward what could be.' },
-    { id: 'helpless', label: 'Helpless or powerless', emoji: '\ud83d\ude1e', color: '#6b7280',
+    { id: 'helpless', label: 'Helpless or powerless', emoji: '\ud83d\ude1e', color: '#94a3b8',
       validation: 'Feeling powerless is one of the hardest human experiences. But history shows us that almost every major change started with people who felt exactly like you do right now \u2014 and chose to act anyway.',
       reframe: 'You may not be able to change everything, but you can change something. Small actions ripple outward in ways you may never see.' },
     { id: 'overwhelmed', label: 'Overwhelmed by too much', emoji: '\ud83e\udd2f', color: '#8b5cf6',
@@ -469,14 +469,74 @@ window.SelHub = window.SelHub || {
       ]
     },
     middle: {
-      title: 'Constitutional Rights',
-      intro: 'The U.S. Constitution, especially the Bill of Rights, protects fundamental freedoms. Understanding these rights helps you know what you are entitled to and how to stand up for yourself and others.',
+      title: 'Rights & Dissent',
+      intro: 'Rights are guarantees of what every person is allowed to do or have. Dissent is the right to disagree with a rule or law and ask for it to change, through means the law itself protects. This module covers both: the rights you hold today, and the history of how people have used peaceful dissent to expand them.',
+      // ── EDITORIAL RED LINES (encoded as comment so future edits respect them) ──
+      // 1. No living politicians by name unless quoted in settled historical record (a 1965 speech, yes; a 2024 statement, no).
+      // 2. No movements still being litigated in the news cycle. ~25-year cooling-off rule for case-study inclusion.
+      // 3. No advocacy verbs in body text ("you should", "we must"). Historical voice only ("the marchers did", "the law was signed").
+      // 4. No live URLs. primarySource is a citation string only.
+      // 5. Civil disobedience always framed with its cost (arrest, consequence-acceptance), never as costless or recommended.
+      // 6. Disability rights gets equal weight to civil rights and suffrage.
       rights: [
         { right: 'Freedom of Speech (1st Amendment)', icon: '\ud83d\udce3', explain: 'You can express your opinions, including at school, as long as you are not causing a substantial disruption. The landmark case Tinker v. Des Moines (1969) confirmed that students do not "shed their constitutional rights at the schoolhouse gate."', responsibility: 'Use your speech to inform and uplift. Consider the impact of your words on others.', scenario: 'A student wears a T-shirt with a political message to school. The principal says they must change. The student says it is protected speech. Who is right, and where is the line?' },
         { right: 'Freedom of Religion (1st Amendment)', icon: '\ud83d\udd4c', explain: 'You can practice any religion or no religion. The government (including public schools) cannot force you to pray or follow religious practices.', responsibility: 'Respect others\' beliefs even when they differ from yours. Learn about different traditions.', scenario: 'A student asks to be excused from a class activity that conflicts with their religious beliefs. Some classmates say they are just trying to get out of work. How should the school handle this?' },
         { right: 'Due Process (5th & 14th Amendments)', icon: '\u2696\ufe0f', explain: 'The government must follow fair procedures before taking away your rights. At school, this means you have the right to hear the charges against you and tell your side before being suspended or expelled.', responsibility: 'Follow school rules. If you disagree with a punishment, use proper channels to appeal.', scenario: 'A student is accused of cheating on a test. The teacher wants to give them a zero immediately without hearing their side. What rights does the student have?' },
         { right: 'Equal Protection (14th Amendment)', icon: '\ud83e\udd1d', explain: 'The law must treat all people equally. Schools cannot discriminate based on race, gender, religion, disability, or national origin.', responsibility: 'Speak up when you see unequal treatment. Be an ally to those who face discrimination.', scenario: 'You notice that students of one racial group receive harsher punishments than others for the same behavior. What could you do about this?' },
         { right: 'Protection from Unreasonable Searches (4th Amendment)', icon: '\ud83d\udd12', explain: 'The government needs a good reason to search your belongings. At school, officials need "reasonable suspicion" (not just a hunch) to search your locker or bag.', responsibility: 'Know your rights if asked to submit to a search. Stay calm and ask questions respectfully.', scenario: 'A school administrator wants to search every student\'s backpack after an anonymous tip. Is this a reasonable search? What would you do?' }
+      ],
+      sections: [
+        {
+          id: 'foundations', label: 'Foundations', icon: '\ud83d\udcdc',
+          intro: 'The frameworks that say what rights people have. The U.S. Bill of Rights covers the core American protections; the Universal Declaration of Human Rights (1948) covers the international ones.',
+          items: [
+            { id: 'speech', title: 'Freedom of Speech', icon: '\ud83d\udce3', summary: 'You can express your opinions, even at school, within limits.', body: 'The 1st Amendment protects speech from government punishment. Tinker v. Des Moines (1969) extended this to public school students, saying students do not "shed their constitutional rights at the schoolhouse gate." Schools may restrict speech that causes a substantial disruption to learning, but not speech they simply disagree with.', primarySource: 'U.S. Const. amend. I; Tinker v. Des Moines, 393 U.S. 503 (1969)', scenario: 'A student wears a T-shirt with a political message. The principal says to change. Where is the legal line between protected speech and a substantial disruption?' },
+            { id: 'religion', title: 'Freedom of Religion', icon: '\ud83d\udd4c', summary: 'You can practice any religion, or none.', body: 'The 1st Amendment has two religion clauses. The Establishment Clause prevents the government (including public schools) from endorsing a religion. The Free Exercise Clause protects your right to practice yours. Together they create a wall between government and religious authority.', primarySource: 'U.S. Const. amend. I', scenario: 'A student asks to be excused from a class activity that conflicts with their religious beliefs. How should a public school respond?' },
+            { id: 'dueprocess', title: 'Due Process', icon: '\u2696\ufe0f', summary: 'The government must follow fair procedures before taking away your rights.', body: 'The 5th and 14th Amendments require fair procedures before the government takes life, liberty, or property. In schools, Goss v. Lopez (1975) established that students have a due-process right to notice of the charges and a chance to tell their side before suspension.', primarySource: 'U.S. Const. amends. V & XIV; Goss v. Lopez, 419 U.S. 565 (1975)', scenario: 'A student is accused of cheating. The teacher wants to give a zero immediately. What does due process require?' },
+            { id: 'equalprotect', title: 'Equal Protection', icon: '\ud83e\udd1d', summary: 'The law must treat all people equally.', body: 'The 14th Amendment\'s Equal Protection Clause was added in 1868 after the Civil War. Brown v. Board of Education (1954) used it to end legally segregated schools. Schools today cannot discriminate based on race, sex, religion, disability, or national origin.', primarySource: 'U.S. Const. amend. XIV; Brown v. Board, 347 U.S. 483 (1954)', scenario: 'You notice students of one group receive harsher discipline than others for the same behavior. What does equal protection say about this pattern?' },
+            { id: 'search', title: 'Protection from Unreasonable Searches', icon: '\ud83d\udd12', summary: 'The government needs a real reason to search your belongings.', body: 'The 4th Amendment requires the government to have a warrant or probable cause before searching. New Jersey v. T.L.O. (1985) lowered the bar for school officials to "reasonable suspicion" (more than a hunch, less than probable cause), recognizing schools\' need to maintain safety.', primarySource: 'U.S. Const. amend. IV; New Jersey v. T.L.O., 469 U.S. 325 (1985)', scenario: 'A school administrator wants to search every student\'s backpack after an anonymous tip. Does that meet the "reasonable suspicion" standard?' },
+            { id: 'udhr19', title: 'UDHR Article 19 (International)', icon: '\ud83c\udf0d', summary: 'Everyone has the right to seek, receive, and share information.', body: 'The Universal Declaration of Human Rights was adopted by the United Nations General Assembly on December 10, 1948, after World War II. The drafting committee was chaired by Eleanor Roosevelt. Article 19 covers freedom of opinion and expression across borders, in any medium.', primarySource: 'UDHR Art. 19, U.N.G.A. Res. 217A (1948)', scenario: 'A government blocks foreign news sites during a crisis. UDHR Article 19 says people may seek information "regardless of frontiers." What tension does that create?' }
+          ]
+        },
+        {
+          id: 'anatomy', label: 'Anatomy of Dissent', icon: '\u2696\ufe0f',
+          intro: 'Peaceful disagreement with a law or policy can take four main forms. Each is protected differently, costs different things, and carries different responsibilities.',
+          items: [
+            { id: 'petition', title: 'Petition', icon: '\u270d\ufe0f', summary: 'A formal written request to government.', body: 'The right to petition appears in the 1st Amendment and predates all the others in English common law (the Magna Carta, 1215). It is the lowest-cost form of dissent: anyone may submit one, and the government has to receive it (though not act on it). Modern petitions include letters to elected officials, online signature drives, and ballot initiatives.', primarySource: 'U.S. Const. amend. I; Magna Carta (1215)', scenario: 'A student wants to change the school dress code. They start with a petition. Why might that be a strategically smart first step before bigger actions?' },
+            { id: 'assembly', title: 'Peaceful Assembly', icon: '\ud83e\uddcd\u200d\u2640\ufe0f', summary: 'Gathering peacefully to make a point.', body: 'The 1st Amendment protects "the right of the people peaceably to assemble." Cities can require permits for large gatherings to manage traffic and safety, but they cannot deny permits based on the message. NAACP v. Alabama (1958) extended the right to include freedom of association, since the right to assemble means little if the government can demand a list of who showed up.', primarySource: 'U.S. Const. amend. I; NAACP v. Alabama, 357 U.S. 449 (1958)', scenario: 'A city requires a permit for any gathering over 50 people in a public park. Is that a permitted regulation, or a restriction on assembly?' },
+            { id: 'speech_dissent', title: 'Public Speech', icon: '\ud83c\udfa4', summary: 'Speaking against government action.', body: 'Political speech receives the strongest 1st Amendment protection. Schenck v. United States (1919) introduced the limit ("clear and present danger") and Brandenburg v. Ohio (1969) sharpened it: speech can only be punished if it is directed at producing imminent lawless action and likely to do so. Disagreement, criticism, and even harsh attacks on government policy are protected.', primarySource: 'U.S. Const. amend. I; Brandenburg v. Ohio, 395 U.S. 444 (1969)', scenario: 'A speaker at a rally calls a government policy "a disgrace" and urges the crowd to vote out the officials who passed it. Is that protected speech under Brandenburg?' },
+            { id: 'civdisob', title: 'Civil Disobedience', icon: '\u26d3\ufe0f', summary: 'Knowingly breaking an unjust law and accepting the legal consequence.', body: 'Civil disobedience is the deliberate, public, nonviolent breaking of a law believed to be unjust. What separates it from ordinary lawbreaking is consequence-acceptance: the person submits to arrest, fine, or jail to expose the law. Henry David Thoreau named the practice in 1849; Mohandas Gandhi developed it in India; Martin Luther King Jr. articulated it in his "Letter from Birmingham Jail" (1963). Important: civil disobedience is not legally protected. Participants are arrested. The strategy depends on that arrest making the unjust law visible.', primarySource: 'Thoreau, "Resistance to Civil Government" (1849); MLK, "Letter from Birmingham Jail" (1963)', scenario: 'A student says any rule they disagree with is "unjust" so they can ignore it without consequence. Where does that argument depart from how civil disobedience actually works?' }
+          ]
+        },
+        {
+          id: 'casestudies', label: 'Case Studies', icon: '\ud83d\udcda',
+          intro: 'Five movements, all from settled historical record, that used the tools above to expand who has rights in the United States.',
+          items: [
+            { id: 'selma', title: 'Selma to Montgomery', icon: '\ud83c\udf09', year: 1965, summary: 'Three marches that drove the Voting Rights Act.', body: 'On March 7, 1965, about 600 marchers led by John Lewis and Hosea Williams attempted to walk from Selma, Alabama, to Montgomery to demand voting rights for Black Americans. State troopers attacked them on the Edmund Pettus Bridge, an event later called Bloody Sunday. National coverage of the violence built support for federal action; the Voting Rights Act was signed five months later, on August 6, 1965.', primarySource: 'Voting Rights Act of 1965, Pub. L. 89-110', scenario: 'The marchers used peaceful assembly. The violence came from the state, not the marchers. Why did that contrast matter politically?' },
+            { id: 'suffrage', title: '19th Amendment', icon: '\ud83d\uddf3\ufe0f', year: 1920, summary: 'Women\'s right to vote, 72 years after Seneca Falls.', body: 'The Seneca Falls Convention in 1848 issued the first formal call for women\'s suffrage in the U.S. Activists used petitions, marches, public speeches, and civil disobedience (the Silent Sentinels picketed the White House from 1917 and were jailed). The 19th Amendment was ratified August 18, 1920. In practice, it did not extend to all women: Native American women gained citizenship in 1924; many Black women in the South were blocked from voting until the 1965 Voting Rights Act.', primarySource: 'U.S. Const. amend. XIX (1920); Indian Citizenship Act (1924)', scenario: 'A right can exist on paper but not in practice. What was the gap between the 19th Amendment as written and as lived for many women?' },
+            { id: 'sec504', title: 'Section 504 Sit-In', icon: '\u267f', year: 1977, summary: '25-day occupation that forced disability accessibility regulations.', body: 'Section 504 of the Rehabilitation Act of 1973 banned disability discrimination in federally funded programs, but the regulations needed to enforce it sat unsigned for four years. On April 5, 1977, about 150 disabled Americans led by Judith Heumann occupied the federal HEW office in San Francisco. The sit-in lasted 25 days, the longest occupation of a federal building in U.S. history. The regulations were signed on April 28, 1977. Section 504 became the foundation for the Americans with Disabilities Act (1990) and IDEA, the law behind every IEP and 504 plan in U.S. schools.', primarySource: 'Rehabilitation Act of 1973, \u00a7 504; Americans with Disabilities Act (1990)', scenario: 'Every student with an IEP or 504 plan today benefits from this 25-day sit-in. Why is it so rarely taught?' },
+            { id: 'auburn', title: 'Auburn Shoe Strike', icon: '\ud83d\udc5e', year: 1937, summary: 'A Maine labor strike that turned violent and reshaped the state.', body: 'In April 1937, about 1,500 workers at shoe factories in Auburn and Lewiston, Maine, went on strike for union recognition. The state called in the National Guard; the strike ended after about three months without recognition. The events shaped Maine\'s labor laws for decades and remain a key local example of how dissent meets the limits of state power.', primarySource: 'Maine State Archives; Bates College historical collection', scenario: 'The strikers used peaceful assembly and lost. Does a movement\'s success depend on whether it changes the law immediately, or on something longer-term?' },
+            { id: 'ufw', title: 'United Farm Workers', icon: '\ud83c\udf47', year: 1965, summary: 'A five-year grape boycott that won contracts for farm workers.', body: 'In September 1965, mostly Filipino farm workers in Delano, California, went on strike against grape growers. They were soon joined by Cesar Chavez and Dolores Huerta\'s mostly Mexican-American union. The combined group used strikes, marches, and a nationwide consumer boycott of California table grapes. After five years, growers signed contracts in July 1970, raising wages and improving conditions for tens of thousands of workers.', primarySource: 'Delano Grape Strike records, Walter P. Reuther Library', scenario: 'The grape boycott asked ordinary shoppers across the country to participate. How does that change the math of a movement?' }
+          ]
+        },
+        {
+          id: 'maine', label: 'Maine & Wabanaki', icon: '\ud83c\udf32',
+          intro: 'Three local examples. Maine has its own long history of rights work, and a continuing one in the relationship between the state and the four Wabanaki nations.',
+          items: [
+            { id: 'wabanaki', title: 'Wabanaki Sovereignty', icon: '\ud83e\udeb6', summary: 'The four nations of Maine and the 1980 Settlement Act.', body: 'The Wabanaki Confederacy includes the Penobscot, Passamaquoddy, Maliseet, and Mi\'kmaq nations, all of whom have lived in what is now Maine for thousands of years. The 1980 Maine Indian Claims Settlement Act resolved a major land claim but also placed Maine tribes under different rules than tribes in other states. The relationship between tribal sovereignty and Maine state law continues to be a live legal and legislative issue today.', primarySource: 'Maine Indian Claims Settlement Act, Pub. L. 96-420 (1980)', scenario: 'A treaty signed in one century is interpreted in another. Why is who interprets the document almost as important as what it says?' },
+            { id: 'carson', title: 'Rachel Carson', icon: '\ud83c\udf3f', year: 1962, summary: 'Silent Spring and the modern environmental movement.', body: 'Rachel Carson lived and wrote part-time on Southport Island, Maine. Her 1962 book Silent Spring documented how the pesticide DDT was killing birds and entering the human food supply. The chemical industry attacked her work; later studies confirmed her findings. DDT was banned for agricultural use in 1972, and the Environmental Protection Agency was created in 1970, partly in response to the book\'s impact.', primarySource: 'Carson, Silent Spring (Houghton Mifflin, 1962)', scenario: 'Carson did not march or sit in. She wrote a book. How does that fit into the anatomy of dissent from the earlier section?' },
+            { id: 'mainesuffrage', title: 'Equal Suffrage League of Maine', icon: '\ud83d\udcdd', year: 1914, summary: 'Maine\'s long road to the 19th Amendment.', body: 'The Equal Suffrage League of Maine, founded in 1914, organized petitions, public speeches, and lobbying for women\'s right to vote in Maine. A 1917 state referendum to grant women the vote in Maine failed by a wide margin. Maine eventually ratified the 19th Amendment on November 5, 1919, before federal ratification took effect in 1920.', primarySource: 'Maine State Library; Maine Historical Society records', scenario: 'Maine voters rejected suffrage in 1917 and the Maine legislature ratified it two years later. What does that gap tell you about how a state changes its mind?' }
+          ]
+        },
+        {
+          id: 'reflection', label: 'Reflection', icon: '\ud83e\udd14',
+          intro: 'Three prompts that draw across the previous sections. Pick any or all.',
+          items: [
+            { id: 'r1', title: 'Pair a Foundation with a Case Study', icon: '\ud83d\udd17', summary: 'Connect a right on paper to a movement that fought for it.', body: 'Choose one item from Foundations and one from Case Studies. Explain how the case study helped the right become real for more people.', scenario: 'Example pairing: Equal Protection (Foundation) and Selma to Montgomery (Case Study). Equal protection existed in the Constitution since 1868, but the Voting Rights Act of 1965 was needed to make it real for Black voters in the South. Pick your own pairing and explain it.' },
+            { id: 'r2', title: 'Anatomy in Action', icon: '\ud83d\udd0d', summary: 'Spot one of the four tools at work.', body: 'Petition, assembly, speech, civil disobedience. Pick one. Describe a time you saw it used, in school, in the news, or in a history class. What did it look like? What did it cost the people who used it?', scenario: 'Be specific. "A speech by a person whose name you know" is more useful than "people speak out."' },
+            { id: 'r3', title: 'A First Step', icon: '\ud83d\udeb6', summary: 'An issue you care about, and the right tool to start with.', body: 'Pick one issue you care about, in school or in your community. Which of the four tools from Anatomy of Dissent would you use as the first step, and why that one and not the others?', scenario: 'A first step does not have to be a big one. A petition that goes nowhere can still teach you who has the power to change the thing.' }
+          ]
+        }
       ]
     },
     high: {
@@ -640,6 +700,8 @@ window.SelHub = window.SelHub || {
       var rightsIdx = d.rightsIdx || 0;
       var rightsExplored = d.rightsExplored || [];
       var rightsScenarioAnswer = d.rightsScenarioAnswer || '';
+      var rightsSection = d.rightsSection || 'foundations';
+      var rightsExploredBySection = d.rightsExploredBySection || {};
       var serviceTemplate = d.serviceTemplate || null;
       var servicePhase = d.servicePhase || 0;
       var serviceNotes = d.serviceNotes || {};
@@ -742,16 +804,16 @@ window.SelHub = window.SelHub || {
 
         // ── Badges ribbon ──
         earnedBadges.length > 0 && h('div', { className: 'flex gap-2 flex-wrap bg-amber-50 border border-amber-200 rounded-xl p-2' },
-          h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold text-amber-600 uppercase self-center' }, 'Badges:'),
+          h('span', { className: 'text-[10px] font-bold text-amber-600 uppercase self-center' }, 'Badges:'),
           earnedBadges.map(function(bid) {
             var badge = BADGES.find(function(b) { return b.id === bid; });
             if (!badge) return null;
-            return h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: bid, className: 'inline-flex items-center gap-1 bg-white border border-amber-300 rounded-full px-2 py-0.5 text-[10px] font-bold text-amber-700', title: badge.desc }, badge.icon, ' ', badge.label);
+            return h('span', { key: bid, className: 'inline-flex items-center gap-1 bg-white border border-amber-300 rounded-full px-2 py-0.5 text-[10px] font-bold text-amber-700', title: badge.desc }, badge.icon, ' ', badge.label);
           })
         ),
 
         // ── Tab Navigation ──
-        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, role: 'tablist', 'aria-label': 'Civic Action tabs', className: 'flex gap-1 bg-teal-50 rounded-xl p-1 border border-teal-200 overflow-x-auto' },
+        h('div', { role: 'tablist', 'aria-label': 'Civic Action tabs', className: 'flex gap-1 bg-teal-50 rounded-xl p-1 border border-teal-200 overflow-x-auto' },
           TABS.map(function(t) {
             return h('button', { 'aria-label': t.label,
               key: t.id,
@@ -764,10 +826,10 @@ window.SelHub = window.SelHub || {
         ),
 
         // ═══ NAME IT — Feelings ═══
-        tab === 'feelings' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4' },
+        tab === 'feelings' && h('div', { className: 'space-y-4' },
           h('p', { className: 'text-sm text-slate-600 text-center' }, 'What are you feeling right now? There are no wrong answers.'),
 
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
+          h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
             FEELINGS_MAP.map(function(f) {
               var isSelected = selectedFeeling === f.id;
               return h('button', { 'aria-label': f.emoji,
@@ -786,17 +848,17 @@ window.SelHub = window.SelHub || {
           ),
 
           // Validation message
-          selectedFeeling && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-gradient-to-r from-teal-50 to-emerald-50 rounded-2xl border border-teal-200 p-5' },
+          selectedFeeling && h('div', { className: 'bg-gradient-to-r from-teal-50 to-emerald-50 rounded-2xl border border-teal-200 p-5' },
             (function() {
               var f = FEELINGS_MAP.find(function(ff) { return ff.id === selectedFeeling; });
               if (!f) return null;
-              return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-3' },
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2' },
-                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-2xl' }, f.emoji),
+              return h('div', { className: 'space-y-3' },
+                h('div', { className: 'flex items-center gap-2' },
+                  h('span', { className: 'text-2xl' }, f.emoji),
                   h('h4', { className: 'font-bold text-sm text-teal-800' }, 'Your feeling is valid')
                 ),
                 h('p', { className: 'text-sm text-slate-700 leading-relaxed' }, f.validation),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-xl p-3 border border-teal-200' },
+                h('div', { className: 'bg-white rounded-xl p-3 border border-teal-200' },
                   h('p', { className: 'text-xs text-teal-700 italic' }, '\ud83d\udca1 ', f.reframe)
                 ),
                 callTTS && h('button', { 'aria-label': 'Hear this read aloud',
@@ -808,7 +870,7 @@ window.SelHub = window.SelHub || {
           ),
 
           // Free write
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-slate-50 rounded-xl border border-slate-200 p-4' },
+          h('div', { className: 'bg-slate-50 rounded-xl border border-slate-200 p-4' },
             h('label', { className: 'text-xs font-bold text-slate-600 block mb-1' }, '\ud83d\udcdd What is on your mind? (private)'),
             h('textarea', {
               value: d.freeWrite || '',
@@ -876,16 +938,15 @@ window.SelHub = window.SelHub || {
 
         // ═══ COPE ═══
         tab === 'cope' && h('div', { className: 'space-y-4' },
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-center mb-2' },
+          h('div', { className: 'text-center mb-2' },
             h('h3', { className: 'text-lg font-black text-slate-800' }, '\ud83c\udf3f Healthy Ways to Hold Hard Feelings'),
             h('p', { className: 'text-sm text-slate-600' }, 'You do not have to fix the world to take care of yourself.')
           ),
 
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
+          h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
             COPING_STRATEGIES.map(function(strategy) {
               var isExpanded = selectedCoping === strategy.id;
-              return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
-                key: strategy.id,
+              return h('div', {                 key: strategy.id,
                 className: 'rounded-2xl border-2 overflow-hidden transition-all ' +
                   (isExpanded ? 'border-teal-400 bg-teal-50 shadow-md' : 'border-slate-200 bg-white hover:border-teal-300')
               },
@@ -910,13 +971,13 @@ window.SelHub = window.SelHub || {
         ),
 
         // ═══ EXPLORE ISSUES (NEW) ═══
-        tab === 'explore' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4' },
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-center mb-2' },
+        tab === 'explore' && h('div', { className: 'space-y-4' },
+          h('div', { className: 'text-center mb-2' },
             h('h3', { className: 'text-lg font-black text-slate-800' }, '\ud83c\udf0d Explore Civic Issues'),
             h('p', { className: 'text-sm text-slate-600' }, 'Learn about issues that affect your community and the world. (' + gradeBand + ' level)')
           ),
 
-          !selectedIssue && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
+          !selectedIssue && h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
             issues.map(function(issue) {
               return h('button', { 'aria-label': issue.emoji,
                 key: issue.id,
@@ -935,7 +996,7 @@ window.SelHub = window.SelHub || {
                 h('div', { className: 'flex items-center gap-3' },
                   h('span', { className: 'text-2xl' }, issue.emoji),
                   h('div', null,
-                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'font-bold text-sm text-slate-800' }, issue.title),
+                    h('div', { className: 'font-bold text-sm text-slate-800' }, issue.title),
                     h('p', { className: 'text-xs text-slate-600 mt-0.5' }, issue.desc)
                   )
                 )
@@ -946,7 +1007,7 @@ window.SelHub = window.SelHub || {
           selectedIssue && (function() {
             var issue = issues.find(function(i) { return i.id === selectedIssue; });
             if (!issue) return null;
-            return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4' },
+            return h('div', { className: 'space-y-4' },
               h('button', { 'aria-label': issue.emoji,
                 onClick: function() { upd('selectedIssue', null); },
                 className: 'text-xs text-teal-600 font-bold hover:text-teal-800 flex items-center gap-1'
@@ -960,11 +1021,11 @@ window.SelHub = window.SelHub || {
                     h('p', { className: 'text-sm text-slate-600' }, issue.desc)
                   )
                 ),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-teal-50 rounded-xl p-4 border border-teal-200' },
+                h('div', { className: 'bg-teal-50 rounded-xl p-4 border border-teal-200' },
                   h('h4', { className: 'text-xs font-bold text-teal-700 uppercase tracking-widest mb-1' }, '\u2764\ufe0f Why It Matters'),
                   h('p', { className: 'text-sm text-slate-700 leading-relaxed' }, issue.why)
                 ),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-emerald-50 rounded-xl p-4 border border-emerald-200' },
+                h('div', { className: 'bg-emerald-50 rounded-xl p-4 border border-emerald-200' },
                   h('h4', { className: 'text-xs font-bold text-emerald-700 uppercase tracking-widest mb-1' }, '\u270a What You Can Do'),
                   h('p', { className: 'text-sm text-slate-700 leading-relaxed' }, issue.act)
                 ),
@@ -988,17 +1049,17 @@ window.SelHub = window.SelHub || {
           h('div', { className: 'space-y-2' },
             actions.map(function(a, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl border border-slate-200 p-4 flex items-start gap-3 hover:border-teal-300 transition-colors' },
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-teal-100 text-teal-700 px-2 py-1 rounded-lg text-[10px] font-bold shrink-0' }, a.impact),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex-1' },
+                h('div', { className: 'bg-teal-100 text-teal-700 px-2 py-1 rounded-lg text-[10px] font-bold shrink-0' }, a.impact),
+                h('div', { className: 'flex-1' },
                   h('p', { className: 'text-sm text-slate-800 font-medium' }, a.action),
-                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-amber-500' }, a.difficulty)
+                  h('span', { className: 'text-[10px] text-amber-500' }, a.difficulty)
                 )
               );
             })
           ),
 
           // Personalized action plan
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-gradient-to-r from-teal-50 to-emerald-50 rounded-2xl border border-teal-200 p-5' },
+          h('div', { className: 'bg-gradient-to-r from-teal-50 to-emerald-50 rounded-2xl border border-teal-200 p-5' },
             h('h4', { className: 'text-sm font-bold text-teal-700 mb-2 flex items-center gap-2' }, h(Sparkles, { size: 14 }), 'Get a Personalized Action Plan'),
             d.issueText && h('p', { className: 'text-xs text-slate-600 mb-3' }, 'Based on your concern about: "' + d.issueText + '"'),
             h('button', { 'aria-label': aiLoading ? 'Creating your plan...' : '\u2728 Generate My Action Plan',
@@ -1057,7 +1118,7 @@ window.SelHub = window.SelHub || {
               className: 'w-full text-sm p-3 border border-slate-200 rounded-lg resize-none h-28 outline-none focus:ring-2 focus:ring-teal-300',
               'aria-label': PLANNER_STEPS[plannerStep].label
             }),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex justify-between' },
+            h('div', { className: 'flex justify-between' },
               plannerStep > 0 ? h('button', { 'aria-label': 'Previous',
                 onClick: function() { upd('plannerStep', plannerStep - 1); },
                 className: 'px-4 py-2 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50'
@@ -1078,10 +1139,10 @@ window.SelHub = window.SelHub || {
           ),
 
           // Template letters section
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-gradient-to-r from-slate-50 to-teal-50 rounded-2xl border border-slate-200 p-5 space-y-3' },
+          h('div', { className: 'bg-gradient-to-r from-slate-50 to-teal-50 rounded-2xl border border-slate-200 p-5 space-y-3' },
             h('h4', { className: 'text-sm font-bold text-slate-700' }, '\ud83d\udce8 Template Letters'),
             h('p', { className: 'text-xs text-slate-600' }, 'Use these templates to write a formal letter advocating for your issue.'),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 flex-wrap' },
+            h('div', { className: 'flex gap-2 flex-wrap' },
               Object.keys(LETTER_TEMPLATES).map(function(key) {
                 var tmpl = LETTER_TEMPLATES[key];
                 return h('button', { 'aria-label': tmpl.title,
@@ -1168,7 +1229,7 @@ window.SelHub = window.SelHub || {
               h('div', { className: 'bg-white rounded-2xl border-2 border-teal-200 p-5 space-y-4' },
                 h('h4', { className: 'text-sm font-bold text-teal-700' }, '\ud83d\udcdd ' + currentProposal.title),
                 h('p', { className: 'text-sm text-slate-700 leading-relaxed' }, currentProposal.desc),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-2 mt-3' },
+                h('div', { className: 'space-y-2 mt-3' },
                   currentProposal.options.map(function(opt, oi) {
                     var chosen = simChoices[currentProposal.id];
                     var isChosen = chosen === oi;
@@ -1177,7 +1238,7 @@ window.SelHub = window.SelHub || {
                     if (showResult && isChosen) btnClass += 'border-teal-400 bg-teal-50 font-bold';
                     else if (!showResult) btnClass += 'border-slate-200 bg-white hover:border-teal-300 hover:bg-teal-50';
                     else btnClass += 'border-slate-200 bg-slate-50 text-slate-400';
-                    return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: oi },
+                    return h('div', { key: oi },
                       h('button', { 'aria-label': opt.text,
                         disabled: showResult,
                         onClick: function() {
@@ -1189,13 +1250,13 @@ window.SelHub = window.SelHub || {
                         },
                         className: btnClass
                       }, opt.text),
-                      showResult && isChosen && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-2 ml-2 bg-blue-50 border border-blue-200 rounded-xl p-3' },
+                      showResult && isChosen && h('div', { className: 'mt-2 ml-2 bg-blue-50 border border-blue-200 rounded-xl p-3' },
                         h('p', { className: 'text-xs font-bold text-blue-700 mb-1' }, '\ud83d\udcca Outcome:'),
                         h('p', { className: 'text-xs text-blue-800 leading-relaxed' }, opt.outcome),
-                        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-3 mt-2' },
-                          h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold ' + (opt.impact.happiness > 0 ? 'text-emerald-600' : opt.impact.happiness < 0 ? 'text-red-500' : 'text-slate-500') }, '\ud83d\ude0a Happiness: ' + (opt.impact.happiness > 0 ? '+' : '') + opt.impact.happiness),
-                          h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold ' + (opt.impact.learning > 0 ? 'text-emerald-600' : opt.impact.learning < 0 ? 'text-red-500' : 'text-slate-500') }, '\ud83d\udcda Learning: ' + (opt.impact.learning > 0 ? '+' : '') + opt.impact.learning),
-                          h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold ' + (opt.impact.health > 0 ? 'text-emerald-600' : opt.impact.health < 0 ? 'text-red-500' : 'text-slate-500') }, '\ud83d\udc9a Health: ' + (opt.impact.health > 0 ? '+' : '') + opt.impact.health)
+                        h('div', { className: 'flex gap-3 mt-2' },
+                          h('span', { className: 'text-[10px] font-bold ' + (opt.impact.happiness > 0 ? 'text-emerald-600' : opt.impact.happiness < 0 ? 'text-red-500' : 'text-slate-300') }, '\ud83d\ude0a Happiness: ' + (opt.impact.happiness > 0 ? '+' : '') + opt.impact.happiness),
+                          h('span', { className: 'text-[10px] font-bold ' + (opt.impact.learning > 0 ? 'text-emerald-600' : opt.impact.learning < 0 ? 'text-red-500' : 'text-slate-300') }, '\ud83d\udcda Learning: ' + (opt.impact.learning > 0 ? '+' : '') + opt.impact.learning),
+                          h('span', { className: 'text-[10px] font-bold ' + (opt.impact.health > 0 ? 'text-emerald-600' : opt.impact.health < 0 ? 'text-red-500' : 'text-slate-300') }, '\ud83d\udc9a Health: ' + (opt.impact.health > 0 ? '+' : '') + opt.impact.health)
                         )
                       )
                     );
@@ -1282,12 +1343,12 @@ window.SelHub = window.SelHub || {
 
             // Step 1: Draft
             if (currentStep.id === 'draft') {
-              return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4' },
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-slate-100 rounded-full h-2 overflow-hidden' },
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-indigo-500 h-full rounded-full transition-all', style: { width: ((legStep + 1) / steps.length * 100) + '%' } })
+              return h('div', { className: 'space-y-4' },
+                h('div', { className: 'bg-slate-100 rounded-full h-2 overflow-hidden' },
+                  h('div', { className: 'bg-indigo-500 h-full rounded-full transition-all', style: { width: ((legStep + 1) / steps.length * 100) + '%' } })
                 ),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-slate-600 text-center' }, currentStep.title),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-2xl border-2 border-indigo-200 p-5 space-y-3' },
+                h('div', { className: 'text-xs font-bold text-slate-600 text-center' }, currentStep.title),
+                h('div', { className: 'bg-white rounded-2xl border-2 border-indigo-200 p-5 space-y-3' },
                   h('p', { className: 'text-sm text-slate-600' }, currentStep.desc),
                   currentStep.bills.map(function(bill) {
                     var isSelected = legBill === bill.id;
@@ -1299,7 +1360,7 @@ window.SelHub = window.SelHub || {
                       },
                       className: 'w-full p-4 rounded-xl border-2 text-left transition-all ' + (isSelected ? 'border-indigo-400 bg-indigo-50' : 'border-slate-200 bg-white hover:border-indigo-300')
                     },
-                      h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'font-bold text-sm text-slate-800' }, bill.title),
+                      h('div', { className: 'font-bold text-sm text-slate-800' }, bill.title),
                       h('p', { className: 'text-xs text-slate-600 mt-1' }, bill.desc),
                       h('p', { className: 'text-[10px] text-amber-600 mt-1' }, '\u26a0\ufe0f Opposition: ' + bill.opposition),
                       h('p', { className: 'text-[10px] text-teal-600 font-bold mt-1' }, 'Base support: ' + bill.support_base + '%')
@@ -1320,20 +1381,20 @@ window.SelHub = window.SelHub || {
                   h('div', { className: 'bg-indigo-500 h-full rounded-full transition-all', style: { width: ((legStep + 1) / steps.length * 100) + '%' } })
                 ),
                 h('div', { className: 'flex justify-between text-xs font-bold' },
-                  h('span', { className: 'text-slate-500' }, currentStep.title),
-                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-indigo-600' }, 'Current Support: ' + legSupport + '%')
+                  h('span', { className: 'text-slate-300' }, currentStep.title),
+                  h('span', { className: 'text-indigo-600' }, 'Current Support: ' + legSupport + '%')
                 ),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-2xl border-2 border-indigo-200 p-5 space-y-3' },
+                h('div', { className: 'bg-white rounded-2xl border-2 border-indigo-200 p-5 space-y-3' },
                   h('p', { className: 'text-sm text-slate-600' }, currentStep.desc),
                   currentStep.allies.map(function(ally) {
                     var isRecruited = legAllies.indexOf(ally.id) !== -1;
-                    return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: ally.id, className: 'p-3 rounded-xl border-2 ' + (isRecruited ? 'border-emerald-300 bg-emerald-50' : 'border-slate-200 bg-white') },
-                      h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex justify-between items-center' },
-                        h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'font-bold text-sm text-slate-800' }, ally.label),
-                        h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold text-emerald-600' }, '+' + ally.bonus + '% support')
+                    return h('div', { key: ally.id, className: 'p-3 rounded-xl border-2 ' + (isRecruited ? 'border-emerald-300 bg-emerald-50' : 'border-slate-200 bg-white') },
+                      h('div', { className: 'flex justify-between items-center' },
+                        h('span', { className: 'font-bold text-sm text-slate-800' }, ally.label),
+                        h('span', { className: 'text-[10px] font-bold text-emerald-600' }, '+' + ally.bonus + '% support')
                       ),
                       h('p', { className: 'text-xs text-slate-600 mt-1' }, ally.ask),
-                      !isRecruited && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 mt-2' },
+                      !isRecruited && h('div', { className: 'flex gap-2 mt-2' },
                         h('button', { 'aria-label': 'Accept & Recruit',
                           onClick: function() {
                             var newAllies = legAllies.concat([ally.id]);
@@ -1349,7 +1410,7 @@ window.SelHub = window.SelHub || {
                           className: 'px-3 py-1 bg-slate-200 text-slate-600 rounded-lg text-[10px] font-bold hover:bg-slate-300'
                         }, '\u274c Decline')
                       ),
-                      isRecruited && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-emerald-600 font-bold mt-1 block' }, '\u2705 Recruited')
+                      isRecruited && h('span', { className: 'text-[10px] text-emerald-600 font-bold mt-1 block' }, '\u2705 Recruited')
                     );
                   }),
                   h('button', { 'aria-label': 'Next: Committee Hearing',
@@ -1364,19 +1425,19 @@ window.SelHub = window.SelHub || {
             if (currentStep.id === 'committee') {
               return h('div', { className: 'space-y-4' },
                 h('div', { className: 'bg-slate-100 rounded-full h-2 overflow-hidden' },
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-indigo-500 h-full rounded-full transition-all', style: { width: ((legStep + 1) / steps.length * 100) + '%' } })
+                  h('div', { className: 'bg-indigo-500 h-full rounded-full transition-all', style: { width: ((legStep + 1) / steps.length * 100) + '%' } })
                 ),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex justify-between text-xs font-bold' },
-                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-slate-500' }, currentStep.title),
-                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-indigo-600' }, 'Current Support: ' + legSupport + '%')
+                h('div', { className: 'flex justify-between text-xs font-bold' },
+                  h('span', { className: 'text-slate-300' }, currentStep.title),
+                  h('span', { className: 'text-indigo-600' }, 'Current Support: ' + legSupport + '%')
                 ),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-2xl border-2 border-indigo-200 p-5 space-y-4' },
+                h('div', { className: 'bg-white rounded-2xl border-2 border-indigo-200 p-5 space-y-4' },
                   h('p', { className: 'text-sm text-slate-600' }, currentStep.desc),
                   currentStep.questions.map(function(cq, qi) {
                     var answered = legAnswers[qi] !== undefined;
-                    return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: qi, className: 'p-3 rounded-xl border-2 ' + (answered ? 'border-slate-200 bg-slate-50' : 'border-amber-300 bg-amber-50') },
+                    return h('div', { key: qi, className: 'p-3 rounded-xl border-2 ' + (answered ? 'border-slate-200 bg-slate-50' : 'border-amber-300 bg-amber-50') },
                       h('p', { className: 'font-bold text-sm text-slate-800' }, '\ud83d\udde3\ufe0f "' + cq.q + '"'),
-                      !answered && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 mt-2' },
+                      !answered && h('div', { className: 'flex gap-2 mt-2' },
                         h('button', { 'aria-label': '\u2705 ' + cq.good,
                           onClick: function() {
                             var newAnswers = {};
@@ -1417,16 +1478,16 @@ window.SelHub = window.SelHub || {
                 h('div', { className: 'bg-slate-100 rounded-full h-2 overflow-hidden' },
                   h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', className: 'bg-indigo-500 h-full rounded-full', style: { width: '100%' } })
                 ),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-slate-600 text-center' }, currentStep.title),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-2xl border-2 border-indigo-200 p-5 space-y-4 text-center' },
+                h('div', { className: 'text-xs font-bold text-slate-600 text-center' }, currentStep.title),
+                h('div', { className: 'bg-white rounded-2xl border-2 border-indigo-200 p-5 space-y-4 text-center' },
                   h('p', { className: 'text-sm text-slate-600' }, currentStep.desc),
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-slate-100 rounded-full h-6 overflow-hidden relative mt-4' },
-                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'h-full rounded-full transition-all ' + (passed ? 'bg-emerald-500' : 'bg-red-400'), style: { width: Math.min(legSupport, 100) + '%' } }),
-                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'absolute inset-0 flex items-center justify-center text-xs font-bold text-white', style: { textShadow: '0 1px 2px rgba(0,0,0,0.3)' } }, legSupport + '% Support')
+                  h('div', { className: 'bg-slate-100 rounded-full h-6 overflow-hidden relative mt-4' },
+                    h('div', { className: 'h-full rounded-full transition-all ' + (passed ? 'bg-emerald-500' : 'bg-red-400'), style: { width: Math.min(legSupport, 100) + '%' } }),
+                    h('div', { className: 'absolute inset-0 flex items-center justify-center text-xs font-bold text-white', style: { textShadow: '0 1px 2px rgba(0,0,0,0.3)' } }, legSupport + '% Support')
                   ),
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'absolute left-1/2 top-0 bottom-0 border-l-2 border-dashed border-slate-400', style: { left: '50%' } }),
+                  h('div', { className: 'absolute left-1/2 top-0 bottom-0 border-l-2 border-dashed border-slate-400', style: { left: '50%' } }),
                   h('p', { className: 'text-xs text-slate-600 mt-1' }, 'Need 51% to pass'),
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-4xl mt-4' }, passed ? '\ud83c\udf89' : '\ud83d\udcaa'),
+                  h('div', { className: 'text-4xl mt-4' }, passed ? '\ud83c\udf89' : '\ud83d\udcaa'),
                   h('h4', { className: 'text-lg font-black ' + (passed ? 'text-emerald-700' : 'text-amber-700') }, passed ? 'Your Bill Passed!' : 'Your Bill Did Not Pass'),
                   h('p', { className: 'text-sm text-slate-600' }, passed ? 'Congratulations! Your coalition-building and strong committee answers made the difference. This is how democracy works.' : 'Your bill fell short of 51%. Consider building a broader coalition and preparing stronger evidence next time. Many great bills take multiple attempts to pass.'),
                   h('button', { 'aria-label': 'Complete Simulation',
@@ -1459,13 +1520,13 @@ window.SelHub = window.SelHub || {
                   totalHe += p.options[ci].impact.health;
                 }
               });
-              return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-gradient-to-r from-teal-50 to-emerald-50 rounded-2xl border-2 border-teal-200 p-6 text-center space-y-4' },
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-4xl' }, '\ud83c\udfdb\ufe0f'),
+              return h('div', { className: 'bg-gradient-to-r from-teal-50 to-emerald-50 rounded-2xl border-2 border-teal-200 p-6 text-center space-y-4' },
+                h('div', { className: 'text-4xl' }, '\ud83c\udfdb\ufe0f'),
                 h('h4', { className: 'text-lg font-black text-slate-800' }, 'School Council Results!'),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex justify-center gap-6' },
-                  h('div', null, h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-2xl' }, '\ud83d\ude0a'), h('div', { className: 'text-sm font-bold ' + (totalH >= 0 ? 'text-emerald-600' : 'text-red-500') }, (totalH >= 0 ? '+' : '') + totalH), h('div', { className: 'text-[10px] text-slate-600' }, 'Happiness')),
-                  h('div', null, h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-2xl' }, '\ud83d\udcda'), h('div', { className: 'text-sm font-bold ' + (totalL >= 0 ? 'text-emerald-600' : 'text-red-500') }, (totalL >= 0 ? '+' : '') + totalL), h('div', { className: 'text-[10px] text-slate-600' }, 'Learning')),
-                  h('div', null, h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-2xl' }, '\ud83d\udc9a'), h('div', { className: 'text-sm font-bold ' + (totalHe >= 0 ? 'text-emerald-600' : 'text-red-500') }, (totalHe >= 0 ? '+' : '') + totalHe), h('div', { className: 'text-[10px] text-slate-600' }, 'Health'))
+                h('div', { className: 'flex justify-center gap-6' },
+                  h('div', null, h('div', { className: 'text-2xl' }, '\ud83d\ude0a'), h('div', { className: 'text-sm font-bold ' + (totalH >= 0 ? 'text-emerald-600' : 'text-red-500') }, (totalH >= 0 ? '+' : '') + totalH), h('div', { className: 'text-[10px] text-slate-600' }, 'Happiness')),
+                  h('div', null, h('div', { className: 'text-2xl' }, '\ud83d\udcda'), h('div', { className: 'text-sm font-bold ' + (totalL >= 0 ? 'text-emerald-600' : 'text-red-500') }, (totalL >= 0 ? '+' : '') + totalL), h('div', { className: 'text-[10px] text-slate-600' }, 'Learning')),
+                  h('div', null, h('div', { className: 'text-2xl' }, '\ud83d\udc9a'), h('div', { className: 'text-sm font-bold ' + (totalHe >= 0 ? 'text-emerald-600' : 'text-red-500') }, (totalHe >= 0 ? '+' : '') + totalHe), h('div', { className: 'text-[10px] text-slate-600' }, 'Health'))
                 ),
                 h('p', { className: 'text-sm text-slate-600' }, 'Every decision has trade-offs. Great civic leaders think about how their choices affect everyone, not just themselves.'),
                 h('button', { 'aria-label': 'Try Again',
@@ -1490,10 +1551,10 @@ window.SelHub = window.SelHub || {
                   var isLow = val < 100000;
                   var isHigh = val > 250000;
                   var reaction = isHigh ? reactions[cat.id].high : (isLow ? reactions[cat.id].low : 'Adequate funding maintains current service levels. The community accepts this allocation.');
-                  return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: cat.id, className: 'bg-white rounded-xl border p-3 ' + (isHigh ? 'border-emerald-300' : isLow ? 'border-red-300' : 'border-slate-200') },
-                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex justify-between' },
-                      h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-slate-700' }, cat.label),
-                      h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-teal-600' }, '$' + val.toLocaleString())
+                  return h('div', { key: cat.id, className: 'bg-white rounded-xl border p-3 ' + (isHigh ? 'border-emerald-300' : isLow ? 'border-red-300' : 'border-slate-200') },
+                    h('div', { className: 'flex justify-between' },
+                      h('span', { className: 'text-xs font-bold text-slate-700' }, cat.label),
+                      h('span', { className: 'text-xs font-bold text-teal-600' }, '$' + val.toLocaleString())
                     ),
                     h('p', { className: 'text-xs text-slate-600 mt-1 leading-relaxed' }, reaction)
                   );
@@ -1508,8 +1569,8 @@ window.SelHub = window.SelHub || {
 
             // High results (handled in floor vote step above)
             if (gradeBand === 'high') {
-              return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl border-2 border-indigo-200 p-6 text-center space-y-4' },
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-4xl' }, '\ud83c\udfdb\ufe0f'),
+              return h('div', { className: 'bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl border-2 border-indigo-200 p-6 text-center space-y-4' },
+                h('div', { className: 'text-4xl' }, '\ud83c\udfdb\ufe0f'),
                 h('h4', { className: 'text-lg font-black text-slate-800' }, 'Legislative Simulation Complete!'),
                 h('p', { className: 'text-sm text-slate-600' }, 'You experienced the full legislative process: drafting, coalition-building, committee testimony, and the floor vote. Real democracy requires patience, persuasion, and persistence.'),
                 h('button', { 'aria-label': 'Try Again',
@@ -1544,10 +1605,10 @@ window.SelHub = window.SelHub || {
           ),
 
           // Template questions
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-slate-50 rounded-2xl border border-slate-200 p-5 space-y-3' },
+          h('div', { className: 'bg-slate-50 rounded-2xl border border-slate-200 p-5 space-y-3' },
             h('h4', { className: 'text-xs font-bold text-slate-600 uppercase tracking-widest' }, '\ud83d\udccb Template Questions (' + gradeBand + ')'),
             h('p', { className: 'text-[10px] text-slate-600' }, 'Click to add a template question to your survey.'),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-2' },
+            h('div', { className: 'space-y-2' },
               surveyTemplates.map(function(tmpl, ti) {
                 var alreadyAdded = surveyQuestions.some(function(sq) { return sq.q === tmpl.q; });
                 return h('button', { 'aria-label': 'Added',
@@ -1571,7 +1632,7 @@ window.SelHub = window.SelHub || {
           ),
 
           // Custom question builder
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-2xl border-2 border-amber-200 p-5 space-y-3' },
+          h('div', { className: 'bg-white rounded-2xl border-2 border-amber-200 p-5 space-y-3' },
             h('h4', { className: 'text-xs font-bold text-amber-700 uppercase tracking-widest' }, '\u270d\ufe0f Write Your Own Question'),
             h('input', {
               type: 'text',
@@ -1581,7 +1642,7 @@ window.SelHub = window.SelHub || {
               className: 'w-full text-sm p-2.5 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-amber-300',
               'aria-label': 'Custom survey question'
             }),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2' },
+            h('div', { className: 'flex gap-2' },
               h('button', { 'aria-label': 'Open-ended',
                 onClick: function() { upd('surveyCustomType', 'open'); },
                 className: 'px-3 py-1.5 rounded-lg text-[10px] font-bold border ' + (surveyCustomType === 'open' ? 'bg-amber-700 text-white border-amber-600' : 'bg-white text-slate-600 border-slate-300')
@@ -1614,14 +1675,14 @@ window.SelHub = window.SelHub || {
           ),
 
           // Current survey preview
-          surveyQuestions.length > 0 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-gradient-to-r from-teal-50 to-emerald-50 rounded-2xl border-2 border-teal-200 p-5 space-y-3' },
+          surveyQuestions.length > 0 && h('div', { className: 'bg-gradient-to-r from-teal-50 to-emerald-50 rounded-2xl border-2 border-teal-200 p-5 space-y-3' },
             h('h4', { className: 'text-xs font-bold text-teal-700 uppercase tracking-widest' }, '\ud83d\udcdd Your Survey (' + surveyQuestions.length + ' questions)'),
             surveyQuestions.map(function(sq, si) {
-              return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: si, className: 'bg-white rounded-xl border border-teal-200 p-3 flex justify-between items-start' },
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex-1' },
+              return h('div', { key: si, className: 'bg-white rounded-xl border border-teal-200 p-3 flex justify-between items-start' },
+                h('div', { className: 'flex-1' },
                   h('p', { className: 'text-xs font-bold text-slate-800' }, (si + 1) + '. ' + sq.q),
-                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-600' }, sq.type === 'choice' ? 'Choices: ' + (sq.options || []).join(', ') : 'Open-ended response'),
-                  sq.custom && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-amber-500 ml-2 font-bold' }, '(custom)')
+                  h('span', { className: 'text-[10px] text-slate-600' }, sq.type === 'choice' ? 'Choices: ' + (sq.options || []).join(', ') : 'Open-ended response'),
+                  sq.custom && h('span', { className: 'text-[10px] text-amber-500 ml-2 font-bold' }, '(custom)')
                 ),
                 h('button', {
                   onClick: function() {
@@ -1635,7 +1696,7 @@ window.SelHub = window.SelHub || {
             }),
 
             // Export survey
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 mt-2' },
+            h('div', { className: 'flex gap-2 mt-2' },
               h('button', { 'aria-label': 'Export survey',
                 onClick: function() {
                   var text = '=== ' + (surveyTitle || 'Community Survey') + ' ===\n\n';
@@ -1681,120 +1742,262 @@ window.SelHub = window.SelHub || {
           )
         ),
 
-        // ═══ RIGHTS & RESPONSIBILITIES EXPLORER (NEW) ═══
-        tab === 'rights' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4' },
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-center mb-2' },
+        // ═══ RIGHTS & DISSENT (sections-aware; flat fallback for elementary/high) ═══
+        tab === 'rights' && h('div', { className: 'space-y-4' },
+          h('div', { className: 'text-center mb-2' },
             h('h3', { className: 'text-lg font-black text-slate-800' }, '\ud83d\udcdc ' + rightsInfo.title),
             h('p', { className: 'text-sm text-slate-600' }, rightsInfo.intro)
           ),
 
-          // Rights navigation
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-1 bg-slate-50 rounded-xl p-1 border border-slate-200 overflow-x-auto' },
-            rightsInfo.rights.map(function(r, ri) {
-              var isExplored = rightsExplored.indexOf(ri) !== -1;
-              return h('button', { 'aria-label': r.icon + ' ' + (ri + 1),
-                key: ri,
-                onClick: function() {
-                  upd('rightsIdx', ri);
-                  if (rightsExplored.indexOf(ri) === -1) {
-                    var newExplored = rightsExplored.concat([ri]);
-                    upd('rightsExplored', newExplored);
-                    ctx.awardXP(5);
-                    if (newExplored.length >= rightsInfo.rights.length) {
-                      awardBadge('rights_scholar');
-                    }
-                  }
-                },
-                className: 'flex-1 px-2 py-2 rounded-lg text-[10px] font-bold transition-all whitespace-nowrap ' +
-                  (rightsIdx === ri ? 'bg-white text-indigo-700 shadow-sm' : isExplored ? 'text-emerald-600/70' : 'text-slate-500/60 hover:text-slate-700')
-              }, r.icon + ' ' + (ri + 1));
-            })
-          ),
+          // Two-level nav (sections + items) when rightsInfo.sections exists; flat fallback otherwise
+          rightsInfo.sections ? (function() {
+            var sections = rightsInfo.sections;
+            var activeSection = null;
+            var activeSectionIdx = 0;
+            for (var si = 0; si < sections.length; si++) {
+              if (sections[si].id === rightsSection) { activeSection = sections[si]; activeSectionIdx = si; break; }
+            }
+            if (!activeSection) { activeSection = sections[0]; activeSectionIdx = 0; }
+            var sectionExplored = (rightsExploredBySection && rightsExploredBySection[activeSection.id]) || [];
+            var item = activeSection.items[rightsIdx] || activeSection.items[0];
+            var totalItems = 0; for (var t = 0; t < sections.length; t++) totalItems += sections[t].items.length;
+            var totalExplored = 0;
+            for (var k in rightsExploredBySection) {
+              if (Object.prototype.hasOwnProperty.call(rightsExploredBySection, k)) {
+                totalExplored += (rightsExploredBySection[k] || []).length;
+              }
+            }
+            var allExplored = totalExplored >= totalItems;
 
-          // Current right detail
-          (function() {
-            var right = rightsInfo.rights[rightsIdx];
-            if (!right) return null;
-            return h('div', { className: 'space-y-4' },
-              // Right card
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-2xl border-2 border-indigo-200 p-5 space-y-4' },
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-3' },
-                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-3xl' }, right.icon),
-                  h('h4', { className: 'text-sm font-bold text-indigo-700' }, right.right)
+            return h('div', { className: 'space-y-3' },
+              // Section pills (top-level nav)
+              h('div', { className: 'flex gap-1 bg-slate-50 rounded-xl p-1 border border-slate-200 overflow-x-auto', role: 'tablist', 'aria-label': 'Rights & Dissent sections' },
+                sections.map(function(s, si) {
+                  var sExplored = (rightsExploredBySection && rightsExploredBySection[s.id]) || [];
+                  var sectionDone = sExplored.length >= s.items.length;
+                  var isActive = s.id === activeSection.id;
+                  return h('button', {
+                    key: s.id,
+                    role: 'tab',
+                    'aria-selected': isActive,
+                    'aria-label': s.label + (sectionDone ? ' (complete)' : ''),
+                    onClick: function() { updMulti({ rightsSection: s.id, rightsIdx: 0, rightsScenarioAnswer: '' }); },
+                    className: 'flex-1 px-2 py-2 rounded-lg text-[10px] font-bold transition-all whitespace-nowrap ' +
+                      (isActive ? 'bg-white text-indigo-700 shadow-sm' : sectionDone ? 'text-emerald-600/70' : 'text-slate-500 hover:text-slate-700')
+                  }, s.icon + ' ' + s.label);
+                })
+              ),
+
+              // Section intro
+              h('p', { className: 'text-xs text-slate-600 italic px-1' }, activeSection.intro),
+
+              // Item pills (second-level nav within active section)
+              h('div', { className: 'flex gap-1 bg-indigo-50/50 rounded-lg p-1 border border-indigo-100 overflow-x-auto' },
+                activeSection.items.map(function(it, ii) {
+                  var isExplored = sectionExplored.indexOf(ii) !== -1;
+                  var isCurrent = rightsIdx === ii;
+                  return h('button', {
+                    key: it.id,
+                    'aria-label': it.title + (isExplored ? ' (explored)' : ''),
+                    onClick: function() {
+                      updMulti({ rightsIdx: ii, rightsScenarioAnswer: '' });
+                      if (sectionExplored.indexOf(ii) === -1) {
+                        var newSec = sectionExplored.concat([ii]);
+                        var newMap = Object.assign({}, rightsExploredBySection);
+                        newMap[activeSection.id] = newSec;
+                        upd('rightsExploredBySection', newMap);
+                        ctx.awardXP(5);
+                        var newTotal = totalExplored + 1;
+                        if (newTotal >= totalItems) {
+                          awardBadge('rights_scholar');
+                          ctx.awardXP(15);
+                          addToast('You have explored all sections of Rights & Dissent!', 'success');
+                          ctx.celebrate();
+                        }
+                      }
+                    },
+                    className: 'flex-shrink-0 px-3 py-1.5 rounded-md text-[10px] font-bold transition-all whitespace-nowrap ' +
+                      (isCurrent ? 'bg-white text-indigo-700 shadow-sm border border-indigo-200' : isExplored ? 'text-emerald-600/70' : 'text-slate-400 hover:text-slate-700')
+                  }, it.icon + ' ' + (ii + 1));
+                })
+              ),
+
+              // Item card
+              item && h('div', { className: 'bg-white rounded-2xl border-2 border-indigo-200 p-5 space-y-3' },
+                h('div', { className: 'flex items-start gap-3' },
+                  h('span', { className: 'text-3xl flex-shrink-0' }, item.icon),
+                  h('div', { className: 'flex-1' },
+                    h('h4', { className: 'text-sm font-bold text-indigo-700' }, item.title + (item.year ? ' (' + item.year + ')' : '')),
+                    item.summary && h('p', { className: 'text-xs text-slate-500 italic mt-0.5' }, item.summary)
+                  )
                 ),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-indigo-50 rounded-xl p-4 border border-indigo-200' },
-                  h('h5', { className: 'text-[10px] font-bold text-indigo-600 uppercase tracking-widest mb-1' }, 'What This Means'),
-                  h('p', { className: 'text-sm text-slate-700 leading-relaxed' }, right.explain)
+                h('div', { className: 'bg-indigo-50 rounded-xl p-4 border border-indigo-200' },
+                  h('p', { className: 'text-sm text-slate-700 leading-relaxed' }, item.body)
                 ),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-emerald-50 rounded-xl p-4 border border-emerald-200' },
-                  h('h5', { className: 'text-[10px] font-bold text-emerald-600 uppercase tracking-widest mb-1' }, 'Your Responsibility'),
-                  h('p', { className: 'text-sm text-slate-700 leading-relaxed' }, right.responsibility)
+                item.primarySource && h('div', { className: 'text-[10px] text-slate-500 px-1' },
+                  h('span', { className: 'font-bold uppercase tracking-widest text-slate-400 mr-1' }, 'Primary source:'),
+                  item.primarySource
                 ),
-                callTTS && h('button', { 'aria-label': 'Hear this read aloud',
-                  onClick: function() { callTTS(right.right + '. ' + right.explain + '. Your responsibility: ' + right.responsibility); },
+                callTTS && h('button', {
+                  'aria-label': 'Hear this read aloud',
+                  onClick: function() { callTTS(item.title + '. ' + item.body); },
                   className: 'text-[10px] text-indigo-500 hover:text-indigo-700 font-bold'
                 }, '\ud83d\udd0a Hear this read aloud')
               ),
 
-              // Scenario
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-amber-50 rounded-2xl border-2 border-amber-200 p-5 space-y-3' },
-                h('h5', { className: 'text-xs font-bold text-amber-700' }, '\ud83e\udd14 What Would You Do?'),
-                h('p', { className: 'text-sm text-slate-700 leading-relaxed italic' }, right.scenario),
+              // Scenario / reflection prompt (only if item has scenario)
+              item && item.scenario && h('div', { className: 'bg-amber-50 rounded-2xl border-2 border-amber-200 p-5 space-y-3' },
+                h('h5', { className: 'text-xs font-bold text-amber-700' }, '\ud83e\udd14 ' + (activeSection.id === 'reflection' ? 'Reflect' : 'What do you think?')),
+                h('p', { className: 'text-sm text-slate-700 leading-relaxed italic' }, item.scenario),
                 h('textarea', {
                   value: rightsScenarioAnswer,
                   onChange: function(e) { upd('rightsScenarioAnswer', e.target.value); },
-                  placeholder: 'Write your response here. Think about rights and responsibilities...',
-                  className: 'w-full text-sm p-3 border border-amber-200 rounded-lg resize-none h-20 outline-none focus:ring-2 focus:ring-amber-300',
-                  'aria-label': 'Your response to the scenario'
+                  placeholder: 'Write your response here.',
+                  className: 'w-full text-sm p-3 border border-amber-200 rounded-lg resize-none h-24 outline-none focus:ring-2 focus:ring-amber-300',
+                  'aria-label': 'Your response to the prompt'
                 }),
-                rightsScenarioAnswer && rightsScenarioAnswer.length > 15 && callGemini && h('button', { 'aria-label': 'Previous Right',
+                rightsScenarioAnswer && rightsScenarioAnswer.length > 15 && callGemini && h('button', {
+                  'aria-label': 'Get feedback on your response',
                   onClick: function() {
                     upd('aiLoading', true);
-                    var prompt = 'You are a civic education teacher for ' + (gradeLevel || '5th grade') + ' students. A student was asked this scenario about rights: "' + right.scenario + '" They responded: "' + rightsScenarioAnswer + '". Give brief, encouraging feedback (2-3 sentences). Highlight their good reasoning and gently suggest any perspectives they might have missed. Be warm and supportive.';
+                    var prompt = 'You are a civic education teacher for ' + (gradeLevel || 'middle school') + ' students. The student is studying the section "' + activeSection.label + '" and was given this prompt about "' + item.title + '": "' + item.scenario + '" They responded: "' + rightsScenarioAnswer + '". Give brief, encouraging feedback (2-3 sentences). Highlight their reasoning. Stay historical and nonpartisan; do not endorse current political positions. Be warm and specific.';
                     callGemini(prompt).then(function(resp) {
                       updMulti({ aiResponse: resp, aiLoading: false });
                       ctx.awardXP(5);
                     }).catch(function() { upd('aiLoading', false); });
                   },
                   disabled: aiLoading,
-                  className: 'px-4 py-2 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-700 disabled:opacity-40 flex items-center gap-2'
-                }, h(Sparkles, { size: 14 }), aiLoading ? 'Thinking...' : '\ud83d\udcac Get Feedback on Your Response')
+                  className: 'px-4 py-2 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-800 disabled:opacity-40 flex items-center gap-2'
+                }, h(Sparkles, { size: 14 }), aiLoading ? 'Thinking...' : '\ud83d\udcac Get Feedback')
               ),
 
-              // Navigation between rights
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex justify-between' },
-                rightsIdx > 0 ? h('button', { 'aria-label': 'Previous Right',
+              // Item-level prev/next + section progress
+              h('div', { className: 'flex justify-between items-center pt-1' },
+                rightsIdx > 0 ? h('button', {
+                  'aria-label': 'Previous item',
                   onClick: function() { updMulti({ rightsIdx: rightsIdx - 1, rightsScenarioAnswer: '' }); },
-                  className: 'px-4 py-2 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50'
-                }, '\u2190 Previous Right') : h('div'),
-                rightsIdx < rightsInfo.rights.length - 1 ? h('button', { 'aria-label': 'Next Right',
+                  className: 'px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50'
+                }, '\u2190 Previous') : h('div'),
+                h('div', { className: 'text-[10px] text-slate-400 font-bold' }, totalExplored + ' / ' + totalItems + ' explored'),
+                rightsIdx < activeSection.items.length - 1 ? h('button', {
+                  'aria-label': 'Next item',
                   onClick: function() { updMulti({ rightsIdx: rightsIdx + 1, rightsScenarioAnswer: '' }); },
-                  className: 'px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700'
-                }, 'Next Right \u2192') : h('button', { 'aria-label': 'Next Right',
-                  onClick: function() {
-                    awardBadge('rights_scholar');
-                    ctx.awardXP(15);
-                    addToast('You have explored all rights for your grade level!', 'success');
-                    ctx.celebrate();
-                  },
-                  className: 'px-4 py-2 bg-emerald-700 text-white rounded-lg text-xs font-bold hover:bg-emerald-700'
-                }, '\u2728 Complete Rights Explorer')
+                  className: 'px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700'
+                }, 'Next \u2192') : activeSectionIdx < sections.length - 1 ? h('button', {
+                  'aria-label': 'Next section',
+                  onClick: function() { updMulti({ rightsSection: sections[activeSectionIdx + 1].id, rightsIdx: 0, rightsScenarioAnswer: '' }); },
+                  className: 'px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700'
+                }, 'Next Section: ' + sections[activeSectionIdx + 1].label + ' \u2192') : allExplored ? h('button', {
+                  'aria-label': 'Complete',
+                  onClick: function() { awardBadge('rights_scholar'); ctx.awardXP(15); addToast('You have explored all of Rights & Dissent.', 'success'); ctx.celebrate(); },
+                  className: 'px-3 py-1.5 bg-emerald-700 text-white rounded-lg text-xs font-bold hover:bg-emerald-800'
+                }, '\u2728 Complete') : h('div', { className: 'text-[10px] text-slate-400 italic' }, 'Visit every item to finish')
               )
+            );
+          })() : (function() {
+            // ── Flat fallback render for elementary and high bands (unchanged behavior) ──
+            return h('div', { className: 'space-y-4' },
+              h('div', { className: 'flex gap-1 bg-slate-50 rounded-xl p-1 border border-slate-200 overflow-x-auto' },
+                rightsInfo.rights.map(function(r, ri) {
+                  var isExplored = rightsExplored.indexOf(ri) !== -1;
+                  return h('button', { 'aria-label': r.icon + ' ' + (ri + 1),
+                    key: ri,
+                    onClick: function() {
+                      upd('rightsIdx', ri);
+                      if (rightsExplored.indexOf(ri) === -1) {
+                        var newExplored = rightsExplored.concat([ri]);
+                        upd('rightsExplored', newExplored);
+                        ctx.awardXP(5);
+                        if (newExplored.length >= rightsInfo.rights.length) {
+                          awardBadge('rights_scholar');
+                        }
+                      }
+                    },
+                    className: 'flex-1 px-2 py-2 rounded-lg text-[10px] font-bold transition-all whitespace-nowrap ' +
+                      (rightsIdx === ri ? 'bg-white text-indigo-700 shadow-sm' : isExplored ? 'text-emerald-600/70' : 'text-slate-300/60 hover:text-slate-700')
+                  }, r.icon + ' ' + (ri + 1));
+                })
+              ),
+              (function() {
+                var right = rightsInfo.rights[rightsIdx];
+                if (!right) return null;
+                return h('div', { className: 'space-y-4' },
+                  h('div', { className: 'bg-white rounded-2xl border-2 border-indigo-200 p-5 space-y-4' },
+                    h('div', { className: 'flex items-center gap-3' },
+                      h('span', { className: 'text-3xl' }, right.icon),
+                      h('h4', { className: 'text-sm font-bold text-indigo-700' }, right.right)
+                    ),
+                    h('div', { className: 'bg-indigo-50 rounded-xl p-4 border border-indigo-200' },
+                      h('h5', { className: 'text-[10px] font-bold text-indigo-600 uppercase tracking-widest mb-1' }, 'What This Means'),
+                      h('p', { className: 'text-sm text-slate-700 leading-relaxed' }, right.explain)
+                    ),
+                    h('div', { className: 'bg-emerald-50 rounded-xl p-4 border border-emerald-200' },
+                      h('h5', { className: 'text-[10px] font-bold text-emerald-600 uppercase tracking-widest mb-1' }, 'Your Responsibility'),
+                      h('p', { className: 'text-sm text-slate-700 leading-relaxed' }, right.responsibility)
+                    ),
+                    callTTS && h('button', { 'aria-label': 'Hear this read aloud',
+                      onClick: function() { callTTS(right.right + '. ' + right.explain + '. Your responsibility: ' + right.responsibility); },
+                      className: 'text-[10px] text-indigo-500 hover:text-indigo-700 font-bold'
+                    }, '\ud83d\udd0a Hear this read aloud')
+                  ),
+                  h('div', { className: 'bg-amber-50 rounded-2xl border-2 border-amber-200 p-5 space-y-3' },
+                    h('h5', { className: 'text-xs font-bold text-amber-700' }, '\ud83e\udd14 What Would You Do?'),
+                    h('p', { className: 'text-sm text-slate-700 leading-relaxed italic' }, right.scenario),
+                    h('textarea', {
+                      value: rightsScenarioAnswer,
+                      onChange: function(e) { upd('rightsScenarioAnswer', e.target.value); },
+                      placeholder: 'Write your response here. Think about rights and responsibilities...',
+                      className: 'w-full text-sm p-3 border border-amber-200 rounded-lg resize-none h-20 outline-none focus:ring-2 focus:ring-amber-300',
+                      'aria-label': 'Your response to the scenario'
+                    }),
+                    rightsScenarioAnswer && rightsScenarioAnswer.length > 15 && callGemini && h('button', { 'aria-label': 'Get feedback on your response',
+                      onClick: function() {
+                        upd('aiLoading', true);
+                        var prompt = 'You are a civic education teacher for ' + (gradeLevel || '5th grade') + ' students. A student was asked this scenario about rights: "' + right.scenario + '" They responded: "' + rightsScenarioAnswer + '". Give brief, encouraging feedback (2-3 sentences). Highlight their good reasoning and gently suggest any perspectives they might have missed. Be warm and supportive.';
+                        callGemini(prompt).then(function(resp) {
+                          updMulti({ aiResponse: resp, aiLoading: false });
+                          ctx.awardXP(5);
+                        }).catch(function() { upd('aiLoading', false); });
+                      },
+                      disabled: aiLoading,
+                      className: 'px-4 py-2 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-700 disabled:opacity-40 flex items-center gap-2'
+                    }, h(Sparkles, { size: 14 }), aiLoading ? 'Thinking...' : '\ud83d\udcac Get Feedback on Your Response')
+                  ),
+                  h('div', { className: 'flex justify-between' },
+                    rightsIdx > 0 ? h('button', { 'aria-label': 'Previous Right',
+                      onClick: function() { updMulti({ rightsIdx: rightsIdx - 1, rightsScenarioAnswer: '' }); },
+                      className: 'px-4 py-2 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50'
+                    }, '\u2190 Previous Right') : h('div'),
+                    rightsIdx < rightsInfo.rights.length - 1 ? h('button', { 'aria-label': 'Next Right',
+                      onClick: function() { updMulti({ rightsIdx: rightsIdx + 1, rightsScenarioAnswer: '' }); },
+                      className: 'px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700'
+                    }, 'Next Right \u2192') : h('button', { 'aria-label': 'Complete Rights Explorer',
+                      onClick: function() {
+                        awardBadge('rights_scholar');
+                        ctx.awardXP(15);
+                        addToast('You have explored all rights for your grade level!', 'success');
+                        ctx.celebrate();
+                      },
+                      className: 'px-4 py-2 bg-emerald-700 text-white rounded-lg text-xs font-bold hover:bg-emerald-700'
+                    }, '\u2728 Complete Rights Explorer')
+                  )
+                );
+              })()
             );
           })()
         ),
 
         // ═══ SERVICE LEARNING PROJECT PLANNER (NEW) ═══
-        tab === 'service' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4' },
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-center mb-2' },
+        tab === 'service' && h('div', { className: 'space-y-4' },
+          h('div', { className: 'text-center mb-2' },
             h('h3', { className: 'text-lg font-black text-slate-800' }, '\ud83e\udd1d Service Learning Project Planner'),
             h('p', { className: 'text-sm text-slate-600' }, 'Plan a community service project from start to finish. Choose a template or design your own.')
           ),
 
           // Template selection
-          !serviceTemplate && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-3' },
+          !serviceTemplate && h('div', { className: 'space-y-3' },
             h('h4', { className: 'text-xs font-bold text-teal-600 uppercase tracking-widest' }, 'Choose a Project Template'),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
+            h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
               SERVICE_TEMPLATES.map(function(tmpl) {
                 return h('button', { 'aria-label': tmpl.title.split(' ')[0],
                   key: tmpl.id,
@@ -1818,7 +2021,7 @@ window.SelHub = window.SelHub || {
             if (!tmpl) return null;
             var currentPhase = SERVICE_PHASES[servicePhase];
             var currentStep = tmpl.steps[servicePhase];
-            return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4' },
+            return h('div', { className: 'space-y-4' },
               h('button', { 'aria-label': tmpl.title,
                 onClick: function() { updMulti({ serviceTemplate: null, servicePhase: 0, serviceNotes: {}, serviceHours: 0 }); },
                 className: 'text-xs text-teal-600 font-bold hover:text-teal-800 flex items-center gap-1'
@@ -1836,7 +2039,7 @@ window.SelHub = window.SelHub || {
                   return h('div', {
                     key: pi,
                     className: 'flex-1 text-center py-2 rounded-lg text-[10px] font-bold ' +
-                      (isActive ? 'bg-teal-700 text-white' : isDone ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500')
+                      (isActive ? 'bg-teal-700 text-white' : isDone ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-300')
                   }, phase.label);
                 })
               ),
@@ -1861,15 +2064,15 @@ window.SelHub = window.SelHub || {
                 }),
 
                 // Hour tracker
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-amber-50 rounded-xl p-3 border border-amber-200' },
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-between' },
-                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-amber-700' }, '\u23f0 Service Hours Logged'),
-                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2' },
+                h('div', { className: 'bg-amber-50 rounded-xl p-3 border border-amber-200' },
+                  h('div', { className: 'flex items-center justify-between' },
+                    h('span', { className: 'text-xs font-bold text-amber-700' }, '\u23f0 Service Hours Logged'),
+                    h('div', { className: 'flex items-center gap-2' },
                       h('button', { 'aria-label': '-',
                         onClick: function() { if (serviceHours > 0) upd('serviceHours', serviceHours - 0.5); },
                         className: 'w-6 h-6 rounded-full bg-amber-200 text-amber-700 text-xs font-bold hover:bg-amber-300'
                       }, '-'),
-                      h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-sm font-bold text-amber-800 w-10 text-center' }, serviceHours.toFixed(1)),
+                      h('span', { className: 'text-sm font-bold text-amber-800 w-10 text-center' }, serviceHours.toFixed(1)),
                       h('button', { 'aria-label': '+',
                         onClick: function() { upd('serviceHours', serviceHours + 0.5); },
                         className: 'w-6 h-6 rounded-full bg-amber-200 text-amber-700 text-xs font-bold hover:bg-amber-300'
@@ -1880,7 +2083,7 @@ window.SelHub = window.SelHub || {
                 ),
 
                 // Navigation
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex justify-between mt-2' },
+                h('div', { className: 'flex justify-between mt-2' },
                   servicePhase > 0 ? h('button', { 'aria-label': 'Previous Phase',
                     onClick: function() { upd('servicePhase', servicePhase - 1); },
                     className: 'px-4 py-2 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50'
@@ -1916,11 +2119,11 @@ window.SelHub = window.SelHub || {
                   h('div', { className: 'text-[10px] text-slate-600' }, 'Hours Logged')
                 ),
                 h('div', null,
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-2xl font-bold text-teal-700' }, Object.keys(serviceNotes).length),
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-600' }, 'Phases Documented')
+                  h('div', { className: 'text-2xl font-bold text-teal-700' }, Object.keys(serviceNotes).length),
+                  h('div', { className: 'text-[10px] text-slate-600' }, 'Phases Documented')
                 )
               ),
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-xl p-3 border border-teal-200 text-left' },
+              h('div', { className: 'bg-white rounded-xl p-3 border border-teal-200 text-left' },
                 h('h5', { className: 'text-xs font-bold text-slate-700 mb-2' }, 'Impact Measurement'),
                 h('p', { className: 'text-xs text-slate-600' }, '\u2022 People served or impacted: ________'),
                 h('p', { className: 'text-xs text-slate-600' }, '\u2022 Items collected/donated: ________'),
@@ -1959,7 +2162,7 @@ window.SelHub = window.SelHub || {
               // Question card
               h('div', { className: 'bg-white rounded-2xl border-2 border-teal-200 p-5 space-y-4' },
                 h('h4', { className: 'text-sm font-bold text-slate-800' }, question.q),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-2' },
+                h('div', { className: 'space-y-2' },
                   question.options.map(function(opt, oi) {
                     var isCorrect = oi === question.answer;
                     var isChosen = quizAnswer === oi;
@@ -1968,7 +2171,7 @@ window.SelHub = window.SelHub || {
                     if (showResult && isCorrect) btnClass += 'border-emerald-400 bg-emerald-50 text-emerald-800 font-bold';
                     else if (showResult && isChosen && !isCorrect) btnClass += 'border-red-400 bg-red-50 text-red-800';
                     else if (!showResult) btnClass += 'border-slate-200 bg-white hover:border-teal-300 hover:bg-teal-50 text-slate-700';
-                    else btnClass += 'border-slate-200 bg-slate-50 text-slate-500';
+                    else btnClass += 'border-slate-200 bg-slate-50 text-slate-300';
                     return h('button', { 'aria-label': '\ud83d\udca1 ' + question.explain,
                       key: oi,
                       disabled: quizAnswered,
@@ -1981,14 +2184,14 @@ window.SelHub = window.SelHub || {
                       className: btnClass
                     },
                       h('span', null, String.fromCharCode(65 + oi) + '. ' + opt),
-                      showResult && isCorrect && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] ml-1 font-bold' }, ' \u2714'),
-                      showResult && isChosen && !isCorrect && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] ml-1 font-bold' }, ' \u2718')
+                      showResult && isCorrect && h('span', { className: 'text-[10px] ml-1 font-bold' }, ' \u2714'),
+                      showResult && isChosen && !isCorrect && h('span', { className: 'text-[10px] ml-1 font-bold' }, ' \u2718')
                     );
                   })
                 ),
 
                 // Explanation
-                quizAnswered && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-blue-50 border border-blue-200 rounded-xl p-3 mt-2' },
+                quizAnswered && h('div', { className: 'bg-blue-50 border border-blue-200 rounded-xl p-3 mt-2' },
                   h('p', { className: 'text-xs text-blue-800 leading-relaxed' }, '\ud83d\udca1 ' + question.explain)
                 ),
 
@@ -2009,8 +2212,8 @@ window.SelHub = window.SelHub || {
           })(),
 
           // Quiz results
-          quizDone && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-gradient-to-r from-teal-50 to-emerald-50 rounded-2xl border-2 border-teal-200 p-6 text-center space-y-4' },
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-4xl' }, quizScore === quizQuestions.length ? '\ud83c\udfc6' : quizScore >= quizQuestions.length * 0.7 ? '\ud83c\udf1f' : '\ud83d\udcaa'),
+          quizDone && h('div', { className: 'bg-gradient-to-r from-teal-50 to-emerald-50 rounded-2xl border-2 border-teal-200 p-6 text-center space-y-4' },
+            h('div', { className: 'text-4xl' }, quizScore === quizQuestions.length ? '\ud83c\udfc6' : quizScore >= quizQuestions.length * 0.7 ? '\ud83c\udf1f' : '\ud83d\udcaa'),
             h('h4', { className: 'text-lg font-black text-slate-800' }, 'Quiz Complete!'),
             h('p', { className: 'text-2xl font-bold text-teal-700' }, quizScore + ' / ' + quizQuestions.length),
             h('p', { className: 'text-sm text-slate-600' },
@@ -2048,7 +2251,7 @@ window.SelHub = window.SelHub || {
                 h('h4', { className: 'text-sm font-bold text-indigo-700' }, '\ud83c\udfac ' + scenario.title),
                 h('p', { className: 'text-sm text-slate-700 leading-relaxed' }, scenario.setup),
 
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-2 mt-3' },
+                h('div', { className: 'space-y-2 mt-3' },
                   scenario.choices.map(function(choice, ci) {
                     var isChosen = scenarioChoice === ci;
                     var showResult = scenarioChosen;
@@ -2057,8 +2260,8 @@ window.SelHub = window.SelHub || {
                     var btnClass = 'w-full p-3 rounded-xl border-2 text-left text-sm transition-all ';
                     if (showResult && isChosen) btnClass += choice.score >= 4 ? 'border-emerald-400 bg-emerald-50' : choice.score >= 3 ? 'border-amber-400 bg-amber-50' : 'border-red-300 bg-red-50';
                     else if (!showResult) btnClass += 'border-slate-200 bg-white hover:border-indigo-300 hover:bg-indigo-50';
-                    else btnClass += 'border-slate-200 bg-slate-50 text-slate-500';
-                    return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: ci },
+                    else btnClass += 'border-slate-200 bg-slate-50 text-slate-300';
+                    return h('div', { key: ci },
                       h('button', { 'aria-label': choice.text,
                         disabled: scenarioChosen,
                         onClick: function() {
@@ -2069,8 +2272,8 @@ window.SelHub = window.SelHub || {
                         },
                         className: btnClass
                       }, choice.text),
-                      showResult && isChosen && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-1 ml-2 space-y-1' },
-                        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs text-amber-600 font-bold' }, 'Effectiveness: ' + stars),
+                      showResult && isChosen && h('div', { className: 'mt-1 ml-2 space-y-1' },
+                        h('div', { className: 'text-xs text-amber-600 font-bold' }, 'Effectiveness: ' + stars),
                         h('p', { className: 'text-xs text-slate-600 leading-relaxed' }, choice.feedback)
                       )
                     );
@@ -2093,8 +2296,8 @@ window.SelHub = window.SelHub || {
           })(),
 
           // Scenario results
-          scenarioDone && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl border-2 border-indigo-200 p-6 text-center space-y-4' },
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-4xl' }, '\ud83c\udfc5'),
+          scenarioDone && h('div', { className: 'bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl border-2 border-indigo-200 p-6 text-center space-y-4' },
+            h('div', { className: 'text-4xl' }, '\ud83c\udfc5'),
             h('h4', { className: 'text-lg font-black text-slate-800' }, 'Scenarios Complete!'),
             h('p', { className: 'text-2xl font-bold text-indigo-700' }, scenarioScore + ' / ' + (scenarios.length * 5) + ' points'),
             h('p', { className: 'text-sm text-slate-600' },
@@ -2154,7 +2357,7 @@ window.SelHub = window.SelHub || {
           ),
 
           // Vision exercise
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-gradient-to-r from-amber-50 to-rose-50 rounded-2xl border border-amber-200 p-5' },
+          h('div', { className: 'bg-gradient-to-r from-amber-50 to-rose-50 rounded-2xl border border-amber-200 p-5' },
             h('h4', { className: 'text-sm font-bold text-amber-700 mb-2' }, '\ud83d\udd2e Your Vision for the Future'),
             h('p', { className: 'text-xs text-slate-600 mb-3' }, 'Close your eyes for a moment. Imagine the world you want to live in 20 years from now. What does it look like?'),
             h('textarea', {
@@ -2185,11 +2388,11 @@ window.SelHub = window.SelHub || {
         ),
 
         // ── AI Response ──
-        aiResponse && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-teal-50 border border-teal-200 rounded-xl p-4' },
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-start gap-2' },
+        aiResponse && h('div', { className: 'bg-teal-50 border border-teal-200 rounded-xl p-4' },
+          h('div', { className: 'flex items-start gap-2' },
             h(Heart, { size: 14, className: 'text-teal-500 mt-0.5 shrink-0' }),
             h('div', null,
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold text-teal-600 uppercase tracking-widest mb-1' }, 'Counselor'),
+              h('div', { className: 'text-[10px] font-bold text-teal-600 uppercase tracking-widest mb-1' }, 'Counselor'),
               h('p', { className: 'text-sm text-teal-800 leading-relaxed' }, aiResponse)
             )
           ),

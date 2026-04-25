@@ -194,7 +194,7 @@ window.SelHub = window.SelHub || {
             var a = activeTab === t.id;
             var explored = !!exploredTabs[t.id];
             return h('button', { key: t.id, role: 'tab', className: 'sel-tab' + (a ? ' sel-tab-active' : ''), 'aria-selected': a ? 'true' : 'false', onClick: function() { upd('activeTab', t.id); if (soundOn) sfxClick(); },
-              style: { padding: '6px 14px', borderRadius: '10px', border: a ? 'none' : '1px solid ' + (explored ? '#bfdbfe' : 'transparent'), background: a ? 'linear-gradient(135deg, ' + BLUE + ', #1d4ed8)' : explored ? 'rgba(37,99,235,0.06)' : 'transparent', color: a ? '#fff' : explored ? '#1e3a8a' : '#6b7280', fontWeight: a ? 700 : 500, fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', whiteSpace: 'nowrap', boxShadow: a ? '0 3px 12px rgba(37,99,235,0.35), inset 0 1px 0 rgba(255,255,255,0.2)' : 'none' }
+              style: { padding: '6px 14px', borderRadius: '10px', border: a ? 'none' : '1px solid ' + (explored ? '#bfdbfe' : 'transparent'), background: a ? 'linear-gradient(135deg, ' + BLUE + ', #1d4ed8)' : explored ? 'rgba(37,99,235,0.06)' : 'transparent', color: a ? '#fff' : explored ? '#1e3a8a' : '#94a3b8', fontWeight: a ? 700 : 500, fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', whiteSpace: 'nowrap', boxShadow: a ? '0 3px 12px rgba(37,99,235,0.35), inset 0 1px 0 rgba(255,255,255,0.2)' : 'none' }
             }, h('span', { className: a ? 'sel-hero-icon' : '', 'aria-hidden': 'true' }, t.icon), t.label,
               explored && !a ? h('span', { style: { width: '5px', height: '5px', borderRadius: '50%', background: '#60a5fa', marginLeft: '2px' } }) : null
             );
@@ -213,7 +213,7 @@ window.SelHub = window.SelHub || {
           h('div', { className: 'sel-hero', style: { textAlign: 'center', marginBottom: '20px' } },
             h('div', { className: 'sel-hero-icon', style: { fontSize: '52px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(37,99,235,0.3))' } }, '\uD83D\uDC65'),
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: BD, margin: '0 0 4px' } }, 'Understanding the Three Roles'),
-            h('p', { style: { fontSize: '13px', color: '#6b7280', margin: 0 } }, 'Every bullying situation has three roles. Understanding all three is how we break the pattern.')
+            h('p', { style: { fontSize: '13px', color: '#94a3b8', margin: 0 } }, 'Every bullying situation has three roles. Understanding all three is how we break the pattern.')
           ),
           // Role selector
           h('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center', marginBottom: '16px' } },
@@ -235,7 +235,7 @@ window.SelHub = window.SelHub || {
             ),
             // What they feel
             h('div', { style: { marginBottom: '12px' } },
-              h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#6b7280', marginBottom: '6px' } }, 'What they might feel:'),
+              h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#94a3b8', marginBottom: '6px' } }, 'What they might feel:'),
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '4px' } },
                 cur.feels.map(function(f) {
                   return h('span', { key: f, style: { padding: '3px 10px', background: '#fff', border: '1px solid ' + cur.color + '66', borderRadius: '20px', fontSize: '11px', color: '#374151' } }, f);
@@ -265,7 +265,7 @@ window.SelHub = window.SelHub || {
           h('div', { className: 'sel-hero', style: { textAlign: 'center', marginBottom: '20px' } },
             h('div', { className: 'sel-hero-icon', style: { fontSize: '52px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(37,99,235,0.3))' } }, '\uD83E\uDDF1'),
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: BD, margin: '0 0 4px' } }, 'Upstander Moves'),
-            h('p', { style: { fontSize: '13px', color: '#6b7280', margin: 0 } }, 'Concrete actions you can take. Each one has a different level of risk \u2014 start where you feel safe.')
+            h('p', { style: { fontSize: '13px', color: '#94a3b8', margin: 0 } }, 'Concrete actions you can take. Each one has a different level of risk \u2014 start where you feel safe.')
           ),
           // Move card
           h('div', { style: { background: '#fff', borderRadius: '16px', padding: '24px', border: '1px solid #e5e7eb', boxShadow: '0 4px 20px rgba(0,0,0,0.06)', marginBottom: '16px' } },
@@ -280,7 +280,7 @@ window.SelHub = window.SelHub || {
           ),
           h('div', { style: { display: 'flex', justifyContent: 'center', gap: '8px' } },
             h('button', { onClick: function() { upd('moveIdx', (moveIdx - 1 + moves.length) % moves.length); }, 'aria-label': 'Previous move', style: { padding: '8px 16px', background: '#fff', border: '2px solid #e5e7eb', borderRadius: '10px', cursor: 'pointer', fontWeight: 600, fontSize: '13px', color: '#374151' } }, '\u2190 Prev'),
-            h('span', { style: { display: 'flex', alignItems: 'center', fontSize: '12px', color: '#6b7280' } }, (moveIdx % moves.length + 1) + ' / ' + moves.length),
+            h('span', { style: { display: 'flex', alignItems: 'center', fontSize: '12px', color: '#94a3b8' } }, (moveIdx % moves.length + 1) + ' / ' + moves.length),
             h('button', { onClick: function() { upd('moveIdx', (moveIdx + 1) % moves.length); if (soundOn) sfxClick(); }, 'aria-label': 'Next move', style: { padding: '8px 16px', background: BLUE, border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 600, fontSize: '13px', color: '#fff' } }, 'Next \u2192')
           )
         );
@@ -294,7 +294,7 @@ window.SelHub = window.SelHub || {
           h('div', { className: 'sel-hero', style: { textAlign: 'center', marginBottom: '20px' } },
             h('div', { className: 'sel-hero-icon', style: { fontSize: '52px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(37,99,235,0.3))' } }, '\uD83D\uDD17'),
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: BD, margin: '0 0 4px' } }, 'Breaking the Cycle'),
-            h('p', { style: { fontSize: '13px', color: '#6b7280', margin: 0 } }, 'How harm flows, why punishment fails, and what actually works.')
+            h('p', { style: { fontSize: '13px', color: '#94a3b8', margin: 0 } }, 'How harm flows, why punishment fails, and what actually works.')
           ),
           h('div', { style: { display: 'flex', flexDirection: 'column', gap: '12px' } },
             breakers.map(function(b, i) {
@@ -320,7 +320,7 @@ window.SelHub = window.SelHub || {
           h('div', { className: 'sel-hero', style: { textAlign: 'center', marginBottom: '20px' } },
             h('div', { className: 'sel-hero-icon', style: { fontSize: '52px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(37,99,235,0.3))' } }, '\u270D\uFE0F'),
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: BD, margin: '0 0 4px' } }, 'My Upstander Pledge'),
-            h('p', { style: { fontSize: '13px', color: '#6b7280', margin: 0 } },
+            h('p', { style: { fontSize: '13px', color: '#94a3b8', margin: 0 } },
               band === 'elementary' ? 'Write a promise to yourself about how you\u2019ll act when you see bullying.'
               : 'Define who you want to be in the face of cruelty. Not who you think you should be \u2014 who you choose to be.')
           ),
@@ -341,8 +341,8 @@ window.SelHub = window.SelHub || {
                 h('div', { style: { fontSize: '32px', marginBottom: '10px' } }, '\uD83E\uDDF1'),
                 h('div', { style: { fontSize: '13px', fontStyle: 'italic', color: BD, marginBottom: '6px' } }, 'I pledge to...'),
                 h('p', { style: { fontSize: '16px', fontWeight: 600, color: '#1f2937', lineHeight: 1.7, fontFamily: 'Georgia, serif', margin: '0 0 16px' } }, pledge),
-                h('div', { style: { fontSize: '12px', color: '#6b7280' } }, 'Signed by you. Witnessed by your courage.'),
-                h('button', { onClick: function() { upd('pledgeSaved', false); }, style: { marginTop: '12px', background: 'none', border: 'none', color: '#6b7280', fontSize: '11px', cursor: 'pointer', textDecoration: 'underline' } }, 'Edit pledge')
+                h('div', { style: { fontSize: '12px', color: '#94a3b8' } }, 'Signed by you. Witnessed by your courage.'),
+                h('button', { onClick: function() { upd('pledgeSaved', false); }, style: { marginTop: '12px', background: 'none', border: 'none', color: '#94a3b8', fontSize: '11px', cursor: 'pointer', textDecoration: 'underline' } }, 'Edit pledge')
               )
         );
       }
@@ -398,7 +398,7 @@ window.SelHub = window.SelHub || {
             h('div', { style: { textAlign: 'center', marginBottom: '16px' } },
               h('div', { className: 'sel-hero-icon', style: { fontSize: '52px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(37,99,235,0.3))' } }, '\uD83E\uDD16'),
               h('h3', { style: { fontSize: '18px', fontWeight: 800, color: BD, margin: '0 0 4px' } }, 'Safe Space'),
-              h('p', { style: { fontSize: '13px', color: '#6b7280', margin: 0 } }, 'Talk about a bullying experience \u2014 from any role. This space is monitored for your safety.'),
+              h('p', { style: { fontSize: '13px', color: '#94a3b8', margin: 0 } }, 'Talk about a bullying experience \u2014 from any role. This space is monitored for your safety.'),
               h('p', { style: { fontSize: '11px', color: '#dc2626', margin: '6px 0 0', fontWeight: 600 } }, '\u26A0\uFE0F If you are in danger, please talk to a trusted adult or call 988.')
             ),
             // Show crisis resources if last message was flagged Tier 3
@@ -429,7 +429,7 @@ window.SelHub = window.SelHub || {
               }, coachLoad ? '\u23F3' : '\uD83E\uDDF1')
             ),
             coachHist.length === 0 && h('div', { style: { marginTop: '16px' } },
-              h('div', { style: { fontSize: '11px', fontWeight: 600, color: '#6b7280', marginBottom: '6px' } }, 'You might share:'),
+              h('div', { style: { fontSize: '11px', fontWeight: 600, color: '#94a3b8', marginBottom: '6px' } }, 'You might share:'),
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px' } },
                 ['Someone is being mean to me at school', 'I watched it happen and didn\u2019t do anything', 'I think I might have been the bully', 'I don\u2019t know what role I played but it still hurts'].map(function(p) {
                   return h('button', { key: p, 'aria-label': 'Use prompt: ' + p, onClick: function() { upd('coachInput', p); },

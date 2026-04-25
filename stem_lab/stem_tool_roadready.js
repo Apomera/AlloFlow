@@ -11905,6 +11905,49 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     pump.position.set(lmCenterWX + 1, 0.6, lmCenterWZ + pmi * 0.6);
                     chunkGroup.add(pump);
                   }
+                  // ── Customer sedan parked at one pump ──
+                  // Sits beside the lmCenterWZ-0.6 pump on the road-facing
+                  // side so the silhouette reads as 'someone is fueling up
+                  // right now' from the driver's POV. Color picked from the
+                  // chunk seed so different gas stations have different
+                  // customers.
+                  var gsRng = seededRandom(chunk.index * 14563 + 31);
+                  var gsCarColors = [0xdc2626, 0x1e40af, 0x059669, 0xf59e0b, 0x4b5563, 0xfef3c7];
+                  var gsCarColor = gsCarColors[Math.floor(gsRng() * gsCarColors.length)];
+                  var gsCarBodyMat = new T.MeshLambertMaterial({ color: gsCarColor });
+                  var gsCarCabMat = new T.MeshLambertMaterial({ color: Math.max(0, gsCarColor - 0x202020) });
+                  var gsCarWheelMat = new T.MeshLambertMaterial({ color: 0x1a1a1a });
+                  var gsCarWinMat = new T.MeshLambertMaterial({ color: 0x1e293b });
+                  var gsCarX = lmCenterWX + 1.7; // beside the pump on its road-facing side
+                  var gsCarZ = lmCenterWZ - 0.6;
+                  // Body + cabin
+                  var gsCarBody = new T.Mesh(new T.BoxGeometry(0.85, 0.55, 1.7), gsCarBodyMat);
+                  gsCarBody.position.set(gsCarX, 0.5, gsCarZ);
+                  gsCarBody.castShadow = true;
+                  chunkGroup.add(gsCarBody);
+                  var gsCarCab = new T.Mesh(new T.BoxGeometry(0.65, 0.45, 0.95), gsCarCabMat);
+                  gsCarCab.position.set(gsCarX, 1.05, gsCarZ - 0.05);
+                  chunkGroup.add(gsCarCab);
+                  // Windshields
+                  var gsCarWinF = new T.Mesh(new T.BoxGeometry(0.5, 0.35, 0.06), gsCarWinMat);
+                  gsCarWinF.position.set(gsCarX, 1.05, gsCarZ + 0.45);
+                  chunkGroup.add(gsCarWinF);
+                  var gsCarWinB = new T.Mesh(new T.BoxGeometry(0.5, 0.35, 0.06), gsCarWinMat);
+                  gsCarWinB.position.set(gsCarX, 1.05, gsCarZ - 0.55);
+                  chunkGroup.add(gsCarWinB);
+                  // Wheels
+                  [[-0.35, -0.6], [0.35, -0.6], [-0.35, 0.6], [0.35, 0.6]].forEach(function(gswp) {
+                    var gsCarWheel = new T.Mesh(new T.CylinderGeometry(0.18, 0.18, 0.12, 8), gsCarWheelMat);
+                    gsCarWheel.rotation.x = Math.PI / 2;
+                    gsCarWheel.position.set(gsCarX + gswp[0], 0.22, gsCarZ + gswp[1]);
+                    chunkGroup.add(gsCarWheel);
+                  });
+                  // Fuel hose — thin black wire from pump to car's gas door
+                  var gsHoseMat = new T.MeshLambertMaterial({ color: 0x111111 });
+                  var gsHose = new T.Mesh(new T.CylinderGeometry(0.025, 0.025, 0.7, 5), gsHoseMat);
+                  gsHose.rotation.z = Math.PI / 2;
+                  gsHose.position.set(lmCenterWX + 1.35, 0.65, gsCarZ);
+                  chunkGroup.add(gsHose);
                   // ── Canopy underglow at night/dusk/fog ──
                   // Real gas stations have bright fluorescent tubes under the canopy
                   // that make them iconic landmarks at night. Horizontal additive

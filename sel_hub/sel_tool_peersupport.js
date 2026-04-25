@@ -305,7 +305,7 @@ window.SelHub = window.SelHub || {
           h('div', { style: { textAlign: 'center', marginBottom: '24px' } },
             h('div', { style: { fontSize: '48px', marginBottom: '8px' } }, '🤝'),
             h('h2', { style: { fontSize: '24px', fontWeight: 900, color: '#1e293b' } }, 'Peer Support Coach'),
-            h('p', { style: { color: '#64748b', fontSize: '14px', maxWidth: '480px', margin: '0 auto' } },
+            h('p', { style: { color: '#94a3b8', fontSize: '14px', maxWidth: '480px', margin: '0 auto' } },
               'Learn to be a supportive listener. Not a counselor — a better friend. These skills help people find their own answers.')
           ),
           // OARS overview cards
@@ -316,7 +316,7 @@ window.SelHub = window.SelHub || {
                   h('span', { style: { fontSize: '18px' }, 'aria-hidden': 'true' }, skill.icon),
                   h('span', { style: { fontSize: '13px', fontWeight: 800, color: skill.color } }, skill.label)
                 ),
-                h('p', { style: { fontSize: '10px', color: '#6b7280', lineHeight: 1.4, margin: 0 } }, skill.what)
+                h('p', { style: { fontSize: '10px', color: '#94a3b8', lineHeight: 1.4, margin: 0 } }, skill.what)
               );
             })
           ),
@@ -361,7 +361,7 @@ window.SelHub = window.SelHub || {
                   h('span', { style: { fontSize: '20px' } }, sc.hasSafetyTrigger ? '🚨' : '💬'),
                   h('div', null,
                     h('div', { style: { fontWeight: 700, fontSize: '13px', color: '#1e293b' } }, sc.title),
-                    h('div', { style: { fontSize: '10px', color: '#6b7280' } }, sc.setup.substring(0, 60) + '...'),
+                    h('div', { style: { fontSize: '10px', color: '#94a3b8' } }, sc.setup.substring(0, 60) + '...'),
                     sc.hasSafetyTrigger && h('span', { style: { fontSize: '9px', background: '#fee2e2', color: '#991b1b', padding: '1px 6px', borderRadius: '6px', fontWeight: 600 } }, 'Includes safety recognition')
                   )
                 );
@@ -430,10 +430,10 @@ window.SelHub = window.SelHub || {
           h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' } },
             h('button', { onClick: function() { setMode('menu'); }, style: btn('#f1f5f9', '#374151', false) }, '← Back'),
             h('span', { style: { fontSize: '13px', fontWeight: 700, color: '#16a34a' } }, '✅ ' + score + '/' + total),
-            h('span', { style: { fontSize: '12px', color: '#6b7280' } }, (subMode === 'open_vs_closed' ? '❓ Open vs Closed' : '🪞 Reflect vs Advise') + ' · ' + (idx + 1) + '/' + exercises.length)
+            h('span', { style: { fontSize: '12px', color: '#94a3b8' } }, (subMode === 'open_vs_closed' ? '❓ Open vs Closed' : '🪞 Reflect vs Advise') + ' · ' + (idx + 1) + '/' + exercises.length)
           ),
           h('div', { style: { background: '#f8fafc', borderRadius: '14px', padding: '16px', border: '1px solid #e5e7eb', marginBottom: '12px' } },
-            h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', marginBottom: '6px' } }, 'Situation'),
+            h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', marginBottom: '6px' } }, 'Situation'),
             h('p', { style: { fontSize: '14px', color: '#1e293b', lineHeight: 1.6 } }, current.situation)
           ),
           feedback && h('div', { role: 'status', 'aria-live': 'assertive', style: { padding: '14px', borderRadius: '12px', marginBottom: '12px', background: '#dcfce7', border: '1px solid #86efac', color: '#166534', fontSize: '13px' } },
@@ -442,7 +442,7 @@ window.SelHub = window.SelHub || {
           !feedback && (subMode === 'open_vs_closed' ? (
             // Two-button: which is the open question?
             h('div', null,
-              h('p', { style: { fontSize: '13px', color: '#6b7280', marginBottom: '10px', fontWeight: 600 } }, 'Which is the OPEN question? (invites them to share more)'),
+              h('p', { style: { fontSize: '13px', color: '#94a3b8', marginBottom: '10px', fontWeight: 600 } }, 'Which is the OPEN question? (invites them to share more)'),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' }, role: 'group', 'aria-label': 'Choose the open question' },
                 [{ text: current.closed, isCorrect: false }, { text: current.open, isCorrect: true }]
                   .sort(function() { return 0.5 - Math.random(); }) // Shuffle
@@ -460,7 +460,7 @@ window.SelHub = window.SelHub || {
           ) : (
             // Reflect vs Advise
             h('div', null,
-              h('p', { style: { fontSize: '13px', color: '#6b7280', marginBottom: '10px', fontWeight: 600 } }, 'Which response is a REFLECTION? (shows you heard them)'),
+              h('p', { style: { fontSize: '13px', color: '#94a3b8', marginBottom: '10px', fontWeight: 600 } }, 'Which response is a REFLECTION? (shows you heard them)'),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' }, role: 'group', 'aria-label': 'Choose the reflection' },
                 [{ text: current.advice, isCorrect: false, label: 'advice' }, { text: current.reflection, isCorrect: true, label: 'reflection' }]
                   .sort(function() { return 0.5 - Math.random(); })
@@ -490,7 +490,7 @@ window.SelHub = window.SelHub || {
             h('button', { onClick: function() { setMode('menu'); }, style: btn('#f1f5f9', '#374151', false) }, '← Back'),
             h('div', { style: { textAlign: 'right' } },
               h('div', { style: { fontSize: '13px', fontWeight: 700, color: '#1e293b' } }, aiScenario.title),
-              h('div', { style: { fontSize: '10px', color: '#6b7280' } }, chatTurns + ' turns')
+              h('div', { style: { fontSize: '10px', color: '#94a3b8' } }, chatTurns + ' turns')
             )
           ),
           // Peer + rapport + OARS tracker
@@ -499,7 +499,7 @@ window.SelHub = window.SelHub || {
             h('div', { style: { flex: 1 } },
               h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '3px' } },
                 h('span', { style: { fontWeight: 700, color: '#1e293b' } }, aiScenario.peerName),
-                h('span', { style: { color: '#6b7280' } }, 'Rapport: ' + rapport + '%')
+                h('span', { style: { color: '#94a3b8' } }, 'Rapport: ' + rapport + '%')
               ),
               h('div', { style: { height: '5px', background: '#e5e7eb', borderRadius: '3px', overflow: 'hidden' }, role: 'progressbar', 'aria-valuenow': rapport, 'aria-label': 'Rapport' },
                 h('div', { style: { height: '100%', width: rapport + '%', background: rapport >= 70 ? '#22c55e' : rapport >= 40 ? '#f59e0b' : '#ef4444', transition: 'all 0.5s', borderRadius: '3px' } })
@@ -533,7 +533,7 @@ window.SelHub = window.SelHub || {
                 )
               );
             }),
-            chatLoading && h('div', { style: { fontSize: '12px', color: '#6b7280', padding: '4px' } }, aiScenario.peerName + ' is typing...'),
+            chatLoading && h('div', { style: { fontSize: '12px', color: '#94a3b8', padding: '4px' } }, aiScenario.peerName + ' is typing...'),
             h('div', { ref: chatEndRef })
           ),
           // Feedback display
@@ -551,7 +551,7 @@ window.SelHub = window.SelHub || {
                 if (!fb || fb === 'null') return null;
                 return h('div', { key: s.id, style: { background: '#fff', borderRadius: '8px', padding: '8px', border: '1px solid ' + s.color + '33' } },
                   h('div', { style: { fontSize: '10px', fontWeight: 700, color: s.color, marginBottom: '2px' } }, s.icon + ' ' + s.label + ' (' + (oarsUsed[s.id] || 0) + 'x)'),
-                  h('p', { style: { fontSize: '10px', color: '#6b7280', margin: 0, lineHeight: 1.3 } }, fb)
+                  h('p', { style: { fontSize: '10px', color: '#94a3b8', margin: 0, lineHeight: 1.3 } }, fb)
                 );
               })
             ),
@@ -569,7 +569,7 @@ window.SelHub = window.SelHub || {
               }, style: btn('#f1f5f9', '#374151', false) }, '📄 Save')
             )
           ),
-          chatFeedback === 'loading' && h('p', { style: { textAlign: 'center', fontSize: '12px', color: '#6b7280', flexShrink: 0 } }, '⏳ Analyzing your OARS skills...'),
+          chatFeedback === 'loading' && h('p', { style: { textAlign: 'center', fontSize: '12px', color: '#94a3b8', flexShrink: 0 } }, '⏳ Analyzing your OARS skills...'),
           // Input
           !chatFeedback && h('div', { style: { display: 'flex', gap: '6px', flexShrink: 0 } },
             h('input', { type: 'text', value: chatInput, onChange: function(ev) { setChatInput(ev.target.value); },

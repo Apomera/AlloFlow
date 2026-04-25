@@ -215,7 +215,7 @@ window.SelHub = window.SelHub || {
               style: {
                 padding: '6px 14px', borderRadius: '10px', border: active ? 'none' : '1px solid ' + (explored ? '#bae6fd' : 'transparent'),
                 background: active ? 'linear-gradient(135deg, ' + SKY + ', #0369a1)' : explored ? 'rgba(2,132,199,0.06)' : 'transparent',
-                color: active ? '#fff' : explored ? '#0c4a6e' : '#6b7280',
+                color: active ? '#fff' : explored ? '#0c4a6e' : '#94a3b8',
                 fontWeight: active ? 700 : 500, fontSize: '12px', cursor: 'pointer',
                 display: 'flex', alignItems: 'center', gap: '5px', whiteSpace: 'nowrap',
                 boxShadow: active ? '0 3px 12px rgba(2,132,199,0.35), inset 0 1px 0 rgba(255,255,255,0.2)' : 'none'
@@ -242,7 +242,7 @@ window.SelHub = window.SelHub || {
           h('div', { className: 'sel-hero', style: { textAlign: 'center', marginBottom: '20px' } },
             h('div', { className: 'sel-hero-icon', style: { fontSize: '52px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(2,132,199,0.3))' } }, '\uD83C\uDF00'),
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: SKY_DARK, margin: '0 0 4px' } }, 'What\u2019s Changing?'),
-            h('p', { style: { fontSize: '13px', color: '#6b7280', margin: 0 } },
+            h('p', { style: { fontSize: '13px', color: '#94a3b8', margin: 0 } },
               band === 'elementary' ? 'Change is a part of life. Let\u2019s name what\u2019s happening for you.'
               : 'Naming what\u2019s changing is the first step toward navigating it.')
           ),
@@ -268,7 +268,7 @@ window.SelHub = window.SelHub || {
               },
                 h('div', { style: { fontSize: '24px', marginBottom: '4px' } }, ct.icon),
                 h('div', { style: { fontSize: '12px', fontWeight: 700, color: isSelected ? SKY : '#374151' } }, ct.label),
-                h('div', { style: { fontSize: '10px', color: '#6b7280', marginTop: '2px' } }, ct.desc)
+                h('div', { style: { fontSize: '10px', color: '#94a3b8', marginTop: '2px' } }, ct.desc)
               );
             })
           ),
@@ -284,7 +284,7 @@ window.SelHub = window.SelHub || {
               placeholder: band === 'elementary' ? 'I feel... because...' : 'What happened, how it affects you, what\u2019s hardest about it...',
               style: { width: '100%', border: '1px solid #bae6fd', borderRadius: '8px', padding: '10px', fontSize: '13px', fontFamily: 'inherit', resize: 'vertical', minHeight: '80px', boxSizing: 'border-box' }
             }),
-            h('p', { style: { fontSize: '11px', color: '#6b7280', margin: '6px 0 0', fontStyle: 'italic' } },
+            h('p', { style: { fontSize: '11px', color: '#94a3b8', margin: '6px 0 0', fontStyle: 'italic' } },
               '\uD83D\uDD12 This stays private. Only you can see what you write here.')
           )
         );
@@ -302,7 +302,7 @@ window.SelHub = window.SelHub || {
           h('div', { className: 'sel-hero', style: { textAlign: 'center', marginBottom: '20px' } },
             h('div', { className: 'sel-hero-icon', style: { fontSize: '52px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(2,132,199,0.3))' } }, '\uD83D\uDCC8'),
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: SKY_DARK, margin: '0 0 4px' } }, 'The Change Curve'),
-            h('p', { style: { fontSize: '13px', color: '#6b7280', margin: 0 } },
+            h('p', { style: { fontSize: '13px', color: '#94a3b8', margin: 0 } },
               band === 'elementary' ? 'Everyone goes through these feelings when things change. You\u2019re not alone.'
               : 'Change follows a predictable emotional pattern. Knowing where you are helps you navigate forward.')
           ),
@@ -376,7 +376,7 @@ window.SelHub = window.SelHub || {
           h('div', { className: 'sel-hero', style: { textAlign: 'center', marginBottom: '20px' } },
             h('div', { className: 'sel-hero-icon', style: { fontSize: '52px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(2,132,199,0.3))' } }, '\uD83D\uDCD6'),
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: SKY_DARK, margin: '0 0 4px' } }, 'Stories of Change'),
-            h('p', { style: { fontSize: '13px', color: '#6b7280', margin: 0 } }, 'Real stories about navigating transitions. You\u2019re not the first to walk this path.')
+            h('p', { style: { fontSize: '13px', color: '#94a3b8', margin: 0 } }, 'Real stories about navigating transitions. You\u2019re not the first to walk this path.')
           ),
           h('div', { style: { background: '#fff', borderRadius: '16px', padding: '24px', border: '1px solid #e5e7eb', boxShadow: '0 4px 20px rgba(0,0,0,0.06)', marginBottom: '16px' } },
             storyType && h('div', { style: { display: 'inline-flex', alignItems: 'center', gap: '4px', background: SKY_LIGHT, padding: '3px 10px', borderRadius: '20px', fontSize: '10px', fontWeight: 600, color: SKY, marginBottom: '10px' } },
@@ -397,7 +397,7 @@ window.SelHub = window.SelHub || {
               'aria-label': 'Previous story',
               style: { padding: '8px 16px', background: '#fff', border: '2px solid #e5e7eb', borderRadius: '10px', cursor: 'pointer', fontWeight: 600, fontSize: '13px', color: '#374151' }
             }, '\u2190 Previous'), // a11y: label set via visible text
-            h('span', { style: { display: 'flex', alignItems: 'center', fontSize: '12px', color: '#6b7280' } },
+            h('span', { style: { display: 'flex', alignItems: 'center', fontSize: '12px', color: '#94a3b8' } },
               (storyIdx % stories.length + 1) + ' / ' + stories.length
             ),
             h('button', {
@@ -428,7 +428,7 @@ window.SelHub = window.SelHub || {
           h('div', { className: 'sel-hero', style: { textAlign: 'center', marginBottom: '20px' } },
             h('div', { className: 'sel-hero-icon', style: { fontSize: '52px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(2,132,199,0.3))' } }, '\u2693'),
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: SKY_DARK, margin: '0 0 4px' } }, 'My Anchors'),
-            h('p', { style: { fontSize: '13px', color: '#6b7280', margin: 0 } },
+            h('p', { style: { fontSize: '13px', color: '#94a3b8', margin: 0 } },
               band === 'elementary' ? 'When everything is changing, some things stay the same. Let\u2019s find yours.'
               : 'Anchors are what stays constant when the world around you shifts. Identifying them builds resilience.')
           ),
@@ -485,7 +485,7 @@ window.SelHub = window.SelHub || {
                   );
                 })
               )
-            : h('div', { style: { textAlign: 'center', padding: '24px', color: '#6b7280' } },
+            : h('div', { style: { textAlign: 'center', padding: '24px', color: '#94a3b8' } },
                 h('p', { style: { fontSize: '13px', fontStyle: 'italic' } }, 'No anchors yet. Even in the biggest storm, something holds steady. What is it for you?')
               )
         );
@@ -500,7 +500,7 @@ window.SelHub = window.SelHub || {
           h('div', { className: 'sel-hero', style: { textAlign: 'center', marginBottom: '20px' } },
             h('div', { className: 'sel-hero-icon', style: { fontSize: '52px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(2,132,199,0.3))' } }, '\uD83D\uDDFA\uFE0F'),
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: SKY_DARK, margin: '0 0 4px' } }, 'My Change Plan'),
-            h('p', { style: { fontSize: '13px', color: '#6b7280', margin: 0 } },
+            h('p', { style: { fontSize: '13px', color: '#94a3b8', margin: 0 } },
               band === 'elementary' ? 'Small steps make big changes feel smaller. What\u2019s one thing you can do?'
               : 'You can\u2019t control the change, but you can choose your response. What\u2019s your plan?')
           ),
@@ -544,7 +544,7 @@ window.SelHub = window.SelHub || {
                     h('div', { style: { width: '22px', height: '22px', borderRadius: '6px', border: '2px solid ' + (step.done ? '#16a34a' : '#d1d5db'), background: step.done ? '#16a34a' : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s' } },
                       step.done && h('span', { style: { color: '#fff', fontSize: '14px', fontWeight: 800 } }, '\u2713')
                     ),
-                    h('span', { style: { flex: 1, fontSize: '14px', color: step.done ? '#6b7280' : '#1f2937', textDecoration: step.done ? 'line-through' : 'none' } }, step.text),
+                    h('span', { style: { flex: 1, fontSize: '14px', color: step.done ? '#94a3b8' : '#1f2937', textDecoration: step.done ? 'line-through' : 'none' } }, step.text),
                     h('button', {
                       onClick: function(ev) { ev.stopPropagation(); upd('planSteps', planSteps.filter(function(s) { return s.id !== step.id; })); },
                       'aria-label': 'Remove step',
@@ -556,7 +556,7 @@ window.SelHub = window.SelHub || {
                   '\u2728 ' + planSteps.filter(function(s) { return s.done; }).length + ' of ' + planSteps.length + ' steps completed!'
                 )
               )
-            : h('div', { style: { textAlign: 'center', padding: '24px', color: '#6b7280' } },
+            : h('div', { style: { textAlign: 'center', padding: '24px', color: '#94a3b8' } },
                 h('p', { style: { fontSize: '13px', fontStyle: 'italic' } }, 'No steps yet. Even the smallest step counts. What\u2019s one thing you can do today?')
               )
         );
@@ -582,7 +582,7 @@ window.SelHub = window.SelHub || {
           h('div', { className: 'sel-hero', style: { textAlign: 'center', marginBottom: '20px' } },
             h('div', { className: 'sel-hero-icon', style: { fontSize: '52px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(2,132,199,0.3))' } }, '\uD83E\uDD16'),
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: SKY_DARK, margin: '0 0 4px' } }, 'AI Support'),
-            h('p', { style: { fontSize: '13px', color: '#6b7280', margin: 0 } }, 'Talk about what you\u2019re going through. This space is monitored for your safety.')
+            h('p', { style: { fontSize: '13px', color: '#94a3b8', margin: 0 } }, 'Talk about what you\u2019re going through. This space is monitored for your safety.')
           ),
           // Context summary
           (changeContext || phaseContext) && h('div', { style: { background: SKY_LIGHT, borderRadius: '10px', padding: '8px 12px', marginBottom: '12px', fontSize: '11px', color: SKY_DARK } },
@@ -675,7 +675,7 @@ window.SelHub = window.SelHub || {
             }, coachLoading ? '\u23F3' : '\u2728 Send')
           ),
           coachHistory.length === 0 && h('div', { style: { marginTop: '16px' } },
-            h('div', { style: { fontSize: '11px', fontWeight: 600, color: '#6b7280', marginBottom: '6px' } }, 'You might start with:'),
+            h('div', { style: { fontSize: '11px', fontWeight: 600, color: '#94a3b8', marginBottom: '6px' } }, 'You might start with:'),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px' } },
               [
                 'I\u2019m scared about the change',
