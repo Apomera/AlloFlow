@@ -12272,6 +12272,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     sgMesh.position.set(roadShoulderX - lm.side * 0.08, 2.0, postZ);
                     sgMesh.rotation.y = lm.side === 1 ? -Math.PI / 2 : Math.PI / 2;
                     chunkGroup.add(sgMesh);
+                    // Snow cap on top of the panel (snow weather only). Sized
+                    // by shape — diamond gets a corner wedge, others a flat
+                    // ledge along the top width.
+                    if (scn.weather === 'snow') {
+                      var sgCapMat = new T.MeshLambertMaterial({ color: 0xf2f5f8 });
+                      if (shape === 'diamond') {
+                        var sgCapD = new T.Mesh(new T.BoxGeometry(0.04, 0.18, 0.36), sgCapMat);
+                        sgCapD.position.set(roadShoulderX, 2.66, postZ);
+                        sgCapD.rotation.x = Math.PI / 4;
+                        chunkGroup.add(sgCapD);
+                      } else {
+                        var sgCapW = shape === 'rect' ? 0.7 : 0.85;
+                        var sgCapH = shape === 'rect' ? 0.55 : 0.45;
+                        var sgCapR = new T.Mesh(new T.BoxGeometry(0.04, 0.07, sgCapW), sgCapMat);
+                        sgCapR.position.set(roadShoulderX, 2.0 + sgCapH, postZ);
+                        chunkGroup.add(sgCapR);
+                      }
+                    }
                   } catch (sgErr) {
                     // Fallback: plain colored square — same road-ward offset
                     var faceMat = new T.MeshBasicMaterial({ color: faceColor, side: T.DoubleSide });
@@ -12932,6 +12950,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     sFace.position.set(slX - slSide * 0.08, slHy + 2.3, slZ);
                     sFace.rotation.y = slSide < 0 ? Math.PI / 2 : -Math.PI / 2;
                     chunkGroup.add(sFace);
+                    // Snow cap accumulated on top edge of the sign in snow
+                    // weather — small white ledge that follows the panel width.
+                    if (scn.weather === 'snow') {
+                      var slCapMat = new T.MeshLambertMaterial({ color: 0xf2f5f8 });
+                      var slCap = new T.Mesh(new T.BoxGeometry(0.04, 0.08, 0.6), slCapMat);
+                      slCap.position.set(slX, slHy + 2.66, slZ);
+                      chunkGroup.add(slCap);
+                    }
                   } catch (signErr) {}
                 })();
                 // Driveways in residential/suburban — small asphalt pads cutting
@@ -13247,6 +13273,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     msIcon.rotation.y = msSide < 0 ? Math.PI / 2 : -Math.PI / 2;
                     chunkGroup.add(msIcon);
                   } catch (msErr) {}
+                  // Snow accumulation on the top diamond corner — small wedge.
+                  if (scn.weather === 'snow') {
+                    var msCapMat = new T.MeshLambertMaterial({ color: 0xf2f5f8 });
+                    var msCap = new T.Mesh(new T.BoxGeometry(0.04, 0.18, 0.32), msCapMat);
+                    msCap.position.set(msX, msHt + 3.02, msZ);
+                    msCap.rotation.x = Math.PI / 4;
+                    chunkGroup.add(msCap);
+                  }
                 }
               }
               // ── Roadside reflector posts (rural / fog / dawn / snow) ──
