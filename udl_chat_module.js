@@ -6,7 +6,54 @@ if (window.AlloModules && window.AlloModules.UdlChatModule) { console.log('[CDN]
 // state and helpers are passed via the deps object and destructured at top.
 
 const handleSendUDLMessage = async (manualText = null, deps) => {
-  const { activeBlueprint, activeView, alloBotRef, currentUiLanguage, guidedFlowState, isAutoFillMode, sourceTopic, udlMessages, udlInput, leveledTextLanguage, persistedLessonDNA, uiDispatch, setActiveBlueprint, setActiveView, setAdventureInputMode, setDokLevel, setExpandedTools, setFillInTheBlank, setFrameType, setFullPackTargetGroup, setGeneratedContent, setGradeLevel, setGuidedFlowState, setIsAutoFillMode, setIsChatProcessing, setLeveledTextLanguage, setOutlineType, setQuizMcqCount, setResourceCount, setSelectedLanguages, setShowBehaviorLens, setShowEducatorHub, setShowReadThisPage, setShowReportWriter, setShowSelHub, setShowSourceGen, setShowStemLab, setShowStoryForge, setSourceLength, setSourceTone, setSourceTopic, setSpotlightMessage, setStudentInterests, setUdlInput, setUdlMessages, addToast, t, warnLog, callGemini, cleanJson, applyAIConfig, applyWorkflowModification, autoConfigureSettings, captureIntentSnapshot, detectWorkflowIntent, flyToElement, generateDynamicBridge, generateStandardChatResponse, getReadableContent, getStageElementId, getWorkflowContext, handleExecuteBlueprint, handleGenerate, handleGenerateFullPack, handleGenerateLessonPlan, handleGenerateSource, handleSettingsIntent, handleShowUiIntent, handleStartAdventure, handleUrlFetch, modifyBlueprintWithAI, parseUserIntent, performHighlight, restoreIntentSnapshot, formatLessonDNA } = deps;
+  // Phase E hotfix: comprehensive deps list (was missing isShowMeMode, isBotVisible,
+  // history, inputText, standardsInput, targetStandards, dokLevel, sourceLength,
+  // sourceTone, quizMcqCount, differentiationRange, outlineType, visualStyle,
+  // and several helpers — those caused the "Sorry, something went wrong" toast).
+  const {
+    // State VALUES
+    activeBlueprint, activeView, alloBotRef, currentUiLanguage, guidedFlowState,
+    isAutoFillMode, isShowMeMode, isBotVisible, sourceTopic, udlMessages, udlInput,
+    leveledTextLanguage, persistedLessonDNA, history, inputText, standardsInput,
+    targetStandards, dokLevel, sourceLength, sourceTone, quizMcqCount,
+    differentiationRange, outlineType, visualStyle, vocabularyType, frameType,
+    pdfFixResult, generatedContent, studentInterests, gradeLevel, gradeLevelInput,
+    selectedLanguages, leveledTextCustomInstructions, quizCustomInstructions,
+    glossaryCustomInstructions, frameCustomInstructions, adventureCustomInstructions,
+    brainstormCustomInstructions, faqCustomInstructions, outlineCustomInstructions,
+    visualCustomInstructions, lessonCustomAdditions, timelineTopic, fillInTheBlank,
+    resourceCount, fullPackTargetGroup, expandedTools, dokOptions, audioBank, voiceMap,
+    // Refs
+    uiDispatch,
+    // State setters
+    setActiveBlueprint, setActiveView, setAdventureInputMode, setDokLevel,
+    setExpandedTools, setFillInTheBlank, setFrameType, setFullPackTargetGroup,
+    setGeneratedContent, setGradeLevel, setGuidedFlowState, setIsAutoFillMode,
+    setIsChatProcessing, setLeveledTextLanguage, setOutlineType, setQuizMcqCount,
+    setResourceCount, setSelectedLanguages, setShowBehaviorLens, setShowEducatorHub,
+    setShowReadThisPage, setShowReportWriter, setShowSelHub, setShowSourceGen,
+    setShowStemLab, setShowStoryForge, setSourceLength, setSourceTone,
+    setSourceTopic, setSpotlightMessage, setStudentInterests, setUdlInput,
+    setUdlMessages, setDifferentiationRange, setVisualStyle, setVocabularyType,
+    setStandardsInput, setTargetStandards, setLessonCustomAdditions, setTimelineTopic,
+    // Helpers
+    addToast, t, warnLog, callGemini, callGeminiVision, cleanJson,
+    applyAIConfig, applyWorkflowModification, autoConfigureSettings,
+    captureIntentSnapshot, detectWorkflowIntent, flyToElement,
+    generateDynamicBridge, generateStandardChatResponse, getReadableContent,
+    getStageElementId, getWorkflowContext, handleExecuteBlueprint,
+    handleGenerate, handleGenerateFullPack, handleGenerateLessonPlan,
+    handleGenerateSource, handleSettingsIntent, handleShowUiIntent,
+    handleStartAdventure, handleUrlFetch, modifyBlueprintWithAI,
+    parseUserIntent, performHighlight, restoreIntentSnapshot,
+    formatLessonDNA, handleScoreUpdate, getDifferentiationGrades,
+    extractSourceTextForProcessing, processGrounding, sanitizeTruncatedCitations,
+    normalizeCitationPlacement, fixCitationPlacement, generateBibliographyString,
+    storageDB,
+  } = deps;
+  // Phase E hotfix: surface real errors to console so we can debug missing deps
+  // instead of silently degrading to "Sorry, something went wrong".
+  const _DEBUG_UDL_CHAT = true;
     const textToSend = typeof manualText === 'string' ? manualText : udlInput;
     if (!textToSend.trim()) return;
     const userMsg = { role: 'user', text: textToSend };
@@ -1031,6 +1078,12 @@ Return ONLY JSON.`;
              await generateStandardChatResponse(textToSend);
         }
     } catch (error) {
+        // Phase E hotfix: log full error to console so missed deps surface clearly
+        try {
+          console.error('[UdlChat] handleSendUDLMessage threw:', error);
+          if (error && error.stack) console.error('[UdlChat] stack:', error.stack);
+          if (error && error.message) console.error('[UdlChat] message:', error.message);
+        } catch (_) {}
         warnLog("UDL Chat Error:", error);
         const isQuota = error.isQuota || (error.message && (
           error.message.includes('API_QUOTA_EXHAUSTED') ||
