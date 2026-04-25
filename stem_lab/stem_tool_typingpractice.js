@@ -126,16 +126,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
   // Each has a check(state) predicate that returns true when earned. Deliberately
   // not streak-based (avoids guilt patterns) and not visible as a "progress
   // toward" bar (avoids pressure). Student simply earns them by showing up.
+  // Milestones — each has check() (boolean predicate) AND progress() which
+  // returns { current, target } so the Achievements 'Coming up' row can
+  // show 'X / Y' on each unearned milestone instead of just the label.
+  // current is capped at target so progress strings never read '15 / 10'.
   var MILESTONES = [
-    { id: 'first',       label: '🌱 First session',         check: function(lt, ud) { return lt.totalSessions >= 1; } },
-    { id: 'ten',         label: '📚 10 sessions',           check: function(lt, ud) { return lt.totalSessions >= 10; } },
-    { id: 'fifty',       label: '📖 50 sessions',           check: function(lt, ud) { return lt.totalSessions >= 50; } },
-    { id: 'hundred',     label: '🎓 100 sessions',          check: function(lt, ud) { return lt.totalSessions >= 100; } },
-    { id: 'thousand',    label: '🏆 1000 characters typed', check: function(lt, ud) { return lt.totalCharsTyped >= 1000; } },
-    { id: 'tenk',        label: '🗝 10000 characters typed',check: function(lt, ud) { return lt.totalCharsTyped >= 10000; } },
-    { id: 'fiftyk',      label: '⭐ 50000 characters typed',check: function(lt, ud) { return lt.totalCharsTyped >= 50000; } },
-    { id: 'days7',       label: '🌻 7 days of practice',    check: function(lt, ud) { return ud >= 7; } },
-    { id: 'days30',      label: '🌳 30 days of practice',   check: function(lt, ud) { return ud >= 30; } }
+    { id: 'first',       label: '🌱 First session',         check: function(lt, ud) { return lt.totalSessions >= 1; },
+      progress: function(lt, ud) { return { current: Math.min(lt.totalSessions || 0, 1), target: 1 }; } },
+    { id: 'ten',         label: '📚 10 sessions',           check: function(lt, ud) { return lt.totalSessions >= 10; },
+      progress: function(lt, ud) { return { current: Math.min(lt.totalSessions || 0, 10), target: 10 }; } },
+    { id: 'fifty',       label: '📖 50 sessions',           check: function(lt, ud) { return lt.totalSessions >= 50; },
+      progress: function(lt, ud) { return { current: Math.min(lt.totalSessions || 0, 50), target: 50 }; } },
+    { id: 'hundred',     label: '🎓 100 sessions',          check: function(lt, ud) { return lt.totalSessions >= 100; },
+      progress: function(lt, ud) { return { current: Math.min(lt.totalSessions || 0, 100), target: 100 }; } },
+    { id: 'thousand',    label: '🏆 1000 characters typed', check: function(lt, ud) { return lt.totalCharsTyped >= 1000; },
+      progress: function(lt, ud) { return { current: Math.min(lt.totalCharsTyped || 0, 1000), target: 1000 }; } },
+    { id: 'tenk',        label: '🗝 10000 characters typed',check: function(lt, ud) { return lt.totalCharsTyped >= 10000; },
+      progress: function(lt, ud) { return { current: Math.min(lt.totalCharsTyped || 0, 10000), target: 10000 }; } },
+    { id: 'fiftyk',      label: '⭐ 50000 characters typed',check: function(lt, ud) { return lt.totalCharsTyped >= 50000; },
+      progress: function(lt, ud) { return { current: Math.min(lt.totalCharsTyped || 0, 50000), target: 50000 }; } },
+    { id: 'days7',       label: '🌻 7 days of practice',    check: function(lt, ud) { return ud >= 7; },
+      progress: function(lt, ud) { return { current: Math.min(ud || 0, 7), target: 7 }; } },
+    { id: 'days30',      label: '🌳 30 days of practice',   check: function(lt, ud) { return ud >= 30; },
+      progress: function(lt, ud) { return { current: Math.min(ud || 0, 30), target: 30 }; } }
   ];
 
   // Maximum size of the saved-passage library. Keep low to avoid clutter —
@@ -8542,12 +8555,45 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 h('div', { style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '10px', fontWeight: 700 } },
                   headerText),
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px' } },
-                  remaining.map(function(m) {
-                    return h('span', {
-                      key: 'up-' + m.id,
-                      style: chipBase
-                    }, m.label);
-                  })
+                  // Each chip now carries a 'X / Y' progress suffix so
+                  // students see how close each milestone is. Comes from
+                  // the new MILESTONES[].progress() function — uses live
+                  // lifetime totals + unique-day count. Numbers tabular so
+                  // they don't shift width as they grow.
+                  (function() {
+                    var lt = state.lifetime || { totalSessions: 0, totalCharsTyped: 0 };
+                    var uniqueDays = {};
+                    (state.sessions || []).forEach(function(s) {
+                      uniqueDays[new Date(s.date).toLocaleDateString()] = true;
+                    });
+                    var udCount = Object.keys(uniqueDays).length;
+                    return remaining.map(function(m) {
+                      var prog = m.progress ? m.progress(lt, udCount) : null;
+                      var progText = prog
+                        ? ' · ' + (prog.current >= 1000 ? Math.round(prog.current / 100) / 10 + 'k' : prog.current) + ' / ' + (prog.target >= 1000 ? Math.round(prog.target / 100) / 10 + 'k' : prog.target)
+                        : '';
+                      // Closer-to-completion chips get a brighter border —
+                      // 75% gets accent border, 50% gets accentDim, < 50%
+                      // stays palette.border. Subtle 'almost there' signal.
+                      var chipStyle = Object.assign({}, chipBase, { fontVariantNumeric: 'tabular-nums' });
+                      if (prog && prog.target > 0) {
+                        var pct = prog.current / prog.target;
+                        if (pct >= 0.75) {
+                          chipStyle.borderColor = palette.accent;
+                          chipStyle.color = palette.text;
+                          chipStyle.borderStyle = 'solid';
+                        } else if (pct >= 0.5) {
+                          chipStyle.borderColor = palette.accentDim || palette.border;
+                          chipStyle.color = palette.textDim;
+                        }
+                      }
+                      return h('span', {
+                        key: 'up-' + m.id,
+                        title: prog ? prog.current + ' of ' + prog.target : '',
+                        style: chipStyle
+                      }, m.label + progText);
+                    });
+                  })()
                 ),
                 h('div', { style: { fontSize: '10px', color: palette.textMute, marginTop: '10px', fontStyle: 'italic' } },
                   footerText)
