@@ -13125,6 +13125,76 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   });
                 }
               }
+              // ── Moose crossing warning signs (rural, ~1 per 3 chunks) ──
+              // Yellow diamond MUTCD warning with a moose silhouette — Maine
+              // DOT places these on Routes 1, 11, 27, 201 and other rural
+              // stretches with documented strikes. Reinforces the moose-strike
+              // lesson visually whenever the player drives a rural chunk. One
+              // per ~3 chunks keeps it iconic instead of background noise.
+              if (chunk.biome === 'rural' && (ci % 3 === 0) && !chunk.hasIntersection) {
+                var msRng = seededRandom(chunk.index * 91237 + 13);
+                var msSide = msRng() < 0.5 ? -1 : 1;
+                var msLocalZ = 6 + msRng() * (CHUNK_SIZE - 12);
+                var msZ = chunkWorldZ + msLocalZ;
+                // Skip if landmark occupies same Z stretch
+                var msSkip = false;
+                if (chunk.landmark && Math.abs(msLocalZ - chunk.landmark.centerY) < chunk.landmark.type.size * 0.7) msSkip = true;
+                if (!msSkip) {
+                  var msCenter = iw.spline ? iw.spline.centerAt(msZ - chunkWorldZ + ribbonChunkBaseY) : 0;
+                  var msWX = msCenter - MAP_SIZE / 2;
+                  var msHt = iw.spline ? iw.spline.heightAt(msZ - chunkWorldZ + ribbonChunkBaseY) : 0;
+                  var msX = msWX + msSide * (roadHalfW + 1.6);
+                  // Sign post
+                  var msPostMat = new T.MeshLambertMaterial({ color: 0x4b5563 });
+                  var msPost = new T.Mesh(new T.CylinderGeometry(0.05, 0.05, 2.6, 6), msPostMat);
+                  msPost.position.set(msX, msHt + 1.3, msZ);
+                  chunkGroup.add(msPost);
+                  // Yellow diamond panel — rotated 45° so corners point N/S/E/W.
+                  // Slightly emissive on dark scenes so headlights pick it up
+                  // (real signs are retroreflective sheeting; this is the cheap
+                  // approximation).
+                  var msIsDark = scn.time === 'night' || scn.weather === 'fog' || scn.id === 'dawn';
+                  var msPanelMat = msIsDark
+                    ? new T.MeshBasicMaterial({ color: 0xfde047 })
+                    : new T.MeshLambertMaterial({ color: 0xfde047 });
+                  var msPanel = new T.Mesh(new T.BoxGeometry(0.85, 0.85, 0.04), msPanelMat);
+                  msPanel.rotation.z = Math.PI / 4;
+                  msPanel.position.set(msX, msHt + 2.4, msZ);
+                  msPanel.rotation.y = msSide < 0 ? Math.PI / 2 : -Math.PI / 2;
+                  chunkGroup.add(msPanel);
+                  // Moose silhouette — drawn to a canvas texture and slapped on
+                  // a thin plane in front of the panel. Wraps in a try/catch
+                  // because some embedded contexts disable canvas creation.
+                  try {
+                    var mc = document.createElement('canvas');
+                    mc.width = 128; mc.height = 128;
+                    var mx = mc.getContext('2d');
+                    mx.clearRect(0, 0, 128, 128);
+                    mx.fillStyle = '#000000';
+                    // Body — a thick blocky silhouette that reads as quadruped
+                    mx.fillRect(34, 56, 56, 28);   // torso
+                    mx.fillRect(38, 78, 8, 22);    // front leg
+                    mx.fillRect(50, 78, 8, 22);    // back front leg
+                    mx.fillRect(70, 78, 8, 22);    // front back leg
+                    mx.fillRect(82, 78, 8, 22);    // back leg
+                    mx.fillRect(82, 42, 16, 18);   // head
+                    mx.fillRect(96, 46, 8, 6);     // muzzle
+                    // Antlers — two flared paddles
+                    mx.beginPath();
+                    mx.moveTo(86, 42); mx.lineTo(78, 26); mx.lineTo(70, 28); mx.lineTo(76, 36); mx.lineTo(82, 38); mx.closePath();
+                    mx.fill();
+                    mx.beginPath();
+                    mx.moveTo(94, 42); mx.lineTo(102, 22); mx.lineTo(112, 26); mx.lineTo(108, 36); mx.lineTo(98, 40); mx.closePath();
+                    mx.fill();
+                    var msTex = new T.CanvasTexture(mc);
+                    var msIconMat = new T.MeshBasicMaterial({ map: msTex, transparent: true, side: T.DoubleSide });
+                    var msIcon = new T.Mesh(new T.PlaneGeometry(0.6, 0.6), msIconMat);
+                    msIcon.position.set(msX + (msSide < 0 ? -0.025 : 0.025), msHt + 2.4, msZ);
+                    msIcon.rotation.y = msSide < 0 ? Math.PI / 2 : -Math.PI / 2;
+                    chunkGroup.add(msIcon);
+                  } catch (msErr) {}
+                }
+              }
               // ── Roadside reflector posts (rural / fog / dawn / snow) ──
               // Short white delineator posts every ~12m along the shoulder of
               // unlit rural roads. Reflective amber disc faces oncoming traffic
