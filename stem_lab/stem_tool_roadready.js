@@ -12106,6 +12106,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       chunkGroup.add(fsHalo);
                     }
                   } else if (lt.id === 'police') {
+                    // ── Parked cruiser out front ──
+                    // Real police stations always have at least one cruiser
+                    // visible out front. Black-and-white body + light bar
+                    // tagged so the cruiser bar pulses on the same beacon
+                    // animator as the rooftop dome at night/fog/dawn.
+                    var crBodyMat = new T.MeshLambertMaterial({ color: 0xffffff });
+                    var crHoodMat = new T.MeshLambertMaterial({ color: 0x1a1a2e });
+                    var crCabMat = new T.MeshLambertMaterial({ color: 0x1e293b });
+                    var crX = lmCenterWX + lm.side * (lt.size * 0.45);
+                    var crZ = lmCenterWZ + lt.size * 0.25;
+                    // Body
+                    var crBody = new T.Mesh(new T.BoxGeometry(1.7, 0.55, 0.85), crBodyMat);
+                    crBody.position.set(crX, 0.4, crZ);
+                    crBody.castShadow = true;
+                    chunkGroup.add(crBody);
+                    // Black hood band (front 40% of the body painted dark)
+                    var crHood = new T.Mesh(new T.BoxGeometry(0.7, 0.56, 0.86), crHoodMat);
+                    crHood.position.set(crX + 0.5, 0.4, crZ);
+                    chunkGroup.add(crHood);
+                    // Cabin
+                    var crCab = new T.Mesh(new T.BoxGeometry(0.95, 0.45, 0.75), crCabMat);
+                    crCab.position.set(crX, 0.92, crZ);
+                    chunkGroup.add(crCab);
+                    // Wheels — four small black cylinders
+                    var crWheelMat = new T.MeshLambertMaterial({ color: 0x1a1a1a });
+                    [[-0.6, -0.42], [0.6, -0.42], [-0.6, 0.42], [0.6, 0.42]].forEach(function(crwp) {
+                      var crWheel = new T.Mesh(new T.CylinderGeometry(0.18, 0.18, 0.12, 8), crWheelMat);
+                      crWheel.rotation.x = Math.PI / 2;
+                      crWheel.position.set(crX + crwp[0], 0.18, crZ + crwp[1]);
+                      chunkGroup.add(crWheel);
+                    });
+                    // Light bar — tagged for the existing rr_policeBeacon
+                    // animator so it pulses red/blue at night/fog/dawn.
+                    var crBarMat = new T.MeshBasicMaterial({
+                      color: 0x60a5fa, transparent: true, opacity: 0.6,
+                      blending: T.AdditiveBlending, depthWrite: false
+                    });
+                    var crBar = new T.Mesh(new T.BoxGeometry(0.7, 0.10, 0.18), crBarMat);
+                    crBar.position.set(crX, 1.22, crZ);
+                    crBar.name = 'rr_policeBeacon';
+                    chunkGroup.add(crBar);
                     // Rooftop blue beacon — pairs with hospital red and fire red so all
                     // three emergency landmarks have distinctive night signatures.
                     // The mesh is tagged 'rr_policeBeacon' so the chunk-walk loop can
