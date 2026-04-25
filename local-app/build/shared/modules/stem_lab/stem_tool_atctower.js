@@ -140,6 +140,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
       var upd = function(key, val) { ctx.update('atcTower', key, val); };
       var updMulti = function(obj) { ctx.updateMulti('atcTower', obj); };
       var addToast = ctx.addToast;
+      var callGemini = ctx.callGemini;
+      var gradeLevel = ctx.gradeLevel;
 
       var view = d.view || 'menu';
       var totalScore = d.totalScore || 0;
@@ -1599,6 +1601,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
       // ═══ LESSON VIEW ═══
       if (view === 'lesson' && d.selectedLesson && ATC_LESSONS[d.selectedLesson]) {
         var les = ATC_LESSONS[d.selectedLesson];
+        var aiKey = 'aiExplain_' + d.selectedLesson;
+        var aiLevelKey = 'aiLevel_' + d.selectedLesson;
+        var aiLoadingKey = 'aiLoading_' + d.selectedLesson;
+        var aiErrorKey = 'aiError_' + d.selectedLesson;
+        var aiLevel = d[aiLevelKey] || 'grade5';
+        var aiText = d[aiKey] || '';
+        var aiLoading = !!d[aiLoadingKey];
+        var aiError = d[aiErrorKey] || '';
+        var LEVELS = [
+          { id: 'plain', label: 'Plain', hint: 'using simple everyday words and short sentences' },
+          { id: 'grade5', label: 'Grade 5', hint: 'for a 5th grade student, brief and friendly' },
+          { id: 'hs', label: 'High School', hint: 'for a high school student studying pre-calculus or physics' }
+        ];
+        var explain = function() {
+          if (typeof callGemini !== 'function') { upd(aiErrorKey, 'AI tutor not available.'); return; }
+          upd(aiLoadingKey, true); upd(aiErrorKey, ''); upd(aiKey, '');
+          var lv = LEVELS.find(function (L) { return L.id === aiLevel; }) || LEVELS[1];
+          var prompt = 'Explain this air traffic control concept ' + lv.hint + '. '
+            + 'Concept: ' + les.title + '. Lesson: ' + les.content + ' Key formula: ' + les.formula + '. '
+            + 'In 3 short sentences: (1) What the concept means for an ATC controller. (2) A concrete everyday-life analogy. (3) One common mistake students make with this. '
+            + 'No markdown, no bullets, no headings. Plain prose.';
+          callGemini(prompt, false, false, 0.5).then(function (resp) {
+            upd(aiKey, String(resp || '').trim()); upd(aiLoadingKey, false);
+          }).catch(function () {
+            upd(aiLoadingKey, false); upd(aiErrorKey, 'Could not reach AI tutor. Try again in a moment.');
+          });
+        };
         return h('div', { style: { padding: '24px', maxWidth: '600px', margin: '0 auto' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '16px', fontSize: '13px', color: '#4ade80', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Back to Tower'),
           h('div', { style: { background: 'linear-gradient(135deg, #021a0a, #0a2e1a)', borderRadius: '16px', padding: '24px', color: '#fff' } },
@@ -1609,6 +1638,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
               h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', marginBottom: '6px' } }, 'Key Formula'),
               h('div', { style: { fontSize: '14px', fontWeight: 800, color: '#4ade80', fontFamily: 'monospace', marginBottom: '8px' } }, les.formula)
             ),
+
+            // ── AI Tutor Panel ──
+            h('div', { style: { marginTop: '12px', padding: '12px', borderRadius: '12px', background: '#0a1a0a', border: '1px solid #6b21a8' }, role: 'region', 'aria-label': 'AI ATC tutor' },
+              h('div', { style: { display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px', marginBottom: '6px' } },
+                h('span', { style: { fontSize: '12px', fontWeight: 800, color: '#c084fc' } }, '✨ Explain at my level'),
+                h('div', { style: { marginLeft: 'auto', display: 'flex', gap: '4px' }, role: 'group', 'aria-label': 'Reading level' },
+                  LEVELS.map(function (L) {
+                    var active = aiLevel === L.id;
+                    return h('button', {
+                      key: L.id,
+                      onClick: function () { upd(aiLevelKey, L.id); },
+                      'aria-label': 'Reading level: ' + L.label + (active ? ' (selected)' : ''),
+                      'aria-pressed': active,
+                      style: { padding: '3px 8px', borderRadius: '4px', border: '1px solid ' + (active ? '#a855f7' : '#374151'), background: active ? '#9333ea' : 'transparent', color: active ? '#fff' : '#cbd5e1', fontSize: '10px', fontWeight: 700, cursor: 'pointer' }
+                    }, L.label);
+                  })
+                ),
+                h('button', {
+                  onClick: explain,
+                  disabled: aiLoading,
+                  'aria-label': 'Generate AI explanation at ' + ((LEVELS.find(function (L) { return L.id === aiLevel; }) || {}).label || 'Grade 5') + ' level',
+                  style: { padding: '4px 10px', borderRadius: '6px', border: 'none', background: '#9333ea', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: aiLoading ? 'default' : 'pointer', opacity: aiLoading ? 0.5 : 1 }
+                }, aiLoading ? '⏳ Thinking...' : (aiText ? '🔄 Re-explain' : '🧠 Explain'))
+              ),
+              aiError && h('p', { style: { fontSize: '11px', color: '#fca5a5', margin: 0 }, role: 'alert' }, aiError),
+              aiText && h('p', { style: { fontSize: '12px', color: '#cbd5e1', lineHeight: '1.6', background: '#000', padding: '10px', borderRadius: '8px', margin: '6px 0 0 0', border: '1px solid #3730a3' } }, aiText),
+              !aiText && !aiLoading && !aiError && h('p', { style: { fontSize: '11px', fontStyle: 'italic', color: '#64748b', margin: 0 } }, 'Click "Explain" for a plain-language breakdown of this ATC concept.')
+            ),
+
             h('button', { onClick: function() { startGame('simple'); },
               style: { width: '100%', marginTop: '16px', padding: '12px', borderRadius: '10px', border: 'none', background: '#16a34a', color: '#fff', fontSize: '14px', fontWeight: 700, cursor: 'pointer' }
             }, '🗼 Practice — Start Controlling')

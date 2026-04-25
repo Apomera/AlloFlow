@@ -573,7 +573,7 @@ window.StemLab = window.StemLab || {
           ),
           h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-sm text-rose-600 mt-2 space-x-3' },
             h('span', null, '= ' + (pd > 0 ? (pn / pd * 100).toFixed(0) : 0) + '%'),
-            pn > 0 && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-slate-500' }, '\u2248 ' + (pd > 0 ? (pn / pd).toFixed(3) : 0)),
+            pn > 0 && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-slate-600' }, '\u2248 ' + (pd > 0 ? (pn / pd).toFixed(3) : 0)),
             !isSimplified && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-violet-600 font-bold' }, '\u2192 ' + pSimp[0] + '/' + pSimp[1])
           ),
           pn > pd && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-sm font-bold text-orange-600 mt-1' }, '\uD83D\uDCE6 Mixed: ' + toMixed(pn, pd)),
@@ -611,12 +611,12 @@ window.StemLab = window.StemLab || {
       return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-3' },
         // Quick presets
         h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-1.5' },
-          h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold text-slate-500 self-center' }, 'Presets:'),
+          h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold text-slate-600 self-center' }, 'Presets:'),
           [[1,2,1,3],[2,5,3,8],[3,4,5,6],[1,4,2,8],[7,10,3,5],[5,12,1,3]].map(function(pr) {
             return h('button', { 'aria-label': 'Sfx Click',
               key: pr.join('-'),
               onClick: function() { sfxClick(); upd({ num1: pr[0], den1: pr[1], num2: pr[2], den2: pr[3] }); },
-              className: 'px-2 py-1 rounded-lg text-[10px] font-bold bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100 transition-all'
+              className: 'px-2 py-1 rounded-lg text-[11px] font-bold bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100 transition-all'
             }, pr[0] + '/' + pr[1] + ' vs ' + pr[2] + '/' + pr[3]);
           })
         ),
@@ -644,9 +644,9 @@ window.StemLab = window.StemLab || {
                   })
                 ),
                 h('div', { className: 'text-left ml-2' },
-                  h('p', { className: 'text-lg font-bold text-slate-500' }, '= ' + (frac.val * 100).toFixed(0) + '%'),
-                  h('p', { className: 'text-xs text-slate-500' }, '\u2248 ' + frac.val.toFixed(3)),
-                  (frac.sn !== frac.n || frac.sd !== frac.d) && h('p', { className: 'text-xs text-slate-500' }, '\u2192 ' + frac.sn + '/' + frac.sd),
+                  h('p', { className: 'text-lg font-bold text-slate-600' }, '= ' + (frac.val * 100).toFixed(0) + '%'),
+                  h('p', { className: 'text-xs text-slate-600' }, '\u2248 ' + frac.val.toFixed(3)),
+                  (frac.sn !== frac.n || frac.sd !== frac.d) && h('p', { className: 'text-xs text-slate-600' }, '\u2192 ' + frac.sn + '/' + frac.sd),
                   frac.n > frac.d && h('p', { className: 'text-xs font-bold text-orange-500' }, '\uD83D\uDCE6 ' + toMixed(frac.n, frac.d))
                 )
               ),
@@ -666,7 +666,7 @@ window.StemLab = window.StemLab || {
         ),
         // Number line
         h('div', { className: 'bg-white rounded-xl border p-3' },
-          h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2' }, '\uD83D\uDCCF Number Line'),
+          h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2' }, '\uD83D\uDCCF Number Line'),
           h('svg', { viewBox: '0 0 400 50', className: 'w-full', style: { maxHeight: '60px' } },
             h('line', { x1: 20, y1: 30, x2: 380, y2: 30, stroke: '#94a3b8', strokeWidth: 2 }),
             Array.from({ length: nlMax + 1 }, function(_, i) {
@@ -685,7 +685,7 @@ window.StemLab = window.StemLab || {
         ),
         // Cross-multiplication explanation
         h('div', { className: 'bg-violet-50 rounded-xl p-3 border border-violet-200' },
-          h('p', { className: 'text-[10px] font-bold text-violet-600 uppercase tracking-wider mb-1' }, '\uD83D\uDCA1 Cross-Multiply Method'),
+          h('p', { className: 'text-[11px] font-bold text-violet-600 uppercase tracking-wider mb-1' }, '\uD83D\uDCA1 Cross-Multiply Method'),
           h('p', { className: 'text-xs text-violet-800' },
             num1 + ' \u00D7 ' + den2 + ' = ' + (num1 * den2) + '  vs  ' + num2 + ' \u00D7 ' + den1 + ' = ' + (num2 * den1) +
             '  \u2192  ' + (num1 * den2 > num2 * den1 ? num1 + '/' + den1 + ' is larger' : num1 * den2 < num2 * den1 ? num2 + '/' + den2 + ' is larger' : 'They are equal')
@@ -762,9 +762,9 @@ window.StemLab = window.StemLab || {
           }
         }
         return h('div', { className: 'bg-white rounded-xl border p-3 text-center' },
-          h('p', { className: 'text-[10px] font-bold text-green-600 uppercase tracking-wider mb-2' }, '\uD83D\uDFE9 Area Model'),
+          h('p', { className: 'text-[11px] font-bold text-green-600 uppercase tracking-wider mb-2' }, '\uD83D\uDFE9 Area Model'),
           h('svg', { viewBox: '0 0 ' + totalW + ' ' + totalH, width: Math.min(totalW * 1.2, 300), height: Math.min(totalH * 1.2, 200) }, cells),
-          h('p', { className: 'text-xs text-slate-500 mt-1' },
+          h('p', { className: 'text-xs text-slate-600 mt-1' },
             'Green = ' + num1 + '\u00D7' + num2 + ' = ' + (num1 * num2) + ' out of ' + (den1 * den2) + ' total cells'
           )
         );
@@ -777,7 +777,7 @@ window.StemLab = window.StemLab || {
            { label: 'B', n: num2, d: den2, nk: 'num2', dk: 'den2', color: '#ef4444' }
           ].map(function(frac) {
             return h('div', { key: frac.label, className: 'bg-white rounded-xl border p-3 text-center' },
-              h('span', { className: 'text-xs font-bold text-slate-500' }, 'Fraction ' + frac.label),
+              h('span', { className: 'text-xs font-bold text-slate-600' }, 'Fraction ' + frac.label),
               h('div', { className: 'flex items-center justify-center gap-1 mt-1' },
                 h('input', {
                   type: 'number', min: 0, max: 20, value: frac.n,
@@ -785,7 +785,7 @@ window.StemLab = window.StemLab || {
                   onChange: function(e) { var o = {}; o[frac.nk] = Math.max(0, parseInt(e.target.value) || 0); upd(o); },
                   className: 'w-12 text-center text-lg font-bold border-b-2 outline-none focus:ring-2 focus:ring-blue-400', style: { borderColor: frac.color }
                 }),
-                h('span', { className: 'text-xl font-bold text-slate-500 mx-1' }, '/'),
+                h('span', { className: 'text-xl font-bold text-slate-600 mx-1' }, '/'),
                 h('input', {
                   type: 'number', min: 1, max: 20, value: frac.d,
                   'aria-label': 'Fraction ' + frac.label + ' denominator',
@@ -813,7 +813,7 @@ window.StemLab = window.StemLab || {
             h('span', { className: 'text-blue-600' }, num1 + '/' + den1),
             h('span', { className: 'mx-3 text-orange-500' }, opSymbols[opMode]),
             h('span', { className: 'text-red-600' }, num2 + '/' + den2),
-            h('span', { className: 'mx-3 text-slate-500' }, '='),
+            h('span', { className: 'mx-3 text-slate-600' }, '='),
             h('span', { className: 'text-emerald-600' }, opSimplified[0] + '/' + opSimplified[1])
           ),
           // Mixed number result
@@ -821,7 +821,7 @@ window.StemLab = window.StemLab || {
             '\uD83D\uDCE6 Mixed: ' + toMixed(opSimplified[0], opSimplified[1])
           ),
           // Decimal result
-          h('p', { className: 'text-xs text-slate-500 mb-3' },
+          h('p', { className: 'text-xs text-slate-600 mb-3' },
             '\u2248 ' + (opSimplified[1] !== 0 ? (opSimplified[0] / opSimplified[1]).toFixed(4) : 'undefined')
           ),
           // Step-by-step
@@ -860,7 +860,7 @@ window.StemLab = window.StemLab || {
            { label: 'Fraction B', n: num2, d: den2, nk: 'num2', dk: 'den2', color: '#ef4444' }
           ].map(function(frac) {
             return h('div', { key: frac.label, className: 'bg-white rounded-xl border p-3 text-center' },
-              h('span', { className: 'text-xs font-bold text-slate-500' }, frac.label),
+              h('span', { className: 'text-xs font-bold text-slate-600' }, frac.label),
               h('div', { className: 'flex items-center justify-center gap-1 mt-1' },
                 h('input', {
                   type: 'number', min: 0, max: 20, value: frac.n,
@@ -868,7 +868,7 @@ window.StemLab = window.StemLab || {
                   onChange: function(e) { var o = {}; o[frac.nk] = Math.max(0, parseInt(e.target.value) || 0); upd(o); },
                   className: 'w-12 text-center text-lg font-bold border-b-2 outline-none focus:ring-2 focus:ring-blue-400', style: { borderColor: frac.color }
                 }),
-                h('span', { className: 'text-xl font-bold text-slate-500 mx-1' }, '/'),
+                h('span', { className: 'text-xl font-bold text-slate-600 mx-1' }, '/'),
                 h('input', {
                   type: 'number', min: 1, max: 20, value: frac.d,
                   'aria-label': frac.label + ' denominator',
@@ -881,7 +881,7 @@ window.StemLab = window.StemLab || {
         ),
         // Equiv chains
         h('div', { className: 'bg-white rounded-xl border-2 border-orange-200 p-4' },
-          h('p', { className: 'text-[10px] font-bold text-orange-600 uppercase tracking-wider mb-2' }, '\uD83D\uDD17 Equivalent Fractions for ' + s1[0] + '/' + s1[1]),
+          h('p', { className: 'text-[11px] font-bold text-orange-600 uppercase tracking-wider mb-2' }, '\uD83D\uDD17 Equivalent Fractions for ' + s1[0] + '/' + s1[1]),
           h('div', { className: 'flex flex-wrap gap-2 mb-3' },
             equivChain(num1, den1, 8).map(function(eq, i) {
               return h('div', {
@@ -889,11 +889,11 @@ window.StemLab = window.StemLab || {
                 className: 'px-3 py-2 rounded-lg border text-center transition-all ' + (i === 0 ? 'bg-blue-100 border-blue-300 shadow-sm' : 'bg-slate-50 border-slate-200 hover:bg-blue-50')
               },
                 h('span', { className: 'text-sm font-bold ' + (i === 0 ? 'text-blue-700' : 'text-slate-700') }, eq[0] + '/' + eq[1]),
-                h('span', { className: 'text-[10px] text-slate-500 block' }, '\u00D7' + (i + 1))
+                h('span', { className: 'text-[11px] text-slate-600 block' }, '\u00D7' + (i + 1))
               );
             })
           ),
-          h('p', { className: 'text-[10px] font-bold text-orange-600 uppercase tracking-wider mb-2 mt-3' }, '\uD83D\uDD17 Equivalent Fractions for ' + s2[0] + '/' + s2[1]),
+          h('p', { className: 'text-[11px] font-bold text-orange-600 uppercase tracking-wider mb-2 mt-3' }, '\uD83D\uDD17 Equivalent Fractions for ' + s2[0] + '/' + s2[1]),
           h('div', { className: 'flex flex-wrap gap-2' },
             equivChain(num2, den2, 8).map(function(eq, i) {
               return h('div', {
@@ -901,7 +901,7 @@ window.StemLab = window.StemLab || {
                 className: 'px-3 py-2 rounded-lg border text-center transition-all ' + (i === 0 ? 'bg-red-100 border-red-300 shadow-sm' : 'bg-slate-50 border-slate-200 hover:bg-red-50')
               },
                 h('span', { className: 'text-sm font-bold ' + (i === 0 ? 'text-red-700' : 'text-slate-700') }, eq[0] + '/' + eq[1]),
-                h('span', { className: 'text-[10px] text-slate-500 block' }, '\u00D7' + (i + 1))
+                h('span', { className: 'text-[11px] text-slate-600 block' }, '\u00D7' + (i + 1))
               );
             })
           ),
@@ -962,7 +962,7 @@ window.StemLab = window.StemLab || {
                 onChange: function(e) { upd({ convNum: Math.max(0, parseInt(e.target.value) || 0) }); },
                 className: 'w-16 text-center text-2xl font-bold border-b-3 border-teal-500 outline-none focus:ring-2 focus:ring-teal-400'
               }),
-              h('span', { className: 'text-3xl font-bold text-slate-500 mx-2' }, '/'),
+              h('span', { className: 'text-3xl font-bold text-slate-600 mx-2' }, '/'),
               h('input', {
                 type: 'number', min: 1, max: 99, value: convDen,
                 'aria-label': 'Converter denominator',
@@ -995,13 +995,13 @@ window.StemLab = window.StemLab || {
             ),
             // Visual bar
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'p-2 bg-white rounded-lg' },
-              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-slate-500 block mb-1' }, 'Visual'),
+              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-slate-600 block mb-1' }, 'Visual'),
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'h-6 bg-slate-200 rounded-full overflow-hidden' },
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
                   style: { width: Math.min(cPct, 100) + '%', backgroundColor: '#14b8a6', transition: 'width 0.3s' },
                   className: 'h-full rounded-full flex items-center justify-center'
                 },
-                  cPct >= 15 && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold text-white' }, cPct.toFixed(0) + '%')
+                  cPct >= 15 && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold text-white' }, cPct.toFixed(0) + '%')
                 )
               )
             )
@@ -1046,7 +1046,7 @@ window.StemLab = window.StemLab || {
               h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-lg font-bold text-purple-800' }, (parsedDec * 100).toFixed(2) + '%')
             ),
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'p-2 bg-white rounded-lg' },
-              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-slate-500 block mb-1' }, 'Visual'),
+              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-slate-600 block mb-1' }, 'Visual'),
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex justify-center' },
                 drawPie(Math.min(decFrac[0], decFrac[1]), decFrac[1], 120, '#14b8a6')
               )
@@ -1061,10 +1061,10 @@ window.StemLab = window.StemLab || {
             className: 'text-xs font-bold text-teal-600 hover:text-teal-800 transition-colors'
           }, (showBenchmarks ? '\u25BC' : '\u25B6') + ' Benchmark Fractions Reference'),
           showBenchmarks && h('div', { className: 'mt-2 bg-white rounded-xl border p-3' },
-            h('div', { className: 'grid grid-cols-3 gap-1 text-[10px] font-bold mb-1' },
-              h('span', { className: 'text-slate-500' }, 'Fraction'),
-              h('span', { className: 'text-slate-500' }, 'Decimal'),
-              h('span', { className: 'text-slate-500' }, 'Percent')
+            h('div', { className: 'grid grid-cols-3 gap-1 text-[11px] font-bold mb-1' },
+              h('span', { className: 'text-slate-600' }, 'Fraction'),
+              h('span', { className: 'text-slate-600' }, 'Decimal'),
+              h('span', { className: 'text-slate-600' }, 'Percent')
             ),
             benchmarks.map(function(bm) {
               return h('div', { key: bm.frac, className: 'grid grid-cols-3 gap-1 text-xs py-0.5 border-t border-slate-100' },
@@ -1172,7 +1172,7 @@ window.StemLab = window.StemLab || {
         ),
         // Quick equivalent finder
         h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-xl border p-3' },
-          h('p', { className: 'text-[10px] font-bold text-indigo-600 uppercase tracking-wider mb-2' }, '\uD83D\uDD0D Find Equivalents'),
+          h('p', { className: 'text-[11px] font-bold text-indigo-600 uppercase tracking-wider mb-2' }, '\uD83D\uDD0D Find Equivalents'),
           h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 flex-wrap' },
             [
               { n: 1, d: 2, l: '1/2' }, { n: 1, d: 3, l: '1/3' }, { n: 1, d: 4, l: '1/4' },
@@ -1193,7 +1193,7 @@ window.StemLab = window.StemLab || {
         // Reset
         h('button', { 'aria-label': 'Clear Highlights',
           onClick: function() { upd({ wallHighlight: null, wallCompareA: null, wallCompareB: null }); },
-          className: 'text-xs font-bold text-slate-500 hover:text-slate-600 transition-colors'
+          className: 'text-xs font-bold text-slate-600 hover:text-slate-600 transition-colors'
         }, '\uD83D\uDD04 Clear Highlights')
       );
     };
@@ -1229,7 +1229,7 @@ window.StemLab = window.StemLab || {
             return h('button', { 'aria-label': 'Ask question',
               key: q,
               onClick: function() { upd({ aiQuestion: q }); },
-              className: 'px-2 py-1 text-[10px] font-bold bg-sky-100 text-sky-700 rounded-full hover:bg-sky-200 transition-all'
+              className: 'px-2 py-1 text-[11px] font-bold bg-sky-100 text-sky-700 rounded-full hover:bg-sky-200 transition-all'
             }, q);
           })
         ),
@@ -1242,7 +1242,7 @@ window.StemLab = window.StemLab || {
       var earned = Object.keys(badges).length;
       if (earned === 0) return null;
       return h('div', { className: 'bg-amber-50 rounded-xl border border-amber-200 p-3' },
-        h('p', { className: 'text-[10px] font-bold text-amber-600 uppercase tracking-wider mb-2' },
+        h('p', { className: 'text-[11px] font-bold text-amber-600 uppercase tracking-wider mb-2' },
           '\uD83C\uDFC5 Badges (' + earned + '/' + BADGES.length + ')'
         ),
         h('div', { className: 'flex flex-wrap gap-1.5' },
@@ -1274,12 +1274,12 @@ window.StemLab = window.StemLab || {
       // Header
       h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-3 mb-2' },
         h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': 'Back' },
-          h(ArrowLeft, { size: 18, className: 'text-slate-500' })),
+          h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
         h('h3', { className: 'text-lg font-bold text-rose-800' }, '\uD83C\uDF55 Fraction Lab'),
         // Stats
         h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'ml-auto flex items-center gap-3' },
           streak > 0 && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-orange-600' }, '\uD83D\uDD25 ' + streak),
-          bestStreak > 0 && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-500' }, 'Best: ' + bestStreak),
+          bestStreak > 0 && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-slate-600' }, 'Best: ' + bestStreak),
           h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-rose-600' }, score.correct + '/' + score.total)
         )
       ),
@@ -1291,7 +1291,7 @@ window.StemLab = window.StemLab || {
             key: t2.id,
             onClick: function() { sfxClick(); upd({ tab: t2.id }); trackTab(t2.id); },
             role: 'tab', 'aria-selected': tab === t2.id,
-            className: 'flex-1 py-2 px-1 rounded-lg text-[10px] sm:text-xs font-bold transition-all ' +
+            className: 'flex-1 py-2 px-1 rounded-lg text-[11px] sm:text-xs font-bold transition-all ' +
               (tab === t2.id ? 'bg-white text-rose-800 shadow-sm' : 'text-rose-500 hover:text-rose-700')
           }, t2.icon + ' ' + t2.label);
         })
@@ -1318,13 +1318,13 @@ window.StemLab = window.StemLab || {
                   className: 'text-[11px] font-bold px-1.5 py-0.5 rounded-full transition-all ' +
                     (difficulty === d
                       ? (d === 'easy' ? 'bg-green-700 text-white' : d === 'hard' ? 'bg-red-700 text-white' : 'bg-rose-700 text-white')
-                      : 'bg-slate-100 text-slate-500 hover:bg-slate-200')
+                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
                 }, d);
               })
             )
           ),
           // Challenge type counter
-          h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-slate-500' }, Object.keys(challengeTypesUsed).length + '/7 types')
+          h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-slate-600' }, Object.keys(challengeTypesUsed).length + '/7 types')
         ),
         !challenge
           ? h('button', { 'aria-label': 'Generate Challenge',
@@ -1376,12 +1376,12 @@ window.StemLab = window.StemLab || {
 
       // Benchmarks panel (when not on converter tab where it's inline)
       showBenchmarks && tab !== 'converter' && h('div', { className: 'bg-white rounded-xl border p-3' },
-        h('p', { className: 'text-[10px] font-bold text-teal-600 uppercase tracking-wider mb-2' }, '\uD83D\uDCCB Benchmark Fractions'),
-        h('div', { className: 'grid grid-cols-4 gap-1 text-[10px] font-bold mb-1' },
-          h('span', { className: 'text-slate-500' }, 'Fraction'),
-          h('span', { className: 'text-slate-500' }, 'Decimal'),
-          h('span', { className: 'text-slate-500' }, 'Percent'),
-          h('span', { className: 'text-slate-500' }, 'Visual')
+        h('p', { className: 'text-[11px] font-bold text-teal-600 uppercase tracking-wider mb-2' }, '\uD83D\uDCCB Benchmark Fractions'),
+        h('div', { className: 'grid grid-cols-4 gap-1 text-[11px] font-bold mb-1' },
+          h('span', { className: 'text-slate-600' }, 'Fraction'),
+          h('span', { className: 'text-slate-600' }, 'Decimal'),
+          h('span', { className: 'text-slate-600' }, 'Percent'),
+          h('span', { className: 'text-slate-600' }, 'Visual')
         ),
         benchmarks.slice(0, 10).map(function(bm) {
           var parts = bm.frac.split('/');
@@ -1398,7 +1398,7 @@ window.StemLab = window.StemLab || {
       ),
 
       // Keyboard shortcuts hint
-      h('div', { className: 'text-center text-[11px] text-slate-500 mt-2' },
+      h('div', { className: 'text-center text-[11px] text-slate-600 mt-2' },
         '\u2328\uFE0F 1-6: tabs | N: new challenge | B: benchmarks | P: pie/bar | ?: AI tutor'
       )
     );

@@ -4,6 +4,14 @@
   if (!window.StemLab || !window.StemLab.registerTool) return;
 
   // ═══ 🔬 brainAtlas (brainAtlas) ═══
+
+  // ── Audio (auto-injected) ──
+  var _brainAC = null;
+  function getBrainAC() { if (!_brainAC) { try { _brainAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_brainAC && _brainAC.state === "suspended") { try { _brainAC.resume(); } catch(e) {} } return _brainAC; }
+  function brainTone(f,d,tp,v) { var ac = getBrainAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||"sine"; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
+  function sfxBrainClick() { brainTone(600, 0.03, "sine", 0.04); }
+  function sfxBrainSuccess() { brainTone(523, 0.08, "sine", 0.07); setTimeout(function() { brainTone(659, 0.08, "sine", 0.07); }, 70); setTimeout(function() { brainTone(784, 0.1, "sine", 0.08); }, 140); }
+
   window.StemLab.registerTool('brainAtlas', {
     icon: '🔬',
     label: 'brainAtlas',
@@ -3414,19 +3422,54 @@ var d = labToolData.brainAtlas || {};
 
 
 
-          return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fade-in duration-200" },
+          // ── Keyboard shortcuts (WCAG 2.1.1) ──
+          var VIEW_KEYS = Object.keys(VIEWS);
+          function onBrainKey(e) {
+            var tgt = e.target || {};
+            var tn = (tgt.tagName || '').toUpperCase();
+            if (tn === 'INPUT' || tn === 'TEXTAREA' || tn === 'SELECT' || tgt.isContentEditable) return;
+            var k = e.key;
+            if (k >= '1' && k <= '9') {
+              var idx = parseInt(k, 10) - 1;
+              if (VIEW_KEYS[idx]) {
+                e.preventDefault();
+                var vk = VIEW_KEYS[idx];
+                upd('view', vk); upd('selectedRegion', null); upd('quizMode', false); upd('search', '');
+                if (typeof announceToSR === 'function') announceToSR('View ' + (idx + 1) + ': ' + (VIEWS[vk].name || vk) + '.');
+              }
+            } else if (k === 'q' || k === 'Q') {
+              e.preventDefault();
+              upd('quizMode', !d.quizMode); upd('quizIdx', 0); upd('quizScore', 0); upd('quizFeedback', null);
+              if (typeof announceToSR === 'function') announceToSR(d.quizMode ? 'Quiz off.' : 'Quiz on.');
+            } else if (k === 'Escape') {
+              if (d.selectedRegion) { e.preventDefault(); upd('selectedRegion', null); if (typeof announceToSR === 'function') announceToSR('Region deselected.'); }
+              else if (d.quizMode) { e.preventDefault(); upd('quizMode', false); if (typeof announceToSR === 'function') announceToSR('Quiz closed.'); }
+            } else if (k === '/') {
+              e.preventDefault();
+              var searchInput = document.querySelector('input[placeholder*="Search regions"]');
+              if (searchInput) searchInput.focus();
+            }
+          }
+
+          return React.createElement("div", {
+              className: "max-w-4xl mx-auto animate-in fade-in duration-200 outline-none",
+              role: "region",
+              "aria-label": "Brain Atlas. Keyboard shortcuts: 1 through " + VIEW_KEYS.length + " switch views, Q toggles quiz, / focuses search, Escape closes region detail.",
+              tabIndex: 0,
+              onKeyDown: onBrainKey
+            },
 
             // Header
 
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
 
-              React.createElement("button", { onClick: function () { setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+              React.createElement("button", { onClick: function () { setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
 
               React.createElement("div", null,
 
                 React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83E\uDDE0 Brain Atlas"),
 
-                React.createElement("p", { className: "text-xs text-slate-500" }, currentView.desc)
+                React.createElement("p", { className: "text-xs text-slate-600" }, currentView.desc)
 
               )
 
@@ -3478,7 +3521,7 @@ var d = labToolData.brainAtlas || {};
 
               }, d.quizMode ? '\u2705 Quiz On' : '\uD83E\uDDEA Quiz'),
 
-              React.createElement("span", { className: "text-[10px] text-slate-500 font-bold" }, filtered.length + ' regions')
+              React.createElement("span", { className: "text-[11px] text-slate-600 font-bold" }, filtered.length + ' regions')
 
             ),
 
@@ -3568,7 +3611,7 @@ var d = labToolData.brainAtlas || {};
 
                     },
 
-                      React.createElement("p", { className: "text-[10px] font-bold text-amber-700 uppercase mb-0.5" }, "\u26A0\uFE0F Tolerance \u0026 Receptor Desensitization"),
+                      React.createElement("p", { className: "text-[11px] font-bold text-amber-700 uppercase mb-0.5" }, "\u26A0\uFE0F Tolerance \u0026 Receptor Desensitization"),
 
                       React.createElement("p", { className: "text-[11px] text-slate-600 leading-relaxed" },
 
@@ -3592,19 +3635,19 @@ var d = labToolData.brainAtlas || {};
                 React.createElement("h4", { className: "text-sm font-black text-purple-800 flex items-center gap-2" }, "\u26A1 How Neurons Fire: The Action Potential"),
                 React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-3 gap-2" },
                   React.createElement("div", { className: "rounded-lg bg-white p-3 border border-purple-100" },
-                    React.createElement("p", { className: "text-[10px] font-bold text-purple-600 uppercase mb-1" }, "\uD83E\uDDEA Ion Chemistry"),
+                    React.createElement("p", { className: "text-[11px] font-bold text-purple-600 uppercase mb-1" }, "\uD83E\uDDEA Ion Chemistry"),
                     React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, "At rest, the neuron is polarized at -70mV. Na\u207A (sodium) is concentrated outside; K\u207A (potassium) inside. The Na\u207A/K\u207A pump maintains this gradient using ATP energy (3 Na\u207A out, 2 K\u207A in).")
                   ),
                   React.createElement("div", { className: "rounded-lg bg-white p-3 border border-purple-100" },
-                    React.createElement("p", { className: "text-[10px] font-bold text-orange-600 uppercase mb-1" }, "\u26A1 All-or-Nothing Firing"),
+                    React.createElement("p", { className: "text-[11px] font-bold text-orange-600 uppercase mb-1" }, "\u26A1 All-or-Nothing Firing"),
                     React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, "When stimulation reaches threshold (-55mV), voltage-gated Na\u207A channels open and the neuron fires at FULL strength. There is no \u201Chalf\u201D signal \u2014 it either fires completely or not at all. Stronger stimuli increase firing RATE, not intensity.")
                   ),
                   React.createElement("div", { className: "rounded-lg bg-white p-3 border border-purple-100" },
-                    React.createElement("p", { className: "text-[10px] font-bold text-green-600 uppercase mb-1" }, "\uD83D\uDD04 Recovery Cycle"),
+                    React.createElement("p", { className: "text-[11px] font-bold text-green-600 uppercase mb-1" }, "\uD83D\uDD04 Recovery Cycle"),
                     React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, "After firing: Na\u207A channels close, K\u207A channels open \u2192 repolarization. The membrane briefly overshoots to -80mV (hyperpolarization), creating a refractory period where the neuron cannot fire again. This ensures one-way signal travel.")
                   )
                 ),
-                React.createElement("p", { className: "text-[10px] text-purple-500 italic text-center" }, "Saltatory conduction: signals \u201Cjump\u201D between Nodes of Ranvier along the myelinated axon, increasing speed from ~2 m/s to ~120 m/s.")
+                React.createElement("p", { className: "text-[11px] text-purple-500 italic text-center" }, "Saltatory conduction: signals \u201Cjump\u201D between Nodes of Ranvier along the myelinated axon, increasing speed from ~2 m/s to ~120 m/s.")
               ),
 
               // ─── Detail panel (below canvas) ───
@@ -3669,7 +3712,7 @@ var d = labToolData.brainAtlas || {};
 
                     React.createElement("p", { className: "font-black " + (d.quizFeedback.correct ? 'text-green-800' : 'text-amber-800') }, (d.quizFeedback.correct ? '\u2705 Correct! ' : '\u274C Correct answer for: ') + quizQ.name),
 
-                    React.createElement("p", { className: "text-slate-700" }, React.createElement("span", { className: "font-bold text-slate-500" }, "Function: "), quizQ.fn),
+                    React.createElement("p", { className: "text-slate-700" }, React.createElement("span", { className: "font-bold text-slate-600" }, "Function: "), quizQ.fn),
 
                     quizQ.damage && React.createElement("p", { className: "text-slate-700" }, React.createElement("span", { className: "font-bold text-rose-500" }, "\uD83C\uDFE5 If Damaged: "), quizQ.damage),
 
@@ -3733,7 +3776,7 @@ var d = labToolData.brainAtlas || {};
 
                           onClick: function () { upd('brainwaveType', waveType); },
 
-                          className: "px-2 py-1 rounded-md text-[10px] font-bold transition-all " + (isActive ? 'text-white shadow-lg' : 'text-white/50 hover:text-white/80'),
+                          className: "px-2 py-1 rounded-md text-[11px] font-bold transition-all " + (isActive ? 'text-white shadow-lg' : 'text-white/50 hover:text-white/80'),
 
                           style: isActive ? { background: meta.color } : {}
 
@@ -3783,7 +3826,7 @@ var d = labToolData.brainAtlas || {};
 
                       React.createElement("div", { className: "rounded-lg p-2", style: { background: activeWave.color + '15', border: '1px solid ' + activeWave.color + '33' } },
 
-                        React.createElement("p", { className: "text-[10px] font-bold uppercase mb-0.5", style: { color: activeWave.color } }, "Frequency"),
+                        React.createElement("p", { className: "text-[11px] font-bold uppercase mb-0.5", style: { color: activeWave.color } }, "Frequency"),
 
                         React.createElement("p", { className: "text-xs text-white/80" }, activeWave.freq)
 
@@ -3791,7 +3834,7 @@ var d = labToolData.brainAtlas || {};
 
                       React.createElement("div", { className: "rounded-lg p-2", style: { background: activeWave.color + '15', border: '1px solid ' + activeWave.color + '33' } },
 
-                        React.createElement("p", { className: "text-[10px] font-bold uppercase mb-0.5", style: { color: activeWave.color } }, "Amplitude"),
+                        React.createElement("p", { className: "text-[11px] font-bold uppercase mb-0.5", style: { color: activeWave.color } }, "Amplitude"),
 
                         React.createElement("p", { className: "text-xs text-white/80" }, activeWave.amp)
 
@@ -3799,7 +3842,7 @@ var d = labToolData.brainAtlas || {};
 
                       React.createElement("div", { className: "rounded-lg p-2", style: { background: activeWave.color + '15', border: '1px solid ' + activeWave.color + '33' } },
 
-                        React.createElement("p", { className: "text-[10px] font-bold uppercase mb-0.5", style: { color: activeWave.color } }, "Mental States"),
+                        React.createElement("p", { className: "text-[11px] font-bold uppercase mb-0.5", style: { color: activeWave.color } }, "Mental States"),
 
                         React.createElement("p", { className: "text-xs text-white/80" }, activeWave.states)
 
@@ -3807,7 +3850,7 @@ var d = labToolData.brainAtlas || {};
 
                       React.createElement("div", { className: "rounded-lg p-2", style: { background: activeWave.color + '15', border: '1px solid ' + activeWave.color + '33' } },
 
-                        React.createElement("p", { className: "text-[10px] font-bold uppercase mb-0.5", style: { color: activeWave.color } }, "EEG Location"),
+                        React.createElement("p", { className: "text-[11px] font-bold uppercase mb-0.5", style: { color: activeWave.color } }, "EEG Location"),
 
                         React.createElement("p", { className: "text-xs text-white/80" }, activeWave.eeg)
 
@@ -3817,7 +3860,7 @@ var d = labToolData.brainAtlas || {};
 
                   })(),
 
-                  React.createElement("p", { className: "text-[10px] text-white/40 mt-2 italic text-center" }, (function () {
+                  React.createElement("p", { className: "text-[11px] text-white/40 mt-2 italic text-center" }, (function () {
 
                     var WAVE_META = {
 
@@ -4013,7 +4056,7 @@ var d = labToolData.brainAtlas || {};
 
                       React.createElement("h4", { className: "text-base font-black text-purple-700" }, sel.name),
 
-                      React.createElement("button", { "aria-label": "Close region detail panel", onClick: function () { upd('selectedRegion', null); }, className: "p-1 hover:bg-slate-100 rounded" }, React.createElement(X, { size: 14, className: "text-slate-500" }))
+                      React.createElement("button", { "aria-label": "Close region detail panel", onClick: function () { upd('selectedRegion', null); }, className: "p-1 hover:bg-slate-100 rounded" }, React.createElement(X, { size: 14, className: "text-slate-600" }))
 
                     ),
 
@@ -4021,7 +4064,7 @@ var d = labToolData.brainAtlas || {};
 
                       React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase mb-0.5" }, "Function"),
+                        React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase mb-0.5" }, "Function"),
 
                         React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed" }, sel.fn)
 
@@ -4029,7 +4072,7 @@ var d = labToolData.brainAtlas || {};
 
                       sel.brodmann && React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase mb-0.5" }, "Brodmann Areas"),
+                        React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase mb-0.5" }, "Brodmann Areas"),
 
                         React.createElement("p", { className: "text-xs text-purple-600 font-mono" }, sel.brodmann)
 
@@ -4037,7 +4080,7 @@ var d = labToolData.brainAtlas || {};
 
                       sel.blood && React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase mb-0.5" }, "Blood Supply"),
+                        React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase mb-0.5" }, "Blood Supply"),
 
                         React.createElement("p", { className: "text-xs text-red-600" }, sel.blood)
 
@@ -4045,7 +4088,7 @@ var d = labToolData.brainAtlas || {};
 
                       sel.category && React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-[10px] font-bold text-purple-500 uppercase mb-0.5" }, "\u2697\uFE0F Category"),
+                        React.createElement("p", { className: "text-[11px] font-bold text-purple-500 uppercase mb-0.5" }, "\u2697\uFE0F Category"),
 
                         React.createElement("p", { className: "text-xs text-purple-700 font-semibold" }, sel.category)
 
@@ -4053,7 +4096,7 @@ var d = labToolData.brainAtlas || {};
 
                       sel.synthesis && React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase mb-0.5" }, "\uD83E\uDDEC Synthesis Pathway"),
+                        React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase mb-0.5" }, "\uD83E\uDDEC Synthesis Pathway"),
 
                         React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-purple-50 rounded-lg p-2" }, sel.synthesis)
 
@@ -4061,7 +4104,7 @@ var d = labToolData.brainAtlas || {};
 
                       sel.receptors && React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase mb-0.5" }, "\uD83C\uDFAF Receptor Subtypes"),
+                        React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase mb-0.5" }, "\uD83C\uDFAF Receptor Subtypes"),
 
                         React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-indigo-50 rounded-lg p-2" }, sel.receptors)
 
@@ -4069,7 +4112,7 @@ var d = labToolData.brainAtlas || {};
 
                       sel.pathways && React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase mb-0.5" }, "\uD83D\uDEE4\uFE0F Neural Pathways"),
+                        React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase mb-0.5" }, "\uD83D\uDEE4\uFE0F Neural Pathways"),
 
                         React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-teal-50 rounded-lg p-2" }, sel.pathways)
 
@@ -4077,7 +4120,7 @@ var d = labToolData.brainAtlas || {};
 
                       sel.drugs && React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-[10px] font-bold text-blue-600 uppercase mb-0.5" }, "\uD83D\uDC8A Pharmacology"),
+                        React.createElement("p", { className: "text-[11px] font-bold text-blue-600 uppercase mb-0.5" }, "\uD83D\uDC8A Pharmacology"),
 
                         React.createElement("p", { className: "text-xs text-blue-800 leading-relaxed bg-blue-50 border border-blue-200 rounded-lg p-2" }, sel.drugs)
 
@@ -4085,7 +4128,7 @@ var d = labToolData.brainAtlas || {};
 
                       sel.conditions && React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-[10px] font-bold text-amber-600 uppercase mb-0.5" }, "\u26A0 Associated Conditions"),
+                        React.createElement("p", { className: "text-[11px] font-bold text-amber-600 uppercase mb-0.5" }, "\u26A0 Associated Conditions"),
 
                         React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-amber-50 rounded-lg p-2" }, sel.conditions)
 
@@ -4093,11 +4136,141 @@ var d = labToolData.brainAtlas || {};
 
                       sel.damage && React.createElement("div", null,
 
-                        React.createElement("p", { className: "text-[10px] font-bold text-rose-500 uppercase mb-0.5" }, "\uD83C\uDFE5 If Damaged"),
+                        React.createElement("p", { className: "text-[11px] font-bold text-rose-500 uppercase mb-0.5" }, "\uD83C\uDFE5 If Damaged"),
 
                         React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed bg-rose-50 rounded-lg p-2" }, sel.damage)
 
-                      )
+                      ),
+
+
+
+                      // ── AI Explain at my level (reading-level aware) ──
+
+                      (function () {
+
+                        var aiKey = '_ai_' + sel.id;
+
+                        var aiLevelKey = '_aiLevel_' + sel.id;
+
+                        var aiLoadingKey = '_aiLoading_' + sel.id;
+
+                        var aiErrorKey = '_aiError_' + sel.id;
+
+                        var aiText = d[aiKey] || '';
+
+                        var aiLevel = d[aiLevelKey] || 'grade5';
+
+                        var aiLoading = !!d[aiLoadingKey];
+
+                        var aiError = d[aiErrorKey] || '';
+
+                        var LEVELS = [
+
+                          { id: 'plain', label: 'Plain', promptHint: 'using simple everyday words and short sentences, no jargon' },
+
+                          { id: 'grade5', label: 'Grade 5', promptHint: 'for a 5th grade student, brief and friendly' },
+
+                          { id: 'hs', label: 'High School', promptHint: 'for a high school student, scientifically accurate but accessible' }
+
+                        ];
+
+                        function explain() {
+
+                          if (typeof callGemini !== 'function') { upd(aiErrorKey, 'AI tutor not available.'); return; }
+
+                          upd(aiLoadingKey, true); upd(aiErrorKey, ''); upd(aiKey, '');
+
+                          var lv = LEVELS.find(function (L) { return L.id === aiLevel; }) || LEVELS[1];
+
+                          var parts = [];
+
+                          parts.push('Brain region: ' + sel.name + '.');
+
+                          parts.push('Function: ' + sel.fn + '.');
+
+                          if (sel.conditions) parts.push('Associated conditions: ' + sel.conditions + '.');
+
+                          if (sel.damage) parts.push('Damage effects: ' + sel.damage + '.');
+
+                          if (sel.drugs) parts.push('Related pharmacology: ' + sel.drugs + '.');
+
+                          var prompt = 'Explain this brain region ' + lv.promptHint + '. '
+
+                            + parts.join(' ') + ' '
+
+                            + 'In 2-3 short sentences, explain (a) what this region does, (b) a concrete everyday example or analogy, and (c) why it matters. '
+
+                            + 'No markdown, no bullets, no headings. Use plain prose.';
+
+                          callGemini(prompt, false, false, 0.5).then(function (resp) {
+
+                            upd(aiKey, String(resp || '').trim());
+
+                            upd(aiLoadingKey, false);
+
+                            if (typeof announceToSR === 'function') announceToSR('Explanation ready for ' + sel.name + '.');
+
+                          }).catch(function () {
+
+                            upd(aiLoadingKey, false);
+
+                            upd(aiErrorKey, 'Could not reach AI tutor. Try again in a moment.');
+
+                          });
+
+                        }
+
+                        return React.createElement("div", { className: "pt-2 border-t border-slate-200" },
+
+                          React.createElement("div", { className: "flex items-center flex-wrap gap-2 mb-1.5" },
+
+                            React.createElement("p", { className: "text-[11px] font-bold text-purple-600 uppercase" }, "\u2728 Explain at my level"),
+
+                            React.createElement("div", { className: "ml-auto flex gap-1", role: "group", "aria-label": "Reading level" },
+
+                              LEVELS.map(function (L) {
+
+                                var active = aiLevel === L.id;
+
+                                return React.createElement("button", {
+
+                                  key: L.id,
+
+                                  onClick: function () { upd(aiLevelKey, L.id); },
+
+                                  "aria-label": "Reading level: " + L.label + (active ? " (selected)" : ""),
+
+                                  "aria-pressed": active,
+
+                                  className: "px-2 py-0.5 rounded text-[10px] font-bold " + (active ? 'bg-purple-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-purple-50')
+
+                                }, L.label);
+
+                              })
+
+                            ),
+
+                            React.createElement("button", {
+
+                              onClick: explain,
+
+                              disabled: aiLoading,
+
+                              "aria-label": "Generate AI explanation for " + sel.name + " at " + ((LEVELS.find(function (L) { return L.id === aiLevel; }) || {}).label || 'Grade 5') + " level",
+
+                              className: "px-2.5 py-1 rounded text-[11px] font-bold bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50"
+
+                            }, aiLoading ? '\u23F3 Thinking...' : (aiText ? '\uD83D\uDD04 Re-explain' : '\uD83E\uDDE0 Explain'))
+
+                          ),
+
+                          aiError && React.createElement("p", { className: "text-[11px] text-rose-600", role: "alert" }, aiError),
+
+                          aiText && React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed bg-purple-50 rounded-lg p-2" }, aiText)
+
+                        );
+
+                      })()
 
                     )
 
@@ -4107,7 +4280,7 @@ var d = labToolData.brainAtlas || {};
 
                   React.createElement("div", { className: "space-y-1 max-h-[380px] overflow-y-auto pr-1" },
 
-                    filtered.length === 0 && React.createElement("p", { className: "text-xs text-slate-500 italic py-4 text-center" }, "No regions match your search."),
+                    filtered.length === 0 && React.createElement("p", { className: "text-xs text-slate-600 italic py-4 text-center" }, "No regions match your search."),
 
                     filtered.map(function (r) {
 
@@ -4125,7 +4298,7 @@ var d = labToolData.brainAtlas || {};
 
                         React.createElement("div", { className: "font-bold text-slate-800" }, r.name),
 
-                        React.createElement("div", { className: "text-[10px] text-slate-500 mt-0.5 line-clamp-1" }, r.fn.substring(0, 80) + (r.fn.length > 80 ? '...' : ''))
+                        React.createElement("div", { className: "text-[11px] text-slate-600 mt-0.5 line-clamp-1" }, r.fn.substring(0, 80) + (r.fn.length > 80 ? '...' : ''))
 
                       );
 

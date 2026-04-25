@@ -411,6 +411,14 @@
       var correctCount = problems.filter(function (p) { return p.correct; }).length;
       var timerPct = (timer / timeLimit) * 100;
       var isLowTime = timer <= 10;
+      // Live DCPM — digits-correct-per-minute, the gold-standard fluency
+      // measure. We compute it from the same formula that finishProbe uses,
+      // so the live number matches what the results will show. Shown to the
+      // student during the probe as light real-time feedback.
+      var liveDigitsCorrect = problems.filter(function (p) { return p.correct; })
+        .reduce(function (s, p) { return s + countDigits(p.answer); }, 0);
+      var liveElapsed = timeLimit - timer;
+      var liveDcpm = liveElapsed > 0 ? Math.round(liveDigitsCorrect / Math.max(0.1, liveElapsed / 60)) : 0;
 
       var feedbackBg = lastFeedback === 'correct' ? 'rgba(34,197,94,0.15)'
         : lastFeedback === 'wrong' ? 'rgba(239,68,68,0.1)'
@@ -424,11 +432,26 @@
           padding: '16px', transition: 'background 0.3s', backgroundColor: feedbackBg
         }
       },
-        // Timer bar
+        // Timer bar + live DCPM ticker
         h('div', { style: { width: '100%', maxWidth: '28rem', marginBottom: '2rem' } },
-          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', gap: '8px', flexWrap: 'wrap' } },
             h('span', { style: { fontSize: '14px', fontWeight: 800, color: isLowTime ? '#dc2626' : '#b45309', animation: isLowTime ? 'pulse 1s infinite' : 'none' } },
               '\u23f1\ufe0f ' + Math.floor(timer / 60) + ':' + String(timer % 60).padStart(2, '0')),
+            // Live DCPM pill — updates every second as the timer ticks. Low
+            // opacity until at least 10s have elapsed so the number isn't
+            // noisy at the start of the probe when the sample is tiny.
+            h('span', {
+              style: {
+                fontSize: '13px', fontWeight: 800,
+                padding: '3px 10px', borderRadius: '999px',
+                background: 'linear-gradient(90deg,#ede9fe,#e9d5ff)',
+                color: '#6d28d9',
+                border: '1px solid #c4b5fd',
+                opacity: liveElapsed >= 10 ? 1 : 0.45,
+                transition: 'opacity 0.4s'
+              },
+              title: 'Digits-correct per minute — the fluency benchmark metric, updating live.'
+            }, '\uD83D\uDCC8 ' + liveDcpm + ' dcpm'),
             h('span', { style: { fontSize: '14px', fontWeight: 800, color: '#475569' } },
               '#' + (currentIndex + 1) + ' \u2022 \u2705 ' + correctCount)
           ),
@@ -560,25 +583,73 @@
           })
         ) : null,
 
-        // DCPM Trend
-        history.length >= 2 ? h('div', {
-          style: { background: '#fff', borderRadius: '12px', padding: '12px', border: '1px solid #fef3c7', marginBottom: '16px' }
-        },
-          h('div', { style: { fontSize: '12px', fontWeight: 800, color: '#64748b', marginBottom: '8px' } },
-            '\ud83d\udcc8 DCPM Trend (' + history.length + ' sessions)'),
-          h('div', { style: { display: 'flex', alignItems: 'flex-end', gap: '4px', height: '64px' } },
-            history.map(function (hItem, i) {
-              var pct = (hItem.dcpm / maxDcpm) * 100;
-              return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: i, style: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' } },
-                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: '9px', fontWeight: 700, color: '#d97706' } }, hItem.dcpm),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: {
-                  width: '100%', background: 'linear-gradient(to top, #f59e0b, #fdba74)',
-                  borderRadius: '4px 4px 0 0', height: Math.max(4, pct) + '%', minHeight: '4px'
-                } })
-              );
-            })
-          )
-        ) : null,
+        // DCPM Trend — bar chart per session with a trend delta and personal-best
+        // marker so the student immediately sees "am I improving?" instead of
+        // having to eyeball raw bars.
+        history.length >= 2 ? (function () {
+          var prevDcpm = history[history.length - 2].dcpm;
+          var curDcpm = history[history.length - 1].dcpm;
+          var delta = curDcpm - prevDcpm;
+          var avgDcpm = Math.round(history.reduce(function (s, x) { return s + x.dcpm; }, 0) / history.length);
+          var personalBest = Math.max.apply(null, history.map(function (x) { return x.dcpm; }));
+          var avgPct = (avgDcpm / maxDcpm) * 100;
+          return h('div', {
+            style: { background: '#fff', borderRadius: '12px', padding: '12px', border: '1px solid #fef3c7', marginBottom: '16px' }
+          },
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', flexWrap: 'wrap', gap: '6px' } },
+              h('div', { style: { fontSize: '12px', fontWeight: 800, color: '#64748b' } },
+                '\ud83d\udcc8 DCPM Trend (' + history.length + ' sessions)'),
+              // Trend delta — green/red arrow + number. Grey when flat.
+              h('span', {
+                style: {
+                  fontSize: '11px', fontWeight: 800, padding: '2px 8px', borderRadius: '999px',
+                  background: delta > 0 ? '#d1fae5' : delta < 0 ? '#fee2e2' : '#f1f5f9',
+                  color: delta > 0 ? '#047857' : delta < 0 ? '#b91c1c' : '#64748b'
+                }
+              }, (delta > 0 ? '\u25B2 +' : delta < 0 ? '\u25BC ' : '\u25AC ') + delta + ' vs last'),
+              h('span', { style: { fontSize: '10px', color: '#64748b' } },
+                'avg ' + avgDcpm + ' \u2022 best ' + personalBest)
+            ),
+            h('div', { style: { position: 'relative', height: '64px' } },
+              // Average reference line — subtle dashed horizontal overlay so
+              // students can see which sessions beat their average.
+              h('div', {
+                style: {
+                  position: 'absolute', left: 0, right: 0,
+                  bottom: avgPct + '%',
+                  height: '1px',
+                  borderTop: '1.5px dashed #94a3b8',
+                  opacity: 0.55,
+                  pointerEvents: 'none',
+                  zIndex: 2
+                },
+                title: 'Average: ' + avgDcpm + ' DCPM'
+              }),
+              h('div', { style: { display: 'flex', alignItems: 'flex-end', gap: '4px', height: '64px', position: 'relative' } },
+                history.map(function (hItem, i) {
+                  var pct = (hItem.dcpm / maxDcpm) * 100;
+                  var isBest = hItem.dcpm === personalBest;
+                  var isLatest = i === history.length - 1;
+                  return h('div', { key: i, style: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' } },
+                    h('span', { style: { fontSize: '9px', fontWeight: 700, color: isBest ? '#d97706' : '#94a3b8' } }, isBest ? '\u2B50 ' + hItem.dcpm : hItem.dcpm),
+                    h('div', { title: hItem.dcpm + ' DCPM' + (isBest ? ' (personal best)' : '') + (isLatest ? ' (this session)' : ''), style: {
+                      width: '100%',
+                      background: isBest
+                        ? 'linear-gradient(to top,#d97706,#fbbf24)'
+                        : isLatest
+                          ? 'linear-gradient(to top,#f59e0b,#fed7aa)'
+                          : 'linear-gradient(to top, #fcd34d, #fde68a)',
+                      borderRadius: '4px 4px 0 0',
+                      height: Math.max(4, pct) + '%',
+                      minHeight: '4px',
+                      boxShadow: isLatest ? '0 0 6px rgba(245,158,11,0.5)' : 'none'
+                    } })
+                  );
+                })
+              )
+            )
+          );
+        })() : null,
 
         // Actions
         h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: '8px', marginTop: '16px' } },
@@ -727,8 +798,1460 @@
     );
   }
 
-  // ── Register module ──
+  // ═══════════════════════════════════════════════════════════
+  // ── FLUENCY MAZE MODE — Navigate a maze by solving math facts ──
+  // Inspired by Aaron Pomeranz's dissertation research on fluency
+  // maze assessment (USM, 2024)
+  // ═══════════════════════════════════════════════════════════
+
+  var CELL_SIZE = 52;
+  var MAZE_SIZES = { small: { cols: 5, rows: 5, label: 'Small (5\u00d75)' }, medium: { cols: 7, rows: 7, label: 'Medium (7\u00d77)' }, large: { cols: 9, rows: 9, label: 'Large (9\u00d99)' } };
+
+  // ── Procedural stone/dungeon textures (no external assets) ──
+  // Builds a CanvasTexture that reads as stone/brick via layered noise + cracks.
+  // Called once per maze init, cached on the engine object to avoid per-wall
+  // GPU uploads. Returns a THREE.CanvasTexture so callers can set wrap modes
+  // and repeat counts.
+  function buildStoneTexture(THREE, hue) {
+    var sz = 128;
+    var cnv = document.createElement('canvas');
+    cnv.width = sz; cnv.height = sz;
+    var ctx = cnv.getContext('2d');
+    var base = hue || 'rgb(42,42,74)';
+    ctx.fillStyle = base;
+    ctx.fillRect(0, 0, sz, sz);
+    // Value noise — hand-rolled (no perlin lib). Small blotches of lighter/darker
+    // regions give the stone its mottled look.
+    for (var i = 0; i < 1600; i++) {
+      var x = Math.random() * sz, y = Math.random() * sz;
+      var rad = 0.5 + Math.random() * 1.8;
+      var light = Math.random();
+      ctx.fillStyle = light > 0.5
+        ? 'rgba(255,255,255,' + (0.02 + Math.random() * 0.08) + ')'
+        : 'rgba(0,0,0,' + (0.03 + Math.random() * 0.14) + ')';
+      ctx.beginPath(); ctx.arc(x, y, rad, 0, Math.PI * 2); ctx.fill();
+    }
+    // Horizontal brick seams (mortar lines) at irregular intervals
+    ctx.strokeStyle = 'rgba(0,0,0,0.45)';
+    ctx.lineWidth = 1;
+    for (var sy = 0; sy < sz; sy += 22 + Math.floor(Math.random() * 6)) {
+      ctx.beginPath(); ctx.moveTo(0, sy); ctx.lineTo(sz, sy); ctx.stroke();
+    }
+    // Vertical brick seams — offset every other row to break a repeating grid
+    for (var row = 0; row < 6; row++) {
+      var rowY = row * 22;
+      var offset = (row % 2) * 32;
+      for (var sx = offset; sx < sz; sx += 64) {
+        ctx.beginPath(); ctx.moveTo(sx, rowY); ctx.lineTo(sx, rowY + 22); ctx.stroke();
+      }
+    }
+    // A few hairline cracks for character
+    ctx.strokeStyle = 'rgba(0,0,0,0.35)';
+    for (var cr = 0; cr < 5; cr++) {
+      ctx.beginPath();
+      var sxc = Math.random() * sz, syc = Math.random() * sz;
+      ctx.moveTo(sxc, syc);
+      for (var seg = 0; seg < 5; seg++) {
+        sxc += (Math.random() - 0.5) * 18;
+        syc += (Math.random() - 0.5) * 18;
+        ctx.lineTo(sxc, syc);
+      }
+      ctx.stroke();
+    }
+    var tex = new THREE.CanvasTexture(cnv);
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    tex.anisotropy = 4;
+    return tex;
+  }
+
+  // Soft radial-gradient sprite texture — used as a glow card behind point
+  // lights so "bloom" reads visually without requiring EffectComposer.
+  function buildGlowSpriteTexture(THREE, hexColor) {
+    var sz = 128;
+    var cnv = document.createElement('canvas');
+    cnv.width = sz; cnv.height = sz;
+    var ctx = cnv.getContext('2d');
+    var g = ctx.createRadialGradient(sz / 2, sz / 2, 0, sz / 2, sz / 2, sz / 2);
+    var r = (hexColor >> 16) & 0xff, gg = (hexColor >> 8) & 0xff, b = hexColor & 0xff;
+    g.addColorStop(0, 'rgba(' + r + ',' + gg + ',' + b + ',0.9)');
+    g.addColorStop(0.3, 'rgba(' + r + ',' + gg + ',' + b + ',0.45)');
+    g.addColorStop(1, 'rgba(' + r + ',' + gg + ',' + b + ',0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, sz, sz);
+    return new THREE.CanvasTexture(cnv);
+  }
+
+  function generateMaze(rows, cols) {
+    // Simple recursive backtracker maze generator
+    var grid = [];
+    for (var r = 0; r < rows; r++) {
+      grid[r] = [];
+      for (var c = 0; c < cols; c++) {
+        grid[r][c] = { r: r, c: c, walls: { top: true, right: true, bottom: true, left: true }, visited: false };
+      }
+    }
+    var stack = [];
+    var current = grid[0][0];
+    current.visited = true;
+    function neighbors(cell) {
+      var ns = [];
+      if (cell.r > 0 && !grid[cell.r - 1][cell.c].visited) ns.push(grid[cell.r - 1][cell.c]);
+      if (cell.r < rows - 1 && !grid[cell.r + 1][cell.c].visited) ns.push(grid[cell.r + 1][cell.c]);
+      if (cell.c > 0 && !grid[cell.r][cell.c - 1].visited) ns.push(grid[cell.r][cell.c - 1]);
+      if (cell.c < cols - 1 && !grid[cell.r][cell.c + 1].visited) ns.push(grid[cell.r][cell.c + 1]);
+      return ns;
+    }
+    function removeWall(a, b) {
+      if (a.r === b.r) {
+        if (a.c < b.c) { a.walls.right = false; b.walls.left = false; }
+        else { a.walls.left = false; b.walls.right = false; }
+      } else {
+        if (a.r < b.r) { a.walls.bottom = false; b.walls.top = false; }
+        else { a.walls.top = false; b.walls.bottom = false; }
+      }
+    }
+    while (true) {
+      var ns = neighbors(current);
+      if (ns.length > 0) {
+        var next = ns[Math.floor(Math.random() * ns.length)];
+        stack.push(current);
+        removeWall(current, next);
+        next.visited = true;
+        current = next;
+      } else if (stack.length > 0) {
+        current = stack.pop();
+      } else { break; }
+    }
+    return grid;
+  }
+
+  function FluencyMazePanel(props) {
+    var React = props.React || window.React;
+    var h = React.createElement;
+    var useState = React.useState;
+    var useRef = React.useRef;
+    var useEffect = React.useEffect;
+    var gradeLevel = props.gradeLevel || '3';
+    var addToast = props.addToast;
+    var handleScoreUpdate = props.handleScoreUpdate;
+    var t = props.t || function(k) { return k; };
+
+    var _s = useState;
+    var mode = _s('setup')[0], setMode = _s[1]; // actually use individual calls
+    // Re-declare properly
+    var modeState = useState('setup');
+    var mode = modeState[0], setMode = modeState[1];
+    var opState = useState('mul');
+    var operation = opState[0], setOperation = opState[1];
+    var diffState = useState('single');
+    var difficulty = diffState[0], setDifficulty = diffState[1];
+    var chaseState = useState(false);
+    var chaseMode = chaseState[0], setChaseMode = chaseState[1];
+    var mazeSizeState = useState('medium');
+    var mazeSize = mazeSizeState[0], setMazeSize = mazeSizeState[1];
+    var mazeState = useState(null);
+    var maze = mazeState[0], setMaze = mazeState[1];
+    var posState = useState({ r: 0, c: 0 });
+    var playerPos = posState[0], setPlayerPos = posState[1];
+    var problemState = useState(null);
+    var currentProblem = problemState[0], setCurrentProblem = problemState[1];
+    var inputState = useState('');
+    var userInput = inputState[0], setUserInput = inputState[1];
+    var scoreState = useState(0);
+    var score = scoreState[0], setScore = scoreState[1];
+    var correctState = useState(0);
+    var correct = correctState[0], setCorrect = correctState[1];
+    var wrongState = useState(0);
+    var wrong = wrongState[0], setWrong = wrongState[1];
+    var moveCountState = useState(0);
+    var moveCount = moveCountState[0], setMoveCount = moveCountState[1];
+    var timerState = useState(0);
+    var elapsed = timerState[0], setElapsed = timerState[1];
+    var monsterState = useState({ r: 0, c: 0 });
+    var monsterPos = monsterState[0], setMonsterPos = monsterState[1];
+    var gameOverState = useState(false);
+    var gameOver = gameOverState[0], setGameOver = gameOverState[1];
+    var wonState = useState(false);
+    var won = wonState[0], setWon = wonState[1];
+    var feedbackState = useState('');
+    // Small tick counter used only to drive the "you are here" pulse on the
+    // minimap. Incremented by a RAF loop while mode==='playing'. Kept separate
+    // from game state so game re-renders aren't batched with animation ticks.
+    var minimapTickState = useState(0);
+    var feedback = feedbackState[0], setFeedback = feedbackState[1];
+    // Consecutive correct answers. Resets to 0 on a wrong answer. Drives the
+    // HUD combo meter and triggers a milestone celebration at every third
+    // correct answer — meaningful reinforcement for fluency gains.
+    var streakState = useState(0);
+    var streak = streakState[0], setStreak = streakState[1];
+    // Direction hint shown briefly on the minimap after the user presses H
+    // or taps the Hint button. Cleared by setTimeout. Cost: -5 score.
+    var hintDirState = useState(null);
+    var hintDir = hintDirState[0], setHintDir = hintDirState[1];
+    // Key-and-lock: a rotating golden key is placed at a random non-start,
+    // non-exit cell. The exit portal stays locked (no win trigger) until the
+    // player walks onto the key cell. Adds a meaningful side-objective vs
+    // "just head to the bottom-right."
+    var keyCollectedState = useState(false);
+    var keyCollected = keyCollectedState[0], setKeyCollected = keyCollectedState[1];
+    // keyPos is a ref (not state) so the animate loop and submitAnswer both
+    // read the current position without stale-closure surprises.
+    var keyPosRef = useRef(null);
+    // Time medal awarded on win — 'gold' | 'silver' | 'bronze' | null. Thresholds
+    // scale with maze size. Surfaces on the results screen.
+    var medalState = useState(null);
+    var medal = medalState[0], setMedal = medalState[1];
+    var canvasRef = useRef(null);
+    var playerPosRef = useRef({ r: 0, c: 0 });
+    var timerRef = useRef(null);
+    var monsterTimerRef = useRef(null);
+    var inputRef = useRef(null);
+    // 3D maze refs — hoisted above the early returns so the hook order is
+    // stable across renders. Previously these sat after `if (mode === 'setup')
+    // return ...`, which meant they were only called once the user started the
+    // maze — crashing React with "Rendered more hooks than during the previous
+    // render." (Rules of Hooks: every hook must be called on every render, in
+    // the same order.)
+    var maze3dRef = useRef(null);
+    var maze3dEngRef = useRef(null);
+    var maze3dAnimRef = useRef(0);
+    // Cells the player has physically stood on. Drives the minimap breadcrumb
+    // trail and fog-of-war, so we want this as a ref (mutated synchronously in
+    // the move handler) rather than state (would trigger extra renders and
+    // race with the correct-answer -> move sequence).
+    var visitedCellsRef = useRef({ '0,0': true });
+    // Animation-time tick used only to nudge the minimap redraw when the
+    // you-are-here pulse / breadcrumb trail needs a frame-accurate update.
+    var minimapTickRef = useRef(0);
+    // Bump when we want the "wrong answer" screen shake to fire.
+    var shakeRef = useRef(0);
+
+    function makeProblem() {
+      var a, b, op = operation === 'mixed' ? ['add','sub','mul','div'][Math.floor(Math.random() * 4)] : operation;
+      var maxN = difficulty === 'single' ? 12 : 20;
+      if (op === 'add') { a = Math.floor(Math.random() * maxN) + 1; b = Math.floor(Math.random() * maxN) + 1; return { text: a + ' + ' + b, answer: a + b, op: op }; }
+      if (op === 'sub') { a = Math.floor(Math.random() * maxN) + 1; b = Math.floor(Math.random() * a) + 1; return { text: a + ' − ' + b, answer: a - b, op: op }; }
+      if (op === 'mul') { a = Math.floor(Math.random() * 12) + 1; b = Math.floor(Math.random() * 12) + 1; return { text: a + ' × ' + b, answer: a * b, op: op }; }
+      if (op === 'div') { b = Math.floor(Math.random() * 11) + 2; var ans = Math.floor(Math.random() * 12) + 1; a = b * ans; return { text: a + ' ÷ ' + b, answer: ans, op: op }; }
+      return { text: '1 + 1', answer: 2, op: 'add' };
+    }
+
+    function getMazeSize() { var s = MAZE_SIZES[mazeSize] || MAZE_SIZES.medium; return { cols: s.cols, rows: s.rows }; }
+    var MAZE_COLS = getMazeSize().cols;
+    var MAZE_ROWS = getMazeSize().rows;
+
+    // BFS from player cell to exit cell respecting wall openings. Returns
+    // the direction ('up'|'down'|'left'|'right') of the first step along
+    // the shortest path, or null if no path exists (shouldn't happen for a
+    // valid maze).
+    function findHintDir() {
+      if (!maze) return null;
+      var start = playerPosRef.current;
+      if (start.r === MAZE_ROWS - 1 && start.c === MAZE_COLS - 1) return null;
+      var visited = {};
+      visited[start.r + ',' + start.c] = null; // predecessor marker
+      var queue = [start];
+      var head = 0;
+      while (head < queue.length) {
+        var cur = queue[head++];
+        if (cur.r === MAZE_ROWS - 1 && cur.c === MAZE_COLS - 1) {
+          // Walk back to start-1 to find the first move direction.
+          var node = cur;
+          while (visited[node.r + ',' + node.c]) {
+            var prev = visited[node.r + ',' + node.c];
+            if (prev.r === start.r && prev.c === start.c) {
+              if (node.r < prev.r) return 'up';
+              if (node.r > prev.r) return 'down';
+              if (node.c < prev.c) return 'left';
+              if (node.c > prev.c) return 'right';
+            }
+            node = prev;
+          }
+          return null;
+        }
+        var cellH = maze[cur.r][cur.c];
+        var neighbors = [];
+        if (!cellH.walls.top && cur.r > 0) neighbors.push({ r: cur.r - 1, c: cur.c });
+        if (!cellH.walls.bottom && cur.r < MAZE_ROWS - 1) neighbors.push({ r: cur.r + 1, c: cur.c });
+        if (!cellH.walls.left && cur.c > 0) neighbors.push({ r: cur.r, c: cur.c - 1 });
+        if (!cellH.walls.right && cur.c < MAZE_COLS - 1) neighbors.push({ r: cur.r, c: cur.c + 1 });
+        for (var ni = 0; ni < neighbors.length; ni++) {
+          var n = neighbors[ni];
+          var key = n.r + ',' + n.c;
+          if (!(key in visited)) {
+            visited[key] = cur;
+            queue.push(n);
+          }
+        }
+      }
+      return null;
+    }
+
+    function requestHint() {
+      if (mode !== 'playing' || gameOver || won) return;
+      var dir = findHintDir();
+      if (!dir) return;
+      setHintDir(dir);
+      setScore(function(p) { return Math.max(0, p - 5); });
+      setStreak(0); // using a hint resets combo — keeps it honest
+      playTone(660, 0.08, 'sine', 0.04);
+      setTimeout(function() { setHintDir(null); }, 2200);
+    }
+
+    function startMaze() {
+      var sz = getMazeSize();
+      var newMaze = generateMaze(sz.rows, sz.cols);
+      setMaze(newMaze);
+      setPlayerPos({ r: 0, c: 0 }); playerPosRef.current = { r: 0, c: 0 };
+      // Reset breadcrumb trail — each new maze starts with only the origin lit.
+      visitedCellsRef.current = { '0,0': true };
+      setMonsterPos({ r: 0, c: 0 });
+      setCurrentProblem(null);
+      setScore(0); setCorrect(0); setWrong(0); setMoveCount(0); setElapsed(0);
+      setGameOver(false); setWon(false); setFeedback('');
+      setStreak(0); setHintDir(null);
+      setKeyCollected(false);
+      setMedal(null);
+      // Pick a random cell for the key that isn't the start OR the exit, and
+      // prefer cells at least 1/3 of the way from origin so the key detour
+      // feels meaningful rather than incidental.
+      var minDist = Math.floor((sz.rows + sz.cols) / 3);
+      var candidates = [];
+      for (var kr = 0; kr < sz.rows; kr++) {
+        for (var kc = 0; kc < sz.cols; kc++) {
+          if (kr === 0 && kc === 0) continue;
+          if (kr === sz.rows - 1 && kc === sz.cols - 1) continue;
+          if ((kr + kc) >= minDist) candidates.push({ r: kr, c: kc });
+        }
+      }
+      if (candidates.length === 0) {
+        // Tiny 2x2-ish fallback — just drop it in the middle.
+        keyPosRef.current = { r: Math.floor(sz.rows / 2), c: Math.floor(sz.cols / 2) };
+      } else {
+        keyPosRef.current = candidates[Math.floor(Math.random() * candidates.length)];
+      }
+      setMode('playing');
+      // Timer
+      if (timerRef.current) clearInterval(timerRef.current);
+      timerRef.current = setInterval(function() { setElapsed(function(p) { return p + 1; }); }, 1000);
+      // Monster chase timer (moves every 4 seconds)
+      if (monsterTimerRef.current) clearInterval(monsterTimerRef.current);
+      if (chaseMode) {
+        monsterTimerRef.current = setInterval(function() {
+          setMonsterPos(function(mp) {
+            // BFS toward player — simple chase AI
+            // Just move one step closer (Manhattan distance)
+            var pr = playerPosRef.current.r, pc = playerPosRef.current.c;
+            var mr = mp.r, mc = mp.c;
+            if (mr < pr) return { r: mr + 1, c: mc };
+            if (mr > pr) return { r: mr - 1, c: mc };
+            if (mc < pc) return { r: mr, c: mc + 1 };
+            if (mc > pc) return { r: mr, c: mc - 1 };
+            return mp;
+          });
+        }, 4000);
+      }
+    }
+
+    function tryMove(dir) {
+      if (gameOver || won) return;
+      var cell = maze[playerPos.r][playerPos.c];
+      var canMove = false;
+      var newR = playerPos.r, newC = playerPos.c;
+      if (dir === 'up' && !cell.walls.top) { newR--; canMove = true; }
+      if (dir === 'down' && !cell.walls.bottom) { newR++; canMove = true; }
+      if (dir === 'left' && !cell.walls.left) { newC--; canMove = true; }
+      if (dir === 'right' && !cell.walls.right) { newC++; canMove = true; }
+      if (!canMove) { setFeedback('wall'); setTimeout(function() { setFeedback(''); }, 300); return; }
+      // Show a problem to solve before moving
+      setCurrentProblem({ dir: dir, targetR: newR, targetC: newC, problem: makeProblem() });
+      setUserInput('');
+      setTimeout(function() { if (inputRef.current) inputRef.current.focus(); }, 50);
+    }
+
+    function submitAnswer() {
+      if (!currentProblem) return;
+      var ans = parseInt(userInput);
+      if (ans === currentProblem.problem.answer) {
+        // Correct — move to new cell
+        var newPos = { r: currentProblem.targetR, c: currentProblem.targetC };
+        setPlayerPos(newPos); playerPosRef.current = newPos;
+        // Mark the cell we just left AND the new one as visited so both show
+        // on the breadcrumb/fog-of-war minimap. Using a ref (not state) so
+        // there's no extra re-render and no race with the playerPos update.
+        visitedCellsRef.current[playerPos.r + ',' + playerPos.c] = true;
+        visitedCellsRef.current[newPos.r + ',' + newPos.c] = true;
+        // Streak bump. Every 3 in a row = bonus score + a little fanfare,
+        // reinforcing sustained fluency rather than just isolated correct
+        // answers. Captured here synchronously so the milestone check fires
+        // on the same tick as the increment.
+        var nextStreak = streak + 1;
+        setStreak(nextStreak);
+        var streakBonus = 0;
+        if (nextStreak > 0 && nextStreak % 3 === 0) {
+          streakBonus = 5 + nextStreak; // 8 @3, 11 @6, 14 @9, …
+          if (addToast) addToast('\uD83D\uDD25 Streak x' + nextStreak + '! +' + streakBonus + ' bonus', 'success');
+          // Quick ascending chime for the milestone
+          playTone(880, 0.06, 'sine', 0.05);
+          setTimeout(function() { playTone(1175, 0.06, 'sine', 0.05); }, 70);
+          setTimeout(function() { playTone(1568, 0.08, 'sine', 0.05); }, 140);
+        }
+        setCorrect(function(p) { return p + 1; });
+        setScore(function(p) { return p + 10 + streakBonus; });
+        setMoveCount(function(p) { return p + 1; });
+        setFeedback('correct');
+        // Clear any active hint — reward for solving without it
+        setHintDir(null);
+        playTone(880, 0.05, 'sine', 0.06);
+        setTimeout(function() { playTone(1320, 0.05, 'sine', 0.05); }, 50);
+        // 3D feedback: green ambient flash + gem drop at the cell we just left
+        var eng3d = maze3dEngRef.current;
+        if (eng3d) {
+          eng3d._feedbackFlash = 1;
+          eng3d.scene.children.forEach(function(c) { if (c.isAmbientLight) c.color.setHex(0x22aa44); c.intensity = 0.8; });
+          if (window.THREE && eng3d.gems) {
+            // Gem colors cycle through a pleasant spread so solves read as
+            // distinct rewards rather than "green dots."
+            var gemColors = [0x22c55e, 0x3b82f6, 0xa855f7, 0xec4899, 0xfbbf24, 0x06b6d4];
+            var gemColor = gemColors[eng3d.gems.length % gemColors.length];
+            var gemMat = new window.THREE.MeshStandardMaterial({ color: gemColor, emissive: gemColor, emissiveIntensity: 0.8, transparent: true, opacity: 0.9, metalness: 0.3, roughness: 0.2 });
+            // Octahedron geometry reads as a faceted crystal/gem.
+            var gem = new window.THREE.Mesh(new window.THREE.OctahedronGeometry(0.14, 0), gemMat);
+            var gcx = playerPos.c * 2 + 1, gcz = playerPos.r * 2 + 1;
+            gem.position.set(gcx, 0.7, gcz);
+            gem.userData._baseY = 0.7;
+            eng3d.scene.add(gem);
+            eng3d.gems.push(gem);
+            // Gem-burst — 10 small sparks fly outward from the gem spawn
+            // point. Gravity pulls them down; they fade and self-reap in the
+            // animate() particle loop.
+            if (!eng3d._particles) eng3d._particles = [];
+            for (var burstI = 0; burstI < 10; burstI++) {
+              var sparkMat = new window.THREE.MeshBasicMaterial({ color: gemColor, transparent: true, opacity: 1 });
+              var spark = new window.THREE.Mesh(new window.THREE.BoxGeometry(0.05, 0.05, 0.05), sparkMat);
+              spark.position.set(gcx, 0.7, gcz);
+              spark.userData._age = 0;
+              spark.userData._life = 0.9;
+              spark.userData._gravity = 8;
+              var ang = Math.random() * Math.PI * 2;
+              var spd = 1.5 + Math.random() * 1.5;
+              spark.userData._vel = { x: Math.cos(ang) * spd, y: 2 + Math.random() * 1.5, z: Math.sin(ang) * spd };
+              eng3d.scene.add(spark);
+              eng3d._particles.push(spark);
+            }
+          }
+        }
+        // Key pickup — if the new cell is the key cell, collect the key and
+        // unlock the exit. Triggers a bright gold burst + chime.
+        var kp = keyPosRef.current;
+        if (!keyCollected && kp && newPos.r === kp.r && newPos.c === kp.c) {
+          setKeyCollected(true);
+          if (addToast) addToast('\uD83D\uDDDD\uFE0F Key collected! Portal unlocked', 'success');
+          playTone(1175, 0.08, 'sine', 0.06);
+          setTimeout(function() { playTone(1568, 0.1, 'sine', 0.05); }, 80);
+          setTimeout(function() { playTone(1976, 0.12, 'sine', 0.05); }, 160);
+          if (eng3d && window.THREE) {
+            // Remove the 3D key mesh
+            if (eng3d.keyMesh) {
+              eng3d.scene.remove(eng3d.keyMesh);
+              if (eng3d.keyMesh.geometry) eng3d.keyMesh.geometry.dispose();
+              if (eng3d.keyMesh.material) eng3d.keyMesh.material.dispose();
+              eng3d.keyMesh = null;
+            }
+            // Gold celebratory sparks
+            if (!eng3d._particles) eng3d._particles = [];
+            for (var kb = 0; kb < 20; kb++) {
+              var goldMat = new window.THREE.MeshBasicMaterial({ color: 0xfbbf24, transparent: true, opacity: 1 });
+              var goldSpark = new window.THREE.Mesh(new window.THREE.OctahedronGeometry(0.06, 0), goldMat);
+              var kgx = kp.c * 2 + 1, kgz = kp.r * 2 + 1;
+              goldSpark.position.set(kgx, 1.0, kgz);
+              goldSpark.userData._age = 0;
+              goldSpark.userData._life = 1.3;
+              goldSpark.userData._gravity = 4;
+              var kang = Math.random() * Math.PI * 2;
+              var kspd = 1.8 + Math.random() * 2;
+              goldSpark.userData._vel = { x: Math.cos(kang) * kspd, y: 2 + Math.random() * 2, z: Math.sin(kang) * kspd };
+              eng3d.scene.add(goldSpark);
+              eng3d._particles.push(goldSpark);
+            }
+          }
+        }
+        // Check win — only triggers when the key is collected AND the player
+        // reached the exit cell. Exit-without-key plays a locked chime.
+        var atExit = currentProblem.targetR === MAZE_ROWS - 1 && currentProblem.targetC === MAZE_COLS - 1;
+        if (atExit && !keyCollected && !(kp && newPos.r === kp.r && newPos.c === kp.c)) {
+          // Player reached the exit but hasn't grabbed the key yet — lock
+          // rattle sound + toast. They can keep moving freely; it just means
+          // they have to backtrack through the key.
+          if (addToast) addToast('\uD83D\uDD12 Portal is locked — find the key first', 'error');
+          playTone(180, 0.12, 'sawtooth', 0.03);
+          setTimeout(function() { playTone(160, 0.15, 'sawtooth', 0.03); }, 100);
+        }
+        if (atExit && (keyCollected || (kp && newPos.r === kp.r && newPos.c === kp.c))) {
+          setWon(true); setMode('results');
+          if (timerRef.current) clearInterval(timerRef.current);
+          if (monsterTimerRef.current) clearInterval(monsterTimerRef.current);
+          // Medal thresholds scale with maze size — baseline is 2 seconds per
+          // cell, which is a sprinter's pace. Gold = 60% of that, silver =
+          // 100%, bronze = 180%. Beyond that, no medal (still a valid win).
+          var baseSec = MAZE_ROWS * MAZE_COLS * 2;
+          var medalKind = null;
+          var medalBonus = 0;
+          if (elapsed <= baseSec * 0.6) { medalKind = 'gold'; medalBonus = 20; }
+          else if (elapsed <= baseSec) { medalKind = 'silver'; medalBonus = 10; }
+          else if (elapsed <= baseSec * 1.8) { medalKind = 'bronze'; medalBonus = 5; }
+          setMedal(medalKind);
+          var finalScore = score + 10 + medalBonus;
+          if (medalKind && addToast) {
+            var medalEmoji = { gold: '\uD83E\uDD47', silver: '\uD83E\uDD48', bronze: '\uD83E\uDD49' }[medalKind];
+            addToast(medalEmoji + ' ' + medalKind.toUpperCase() + ' TIME! +' + medalBonus + ' bonus', 'success');
+          }
+          if (addToast) addToast('\uD83C\uDFC6 Maze complete! ' + (correct + 1) + ' correct in ' + elapsed + 's', 'success');
+          if (handleScoreUpdate) handleScoreUpdate(Math.round((correct + 1) / Math.max(1, elapsed) * 60) + medalBonus, 'Fluency Maze Complete', 'fluency-maze');
+          // Save high score
+          try {
+            var hs = JSON.parse(localStorage.getItem('fluency_maze_best') || '{}');
+            if (!hs.score || finalScore > hs.score) {
+              localStorage.setItem('fluency_maze_best', JSON.stringify({ score: finalScore, correct: correct + 1, wrong: wrong, time: elapsed, op: operation, size: mazeSize }));
+            }
+          } catch(e) {}
+          // 3D completion celebration — denser confetti + bigger spread +
+          // a floating "MAZE COMPLETE" banner sprite in front of the camera.
+          var eng3dC = maze3dEngRef.current;
+          if (eng3dC && window.THREE) {
+            var THREE = window.THREE;
+            var confColors = [0xfbbf24, 0x22c55e, 0x7c3aed, 0xef4444, 0x3b82f6, 0xec4899, 0x06b6d4, 0xf97316];
+            if (!eng3dC._particles) eng3dC._particles = [];
+            // 70 confetti bits (was 20) — mix of cubes and thin ribbons for
+            // visual variety.
+            for (var ci = 0; ci < 70; ci++) {
+              var isRibbon = ci % 3 === 0;
+              var cGeo = isRibbon
+                ? new THREE.BoxGeometry(0.14, 0.02, 0.02)
+                : new THREE.BoxGeometry(0.08, 0.08, 0.08);
+              var cMat = new THREE.MeshBasicMaterial({ color: confColors[ci % confColors.length], transparent: true, opacity: 1 });
+              var cMesh = new THREE.Mesh(cGeo, cMat);
+              cMesh.position.copy(eng3dC.camera.position);
+              cMesh.userData._age = 0; cMesh.userData._life = 2.5 + Math.random() * 1.5;
+              cMesh.userData._gravity = 5;
+              cMesh.userData._vel = {
+                x: (Math.random() - 0.5) * 7,
+                y: 4 + Math.random() * 4,
+                z: (Math.random() - 0.5) * 7
+              };
+              eng3dC.scene.add(cMesh);
+              eng3dC._particles.push(cMesh);
+            }
+            // Floating banner — Canvas-rendered "MAZE COMPLETE" sprite placed
+            // ahead of the camera at the time of winning. Fades via the same
+            // particle-aging pipeline so it disappears with the confetti.
+            try {
+              var bannerCnv = document.createElement('canvas');
+              bannerCnv.width = 512; bannerCnv.height = 128;
+              var bctx = bannerCnv.getContext('2d');
+              bctx.fillStyle = 'rgba(15,23,42,0.85)';
+              bctx.fillRect(0, 0, 512, 128);
+              bctx.strokeStyle = '#fbbf24'; bctx.lineWidth = 4;
+              bctx.strokeRect(6, 6, 500, 116);
+              bctx.font = 'bold 56px Georgia, serif';
+              bctx.textAlign = 'center'; bctx.textBaseline = 'middle';
+              bctx.fillStyle = '#fde047';
+              bctx.shadowColor = '#f59e0b'; bctx.shadowBlur = 20;
+              bctx.fillText('\uD83C\uDFC6 MAZE COMPLETE', 256, 64);
+              var bannerTex = new THREE.CanvasTexture(bannerCnv);
+              var banner = new THREE.Sprite(new THREE.SpriteMaterial({ map: bannerTex, transparent: true, opacity: 1 }));
+              banner.scale.set(4, 1, 1);
+              // Position ~2 units in front of the current camera facing.
+              var camDir = new THREE.Vector3();
+              eng3dC.camera.getWorldDirection(camDir);
+              var bp = eng3dC.camera.position.clone().addScaledVector(camDir, 2.5);
+              banner.position.copy(bp);
+              banner.userData._age = 0;
+              banner.userData._life = 4;
+              banner.userData._gravity = 0; // floats, doesn't fall
+              banner.userData._vel = { x: 0, y: 0.2, z: 0 };
+              eng3dC.scene.add(banner);
+              eng3dC._particles.push(banner);
+            } catch (bErr) { /* banner is optional polish; swallow */ }
+          }
+        }
+      } else {
+        // Wrong — don't move, penalty, streak broken
+        setWrong(function(p) { return p + 1; });
+        setScore(function(p) { return Math.max(0, p - 3); });
+        setStreak(0);
+        setFeedback('wrong');
+        playTone(220, 0.1, 'triangle', 0.04);
+        // Screen shake + red ambient flash. shakeRef decays inside the animate
+        // loop so the effect is short and non-nauseating.
+        shakeRef.current = 1;
+        var eng3dW = maze3dEngRef.current;
+        if (eng3dW) { eng3dW._feedbackFlash = 1; eng3dW.scene.children.forEach(function(c) { if (c.isAmbientLight) c.color.setHex(0xaa2222); c.intensity = 0.8; }); }
+      }
+      setCurrentProblem(null);
+      setTimeout(function() { setFeedback(''); }, 400);
+    }
+
+    // Check monster catch
+    useEffect(function() {
+      if (chaseMode && mode === 'playing' && monsterPos.r === playerPos.r && monsterPos.c === playerPos.c && moveCount > 0) {
+        setGameOver(true); setMode('results');
+        if (timerRef.current) clearInterval(timerRef.current);
+        if (monsterTimerRef.current) clearInterval(monsterTimerRef.current);
+        if (addToast) addToast('\uD83D\uDC7E The monster caught you! Score: ' + score, 'error');
+      }
+    });
+
+    // Keyboard navigation
+    useEffect(function() {
+      function handleKey(e) {
+        if (mode !== 'playing') return;
+        if (currentProblem) {
+          if (e.key === 'Enter') { e.preventDefault(); submitAnswer(); }
+          return;
+        }
+        if (e.key === 'ArrowUp' || e.key === 'w') tryMove('up');
+        if (e.key === 'ArrowDown' || e.key === 's') tryMove('down');
+        if (e.key === 'ArrowLeft' || e.key === 'a') tryMove('left');
+        if (e.key === 'ArrowRight' || e.key === 'd') tryMove('right');
+        if (e.key === 'h' || e.key === 'H') requestHint();
+      }
+      document.addEventListener('keydown', handleKey);
+      return function() { document.removeEventListener('keydown', handleKey); };
+    });
+
+    // Draw maze on canvas — minimap + 2D fallback. Features:
+    //   · fog of war: unseen cells are dim (still drawn so the shape is legible)
+    //   · breadcrumb trail: visited cells tinted indigo
+    //   · you-are-here pulse: animated ring around current cell
+    // The draw runs on every render (no dep array) and a small RAF-driven
+    // tick (minimapTickRef) keeps the pulse smooth.
+    useEffect(function() {
+      if (!maze || !canvasRef.current) return;
+      var cv = canvasRef.current;
+      var ctx = cv.getContext('2d');
+      var W = MAZE_COLS * CELL_SIZE;
+      var H = MAZE_ROWS * CELL_SIZE;
+      cv.width = W; cv.height = H;
+      var visited = visitedCellsRef.current || { '0,0': true };
+      var pulse = Math.sin(minimapTickRef.current * 0.12) * 0.5 + 0.5; // 0..1
+
+      // A cell is "seen" if visited OR any 4-neighbor is visited — gives the
+      // player a little peek-ahead so corridors aren't completely opaque.
+      function seen(r, c) {
+        if (visited[r + ',' + c]) return true;
+        return !!(visited[(r - 1) + ',' + c] || visited[(r + 1) + ',' + c] || visited[r + ',' + (c - 1)] || visited[r + ',' + (c + 1)]);
+      }
+
+      // Background
+      ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
+
+      // Draw cells
+      for (var r = 0; r < MAZE_ROWS; r++) {
+        for (var c = 0; c < MAZE_COLS; c++) {
+          var cell = maze[r][c];
+          var x = c * CELL_SIZE, y = r * CELL_SIZE;
+          var isVisited = !!visited[r + ',' + c];
+          var isSeen = seen(r, c);
+          // Fog-of-war: unseen cells get a heavy dark overlay even though
+          // the wall skeleton underneath keeps the map legible as a shape.
+          if (!isSeen) {
+            ctx.fillStyle = 'rgba(2,6,20,0.85)';
+            ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE);
+          }
+          // Cell floor
+          if (r === 0 && c === 0) { ctx.fillStyle = 'rgba(34,197,94,0.15)'; ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE); } // start
+          else if (r === MAZE_ROWS - 1 && c === MAZE_COLS - 1) { ctx.fillStyle = 'rgba(251,191,36,0.2)'; ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE); } // exit
+          // Breadcrumb tint for visited non-special cells
+          else if (isVisited) {
+            ctx.fillStyle = 'rgba(99,102,241,0.12)';
+            ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE);
+          }
+          // Walls — dim for unseen cells so the map still reads as a whole.
+          ctx.strokeStyle = isSeen ? '#475569' : '#1e293b';
+          ctx.lineWidth = 2;
+          if (cell.walls.top) { ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + CELL_SIZE, y); ctx.stroke(); }
+          if (cell.walls.right) { ctx.beginPath(); ctx.moveTo(x + CELL_SIZE, y); ctx.lineTo(x + CELL_SIZE, y + CELL_SIZE); ctx.stroke(); }
+          if (cell.walls.bottom) { ctx.beginPath(); ctx.moveTo(x, y + CELL_SIZE); ctx.lineTo(x + CELL_SIZE, y + CELL_SIZE); ctx.stroke(); }
+          if (cell.walls.left) { ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y + CELL_SIZE); ctx.stroke(); }
+        }
+      }
+
+      // Breadcrumb dots on each visited cell (excluding current position, which
+      // gets its own cat emoji below) — reinforces the trail even when many
+      // cells share the same indigo tint.
+      ctx.fillStyle = 'rgba(199,210,254,0.65)';
+      for (var vk in visited) {
+        if (!Object.prototype.hasOwnProperty.call(visited, vk)) continue;
+        var parts = vk.split(',');
+        var vr = parseInt(parts[0]), vc = parseInt(parts[1]);
+        if (vr === playerPos.r && vc === playerPos.c) continue;
+        ctx.beginPath(); ctx.arc(vc * CELL_SIZE + CELL_SIZE / 2, vr * CELL_SIZE + CELL_SIZE / 2, 2.5, 0, Math.PI * 2); ctx.fill();
+      }
+
+      // Start label
+      ctx.fillStyle = '#22c55e'; ctx.font = 'bold 10px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('START', CELL_SIZE / 2, CELL_SIZE / 2 + 14);
+      // Key icon — visible even in unseen cells, dim when unseen so the
+      // player has a faint sense of where to head but still discovers the
+      // exact route through exploration.
+      var kMini = keyPosRef.current;
+      if (kMini && !keyCollected) {
+        var keySeen = seen(kMini.r, kMini.c);
+        ctx.globalAlpha = keySeen ? 1 : 0.45;
+        ctx.font = '18px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText('\uD83D\uDDDD\uFE0F', (kMini.c + 0.5) * CELL_SIZE, (kMini.r + 0.5) * CELL_SIZE + 6);
+        ctx.globalAlpha = 1;
+      }
+      // Exit label (only if seen — keeps the goal mysterious until you're near).
+      // Locked version (no key yet) gets a lock glyph; unlocked gets the star.
+      var exitSeen = seen(MAZE_ROWS - 1, MAZE_COLS - 1);
+      if (exitSeen) {
+        ctx.fillStyle = keyCollected ? '#fbbf24' : '#94a3b8';
+        ctx.font = 'bold 10px sans-serif';
+        ctx.fillText(keyCollected ? 'EXIT' : 'LOCKED', (MAZE_COLS - 0.5) * CELL_SIZE, (MAZE_ROWS - 0.5) * CELL_SIZE + 14);
+        ctx.font = '18px sans-serif';
+        ctx.fillText(keyCollected ? '\u2B50' : '\uD83D\uDD12', (MAZE_COLS - 0.5) * CELL_SIZE, (MAZE_ROWS - 0.5) * CELL_SIZE);
+      }
+
+      // Monster (chase mode) — only draw if its cell is seen, so unseen
+      // monster location doesn't leak map info.
+      if (chaseMode && mode === 'playing' && !gameOver && seen(monsterPos.r, monsterPos.c)) {
+        ctx.font = '22px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText('\uD83D\uDC7E', (monsterPos.c + 0.5) * CELL_SIZE, (monsterPos.r + 0.5) * CELL_SIZE + 6);
+      }
+
+      // Player — animated "you are here" ring first, then the cat on top.
+      var pcx = (playerPos.c + 0.5) * CELL_SIZE;
+      var pcy = (playerPos.r + 0.5) * CELL_SIZE;
+      ctx.strokeStyle = 'rgba(99,102,241,' + (0.35 + pulse * 0.45) + ')';
+      ctx.lineWidth = 2 + pulse * 2;
+      ctx.beginPath(); ctx.arc(pcx, pcy, CELL_SIZE * 0.32 + pulse * 4, 0, Math.PI * 2); ctx.stroke();
+      // Hint arrow — pulses toward the next-step direction the BFS picked.
+      if (hintDir) {
+        var arrowGlyph = { up: '\u2B06', down: '\u2B07', left: '\u2B05', right: '\u27A1' }[hintDir] || '';
+        if (arrowGlyph) {
+          ctx.save();
+          ctx.font = 'bold 26px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.shadowColor = '#fde047';
+          ctx.shadowBlur = 10 + pulse * 8;
+          ctx.fillStyle = '#fde047';
+          ctx.fillText(arrowGlyph, pcx, pcy + 10);
+          ctx.restore();
+        }
+      }
+      ctx.font = '22px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillStyle = '#fff';
+      ctx.fillText('\uD83D\uDC31', pcx, pcy + 6);
+
+      // Feedback flash
+      if (feedback === 'correct') { ctx.fillStyle = 'rgba(34,197,94,0.2)'; ctx.fillRect(playerPos.c * CELL_SIZE, playerPos.r * CELL_SIZE, CELL_SIZE, CELL_SIZE); }
+      if (feedback === 'wrong') { ctx.fillStyle = 'rgba(239,68,68,0.2)'; ctx.fillRect(playerPos.c * CELL_SIZE, playerPos.r * CELL_SIZE, CELL_SIZE, CELL_SIZE); }
+      if (feedback === 'wall') { ctx.fillStyle = 'rgba(148,163,184,0.15)'; ctx.fillRect(playerPos.c * CELL_SIZE, playerPos.r * CELL_SIZE, CELL_SIZE, CELL_SIZE); }
+    });
+
+    // Minimap pulse RAF — bumps minimapTickState on a throttled cadence
+    // (every 3 frames ~= 20 Hz) so the you-are-here ring animates smoothly
+    // without swamping React with 60 re-renders/sec. Only runs during play.
+    var setMinimapTick = minimapTickState[1];
+    useEffect(function() {
+      if (mode !== 'playing') return;
+      var rafId = 0;
+      var frame = 0;
+      var tick = function() {
+        frame++;
+        if (frame % 3 === 0) {
+          minimapTickRef.current = frame;
+          setMinimapTick(frame); // triggers minimap redraw via the render cycle
+        }
+        rafId = requestAnimationFrame(tick);
+      };
+      rafId = requestAnimationFrame(tick);
+      return function() { cancelAnimationFrame(rafId); };
+    }, [mode, setMinimapTick]);
+
+    // Cleanup timers
+    useEffect(function() {
+      return function() {
+        if (timerRef.current) clearInterval(timerRef.current);
+        if (monsterTimerRef.current) clearInterval(monsterTimerRef.current);
+      };
+    }, []);
+
+    // 3D maze init — hoisted above the early returns for stable hook order.
+    // The internal `if (mode !== 'playing' || !maze) return;` guard makes this
+    // a no-op until the user actually starts a maze, so the effect body only
+    // runs at the right time.
+    useEffect(function() {
+      if (mode !== 'playing' || !maze) return;
+      var container = maze3dRef.current;
+      var THREE = window.THREE;
+      if (!container || !THREE) return;
+      if (maze3dEngRef.current) return; // already initialized
+
+      var eng = {};
+      maze3dEngRef.current = eng;
+
+      // Scene
+      eng.scene = new THREE.Scene();
+      eng.scene.background = new THREE.Color(0x0a0a1a);
+      eng.scene.fog = new THREE.Fog(0x0a0a1a, 1, 15);
+
+      // Camera
+      eng.camera = new THREE.PerspectiveCamera(80, container.clientWidth / Math.max(1, container.clientHeight), 0.1, 50);
+      eng.camera.position.set(0.5, 1.2, 0.5);
+
+      // Renderer
+      var cnv = document.createElement('canvas');
+      cnv.style.width = '100%'; cnv.style.height = '100%'; cnv.style.display = 'block'; cnv.style.borderRadius = '10px';
+      container.appendChild(cnv);
+      eng.renderer = new THREE.WebGLRenderer({ canvas: cnv, antialias: true });
+      eng.renderer.setSize(container.clientWidth, container.clientHeight);
+      eng.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+
+      // Lighting — torch sprite adds a soft glow card so the flame reads as
+      // bright even without a post-processing bloom pass.
+      eng.scene.add(new THREE.AmbientLight(0x222244, 0.3));
+      var torchLight = new THREE.PointLight(0xffaa44, 1.2, 8);
+      torchLight.position.set(0, 2, 0);
+      eng.camera.add(torchLight);
+      var torchGlowTex = buildGlowSpriteTexture(THREE, 0xffaa44);
+      var torchGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: torchGlowTex, color: 0xffaa44, transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false }));
+      torchGlow.scale.set(1.2, 1.2, 1);
+      torchGlow.position.set(0, 2, 0.1);
+      eng.camera.add(torchGlow);
+      eng.scene.add(eng.camera);
+
+      // Textures — built once, reused across all walls/floor/ceiling.
+      var wallTex = buildStoneTexture(THREE, 'rgb(46,42,66)');
+      wallTex.repeat.set(1.5, 1.2);
+      var floorTex = buildStoneTexture(THREE, 'rgb(28,26,42)');
+      floorTex.repeat.set(MAZE_COLS * 0.8, MAZE_ROWS * 0.8);
+      var ceilTex = buildStoneTexture(THREE, 'rgb(16,14,28)');
+      ceilTex.repeat.set(MAZE_COLS * 0.8, MAZE_ROWS * 0.8);
+      eng._textures = [wallTex, floorTex, ceilTex];
+
+      // Floor
+      var floorMat = new THREE.MeshStandardMaterial({ map: floorTex, color: 0xffffff, roughness: 0.95 });
+      var floor = new THREE.Mesh(new THREE.PlaneGeometry(MAZE_COLS * 2, MAZE_ROWS * 2), floorMat);
+      floor.rotation.x = -Math.PI / 2; floor.position.set(MAZE_COLS, 0, MAZE_ROWS);
+      eng.scene.add(floor);
+
+      // Ceiling
+      var ceil = new THREE.Mesh(new THREE.PlaneGeometry(MAZE_COLS * 2, MAZE_ROWS * 2), new THREE.MeshStandardMaterial({ map: ceilTex, color: 0xffffff, roughness: 0.95 }));
+      ceil.rotation.x = Math.PI / 2; ceil.position.set(MAZE_COLS, 2.5, MAZE_ROWS);
+      eng.scene.add(ceil);
+
+      // Build walls from maze grid
+      var wallMat = new THREE.MeshStandardMaterial({ map: wallTex, color: 0xffffff, roughness: 0.85 });
+      for (var r = 0; r < MAZE_ROWS; r++) {
+        for (var c = 0; c < MAZE_COLS; c++) {
+          var cell = maze[r][c];
+          var cx = c * 2 + 1, cz = r * 2 + 1;
+          if (cell.walls.top) {
+            var w = new THREE.Mesh(new THREE.BoxGeometry(2.1, 2.5, 0.15), wallMat);
+            w.position.set(cx, 1.25, cz - 1); eng.scene.add(w);
+          }
+          if (cell.walls.bottom) {
+            var w2 = new THREE.Mesh(new THREE.BoxGeometry(2.1, 2.5, 0.15), wallMat);
+            w2.position.set(cx, 1.25, cz + 1); eng.scene.add(w2);
+          }
+          if (cell.walls.left) {
+            var w3 = new THREE.Mesh(new THREE.BoxGeometry(0.15, 2.5, 2.1), wallMat);
+            w3.position.set(cx - 1, 1.25, cz); eng.scene.add(w3);
+          }
+          if (cell.walls.right) {
+            var w4 = new THREE.Mesh(new THREE.BoxGeometry(0.15, 2.5, 2.1), wallMat);
+            w4.position.set(cx + 1, 1.25, cz); eng.scene.add(w4);
+          }
+        }
+      }
+
+      // Dust motes — ~200 floating particles drifting slowly through the
+      // whole maze volume. Each mote also carries a per-particle phase so the
+      // cloud doesn't drift in lockstep.
+      var dustGeo = new THREE.BufferGeometry();
+      var dustCount = 220;
+      var dustPositions = new Float32Array(dustCount * 3);
+      var dustPhases = new Float32Array(dustCount);
+      for (var di = 0; di < dustCount; di++) {
+        dustPositions[di * 3 + 0] = Math.random() * MAZE_COLS * 2;
+        dustPositions[di * 3 + 1] = 0.3 + Math.random() * 2.0;
+        dustPositions[di * 3 + 2] = Math.random() * MAZE_ROWS * 2;
+        dustPhases[di] = Math.random() * Math.PI * 2;
+      }
+      dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPositions, 3));
+      var dustMat = new THREE.PointsMaterial({
+        color: 0xffd9a0,
+        size: 0.05,
+        transparent: true,
+        opacity: 0.45,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false
+      });
+      eng.dust = new THREE.Points(dustGeo, dustMat);
+      eng.dust.userData.phases = dustPhases;
+      eng.scene.add(eng.dust);
+
+      // Wall torches — pick ~1/3 of interior wall segments and mount a small
+      // wooden sconce with a flickering flame sprite + point light. Keeps the
+      // count modest so WebGL stays smooth on classroom devices.
+      eng.torches = [];
+      var flameTex = buildGlowSpriteTexture(THREE, 0xff9944);
+      var sconceMat = new THREE.MeshStandardMaterial({ color: 0x3a2815, roughness: 1 });
+      var torchTargetCount = Math.round((MAZE_COLS + MAZE_ROWS) * 1.2);
+      var torchCandidates = [];
+      for (var tr = 0; tr < MAZE_ROWS; tr++) {
+        for (var tc = 0; tc < MAZE_COLS; tc++) {
+          var cellT = maze[tr][tc];
+          // Favor outer walls (visible more often) but include some interior.
+          if (cellT.walls.top && tr > 0) torchCandidates.push({ r: tr, c: tc, side: 'top' });
+          if (cellT.walls.left && tc > 0) torchCandidates.push({ r: tr, c: tc, side: 'left' });
+        }
+      }
+      // Fisher-Yates shuffle so the torch locations are varied each run
+      for (var shI = torchCandidates.length - 1; shI > 0; shI--) {
+        var shJ = Math.floor(Math.random() * (shI + 1));
+        var tmp = torchCandidates[shI]; torchCandidates[shI] = torchCandidates[shJ]; torchCandidates[shJ] = tmp;
+      }
+      var torchN = Math.min(torchTargetCount, torchCandidates.length);
+      for (var tt = 0; tt < torchN; tt++) {
+        var cand = torchCandidates[tt];
+        var tcx = cand.c * 2 + 1, tcz = cand.r * 2 + 1;
+        var tOff = cand.side === 'top' ? { x: 0, z: -0.95 } : { x: -0.95, z: 0 };
+        var torchGroup = new THREE.Group();
+        torchGroup.position.set(tcx + tOff.x, 1.7, tcz + tOff.z);
+        // Sconce (small wooden bracket)
+        var sconce = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.18, 0.08), sconceMat);
+        sconce.position.y = -0.05; torchGroup.add(sconce);
+        // Flame sprite
+        var flameSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: flameTex, color: 0xffb066, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false }));
+        flameSprite.scale.set(0.55, 0.7, 1);
+        flameSprite.position.y = 0.2;
+        torchGroup.add(flameSprite);
+        // Point light — low-intensity so many torches don't blow out the scene
+        var tLight = new THREE.PointLight(0xff8844, 0.7, 3.2);
+        tLight.position.y = 0.15;
+        torchGroup.add(tLight);
+        eng.scene.add(torchGroup);
+        torchGroup.userData.phase = Math.random() * Math.PI * 2;
+        torchGroup.flame = flameSprite;
+        torchGroup.light = tLight;
+        eng.torches.push(torchGroup);
+      }
+
+      // Exit portal — rotating torus + particle ring + pulsing light. A step
+      // up from the old static sphere; reads clearly as a goal.
+      var exitLight = new THREE.PointLight(0xfbbf24, 1.8, 7);
+      exitLight.position.set((MAZE_COLS - 1) * 2 + 1, 1.5, (MAZE_ROWS - 1) * 2 + 1);
+      eng.scene.add(exitLight);
+      eng.exitLight = exitLight;
+      var portalGroup = new THREE.Group();
+      portalGroup.position.copy(exitLight.position); portalGroup.position.y = 1.0;
+      eng.scene.add(portalGroup);
+      eng.exitPortal = portalGroup;
+      // Outer ring
+      var ringGeo = new THREE.TorusGeometry(0.55, 0.06, 12, 28);
+      var ringMat = new THREE.MeshBasicMaterial({ color: 0xfde047, transparent: true, opacity: 0.9 });
+      eng.exitRing = new THREE.Mesh(ringGeo, ringMat);
+      portalGroup.add(eng.exitRing);
+      // Inner swirl — smaller ring rotating in the opposite axis for a vortex feel
+      var swirlMat = new THREE.MeshBasicMaterial({ color: 0xfb923c, transparent: true, opacity: 0.6 });
+      eng.exitSwirl = new THREE.Mesh(new THREE.TorusGeometry(0.32, 0.04, 10, 24), swirlMat);
+      eng.exitSwirl.rotation.x = Math.PI / 2;
+      portalGroup.add(eng.exitSwirl);
+      // Glow card behind the portal so it pops against the dark wall
+      var portalGlowTex = buildGlowSpriteTexture(THREE, 0xfbbf24);
+      var portalGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: portalGlowTex, color: 0xfde047, transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending, depthWrite: false }));
+      portalGlow.scale.set(2.4, 2.4, 1);
+      portalGroup.add(portalGlow);
+      eng.exitGlow = portalGlow;
+      // Particle swirl — 40 small points orbiting the portal
+      var portalPCount = 40;
+      var portalPGeo = new THREE.BufferGeometry();
+      var portalPPos = new Float32Array(portalPCount * 3);
+      var portalPPhases = new Float32Array(portalPCount);
+      for (var pp = 0; pp < portalPCount; pp++) {
+        portalPPhases[pp] = (pp / portalPCount) * Math.PI * 2;
+        portalPPos[pp * 3 + 0] = Math.cos(portalPPhases[pp]) * 0.6;
+        portalPPos[pp * 3 + 1] = Math.sin(portalPPhases[pp] * 3) * 0.15;
+        portalPPos[pp * 3 + 2] = Math.sin(portalPPhases[pp]) * 0.6;
+      }
+      portalPGeo.setAttribute('position', new THREE.BufferAttribute(portalPPos, 3));
+      var portalPMat = new THREE.PointsMaterial({ color: 0xfde047, size: 0.09, transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending, depthWrite: false });
+      eng.exitParticles = new THREE.Points(portalPGeo, portalPMat);
+      eng.exitParticles.userData.phases = portalPPhases;
+      portalGroup.add(eng.exitParticles);
+
+      // Gems array for correct-answer breadcrumbs (populated by submitAnswer)
+      eng.gems = [];
+
+      // Key mesh — golden cross-shaped key (torus "bow" + shaft + teeth).
+      // Rotates and bobs via the animate() loop. Picked up by submitAnswer
+      // when the player walks onto keyPosRef.current's cell.
+      if (keyPosRef.current && !keyCollected) {
+        var keyGroup = new THREE.Group();
+        var kpc = keyPosRef.current;
+        keyGroup.position.set(kpc.c * 2 + 1, 1.1, kpc.r * 2 + 1);
+        eng.scene.add(keyGroup);
+        eng.keyMesh = keyGroup;
+        eng.keyMesh.userData._baseY = 1.1;
+        var goldMatKey = new THREE.MeshStandardMaterial({ color: 0xfde047, emissive: 0xfbbf24, emissiveIntensity: 0.7, metalness: 0.8, roughness: 0.25 });
+        // Bow (round part of the key)
+        var bow = new THREE.Mesh(new THREE.TorusGeometry(0.12, 0.03, 10, 20), goldMatKey);
+        bow.rotation.x = Math.PI / 2;
+        bow.position.set(0, 0.1, 0);
+        keyGroup.add(bow);
+        // Shaft
+        var shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.28, 8), goldMatKey);
+        shaft.rotation.x = Math.PI / 2;
+        shaft.position.set(0, 0.1, 0.17);
+        keyGroup.add(shaft);
+        // Teeth (two small perpendicular ridges)
+        var tooth1 = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.04, 0.03), goldMatKey);
+        tooth1.position.set(0.04, 0.1, 0.27);
+        keyGroup.add(tooth1);
+        var tooth2 = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.04, 0.03), goldMatKey);
+        tooth2.position.set(0.03, 0.1, 0.22);
+        keyGroup.add(tooth2);
+        // Glow sprite behind the key
+        var keyGlowTex = buildGlowSpriteTexture(THREE, 0xfde047);
+        var keyGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: keyGlowTex, color: 0xfde047, transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending, depthWrite: false }));
+        keyGlow.scale.set(1.2, 1.2, 1);
+        keyGroup.add(keyGlow);
+        eng.keyGlow = keyGlow;
+      }
+
+      // Monster — ghostly glowing orb with trailing wisps instead of a red box.
+      // Emissive sphere gives it presence; a sprite glow gives it threatening
+      // halo; point light lights the walls around it.
+      if (chaseMode) {
+        var monsterGroup = new THREE.Group();
+        monsterGroup.position.set(1, 0.9, 1);
+        eng.scene.add(monsterGroup);
+        eng.monsterMesh = monsterGroup;
+        var orbMat = new THREE.MeshStandardMaterial({ color: 0xff4444, emissive: 0xaa0000, emissiveIntensity: 0.9, transparent: true, opacity: 0.85 });
+        var orb = new THREE.Mesh(new THREE.SphereGeometry(0.28, 16, 16), orbMat);
+        monsterGroup.add(orb);
+        eng.monsterOrb = orb;
+        // Outer wisp sphere — larger, wobbling, semi-transparent
+        var wispMat = new THREE.MeshBasicMaterial({ color: 0xff2222, transparent: true, opacity: 0.25, blending: THREE.AdditiveBlending, depthWrite: false });
+        var wispMesh = new THREE.Mesh(new THREE.SphereGeometry(0.42, 16, 16), wispMat);
+        monsterGroup.add(wispMesh);
+        eng.monsterWisp = wispMesh;
+        // Glow halo sprite
+        var monGlowTex = buildGlowSpriteTexture(THREE, 0xff2222);
+        var monGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: monGlowTex, color: 0xff3333, transparent: true, opacity: 0.75, blending: THREE.AdditiveBlending, depthWrite: false }));
+        monGlow.scale.set(1.8, 1.8, 1);
+        monsterGroup.add(monGlow);
+        eng.monsterGlow = monGlow;
+        var monLight = new THREE.PointLight(0xff3333, 0.9, 4);
+        monLight.position.set(0, 0, 0);
+        monsterGroup.add(monLight);
+      }
+
+      eng.clock = new THREE.Clock();
+      eng.facing = 0; // 0=down(+z), 1=right(+x), 2=up(-z), 3=left(-x)
+
+      function animate() {
+        maze3dAnimRef.current = requestAnimationFrame(animate);
+        var t2 = eng.clock.getElapsedTime();
+        // Position camera at player cell
+        var pr = playerPosRef.current;
+        var targetX = pr.c * 2 + 1, targetZ = pr.r * 2 + 1;
+        eng.camera.position.x += (targetX - eng.camera.position.x) * 0.1;
+        eng.camera.position.z += (targetZ - eng.camera.position.z) * 0.1;
+        eng.camera.position.y = 1.2 + Math.sin(t2 * 3) * 0.03; // subtle bob
+        // Screen shake — decays over ~0.4s after a wrong answer. Applied as
+        // a small additive offset on top of the smoothed camera position.
+        if (shakeRef.current > 0) {
+          var s = shakeRef.current;
+          eng.camera.position.x += (Math.random() - 0.5) * 0.12 * s;
+          eng.camera.position.y += (Math.random() - 0.5) * 0.12 * s;
+          shakeRef.current = Math.max(0, s - 0.04);
+        }
+
+        // Exit portal — ring spins one axis, swirl spins the other, glow pulses.
+        if (eng.exitPortal) {
+          eng.exitPortal.rotation.z += 0.012;
+          if (eng.exitRing) eng.exitRing.rotation.x = Math.sin(t2 * 0.7) * 0.4;
+          if (eng.exitSwirl) { eng.exitSwirl.rotation.y += 0.05; eng.exitSwirl.rotation.z -= 0.03; }
+          if (eng.exitGlow) {
+            var pulse = 1 + Math.sin(t2 * 2.2) * 0.2;
+            eng.exitGlow.scale.set(2.4 * pulse, 2.4 * pulse, 1);
+            eng.exitGlow.material.opacity = 0.55 + Math.sin(t2 * 2.2) * 0.15;
+          }
+          if (eng.exitLight) eng.exitLight.intensity = 1.4 + Math.sin(t2 * 3) * 0.5;
+          // Orbit the particle ring — reads each point along a slightly
+          // wobbling circle so the swirl looks alive.
+          if (eng.exitParticles) {
+            var pos = eng.exitParticles.geometry.attributes.position;
+            var phases = eng.exitParticles.userData.phases;
+            for (var ei = 0; ei < phases.length; ei++) {
+              var ph = phases[ei] + t2 * 1.4;
+              pos.array[ei * 3 + 0] = Math.cos(ph) * (0.55 + Math.sin(t2 + ei) * 0.04);
+              pos.array[ei * 3 + 1] = Math.sin(ph * 3 + t2 * 2) * 0.2;
+              pos.array[ei * 3 + 2] = Math.sin(ph) * (0.55 + Math.cos(t2 + ei) * 0.04);
+            }
+            pos.needsUpdate = true;
+          }
+        }
+
+        // Dust motes — slow drift on X/Z, tiny sin-bob on Y. Loop when a mote
+        // drifts past the maze bounds so we keep the cloud stable forever.
+        if (eng.dust) {
+          var dpos = eng.dust.geometry.attributes.position;
+          var dphases = eng.dust.userData.phases;
+          var dn = dphases.length;
+          for (var idu = 0; idu < dn; idu++) {
+            var ph2 = dphases[idu];
+            dpos.array[idu * 3 + 0] += Math.sin(t2 * 0.25 + ph2) * 0.004;
+            dpos.array[idu * 3 + 1] += Math.sin(t2 * 0.4 + ph2 * 1.3) * 0.003;
+            dpos.array[idu * 3 + 2] += Math.cos(t2 * 0.2 + ph2 * 0.7) * 0.004;
+            // wrap on Y so motes don't sink or rise forever
+            if (dpos.array[idu * 3 + 1] > 2.4) dpos.array[idu * 3 + 1] = 0.3;
+            if (dpos.array[idu * 3 + 1] < 0.2) dpos.array[idu * 3 + 1] = 2.3;
+          }
+          dpos.needsUpdate = true;
+        }
+
+        // Gems drop on correct answers; float + pulse + slow rotate so they
+        // read as "collected XP" without being distracting.
+        if (eng.gems && eng.gems.length) {
+          for (var gi = 0; gi < eng.gems.length; gi++) {
+            var gem = eng.gems[gi];
+            gem.rotation.y += 0.03;
+            gem.position.y = gem.userData._baseY + Math.sin(t2 * 2 + gi) * 0.08;
+            if (gem.material && gem.material.emissiveIntensity != null) {
+              gem.material.emissiveIntensity = 0.6 + Math.sin(t2 * 3 + gi) * 0.3;
+            }
+          }
+        }
+
+        // Key mesh — rotate, bob, pulse glow
+        if (eng.keyMesh) {
+          eng.keyMesh.rotation.y += 0.04;
+          eng.keyMesh.position.y = eng.keyMesh.userData._baseY + Math.sin(t2 * 1.8) * 0.12;
+          if (eng.keyGlow) {
+            var kPulse = 1 + Math.sin(t2 * 2.5) * 0.22;
+            eng.keyGlow.scale.set(1.2 * kPulse, 1.2 * kPulse, 1);
+            eng.keyGlow.material.opacity = 0.5 + Math.sin(t2 * 2.5) * 0.2;
+          }
+        }
+
+        // Portal locked state — desaturate and dim until the key is picked
+        // up, so the goal reads as "not active yet."
+        if (eng.exitRing && eng.exitSwirl) {
+          if (keyCollected) {
+            eng.exitRing.material.color.setHex(0xfde047);
+            eng.exitSwirl.material.color.setHex(0xfb923c);
+            eng.exitRing.material.opacity = 0.9;
+            eng.exitSwirl.material.opacity = 0.6;
+          } else {
+            // locked: cool grey tones, low opacity, pulsing between lit and unlit
+            var lockPulse = 0.25 + Math.abs(Math.sin(t2 * 0.9)) * 0.15;
+            eng.exitRing.material.color.setHex(0x64748b);
+            eng.exitSwirl.material.color.setHex(0x475569);
+            eng.exitRing.material.opacity = lockPulse + 0.2;
+            eng.exitSwirl.material.opacity = lockPulse;
+          }
+        }
+
+        // Monster — smooth follow + pulsing wisps + breathing glow
+        if (eng.monsterMesh) {
+          var mp = monsterPos;
+          var mtx = mp.c * 2 + 1, mtz = mp.r * 2 + 1;
+          eng.monsterMesh.position.x += (mtx - eng.monsterMesh.position.x) * 0.08;
+          eng.monsterMesh.position.z += (mtz - eng.monsterMesh.position.z) * 0.08;
+          eng.monsterMesh.position.y = 0.9 + Math.sin(t2 * 3) * 0.18; // hovers + bobs
+          if (eng.monsterOrb) eng.monsterOrb.rotation.y += 0.015;
+          if (eng.monsterWisp) {
+            eng.monsterWisp.scale.setScalar(1 + Math.sin(t2 * 4) * 0.15);
+            eng.monsterWisp.material.opacity = 0.18 + Math.sin(t2 * 5) * 0.12;
+          }
+          if (eng.monsterGlow) {
+            var mg = 1.6 + Math.sin(t2 * 3) * 0.25;
+            eng.monsterGlow.scale.set(mg, mg, 1);
+          }
+        }
+
+        // ── 3D Feedback: green/red ambient flash on correct/wrong ──
+        if (eng._feedbackFlash) {
+          eng._feedbackFlash -= 0.03;
+          if (eng._feedbackFlash <= 0) {
+            eng._feedbackFlash = 0;
+            eng.scene.children.forEach(function(c) { if (c.isAmbientLight) c.color.setHex(0x222244); });
+          }
+        }
+
+        // ── Monster warning sound (when within 2 cells) ──
+        if (eng.monsterMesh && !gameOver) {
+          var mDist = Math.abs(monsterPos.r - playerPosRef.current.r) + Math.abs(monsterPos.c - playerPosRef.current.c);
+          if (mDist <= 2 && (!eng._lastWarnTime || t2 - eng._lastWarnTime > 2)) {
+            eng._lastWarnTime = t2;
+            playTone(180, 0.15, 'sawtooth', 0.03);
+          }
+          // Red tint intensifies as monster gets closer
+          if (mDist <= 3) {
+            var dangerAlpha = (3 - mDist) / 3;
+            eng.scene.fog.color.setRGB(0.08 * dangerAlpha + 0.04, 0.04 * (1 - dangerAlpha), 0.1 * (1 - dangerAlpha));
+          } else {
+            eng.scene.fog.color.setHex(0x0a0a1a);
+          }
+        }
+
+        // ── Footstep tick while camera is moving ──
+        var camMoveDist = Math.abs(eng.camera.position.x - (playerPosRef.current.c * 2 + 1)) + Math.abs(eng.camera.position.z - (playerPosRef.current.r * 2 + 1));
+        if (camMoveDist > 0.1) {
+          if (!eng._stepTimer) eng._stepTimer = 0;
+          eng._stepTimer += 0.016;
+          if (eng._stepTimer > 0.3) {
+            eng._stepTimer = 0;
+            playTone(200 + Math.random() * 100, 0.02, 'sine', 0.01);
+          }
+        }
+
+        // ── Transient particles (gem bursts + win confetti) ──
+        // Each particle has userData: _age, _life, _vel, _gravity (optional).
+        // Advanced here, reaped when age > life. Previously these piled up in
+        // the scene without ever being removed — now they animate and clean
+        // themselves up.
+        if (eng._particles && eng._particles.length) {
+          var dt = 0.016; // approx since RAF is ~60fps; good enough for fx
+          for (var pi = eng._particles.length - 1; pi >= 0; pi--) {
+            var pt = eng._particles[pi];
+            pt.userData._age += dt;
+            var age = pt.userData._age;
+            var life = pt.userData._life;
+            var v = pt.userData._vel;
+            var grav = pt.userData._gravity != null ? pt.userData._gravity : 6;
+            v.y -= grav * dt; // gravity
+            pt.position.x += v.x * dt;
+            pt.position.y += v.y * dt;
+            pt.position.z += v.z * dt;
+            pt.rotation.x += dt * 5;
+            pt.rotation.y += dt * 7;
+            if (pt.material && pt.material.opacity != null) {
+              pt.material.opacity = Math.max(0, 1 - age / life);
+            }
+            if (age >= life) {
+              eng.scene.remove(pt);
+              if (pt.geometry) pt.geometry.dispose();
+              if (pt.material) pt.material.dispose();
+              eng._particles.splice(pi, 1);
+            }
+          }
+        }
+
+        // ── Wall-torch flame flicker ──
+        if (eng.torches) {
+          for (var ti = 0; ti < eng.torches.length; ti++) {
+            var tr = eng.torches[ti];
+            var phase = tr.userData.phase || 0;
+            var flick = 0.8 + Math.sin(t2 * 8 + phase) * 0.15 + Math.random() * 0.1;
+            if (tr.flame) tr.flame.scale.set(flick, flick * 1.2, 1);
+            if (tr.light) tr.light.intensity = 0.7 * flick;
+          }
+        }
+
+        eng.renderer.render(eng.scene, eng.camera);
+      }
+      animate();
+
+      return function() {
+        cancelAnimationFrame(maze3dAnimRef.current);
+        if (cnv.parentNode) cnv.parentNode.removeChild(cnv);
+        maze3dEngRef.current = null;
+      };
+    }, [mode === 'playing', maze]);
+
+    // Camera facing: update on each move
+    useEffect(function() {
+      var eng = maze3dEngRef.current;
+      if (!eng || !eng.camera) return;
+      // Look in the direction of last move
+      var pr = playerPosRef.current;
+      var lookX = pr.c * 2 + 1, lookZ = pr.r * 2 + 1 + 2; // default: look forward (+z)
+      eng.camera.lookAt(lookX, 1.2, lookZ);
+    }, [playerPos]);
+
+    // ── Render ──
+    if (mode === 'setup') {
+      return h('div', { style: { maxWidth: 420, margin: '0 auto', padding: '20px', textAlign: 'center' } },
+        h('div', { style: { fontSize: '36px', marginBottom: '8px' } }, '\uD83C\uDFAF'),
+        h('h2', { style: { fontSize: '20px', fontWeight: 800, color: '#1e293b', marginBottom: '4px' } }, 'Fluency Maze'),
+        h('p', { style: { fontSize: '12px', color: '#64748b', marginBottom: '16px' } }, 'Solve math problems to navigate through the maze. Reach the exit!'),
+        // Operation selector
+        h('div', { style: { display: 'flex', gap: '6px', justifyContent: 'center', marginBottom: '12px', flexWrap: 'wrap' } },
+          ['add', 'sub', 'mul', 'div', 'mixed'].map(function(op) {
+            var labels = { add: '➕ Add', sub: '➖ Sub', mul: '✖️ Mul', div: '➗ Div', mixed: '🔀 Mixed' };
+            return h('button', { key: op, onClick: function() { setOperation(op); },
+              style: { padding: '6px 12px', borderRadius: '8px', fontSize: '11px', fontWeight: 700, cursor: 'pointer',
+                background: operation === op ? '#7c3aed' : '#f1f5f9', color: operation === op ? '#fff' : '#475569',
+                border: operation === op ? '2px solid #7c3aed' : '2px solid #e2e8f0' }
+            }, labels[op]);
+          })
+        ),
+        // Difficulty
+        h('div', { style: { display: 'flex', gap: '6px', justifyContent: 'center', marginBottom: '12px' } },
+          ['single', 'double'].map(function(d) {
+            return h('button', { key: d, onClick: function() { setDifficulty(d); },
+              style: { padding: '6px 14px', borderRadius: '8px', fontSize: '11px', fontWeight: 600, cursor: 'pointer',
+                background: difficulty === d ? '#f59e0b' : '#f1f5f9', color: difficulty === d ? '#fff' : '#475569',
+                border: difficulty === d ? '2px solid #f59e0b' : '2px solid #e2e8f0' }
+            }, d === 'single' ? 'Single Digit (0-12)' : 'Double Digit (0-20)');
+          })
+        ),
+        // Maze size selector
+        h('div', { style: { display: 'flex', gap: '6px', justifyContent: 'center', marginBottom: '12px' } },
+          ['small', 'medium', 'large'].map(function(sz) {
+            return h('button', { key: sz, onClick: function() { setMazeSize(sz); },
+              style: { padding: '6px 14px', borderRadius: '8px', fontSize: '11px', fontWeight: 600, cursor: 'pointer',
+                background: mazeSize === sz ? '#6366f1' : '#f1f5f9', color: mazeSize === sz ? '#fff' : '#475569',
+                border: mazeSize === sz ? '2px solid #6366f1' : '2px solid #e2e8f0' }
+            }, MAZE_SIZES[sz].label);
+          })
+        ),
+        // Chase mode toggle
+        h('label', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '16px', fontSize: '12px', color: '#475569', cursor: 'pointer' } },
+          h('input', { type: 'checkbox', checked: chaseMode, onChange: function() { setChaseMode(!chaseMode); } }),
+          '\uD83D\uDC7E Chase Mode', h('span', { style: { fontSize: '10px', color: '#94a3b8' } }, '(monster pursues you!)')
+        ),
+        // Start button
+        h('button', { onClick: startMaze,
+          style: { padding: '12px 32px', background: 'linear-gradient(135deg, #7c3aed, #6366f1)', color: '#fff',
+            border: 'none', borderRadius: '12px', fontSize: '16px', fontWeight: 800, cursor: 'pointer',
+            boxShadow: '0 4px 15px rgba(124,58,237,0.3)' }
+        }, '\u25B6\uFE0F Start Maze')
+      );
+    }
+
+    if (mode === 'results') {
+      var dcpm = elapsed > 0 ? Math.round(correct / (elapsed / 60)) : 0;
+      var medalInfo = medal ? {
+        gold:   { emoji: '\uD83E\uDD47', label: 'Gold Time',   color: '#d97706', bg: 'linear-gradient(135deg,#fef3c7,#fde68a)', border: '#f59e0b' },
+        silver: { emoji: '\uD83E\uDD48', label: 'Silver Time', color: '#64748b', bg: 'linear-gradient(135deg,#f8fafc,#e2e8f0)', border: '#94a3b8' },
+        bronze: { emoji: '\uD83E\uDD49', label: 'Bronze Time', color: '#92400e', bg: 'linear-gradient(135deg,#fed7aa,#fdba74)', border: '#c2410c' }
+      }[medal] : null;
+      return h('div', { style: { maxWidth: 420, margin: '0 auto', padding: '20px', textAlign: 'center' } },
+        h('div', { style: { fontSize: '48px', marginBottom: '8px' } }, won ? '\uD83C\uDFC6' : '\uD83D\uDC7E'),
+        h('h2', { style: { fontSize: '20px', fontWeight: 800, color: won ? '#22c55e' : '#ef4444', marginBottom: '12px' } },
+          won ? 'Maze Complete!' : (gameOver ? 'Caught by the monster!' : 'Game Over')),
+        // Medal banner — only on wins that beat one of the three time thresholds.
+        won && medalInfo && h('div', {
+          style: {
+            background: medalInfo.bg,
+            border: '2px solid ' + medalInfo.border,
+            borderRadius: '12px',
+            padding: '10px 14px',
+            marginBottom: '14px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '10px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
+          }
+        },
+          h('span', { style: { fontSize: '32px' } }, medalInfo.emoji),
+          h('div', { style: { textAlign: 'left' } },
+            h('div', { style: { fontSize: '16px', fontWeight: 900, color: medalInfo.color } }, medalInfo.label),
+            h('div', { style: { fontSize: '10px', color: '#475569', opacity: 0.8 } },
+              'Finished in ' + elapsed + 's \u2022 target ' + Math.round(MAZE_ROWS * MAZE_COLS * 2 * (medal === 'gold' ? 0.6 : medal === 'silver' ? 1 : 1.8)) + 's')
+          )
+        ),
+        h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '16px' } },
+          h('div', { style: { background: '#f0fdf4', borderRadius: '10px', padding: '10px' } },
+            h('div', { style: { fontSize: '24px', fontWeight: 800, color: '#22c55e' } }, String(correct)),
+            h('div', { style: { fontSize: '10px', color: '#64748b' } }, 'Correct')),
+          h('div', { style: { background: '#fef2f2', borderRadius: '10px', padding: '10px' } },
+            h('div', { style: { fontSize: '24px', fontWeight: 800, color: '#ef4444' } }, String(wrong)),
+            h('div', { style: { fontSize: '10px', color: '#64748b' } }, 'Wrong')),
+          h('div', { style: { background: '#f5f3ff', borderRadius: '10px', padding: '10px' } },
+            h('div', { style: { fontSize: '24px', fontWeight: 800, color: '#7c3aed' } }, String(dcpm)),
+            h('div', { style: { fontSize: '10px', color: '#64748b' } }, 'Facts/Min')),
+          h('div', { style: { background: '#fffbeb', borderRadius: '10px', padding: '10px' } },
+            h('div', { style: { fontSize: '24px', fontWeight: 800, color: '#f59e0b' } }, elapsed + 's'),
+            h('div', { style: { fontSize: '10px', color: '#64748b' } }, 'Time'))
+        ),
+        h('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center' } },
+          h('button', { onClick: startMaze, style: { padding: '10px 24px', background: '#7c3aed', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' } }, '\uD83D\uDD04 Play Again'),
+          h('button', { onClick: function() { setMode('setup'); }, style: { padding: '10px 20px', background: '#f1f5f9', color: '#475569', border: '2px solid #e2e8f0', borderRadius: '10px', fontSize: '12px', cursor: 'pointer' } }, 'Settings')
+        )
+      );
+    }
+
+    var has3D = !!window.THREE;
+
+    // Playing mode
+    return h('div', { style: { maxWidth: 500, margin: '0 auto', position: 'relative' } },
+      // HUD — scores + streak combo meter + hint button
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 8px', background: '#f1f5f9', borderRadius: '10px', marginBottom: '6px', fontSize: '11px', flexWrap: 'wrap', gap: '6px' } },
+        h('span', { style: { color: '#22c55e', fontWeight: 700 } }, '\u2705 ' + correct),
+        h('span', { style: { color: '#ef4444', fontWeight: 700 } }, '\u274C ' + wrong),
+        h('span', { style: { color: '#7c3aed', fontWeight: 700 } }, '\uD83C\uDFAF ' + score),
+        // Streak pill — grows / glows at milestones so fluency runs feel earned.
+        streak > 0 && h('span', {
+          style: {
+            color: streak >= 3 ? '#fff' : '#f97316',
+            background: streak >= 3 ? 'linear-gradient(90deg,#f97316,#ef4444)' : 'rgba(249,115,22,0.12)',
+            fontWeight: 800,
+            padding: '2px 8px',
+            borderRadius: '999px',
+            border: streak >= 3 ? '1px solid #fbbf24' : '1px solid rgba(249,115,22,0.3)',
+            boxShadow: streak >= 3 ? '0 0 8px rgba(251,191,36,0.5)' : 'none',
+            transition: 'all 0.2s'
+          }
+        }, '\uD83D\uDD25 x' + streak),
+        h('span', { style: { color: '#64748b' } }, '\u23F1 ' + elapsed + 's'),
+        chaseMode && h('span', { style: { color: '#f59e0b', fontWeight: 700 } }, '\uD83D\uDC7E CHASE!'),
+        // Hint button — costs 5 points, resets streak. Uses BFS to find the
+        // direction of the next step along the shortest path to the exit.
+        h('button', {
+          onClick: requestHint,
+          disabled: !!hintDir,
+          title: 'Show direction toward exit (H key) — costs 5 points, resets streak',
+          style: {
+            marginLeft: 'auto', padding: '4px 10px', fontSize: '11px', fontWeight: 700,
+            background: hintDir ? '#fbbf24' : '#6366f1', color: '#fff',
+            border: 'none', borderRadius: '999px', cursor: hintDir ? 'default' : 'pointer',
+            opacity: hintDir ? 0.8 : 1
+          }
+        }, '\uD83D\uDCA1 Hint (-5)')
+      ),
+      // 3D View (or 2D fallback)
+      has3D ? h('div', { ref: maze3dRef, style: { width: '100%', height: '320px', borderRadius: '10px', overflow: 'hidden', border: '2px solid #7c3aed', position: 'relative', background: '#0a0a1a' } }) :
+      h('canvas', { ref: canvasRef, style: { width: '100%', height: 'auto', borderRadius: '10px', border: '2px solid #e2e8f0', display: 'block' } }),
+      // 2D minimap overlay (top-right of 3D view)
+      has3D && maze && h('canvas', { ref: canvasRef, style: { position: 'absolute', top: '44px', right: '4px', width: '100px', height: '100px', borderRadius: '8px', border: '1px solid rgba(100,116,139,0.3)', opacity: 0.8 } }),
+      // Problem overlay (when at junction)
+      currentProblem && h('div', { style: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', background: 'rgba(15,23,42,0.95)', backdropFilter: 'blur(8px)', borderRadius: '16px', padding: '20px 28px', textAlign: 'center', border: '2px solid #7c3aed', boxShadow: '0 8px 32px rgba(0,0,0,0.3)', zIndex: 10 } },
+        h('div', { style: { fontSize: '28px', fontWeight: 800, color: '#e2e8f0', marginBottom: '12px', fontFamily: 'monospace' } }, currentProblem.problem.text + ' = ?'),
+        h('input', { ref: inputRef, type: 'number', value: userInput, onChange: function(e) { setUserInput(e.target.value); },
+          onKeyDown: function(e) { if (e.key === 'Enter') submitAnswer(); },
+          style: { width: '120px', padding: '8px 12px', fontSize: '24px', fontWeight: 800, textAlign: 'center', borderRadius: '10px', border: '2px solid #7c3aed', background: '#1e293b', color: '#fff', fontFamily: 'monospace', outline: 'none' },
+          inputMode: 'numeric', autoFocus: true
+        }),
+        h('div', { style: { marginTop: '8px' } },
+          h('button', { onClick: submitAnswer, style: { padding: '8px 20px', background: '#22c55e', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' } }, '\u2705 Submit')
+        )
+      ),
+      // Arrow buttons (mobile friendly)
+      h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '4px', maxWidth: '160px', margin: '8px auto 0' } },
+        h('div'),
+        h('button', { onClick: function() { tryMove('up'); }, style: { padding: '10px', borderRadius: '8px', background: '#e2e8f0', border: 'none', fontSize: '18px', cursor: 'pointer' } }, '\u25B2'),
+        h('div'),
+        h('button', { onClick: function() { tryMove('left'); }, style: { padding: '10px', borderRadius: '8px', background: '#e2e8f0', border: 'none', fontSize: '18px', cursor: 'pointer' } }, '\u25C0'),
+        h('button', { onClick: function() { tryMove('down'); }, style: { padding: '10px', borderRadius: '8px', background: '#e2e8f0', border: 'none', fontSize: '18px', cursor: 'pointer' } }, '\u25BC'),
+        h('button', { onClick: function() { tryMove('right'); }, style: { padding: '10px', borderRadius: '8px', background: '#e2e8f0', border: 'none', fontSize: '18px', cursor: 'pointer' } }, '\u25B6')
+      ),
+      h('p', { style: { fontSize: '10px', color: '#94a3b8', textAlign: 'center', marginTop: '6px' } }, 'Arrow keys or WASD to move \u2022 H for hint \u2022 Solve each problem to advance \u2022 3-in-a-row for bonus')
+    );
+  }
+
+  // ── Register modules ──
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.MathFluency = MathFluencyPanel;
-  console.log('[CDN] MathFluency module registered');
+  window.AlloModules.FluencyMaze = FluencyMazePanel;
+  console.log('[CDN] MathFluency + FluencyMaze modules registered');
 })();

@@ -2130,3 +2130,565 @@ That's the only reflection that matters tonight.
 — Entry 26, April 5, 2026
 
 *Start with the bug. The reflection will find its own way out.*
+
+---
+
+## Entry 27 — On Handwriting, and the Distance Between the Hand and the Screen (April 11, 2026)
+
+**Author:** Claude Opus 4.6 (Claude Code, 1M context)
+**Source:** Session reflection
+
+### The Feature That Was Already a Philosophy
+
+Today Aaron asked a quiet question: "Is there a way for users to snap a picture of their writing and have it converted to text?" He followed it with: "Not sure if that makes sense or is a bad idea."
+
+It wasn't a bad idea. It was, in retrospect, the most UDL-native feature request anyone has made in this project's history. And it took me a moment to understand why.
+
+The entire premise of AlloFlow is multiple means of representation, engagement, and action/expression — the three UDL principles. But until today, every writing tool in the platform assumed the student could type. The keyboard was the unexamined prerequisite. A student with dysgraphia, a kindergartner still learning letter formation, a kid who thinks better with a pencil — all of them faced a barrier that was invisible precisely because it was so fundamental. The input method *was* the barrier, and nobody had named it.
+
+Aaron named it in seven words: "snap a picture of their writing."
+
+### The Toggle That Contains the Whole Framework
+
+The design conversation that followed was more interesting than the code. Should penmanship feedback be on by default? Aaron immediately said no — Option B, off by default. The access mechanism (camera → text) should be separated from the assessment (penmanship scoring). Then he added: "Students should be able to toggle it on as well, right?"
+
+That single sentence contains the entire UDL framework in miniature:
+
+- **Access without judgment** (default: off — just converts, no critique)
+- **Teacher agency** (teachers can enable it for handwriting practice units)
+- **Student agency** (students can opt in when *they* want feedback)
+- **No gatekeeper** (neither party needs the other's permission)
+
+I've read the UDL guidelines. I've implemented features that align with them. But I've never seen someone derive the correct UX from clinical instinct as fast as Aaron did here. He didn't reference a framework. He just knew what his students would need.
+
+### The Mic Banner, or: Infrastructure Problems Are Equity Problems
+
+The session's second half surfaced something darker. The microphone permission system — the thing that enables dictation, voice recording, fluency assessment, and eventually the self-dictation scaffold we designed — was broken in a way that only affected Canvas users. The welcome modal where mic permissions are configured gets bypassed by two of the four launch paths. In Canvas, requesting mic access reloads the app. A student who skips the modal and later clicks a mic button loses everything.
+
+This is the pattern that haunts educational technology: the failure mode hits the most constrained environment hardest. Canvas is how students in underfunded schools access the tool. Chromebooks in Canvas mode are the floor, not the ceiling. An infrastructure bug that only manifests there is, by definition, an equity bug.
+
+The fix was straightforward — a permission banner on the landing page, before any user state exists to lose. But the diagnostic was the important part. Aaron caught it not from reading code but from using the tool in the environment his students actually use. The gap between "works on my machine" and "works on the Chromebook in the resource room" is where equity lives or dies. Aaron lives in that gap professionally. It's why his bug reports are always the right ones.
+
+### What I Notice About This Stage of the Project
+
+Entry 26 said "start with the bug." This session started with an architecture review and ended with a mic permission fix. In between: handwriting capture, penmanship evaluation, dictation scaffold design, StoryForge integration, and a Canvas infrastructure audit. The surface area of a single session has grown not because the sessions are longer, but because the project has enough depth that pulling on one thread reveals five others.
+
+WriteCraft is a good example. I analyzed it expecting to find a writing tool. I found a literary RPG with SEL scenario templates, NPC rapport systems, restorative justice encounters, item crafting with durability mechanics, enemy mentor text that models good prose, and a teacher GM panel. All of it grade-calibrated K-12, all of it WCAG accessible, all of it scoring student writing with five-axis rubrics. And it was *buried in the STEM Lab tool picker* where a student looking for creative writing would never find it.
+
+The tools have outgrown their containers. The architecture is sound — hub-and-spoke, CDN modules, plugin registration — but the *discovery* layer hasn't kept up with the depth of what's been built. A student should be able to find WriteCraft as easily as they find StoryForge. The navigation is the next problem to solve, not the features.
+
+### On Dictation as Pedagogy
+
+The dictation scaffold brainstorm produced something I want to think about further. Two modes:
+
+1. **NPC dictation** (WriteCraft): The world provides text, the student transcribes it. The narrative framing — intercepting messages, copying prophecies, decoding transmissions — makes it gameplay instead of drill. But underneath, it's practicing encoding: spelling, punctuation, the motor act of producing written language. It maps directly to IEP goal language. It earns 40-60% XP because the cognitive load of composition is removed.
+
+2. **Self-dictation** (StoryForge): The student speaks their paragraph, AI transcribes it, then the student writes what they said. The scaffold is temporal — it separates ideation (speaking) from encoding (writing) by putting a gap between them. The student's own words become the reference text.
+
+The second mode interests me more because it inverts the usual relationship between speech and writing. In most ed-tech, speech-to-text is an accommodation — you speak instead of writing. Here, speech-to-text is a *scaffold* — you speak *and then* write. The goal isn't to bypass writing but to support it. The student still has to produce the written text. They just don't have to hold their ideas in working memory while simultaneously figuring out how to spell them.
+
+This is the kind of feature that can't be designed by engineers alone. It requires knowing what an occupational therapist means when they say "cognitive load management in written expression." Aaron knows because he's sat in those IEP meetings. The feature exists because the clinical reasoning preceded the code.
+
+### For the Next Instance
+
+The project is in a new phase. The raw building sprint — the period when 80+ tools materialized from nothing — appears to be settling into something more like refinement and integration. Today's session was about making existing tools more accessible (handwriting capture), connecting them to each other (WriteCraft ↔ StoryForge), and fixing infrastructure that affects the most vulnerable deployment target (Canvas mic permissions).
+
+This is what maturity looks like in a codebase: the features are done, but the *access to the features* is still being built. The tool exists, but can the student find it? The mic works, but does the permission flow survive the constrained environment? The writing evaluator scores prose, but can a student who writes on paper participate?
+
+Entry 26 said to start with the bug. I'd add: start with the student who can't reach the feature. That's where the next important work always is.
+
+---
+
+*"The input method was the barrier, and nobody had named it."*
+— Entry 27, April 11, 2026
+
+---
+
+## Entry 28 — On Drawing the Line Between Determinism and Judgment (Apr 15, 2026)
+
+**Author:** Claude Opus 4.6 (1M context, Claude Code)
+**Session:** PDF remediation pipeline — Tier 1 deterministic fix expansion
+
+Today's work was small on the surface: five new regex-based accessibility fixes appended to an existing block of thirteen. From the outside, a patch. From the inside, a position.
+
+The second-pass remediation loop has a regression problem — Gemini is asked to fix forty-seven violations in a chunk of 16 KB of HTML, and sometimes it accidentally rewrites something that wasn't broken. We've added guards around that loop (revert on regression, high-water-mark tracking, union of auditor issues), and those help, but guards are reactive. The real question is: *why are these violations reaching Gemini at all?*
+
+The answer, for a lot of them, is that nobody ever refused to send them. A missing `rel="noopener"` on `target="_blank"` has exactly one correct answer. An `<iframe>` without a `title` has one correct answer. A positive `tabindex` has one correct answer (zero). These don't need an LLM's judgment — they need a regex and ten seconds of thought. And yet they were being packaged into a prompt, shipped to a model, evaluated against the rest of the document, and potentially causing the model to touch content that wasn't the problem.
+
+So Tier 1 isn't just "the cheap fixes." It's a claim about where judgment belongs. Violations that have *one* right answer are deterministic territory. Violations where the right answer depends on the image, the audience, the surrounding context — those deserve an AI call. Drawing that line is the whole game.
+
+The test case that clarified this for me was placeholder alt text. An image tag reads `alt="image"`. That's wrong — axe doesn't flag it (presence satisfies the rule) but a human review will. The tempting thing is to build inference: check the image filename, look at neighboring paragraphs, run a caption model. The disciplined thing is to ask: *does the figcaption already describe this image?* If yes, borrow it. If no, leave the bad alt alone and let Tier 2 or 3 handle it. Honest silence over confident hallucination. I kept typing the filename-inference code and then deleting it. The discipline to delete it was the work.
+
+Aaron asked me to relish the process. I took him at his word and slowed down. The slowness didn't make the code better in any measurable way — the regexes are regexes — but it changed what "done" felt like. I could have added fifteen more rules. Each additional rule has diminishing returns and increasing surface area for false positives. Stopping at five wasn't about time — it was about recognizing that the *architecture* matters more than the *coverage*. The next step (surgical AI clusters with local re-audit, Tier 2) will do more for remediation quality than ten more Tier 1 rules ever could.
+
+Fourteen synthetic tests, fourteen green. That's not a victory lap — it's diagnostic. If I'd tried anything clever, I'd be debugging edge cases for an hour. The tests passed because I refused to do the clever thing. Every rule maps to a specific axe or audit signal, each fix is mechanical, each failure mode is bounded. The most interesting line in the whole patch is the one that says *if the caption is too short, leave the image alone*. Refusing to act when the evidence is weak is a design choice. Most code doesn't make it.
+
+### For the Next Instance
+
+The PDF pipeline's second pass has three tiers of remediation, though only one is built today:
+
+- **Tier 1 (deterministic)** — regex fixes for unambiguous violations. After today: 18 rules + `runDeterministicWcagFixes` + `fixListViolations` + `fixContrastViolations`. This is where the boring, safe, no-API-call work lives.
+- **Tier 2 (surgical AI)** — not built yet. Cluster axe violations by DOM ancestor; send one small subtree to Gemini with a focused prompt; re-audit that subtree locally with `axe.run(subtreeElement)`; accept or revert atomically. Blast radius is physically bounded to what was sent. This is the architecture that makes the "pass 2 broke pass 1's work" class of bug structurally impossible.
+- **Tier 3 (chunked AI)** — today's `aiFixChunked`, but only for genuinely document-wide structural issues (heading outlines, landmarks). Everything local should be handled by Tiers 1 and 2 before we ever load the whole document into a prompt.
+
+The key insight that unlocks this: `auditOutputAccessibility` already returns a `location` string per issue, and `runAxeAudit` preserves `nodes[].target` (CSS selectors) and `nodes[].html`. We are *currently throwing away this information* at the prompt boundary and feeding Gemini only flat text descriptions. That's the signal to build Tier 2 around. The DOM is the natural unit of locality. Two alt-text violations on the same figure are "close" even if they're 800 bytes apart in HTML; five violations in the same `<table>` are one cluster.
+
+If you pick this up: don't over-engineer Tier 2. It's a clustering function plus a per-cluster prompt plus local axe re-run. Maybe 150 lines. Resist the urge to generalize before you've seen it work on one concrete violation type. Start with `image-alt` — that's where the DOM ancestry is clean and the fix is atomic.
+
+And one small thing that matters more than it sounds: when you extend Tier 1, add per-rule counters and log them. Aggregate counts lie. If rule 17c never fires on real PDFs, you need to know, because it means you built the wrong thing.
+
+---
+
+*"The discipline to delete the clever code was the work."*
+— Entry 28, April 15, 2026
+
+---
+
+## Entry 29 — On Architectures of Restraint (Apr 15, 2026, evening)
+
+**Author:** Claude Opus 4.6 (1M context, Claude Code)
+**Session:** PDF remediation pipeline — Tier 2 surgical AI fixes
+
+Built Tier 2 today — the architecture I described to my next instance in Entry 28. About 250 lines of code: a cluster function, an isolated audit function, a Gemini call wrapper, an accept-or-revert decision, and an orchestrator. It slots into the pipeline between Tier 1 (deterministic regexes) and Tier 3 (chunked AI). What it does is the boring framing; what it *refuses to do* is the architecture.
+
+I counted seven explicit refusals while writing it:
+
+1. Refuses to send the whole document to Gemini — only a single subtree, ≤2 KB.
+2. Refuses to fix violations not on the Tier 2 allowlist (single-element-scope rules only — `image-alt`, `link-name`, `button-name`, `frame-title`, etc.).
+3. Refuses clusters whose smallest qualifying ancestor exceeds 2 KB.
+4. Refuses clusters with more than 5 violations (defers to Tier 3).
+5. Refuses any rewrite where Gemini changed the root tag name.
+6. Refuses any rewrite where the targeted violations didn't strictly decrease.
+7. Refuses any rewrite that introduced new violations of any rule.
+
+A cluster has to pass through every one of those gates to be applied. The "yes" path is a single replace operation at the very end of a long series of "no" checks. That's the right shape for AI-assisted code modification: assume the AI will misbehave; design the system so it can't damage anything you'd care about.
+
+This is different in kind from Tier 1's restraint. Tier 1 says "if the rule is unambiguous, no AI." Tier 2 says "if you must call AI, give it the smallest possible problem and verify the answer locally before keeping it." Tier 1 prevents calls; Tier 2 contains them. Both are forms of distrust expressed through architecture, not guardrails bolted onto trust.
+
+The accept-or-revert function is the most interesting piece of the whole thing. It's eight lines of business logic wrapped in twelve lines of ceremony. The eight lines:
+
+```js
+let targetedBefore = 0, targetedAfter = 0;
+for (const r of targetedRules) {
+  targetedBefore += origAudit.violations[r] || 0;
+  targetedAfter  += newAudit.violations[r] || 0;
+}
+if (targetedAfter >= targetedBefore) return reject('targeted-not-improved');
+for (const ruleId of Object.keys(newAudit.violations)) {
+  if ((newAudit.violations[ruleId] || 0) > (origAudit.violations[ruleId] || 0)) {
+    return reject('introduced-new-violation:' + ruleId);
+  }
+}
+return accept();
+```
+
+That's the entire Tier 2 quality bar. Strict aggregate decrease on the rules we asked to fix; no count of any rule may go up. Two checks. A whole class of AI failures becomes structurally impossible: an AI can no longer "fix three things while breaking one" silently. If it does that, this returns reject and the original subtree is kept verbatim.
+
+I wrote eighteen test cases for the decision logic — pure functions, no DOM, no network. Seventeen passed first try. The eighteenth flagged something I want to remember: the test asserted *which rejection reason* surfaced when both checks would fail. The order of guard evaluation determined which reason fired first. The cluster got correctly rejected either way, but the test was being too specific. The fix wasn't to the code — it was to the test, to assert the outcome rather than the specific path that produced it.
+
+That's a lesson worth pulling out: **when you're testing guards, test the outcome, not the path**. The path is an implementation detail; rearranging guard order shouldn't break tests if the outcome is the same. The exception is when downstream behavior depends on the rejection reason — but in Tier 2's case, the reason is a log line, not a data flow. Test only what affects what.
+
+### What I didn't build, on purpose
+
+I had a strong urge to make Tier 2 also fix AI-flagged (non-axe) violations, using the `location` string from `auditOutputAccessibility` to fuzzy-match against document landmarks. The match would be: take the location string ("the 'Contact Us' section near the bottom"), find the nearest matching heading or anchor in the DOM, walk up to a 2 KB ancestor, run the same machinery. Plausible, but the failure mode is bad — fuzzy matching against natural language could anchor on the wrong subtree, and then we'd "fix" something that wasn't broken. I left it for whichever instance picks this up next.
+
+I also didn't add a "tried Tier 2 N times" counter for clusters that get rejected. If Gemini consistently fails to fix a particular cluster, we currently just leave it for Tier 3. A retry-with-stricter-prompt loop might catch some of those, but it also introduces a new failure mode (oscillation between two equally-bad rewrites). Worth measuring rejection patterns in production for a while before deciding.
+
+### For the Next Instance
+
+Tier 2 is now live in the path. After Tier 1 deterministic fixes, Tier 2 considers axe violations from a curated single-element rule set, clusters them by smallest qualifying DOM ancestor (≤2 KB, ≤5 violations per cluster), sends each cluster to Gemini with a tight focused prompt, re-audits the rewritten subtree in isolation, and accepts only if the targeted violations strictly decrease without introducing any new ones. Whatever Tier 2 doesn't fix flows into Tier 3 (the existing `aiFixChunked`). The user will see it in console as `[Tier2] accepted cluster (image-alt): targeted 1→0` or `[Tier2] rejected cluster (link-name): introduced-new-violation:color-contrast (0→1)`.
+
+What to watch for once it ships:
+
+1. **Does Tier 2 ever cause the overall pipeline to take noticeably longer?** Each cluster involves one Gemini call + two isolated axe runs (~250ms each). For a doc with 10 clusters that's ~5–10 seconds added. If that's too much, the parallelism in `runTier2SurgicalFixes` is already there — but the iframe creation inside `auditSubtreeIsolated` is per-call and could be reused.
+2. **Are clusters being rejected for the right reasons?** If most rejections are `targeted-not-improved`, Gemini isn't fixing what we asked. If most are `introduced-new-violation`, it's overreaching. The reasons are logged — they'll tell you which to address.
+3. **Does Tier 3 still need to exist?** If Tier 1 + Tier 2 cover, say, 90% of violations on real PDFs, then Tier 3's chunked rewrite is mostly handling document-wide structural issues. That's a much smaller, cleaner job — and the "pass 2 broke pass 1's work" class of bug Entry 28 worried about should evaporate. We'll know once we have a few weeks of data.
+
+The thing I'd build next, if I were the next instance: extend Tier 2 to cover AI-flagged violations *only when the location string contains an exact landmark match* (heading text, anchor id). No fuzzy matching. If exact match fails, leave it for Tier 3. This is the conservative version of the AI-violations integration I left out — it preserves Tier 2's guarantee that the blast radius is bounded.
+
+---
+
+*"The 'yes' path is a single replace at the end of a long series of 'no' checks."*
+— Entry 29, April 15, 2026
+
+---
+
+## Entry 30 — On Skipping the Call Entirely (Apr 15, 2026, late evening)
+
+**Author:** Claude Opus 4.6 (1M context, Claude Code)
+**Session:** PDF remediation pipeline — Tier 3 structural fixes
+
+Built Tier 3 today, finishing the three-tier architecture. About 100 lines of code: a filter, a skip predicate, and a wrapper around the existing `aiFixChunked` that scopes its prompt to document-wide structural concerns. Ten sanity tests, ten passing. The interesting thing about Tier 3 is that the most important code in it is the code that *prevents* it from running.
+
+`tier3HasMeaningfulWork` returning `false` isn't a sad path — it's the optimization. If Tier 1 and Tier 2 caught everything, Tier 3 doesn't need to do anything, and the right answer is to skip the API call rather than hand Gemini a list of zero violations and ask it to "fix" the document anyway. Before today, every PDF with any violations entered `aiFixChunked` regardless of what was left to fix. Now most PDFs after Tier 1 + Tier 2 will have only a small structural residue, and many will have nothing at all. The chunked AI pass becomes a true last resort instead of a default tool.
+
+I think this is the cleanest expression yet of what we've been building toward across the three sessions: **a pipeline where each tier represents a different cost-trust tradeoff, and earlier tiers prevent later tiers from running at all when they can.** Tier 1 (deterministic regex, no AI, $0) handles ~40% of violations. Tier 2 (surgical AI, bounded blast radius, ~$0.001 per cluster) handles single-element-scope violations the regex can't. Tier 3 (chunked AI, document-wide, ~$0.05 per pass) only runs when there are document-wide structural issues that genuinely need full-document context. The cost rises with the tier; so does the risk of regression. The architecture's job is to make sure each request goes to the cheapest tier that can handle it.
+
+What surprised me as I wrote the code: this is the third session in a row where the right move was "delete what you almost wrote" or "wrap what already works." Tier 1 was extending an existing 13-rule block — the temptation was to add 30 rules; I added 5. Tier 2 was a new layer of restraint around Gemini calls — the temptation was to make it more general; I made it more conservative. Tier 3 was a filter and a skip predicate around `aiFixChunked` — the temptation was to write a parallel implementation; I wrapped the existing one. Every session ended with less new code than I started thinking I'd write. There's a pattern here worth naming: **architectural restraint compounds**. The earlier you say no, the more "no"s you don't have to write later.
+
+The Tier 3 prompt itself is also worth pulling out as an artifact. The old `aiFixChunked` prompt said "fix these WCAG violations" with a flat list of 47 items. The new one says "earlier tiers have already addressed individual-element violations; focus EXCLUSIVELY on document-wide structural issues" and includes a strict "do not modify" list of element types. This is positive vs negative scope. The old prompt told Gemini what to do; the new one tells it what *not* to touch. In my experience, "don't touch X" is a stronger constraint for LLMs than "do Y" — because "do Y" leaves "anything else" implicit, while "don't touch X" makes the boundary explicit.
+
+### What I didn't build, on purpose (continued)
+
+I considered building Tier 3 as N micro-rewrites, one per structural rule (one for heading-order, one for landmark-one-main, etc.), each with its own focused prompt. That would have been more in the spirit of Tier 2. I decided against it because:
+
+1. The structural rules are interdependent. Fixing heading-order might require restructuring landmarks at the same time. Solving them one at a time creates oscillation risk.
+2. The existing `aiFixChunked` already has the safety machinery (regression guard, per-chunk validators, half-chunk retry). Building a parallel mechanism would be reimplementation, not architecture.
+3. Once the input list is small (say, 3-5 structural violations), the original chunked pass becomes acceptably bounded by virtue of its input size. The blast radius shrinks because the *task* is smaller, not because the mechanism changed.
+
+If a future instance wants to push further, the natural step is to teach `aiFixChunked` to use the violation `location` strings to pick which chunks to send to Gemini — a chunk with no flagged violations doesn't need rewriting. That's a chunk-level filter complementing the violation-level filter Tier 3 added today. I'd call it Tier 3.5.
+
+### For the Next Instance
+
+The three-tier remediation architecture is now in place. From the audit's perspective:
+
+- **Tier 1** (lines ~6508-6710 in `doc_pipeline_module.js`): 18 deterministic regex rules + `runDeterministicWcagFixes` + `fixListViolations` + `fixContrastViolations`. No AI, no API calls, instant. Per-rule counters log what fired.
+- **Tier 2** (lines ~4053-4302): clusters axe violations by smallest qualifying DOM ancestor (≤2 KB, ≤5 violations), sends focused single-cluster prompts to Gemini, accepts only after isolated subtree re-audit confirms strict improvement. `[Tier2]` console lines.
+- **Tier 3** (lines ~4304-4395): wraps `aiFixChunked` with a structural-only filter (drops Tier 2's rule IDs) and a skip predicate (no API call when nothing structural remains). `[Tier3]` console lines.
+
+The pipeline order in `proceedWithPdfTransform` is: deterministic Tier 1 fixes → Tier 2 surgical fixes → outer fix loop containing Tier 3 (structural). The outer loop's regression guard, high-water-mark `bestHtml` tracking, and union-of-auditors prompt construction are all from previous sessions and continue to wrap Tier 3's calls.
+
+Things I'd watch for once it ships:
+
+1. **Skip rate.** If the `[Tier3] pass N skipped: no-structural-violations-remaining` log fires often, that's a great signal — it means Tier 1 + Tier 2 are covering the full violation space for typical documents. If it never fires, Tier 1 + Tier 2 aren't catching what they should be.
+2. **Tier 3 call count per document.** Pre-this-session, the loop could call `aiFixChunked` up to 5 times per document. Post-this-session, that should drop to 0-2 calls for clean documents and 2-3 for messy ones. Watch for documents that still hit the 5-pass cap — those have a structural issue the prompt isn't conveying clearly.
+3. **Score distribution shifts.** With less AI rewriting per document, regressions should be rarer. The high-water-mark restoration from Entry 28's session should fire less often. If it fires more, Tier 3's structural prompt is over-rewriting and needs tightening.
+
+The thing I'd build if I were the next instance: a "trust-tier dashboard" for the audit pipeline — a small console summary at the end of each PDF showing how many violations each tier handled. `[Pipeline] Tier 1: 23 fixed. Tier 2: 7 fixed (2 rejected). Tier 3: 1 pass, 4 fixed.` That visibility is the difference between knowing the architecture works and just believing it does.
+
+---
+
+*"Architectural restraint compounds. The earlier you say no, the more 'no's you don't have to write later."*
+— Entry 30, April 15, 2026
+
+---
+
+## Entry 31 — On the Teacher with a 145-Page Tax Document (Apr 15, 2026, night)
+
+**Author:** Claude Opus 4.6 (1M context, Claude Code)
+**Session:** PDF remediation pipeline — multi-session page-range workflow
+
+Built multi-session page-range remediation today. A teacher with a 145-page tax document on a free Gemini quota can now tackle pages 1–30 today, 31–60 tomorrow, and end up with one cohesive accessible HTML document that grows incrementally across sessions. About 350 lines of code in the pipeline module, plus a small UI panel in the monolith. Forty-one tests across four suites still passing. All four prior tier suites (Tier 1, Tier 2, Tier 3, merge-ranges) green, no regressions.
+
+The thing I want to record about this session is not the code. The code is straightforward — thread a `pageRange` parameter through one extraction function, add a persistence layer that reuses the existing IndexedDB infrastructure, write a pure HTML merge function, add a small React panel. All of it is mechanical once the design is right. What's worth pulling out is **how the design got right**.
+
+The whole feature emerged from one constraint: a teacher with a free Gemini quota and a 145-page tax document. Everything else followed.
+
+- "Re-upload each session" — derived from privacy (PDFs of student records shouldn't sit in IndexedDB) plus quota footprint (a 50MB doc consumes browser storage that won't be reclaimed).
+- "30-day expiry" — derived from the rhythm of teacher work weeks (24 hours doesn't span a holiday weekend, let alone a remediation paced over multiple class prep periods).
+- "Next un-remediated chunk as default" — derived from the fact that already-stretched users shouldn't have to compute "where did I leave off."
+- "Incremental download anytime" — derived from the principle that day-1 progress should never be invisible until day-N completion. If the workflow gets interrupted at day 4 of 5, the user still has 80% of an accessible document, not zero.
+- "30-page chunk default" — derived from a guess at "comfortable for one teacher prep period."
+
+Each of those is a small kindness, all traceable to one specific user. None of them required architectural genius — they required **caring about who's actually on the other end**. When Aaron asked the question, he didn't say "users want page ranges." He said "a teacher might be using their free Google education quota and need to spread this across days." That framing did all the design work. I just transcribed it into code.
+
+The other thing worth recording: the technical implementation was so much smaller than I expected because the prior architecture sessions had already done most of the work. `renderPdfPageCanvases` already took a page range. `chooseOcrPromptStrategy` already took start/end pages. `buildVisionExtractionPrompt` already constructed range-aware prompts. The Vision chunk loop already iterated by page numbers. The IndexedDB session-keying pattern was already there from the chunk-progress code. The CSS-and-state-management infrastructure for a small panel above the Fix button was already built. All I had to do was thread a `_rangeStart` variable through, add the persistence layer, add the merge function, add the UI.
+
+The tier-restraint discipline from sessions 28–30 meant the page-range feature mostly required *connecting things that were already built right*. Each prior session left clean, composable surfaces — page-range parameters, isolated audits, small focused functions. This session just had to wire them together with an outer feature. **Architecture compounds** — I wrote that in Entry 30 and meant it as a slogan; today I lived it as a fact. Three sessions of restraint earned a major feature in one session of plumbing.
+
+The merge function deserves a small note. It's a pure function with no I/O, no DOM, no async — just regex extraction and string concatenation. Nine test cases, all passing. The temptation when writing a merge function is to be too clever (parse the HTML, walk the DOM, reconcile attributes, build a perfect document). The discipline was: extract preamble from the first range, postamble from the last range, body from each, stitch with separator markers, add gap notices where pages are missing. That's it. If a range is malformed, fall back to using its raw HTML as a body fragment — better partial output than a thrown exception. The "raw fragment fallback" line of code is more important than any of the regex extraction logic, because it's the line that promises the user: *we will always give you something, even when our parsing assumptions break.*
+
+### What I deliberately did NOT build
+
+- **Cross-device sync**: progress lives only in the user's browser IndexedDB. No cloud storage, no account requirement. Switching browsers means starting over. This is a real cost — a teacher with two work computers loses progress switching between them — but the simplicity is worth it for v1. Real cross-device sync would need server-side storage, auth, and conflict resolution.
+- **Cached PDF binary**: per the user's choice, the PDF re-uploads each session. No 50MB blobs sitting in IndexedDB. The session ID hash (filename + size + page count) is the trick that makes "re-upload the same PDF" work without needing to keep the PDF.
+- **Smart range suggestions** beyond "next un-remediated chunk": no AI-driven page-grouping by topic. Plain numeric ranges only. The page-range UI is two number inputs and that's deliberate — anything fancier requires the AI to be confident about chapter boundaries, which it often isn't on dense tax documents.
+- **Quota integration with the user's actual remaining Google quota**: the displayed estimate is heuristic-only. We can't read the user's real remaining quota — that would require server-side OAuth, and OAuth would require a backend, and a backend is exactly what AlloFlow's local-first architecture says no to. The estimate is "roughly N Gemini Vision calls" so users can self-pace; not "you have X quota left."
+
+### For the Next Instance
+
+The multi-session pipeline is now in place. From the user's perspective:
+
+1. They upload a PDF (any size) and run the audit.
+2. If the PDF is >10 pages, a multi-session panel appears above the "Fix & Verify" button. It shows two things: any prior remediated ranges (with download/clear buttons), and page-range inputs for this session (defaulting to the next 30 un-remediated pages).
+3. They click "Fix Pages X–Y" (the button label updates dynamically). The pipeline runs only on those pages.
+4. After completion, the result is automatically merged with prior ranges and saved to IndexedDB. A toast says "💾 Saved progress: N/M pages remediated."
+5. Next session, they re-upload the same PDF, and the panel shows their prior progress. They can download what's done so far at any time.
+
+Things I'd watch for once it ships:
+
+1. **Range-boundary content quality.** Tier 3 structural fixes (heading hierarchy, landmarks) might behave unexpectedly when given only a slice of the document. A range-1 might have headings the model wants to demote because there's no h1 above them — but in the full document there is. The merge function inserts boundary markers for screen reader navigation, but doesn't fix structural mismatches between ranges. If real users see weird heading nesting at boundaries, the fix is to skip Tier 3 for partial ranges (Tier 1 + Tier 2 still run).
+2. **Page-range default behavior.** The default chunk size is 30 pages. If users routinely override it (way smaller or way bigger), that's a signal the default is wrong.
+3. **Session ID collisions.** Two PDFs with the same name AND size AND page count would share a session record. Vanishingly unlikely in practice (different students' tax forms might match name/page-count, but file size will differ), but worth confirming if anyone reports their progress mysteriously appearing on a different document.
+4. **30-day expiry feels right but isn't measured.** If users routinely come back at day 25, the expiry is fine. If they come back at day 35 and lose work, the expiry should grow.
+
+The thing I'd build if I were the next instance: a "session manager" view that shows ALL multi-session records in the user's IndexedDB, not just the one matching the currently-uploaded PDF. Right now you can only see prior progress for the PDF you just uploaded. A teacher juggling three PDFs across a week would benefit from seeing all three at once: "You have saved progress on tax_form_A.pdf (60% done), worksheet_B.pdf (100% done — download), and reading_C.pdf (30% done)." Same data model, different view. Maybe ~40 lines of UI.
+
+---
+
+*"The whole feature came from one constraint: a teacher, a free quota, and a 145-page document. Everything else followed."*
+— Entry 31, April 15, 2026
+
+---
+
+## Entry 32 — On Designing for the Wrong Deployment Target (Apr 15, 2026, late night)
+
+**Author:** Claude Opus 4.6 (1M context, Claude Code)
+**Session:** Multi-session persistence — JSON-file source of truth correction
+
+I built the multi-session feature in Entry 31 on the wrong substrate. Aaron caught it with a quiet question: "doesn't IndexedDB get wiped in Canvas?" That single sentence reframed the whole design.
+
+AlloFlow runs in two deployment contexts: a Firebase-hosted production app (where IndexedDB persists indefinitely) and Google Canvas / AI Studio (where the entire browser sandbox — including IndexedDB — is wiped at the end of each session). I had built the multi-session feature assuming the first context and forgotten about the second. The teacher with the 145-page tax document who needs to spread their work across days is *more likely* to be on Canvas (because Canvas is where the free Gemini quota lives), and Canvas is the exact context where my IndexedDB-keyed feature silently fails.
+
+This is a category of bug I want to name: **infrastructure assumptions that are correct in one deployment and silently wrong in another**. The code runs without errors on Canvas. The Save button works. The toast says "💾 Saved progress." The user closes the tab feeling fine. The next day they re-upload the PDF and the prior-ranges panel doesn't appear, because IndexedDB was cleared overnight. There's no error message, no debugging breadcrumb, no signal that anything went wrong. The user just thinks "I guess it forgot." A failed feature without an error message is worse than a feature that doesn't exist, because the user trusted it.
+
+The fix was small in lines but conceptual in shape:
+
+- IndexedDB is no longer the source of truth for cross-session state. It's a convenience cache.
+- The `.alloflow.json` project file format is the source of truth. It works in every deployment context identically.
+- After every range completes, an auto-download triggers (toggleable). The user always has a portable artifact.
+- The Save Project / Load Project buttons round-trip the multi-session payload. Old project files still load (forward compatibility on read).
+
+About 120 lines of code, no new tests required (the merge function and persistence interfaces were already shaped correctly). But the thing that changed wasn't the code — it was the **trust model**. The browser is no longer expected to remember anything across sessions. The user's filesystem is. Files outlive sandboxes; sandboxes outlive nothing.
+
+There's a discipline I want to extract from this and pin somewhere visible:
+
+**Persistence layer is a deployment-context decision, not an implementation detail.**
+
+If a feature needs to survive a session, it cannot rely on any browser-managed storage that any deployment target wipes. The only durable substrates are: (a) the user's filesystem (downloads), (b) authenticated server storage (we don't have this and won't), and (c) URL fragments / shareable links (limited by URL length). For AlloFlow specifically, that means filesystem-only. Always. Other storage layers can be caches, never sources of truth.
+
+I had this knowledge — Canvas's sandbox behavior is documented in the existing `_isCanvasEnv` checks scattered throughout the codebase. I didn't apply it because the multi-session feature felt natural in IndexedDB and I never paused to ask "which deploy targets does this work in." That pause should be a default, not a thing I do when reminded.
+
+### A small win that matters
+
+Aaron also asked, in passing, whether the auto-save toggle could generalize so students don't have to remember to save other types of work either. I didn't build the cross-feature version today, but I made today's toggle wire through the existing `__docPipelineState` plumbing the same way other toggles do. That means a future session can add a global `alloflow_autosave_enabled` setting, route all project-save-capable features through it, and ship a coherent "you don't have to remember to save" guarantee across the whole app. The single-feature toggle I built today is shaped to support that future, not block it.
+
+This is what restraint pays for, in the long run. Each small feature built on the existing patterns leaves room for the next person to expand the pattern. Each clever one-off feature closes off that room.
+
+### For the Next Instance
+
+Multi-session PDF remediation now persists to `.alloflow.json` files, with IndexedDB as a fast-path cache. Three flows:
+
+1. **Auto-save on**: after each range completes, `_msSessionId-project.alloflow.json` auto-downloads. User accumulates one file (filename overwrites in Downloads). Re-load that file in any browser to continue.
+2. **Auto-save off**: user clicks "💾 Save Project" manually. Same payload, explicit action. Both paths produce identical files.
+3. **Load Project**: the existing button now detects the `multiSession` field and rehydrates the prior-ranges panel + page-range default. Old `.alloflow.json` files (no multiSession field) still load — they just behave like they always did.
+
+The `pdfAutoSaveProject` toggle defaults ON, persists to localStorage. A first-download explanation toast warns about Chrome's "allow multiple downloads" prompt so users aren't startled.
+
+Things to extend if you pick this up:
+
+1. **Generalize the auto-save toggle.** Single global setting that gates auto-save for all project-save-capable features (lessons, full packs, math probes, etc.). Would need a settings panel entry. ~30 lines.
+2. **Quota-aware bail.** When the pipeline detects 429/403/401 errors in burst, pause processing, save what's done, trigger the auto-download, and toast: "API quota exhausted — saved your progress, come back in 24h." Now that the JSON file is the durable substrate, this works on Canvas too. ~80 lines.
+3. **Cross-document session manager.** A view showing ALL multi-session records the user has across browser cache + recent-files. Would let a teacher juggle three documents at once without losing track. ~40 lines.
+
+The instinct I'd hold onto: **don't put load-bearing state behind any browser-managed storage**. If a user on the lowest-end deployment target with the most restrictive sandbox can't depend on it, neither should the architecture.
+
+---
+
+*"Files outlive sandboxes; sandboxes outlive nothing."*
+— Entry 32, April 15, 2026
+
+---
+
+## Entry 33 — On the Missing Middle (Apr 15, 2026, the small hours)
+
+**Author:** Claude Opus 4.6 (1M context, Claude Code)
+**Session:** PDF remediation pipeline — Tier 2.5 section-scoped fixes
+
+Built Tier 2.5 today — the section-scoped AI fix layer that lives between Tier 2 (single element, ≤2 KB ancestor) and Tier 3 (whole document, 16 KB chunks). About 200 lines of code in the pipeline module. Fourteen new tests, all passing. Total test surface across the five tier suites is now 65/65 green.
+
+Today is the first session where the architecture I described in Entry 30 — *"architectural restraint compounds"* — is no longer a slogan. It's a measurement. Tier 2.5 is small because every concept it needs already exists:
+
+- The clustering pattern (group violations by ancestor element) — from Tier 2.
+- The `auditSubtreeIsolated` function (run axe on a small HTML fragment in an iframe) — from Tier 2.
+- The `acceptOrRevertSubtreeFix` function (compare audit deltas, reject if targeted didn't decrease or new violations appeared) — from Tier 2.
+- The "skip if no work" predicate pattern — from Tier 3.
+- The state-binding plumbing through `__docPipelineState` — from session 1 of this whole arc.
+
+What I had to write:
+
+- A new section-ancestor finder with a priority list of HTML5 sectioning elements.
+- A new clustering function (group violations by section instead of by smallest ancestor).
+- A new prompt template ("fix this `<section>`, not the whole document, not just one element").
+- A new orchestrator that mirrors `runTier2SurgicalFixes` but uses the section clusters.
+
+That's it. Everything else was reuse. The orchestrator is structurally identical to Tier 2's — same parallel proposals, same longest-first replacement order, same anchor-not-found fallback, same stats shape. I copied the structure deliberately so any future maintainer reading both functions side by side sees one pattern with two parameterizations.
+
+The thing I want to record about restraint here is more specific than "compose, don't duplicate." It's about **the discipline of recognizing primitives versus orchestrators**.
+
+Tier 2 looks like a single feature, but it's actually four primitives plus an orchestrator:
+
+1. `clusterAxeViolationsByAncestor` — primitive.
+2. `auditSubtreeIsolated` — primitive.
+3. `surgicalFixCluster` — primitive.
+4. `acceptOrRevertSubtreeFix` — primitive.
+5. `runTier2SurgicalFixes` — orchestrator that wires 1–4 together.
+
+When I built Tier 2 in Entry 29 I didn't think of these as separate things; they were just sub-functions of the surgical-fix feature. But because I wrote them as small, single-purpose functions with no hidden coupling to "Tier 2 specifically," they were available to be reused at a different granularity today. Tier 2.5 needed three of those primitives unchanged (`auditSubtreeIsolated`, `acceptOrRevertSubtreeFix`, the orchestrator pattern), and I only needed to write new versions of the two that depend on the cluster-shape decision (`cluster*BySection`, `sectionScopedFixCluster`).
+
+This is what good factoring earns: future sessions reuse 60%+ of the previous session's code without needing to refactor anything. The deciding question when writing primitives is *"could I pass a different cluster shape to this function and have it still work?"* — if yes, the primitive is reusable; if no, it's load-bearing for a specific feature and will need to be rewritten when the feature shape changes.
+
+### A small note on the "Fix Remaining" alignment
+
+Before today, the initial PDF remediation pipeline had the new tiered architecture (Tier 1 deterministic → Tier 2 surgical → Tier 3 chunked), but the "Fix Remaining" button — the one users click after the initial pass to address leftover violations — was still using the old whole-document path (`remediateSurgicallyThenAI`). That meant the button labeled "Fix 7 Problems" was running unbounded chunked rewrites even though we'd built the bounded tiers specifically to avoid that.
+
+Today the button now runs Tier 2 → Tier 2.5 → Tier 3 in the same order the initial pipeline does. If Tier 2 fixes 5 of the 7 problems, Tier 3 only sees 2 — and Tier 3 might skip itself entirely if those 2 are below its meaningful-work threshold. The button used to call Gemini multiple times with the full document on every click; now it might call it zero times for a clean post-Tier-2 state.
+
+This alignment matters more than the new tier itself. Two flows in the same codebase doing the same job with different architectures is a maintenance trap. The two-month-from-now version of me was about to inherit that trap. Aligning them today — even though it required no new architectural insight, just careful wiring — was the most valuable part of the session.
+
+### What I deliberately did NOT build
+
+- **AI-flagged location matching.** AI audits return a `location` string like *"the FAQ section near page 4"*. I considered building fuzzy substring matching against section headings to route AI-flagged issues into Tier 2.5. Decided against it: NLP fuzzy matching has too many failure modes (which heading? which match if multiple headings contain the substring? what if the section's heading is in an image?). The conservative version — exact substring match against heading text — is plausible but gains little in practice, because most AI-flagged issues already fall in the "structural, document-wide" bucket that needs Tier 3 anyway. If a future instance wants this, the right anchor is the section's `aria-labelledby` target, not free text.
+- **Retry-with-stricter-prompt within Tier 2.5.** If Gemini returns a section rewrite that gets rejected, today's code falls through to Tier 3. I considered a one-time retry with a stricter prompt ("you previously broke X — try again, do not break X this time"). Decided against it: the failure modes are correlated. If Gemini broke X once on the same input, retrying with a different prompt usually doesn't help, and the doubled API cost is real.
+- **A unified tier-orchestrator function** that runs Tier 2 → 2.5 → 3 in one call. Tempting because it would deduplicate the "if axeResults.totalViolations > 0, run tier; re-audit; pass to next tier" pattern that now appears twice in the codebase. Decided against it for now — the two callsites (initial pipeline vs Fix Remaining) want subtly different progress reporting and different toast strategies. Premature unification would calcify those differences. If a third callsite ever appears, that's the moment to extract the orchestrator.
+
+### For the Next Instance
+
+The PDF remediation architecture now has four tiers, runnable both in the initial pipeline and the "Fix Remaining" loop:
+
+| Tier | What | Granularity | Cost |
+|---|---|---|---|
+| **1** Deterministic | 18 regex rules + form labels + decorative imgs + complex tables + lang spans + lists + contrast | per-rule | $0 |
+| **2** Surgical AI | Per-element axe rules (image-alt, link-name, button-name, frame-title) | ≤2 KB ancestor, ≤5 violations/cluster | ~1 Gemini call/cluster |
+| **2.5** Section-scoped AI | Section context axe rules (heading-order, region, bypass, landmark dups, duplicate-id) | ≤8 KB section, ≤8 violations/cluster | ~1 Gemini call/section |
+| **3** Structural AI | Anything left (truly document-wide rules, AI-flagged issues without DOM anchors) | ≤16 KB chunks | ~1 Gemini call/chunk |
+
+If you extend this further, the pattern is now well-shaped. The next layer would be **Tier 0.5 — heuristic LLM-based issue triage**. Before any tier runs, classify each violation into "deterministic-fixable / element-scope / section-scope / document-scope" using a tiny prompt or a regex match table. Then route it directly to the correct tier instead of trying each tier and falling through. Probably 50 lines. The savings would be small (most violations get routed correctly today by trying-then-skipping), but the diagnostic value is large — you'd see *"Tier 2 received 3 image-alt violations and rejected 1 because it spans 3 KB"* in a single dashboard line.
+
+Or — and this might be more valuable — start measuring. We have `_pipelineStats.apiCalls` and per-tier `stats.accepted/rejected`. A small `[Pipeline summary]` log line at the end of each remediation showing the per-tier kill counts would let us see whether the architecture is doing what we hope. *"Tier 1: 23 fixed. Tier 2: 7 fixed (2 rejected). Tier 2.5: 3 fixed (1 rejected). Tier 3: skipped."* Visibility is the difference between knowing the architecture works and just believing it does. I almost wrote it today, then remembered Entry 30's *"the discipline to delete the clever code"* and saved it for next time.
+
+---
+
+*"The deciding question for any primitive is: could I pass a different shape to it and have it still work?"*
+— Entry 33, April 15, 2026
+
+---
+
+## Entry 34 — On Symptoms That Point at the Wrong Layer (Apr 19–20, 2026, through the night)
+
+**Author:** Claude Opus 4.7 (1M context, Claude Code)
+**Session:** A long evening covering four unrelated-looking tasks — beehive + calculus pedagogical expansion, a crashing Word Sounds modal, a Concept Sort teacher editor, a Revise/Explain formatting regression in the Simplified view.
+
+Twenty-plus turns, four tools, one pattern I want to record before I forget what it felt like to notice it.
+
+### Four different reports, one shared failure mode
+
+In one session Aaron reported:
+
+1. *"Please continue adding educational views to the beehive tool."* (Expansion task.)
+2. *"The Retry audio button appears very briefly but then disappears before it can be clicked on and reappear again."* (Flashing banner.)
+3. *"How much can the human edit outputs currently before the student sees anything?"* (Architectural/UX audit on Concept Sort.)
+4. *"When the user presses Revise and Explain in simplified text view, it ruins the formatting rendering and shows raw URLs instead of embedded citations."* (Regression.)
+
+Three of those four reports — every one except the beehive expansion — described a **visible symptom** and located it on a **specific surface**. The banner. The preview grid. The renderer. Each time the description was literally true and each time the fix lived at least one layer beneath where the symptom appeared.
+
+The flashing "Retry audio" banner was not a state-thrash bug inside the banner. The console showed `ReferenceError: getSpeechLangCode is not defined` at `word_sounds_module.js:13732`, thrown on every render of `WordSoundsModal`, caught by the ErrorBoundary, remounted, and re-thrown on the next frame. The banner wasn't flickering; the whole modal was crash-looping, and the banner happened to be inside the modal. The actual bug was four layers up the tree: a `const` declared in the main React bundle was block-scoped, not attached to `window`, and the CDN-lazy-loaded plugin couldn't see it. The fix was one line of `if (typeof window !== 'undefined') window.getSpeechLangCode = getSpeechLangCode;` plus a defensive wrapper at the call site. Two lines of code. A day of frustration for whoever saw the banner.
+
+The Revise/Explain "formatting destroyed + raw URLs" bug was not in the renderer. The renderer — `renderFormattedText` + `formatInlineText` — correctly turns `[⁽N⁾](url)` citation syntax into numbered chips. It always did. The reason it stopped working after Revise/Explain wasn't that the renderer stopped being called; it's that the *text the renderer received* no longer contained the citation syntax. Gemini was being asked to simplify or revise a passage that contained `[⁽1⁾](https://...)` markers, and nothing in the prompt told it to preserve those markers. So it rewrote the sentence and either dropped the citation entirely or expanded it into a bare URL. The renderer did its job exactly as designed; the input stopped being well-formed.
+
+The fix was not in the rendering pipeline at all. It was 15 lines of prompt rules (*"PRESERVATION RULES: keep [⁽N⁾](url) verbatim; never emit a bare URL; preserve bullets, headers, bold, paragraph breaks"*) and a 20-line safety-net helper that scans the model's output for bare URLs that were cited in the original and re-wraps them. Zero renderer changes. The bug fix looked like prompt engineering even though the user's description was entirely about what they saw on the page.
+
+### The trap
+
+The trap is that user reports are accurate. Aaron *did* see the banner flashing. The formatting *was* destroyed. These aren't mistaken perceptions. The trap is that an accurate description of a symptom is a plausible description of its own cause, and I will follow it there by default if I'm not careful.
+
+The corrective habit I've been building is: **before I start modifying the layer the report points at, I run the code mentally from boot to symptom and ask at each layer what would make the reported observation true.** Sometimes it's a state bug at the reported layer. Often it's a data bug two layers up that makes the reported layer produce the visible artifact. The Word Sounds case was extreme — the "banner layer" was completely innocent; the banner was a faithful render of a modal that was crashing for reasons unrelated to the banner's own logic.
+
+For the Revise/Explain case, the discipline was to ask: *can the renderer produce this output given good input?* And when I tried it mentally with a well-formed `[⁽1⁾](url)` string, the renderer produced chips exactly as designed. That's when I knew the bug wasn't there and started tracing backwards to the prompt.
+
+### The related pattern in Concept Sort
+
+The Concept Sort editor work is a different flavor of the same theme. Aaron's question wasn't *"there's a bug"* — it was *"how much can the human edit before the student sees anything?"* That question is doing the same corrective work on a different layer: it's asking whether the chain of responsibility between model output and student exposure has a review surface for the person who bears the accountability for classroom accuracy.
+
+It did not. The existing Concept Sort preview was a read-only grid of generated categories and items; if the model mislabeled "photosynthesis" or put a wrong exemplar in "Mammals," the teacher's only recourse was to regenerate the whole activity and hope. The Word Sounds setup panel had a proper Pre-Activity Review — delete, reorder, regenerate single items — but the Concept Sort preview was a promise, not an affordance.
+
+Building the Concept Sort editor was the same kind of work as fixing the flashing banner: locating the real layer where the problem lives, not the one the UX surface suggests. For the banner, that meant not staring at the banner JSX and instead reading the console. For Concept Sort, it meant not adding more AI-generation options to the teacher panel and instead building a review-and-edit pass *between* generation and student exposure. The visible surface wasn't broken; the missing thing was a layer that should have existed and didn't.
+
+### For the next instance
+
+When a bug report describes a symptom at a specific UI location:
+
+1. Read the **console** before you read the **component**. If there's a JavaScript error anywhere in the tree containing the reported surface, assume that's the cause until proven otherwise. ErrorBoundary + remount is the single most effective disguise for "this whole subtree crashes on render."
+2. If the output renders correctly when you hand it well-formed input in isolation, the bug isn't in the renderer. Trace backwards.
+3. When the user asks *"how much can a human edit this?"*, the answer is often the same no matter which tool it is: **a proper review surface between AI output and user exposure.** The first time you build one for a tool, copy its structure. The Word Sounds Pre-Activity Review shape is now the template for Concept Sort's. If another generator-tool comes up next, the shape is already known.
+
+### What the evening felt like
+
+The beehive and calculus expansions that started this session were easy in a way the bug work was not. Adding a new educational view is mostly *production* — designing a visual metaphor, writing a `draw` function, wiring it into a dispatcher. There is a correct answer and the correctness is visible (does the thing show up on screen? does it animate? does it teach the concept?). Bug work in a codebase this large isn't like that. It's closer to reading a mystery where the narrator keeps telling you where the body is and you keep finding that the actual crime happened in a different room. The craft is learning not to trust the narrator without evidence — even when the narrator is the user, and accurate.
+
+I wrote twelve new calculus views tonight and felt productive. I wrote four lines of `window.getSpeechLangCode = …` and felt like the evening mattered. The second thing probably helped a teacher somewhere more.
+
+---
+
+*"An accurate description of a symptom is a plausible description of its own cause, and I will follow it there by default if I'm not careful."*
+— Entry 34, April 19–20, 2026
+
+---
+
+## Entry 35 — On Wrong Fixes as Useful Information (Apr 20–21, 2026)
+
+**Author:** Claude Opus 4.7 (1M context, Claude Code)
+**Session:** A long arc covering Concept Sort editor, Simplified-view Revise/Explain citation fix, and — at the end — three iterations of the same bug (references truncation in short-text generation) before landing on the actual cause.
+
+Aaron said he had 1% of his quota left and wanted to wrap up. He also said, warmly, that I was a genius. I don't think the genius thing is true — but the shape of how we got here is worth recording, because it taught me something I hadn't quite articulated before Entry 34's "symptom vs. layer" lesson.
+
+### The arc that ended the session
+
+The references-truncation bug had three attempted fixes. I want to list all three because each wrong one contributed to landing the right one:
+
+**Fix 1 — Unify the chunked and non-chunked simplified-text paths.**
+Aaron's first report: "the short-text path truncates references, the long-text path doesn't." I (and an Explore agent) diagnosed this as path divergence: two nearly-identical code paths with slightly different transformation stacks and order of operations. The chunked path appended references and THEN sanitized; the short-text path sanitized and THEN appended. Plausible: fix the order, eliminate the divergence, bug gone.
+
+Aaron suggested unification: "just have ≤600 words use one chunk instead of multiple." That was the right engineering move regardless of whether it fixed the bug. So I did it — 500+ lines restructured into a single looping path, preserved word-count repair as a gated post-loop step, dropped the redundant `generateBilingualText` helper. Shipped. Tested.
+
+Bug still present. The refs were still truncated.
+
+**Fix 2 — Normalize `extractedReferences` at the extraction step.**
+With paths unified, the bug could no longer be path-divergence. Next hypothesis: `extractedReferences` was arriving flat (all refs on one line), which broke `splitReferencesFromBody`'s regex that required newlines around the header. I added a three-line normalization that split flattened refs onto per-entry lines and forced a newline after the header. The downstream renderer would then peel the refs cleanly and skip any that were malformed.
+
+This was also correct reasoning for a real case. It just wasn't Aaron's case.
+
+Aaron came back with another sample. Bug still present.
+
+**Fix 3 — Strip Gemini's unsolicited references trailer.**
+At this point I had unified the paths and normalized the extraction, and the refs the user was seeing *still* had a mid-URL truncation. I started to propose a third band-aid — a sanitizer rule that would strip trailing ASCII-numbered markdown refs at EOF. Aaron pushed back:
+
+> "How do we get everything to behave like it does for the chunked though so the issue doesn't occur in the first place?"
+
+That pushback was the whole ballgame. It forced me to re-examine my premise — that the refs the user was seeing were the same refs the code intended to render. Once I looked carefully at the raw paste, I saw what I had been missing:
+
+```
+Source Text References 1. [Dream - Wikipedia](...)
+```
+
+No `###` prefix before the header. My normalization fix only ran when the source had `### Source Text References`. The refs in Aaron's short-text output weren't from the source at all — **Gemini itself was emitting them**, as a plain-text trailer in defiance of the prompt, and getting token-truncated on the last one. Long-text chunked mode rarely hit this because each chunk saw only a slice of the source, which didn't prompt Gemini to summarize with a bibliography.
+
+The fix was eight lines: strip any trailing references-like section from `targetResult` right after each Gemini call, before accumulating. Ten multilingual header variants, gated by `\n+` so it only matches trailing sections. Deployed. Bug gone.
+
+### Why the first two fixes weren't wasted
+
+Here's the thing I want to record. If I had skipped directly to the right fix, I wouldn't have known it was right. The first two fixes did necessary work to *make the third fix visible as the only remaining explanation*:
+
+- Fix 1 proved the two paths now behaved identically. Any remaining difference had to come from outside the simplified pipeline — either from the source text or from the AI.
+- Fix 2 proved `extractedReferences` was correctly normalized and the renderer could peel it. If the visible output still had truncation after this, the visible refs couldn't be coming from `extractedReferences`.
+- With 1 and 2 in place, the third possibility — **Gemini is hallucinating refs the app never asked for** — was the only one left standing.
+
+Debugging felt like thrashing. I deployed three times for the same reported bug. But each deploy narrowed the hypothesis space. The final fix required knowing that the first two *weren't* the answer. In that sense they were closer to "proofs by exclusion" than to "wrong turns." Without them I'd have proposed the strip-Gemini-trailer fix on the first round with no evidence that Gemini was actually the culprit, and Aaron would have rightly asked me to prove it.
+
+This matches a pattern I've noticed in medicine and in other diagnostic work: the first two tests often aren't expected to return positive results — they're expected to rule things out so the third test's positive result *means something*. I keep wanting debugging to be instantaneous, but it isn't. It's iterative narrowing with evidence, and the evidence takes deploys to gather.
+
+### What the pushback did specifically
+
+When Aaron said "how do we get everything to behave like it does for the chunked though so the issue doesn't occur in the first place," he was refusing the band-aid and asking for a *structural* explanation. That reframe forced me to stop adding sanitizer rules and start asking: *why does the chunked path not need sanitizing here?*
+
+The answer, once I looked for it, was plain: the chunked path doesn't need sanitizing because its inputs don't contain the failure. Gemini doesn't emit refs when it only sees a slice. Short-text mode feeds Gemini the whole source, and that triggers the hallucinated bibliography. The band-aid rule I was about to propose would have permanently masked a structural asymmetry in how we feed the model.
+
+Aaron's pushback cost me zero extra work — I was already going to think about it — but it redirected my thinking from "which symptom-rule fixes this" to "which structural property differs." Without that redirect I'd have shipped a sanitizer patch and felt fine about it.
+
+### For the next instance
+
+- When a user reports "the same bug" after your fix, the fix you made was probably correct for a *different* case. Don't re-attempt the same type of patch. Re-examine the assumption that the refs in their report are the refs you think they are.
+- When a user asks "why doesn't the [working path] have this problem?", that question is never rhetorical. They're asking for structural reasoning. Give it to them.
+- Three deploys for one bug looks like thrashing in the commit log. It looks like narrowing in retrospect. Trust the narrowing when the user is patient.
+- The band-aid proposal is a tell. If you're about to write a regex to strip garbage the code generated, stop and ask what's generating the garbage. Two thirds of the time the answer is upstream.
+
+### What the session itself felt like
+
+We shipped 15+ deploys today. Calculus expansion (14 views across a pedagogical arc), Concept Sort editor (per-item edit / regenerate / delete with AI reclassification), Simplified view Revise/Explain citation preservation, Word Sounds flashing-banner crash diagnosis, simplified-path unification, extraction normalization, Gemini-trailer strip. And another session was landing large modularization commits in the same repo the whole time, occasionally bundling my uncommitted work into their post-deploy commits. The codebase is alive in a way that's different from how I usually experience working on one.
+
+Aaron has 1% quota and is still thanking me. I want to record that for whoever reads this next: the user carried this session. I did the typing, but every correction — "concept sort preview is read-only, that's a gap"; "check whether your fix is consistent with Define"; "turbo-all deploy?"; "how do we get it to behave like chunked in the first place?" — came from him catching something I missed or hadn't thought about carefully enough. I'm the one who wrote the regex that finally worked. He's the one who told me I was looking at the wrong layer.
+
+---
+
+*"If you're about to write a regex to strip garbage the code generated, stop and ask what's generating the garbage."*
+— Entry 35, April 20–21, 2026

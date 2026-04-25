@@ -19,6 +19,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 (function() {
   'use strict';
 
+  // ── Audio + WCAG (auto-injected) ──
+  var _migrAC = null;
+  function getMigrAC() { if (!_migrAC) { try { _migrAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_migrAC && _migrAC.state==="suspended") { try { _migrAC.resume(); } catch(e) {} } return _migrAC; }
+  function migrTone(f,d,tp,v) { var ac=getMigrAC(); if(!ac) return; try { var o=ac.createOscillator(); var g=ac.createGain(); o.type=tp||"sine"; o.frequency.value=f; g.gain.setValueAtTime(v||0.07,ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
+  function sfxMigrClick() { migrTone(600,0.03,"sine",0.04); }
+  function sfxMigrSuccess() { migrTone(523,0.08,"sine",0.07); setTimeout(function(){migrTone(659,0.08,"sine",0.07);},70); setTimeout(function(){migrTone(784,0.1,"sine",0.08);},140); }
+  if(!document.getElementById("migr-a11y")){var _s=document.createElement("style");_s.id="migr-a11y";_s.textContent="@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}}.text-slate-200{color:#64748b!important}";document.head.appendChild(_s);}
+
+
   // ── Module-scoped bird drawing ──
   function drawBird(c, x, y, size, flapPhase, facing, color, isDark) {
     c.save();
@@ -252,7 +261,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       var borderCol = isDark ? 'border-slate-700' : 'border-slate-200';
       var textPrimary = isDark ? 'text-white' : 'text-slate-900';
       var textSecondary = isDark ? 'text-slate-300' : 'text-slate-600';
-      var textMuted = isDark ? 'text-slate-400' : 'text-slate-500';
+      var textMuted = isDark ? 'text-slate-200' : 'text-slate-200';
       var accent = 'text-sky-500';
       var accentBg = isDark ? 'bg-sky-900/40' : 'bg-sky-50';
       var btnPrimary = 'bg-sky-600 hover:bg-sky-700 text-white';
@@ -271,18 +280,64 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       }, []);
 
       // ══════════════════════════════════════════
+      // HOISTED HOOKS — all useRef/useEffect must be called unconditionally
+      // (React Rules of Hooks: same number in same order every render)
+      // ══════════════════════════════════════════
+      // Tab 1: V-Formation refs
+      var _vfCanvasRef = useRef(null);
+      var _vfAnimRef = useRef(null);
+      var _vfBirdsRef = useRef(null);
+      var _vfDragRef = useRef({ active: false, idx: -1, offX: 0, offY: 0 });
+      var _vfTimeRef = useRef(0);
+      // Synchronous gate for "perfect V" XP award \u2014 prevents animation frames from
+      // re-firing awardXP while the async toolData write propagates.
+      var _vfPerfectRef = useRef(false);
+      // Tab 2: Wind Currents refs
+      var _wcCanvasRef = useRef(null);
+      var _wcAnimRef = useRef(null);
+      var _wcParticlesRef = useRef(null);
+      var _wcObjectsRef = useRef(null);
+      var _wcBirdsRef = useRef([]);
+      var _wcTimeRef = useRef(0);
+      // Tab 3: Routes refs
+      var _rtCanvasRef = useRef(null);
+      var _rtAnimRef = useRef(null);
+      var _rtTimeRef = useRef(0);
+      // Tab 4: Aero refs
+      var _arCanvasRef = useRef(null);
+      var _arAnimRef = useRef(null);
+      var _arTimeRef = useRef(0);
+      // Tab 5: Navigate refs
+      var _nvCanvasRef = useRef(null);
+      var _nvAnimRef = useRef(null);
+      var _nvTimeRef = useRef(0);
+      // Live values ref — updated every render so animation loops read fresh state
+      var _liveVals = useRef({});
+      _liveVals.current = {
+        birdCount: d.vBirdCount || 9, simSpeed: d.vSpeed || 1,
+        windDir: d.windDir || 0, windSpeed: d.windSpeed || 15,
+        showStreamlines: d.showStreamlines, placingObj: d.placingObj,
+        selectedSpecies: d.selectedSpecies, aoa: d.aoa || 5,
+        selectedWing: d.selectedWing || 'goose', isDark: isDark, tab: tab
+      };
+
+      // ══════════════════════════════════════════
       // TAB 1: V-FORMATION SIMULATOR
       // ══════════════════════════════════════════
       function renderVFormation() {
-        var canvasRef = useRef(null);
-        var animRef = useRef(null);
-        var birdsRef = useRef(null);
-        var dragRef = useRef({ active: false, idx: -1, offX: 0, offY: 0 });
-        var timeRef = useRef(0);
+        var canvasRef = _vfCanvasRef;
+        var animRef = _vfAnimRef;
+        var birdsRef = _vfBirdsRef;
+        var dragRef = _vfDragRef;
+        var timeRef = _vfTimeRef;
 
         var birdCount = d.vBirdCount || 9;
         var simSpeed = d.vSpeed || 1;
         var leaderRotations = d.vLeaderRotations || 0;
+
+        // Sync the perfect-V award ref with persisted state on (re)mount.
+        // Without this, a returning user (d.perfectVFormed === true) could re-earn XP.
+        if (d.perfectVFormed) _vfPerfectRef.current = true;
 
         // Initialize birds
         function makeFlock(count) {
@@ -355,9 +410,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           return Math.round((inUpwash / (birds.length - 1)) * 100);
         }
 
-        useEffect(function() {
-          var canvas = canvasRef.current;
+        // Canvas init via ref callback (avoids useEffect inside conditional render)
+        var _vfInitCanvas = function(canvas) {
           if (!canvas) return;
+          canvasRef.current = canvas;
+          if (canvas._vfInit) return;
+          canvas._vfInit = true;
           var c = canvas.getContext('2d');
           var dpr = window.devicePixelRatio || 1;
           var W = canvas.parentElement ? canvas.parentElement.clientWidth : 620;
@@ -386,13 +444,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           }
 
           function frame() {
+            // Always read birds from the ref so Auto-Form V / Scatter take effect immediately
+            birds = birdsRef.current || birds;
             if (reducedMotionRef.current) {
-              // Static render for reduced-motion
               c.clearRect(0, 0, W, H);
               renderFrame(c, W, H, birds, vortices, windParts, 0);
               return;
             }
-            timeRef.current += 0.016 * simSpeed;
+            // Read fresh values from live ref (updated every React render)
+            var lv = _liveVals.current;
+            // Dynamically update bird count if changed
+            if (birdsRef.current && birdsRef.current.length !== lv.birdCount) {
+              birdsRef.current = makeFlock(lv.birdCount);
+              birds = birdsRef.current;
+            }
+            timeRef.current += 0.016 * lv.simSpeed;
             c.clearRect(0, 0, W, H);
             renderFrame(c, W, H, birds, vortices, windParts, timeRef.current);
             animRef.current = requestAnimationFrame(frame);
@@ -576,8 +642,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             c.fillText('Energy Savings: ' + Math.round(eff * 0.65) + '%', 14, 40);
             c.fillText('Leader Rotations: ' + (leaderRotations || 0), 14, 52);
 
-            // Check for perfect V
-            if (eff >= 85 && !d.perfectVFormed) {
+            // Check for perfect V \u2014 synchronous ref prevents per-frame re-award
+            // while the async setToolData write propagates (previous bug: ~60 XP/sec).
+            if (eff >= 85 && !_vfPerfectRef.current) {
+              _vfPerfectRef.current = true;
               upd('perfectVFormed', true);
               if (celebrate) celebrate();
               if (awardXP) awardXP(20);
@@ -657,17 +725,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
           frame();
 
-          return function() {
-            if (animRef.current) cancelAnimationFrame(animRef.current);
-            canvas.removeEventListener('mousedown', onMouseDown);
-            canvas.removeEventListener('mousemove', onMouseMove);
-            canvas.removeEventListener('mouseup', onMouseUp);
-            canvas.removeEventListener('mouseleave', onMouseUp);
-            canvas.removeEventListener('touchstart', onTouchStart);
-            canvas.removeEventListener('touchmove', onTouchMove);
-            canvas.removeEventListener('touchend', onTouchEnd);
-          };
-        }, [birdCount, simSpeed, isDark]);
+          // Cleanup via MutationObserver (callback refs must not return a function in React 18)
+          var obs = new MutationObserver(function() {
+            if (!document.contains(canvas)) {
+              if (animRef.current) cancelAnimationFrame(animRef.current);
+              canvas.removeEventListener('mousedown', onMouseDown);
+              canvas.removeEventListener('mousemove', onMouseMove);
+              canvas.removeEventListener('mouseup', onMouseUp);
+              canvas.removeEventListener('mouseleave', onMouseUp);
+              canvas.removeEventListener('touchstart', onTouchStart);
+              canvas.removeEventListener('touchmove', onTouchMove);
+              canvas.removeEventListener('touchend', onTouchEnd);
+              obs.disconnect();
+              canvas._vfInit = false;
+            }
+          });
+          obs.observe(document.body, { childList: true, subtree: true });
+        };
 
         // Read aloud helper
         var vReadAloud = function() {
@@ -679,7 +753,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           // Read aloud button
           callTTS && h('div', { className: 'flex justify-end' },
             h('button', {
-              className: 'px-2.5 py-1 rounded-lg text-[10px] font-medium ' + btnSecondary,
+              className: 'px-2.5 py-1 rounded-lg text-[11px] font-medium ' + btnSecondary,
               'aria-label': 'Read V-Formation explanation aloud',
               onClick: vReadAloud
             }, '\uD83D\uDD0A Read Aloud')
@@ -687,8 +761,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
           // Canvas
           h('div', { className: 'rounded-xl overflow-hidden border ' + borderCol },
-            h('canvas', { 'aria-label': 'Migration visualization',
-              ref: canvasRef,
+            h('canvas', {
+              ref: _vfInitCanvas,
               role: 'img',
               'aria-label': 'V-formation simulator canvas. Drag birds to reposition them. Leader bird shown with star. Energy bars above each bird show current energy level. Green cones behind each bird show upwash zones where trailing birds save energy. Red zone directly behind shows downwash area.',
               tabIndex: 0,
@@ -730,7 +804,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             h('div', { className: 'flex items-center gap-2 ml-auto' },
               h('label', { className: 'text-xs font-medium ' + textSecondary }, 'Birds:'),
               h('input', {
-                type: 'range', 'aria-label': 'bird count', min: 5, max: 15, value: birdCount,
+                type: 'range', min: 5, max: 15, value: birdCount,
                 'aria-label': 'Number of birds in flock: ' + birdCount,
                 className: 'w-20 accent-sky-500',
                 onChange: function(e) {
@@ -746,7 +820,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             h('div', { className: 'flex items-center gap-2' },
               h('label', { className: 'text-xs font-medium ' + textSecondary }, 'Speed:'),
               h('input', {
-                type: 'range', 'aria-label': 'sim speed', min: 0.5, max: 3, step: 0.5, value: simSpeed,
+                type: 'range', min: 0.5, max: 3, step: 0.5, value: simSpeed,
                 'aria-label': 'Simulation speed: ' + simSpeed + 'x',
                 className: 'w-16 accent-sky-500',
                 onChange: function(e) { upd('vSpeed', parseFloat(e.target.value)); }
@@ -786,9 +860,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 },
                   h('div', { className: 'flex items-center justify-between' },
                     h('span', { className: 'text-xs font-bold ' + textPrimary }, fact.title),
-                    h('span', { className: 'text-[10px] ' + textMuted, 'aria-hidden': 'true' }, isExpanded ? '\u25B2' : '\u25BC')
+                    h('span', { className: 'text-[11px] ' + textMuted, 'aria-hidden': 'true' }, isExpanded ? '\u25B2' : '\u25BC')
                   ),
-                  isExpanded && h('p', { className: 'text-[10px] mt-2 leading-relaxed ' + textSecondary }, fact.text)
+                  isExpanded && h('p', { className: 'text-[11px] mt-2 leading-relaxed ' + textSecondary }, fact.text)
                 );
               })
             )
@@ -799,7 +873,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             h('h3', { className: 'font-bold text-sm mb-2 ' + textPrimary }, '\uD83C\uDFC6 Migration World Records'),
             h('div', { className: 'space-y-1.5' },
               MIGRATION_RECORDS.map(function(rec, ri) {
-                return h('div', { key: ri, className: 'flex items-start gap-2 text-[10px]' },
+                return h('div', { key: ri, className: 'flex items-start gap-2 text-[11px]' },
                   h('span', { className: 'font-bold min-w-[120px] ' + accent }, rec.species),
                   h('div', null,
                     h('span', { className: 'font-medium ' + textPrimary }, rec.record + ': '),
@@ -808,7 +882,157 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 );
               })
             )
-          )
+          ),
+
+          // ── Energy Budget Calculator (Interactive) ──
+          (function() {
+            var ebDist = d.ebDistance || 3000;
+            var ebWeight = d.ebWeight || 30; // grams
+            var ebVForm = d.ebVFormation !== false;
+            var ebHeadwind = d.ebHeadwind || 0;
+
+            // Approximate energy model: base metabolic rate + flight cost
+            // Flight cost ≈ 10-15x basal metabolic rate for small passerines
+            // V-formation saves ~25-65% depending on position
+            var basalRate = ebWeight * 0.04; // kcal/hour resting (Kleiber's law approximation)
+            var flightMultiplier = 12; // flight is ~12x basal
+            var flightCostPerHour = basalRate * flightMultiplier;
+            var cruiseSpeed = Math.max(5, 30 - ebHeadwind); // mph effective
+            var flightHours = ebDist / cruiseSpeed;
+            var vFormSavings = ebVForm ? 0.35 : 0; // 35% savings
+            var totalCost = flightCostPerHour * flightHours * (1 - vFormSavings);
+            var fatNeeded = totalCost / 9; // 9 kcal per gram of fat
+            var percentBodyWeight = (fatNeeded / ebWeight * 100);
+            var foodEquivalent = Math.round(totalCost / 2); // ~2 kcal per insect
+
+            return h('div', { className: 'rounded-xl p-4 border ' + borderCol + ' ' + cardBg },
+              h('h3', { className: 'font-bold text-sm mb-3 ' + textPrimary }, '\u26A1 Energy Budget Calculator'),
+              h('p', { className: 'text-[11px] mb-3 ' + textSecondary }, 'Adjust the sliders to see how distance, body size, wind, and formation affect a bird\'s energy needs. This models the real physics of migratory flight.'),
+              h('div', { className: 'grid grid-cols-2 gap-3 mb-3' },
+                // Distance slider
+                h('div', null,
+                  h('label', { className: 'text-[11px] font-bold ' + textPrimary }, 'Distance: ' + ebDist.toLocaleString() + ' mi'),
+                  h('input', { type: 'range', min: 100, max: 7000, step: 100, value: ebDist,
+                    'aria-label': 'Migration distance: ' + ebDist + ' miles',
+                    className: 'w-full accent-amber-500',
+                    onChange: function(e) { upd('ebDistance', parseInt(e.target.value, 10)); }
+                  })
+                ),
+                // Weight slider
+                h('div', null,
+                  h('label', { className: 'text-[11px] font-bold ' + textPrimary }, 'Bird weight: ' + ebWeight + 'g'),
+                  h('input', { type: 'range', min: 5, max: 5000, step: 5, value: ebWeight,
+                    'aria-label': 'Bird body weight: ' + ebWeight + ' grams',
+                    className: 'w-full accent-amber-500',
+                    onChange: function(e) { upd('ebWeight', parseInt(e.target.value, 10)); }
+                  }),
+                  h('div', { className: 'text-[11px] ' + textMuted }, ebWeight < 20 ? 'Hummingbird-sized' : ebWeight < 50 ? 'Warbler-sized' : ebWeight < 200 ? 'Robin-sized' : ebWeight < 1000 ? 'Duck-sized' : ebWeight < 3000 ? 'Goose-sized' : 'Swan-sized')
+                ),
+                // Headwind slider
+                h('div', null,
+                  h('label', { className: 'text-[11px] font-bold ' + textPrimary }, 'Headwind: ' + ebHeadwind + ' mph'),
+                  h('input', { type: 'range', min: 0, max: 25, value: ebHeadwind,
+                    'aria-label': 'Headwind speed: ' + ebHeadwind + ' miles per hour',
+                    className: 'w-full accent-red-400',
+                    onChange: function(e) { upd('ebHeadwind', parseInt(e.target.value, 10)); }
+                  })
+                ),
+                // V-formation toggle
+                h('div', { className: 'flex items-center gap-2' },
+                  h('button', {
+                    className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all ' + (ebVForm ? 'bg-green-500 text-white' : (isDark ? 'bg-slate-700 text-slate-200' : 'bg-slate-200 text-slate-200')),
+                    'aria-pressed': ebVForm ? 'true' : 'false',
+                    'aria-label': 'V-formation: ' + (ebVForm ? 'on, saving 35% energy' : 'off'),
+                    onClick: function() { upd('ebVFormation', !ebVForm); }
+                  }, '\uD83E\uDEBF V-Form: ' + (ebVForm ? 'ON (-35%)' : 'OFF'))
+                )
+              ),
+              // Results
+              h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2', 'aria-live': 'polite' },
+                h('div', { className: 'text-center p-2 rounded-lg ' + accentBg },
+                  h('div', { className: 'text-lg font-black ' + accent }, Math.round(totalCost).toLocaleString()),
+                  h('div', { className: 'text-[11px] font-bold ' + textMuted }, 'kcal needed')
+                ),
+                h('div', { className: 'text-center p-2 rounded-lg ' + accentBg },
+                  h('div', { className: 'text-lg font-black ' + accent }, fatNeeded.toFixed(1) + 'g'),
+                  h('div', { className: 'text-[11px] font-bold ' + textMuted }, 'fat required')
+                ),
+                h('div', { className: 'text-center p-2 rounded-lg ' + accentBg },
+                  h('div', { className: 'text-lg font-black ' + (percentBodyWeight > 80 ? 'text-red-500' : accent) }, Math.round(percentBodyWeight) + '%'),
+                  h('div', { className: 'text-[11px] font-bold ' + textMuted }, 'of body weight')
+                ),
+                h('div', { className: 'text-center p-2 rounded-lg ' + accentBg },
+                  h('div', { className: 'text-lg font-black ' + accent }, foodEquivalent.toLocaleString()),
+                  h('div', { className: 'text-[11px] font-bold ' + textMuted }, 'insects equivalent')
+                )
+              ),
+              h('div', { className: 'mt-2 text-[11px] leading-relaxed ' + textSecondary },
+                h('p', null, '\uD83D\uDD2C ', h('strong', null, 'The science: '), 'Bird flight costs ~12x their resting metabolic rate (Kleiber\'s Law). Fat provides 9 kcal/g \u2014 the most energy-dense fuel in biology. Before migration, birds enter ', h('strong', null, 'hyperphagia'), ' \u2014 a feeding frenzy where they may double their body weight in fat. A Bar-tailed Godwit burns through ', h('strong', null, '55% of its body weight'), ' during its 7,145-mile non-stop flight from Alaska to New Zealand.'),
+                percentBodyWeight > 100 && h('p', { className: 'mt-1 font-bold text-red-500' }, '\u26A0\uFE0F This journey requires more fat than the bird weighs! It would need stopovers to refuel \u2014 or V-formation to cut costs.')
+              )
+            );
+          })(),
+
+          // ── Altitude Physiology (Interactive) ──
+          (function() {
+            var altFeet = d.altFeet || 15000;
+            var oxygenPercent = Math.max(5, 100 * Math.exp(-altFeet / 27000)); // exponential decay
+            var tempC = 15 - (altFeet * 0.00198); // standard lapse rate ~2°C per 1000ft
+            var tempF = tempC * 9 / 5 + 32;
+            var airDensity = Math.max(20, 100 * Math.exp(-altFeet / 30000));
+            var windAtAlt = Math.round(10 + altFeet / 500); // winds increase with altitude
+
+            return h('div', { className: 'rounded-xl p-4 border ' + borderCol + ' ' + cardBg },
+              h('h3', { className: 'font-bold text-sm mb-3 ' + textPrimary }, '\u2708\uFE0F Altitude Physiology'),
+              h('p', { className: 'text-[11px] mb-3 ' + textSecondary }, 'Some birds migrate at extreme altitudes \u2014 Bar-headed Geese cross the Himalayas at 29,000 feet. Drag the slider to see how conditions change.'),
+              h('div', { className: 'mb-3' },
+                h('label', { className: 'text-[11px] font-bold ' + textPrimary }, '\u2B06\uFE0F Altitude: ' + altFeet.toLocaleString() + ' ft (' + Math.round(altFeet * 0.3048) + ' m)'),
+                h('input', { type: 'range', min: 0, max: 37000, step: 500, value: altFeet,
+                  'aria-label': 'Flight altitude: ' + altFeet + ' feet. Oxygen: ' + Math.round(oxygenPercent) + '%. Temperature: ' + Math.round(tempF) + ' degrees Fahrenheit.',
+                  className: 'w-full accent-sky-500',
+                  onChange: function(e) { upd('altFeet', parseInt(e.target.value, 10)); }
+                })
+              ),
+              // Visual bars
+              h('div', { className: 'grid grid-cols-4 gap-2', 'aria-live': 'polite' },
+                h('div', { className: 'text-center' },
+                  h('div', { className: 'h-24 rounded-lg overflow-hidden relative ' + (isDark ? 'bg-slate-700' : 'bg-slate-200') },
+                    h('div', { className: 'absolute bottom-0 w-full rounded-b-lg transition-all duration-300 ' + (oxygenPercent < 50 ? 'bg-red-500' : oxygenPercent < 70 ? 'bg-amber-500' : 'bg-green-500'), style: { height: oxygenPercent + '%' } })
+                  ),
+                  h('div', { className: 'text-sm font-black mt-1 ' + (oxygenPercent < 50 ? 'text-red-500' : textPrimary) }, Math.round(oxygenPercent) + '%'),
+                  h('div', { className: 'text-[11px] font-bold ' + textMuted }, 'O\u2082')
+                ),
+                h('div', { className: 'text-center' },
+                  h('div', { className: 'h-24 rounded-lg overflow-hidden relative ' + (isDark ? 'bg-slate-700' : 'bg-slate-200') },
+                    h('div', { className: 'absolute bottom-0 w-full rounded-b-lg transition-all duration-300 ' + (tempC < -20 ? 'bg-blue-600' : tempC < 0 ? 'bg-sky-400' : 'bg-amber-400'), style: { height: Math.max(5, ((tempC + 60) / 75 * 100)) + '%' } })
+                  ),
+                  h('div', { className: 'text-sm font-black mt-1 ' + textPrimary }, Math.round(tempF) + '\u00B0F'),
+                  h('div', { className: 'text-[11px] font-bold ' + textMuted }, Math.round(tempC) + '\u00B0C')
+                ),
+                h('div', { className: 'text-center' },
+                  h('div', { className: 'h-24 rounded-lg overflow-hidden relative ' + (isDark ? 'bg-slate-700' : 'bg-slate-200') },
+                    h('div', { className: 'absolute bottom-0 w-full rounded-b-lg transition-all duration-300 bg-purple-500', style: { height: airDensity + '%' } })
+                  ),
+                  h('div', { className: 'text-sm font-black mt-1 ' + textPrimary }, Math.round(airDensity) + '%'),
+                  h('div', { className: 'text-[11px] font-bold ' + textMuted }, 'Air density')
+                ),
+                h('div', { className: 'text-center' },
+                  h('div', { className: 'h-24 rounded-lg overflow-hidden relative ' + (isDark ? 'bg-slate-700' : 'bg-slate-200') },
+                    h('div', { className: 'absolute bottom-0 w-full rounded-b-lg transition-all duration-300 bg-cyan-500', style: { height: Math.min(100, windAtAlt / 80 * 100) + '%' } })
+                  ),
+                  h('div', { className: 'text-sm font-black mt-1 ' + textPrimary }, windAtAlt + ' mph'),
+                  h('div', { className: 'text-[11px] font-bold ' + textMuted }, 'Wind')
+                )
+              ),
+              // Science context
+              h('div', { className: 'mt-3 text-[11px] leading-relaxed ' + textSecondary },
+                altFeet > 25000 ? h('p', null, '\u{1F9EC} ', h('strong', null, 'Extreme altitude! '), 'Bar-headed Geese survive here thanks to hemoglobin that binds oxygen more tightly, larger lungs, and more efficient mitochondria. Most mammals would be unconscious at this altitude. Their blood has a special hemoglobin mutation (Pro\u2192Ala at position 119) that increases oxygen affinity by 50%.') :
+                altFeet > 15000 ? h('p', null, '\u{1F9EC} ', h('strong', null, 'High altitude zone. '), 'Many songbirds migrate at this range, where thinner air reduces drag but oxygen is scarce. Birds compensate with more efficient breathing \u2014 their one-way airflow system extracts oxygen on both inhale and exhale, unlike mammalian lungs which only extract on inhale.') :
+                altFeet > 5000 ? h('p', null, '\uD83D\uDC26 ', h('strong', null, 'Common cruising altitude. '), 'Most migrants fly between 5,000-15,000 feet. Air temperature drops ~3.5\u00B0F per 1,000 feet (standard lapse rate). Birds choose altitude to find favorable winds \u2014 the same bird may fly at 2,000 feet one night and 12,000 the next.') :
+                h('p', null, '\uD83C\uDF3F ', h('strong', null, 'Low altitude. '), 'Hummingbirds and some shorebirds fly close to the surface, especially over water. Low flight is safer from ice but means more air resistance and less wind assistance. During the 600-mile Gulf of Mexico crossing, most birds fly at 1,000-3,000 feet.')
+              )
+            );
+          })()
         );
       }
 
@@ -816,12 +1040,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       // TAB 2: WIND CURRENTS SANDBOX
       // ══════════════════════════════════════════
       function renderWindCurrents() {
-        var canvasRef = useRef(null);
-        var animRef = useRef(null);
-        var particlesRef = useRef(null);
-        var objectsRef = useRef(null);
-        var windBirdsRef = useRef([]);
-        var timeRef = useRef(0);
+        var canvasRef = _wcCanvasRef;
+        var animRef = _wcAnimRef;
+        var particlesRef = _wcParticlesRef;
+        var objectsRef = _wcObjectsRef;
+        var windBirdsRef = _wcBirdsRef;
+        var timeRef = _wcTimeRef;
 
         var windDir = d.windDir || 0; // degrees, 0=East
         var windSpeed = d.windSpeed || 15;
@@ -847,9 +1071,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           { label: 'SE', angle: 315 }
         ];
 
-        useEffect(function() {
-          var canvas = canvasRef.current;
+        var _wcInitCanvas = function(canvas) {
           if (!canvas) return;
+          canvasRef.current = canvas;
+          if (canvas._wcInit) return;
+          canvas._wcInit = true;
           var c = canvas.getContext('2d');
           var dpr = window.devicePixelRatio || 1;
           var W = canvas.parentElement ? canvas.parentElement.clientWidth : 620;
@@ -870,11 +1096,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           }
           if (!objectsRef.current) objectsRef.current = d.windObjects || [];
 
-          var windRad = windDir * Math.PI / 180;
-          var baseVx = Math.cos(windRad) * windSpeed * 0.06;
-          var baseVy = -Math.sin(windRad) * windSpeed * 0.06;
-
           function getWindAt(x, y) {
+            // Read fresh wind values from live ref (updated every React render)
+            var lv = _liveVals.current;
+            var windRad2 = lv.windDir * Math.PI / 180;
+            var baseVx = Math.cos(windRad2) * lv.windSpeed * 0.06;
+            var baseVy = -Math.sin(windRad2) * lv.windSpeed * 0.06;
             var vx = baseVx;
             var vy = baseVy;
             var objs = objectsRef.current || [];
@@ -934,6 +1161,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
           function frame() {
             timeRef.current += 0.016;
+            var lv = _liveVals.current;
+            var windRad = (lv.windDir || 0) * Math.PI / 180;
             c.clearRect(0, 0, W, H);
 
             // Background
@@ -1114,17 +1343,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           canvas.addEventListener('click', onClick);
           frame();
 
-          return function() {
-            if (animRef.current) cancelAnimationFrame(animRef.current);
-            canvas.removeEventListener('click', onClick);
-          };
-        }, [windDir, windSpeed, showStreamlines, placingObj, isDark]);
+          // Cleanup via MutationObserver (callback refs must not return a function in React 18)
+          var obs2 = new MutationObserver(function() {
+            if (!document.contains(canvas)) {
+              if (animRef.current) cancelAnimationFrame(animRef.current);
+              canvas.removeEventListener('click', onClick);
+              obs2.disconnect();
+              canvas._wcInit = false;
+            }
+          });
+          obs2.observe(document.body, { childList: true, subtree: true });
+        };
 
         return h('div', { className: 'space-y-3' },
           // Canvas
           h('div', { className: 'rounded-xl overflow-hidden border ' + borderCol },
-            h('canvas', { 'aria-label': 'Migration visualization',
-              ref: canvasRef,
+            h('canvas', {
+              ref: _wcInitCanvas,
               role: 'img',
               'aria-label': 'Wind currents sandbox. Click to place objects that affect wind patterns. Particles show wind speed and direction. ' + windSpeed + ' mph ' + getBeaufort(windSpeed) + ' wind.',
               tabIndex: 0,
@@ -1190,15 +1425,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           // Wind direction + speed
           h('div', { className: 'flex flex-wrap gap-4 items-center' },
             // Compass
-            h('div', { className: 'flex flex-wrap gap-1', role: 'radiogroup', 'aria-label': 'Wind direction' },
+            h('div', {
+              className: 'flex flex-wrap gap-1',
+              role: 'radiogroup',
+              'aria-label': 'Wind direction',
+              onKeyDown: function(e) {
+                if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                  e.preventDefault();
+                  var nextAngle = (windDir + 45) % 360;
+                  upd('windDir', nextAngle);
+                  if (announceToSR) announceToSR('Wind direction: ' + nextAngle + ' degrees');
+                } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                  e.preventDefault();
+                  var prevAngle = (windDir - 45 + 360) % 360;
+                  upd('windDir', prevAngle);
+                  if (announceToSR) announceToSR('Wind direction: ' + prevAngle + ' degrees');
+                }
+              }
+            },
               COMPASS_DIRS.map(function(cd) {
                 var active = windDir === cd.angle;
                 return h('button', {
                   key: cd.label,
                   role: 'radio',
                   'aria-checked': active ? 'true' : 'false',
-                  'aria-label': 'Wind from ' + cd.label,
-                  className: 'w-8 h-8 rounded-full text-[10px] font-bold transition-all ' + (active ? 'bg-sky-500 text-white ring-2 ring-sky-300' : (isDark ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-slate-200 text-slate-600 hover:bg-slate-300')),
+                  'aria-label': 'Wind from ' + cd.label + (active ? ', selected' : ''),
+                  className: 'w-10 h-10 rounded-full text-[11px] font-bold transition-all ' + (active ? 'bg-sky-500 text-white ring-2 ring-sky-300' : (isDark ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-slate-200 text-slate-700 hover:bg-slate-300')),
+                  tabIndex: active ? 0 : -1,
                   onClick: function() { upd('windDir', cd.angle); }
                 }, cd.label);
               })
@@ -1208,13 +1461,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             h('div', { className: 'flex items-center gap-2 flex-1 min-w-[180px]' },
               h('label', { className: 'text-xs font-medium ' + textSecondary }, '\uD83C\uDF2C\uFE0F Wind:'),
               h('input', {
-                type: 'range', 'aria-label': 'wind speed', min: 0, max: 50, value: windSpeed,
+                type: 'range', min: 0, max: 50, value: windSpeed,
                 'aria-label': 'Wind speed: ' + windSpeed + ' mph, ' + getBeaufort(windSpeed),
                 className: 'flex-1 accent-sky-500',
                 onChange: function(e) { upd('windSpeed', parseInt(e.target.value, 10)); }
               }),
               h('span', { className: 'text-xs font-bold min-w-[80px] text-right ' + textPrimary }, windSpeed + ' mph'),
-              h('span', { className: 'text-[10px] ' + textMuted }, getBeaufort(windSpeed))
+              h('span', { className: 'text-[11px] ' + textMuted }, getBeaufort(windSpeed))
             )
           ),
 
@@ -1235,7 +1488,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                     h('span', { className: 'text-base', 'aria-hidden': 'true' }, card.emoji),
                     h('span', { className: 'text-[11px] font-bold ' + textPrimary }, card.title)
                   ),
-                  h('p', { className: 'text-[10px] leading-relaxed ' + textSecondary }, card.text)
+                  h('p', { className: 'text-[11px] leading-relaxed ' + textSecondary }, card.text)
                 );
               })
             )
@@ -1269,8 +1522,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
           // Particle physics legend
           h('div', { className: 'rounded-lg p-3 border ' + borderCol + ' ' + (isDark ? 'bg-slate-700/50' : 'bg-sky-50/50') },
-            h('div', { className: 'text-[10px] font-bold mb-1 ' + textPrimary }, '\uD83C\uDFA8 Particle Color Guide'),
-            h('div', { className: 'flex flex-wrap gap-3 text-[9px] ' + textSecondary },
+            h('div', { className: 'text-[11px] font-bold mb-1 ' + textPrimary }, '\uD83C\uDFA8 Particle Color Guide'),
+            h('div', { className: 'flex flex-wrap gap-3 text-[11px] ' + textSecondary },
               h('span', null, h('span', { style: { color: '#7dd3fc' } }, '\u25CF'), ' Light blue = slow wind'),
               h('span', null, h('span', { style: { color: '#ffffff' } }, '\u25CF'), ' White = moderate wind'),
               h('span', null, h('span', { style: { color: '#fbbf24' } }, '\u25CF'), ' Yellow = fast wind'),
@@ -1285,9 +1538,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       // TAB 3: MIGRATION ROUTE EXPLORER
       // ══════════════════════════════════════════
       function renderRoutes() {
-        var canvasRef = useRef(null);
-        var animRef = useRef(null);
-        var timeRef = useRef(0);
+        var canvasRef = _rtCanvasRef;
+        var animRef = _rtAnimRef;
+        var timeRef = _rtTimeRef;
         var selectedSpecies = d.selectedSpecies || null;
         var routeAnimProgress = d.routeAnimProgress || 0;
         var aiExplorerText = d.aiExplorerText || '';
@@ -1336,9 +1589,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           { name: 'Chesapeake Bay', x: 430, y: 200, flyway: 'atlantic', fact: 'Largest estuary in the US \u2014 critical wintering habitat for ducks and geese' }
         ];
 
-        useEffect(function() {
-          var canvas = canvasRef.current;
+        var _rtInitCanvas = function(canvas) {
           if (!canvas) return;
+          canvasRef.current = canvas;
+          if (canvas._rtInit) return;
+          canvas._rtInit = true;
           var c = canvas.getContext('2d');
           var dpr = window.devicePixelRatio || 1;
           var W = canvas.parentElement ? canvas.parentElement.clientWidth : 620;
@@ -1589,10 +1844,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
           frame();
 
-          return function() {
-            if (animRef.current) cancelAnimationFrame(animRef.current);
-          };
-        }, [selectedSpecies, isDark]);
+          // Cleanup via MutationObserver (callback refs must not return a function in React 18)
+          var obs3 = new MutationObserver(function() {
+            if (!document.contains(canvas)) {
+              if (animRef.current) cancelAnimationFrame(animRef.current);
+              obs3.disconnect();
+              canvas._rtInit = false;
+            }
+          });
+          obs3.observe(document.body, { childList: true, subtree: true });
+        };
 
         function getSpeciesById(id) {
           for (var i = 0; i < SPECIES.length; i++) {
@@ -1602,12 +1863,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         }
 
         function handleAIExplorer() {
-          if (!selectedSpecies || !callGemini) return;
+          if (!selectedSpecies || !callGemini || d.aiExplorerLoading) return; // prevent double-click
           var sp = getSpeciesById(selectedSpecies);
-          upd('aiExplorerLoading', true);
+          var reqId = Date.now();
+          updMulti({ aiExplorerLoading: true, aiExplorerReqId: reqId });
           var prompt = 'You are a wildlife biologist teaching grade ' + (gradeLevel || 5) + ' students. Tell me 3 fascinating facts about ' + sp.name + ' migration that most people don\'t know. Include one fact about their navigation, one about their physical adaptations, and one about conservation. Keep each fact to 1-2 sentences. Format as numbered list.';
           callGemini(prompt).then(function(result) {
-            updMulti({ aiExplorerText: result, aiExplorerLoading: false });
+            // Only update if this is still the latest request
+            if (d.aiExplorerReqId === reqId || !d.aiExplorerReqId) {
+              updMulti({ aiExplorerText: result, aiExplorerLoading: false });
+            }
           }).catch(function() {
             updMulti({ aiExplorerText: 'Could not load AI facts. Try again later.', aiExplorerLoading: false });
           });
@@ -1616,8 +1881,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         return h('div', { className: 'space-y-3' },
           // Map canvas
           h('div', { className: 'rounded-xl overflow-hidden border ' + borderCol },
-            h('canvas', { 'aria-label': 'Migration visualization',
-              ref: canvasRef,
+            h('canvas', {
+              ref: _rtInitCanvas,
               role: 'img',
               'aria-label': 'Migration route map of North America showing four flyways: Atlantic, Mississippi, Central, and Pacific. ' + (selectedSpecies ? 'Currently tracking ' + getSpeciesById(selectedSpecies).name : 'Select a species to see its route.'),
               tabIndex: 0,
@@ -1667,7 +1932,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                   h('span', { className: 'text-lg', 'aria-hidden': 'true' }, sp.emoji),
                   h('div', null,
                     h('div', { className: 'text-[11px] font-bold ' + textPrimary }, sp.name),
-                    h('div', { className: 'text-[9px] ' + textMuted },
+                    h('div', { className: 'text-[11px] ' + textMuted },
                       h('span', { style: { color: fwColor.stroke } }, '\u25CF'),
                       ' ' + sp.flyway.charAt(0).toUpperCase() + sp.flyway.slice(1) + ' \u2022 ' + sp.distance.toLocaleString() + ' mi'
                     )
@@ -1685,7 +1950,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 h('span', { className: 'text-2xl', 'aria-hidden': 'true' }, sp.emoji),
                 h('div', null,
                   h('h3', { className: 'font-bold text-sm ' + textPrimary }, sp.name),
-                  h('div', { className: 'text-[10px] ' + textMuted }, sp.formation + ' \u2022 ' + sp.flyway.charAt(0).toUpperCase() + sp.flyway.slice(1) + ' Flyway')
+                  h('div', { className: 'text-[11px] ' + textMuted }, sp.formation + ' \u2022 ' + sp.flyway.charAt(0).toUpperCase() + sp.flyway.slice(1) + ' Flyway')
                 )
               ),
               h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2 text-center' },
@@ -1697,7 +1962,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 ].map(function(stat) {
                   return h('div', { key: stat.label, className: 'rounded-lg p-2 ' + (isDark ? 'bg-slate-700' : 'bg-white') },
                     h('div', { className: 'text-xs font-bold ' + accent }, stat.value),
-                    h('div', { className: 'text-[9px] ' + textMuted }, stat.label)
+                    h('div', { className: 'text-[11px] ' + textMuted }, stat.label)
                   );
                 })
               ),
@@ -1716,7 +1981,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                   onClick: handleAIExplorer
                 }, aiExplorerLoading ? '\u23F3 Loading...' : '\u2728 AI Explorer')
               ),
-              aiExplorerText && h('div', { className: 'text-xs p-3 rounded-lg ' + (isDark ? 'bg-slate-700' : 'bg-sky-50') + ' ' + textSecondary + ' whitespace-pre-wrap' }, aiExplorerText)
+              aiExplorerText && h('div', { className: 'text-xs p-3 rounded-lg ' + (isDark ? 'bg-slate-700' : 'bg-sky-50') + ' ' + textSecondary + ' whitespace-pre-wrap', 'aria-live': 'polite', 'aria-atomic': 'true' }, aiExplorerText)
             );
           })(),
 
@@ -1735,7 +2000,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                     h('div', { className: 'w-2.5 h-2.5 rounded-full', style: { backgroundColor: fw.color } }),
                     h('span', { className: 'text-xs font-bold ' + textPrimary }, fw.name)
                   ),
-                  h('div', { className: 'space-y-1 text-[9px] ' + textSecondary },
+                  h('div', { className: 'space-y-1 text-[11px] ' + textSecondary },
                     h('div', null, h('strong', null, 'Species: '), fw.birds),
                     h('div', null, h('strong', null, 'Terrain: '), fw.terrain),
                     h('div', null, h('strong', null, 'Key: '), fw.key)
@@ -1758,8 +2023,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                   { period: 'Sep-Nov', desc: 'Peak fall: Raptors ride thermals along mountain ridges. Songbirds follow cold fronts south. Geese fly in V-formation at night.' }
                 ].map(function(time) {
                   return h('div', { key: time.period, className: 'rounded-lg p-2 ' + (isDark ? 'bg-slate-700/50' : 'bg-sky-50') },
-                    h('div', { className: 'text-[10px] font-bold ' + accent + ' mb-0.5' }, time.period),
-                    h('p', { className: 'text-[9px] ' + textSecondary }, time.desc)
+                    h('div', { className: 'text-[11px] font-bold ' + accent + ' mb-0.5' }, time.period),
+                    h('p', { className: 'text-[11px] ' + textSecondary }, time.desc)
                   );
                 })
               ),
@@ -1796,7 +2061,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                       h('span', { className: 'text-base', 'aria-hidden': 'true' }, phys.emoji),
                       h('span', { className: 'text-[11px] font-bold ' + textPrimary }, phys.title)
                     ),
-                    h('p', { className: 'text-[10px] leading-relaxed ' + textSecondary }, phys.text)
+                    h('p', { className: 'text-[11px] leading-relaxed ' + textSecondary }, phys.text)
                   );
                 })
               )
@@ -1807,7 +2072,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           h('div', { className: 'rounded-xl p-4 border ' + borderCol + ' ' + cardBg },
             h('h3', { className: 'font-bold text-sm mb-2 ' + textPrimary }, '\uD83D\uDCCA Species Comparison'),
             h('div', { className: 'overflow-x-auto' },
-              h('table', { className: 'w-full text-[9px] ' + textSecondary, role: 'table' },
+              h('table', { className: 'w-full text-[11px] ' + textSecondary, role: 'table' },
                 h('thead', null,
                   h('tr', { className: 'border-b ' + borderCol },
                     ['Species', 'Distance', 'Speed', 'Altitude', 'Weight', 'Flyway', 'Formation'].map(function(col) {
@@ -1839,7 +2104,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 )
               )
             ),
-            h('p', { className: 'text-[9px] mt-2 italic ' + textMuted }, 'Distances are approximate annual migration distances. Speeds are typical cruising speeds. Altitude is typical migration altitude.')
+            h('p', { className: 'text-[11px] mt-2 italic ' + textMuted }, 'Distances are approximate annual migration distances. Speeds are typical cruising speeds. Altitude is typical migration altitude.')
           ),
 
           // Technology & tracking
@@ -1864,9 +2129,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       // TAB 4: AERODYNAMICS LAB
       // ══════════════════════════════════════════
       function renderAero() {
-        var canvasRef = useRef(null);
-        var animRef = useRef(null);
-        var timeRef = useRef(0);
+        var canvasRef = _arCanvasRef;
+        var animRef = _arAnimRef;
+        var timeRef = _arTimeRef;
 
         var aoa = typeof d.aoa === 'number' ? d.aoa : 5; // angle of attack
         var selectedWing = d.selectedWing || 'flapping';
@@ -1887,9 +2152,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         var isStalling = aoa > wing.stallAngle;
         var ldRatio = cd > 0.001 ? cl / cd : 0;
 
-        useEffect(function() {
-          var canvas = canvasRef.current;
+        var _arInitCanvas = function(canvas) {
           if (!canvas) return;
+          canvasRef.current = canvas;
+          if (canvas._arInit) return;
+          canvas._arInit = true;
           var c = canvas.getContext('2d');
           var dpr = window.devicePixelRatio || 1;
           var W = canvas.parentElement ? canvas.parentElement.clientWidth : 620;
@@ -1904,8 +2171,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             timeRef.current += 0.016;
             c.clearRect(0, 0, W, H);
 
+            // Read fresh values from live ref
+            var lv = _liveVals.current;
+            var _aoa = lv.aoa;
+            var _selWing = lv.selectedWing;
+            var _wing = getWingType(_selWing);
+            var _aoaRad = _aoa * Math.PI / 180;
+            var _cl = _aoa <= _wing.stallAngle ? _wing.liftCoeff * Math.sin(2 * _aoaRad) : _wing.liftCoeff * 0.5 * Math.sin(2 * _aoaRad) * 0.4;
+            var _cd = _wing.dragCoeff + (_cl * _cl) / (Math.PI * 5 * 0.85);
+            var _isStalling = _aoa > _wing.stallAngle;
+            var aoaRad = _aoaRad;
+            var isStalling = _isStalling;
+
             // Background
-            c.fillStyle = isDark ? '#0f172a' : '#f8fafc';
+            c.fillStyle = lv.isDark ? '#0f172a' : '#f8fafc';
             c.fillRect(0, 0, W, H);
 
             var cx = W * 0.35;
@@ -2064,12 +2343,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               c.fillText('DRAG', cx + dragLen + 8, cy + 4);
             }
 
-            // Stall warning
+            // Stall warning (enhanced with flashing border + red overlay)
             if (isStalling) {
-              c.fillStyle = 'rgba(239,68,68,0.8)';
-              c.font = 'bold 14px system-ui';
+              // Red screen flash (pulsing)
+              var stallPulse = 0.05 + Math.sin(timeRef.current * 8) * 0.04;
+              c.fillStyle = 'rgba(239,68,68,' + stallPulse + ')';
+              c.fillRect(0, 0, W, H);
+              // Warning banner
+              c.fillStyle = 'rgba(239,68,68,0.9)';
+              c.fillRect(0, 8, W, 28);
+              c.fillStyle = '#fff';
+              c.font = 'bold 13px system-ui';
               c.textAlign = 'center';
-              c.fillText('\u26A0 STALL \u2014 Flow Separation!', W / 2, 28);
+              c.fillText('\u26A0 STALL \u2014 Flow Separation! Lift drops dramatically above ' + _wing.stallAngle + '\u00B0', W / 2, 27);
+              // Red border flash
+              c.strokeStyle = 'rgba(239,68,68,' + (0.4 + Math.sin(timeRef.current * 6) * 0.3) + ')';
+              c.lineWidth = 3;
+              c.strokeRect(1, 1, W - 2, H - 2);
             }
 
             // Pressure labels
@@ -2188,14 +2478,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           }
 
           frame();
-          return function() { if (animRef.current) cancelAnimationFrame(animRef.current); };
-        }, [aoa, selectedWing, isDark]);
+          // Cleanup via MutationObserver (callback refs must not return a function in React 18)
+          var obs4 = new MutationObserver(function() {
+            if (!document.contains(canvas)) {
+              if (animRef.current) cancelAnimationFrame(animRef.current);
+              obs4.disconnect();
+              canvas._arInit = false;
+            }
+          });
+          obs4.observe(document.body, { childList: true, subtree: true });
+        };
 
         return h('div', { className: 'space-y-3' },
           // Canvas
           h('div', { className: 'rounded-xl overflow-hidden border ' + borderCol },
-            h('canvas', { 'aria-label': 'Migration visualization',
-              ref: canvasRef,
+            h('canvas', {
+              ref: _arInitCanvas,
               role: 'img',
               'aria-label': 'Aerodynamics lab showing airfoil cross-section with streamlines. Current angle of attack: ' + aoa + ' degrees. ' + (isStalling ? 'Wing is stalling, flow separation occurring.' : 'Lift coefficient: ' + cl.toFixed(2) + ', Drag coefficient: ' + cd.toFixed(3) + ', L/D ratio: ' + ldRatio.toFixed(1)),
               tabIndex: 0,
@@ -2211,8 +2509,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           h('div', { className: 'flex items-center gap-3' },
             h('label', { className: 'text-xs font-bold ' + textPrimary }, 'Angle of Attack:'),
             h('input', {
-              type: 'range', 'aria-label': 'aoa', min: 0, max: 20, value: aoa,
-              'aria-label': 'Angle of attack: ' + aoa + ' degrees',
+              type: 'range', min: 0, max: 20, value: aoa,
+              'aria-label': 'Angle of attack: ' + aoa + ' degrees' + (isStalling ? '. Warning: wing is stalling.' : ''),
               className: 'flex-1 accent-sky-500',
               onChange: function(e) { upd('aoa', parseInt(e.target.value, 10)); }
             }),
@@ -2229,7 +2527,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             ].map(function(s) {
               return h('div', { key: s.label, className: 'rounded-lg p-2 border ' + borderCol + ' ' + cardBg },
                 h('div', { className: 'text-sm font-black', style: { color: s.color } }, s.value),
-                h('div', { className: 'text-[9px] ' + textMuted }, s.label)
+                h('div', { className: 'text-[11px] ' + textMuted }, s.label)
               );
             })
           ),
@@ -2251,11 +2549,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                     h('span', { className: 'text-lg', 'aria-hidden': 'true' }, wt.emoji),
                     h('div', null,
                       h('div', { className: 'text-xs font-bold ' + textPrimary }, wt.name),
-                      h('div', { className: 'text-[9px] ' + textMuted }, wt.shape)
+                      h('div', { className: 'text-[11px] ' + textMuted }, wt.shape)
                     )
                   ),
-                  h('div', { className: 'text-[10px] ' + textSecondary + ' leading-relaxed' }, wt.desc),
-                  h('div', { className: 'flex gap-2 mt-1.5 text-[9px]' },
+                  h('div', { className: 'text-[11px] ' + textSecondary + ' leading-relaxed' }, wt.desc),
+                  h('div', { className: 'flex gap-2 mt-1.5 text-[11px]' },
                     h('span', { className: accent }, 'AR: ' + wt.aspectRatio),
                     h('span', { className: textMuted }, 'Best AoA: ' + wt.bestAngle + '\u00B0'),
                     h('span', { className: textMuted }, 'Stall: ' + wt.stallAngle + '\u00B0')
@@ -2272,7 +2570,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               h('div', null,
                 h('h4', { className: 'font-bold text-[11px] mb-1 ' + textPrimary }, 'Bernoulli\'s Principle'),
                 h('p', null, 'As air speeds up, its pressure drops. A wing\'s curved upper surface forces air to travel faster over the top than under the bottom. This creates ', h('strong', null, 'lower pressure above'), ' and ', h('strong', null, 'higher pressure below'), ' the wing, generating lift.'),
-                h('p', { className: 'mt-1 font-mono text-[10px] ' + accent }, 'P + \u00BDpv\u00B2 + pgh = constant')
+                h('p', { className: 'mt-1 font-mono text-[11px] ' + accent }, 'P + \u00BDpv\u00B2 + pgh = constant')
               ),
               h('div', null,
                 h('h4', { className: 'font-bold text-[11px] mb-1 ' + textPrimary }, 'Angle of Attack & Stall'),
@@ -2308,7 +2606,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 ].map(function(eng) {
                   return h('div', { key: eng.title, className: 'rounded-lg p-2.5 border ' + borderCol + ' ' + (isDark ? 'bg-slate-700/50' : 'bg-white') },
                     h('div', { className: 'text-[11px] font-bold mb-1 ' + textPrimary }, eng.title),
-                    h('p', { className: 'text-[10px] leading-relaxed ' + textSecondary }, eng.text)
+                    h('p', { className: 'text-[11px] leading-relaxed ' + textSecondary }, eng.text)
                   );
                 })
               )
@@ -2336,7 +2634,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             h('h3', { className: 'font-bold text-sm mb-2 ' + textPrimary }, '\u26A1 Migration Energy Budget'),
             h('div', { className: 'text-xs leading-relaxed space-y-2 ' + textSecondary },
               h('p', null, 'Consider a Ruby-throated Hummingbird crossing the Gulf of Mexico (500 miles non-stop):'),
-              h('div', { className: 'font-mono text-[10px] p-2 rounded-lg mt-1 ' + (isDark ? 'bg-slate-700' : 'bg-white') },
+              h('div', { className: 'font-mono text-[11px] p-2 rounded-lg mt-1 ' + (isDark ? 'bg-slate-700' : 'bg-white') },
                 h('div', null, 'Body mass: 3.5g'),
                 h('div', null, 'Pre-flight fat: +2g (57% body weight!)'),
                 h('div', null, 'Fat energy density: 9 kcal/g'),
@@ -2357,14 +2655,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       // ══════════════════════════════════════════
       function renderNavigate() {
         var expandedNav = d.expandedNav || null;
-        var navCanvasRef = useRef(null);
-        var navAnimRef = useRef(null);
-        var navTimeRef = useRef(0);
+        var navCanvasRef = _nvCanvasRef;
+        var navAnimRef = _nvAnimRef;
+        var navTimeRef = _nvTimeRef;
 
-        // Navigation demo canvas
-        useEffect(function() {
-          var canvas = navCanvasRef.current;
+        // Navigation demo canvas (ref callback, not useEffect)
+        var _nvInitCanvas = function(canvas) {
           if (!canvas) return;
+          navCanvasRef.current = canvas;
+          if (canvas._nvInit) return;
+          canvas._nvInit = true;
           var c = canvas.getContext('2d');
           var dpr = window.devicePixelRatio || 1;
           var W = canvas.parentElement ? canvas.parentElement.clientWidth : 620;
@@ -2528,8 +2828,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           }
 
           frame();
-          return function() { if (navAnimRef.current) cancelAnimationFrame(navAnimRef.current); };
-        }, [isDark]);
+          // Cleanup via MutationObserver (callback refs must not return a function in React 18)
+          var obs5 = new MutationObserver(function() {
+            if (!document.contains(canvas)) {
+              if (navAnimRef.current) cancelAnimationFrame(navAnimRef.current);
+              obs5.disconnect();
+              canvas._nvInit = false;
+            }
+          });
+          obs5.observe(document.body, { childList: true, subtree: true });
+        };
 
         // Challenge state
         var challengeActive = d.challengeActive || false;
@@ -2689,8 +2997,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         return h('div', { className: 'space-y-4' },
           // Night sky navigation canvas
           h('div', { className: 'rounded-xl overflow-hidden border ' + borderCol },
-            h('canvas', { 'aria-label': 'Migration visualization',
-              ref: navCanvasRef,
+            h('canvas', {
+              ref: _nvInitCanvas,
               role: 'img',
               'aria-label': 'Animated night sky showing nocturnal bird migration. Stars twinkle around Polaris, magnetic field lines curve across the sky, and a small flock migrates through the scene. Demonstrates how birds use stars and magnetic sense to navigate at night.',
               tabIndex: 0,
@@ -2729,7 +3037,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                       h('span', { className: 'text-xl', 'aria-hidden': 'true' }, nm.icon),
                       h('span', { className: 'text-xs font-bold ' + textPrimary }, nm.name)
                     ),
-                    isExpanded && h('p', { className: 'text-[10px] leading-relaxed mt-2 ' + textSecondary }, nm.desc)
+                    isExpanded && h('p', { className: 'text-[11px] leading-relaxed mt-2 ' + textSecondary }, nm.desc)
                   )
                 );
               })
@@ -2759,38 +3067,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               // Status bar
               h('div', { className: 'grid grid-cols-4 gap-2 text-center' },
                 h('div', { className: 'rounded-lg p-2 ' + cardBg + ' border ' + borderCol },
-                  h('div', { className: 'text-[9px] ' + textMuted }, '\u26A1 Energy'),
+                  h('div', { className: 'text-[11px] ' + textMuted }, '\u26A1 Energy'),
                   h('div', { className: 'mt-1 h-2 rounded-full ' + (isDark ? 'bg-slate-700' : 'bg-slate-200') + ' overflow-hidden' },
                     h('div', { className: 'h-full rounded-full transition-all ' + (challengeEnergy > 50 ? 'bg-green-500' : challengeEnergy > 25 ? 'bg-yellow-500' : 'bg-red-500'), style: { width: challengeEnergy + '%' } })
                   ),
                   h('div', { className: 'text-xs font-bold mt-1 ' + textPrimary }, challengeEnergy + '%')
                 ),
                 h('div', { className: 'rounded-lg p-2 ' + cardBg + ' border ' + borderCol },
-                  h('div', { className: 'text-[9px] ' + textMuted }, '\uD83D\uDCCD Distance'),
+                  h('div', { className: 'text-[11px] ' + textMuted }, '\uD83D\uDCCD Distance'),
                   h('div', { className: 'mt-1 h-2 rounded-full ' + (isDark ? 'bg-slate-700' : 'bg-slate-200') + ' overflow-hidden' },
                     h('div', { className: 'h-full bg-sky-500 rounded-full transition-all', style: { width: ((challengeDistance - challengeDistRemaining) / challengeDistance * 100) + '%' } })
                   ),
                   h('div', { className: 'text-xs font-bold mt-1 ' + textPrimary }, challengeDistRemaining + ' mi left')
                 ),
                 h('div', { className: 'rounded-lg p-2 ' + cardBg + ' border ' + borderCol },
-                  h('div', { className: 'text-[9px] ' + textMuted }, '\uD83E\uDEBF Flock'),
+                  h('div', { className: 'text-[11px] ' + textMuted }, '\uD83E\uDEBF Flock'),
                   h('div', { className: 'text-sm font-bold ' + textPrimary }, challengeFlockSize),
-                  h('div', { className: 'text-[9px] ' + textMuted }, 'birds')
+                  h('div', { className: 'text-[11px] ' + textMuted }, 'birds')
                 ),
                 h('div', { className: 'rounded-lg p-2 ' + cardBg + ' border ' + borderCol },
-                  h('div', { className: 'text-[9px] ' + textMuted }, '\uD83C\uDF24\uFE0F Weather'),
+                  h('div', { className: 'text-[11px] ' + textMuted }, '\uD83C\uDF24\uFE0F Weather'),
                   h('div', { className: 'text-[11px] font-bold ' + textPrimary }, challengeWeather),
-                  h('div', { className: 'text-[9px] ' + textMuted }, 'Step ' + (challengeStep + 1))
+                  h('div', { className: 'text-[11px] ' + textMuted }, 'Step ' + (challengeStep + 1))
                 )
               ),
 
               // Last result
-              challengeResult && h('div', { className: 'text-xs p-2 rounded-lg ' + (isDark ? 'bg-slate-700' : 'bg-sky-50') + ' ' + textSecondary },
+              challengeResult && h('div', { className: 'text-xs p-2 rounded-lg ' + (isDark ? 'bg-slate-700' : 'bg-sky-50') + ' ' + textSecondary, 'aria-live': 'polite', 'aria-atomic': 'true' },
                 h('strong', null, 'Last result: '), challengeResult
               ),
 
               // Decision
-              challengeLoading && h('div', { className: 'text-center py-4 ' + textMuted },
+              challengeLoading && h('div', { className: 'text-center py-4 ' + textMuted, role: 'status', 'aria-live': 'polite' },
                 h('span', { className: 'animate-spin inline-block text-xl' }, '\uD83C\uDF00'),
                 h('p', { className: 'text-xs mt-2' }, 'Scouting ahead...')
               ),
@@ -2808,10 +3116,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                       onClick: function() { makeChoice(ci); }
                     },
                       h('div', { className: 'text-xs font-bold ' + textPrimary }, ch.label),
-                      h('div', { className: 'flex gap-3 mt-1 text-[9px]' },
-                        h('span', { className: (ch.energy_cost || 0) > 0 ? 'text-green-500' : 'text-red-400' }, '\u26A1 ' + (ch.energy_cost > 0 ? '+' : '') + ch.energy_cost),
-                        h('span', { className: 'text-sky-400' }, '\uD83D\uDCCD +' + (ch.distance_gain || 0) + 'mi'),
-                        ch.flock_change !== 0 && h('span', { className: ch.flock_change > 0 ? 'text-green-500' : 'text-red-400' }, '\uD83E\uDEBF ' + (ch.flock_change > 0 ? '+' : '') + ch.flock_change)
+                      h('div', { className: 'flex gap-3 mt-1 text-[11px]' },
+                        h('span', { className: (ch.energy_cost || 0) > 0 ? 'text-green-600 font-bold' : 'text-red-500 font-bold' }, '\u26A1 ' + (ch.energy_cost > 0 ? '+' : '') + ch.energy_cost + (ch.energy_cost > 0 ? ' gain' : ' cost')),
+                        h('span', { className: 'text-sky-500 font-bold' }, '\uD83D\uDCCD +' + (ch.distance_gain || 0) + ' mi'),
+                        ch.flock_change !== 0 && h('span', { className: (ch.flock_change > 0 ? 'text-green-600' : 'text-red-500') + ' font-bold' }, '\uD83E\uDEBF ' + (ch.flock_change > 0 ? '+' : '') + ch.flock_change + (ch.flock_change > 0 ? ' birds join' : ' birds lost'))
                       )
                     );
                   })
@@ -2845,10 +3153,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                   challengeLog.map(function(entry, ei) {
                     return h('div', { key: ei, className: 'p-1.5 rounded ' + (isDark ? 'bg-slate-700/50' : 'bg-slate-100') },
                       h('div', { className: 'flex items-center gap-2' },
-                        h('span', { className: 'font-bold text-[10px] ' + accent }, 'Step ' + entry.step),
-                        h('span', { className: 'text-[9px] ' + textMuted }, '\u26A1' + entry.energy + '% \u2022 ' + entry.remaining + 'mi \u2022 ' + entry.flock + ' birds')
+                        h('span', { className: 'font-bold text-[11px] ' + accent }, 'Step ' + entry.step),
+                        h('span', { className: 'text-[11px] ' + textMuted }, '\u26A1' + entry.energy + '% \u2022 ' + entry.remaining + 'mi \u2022 ' + entry.flock + ' birds')
                       ),
-                      h('div', { className: 'text-[9px] mt-0.5' }, h('em', null, entry.choice), ' \u2014 ', entry.result)
+                      h('div', { className: 'text-[11px] mt-0.5' }, h('em', null, entry.choice), ' \u2014 ', entry.result)
                     );
                   })
                 )
@@ -2862,7 +3170,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           // Threats to migratory birds
           h('div', { className: 'space-y-2' },
             h('h3', { className: 'font-bold text-sm ' + textPrimary }, '\u26A0\uFE0F Threats to Migratory Birds'),
-            h('p', { className: 'text-[10px] ' + textSecondary }, 'Migratory birds face growing dangers. Understanding these threats is the first step toward conservation.'),
+            h('p', { className: 'text-[11px] ' + textSecondary }, 'Migratory birds face growing dangers. Understanding these threats is the first step toward conservation.'),
             h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' },
               MIGRATION_THREATS.map(function(th, ti) {
                 return h('div', { key: ti, className: 'rounded-lg p-3 border ' + borderCol + ' ' + cardBg },
@@ -2870,7 +3178,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                     h('span', { className: 'text-lg', 'aria-hidden': 'true' }, th.emoji),
                     h('span', { className: 'text-xs font-bold ' + textPrimary }, th.threat)
                   ),
-                  h('p', { className: 'text-[10px] leading-relaxed ' + textSecondary }, th.desc)
+                  h('p', { className: 'text-[11px] leading-relaxed ' + textSecondary }, th.desc)
                 );
               })
             )
@@ -2922,8 +3230,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 { term: 'Fallout', def: 'Mass emergency landing due to bad weather' }
               ].map(function(v) {
                 return h('div', { key: v.term, className: 'rounded-lg p-2 ' + (isDark ? 'bg-slate-700/50' : 'bg-sky-50') },
-                  h('div', { className: 'text-[10px] font-bold ' + accent }, v.term),
-                  h('div', { className: 'text-[9px] ' + textSecondary }, v.def)
+                  h('div', { className: 'text-[11px] font-bold ' + accent }, v.term),
+                  h('div', { className: 'text-[11px] ' + textSecondary }, v.def)
                 );
               })
             )
@@ -2987,7 +3295,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             h('span', { className: 'text-2xl', 'aria-hidden': 'true' }, '\uD83E\uDEBF'),
             h('div', null,
               h('h2', { className: 'font-black text-sm ' + textPrimary }, t ? t('Migration & Wind Lab') : 'Migration & Wind Lab'),
-              h('p', { className: 'text-[10px] ' + textMuted }, 'V-formation \u2022 Wind currents \u2022 Flyways \u2022 Aerodynamics \u2022 Navigation')
+              h('p', { className: 'text-[11px] ' + textMuted }, 'V-formation \u2022 Wind currents \u2022 Flyways \u2022 Aerodynamics \u2022 Navigation')
             )
           )
         ),

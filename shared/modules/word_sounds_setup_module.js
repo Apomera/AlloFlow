@@ -9,7 +9,7 @@
 (function() {
   'use strict';
   // WCAG 2.1 AA: Accessibility CSS
-  if (!document.getElementById("word-sounds-setup-module-a11y")) { var _s = document.createElement("style"); _s.id = "word-sounds-setup-module-a11y"; _s.textContent = "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .text-slate-400 { color: #64748b !important; }"; document.head.appendChild(_s); }
+  if (!document.getElementById("word-sounds-setup-module-a11y")) { var _s = document.createElement("style"); _s.id = "word-sounds-setup-module-a11y"; _s.textContent = "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .text-slate-600 { color: #64748b !important; }"; document.head.appendChild(_s); }
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-word-sounds-setup')) return;
@@ -44,82 +44,75 @@
   // ── App dependencies from window ──
   var LanguageContext = window.AlloLanguageContext;
   var _shared = window.__alloShared || {};
-  // Word family and sight word presets — exposed by AlloFlowANTI.txt
-  // Use Proxy/getter pattern so we read from window at USE time, not at module-load time
-  // (the module IIFE runs before AlloFlowANTI.txt populates window.WORD_FAMILY_PRESETS)
-  var WORD_FAMILY_PRESETS = new Proxy({}, {
-    get: function(target, prop) {
-      var src = window.WORD_FAMILY_PRESETS || {};
-      return src[prop];
-    },
-    ownKeys: function() {
-      var src = window.WORD_FAMILY_PRESETS || {};
-      return Object.keys(src);
-    },
-    getOwnPropertyDescriptor: function(target, prop) {
-      var src = window.WORD_FAMILY_PRESETS || {};
-      if (prop in src) return { enumerable: true, configurable: true, value: src[prop] };
-    },
-    has: function(target, prop) {
-      var src = window.WORD_FAMILY_PRESETS || {};
-      return prop in src;
-    }
-  });
-  var SIGHT_WORD_PRESETS = new Proxy({}, {
-    get: function(target, prop) {
-      var src = window.SIGHT_WORD_PRESETS || {};
-      return src[prop];
-    },
-    ownKeys: function() {
-      var src = window.SIGHT_WORD_PRESETS || {};
-      return Object.keys(src);
-    },
-    getOwnPropertyDescriptor: function(target, prop) {
-      var src = window.SIGHT_WORD_PRESETS || {};
-      if (prop in src) return { enumerable: true, configurable: true, value: src[prop] };
-    },
-    has: function(target, prop) {
-      var src = window.SIGHT_WORD_PRESETS || {};
-      return prop in src;
-    }
-  });
+  // NOTE: WORD_FAMILY_PRESETS + SIGHT_WORD_PRESETS are declared by the source file
+  // itself (top of word_sounds_setup_source.jsx) as Proxies that read window at
+  // USE time. Declaring them here again would cause "already declared" errors.
   var warnLog = _shared.warnLog || function() { console.warn.apply(console, arguments); };
   var debugLog = window.__alloDebugLog || function() {};
   var getGlobalAudioContext = window.getGlobalAudioContext || function() { return null; };
+  var loadPsychometricProbes = window.loadPsychometricProbes || function() {};
+  var getWordSoundsString = window.getWordSoundsString || function(fallback, key, params) { return (params && params.default) || key; };
 
   // ── Probe bank globals (read-only, loaded by host app) ──
-  // WordSoundsReviewPanel reads these for probe mode
-  // They are set on window by loadPsychometricProbes() in the host app
 
   // ── Lucide icons from host app ──
   var _icons = window.AlloIcons || {};
   var Ban = _icons.Ban || function() { return null; };
   var BookOpen = _icons.BookOpen || function() { return null; };
+  var Calculator = _icons.Calculator || function() { return null; };
   var Check = _icons.Check || function() { return null; };
   var CheckCircle2 = _icons.CheckCircle2 || function() { return null; };
   var ChevronDown = _icons.ChevronDown || function() { return null; };
   var ChevronLeft = _icons.ChevronLeft || function() { return null; };
   var Edit2 = _icons.Edit2 || function() { return null; };
   var Eye = _icons.Eye || function() { return null; };
+  var GitCompare = _icons.GitCompare || function() { return null; };
+  var GripHorizontal = _icons.GripHorizontal || function() { return null; };
   var GripVertical = _icons.GripVertical || function() { return null; };
   var ImageIcon = _icons.ImageIcon || function() { return null; };
   var Layers = _icons.Layers || function() { return null; };
   var Loader2 = _icons.Loader2 || function() { return null; };
   var Maximize2 = _icons.Maximize2 || function() { return null; };
   var Minimize = _icons.Minimize || function() { return null; };
+  var Music = _icons.Music || function() { return null; };
   var Palette = _icons.Palette || function() { return null; };
+  var PenTool = _icons.PenTool || function() { return null; };
   var Play = _icons.Play || function() { return null; };
   var PlayCircle = _icons.PlayCircle || function() { return null; };
   var RefreshCw = _icons.RefreshCw || function() { return null; };
+  var ScanSearch = _icons.ScanSearch || function() { return null; };
+  var Scissors = _icons.Scissors || function() { return null; };
   var Send = _icons.Send || function() { return null; };
+  var Shuffle = _icons.Shuffle || function() { return null; };
   var Sparkles = _icons.Sparkles || function() { return null; };
+  var Type = _icons.Type || function() { return null; };
+  var Users = _icons.Users || function() { return null; };
   var Volume2 = _icons.Volume2 || function() { return null; };
+  var X = _icons.X || function() { return null; };
 
   // ═══════════════════════════════════════════════════════════════
   // WORD SOUNDS SETUP COMPONENTS (JSX pre-transformed by esbuild)
   // ═══════════════════════════════════════════════════════════════
 
-var WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, callGemini, callImagen, callTTS, gradeLevel, t: tProp, preloadedWords = [], onShowReview, onMinimize, onExpand, isProbeMode }) => {
+const WORD_FAMILY_PRESETS = new Proxy({}, {
+  get: (_, prop) => (window.WORD_FAMILY_PRESETS || {})[prop],
+  ownKeys: () => Object.keys(window.WORD_FAMILY_PRESETS || {}),
+  getOwnPropertyDescriptor: (_, prop) => {
+    const src = window.WORD_FAMILY_PRESETS || {};
+    if (prop in src) return { enumerable: true, configurable: true, value: src[prop] };
+  },
+  has: (_, prop) => prop in (window.WORD_FAMILY_PRESETS || {})
+});
+const SIGHT_WORD_PRESETS = new Proxy({}, {
+  get: (_, prop) => (window.SIGHT_WORD_PRESETS || {})[prop],
+  ownKeys: () => Object.keys(window.SIGHT_WORD_PRESETS || {}),
+  getOwnPropertyDescriptor: (_, prop) => {
+    const src = window.SIGHT_WORD_PRESETS || {};
+    if (prop in src) return { enumerable: true, configurable: true, value: src[prop] };
+  },
+  has: (_, prop) => prop in (window.SIGHT_WORD_PRESETS || {})
+});
+const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, callGemini, callImagen, callTTS, gradeLevel, t: tProp, preloadedWords = [], onShowReview, onMinimize, onExpand, isProbeMode, selectedVoice, setSelectedVoice, isCanvasEnv, ttsSpeed, onRequestKokoroOffer, wordSoundsLanguage }) => {
   const t = tProp || ((key, params) => getWordSoundsString((k) => k, key, params || {}));
   const [imageVisibilityMode, setImageVisibilityMode] = React.useState("smart");
   React.useEffect(() => {
@@ -167,7 +160,8 @@ var WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, cal
     mapping: { enabled: false, count: 5 },
     sound_sort: { enabled: false, count: 5 },
     word_families: { enabled: false, count: 5 },
-    word_scramble: { enabled: false, count: 5 }
+    word_scramble: { enabled: false, count: 5 },
+    manipulation: { enabled: false, count: 5 }
   });
   const [lessonPlanOrder, setLessonPlanOrder] = React.useState([
     "isolation",
@@ -180,7 +174,8 @@ var WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, cal
     "mapping",
     "sound_sort",
     "word_families",
-    "word_scramble"
+    "word_scramble",
+    "manipulation"
   ]);
   const [draggedActivity, setDraggedActivity] = React.useState(null);
   const [imageTheme, setImageTheme] = React.useState("");
@@ -196,7 +191,16 @@ var WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, cal
     }
   }, []);
   const [generatedCount, setGeneratedCount] = React.useState(0);
+  const [prewarmCount, setPrewarmCount] = React.useState(0);
+  const [prewarmTotal, setPrewarmTotal] = React.useState(0);
   const [selectedIndices, setSelectedIndices] = React.useState(/* @__PURE__ */ new Set());
+  const [kokoroRecDismissed, setKokoroRecDismissed] = React.useState(() => {
+    try {
+      return sessionStorage.getItem("allo.kokoroRecDismissed") === "1";
+    } catch (_) {
+      return false;
+    }
+  });
   const hasAutoNavigated = React.useRef(preloadedWords.length > 0);
   React.useEffect(() => {
     if (preloadedWords.length > 0 && !isProcessing && onShowReview && !hasAutoNavigated.current) {
@@ -218,7 +222,6 @@ var WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, cal
   }, []);
   const previewList = React.useMemo(() => {
     let list = [];
-    // Include already-generated words so they appear in the Lesson Preview grid
     if (preloadedWords && preloadedWords.length > 0) {
       const preloadedWordStrings = preloadedWords.map((w) => w.targetWord || w.word || w.term || (typeof w === "string" ? w : ""));
       list = [...list, ...preloadedWordStrings.filter((w) => w)];
@@ -286,6 +289,10 @@ var WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, cal
     if (wordsToProcess.length === 0) return;
     setIsProcessing(true);
     setGeneratedCount(0);
+    setPrewarmCount(0);
+    setPrewarmTotal(0);
+    let prewarmAborted = false;
+    if (typeof window !== "undefined") window.__kokoroOfferedThisPreload = false;
     const processed = [];
     const preloadedMap = {};
     if (preloadedWords && preloadedWords.length > 0) {
@@ -303,7 +310,6 @@ var WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, cal
         continue;
       }
       try {
-
         const prompt = `
                          Analyze the word "${rawWord}" for phonemic awareness activities. Target Audience: ${gradeLevel || "Early Readers (K-2)"}.
                          PHONEME NOTATION (use EXACTLY these symbols):
@@ -326,6 +332,8 @@ var WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, cal
                          \u2022 "turn" \u2192 ["t", "ur", "n"] (3 phonemes, ur is ONE sound)
                          \u2022 "fern" \u2192 ["f", "er", "n"] (3 phonemes, er is ONE sound)
                          \u2022 "rain" \u2192 ["r", "\u0101", "n"] (3 phonemes, ai = long a)
+                         ORTHOGRAPHY DISTRACTORS: Also return 3 plausible misspellings of the target word \u2014 letter substitutions or omissions a K-2 student might reasonably make (e.g. for "corn": ["korn", "cron", "cor"]). These are used for a spelling-choice activity so they should look visually similar to the correct word.
+                         MANIPULATION TASK (Sound Swap activity): Return a phoneme deletion OR substitution task. Pick whichever yields a common English answer word. Include a child-friendly instruction line, the target phoneme in plain text (no slashes), the resulting answer word, and 3 distractor words that are also real common English words similar in length to the answer but NOT correct.
                          Return ONLY JSON:
                          {
                              "word": "${rawWord}",
@@ -335,13 +343,21 @@ var WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, cal
                              "rhymeWord": "horn",
                              "rhymeDistractors": ["dog", "sun", "bed", "leg", "cup"],
                              "blendingDistractors": ["cord", "core", "born", "worn", "torn"],
+                             "orthographyDistractors": ["korn", "cron", "cor"],
                              "wordFamily": "-orn",
                              "familyEnding": "-orn",
                              "familyMembers": ["horn", "born", "worn", "torn", "morn"],
                              "firstSound": "k",
                              "lastSound": "n",
                              "definition": "Simple definition matching grade level",
-                             "imagePrompt": "Icon of ${rawWord}, white background"
+                             "imagePrompt": "Icon of ${rawWord}, white background",
+                             "manipulationTask": {
+                                 "type": "deletion",
+                                 "instruction": "Say '${rawWord}'. Now say it again, but leave out the /k/ sound.",
+                                 "targetPhoneme": "k",
+                                 "answer": "orn",
+                                 "distractors": ["horn", "born", "torn"]
+                             }
                          }
                       `;
         const result = await callGemini(prompt, true);
@@ -357,6 +373,16 @@ var WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, cal
           }
         }
         const validatedPhonemes = data.phonemes && data.phonemes.length > 0 ? data.phonemes : data.word.toLowerCase().split("");
+        let manipTask = null;
+        if (data.manipulationTask && data.manipulationTask.answer && Array.isArray(data.manipulationTask.distractors) && data.manipulationTask.distractors.length >= 2 && data.manipulationTask.instruction) {
+          manipTask = {
+            type: data.manipulationTask.type || "deletion",
+            instruction: data.manipulationTask.instruction,
+            targetPhoneme: data.manipulationTask.targetPhoneme || "",
+            answer: data.manipulationTask.answer,
+            distractors: data.manipulationTask.distractors.slice(0, 3)
+          };
+        }
         processed.push({
           id: Date.now() + i,
           term: data.word,
@@ -370,12 +396,14 @@ var WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, cal
           rhymeWord: data.rhymeWord || data.rhymes && data.rhymes[0] || "",
           rhymeDistractors: data.rhymeDistractors || [],
           blendingDistractors: data.blendingDistractors || [],
+          orthographyDistractors: data.orthographyDistractors || [],
           familyEnding: data.familyEnding || "",
           familyMembers: data.familyMembers || [],
           firstSound: data.firstSound || data.phonemes && data.phonemes[0] || "",
           lastSound: data.lastSound || data.phonemes && data.phonemes[data.phonemes.length - 1] || "",
           definition: data.definition,
-          image: imageUrl
+          image: imageUrl,
+          manipulationTask: manipTask
         });
       } catch (e) {
         warnLog("Word processing failed for:", rawWord, e.message);
@@ -393,16 +421,45 @@ var WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, cal
         });
       }
       const lastItem = processed[processed.length - 1];
-      if (callTTS && typeof callTTS === "function" && lastItem && !lastItem._fallbackUsed) {
+      if (callTTS && typeof callTTS === "function" && lastItem && !lastItem._fallbackUsed && !prewarmAborted) {
         const ttsTasks = /* @__PURE__ */ new Set();
+        const target = lastItem.targetWord || lastItem.word;
+        if (target) ttsTasks.add(target);
         if (lastItem.rhymeWord) ttsTasks.add(lastItem.rhymeWord);
         (lastItem.rhymeDistractors || []).forEach((w) => w && ttsTasks.add(w));
         (lastItem.blendingDistractors || []).forEach((w) => w && ttsTasks.add(w));
         (lastItem.familyMembers || []).forEach((w) => w && ttsTasks.add(w));
+        (lastItem.orthographyDistractors || []).forEach((w) => w && ttsTasks.add(w));
+        if (lastItem.manipulationTask) {
+          if (lastItem.manipulationTask.instruction) ttsTasks.add(lastItem.manipulationTask.instruction);
+          if (lastItem.manipulationTask.answer) ttsTasks.add(lastItem.manipulationTask.answer);
+          (lastItem.manipulationTask.distractors || []).forEach((w) => w && ttsTasks.add(w));
+        }
+        const voiceForTts = selectedVoice || void 0;
+        const speedForTts = typeof ttsSpeed === "number" ? ttsSpeed : void 0;
+        const taskList = Array.from(ttsTasks);
+        setPrewarmTotal((prev) => prev + taskList.length);
         try {
-          await Promise.allSettled(Array.from(ttsTasks).map((w) => callTTS(w)));
+          const results = await Promise.allSettled(taskList.map(async (w) => {
+            try {
+              await callTTS(w, voiceForTts, speedForTts);
+            } finally {
+              setPrewarmCount((prev) => prev + 1);
+            }
+          }));
+          const hit429 = results.some((r) => r.status === "rejected" && /429|Rate Limit/i.test(r.reason?.message || ""));
+          if (hit429) {
+            prewarmAborted = true;
+            if (typeof window !== "undefined" && !window.__kokoroOfferDeclined && onRequestKokoroOffer && !window.__kokoroOfferedThisPreload) {
+              window.__kokoroOfferedThisPreload = true;
+              try {
+                onRequestKokoroOffer("word_sounds");
+              } catch (_) {
+              }
+            }
+          }
         } catch (e) {
-          warnLog("Caught error:", e?.message || e);
+          warnLog("prewarm batch failed:", e?.message || e);
         }
       }
       setGeneratedCount((prev) => prev + 1);
@@ -434,13 +491,13 @@ var WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, cal
     return /* @__PURE__ */ React.createElement("div", { className: "fixed bottom-4 right-4 z-[100] bg-white rounded-2xl shadow-2xl border-2 border-violet-500 p-4 animate-in slide-in-from-bottom-10 fade-in w-80" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Loader2, { className: `text-violet-600 ${isProcessing ? "animate-spin" : ""}`, size: 20 }), /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700 text-sm" }, isProcessing ? "Generating..." : "Word Sounds")), /* @__PURE__ */ React.createElement("button", { "data-help-key": "ws_gen_expand", onClick: () => {
       setIsMinimized(false);
       if (onExpand) onExpand();
-    }, className: "p-1 hover:bg-slate-100 rounded text-slate-500" }, /* @__PURE__ */ React.createElement(Maximize2, { size: 18 }))), isProcessing && /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-xs font-bold text-violet-600" }, /* @__PURE__ */ React.createElement("span", null, t("status.analyzing", "Processing...")), /* @__PURE__ */ React.createElement("span", null, generatedCount, " / ", selectedIndices.size)), /* @__PURE__ */ React.createElement("div", { className: "w-full h-2 bg-slate-100 rounded-full overflow-hidden" }, /* @__PURE__ */ React.createElement(
+    }, className: "p-1 hover:bg-slate-100 rounded text-slate-600" }, /* @__PURE__ */ React.createElement(Maximize2, { size: 18 }))), isProcessing && /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-xs font-bold text-violet-600" }, /* @__PURE__ */ React.createElement("span", null, t("status.analyzing", "Processing...")), /* @__PURE__ */ React.createElement("span", null, generatedCount, " / ", selectedIndices.size)), /* @__PURE__ */ React.createElement("div", { className: "w-full h-2 bg-slate-100 rounded-full overflow-hidden" }, /* @__PURE__ */ React.createElement(
       "div",
       {
         className: "h-full bg-violet-600 transition-all duration-300",
         style: { width: `${selectedIndices.size ? generatedCount / selectedIndices.size * 100 : 0}%` }
       }
-    ))), !isProcessing && /* @__PURE__ */ React.createElement("div", { className: "text-center" }, /* @__PURE__ */ React.createElement(
+    )), prewarmTotal > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px] font-medium text-teal-600" }, /* @__PURE__ */ React.createElement("span", null, "\u{1F50A} Preloading voices"), /* @__PURE__ */ React.createElement("span", null, prewarmCount, " / ", prewarmTotal))), !isProcessing && /* @__PURE__ */ React.createElement("div", { className: "text-center" }, /* @__PURE__ */ React.createElement(
       "button",
       {
         "aria-label": t("common.generate"),
@@ -454,7 +511,7 @@ var WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, cal
       "Tap to Expand"
     )));
   }
-  return /* @__PURE__ */ React.createElement("div", { role: "dialog", "aria-modal": "true", className: "fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 animate-in fade-in" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-3xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden border border-slate-200" }, /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-violet-600 to-indigo-600 p-6 flex justify-between items-center text-white shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white/20 p-3 rounded-2xl backdrop-blur-md" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 32, className: "text-yellow-300 animate-pulse" })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { className: "text-3xl font-black tracking-tight" }, isProbeMode ? `\u{1F4CA} ${(probeActivity || "").charAt(0).toUpperCase() + (probeActivity || "").slice(1)} Probe` : t("word_sounds.title", "Word Sounds Studio")), /* @__PURE__ */ React.createElement("p", { className: "text-indigo-100 font-medium opacity-90" }, t("word_sounds.subtitle", "Design your phonics lesson"), " \u2022 ", gradeLevel || "K-2"))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement("button", { "data-help-key": "ws_gen_minimize", onClick: () => {
+  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 animate-in fade-in" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-3xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden border border-slate-200" }, /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-violet-600 to-indigo-600 p-6 flex justify-between items-center text-white shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white/20 p-3 rounded-2xl backdrop-blur-md" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 32, className: "text-yellow-300 animate-pulse" })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { className: "text-3xl font-black tracking-tight" }, isProbeMode ? `\u{1F4CA} ${(probeActivity || "").charAt(0).toUpperCase() + (probeActivity || "").slice(1)} Probe` : t("word_sounds.title", "Word Sounds Studio")), /* @__PURE__ */ React.createElement("p", { className: "text-indigo-100 font-medium opacity-90" }, t("word_sounds.subtitle", "Design your phonics lesson"), " \u2022 ", gradeLevel || "K-2"))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement("button", { "data-help-key": "ws_gen_minimize", onClick: () => {
     setIsMinimized(true);
     if (onMinimize) onMinimize();
   }, className: "bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors", title: t("common.minimize") }, /* @__PURE__ */ React.createElement(Minimize, { size: 24 })), /* @__PURE__ */ React.createElement("button", { "aria-label": t("common.close_minimize"), "data-help-key": "ws_gen_close", onClick: onClose, className: "bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors", title: t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 24 })))), preloadedWords && preloadedWords.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-emerald-50 to-teal-50 border-b border-emerald-200 px-6 py-3 flex items-center justify-between" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-100 rounded-full p-1.5" }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 16, className: "text-emerald-600" })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-emerald-800" }, preloadedWords.length, " words ready"), /* @__PURE__ */ React.createElement("span", { className: "text-emerald-600 text-sm ml-2" }, preloadedWords.slice(0, 5).map((w) => w.targetWord || w.word || w).join(", "), preloadedWords.length > 5 && `, +${preloadedWords.length - 5} more`))), /* @__PURE__ */ React.createElement(
@@ -463,11 +520,49 @@ var WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, cal
       "aria-label": t("common.show"),
       "data-help-key": "ws_gen_review_btn",
       onClick: onShowReview,
-      className: "px-4 py-1.5 bg-emerald-700 hover:bg-emerald-700 text-white rounded-full font-bold text-sm flex items-center gap-2 transition-colors shadow-sm"
+      className: "px-4 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full font-bold text-sm flex items-center gap-2 transition-colors shadow-sm"
     },
     /* @__PURE__ */ React.createElement(Eye, { size: 14 }),
     "Review Words"
-  )), /* @__PURE__ */ React.createElement("div", { className: "flex flex-1 overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "w-1/3 bg-slate-50 border-r border-slate-200 p-6 flex flex-col gap-6 overflow-y-auto" }, /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-500 uppercase tracking-widest px-1" }, t("word_sounds.settings", "Settings")), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-4 rounded-xl border border-slate-200 shadow-sm" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, t("word_sounds.count", "Word Count")), /* @__PURE__ */ React.createElement("span", { className: "bg-violet-100 text-violet-700 px-2 py-1 rounded-md text-xs font-bold" }, wordCount)), /* @__PURE__ */ React.createElement(
+  )), (() => {
+    const isKokoroVoice = typeof selectedVoice === "string" && /^[abil][fm]_/i.test(selectedVoice);
+    const kokoroReady = typeof window !== "undefined" && window._kokoroTTS && window._kokoroTTS.ready;
+    const isEnglish = !wordSoundsLanguage || String(wordSoundsLanguage).toLowerCase().startsWith("en");
+    const shouldShow = isCanvasEnv && isEnglish && !isKokoroVoice && !kokoroReady && !kokoroRecDismissed && !isProcessing;
+    if (!shouldShow) return null;
+    return /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-amber-50 to-yellow-50 border-b border-amber-200 px-6 py-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-amber-100 rounded-full p-2 shrink-0" }, /* @__PURE__ */ React.createElement("span", { className: "text-xl" }, "\u{1F3A4}")), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("p", { className: "font-bold text-amber-900 text-sm mb-1" }, "Recommended for Word Sounds: Kokoro local voice"), /* @__PURE__ */ React.createElement("p", { className: "text-amber-800 text-xs leading-relaxed mb-2" }, "Preloading synthesizes ~5 audio clips per word. On Gemini this can hit the 60-second rate-limit cooldown mid-preload. Kokoro is a free on-device voice \u2014 one-time ~40 MB download, then every Word Sounds session is instant and rate-limit-free."), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: () => {
+          if (typeof window === "undefined" || !window.__loadKokoroTTS) return;
+          window.__kokoroTTSDownloading = true;
+          window.__loadKokoroTTS().then((ok) => {
+            window.__kokoroTTSDownloading = false;
+            if (ok && typeof setSelectedVoice === "function") {
+              setSelectedVoice("af_heart");
+            }
+          }).catch(() => {
+            window.__kokoroTTSDownloading = false;
+          });
+        },
+        className: "px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-bold text-xs transition-colors shadow-sm"
+      },
+      "Use Kokoro Voice"
+    ), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: () => {
+          try {
+            sessionStorage.setItem("allo.kokoroRecDismissed", "1");
+          } catch (_) {
+          }
+          setKokoroRecDismissed(true);
+        },
+        className: "px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 rounded-lg font-bold text-xs transition-colors"
+      },
+      "Keep Gemini"
+    )))));
+  })(), /* @__PURE__ */ React.createElement("div", { className: "flex flex-1 overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "w-1/3 bg-slate-50 border-r border-slate-200 p-6 flex flex-col gap-6 overflow-y-auto" }, /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-600 uppercase tracking-widest px-1" }, t("word_sounds.settings", "Settings")), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-4 rounded-xl border border-slate-200 shadow-sm" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, t("word_sounds.count", "Word Count")), /* @__PURE__ */ React.createElement("span", { className: "bg-violet-100 text-violet-700 px-2 py-1 rounded-md text-xs font-bold" }, wordCount)), /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("common.word_count_slider"),
@@ -480,7 +575,7 @@ var WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, cal
       onChange: (e) => setWordCount(parseInt(e.target.value)),
       className: "w-full accent-violet-600 cursor-pointer"
     }
-  ), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-500 mt-2" }, t("word_sounds.auto_select_hint", `Auto-selects ${wordCount} words`))), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-4 rounded-xl border border-slate-200 shadow-sm mt-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, t("word_sounds.phono_activity_length", "Sound Activities per Session")), /* @__PURE__ */ React.createElement("span", { className: "bg-emerald-100 text-emerald-700 px-2 py-1 rounded-md text-xs font-bold" }, wordSoundsSessionGoal || 30)), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-2" }, t("word_sounds.auto_select_hint", `Auto-selects ${wordCount} words`))), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-4 rounded-xl border border-slate-200 shadow-sm mt-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, t("word_sounds.phono_activity_length", "Sound Activities per Session")), /* @__PURE__ */ React.createElement("span", { className: "bg-emerald-100 text-emerald-700 px-2 py-1 rounded-md text-xs font-bold" }, wordSoundsSessionGoal || 30)), /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("common.session_goal_slider"),
@@ -493,7 +588,7 @@ var WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, cal
       onChange: (e) => setWordSoundsSessionGoal && setWordSoundsSessionGoal(parseInt(e.target.value)),
       className: "w-full accent-emerald-500 cursor-pointer"
     }
-  ), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-500 mt-2" }, t("word_sounds.phono_activity_length_hint", "Phonological activities complete after this many correct answers"))), /* @__PURE__ */ React.createElement("div", { className: "mt-3" }, /* @__PURE__ */ React.createElement("div", { className: `bg-white p-4 rounded-xl border ${includeLessonPlan ? "opacity-50 cursor-not-allowed border-slate-200" : orthoSessionGoal > 0 ? "border-indigo-300 bg-indigo-50/30" : "border-slate-200"} shadow-sm` }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, t("word_sounds.ortho_activity_length", "\u{1F524} Spelling Activities per Session")), /* @__PURE__ */ React.createElement("span", { className: `px-2 py-1 rounded-md text-xs font-bold ${orthoSessionGoal > 0 ? "bg-indigo-100 text-indigo-700" : "bg-slate-100 text-slate-500"}` }, orthoSessionGoal || "Off")), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-2" }, t("word_sounds.phono_activity_length_hint", "Phonological activities complete after this many correct answers"))), /* @__PURE__ */ React.createElement("div", { className: "mt-3" }, /* @__PURE__ */ React.createElement("div", { className: `bg-white p-4 rounded-xl border ${includeLessonPlan ? "opacity-50 cursor-not-allowed border-slate-200" : orthoSessionGoal > 0 ? "border-indigo-300 bg-indigo-50/30" : "border-slate-200"} shadow-sm` }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, t("word_sounds.ortho_activity_length", "\u{1F524} Spelling Activities per Session")), /* @__PURE__ */ React.createElement("span", { className: `px-2 py-1 rounded-md text-xs font-bold ${orthoSessionGoal > 0 ? "bg-indigo-100 text-indigo-700" : "bg-slate-100 text-slate-600"}` }, orthoSessionGoal || "Off")), /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("common.spelling_session_goal_slider"),
@@ -507,7 +602,7 @@ var WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, cal
       className: `w-full ${includeLessonPlan ? "opacity-50" : ""} accent-indigo-500 cursor-pointer`,
       disabled: includeLessonPlan
     }
-  ), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-500 mt-2" }, includeLessonPlan ? "\u26A0\uFE0F Controlled by Lesson Plan mode" : orthoSessionGoal > 0 ? t("word_sounds.ortho_activity_hint_on", `Spelling activities begin after sound activities complete (${orthoSessionGoal} items)`) : t("word_sounds.ortho_activity_hint_off", "Slide right to add spelling practice after phonics activities")))), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-4 rounded-xl border border-slate-200 shadow-sm mt-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, t("word_sounds.image_theme", "Image Style")), /* @__PURE__ */ React.createElement(Palette, { size: 18, className: "text-pink-500" })), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-2" }, includeLessonPlan ? "\u26A0\uFE0F Controlled by Lesson Plan mode" : orthoSessionGoal > 0 ? t("word_sounds.ortho_activity_hint_on", `Spelling activities begin after sound activities complete (${orthoSessionGoal} items)`) : t("word_sounds.ortho_activity_hint_off", "Slide right to add spelling practice after phonics activities")))), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-4 rounded-xl border border-slate-200 shadow-sm mt-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, t("word_sounds.image_theme", "Image Style")), /* @__PURE__ */ React.createElement(Palette, { size: 18, className: "text-pink-500" })), /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("common.image_theme_input"),
@@ -518,7 +613,7 @@ var WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, cal
       placeholder: t("word_sounds.theme_placeholder", "e.g. cartoon, pixel art, realistic..."),
       className: "w-full p-2 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-pink-400 focus:outline-none"
     }
-  ), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-500 mt-2" }, t("word_sounds.theme_hint", "Optional: Style for new word images (not glossary)"))), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-4 rounded-xl border border-slate-200 shadow-sm mt-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, t("word_sounds.image_display_mode")), /* @__PURE__ */ React.createElement(ImageIcon, { size: 18, className: "text-violet-500" })), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-2" }, t("word_sounds.theme_hint", "Optional: Style for new word images (not glossary)"))), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-4 rounded-xl border border-slate-200 shadow-sm mt-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, t("word_sounds.image_display_mode")), /* @__PURE__ */ React.createElement(ImageIcon, { size: 18, className: "text-violet-500" })), /* @__PURE__ */ React.createElement(
     "select",
     {
       "aria-label": t("common.image_display_mode"),
@@ -531,7 +626,7 @@ var WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, cal
     /* @__PURE__ */ React.createElement("option", { value: "alwaysOn" }, "\u{1F5BC}\uFE0F Always On - Image visible immediately"),
     /* @__PURE__ */ React.createElement("option", { value: "progressive" }, "\u{1F4C8} Progressive - After 1st response"),
     /* @__PURE__ */ React.createElement("option", { value: "afterCompletion" }, "\u2705 After Completion - After correct or 2nd attempt")
-  ), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-500 mt-2" }, "When should word images be revealed during activities (Smart = optimized per activity)")), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-4 rounded-xl border border-slate-200 shadow-sm mt-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, t("word_sounds.syllable_range")), /* @__PURE__ */ React.createElement("span", { className: "bg-emerald-100 text-emerald-700 px-2 py-1 rounded-md text-xs font-bold" }, syllableRange.min, " - ", syllableRange.max)), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs text-slate-500 block mb-1" }, "Min"), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-2" }, "When should word images be revealed during activities (Smart = optimized per activity)")), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-4 rounded-xl border border-slate-200 shadow-sm mt-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, t("word_sounds.syllable_range")), /* @__PURE__ */ React.createElement("span", { className: "bg-emerald-100 text-emerald-700 px-2 py-1 rounded-md text-xs font-bold" }, syllableRange.min, " - ", syllableRange.max)), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs text-slate-600 block mb-1" }, "Min"), /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("common.min"),
@@ -546,7 +641,7 @@ var WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, cal
       },
       className: "w-full p-2 border rounded-lg text-center font-bold"
     }
-  )), /* @__PURE__ */ React.createElement("span", { className: "text-slate-500 mt-4" }, "-"), /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs text-slate-500 block mb-1" }, "Max"), /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 mt-4" }, "-"), /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs text-slate-600 block mb-1" }, "Max"), /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("common.max"),
@@ -561,7 +656,7 @@ var WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, cal
       },
       className: "w-full p-2 border rounded-lg text-center font-bold"
     }
-  ))), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-500 mt-2" }, "Limit word complexity (Min/Max Syllables)"))), /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-500 uppercase tracking-widest px-1" }, t("word_sounds.sources", "Active Sources")), /* @__PURE__ */ React.createElement("div", { role: "button", tabIndex: 0, className: `p-3 rounded-xl border-2 transition-all cursor-pointer ${includeGlossary ? "bg-violet-50 border-violet-500" : "bg-white border-slate-200"}`, "data-help-key": "ws_gen_src_glossary", onClick: () => setIncludeGlossary((prev) => !prev) }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("div", { className: `w-5 h-5 rounded border flex items-center justify-center ${includeGlossary ? "bg-violet-600 border-violet-600" : "border-slate-300"}` }, includeGlossary && /* @__PURE__ */ React.createElement(Check, { size: 14, className: "text-white" })), /* @__PURE__ */ React.createElement(BookOpen, { size: 18, className: "text-violet-600" }), /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, t("word_sounds.source_glossary", "Glossary"), " (", glossaryTerms?.length || 0, ")"))), /* @__PURE__ */ React.createElement("div", { className: `p-3 rounded-xl border-2 transition-all ${includeFamily ? "bg-pink-50 border-pink-500" : "bg-white border-slate-200"}` }, /* @__PURE__ */ React.createElement("div", { role: "button", tabIndex: 0, className: "flex items-center gap-3 cursor-pointer", "data-help-key": "ws_gen_src_family", onClick: () => setIncludeFamily((prev) => !prev) }, /* @__PURE__ */ React.createElement("div", { className: `w-5 h-5 rounded border flex items-center justify-center ${includeFamily ? "bg-pink-600 border-pink-600" : "border-slate-300"}` }, includeFamily && /* @__PURE__ */ React.createElement(Check, { size: 14, className: "text-white" })), /* @__PURE__ */ React.createElement(Layers, { size: 18, className: "text-pink-600" }), /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, t("word_sounds.source_family", "Word Family"))), includeFamily && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
+  ))), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-2" }, "Limit word complexity (Min/Max Syllables)"))), /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-600 uppercase tracking-widest px-1" }, t("word_sounds.sources", "Active Sources")), /* @__PURE__ */ React.createElement("div", { role: "button", tabIndex: 0, className: `p-3 rounded-xl border-2 transition-all cursor-pointer ${includeGlossary ? "bg-violet-50 border-violet-500" : "bg-white border-slate-200"}`, "data-help-key": "ws_gen_src_glossary", onClick: () => setIncludeGlossary((prev) => !prev) }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("div", { className: `w-5 h-5 rounded border flex items-center justify-center ${includeGlossary ? "bg-violet-600 border-violet-600" : "border-slate-300"}` }, includeGlossary && /* @__PURE__ */ React.createElement(Check, { size: 14, className: "text-white" })), /* @__PURE__ */ React.createElement(BookOpen, { size: 18, className: "text-violet-600" }), /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, t("word_sounds.source_glossary", "Glossary"), " (", glossaryTerms?.length || 0, ")"))), /* @__PURE__ */ React.createElement("div", { className: `p-3 rounded-xl border-2 transition-all ${includeFamily ? "bg-pink-50 border-pink-500" : "bg-white border-slate-200"}` }, /* @__PURE__ */ React.createElement("div", { role: "button", tabIndex: 0, className: "flex items-center gap-3 cursor-pointer", "data-help-key": "ws_gen_src_family", onClick: () => setIncludeFamily((prev) => !prev) }, /* @__PURE__ */ React.createElement("div", { className: `w-5 h-5 rounded border flex items-center justify-center ${includeFamily ? "bg-pink-600 border-pink-600" : "border-slate-300"}` }, includeFamily && /* @__PURE__ */ React.createElement(Check, { size: 14, className: "text-white" })), /* @__PURE__ */ React.createElement(Layers, { size: 18, className: "text-pink-600" }), /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, t("word_sounds.source_family", "Word Family"))), includeFamily && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
     "select",
     {
       "aria-label": t("common.selection"),
@@ -649,7 +744,7 @@ var WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, cal
       className: "bg-violet-600 text-white px-3 py-1 rounded-lg text-sm font-bold hover:bg-violet-700 disabled:opacity-50"
     },
     isAiGenerating ? "..." : "Go"
-  )))), /* @__PURE__ */ React.createElement("div", { className: "space-y-3 pt-4 mt-4 border-t border-slate-200" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-500 uppercase tracking-widest px-1" }, "\u{1F4CB} Lesson Plan (Advanced)"), /* @__PURE__ */ React.createElement("div", { className: `p-4 rounded-xl border-2 transition-all ${includeLessonPlan ? "bg-indigo-50 border-indigo-500" : "bg-white border-slate-200"}` }, /* @__PURE__ */ React.createElement("div", { role: "button", tabIndex: 0, className: "flex items-center justify-between cursor-pointer mb-3", onClick: () => setIncludeLessonPlan((prev) => !prev) }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("div", { className: `w-5 h-5 rounded border flex items-center justify-center ${includeLessonPlan ? "bg-indigo-600 border-indigo-600" : "border-slate-300"}` }, includeLessonPlan && /* @__PURE__ */ React.createElement(Check, { size: 14, className: "text-white" })), /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, t("word_sounds.enable_lesson_plan")))), includeLessonPlan && /* @__PURE__ */ React.createElement("div", { className: "space-y-3 pl-2 mt-3 animate-in fade-in slide-in-from-top-1" }, lessonPlanOrder.map((actId) => {
+  )))), /* @__PURE__ */ React.createElement("div", { className: "space-y-3 pt-4 mt-4 border-t border-slate-200" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-600 uppercase tracking-widest px-1" }, "\u{1F4CB} Lesson Plan (Advanced)"), /* @__PURE__ */ React.createElement("div", { className: `p-4 rounded-xl border-2 transition-all ${includeLessonPlan ? "bg-indigo-50 border-indigo-500" : "bg-white border-slate-200"}` }, /* @__PURE__ */ React.createElement("div", { role: "button", tabIndex: 0, className: "flex items-center justify-between cursor-pointer mb-3", onClick: () => setIncludeLessonPlan((prev) => !prev) }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("div", { className: `w-5 h-5 rounded border flex items-center justify-center ${includeLessonPlan ? "bg-indigo-600 border-indigo-600" : "border-slate-300"}` }, includeLessonPlan && /* @__PURE__ */ React.createElement(Check, { size: 14, className: "text-white" })), /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, t("word_sounds.enable_lesson_plan")))), includeLessonPlan && /* @__PURE__ */ React.createElement("div", { className: "space-y-3 pl-2 mt-3 animate-in fade-in slide-in-from-top-1" }, lessonPlanOrder.map((actId) => {
     const activityDefs = {
       isolation: { id: "isolation", label: "Find Sounds", icon: ScanSearch },
       blending: { id: "blending", label: "Blending", icon: GripHorizontal },
@@ -661,7 +756,8 @@ var WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, cal
       mapping: { id: "mapping", label: "Sound Mapping", icon: GitCompare },
       sound_sort: { id: "sound_sort", label: "Sound Sort", icon: Users },
       word_families: { id: "word_families", label: "Word Families", icon: Users },
-      word_scramble: { id: "word_scramble", label: "Word Scramble", icon: Shuffle }
+      word_scramble: { id: "word_scramble", label: "Word Scramble", icon: Shuffle },
+      manipulation: { id: "manipulation", label: "Sound Swap", icon: Shuffle }
     };
     const activity = activityDefs[actId];
     return /* @__PURE__ */ React.createElement(
@@ -693,7 +789,7 @@ var WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, cal
         onDragEnd: () => setDraggedActivity(null),
         className: `bg-white p-3 rounded-lg border transition-all cursor-move ${draggedActivity === activity.id ? "border-indigo-500 shadow-lg scale-[1.02]" : "border-indigo-100 hover:border-indigo-300"}`
       },
-      /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(GripVertical, { size: 14, className: "text-slate-500 cursor-grab active:cursor-grabbing" }), /* @__PURE__ */ React.createElement(
+      /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(GripVertical, { size: 14, className: "text-slate-600 cursor-grab active:cursor-grabbing" }), /* @__PURE__ */ React.createElement(
         "input",
         {
           "aria-label": t("common.toggle_enabled"),
@@ -723,7 +819,7 @@ var WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, cal
         }
       )
     );
-  }))))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 bg-white p-8 overflow-y-auto flex flex-col" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-end mb-6" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "text-2xl font-black text-slate-700" }, t("word_sounds.preview_title", "Lesson Preview")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4" }, /* @__PURE__ */ React.createElement("p", { className: "text-slate-500 font-medium" }, selectedIndices.size, " ", t("word_sounds.of_total", "of"), " ", previewList.length, " ", t("word_sounds.words_selected", "words selected")), previewList.length > 0 && /* @__PURE__ */ React.createElement(
+  }))))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 bg-white p-8 overflow-y-auto flex flex-col" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-end mb-6" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "text-2xl font-black text-slate-700" }, t("word_sounds.preview_title", "Lesson Preview")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4" }, /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 font-medium" }, selectedIndices.size, " ", t("word_sounds.of_total", "of"), " ", previewList.length, " ", t("word_sounds.words_selected", "words selected")), previewList.length > 0 && /* @__PURE__ */ React.createElement(
     "button",
     {
       "aria-label": t("common.toggle_all"),
@@ -736,7 +832,7 @@ var WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, cal
     {
       onClick: handleStart,
       disabled: selectedIndices.size === 0 || isProcessing,
-      className: `px-8 py-4 rounded-2xl font-black text-xl shadow-xl transition-all flex items-center gap-3 ${selectedIndices.size > 0 && !isProcessing ? "bg-gradient-to-r from-violet-600 to-indigo-600 text-white hover:scale-105 active:scale-95 hover:shadow-2xl hover:brightness-110" : isProcessing ? "bg-violet-400 text-white cursor-wait" : "bg-slate-100 text-slate-500 cursor-not-allowed"}`
+      className: `px-8 py-4 rounded-2xl font-black text-xl shadow-xl transition-all flex items-center gap-3 ${selectedIndices.size > 0 && !isProcessing ? "bg-gradient-to-r from-violet-600 to-indigo-600 text-white hover:scale-105 active:scale-95 hover:shadow-2xl hover:brightness-110" : isProcessing ? "bg-violet-400 text-white cursor-wait" : "bg-slate-100 text-slate-600 cursor-not-allowed"}`
     },
     isProcessing ? /* @__PURE__ */ React.createElement(Loader2, { className: "animate-spin" }) : /* @__PURE__ */ React.createElement(PlayCircle, { fill: "currentColor", className: "text-white/20", size: 28 }),
     isProcessing ? t("status.generating", "Generating...") : t("word_sounds.start", "Start Activity")
@@ -746,7 +842,13 @@ var WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, cal
       className: "h-full bg-gradient-to-r from-violet-500 to-indigo-500 rounded-full transition-all duration-500 ease-out",
       style: { width: `${generatedCount / selectedIndices.size * 100}%` }
     }
-  )), /* @__PURE__ */ React.createElement("p", { className: "text-violet-500 text-sm mt-2 text-center" }, generatedCount < selectedIndices.size ? `Building Audio: "${previewList[Array.from(selectedIndices)[generatedCount]] || "..."}"` : "Finishing up...")), previewList.length > 0 ? /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-3 gap-4 pb-20" }, previewList.map((word, i) => {
+  )), /* @__PURE__ */ React.createElement("p", { className: "text-violet-500 text-sm mt-2 text-center" }, generatedCount < selectedIndices.size ? `Building Audio: "${previewList[Array.from(selectedIndices)[generatedCount]] || "..."}"` : "Finishing up..."), prewarmTotal > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-3 pt-3 border-t border-violet-200/60" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-1.5" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Volume2, { size: 14, className: "text-teal-600" }), /* @__PURE__ */ React.createElement("span", { className: "text-teal-700 font-bold text-xs uppercase tracking-wider" }, "Preloading voices for instant playback")), /* @__PURE__ */ React.createElement("span", { className: "text-teal-600 font-bold text-sm" }, prewarmCount, " / ", prewarmTotal)), /* @__PURE__ */ React.createElement("div", { className: "w-full h-2 bg-teal-100 rounded-full overflow-hidden" }, /* @__PURE__ */ React.createElement(
+    "div",
+    {
+      className: "h-full bg-gradient-to-r from-teal-500 to-emerald-500 rounded-full transition-all duration-300",
+      style: { width: `${prewarmTotal ? prewarmCount / prewarmTotal * 100 : 0}%` }
+    }
+  )))), previewList.length > 0 ? /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-3 gap-4 pb-20" }, previewList.map((word, i) => {
     const isSelected = selectedIndices.has(i);
     return /* @__PURE__ */ React.createElement(
       "div",
@@ -758,9 +860,9 @@ var WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, cal
       /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("div", { className: `w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors ${isSelected ? "bg-violet-600 border-violet-600" : "border-slate-300 bg-white"}` }, isSelected && /* @__PURE__ */ React.createElement(Check, { size: 14, className: "text-white" })), /* @__PURE__ */ React.createElement("span", { className: `font-bold text-lg capitalize ${isSelected ? "text-violet-900" : "text-slate-600"}` }, word)),
       /* @__PURE__ */ React.createElement("div", { className: "flex gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "w-2 h-2 rounded-full bg-indigo-400", title: t("common.phonemes") }), /* @__PURE__ */ React.createElement("span", { className: "w-2 h-2 rounded-full bg-pink-400", title: t("common.image") }))
     );
-  })) : /* @__PURE__ */ React.createElement("div", { className: "flex-1 flex flex-col items-center justify-center text-slate-500" }, /* @__PURE__ */ React.createElement(Layers, { size: 48, className: "mb-4 opacity-50" }), /* @__PURE__ */ React.createElement("p", { className: "text-xl font-bold" }, t("word_sounds.no_words", "No words selected")), /* @__PURE__ */ React.createElement("p", { className: "text-sm" }, t("word_sounds.choose_source_hint", "Choose a source to begin")))))));
+  })) : /* @__PURE__ */ React.createElement("div", { className: "flex-1 flex flex-col items-center justify-center text-slate-600" }, /* @__PURE__ */ React.createElement(Layers, { size: 48, className: "mb-4 opacity-50" }), /* @__PURE__ */ React.createElement("p", { className: "text-xl font-bold" }, t("word_sounds.no_words", "No words selected")), /* @__PURE__ */ React.createElement("p", { className: "text-sm" }, t("word_sounds.choose_source_hint", "Choose a source to begin")))))));
 });
-var WordSoundsReviewPanel = ({
+const WordSoundsReviewPanel = ({
   preloadedWords,
   onUpdateWord,
   onReorderWords,
@@ -771,6 +873,7 @@ var WordSoundsReviewPanel = ({
   onRegenerateWord,
   onRegenerateOption,
   onRegenerateAll,
+  onRetryFailedTTS,
   regeneratingIndex,
   onGenerateImage,
   onRefineImage,
@@ -796,19 +899,6 @@ var WordSoundsReviewPanel = ({
   const [playingWordIndex, setPlayingWordIndex] = React.useState(null);
   const [regeneratingOptions, setRegeneratingOptions] = React.useState({});
   const [playingAudioKey, setPlayingAudioKey] = React.useState(null);
-  const [audioProgress, setAudioProgress] = React.useState({ ready: 0, total: 0 });
-  React.useEffect(() => {
-    if (!preloadedWords || preloadedWords.length === 0) return;
-    const checkAudio = () => {
-      setAudioProgress({
-        ready: preloadedWords.filter((w) => w.ttsReady || w.phonemes).length,
-        total: preloadedWords.length
-      });
-    };
-    const interval = setInterval(checkAudio, 1e3);
-    checkAudio();
-    return () => clearInterval(interval);
-  }, [preloadedWords]);
   const PHONEME_BANK = {
     "Consonants": ["b", "c", "d", "f", "g", "h", "j", "k", "l", "m", "n", "p", "r", "s", "t", "v", "w", "y", "z"],
     "Digraphs": ["sh", "zh", "ch", "th", "wh", "ph", "ck", "ng", "q"],
@@ -1087,7 +1177,19 @@ var WordSoundsReviewPanel = ({
     onReorderWords(newList);
     setExpandedIndex(null);
   };
-  return /* @__PURE__ */ React.createElement("div", { role: "dialog", "aria-modal": "true", className: "fixed inset-0 bg-black/50 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-in fade-in duration-300" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col" }, /* @__PURE__ */ React.createElement("div", { className: "p-6 border-b bg-gradient-to-r from-pink-500 to-violet-500 text-white flex-shrink-0" }, /* @__PURE__ */ React.createElement("h2", { className: "text-2xl font-black flex items-center gap-2" }, "\u{1F4CB} Pre-Activity Review", /* @__PURE__ */ React.createElement("span", { className: "relative group ml-2" }, /* @__PURE__ */ React.createElement("span", { className: "cursor-help text-white/70 hover:text-white text-base" }, "\u2139\uFE0F"), /* @__PURE__ */ React.createElement("div", { className: "absolute left-0 top-8 w-72 p-3 bg-slate-800 text-white text-xs rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity z-50 pointer-events-none" }, /* @__PURE__ */ React.createElement("strong", { className: "block mb-1" }, "\u{1F4D6} Phonics Counting Guide"), /* @__PURE__ */ React.createElement("p", { className: "mb-2" }, "R-controlled vowels (ar, er, ir, or, ur) are counted as ", /* @__PURE__ */ React.createElement("strong", null, "single sounds"), " because the vowel and R blend together."), /* @__PURE__ */ React.createElement("p", { className: "text-slate-500" }, 'Example: "star" = 3 sounds (s-t-ar), not 4. This aligns with Orton-Gillingham and Wilson Reading methods.')))), /* @__PURE__ */ React.createElement("p", { className: "text-sm opacity-80 mt-1 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", null, "Review and edit words \u2022 ", preloadedWords.length, " words ready"), isLoading && /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1 bg-white/20 px-2 py-0.5 rounded-full text-xs animate-pulse" }, /* @__PURE__ */ React.createElement("div", { className: "w-2 h-2 bg-white rounded-full animate-bounce" }), " Generating more..."))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar" }, preloadedWords.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "text-center py-12 text-slate-500" }, /* @__PURE__ */ React.createElement("div", { className: "text-4xl mb-2" }, "\u23F3"), isLoading ? /* @__PURE__ */ React.createElement("p", { className: "animate-pulse" }, "Generating new words... this may take a moment") : /* @__PURE__ */ React.createElement("p", null, "No words preloaded yet. Start the activity to generate words.")) : (preloadedWords || []).map((word, idx) => /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 bg-black/50 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-in fade-in duration-300" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col" }, /* @__PURE__ */ React.createElement("div", { className: "p-6 border-b bg-gradient-to-r from-pink-500 to-violet-500 text-white flex-shrink-0" }, /* @__PURE__ */ React.createElement("h2", { className: "text-2xl font-black flex items-center gap-2" }, "\u{1F4CB} Pre-Activity Review", /* @__PURE__ */ React.createElement("span", { className: "relative group ml-2" }, /* @__PURE__ */ React.createElement("span", { className: "cursor-help text-white/70 hover:text-white text-base" }, "\u2139\uFE0F"), /* @__PURE__ */ React.createElement("div", { className: "absolute left-0 top-8 w-72 p-3 bg-slate-800 text-white text-xs rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity z-50 pointer-events-none" }, /* @__PURE__ */ React.createElement("strong", { className: "block mb-1" }, "\u{1F4D6} Phonics Counting Guide"), /* @__PURE__ */ React.createElement("p", { className: "mb-2" }, "R-controlled vowels (ar, er, ir, or, ur) are counted as ", /* @__PURE__ */ React.createElement("strong", null, "single sounds"), " because the vowel and R blend together."), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600" }, 'Example: "star" = 3 sounds (s-t-ar), not 4. This aligns with Orton-Gillingham and Wilson Reading methods.')))), /* @__PURE__ */ React.createElement("p", { className: "text-sm opacity-80 mt-1 flex items-center gap-2 flex-wrap" }, /* @__PURE__ */ React.createElement("span", null, "Review and edit words \u2022 ", preloadedWords.length, " words ready"), isLoading && /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1 bg-white/20 px-2 py-0.5 rounded-full text-xs animate-pulse" }, /* @__PURE__ */ React.createElement("div", { className: "w-2 h-2 bg-white rounded-full animate-bounce" }), " Generating more..."), !isLoading && preloadedWords.some((w) => w && w._ttsFailed) && /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-2 bg-red-500/30 border border-red-200/60 px-3 py-1 rounded-full text-xs" }, /* @__PURE__ */ React.createElement("span", null, "\u{1F507} Audio missing for ", preloadedWords.filter((w) => w && w._ttsFailed).length, " word", preloadedWords.filter((w) => w && w._ttsFailed).length === 1 ? "" : "s"), typeof onRetryFailedTTS === "function" && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      onClick: (e) => {
+        e.stopPropagation();
+        onRetryFailedTTS();
+      },
+      className: "px-2 py-0.5 bg-white/90 hover:bg-white text-red-600 font-bold rounded-full text-xs",
+      title: "Retry audio generation for words that failed"
+    },
+    "Retry audio"
+  )))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar" }, preloadedWords.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "text-center py-12 text-slate-600" }, /* @__PURE__ */ React.createElement("div", { className: "text-4xl mb-2" }, "\u23F3"), isLoading ? /* @__PURE__ */ React.createElement("p", { className: "animate-pulse" }, "Generating new words... this may take a moment") : /* @__PURE__ */ React.createElement("p", null, "No words preloaded yet. Start the activity to generate words.")) : (preloadedWords || []).map((word, idx) => /* @__PURE__ */ React.createElement(
     "div",
     {
       key: word.id || `word-${word.targetWord || word.word}-${idx}`,
@@ -1136,7 +1238,7 @@ var WordSoundsReviewPanel = ({
             moveWord(idx, "up");
           },
           disabled: idx === 0,
-          className: `w-6 h-6 flex items-center justify-center rounded text-xs ${idx === 0 ? "text-slate-200" : "text-slate-500 hover:bg-slate-100 hover:text-slate-600"}`,
+          className: `w-6 h-6 flex items-center justify-center rounded text-xs ${idx === 0 ? "text-slate-200" : "text-slate-600 hover:bg-slate-100 hover:text-slate-600"}`,
           "data-help-key": "word_sounds_review_move_word",
           title: t("common.move_up")
         },
@@ -1150,7 +1252,7 @@ var WordSoundsReviewPanel = ({
             moveWord(idx, "down");
           },
           disabled: idx === preloadedWords.length - 1,
-          className: `w-6 h-6 flex items-center justify-center rounded text-xs ${idx === preloadedWords.length - 1 ? "text-slate-200" : "text-slate-500 hover:bg-slate-100 hover:text-slate-600"}`,
+          className: `w-6 h-6 flex items-center justify-center rounded text-xs ${idx === preloadedWords.length - 1 ? "text-slate-200" : "text-slate-600 hover:bg-slate-100 hover:text-slate-600"}`,
           "data-help-key": "word_sounds_review_move_word",
           title: t("common.move_down")
         },
@@ -1183,7 +1285,7 @@ var WordSoundsReviewPanel = ({
           title: t("common.delete_word")
         },
         "\u{1F5D1}\uFE0F"
-      )), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-mono text-slate-500 w-6" }, idx + 1, "."), /* @__PURE__ */ React.createElement(
+      )), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-mono text-slate-600 w-6" }, idx + 1, "."), /* @__PURE__ */ React.createElement(
         "button",
         {
           "data-help-key": "word_sounds_review_play_word",
@@ -1206,10 +1308,10 @@ var WordSoundsReviewPanel = ({
             }
           },
           disabled: playingWordIndex !== null || !word.ttsReady,
-          className: `w-10 h-10 rounded-full flex items-center justify-center transition-colors ${playingWordIndex === idx ? "bg-pink-200 text-pink-700 animate-pulse" : playingWordIndex !== null ? "bg-pink-50 text-pink-300 cursor-not-allowed" : "bg-pink-100 hover:bg-pink-200 text-pink-600"}`,
-          title: playingWordIndex === idx ? "Playing..." : !word.ttsReady ? "Loading audio..." : "Play word"
+          className: `w-10 h-10 rounded-full flex items-center justify-center transition-colors ${word._ttsFailed ? "bg-red-100 hover:bg-red-200 text-red-600 border-2 border-red-300" : playingWordIndex === idx ? "bg-pink-200 text-pink-700 animate-pulse" : playingWordIndex !== null ? "bg-pink-50 text-pink-300 cursor-not-allowed" : "bg-pink-100 hover:bg-pink-200 text-pink-600"}`,
+          title: playingWordIndex === idx ? "Playing..." : word._ttsFailed ? "Audio failed to generate \u2014 click Retry audio in header" : !word.ttsReady ? "Loading audio..." : "Play word"
         },
-        playingWordIndex === idx ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 18, className: "animate-spin" }) : /* @__PURE__ */ React.createElement(Volume2, { size: 18 })
+        word._ttsFailed ? "\u{1F507}" : playingWordIndex === idx ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 18, className: "animate-spin" }) : /* @__PURE__ */ React.createElement(Volume2, { size: 18 })
       ), word.phonemes && Array.isArray(word.phonemes) && word.phonemes.length > 0 && /* @__PURE__ */ React.createElement(
         "button",
         {
@@ -1287,15 +1389,15 @@ var WordSoundsReviewPanel = ({
         /* @__PURE__ */ React.createElement("option", { value: "easy" }, "\u{1F7E2} Easy"),
         /* @__PURE__ */ React.createElement("option", { value: "medium" }, "\u{1F7E1} Medium"),
         /* @__PURE__ */ React.createElement("option", { value: "hard" }, "\u{1F534} Hard")
-      ), /* @__PURE__ */ React.createElement("span", { className: "text-xs bg-slate-100 text-slate-500 px-2 py-1 rounded-full" }, word.phonemes?.length || 0, " sounds")),
-      /* @__PURE__ */ React.createElement(ChevronDown, { size: 20, className: `text-slate-500 transition-transform ${expandedIndex === idx ? "rotate-180" : ""}` })
+      ), /* @__PURE__ */ React.createElement("span", { className: "text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded-full" }, word.phonemes?.length || 0, " sounds")),
+      /* @__PURE__ */ React.createElement(ChevronDown, { size: 20, className: `text-slate-600 transition-transform ${expandedIndex === idx ? "rotate-180" : ""}` })
     ),
-    expandedIndex === idx && /* @__PURE__ */ React.createElement("div", { className: "border-t border-slate-100 p-4 space-y-4 animate-in slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-500 uppercase tracking-wider" }, t("word_sounds.phonemes")), /* @__PURE__ */ React.createElement(
+    expandedIndex === idx && /* @__PURE__ */ React.createElement("div", { className: "border-t border-slate-100 p-4 space-y-4 animate-in slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider" }, t("word_sounds.phonemes")), /* @__PURE__ */ React.createElement(
       "button",
       {
         onClick: () => onRegenerateWord && onRegenerateWord(idx),
         disabled: regeneratingIndex === idx,
-        className: `text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1 font-bold transition-colors ${regeneratingIndex === idx ? "bg-slate-100 text-slate-500" : "bg-violet-100 text-violet-600 hover:bg-violet-200"}`,
+        className: `text-[11px] px-2 py-0.5 rounded-full flex items-center gap-1 font-bold transition-colors ${regeneratingIndex === idx ? "bg-slate-100 text-slate-600" : "bg-violet-100 text-violet-600 hover:bg-violet-200"}`,
         title: "Re-check phonemes with Gemini"
       },
       regeneratingIndex === idx ? /* @__PURE__ */ React.createElement("div", { className: "animate-spin h-3 w-3 border-2 border-current border-t-transparent rounded-full" }) : "\u2728",
@@ -1305,7 +1407,7 @@ var WordSoundsReviewPanel = ({
       {
         "data-help-key": "word_sounds_review_phoneme_bank",
         onClick: () => setShowPhonemeBank(showPhonemeBank === idx ? null : idx),
-        className: `text-xs px-2 py-1 rounded-full transition-colors ${showPhonemeBank === idx ? "bg-pink-700 text-white" : "bg-pink-100 text-pink-600 hover:bg-pink-200"}`
+        className: `text-xs px-2 py-1 rounded-full transition-colors ${showPhonemeBank === idx ? "bg-pink-500 text-white" : "bg-pink-100 text-pink-600 hover:bg-pink-200"}`
       },
       showPhonemeBank === idx ? "\u2715 Close Bank" : "+ Add Sound"
     )), /* @__PURE__ */ React.createElement(
@@ -1329,7 +1431,7 @@ var WordSoundsReviewPanel = ({
           },
           onDragEnd: handleDragEnd
         },
-        /* @__PURE__ */ React.createElement("span", { className: "inline-flex items-center gap-1 px-3 py-1.5 bg-gradient-to-r from-pink-100 to-violet-100 text-violet-700 font-bold rounded-lg border-2 border-violet-200", title: typeof p === "string" && typeof PHONEME_GUIDE !== "undefined" && PHONEME_GUIDE[p] ? `${PHONEME_GUIDE[p].label} (${PHONEME_GUIDE[p].ipa}) \u2014 ${PHONEME_GUIDE[p].examples}` : typeof p === "string" ? p : "" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-500 text-xs mr-1" }, "\u283F"), p, /* @__PURE__ */ React.createElement(
+        /* @__PURE__ */ React.createElement("span", { className: "inline-flex items-center gap-1 px-3 py-1.5 bg-gradient-to-r from-pink-100 to-violet-100 text-violet-700 font-bold rounded-lg border-2 border-violet-200", title: typeof p === "string" && typeof PHONEME_GUIDE !== "undefined" && PHONEME_GUIDE[p] ? `${PHONEME_GUIDE[p].label} (${PHONEME_GUIDE[p].ipa}) \u2014 ${PHONEME_GUIDE[p].examples}` : typeof p === "string" ? p : "" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 text-xs mr-1" }, "\u283F"), p, /* @__PURE__ */ React.createElement(
           "button",
           {
             "aria-label": t("common.remove"),
@@ -1344,12 +1446,12 @@ var WordSoundsReviewPanel = ({
         const p = word.phonemes;
         const a = Array.isArray(p) ? p : p?.phonemes && Array.isArray(p.phonemes) ? p.phonemes : [];
         return a.length === 0;
-      })() && /* @__PURE__ */ React.createElement("span", { className: "text-slate-500 text-sm italic" }, 'No phonemes - click "Add Sound" to build')
-    ), showPhonemeBank === idx && /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border-2 border-slate-200 rounded-xl p-3 mt-2 animate-in slide-in-from-top-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-500 italic" }, "\u{1F4A1} Hover any sound for teaching tips")), Object.entries(PHONEME_BANK).map(([category, phonemes]) => /* @__PURE__ */ React.createElement("div", { key: category, className: "mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-slate-500 uppercase mb-1", title: category === "Consonants" ? "Single consonant sounds \u2014 pair voiced (b,d,g) with unvoiced (p,t,k)" : category === "Vowels (Short)" ? "Quick vowel sounds \u2014 cat, pet, sit, hot, cup, book" : category === "Vowels (Long)" ? "Longer vowel sounds \u2014 see, moon, cue, saw + vowel teams ai, ea, oa" : category === "Digraphs" ? "Two letters that make ONE sound \u2014 sh, ch, th, wh, ng" : category === "R-Controlled" ? "Bossy R changes the vowel sound \u2014 ar, er, ir, or, ur, air, ear" : category === "Diphthongs" ? "Vowel sounds that glide \u2014 ay (day), ie (tie), ow (cow), oy (boy)" : category }, category), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, (Array.isArray(phonemes) ? phonemes : []).map((p) => /* @__PURE__ */ React.createElement("div", { key: p, className: "inline-flex rounded overflow-hidden border border-slate-300 hover:border-pink-400 transition-colors" }, /* @__PURE__ */ React.createElement(
+      })() && /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 text-sm italic" }, 'No phonemes - click "Add Sound" to build')
+    ), showPhonemeBank === idx && /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border-2 border-slate-200 rounded-xl p-3 mt-2 animate-in slide-in-from-top-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 italic" }, "\u{1F4A1} Hover any sound for teaching tips")), Object.entries(PHONEME_BANK).map(([category, phonemes]) => /* @__PURE__ */ React.createElement("div", { key: category, className: "mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-slate-600 uppercase mb-1", title: category === "Consonants" ? "Single consonant sounds \u2014 pair voiced (b,d,g) with unvoiced (p,t,k)" : category === "Vowels (Short)" ? "Quick vowel sounds \u2014 cat, pet, sit, hot, cup, book" : category === "Vowels (Long)" ? "Longer vowel sounds \u2014 see, moon, cue, saw + vowel teams ai, ea, oa" : category === "Digraphs" ? "Two letters that make ONE sound \u2014 sh, ch, th, wh, ng" : category === "R-Controlled" ? "Bossy R changes the vowel sound \u2014 ar, er, ir, or, ur, air, ear" : category === "Diphthongs" ? "Vowel sounds that glide \u2014 ay (day), ie (tie), ow (cow), oy (boy)" : category }, category), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, (Array.isArray(phonemes) ? phonemes : []).map((p) => /* @__PURE__ */ React.createElement("div", { key: p, className: "inline-flex rounded overflow-hidden border border-slate-300 hover:border-pink-400 transition-colors" }, /* @__PURE__ */ React.createElement(
       "button",
       {
         onClick: () => onPlayAudio && onPlayAudio(p),
-        className: "px-1.5 py-1 bg-slate-100 hover:bg-pink-200 text-slate-500 hover:text-pink-600 transition-colors border-r border-slate-300",
+        className: "px-1.5 py-1 bg-slate-100 hover:bg-pink-200 text-slate-600 hover:text-pink-600 transition-colors border-r border-slate-300",
         title: typeof PHONEME_GUIDE !== "undefined" && PHONEME_GUIDE[p] ? `\u{1F50A} ${PHONEME_GUIDE[p].label} (${PHONEME_GUIDE[p].ipa}) \u2014 ${PHONEME_GUIDE[p].examples}` : `Play sound: ${p}`
       },
       "\u{1F50A}"
@@ -1403,7 +1505,7 @@ var WordSoundsReviewPanel = ({
             setPlayingAudioKey(null);
           }
         },
-        className: "p-2 rounded-lg bg-slate-100 hover:bg-orange-100 text-slate-500 hover:text-orange-600 transition-colors min-w-[32px] flex justify-center",
+        className: "p-2 rounded-lg bg-slate-100 hover:bg-orange-100 text-slate-600 hover:text-orange-600 transition-colors min-w-[32px] flex justify-center",
         "data-help-key": "word_sounds_review_play_distractor",
         title: t("common.play_tts")
       },
@@ -1424,7 +1526,7 @@ var WordSoundsReviewPanel = ({
             });
           }
         },
-        className: "w-8 h-8 rounded-lg bg-orange-50 hover:bg-orange-100 text-orange-800 hover:text-orange-600 transition-colors flex items-center justify-center",
+        className: "w-8 h-8 rounded-lg bg-orange-50 hover:bg-orange-100 text-orange-400 hover:text-orange-600 transition-colors flex items-center justify-center",
         title: t("common.regenerate_this_option")
       },
       regeneratingOptions[`${idx}-rhyme-${i}`] ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "animate-spin" }) : "\u{1F504}"
@@ -1465,7 +1567,7 @@ var WordSoundsReviewPanel = ({
             setPlayingAudioKey(null);
           }
         },
-        className: "p-2 rounded-lg bg-slate-100 hover:bg-violet-100 text-slate-500 hover:text-violet-600 transition-colors min-w-[32px] flex justify-center",
+        className: "p-2 rounded-lg bg-slate-100 hover:bg-violet-100 text-slate-600 hover:text-violet-600 transition-colors min-w-[32px] flex justify-center",
         "data-help-key": "word_sounds_review_play_distractor",
         title: t("common.play_tts")
       },
@@ -1486,7 +1588,7 @@ var WordSoundsReviewPanel = ({
             });
           }
         },
-        className: "w-8 h-8 rounded-lg bg-violet-50 hover:bg-violet-100 text-violet-700 hover:text-violet-600 transition-colors flex items-center justify-center",
+        className: "w-8 h-8 rounded-lg bg-violet-50 hover:bg-violet-100 text-violet-400 hover:text-violet-600 transition-colors flex items-center justify-center",
         title: t("common.regenerate_this_option")
       },
       regeneratingOptions[`${idx}-blend-${i}`] ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "animate-spin" }) : "\u{1F504}"
@@ -1500,15 +1602,15 @@ var WordSoundsReviewPanel = ({
         className: "px-3 py-1.5 bg-violet-100 text-violet-600 rounded-lg border-2 border-dashed border-violet-300 hover:bg-violet-200 text-sm font-bold"
       },
       "+ Add"
-    ))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block" }, "Sound Positions (Find Sounds Activity)"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, (() => {
+    ))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 block" }, "Sound Positions (Find Sounds Activity)"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, (() => {
       const phonemesRaw = word.phonemes;
       const phonemeArray = Array.isArray(phonemesRaw) ? phonemesRaw : phonemesRaw?.phonemes && Array.isArray(phonemesRaw.phonemes) ? phonemesRaw.phonemes : [];
       return phonemeArray;
     })().map((phoneme, soundIdx) => {
       const ordinals = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th"];
       const ordinalLabel = ordinals[soundIdx] || `${soundIdx + 1}th`;
-      return /* @__PURE__ */ React.createElement("div", { key: soundIdx, className: "flex items-center gap-1 bg-gradient-to-r from-violet-50 to-pink-50 border-2 border-violet-200 rounded-lg px-2 py-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-slate-500" }, ordinalLabel, ":"), /* @__PURE__ */ React.createElement("span", { className: "font-bold text-violet-700 text-lg" }, phoneme));
-    }), (!word.phonemes || word.phonemes.length === 0) && /* @__PURE__ */ React.createElement("span", { className: "text-slate-500 text-sm italic" }, t("word_sounds.no_phonemes")))), /* @__PURE__ */ React.createElement("div", { className: "mt-4 pt-4 border-t border-slate-200" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-indigo-500 uppercase tracking-wider mb-2 block flex items-center gap-2" }, /* @__PURE__ */ React.createElement(ImageIcon, { size: 12 }), " Word Image"), /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex-shrink-0" }, word.image ? /* @__PURE__ */ React.createElement(
+      return /* @__PURE__ */ React.createElement("div", { key: soundIdx, className: "flex items-center gap-1 bg-gradient-to-r from-violet-50 to-pink-50 border-2 border-violet-200 rounded-lg px-2 py-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-slate-600" }, ordinalLabel, ":"), /* @__PURE__ */ React.createElement("span", { className: "font-bold text-violet-700 text-lg" }, phoneme));
+    }), (!word.phonemes || word.phonemes.length === 0) && /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 text-sm italic" }, t("word_sounds.no_phonemes")))), /* @__PURE__ */ React.createElement("div", { className: "mt-4 pt-4 border-t border-slate-200" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-indigo-500 uppercase tracking-wider mb-2 block flex items-center gap-2" }, /* @__PURE__ */ React.createElement(ImageIcon, { size: 12 }), " Word Image"), /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex-shrink-0" }, word.image ? /* @__PURE__ */ React.createElement(
       "img",
       {
         loading: "lazy",
@@ -1516,7 +1618,7 @@ var WordSoundsReviewPanel = ({
         alt: word.targetWord || word.word,
         className: "w-24 h-24 rounded-xl object-cover border-2 border-indigo-200 shadow-md"
       }
-    ) : /* @__PURE__ */ React.createElement("div", { className: "w-24 h-24 rounded-xl border-2 border-dashed border-slate-300 flex items-center justify-center text-slate-500 bg-slate-50" }, /* @__PURE__ */ React.createElement(ImageIcon, { size: 32 }))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 space-y-2" }, /* @__PURE__ */ React.createElement(
+    ) : /* @__PURE__ */ React.createElement("div", { className: "w-24 h-24 rounded-xl border-2 border-dashed border-slate-300 flex items-center justify-center text-slate-600 bg-slate-50" }, /* @__PURE__ */ React.createElement(ImageIcon, { size: 32 }))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 space-y-2" }, /* @__PURE__ */ React.createElement(
       "button",
       {
         "aria-label": t("common.refresh"),
@@ -1559,7 +1661,7 @@ var WordSoundsReviewPanel = ({
         className: "px-3 py-1.5 bg-yellow-400 text-yellow-900 rounded-lg hover:bg-yellow-500 disabled:opacity-50 font-bold text-xs transition-colors"
       },
       generatingImageIndex === idx ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 12, className: "animate-spin" }) : /* @__PURE__ */ React.createElement(Send, { size: 12 })
-    )), /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-slate-500 italic" }, '\u2728 Nano Mode: Type custom edits like "make it blue" or "add a hat"'))))))
+    )), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 italic" }, '\u2728 Nano Mode: Type custom edits like "make it blue" or "add a hat"'))))))
   ))), /* @__PURE__ */ React.createElement("div", { className: "p-4 border-t bg-slate-50 flex justify-between items-center flex-shrink-0" }, /* @__PURE__ */ React.createElement(
     "button",
     {
@@ -1586,17 +1688,17 @@ var WordSoundsReviewPanel = ({
   )))));
 };
 
-
   // ═══════════════════════════════════════════════════════════════
   // REGISTRATION
   // ═══════════════════════════════════════════════════════════════
   window.AlloModules = window.AlloModules || {};
-  window.AlloModules.WordSoundsGenerator = WordSoundsGenerator;
-  window.AlloModules.WordSoundsReviewPanel = WordSoundsReviewPanel;
+  window.AlloModules.WordSoundsGenerator = (typeof WordSoundsGenerator !== 'undefined') ? WordSoundsGenerator : null;
+  window.AlloModules.WordSoundsReviewPanel = (typeof WordSoundsReviewPanel !== 'undefined') ? WordSoundsReviewPanel : null;
   window.AlloModules.WordSoundsSetupModule = true;
 
-  // Update the global reference used by the WordSoundsModal CDN module
-  window.WordSoundsReviewPanel = WordSoundsReviewPanel;
+  if (typeof WordSoundsReviewPanel !== 'undefined') {
+    window.WordSoundsReviewPanel = WordSoundsReviewPanel;
+  }
 
   console.log('[WordSoundsSetupModule] WordSoundsGenerator + WordSoundsReviewPanel registered');
 })();

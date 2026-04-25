@@ -85,7 +85,7 @@ window.StemLab = window.StemLab || {
             }});
           });
         }
-        return h('div', { className: 'p-8 text-center text-slate-500' }, 'Loading Wave Simulator…');
+        return h('div', { className: 'p-8 text-center text-slate-600' }, 'Loading Wave Simulator…');
       }
       return (function() {
 const d = labToolData.wave;
@@ -1361,11 +1361,11 @@ const d = labToolData.wave;
 
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
 
-              React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+              React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-200" })),
 
               React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDF0A Wave Simulator"),
 
-              React.createElement("span", { className: "px-2 py-0.5 bg-cyan-100 text-cyan-700 text-[10px] font-bold rounded-full" }, "ANIMATED")
+              React.createElement("span", { className: "px-2 py-0.5 bg-cyan-100 text-cyan-700 text-[11px] font-bold rounded-full" }, "ANIMATED")
 
             ),
 
@@ -1484,7 +1484,7 @@ const d = labToolData.wave;
 
               }),
 
-              React.createElement("span", { className: "text-xs text-slate-500 ml-2" }, (d.harmonic || 1) + " node" + ((d.harmonic || 1) > 1 ? 's' : '') + ", " + ((d.harmonic || 1) + 1) + " antinode" + ((d.harmonic || 1) > 0 ? 's' : ''))
+              React.createElement("span", { className: "text-xs text-slate-600 ml-2" }, (d.harmonic || 1) + " node" + ((d.harmonic || 1) > 1 ? 's' : '') + ", " + ((d.harmonic || 1) + 1) + " antinode" + ((d.harmonic || 1) > 0 ? 's' : ''))
 
             ),
 
@@ -1522,7 +1522,7 @@ const d = labToolData.wave;
 
                 React.createElement("div", { key: s.k, className: "text-center bg-slate-50 rounded-lg p-2 border" },
 
-                  React.createElement("label", { className: "text-[10px] font-bold text-slate-500 block" }, s.label),
+                  React.createElement("label", { className: "text-[11px] font-bold text-slate-600 block" }, s.label),
 
                   React.createElement("span", { className: "text-sm font-bold text-slate-700 block" }, d[s.k] || (s.k === 'speed' ? 1 : s.k === 'waveSpeed' ? 343 : d[s.k])),
 
@@ -1559,31 +1559,31 @@ const d = labToolData.wave;
 
                 React.createElement("div", { className: "flex items-center gap-1" },
 
-                  React.createElement("span", { className: "text-[10px] text-pink-500 font-bold" }, "A2:"),
+                  React.createElement("span", { className: "text-[11px] text-pink-500 font-bold" }, "A2:"),
 
                   React.createElement("input", { type: "range", min: 10, max: 80, step: 1, value: d.amplitude2 || 30, 'aria-label': 'Second wave amplitude', onChange: e => upd('amplitude2', parseFloat(e.target.value)), className: "w-16 accent-pink-500" }),
 
-                  React.createElement("span", { className: "text-[10px] text-pink-700 font-bold" }, d.amplitude2 || 30)
+                  React.createElement("span", { className: "text-[11px] text-pink-700 font-bold" }, d.amplitude2 || 30)
 
                 ),
 
                 React.createElement("div", { className: "flex items-center gap-1" },
 
-                  React.createElement("span", { className: "text-[10px] text-pink-500 font-bold" }, "f2:"),
+                  React.createElement("span", { className: "text-[11px] text-pink-500 font-bold" }, "f2:"),
 
                   React.createElement("input", { type: "range", min: 0.5, max: 10, step: 0.5, value: d.frequency2 || 3, 'aria-label': 'Second wave frequency', onChange: e => upd('frequency2', parseFloat(e.target.value)), className: "w-16 accent-pink-500" }),
 
-                  React.createElement("span", { className: "text-[10px] text-pink-700 font-bold" }, d.frequency2 || 3)
+                  React.createElement("span", { className: "text-[11px] text-pink-700 font-bold" }, d.frequency2 || 3)
 
                 ),
 
                 React.createElement("div", { className: "flex items-center gap-1" },
 
-                  React.createElement("span", { className: "text-[10px] text-pink-500 font-bold" }, "\u03C6\u2082:"),
+                  React.createElement("span", { className: "text-[11px] text-pink-500 font-bold" }, "\u03C6\u2082:"),
 
                   React.createElement("input", { type: "range", min: 0, max: 6.28, step: 0.1, value: d.phase2 || 0, 'aria-label': 'Second wave phase', onChange: e => upd('phase2', parseFloat(e.target.value)), className: "w-16 accent-pink-500" }),
 
-                  React.createElement("span", { className: "text-[10px] text-pink-700 font-bold" }, ((d.phase2 || 0) / Math.PI).toFixed(1) + "\u03C0")
+                  React.createElement("span", { className: "text-[11px] text-pink-700 font-bold" }, ((d.phase2 || 0) / Math.PI).toFixed(1) + "\u03C0")
 
                 )
 
@@ -1605,11 +1605,11 @@ const d = labToolData.wave;
 
               d.damping && React.createElement("div", { className: "flex items-center gap-1" },
 
-                React.createElement("span", { className: "text-[10px] text-amber-500 font-bold" }, "\u03B1:"),
+                React.createElement("span", { className: "text-[11px] text-amber-500 font-bold" }, "\u03B1:"),
 
                 React.createElement("input", { type: "range", min: 0.1, max: 2.0, step: 0.1, value: d.dampingAlpha || 0.5, 'aria-label': 'Damping coefficient', onChange: e => upd('dampingAlpha', parseFloat(e.target.value)), className: "w-20 accent-amber-500" }),
 
-                React.createElement("span", { className: "text-[10px] text-amber-700 font-bold" }, (d.dampingAlpha || 0.5).toFixed(1))
+                React.createElement("span", { className: "text-[11px] text-amber-700 font-bold" }, (d.dampingAlpha || 0.5).toFixed(1))
 
               )
 
@@ -1655,7 +1655,7 @@ const d = labToolData.wave;
 
               ),
 
-              React.createElement("span", { className: "text-[10px] text-rose-500" }, "of sound speed (Mach number)")
+              React.createElement("span", { className: "text-[11px] text-rose-500" }, "of sound speed (Mach number)")
 
             ),
 
@@ -1663,7 +1663,7 @@ const d = labToolData.wave;
 
             React.createElement("div", { className: "bg-slate-800 rounded-lg p-3 mb-3 text-center" },
 
-              React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1" }, "\uD83D\uDCDD Wave Equation"),
+              React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1" }, "\uD83D\uDCDD Wave Equation"),
 
               
 
@@ -1671,7 +1671,7 @@ const d = labToolData.wave;
 
               React.createElement("div", { className: "mb-3 p-1.5 bg-slate-900/50 rounded-lg border border-slate-700/50 inline-block text-center" },
 
-                 React.createElement("p", { className: "text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-0.5" }, "General Formula"),
+                 React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-0.5" }, "General Formula"),
 
                  React.createElement("p", { className: "text-sm font-mono font-bold text-slate-300" }, 
 
@@ -1687,7 +1687,7 @@ const d = labToolData.wave;
 
               (d.matchTarget && d.matchTarget.isEquation) && React.createElement("div", { className: "mb-3 p-2 bg-purple-900/50 rounded-lg border border-purple-500/50 inline-block text-left" },
 
-                  React.createElement("p", { className: "text-[10px] font-bold text-purple-300 uppercase tracking-wider mb-1" }, "Target Equation:"),
+                  React.createElement("p", { className: "text-[11px] font-bold text-purple-300 uppercase tracking-wider mb-1" }, "Target Equation:"),
 
                   React.createElement("div", { className: "text-lg font-mono font-bold opacity-90" }, 
 
@@ -1697,7 +1697,7 @@ const d = labToolData.wave;
 
               ),
 
-              React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 mt-1 flex justify-center items-center h-4" }, 
+              React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1 mt-1 flex justify-center items-center h-4" }, 
 
                   (d.matchTarget && d.matchTarget.isEquation) ? "Your Equation:" : "Current Equation:",
 
@@ -1722,7 +1722,7 @@ const d = labToolData.wave;
 
               ),
 
-              React.createElement("p", { className: "text-[10px] text-slate-500 mt-2" }, 
+              React.createElement("p", { className: "text-[11px] text-slate-600 mt-2" }, 
 
                   waveMode === 'standing' 
 
@@ -1836,7 +1836,7 @@ const d = labToolData.wave;
 
                 onClick: function () { upd('matchTarget', null); upd('matchXpClaimed', false); },
 
-                className: "px-2 py-1 rounded-lg text-xs text-slate-500 hover:bg-slate-100"
+                className: "px-2 py-1 rounded-lg text-xs text-slate-600 hover:bg-slate-100"
 
               }, "\u2715 Clear"),
 
@@ -1880,7 +1880,67 @@ const d = labToolData.wave;
 
             ),
 
-            React.createElement("button", { "aria-label": "Snapshot", onClick: () => { setToolSnapshots(prev => [...prev, { id: 'wv-' + Date.now(), tool: 'wave', label: 'A=' + d.amplitude + ' f=' + d.frequency, data: Object.assign({}, d), timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+            React.createElement("button", { "aria-label": "Snapshot", onClick: () => { setToolSnapshots(prev => [...prev, { id: 'wv-' + Date.now(), tool: 'wave', label: 'A=' + d.amplitude + ' f=' + d.frequency, data: Object.assign({}, d), timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot"),
+
+            // ── AI Wave Tutor (reading-level aware) ──
+            (function () {
+              var aiLevel = d.aiLevel || 'grade5';
+              var aiText = d.aiExplain || '';
+              var aiLoading = !!d.aiLoading;
+              var aiError = d.aiError || '';
+              var LEVELS = [
+                { id: 'plain', label: 'Plain', hint: 'using simple everyday words and short sentences' },
+                { id: 'grade5', label: 'Grade 5', hint: 'for a 5th grade student, brief and friendly' },
+                { id: 'hs', label: 'High School', hint: 'for a high school physics student, with appropriate equations' }
+              ];
+              function explain() {
+                if (typeof callGemini !== 'function') { var labToolData = ctx.toolData; setLabToolData(function (prev) { return Object.assign({}, prev, { wave: Object.assign({}, prev.wave, { aiError: 'AI tutor not available.' }) }); }); return; }
+                setLabToolData(function (prev) { return Object.assign({}, prev, { wave: Object.assign({}, prev.wave, { aiLoading: true, aiError: '', aiExplain: '' }) }); });
+                var lv = LEVELS.find(function (L) { return L.id === aiLevel; }) || LEVELS[1];
+                var waveMode = d.waveMode || 'free';
+                var waveType = d.waveType || 'sine';
+                var prompt = 'Explain this wave setup ' + lv.hint + '. '
+                  + 'Wave mode: ' + waveMode + '. Wave type: ' + waveType + '. Frequency: ' + (d.frequency || 2) + ' Hz. Amplitude: ' + (d.amplitude || 50) + '. '
+                  + (d.showSecond ? 'A second wave is also showing for comparison. ' : '')
+                  + 'In 3 short sentences: (1) What the student is seeing on screen. (2) Which property changes the wave the most (and how). (3) One everyday example of this wave behavior. '
+                  + 'No markdown, no bullets, no headings. Plain prose.';
+                callGemini(prompt, false, false, 0.5).then(function (resp) {
+                  setLabToolData(function (prev) { return Object.assign({}, prev, { wave: Object.assign({}, prev.wave, { aiExplain: String(resp || '').trim(), aiLoading: false }) }); });
+                  if (typeof announceToSR === 'function') announceToSR('Explanation ready.');
+                }).catch(function () {
+                  setLabToolData(function (prev) { return Object.assign({}, prev, { wave: Object.assign({}, prev.wave, { aiLoading: false, aiError: 'Could not reach AI tutor. Try again in a moment.' }) }); });
+                });
+              }
+              function setAiLevel(id) {
+                setLabToolData(function (prev) { return Object.assign({}, prev, { wave: Object.assign({}, prev.wave, { aiLevel: id }) }); });
+              }
+              return React.createElement("div", { className: "mt-3 p-3 rounded-xl border-2 border-purple-200 bg-purple-50", role: "region", "aria-label": "AI wave tutor" },
+                React.createElement("div", { className: "flex items-center flex-wrap gap-2 mb-1.5" },
+                  React.createElement("span", { className: "text-sm font-bold text-purple-700" }, "\u2728 Explain at my level"),
+                  React.createElement("div", { className: "ml-auto flex gap-1", role: "group", "aria-label": "Reading level" },
+                    LEVELS.map(function (L) {
+                      var active = aiLevel === L.id;
+                      return React.createElement("button", {
+                        key: L.id,
+                        onClick: function () { setAiLevel(L.id); },
+                        "aria-label": "Reading level: " + L.label + (active ? " (selected)" : ""),
+                        "aria-pressed": active,
+                        className: "px-2 py-0.5 rounded text-[10px] font-bold " + (active ? 'bg-purple-600 text-white' : 'bg-white text-purple-700 border border-purple-200 hover:bg-purple-100')
+                      }, L.label);
+                    })
+                  ),
+                  React.createElement("button", {
+                    onClick: explain,
+                    disabled: aiLoading,
+                    "aria-label": "Generate AI explanation at " + ((LEVELS.find(function (L) { return L.id === aiLevel; }) || {}).label || 'Grade 5') + " level",
+                    className: "px-3 py-1 rounded-lg text-[11px] font-bold bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50"
+                  }, aiLoading ? '\u23F3 Thinking...' : (aiText ? '\uD83D\uDD04 Re-explain' : '\uD83E\uDDE0 Explain'))
+                ),
+                aiError && React.createElement("p", { className: "text-[11px] text-rose-600", role: "alert" }, aiError),
+                aiText && React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed bg-white rounded-lg p-2 border border-purple-100" }, aiText),
+                !aiText && !aiLoading && !aiError && React.createElement("p", { className: "text-[11px] italic text-slate-500" }, "Click \u201CExplain\u201D for the AI tutor to describe the current wave at your chosen reading level.")
+              );
+            })()
 
           )
       })();

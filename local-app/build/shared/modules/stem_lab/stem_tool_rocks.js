@@ -3,6 +3,17 @@
 // Extracted from stem_tool_science.js for modular loading
 // =================================================================
 (function () {
+  // Audio system
+  var _rockAC = null;
+  function getRockAC() { if (!_rockAC) { try { _rockAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_rockAC && _rockAC.state === 'suspended') { try { _rockAC.resume(); } catch(e) {} } return _rockAC; }
+  function rockTone(f,d,tp,v) { var ac = getRockAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||'sine'; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
+  function sfxRockCrack() { rockTone(300, 0.08, 'sawtooth', 0.06); if (window._alloHaptic) window._alloHaptic('break'); }
+  function sfxRockMelt() { rockTone(150, 0.2, 'sine', 0.05); setTimeout(function() { rockTone(120, 0.15, 'sine', 0.04); }, 100); }
+  function sfxRockCool() { rockTone(800, 0.06, 'sine', 0.04); setTimeout(function() { rockTone(600, 0.05, 'sine', 0.03); }, 40); }
+  function sfxRockClick() { rockTone(600, 0.03, 'sine', 0.04); }
+  function sfxRockCorrect() { rockTone(523, 0.08, 'sine', 0.07); setTimeout(function() { rockTone(659, 0.08, 'sine', 0.07); }, 70); setTimeout(function() { rockTone(784, 0.1, 'sine', 0.08); }, 140); }
+  if (!document.getElementById('rock-a11y')) { var _s = document.createElement('style'); _s.id = 'rock-a11y'; _s.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .text-slate-600 { color: #64748b !important; }'; document.head.appendChild(_s); }
+
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-rocks')) return;
@@ -841,6 +852,44 @@ const d = labToolData.rocks || {};
 
 
 
+            // ── Keyboard zone selector (WCAG 2.1.1) ──
+
+            canvasEl.setAttribute('tabindex', '0');
+
+            canvasEl.setAttribute('role', 'application');
+
+            canvasEl.setAttribute('aria-label', 'Rock cycle landscape. Press 1 for volcano igneous rocks, 2 for river delta sedimentary rocks, 3 for mountain core metamorphic rocks.');
+
+            function onRockKey(e) {
+
+              var zoneIdx = -1;
+
+              if (e.key === '1' || e.key === 'v' || e.key === 'V') zoneIdx = 0;
+
+              else if (e.key === '2' || e.key === 'r' || e.key === 'R') zoneIdx = 1;
+
+              else if (e.key === '3' || e.key === 'm' || e.key === 'M') zoneIdx = 2;
+
+              if (zoneIdx >= 0) {
+
+                e.preventDefault();
+
+                var z = zones[zoneIdx];
+
+                hoverZone = z.id;
+
+                var typeRocks = ROCKS.filter(function (r) { return r.type === z.type; });
+
+                if (typeRocks.length > 0) canvasEl._onSelectRock && canvasEl._onSelectRock(typeRocks[0].id, z.type);
+
+              }
+
+            }
+
+            canvasEl.addEventListener('keydown', onRockKey);
+
+
+
             const ro = new ResizeObserver(function () {
 
               var newW = canvasEl.offsetWidth * dpr;
@@ -868,6 +917,8 @@ const d = labToolData.rocks || {};
               canvasEl.removeEventListener('mousemove', onRockMove);
 
               canvasEl.removeEventListener('click', onRockClick);
+
+              canvasEl.removeEventListener('keydown', onRockKey);
 
               ro.disconnect();
 
@@ -1157,15 +1208,17 @@ const d = labToolData.rocks || {};
 
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
 
-              React.createElement("button", { onClick: function () { setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+              React.createElement("button", { onClick: function () { setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
 
               React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83E\uDEA8 Rocks & Minerals Explorer"),
 
               React.createElement("div", { className: "flex gap-1 ml-auto" },
 
-                ['landscape', 'rocks', 'minerals', 'quiz'].map(function (m) {
+                ['landscape', 'rocks', 'minerals', 'mystery', 'quiz'].map(function (m) {
 
-                  return React.createElement("button", { "aria-label": "Change mode",
+                  const modeLabel = m === 'landscape' ? 'Landscape' : m === 'rocks' ? 'Rocks' : m === 'minerals' ? 'Minerals' : m === 'mystery' ? 'Mystery Rock' : 'Quiz';
+
+                  return React.createElement("button", { "aria-label": "Switch to " + modeLabel + " mode",
 
                     key: m, onClick: function () {
 
@@ -1175,13 +1228,13 @@ const d = labToolData.rocks || {};
 
                       else { upd("quizMode", false); }
 
-                      if (typeof canvasNarrate === 'function') { canvasNarrate('rocks', 'mode_switch', { first: 'Switched to ' + (m === 'landscape' ? 'Landscape' : m === 'rocks' ? 'Rocks' : m === 'minerals' ? 'Minerals' : 'Quiz') + ' mode.', repeat: (m === 'landscape' ? 'Landscape' : m === 'rocks' ? 'Rocks' : m === 'minerals' ? 'Minerals' : 'Quiz') + ' mode.', terse: m + '.' }, { debounce: 500 }); }
+                      if (typeof canvasNarrate === 'function') { canvasNarrate('rocks', 'mode_switch', { first: 'Switched to ' + modeLabel + ' mode.', repeat: modeLabel + ' mode.', terse: m + '.' }, { debounce: 500 }); }
 
                     }, className: "px-3 py-1 rounded-lg text-xs font-bold capitalize " + (mode === m ? 'bg-amber-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
 
                   },
 
-                    m === 'landscape' ? '🗺️ Landscape' : m === 'rocks' ? '🪨 Rocks' : m === 'minerals' ? '💎 Minerals' : '🧠 Quiz');
+                    m === 'landscape' ? '🗺️ Landscape' : m === 'rocks' ? '🪨 Rocks' : m === 'minerals' ? '💎 Minerals' : m === 'mystery' ? '🔍 Mystery' : '🧠 Quiz');
 
                 })
 
@@ -1195,7 +1248,7 @@ const d = labToolData.rocks || {};
 
             mode === 'landscape' && React.createElement("div", null,
 
-              React.createElement("p", { className: "text-xs text-slate-500 mb-2 italic" }, "Click landscape zones to explore rock types. Hover to see labels."),
+              React.createElement("p", { className: "text-xs text-slate-600 mb-2 italic" }, "Click landscape zones to explore rock types. Hover to see labels. Keyboard: Tab to canvas, then 1=Volcano, 2=River, 3=Mountain."),
 
               React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-amber-200", style: { height: '520px' } },
 
@@ -1325,7 +1378,7 @@ const d = labToolData.rocks || {};
 
                     React.createElement("h4", { className: "font-bold text-base mb-1", style: { color: ROCK_TYPES[selRock.type].color } }, ROCK_TYPES[selRock.type].icon + " " + selRock.label),
 
-                    React.createElement("span", { className: "inline-block px-2 py-0.5 rounded-full text-[10px] font-bold mb-2", style: { background: ROCK_TYPES[selRock.type].color + '20', color: ROCK_TYPES[selRock.type].color } }, ROCK_TYPES[selRock.type].label + " Rock"),
+                    React.createElement("span", { className: "inline-block px-2 py-0.5 rounded-full text-[11px] font-bold mb-2", style: { background: ROCK_TYPES[selRock.type].color + '20', color: ROCK_TYPES[selRock.type].color } }, ROCK_TYPES[selRock.type].label + " Rock"),
 
                     React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, selRock.desc),
 
@@ -1349,7 +1402,7 @@ const d = labToolData.rocks || {};
 
                     return React.createElement("div", { key: prop.label, className: "bg-slate-50 rounded-lg p-2 text-center" },
 
-                      React.createElement("p", { className: "text-[10px] text-slate-500 font-bold" }, prop.icon + " " + prop.label),
+                      React.createElement("p", { className: "text-[11px] text-slate-600 font-bold" }, prop.icon + " " + prop.label),
 
                       React.createElement("p", { className: "text-xs font-bold text-slate-700 mt-0.5" }, prop.value));
 
@@ -1361,7 +1414,7 @@ const d = labToolData.rocks || {};
 
                 React.createElement("div", { className: "mt-3" },
 
-                  React.createElement("p", { className: "text-[10px] font-bold text-slate-500 mb-1" }, "Mohs Hardness Scale"),
+                  React.createElement("p", { className: "text-[11px] font-bold text-slate-600 mb-1" }, "Mohs Hardness Scale"),
 
                   React.createElement("div", { className: "flex gap-0.5 items-end" },
 
@@ -1385,7 +1438,7 @@ const d = labToolData.rocks || {};
 
                   ),
 
-                  React.createElement("div", { className: "flex justify-between text-[8px] text-slate-500 mt-0.5" },
+                  React.createElement("div", { className: "flex justify-between text-[11px] text-slate-600 mt-0.5" },
 
                     React.createElement("span", null, "1 (Talc)"),
 
@@ -1974,7 +2027,7 @@ const d = labToolData.rocks || {};
 
                 React.createElement("h4", { className: "font-bold text-base text-violet-700 mb-1" }, "\uD83D\uDC8E " + selMineral.label),
 
-                React.createElement("p", { className: "text-xs text-slate-500 font-mono mb-1" }, "Formula: " + selMineral.formula),
+                React.createElement("p", { className: "text-xs text-slate-600 font-mono mb-1" }, "Formula: " + selMineral.formula),
 
                 // Cross-section canvas
 
@@ -2006,7 +2059,7 @@ const d = labToolData.rocks || {};
 
                     return React.createElement("div", { key: prop.label, className: "rounded-lg p-2.5 text-center", style: { background: selMineral.color } },
 
-                      React.createElement("p", { className: "text-[10px] text-slate-500 font-bold" }, prop.icon + " " + prop.label),
+                      React.createElement("p", { className: "text-[11px] text-slate-600 font-bold" }, prop.icon + " " + prop.label),
 
                       React.createElement("p", { className: "text-sm font-bold text-slate-800 mt-0.5" }, prop.value));
 
@@ -2016,7 +2069,7 @@ const d = labToolData.rocks || {};
 
                 selMineral.uses && React.createElement("div", { className: "bg-blue-50 rounded-lg p-2.5" },
 
-                  React.createElement("p", { className: "text-[10px] font-bold text-blue-500 uppercase mb-0.5" }, "\uD83C\uDFD7\uFE0F Uses"),
+                  React.createElement("p", { className: "text-[11px] font-bold text-blue-500 uppercase mb-0.5" }, "\uD83C\uDFD7\uFE0F Uses"),
 
                   React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed" }, selMineral.uses)
 
@@ -2024,7 +2077,7 @@ const d = labToolData.rocks || {};
 
                 selMineral.funFact && React.createElement("div", { className: "bg-amber-50 rounded-lg p-2.5 border border-amber-200" },
 
-                  React.createElement("p", { className: "text-[10px] font-bold text-amber-600 uppercase mb-0.5" }, "\uD83D\uDCA1 Fun Fact"),
+                  React.createElement("p", { className: "text-[11px] font-bold text-amber-600 uppercase mb-0.5" }, "\uD83D\uDCA1 Fun Fact"),
 
                   React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed italic" }, selMineral.funFact)
 
@@ -2032,7 +2085,7 @@ const d = labToolData.rocks || {};
 
                 selMineral.occurrence && React.createElement("div", { className: "bg-emerald-50 rounded-lg p-2.5" },
 
-                  React.createElement("p", { className: "text-[10px] font-bold text-emerald-600 uppercase mb-0.5" }, "\uD83C\uDF0D Where Found"),
+                  React.createElement("p", { className: "text-[11px] font-bold text-emerald-600 uppercase mb-0.5" }, "\uD83C\uDF0D Where Found"),
 
                   React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed" }, selMineral.occurrence)
 
@@ -2042,7 +2095,7 @@ const d = labToolData.rocks || {};
 
                 React.createElement("div", { className: "mt-1" },
 
-                  React.createElement("p", { className: "text-[10px] font-bold text-slate-500 mb-1" }, "Mohs Position"),
+                  React.createElement("p", { className: "text-[11px] font-bold text-slate-600 mb-1" }, "Mohs Position"),
 
                   React.createElement("div", { className: "flex gap-0.5 items-end" },
 
@@ -2066,7 +2119,7 @@ const d = labToolData.rocks || {};
 
                   ),
 
-                  React.createElement("div", { className: "flex justify-between text-[8px] text-slate-500 mt-0.5" },
+                  React.createElement("div", { className: "flex justify-between text-[11px] text-slate-600 mt-0.5" },
 
                     React.createElement("span", null, "1 (Talc)"),
 
@@ -2082,9 +2135,325 @@ const d = labToolData.rocks || {};
 
 
 
+            // ── Mystery Rock mode (AI) ──
+
+            mode === 'mystery' && (function () {
+
+              const myst = d.mystery || {};
+
+              const mysteryRock = myst.rockId ? ROCKS.find(function (r) { return r.id === myst.rockId; }) : null;
+
+              const clues = Array.isArray(myst.clues) ? myst.clues : [];
+
+              const cluesShown = Math.min(Math.max(myst.cluesShown || 0, 0), clues.length);
+
+
+
+              function startMystery() {
+
+                if (typeof callGemini !== 'function') {
+
+                  upd("mystery", { error: 'AI tutor is not available. Check back when online.' });
+
+                  return;
+
+                }
+
+                const pick = ROCKS[Math.floor(Math.random() * ROCKS.length)];
+
+                const typeLabels = { igneous: 'igneous', sedimentary: 'sedimentary', metamorphic: 'metamorphic' };
+
+                upd("mystery", { rockId: pick.id, clues: [], cluesShown: 0, revealed: false, solved: false, loading: true, lastGuess: null, error: null });
+
+                const prompt = 'You are giving rock identification clues to a ' + (gradeLevel || '5th Grade') + ' student. The mystery rock is ' + pick.label + ' (' + typeLabels[pick.type] + '). '
+
+                  + 'Produce exactly 3 clues, ordered from subtle to obvious. Do NOT use the rock\'s name, color name, or any word from "' + pick.label + '" in the clues. '
+
+                  + 'Clue 1: vague category hint (formation or environment). '
+
+                  + 'Clue 2: a distinctive property (hardness, texture, or famous use). '
+
+                  + 'Clue 3: a defining giveaway. '
+
+                  + 'Return ONLY the three clues separated by "|||", nothing else. No numbering, no labels.';
+
+                callGemini(prompt, false, false, 0.6).then(function (resp) {
+
+                  const parts = String(resp || '').split('|||').map(function (s) { return s.replace(/^\s*[0-9]+\.?\s*/, '').trim(); }).filter(Boolean);
+
+                  const safeClues = parts.length >= 1 ? parts.slice(0, 3) : ['The AI returned no clues. Try again.'];
+
+                  upd("mystery", { rockId: pick.id, clues: safeClues, cluesShown: 1, revealed: false, solved: false, loading: false, lastGuess: null, error: null });
+
+                  if (typeof announceToSR === 'function') announceToSR('Mystery rock ready. First clue revealed.');
+
+                }).catch(function () {
+
+                  upd("mystery", { rockId: pick.id, clues: [], cluesShown: 0, revealed: false, solved: false, loading: false, lastGuess: null, error: 'Could not reach AI tutor. Try again in a moment.' });
+
+                });
+
+              }
+
+
+
+              function revealNextClue() {
+
+                if (cluesShown < clues.length) {
+
+                  upd("mystery", Object.assign({}, myst, { cluesShown: cluesShown + 1 }));
+
+                  sfxRockClick();
+
+                  if (typeof announceToSR === 'function') announceToSR('Clue ' + (cluesShown + 1) + ' of ' + clues.length + ': ' + clues[cluesShown]);
+
+                }
+
+              }
+
+
+
+              function guess(rockId) {
+
+                if (!mysteryRock || myst.solved || myst.revealed) return;
+
+                const correct = rockId === myst.rockId;
+
+                if (correct) {
+
+                  sfxRockCorrect();
+
+                  upd("mystery", Object.assign({}, myst, { solved: true, lastGuess: rockId }));
+
+                  if (typeof awardStemXP === 'function') awardStemXP(15, 'Mystery rock solved!');
+
+                  if (typeof stemCelebrate === 'function') stemCelebrate();
+
+                  if (typeof announceToSR === 'function') announceToSR('Correct! The mystery rock was ' + mysteryRock.label + '.');
+
+                } else {
+
+                  rockTone(200, 0.1, 'sawtooth', 0.05);
+
+                  upd("mystery", Object.assign({}, myst, { lastGuess: rockId, cluesShown: Math.min(cluesShown + 1, clues.length) }));
+
+                  if (typeof announceToSR === 'function') announceToSR('Not quite. Next clue revealed.');
+
+                }
+
+              }
+
+
+
+              function giveUp() {
+
+                if (!mysteryRock) return;
+
+                upd("mystery", Object.assign({}, myst, { revealed: true, cluesShown: clues.length }));
+
+                if (typeof announceToSR === 'function') announceToSR('Answer revealed: ' + mysteryRock.label + '.');
+
+              }
+
+
+
+              return React.createElement("div", { className: "mt-2", role: "region", "aria-label": "Mystery Rock challenge" },
+
+                React.createElement("div", { className: "bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl border-2 border-amber-300 p-4 mb-3" },
+
+                  React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+
+                    React.createElement("span", { className: "text-2xl" }, "🔍"),
+
+                    React.createElement("h4", { className: "font-bold text-sm text-amber-900" }, "Mystery Rock Challenge"),
+
+                    React.createElement("span", { className: "ml-auto text-[11px] text-amber-700 font-bold" }, "Reading level: " + (gradeLevel || '5th Grade'))
+
+                  ),
+
+                  React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed" },
+
+                    "The AI tutor picks a rock and gives you 3 clues. Read each clue, then click a rock from the grid below to guess. Wrong guesses reveal the next clue. Earn 15 XP for a correct ID.")
+
+                ),
+
+                !myst.rockId && !myst.loading && React.createElement("div", { className: "flex flex-col items-center gap-2 p-6 bg-white rounded-xl border-2 border-dashed border-amber-300" },
+
+                  React.createElement("p", { className: "text-xs text-slate-600" }, "Ready to test your rock knowledge?"),
+
+                  React.createElement("button", {
+
+                    onClick: startMystery,
+
+                    "aria-label": "Start Mystery Rock challenge",
+
+                    className: "px-5 py-2 bg-gradient-to-r from-amber-600 to-orange-600 text-white font-bold text-sm rounded-full shadow-md hover:shadow-lg hover:from-amber-700 hover:to-orange-700"
+
+                  }, "🎲 Start Challenge"),
+
+                  myst.error && React.createElement("p", { className: "text-[11px] text-red-600 mt-1", role: "alert" }, myst.error)
+
+                ),
+
+                myst.loading && React.createElement("div", { className: "p-4 bg-white rounded-xl border border-amber-200 text-center text-xs text-slate-600", role: "status", "aria-live": "polite" },
+
+                  "🧠 AI tutor is thinking up clues..."),
+
+                myst.rockId && !myst.loading && React.createElement("div", null,
+
+                  React.createElement("div", { className: "bg-white rounded-xl border-2 border-amber-200 p-3 mb-3" },
+
+                    React.createElement("p", { className: "text-[11px] font-bold text-amber-700 mb-2" }, "Clues (" + cluesShown + "/" + clues.length + ")"),
+
+                    clues.slice(0, cluesShown).map(function (c, i) {
+
+                      return React.createElement("div", { key: i, className: "flex gap-2 mb-1.5 text-xs text-slate-700 leading-relaxed" },
+
+                        React.createElement("span", { className: "font-bold text-amber-700 shrink-0" }, "Clue " + (i + 1) + ":"),
+
+                        React.createElement("span", null, c));
+
+                    }),
+
+                    cluesShown < clues.length && !myst.solved && !myst.revealed && React.createElement("button", {
+
+                      onClick: revealNextClue,
+
+                      "aria-label": "Reveal next clue",
+
+                      className: "mt-1 px-3 py-1 text-[11px] font-bold bg-amber-100 text-amber-800 rounded-lg hover:bg-amber-200"
+
+                    }, "+ Reveal next clue")
+
+                  ),
+
+                  (myst.solved || myst.revealed) && mysteryRock && React.createElement("div", {
+
+                    className: "p-3 rounded-xl border-2 mb-3 " + (myst.solved ? "bg-green-50 border-green-300" : "bg-slate-50 border-slate-300"),
+
+                    role: "alert"
+
+                  },
+
+                    React.createElement("p", { className: "text-sm font-bold " + (myst.solved ? "text-green-800" : "text-slate-800") },
+
+                      (myst.solved ? "✅ Correct! It was " : "📖 The answer was ") + ROCK_TYPES[mysteryRock.type].icon + " " + mysteryRock.label),
+
+                    React.createElement("p", { className: "text-[11px] text-slate-600 mt-1 leading-relaxed" }, mysteryRock.desc),
+
+                    React.createElement("button", {
+
+                      onClick: startMystery,
+
+                      "aria-label": "Start a new Mystery Rock challenge",
+
+                      className: "mt-2 px-3 py-1 text-[11px] font-bold bg-amber-700 text-white rounded-lg hover:bg-amber-800"
+
+                    }, "🎲 New Mystery")
+
+                  ),
+
+                  !myst.solved && !myst.revealed && React.createElement("div", null,
+
+                    React.createElement("p", { className: "text-[11px] font-bold text-slate-600 mb-1.5" }, "Click the rock you think matches the clues:"),
+
+                    React.createElement("div", { className: "grid grid-cols-4 gap-2 mb-2", role: "group", "aria-label": "Rock guess options" },
+
+                      ROCKS.map(function (rock) {
+
+                        const rt = ROCK_TYPES[rock.type];
+
+                        const wasWrong = myst.lastGuess === rock.id && myst.lastGuess !== myst.rockId;
+
+                        return React.createElement("button", {
+
+                          key: rock.id,
+
+                          onClick: function () { guess(rock.id); },
+
+                          "aria-label": "Guess " + rock.label,
+
+                          className: "p-2 rounded-lg text-[11px] font-bold border-2 transition-all hover:scale-105 text-center " +
+
+                            (wasWrong ? "bg-red-50 border-red-300 text-red-700" : "bg-slate-50 border-slate-200 text-slate-700 hover:border-amber-400")
+
+                        },
+
+                          React.createElement("div", { className: "text-lg mb-0.5" }, rt.icon),
+
+                          rock.label);
+
+                      })
+
+                    ),
+
+                    React.createElement("button", {
+
+                      onClick: giveUp,
+
+                      "aria-label": "Give up and reveal the answer",
+
+                      className: "px-3 py-1 text-[11px] font-bold text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200"
+
+                    }, "🤷 Give up · show answer")
+
+                  )
+
+                )
+
+              );
+
+            })(),
+
+
+
             // ── Quiz mode ──
 
-            d.quizMode && quizQ && React.createElement("div", { className: "mt-3 bg-amber-50 rounded-xl border-2 border-amber-200 p-4 animate-in fade-in" },
+            d.quizMode && quizQ && React.createElement("div", {
+
+              className: "mt-3 bg-amber-50 rounded-xl border-2 border-amber-200 p-4 animate-in fade-in outline-none focus:ring-2 focus:ring-amber-400",
+
+              role: "region", "aria-label": "Rock identification quiz. Press 1 through 4 to answer, or N for next.",
+
+              tabIndex: 0,
+
+              ref: function (el) { if (el && !el._rkQuizFocused) { el._rkQuizFocused = true; try { el.focus({ preventScroll: true }); } catch (e) { el.focus(); } } },
+
+              onKeyDown: function (e) {
+
+                const k = e.key;
+
+                if (k >= '1' && k <= '9') {
+
+                  const idx = parseInt(k, 10) - 1;
+
+                  if (!d.quizFeedback && quizQ.options[idx] !== undefined) {
+
+                    e.preventDefault();
+
+                    const opt = quizQ.options[idx];
+
+                    const correct = opt === quizQ.a;
+
+                    upd("quizFeedback", { correct: correct, msg: correct ? "\u2705 Correct! +10 XP" : "\u274C Not quite. The answer is: " + quizQ.a });
+
+                    if (correct) upd("quizScore", (d.quizScore || 0) + 1);
+
+                  }
+
+                } else if ((k === 'n' || k === 'N' || k === 'Enter') && d.quizFeedback) {
+
+                  e.preventDefault();
+
+                  const nextIdx = ((d.quizIdx || 0) + 1) % QUIZ_BANK.length;
+
+                  upd("quizIdx", nextIdx); upd("quizFeedback", null);
+
+                }
+
+              }
+
+            },
 
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
 
@@ -2098,11 +2467,15 @@ const d = labToolData.rocks || {};
 
               React.createElement("div", { className: "grid grid-cols-2 gap-2" },
 
-                quizQ.options.map(function (opt) {
+                quizQ.options.map(function (opt, i) {
 
-                  return React.createElement("button", { "aria-label": "Select answer: " + opt,
+                  const shortcut = (i + 1).toString();
+
+                  return React.createElement("button", { "aria-label": "Answer " + shortcut + ": " + opt,
 
                     key: opt, onClick: function () {
+
+                      if (d.quizFeedback) return;
 
                       const correct = opt === quizQ.a;
 
@@ -2110,11 +2483,15 @@ const d = labToolData.rocks || {};
 
                       if (correct) upd("quizScore", (d.quizScore || 0) + 1);
 
-                    }, className: "px-3 py-2 text-xs font-bold rounded-lg border-2 transition-all hover:scale-[1.02] " +
+                    }, className: "px-3 py-2 text-xs font-bold rounded-lg border-2 transition-all hover:scale-[1.02] flex items-center gap-2 " +
 
                       (d.quizFeedback ? (opt === quizQ.a ? "border-green-400 bg-green-50 text-green-700" : "border-slate-200 bg-white text-slate-600") : "border-amber-200 bg-white text-slate-700 hover:border-amber-400")
 
-                  }, opt);
+                  },
+
+                    React.createElement("span", { className: "inline-flex items-center justify-center w-5 h-5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 shrink-0", "aria-hidden": "true" }, shortcut),
+
+                    React.createElement("span", null, opt));
 
                 })
 
@@ -2124,7 +2501,7 @@ const d = labToolData.rocks || {};
 
                 d.quizFeedback.msg,
 
-                React.createElement("button", { "aria-label": "Next",
+                React.createElement("button", { "aria-label": "Next question (shortcut: N)",
 
                   onClick: function () {
 
@@ -2134,7 +2511,7 @@ const d = labToolData.rocks || {};
 
                   }, className: "ml-3 px-2 py-0.5 bg-amber-700 text-white rounded text-xs"
 
-                }, "Next \u2192")
+                }, "Next \u2192 (N)")
 
               )
 
@@ -3040,15 +3417,15 @@ const d = labToolData.rockCycle;
 
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
 
-              React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+              React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
 
               React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83E\uDEA8 Rock Cycle"),
 
-              React.createElement("span", { className: "px-2 py-0.5 bg-orange-100 text-orange-700 text-[10px] font-bold rounded-full" }, "ANIMATED")
+              React.createElement("span", { className: "px-2 py-0.5 bg-orange-100 text-orange-700 text-[11px] font-bold rounded-full" }, "ANIMATED")
 
             ),
 
-            React.createElement("p", { className: "text-xs text-slate-500 mb-2" }, "Click a rock type on the diagram to explore. Watch particles flow through the cycle!"),
+            React.createElement("p", { className: "text-xs text-slate-600 mb-2" }, "Click a rock type on the diagram to explore. Watch particles flow through the cycle!"),
 
             React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-amber-400 shadow-lg mb-3", style: { height: "420px" } },
 
@@ -3084,7 +3461,7 @@ const d = labToolData.rockCycle;
 
                   React.createElement("h4", { className: "text-lg font-black", style: { color: sel.color } }, sel.label + " Rocks"),
 
-                  React.createElement("p", { className: "text-[10px] text-slate-500" }, sel.examples)
+                  React.createElement("p", { className: "text-[11px] text-slate-600" }, sel.examples)
 
                 )
 
@@ -3096,7 +3473,7 @@ const d = labToolData.rockCycle;
 
                 React.createElement("div", { className: "bg-white rounded-lg p-2 text-center border" },
 
-                  React.createElement("p", { className: "text-[11px] font-bold text-slate-500 uppercase" }, "Hardness"),
+                  React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase" }, "Hardness"),
 
                   React.createElement("p", { className: "text-xs font-bold", style: { color: sel.color } }, sel.hardness)
 
@@ -3104,7 +3481,7 @@ const d = labToolData.rockCycle;
 
                 React.createElement("div", { className: "bg-white rounded-lg p-2 text-center border" },
 
-                  React.createElement("p", { className: "text-[11px] font-bold text-slate-500 uppercase" }, "Crystals"),
+                  React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase" }, "Crystals"),
 
                   React.createElement("p", { className: "text-xs font-bold", style: { color: sel.color } }, sel.crystals)
 
@@ -3112,7 +3489,7 @@ const d = labToolData.rockCycle;
 
                 React.createElement("div", { className: "bg-white rounded-lg p-2 text-center border" },
 
-                  React.createElement("p", { className: "text-[11px] font-bold text-slate-500 uppercase" }, "Real Uses"),
+                  React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase" }, "Real Uses"),
 
                   React.createElement("p", { className: "text-xs font-bold", style: { color: sel.color } }, sel.uses)
 
@@ -3130,7 +3507,7 @@ const d = labToolData.rockCycle;
 
             React.createElement("div", { className: "mb-3" },
 
-              React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2" }, "\u2194\uFE0F Transformation Processes"),
+              React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2" }, "\u2194\uFE0F Transformation Processes"),
 
               React.createElement("div", { className: "grid grid-cols-3 gap-2" },
 
@@ -3148,7 +3525,7 @@ const d = labToolData.rockCycle;
 
                     React.createElement("p", { className: "text-sm font-bold " + (isActive ? 'text-orange-700' : 'text-slate-600') }, proc.emoji + " " + proc.label),
 
-                    React.createElement("p", { className: "text-[10px] text-slate-500" }, ROCKS.find(function (r) { return r.id === proc.from; }).label + " \u2192 " + ROCKS.find(function (r) { return r.id === proc.to; }).label)
+                    React.createElement("p", { className: "text-[11px] text-slate-600" }, ROCKS.find(function (r) { return r.id === proc.from; }).label + " \u2192 " + ROCKS.find(function (r) { return r.id === proc.to; }).label)
 
                   );
 

@@ -15,6 +15,53 @@
     document.body.appendChild(liveRegion);
   })();
 
+  // ── Water Cycle Audio System ──
+  var _wcAC = null;
+  function getWCAC() { if (!_wcAC) { try { _wcAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_wcAC && _wcAC.state === 'suspended') { try { _wcAC.resume(); } catch(e) {} } return _wcAC; }
+  function wcTone(f, d2, t, v) { var ac = getWCAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = t||'sine'; o.frequency.value = f; g.gain.setValueAtTime(v||0.06, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d2||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d2||0.1)); } catch(e) {} }
+  function wcNoise(dur, vol, hz, type) { var ac = getWCAC(); if (!ac) return; try { var bs = Math.floor(ac.sampleRate*(dur||0.1)); var b = ac.createBuffer(1,bs,ac.sampleRate); var dd = b.getChannelData(0); for(var i=0;i<bs;i++) dd[i]=(Math.random()*2-1)*(1-i/bs); var s = ac.createBufferSource(); s.buffer=b; var f = ac.createBiquadFilter(); f.type=type||'lowpass'; f.frequency.value=hz||600; var g = ac.createGain(); g.gain.setValueAtTime(vol||0.04,ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+(dur||0.1)); s.connect(f); f.connect(g); g.connect(ac.destination); s.start(); } catch(e) {} }
+  function sfxRain() { for (var i = 0; i < 5; i++) { (function(d3) { setTimeout(function() { wcNoise(0.03, 0.02 + Math.random() * 0.02, 1500 + Math.random() * 1000, 'bandpass'); }, d3); })(i * 25 + Math.random() * 15); } }
+  function sfxEvaporate() { wcTone(400, 0.1, 'sine', 0.05); setTimeout(function() { wcTone(600, 0.08, 'sine', 0.05); }, 60); setTimeout(function() { wcTone(800, 0.12, 'sine', 0.06); }, 120); }
+  function sfxCondense() { wcTone(600, 0.08, 'sine', 0.05); setTimeout(function() { wcTone(400, 0.1, 'sine', 0.05); }, 60); }
+  function sfxCollect() { wcNoise(0.15, 0.05, 300, 'lowpass'); wcTone(200, 0.1, 'sine', 0.04); }
+  function sfxStream() { wcNoise(0.2, 0.04, 400, 'bandpass'); }
+  function sfxFreeze() { wcTone(1200, 0.04, 'sine', 0.04); setTimeout(function() { wcTone(1400, 0.03, 'sine', 0.03); }, 30); setTimeout(function() { wcTone(1600, 0.03, 'sine', 0.03); }, 60); }
+  function sfxWcCorrect() { wcTone(523, 0.08, 'sine', 0.07); setTimeout(function() { wcTone(659, 0.08, 'sine', 0.07); }, 70); setTimeout(function() { wcTone(784, 0.1, 'sine', 0.08); }, 140); }
+  function sfxWcClick() { wcTone(600, 0.03, 'sine', 0.04); }
+
+  // Ambient water background
+  var _wcAmb = null;
+  function startWcAmbient() {
+    if (_wcAmb) return;
+    var ac = getWCAC(); if (!ac) return;
+    try {
+      var bs = ac.sampleRate * 2; var b = ac.createBuffer(1,bs,ac.sampleRate); var dd = b.getChannelData(0);
+      for(var i=0;i<bs;i++) dd[i]=(Math.random()*2-1);
+      var s = ac.createBufferSource(); s.buffer=b; s.loop=true;
+      var f = ac.createBiquadFilter(); f.type='lowpass'; f.frequency.value=250;
+      var lfo = ac.createOscillator(); lfo.type='sine'; lfo.frequency.value=0.12;
+      var lg = ac.createGain(); lg.gain.value=40; lfo.connect(lg); lg.connect(f.frequency);
+      var m = ac.createGain(); m.gain.setValueAtTime(0,ac.currentTime); m.gain.linearRampToValueAtTime(0.008,ac.currentTime+2);
+      s.connect(f); f.connect(m); m.connect(ac.destination); s.start(); lfo.start();
+      _wcAmb = { src:s, lfo:lfo, master:m };
+      _wcAmb._int = setInterval(function() {
+        if (Math.random() > 0.5) sfxRain();
+        if (Math.random() > 0.8) wcTone(200 + Math.random() * 100, 0.3, 'sine', 0.01); // distant thunder
+      }, 3000 + Math.random() * 4000);
+    } catch(e) {}
+  }
+  function stopWcAmbient() {
+    if (_wcAmb) {
+      try { var ac = getWCAC(); if (ac) _wcAmb.master.gain.linearRampToValueAtTime(0, ac.currentTime + 0.5); } catch(e) {}
+      if (_wcAmb._int) clearInterval(_wcAmb._int);
+      var n = _wcAmb; setTimeout(function() { try { n.src.stop(); n.lfo.stop(); } catch(e) {} }, 600);
+      _wcAmb = null;
+    }
+  }
+
+  // WCAG a11y CSS
+  if (!document.getElementById('wc-a11y-css')) { var _s = document.createElement('style'); _s.id = 'wc-a11y-css'; _s.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .text-slate-600 { color: #64748b !important; }'; document.head.appendChild(_s); }
+
   if(!window.StemLab||!window.StemLab.registerTool) return;
   window.StemLab.registerTool('waterCycle',{
     icon:'\uD83C\uDF0A', label:'waterCycle', desc:'Interactive Water Cycle with Journey Mode',
@@ -1500,6 +1547,14 @@ const d = labToolData.waterCycle;
             };
             // Bridge canvas clicks to React state (called from click handler)
             canvasEl._wcSyncReact = function(nextState, pathKey) {
+              // Play state-specific water cycle sound
+              if (nextState && nextState.indexOf('evap') >= 0) sfxEvaporate();
+              else if (nextState && nextState.indexOf('cloud') >= 0) sfxCondense();
+              else if (nextState && (nextState.indexOf('rain') >= 0 || nextState.indexOf('precip') >= 0 || nextState.indexOf('snow') >= 0)) sfxRain();
+              else if (nextState && (nextState.indexOf('river') >= 0 || nextState.indexOf('runoff') >= 0 || nextState.indexOf('stream') >= 0)) sfxStream();
+              else if (nextState && (nextState.indexOf('collect') >= 0 || nextState.indexOf('ocean') >= 0 || nextState.indexOf('lake') >= 0)) sfxCollect();
+              else if (nextState && (nextState.indexOf('freez') >= 0 || nextState.indexOf('ice') >= 0 || nextState.indexOf('glacier') >= 0)) sfxFreeze();
+              else sfxWcClick();
               upd('journeyState', nextState);
               if (pathKey) {
                 var paths = Object.assign({}, d.journeyPaths || { runoff: 0, infiltrate: 0, plant: 0 });
@@ -1518,21 +1573,68 @@ const d = labToolData.waterCycle;
 
 
 
-          return React.createElement("div", { className: "max-w-3xl mx-auto animate-in fade-in duration-200" },
+          // ── Keyboard shortcuts (WCAG 2.1.1): 1-6 = stage, J = toggle Journey, R/U/P = journey ground choice ──
+          function onWcKey(e) {
+            var tgt = e.target || {};
+            var tn = (tgt.tagName || '').toUpperCase();
+            if (tn === 'INPUT' || tn === 'TEXTAREA' || tn === 'SELECT' || tgt.isContentEditable) return;
+            var k = e.key;
+            if (k >= '1' && k <= '9') {
+              var idx = parseInt(k, 10) - 1;
+              if (STAGES[idx]) {
+                e.preventDefault();
+                var st = STAGES[idx];
+                upd('activeStage', st.id);
+                if (typeof announceToSR === 'function') announceToSR('Stage ' + (idx + 1) + ': ' + st.label + '.');
+              }
+            } else if (k === 'j' || k === 'J') {
+              e.preventDefault();
+              if (d.journeyActive) {
+                upd('journeyActive', false); upd('journeyState', 'idle');
+                var cvOff = document.getElementById('wcCanvas'); if (cvOff) cvOff.dataset.journeyState = 'idle';
+                if (typeof announceToSR === 'function') announceToSR('Journey ended.');
+              } else {
+                upd('journeyActive', true); upd('journeyState', 'ocean');
+                upd('journeyLoops', d.journeyLoops || 0);
+                upd('journeyPaths', d.journeyPaths || { runoff: 0, infiltrate: 0, plant: 0 });
+                var cvOn = document.getElementById('wcCanvas'); if (cvOn) cvOn.dataset.journeyState = 'ocean';
+                if (typeof announceToSR === 'function') announceToSR('Journey started. You are now a water droplet in the ocean.');
+              }
+            } else if (d.journeyActive && d.journeyState === 'ground_choice' && (k === 'r' || k === 'R' || k === 'u' || k === 'U' || k === 'p' || k === 'P')) {
+              e.preventDefault();
+              var choice = (k === 'r' || k === 'R') ? 'runoff' : (k === 'u' || k === 'U') ? 'infiltrate' : 'plant';
+              var stateMap = { runoff: 'river_runoff', infiltrate: 'infiltrating', plant: 'plant_absorb' };
+              var nextState = stateMap[choice];
+              upd('journeyState', nextState);
+              var newPaths = Object.assign({}, d.journeyPaths || {}, {}); newPaths[choice] = (newPaths[choice] || 0) + 1;
+              upd('journeyPaths', newPaths);
+              var cv2 = document.getElementById('wcCanvas');
+              if (cv2) { cv2.dataset.journeyState = nextState; if (cv2._onJourneyTransition) cv2._onJourneyTransition(nextState); }
+              if (typeof announceToSR === 'function') announceToSR('Path chosen: ' + choice + '.');
+            }
+          }
+
+          return React.createElement("div", {
+              className: "max-w-3xl mx-auto animate-in fade-in duration-200 outline-none",
+              role: "region",
+              "aria-label": "Water Cycle. Keyboard shortcuts: 1 through 6 select a stage, J toggles Journey mode, R U P choose your journey path.",
+              tabIndex: 0,
+              onKeyDown: onWcKey
+            },
 
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
 
-              React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+              React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
 
               React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDF0A Water Cycle"),
 
-              React.createElement("span", { className: "px-2 py-0.5 bg-sky-100 text-sky-700 text-[10px] font-bold rounded-full" }, "ANIMATED")
+              React.createElement("span", { className: "px-2 py-0.5 bg-sky-100 text-sky-700 text-[11px] font-bold rounded-full" }, "ANIMATED")
 
             ),
 
             // ═══ GRADE LEVEL SELECTOR ═══
             React.createElement("div", { className: "flex items-center gap-1.5 mb-3 flex-wrap" },
-              React.createElement("span", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider mr-1" }, "\uD83C\uDF93 Grade:"),
+              React.createElement("span", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mr-1" }, "\uD83C\uDF93 Grade:"),
               GRADE_BANDS.map(function(gb) {
                 return React.createElement("button", { "aria-label": "Change wc grade override",
                   key: gb,
@@ -1540,7 +1642,7 @@ const d = labToolData.waterCycle;
                     upd('wcGradeOverride', gb);
                     addToast('\uD83C\uDF93 Grade set to ' + gb + ' — content complexity updated!', 'success');
                   },
-                  className: "px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all " + (gradeBand === gb ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-100 text-slate-500 hover:bg-indigo-50 border border-slate-200')
+                  className: "px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all " + (gradeBand === gb ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-indigo-50 border border-slate-200')
                 }, gb);
               }),
               React.createElement("span", { className: "ml-auto px-2 py-0.5 bg-indigo-50 text-indigo-600 text-[11px] font-bold rounded-full border border-indigo-200" },
@@ -1569,7 +1671,7 @@ const d = labToolData.waterCycle;
               React.createElement("div", { className: "grid grid-cols-3 gap-3" },
                 // Solar Intensity
                 React.createElement("div", { className: "space-y-1" },
-                  React.createElement("label", { className: "text-[10px] font-bold text-amber-700 flex items-center gap-1" }, "\u2600\uFE0F Solar: " + ((d.climSolar != null ? d.climSolar : 1.0) * 100).toFixed(0) + "%"),
+                  React.createElement("label", { className: "text-[11px] font-bold text-amber-700 flex items-center gap-1" }, "\u2600\uFE0F Solar: " + ((d.climSolar != null ? d.climSolar : 1.0) * 100).toFixed(0) + "%"),
                   React.createElement("input", {
                     type: "range", min: "0", max: "2", step: "0.05",
                     value: d.climSolar != null ? d.climSolar : 1.0,
@@ -1577,14 +1679,14 @@ const d = labToolData.waterCycle;
                     className: "w-full h-1.5 rounded-full appearance-none bg-gradient-to-r from-indigo-300 via-amber-300 to-amber-500 cursor-pointer",
                     style: { accentColor: '#f59e0b' }
                   }),
-                  React.createElement("div", { className: "flex justify-between text-[8px] text-amber-500" },
+                  React.createElement("div", { className: "flex justify-between text-[11px] text-amber-500" },
                     React.createElement("span", null, "\uD83C\uDF19 Night"),
                     React.createElement("span", null, "\u2600\uFE0F Bright")
                   )
                 ),
                 // Temperature
                 React.createElement("div", { className: "space-y-1" },
-                  React.createElement("label", { className: "text-[10px] font-bold text-sky-700 flex items-center gap-1" }, "\uD83C\uDF21\uFE0F Temp: " + (d.climTemp != null ? d.climTemp : 15) + "\u00B0C"),
+                  React.createElement("label", { className: "text-[11px] font-bold text-sky-700 flex items-center gap-1" }, "\uD83C\uDF21\uFE0F Temp: " + (d.climTemp != null ? d.climTemp : 15) + "\u00B0C"),
                   React.createElement("input", {
                     type: "range", min: "-20", max: "45", step: "1",
                     value: d.climTemp != null ? d.climTemp : 15,
@@ -1592,14 +1694,14 @@ const d = labToolData.waterCycle;
                     className: "w-full h-1.5 rounded-full appearance-none bg-gradient-to-r from-blue-400 via-emerald-300 to-red-400 cursor-pointer",
                     style: { accentColor: '#0ea5e9' }
                   }),
-                  React.createElement("div", { className: "flex justify-between text-[8px] text-sky-500" },
+                  React.createElement("div", { className: "flex justify-between text-[11px] text-sky-500" },
                     React.createElement("span", null, "\u2744\uFE0F -20\u00B0"),
                     React.createElement("span", null, "\uD83D\uDD25 45\u00B0")
                   )
                 ),
                 // Wind Speed
                 React.createElement("div", { className: "space-y-1" },
-                  React.createElement("label", { className: "text-[10px] font-bold text-emerald-700 flex items-center gap-1" }, "\uD83C\uDF2C\uFE0F Wind: " + ((d.climWind != null ? d.climWind : 1.0)).toFixed(1) + "x"),
+                  React.createElement("label", { className: "text-[11px] font-bold text-emerald-700 flex items-center gap-1" }, "\uD83C\uDF2C\uFE0F Wind: " + ((d.climWind != null ? d.climWind : 1.0)).toFixed(1) + "x"),
                   React.createElement("input", {
                     type: "range", min: "0", max: "3", step: "0.1",
                     value: d.climWind != null ? d.climWind : 1.0,
@@ -1607,7 +1709,7 @@ const d = labToolData.waterCycle;
                     className: "w-full h-1.5 rounded-full appearance-none bg-gradient-to-r from-slate-200 to-emerald-400 cursor-pointer",
                     style: { accentColor: '#22c55e' }
                   }),
-                  React.createElement("div", { className: "flex justify-between text-[8px] text-emerald-500" },
+                  React.createElement("div", { className: "flex justify-between text-[11px] text-emerald-500" },
                     React.createElement("span", null, "Calm"),
                     React.createElement("span", null, "\uD83C\uDF2A Gale")
                   )
@@ -1626,19 +1728,27 @@ const d = labToolData.waterCycle;
               )
             ),
 
-            React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-3" },
+            React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-3", role: "group", "aria-label": "Water cycle stages" },
 
-              STAGES.map(function (stage) {
+              STAGES.map(function (stage, stageIdx) {
 
-                return React.createElement("button", { "aria-label": "Change active stage",
+                var isActive = (d.activeStage || 'evaporation') === stage.id;
 
-                  key: stage.id, onClick: function () { upd('activeStage', stage.id); if (typeof canvasNarrate === 'function') { canvasNarrate('waterCycle', 'stage_select', { first: 'Selected ' + stage.label + ' stage. ' + (typeof selDesc === 'string' ? selDesc.substring(0, 80) : ''), repeat: stage.label + ' stage.', terse: stage.label + '.' }, { debounce: 500 }); } },
+                var shortcut = (stageIdx + 1).toString();
 
-                  className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " + ((d.activeStage || 'evaporation') === stage.id ? 'text-white shadow-md' : 'border hover:opacity-80'),
+                return React.createElement("button", { "aria-label": "Stage " + shortcut + ": " + stage.label + (isActive ? " (selected)" : ""), "aria-pressed": isActive,
 
-                  style: { backgroundColor: (d.activeStage || 'evaporation') === stage.id ? stage.color : stage.color + '15', borderColor: stage.color, color: (d.activeStage || 'evaporation') === stage.id ? 'white' : stage.color }
+                  key: stage.id, onClick: function () { upd('activeStage', stage.id); if (typeof announceToSR === 'function') announceToSR(stage.label + ' stage selected.'); if (typeof canvasNarrate === 'function') { canvasNarrate('waterCycle', 'stage_select', { first: 'Selected ' + stage.label + ' stage. ' + (typeof selDesc === 'string' ? selDesc.substring(0, 80) : ''), repeat: stage.label + ' stage.', terse: stage.label + '.' }, { debounce: 500 }); } },
 
-                }, stage.emoji + " " + stage.label);
+                  className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all inline-flex items-center gap-1.5 " + (isActive ? 'text-white shadow-md' : 'border hover:opacity-80'),
+
+                  style: { backgroundColor: isActive ? stage.color : stage.color + '15', borderColor: stage.color, color: isActive ? 'white' : stage.color }
+
+                },
+
+                  React.createElement("span", { className: "inline-flex items-center justify-center w-4 h-4 rounded text-[9px] font-bold " + (isActive ? "bg-white/25 text-white" : "bg-white/60"), "aria-hidden": "true" }, shortcut),
+
+                  React.createElement("span", null, stage.emoji + " " + stage.label));
 
               })
 
@@ -1655,7 +1765,7 @@ const d = labToolData.waterCycle;
                   React.createElement("span", { className: "px-2 py-0.5 bg-cyan-200 text-cyan-800 text-[11px] font-bold rounded-full" }, "PLAY AS WATER")
                 ),
                 !d.journeyActive
-                  ? React.createElement("button", { "aria-label": "Start Journey",
+                  ? React.createElement("button", { "aria-label": "Start Journey mode (shortcut: J)",
                       onClick: function() {
                         upd('journeyActive', true);
                         upd('journeyState', 'ocean');
@@ -1663,20 +1773,22 @@ const d = labToolData.waterCycle;
                         upd('journeyPaths', d.journeyPaths || { runoff: 0, infiltrate: 0, plant: 0 });
                         var cv = document.getElementById('wcCanvas');
                         if (cv) { cv.dataset.journeyState = 'ocean'; }
+                        if (typeof announceToSR === 'function') announceToSR('Journey started. You are now a water droplet in the ocean.');
                         addToast('\uD83D\uDCA7 You are now a water droplet in the ocean! Watch and learn as you travel through the water cycle.', 'info');
                       },
                       className: "px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-xs font-bold rounded-xl hover:from-cyan-600 hover:to-blue-600 shadow-lg transition-all hover:scale-105"
-                    }, "\uD83C\uDFAE Start Journey")
+                    }, "\uD83C\uDFAE Start Journey (J)")
                   : React.createElement("div", { className: "flex gap-1.5" },
-                      React.createElement("button", { "aria-label": "End Journey",
+                      React.createElement("button", { "aria-label": "End Journey mode (shortcut: J)",
                         onClick: function() {
                           upd('journeyActive', false);
                           upd('journeyState', 'idle');
                           var cv = document.getElementById('wcCanvas');
                           if (cv) { cv.dataset.journeyState = 'idle'; }
+                          if (typeof announceToSR === 'function') announceToSR('Journey ended.');
                         },
-                        className: "px-3 py-1.5 bg-slate-600 text-white text-[10px] font-bold rounded-lg hover:bg-slate-500 transition-all"
-                      }, "\u23F9 End Journey")
+                        className: "px-3 py-1.5 bg-slate-600 text-white text-[11px] font-bold rounded-lg hover:bg-slate-500 transition-all"
+                      }, "\u23F9 End Journey (J)")
                     )
               ),
 
@@ -1689,44 +1801,47 @@ const d = labToolData.waterCycle;
                     (d.journeyState === 'complete') ? "\u2705 You completed the water cycle! +25 XP" :
                     "\uD83D\uDCA7 Current: " + (d.journeyState || 'ocean').replace(/_/g, ' ')
                   ),
-                  d.journeyState === 'ground_choice' && React.createElement("div", { className: "grid grid-cols-3 gap-2 mt-2" },
-                    React.createElement("button", { "aria-label": "Change journey state",
+                  d.journeyState === 'ground_choice' && React.createElement("div", { className: "grid grid-cols-3 gap-2 mt-2", role: "group", "aria-label": "Ground path choices" },
+                    React.createElement("button", { "aria-label": "Choose River Runoff path (shortcut: R)",
                       onClick: function() {
                         upd('journeyState', 'river_runoff');
                         upd('journeyPaths', Object.assign({}, d.journeyPaths, { runoff: (d.journeyPaths.runoff || 0) + 1 }));
                         var cv = document.getElementById('wcCanvas');
                         if (cv) { cv.dataset.journeyState = 'river_runoff'; if (cv._onJourneyTransition) cv._onJourneyTransition('river_runoff'); }
+                        if (typeof announceToSR === 'function') announceToSR('Path chosen: River Runoff.');
                       },
                       className: "p-2 rounded-lg text-center bg-blue-50 border-2 border-blue-300 hover:bg-blue-100 transition-all hover:scale-105"
                     },
                       React.createElement("p", { className: "text-lg" }, "\uD83C\uDF0A"),
-                      React.createElement("p", { className: "text-[10px] font-bold text-blue-700" }, "River Runoff"),
+                      React.createElement("p", { className: "text-[11px] font-bold text-blue-700" }, "River Runoff (R)"),
                       React.createElement("p", { className: "text-[11px] text-blue-500" }, "Fast path!")
                     ),
-                    React.createElement("button", { "aria-label": "Change journey state",
+                    React.createElement("button", { "aria-label": "Choose Underground infiltration path (shortcut: U)",
                       onClick: function() {
                         upd('journeyState', 'infiltrating');
                         upd('journeyPaths', Object.assign({}, d.journeyPaths, { infiltrate: (d.journeyPaths.infiltrate || 0) + 1 }));
                         var cv = document.getElementById('wcCanvas');
                         if (cv) { cv.dataset.journeyState = 'infiltrating'; if (cv._onJourneyTransition) cv._onJourneyTransition('infiltrating'); }
+                        if (typeof announceToSR === 'function') announceToSR('Path chosen: Underground infiltration.');
                       },
                       className: "p-2 rounded-lg text-center bg-amber-50 border-2 border-amber-300 hover:bg-amber-100 transition-all hover:scale-105"
                     },
                       React.createElement("p", { className: "text-lg" }, "\uD83E\uDEB4"),
-                      React.createElement("p", { className: "text-[10px] font-bold text-amber-700" }, "Underground"),
+                      React.createElement("p", { className: "text-[11px] font-bold text-amber-700" }, "Underground (U)"),
                       React.createElement("p", { className: "text-[11px] text-amber-500" }, "Slow + deep")
                     ),
-                    React.createElement("button", { "aria-label": "Change journey state",
+                    React.createElement("button", { "aria-label": "Choose Plant absorption path (shortcut: P)",
                       onClick: function() {
                         upd('journeyState', 'plant_absorb');
                         upd('journeyPaths', Object.assign({}, d.journeyPaths, { plant: (d.journeyPaths.plant || 0) + 1 }));
                         var cv = document.getElementById('wcCanvas');
                         if (cv) { cv.dataset.journeyState = 'plant_absorb'; if (cv._onJourneyTransition) cv._onJourneyTransition('plant_absorb'); }
+                        if (typeof announceToSR === 'function') announceToSR('Path chosen: Plant absorption.');
                       },
                       className: "p-2 rounded-lg text-center bg-emerald-50 border-2 border-emerald-300 hover:bg-emerald-100 transition-all hover:scale-105"
                     },
                       React.createElement("p", { className: "text-lg" }, "\uD83C\uDF3F"),
-                      React.createElement("p", { className: "text-[10px] font-bold text-emerald-700" }, "Enter Plant"),
+                      React.createElement("p", { className: "text-[11px] font-bold text-emerald-700" }, "Enter Plant (P)"),
                       React.createElement("p", { className: "text-[11px] text-emerald-500" }, "Transpiration!")
                     )
                   ),
@@ -1745,7 +1860,7 @@ const d = labToolData.waterCycle;
                 ),
 
                 // Stats bar
-                (d.journeyLoops > 0 || (d.journeyPaths && (d.journeyPaths.runoff || d.journeyPaths.infiltrate || d.journeyPaths.plant))) && React.createElement("div", { className: "flex gap-3 text-[10px] font-bold" },
+                (d.journeyLoops > 0 || (d.journeyPaths && (d.journeyPaths.runoff || d.journeyPaths.infiltrate || d.journeyPaths.plant))) && React.createElement("div", { className: "flex gap-3 text-[11px] font-bold" },
                   React.createElement("span", { className: "text-cyan-600" }, "\uD83D\uDD04 Loops: " + (d.journeyLoops || 0)),
                   React.createElement("span", { className: "text-blue-600" }, "\uD83C\uDF0A Runoff: " + ((d.journeyPaths && d.journeyPaths.runoff) || 0)),
                   React.createElement("span", { className: "text-amber-600" }, "\uD83E\uDEB4 Underground: " + ((d.journeyPaths && d.journeyPaths.infiltrate) || 0)),
@@ -1754,7 +1869,7 @@ const d = labToolData.waterCycle;
               ),
 
               // Inactive description
-              !d.journeyActive && React.createElement("p", { className: "text-[10px] text-cyan-600 mt-1" }, "Become a water droplet and travel through the entire water cycle! Make choices at each stage and learn the science behind each transformation.")
+              !d.journeyActive && React.createElement("p", { className: "text-[11px] text-cyan-600 mt-1" }, "Become a water droplet and travel through the entire water cycle! Make choices at each stage and learn the science behind each transformation.")
             ),
 
             sel && React.createElement("div", { className: "bg-gradient-to-r from-sky-50 to-blue-50 rounded-xl p-4 border border-sky-200 mb-3" },
@@ -1771,7 +1886,7 @@ const d = labToolData.waterCycle;
 
               selFunFact && React.createElement("div", { className: "bg-amber-50 rounded-lg p-2 border border-amber-200" },
 
-                React.createElement("p", { className: "text-[10px] text-amber-700" }, "\uD83D\uDCA1 " + selFunFact)
+                React.createElement("p", { className: "text-[11px] text-amber-700" }, "\uD83D\uDCA1 " + selFunFact)
 
               )
 
@@ -1782,7 +1897,7 @@ const d = labToolData.waterCycle;
               React.createElement("div", { className: "flex items-center gap-2 mb-2" },
                 React.createElement("span", { className: "text-base" }, "\uD83D\uDCCA"),
                 React.createElement("h4", { className: "text-xs font-bold text-slate-700" }, "Water Budget (Live)"),
-                React.createElement("span", { className: "px-1.5 py-0.5 bg-sky-100 text-sky-600 text-[8px] font-bold rounded-full" }, "REAL-TIME")
+                React.createElement("span", { className: "px-1.5 py-0.5 bg-sky-100 text-sky-600 text-[11px] font-bold rounded-full" }, "REAL-TIME")
               ),
               (function() {
                 var s2 = d.climSolar != null ? d.climSolar : 1.0;
@@ -1795,19 +1910,19 @@ const d = labToolData.waterCycle;
                 return React.createElement("div", { className: "grid grid-cols-4 gap-2" },
                   React.createElement("div", { className: "bg-white rounded-lg p-2 text-center border border-amber-100" },
                     React.createElement("p", { className: "text-lg font-bold text-amber-600" }, (evapRate * 100).toFixed(0) + "%"),
-                    React.createElement("p", { className: "text-[8px] font-bold text-amber-500" }, "Evaporation")
+                    React.createElement("p", { className: "text-[11px] font-bold text-amber-500" }, "Evaporation")
                   ),
                   React.createElement("div", { className: "bg-white rounded-lg p-2 text-center border border-blue-100" },
                     React.createElement("p", { className: "text-sm font-bold text-blue-600" }, precipType),
-                    React.createElement("p", { className: "text-[8px] font-bold text-blue-500" }, "Precip Type")
+                    React.createElement("p", { className: "text-[11px] font-bold text-blue-500" }, "Precip Type")
                   ),
                   React.createElement("div", { className: "bg-white rounded-lg p-2 text-center border border-cyan-100" },
                     React.createElement("p", { className: "text-lg font-bold text-cyan-600" }, runoffPct.toFixed(0) + "%"),
-                    React.createElement("p", { className: "text-[8px] font-bold text-cyan-500" }, "Runoff")
+                    React.createElement("p", { className: "text-[11px] font-bold text-cyan-500" }, "Runoff")
                   ),
                   React.createElement("div", { className: "bg-white rounded-lg p-2 text-center border border-emerald-100" },
                     React.createElement("p", { className: "text-lg font-bold text-emerald-600" }, gwRecharge.toFixed(0) + "%"),
-                    React.createElement("p", { className: "text-[8px] font-bold text-emerald-500" }, "GW Recharge")
+                    React.createElement("p", { className: "text-[11px] font-bold text-emerald-500" }, "GW Recharge")
                   )
                 );
               })()
@@ -1906,9 +2021,9 @@ const d = labToolData.waterCycle;
               }, d.aiQuizLoading ? '\u23F3 Generating...' : '\u2728 AI Question'),
 
               d.wcQuiz && d.wcQuiz.score > 0 && React.createElement("span", { className: "ml-2 text-xs font-bold text-emerald-600" }, "\u2B50 " + d.wcQuiz.score + " correct"),
-              d.wcQuiz && d.wcQuiz.isAI && React.createElement("span", { className: "px-1.5 py-0.5 bg-purple-100 text-purple-600 text-[8px] font-bold rounded-full" }, "\uD83E\uDDE0 AI-GENERATED"),
+              d.wcQuiz && d.wcQuiz.isAI && React.createElement("span", { className: "px-1.5 py-0.5 bg-purple-100 text-purple-600 text-[11px] font-bold rounded-full" }, "\uD83E\uDDE0 AI-GENERATED"),
               (d.wcStreak || 0) >= 3 && React.createElement("span", { className: "px-2 py-0.5 bg-gradient-to-r from-orange-400 to-red-500 text-white text-[11px] font-bold rounded-full shadow-sm animate-pulse" }, "\uD83D\uDD25 " + d.wcStreak + " streak!"),
-              (d.wcAttempts || 0) > 0 && React.createElement("span", { className: "px-1.5 py-0.5 bg-slate-100 text-slate-500 text-[8px] font-bold rounded-full" }, (d.wcQuiz && d.wcQuiz.score || 0) + "/" + d.wcAttempts + " (" + Math.round(((d.wcQuiz && d.wcQuiz.score || 0) / d.wcAttempts) * 100) + "%)"),
+              (d.wcAttempts || 0) > 0 && React.createElement("span", { className: "px-1.5 py-0.5 bg-slate-100 text-slate-600 text-[11px] font-bold rounded-full" }, (d.wcQuiz && d.wcQuiz.score || 0) + "/" + d.wcAttempts + " (" + Math.round(((d.wcQuiz && d.wcQuiz.score || 0) / d.wcAttempts) * 100) + "%)"),
 
               d.wcQuiz && React.createElement("div", { className: "mt-2 bg-gradient-to-br from-sky-50 to-indigo-50 rounded-xl p-3 border border-sky-200 shadow-sm" },
 

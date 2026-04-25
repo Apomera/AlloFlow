@@ -908,6 +908,151 @@
         }, 2000); // Run every 2 seconds
       }
 
+      // ── Gamepad API Adapter — maps controller inputs to keyboard events ──
+      // Runs a polling loop when a gamepad is connected. Synthesizes KeyboardEvents
+      // so all existing tools get controller support automatically (no per-tool changes).
+      // Supports Xbox, PlayStation, and generic HID controllers.
+      // Button mapping follows the W3C Standard Gamepad layout:
+      //   Left stick: WASD movement | Right stick: Arrow keys (camera/turn)
+      //   A/Cross: Space (jump/click) | B/Circle: Escape (close dialog)
+      //   X/Square: KeyE (interact) | Y/Triangle: KeyM (measure)
+      //   LB: KeyQ (cycle shape) | RB: right-click (place block)
+      //   LT: Shift (sprint) | RT: left-click (break block)
+      //   D-pad: 1-4 block selection | Start: KeyF (fly) | Select: KeyG (grid)
+      if (!window._stemGamepadActive) {
+        window._stemGamepadActive = true;
+        var _gpPrevButtons = {};
+        var _gpConnected = false;
+        var _gpDeadzone = 0.2;
+
+        window.addEventListener('gamepadconnected', function(e) {
+          _gpConnected = true;
+          console.log('[Gamepad] Connected: ' + e.gamepad.id);
+          if (typeof addToast === 'function') addToast('\uD83C\uDFAE Controller connected: ' + e.gamepad.id.substring(0, 40), 'success');
+        });
+        window.addEventListener('gamepaddisconnected', function() {
+          _gpConnected = false;
+          console.log('[Gamepad] Disconnected');
+        });
+
+        // Synthesize a keyboard event the same way the browser would
+        function _gpKey(code, type) {
+          try {
+            var ev = new KeyboardEvent(type, { code: code, key: code.replace('Key', '').toLowerCase(), bubbles: true, cancelable: true });
+            document.dispatchEvent(ev);
+            // Also dispatch to the focused element (for canvas listeners)
+            if (document.activeElement && document.activeElement !== document.body) {
+              document.activeElement.dispatchEvent(new KeyboardEvent(type, { code: code, key: code.replace('Key', '').toLowerCase(), bubbles: true, cancelable: true }));
+            }
+          } catch(e) {}
+        }
+
+        // Synthesize mouse click for block place/break
+        function _gpClick(button) {
+          try {
+            var target = document.activeElement || document.querySelector('canvas');
+            if (target) {
+              var rect = target.getBoundingClientRect();
+              var cx = rect.left + rect.width / 2, cy = rect.top + rect.height / 2;
+              target.dispatchEvent(new MouseEvent('mousedown', { button: button, clientX: cx, clientY: cy, bubbles: true }));
+              setTimeout(function() {
+                target.dispatchEvent(new MouseEvent('mouseup', { button: button, clientX: cx, clientY: cy, bubbles: true }));
+              }, 50);
+            }
+          } catch(e) {}
+        }
+
+        // Button state tracker (press/release edge detection)
+        function _gpBtnPressed(idx, pressed) {
+          var wasPressed = !!_gpPrevButtons[idx];
+          _gpPrevButtons[idx] = pressed;
+          return pressed && !wasPressed; // true on rising edge only
+        }
+        function _gpBtnReleased(idx, pressed) {
+          var wasPressed = !!_gpPrevButtons[idx];
+          _gpPrevButtons[idx] = pressed;
+          return !pressed && wasPressed;
+        }
+
+        // Axis-to-key state tracking (hold behavior, not just press)
+        var _gpAxisKeys = {};
+        function _gpAxisToKey(axisVal, negKey, posKey, id) {
+          var negActive = axisVal < -_gpDeadzone;
+          var posActive = axisVal > _gpDeadzone;
+          var prevNeg = _gpAxisKeys[id + '_neg'];
+          var prevPos = _gpAxisKeys[id + '_pos'];
+          if (negActive && !prevNeg) _gpKey(negKey, 'keydown');
+          if (!negActive && prevNeg) _gpKey(negKey, 'keyup');
+          if (posActive && !prevPos) _gpKey(posKey, 'keydown');
+          if (!posActive && prevPos) _gpKey(posKey, 'keyup');
+          _gpAxisKeys[id + '_neg'] = negActive;
+          _gpAxisKeys[id + '_pos'] = posActive;
+        }
+
+        // Poll loop (requestAnimationFrame)
+        function _gpPoll() {
+          requestAnimationFrame(_gpPoll);
+          if (!_gpConnected) return;
+          var gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
+          var gp = null;
+          for (var gi = 0; gi < gamepads.length; gi++) { if (gamepads[gi]) { gp = gamepads[gi]; break; } }
+          if (!gp) return;
+
+          // Left stick → WASD
+          _gpAxisToKey(gp.axes[1], 'KeyW', 'KeyS', 'ls_y'); // Y-axis inverted: up = negative
+          _gpAxisToKey(gp.axes[0], 'KeyA', 'KeyD', 'ls_x');
+
+          // Right stick → Arrow keys (camera/turn)
+          if (gp.axes.length >= 4) {
+            _gpAxisToKey(gp.axes[3], 'ArrowUp', 'ArrowDown', 'rs_y');
+            _gpAxisToKey(gp.axes[2], 'ArrowLeft', 'ArrowRight', 'rs_x');
+          }
+
+          // Face buttons (Standard Gamepad mapping)
+          var btns = gp.buttons;
+          if (btns.length >= 4) {
+            // A/Cross (index 0) → Space
+            if (_gpBtnPressed(0, btns[0].pressed)) _gpKey('Space', 'keydown');
+            if (_gpBtnReleased(0, btns[0].pressed)) _gpKey('Space', 'keyup');
+            // B/Circle (1) → Escape
+            if (_gpBtnPressed(1, btns[1].pressed)) _gpKey('Escape', 'keydown');
+            if (_gpBtnReleased(1, btns[1].pressed)) _gpKey('Escape', 'keyup');
+            // X/Square (2) → KeyE (interact with NPC)
+            if (_gpBtnPressed(2, btns[2].pressed)) _gpKey('KeyE', 'keydown');
+            if (_gpBtnReleased(2, btns[2].pressed)) _gpKey('KeyE', 'keyup');
+            // Y/Triangle (3) → KeyM (measure)
+            if (_gpBtnPressed(3, btns[3].pressed)) _gpKey('KeyM', 'keydown');
+            if (_gpBtnReleased(3, btns[3].pressed)) _gpKey('KeyM', 'keyup');
+          }
+          if (btns.length >= 8) {
+            // LB (4) → KeyQ (cycle shape/tool)
+            if (_gpBtnPressed(4, btns[4].pressed)) _gpKey('KeyQ', 'keydown');
+            if (_gpBtnReleased(4, btns[4].pressed)) _gpKey('KeyQ', 'keyup');
+            // RB (5) → right-click (place block)
+            if (_gpBtnPressed(5, btns[5].pressed)) _gpClick(2);
+            // LT (6) → Shift (sprint)
+            if (btns[6].value > 0.3 && !_gpAxisKeys['lt']) { _gpKey('ShiftLeft', 'keydown'); _gpAxisKeys['lt'] = true; }
+            if (btns[6].value <= 0.3 && _gpAxisKeys['lt']) { _gpKey('ShiftLeft', 'keyup'); _gpAxisKeys['lt'] = false; }
+            // RT (7) → left-click (break block)
+            if (_gpBtnPressed(7, btns[7].pressed)) _gpClick(0);
+          }
+          if (btns.length >= 10) {
+            // Select/Back (8) → KeyG (grid toggle)
+            if (_gpBtnPressed(8, btns[8].pressed)) _gpKey('KeyG', 'keydown');
+            // Start (9) → KeyF (fly toggle)
+            if (_gpBtnPressed(9, btns[9].pressed)) _gpKey('KeyF', 'keydown');
+          }
+          // D-pad → Digit1-4 (block type selection)
+          if (btns.length >= 16) {
+            if (_gpBtnPressed(12, btns[12].pressed)) _gpKey('Digit1', 'keydown'); // Up
+            if (_gpBtnPressed(13, btns[13].pressed)) _gpKey('Digit2', 'keydown'); // Down
+            if (_gpBtnPressed(14, btns[14].pressed)) _gpKey('Digit3', 'keydown'); // Left
+            if (_gpBtnPressed(15, btns[15].pressed)) _gpKey('Digit4', 'keydown'); // Right
+          }
+        }
+        _gpPoll();
+      }
+
       // ── Canvas Narration: Dual-Channel (aria-live + TTS) with Smart Detection & Adaptive Verbosity ──
       // Dedupe + encounter maps MUST live on window so they persist across React renders
       // (otherwise init/debounce guards reset every render → infinite repeat narration).
@@ -1062,7 +1207,7 @@
       /* graphCalc canvas renderer: removed — see stem_tool_graphcalc.js */
       // ── 3D Tools: Load Three.js on demand (Geometry Sandbox + Architecture Studio) ──
       React.useEffect(function () {
-        if (stemLabTab !== 'explore' || (stemLabTool !== 'geoSandbox' && stemLabTool !== 'archStudio' && stemLabTool !== 'geometryWorld')) return;
+        if (stemLabTab !== 'explore' || (stemLabTool !== 'geoSandbox' && stemLabTool !== 'archStudio' && stemLabTool !== 'geometryWorld' && stemLabTool !== 'echolocation')) return;
         if (window.THREE) { setLabToolData(function (p) { return Object.assign({}, p, { _threeLoaded: true }); }); return; }
         var s = document.createElement('script');
         s.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
@@ -1860,7 +2005,7 @@
       // STEM Lab modal JSX
       return /*#__PURE__*/React.createElement("div", {
         "data-stem-lab": "true", role: "dialog", "aria-modal": "true", "aria-label": stemLabTool ? "STEM Lab: " + stemLabTool : "STEM Lab",
-        className: "fixed inset-0 z-[9999] flex items-stretch justify-center" + (_reduceMotion ? " reduce-motion" : ""),
+        className: "fixed inset-0 z-[9999] flex items-stretch justify-center stem-lab-modal" + (_reduceMotion ? " reduce-motion" : ""),
         style: {
           background: 'rgba(15,23,42,0.7)',
           backdropFilter: 'blur(6px)'
@@ -2026,6 +2171,39 @@
             React.createElement("span", { style: { color: _pal.textMuted } }, "Move between controls"),
             React.createElement("kbd", { style: { background: _pal.bgAlt, border: '1px solid ' + _pal.border, padding: '1px 6px', borderRadius: 3, fontFamily: 'monospace', fontSize: 11 } }, "?"),
             React.createElement("span", { style: { color: _pal.textMuted } }, "Toggle this help panel")
+          ),
+          // Gamepad controller mapping
+          React.createElement("div", { style: { marginTop: 12, paddingTop: 10, borderTop: '1px solid ' + _pal.border } },
+            React.createElement("h4", { style: { margin: '0 0 6px', fontSize: 12, fontWeight: 700, color: isContrast ? '#facc15' : '#4f46e5' } }, "\uD83C\uDFAE Controller Support (Xbox / PlayStation / Generic)"),
+            React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'auto 1fr auto 1fr', gap: '3px 14px', fontSize: 11 } },
+              React.createElement("span", { style: { fontWeight: 700, color: _pal.text } }, "L Stick"),
+              React.createElement("span", { style: { color: _pal.textMuted } }, "Move (WASD)"),
+              React.createElement("span", { style: { fontWeight: 700, color: _pal.text } }, "R Stick"),
+              React.createElement("span", { style: { color: _pal.textMuted } }, "Look / Turn"),
+              React.createElement("span", { style: { fontWeight: 700, color: _pal.text } }, "A / \u2A2F"),
+              React.createElement("span", { style: { color: _pal.textMuted } }, "Jump / Click / Confirm"),
+              React.createElement("span", { style: { fontWeight: 700, color: _pal.text } }, "B / \u25CB"),
+              React.createElement("span", { style: { color: _pal.textMuted } }, "Close / Back"),
+              React.createElement("span", { style: { fontWeight: 700, color: _pal.text } }, "X / \u25A1"),
+              React.createElement("span", { style: { color: _pal.textMuted } }, "Interact (NPC)"),
+              React.createElement("span", { style: { fontWeight: 700, color: _pal.text } }, "Y / \u25B3"),
+              React.createElement("span", { style: { color: _pal.textMuted } }, "Measure"),
+              React.createElement("span", { style: { fontWeight: 700, color: _pal.text } }, "LB"),
+              React.createElement("span", { style: { color: _pal.textMuted } }, "Cycle tool/shape"),
+              React.createElement("span", { style: { fontWeight: 700, color: _pal.text } }, "RB"),
+              React.createElement("span", { style: { color: _pal.textMuted } }, "Place block"),
+              React.createElement("span", { style: { fontWeight: 700, color: _pal.text } }, "LT"),
+              React.createElement("span", { style: { color: _pal.textMuted } }, "Sprint"),
+              React.createElement("span", { style: { fontWeight: 700, color: _pal.text } }, "RT"),
+              React.createElement("span", { style: { color: _pal.textMuted } }, "Break block"),
+              React.createElement("span", { style: { fontWeight: 700, color: _pal.text } }, "D-pad"),
+              React.createElement("span", { style: { color: _pal.textMuted } }, "Select blocks 1-4"),
+              React.createElement("span", { style: { fontWeight: 700, color: _pal.text } }, "Start"),
+              React.createElement("span", { style: { color: _pal.textMuted } }, "Toggle fly mode"),
+              React.createElement("span", { style: { fontWeight: 700, color: _pal.text } }, "Select"),
+              React.createElement("span", { style: { color: _pal.textMuted } }, "Toggle grid")
+            ),
+            React.createElement("p", { style: { margin: '6px 0 0', fontSize: 10, color: _pal.textMuted, fontStyle: 'italic' } }, "Just connect your controller \u2014 it\u2019s auto-detected. Works with all 3D tools including Geometry World, Echo Navigator, SkySchool, Moon Mission, and Solar System.")
           )
         ),
         // ═══ XP Progress Overlay Panel ═══
@@ -2877,6 +3055,16 @@
                 color: 'sky', ready: true
               },
               {
+                id: 'roadReady', icon: '🚗', label: "RoadReady: Driver's Ed",
+                desc: "3D driving simulator + US permit test + fuel efficiency physics. 14 scenarios, 114 practice questions, real stopping-distance math. Maine state focus.",
+                color: 'emerald', ready: true
+              },
+              {
+                id: 'echoTrainer', icon: '🎧', label: 'Echo Navigator',
+                desc: 'Navigate virtual spaces using only spatial audio echoes — real HRTF binaural sound. Wear headphones!',
+                color: 'indigo', ready: true
+              },
+              {
                 id: 'atcTower', icon: '🗼', label: 'ATC Tower',
                 desc: 'Air Traffic Control simulator — manage approaching aircraft, solve rate problems, and learn the math behind aviation safety.',
                 color: 'emerald', ready: true
@@ -2902,8 +3090,8 @@
 
               { id: '_cat_SoundSpeech', icon: '', label: '\uD83C\uDFA4 Sound, Speech & Music', desc: '', color: 'slate', category: true },
               { id: 'echolocation', icon: '\uD83E\uDD87', label: 'Echolocation Lab', desc: 'See the world through sound! Sonar vision, wave physics, Doppler effect, bat biology, and acoustic ecology with interactive canvas simulations.', color: 'indigo', ready: true },
-              { id: 'oratory', icon: '\uD83C\uDFA4', label: 'Oratory & Speech Lab', desc: 'Practice public speaking with real-time pacing analysis, vocal warm-ups, and speech delivery coaching.', color: 'rose', ready: true },
-              { id: 'singing', icon: '\uD83C\uDFA4', label: 'Voice & Singing Lab', desc: 'Vocal range exploration, pitch matching, breathing exercises, and the science of the singing voice.', color: 'pink', ready: true },
+              { id: 'oratory', icon: '\uD83D\uDDE3\uFE0F', label: 'Oratory & Speech Lab', desc: 'Practice public speaking with real-time pacing analysis, vocal warm-ups, and speech delivery coaching.', color: 'rose', ready: true },
+              { id: 'singing', icon: '\uD83C\uDFB5', label: 'Voice & Singing Lab', desc: 'Vocal range exploration, pitch matching, breathing exercises, and the science of the singing voice.', color: 'violet', ready: true },
 
               { id: '_cat_Ecology', icon: '', label: '\uD83C\uDF0D Ecology & Migration', desc: '', color: 'slate', category: true },
               { id: 'migration', icon: '\uD83E\uDD85', label: 'Animal Migration Lab', desc: 'Track real animal migration routes across continents. Explore navigation, climate triggers, and conservation challenges facing migratory species.', color: 'teal', ready: true },
@@ -3050,7 +3238,7 @@
                 className: "ml-auto text-[10px] text-emerald-500 hover:text-emerald-700 font-bold"
               }, "\u2715 Exit Station"),
               // Quest count badge
-              _activeStation.quests && _activeStation.quests.length > 0 ? React.createElement("span", { className: "text-[9px] px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 font-bold" },
+              _activeStation.quests && _activeStation.quests.length > 0 ? React.createElement("span", { className: "text-[10px] px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 font-bold" },
                 "\uD83C\uDFC6 " + (_activeStation.quests.filter(function(q) { return ((_questProgress[_activeStation.id] || {})[q.qid] || {}).complete; }).length) + "/" + _activeStation.quests.length + " quests"
               ) : null
             ) : null,
@@ -3122,9 +3310,9 @@
                         React.createElement("span", { className: "text-[11px] font-bold truncate " + (disp.done ? 'text-green-700' : 'text-slate-700') },
                           (disp.done ? "\u2705 " : (qtDef.icon || "\u2B1C") + " ") + quest.label
                         ),
-                        !disp.done && React.createElement("span", { className: "text-[9px] px-1 py-0.5 rounded-full shrink-0 " + diffColors[difficulty], title: difficulty + ' difficulty' }, diffLabels[difficulty])
+                        !disp.done && React.createElement("span", { className: "text-[10px] px-1 py-0.5 rounded-full shrink-0 " + diffColors[difficulty], title: difficulty + ' difficulty' }, diffLabels[difficulty])
                       ),
-                      React.createElement("span", { className: "text-[9px] font-mono shrink-0 ml-1 " + (disp.done ? 'text-green-500' : 'text-amber-600') }, disp.text)
+                      React.createElement("span", { className: "text-[10px] font-mono shrink-0 ml-1 " + (disp.done ? 'text-green-500' : 'text-amber-600') }, disp.text)
                     ),
                     // Live timer for timeSpent quests
                     quest.type === 'timeSpent' && !disp.done && (function() {
@@ -3134,10 +3322,10 @@
                       var sec = Math.floor((ms % 60000) / 1000);
                       var isActive = stemLabTool === quest.toolId;
                       return React.createElement("div", { className: "flex items-center gap-1.5 mt-0.5 mb-0.5" },
-                        React.createElement("span", { className: "text-[9px] " + (isActive ? 'text-green-600 font-bold' : 'text-slate-400') },
+                        React.createElement("span", { className: "text-[10px] " + (isActive ? 'text-green-600 font-bold' : 'text-slate-400') },
                           (isActive ? '\u25CF ' : '\u25CB ') + min + ':' + sec.toString().padStart(2, '0') + ' / ' + (quest.params.minutes || 5) + ':00'
                         ),
-                        isActive && React.createElement("span", { className: "text-[9px] text-green-500 animate-pulse" }, 'timing...')
+                        isActive && React.createElement("span", { className: "text-[10px] text-green-500 animate-pulse" }, 'timing...')
                       );
                     })(),
                     // Progress bar
@@ -3197,7 +3385,7 @@
                               });
                             }
                           },
-                          className: "text-[9px] text-green-700 hover:text-green-900 underline font-bold"
+                          className: "text-[10px] text-green-700 hover:text-green-900 underline font-bold"
                         }, "\uD83D\uDCCB Copy Report"),
                         React.createElement("button", {
                           'aria-label': 'Reset all quest progress for this station',
@@ -3209,7 +3397,7 @@
                             });
                             if (addToast) addToast('\uD83D\uDD04 Quest progress reset for ' + _activeStation.name, 'info');
                           },
-                          className: "text-[9px] text-green-600 hover:text-green-800 underline"
+                          className: "text-[10px] text-green-600 hover:text-green-800 underline"
                         }, "\uD83D\uDD04 Reset & Try Again")
                       )
                     ) : null,
@@ -3218,7 +3406,7 @@
                       React.createElement("div", { className: "w-full h-1.5 bg-amber-100 rounded-full overflow-hidden flex-1" },
                         React.createElement("div", { className: "h-full bg-amber-400 rounded-full transition-all", style: { width: Math.round(completedCount / _activeStation.quests.length * 100) + '%' } })
                       ),
-                      React.createElement("span", { className: "text-[9px] font-bold text-amber-700 shrink-0" }, Math.round(completedCount / _activeStation.quests.length * 100) + '%')
+                      React.createElement("span", { className: "text-[10px] font-bold text-amber-700 shrink-0" }, Math.round(completedCount / _activeStation.quests.length * 100) + '%')
                     ) : null
                   );
                 })()
@@ -3292,7 +3480,7 @@
               _questPickerOpen && React.createElement("div", { className: "p-3 bg-amber-50/50 space-y-3" },
                 // Quick preset templates + auto-suggest
                 _stationQuests.length === 0 && React.createElement("div", { className: "space-y-1.5" },
-                  React.createElement("p", { className: "text-[9px] text-amber-600 font-bold uppercase tracking-wider mb-1" }, "\u26A1 Quick Presets"),
+                  React.createElement("p", { className: "text-[10px] text-amber-600 font-bold uppercase tracking-wider mb-1" }, "\u26A1 Quick Presets"),
                   // Auto-suggest button
                   (function() {
                     var selectedTools = Object.keys(_stationTools).filter(function(k) { return _stationTools[k]; });
@@ -3362,8 +3550,8 @@
                         className: "bg-white rounded-lg p-2 border border-amber-200 hover:border-amber-400 hover:bg-amber-50 transition-all text-center"
                       },
                         React.createElement("div", { className: "text-lg" }, preset.icon),
-                        React.createElement("div", { className: "text-[9px] font-bold text-amber-800" }, preset.name),
-                        React.createElement("div", { className: "text-[9px] text-amber-600" }, preset.desc)
+                        React.createElement("div", { className: "text-[10px] font-bold text-amber-800" }, preset.name),
+                        React.createElement("div", { className: "text-[10px] text-amber-600" }, preset.desc)
                       );
                     })
                   )
@@ -3395,7 +3583,7 @@
                   });
                   if (allHooks.length === 0) return null;
                   return React.createElement("div", { className: "bg-white rounded-lg p-2.5 border border-purple-200 space-y-1.5" },
-                    React.createElement("p", { className: "text-[9px] text-purple-600 font-bold uppercase tracking-wider" }, "\uD83C\uDFC6 Tool-Specific Quests (" + allHooks.length + " available)"),
+                    React.createElement("p", { className: "text-[10px] text-purple-600 font-bold uppercase tracking-wider" }, "\uD83C\uDFC6 Tool-Specific Quests (" + allHooks.length + " available)"),
                     React.createElement("div", { className: "grid grid-cols-1 gap-1 max-h-[200px] overflow-y-auto" },
                       allHooks.map(function(ah, ahi) {
                         var toolLabel = (_allStemTools.find(function(t3) { return t3.id === ah.toolId; }) || {}).label || ah.toolId;
@@ -3416,7 +3604,7 @@
                           React.createElement("span", { className: "text-sm shrink-0" }, ah.hook.icon || '\uD83C\uDFC6'),
                           React.createElement("div", { className: "flex-1 min-w-0" },
                             React.createElement("div", { className: "font-bold text-purple-800 truncate" }, ah.hook.label),
-                            React.createElement("div", { className: "text-[9px] text-purple-500" }, toolLabel)
+                            React.createElement("div", { className: "text-[10px] text-purple-500" }, toolLabel)
                           ),
                           React.createElement("span", { className: "text-purple-400 text-xs shrink-0" }, "+")
                         );
@@ -3426,7 +3614,7 @@
                 })(),
                 // Add quest form (universal types)
                 React.createElement("div", { className: "bg-white rounded-lg p-2.5 border border-amber-200 space-y-2" },
-                  React.createElement("p", { className: "text-[9px] text-amber-600 font-bold uppercase tracking-wider" }, "Custom Quest"),
+                  React.createElement("p", { className: "text-[10px] text-amber-600 font-bold uppercase tracking-wider" }, "Custom Quest"),
                   // Type selector
                   React.createElement("div", { className: "grid grid-cols-5 gap-1" },
                     QUEST_TYPES.map(function(qt) {
@@ -3435,7 +3623,7 @@
                         key: qt.id,
                         'aria-label': 'Quest type: ' + qt.label,
                         onClick: function() { upd('_questBuilderType', qt.id); },
-                        className: "px-1.5 py-1.5 rounded-lg text-[9px] font-bold text-center transition-all border " + (isActive ? 'bg-amber-700 text-white border-amber-600' : 'bg-white text-amber-700 border-amber-200 hover:border-amber-400')
+                        className: "px-1.5 py-1.5 rounded-lg text-[10px] font-bold text-center transition-all border " + (isActive ? 'bg-amber-700 text-white border-amber-600' : 'bg-white text-amber-700 border-amber-200 hover:border-amber-400')
                       },
                         React.createElement("div", { className: "text-sm" }, qt.icon),
                         React.createElement("div", null, qt.label)
@@ -3444,7 +3632,7 @@
                   ),
                   // Tool selector (for non-freeResponse types)
                   (d._questBuilderType || 'xpThreshold') !== 'freeResponse' && React.createElement("div", null,
-                    React.createElement("label", { className: "text-[9px] text-slate-500 block mb-0.5" }, "For which tool?"),
+                    React.createElement("label", { className: "text-[10px] text-slate-500 block mb-0.5" }, "For which tool?"),
                     React.createElement("select", {
                       value: d._questBuilderTool || '',
                       onChange: function(e) { upd('_questBuilderTool', e.target.value); },
@@ -3465,7 +3653,7 @@
                       var qtDef = QUEST_TYPES.find(function(qt2) { return qt2.id === qType; }) || QUEST_TYPES[0];
                       if (qType === 'freeResponse') {
                         return React.createElement("div", null,
-                          React.createElement("label", { className: "text-[9px] text-slate-500 block mb-0.5" }, "Prompt for student"),
+                          React.createElement("label", { className: "text-[10px] text-slate-500 block mb-0.5" }, "Prompt for student"),
                           React.createElement("input", {
                             type: "text",
                             value: d._questBuilderPrompt || '',
@@ -3476,7 +3664,7 @@
                         );
                       }
                       return React.createElement("div", null,
-                        React.createElement("label", { className: "text-[9px] text-slate-500 block mb-0.5" }, qtDef.paramLabel),
+                        React.createElement("label", { className: "text-[10px] text-slate-500 block mb-0.5" }, qtDef.paramLabel),
                         React.createElement("input", {
                           type: "number",
                           value: d._questBuilderParam || qtDef.defaultVal,
@@ -3485,13 +3673,13 @@
                           'aria-label': qtDef.paramLabel + ' for quest',
                           className: "w-20 px-2 py-1.5 text-xs border border-amber-200 rounded-lg"
                         }),
-                        React.createElement("span", { className: "text-[9px] text-slate-400 ml-1.5" }, qtDef.unit)
+                        React.createElement("span", { className: "text-[10px] text-slate-400 ml-1.5" }, qtDef.unit)
                       );
                     })()
                   ),
                   // Preview + Add button
                   React.createElement("div", { className: "flex items-center justify-between" },
-                    React.createElement("span", { className: "text-[9px] text-slate-400 italic" },
+                    React.createElement("span", { className: "text-[10px] text-slate-400 italic" },
                       "\u201C" + _questAutoLabel(
                         d._questBuilderType || 'xpThreshold',
                         d._questBuilderTool || null,
@@ -3932,7 +4120,7 @@
             // Art & Music
             artStudio: true, creative: true, gameStudio: true,
             // Earth & Space
-            galaxy: true, moonMission: true, plateTectonics: true, spaceColony: true,
+            galaxy: true, moonMission: true, plateTectonics: true, spaceColony: true, spaceExplorer: true,
             // Data & Logic
             behaviorLab: true, dataStudio: true, economicsLab: true, logicLab: true,
             // Geography
@@ -3941,16 +4129,23 @@
             a11yAuditor: true, lifeSkills: true, physics: true, wave: true,
             worldBuilder: true,
             flightSim: true,
+            roadReady: true,
             atcTower: true,
             musicSynth: true,
             beehive: true,
             echolocation: true,
+            echoTrainer: true,
             oratory: true,
             singing: true,
             migration: true,
             appLab: true
           };
-          console.log('[StemLab Fallback] Attempting to render plugin: ' + stemLabTool + ' (registered: ' + window.StemLab.isRegistered(stemLabTool) + ')');
+          // Throttle fallback log to once per tool (avoid flooding console on re-renders)
+          if (!window._stemFallbackLogged) window._stemFallbackLogged = {};
+          if (!window._stemFallbackLogged[stemLabTool]) {
+            console.log('[StemLab Fallback] Rendering plugin: ' + stemLabTool + ' (registered: ' + window.StemLab.isRegistered(stemLabTool) + ')');
+            window._stemFallbackLogged[stemLabTool] = true;
+          }
           if (!_pluginOnlyTools[stemLabTool]) return null;
 
           // Show skeleton loader while plugin hasn't registered yet
@@ -3975,12 +4170,27 @@
           }
 
           // Build context bridge: map hub-local variables to plugin ctx format
+          // Deferred setter: if called during a React render pass, queue via setTimeout(0)
+          // to avoid "Cannot update a component while rendering a different component"
+          var _renderingFlag = { current: false };
+          function _deferSafe(fn) {
+            return function() {
+              var args = arguments;
+              var self = this;
+              if (_renderingFlag.current) {
+                setTimeout(function() { fn.apply(self, args); }, 0);
+              } else {
+                fn.apply(self, args);
+              }
+            };
+          }
+          var _safeSetLabToolData = _deferSafe(setLabToolData);
           var _ctx = {
             React: React,
             toolData: labToolData,
-            setToolData: setLabToolData,
+            setToolData: _safeSetLabToolData,
             update: function(toolId, key, val) {
-              setLabToolData(function(prev) {
+              _safeSetLabToolData(function(prev) {
                 var toolState = Object.assign({}, (prev && prev[toolId]) || {});
                 toolState[key] = val;
                 var patch = {}; patch[toolId] = toolState;
@@ -3988,7 +4198,7 @@
               });
             },
             updateMulti: function(toolId, obj) {
-              setLabToolData(function(prev) {
+              _safeSetLabToolData(function(prev) {
                 var toolState = Object.assign({}, (prev && prev[toolId]) || {}, obj);
                 var patch = {}; patch[toolId] = toolState;
                 return Object.assign({}, prev, patch);
@@ -4084,12 +4294,8 @@
             setMultTableRevealed: typeof setMultTableRevealed === 'function' ? setMultTableRevealed : function() {},
             // ── Shared labToolData ──
             labToolData: labToolData || {},
-            setLabToolData: function(updater) {
-              if (typeof setLabToolData === 'function') {
-                if (_ctx._isRendering) setTimeout(function() { setLabToolData(updater); }, 0);
-                else setLabToolData(updater);
-              }
-            }
+            setLabToolData: _safeSetLabToolData,
+            _renderingFlag: _renderingFlag
           };
 
           try {
@@ -4099,70 +4305,17 @@
             if (!window.__stemPluginComponents) window.__stemPluginComponents = {};
             if (!window.__stemPluginComponents[stemLabTool]) {
               window.__stemPluginComponents[stemLabTool] = function StemPluginBridge(props) {
-                return window.StemLab.renderTool(props._toolId, props._ctx);
-              };
-            }
-            // Note: deferred setState bridge was removed — it caused blank renders in some tools.
-            // The React warning "Cannot update a component while rendering" is cosmetic and non-breaking.
-            if (false) {
-              window.__stemPluginComponents['__unused'] = function(props) {
-                var c = props._ctx;
-                var pendingUpdates = React.useRef([]);
-                var renderingRef = React.useRef(false);
-                var originalUpdate = c.update;
-                var originalUpdateMulti = c.updateMulti;
-                var originalAwardXP = c.awardXP;
-                var originalAddToast = c.addToast;
-                var wrappedCtx = Object.assign({}, c, {
-                  update: function(toolId, key, val) {
-                    if (renderingRef.current) {
-                      pendingUpdates.current.push({ type: 'single', toolId: toolId, key: key, val: val });
-                    } else {
-                      originalUpdate(toolId, key, val);
-                    }
-                  },
-                  updateMulti: function(toolId, obj) {
-                    if (renderingRef.current) {
-                      pendingUpdates.current.push({ type: 'multi', toolId: toolId, obj: obj });
-                    } else {
-                      originalUpdateMulti(toolId, obj);
-                    }
-                  },
-                  awardXP: function(activityId, pts, reason) {
-                    if (renderingRef.current) {
-                      pendingUpdates.current.push({ type: 'xp', activityId: activityId, pts: pts, reason: reason });
-                    } else {
-                      originalAwardXP(activityId, pts, reason);
-                    }
-                  },
-                  addToast: function(msg, type) {
-                    if (renderingRef.current) {
-                      pendingUpdates.current.push({ type: 'toast', msg: msg, toastType: type });
-                    } else {
-                      originalAddToast(msg, type);
-                    }
-                  }
-                });
-                React.useEffect(function() {
-                  if (pendingUpdates.current.length > 0) {
-                    var batch = pendingUpdates.current.slice();
-                    pendingUpdates.current = [];
-                    batch.forEach(function(u) {
-                      if (u.type === 'multi') originalUpdateMulti(u.toolId, u.obj);
-                      else if (u.type === 'xp') originalAwardXP(u.activityId, u.pts, u.reason);
-                      else if (u.type === 'toast') originalAddToast(u.msg, u.toastType);
-                      else originalUpdate(u.toolId, u.key, u.val);
-                    });
-                  }
-                });
-                renderingRef.current = true;
+                // Set rendering flag so any setState calls during render get deferred via setTimeout(0)
+                props._ctx._renderingFlag.current = true;
                 try {
-                  return window.StemLab.renderTool(props._toolId, wrappedCtx);
+                  return window.StemLab.renderTool(props._toolId, props._ctx);
                 } finally {
-                  renderingRef.current = false;
+                  props._ctx._renderingFlag.current = false;
                 }
               };
             }
+            // The deferred setState bridge uses _renderingFlag to queue updates that
+            // would otherwise trigger "Cannot update a component while rendering".
             return React.createElement(window.__stemPluginComponents[stemLabTool], { key: 'plugin-' + stemLabTool, _toolId: stemLabTool, _ctx: _ctx });
           } catch(e) {
             console.error('[StemLab] Plugin fallback error for ' + stemLabTool, e);

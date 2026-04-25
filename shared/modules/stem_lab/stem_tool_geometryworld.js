@@ -1279,7 +1279,30 @@
       };
       var callGemini = ctx.callGemini || null;
       var addToast = ctx.addToast;
-      var awardXP = ctx.awardXP;
+      // Wrap awardXP so the session-XP total is tracked on the engine for the HUD display.
+      // Persists across React renders via engine._sessionXP (not reset until lesson load).
+      var _rawAwardXP = ctx.awardXP;
+      var awardXP = _rawAwardXP ? function(toolId, amount, reason) {
+        var engine2 = window[engineKey];
+        if (engine2 && typeof amount === 'number' && amount > 0) {
+          engine2._sessionXP = (engine2._sessionXP || 0) + amount;
+        }
+        return _rawAwardXP(toolId, amount, reason);
+      } : null;
+
+      // Screen-reader announcement helper. Writes to the shared live region so announcements
+      // are read by assistive tech even when the visual game UI changes. Previously the tool
+      // referenced `announceToSR` without defining it — the `typeof === 'function'` guards
+      // silently skipped announcements, which meant no SR support.
+      function announceToSR(message) {
+        try {
+          var lr = document.getElementById('allo-live-geometryworld');
+          if (!lr) return;
+          // Swapping text in two ticks ensures the SR re-announces even if the message repeats
+          lr.textContent = '';
+          setTimeout(function() { lr.textContent = String(message || ''); }, 30);
+        } catch (e) {}
+      }
       var threeReady = ctx.toolData && ctx.toolData._threeLoaded;
 
       // ── State from toolData ──
@@ -1366,14 +1389,18 @@
       var lastBadgeNotification = d.lastBadgeNotification || null;
 
       // Check achievements after key events (called from answer handlers, etc.)
+      // Reads earnedBadges from engine._badgesRef (fresh) rather than closure (stale when
+      // called via setTimeout from long-lived document/canvas handlers).
       function runAchievementCheck() {
         var eng = window[engineKey];
         if (!eng || !eng.sessionLog) return;
-        var result = checkAchievements(eng.sessionLog, Object.assign({}, earnedBadges));
+        var currentBadges = (eng._badgesRef) || earnedBadges;
+        var result = checkAchievements(eng.sessionLog, Object.assign({}, currentBadges));
         if (result.newBadges.length > 0) {
           var latest = result.newBadges[result.newBadges.length - 1];
           upd({ earnedBadges: result.badges, lastBadgeNotification: latest });
           if (addToast) addToast(latest.icon + ' Achievement: ' + latest.name + ' \u2014 ' + latest.desc, 'success');
+          announceToSR('Achievement unlocked! ' + latest.name + '. ' + latest.desc);
           if (typeof awardXP === 'function') awardXP('geometryWorld', 10, 'Badge: ' + latest.name);
           // Auto-dismiss after 4 seconds
           setTimeout(function() { upd('lastBadgeNotification', null); }, 4000);
@@ -1532,9 +1559,13 @@
 
       // ── Collaborative Mode: Push block changes to Firestore ──
       function syncBlocksToFirestore() {
-        if (!collabMode) return;
-        var ref = getSessionRef();
+        // Read collab flag from engine bridge — closure's collabMode is stale because this
+        // function is captured in a long-lived setTimeout scheduled from the canvas mousedown
+        // handler (which itself was attached during one-shot initEngine).
         var eng = window[engineKey];
+        var isCollab = eng && eng._placeState && eng._placeState.collabMode;
+        if (!isCollab) return;
+        var ref = getSessionRef();
         if (!ref || !eng || !fb.updateDoc) return;
         var blocks = [];
         Object.keys(eng.blocks).forEach(function(key) {
@@ -1848,6 +1879,32 @@
         // ── Undo / Redo system ──
         engine._undoStack = []; // { action: 'place'|'remove', x, y, z, type, shape }
         engine._redoStack = [];
+
+        // ── Return to Spawn: teleport player back to lesson spawn point ──
+        engine.returnToSpawn = function() {
+          var sp = (engine._currentLesson && engine._currentLesson.spawnPoint) || [0, 2, 0];
+          engine.camera.position.set(sp[0], sp[1] + 1.7, sp[2]);
+          engine.velocity.set(0, 0, 0);
+          engine.yaw = 0; engine.pitch = 0;
+        };
+
+        // ── Clear My Blocks: remove only student-placed blocks (preserves lesson structures) ──
+        engine.clearPlayerBlocks = function() {
+          var cleared = 0;
+          Object.keys(engine.blocks).forEach(function(key) {
+            var mesh = engine.blocks[key];
+            if (mesh && mesh.userData && !mesh.userData._lessonBlock) {
+              var p = key.split(',').map(Number);
+              engine.removeBlock(p[0], p[1], p[2], true);
+              cleared++;
+            }
+          });
+          // Reset counter + clear undo history (confusing after bulk clear)
+          engine.blocksPlaced = 0;
+          engine._undoStack = [];
+          engine._redoStack = [];
+          return cleared;
+        };
         var MAX_UNDO = 200;
         function pushUndo(action) {
           engine._undoStack.push(action);
@@ -1866,6 +1923,7 @@
               if (mesh.children) mesh.children.forEach(function(c) { if (c.geometry) c.geometry.dispose(); if (c.material) c.material.dispose(); });
               mesh.geometry.dispose(); mesh.material.dispose();
               delete engine.blocks[key];
+              engine._blocksDirty = true;
             }
           } else if (a.action === 'remove') {
             // Undo a removal = re-place the block
@@ -1890,6 +1948,7 @@
               if (mesh.children) mesh.children.forEach(function(c) { if (c.geometry) c.geometry.dispose(); if (c.material) c.material.dispose(); });
               mesh.geometry.dispose(); mesh.material.dispose();
               delete engine.blocks[key];
+              engine._blocksDirty = true;
             }
           }
           engine._undoStack.push(a);
@@ -1922,6 +1981,7 @@
           mesh.userData = { blockType: type, gridPos: { x: x, y: y, z: z }, shape: shapeId, volume: shapeDef.volume, rotation: rot, _lessonBlock: !!engine._placingLessonBlocks };
           engine.scene.add(mesh);
           engine.blocks[key] = mesh;
+          engine._blocksDirty = true; // invalidate cached blocks array so raycasters rebuild
           pushUndo({ action: 'place', x: x, y: y, z: z, type: type, shape: shapeId });
           // Torch blocks emit a point light
           if (type === 'torch') {
@@ -1960,6 +2020,7 @@
             if (mesh.children) mesh.children.forEach(function(c) { if (c.geometry) c.geometry.dispose(); if (c.material) c.material.dispose(); });
             mesh.geometry.dispose(); mesh.material.dispose();
             delete engine.blocks[key];
+            engine._blocksDirty = true; // invalidate cached blocks array
             pushUndo({ action: 'remove', x: x, y: y, z: z, type: removedType, shape: removedShape });
           }
         };
@@ -1969,15 +2030,16 @@
         function spawnBreakParticles(eng, px, py, pz, color) {
           var THREE = window.THREE;
           if (!THREE) return;
-          var count = 6;
+          // Chunkier shatter: more shards, wider size range, a bit more vertical lift.
+          var count = 10;
           for (var i = 0; i < count; i++) {
-            var size = 0.08 + Math.random() * 0.08;
+            var size = 0.06 + Math.random() * 0.14;
             var geo = new THREE.BoxGeometry(size, size, size);
             var mat = new THREE.MeshBasicMaterial({ color: color, transparent: true });
             var p = new THREE.Mesh(geo, mat);
-            p.position.set(px + (Math.random() - 0.5) * 0.5, py + (Math.random() - 0.5) * 0.5, pz + (Math.random() - 0.5) * 0.5);
-            p.userData._vel = new THREE.Vector3((Math.random() - 0.5) * 3, 1.5 + Math.random() * 3, (Math.random() - 0.5) * 3);
-            p.userData._life = 0.5 + Math.random() * 0.3;
+            p.position.set(px + (Math.random() - 0.5) * 0.6, py + (Math.random() - 0.5) * 0.6, pz + (Math.random() - 0.5) * 0.6);
+            p.userData._vel = new THREE.Vector3((Math.random() - 0.5) * 4, 2 + Math.random() * 3.5, (Math.random() - 0.5) * 4);
+            p.userData._life = 0.55 + Math.random() * 0.4;
             p.userData._age = 0;
             eng.scene.add(p);
             eng._particles.push(p);
@@ -1988,14 +2050,16 @@
         function spawnPlaceParticles(eng, px, py, pz) {
           var THREE = window.THREE;
           if (!THREE) return;
-          for (var i = 0; i < 5; i++) {
-            var size = 0.04 + Math.random() * 0.04;
+          // Mix of gold sparks + white-hot flashes for a more reactive place feel.
+          for (var i = 0; i < 8; i++) {
+            var size = 0.03 + Math.random() * 0.06;
             var geo = new THREE.BoxGeometry(size, size, size);
-            var mat = new THREE.MeshBasicMaterial({ color: 0xfbbf24, transparent: true });
+            var sparkColor = Math.random() < 0.35 ? 0xffffff : 0xfbbf24;
+            var mat = new THREE.MeshBasicMaterial({ color: sparkColor, transparent: true });
             var sp = new THREE.Mesh(geo, mat);
             sp.position.set(px + (Math.random() - 0.5) * 0.6, py + (Math.random() - 0.5) * 0.6, pz + (Math.random() - 0.5) * 0.6);
-            sp.userData._vel = new THREE.Vector3((Math.random() - 0.5) * 2, 0.5 + Math.random() * 2, (Math.random() - 0.5) * 2);
-            sp.userData._life = 0.3 + Math.random() * 0.2;
+            sp.userData._vel = new THREE.Vector3((Math.random() - 0.5) * 2.2, 0.6 + Math.random() * 2.2, (Math.random() - 0.5) * 2.2);
+            sp.userData._life = 0.3 + Math.random() * 0.25;
             sp.userData._age = 0;
             eng.scene.add(sp);
             eng._particles.push(sp);
@@ -2014,6 +2078,7 @@
             var m = engine.blocks[k]; engine.scene.remove(m); m.geometry.dispose(); m.material.dispose();
           });
           engine.blocks = {};
+          engine._blocksDirty = true; // invalidate cache
           engine.npcs.forEach(function(n) {
             engine.scene.remove(n.body); engine.scene.remove(n.head); engine.scene.remove(n.label);
             if (n.prompt) engine.scene.remove(n.prompt);
@@ -2040,13 +2105,14 @@
           head.castShadow = true;
           engine.scene.add(head);
 
-          // Eyes — two small dark spheres
+          // Eyes — classic white-ring + pupil. Previously the white was BEHIND the pupil (z=0.22 vs 0.24)
+          // so it hid inside the head. Now white at the surface, pupil in front of it.
           var eyeMat = new THREE.MeshBasicMaterial({ color: 0x1e293b });
-          var eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.04, 6, 6), eyeMat);
-          eyeL.position.set(-0.1, 0.04, 0.24);
+          var eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.032, 8, 8), eyeMat);
+          eyeL.position.set(-0.1, 0.04, 0.27);
           head.add(eyeL);
-          var eyeR = new THREE.Mesh(new THREE.SphereGeometry(0.04, 6, 6), eyeMat);
-          eyeR.position.set(0.1, 0.04, 0.24);
+          var eyeR = new THREE.Mesh(new THREE.SphereGeometry(0.032, 8, 8), eyeMat);
+          eyeR.position.set(0.1, 0.04, 0.27);
           head.add(eyeR);
 
           // Name label — cleaner with rounded background
@@ -2091,11 +2157,12 @@
             engine.scene.add(qMarkSprite);
           }
 
-          // Eye white/iris for expressiveness
-          var eyeWhiteL = new THREE.Mesh(new THREE.SphereGeometry(0.055, 6, 6), new THREE.MeshBasicMaterial({ color: 0xffffff }));
-          eyeWhiteL.position.set(-0.1, 0.04, 0.22); head.add(eyeWhiteL);
-          var eyeWhiteR = new THREE.Mesh(new THREE.SphereGeometry(0.055, 6, 6), new THREE.MeshBasicMaterial({ color: 0xffffff }));
-          eyeWhiteR.position.set(0.1, 0.04, 0.22); head.add(eyeWhiteR);
+          // Eye whites — positioned at the head surface so pupils (z=0.27) sit nicely in front.
+          // Slight inset gives the pupil a visible ring of white around it.
+          var eyeWhiteL = new THREE.Mesh(new THREE.SphereGeometry(0.055, 8, 8), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+          eyeWhiteL.position.set(-0.1, 0.04, 0.255); head.add(eyeWhiteL);
+          var eyeWhiteR = new THREE.Mesh(new THREE.SphereGeometry(0.055, 8, 8), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+          eyeWhiteR.position.set(0.1, 0.04, 0.255); head.add(eyeWhiteR);
 
           body.userData.isNPC = true; body.userData.npcIndex = engine.npcs.length;
           head.userData.isNPC = true; head.userData.npcIndex = engine.npcs.length;
@@ -2104,6 +2171,7 @@
 
         engine.loadLesson = function(lesson) {
           if (engine.logEvent) engine.logEvent('lesson_load', { title: lesson.title || 'unknown', npcCount: (lesson.npcs || []).length, questionCount: (lesson.npcs || []).filter(function(n) { return n.question; }).length });
+          engine._currentLesson = lesson; // remember for returnToSpawn
           engine.clearWorld();
           // Reset sky to daytime
           engine.scene.background.setRGB(0.53, 0.81, 0.92);
@@ -2111,6 +2179,8 @@
           engine.completionTriggered = false;
           engine.completionProgress = 0;
           engine.blocksPlaced = 0;
+          engine._sessionXP = 0; // Reset session XP counter when switching lessons
+          engine._blockMilestones = {}; // Re-arm 10/50-block XP awards for the new lesson
           if (engine.stars) { engine.scene.remove(engine.stars); engine.stars = null; engine.starsCreated = false; }
           if (engine.congratsSprite) { engine.scene.remove(engine.congratsSprite); engine.congratsSprite = null; engine.congratsCreated = false; }
           // Place ground and structures as indestructible lesson blocks
@@ -2142,11 +2212,13 @@
           // Restore chat history from localStorage
           var savedChat = null;
           try { savedChat = JSON.parse(localStorage.getItem('gw_chat_' + (lesson._id || Object.keys(SAMPLE_LESSONS).find(function(k) { return SAMPLE_LESSONS[k] === lesson; }) || 'unknown'))); } catch(e) {}
+          // engine.blocksPlaced was reset to 0 at the top of loadLesson — mirror to React state
+          // so the HUD + build_10 quest don't display stale counts from a prior session/lesson.
           if (savedProgress && savedProgress.score > 0) {
-            upd({ totalQ: totalQCount, score: savedProgress.score, answeredNpcs: savedProgress.answeredNpcs || {}, npcFollowUpStep: savedProgress.npcFollowUpStep || {}, npcChatHistory: savedChat || {}, worldActive: true });
+            upd({ totalQ: totalQCount, score: savedProgress.score, answeredNpcs: savedProgress.answeredNpcs || {}, npcFollowUpStep: savedProgress.npcFollowUpStep || {}, npcChatHistory: savedChat || {}, worldActive: true, blocksPlaced: 0 });
             if (addToast) addToast('\uD83D\uDCBE Progress restored: ' + savedProgress.score + '/' + totalQCount, 'info');
           } else {
-            upd({ totalQ: totalQCount, score: 0, answeredNpcs: {}, npcFollowUpStep: {}, npcChatHistory: savedChat || {}, worldActive: true });
+            upd({ totalQ: totalQCount, score: 0, answeredNpcs: {}, npcFollowUpStep: {}, npcChatHistory: savedChat || {}, worldActive: true, blocksPlaced: 0 });
           }
           engine._progressKey = progressKey;
         };
@@ -2195,13 +2267,25 @@
         }
         function makeDimLabel(text, color) {
           var THREE = window.THREE;
-          var c = document.createElement('canvas'); c.width = 128; c.height = 48;
+          // Hi-DPI canvas for crisper labels at distance
+          var c = document.createElement('canvas'); c.width = 256; c.height = 96;
           var cx = c.getContext('2d');
-          cx.clearRect(0, 0, 128, 48);
-          cx.fillStyle = 'rgba(0,0,0,0.6)';
-          cx.fillRect(4, 4, 120, 40);
-          cx.fillStyle = color || '#fff'; cx.font = 'bold 20px monospace'; cx.textAlign = 'center';
-          cx.fillText(text, 64, 32);
+          cx.clearRect(0, 0, 256, 96);
+          // Rounded pill background with subtle color-matched border
+          cx.fillStyle = 'rgba(15,23,42,0.88)';
+          if (cx.roundRect) { cx.beginPath(); cx.roundRect(8, 8, 240, 80, 20); cx.fill(); } else { cx.fillRect(8, 8, 240, 80); }
+          if (cx.roundRect) {
+            cx.strokeStyle = color || '#ffffff';
+            cx.lineWidth = 3;
+            cx.beginPath(); cx.roundRect(8, 8, 240, 80, 20); cx.stroke();
+          }
+          // Text with subtle shadow for contrast at distance
+          cx.shadowColor = 'rgba(0,0,0,0.5)'; cx.shadowBlur = 6;
+          cx.fillStyle = color || '#fff';
+          cx.font = 'bold 42px "SF Mono", "Consolas", monospace';
+          cx.textAlign = 'center'; cx.textBaseline = 'middle';
+          cx.fillText(text, 128, 52);
+          cx.shadowBlur = 0;
           var spr = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), transparent: true, depthTest: false }));
           spr.scale.set(1.6, 0.6, 1);
           return spr;
@@ -2229,7 +2313,7 @@
 
           // Step 2 (after 0.8s): Width line + label
           setTimeout(function() {
-            if (!engine || !engine.scene) return;
+            if (!engine || !engine.scene || !window.THREE) return;
             dimLine(x0, y0, z0, x0, y0, z1, 0x3b82f6);
             var wbl = makeDimLabel('W=' + m.W, '#3b82f6');
             wbl.position.set(x0 - 0.5, y0 - 0.4, (z0 + z1) / 2);
@@ -2238,7 +2322,7 @@
 
           // Step 3 (after 1.6s): Height line + label
           setTimeout(function() {
-            if (!engine || !engine.scene) return;
+            if (!engine || !engine.scene || !window.THREE) return;
             dimLine(x0, y0, z0, x0, y1, z0, 0x22c55e);
             var hbl = makeDimLabel('H=' + m.H, '#22c55e');
             hbl.position.set(x0 - 0.5, (y0 + y1) / 2, z0);
@@ -2290,7 +2374,7 @@
           var colors = [0xef4444, 0xf59e0b, 0x22c55e, 0x3b82f6, 0x7c3aed, 0xec4899];
           sortedYs.forEach(function(ly, layerIdx) {
             setTimeout(function() {
-              if (!engine || !engine.scene) return;
+              if (!engine || !engine.scene || !window.THREE) return;
               var layerColor = colors[layerIdx % colors.length];
               var glowMat = new THREE.MeshBasicMaterial({ color: layerColor, transparent: true, opacity: 0.22, side: THREE.DoubleSide });
               layers[ly].forEach(function(b) {
@@ -2320,7 +2404,7 @@
         canvas.addEventListener('click', function() { if (!engine.isLocked) canvas.requestPointerLock(); });
         document.addEventListener('pointerlockchange', function() {
           engine.isLocked = !!document.pointerLockElement;
-          if (engine.isLocked) { startAmbientWind(); if (tutorialStep === 0 && !tutorialDismissed) upd('tutorialStep', 1); }
+          if (engine.isLocked) { startAmbientWind(); var ts = engine._tutorialState || {}; if (ts.step === 0 && !ts.dismissed) upd('tutorialStep', 1); }
         });
 
         // Smooth mouse look with configurable sensitivity
@@ -2335,15 +2419,38 @@
         });
 
         document.addEventListener('keydown', function(ev) {
+          // Let Esc pass through even in inputs (students expect it to close overlays/blur inputs).
+          // But every other shortcut should be ignored when typing in a form field — otherwise
+          // typing "house" into the AI prompt triggers H-teleport, S-movement, E-talk, etc.
+          if (ev.code !== 'Escape' && ev.target && (
+            ev.target.tagName === 'INPUT' ||
+            ev.target.tagName === 'TEXTAREA' ||
+            ev.target.isContentEditable
+          )) return;
           switch (ev.code) {
             case 'Escape':
-              // Close any open dialog/overlay and release pointer lock
-              if (showNpcDialog) { upd('showNpcDialog', false); break; }
-              if (showHelp) { upd('showHelp', false); break; }
-              if (showGrowthNudge) { upd('showGrowthNudge', false); break; }
-              if (showPeerWorlds) { upd('showPeerWorlds', false); break; }
-              if (showTeacherView) { upd('showTeacherView', false); break; }
-              if (creatorMode) { upd('creatorMode', false); break; }
+              // Shift+Esc: close every overlay at once. Unconditional dispatch so it works
+              // regardless of closure staleness (keydown handler was attached once).
+              if (ev.shiftKey) {
+                ev.preventDefault();
+                upd({ showNpcDialog: false, showMyLessons: false, showLessonEditor: false, showLessonIntro: false, showReflection: false, showHelp: false, showCreatorPanel: false, showGrowthNudge: false, showTeacherView: false, showPeerWorlds: false });
+                if (addToast) addToast('🎮 Closed all overlays — back in the game', 'info');
+                break;
+              }
+              // Plain Esc: close the top-priority open dialog/overlay one at a time.
+              // Read from engine._modalState (updated each React render) to avoid stale closure.
+              var ms = (engine && engine._modalState) || {};
+              if (ms.showNpcDialog) { upd('showNpcDialog', false); break; }
+              if (ms.showHelp) { upd('showHelp', false); break; }
+              if (ms.showGrowthNudge) { upd('showGrowthNudge', false); break; }
+              if (ms.showPeerWorlds) { upd('showPeerWorlds', false); break; }
+              if (ms.showTeacherView) { upd('showTeacherView', false); break; }
+              if (ms.showMyLessons) { upd('showMyLessons', false); break; }
+              if (ms.showLessonEditor) { upd('showLessonEditor', false); break; }
+              if (ms.showLessonIntro) { upd('showLessonIntro', false); break; }
+              if (ms.showReflection) { upd('showReflection', false); break; }
+              if (ms.showCreatorPanel) { upd('showCreatorPanel', false); break; }
+              if (ms.creatorMode) { upd('creatorMode', false); break; }
               break;
             case 'KeyW': engine.moveState.forward = true; break;
             case 'KeyS': engine.moveState.backward = true; break;
@@ -2351,6 +2458,13 @@
             case 'KeyD': engine.moveState.right = true; break;
             case 'Space':
               ev.preventDefault();
+              // Ignore OS key-repeat: without this the double-tap-to-fly check fires
+              // ~33ms after the initial press, silently toggling fly mode while the
+              // user just holds Space to jump.
+              if (ev.repeat) {
+                if (engine.flyMode) engine.moveState.flyUp = true;
+                break;
+              }
               // Double-tap Space = toggle fly mode (like Minecraft creative)
               var now = Date.now();
               if (engine._lastSpaceTime && now - engine._lastSpaceTime < 300) {
@@ -2396,7 +2510,7 @@
                 var dist = engine.camera.position.distanceTo(n.body.position);
                 if (dist < minD) { minD = dist; nearest = i; }
               });
-              if (nearest >= 0) { if (document.pointerLockElement) document.exitPointerLock(); upd({ showNpcDialog: true, dialogNpcIdx: nearest, npcTypewriterPos: 0, npcTypewriterNpc: nearest }); sfxNpcChime(); if (tutorialStep === 1 && !tutorialDismissed) upd('tutorialStep', 2); }
+              if (nearest >= 0) { if (document.pointerLockElement) document.exitPointerLock(); upd({ showNpcDialog: true, dialogNpcIdx: nearest, npcTypewriterPos: 0, npcTypewriterNpc: nearest }); sfxNpcChime(); var ts1 = engine._tutorialState || {}; if (ts1.step === 1 && !ts1.dismissed) upd('tutorialStep', 2); }
               break;
             case 'KeyM':
               engine.raycaster.setFromCamera(new THREE.Vector2(0, 0), engine.camera);
@@ -2410,6 +2524,7 @@
                   var mh = (d.measureHistory || []).concat([{ L: m.L, W: m.W, H: m.H, vol: m.hasFractions ? m.formattedVolume : m.boundingVolume, blocks: m.count, t: Date.now() }]);
                   if (mh.length > 10) mh = mh.slice(-10);
                   upd({ measureResult: m, measureHistory: mh, actionFeedback: '\uD83D\uDCCF Measured: ' + m.L + '\u00d7' + m.W + '\u00d7' + m.H + ' = ' + (m.hasFractions ? m.formattedVolume : m.boundingVolume) });
+                  announceToSR('Measured: length ' + m.L + ' by width ' + m.W + ' by height ' + m.H + ' equals ' + (m.hasFractions ? m.formattedVolume : m.boundingVolume) + ' cubic units');
                   setTimeout(function() { upd('actionFeedback', ''); }, 2500);
                   // Show 3D dimension lines + selection glow around the measured structure
                   if (engine._dimTimer) clearTimeout(engine._dimTimer);
@@ -2421,7 +2536,7 @@
                   if (engine.logEvent) engine.logEvent('measurement', { L: m.L, W: m.W, H: m.H, volume: m.boundingVolume, blocks: m.count });
                   var mCount = (engine.sessionLog || []).filter(function(e) { return e.type === 'measurement'; }).length;
                   if (mCount <= 1 && typeof awardXP === 'function') awardXP('geometryWorld', 5, 'First measurement');
-                  if (tutorialStep === 2 && !tutorialDismissed) upd('tutorialStep', 3);
+                  var ts2 = engine._tutorialState || {}; if (ts2.step === 2 && !ts2.dismissed) upd('tutorialStep', 3);
                   setTimeout(runAchievementCheck, 100);
                 }
               }
@@ -2434,12 +2549,16 @@
               if (BLOCK_TYPES.length >= 10) upd('selectedBlock', 9);
               break;
             case 'KeyQ': // Cycle through shapes
-              upd({ selectedShape: (selectedShape + 1) % BLOCK_SHAPES.length, blockRotation: 0 });
-              upd('actionFeedback', 'Shape: ' + BLOCK_SHAPES[(selectedShape + 1) % BLOCK_SHAPES.length].name);
+              // Read latest shape from engine bridge (closure value is stale after first render)
+              var curShape = (engine._placeState && typeof engine._placeState.selectedShape === 'number') ? engine._placeState.selectedShape : 0;
+              var nextShape = (curShape + 1) % BLOCK_SHAPES.length;
+              upd({ selectedShape: nextShape, blockRotation: 0 });
+              upd('actionFeedback', 'Shape: ' + BLOCK_SHAPES[nextShape].name);
               setTimeout(function() { upd('actionFeedback', ''); }, 1200);
               break;
             case 'KeyR': // Rotate block 90° (for half/quarter shapes)
-              var newRot = (blockRotation + 1) % 4;
+              var curRot = (engine._placeState && typeof engine._placeState.blockRotation === 'number') ? engine._placeState.blockRotation : 0;
+              var newRot = (curRot + 1) % 4;
               upd('blockRotation', newRot);
               upd('actionFeedback', 'Rotate: ' + (newRot * 90) + '\u00b0');
               setTimeout(function() { upd('actionFeedback', ''); }, 1200);
@@ -2487,7 +2606,163 @@
                 setTimeout(function() { upd('actionFeedback', ''); }, 1200);
               }
               break;
+            case 'KeyC': // Toggle coordinate announcements for screen-reader users
+              engine._coordAnnounce = !engine._coordAnnounce;
+              announceToSR(engine._coordAnnounce
+                ? 'Coordinate announcements on. Position at X ' + Math.floor(engine.camera.position.x) + ' Y ' + Math.floor(engine.camera.position.y) + ' Z ' + Math.floor(engine.camera.position.z)
+                : 'Coordinate announcements off');
+              upd('actionFeedback', engine._coordAnnounce ? '\uD83D\uDD0A Coord SR ON' : '\uD83D\uDD07 Coord SR OFF');
+              setTimeout(function() { upd('actionFeedback', ''); }, 1500);
+              break;
+            case 'KeyV': // 3-point angle tool: click 3 blocks (A, vertex B, C), get the angle at B
+              engine.raycaster.setFromCamera(new THREE.Vector2(0, 0), engine.camera);
+              var vHits = engine.raycaster.intersectObjects(Object.values(engine.blocks));
+              if (vHits.length > 0 && vHits[0].object.userData.gridPos) {
+                var vp = vHits[0].object.userData.gridPos;
+                // Use block center as the geometric point for the angle calc.
+                var vPoint = new THREE.Vector3(vp.x + 0.5, vp.y + 0.5, vp.z + 0.5);
+                if (!engine._anglePoints) engine._anglePoints = [];
+                engine._anglePoints.push(vPoint);
+                if (engine._anglePoints.length === 1) {
+                  upd('actionFeedback', '\uD83D\uDCD0 Angle: A set \u2014 press V on the vertex');
+                  announceToSR('Angle point A set. Aim at the vertex and press V.');
+                  setTimeout(function() { upd('actionFeedback', ''); }, 2000);
+                } else if (engine._anglePoints.length === 2) {
+                  upd('actionFeedback', '\uD83D\uDCD0 Angle: Vertex set \u2014 press V on the third point');
+                  announceToSR('Angle vertex set. Aim at the third point and press V.');
+                  setTimeout(function() { upd('actionFeedback', ''); }, 2000);
+                } else {
+                  // Three points collected: compute angle at the middle point (the vertex).
+                  var aPt = engine._anglePoints[0];
+                  var bPt = engine._anglePoints[1];
+                  var cPt = engine._anglePoints[2];
+                  var ba = new THREE.Vector3().subVectors(aPt, bPt);
+                  var bc = new THREE.Vector3().subVectors(cPt, bPt);
+                  var deg = 0;
+                  if (ba.length() > 0.0001 && bc.length() > 0.0001) {
+                    var cosang = ba.dot(bc) / (ba.length() * bc.length());
+                    cosang = Math.max(-1, Math.min(1, cosang));
+                    deg = Math.acos(cosang) * (180 / Math.PI);
+                  }
+                  var degStr = deg.toFixed(1);
+                  // Clear any prior angle helpers, then draw two lines (A→B, B→C) and a label at B.
+                  if (engine._angleHelpers) {
+                    engine._angleHelpers.forEach(function(o) { engine.scene.remove(o); if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
+                  }
+                  engine._angleHelpers = [];
+                  var aMat = new THREE.LineBasicMaterial({ color: 0xf472b6, transparent: true, opacity: 0.9, linewidth: 2 });
+                  var aGeo1 = new THREE.BufferGeometry().setFromPoints([bPt, aPt]);
+                  var aGeo2 = new THREE.BufferGeometry().setFromPoints([bPt, cPt]);
+                  var aLine1 = new THREE.LineSegments(aGeo1, aMat);
+                  var aLine2 = new THREE.LineSegments(aGeo2, aMat.clone());
+                  engine.scene.add(aLine1); engine.scene.add(aLine2);
+                  engine._angleHelpers.push(aLine1); engine._angleHelpers.push(aLine2);
+                  var aLbl = makeDimLabel(degStr + '\u00b0', '#f472b6');
+                  aLbl.position.set(bPt.x, bPt.y + 0.7, bPt.z);
+                  aLbl.scale.set(1.8, 0.7, 1);
+                  engine.scene.add(aLbl);
+                  engine._angleHelpers.push(aLbl);
+                  var kind = deg < 89.5 ? 'acute' : (deg > 90.5 ? (deg > 179.5 ? 'straight' : 'obtuse') : 'right');
+                  upd('actionFeedback', '\uD83D\uDCD0 Angle: ' + degStr + '\u00b0 (' + kind + ')');
+                  announceToSR('Angle measured. ' + degStr + ' degrees. ' + kind + ' angle.');
+                  if (engine.logEvent) engine.logEvent('angle_measure', { degrees: parseFloat(degStr), kind: kind });
+                  setTimeout(function() { upd('actionFeedback', ''); }, 3500);
+                  // Auto-clear helpers after 20s so the scene stays tidy.
+                  if (engine._angleClearTimer) clearTimeout(engine._angleClearTimer);
+                  engine._angleClearTimer = setTimeout(function() {
+                    if (engine._angleHelpers) {
+                      engine._angleHelpers.forEach(function(o) { engine.scene.remove(o); if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
+                      engine._angleHelpers = [];
+                    }
+                  }, 20000);
+                  engine._anglePoints = [];
+                }
+              } else if (engine._anglePoints && engine._anglePoints.length > 0) {
+                // Cancel in-progress angle if no hit.
+                engine._anglePoints = [];
+                upd('actionFeedback', '\uD83D\uDCD0 Angle cancelled');
+                setTimeout(function() { upd('actionFeedback', ''); }, 1200);
+              }
+              break;
+            case 'KeyN': // Net unfolding: show the 6 faces of the targeted structure's bounding box flat
+              engine.raycaster.setFromCamera(new THREE.Vector2(0, 0), engine.camera);
+              var nHits = engine.raycaster.intersectObjects(Object.values(engine.blocks));
+              if (nHits.length > 0 && nHits[0].object.userData.gridPos) {
+                var ngp = nHits[0].object.userData.gridPos;
+                var nm = engine.measureStructure(ngp.x, ngp.y, ngp.z, nHits[0].object.userData.blockType);
+                if (nm) {
+                  // Clear any prior net helpers.
+                  if (engine._netHelpers) {
+                    engine._netHelpers.forEach(function(o) { engine.scene.remove(o); if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
+                  }
+                  engine._netHelpers = [];
+                  var L = nm.L, W = nm.W, H = nm.H;
+                  var areaTop = L * W, areaFront = L * H, areaSide = W * H;
+                  var surface = 2 * (areaTop + areaFront + areaSide);
+                  // Lay out the classic cross-shape net on the ground 2 blocks east of the structure.
+                  // Centered vertically on the structure's midline; each face is a flat quad with a label.
+                  var baseX = nm.minX + L + 3;
+                  var baseY = 0.02; // just above ground to avoid z-fighting
+                  var baseZ = nm.minZ;
+                  function addQuad(ox, oz, w, h, color, label) {
+                    // Quad: lying flat on XZ plane, with width = w (X) and depth = h (Z).
+                    var g = new THREE.PlaneGeometry(w, h);
+                    var mat = new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 0.35, side: THREE.DoubleSide, depthWrite: false });
+                    var mesh = new THREE.Mesh(g, mat);
+                    mesh.rotation.x = -Math.PI / 2;
+                    mesh.position.set(baseX + ox + w / 2, baseY, baseZ + oz + h / 2);
+                    engine.scene.add(mesh); engine._netHelpers.push(mesh);
+                    var edgeGeo = new THREE.EdgesGeometry(g);
+                    var edgeMat = new THREE.LineBasicMaterial({ color: color, transparent: true, opacity: 0.9 });
+                    var edges = new THREE.LineSegments(edgeGeo, edgeMat);
+                    edges.rotation.x = -Math.PI / 2;
+                    edges.position.copy(mesh.position);
+                    engine.scene.add(edges); engine._netHelpers.push(edges);
+                    var lbl = makeDimLabel(label, '#f8fafc');
+                    lbl.position.set(mesh.position.x, baseY + 0.8, mesh.position.z);
+                    lbl.scale.set(1.2, 0.5, 1);
+                    engine.scene.add(lbl); engine._netHelpers.push(lbl);
+                  }
+                  // Cross layout: middle row = [left W×H, front L×H, right W×H, back L×H]
+                  // with top L×W above the front, bottom L×W below the front.
+                  // Origin (0,0) is the front face's NW corner.
+                  addQuad(-W, 0, W, H, 0x60a5fa, 'Left ' + W + '\u00d7' + H + '=' + areaSide);
+                  addQuad(0, 0, L, H, 0x22d3ee, 'Front ' + L + '\u00d7' + H + '=' + areaFront);
+                  addQuad(L, 0, W, H, 0x60a5fa, 'Right ' + W + '\u00d7' + H + '=' + areaSide);
+                  addQuad(L + W, 0, L, H, 0x22d3ee, 'Back ' + L + '\u00d7' + H + '=' + areaFront);
+                  addQuad(0, -W, L, W, 0x34d399, 'Top ' + L + '\u00d7' + W + '=' + areaTop);
+                  addQuad(0, H, L, W, 0xfbbf24, 'Bottom ' + L + '\u00d7' + W + '=' + areaTop);
+                  // Total surface area label floating above the net.
+                  var totalLbl = makeDimLabel('SA = ' + surface, '#a78bfa');
+                  totalLbl.position.set(baseX + L / 2, 2.4, baseZ + H / 2 - W);
+                  totalLbl.scale.set(2.4, 0.9, 1);
+                  engine.scene.add(totalLbl); engine._netHelpers.push(totalLbl);
+                  upd('actionFeedback', '\uD83D\uDCCB Net: SA = 2(' + areaTop + '+' + areaFront + '+' + areaSide + ') = ' + surface);
+                  announceToSR('Net unfolded. Surface area equals ' + surface + ' square units. Two times top ' + areaTop + ' plus front ' + areaFront + ' plus side ' + areaSide + '.');
+                  if (engine.logEvent) engine.logEvent('net_unfold', { L: L, W: W, H: H, surfaceArea: surface });
+                  setTimeout(function() { upd('actionFeedback', ''); }, 4000);
+                  // Auto-clear after 30s so the scene doesn't get cluttered.
+                  if (engine._netClearTimer) clearTimeout(engine._netClearTimer);
+                  engine._netClearTimer = setTimeout(function() {
+                    if (engine._netHelpers) {
+                      engine._netHelpers.forEach(function(o) { engine.scene.remove(o); if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
+                      engine._netHelpers = [];
+                    }
+                  }, 30000);
+                }
+              }
+              break;
             case 'ShiftLeft': case 'ShiftRight': engine.moveState.sprint = true; break;
+            case 'KeyH':
+              // H = return to spawn (home)
+              if (!ev.ctrlKey && !ev.metaKey) {
+                ev.preventDefault();
+                if (engine.returnToSpawn) {
+                  engine.returnToSpawn();
+                  if (addToast) addToast('🏠 Teleported to spawn', 'info');
+                }
+              }
+              break;
             case 'KeyZ':
               if (ev.ctrlKey || ev.metaKey) { ev.preventDefault(); engine.undo(); if (addToast) addToast('\u21A9\uFE0F Undo', 'info'); }
               break;
@@ -2511,7 +2786,7 @@
           if (!engine.isLocked) return;
           var THREE = window.THREE;
           engine.raycaster.setFromCamera(new THREE.Vector2(0, 0), engine.camera);
-          var allMeshes = Object.values(engine.blocks).concat(engine.npcs.map(function(n) { return n.body; }));
+          var allMeshes = engine.getBlocksArr().concat(engine.npcs.map(function(n) { return n.body; }));
           var hits = engine.raycaster.intersectObjects(allMeshes);
           if (hits.length > 0) {
             var hit = hits[0];
@@ -2530,8 +2805,10 @@
               engine._shakeUntil = engine.clock.getElapsedTime() + 0.15;
               engine._shakeIntensity = 0.03;
               engine.blocksPlaced = Math.max(0, (engine.blocksPlaced || 0) - 1);
+              upd('blocksPlaced', engine.blocksPlaced); // keep React state in sync
               checkBreakFrustration();
-              if (collabMode) { clearTimeout(engine._collabSyncTimer); engine._collabSyncTimer = setTimeout(syncBlocksToFirestore, 500); }
+              var ps1 = engine._placeState || {};
+              if (ps1.collabMode) { clearTimeout(engine._collabSyncTimer); engine._collabSyncTimer = setTimeout(syncBlocksToFirestore, 500); }
             } else if (ev.button === 2 && hit.object.userData.gridPos && hit.face) {
               // Block limit check
               if (Object.keys(engine.blocks).length >= MAX_BLOCKS) {
@@ -2541,11 +2818,15 @@
               var p = hit.object.userData.gridPos;
               var n = hit.face.normal;
               var placeX = p.x + Math.round(n.x), placeY = p.y + Math.round(n.y), placeZ = p.z + Math.round(n.z);
-              var placeType = BLOCK_TYPES[selectedBlock].id;
-              engine.placeBlock(placeX, placeY, placeZ, placeType, BLOCK_SHAPES[selectedShape].id, blockRotation);
+              // Read current placement state from engine bridge (closure vars are stale).
+              var ps = engine._placeState || { selectedBlock: 0, selectedShape: 0, blockRotation: 0 };
+              var placeType = BLOCK_TYPES[ps.selectedBlock].id;
+              engine.placeBlock(placeX, placeY, placeZ, placeType, BLOCK_SHAPES[ps.selectedShape].id, ps.blockRotation);
               sfxPlace(placeType); if (window._alloHaptic) window._alloHaptic('place');
               spawnPlaceParticles(engine, placeX + 0.5, placeY + 0.5, placeZ + 0.5);
               engine.blocksPlaced = (engine.blocksPlaced || 0) + 1;
+              // Sync to React state so quests + HUD stay current (was never synced — pre-existing bug)
+              upd('blocksPlaced', engine.blocksPlaced);
               // First block ever — special celebration!
               if (engine.blocksPlaced === 1) {
                 if (addToast) addToast('\uD83C\uDF89 Your first block! Keep building!', 'success');
@@ -2563,10 +2844,13 @@
                   } catch(e) {}
                 }
               }
-              if (engine.blocksPlaced === 10 && typeof awardXP === 'function') awardXP('geometryWorld', 5, '10 blocks placed');
-              if (engine.blocksPlaced === 50 && typeof awardXP === 'function') awardXP('geometryWorld', 5, '50 blocks placed');
-              if (tutorialStep === 3 && !tutorialDismissed) upd({ tutorialStep: 4, tutorialDismissed: true });
-              if (collabMode) { clearTimeout(engine._collabSyncTimer); engine._collabSyncTimer = setTimeout(syncBlocksToFirestore, 500); }
+              // Award XP once per threshold per session. Undoing past a threshold and redoing
+              // previously caused duplicate awards; engine._blockMilestones tracks claimed flags.
+              if (!engine._blockMilestones) engine._blockMilestones = {};
+              if (engine.blocksPlaced >= 10 && !engine._blockMilestones.ten && typeof awardXP === 'function') { awardXP('geometryWorld', 5, '10 blocks placed'); engine._blockMilestones.ten = true; }
+              if (engine.blocksPlaced >= 50 && !engine._blockMilestones.fifty && typeof awardXP === 'function') { awardXP('geometryWorld', 5, '50 blocks placed'); engine._blockMilestones.fifty = true; }
+              var ts3 = engine._tutorialState || {}; if (ts3.step === 3 && !ts3.dismissed) upd({ tutorialStep: 4, tutorialDismissed: true });
+              if (ps.collabMode) { clearTimeout(engine._collabSyncTimer); engine._collabSyncTimer = setTimeout(syncBlocksToFirestore, 500); }
             }
           }
         });
@@ -2577,8 +2861,10 @@
         canvas.addEventListener('wheel', function(ev) {
           if (!engine.isLocked) return;
           ev.preventDefault();
-          var dir = ev.deltaY > 0 ? 1 : -1;
-          var newIdx = ((selectedBlock + dir) % BLOCK_TYPES.length + BLOCK_TYPES.length) % BLOCK_TYPES.length;
+          var wdir = ev.deltaY > 0 ? 1 : -1;
+          // Read current selection from engine bridge (closure var is stale)
+          var cur = (engine._placeState && typeof engine._placeState.selectedBlock === 'number') ? engine._placeState.selectedBlock : 0;
+          var newIdx = ((cur + wdir) % BLOCK_TYPES.length + BLOCK_TYPES.length) % BLOCK_TYPES.length;
           upd('selectedBlock', newIdx);
         }, { passive: false });
 
@@ -2656,6 +2942,18 @@
           }
         }, { passive: false });
 
+        // ── Cached blocks array (rebuilt only when blocks change). Avoids allocating
+        // a fresh Object.values() array every frame in the ghost-preview raycaster.
+        engine._blocksArr = [];
+        engine._blocksDirty = true;
+        engine.getBlocksArr = function() {
+          if (engine._blocksDirty) {
+            engine._blocksArr = Object.values(engine.blocks);
+            engine._blocksDirty = false;
+          }
+          return engine._blocksArr;
+        };
+
         // ── Block placement preview ghost + break highlight + crosshair targeting ──
         engine._ghostMesh = null;
         engine._highlightMesh = null;
@@ -2679,8 +2977,33 @@
           } else {
             engine._crosshairTarget = 'none';
           }
-          var hits = engine.raycaster.intersectObjects(Object.values(engine.blocks));
+          var hits = engine.raycaster.intersectObjects(engine.getBlocksArr());
           if (hits.length > 0) engine._crosshairTarget = engine._crosshairTarget === 'none' ? 'block' : engine._crosshairTarget;
+          // Track targeted block grid position so the HUD and SR-announcer can read it.
+          if (hits.length > 0 && hits[0].object.userData.gridPos) {
+            var tg = hits[0].object.userData.gridPos;
+            var tbt = hits[0].object.userData.blockType || null;
+            engine._targetGrid = { x: tg.x, y: tg.y, z: tg.z, type: tbt };
+          } else {
+            engine._targetGrid = null;
+          }
+          // Periodic coord announcer for low-vision / screen-reader users.
+          // Fires on movement > ~3 blocks OR every 6 seconds idle, while _coordAnnounce is on.
+          if (engine._coordAnnounce) {
+            var nowMs = Date.now();
+            var cp = engine.camera.position;
+            var cx3 = Math.floor(cp.x), cy3 = Math.floor(cp.y), cz3 = Math.floor(cp.z);
+            if (!engine._lastAnnouncePos) engine._lastAnnouncePos = { x: cx3, y: cy3, z: cz3, t: 0 };
+            var lp = engine._lastAnnouncePos;
+            var moved = Math.abs(cx3 - lp.x) + Math.abs(cy3 - lp.y) + Math.abs(cz3 - lp.z);
+            var elapsed = nowMs - lp.t;
+            if ((moved >= 3 && elapsed > 1500) || elapsed > 6000) {
+              var msg = 'X ' + cx3 + ' Y ' + cy3 + ' Z ' + cz3;
+              if (engine._targetGrid) msg += '. Looking at ' + (engine._targetGrid.type || 'block') + ' at X ' + engine._targetGrid.x + ' Y ' + engine._targetGrid.y + ' Z ' + engine._targetGrid.z;
+              announceToSR(msg);
+              engine._lastAnnouncePos = { x: cx3, y: cy3, z: cz3, t: nowMs };
+            }
+          }
 
           // ── Break highlight — colored wireframe on the targeted block ──
           if (hits.length > 0 && hits[0].object.userData.gridPos) {
@@ -2710,8 +3033,11 @@
             var p2 = hits[0].object.userData.gridPos;
             var n2 = hits[0].face.normal;
             var gx = p2.x + Math.round(n2.x), gy = p2.y + Math.round(n2.y), gz = p2.z + Math.round(n2.z);
-            var curShapeId = BLOCK_SHAPES[selectedShape] ? BLOCK_SHAPES[selectedShape].id : 'cube';
-            var curRot = blockRotation || 0;
+            // Read from engine bridge so ghost preview matches the CURRENT selected shape + rotation
+            // (closure vars are stale — handler attached once in initEngine)
+            var _ps = engine._placeState || { selectedShape: 0, blockRotation: 0 };
+            var curShapeId = BLOCK_SHAPES[_ps.selectedShape] ? BLOCK_SHAPES[_ps.selectedShape].id : 'cube';
+            var curRot = _ps.blockRotation || 0;
             // Recreate ghost if shape or rotation changed
             if (!engine._ghostMesh || engine._ghostShapeId !== curShapeId || engine._ghostRot !== curRot) {
               if (engine._ghostMesh) { engine.scene.remove(engine._ghostMesh); engine._ghostMesh.geometry.dispose(); engine._ghostMesh.material.dispose(); }
@@ -2733,6 +3059,13 @@
               engine._ghostMesh.position.set(gx + 0.5, gy + 0.5, gz + 0.5);
             }
             engine._ghostMesh.visible = true;
+            // Gentle breathing pulse — subtle opacity + scale oscillation so the preview
+            // reads as "alive" without distracting from the block it's snapping to.
+            var ghostT = engine.clock.getElapsedTime();
+            var ghostPulse = 0.5 + Math.sin(ghostT * 2.5) * 0.5; // 0..1
+            engine._ghostMesh.material.opacity = 0.12 + ghostPulse * 0.14;
+            var ghostScale = 1 + ghostPulse * 0.02;
+            engine._ghostMesh.scale.set(ghostScale, ghostScale, ghostScale);
           } else {
             if (engine._ghostMesh) engine._ghostMesh.visible = false;
           }
@@ -2741,6 +3074,13 @@
         // ── Collision helper: check if a world-space position is inside a solid block ──
         function isBlockAt(bx, by, bz) {
           return !!engine.blocks[Math.floor(bx) + ',' + Math.floor(by) + ',' + Math.floor(bz)];
+        }
+        // Fly-mode collision ignores water/lava so you can swim/dive through them like Minecraft creative.
+        function isSolidBlockAt(bx, by, bz) {
+          var b = engine.blocks[Math.floor(bx) + ',' + Math.floor(by) + ',' + Math.floor(bz)];
+          if (!b) return false;
+          var bt = b.userData && b.userData.blockType;
+          return bt !== 'water' && bt !== 'lava';
         }
 
         // Player physics constants
@@ -2761,6 +3101,8 @@
         // Animation loop
         function animate() {
           requestAnimationFrame(animate);
+          // Guard: if Three.js isn't on window (CDN failure, teardown), skip frame entirely
+          if (!window.THREE || !engine || !engine.scene || !engine.camera) return;
           var dt = Math.min(engine.clock.getDelta(), 0.1);
 
           // ── Smooth environment transitions ──
@@ -2834,14 +3176,48 @@
             var cam = engine.camera.position;
 
             if (engine.flyMode) {
-              // ── Fly mode: no gravity, no collision, Space=up, Shift=down ──
+              // ── Fly mode: no gravity, collides with solid blocks but passes through water/lava ──
               var flySpeed = isSprinting ? 12 : 7;
-              cam.x += engine.velocity.x * dt;
-              cam.z += engine.velocity.z * dt;
+              var feetY = cam.y - EYE_HEIGHT;
+
+              // X axis collision — body-column check, no auto-step while flying
+              var newX = cam.x + engine.velocity.x * dt;
+              var blockedFX = false;
+              for (var fcy = 0; fcy < Math.ceil(PLAYER_HEIGHT); fcy++) {
+                if (isSolidBlockAt(newX + PLAYER_RADIUS, feetY + fcy, cam.z) || isSolidBlockAt(newX - PLAYER_RADIUS, feetY + fcy, cam.z)) { blockedFX = true; break; }
+              }
+              if (!blockedFX) cam.x = newX; else engine.velocity.x = 0;
+
+              // Z axis collision
+              var newZ = cam.z + engine.velocity.z * dt;
+              var blockedFZ = false;
+              for (var fcy2 = 0; fcy2 < Math.ceil(PLAYER_HEIGHT); fcy2++) {
+                if (isSolidBlockAt(cam.x, feetY + fcy2, newZ + PLAYER_RADIUS) || isSolidBlockAt(cam.x, feetY + fcy2, newZ - PLAYER_RADIUS)) { blockedFZ = true; break; }
+              }
+              if (!blockedFZ) cam.z = newZ; else engine.velocity.z = 0;
+
+              // Y axis collision — block on ceiling when ascending, on floor when descending
               var flyVertical = 0;
               if (engine.moveState.flyUp) flyVertical = flySpeed;
               if (engine.moveState.sprint && !engine.moveState.forward) flyVertical = -flySpeed;
-              cam.y += flyVertical * dt;
+              var newY = cam.y + flyVertical * dt;
+              if (flyVertical > 0) {
+                var headY = newY + (PLAYER_HEIGHT - EYE_HEIGHT);
+                if (!isSolidBlockAt(cam.x, headY, cam.z)
+                    && !isSolidBlockAt(cam.x + PLAYER_RADIUS, headY, cam.z)
+                    && !isSolidBlockAt(cam.x - PLAYER_RADIUS, headY, cam.z)
+                    && !isSolidBlockAt(cam.x, headY, cam.z + PLAYER_RADIUS)
+                    && !isSolidBlockAt(cam.x, headY, cam.z - PLAYER_RADIUS)) cam.y = newY;
+              } else if (flyVertical < 0) {
+                var newFeetY = newY - EYE_HEIGHT;
+                if (!isSolidBlockAt(cam.x, newFeetY, cam.z)
+                    && !isSolidBlockAt(cam.x + PLAYER_RADIUS, newFeetY, cam.z)
+                    && !isSolidBlockAt(cam.x - PLAYER_RADIUS, newFeetY, cam.z)
+                    && !isSolidBlockAt(cam.x, newFeetY, cam.z + PLAYER_RADIUS)
+                    && !isSolidBlockAt(cam.x, newFeetY, cam.z - PLAYER_RADIUS)) cam.y = newY;
+              } else {
+                cam.y = newY;
+              }
               engine.onGround = false;
             } else {
               // ── Walk mode: full gravity + collision ──
@@ -2980,7 +3356,14 @@
               npc.body.position.x = npc.data.position[0] + 0.5;
             }
             npc.body.position.y = baseY + bobY;
+            // Sync head + floating sprites to body's CURRENT X/Z so the head doesn't drift
+            // when the body sway/shake animations offset the body.
+            npc.head.position.x = npc.body.position.x;
+            npc.head.position.z = npc.body.position.z;
             npc.head.position.y = npc.data.position[1] + 1.7 + bobY;
+            if (npc.label)  { npc.label.position.x  = npc.body.position.x; npc.label.position.z  = npc.body.position.z; npc.label.position.y  = npc.data.position[1] + 2.1 + bobY; }
+            if (npc.prompt) { npc.prompt.position.x = npc.body.position.x; npc.prompt.position.z = npc.body.position.z; }
+            if (npc.qMark)  { npc.qMark.position.x  = npc.body.position.x; npc.qMark.position.z  = npc.body.position.z; }
             // Face toward player when within 6 blocks
             if (engine.camera) {
               var dx = engine.camera.position.x - npc.body.position.x;
@@ -3124,12 +3507,16 @@
           }
 
           // ── Collaborative: render peer player avatars ──
-          if (collabMode && engine._peerAvatars === undefined) engine._peerAvatars = {};
-          if (collabMode) {
+          // Read from engine bridges (closure vars are stale — animate loop captured first render)
+          var _collabActive = engine._placeState && engine._placeState.collabMode;
+          var _collabPlayers = engine._collabPlayersRef || {};
+          var _playerName = engine._playerNameRef || playerName;
+          if (_collabActive && engine._peerAvatars === undefined) engine._peerAvatars = {};
+          if (_collabActive) {
             var THREE = window.THREE;
-            Object.keys(collabPlayers).forEach(function(key) {
-              var p = collabPlayers[key];
-              if (p.name === playerName || !p.position) return;
+            Object.keys(_collabPlayers).forEach(function(key) {
+              var p = _collabPlayers[key];
+              if (p.name === _playerName || !p.position) return;
               if (!engine._peerAvatars[key]) {
                 // Create avatar: colored cube head + body
                 var mat = new THREE.MeshLambertMaterial({ color: new THREE.Color(p.color || '#34d399') });
@@ -3240,17 +3627,20 @@
                 var lp = wm.userData.gridPos;
                 wm.material.emissiveIntensity = 0.5 + Math.sin(wt * 1.2 + lp.x * 0.5 + lp.z * 0.3) * 0.25;
               } else if (wm && wm.userData.blockType === 'diamond') {
-                // Diamond: periodic sparkle particles (1 in 200 chance per frame per block)
-                if (Math.random() < 0.005) {
+                // Diamond: periodic sparkle particles. Bumped from 0.005 (~1/3s) to 0.015 (~1/s)
+                // and added an occasional white-hot flash for a shinier crystal feel.
+                if (Math.random() < 0.015) {
                   var dp = wm.userData.gridPos;
                   var THREE2 = window.THREE;
                   if (THREE2) {
-                    var sparkGeo = new THREE2.BoxGeometry(0.06, 0.06, 0.06);
-                    var sparkMat = new THREE2.MeshBasicMaterial({ color: 0x00ffff, transparent: true, opacity: 0.9 });
+                    var sparkSize = 0.05 + Math.random() * 0.04;
+                    var sparkGeo = new THREE2.BoxGeometry(sparkSize, sparkSize, sparkSize);
+                    var sparkColor = Math.random() < 0.2 ? 0xffffff : 0x00ffff;
+                    var sparkMat = new THREE2.MeshBasicMaterial({ color: sparkColor, transparent: true, opacity: 0.9 });
                     var spark = new THREE2.Mesh(sparkGeo, sparkMat);
                     spark.position.set(dp.x + Math.random(), dp.y + Math.random(), dp.z + Math.random());
-                    spark.userData._age = 0; spark.userData._life = 0.6;
-                    spark.userData._vel = { x: (Math.random() - 0.5) * 2, y: 1.5 + Math.random(), z: (Math.random() - 0.5) * 2 };
+                    spark.userData._age = 0; spark.userData._life = 0.55 + Math.random() * 0.25;
+                    spark.userData._vel = { x: (Math.random() - 0.5) * 2, y: 1.2 + Math.random() * 1.2, z: (Math.random() - 0.5) * 2 };
                     engine.scene.add(spark);
                     engine._particles.push(spark);
                   }
@@ -3319,6 +3709,13 @@
           if (engine._cloudPlane && engine.camera) {
             engine._cloudPlane.position.x = engine.camera.position.x;
             engine._cloudPlane.position.z = engine.camera.position.z;
+          }
+          // Keep sun sprite at a consistent sky direction relative to camera so it doesn't
+          // "run off" into a strange corner when the player explores a large world.
+          if (engine._sunSprite && engine.camera) {
+            engine._sunSprite.position.x = engine.camera.position.x + 40;
+            engine._sunSprite.position.y = 45;
+            engine._sunSprite.position.z = engine.camera.position.z + 40;
           }
 
           engine.renderer.render(engine.scene, engine.camera);
@@ -3604,8 +4001,11 @@
       }
 
       // ── Auto-show lesson intro on first load ──
+      // Defer via setTimeout(0) so we don't call upd (state update) during render.
+      // _introShownOnce is flipped to true immediately to prevent re-queueing on re-renders
+      // that happen before the deferred upd lands.
       if (threeReady && !worldActive && !showLessonIntro && !d._introShownOnce) {
-        upd({ showLessonIntro: true, _introShownOnce: true });
+        setTimeout(function() { upd({ showLessonIntro: true, _introShownOnce: true }); }, 0);
       }
 
       // ── Typewriter effect: auto-advance character position ──
@@ -3689,6 +4089,7 @@
       // ── Helper: save lesson to localStorage library ──
       function saveToMyLessons(lesson) {
         try {
+          _myLessonsCache = null; // invalidate since storage is changing
           var lib = JSON.parse(localStorage.getItem('gw_my_lessons') || '[]');
           lesson._savedAt = Date.now();
           lesson._id = 'ai_' + Date.now();
@@ -3697,12 +4098,18 @@
           localStorage.setItem('gw_my_lessons', JSON.stringify(lib));
         } catch(e) { console.warn('[GeoWorld] Failed to save lesson:', e); }
       }
+      // Memoize within this render: render tree calls getMyLessons() ~6× per render
+      // (dropdown, count badges, modal list). Parsing the same JSON 6 times is wasteful.
+      var _myLessonsCache = null;
       function getMyLessons() {
-        try { return JSON.parse(localStorage.getItem('gw_my_lessons') || '[]'); } catch(e) { return []; }
+        if (_myLessonsCache !== null) return _myLessonsCache;
+        try { _myLessonsCache = JSON.parse(localStorage.getItem('gw_my_lessons') || '[]'); } catch(e) { _myLessonsCache = []; }
+        return _myLessonsCache;
       }
       function deleteMyLesson(id) {
         try {
-          var lib = getMyLessons().filter(function(l) { return l._id !== id; });
+          _myLessonsCache = null; // invalidate since storage is changing
+          var lib = JSON.parse(localStorage.getItem('gw_my_lessons') || '[]').filter(function(l) { return l._id !== id; });
           localStorage.setItem('gw_my_lessons', JSON.stringify(lib));
         } catch(e) {}
       }
@@ -3866,6 +4273,59 @@
 
       var engine = window[engineKey];
       var currentLesson = SAMPLE_LESSONS[activeLesson] || SAMPLE_LESSONS.volumeExplorer;
+
+      // Expose current React state to the engine so the compass rAF loop reads live data
+      if (engine) {
+        engine._answeredRef = answeredNpcs;
+        // Modal flags bridge: the keydown handler was attached once during initEngine
+        // and its closure captured these as first-render primitives. Mirror them onto
+        // the engine on every React render so Esc/Shift+Esc always see current state.
+        engine._modalState = {
+          showNpcDialog: showNpcDialog, showHelp: showHelp, showGrowthNudge: showGrowthNudge,
+          showPeerWorlds: showPeerWorlds, showTeacherView: showTeacherView,
+          showMyLessons: showMyLessons, showLessonEditor: showLessonEditor,
+          showLessonIntro: showLessonIntro, showReflection: showReflection,
+          showCreatorPanel: showCreatorPanel, creatorMode: creatorMode
+        };
+        // Tutorial state bridge — same staleness issue; tutorial advancement checks
+        // must read from here or they compare against the first-render value (usually 0).
+        engine._tutorialState = { step: tutorialStep, dismissed: tutorialDismissed };
+        // Placement state bridge — critical: canvas.addEventListener handlers are stale
+        // (attached once in initEngine) so they can't see number-key block switches,
+        // shape cycling (Q), rotation (R), or collab-mode toggling.
+        engine._placeState = { selectedBlock: selectedBlock, selectedShape: selectedShape, blockRotation: blockRotation, collabMode: collabMode };
+        // Badges bridge — runAchievementCheck called via setTimeout from stale closures
+        // needs to read the LATEST earned-badges object to avoid re-awarding duplicates.
+        engine._badgesRef = earnedBadges;
+        // Collab bridges — animate loop renders peer avatars per-frame but its closure
+        // captured first-render empty values. Sync live data so avatars appear/update.
+        engine._collabPlayersRef = collabPlayers;
+        engine._playerNameRef = playerName;
+      }
+
+      // ── Modal tracking: count all open overlays so students can see/dismiss them all ──
+      var OPEN_MODALS = [
+        { flag: showNpcDialog,    key: 'showNpcDialog',    label: 'NPC Dialog',            emoji: '💬' },
+        { flag: showMyLessons,    key: 'showMyLessons',    label: 'My Lessons',            emoji: '📚' },
+        { flag: showLessonEditor, key: 'showLessonEditor', label: 'Lesson Editor',         emoji: '✏️' },
+        { flag: showLessonIntro,  key: 'showLessonIntro',  label: 'Lesson Intro',          emoji: '📖' },
+        { flag: showReflection,   key: 'showReflection',   label: 'Reflection',            emoji: '🔍' },
+        { flag: showHelp,         key: 'showHelp',         label: 'Help',                  emoji: '❓' },
+        { flag: showCreatorPanel, key: 'showCreatorPanel', label: 'Creator Panel',         emoji: '🎨' },
+        { flag: showGrowthNudge,  key: 'showGrowthNudge',  label: 'Growth Nudge',          emoji: '🌱' },
+        { flag: showTeacherView,  key: 'showTeacherView',  label: 'Teacher Dashboard',     emoji: '📊' },
+        { flag: showPeerWorlds,   key: 'showPeerWorlds',   label: 'Class Worlds',          emoji: '🌐' }
+      ];
+      var openModals = OPEN_MODALS.filter(function(m) { return m.flag; });
+      function closeAllModals() {
+        var patch = {};
+        OPEN_MODALS.forEach(function(m) { if (m.flag) patch[m.key] = false; });
+        if (Object.keys(patch).length > 0) {
+          upd(patch);
+          if (addToast) addToast('🎮 Returned to game — ' + Object.keys(patch).length + ' overlay(s) closed', 'info');
+          try { sfxJump(); } catch(e) {}
+        }
+      }
 
       return el('div', { role: 'application', 'aria-label': 'Geometry World - 3D block-based math explorer. Use WASD to move, mouse to look, left-click to break blocks, right-click to place blocks.', style: { display: 'flex', flexDirection: 'column', height: '100%', position: 'relative', background: '#000' } },
         // Top bar — glass style
@@ -4128,17 +4588,26 @@
           engine && el('button', {
             onClick: function() {
               var eng = window[engineKey];
-              if (!eng || !eng.renderer) return;
-              eng.renderer.render(eng.scene, eng.camera); // force render
-              var dataUrl = eng.renderer.domElement.toDataURL('image/png');
-              var a = document.createElement('a');
-              a.href = dataUrl;
-              a.download = 'geometry_world_' + new Date().toISOString().slice(0, 19).replace(/:/g, '-') + '.png';
-              document.body.appendChild(a); a.click(); document.body.removeChild(a);
-              if (addToast) addToast('\uD83D\uDCF8 Screenshot saved!', 'success');
-              if (eng.logEvent) eng.logEvent('screenshot', { timestamp: Date.now() });
+              if (!eng || !eng.renderer || !eng.scene || !eng.camera) return;
+              try {
+                // Force fresh render since WebGLRenderer wasn't created with preserveDrawingBuffer
+                eng.renderer.render(eng.scene, eng.camera);
+                var dataUrl = eng.renderer.domElement.toDataURL('image/png');
+                // Filename includes the lesson title so students can recognize their work later
+                var stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+                var safeTitle = (currentLesson.title || 'geometry-world').replace(/[^a-z0-9]+/gi, '-').toLowerCase().slice(0, 40).replace(/^-|-$/g, '');
+                var a = document.createElement('a');
+                a.href = dataUrl;
+                a.download = 'geometry-world_' + safeTitle + '_' + stamp + '.png';
+                document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                if (addToast) addToast('\uD83D\uDCF8 Screenshot saved!', 'success');
+                if (eng.logEvent) eng.logEvent('screenshot', { timestamp: Date.now(), lesson: currentLesson.title });
+              } catch(err) {
+                console.error('Screenshot failed:', err);
+                if (addToast) addToast('Screenshot failed — try again.', 'info');
+              }
             },
-            title: 'Capture a screenshot of your world',
+            title: 'Capture a screenshot of your world (saves to downloads)',
             style: { background: '#1e293b', border: '1px solid #334155', borderRadius: '6px', padding: '4px 10px', color: '#60a5fa', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }
           }, '\uD83D\uDCF8 Photo'),
           // Print companion worksheet
@@ -4302,11 +4771,20 @@
             },
               el('option', { value: '1' }, '\u26A1 Quick'), el('option', { value: '2' }, '\u2728 Refine'), el('option', { value: '3' }, '\uD83C\uDF1F Full')
             ),
-            // Generate button (shows pass progress)
-            el('button', {
-              onClick: generateWorld, disabled: aiGenerating || !aiPrompt.trim(),
-              style: { background: aiGenerating ? '#334155' : '#7c3aed', color: '#fff', border: 'none', borderRadius: '6px', padding: '4px 10px', cursor: 'pointer', fontSize: '11px', fontWeight: 700, minWidth: '80px' }
-            }, aiGenerating ? '\u23F3 Pass ' + aiCurrentPass + '/' + aiPassCount : '\u2728 Generate'),
+            // Generate button (shows pass progress with descriptive labels)
+            (function() {
+              var passLabels = ['', 'Drafting', 'Refining', 'Adding hints'];
+              var buttonLabel = aiGenerating
+                ? '\u23F3 ' + (passLabels[aiCurrentPass] || 'Working') + '... ' + aiCurrentPass + '/' + aiPassCount
+                : '\u2728 Generate';
+              return el('button', {
+                onClick: generateWorld, disabled: aiGenerating || !aiPrompt.trim(),
+                title: aiGenerating
+                  ? 'Pass ' + aiCurrentPass + ' of ' + aiPassCount + ': ' + (aiCurrentPass === 1 ? 'generating initial lesson JSON' : aiCurrentPass === 2 ? 'improving structures + dialogue' : 'adding scaffolded follow-up questions')
+                  : 'Generate an AI lesson from your prompt',
+                style: { background: aiGenerating ? '#334155' : '#7c3aed', color: '#fff', border: 'none', borderRadius: '6px', padding: '4px 10px', cursor: 'pointer', fontSize: '11px', fontWeight: 700, minWidth: '120px' }
+              }, buttonLabel);
+            })(),
             // Surprise Me (grade-aware topics)
             el('button', {
               onClick: function() {
@@ -4351,6 +4829,199 @@
             }, '\u270F\uFE0F JSON')
           )
         ),
+
+        // ── LESSON PROGRESS HUD (always visible while playing, hidden when modals cover it) ──
+        // Compact status card top-left below the toolbar. Students always see lesson title +
+        // NPC progress + blocks placed without opening a menu.
+        worldActive && openModals.length === 0 && el('div', {
+          style: { position: 'absolute', top: '56px', left: '10px', zIndex: 5, padding: '8px 12px', borderRadius: '10px', background: 'rgba(15,23,42,0.72)', backdropFilter: 'blur(6px)', border: '1px solid rgba(124,58,237,0.22)', color: '#e2e8f0', fontSize: '11px', fontWeight: 600, maxWidth: '260px', pointerEvents: 'none' },
+          role: 'status', 'aria-live': 'polite', 'aria-label': 'Lesson progress: ' + (currentLesson.title || 'Lesson') + ', ' + Object.keys(answeredNpcs).length + ' of ' + totalQ + ' NPCs answered, ' + ((engine && engine.blocksPlaced) || 0) + ' blocks placed'
+        },
+          el('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' } },
+            el('span', { style: { fontSize: '13px' } }, '📐'),
+            el('span', { style: { color: '#c4b5fd', fontSize: '11px', fontWeight: 800, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '200px' } }, currentLesson.title || 'Geometry Lesson')
+          ),
+          el('div', { style: { display: 'flex', gap: '10px', alignItems: 'center', fontSize: '10px' } },
+            totalQ > 0 && el('span', { title: 'NPCs answered', style: { color: Object.keys(answeredNpcs).length === totalQ ? '#4ade80' : '#94a3b8' } },
+              '💬 ' + Object.keys(answeredNpcs).length + '/' + totalQ),
+            el('span', { title: 'Blocks placed this session', style: { color: '#fbbf24' } },
+              '🧱 ' + ((engine && engine.blocksPlaced) || 0)),
+            el('span', { title: 'Correct answers this session', style: { color: '#34d399' } },
+              '⭐ ' + score),
+            ((engine && engine._sessionXP) || 0) > 0 && el('span', { title: 'XP earned this session', style: { color: '#c084fc' } },
+              '✨ +' + (engine._sessionXP) + ' XP')
+          ),
+          // NPC progress bar (only if there are NPCs in this lesson)
+          totalQ > 0 && el('div', { style: { marginTop: '4px', height: '3px', background: 'rgba(255,255,255,0.06)', borderRadius: '2px', overflow: 'hidden' } },
+            el('div', { style: { width: Math.round((Object.keys(answeredNpcs).length / totalQ) * 100) + '%', height: '100%', background: 'linear-gradient(90deg, #7c3aed, #34d399)', transition: 'width 0.4s' } })
+          ),
+          // ── Objectives checklist (auto-computed from lesson data + live state) ──
+          (function() {
+            var objectives = [];
+            // 1. Lesson's explicit objectives (from lesson JSON)
+            if (Array.isArray(currentLesson.objectives) && currentLesson.objectives.length > 0) {
+              currentLesson.objectives.forEach(function(text) {
+                // Heuristic: mark done if text matches one of the known behaviors + state hits threshold.
+                var done = false;
+                if (/answer|talk|ask|speak/i.test(text) && totalQ > 0) done = Object.keys(answeredNpcs).length >= totalQ;
+                else if (/build|place|construct|create|make|stack/i.test(text)) done = ((engine && engine.blocksPlaced) || 0) >= 1;
+                else if (/measure|ruler|volume/i.test(text)) done = (measureHistory && measureHistory.length > 0);
+                else if (/explore|find|locate|visit/i.test(text) && totalQ > 0) done = Object.keys(answeredNpcs).length > 0;
+                objectives.push({ text: text, done: done });
+              });
+            } else {
+              // 2. Fallback auto-generated objectives from lesson shape
+              if (totalQ > 0) objectives.push({ text: 'Answer all ' + totalQ + ' NPC question' + (totalQ === 1 ? '' : 's'), done: Object.keys(answeredNpcs).length >= totalQ });
+              if (currentLesson.structures && currentLesson.structures.length > 0) objectives.push({ text: 'Explore the ' + currentLesson.structures.length + ' structures', done: (measureHistory && measureHistory.length > 0) });
+              objectives.push({ text: 'Place at least 5 blocks', done: ((engine && engine.blocksPlaced) || 0) >= 5 });
+            }
+            var allDone = objectives.length > 0 && objectives.every(function(o) { return o.done; });
+            return el('div', { style: { marginTop: '6px', paddingTop: '6px', borderTop: '1px dashed rgba(148,163,184,0.2)' } },
+              el('div', { style: { fontSize: '9px', fontWeight: 800, color: allDone ? '#4ade80' : '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: '2px' } },
+                (allDone ? '✨ ' : '🎯 ') + 'Objectives'),
+              objectives.slice(0, 4).map(function(o, i) {
+                return el('div', { key: i, style: { display: 'flex', alignItems: 'start', gap: '5px', fontSize: '10px', lineHeight: 1.3, marginBottom: '1px' } },
+                  el('span', { style: { color: o.done ? '#4ade80' : '#64748b', flexShrink: 0, fontWeight: 700 } }, o.done ? '☑' : '☐'),
+                  el('span', { style: { color: o.done ? '#94a3b8' : '#cbd5e1', textDecoration: o.done ? 'line-through' : 'none' } }, o.text)
+                );
+              })
+            );
+          })()
+        ),
+
+        // ── NPC COMPASS — live-updating horizontal pip strip centered on camera facing ──
+        // Pips colored green (answered) or red (unanswered) help students locate NPCs they've missed.
+        // Self-contained: canvas ref boots a rAF loop that reads engine.camera + engine.npcs each frame.
+        worldActive && openModals.length === 0 && engine && engine.npcs && engine.npcs.length > 0 && el('canvas', {
+          ref: function(cv) {
+            if (!cv) return;
+            if (cv._compassStarted) return; // guard against React re-render re-initialization
+            cv._compassStarted = true;
+            var dpr = window.devicePixelRatio || 1;
+            var W = 260, H = 32;
+            cv.width = W * dpr; cv.height = H * dpr;
+            cv.style.width = W + 'px'; cv.style.height = H + 'px';
+            var ctx = cv.getContext('2d');
+            ctx.scale(dpr, dpr);
+            function render() {
+              if (!cv.isConnected) return; // canvas removed — stop loop
+              if (!window.THREE || !engine || !engine.camera || !engine.npcs) {
+                requestAnimationFrame(render);
+                return;
+              }
+              ctx.clearRect(0, 0, W, H);
+              // Background pill
+              ctx.fillStyle = 'rgba(15,23,42,0.7)';
+              if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(0, 0, W, H, 16); ctx.fill(); }
+              else ctx.fillRect(0, 0, W, H);
+              ctx.strokeStyle = 'rgba(124,58,237,0.3)'; ctx.lineWidth = 1;
+              if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(0.5, 0.5, W - 1, H - 1, 16); ctx.stroke(); }
+              // Read camera yaw from quaternion (YXZ order gives yaw directly)
+              var euler = new window.THREE.Euler().setFromQuaternion(engine.camera.quaternion, 'YXZ');
+              var camYaw = euler.y;
+              var halfFov = Math.PI; // show full 180° ahead and behind (180° = ±π/2)
+              var answered = engine._answeredRef || {};
+              // Draw center forward tick
+              ctx.fillStyle = '#fbbf24';
+              ctx.beginPath();
+              ctx.moveTo(W / 2, 5); ctx.lineTo(W / 2 - 4, 11); ctx.lineTo(W / 2 + 4, 11);
+              ctx.closePath(); ctx.fill();
+              // Draw pips for each NPC
+              engine.npcs.forEach(function(npc, i) {
+                if (!npc || !npc.body) return;
+                var dx = npc.body.position.x - engine.camera.position.x;
+                var dz = npc.body.position.z - engine.camera.position.z;
+                var dist = Math.sqrt(dx * dx + dz * dz);
+                // World-frame angle: atan2(-dx, -dz) gives 0 when NPC is directly ahead (−Z forward)
+                var worldAngle = Math.atan2(dx, -dz);
+                var relAngle = worldAngle - camYaw;
+                while (relAngle > Math.PI) relAngle -= 2 * Math.PI;
+                while (relAngle < -Math.PI) relAngle += 2 * Math.PI;
+                // Only show pips within ±90° field of compass
+                if (Math.abs(relAngle) > halfFov / 2) {
+                  // Off-compass: draw a small edge arrow
+                  var edgeX = relAngle > 0 ? W - 10 : 10;
+                  ctx.fillStyle = answered[i] ? 'rgba(74,222,128,0.4)' : 'rgba(248,113,113,0.6)';
+                  ctx.beginPath();
+                  if (relAngle > 0) { ctx.moveTo(edgeX, 16); ctx.lineTo(edgeX - 6, 12); ctx.lineTo(edgeX - 6, 20); }
+                  else { ctx.moveTo(edgeX, 16); ctx.lineTo(edgeX + 6, 12); ctx.lineTo(edgeX + 6, 20); }
+                  ctx.closePath(); ctx.fill();
+                  return;
+                }
+                var pipX = W / 2 + (relAngle / (halfFov / 2)) * (W / 2 - 12);
+                var isAnswered = !!answered[i];
+                // Pip — circle for answered (done, closed), square for unanswered (open task)
+                // Shape + color + glyph = triple-coded for color-blind accessibility
+                ctx.fillStyle = isAnswered ? '#22c55e' : '#ef4444';
+                if (isAnswered) {
+                  ctx.beginPath(); ctx.arc(pipX, 18, 6, 0, 6.28); ctx.fill();
+                } else {
+                  ctx.fillRect(pipX - 6, 12, 12, 12); // square = "task open"
+                }
+                // Inner glyph (third visual channel)
+                ctx.fillStyle = '#fff'; ctx.font = 'bold 9px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillText(isAnswered ? '✓' : '?', pipX, 18);
+                // Distance dot size hints (closer = bigger) — subtle
+                if (dist < 8) {
+                  ctx.strokeStyle = 'rgba(255,255,255,0.5)'; ctx.lineWidth = 1.5;
+                  ctx.beginPath(); ctx.arc(pipX, 18, 8, 0, 6.28); ctx.stroke();
+                }
+              });
+              requestAnimationFrame(render);
+            }
+            requestAnimationFrame(render);
+          },
+          style: { position: 'absolute', top: '12px', left: '50%', transform: 'translateX(-50%)', zIndex: 5, pointerEvents: 'none', borderRadius: '16px' },
+          role: 'img', 'aria-label': 'NPC compass strip showing relative direction to each NPC from camera facing'
+        })
+        ,
+
+        // (Block palette hotbar already exists at bottom-center further below — line ~5060)
+
+        // ── Cinematic vignette overlay ──
+        // Subtle radial darkening at the frame edges draws the eye to the center of the
+        // view. Pure DOM, pointer-events: none, so it has zero effect on WebGL perf or
+        // input handling. z-index 4 keeps it below the compass (5) and HUD (20).
+        worldActive && el('div', {
+          'aria-hidden': 'true',
+          style: { position: 'absolute', inset: 0, zIndex: 4, pointerEvents: 'none',
+            background: 'radial-gradient(ellipse at center, rgba(0,0,0,0) 55%, rgba(0,0,0,0.28) 100%)',
+            mixBlendMode: 'multiply' }
+        }),
+
+        // ── FLOATING "BACK TO GAME" BUTTON — appears when any modal/overlay is open ──
+        // Lets students instantly dismiss all overlays and return to the 3D world.
+        // Positioned bottom-center so it doesn't collide with any modal, high z-index so always visible.
+        openModals.length > 0 && el('div', {
+          style: { position: 'absolute', bottom: '20px', left: '50%', transform: 'translateX(-50%)', zIndex: 100, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', pointerEvents: 'none' }
+        },
+          // Status pill: list of open overlays
+          el('div', {
+            style: { pointerEvents: 'auto', padding: '4px 10px', borderRadius: '14px', background: 'rgba(15,23,42,0.85)', backdropFilter: 'blur(6px)', border: '1px solid rgba(124,58,237,0.3)', color: '#c4b5fd', fontSize: '10px', fontWeight: 600, maxWidth: '420px', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
+            title: openModals.length + ' overlay' + (openModals.length === 1 ? '' : 's') + ' open: ' + openModals.map(function(m) { return m.emoji + ' ' + m.label; }).join(', ')
+          },
+            openModals.length === 1 ? (openModals[0].emoji + ' ' + openModals[0].label + ' open') :
+              (openModals.length + ' overlays open: ' + openModals.map(function(m) { return m.emoji; }).join(' '))
+          ),
+          // Main "Back to Game" button (prominent)
+          el('button', {
+            onClick: closeAllModals,
+            'aria-label': 'Close all open overlays and return to the game view',
+            title: 'Close all overlays & return to the 3D game (or press Shift+Esc)',
+            style: { pointerEvents: 'auto', padding: '10px 22px', borderRadius: '14px', background: 'linear-gradient(135deg, #7c3aed, #a855f7)', border: 'none', color: '#fff', fontSize: '13px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 6px 20px rgba(124,58,237,0.45), 0 0 0 2px rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: '8px', transition: 'transform 0.15s' },
+            onMouseEnter: function(ev) { ev.currentTarget.style.transform = 'scale(1.03)'; },
+            onMouseLeave: function(ev) { ev.currentTarget.style.transform = 'scale(1)'; }
+          },
+            el('span', { style: { fontSize: '18px' } }, '🎮'),
+            'Back to Game',
+            openModals.length > 1 && el('span', { style: { fontSize: '10px', padding: '2px 6px', borderRadius: '10px', background: 'rgba(0,0,0,0.25)', fontWeight: 700 } }, 'close all ' + openModals.length)
+          ),
+          // Keyboard hint (subtle)
+          el('div', { style: { color: '#64748b', fontSize: '9px', fontWeight: 600 } },
+            openModals.length === 1 ? 'Esc also closes this' : 'Esc closes one · Shift+Esc closes all'
+          )
+        ),
+
         // Help overlay
         showHelp && el('div', { style: { position: 'absolute', top: '48px', right: '8px', zIndex: 20, background: 'rgba(15,23,42,0.95)', border: '1px solid #334155', borderRadius: '10px', padding: '12px', fontSize: '11px', color: '#cbd5e1', lineHeight: 1.6, maxWidth: '240px' } },
           el('div', { style: { fontWeight: 700, color: '#a78bfa', marginBottom: '6px', fontSize: '12px' } }, '\uD83C\uDFAE Controls'),
@@ -4371,7 +5042,13 @@
             el('span', { style: { color: '#a78bfa', fontWeight: 600 } }, 'G'), 'Toggle grid',
             el('span', { style: { color: '#fbbf24', fontWeight: 600 } }, 'Q'), 'Cycle shape (\u25A1 \u25E2 \u25AD \u25E3)',
             el('span', { style: { color: '#fbbf24', fontWeight: 600 } }, 'R'), 'Rotate shape 90\u00b0',
-            el('span', { style: { color: '#22d3ee', fontWeight: 600 } }, 'T'), 'Ruler (2 points)'
+            el('span', { style: { color: '#22d3ee', fontWeight: 600 } }, 'T'), 'Ruler (2 points)',
+            el('span', { style: { color: '#f472b6', fontWeight: 600 } }, 'V'), 'Angle (3 points \u2014 A, vertex, C)',
+            el('span', { style: { color: '#34d399', fontWeight: 600 } }, 'N'), 'Net unfolding (surface area)',
+            el('span', { style: { color: '#67e8f9', fontWeight: 600 } }, 'C'), 'Toggle coord SR announcements',
+            el('span', { style: { color: '#93c5fd', fontWeight: 600 } }, 'H'), 'Return to spawn',
+            el('span', { style: { color: '#94a3b8', fontWeight: 600 } }, 'Esc'), 'Close open overlay',
+            el('span', { style: { color: '#94a3b8', fontWeight: 600 } }, 'Shift+Esc'), 'Close ALL overlays'
           ),
           // Mobile touch controls section (shown on touch devices)
           isMobile && el('div', { style: { marginBottom: '8px' } },
@@ -4725,7 +5402,7 @@
               onClick: function() { upd('selectedShape', i); },
               onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); upd('selectedShape', i); } },
               title: bs.name + ' (' + bs.desc + ')',
-              style: { width: '32px', height: '32px', borderRadius: '5px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontSize: '14px', cursor: 'pointer',
+              style: { width: isMobile ? '26px' : '32px', height: isMobile ? '26px' : '32px', borderRadius: '5px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontSize: isMobile ? '12px' : '14px', cursor: 'pointer',
                 border: i === selectedShape ? '2px solid #fbbf24' : '2px solid transparent',
                 background: i === selectedShape ? 'rgba(251,191,36,0.2)' : 'transparent' }
             },
@@ -4747,7 +5424,7 @@
               onClick: function() { upd('selectedBlock', i); },
               onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); upd('selectedBlock', i); } },
               title: bt.name + ' (' + (i + 1) + ')',
-              style: { width: '38px', height: '38px', borderRadius: '7px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontSize: '17px', cursor: 'pointer', position: 'relative', transition: 'all 0.15s ease',
+              style: { width: isMobile ? '30px' : '38px', height: isMobile ? '30px' : '38px', borderRadius: '7px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontSize: isMobile ? '14px' : '17px', cursor: 'pointer', position: 'relative', transition: 'all 0.15s ease',
                 border: isActive ? '2px solid #a78bfa' : '2px solid rgba(255,255,255,0.08)',
                 background: isActive ? 'rgba(124,58,237,0.35)' : 'rgba(255,255,255,0.03)',
                 boxShadow: isActive ? '0 0 10px rgba(124,58,237,0.5), inset 0 0 8px rgba(124,58,237,0.2)' : 'none' }
@@ -4782,13 +5459,47 @@
               el('span', { style: { color: '#fbbf24', fontWeight: 700, fontSize: '11px' } }, dirs[idx]),
               el('span', { style: { color: '#475569' } }, Math.round(angle) + '\u00b0')
             );
-          })()
+          })(),
+          // Target block line — shows the XYZ of the block the player is aiming at.
+          engine._targetGrid && el('div', { style: { marginTop: '3px', paddingTop: '3px', borderTop: '1px solid rgba(255,255,255,0.08)' } },
+            el('span', { style: { color: '#64748b', fontWeight: 600, fontSize: '8px', letterSpacing: '0.5px', marginRight: '4px' } }, 'TARGET'),
+            el('span', { style: { color: '#ef4444' } }, 'X'),
+            ' ' + engine._targetGrid.x + '  ',
+            el('span', { style: { color: '#22c55e' } }, 'Y'),
+            ' ' + engine._targetGrid.y + '  ',
+            el('span', { style: { color: '#3b82f6' } }, 'Z'),
+            ' ' + engine._targetGrid.z
+          ),
+          // SR-announce pill — indicator + click toggle (matches 'C' key). When on, position
+          // is announced periodically to the shared live region so low-vision students can
+          // navigate by coordinate.
+          el('div', {
+            role: 'button', tabIndex: 0,
+            onClick: function() {
+              var eng = window[engineKey]; if (!eng) return;
+              eng._coordAnnounce = !eng._coordAnnounce;
+              if (addToast) addToast(eng._coordAnnounce ? '\uD83D\uDD0A Coord announcements ON (press C to toggle)' : '\uD83D\uDD07 Coord announcements OFF', 'info');
+              if (eng._coordAnnounce && typeof announceToSR === 'function') {
+                announceToSR('Coordinate announcements on. Position at X ' + Math.floor(eng.camera.position.x) + ' Y ' + Math.floor(eng.camera.position.y) + ' Z ' + Math.floor(eng.camera.position.z));
+              }
+            },
+            onKeyDown: function(ev) { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); ev.currentTarget.click(); } },
+            'aria-pressed': engine._coordAnnounce ? 'true' : 'false',
+            'aria-label': 'Toggle coordinate screen-reader announcements (key C)',
+            title: 'Announce coordinates to screen reader (C)',
+            style: { marginTop: '4px', cursor: 'pointer', padding: '2px 6px', borderRadius: '6px', fontSize: '8px', fontWeight: 700, letterSpacing: '0.5px', display: 'inline-block',
+              background: engine._coordAnnounce ? 'rgba(34,211,238,0.25)' : 'rgba(100,116,139,0.15)',
+              color: engine._coordAnnounce ? '#67e8f9' : '#64748b',
+              border: '1px solid ' + (engine._coordAnnounce ? 'rgba(34,211,238,0.5)' : 'rgba(100,116,139,0.2)') }
+          }, engine._coordAnnounce ? '\uD83D\uDD0A SR ON' : '\uD83D\uDD07 SR OFF')
         ),
-        // ── Mode indicators (fly, grid) ──
+        // ── Unified action bar (mode toggles, undo/redo, world actions) ──
+        // All pills live in one wrapping flex row so they align regardless of which are
+        // visible, and wrap gracefully on narrow viewports instead of colliding.
         engine && el('div', {
-          style: { position: 'absolute', bottom: '10px', left: '130px', zIndex: 20, display: 'flex', gap: '4px' }
+          style: { position: 'absolute', bottom: '10px', left: '130px', right: '120px', zIndex: 20, display: 'flex', flexWrap: 'wrap', gap: '4px', alignItems: 'center' }
         },
-          // Fly mode toggle (always visible as a button)
+          // Fly mode toggle (always visible)
           el('button', {
             onClick: function() {
               var eng = window[engineKey];
@@ -4797,24 +5508,49 @@
               if (addToast) addToast(eng.flyMode ? '\uD83D\uDD4A\uFE0F Fly mode ON — Space=up, Shift=down, double-tap Space to land' : '\uD83D\uDC63 Walk mode', 'info');
             },
             title: 'Toggle fly mode (or double-tap Space)',
-            style: { background: engine.flyMode ? 'rgba(99,102,241,0.35)' : 'rgba(30,41,59,0.6)', border: '1px solid ' + (engine.flyMode ? 'rgba(99,102,241,0.5)' : 'rgba(100,116,139,0.2)'), borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: engine.flyMode ? '#a5b4fc' : '#64748b', fontWeight: 600, cursor: 'pointer' }
+            style: { background: engine.flyMode ? 'rgba(99,102,241,0.35)' : 'rgba(30,41,59,0.6)', border: '1px solid ' + (engine.flyMode ? 'rgba(99,102,241,0.5)' : 'rgba(100,116,139,0.2)'), borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: engine.flyMode ? '#a5b4fc' : '#64748b', fontWeight: 600, cursor: 'pointer', backdropFilter: 'blur(4px)' }
           }, engine.flyMode ? '\uD83D\uDD4A\uFE0F FLY' : '\uD83D\uDD4A\uFE0F Fly'),
-          engine._gridHelper && el('div', { style: { background: 'rgba(34,211,238,0.15)', border: '1px solid rgba(34,211,238,0.3)', borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: '#67e8f9', fontWeight: 600 } }, '\uD83D\uDCCF GRID')
-        ),
-        // ── Undo/Redo indicator ──
-        engine && (engine._undoStack && engine._undoStack.length > 0 || engine._redoStack && engine._redoStack.length > 0) && el('div', {
-          style: { position: 'absolute', bottom: '10px', left: '220px', zIndex: 20, display: 'flex', gap: '4px', alignItems: 'center' }
-        },
+          engine._gridHelper && el('div', { style: { background: 'rgba(34,211,238,0.15)', border: '1px solid rgba(34,211,238,0.3)', borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: '#67e8f9', fontWeight: 600, backdropFilter: 'blur(4px)' } }, '\uD83D\uDCCF GRID'),
+          // Undo — conditional
           engine._undoStack && engine._undoStack.length > 0 && el('div', {
-            style: { background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: '#fbbf24', fontWeight: 600, cursor: 'pointer' },
+            style: { background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: '#fbbf24', fontWeight: 600, cursor: 'pointer', backdropFilter: 'blur(4px)' },
             onClick: function() { if (engine.undo) engine.undo(); },
             title: 'Undo (Ctrl+Z) — ' + engine._undoStack.length + ' actions'
           }, '\u21A9 ' + engine._undoStack.length),
+          // Redo — conditional
           engine._redoStack && engine._redoStack.length > 0 && el('div', {
-            style: { background: 'rgba(34,211,238,0.15)', border: '1px solid rgba(34,211,238,0.3)', borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: '#67e8f9', fontWeight: 600, cursor: 'pointer' },
+            style: { background: 'rgba(34,211,238,0.15)', border: '1px solid rgba(34,211,238,0.3)', borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: '#67e8f9', fontWeight: 600, cursor: 'pointer', backdropFilter: 'blur(4px)' },
             onClick: function() { if (engine.redo) engine.redo(); },
             title: 'Redo (Ctrl+Y) — ' + engine._redoStack.length + ' actions'
-          }, '\u21AA ' + engine._redoStack.length)
+          }, '\u21AA ' + engine._redoStack.length),
+          // Home (return to spawn)
+          worldActive && el('div', {
+            style: { background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.3)', borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: '#93c5fd', fontWeight: 700, cursor: 'pointer', backdropFilter: 'blur(4px)' },
+            onClick: function() { if (engine && engine.returnToSpawn) { engine.returnToSpawn(); if (addToast) addToast('🏠 Teleported to spawn', 'info'); } },
+            title: 'Return to spawn point (H)'
+          }, '\uD83C\uDFE0 Home'),
+          // Clear my blocks
+          worldActive && el('div', {
+            style: { background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: '#fca5a5', fontWeight: 700, cursor: 'pointer', backdropFilter: 'blur(4px)' },
+            onClick: function() {
+              if (!engine || !engine.clearPlayerBlocks) return;
+              var count = 0;
+              Object.keys(engine.blocks || {}).forEach(function(k) {
+                var m = engine.blocks[k];
+                if (m && m.userData && !m.userData._lessonBlock) count++;
+              });
+              if (count === 0) {
+                if (addToast) addToast('Nothing to clear — you haven\'t placed any blocks.', 'info');
+                return;
+              }
+              if (window.confirm('Clear all ' + count + ' of your placed blocks? The lesson\'s structures and NPCs will stay. This cannot be undone.')) {
+                var cleared = engine.clearPlayerBlocks();
+                upd('blocksPlaced', 0);
+                if (addToast) addToast('🗑️ Cleared ' + cleared + ' block' + (cleared === 1 ? '' : 's') + '. Lesson structures preserved.', 'success');
+              }
+            },
+            title: 'Clear only YOUR placed blocks (lesson structures stay). Useful for restarting an experiment.'
+          }, '\uD83D\uDDD1\uFE0F Clear Mine')
         ),
         // ── Mobile touch controls overlay (visible on touch devices) ──
         isMobile && worldActive && engine && el('div', { style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0, zIndex: 8, pointerEvents: 'none' } },
@@ -4830,8 +5566,8 @@
           el('div', { style: { position: 'absolute', bottom: '80px', right: '12px', display: 'flex', flexDirection: 'column', gap: '8px', pointerEvents: 'auto' } },
             // Jump button
             el('button', {
-              onTouchStart: function(ev) { ev.stopPropagation(); if (!engine.flyMode && engine.onGround) { engine.velocity.y = 6; sfxJump(); } else if (engine.flyMode) { engine.moveState.flyUp = true; } },
-              onTouchEnd: function() { engine.moveState.flyUp = false; },
+              onTouchStart: function(ev) { ev.stopPropagation(); if (!engine.flyMode && engine.onGround && !engine._jumpLock) { engine.velocity.y = 6; sfxJump(); engine._jumpLock = true; } else if (engine.flyMode) { engine.moveState.flyUp = true; } },
+              onTouchEnd: function() { engine.moveState.flyUp = false; engine._jumpLock = false; },
               style: { width: '52px', height: '52px', borderRadius: '50%', background: 'rgba(99,102,241,0.4)', border: '2px solid rgba(99,102,241,0.6)', color: '#fff', fontSize: '18px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }
             }, '\u2B06\uFE0F'),
             // Place block button
@@ -4849,6 +5585,8 @@
                     sfxPlace(BLOCK_TYPES[selectedBlock].id);
                     spawnPlaceParticles(engine, px + 0.5, py + 0.5, pz + 0.5);
                     engine.blocksPlaced = (engine.blocksPlaced || 0) + 1;
+                    upd('blocksPlaced', engine.blocksPlaced); // keep React state + HUD in sync
+                    if (collabMode) { clearTimeout(engine._collabSyncTimer); engine._collabSyncTimer = setTimeout(syncBlocksToFirestore, 500); }
                   }
                 }
               },
@@ -4864,6 +5602,9 @@
                 if (h2.length > 0 && h2[0].object.userData.gridPos) {
                   var pp = h2[0].object.userData.gridPos;
                   engine.removeBlock(pp.x, pp.y, pp.z); sfxBreak(h2[0].object.userData.blockType || 'stone');
+                  engine.blocksPlaced = Math.max(0, (engine.blocksPlaced || 0) - 1);
+                  upd('blocksPlaced', engine.blocksPlaced);
+                  if (collabMode) { clearTimeout(engine._collabSyncTimer); engine._collabSyncTimer = setTimeout(syncBlocksToFirestore, 500); }
                 }
               },
               style: { width: '52px', height: '52px', borderRadius: '50%', background: 'rgba(239,68,68,0.4)', border: '2px solid rgba(239,68,68,0.6)', color: '#fff', fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }
@@ -5096,18 +5837,20 @@
             style: { width: '100%', height: '70px', background: '#0f172a', border: '1px solid #334155', borderRadius: '8px', padding: '8px', color: '#e2e8f0', fontSize: '12px', fontFamily: 'inherit', resize: 'vertical', lineHeight: 1.5 }
           }),
           el('div', { style: { display: 'flex', gap: '8px', marginTop: '12px', justifyContent: 'center' } },
+            // Primary action — saves if there's text, otherwise behaves like a quick confirm
             el('button', {
               onClick: function() {
                 upd('showReflection', false);
                 var eng = window[engineKey];
-                if (eng && eng.logEvent) eng.logEvent('reflection', { text: reflectionText, lesson: currentLesson.title });
+                if (eng && eng.logEvent && reflectionText.trim()) eng.logEvent('reflection', { text: reflectionText, lesson: currentLesson.title });
               },
-              style: { background: '#7c3aed', color: '#fff', border: 'none', borderRadius: '10px', padding: '8px 20px', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
-            }, reflectionText.trim() ? '\u2705 Save & Continue' : 'Skip'),
+              style: { background: reflectionText.trim() ? '#7c3aed' : 'rgba(124,58,237,0.5)', color: '#fff', border: 'none', borderRadius: '10px', padding: '8px 20px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', transition: 'background 0.2s' }
+            }, reflectionText.trim() ? '\u2705 Save & Continue' : 'Continue without writing'),
+            // Secondary "later" — dismisses without firing the save event
             el('button', {
               onClick: function() { upd('showReflection', false); },
               style: { background: 'rgba(100,116,139,0.2)', border: '1px solid rgba(100,116,139,0.3)', borderRadius: '10px', padding: '8px 16px', color: '#94a3b8', fontSize: '11px', cursor: 'pointer' }
-            }, 'Skip')
+            }, 'Maybe later')
           )
         ),
         // ── Lesson Completion overlay with Next Lesson ──
@@ -5149,7 +5892,7 @@
                 el('div', { style: { fontSize: '32px', marginBottom: '4px' } }, '\uD83C\uDFC6\u2B50\uD83C\uDF1F'),
                 el('div', { style: { fontSize: '16px', fontWeight: 800, color: '#fbbf24', marginBottom: '8px' } }, 'All Lessons Complete!'),
                 el('div', { style: { fontSize: '11px', color: '#94a3b8', lineHeight: 1.6, marginBottom: '8px' } },
-                  'You\u2019ve mastered all 9 geometry lessons! Here\u2019s your journey:'),
+                  'You\u2019ve mastered all ' + LESSON_ORDER.length + ' geometry lessons! Here\u2019s your journey:'),
                 el('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', fontSize: '10px', color: '#cbd5e1' } },
                   el('div', { style: { background: 'rgba(124,58,237,0.15)', borderRadius: '8px', padding: '6px', textAlign: 'center' } },
                     el('div', { style: { fontSize: '18px', fontWeight: 800, color: '#a78bfa' } }, String(Object.keys(earnedBadges).length)),
@@ -5210,7 +5953,25 @@
               });
           }
           var npcHexColor = '#' + (data.color || 0x7c3aed).toString(16).padStart(6, '0');
-          return el('div', { style: { position: 'absolute', bottom: '60px', left: '50%', transform: 'translateX(-50%)', zIndex: 30, background: 'rgba(15,23,42,0.92)', backdropFilter: 'blur(12px)', border: '1px solid rgba(100,116,139,0.25)', borderRadius: '16px', padding: '0', maxWidth: '440px', width: '90%', overflow: 'hidden', boxShadow: '0 8px 32px rgba(0,0,0,0.4)' } },
+          return el('div', { style: {
+              position: 'absolute',
+              // On mobile the dialog sits a bit higher so it doesn't overlap the touch-action buttons
+              bottom: isMobile ? '160px' : '60px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              zIndex: 30,
+              background: 'rgba(15,23,42,0.92)',
+              backdropFilter: 'blur(12px)',
+              border: '1px solid rgba(100,116,139,0.25)',
+              borderRadius: '16px',
+              padding: '0',
+              maxWidth: '440px',
+              width: isMobile ? '94%' : '90%',
+              // Clamp vertical size on mobile so it never eats the whole screen
+              maxHeight: isMobile ? 'calc(100vh - 220px)' : '70vh',
+              overflow: 'auto',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.4)'
+            } },
             // Header bar with NPC color accent
             el('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', background: 'linear-gradient(135deg, ' + npcHexColor + '22, ' + npcHexColor + '08)', borderBottom: '1px solid rgba(100,116,139,0.15)' } },
               // NPC avatar circle
@@ -5270,7 +6031,10 @@
                     onClick: function() {
                       if (ci === curQ.correct) {
                         sfxCorrect();
-                        upd('consecutiveWrong', 0);
+                        // Clear wrongs lesson-wide + this NPC's wrong count
+                        var clearedWrongs = Object.assign({}, d.npcWrongCount || {});
+                        delete clearedWrongs[dialogNpcIdx];
+                        upd({ consecutiveWrong: 0, npcWrongCount: clearedWrongs });
                         if (typeof awardXP === 'function') awardXP('geometryWorld', 2, 'Step correct: ' + data.name);
                         var eng = window[engineKey];
                         if (eng && eng.logEvent) eng.logEvent('answer_correct', { npc: data.name, question: curQ.text, choice: choice, step: curStep });
@@ -5291,7 +6055,7 @@
                           try { var pk = eng && eng._progressKey; if (pk) localStorage.setItem(pk, JSON.stringify({ score: newScore, answeredNpcs: newAnswered, npcFollowUpStep: npcFollowUpStep })); } catch(e) {}
                           if (addToast) addToast('\u2705 Correct! +1', 'success');
                           if (typeof awardXP === 'function') awardXP('geometryWorld', 5, 'Correct answer: ' + data.name);
-                          if (typeof announceToSR === 'function') announceToSR('Correct! Score is now ' + newScore + ' of ' + totalQ);
+                          announceToSR('Correct! Score is now ' + newScore + ' of ' + totalQ);
                       if (window._alloHaptic) window._alloHaptic('correct');
                           // 3D confetti from NPC + celebration bounce
                           if (eng && npc.body) {
@@ -5302,6 +6066,7 @@
                           if (newScore >= totalQ && totalQ > 0) {
                             sfxComplete();
                             if (addToast) addToast('\uD83C\uDFC6 Lesson Complete! Look up...', 'success');
+                            announceToSR('Lesson complete! You answered all ' + totalQ + ' questions correctly. The sun is setting \u2014 look up to see the celebration.');
                               // Trigger reflection prompt after a delay
                               setTimeout(function() { upd({ showReflection: true, reflectionText: '' }); }, 5000);
                             if (typeof awardXP === 'function') awardXP('geometryWorld', 15, 'Lesson complete: ' + currentLesson.title);
@@ -5332,19 +6097,29 @@
                         var eng2 = window[engineKey];
                         if (eng2 && npc && npc._shakeUntil !== undefined) { npc._shakeUntil = (eng2.clock ? eng2.clock.getElapsedTime() : 0) + 0.5; }
                         if (eng2 && eng2.logEvent) eng2.logEvent('answer_wrong', { npc: data.name, question: curQ.text, chosenAnswer: choice, correctAnswer: curQ.choices[curQ.correct] });
-                        var newWrong = consecutiveWrong + 1;
-                        upd('consecutiveWrong', newWrong);
-                        checkFrustration(newWrong);
+                        // Track per-NPC wrong count (not global) so hint escalation is scoped.
+                        // Previously `consecutiveWrong` was lesson-wide, letting wrongs on NPC A
+                        // trigger level-3 hints on the first wrong answer at NPC B. Also prevents
+                        // "farming" — wrong 3× on NPC A used to REVEAL the correct answer, which
+                        // students could exploit to bypass learning.
+                        var npcWrongMap = Object.assign({}, d.npcWrongCount || {});
+                        npcWrongMap[dialogNpcIdx] = (npcWrongMap[dialogNpcIdx] || 0) + 1;
+                        var newWrong = npcWrongMap[dialogNpcIdx];
+                        var totalConsecutive = consecutiveWrong + 1;
+                        upd({ consecutiveWrong: totalConsecutive, npcWrongCount: npcWrongMap });
+                        checkFrustration(totalConsecutive);
                         setTimeout(runAchievementCheck, 100);
                         var hintText = '\u274C Not quite. ';
+                        // Escalate scaffolding WITHOUT revealing the correct answer choice.
                         if (newWrong >= 3) {
-                          hintText += 'Let\u2019s break it down: ' + curQ.choices[curQ.correct] + '. Try measuring with M key!';
+                          hintText += 'Try measuring with M first. Then count carefully: how many blocks long, wide, and tall?';
                         } else if (newWrong >= 2) {
                           hintText += data.dialogue.indexOf('layer') >= 0 ? 'Count the blocks in one layer, then count how many layers tall.' : data.dialogue.indexOf('L-block') >= 0 ? 'Split it into two rectangles. Find each volume, then add.' : 'Count: how many blocks long? How many wide? How many tall? Multiply!';
                         } else {
                           hintText += 'Hint: think about ' + (data.dialogue.indexOf('layer') >= 0 ? 'counting the layers' : data.dialogue.indexOf('L-block') >= 0 ? 'splitting into two prisms' : 'L \u00d7 W \u00d7 H');
                         }
                         if (addToast) addToast(hintText, 'error');
+                        announceToSR('Not quite right. ' + hintText.replace(/^❌\s*Not quite\.\s*/, ''));
                       }
                     },
                     style: { display: 'block', width: '100%', padding: '6px 12px', marginBottom: '4px', background: '#1e293b', border: '1px solid #334155', borderRadius: '7px', color: '#e2e8f0', fontSize: '12px', cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit' }

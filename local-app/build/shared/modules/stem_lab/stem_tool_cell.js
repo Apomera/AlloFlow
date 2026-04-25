@@ -105,25 +105,106 @@ var d = labToolData.cell;
           var upd = function (key, val) { setLabToolData(function (prev) { return Object.assign({}, prev, { cell: Object.assign({}, prev.cell, (function () { var o = {}; o[key] = val; return o; })()) }); }); };
 
       // ── Sound Effects (Web Audio) ──
+      // ── Cell Biology Audio System (singleton context) ──
+      var _cellAC = null;
+      function getCellAC() {
+        if (!_cellAC) { try { _cellAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} }
+        if (_cellAC && _cellAC.state === 'suspended') { try { _cellAC.resume(); } catch(e) {} }
+        return _cellAC;
+      }
+      function cellTone(freq, dur, type, vol) {
+        var ac = getCellAC(); if (!ac) return;
+        try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = type || 'sine'; o.frequency.value = freq; g.gain.setValueAtTime(vol || 0.08, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + (dur || 0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime + (dur || 0.1)); } catch(e) {}
+      }
       var cellSound = function (type) {
         try {
-          var AC = window.AudioContext || window.webkitAudioContext;
-          if (!AC) return;
-          var a = new AC();
-          var o = a.createOscillator();
-          var g = a.createGain();
-          o.connect(g);
-          g.connect(a.destination);
-          var freqs = { select: [520, 0.08], food: [660, 0.1], correct: [880, 0.15], wrong: [220, 0.18], streak: [740, 0.12], badge: [990, 0.2], photosynthesis: [440, 0.14] };
-          var f = freqs[type] || [440, 0.1];
-          o.frequency.value = f[0];
-          g.gain.value = 0.13;
-          o.type = type === 'wrong' ? 'sawtooth' : type === 'badge' ? 'triangle' : 'sine';
-          o.start();
-          g.gain.exponentialRampToValueAtTime(0.001, a.currentTime + f[1]);
-          o.stop(a.currentTime + f[1] + 0.01);
+          switch (type) {
+            case 'select':
+              cellTone(520, 0.06, 'sine', 0.07);
+              setTimeout(function() { cellTone(660, 0.05, 'sine', 0.06); }, 40);
+              break;
+            case 'food':
+              cellTone(440, 0.04, 'sine', 0.06);
+              setTimeout(function() { cellTone(554, 0.04, 'sine', 0.06); }, 30);
+              setTimeout(function() { cellTone(660, 0.06, 'sine', 0.07); }, 60);
+              break;
+            case 'photosynthesis':
+              // Gentle rising shimmer (sun energy)
+              cellTone(330, 0.08, 'sine', 0.05);
+              setTimeout(function() { cellTone(440, 0.08, 'sine', 0.06); }, 60);
+              setTimeout(function() { cellTone(554, 0.1, 'sine', 0.07); }, 120);
+              break;
+            case 'correct':
+              cellTone(523, 0.08, 'sine', 0.08);
+              setTimeout(function() { cellTone(659, 0.08, 'sine', 0.08); }, 70);
+              setTimeout(function() { cellTone(784, 0.1, 'sine', 0.09); }, 140);
+              break;
+            case 'wrong':
+              cellTone(250, 0.15, 'sawtooth', 0.06);
+              setTimeout(function() { cellTone(200, 0.12, 'sawtooth', 0.04); }, 80);
+              break;
+            case 'streak':
+              cellTone(784, 0.06, 'sine', 0.07);
+              setTimeout(function() { cellTone(880, 0.06, 'sine', 0.07); }, 50);
+              setTimeout(function() { cellTone(1047, 0.1, 'sine', 0.08); }, 100);
+              break;
+            case 'badge':
+              [523, 659, 784, 1047].forEach(function(f, i) { setTimeout(function() { cellTone(f, 0.1, 'triangle', 0.08); }, i * 90); });
+              break;
+            case 'divide':
+              // Cell division — splitting wobble
+              cellTone(300, 0.06, 'sine', 0.05);
+              setTimeout(function() { cellTone(350, 0.05, 'sine', 0.05); }, 40);
+              setTimeout(function() { cellTone(300, 0.04, 'sine', 0.04); cellTone(400, 0.04, 'sine', 0.04); }, 80);
+              break;
+            case 'death':
+              cellTone(180, 0.2, 'sine', 0.04);
+              break;
+            default:
+              cellTone(440, 0.08, 'sine', 0.06);
+          }
+          if (window._alloHaptic) {
+            if (type === 'correct' || type === 'badge') window._alloHaptic('correct');
+            else if (type === 'wrong') window._alloHaptic('wrong');
+            else if (type === 'food' || type === 'select') window._alloHaptic('tap');
+          }
         } catch (e) {}
       };
+
+      // ── Ambient petri dish soundscape ──
+      var _cellAmbient = null;
+      function startCellAmbient() {
+        if (_cellAmbient) return;
+        var ac = getCellAC(); if (!ac) return;
+        try {
+          var bufSize = ac.sampleRate * 2;
+          var buf = ac.createBuffer(1, bufSize, ac.sampleRate);
+          var data = buf.getChannelData(0);
+          for (var i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1);
+          var src = ac.createBufferSource(); src.buffer = buf; src.loop = true;
+          var filt = ac.createBiquadFilter(); filt.type = 'lowpass'; filt.frequency.value = 180; filt.Q.value = 0.5;
+          var master = ac.createGain(); master.gain.setValueAtTime(0, ac.currentTime);
+          master.gain.linearRampToValueAtTime(0.006, ac.currentTime + 2);
+          src.connect(filt); filt.connect(master); master.connect(ac.destination);
+          src.start();
+          _cellAmbient = { src: src, master: master };
+          // Random microscopic bubbles
+          _cellAmbient._interval = setInterval(function() {
+            if (Math.random() > 0.6) {
+              cellTone(1200 + Math.random() * 800, 0.02, 'sine', 0.02);
+            }
+          }, 2000 + Math.random() * 3000);
+        } catch(e) {}
+      }
+      function stopCellAmbient() {
+        if (_cellAmbient) {
+          try { var ac = getCellAC(); if (ac) _cellAmbient.master.gain.linearRampToValueAtTime(0, ac.currentTime + 0.5); } catch(e) {}
+          if (_cellAmbient._interval) clearInterval(_cellAmbient._interval);
+          var nodes = _cellAmbient;
+          setTimeout(function() { try { nodes.src.stop(); } catch(e) {} }, 600);
+          _cellAmbient = null;
+        }
+      }
 
       // ── Extended state for badges ──
       var ext = d._cellExt || { badges: [], totalFood: 0, organismsObserved: [], organellesClicked: [], quizCorrect: 0, playModeUsed: false };
@@ -3246,11 +3327,11 @@ var d = labToolData.cell;
 
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
 
-              React.createElement("button", { onClick: function () { setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+              React.createElement("button", { onClick: function () { setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
 
               React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83D\uDD2C Cell Simulator"),
 
-              React.createElement("span", { className: "text-xs text-slate-500 ml-1" }, d.mode === 'play' ? "\uD83C\uDFAE Playing as " + (ORGANISMS.find(function (o) { return o.id === d.playAsOrganism; }) || {}).label : d.quizMode ? "\uD83E\uDDE0 Quiz Mode" : "\uD83D\uDC41 Observe"),
+              React.createElement("span", { className: "text-xs text-slate-600 ml-1" }, d.mode === 'play' ? "\uD83C\uDFAE Playing as " + (ORGANISMS.find(function (o) { return o.id === d.playAsOrganism; }) || {}).label : d.quizMode ? "\uD83E\uDDE0 Quiz Mode" : "\uD83D\uDC41 Observe"),
 
               React.createElement("div", { className: "flex gap-1 ml-auto" },
 
@@ -3284,7 +3365,7 @@ var d = labToolData.cell;
 
               // Zoom overlay
 
-              React.createElement("div", { className: "absolute bottom-2 left-2 flex items-center gap-2 bg-white/80 backdrop-blur rounded-lg px-2 py-1 text-[10px] font-bold text-slate-600" },
+              React.createElement("div", { className: "absolute bottom-2 left-2 flex items-center gap-2 bg-white/80 backdrop-blur rounded-lg px-2 py-1 text-[11px] font-bold text-slate-600" },
 
                 "\uD83D\uDD2C",
 
@@ -3304,7 +3385,7 @@ var d = labToolData.cell;
 
               // Speed controls
 
-              React.createElement("div", { className: "absolute bottom-2 right-2 flex items-center gap-2 bg-white/80 backdrop-blur rounded-lg px-3 py-1.5 text-[10px] font-bold text-slate-600" },
+              React.createElement("div", { className: "absolute bottom-2 right-2 flex items-center gap-2 bg-white/80 backdrop-blur rounded-lg px-3 py-1.5 text-[11px] font-bold text-slate-600" },
 
                 "\u23E9",
 
@@ -3320,7 +3401,7 @@ var d = labToolData.cell;
 
                 (d.simSpeed || 1) + "x",
 
-                React.createElement("button", { "aria-label": "Play", onClick: function () { var p = !d.paused; upd("paused", p); var cv = document.querySelector('[data-cell-sim-canvas]'); if (cv) { if (!p && cv._cellSimRestart && !cv._cellSimAlive) { cv._cellSimRestart(); } else if (cv._cellSimSetPaused) { cv._cellSimSetPaused(p); } } }, className: "text-xs font-bold px-2 py-0.5 rounded " + (d.paused ? "bg-green-700 text-white" : "bg-slate-200 text-slate-600") }, d.paused ? "\u25B6" : "\u23F8")
+                React.createElement("button", { "aria-label": "Play", onClick: function () { var p = !d.paused; upd("paused", p); if (p) { stopCellAmbient(); } else { startCellAmbient(); } var cv = document.querySelector('[data-cell-sim-canvas]'); if (cv) { if (!p && cv._cellSimRestart && !cv._cellSimAlive) { cv._cellSimRestart(); } else if (cv._cellSimSetPaused) { cv._cellSimSetPaused(p); } } }, className: "text-xs font-bold px-2 py-0.5 rounded " + (d.paused ? "bg-green-700 text-white" : "bg-slate-200 text-slate-600") }, d.paused ? "\u25B6" : "\u23F8")
 
               ),
 
@@ -3398,7 +3479,7 @@ var d = labToolData.cell;
 
                           React.createElement("p", { className: "text-xs font-black text-slate-700" }, "Goal: " + org.activity),
 
-                          React.createElement("p", { className: "text-[11px] text-slate-500" }, org.activityDesc + " Earn +" + org.xp + " XP per success!")
+                          React.createElement("p", { className: "text-[11px] text-slate-600" }, org.activityDesc + " Earn +" + org.xp + " XP per success!")
 
                         )
 
@@ -3418,13 +3499,13 @@ var d = labToolData.cell;
 
                             ["W/\u2191", "A/\u2190", "S/\u2193", "D/\u2192"].map(function (k) {
 
-                              return React.createElement("span", { key: k, className: "px-1.5 py-0.5 bg-slate-100 rounded text-[10px] font-mono font-bold text-slate-600 border border-slate-200" }, k);
+                              return React.createElement("span", { key: k, className: "px-1.5 py-0.5 bg-slate-100 rounded text-[11px] font-mono font-bold text-slate-600 border border-slate-200" }, k);
 
                             })
 
                           ),
 
-                          React.createElement("p", { className: "text-[10px] text-slate-500 mt-0.5" }, "Move your organism to interact with the environment")
+                          React.createElement("p", { className: "text-[11px] text-slate-600 mt-0.5" }, "Move your organism to interact with the environment")
 
                         )
 
@@ -3592,7 +3673,7 @@ var d = labToolData.cell;
 
                 React.createElement("span", { className: "font-bold text-slate-700" }, "\u{1F3AF} " + selDef.activity + ": "),
 
-                React.createElement("span", { className: "text-slate-500" }, selDef.activityDesc),
+                React.createElement("span", { className: "text-slate-600" }, selDef.activityDesc),
 
                 React.createElement("span", { className: "ml-2 font-bold", style: { color: selDef.color } }, "+" + selDef.xp + " XP")
 
@@ -3606,9 +3687,9 @@ var d = labToolData.cell;
 
                   var discovered = (d.discoveries || []).indexOf(selDef.id + '_' + i) !== -1;
 
-                  return React.createElement("div", { key: i, className: "flex items-start gap-2 text-[10px] py-0.5" },
+                  return React.createElement("div", { key: i, className: "flex items-start gap-2 text-[11px] py-0.5" },
 
-                    React.createElement("span", { className: discovered ? "text-green-600 flex-shrink-0" : "text-slate-500 flex-shrink-0" }, discovered ? "\u2713" : "\u2022"),
+                    React.createElement("span", { className: discovered ? "text-green-600 flex-shrink-0" : "text-slate-600 flex-shrink-0" }, discovered ? "\u2713" : "\u2022"),
 
                     React.createElement("span", { className: discovered ? "text-slate-700 font-semibold" : "text-slate-600" }, fact)
 
@@ -3622,13 +3703,13 @@ var d = labToolData.cell;
 
               selDef.anatomy && React.createElement("div", { className: "mt-2 border-t border-slate-100 pt-2" },
 
-                React.createElement("p", { className: "text-[10px] font-black text-slate-500 uppercase mb-1" }, "\uD83E\uDDEC Key Structures"),
+                React.createElement("p", { className: "text-[11px] font-black text-slate-600 uppercase mb-1" }, "\uD83E\uDDEC Key Structures"),
 
                 React.createElement("div", { className: "grid grid-cols-1 gap-1" },
 
                   selDef.anatomy.map(function (a, i) {
 
-                    return React.createElement("div", { key: i, className: "flex items-start gap-1.5 text-[10px]" },
+                    return React.createElement("div", { key: i, className: "flex items-start gap-1.5 text-[11px]" },
 
                       React.createElement("span", { className: "flex-shrink-0", style: { color: selDef.color } }, a.icon || "\u25CF"),
 
@@ -3636,7 +3717,7 @@ var d = labToolData.cell;
 
                         React.createElement("span", { className: "font-bold text-slate-700" }, a.name + ": "),
 
-                        React.createElement("span", { className: "text-slate-500" }, a.fn)
+                        React.createElement("span", { className: "text-slate-600" }, a.fn)
 
                       )
 
@@ -3779,8 +3860,8 @@ var d = labToolData.cell;
                   return React.createElement("div", { key: b.id, className: "flex items-center gap-2 p-2 rounded-lg " + (earned ? "bg-amber-100 border border-amber-300" : "bg-white/60 border border-slate-200 opacity-50") },
                     React.createElement("span", { className: "text-lg" }, earned ? b.icon : "\uD83D\uDD12"),
                     React.createElement("div", null,
-                      React.createElement("p", { className: "text-[11px] font-bold " + (earned ? "text-amber-800" : "text-slate-500") }, b.label),
-                      React.createElement("p", { className: "text-[11px] " + (earned ? "text-amber-600" : "text-slate-500") }, b.desc)
+                      React.createElement("p", { className: "text-[11px] font-bold " + (earned ? "text-amber-800" : "text-slate-600") }, b.label),
+                      React.createElement("p", { className: "text-[11px] " + (earned ? "text-amber-600" : "text-slate-600") }, b.desc)
                     )
                   );
                 })

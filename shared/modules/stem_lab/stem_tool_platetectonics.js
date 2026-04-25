@@ -1,4 +1,14 @@
 // ── Plate Tectonics Plugin (extracted from stem_tool_science.js) ──
+  // Audio system
+  var _tectAC = null;
+  function getTectAC() { if (!_tectAC) { try { _tectAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_tectAC && _tectAC.state === 'suspended') { try { _tectAC.resume(); } catch(e) {} } return _tectAC; }
+  function tectTone(f,d,tp,v) { var ac = getTectAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||'sine'; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
+  function sfxTectQuake() { tectTone(80, 0.3, 'sawtooth', 0.08); setTimeout(function() { tectTone(100, 0.2, 'sawtooth', 0.06); }, 100); if (window._alloHaptic) window._alloHaptic('bump'); }
+  function sfxTectShift() { tectTone(200, 0.15, 'sine', 0.05); }
+  function sfxTectErupt() { tectTone(60, 0.4, 'sawtooth', 0.09); setTimeout(function() { tectTone(100, 0.3, 'sawtooth', 0.07); }, 150); if (window._alloHaptic) window._alloHaptic('launch'); }
+  function sfxTectClick() { tectTone(600, 0.03, 'sine', 0.04); }
+  function sfxTectCorrect() { tectTone(523, 0.08, 'sine', 0.07); setTimeout(function() { tectTone(659, 0.08, 'sine', 0.07); }, 70); setTimeout(function() { tectTone(784, 0.1, 'sine', 0.08); }, 140); }
+  if (!document.getElementById('tect-a11y')) { var _s = document.createElement('style'); _s.id = 'tect-a11y'; _s.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .text-slate-600 { color: #64748b !important; }'; document.head.appendChild(_s); }
   // â•â•â• ðŸ”¬ plateTectonics (plateTectonics) â•â•â•
   window.StemLab.registerTool('plateTectonics', {
     icon: '\uD83C\uDF0B',
@@ -1122,7 +1132,35 @@ var d = labToolData.plateTectonics || {};
 
           // â”€â”€ render â”€â”€
 
-          return React.createElement("div", { className: "max-w-4xl mx-auto" },
+          // ── Keyboard shortcuts (WCAG 2.1.1): 1-4 switch tabs ──
+          var _PT_TABS = ['sim', 'earthquake', 'timeline', 'quiz'];
+          var _PT_TAB_LABELS = { sim: 'Simulation', earthquake: 'Earthquake Lab', timeline: 'Timeline', quiz: 'Quiz' };
+          function onPtKey(e) {
+            var tgt = e.target || {};
+            var tn = (tgt.tagName || '').toUpperCase();
+            if (tn === 'INPUT' || tn === 'TEXTAREA' || tn === 'SELECT' || tgt.isContentEditable) return;
+            var k = e.key;
+            if (k >= '1' && k <= '4') {
+              var idx = parseInt(k, 10) - 1;
+              if (_PT_TABS[idx]) {
+                e.preventDefault();
+                upd({ simTab: _PT_TABS[idx] });
+                if (typeof announceToSR === 'function') announceToSR('Switched to ' + _PT_TAB_LABELS[_PT_TABS[idx]] + '.');
+              }
+            } else if (k === 'l' || k === 'L') {
+              if (simTab === 'sim') { e.preventDefault(); upd({ showLabels: !showLabels }); if (typeof announceToSR === 'function') announceToSR('Labels ' + (!showLabels ? 'on' : 'off') + '.'); }
+            } else if (k === 'c' || k === 'C') {
+              if (simTab === 'sim') { e.preventDefault(); upd({ showConvection: !showConvection }); if (typeof announceToSR === 'function') announceToSR('Convection currents ' + (!showConvection ? 'on' : 'off') + '.'); }
+            }
+          }
+
+          return React.createElement("div", {
+              className: "max-w-4xl mx-auto outline-none",
+              role: "region",
+              "aria-label": "Plate Tectonics. Keyboard shortcuts: 1 through 4 switch tabs, L toggles labels, C toggles convection currents.",
+              tabIndex: 0,
+              onKeyDown: onPtKey
+            },
 
             // Header
 
@@ -1224,7 +1262,66 @@ var d = labToolData.plateTectonics || {};
                   style: { animation: 'pulse 2s infinite', boxShadow: '0 0 12px rgba(255,100,0,0.4)' }
                 }, "\uD83C\uDF0B Erupt!")
 
-              )
+              ),
+
+              // ── AI Tutor Panel (reading-level aware) ──
+              (function () {
+                var aiLevel = d.aiLevel || 'grade5';
+                var aiText = d.aiExplain || '';
+                var aiLoading = !!d.aiLoading;
+                var aiError = d.aiError || '';
+                var LEVELS = [
+                  { id: 'plain', label: 'Plain', hint: 'using simple everyday words and short sentences' },
+                  { id: 'grade5', label: 'Grade 5', hint: 'for a 5th grade student, brief and friendly' },
+                  { id: 'hs', label: 'High School', hint: 'for a high school earth-science student, accurate but accessible' }
+                ];
+                function explain() {
+                  if (typeof callGemini !== 'function') { upd({ aiError: 'AI tutor not available.' }); return; }
+                  upd({ aiLoading: true, aiError: '', aiExplain: '' });
+                  var lv = LEVELS.find(function (L) { return L.id === aiLevel; }) || LEVELS[1];
+                  var selLine = selectedPlate ? 'Selected plate: ' + selectedPlate + '. ' : 'No plate selected. ';
+                  var prompt = 'Explain what is happening in this plate tectonics simulation ' + lv.hint + '. '
+                    + selLine
+                    + 'Animation speed: ' + speed + 'x. Labels ' + (showLabels ? 'on' : 'off') + '. Convection currents ' + (showConvection ? 'visible' : 'hidden') + '. '
+                    + 'In 3 short sentences: (1) What process is driving the motion? (2) What happens at the boundaries the student can see? (3) One real-world example this connects to (mountain, volcano, earthquake, or ocean feature). '
+                    + 'No markdown, no bullets, no headings. Plain prose.';
+                  callGemini(prompt, false, false, 0.5).then(function (resp) {
+                    upd({ aiExplain: String(resp || '').trim(), aiLoading: false });
+                    if (typeof announceToSR === 'function') announceToSR('Explanation ready.');
+                  }).catch(function () {
+                    upd({ aiLoading: false, aiError: 'Could not reach AI tutor. Try again in a moment.' });
+                  });
+                }
+                return React.createElement("div", {
+                  className: "p-4 rounded-xl border-2 border-purple-200 bg-purple-50/60",
+                  role: "region", "aria-label": "AI tectonics tutor"
+                },
+                  React.createElement("div", { className: "flex items-center flex-wrap gap-2 mb-2" },
+                    React.createElement("span", { className: "text-sm font-bold text-purple-700" }, "\u2728 Explain at my level"),
+                    React.createElement("div", { className: "ml-auto flex gap-1", role: "group", "aria-label": "Reading level" },
+                      LEVELS.map(function (L) {
+                        var active = aiLevel === L.id;
+                        return React.createElement("button", {
+                          key: L.id,
+                          onClick: function () { upd({ aiLevel: L.id }); },
+                          "aria-label": "Reading level: " + L.label + (active ? " (selected)" : ""),
+                          "aria-pressed": active,
+                          className: "px-2 py-0.5 rounded text-[10px] font-bold " + (active ? 'bg-purple-600 text-white' : 'bg-white text-purple-700 border border-purple-200 hover:bg-purple-100')
+                        }, L.label);
+                      })
+                    ),
+                    React.createElement("button", {
+                      onClick: explain,
+                      disabled: aiLoading,
+                      "aria-label": "Generate AI explanation at " + ((LEVELS.find(function (L) { return L.id === aiLevel; }) || {}).label || 'Grade 5') + " level",
+                      className: "px-3 py-1 rounded-lg text-[11px] font-bold bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50"
+                    }, aiLoading ? '\u23F3 Thinking...' : (aiText ? '\uD83D\uDD04 Re-explain' : '\uD83E\uDDE0 Explain'))
+                  ),
+                  aiError && React.createElement("p", { className: "text-[11px] text-rose-600", role: "alert" }, aiError),
+                  aiText && React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed bg-white rounded-lg p-3 border border-purple-100" }, aiText),
+                  !aiText && !aiLoading && !aiError && React.createElement("p", { className: "text-[11px] italic text-slate-500" }, "Click \u201CExplain\u201D for the AI tutor to describe the current simulation at your chosen reading level.")
+                );
+              })()
 
             ),
 
@@ -1278,7 +1375,7 @@ var d = labToolData.plateTectonics || {};
 
                       React.createElement("div", { className: "text-xs font-black", style: { color: d2.color } }, d2.label + " (" + d2.range + ")"),
 
-                      React.createElement("div", { className: "text-[10px] text-slate-500" }, d2.desc)
+                      React.createElement("div", { className: "text-[11px] text-slate-600" }, d2.desc)
 
                     );
 
@@ -1306,7 +1403,7 @@ var d = labToolData.plateTectonics || {};
 
                       React.createElement("div", { className: "text-xs font-black", style: { color: w2.color } }, w2.name),
 
-                      React.createElement("div", { className: "text-[10px] text-slate-500" }, w2.desc)
+                      React.createElement("div", { className: "text-[11px] text-slate-600" }, w2.desc)
 
                     );
 
@@ -1358,7 +1455,7 @@ var d = labToolData.plateTectonics || {};
                     React.createElement('select', {
                       value: timelapseSpeed,
                       onChange: function(e) { upd({ timelapseSpeed: parseFloat(e.target.value) }); },
-                      className: 'text-[10px] font-bold px-2 py-1 rounded-lg border border-red-200 bg-white text-red-700'
+                      className: 'text-[11px] font-bold px-2 py-1 rounded-lg border border-red-200 bg-white text-red-700'
                     },
                       React.createElement('option', { value: '0.5' }, '0.5\u00D7'),
                       React.createElement('option', { value: '1' }, '1\u00D7'),
@@ -1400,8 +1497,8 @@ var d = labToolData.plateTectonics || {};
                       style: { background: isActive ? 'linear-gradient(135deg, #fecaca, #fca5a5)' : 'white', border: '2px solid ' + (isActive ? '#ef4444' : '#fecaca') }
                     },
                       React.createElement('div', { className: 'text-lg' }, era.icon || '\uD83C\uDF0D'),
-                      React.createElement('div', { className: 'text-[11px] font-black ' + (isActive ? 'text-red-700' : 'text-slate-500') }, era.name),
-                      React.createElement('div', { className: 'text-[8px] text-slate-500' }, era.mya)
+                      React.createElement('div', { className: 'text-[11px] font-black ' + (isActive ? 'text-red-700' : 'text-slate-600') }, era.name),
+                      React.createElement('div', { className: 'text-[11px] text-slate-600' }, era.mya)
                     );
                   })
                 ),
@@ -1423,7 +1520,7 @@ var d = labToolData.plateTectonics || {};
                   // Detailed description
                   React.createElement('p', { className: 'text-xs text-slate-600 leading-relaxed' }, ERAS[timelineEra].desc || ''),
 
-                  React.createElement('p', { className: 'text-[10px] text-slate-500 mt-1 italic' }, '\uD83D\uDCA1 Switch to Simulation tab to see plate positions, or use Time-Lapse to animate through all eras.')
+                  React.createElement('p', { className: 'text-[11px] text-slate-600 mt-1 italic' }, '\uD83D\uDCA1 Switch to Simulation tab to see plate positions, or use Time-Lapse to animate through all eras.')
                 )
 
               )
@@ -1442,7 +1539,7 @@ var d = labToolData.plateTectonics || {};
 
                   React.createElement("h4", { className: "font-black text-white text-sm" }, "Earth Through Time"),
 
-                  React.createElement("span", { className: "text-[10px] text-indigo-300 font-bold bg-indigo-900/50 px-2 py-0.5 rounded-full" }, ERAS[timelineEra].name)
+                  React.createElement("span", { className: "text-[11px] text-indigo-300 font-bold bg-indigo-900/50 px-2 py-0.5 rounded-full" }, ERAS[timelineEra].name)
 
                 ),
 
@@ -1462,7 +1559,7 @@ var d = labToolData.plateTectonics || {};
 
                 }),
 
-                React.createElement("p", { className: "text-[10px] text-indigo-300/60 mt-2 italic text-center" }, "\u{1F4A1} Drag the timeline slider to see how Earth's continents have shifted over billions of years")
+                React.createElement("p", { className: "text-[11px] text-indigo-300/60 mt-2 italic text-center" }, "\u{1F4A1} Drag the timeline slider to see how Earth's continents have shifted over billions of years")
 
               )
 
@@ -1906,7 +2003,7 @@ var d = labToolData.plateTectonics || {};
 
                         key: oi,
 
-                        className: "p-3 rounded-xl text-sm font-bold border-2 transition-all text-left " + (isCorrect ? "border-emerald-400 bg-emerald-50 text-emerald-700" : wasSelected ? "border-red-400 bg-red-50 text-red-600" : "border-slate-200 bg-white text-slate-400")
+                        className: "p-3 rounded-xl text-sm font-bold border-2 transition-all text-left " + (isCorrect ? "border-emerald-400 bg-emerald-50 text-emerald-700" : wasSelected ? "border-red-400 bg-red-50 text-red-600" : "border-slate-200 bg-white text-slate-600")
 
                       }, (isCorrect ? "\u2705 " : wasSelected ? "\u274C " : "") + String.fromCharCode(65 + oi) + ". " + opt);
 
@@ -1990,7 +2087,7 @@ var d = labToolData.plateTectonics || {};
 
                           React.createElement("td", { className: "py-1.5 text-slate-600 w-32" }, r[1]),
 
-                          React.createElement("td", { className: "py-1.5 text-slate-500" }, r[2])
+                          React.createElement("td", { className: "py-1.5 text-slate-600" }, r[2])
 
                         );
 

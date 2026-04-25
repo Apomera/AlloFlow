@@ -32,18 +32,84 @@ var createContentEngine = function(deps) {
     else { lines[firstNonEmptyIdx] = '# ' + firstLine; }
     return lines.join('\n');
   };
+  // Rebuild each [⁽N⁾](url) using the canonical URI from the (already-reordered)
+  // groundingChunks. N is a deterministic index into chunks — after the LLM cleanup
+  // round-trip, the citation NUMBER is trustworthy even when the URL inside is
+  // truncated, rewritten, space-padded, or otherwise mangled by Gemini.
+  //
+  // This catches ALL forms of URL corruption (mid-URL truncation, dropped protocol,
+  // "webmd. com" space injection, trailing-paren drop) in one deterministic pass,
+  // not the heuristic repair rules in sanitizeTruncatedCitations which can only
+  // handle known shapes.
+  var restoreCanonicalCitationUrls = function(text, chunks) {
+    if (!text || !chunks || !chunks.length) return text;
+    var superMap = {'\u2070':'0','\u00b9':'1','\u00b2':'2','\u00b3':'3','\u2074':'4','\u2075':'5','\u2076':'6','\u2077':'7','\u2078':'8','\u2079':'9'};
+    var decodeSuper = function(s) {
+      var n = '';
+      for (var i = 0; i < s.length; i++) { n += superMap[s[i]] || ''; }
+      return n;
+    };
+    var fixed = 0;
+    var total = 0;
+    // Widened regex: opening ⁽ optional and closing ) optional so we can also rebuild
+    // citations that Gemini produced in a broken shape (missing ⁽ or trailing )).
+    var result = text.replace(/\[\u207d?([\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079]+)\u207e\]\(([^)\n]*)\)?/g, function(match, supDigits, currentUrl) {
+      total++;
+      var n = parseInt(decodeSuper(supDigits), 10);
+      if (!n || n < 1 || n > chunks.length) return match;
+      var chunk = chunks[n - 1];
+      var canonical = chunk && chunk.web && chunk.web.uri;
+      if (!canonical) return match;
+      if (currentUrl !== canonical) fixed++;
+      return '[\u207d' + supDigits + '\u207e](' + canonical + ')';
+    });
+    if (fixed > 0) {
+      warnLog('[Citations] restored ' + fixed + '/' + total + ' corrupt URLs from canonical grounding metadata');
+    }
+    return result;
+  };
+  // Belt-and-suspenders defensive second pass, called AFTER restoreCanonicalCitationUrls.
+  // The primary function uses a strict regex that requires `\u207d`/`\u207e` superscript
+  // brackets and matches `[⁽N⁾](url)` with optional closing paren. Several look-alike
+  // chars (ASCII `(` / `)`, or no bracket at all around the digit) slip past it. This
+  // second pass accepts a more permissive bracket set, still keyed by the superscript
+  // digit, and forces a rebuild when the URL doesn't match the canonical chunk URL.
+  // Idempotent: when the citation is already well-formed with the canonical URL, the
+  // replacement callback returns the match unchanged so no churn.
+  var defensiveLastCitationRepair = function(text, chunks) {
+    if (!text || !chunks || !chunks.length) return text;
+    var superMap = {'\u2070':'0','\u00b9':'1','\u00b2':'2','\u00b3':'3','\u2074':'4','\u2075':'5','\u2076':'6','\u2077':'7','\u2078':'8','\u2079':'9'};
+    var decodeSup = function(s) { var n = ''; for (var i = 0; i < s.length; i++) n += superMap[s[i]] || ''; return n; };
+    var rewrites = 0;
+    var out = text.replace(/\[(?:[\u207d(]?)([\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079]+)(?:[\u207e)]?)\]\(([^)\n]*)(\))?/g, function(match, digits, urlInMatch, closing) {
+      var n = parseInt(decodeSup(digits), 10);
+      if (!n || n < 1 || n > chunks.length) return match;
+      var canonical = chunks[n - 1] && chunks[n - 1].web && chunks[n - 1].web.uri;
+      if (!canonical) return match;
+      if (closing === ')' && urlInMatch === canonical) return match;
+      rewrites++;
+      return '[\u207d' + digits + '\u207e](' + canonical + ')';
+    });
+    if (rewrites > 0) warnLog('[Citations] defensive pass rebuilt ' + rewrites + ' citation(s) (primary restoreCanonicalCitationUrls missed them — likely bracket variant or truncated URL without closing paren)');
+    return out;
+  };
   var repairSourceMarkdown = function(rawText) {
     if (!rawText) return rawText;
 
-    // ── Fix broken/truncated citations (common when Gemini hits token limit) ──
-    // 1. Remove truncated citation links: [⁽¹⁸⁾](https://partial.url  (no closing paren)
-    rawText = rawText.replace(/\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\([^)\s\n]*$/gm, '');
-    // 2. Remove truncated citations at end of text (URL cut off mid-string, no closing bracket)
-    rawText = rawText.replace(/\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\([^)]{0,200}$/, '');
+    // ── Fix broken/truncated citations (Gemini systematically drops characters in the
+    // last citation of any generated text, regardless of length — missing ⁽ and/or closing ). ──
+    // The `⁽?` makes the opening superscript-paren optional so malformed [N⁾](url) also matches.
+    // 1. Remove truncated citation links: [⁽¹⁸⁾](https://partial.url  (no closing paren).
+    //    Char-class is [^)\n] (not [^)\s\n]) so trailing whitespace before the newline is
+    //    consumed — Gemini sometimes emits "...sleepfoundation.  \n" and the old regex failed
+    //    to match because it stopped at the space and then needed $ immediately after.
+    rawText = rawText.replace(/\[⁽?[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\([^)\n]*$/gm, '');
+    // 2. Remove truncated citations at end of text (URL cut off mid-string, no closing paren)
+    rawText = rawText.replace(/\[⁽?[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\([^)]{0,200}$/, '');
     // 3. Fix citation links missing closing paren: [⁽¹⁾](url  → [⁽¹⁾](url)
-    rawText = rawText.replace(/(\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\(https?:\/\/[^\s)]+)(\s)/g, '$1)$2');
+    rawText = rawText.replace(/(\[⁽?[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\(https?:\/\/[^\s)]+)(\s)/g, '$1)$2');
     // 4. Remove orphan superscript citations with no link: ⁽¹⁸⁾ at end of line with no []() wrapper
-    rawText = rawText.replace(/\s*\[?⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]?\s*$/gm, function(match, offset) {
+    rawText = rawText.replace(/\s*\[?⁽?[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]?\s*$/gm, function(match, offset) {
       // Only strip if it's truly orphaned (not part of a [⁽N⁾](url) pattern)
       var before = rawText.substring(Math.max(0, offset - 5), offset);
       if (before.includes('](')) return match; // it's inside a proper link
@@ -52,17 +118,40 @@ var createContentEngine = function(deps) {
     // 5. Remove stray lone # (orphaned heading markers from truncation)
     rawText = rawText.replace(/\n\s*#\s*$/gm, '');
     rawText = rawText.replace(/\n\s*#\s*\n/g, '\n');
+    // 6. Restore missing opening ⁽ in otherwise-complete citations: [N⁾](url) → [⁽N⁾](url)
+    //    (must come AFTER rules 1-2 so we don't restore the opening on a citation we just stripped)
+    rawText = rawText.replace(/\[([⁰¹²³⁴⁵⁶⁷⁸⁹]+)⁾\]\(([^)]+)\)/g, '[⁽$1⁾]($2)');
 
     var bibMatch = rawText.match(/(\n---\n|\n#{2,3} Source Text References)/s);
     var body = bibMatch ? rawText.substring(0, bibMatch.index) : rawText;
     var bib = bibMatch ? rawText.substring(bibMatch.index) : '';
     var trimmedBody = body.trimEnd();
     if (trimmedBody.length > 50) {
-      var lastSentenceEnd = Math.max(trimmedBody.lastIndexOf('.'), trimmedBody.lastIndexOf('!'), trimmedBody.lastIndexOf('?'));
+      // Mask markdown link tokens [text](url) with spaces of equal length so
+      // lastIndexOf('.') can only find sentence-ending periods in PROSE, not
+      // domain-name dots inside citation URLs (e.g., the '.' in
+      // 'online.utpb.edu'). Without this mask: when Gemini emits the last
+      // sentence without a terminal '.', the trim below would locate a URL
+      // domain dot as the "last sentence end" and truncate the body mid-URL —
+      // the exact symptom that has persisted through every prior citation fix.
+      // Length-preserving replacement so positions still map 1:1 to trimmedBody.
+      var bodyForSearch = trimmedBody.replace(/\[[^\]]*\]\([^)]*\)/g, function(m) { return ' '.repeat(m.length); });
+      var lastSentenceEnd = Math.max(bodyForSearch.lastIndexOf('.'), bodyForSearch.lastIndexOf('!'), bodyForSearch.lastIndexOf('?'));
       if (lastSentenceEnd > 0 && (trimmedBody.length - lastSentenceEnd) < 120) {
         var afterPunctuation = trimmedBody.substring(lastSentenceEnd + 1).trim();
         if (afterPunctuation.length > 5 && !/[.!?]/.test(afterPunctuation)) body = trimmedBody.substring(0, lastSentenceEnd + 1);
       }
+    }
+    // Terminal-punctuation safety net: if body ends with a well-formed citation
+    // or plain prose letter but lacks terminal punctuation, append '.'. Covers
+    // Gemini's occasional habit of emitting the final sentence without a period
+    // (the upstream cause of every "last sentence looks truncated" report).
+    // Regex guard restricts to endings that plausibly need a period: closing
+    // paren ')' (end of citation link), superscript digit + ')' (bare citation),
+    // or a letter (raw prose). Avoids appending to lists, headings, or code.
+    var _tailCheck = body.trimEnd();
+    if (_tailCheck.length > 50 && !/[.!?]\s*$/.test(_tailCheck) && /(?:\)|[\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079]\u207e|[a-zA-Z])\s*$/.test(_tailCheck)) {
+      body = _tailCheck + '.';
     }
     rawText = body + bib;
     // Ensure headings always start on a new line with a blank line before them
@@ -99,11 +188,34 @@ var createContentEngine = function(deps) {
     if (!text || !originalChunks || originalChunks.length === 0) return { renumberedText: text, reorderedChunks: originalChunks || [] };
     var reverseMap = {'⁰':0,'¹':1,'²':2,'³':3,'⁴':4,'⁵':5,'⁶':6,'⁷':7,'⁸':8,'⁹':9};
     var decodeSuperscript = function(str) { return parseInt(str.split('').map(function(c){return reverseMap[c];}).join(''), 10); };
-    var newChunksMap = new Map(); var reorderedChunks = []; var nextIndex = 1;
+    // Normalize URL for dedupe: lowercase host, strip trailing slash, #hash, ?query (grounding
+    // sometimes appends tracking params that vary across Gemini passes for the same source).
+    var normalizeUrl = function(u) { return String(u || '').trim().toLowerCase().replace(/[#?].*$/, '').replace(/\/+$/, ''); };
+    var newChunksMap = new Map();           // oldIdx -> newIdx (caches per-old-chunk lookup)
+    var urlToNewIdx = new Map();            // normalized URL -> newIdx (dedupe key)
+    var reorderedChunks = [];
+    var nextIndex = 1;
     var renumberedText = text.replace(/⁽([⁰¹²³⁴⁵⁶⁷⁸⁹]+)⁾/g, function(match, digits) {
       var oldIdx = decodeSuperscript(digits) - 1;
       if (!originalChunks[oldIdx]) return match;
-      var newIdx; if (newChunksMap.has(oldIdx)) { newIdx = newChunksMap.get(oldIdx); } else { newIdx = nextIndex++; newChunksMap.set(oldIdx, newIdx); reorderedChunks.push(originalChunks[oldIdx]); }
+      var newIdx;
+      if (newChunksMap.has(oldIdx)) {
+        newIdx = newChunksMap.get(oldIdx);
+      } else {
+        // Multi-section generations (e.g. two Gemini passes concatenated) often re-ground
+        // the same source as a fresh chunk. Collapse by URL so the bibliography and in-body
+        // markers both converge on the first occurrence's number.
+        var u = normalizeUrl(originalChunks[oldIdx].web && originalChunks[oldIdx].web.uri);
+        if (u && urlToNewIdx.has(u)) {
+          newIdx = urlToNewIdx.get(u);
+          newChunksMap.set(oldIdx, newIdx);
+        } else {
+          newIdx = nextIndex++;
+          newChunksMap.set(oldIdx, newIdx);
+          if (u) urlToNewIdx.set(u, newIdx);
+          reorderedChunks.push(originalChunks[oldIdx]);
+        }
+      }
       return '⁽' + toSuperscript(newIdx) + '⁾';
     });
     return reorderedChunks.length === 0 ? { renumberedText: text, reorderedChunks: [] } : { renumberedText: renumberedText, reorderedChunks: reorderedChunks };
@@ -201,6 +313,7 @@ var createContentEngine = function(deps) {
       selectedFont, includeSourceCitations,
       interactionMode, revisionData, standardsPromptString,
       ai, webSearchProvider,
+      selectedVoice, voiceSpeed,
       setActiveView, setConceptInput, setError, setGeneratedContent,
       setGenerationStep, setInputText, setInterestInput, setIsGeneratingSource,
       setLanguageInput, setLeveledTextLanguage, setSelectedConcepts,
@@ -213,6 +326,7 @@ var createContentEngine = function(deps) {
   var isPlayingRef = { current: false };
   var isSystemAudioActiveRef = { current: false };
   var currentAudioRef = { current: null };
+  var _phonicsReqId = 0;
   _bindState = function() {
     var s = _s();
     inputText = s.inputText; gradeLevel = s.gradeLevel;
@@ -235,6 +349,8 @@ var createContentEngine = function(deps) {
     standardsPromptString = s.standardsPromptString || '';
     ai = s.ai || null;
     webSearchProvider = s.webSearchProvider || null;
+    selectedVoice = s.selectedVoice || 'Puck';
+    voiceSpeed = s.voiceSpeed || 1;
     alloBotRef = s.alloBotRef || { current: null };
     isBotVisible = s.isBotVisible || false;
     isPlayingRef = s.isPlayingRef || { current: false };
@@ -285,6 +401,22 @@ var createContentEngine = function(deps) {
     const chunkCapacity = 600;
     const numChunks = Math.ceil(targetWords / chunkCapacity);
     const isShortText = numChunks <= 1;
+    // Tone checks hoisted up so the multi-chunk gate below can read them.
+    // Dialogue mode uses a bespoke JSON output schema + dialogue-plan pre-step
+    // (see single-call path below) and cannot route through the multi-chunk
+    // pipeline. Narrative (prose) has no such constraint — it rides along.
+    const isDialogueMode = effTone === 'Narrative';
+    const isNarrativeMode = effTone === 'Narrative' || effTone === 'Engaging Narrative';
+    // Prompt helpers hoisted up: the single-section (N=1) branch of the
+    // multi-chunk pipeline merges these into its section prompt to preserve
+    // the reading-level / tone / structure guidance that previously only
+    // lived in the legacy single-call path.
+    const complexityGuard = `
+        - HANDLING COMPLEX TOPICS: If the topic involves abstract, religious, or advanced scientific concepts (e.g. Shintoism, Quantum Mechanics), do NOT use high-level academic definitions.
+        - ANALOGY REQUIREMENT: You MUST explain every abstract concept using a concrete analogy relatable to a ${effGrade} student immediately.
+        - VOCABULARY GUARD: If you use a domain-specific term (Tier 3), define it simply in the same sentence.
+      `;
+    const structureInstruction = getStructureForLength(targetWords);
     try {
       let researchContext = "";
       if (effIncludeCitations) {
@@ -368,40 +500,107 @@ var createContentEngine = function(deps) {
           addToast(t('toasts.research_skipped'), "info");
       }
       // targetWords, chunkCapacity, numChunks, isShortText are declared above (before the research block)
-      if (numChunks > 1) {
-           setGenerationStep(t('status_steps.designing_structure'));
-           const outlinePrompt = `
-             You are an expert curriculum designer.
-             Plan a comprehensive educational article.
-             Topic: "${effTopic}"
-             Target Audience: ${effGrade}
-             Total Target Word Count: ${targetWords} words.
-             Task: Create a structured outline with exactly ${numChunks} distinct section headings that cover the topic in depth.
-             Return ONLY a JSON array of strings (the headings).
-             Example: ${JSON.stringify(Array.from({length: numChunks}, (_, i) => `Section ${i+1} Title`))}
-           `;
-           const outlineResult = await callGemini(outlinePrompt, true);
+      // Gate: route everything except Dialogue mode through the multi-chunk pipeline
+      // (even for N=1). Dialogue mode uses a bespoke JSON output schema and must stay
+      // on the single-call path below. This unifies short + long text behind the
+      // multi-chunk post-processing infrastructure (URL repair, source filter,
+      // out-of-range citation strip, validateAndRepairCitations) that the legacy
+      // short path was missing — fixes the mid-URL-truncated refs bug.
+      if (!isDialogueMode) {
            let sections = [];
-           try {
-               sections = JSON.parse(cleanJson(outlineResult));
-               if (!Array.isArray(sections) || sections.length === 0) throw new Error("Invalid outline");
-           } catch (e) {
-               sections = Array.from({length: numChunks}, (_, i) => `Part ${i+1}`);
+           if (numChunks === 1) {
+               // Single-section shortcut: no outline call needed.
+               // Use the topic itself as the section title.
+               sections = [effTopic];
+           } else {
+               setGenerationStep(t('status_steps.designing_structure'));
+               const outlinePrompt = `
+                 You are an expert curriculum designer.
+                 Plan a comprehensive educational article.
+                 Topic: "${effTopic}"
+                 Target Audience: ${effGrade}
+                 Total Target Word Count: ${targetWords} words.
+                 Task: Create a structured outline with exactly ${numChunks} distinct section headings that cover the topic in depth.
+                 Return ONLY a JSON array of strings (the headings).
+                 Example: ${JSON.stringify(Array.from({length: numChunks}, (_, i) => `Section ${i+1} Title`))}
+               `;
+               const outlineResult = await callGemini(outlinePrompt, true);
+               try {
+                   sections = JSON.parse(cleanJson(outlineResult));
+                   if (!Array.isArray(sections) || sections.length === 0) throw new Error("Invalid outline");
+               } catch (e) {
+                   sections = Array.from({length: numChunks}, (_, i) => `Part ${i+1}`);
+               }
            }
            let fullDocument = `Title: ${effTopic}\n\n`;
            const wordsPerSection = Math.ceil(targetWords / sections.length);
            let allGroundingChunks = [];
            let currentCitationOffset = 0;
+           // Track per-section text so each subsequent prompt can include a recap of
+           // what's already been written. Without this, Gemini sees only the section
+           // title + the same research brief every chunk — the result is near-
+           // identical chunks that each re-establish the introduction, definitions,
+           // and high-level framing instead of continuing the article.
+           const sectionTexts = [];
            setInputText(fullDocument);
            for (let i = 0; i < sections.length; i++) {
                const sectionTitle = sections[i];
                setGenerationStep(t('status_steps.writing_part', { current: i + 1, total: sections.length, title: sectionTitle }));
                const bilingualInstruction = getBilingualPromptInstruction(effectiveLanguage);
-               const sectionPrompt = `
-                   Write the section "${sectionTitle}" for an educational article about "${effTopic}".
+               // Build an outline snapshot Gemini can orient against and a trimmed
+               // prior-content recap (~250 words per prior section, tail-biased so
+               // the model sees how each section ENDED — the most useful continuity
+               // signal). Citations in the prior text are stripped so superscript
+               // numbers don't carry over and conflict with the current section's
+               // grounding offsets.
+               const outlineSnapshot = sections.map((st, idx) => {
+                   const marker = idx < i ? 'DONE' : idx === i ? 'WRITING NOW' : 'upcoming';
+                   return `  ${idx + 1}. ${st}  ← ${marker}`;
+               }).join('\n');
+               const _trimPrior = (text, maxWords) => {
+                   const stripped = String(text || '')
+                       .replace(/\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\([^)]+\)/g, '')
+                       .replace(/⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾/g, '')
+                       .replace(/\s+/g, ' ')
+                       .trim();
+                   const words = stripped.split(' ');
+                   if (words.length <= maxWords) return stripped;
+                   return '… ' + words.slice(-maxWords).join(' ');
+               };
+               const priorRecap = i === 0
+                   ? ''
+                   : sectionTexts.map((st, idx) => `===== SECTION ${idx + 1}: ${sections[idx]} =====\n${_trimPrior(st, 250)}`).join('\n\n');
+               // Single-section (N=1) path takes a different prompt shape:
+               // no section-N-of-M framing, no "## SectionTitle" header (would
+               // duplicate the topic as a redundant subheading), combined
+               // first+final instructions, and the reading-level / tone /
+               // structure guidance that used to live on the legacy single-call
+               // path is merged in here so short text doesn't lose quality.
+               const isSingleSection = sections.length === 1;
+               const toneSpecificInstruction = (effTone === 'Persuasive' || effTone === 'Persuasive / Opinion')
+                   ? 'Write a compelling argumentative piece with clear claims, evidence, and a call to action.'
+                   : (effTone === 'Humorous' || effTone === 'Humorous / Engaging')
+                   ? 'Use humor, jokes, and entertaining analogies while maintaining educational accuracy.'
+                   : (effTone === 'Procedural' || effTone === 'Step-by-Step / Procedural')
+                   ? 'Write clear step-by-step instructions with numbered steps and helpful tips.'
+                   : isNarrativeMode
+                   ? 'Write an engaging narrative article that weaves facts into a story-like flow while staying factually accurate.'
+                   : 'Write in a formal, expository textbook style. Focus on factual presentation with clear definitions and explanations. Avoid narrative hooks, storytelling elements, or conversational language. Present information directly and academically.';
+               const readingLevelGuidance = `
+                   STRICT READING LEVEL GUIDELINES (COMPENSATION FOR AI BIAS):
+                   - AI models typically write 1-2 grades higher than requested. You MUST compensate for this.
+                   - If "Kindergarten" or "1st Grade": Target Pre-K complexity. Use extremely short sentences (3-5 words). No compound sentences.
+                   - If "2nd Grade" or "3rd Grade": Target 1st Grade complexity. Use short, declarative sentences. High-frequency vocabulary only.
+                   - If "4th Grade" or "5th Grade": Target 3rd Grade complexity. Mostly simple sentences, limited compound sentences.
+                   - If "6th Grade" to "8th Grade": Target 5th Grade complexity. Straightforward syntax, avoid dense academic language.
+                   - If "9th Grade" to "12th Grade": Target 8th Grade complexity. Clear, standard English without unnecessary jargon.
+                   - GENERAL RULE: If in doubt, simplify further. Shorter sentences. Simpler words.
+               `;
+               const sectionPrompt = isSingleSection ? `
+                   Write a self-contained educational article about "${effTopic}".
                    Target Audience: ${effGrade}
                    Tone: ${effTone}
-                   Target Length for this section: ~${wordsPerSection} words.
+                   Target Length: approximately ${wordsPerSection} words (keep within 10%).
                    ${researchContext ? `
                    --- RESEARCH BRIEF (BACKGROUND CONTEXT ONLY) ---
                    The following background information is available:
@@ -411,8 +610,54 @@ var createContentEngine = function(deps) {
                    ------------------------------------------------
                    IMPORTANT: This brief is for context. You MUST still use Google Search independently to verify and cite every fact you write.
                    ` : ''}
-                   Context So Far:
-                   ${i === 0 ? "This is the FIRST section." : "This follows previous sections."}
+                   This is a single self-contained article — write an engaging opening AND a summary conclusion. No section heading — the article stands on its own.
+                   STRICT INSTRUCTIONS:
+                   ${effIncludeCitations ? `
+                   1. CITATION REQUIREMENT: Include inline citations throughout. Every paragraph should have at least one citation.
+                   2. Major facts, statistics, and claims require source attribution.
+                   3. Verify claims with web sources before including them.
+                   ` : ''}
+                   4. Write in PROSE PARAGRAPHS. Do NOT use numbered lists or bullet points for the main content. Do NOT summarize.
+                   5. Do NOT include a "Sources", "References", "Works Cited", or "Bibliography" section — the citation list is appended automatically from grounding metadata.
+                   6. Do NOT emit a "## ${effTopic}" heading or any other top-level heading — begin directly with the article prose.
+                   ${structureInstruction}
+                   ${toneSpecificInstruction}
+                   ${effVocabulary ? `Key Vocabulary to Include: ${effVocabulary}` : ''}
+                   ${effCustomInstructions ? `Custom Instructions: ${effCustomInstructions}` : ''}
+                   ${readingLevelGuidance}
+                   ${complexityGuard}
+                   ${dialectInstruction}
+                   ${bilingualInstruction}
+                   Return ONLY the article text. Do not wrap in markdown code blocks.
+               ` : `
+                   Write the section "${sectionTitle}" for an educational article about "${effTopic}".
+                   Target Audience: ${effGrade}
+                   Tone: ${effTone}
+                   Target Length for this section: ~${wordsPerSection} words.
+                   You are writing section ${i + 1} of ${sections.length}. Full outline:
+${outlineSnapshot}
+                   ${researchContext ? `
+                   --- RESEARCH BRIEF (BACKGROUND CONTEXT ONLY) ---
+                   The following background information is available:
+                   """
+                   ${researchContext}
+                   """
+                   ------------------------------------------------
+                   IMPORTANT: This brief is for context. You MUST still use Google Search independently to verify and cite every fact you write.
+                   ` : ''}
+                   ${i === 0 ? 'This is the FIRST section. Write an engaging opening that sets up the article.' : `
+--- PREVIOUSLY WRITTEN SECTIONS (READ CAREFULLY — DO NOT REPEAT) ---
+${priorRecap}
+---------------------------------------------------------------
+CRITICAL: The sections above are already written. You MUST NOT:
+  • Re-introduce the topic, re-define terms, or restate background
+  • Repeat facts, examples, or analogies already covered
+  • Start with framing like "In this article we will explore..."
+You MUST:
+  • Continue naturally from where section ${i} ended
+  • Cover genuinely NEW ground specific to "${sectionTitle}"
+  • Assume the reader has just finished reading the prior sections
+`}
                    STRICT INSTRUCTIONS:
                    ${effIncludeCitations ? `
                    1. CITATION REQUIREMENT (section ${i + 1} of ${sections.length}): Include inline citations throughout this section.
@@ -422,7 +667,7 @@ var createContentEngine = function(deps) {
                    ` : ''}
                    5. Write detailed, rigorous paragraphs. Do NOT summarize.
                    6. Include a header "## ${sectionTitle}".
-                   7. Do NOT write a conclusion unless this is the final section.
+                   7. ${i === sections.length - 1 ? 'This IS the final section — end with a conclusion paragraph.' : 'Do NOT write a conclusion; more sections follow.'}
                    ${dialectInstruction}
                    ${bilingualInstruction}
                    Return ONLY the section text. Do not wrap in markdown code blocks.
@@ -493,14 +738,125 @@ var createContentEngine = function(deps) {
                    sectionText = String(result || "");
                }
                sectionText = sectionText.replace(/^```[a-zA-Z]*\n/i, '').replace(/^```\s*/, '').replace(/```\s*$/, '').trim();
+               sectionTexts.push(sectionText);
                fullDocument += sectionText + "\n\n";
                setInputText(fullDocument);
                if (i < sections.length - 1) await new Promise(r => setTimeout(r, 1000));
            }
            if (effIncludeCitations && allGroundingChunks.length > 0) {
-                const masterMetadata = { groundingChunks: allGroundingChunks };
+                // Strip any LLM-emitted bibliography trailer BEFORE we do citation
+                // repair.  Despite the prompt forbidding it, Gemini occasionally emits
+                // its own "## Source Text References\n\n1. [Title](url)..." section at
+                // the end of the generated text — and when it hits the token limit
+                // partway through, the trailer (and any inline citation near it) gets
+                // truncated mid-URL.  The authoritative bibliography is appended below
+                // via generateBibliographyString from grounding metadata, so we can
+                // safely drop Gemini's version.  Lookahead-gated by "\d+. [Title](" so
+                // it only strips actual numbered-link lists, never body prose that
+                // happens to contain the word "Sources" or "References".
+                fullDocument = fullDocument.replace(
+                    /(?:\n|^)\s*(?:#{1,4}\s*)?(?:\*+\s*)?(?:Source\s+Text\s+References|Accuracy\s+Check\s+References|Verified\s+Sources|Works?\s+Cited|Bibliography|Citations)(?:\*+)?[\s:]*(?=\s*\d+\.\s*\[[^\]]+\]\()[\s\S]*$/i,
+                    ''
+                );
+                // Strip hallucinated citations whose index is outside the collected chunks.
+                // These happen when a later section's Gemini emits a higher N than that
+                // section's chunk count — the offset then pushes it past the end of
+                // allGroundingChunks. Three passes to avoid a greedy over-match:
+                //   1. well-formed links  [⁽N⁾](url)  with a closing ).
+                //   2. truncated links    [⁽N⁾](url-cut-off  at end of line (no closing ).
+                //   3. bare citations     ⁽N⁾  that aren't part of a link.
+                //
+                // ALSO strip body citations whose target chunk will be rejected by
+                // filterSources (YouTube music, Spotify, social, shopping). Previously these
+                // orphaned the body citation: bibliography dropped the YouTube entry but the
+                // inline ⁽N⁾ stayed, leaving a broken reference. Compute the rejected index
+                // set here so _keepInRange can match both out-of-range and rejected cases.
+                var _maxIdx = allGroundingChunks.length;
+                var _rejectedIdx = new Set();
+                var _kept = filterSources(allGroundingChunks);
+                var _keptSet = new Set(_kept);
+                allGroundingChunks.forEach(function(ch, i) { if (!_keptSet.has(ch)) _rejectedIdx.add(i + 1); });
+                var _superMap = {'\u2070':0,'\u00b9':1,'\u00b2':2,'\u00b3':3,'\u2074':4,'\u2075':5,'\u2076':6,'\u2077':7,'\u2078':8,'\u2079':9};
+                var _decodeSup = function(s) { var n = 0; for (var i = 0; i < s.length; i++) { n = n * 10 + (_superMap[s[i]] || 0); } return n; };
+                var _keepInRange = function(match, digits) {
+                    var n = _decodeSup(digits);
+                    if (n < 1 || n > _maxIdx) return '';
+                    if (_rejectedIdx.has(n)) return ''; // source will be filtered from bibliography — don't leave a dangling inline cit
+                    return match;
+                };
+                // Pass 1: well-formed [⁽N⁾](url)
+                fullDocument = fullDocument.replace(
+                    /\[\u207d?([\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079]+)\u207e\]\([^)\n]*\)/g,
+                    _keepInRange
+                );
+                // Pass 2: truncated [⁽N⁾](url-without-close) at end of line
+                fullDocument = fullDocument.replace(
+                    /\[\u207d?([\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079]+)\u207e\]\([^)\n]*$/gm,
+                    _keepInRange
+                );
+                // Pass 3: bare ⁽N⁾ not followed by ]( (i.e., not inside a surviving link)
+                fullDocument = fullDocument.replace(
+                    /\u207d([\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079]+)\u207e(?!\])/g,
+                    _keepInRange
+                );
+
+                // Renumber body citations 1..N in order of first appearance and get
+                // chunks reordered to match that sequence. This aligns body numbers
+                // with bibliography numbers — they'll both run 1..N in the same order.
+                var _renum = renumberCitations(fullDocument, allGroundingChunks);
+                fullDocument = _renum.renumberedText;
+
+                // Diagnostic: capture the document tail + last-3 citation parses BEFORE
+                // canonical URL repair runs. If the "last .com stripped" bug persists
+                // after the defensive pass below, this log tells us whether the truncated
+                // shape is even present at this stage (vs. corrupted later).
+                try {
+                  var _tail = fullDocument.slice(-400);
+                  var _citRegex = /\[(?:[\u207d(]?)([\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079]+)(?:[\u207e)]?)\]\(([^)\n]*)(\))?/g;
+                  var _lastCites = (_tail.match(_citRegex) || []).slice(-3);
+                  warnLog('[Citations pre-repair] tail(-120) ends: ' + JSON.stringify(_tail.slice(-120)) + ' | last citations: ' + JSON.stringify(_lastCites));
+                } catch (_diagErr) { /* non-fatal */ }
+                // Restore any URLs Gemini corrupted (truncation at end of section,
+                // space injection at dots like "webmd. com", dropped https://) using
+                // the canonical URIs from the reordered chunks. Deterministic because
+                // after renumber, citation N is exactly reorderedChunks[N-1].
+                fullDocument = restoreCanonicalCitationUrls(fullDocument, _renum.reorderedChunks);
+                // Belt-and-suspenders: catch citations with look-alike brackets or
+                // truncated URLs that the primary regex missed.
+                fullDocument = defensiveLastCitationRepair(fullDocument, _renum.reorderedChunks);
+
+                // Generate bibliography from reordered chunks so its numbers match body.
+                var masterMetadata = { groundingChunks: _renum.reorderedChunks };
                 fullDocument += generateBibliographyString(masterMetadata, 'Links Only', "Source Text References");
-                fullDocument = validateAndRepairCitations(fullDocument, allGroundingChunks);
+                fullDocument = validateAndRepairCitations(fullDocument, _renum.reorderedChunks);
+                // Citation spacing normalization (mirrors the former short-path cleanup).
+                // Multi-chunk per-section processing only moved trailing periods; it did
+                // NOT split adjacent citations or clean up stray whitespace. Result: text
+                // like "asleep  . [⁽¹⁾](url)" (double-space before period) and
+                // "[⁽²⁾](url) . [⁽³⁾](url)" (period floating between two citations).
+                // This pass normalizes the citation group into its canonical form:
+                // "sentence. [⁽A⁾](url), [⁽B⁾](url)" — period before the group, comma
+                // between adjacent citations, no double spaces. The patterns only match
+                // superscript-containing links (body citations); bibliography entries
+                // don't have superscripts so they are never affected.
+                fullDocument = fullDocument
+                    // 1. Strip stray tabs/spaces immediately before punctuation —
+                    //    catches "asleep  . [cite]" → "asleep. [cite]".
+                    .replace(/[ \t]+([.,;:!?])/g, '$1')
+                    // 2. Drop interstitial periods between adjacent citations —
+                    //    "[cite1] . [cite2]" is formatting junk (both citations support
+                    //    the same claim, the period is a scrambled sentence-end
+                    //    artifact). Replace with comma-separator, using lookahead so
+                    //    chains of 3+ citations collapse in one pass.
+                    .replace(/(\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\([^)]+\))\s*[.!?]\s+(?=\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\()/g, '$1, ')
+                    // 3. Adjacent citation comma separator — no-space variant that
+                    //    Gemini sometimes emits ("[cite1][cite2]").
+                    .replace(/(\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\([^)]+\))(?=\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\()/g, '$1, ')
+                    // 4. Adjacent citation comma separator — space-separated variant.
+                    //    Lookahead lets chains collapse in one pass.
+                    .replace(/(\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\([^)]+\))[ \t]+(?=\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\()/g, '$1, ')
+                    // 5. Final collapse of 2+ tabs/spaces (preserve newlines).
+                    .replace(/[ \t]{2,}/g, ' ');
            }
            if (effIncludeCitations) {
                 const finalCitCount = (fullDocument.match(/\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\(/g) || []).length;
@@ -529,14 +885,9 @@ var createContentEngine = function(deps) {
       }
       const minParagraphs = Math.max(3, Math.ceil(targetWords / 60));
       const minSections = Math.max(3, Math.ceil(targetWords / 250));
-      const complexityGuard = `
-        - HANDLING COMPLEX TOPICS: If the topic involves abstract, religious, or advanced scientific concepts (e.g. Shintoism, Quantum Mechanics), do NOT use high-level academic definitions.
-        - ANALOGY REQUIREMENT: You MUST explain every abstract concept using a concrete analogy relatable to a ${effGrade} student immediately.
-        - VOCABULARY GUARD: If you use a domain-specific term (Tier 3), define it simply in the same sentence.
-      `;
-      const structureInstruction = getStructureForLength(targetWords);
-      const isDialogueMode = effTone === 'Narrative';
-      const isNarrativeMode = effTone === 'Narrative' || effTone === 'Engaging Narrative';
+      // complexityGuard, structureInstruction, isDialogueMode, isNarrativeMode
+      // are hoisted to the top of the function so the multi-chunk gate above
+      // can reference them for the N=1 single-section prompt.
       let storyOutline = '';
       if (isDialogueMode) {
         addToast(t('input.drafting_story_outline') || "Planning dialogue structure...", "info");
@@ -591,6 +942,7 @@ IMPORTANT: Plan for DIALOGUE, not narration. 70%+ should be spoken lines.
           storyOutline = '';
         }
       }
+      const bilingualInstruction = getBilingualPromptInstruction(effectiveLanguage);
       const prompt = isDialogueMode ? `
 You are generating an EDUCATIONAL DIALOGUE between two characters who explore a topic through natural conversation.
 Topic: "${effTopic}"
@@ -642,7 +994,7 @@ ${effGrade === '6th Grade' || effGrade === '7th Grade' || effGrade === '8th Grad
 ${complexityGuard}
 Return ONLY the JSON object. Do not include any preamble, markdown code blocks, or explanation.
       ` : `
-        Write a comprehensive educational text for use as source material.
+        You are writing PART 1 of 1 of an educational text — a single self-contained segment that will be used as source material. Treat this as a segment rewrite, NOT as authoring a complete document with a bibliography at the end. The citation list will be generated automatically from grounding metadata and appended by the system.
         Topic: "${effTopic}"
         Target Reading Level: ${effGrade}
         Tone/Style: ${effTone}
@@ -668,6 +1020,7 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
         CRITICAL FORMAT RULES:
         - Write in PROSE PARAGRAPHS. Do NOT use numbered lists or bullet points for the main content. Use flowing text with complete paragraphs.
         - Do NOT include any "Sources", "References", "Works Cited", "Bibliography", or similar sections. I will automatically append verified sources at the end.
+        - SPECIFICALLY FORBIDDEN: Do not write a "Source Text References" heading or any numbered list of citations like "1. [Title](url) 2. [Title](url)". These will be generated from my grounding metadata — any you write will be discarded.
         ` : (effIncludeCitations ? `
         CRITICAL: You MUST use Google Search to find, verify, and cite facts about "${effTopic}".
         Search for key facts, statistics, dates, and claims relevant to this topic. Every paragraph must include at least one cited source.
@@ -676,6 +1029,7 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
         CRITICAL FORMAT RULES:
         - Write in PROSE PARAGRAPHS. Do NOT use numbered lists or bullet points for the main content. Use flowing text with complete paragraphs.
         - Do NOT include any "Sources", "References", "Works Cited", "Bibliography", or similar sections. I will automatically append verified sources at the end.
+        - SPECIFICALLY FORBIDDEN: Do not write a "Source Text References" heading or any numbered list of citations like "1. [Title](url) 2. [Title](url)". These will be generated from my grounding metadata — any you write will be discarded.
         ` : '')}
         STRICT READING LEVEL GUIDELINES (COMPENSATION FOR AI BIAS):
         - AI models typically write 1-2 grades higher than requested. You MUST compensate for this.
@@ -691,6 +1045,8 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
         - Ensure factual accuracy and clarity.
         - ${effTone === 'Persuasive' || effTone === 'Persuasive / Opinion' ? 'Write a compelling argumentative piece with clear claims, evidence, and a call to action.' : effTone === 'Humorous' || effTone === 'Humorous / Engaging' ? 'Use humor, jokes, and entertaining analogies while maintaining educational accuracy.' : effTone === 'Procedural' || effTone === 'Step-by-Step / Procedural' ? 'Write clear step-by-step instructions with numbered steps and helpful tips.' : 'Write in a formal, expository textbook style. Focus on factual presentation with clear definitions and explanations. Avoid narrative hooks, storytelling elements, or conversational language. Present information directly and academically.'}
         - Do not include any intro/outro conversational text (like "Here is the text"). Just provide the content.
+        ${dialectInstruction}
+        ${bilingualInstruction}
       `;
       const shouldUseJsonMode = false;
       const creativeTemperature = isNarrativeMode ? 1.6 : null;
@@ -726,7 +1082,14 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
           if (effIncludeCitations && rawText) {
               const cleanedRawText = rawText.replace(/\[cite:\s*[\d,\s]+(?:in step \d+)?\]\.?\s*/gi, '');
               const rawWithCitations = processGrounding(cleanedRawText, result.groundingMetadata, 'Links Only', false, false);
-              if (isShortText) {
+              // Gate narrowed: non-dialogue short text now routes through the
+              // multi-chunk pipeline (see !isDialogueMode branch above). Only
+              // dialogue-mode single-call output reaches this path — and only
+              // when it's short. The deterministic cleanup below is kept
+              // intact for that case; LLM-cleanup branch below handles the
+              // non-dialogue fallback if dialogue ever gets pushed into the
+              // long-form path.
+              if (isShortText && isDialogueMode) {
                   // ── Short text: deterministic citation cleanup (no lossy LLM round-trip) ──
                   setGenerationStep(t('status_steps.optimizing_citations'));
                   let processedText = rawWithCitations
@@ -734,8 +1097,15 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
                       .replace(/(\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\([^)]+\))\s*([.!?])/g, '$2 $1')
                       // Separate adjacent citations with comma
                       .replace(/(\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\([^)]+\))(\[⁽)/g, '$1, $2')
-                      // Strip any Sources/References/Bibliography sections (auto-generated later)
-                      .replace(/\n*(?:#{1,4}\s*)?(?:Sources?|References?|Works?\s*Cited|Bibliography)\s*[\n\r]+(?:(?:\d+\.\s+|\*\s+|-\s+)?.+[\n\r]+)*(?=\n*(?:#{1,4}\s|\Z|$))/gi, '\n')
+                      // Strip any Sources/References/Bibliography trailer at end of text
+                      // (auto-generated later by generateBibliographyString). Lookahead-gated:
+                      // only strips when the header is followed by at least one numbered
+                      // markdown link. This prevents false matches on legitimate body content
+                      // that happens to contain the word "References" or "Sources" — the
+                      // over-match that tanked the earlier simplified-pipeline strip attempt.
+                      // Supersedes the old `\s*[\n\r]+` requirement that failed when Gemini
+                      // emitted refs as a flat one-line trailer.
+                      .replace(/(?:\n|^)\s*(?:#{1,4}\s*)?(?:\*+\s*)?(?:Source\s+Text\s+References|Accuracy\s+Check\s+References|Verified\s+Sources|Works?\s+Cited|Bibliography|Citations)(?:\*+)?[\s:]*(?=\s*\d+\.\s*\[[^\]]+\]\()[\s\S]*$/i, '')
                       // Clean orphan brackets around citations
                       .replace(/\[(⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾)(?!\]\()/g, '$1')
                       .replace(/(⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾)\](?!\()/g, '$1')
@@ -744,7 +1114,8 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
                   text = processedText.trim();
                   if (result.groundingMetadata?.groundingChunks) {
                       const { renumberedText, reorderedChunks } = renumberCitations(text, result.groundingMetadata.groundingChunks);
-                      text = renumberedText;
+                      text = restoreCanonicalCitationUrls(renumberedText, reorderedChunks);
+                      text = defensiveLastCitationRepair(text, reorderedChunks);
                       const tempMeta = { ...result.groundingMetadata, groundingChunks: reorderedChunks };
                       text += generateBibliographyString(tempMeta, 'Links Only', "Source Text References");
                   } else {
@@ -780,11 +1151,16 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
                       warnLog(`Citation validation: cleanup lost ${rawCitCount - cleanedCitCount}/${rawCitCount} citations. Falling back to raw.`);
                       throw new Error("Citation loss detected - using raw grounding");
                   }
-                  let strippedText = cleaned.replace(/\n*(?:#{1,4}\s*)?(?:Sources?|References?|Works?\s*Cited|Bibliography)\s*[\n\r]+(?:(?:\d+\.\s+|\*\s+|-\s+)?.+[\n\r]+)*(?=\n*(?:#{1,4}\s|\Z|$))/gi, '\n');
+                  let strippedText = cleaned.replace(/(?:\n|^)\s*(?:#{1,4}\s*)?(?:\*+\s*)?(?:Source\s+Text\s+References|Accuracy\s+Check\s+References|Verified\s+Sources|Works?\s+Cited|Bibliography|Citations)(?:\*+)?[\s:]*(?=\s*\d+\.\s*\[[^\]]+\]\()[\s\S]*$/i, '\n');
                   text = strippedText.trim();
                   if (result.groundingMetadata?.groundingChunks) {
                       const { renumberedText, reorderedChunks } = renumberCitations(text, result.groundingMetadata.groundingChunks);
-                      text = renumberedText;
+                      // CANONICAL URL VALIDATION: the cleanup round-trip above can corrupt URLs
+                      // (truncate mid-domain, drop the closing paren, space-pad at dots, drop
+                      // the protocol). Rebuild every [⁽N⁾](url) using the canonical web.uri
+                      // from reorderedChunks[N-1] — after renumber, N is a deterministic index.
+                      text = restoreCanonicalCitationUrls(renumberedText, reorderedChunks);
+                      text = defensiveLastCitationRepair(text, reorderedChunks);
                       const tempMeta = { ...result.groundingMetadata, groundingChunks: reorderedChunks };
                       text += generateBibliographyString(tempMeta, 'Links Only', "Source Text References");
                   } else {
@@ -794,10 +1170,11 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
                   warnLog("Citation placement optimization skipped (Timeout or Error):", cleanupErr);
                   const cleanedFallback = rawText.replace(/\[cite:\s*[\d,\s]+(?:in step \d+)?\]\.?\s*/gi, '');
                   let fallbackText = processGrounding(cleanedFallback, result.groundingMetadata, 'Links Only', false, false);
-                  fallbackText = fallbackText.replace(/\n*(?:#{1,4}\s*)?(?:Sources?|References?|Works?\s*Cited|Bibliography)\s*[\n\r]+(?:(?:\d+\.\s+|\*\s+|-\s+)?.+[\n\r]+)*(?=\n*(?:#{1,4}\s|\Z|$))/gi, '\n').trim();
+                  fallbackText = fallbackText.replace(/(?:\n|^)\s*(?:#{1,4}\s*)?(?:\*+\s*)?(?:Source\s+Text\s+References|Accuracy\s+Check\s+References|Verified\s+Sources|Works?\s+Cited|Bibliography|Citations)(?:\*+)?[\s:]*(?=\s*\d+\.\s*\[[^\]]+\]\()[\s\S]*$/i, '\n').trim();
                   if (result.groundingMetadata?.groundingChunks) {
                       const { renumberedText, reorderedChunks } = renumberCitations(fallbackText, result.groundingMetadata.groundingChunks);
-                      fallbackText = renumberedText;
+                      fallbackText = restoreCanonicalCitationUrls(renumberedText, reorderedChunks);
+                      fallbackText = defensiveLastCitationRepair(fallbackText, reorderedChunks);
                       const tempMeta = { ...result.groundingMetadata, groundingChunks: reorderedChunks };
                       fallbackText += generateBibliographyString(tempMeta, 'Links Only', "Source Text References");
                   } else {
@@ -858,14 +1235,15 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
                       retryText = retryText
                           .replace(/(\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\([^)]+\))\s*([.!?])/g, '$2 $1')
                           .replace(/(\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\([^)]+\))(\[⁽)/g, '$1, $2')
-                          .replace(/\n*(?:#{1,4}\s*)?(?:Sources?|References?|Works?\s*Cited|Bibliography)\s*[\n\r]+(?:(?:\d+\.\s+|\*\s+|-\s+)?.+[\n\r]+)*(?=\n*(?:#{1,4}\s|\Z|$))/gi, '\n')
+                          .replace(/(?:\n|^)\s*(?:#{1,4}\s*)?(?:\*+\s*)?(?:Source\s+Text\s+References|Accuracy\s+Check\s+References|Verified\s+Sources|Works?\s+Cited|Bibliography|Citations)(?:\*+)?[\s:]*(?=\s*\d+\.\s*\[[^\]]+\]\()[\s\S]*$/i, '\n')
                           .replace(/\[(⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾)(?!\]\()/g, '$1')
                           .replace(/(⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾)\](?!\()/g, '$1')
                           .replace(/\[?Sources?\s+[\d,\s]+(?:and\s+\d+)?\]?/gi, '')
                           .trim();
                       if (retryResult.groundingMetadata?.groundingChunks) {
                           const { renumberedText, reorderedChunks } = renumberCitations(retryText, retryResult.groundingMetadata.groundingChunks);
-                          retryText = renumberedText;
+                          retryText = restoreCanonicalCitationUrls(renumberedText, reorderedChunks);
+                          retryText = defensiveLastCitationRepair(retryText, reorderedChunks);
                           const tempMeta = { ...retryResult.groundingMetadata, groundingChunks: reorderedChunks };
                           retryText += generateBibliographyString(tempMeta, 'Links Only', "Source Text References");
                       }
@@ -1041,6 +1419,32 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
           });
       }
   };
+  // Citation-restore helper. If the model dropped [⁽N⁾](url) wrappers from
+  // the original and emitted bare URLs, put the wrappers back so the
+  // simplified-view renderer turns them into numbered chips instead of raw
+  // URL text. Also strips bare URLs that were NOT in the original (likely
+  // hallucinated citations).
+  const _restoreCitations = (result, original) => {
+      if (!result || !original || typeof result !== 'string' || typeof original !== 'string') return result;
+      const citRegex = /\[(⁽[0-9⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾)\]\(([^)]+)\)/g;
+      const urlToMarker = new Map();
+      let m;
+      while ((m = citRegex.exec(original)) !== null) {
+          urlToMarker.set(m[2], m[1]);
+      }
+      let fixed = result;
+      // Re-wrap known bare URLs
+      urlToMarker.forEach((marker, url) => {
+          const urlEsc = url.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          // If the URL is already inside a markdown link in the result, skip.
+          const alreadyLinked = new RegExp('\\]\\(' + urlEsc + '\\)');
+          if (alreadyLinked.test(fixed)) return;
+          // Replace the bare URL (not already inside ](...)) with a citation.
+          const bareUrl = new RegExp('(^|[^(\\[])' + urlEsc, 'g');
+          fixed = fixed.replace(bareUrl, '$1[' + marker + '](' + url + ')');
+      });
+      return fixed;
+  };
   const handleReviseSelection = async (action, customInstruction = '') => {
       if (!selectionMenu || !selectionMenu.text) return;
       const originalText = selectionMenu.text;
@@ -1100,6 +1504,24 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
           let prompt;
           const outputLang = leveledTextLanguage === 'All Selected Languages' ? 'English' : leveledTextLanguage;
           const dialectInstruction = outputLang !== 'English' ? `STRICT DIALECT ADHERENCE: If a specific dialect is named (e.g. 'Brazilian Portuguese' vs 'European Portuguese'), explicitly use that region's vocabulary, spelling, and grammar conventions.` : '';
+          // Shared preservation rules injected into Revise/Simplify prompts so
+          // Gemini keeps citation chips like [⁽1⁾](url) and markdown structure
+          // intact. Without this, the model drops citation wrappers and
+          // re-emits raw URLs inline, breaking the simplified view's renderer.
+          const preservationRules = `
+                PRESERVATION RULES (follow EXACTLY):
+                1. If the input contains citation markers in the form [⁽N⁾](url)
+                   (e.g. [⁽1⁾](https://example.com)), keep EACH ONE VERBATIM in
+                   your output at the appropriate place in the new sentence.
+                   Do not re-number them, drop the superscript wrapper, or
+                   convert them into plain URLs.
+                2. NEVER emit a bare URL (e.g. "https://example.com") anywhere
+                   in your output. URLs must only appear inside a
+                   [⁽N⁾](url) markdown link.
+                3. Preserve markdown structure from the input: keep bullet
+                   points (- or *), numbered lists, bold (**...**), headers
+                   (#, ##, ###), and paragraph breaks exactly where they are.
+              `;
           if (action === 'simplify') {
               prompt = `
                 Simplify this specific sentence/phrase for a ${gradeLevel} student.
@@ -1107,6 +1529,7 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
                 Context Topic: ${sourceTopic || "General"}.
                 Text to simplify: "${originalText}",
                 CRITICAL: Output the simplified text in the SAME language as the input "Text to simplify".
+                ${preservationRules}
                 ${dialectInstruction}
                 Return ONLY the simplified text. No quotes or labels.
               `;
@@ -1117,6 +1540,7 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
                 Context Topic: ${sourceTopic || "General"}.
                 Target Audience: ${gradeLevel}.
                 CRITICAL: Output the revised text in the SAME language as the input "Text to revise" unless the instructions explicitly ask to translate.
+                ${preservationRules}
                 ${dialectInstruction}
                 Return ONLY the revised text. No quotes, no conversational filler.
               `;
@@ -1128,14 +1552,18 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
                 Phrase: "${originalText}",
                 Output Language: ${outputLang}.
                 ${outputLang !== 'English' ? `Provide the explanation in ${outputLang} first. Then add a new line with "**English:**" followed by the English explanation.` : ''}
+                IMPORTANT: Do NOT include bare URLs in your explanation. Reference sources only by name.
                 ${dialectInstruction}
                 Return ONLY the explanation.
               `;
           }
           const result = await callGemini(prompt);
+          // Safety net: if Gemini still dropped citation wrappers and emitted
+          // bare URLs that were cited in the original, re-wrap them as [⁽N⁾](url).
+          const restoredResult = _restoreCitations(result, originalText);
           setRevisionData(prev => ({
               ...prev,
-              result: result
+              result: restoredResult
           }));
       } catch (err) {
           warnLog("Unhandled error:", err);
@@ -1165,6 +1593,7 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
             Output Language: ${outputLang}.
             ${outputLang !== 'English' ? `Provide the definition in ${outputLang} first. Then add a new line with "**English:**" followed by the English definition.` : ''}
             ${outputLang !== 'English' ? `STRICT DIALECT ADHERENCE: If a specific dialect is named (e.g. 'Brazilian Portuguese'), use that region's conventions.` : ''}
+            IMPORTANT: Do NOT include bare URLs in your definition. Reference sources only by name.
             Return ONLY the definition. Keep it concise (1-2 sentences).
           `;
           const result = await callGemini(prompt);
@@ -1180,9 +1609,14 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
       }
   };
   const handlePhonicsClick = async (rawWord, e = null) => {
-      const word = rawWord.replace(/[^a-zA-ZÀ-ÿ0-9-\s]/g, "").trim();
+      // Use a Unicode property class so non-Latin scripts (Cyrillic, Greek, Arabic, Hebrew,
+      // Han, Hiragana/Katakana, Hangul, Devanagari, etc.) survive the character scrub.
+      // Previously the regex was /[^a-zA-ZÀ-ÿ0-9-\s]/g which kept only Latin + Latin-Extended-A,
+      // so a click on any non-Latin word produced an empty string and silently did nothing.
+      const word = rawWord.replace(/[^\p{L}\p{N}\s-]/gu, "").trim();
       if (!word) return;
       if (e) e.stopPropagation();
+      const reqId = ++_phonicsReqId;
       setPhonicsData({
           word,
           data: null,
@@ -1190,45 +1624,72 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
           x: e ? e.clientX : 0,
           y: e ? e.clientY : 0
       });
+      // Resolve the active content language. "All Selected Languages" is a UI pseudo-value
+      // that means "generate in every selected language"; for phonics of a specific word,
+      // fall back to English as the analysis language in that ambiguous case.
+      const _phLang = (leveledTextLanguage && leveledTextLanguage !== 'All Selected Languages')
+          ? leveledTextLanguage : 'English';
       try {
-          const prompt = `Analyze the English word: '${word}'. Return ONLY JSON: { "ipa": "International Phonetic Alphabet representation", "phoneticSpelling": "Simple phonetic spelling (e.g. cat -> kat)", "syllables": ["syl", "la", "bles"] }.`;
+          const prompt = _phLang === 'English'
+              ? `Analyze the English word: '${word}'. Return ONLY JSON: { "ipa": "International Phonetic Alphabet representation", "phoneticSpelling": "Simple phonetic spelling (e.g. cat -> kat)", "syllables": ["syl", "la", "bles"] }.`
+              : `Analyze the ${_phLang} word: '${word}'. Return IPA and syllables appropriate to ${_phLang} phonology — NOT English. Return ONLY JSON: { "ipa": "IPA in the ${_phLang} phoneme system", "phoneticSpelling": "Simple phonetic spelling a ${_phLang} reader would understand", "syllables": ["syl","la","bles"] }.`;
           const result = await callGemini(prompt, true);
+          if (reqId !== _phonicsReqId) return;
           let data;
           try {
               data = JSON.parse(cleanJson(result));
           } catch (jsonError) {
               warnLog("Phonics JSON Parse Error:", jsonError);
+              if (reqId !== _phonicsReqId) return;
               setPhonicsData(null);
               addToast(t('toasts.phonics_parse_failed'), "error");
               return;
           }
-          const audioUrl = await callTTS(word, selectedVoice);
-          if (audioUrl) {
-              const audio = new Audio(audioUrl);
-              audio.playbackRate = voiceSpeed;
-              await audio.play();
-          }
-          setPhonicsData(prev => ({
+          setPhonicsData(prev => (reqId === _phonicsReqId && prev ? {
               ...prev,
               data: data,
-              audioUrl: audioUrl,
               isLoading: false
-          }));
+          } : prev));
+          try {
+              // Pass the active language so callTTS can (a) swap Kokoro for a multilingual
+              // Gemini voice when content is non-English, and (b) include a language-hint
+              // prefix in the TTS prompt so Gemini uses the right phonology.
+              const audioUrl = await callTTS(word, selectedVoice, voiceSpeed || 1, 2, _phLang);
+              if (reqId !== _phonicsReqId) return;
+              if (audioUrl) {
+                  const audio = new Audio(audioUrl);
+                  audio.playbackRate = voiceSpeed;
+                  await audio.play();
+                  if (reqId !== _phonicsReqId) return;
+                  setPhonicsData(prev => (reqId === _phonicsReqId && prev ? {
+                      ...prev,
+                      audioUrl: audioUrl
+                  } : prev));
+              }
+          } catch (audioError) {
+              warnLog("Phonics audio error:", audioError);
+              if (reqId === _phonicsReqId) addToast(t('toasts.phonics_audio_failed'), "error");
+          }
       } catch (error) {
           warnLog("Phonics Error:", error);
+          if (reqId !== _phonicsReqId) return;
           addToast(t('toasts.phonics_analyze_failed'), "error");
           setPhonicsData(null);
       }
   };
-  const applyTextRevision = () => {
+  const applyTextRevision = async () => {
       if (!revisionData || !revisionData.result || !generatedContent) return;
       const currentFullText = typeof generatedContent?.data === 'string' ? generatedContent?.data : '';
       let newFullText = currentFullText;
+      // Track the (original → replacement) pairs we actually applied, so the bilingual
+      // sync step below can translate the same edits into the other-language block.
+      const _appliedEdits = [];
       if (revisionData.replacements && Array.isArray(revisionData.replacements)) {
           let notFoundCount = 0;
           revisionData.replacements.forEach(rep => {
               if (newFullText.includes(rep.original)) {
                   newFullText = newFullText.replace(rep.original, rep.new);
+                  _appliedEdits.push({ original: rep.original, result: rep.new });
               } else {
                   notFoundCount++;
               }
@@ -1238,16 +1699,78 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
                return;
           }
       } else {
-          newFullText = currentFullText.replace(revisionData.original, revisionData.result);
-          if (newFullText === currentFullText) {
+          const after = currentFullText.replace(revisionData.original, revisionData.result);
+          if (after === currentFullText) {
               addToast(t('toasts.text_exact_not_found'), "error");
               return;
           }
+          newFullText = after;
+          _appliedEdits.push({ original: revisionData.original, result: revisionData.result });
       }
       handleSimplifiedTextChange(newFullText);
       setRevisionData(null);
       window.getSelection().removeAllRanges();
       addToast(t('toasts.text_updated'), "success");
+
+      // ── Bidirectional bilingual sync ───────────────────────────────────────────
+      // If the document has a "--- ENGLISH TRANSLATION ---" delimiter, try to keep
+      // the paired sentence in the OTHER block consistent with the edit we just
+      // applied. For each applied edit we:
+      //   1. Determine whether it landed in the target-language half or the English
+      //      half (by substring position relative to the delimiter).
+      //   2. Find the counterpart sentence in the other half at the same sentence
+      //      index within its paragraph (best-effort — bilingual output from
+      //      generateBilingualText preserves paragraph + sentence parity).
+      //   3. Ask Gemini to translate the NEW version (one short call per edit)
+      //      into the other language, then replace just that counterpart sentence.
+      // This is best-effort: if the counterpart can't be found, or translation
+      // fails, we silently skip — the primary edit is already committed.
+      const BILINGUAL_DELIMITER = '--- ENGLISH TRANSLATION ---';
+      const _biIdx = newFullText.indexOf(BILINGUAL_DELIMITER);
+      if (_biIdx === -1 || _appliedEdits.length === 0 || !callGemini) return;
+      const targetLang = (leveledTextLanguage && leveledTextLanguage !== 'All Selected Languages' && leveledTextLanguage !== 'English')
+          ? leveledTextLanguage : null;
+      if (!targetLang) return; // no meaningful paired language
+      const _splitIntoSentences = (txt) => {
+          // Mirror the splitTextToSentences heuristic used in the renderer so indices line up.
+          const m = (txt || '').match(/[^.!?…]+[.!?…]+\s*/g);
+          return m ? m.map(s => s.trim()).filter(Boolean) : (txt ? [txt.trim()] : []);
+      };
+      let resultText = newFullText;
+      let syncedCount = 0;
+      for (const edit of _appliedEdits) {
+          // Where did the EDITED sentence land? Search the NEW text for the replacement.
+          const editPos = resultText.indexOf(edit.result);
+          if (editPos === -1) continue;
+          const biIdxNow = resultText.indexOf(BILINGUAL_DELIMITER);
+          const editInTarget = editPos < biIdxNow;
+          const sourceSentences = editInTarget ? _splitIntoSentences(resultText.substring(0, biIdxNow))
+                                               : _splitIntoSentences(resultText.substring(biIdxNow + BILINGUAL_DELIMITER.length));
+          const pairedSentences = editInTarget ? _splitIntoSentences(resultText.substring(biIdxNow + BILINGUAL_DELIMITER.length))
+                                               : _splitIntoSentences(resultText.substring(0, biIdxNow));
+          const editedSentenceIdx = sourceSentences.findIndex(s => s.includes(edit.result.trim().split(/[.!?…]/)[0].slice(0, 40)));
+          if (editedSentenceIdx === -1 || editedSentenceIdx >= pairedSentences.length) continue;
+          const counterpart = pairedSentences[editedSentenceIdx];
+          if (!counterpart) continue;
+          const translatePrompt = editInTarget
+              ? `Translate this ${targetLang} sentence into English, preserving meaning, tone, and any citation markers like ⁽¹⁾:\n"${edit.result}"\nReturn ONLY the English translation — no quotes, no explanation.`
+              : `Translate this English sentence into ${targetLang}, preserving meaning, tone, and any citation markers like ⁽¹⁾:\n"${edit.result}"\nReturn ONLY the ${targetLang} translation — no quotes, no explanation.`;
+          try {
+              const translation = await callGemini(translatePrompt);
+              const cleanTranslation = String(translation || '').trim().replace(/^["""'']|["""''.]$/g, '').trim();
+              if (!cleanTranslation) continue;
+              if (resultText.includes(counterpart)) {
+                  resultText = resultText.replace(counterpart, cleanTranslation);
+                  syncedCount++;
+              }
+          } catch (e) {
+              warnLog('Bilingual sync translation failed for an edit:', e?.message || e);
+          }
+      }
+      if (syncedCount > 0 && resultText !== newFullText) {
+          handleSimplifiedTextChange(resultText);
+          addToast((t('toasts.bilingual_synced') || 'Paired translation updated.') + ' (' + syncedCount + ')', 'info');
+      }
   };
   const closeRevision = () => {
       setRevisionData(null);

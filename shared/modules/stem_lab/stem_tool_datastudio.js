@@ -32,6 +32,13 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
+
+  // ── Audio (auto-injected) ──
+  var _datastAC = null;
+  function getDatastAC() { if (!_datastAC) { try { _datastAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_datastAC && _datastAC.state === "suspended") { try { _datastAC.resume(); } catch(e) {} } return _datastAC; }
+  function datastTone(f,d,tp,v) { var ac = getDatastAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||"sine"; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
+  function sfxDatastClick() { datastTone(600, 0.03, "sine", 0.04); }
+
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-datastudio')) return;
@@ -423,7 +430,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                   React.createElement("div", { className: "text-lg" }, ct.icon),
 
-                  React.createElement("div", { className: "text-[10px] font-bold" }, ct.label)
+                  React.createElement("div", { className: "text-[11px] font-bold" }, ct.label)
 
                 );
 
@@ -852,7 +859,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               // Sort controls
 
-              React.createElement("span", { className: "text-[10px] font-bold", style: { color: _muted } }, "SORT:"),
+              React.createElement("span", { className: "text-[11px] font-bold", style: { color: _muted } }, "SORT:"),
 
               ['none', 'asc', 'desc'].map(function (s) {
 
@@ -864,7 +871,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                   onClick: function () { updDS('sortOrder', s); },
 
-                  className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all",
+                  className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all",
 
                   style: { background: sortOrder === s ? _btnBg : _card, color: sortOrder === s ? '#fff' : _text, border: '1px solid ' + _border }
 
@@ -874,7 +881,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               // Filter controls
 
-              React.createElement("span", { className: "text-[10px] font-bold ml-2", style: { color: _muted } }, "FILTER:"),
+              React.createElement("span", { className: "text-[11px] font-bold ml-2", style: { color: _muted } }, "FILTER:"),
 
               React.createElement("input", {
 
@@ -882,14 +889,14 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 onChange: function (e) { updDS('filterMin', e.target.value === '' ? '' : parseFloat(e.target.value)); },
 
-                className: "w-14 px-1.5 py-1 rounded-lg text-[10px] font-mono",
+                className: "w-14 px-1.5 py-1 rounded-lg text-[11px] font-mono",
 
                 style: { background: _card, border: '1px solid ' + _border, color: _text, outline: 'none' },
                 onFocus: function(e) { e.target.style.boxShadow = '0 0 0 2px #6366f1'; }, onBlur: function(e) { e.target.style.boxShadow = 'none'; }
 
               }),
 
-              React.createElement("span", { className: "text-[10px]", style: { color: _muted } }, "to"),
+              React.createElement("span", { className: "text-[11px]", style: { color: _muted } }, "to"),
 
               React.createElement("input", {
 
@@ -897,7 +904,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 onChange: function (e) { updDS('filterMax', e.target.value === '' ? '' : parseFloat(e.target.value)); },
 
-                className: "w-14 px-1.5 py-1 rounded-lg text-[10px] font-mono",
+                className: "w-14 px-1.5 py-1 rounded-lg text-[11px] font-mono",
 
                 style: { background: _card, border: '1px solid ' + _border, color: _text, outline: 'none' },
                 onFocus: function(e) { e.target.style.boxShadow = '0 0 0 2px #6366f1'; }, onBlur: function(e) { e.target.style.boxShadow = 'none'; }
@@ -908,13 +915,13 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 onClick: function () { updDS('filterMin', ''); updDS('filterMax', ''); },
 
-                className: "px-2 py-1 rounded-lg text-[10px] font-bold",
+                className: "px-2 py-1 rounded-lg text-[11px] font-bold",
 
                 style: { background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.2)' }
 
               }, "✕ Clear"),
 
-              displayRows.length !== dataRows.length && React.createElement("span", { className: "text-[10px] font-bold", style: { color: _accent } }, '(' + displayRows.length + '/' + dataRows.length + ' shown)'),
+              displayRows.length !== dataRows.length && React.createElement("span", { className: "text-[11px] font-bold", style: { color: _accent } }, '(' + displayRows.length + '/' + dataRows.length + ' shown)'),
 
               // Trendline toggle (for line/scatter)
 
@@ -922,7 +929,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 onClick: function () { updDS('showTrendline', !showTrendline); },
 
-                className: "px-2.5 py-1 rounded-lg text-[10px] font-bold ml-auto transition-all",
+                className: "px-2.5 py-1 rounded-lg text-[11px] font-bold ml-auto transition-all",
 
                 style: { background: showTrendline ? '#ef4444' : _card, color: showTrendline ? '#fff' : _text, border: '1px solid ' + (showTrendline ? '#ef4444' : _border) }
 
@@ -936,7 +943,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
             React.createElement("div", { className: "flex gap-2 flex-wrap" },
 
-              React.createElement("span", { className: "text-[10px] font-bold self-center", style: { color: _muted } }, "PRESETS:"),
+              React.createElement("span", { className: "text-[11px] font-bold self-center", style: { color: _muted } }, "PRESETS:"),
 
               PRESETS.map(function (p, i) {
 
@@ -946,7 +953,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                   onClick: function () { updDS('dataRows', p.data); updDS('chartTitle', p.title); if (typeof awardStemXP === 'function') awardStemXP('dataStudio', 3, 'Preset: ' + p.title); },
 
-                  className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all hover:scale-105",
+                  className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all hover:scale-105",
 
                   style: { background: _card, border: '1px solid ' + _border, color: _accent }
 
@@ -1134,7 +1141,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 onClick: function () { updDS('dataRows', []); },
 
-                className: "mt-2 px-3 py-1 rounded-lg text-[10px] font-bold",
+                className: "mt-2 px-3 py-1 rounded-lg text-[11px] font-bold",
 
                 style: { background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.2)' }
 
@@ -1170,7 +1177,139 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               })
 
-            )
+            ),
+
+
+
+            // ── AI Data Story Panel (reading-level aware) ──
+
+            dataRows.length > 0 && (function () {
+
+              var aiLevel = d.aiLevel || 'grade5';
+
+              var aiStory = d.aiStory || '';
+
+              var aiLoading = !!d.aiLoading;
+
+              var aiError = d.aiError || '';
+
+              var LEVELS = [
+
+                { id: 'plain', label: 'Plain Language', promptHint: 'simple everyday words, short sentences' },
+
+                { id: 'grade5', label: 'Grade 5', promptHint: 'a 5th grade student' },
+
+                { id: 'grade8', label: 'Grade 8', promptHint: 'an 8th grade student' }
+
+              ];
+
+              function tellStory() {
+
+                if (typeof callGemini !== 'function') {
+
+                  updDS('aiError', 'AI tutor not available.');
+
+                  return;
+
+                }
+
+                updDS('aiLoading', true); updDS('aiError', ''); updDS('aiStory', '');
+
+                var levelObj = LEVELS.find(function (L) { return L.id === aiLevel; }) || LEVELS[1];
+
+                var dataSummary = dataRows.map(function (r) { return r.label + ': ' + r.value; }).join('; ');
+
+                var chartLabel = (CHART_TYPES.find(function (ct) { return ct.id === chartType; }) || { label: chartType }).label;
+
+                var prompt = 'You are a friendly data tutor explaining a chart to ' + levelObj.promptHint + '. '
+
+                  + (aiLevel === 'plain' ? 'Use simple everyday words and short sentences. ' : '')
+
+                  + 'Chart type: ' + chartLabel + '. Title: "' + chartTitle + '". '
+
+                  + 'Data points (' + dataRows.length + '): ' + dataSummary + '. '
+
+                  + 'Stats: sum=' + total.toFixed(1) + ', mean=' + mean.toFixed(1) + ', median=' + median.toFixed(1) + ', std dev=' + stdDev.toFixed(1) + '. '
+
+                  + 'In 3 short sentences: (1) What story does this data tell? (2) What pattern or outlier stands out? (3) One interesting question this data raises. '
+
+                  + 'Use the actual numbers. No markdown, no headings, no bullets.';
+
+                callGemini(prompt, false, false, 0.5).then(function (resp) {
+
+                  updDS('aiStory', String(resp || '').trim());
+
+                  updDS('aiLoading', false);
+
+                  if (typeof announceToSR === 'function') announceToSR('Data story ready.');
+
+                }).catch(function () {
+
+                  updDS('aiLoading', false);
+
+                  updDS('aiError', 'Could not reach AI tutor. Try again in a moment.');
+
+                });
+
+              }
+
+              return React.createElement("div", { className: "mt-2 rounded-xl p-3", role: "region", "aria-label": "AI data story", style: { background: _card, border: '1px solid ' + _border } },
+
+                React.createElement("div", { className: "flex items-center flex-wrap gap-2 mb-2" },
+
+                  React.createElement("span", { className: "text-sm font-bold", style: { color: _accent } }, "\u2728 What story does this data tell?"),
+
+                  React.createElement("div", { className: "ml-auto flex gap-1", role: "group", "aria-label": "Reading level" },
+
+                    LEVELS.map(function (L) {
+
+                      var active = aiLevel === L.id;
+
+                      return React.createElement("button", {
+
+                        key: L.id,
+
+                        onClick: function () { updDS('aiLevel', L.id); },
+
+                        "aria-label": "Reading level: " + L.label + (active ? " (selected)" : ""),
+
+                        "aria-pressed": active,
+
+                        className: "px-2 py-0.5 rounded-md text-[11px] font-bold transition-all",
+
+                        style: { background: active ? _accent : 'transparent', color: active ? '#fff' : _text, border: '1px solid ' + _border }
+
+                      }, L.label);
+
+                    })
+
+                  ),
+
+                  React.createElement("button", {
+
+                    onClick: tellStory,
+
+                    disabled: aiLoading,
+
+                    "aria-label": "Generate data story at " + (LEVELS.find(function (L) { return L.id === aiLevel; }) || { label: 'Grade 5' }).label + " level",
+
+                    className: "px-3 py-1 rounded-lg text-[11px] font-bold transition-all disabled:opacity-50",
+
+                    style: { background: _accent, color: '#fff' }
+
+                  }, aiLoading ? '\u23F3 Thinking...' : (aiStory ? '\uD83D\uDD04 Re-tell' : '\uD83E\uDDE0 Tell the story'))
+
+                ),
+
+                aiError && React.createElement("p", { className: "text-[11px] mt-1", role: "alert", style: { color: '#ef4444' } }, aiError),
+
+                aiStory && React.createElement("p", { className: "text-xs leading-relaxed mt-1", style: { color: _text } }, aiStory),
+
+                !aiStory && !aiLoading && !aiError && React.createElement("p", { className: "text-[11px] italic", style: { color: _muted } }, "Click \u201CTell the story\u201D to have the AI tutor explain what your chart shows at your chosen reading level.")
+
+              );
+
+            })()
 
           );
       })();

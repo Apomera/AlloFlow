@@ -3480,9 +3480,9 @@ var d = (labToolData.companionPlanting) || {};
                   h('div', { className: 'bg-indigo-900/40 rounded-lg p-3 border border-indigo-500/30' },
                     h('div', { className: 'font-bold text-indigo-300 text-xs mb-1' }, '🧪 The NPK Cycle'),
                     h('div', { className: 'grid grid-cols-3 gap-2 mb-2' },
-                      h('div', { className: 'text-center bg-blue-900/40 rounded-lg p-2' }, h('div', { className: 'text-lg font-black text-blue-400' }, 'N'), h('div', { className: 'text-[9px] text-blue-300' }, 'Nitrogen'), h('div', { className: 'text-[8px] text-slate-400' }, 'Drives leaf growth')),
-                      h('div', { className: 'text-center bg-orange-900/40 rounded-lg p-2' }, h('div', { className: 'text-lg font-black text-orange-400' }, 'P'), h('div', { className: 'text-[9px] text-orange-300' }, 'Phosphorus'), h('div', { className: 'text-[8px] text-slate-400' }, 'Drives roots & fruit')),
-                      h('div', { className: 'text-center bg-purple-900/40 rounded-lg p-2' }, h('div', { className: 'text-lg font-black text-purple-400' }, 'K'), h('div', { className: 'text-[9px] text-purple-300' }, 'Potassium'), h('div', { className: 'text-[8px] text-slate-400' }, 'Drives health & water'))),
+                      h('div', { className: 'text-center bg-blue-900/40 rounded-lg p-2' }, h('div', { className: 'text-lg font-black text-blue-400' }, 'N'), h('div', { className: 'text-[10px] text-blue-300' }, 'Nitrogen'), h('div', { className: 'text-[8px] text-slate-400' }, 'Drives leaf growth')),
+                      h('div', { className: 'text-center bg-orange-900/40 rounded-lg p-2' }, h('div', { className: 'text-lg font-black text-orange-400' }, 'P'), h('div', { className: 'text-[10px] text-orange-300' }, 'Phosphorus'), h('div', { className: 'text-[8px] text-slate-400' }, 'Drives roots & fruit')),
+                      h('div', { className: 'text-center bg-purple-900/40 rounded-lg p-2' }, h('div', { className: 'text-lg font-black text-purple-400' }, 'K'), h('div', { className: 'text-[10px] text-purple-300' }, 'Potassium'), h('div', { className: 'text-[8px] text-slate-400' }, 'Drives health & water'))),
                     h('p', null, plant.nEffect < 0
                       ? '⬇️ ' + plant.label + ' is a heavy feeder — it consumes nitrogen faster than the soil replaces it. Without legume neighbors or compost, nitrogen depletes over time.'
                       : plant.nEffect > 0
@@ -3551,7 +3551,7 @@ var d = (labToolData.companionPlanting) || {};
                         // Net carbon
                         h('div', { className: 'text-center text-[10px] font-bold ' + (netCarbon > 0 ? 'text-green-400' : 'text-red-400') },
                           'Net carbon: ' + (netCarbon > 0 ? '+' + netCarbon + '% → Growth!' : netCarbon + '% → Using stored energy')),
-                        h('p', { className: 'text-[9px] text-slate-400 mt-1' },
+                        h('p', { className: 'text-[10px] text-slate-400 mt-1' },
                           cgSeason === 3 ? '❄️ Winter: minimal sunlight. Plant relies on stored sugars. Photosynthesis nearly stopped.'
                           : cgSeason === 1 ? '☀️ Summer: peak sunlight drives maximum photosynthesis. Watch water — transpiration is high.'
                           : cgSeason === 0 ? '🌱 Spring: increasing daylight ramps up photosynthesis. Growth accelerating.'
@@ -3563,7 +3563,7 @@ var d = (labToolData.companionPlanting) || {};
                             h('span', { className: 'text-blue-300 font-mono' }, transpRate + '%')),
                           h('div', { className: 'h-2 bg-slate-700 rounded-full overflow-hidden' },
                             h('div', { style: { width: transpRate + '%' }, className: 'h-full bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full transition-all' }))),
-                        h('p', { className: 'text-[9px] text-slate-400' }, 'Water evaporates from leaf stomata, pulling more water up from roots (transpiration stream). ' + (transpRate > 60 ? 'High transpiration — soil drying quickly!' : 'Moderate transpiration — soil moisture is stable.')));
+                        h('p', { className: 'text-[10px] text-slate-400' }, 'Water evaporates from leaf stomata, pulling more water up from roots (transpiration stream). ' + (transpRate > 60 ? 'High transpiration — soil drying quickly!' : 'Moderate transpiration — soil moisture is stable.')));
                     })()))),
 
               // ── FUNGAL NETWORK VIEW ──
@@ -3575,11 +3575,11 @@ var d = (labToolData.companionPlanting) || {};
                     h('p', null, 'Beneath your garden, an invisible internet of fungal threads (hyphae) connects 90% of plant species. These mycorrhizal fungi form symbiotic partnerships with roots:'),
                     h('div', { className: 'my-2 bg-purple-800/30 rounded-lg p-2 text-center' },
                       h('div', { className: 'flex items-center justify-center gap-3' },
-                        h('div', { className: 'text-center' }, h('div', { className: 'text-xl' }, '🌱'), h('div', { className: 'text-[9px] text-purple-300' }, 'Plant')),
+                        h('div', { className: 'text-center' }, h('div', { className: 'text-xl' }, '🌱'), h('div', { className: 'text-[10px] text-purple-300' }, 'Plant')),
                         h('div', { className: 'text-purple-400 text-sm' }, '← sugars (C₆H₁₂O₆)'),
-                        h('div', { className: 'text-center' }, h('div', { className: 'text-xl' }, '🍄'), h('div', { className: 'text-[9px] text-purple-300' }, 'Fungus')),
+                        h('div', { className: 'text-center' }, h('div', { className: 'text-xl' }, '🍄'), h('div', { className: 'text-[10px] text-purple-300' }, 'Fungus')),
                         h('div', { className: 'text-purple-400 text-sm' }, 'phosphorus (PO₄³⁻) →'),
-                        h('div', { className: 'text-center' }, h('div', { className: 'text-xl' }, '🌱'), h('div', { className: 'text-[9px] text-purple-300' }, 'Plant')))),
+                        h('div', { className: 'text-center' }, h('div', { className: 'text-xl' }, '🌱'), h('div', { className: 'text-[10px] text-purple-300' }, 'Plant')))),
                     h('p', null, 'The fungus extends the plant\'s root system by 100-1000×, accessing water and phosphorus the roots can\'t reach. In return, the plant shares 10-30% of its photosynthesized sugars. Both benefit — neither survives as well alone.')),
                   h('div', { className: 'bg-indigo-900/40 rounded-lg p-3 border border-indigo-500/30' },
                     h('div', { className: 'font-bold text-indigo-300 text-xs mb-1' }, '📡 Chemical Signaling'),
@@ -3716,7 +3716,7 @@ var d = (labToolData.companionPlanting) || {};
                         h('div', { className: 'text-xl font-black ' + (gradeColors[g.mark] || 'text-slate-400') }, g.mark),
                         h('div', null,
                           h('div', { className: 'text-[10px] font-bold text-slate-300' }, g.area),
-                          h('div', { className: 'text-[9px] text-slate-400' }, g.note)));
+                          h('div', { className: 'text-[10px] text-slate-400' }, g.note)));
                     })),
                   h('div', { className: 'text-center' },
                     h('div', { className: 'text-3xl font-black ' + (gradeColors[overallGrade] || '') }, overallGrade),
@@ -3797,13 +3797,13 @@ var d = (labToolData.companionPlanting) || {};
                   h('div', { className: 'grid grid-cols-3 gap-2 text-center' },
                     h('div', { className: 'bg-white rounded-lg p-2' },
                       h('div', { className: 'text-lg font-black text-emerald-600' }, diversity),
-                      h('div', { className: 'text-[9px] text-slate-500' }, 'Plant Families')),
+                      h('div', { className: 'text-[10px] text-slate-500' }, 'Plant Families')),
                     h('div', { className: 'bg-white rounded-lg p-2' },
                       h('div', { className: 'text-lg font-black text-purple-600' }, pollinatorCount),
-                      h('div', { className: 'text-[9px] text-slate-500' }, '🐝 Pollinators')),
+                      h('div', { className: 'text-[10px] text-slate-500' }, '🐝 Pollinators')),
                     h('div', { className: 'bg-white rounded-lg p-2' },
                       h('div', { className: 'text-lg font-black ' + (avgHealth > 70 ? 'text-emerald-600' : avgHealth > 40 ? 'text-yellow-600' : 'text-red-600') }, avgHealth + '%'),
-                      h('div', { className: 'text-[9px] text-slate-500' }, 'Avg Health'))),
+                      h('div', { className: 'text-[10px] text-slate-500' }, 'Avg Health'))),
                   // Ecosystem feedback
                   h('div', { className: 'mt-2 text-[10px] text-emerald-700 space-y-0.5' },
                     diversity < 3 && h('div', null, '⚠️ Low diversity — try planting more plant families for ecosystem resilience'),
@@ -4235,7 +4235,7 @@ var d = (labToolData.companionPlanting) || {};
                     // Plant display
                     plant ? h('div', { className: 'text-center' },
                       h('div', { className: 'text-2xl ' + (isDead ? 'grayscale opacity-40' : '') }, plant.emoji),
-                      h('div', { className: 'text-[9px] font-bold text-slate-700 leading-tight mt-0.5' }, plant.label),
+                      h('div', { className: 'text-[10px] font-bold text-slate-700 leading-tight mt-0.5' }, plant.label),
                       // Growth bar
                       h('div', { className: 'w-full h-1 bg-slate-200 rounded-full mt-1 overflow-hidden' },
                         h('div', { className: 'h-full rounded-full transition-all', style: { width: growthPct + '%', background: isDead ? '#ef4444' : isReady ? '#facc15' : '#22c55e' } })),
@@ -4310,7 +4310,7 @@ var d = (labToolData.companionPlanting) || {};
                     h('div', { className: 'space-y-0.5' },
                       friends.slice(0, 8).map(function(g, i) {
                         var aP = CG_PLANTS[g.comp.a]; var bP = CG_PLANTS[g.comp.b];
-                        return h('div', { key: i, className: 'flex items-center gap-1.5 text-[9px] px-2 py-0.5 rounded ' + (g.active ? 'bg-emerald-50' : 'bg-slate-50') },
+                        return h('div', { key: i, className: 'flex items-center gap-1.5 text-[10px] px-2 py-0.5 rounded ' + (g.active ? 'bg-emerald-50' : 'bg-slate-50') },
                           h('span', null, (aP ? aP.emoji : '') + ' + ' + (bP ? bP.emoji : '')),
                           h('span', { className: 'font-bold text-emerald-600' }, '+' + g.comp.bonus + '%'),
                           h('span', { className: 'text-slate-500 truncate' }, g.comp.desc),
@@ -4321,7 +4321,7 @@ var d = (labToolData.companionPlanting) || {};
                     h('div', { className: 'space-y-0.5' },
                       enemies.slice(0, 6).map(function(g, i) {
                         var aP = CG_PLANTS[g.comp.a]; var bP = CG_PLANTS[g.comp.b];
-                        return h('div', { key: i, className: 'flex items-center gap-1.5 text-[9px] px-2 py-0.5 rounded ' + (g.active ? 'bg-red-50' : 'bg-slate-50') },
+                        return h('div', { key: i, className: 'flex items-center gap-1.5 text-[10px] px-2 py-0.5 rounded ' + (g.active ? 'bg-red-50' : 'bg-slate-50') },
                           h('span', null, (aP ? aP.emoji : '') + ' ✕ ' + (bP ? bP.emoji : '')),
                           h('span', { className: 'font-bold text-red-500' }, g.comp.bonus + '%'),
                           h('span', { className: 'text-slate-500 truncate' }, g.comp.desc),
@@ -4347,8 +4347,8 @@ var d = (labToolData.companionPlanting) || {};
                       h('div', { className: 'flex items-center gap-1.5' },
                         h('span', null, ch.emoji),
                         h('span', { className: 'text-[10px] font-bold ' + (completed ? 'text-emerald-700' : 'text-slate-800') }, ch.title),
-                        completed && h('span', { className: 'text-[9px]' }, '✅')),
-                      h('div', { className: 'text-[9px] text-slate-500 mt-0.5' }, ch.difficulty + ' · ' + ch.ngss));
+                        completed && h('span', { className: 'text-[10px]' }, '✅')),
+                      h('div', { className: 'text-[10px] text-slate-500 mt-0.5' }, ch.difficulty + ' · ' + ch.ngss));
                   }))),
 
               // Active challenge banner
@@ -4401,7 +4401,7 @@ var d = (labToolData.companionPlanting) || {};
                       { label: 'K', val: cgPotassium, color: '#8b5cf6', tip: 'Potassium' }
                     ].map(function(r) {
                       return h('div', { key: r.label, className: 'flex items-center gap-1.5', title: r.tip + ': ' + Math.round(r.val) + '/100' },
-                        h('span', { className: 'text-[9px] font-bold w-3', style: { color: r.color } }, r.label),
+                        h('span', { className: 'text-[10px] font-bold w-3', style: { color: r.color } }, r.label),
                         h('div', { className: 'flex-1 h-2 bg-slate-200 rounded-full overflow-hidden' },
                           h('div', { style: { width: Math.round(r.val) + '%', backgroundColor: r.val < 15 ? '#ef4444' : r.color }, className: 'h-full rounded-full transition-all' })
                         ),
@@ -4409,7 +4409,7 @@ var d = (labToolData.companionPlanting) || {};
                       );
                     })
                   ),
-                  h('div', { className: 'flex justify-between mt-1.5 text-[9px]' },
+                  h('div', { className: 'flex justify-between mt-1.5 text-[10px]' },
                     h('span', { className: 'text-amber-600', title: 'Soil pH (ideal 6.0-7.0 for most crops)' }, 'pH: ' + cgPH),
                     h('span', { className: 'text-amber-600', title: 'Organic matter % (higher = better water retention)' }, 'OM: ' + cgOrganicMatter.toFixed(1) + '%')
                   ),
@@ -4429,7 +4429,7 @@ var d = (labToolData.companionPlanting) || {};
                       h('span', null, 'Spent: $' + cgExpenses.toFixed(2)),
                       h('span', null, 'Earned: $' + cgRevenue.toFixed(2))
                     ),
-                    (cgRevenue - cgExpenses) !== 0 && h('div', { className: 'text-[9px] font-bold mt-0.5 ' + ((cgRevenue - cgExpenses) >= 0 ? 'text-green-500' : 'text-red-500') },
+                    (cgRevenue - cgExpenses) !== 0 && h('div', { className: 'text-[10px] font-bold mt-0.5 ' + ((cgRevenue - cgExpenses) >= 0 ? 'text-green-500' : 'text-red-500') },
                       (cgRevenue - cgExpenses) >= 0 ? '\u2B06 Profit: $' + (cgRevenue - cgExpenses).toFixed(2) : '\u2B07 Loss: $' + Math.abs(cgRevenue - cgExpenses).toFixed(2))
                   ),
                   // Pest ecosystem
@@ -4465,7 +4465,7 @@ var d = (labToolData.companionPlanting) || {};
               cgAdvisorResponse && h('div', { className: 'bg-emerald-50 rounded-xl border border-emerald-200 p-3' },
                 h('div', { className: 'flex items-center gap-2 mb-1' },
                   h('span', { className: 'text-[10px] font-bold text-emerald-700' }, '\uD83E\uDDD1\u200D\uD83C\uDF3E Garden Advisor'),
-                  h('button', { onClick: function() { cgUpd({ advisorResponse: null }); }, className: 'ml-auto text-[9px] text-slate-400 hover:text-slate-600' }, '\u2715')
+                  h('button', { onClick: function() { cgUpd({ advisorResponse: null }); }, className: 'ml-auto text-[10px] text-slate-400 hover:text-slate-600' }, '\u2715')
                 ),
                 h('p', { className: 'text-[10px] text-slate-600 leading-relaxed whitespace-pre-line' }, cgAdvisorResponse)
               ),
@@ -4493,7 +4493,7 @@ var d = (labToolData.companionPlanting) || {};
                       h('div', { className: 'flex items-center gap-2 mb-1' },
                         h('span', null, ref.emoji || '📝'),
                         h('span', { className: 'text-[10px] font-bold text-violet-800' }, ref.title || entry.id),
-                        h('span', { className: 'text-[9px] text-slate-400 ml-auto' }, new Date(entry.ts).toLocaleDateString())),
+                        h('span', { className: 'text-[10px] text-slate-400 ml-auto' }, new Date(entry.ts).toLocaleDateString())),
                       h('p', { className: 'text-xs text-slate-700 leading-relaxed' }, entry.response));
                   })))
             );

@@ -1,3 +1,10 @@
+// WCAG 2.4.3: Focus management — save/restore focus on modal open/close.
+// Added in commit ba27e92 to module.js only; back-ported here to close source/module drift.
+// Actually USED in teacher by the Escape-to-close handler (vs dead code in games/visual_panel/story_forge).
+var _alloFocusTrigger = null;
+function alloSaveFocus() { _alloFocusTrigger = document.activeElement; }
+function alloRestoreFocus() { if (_alloFocusTrigger && typeof _alloFocusTrigger.focus === 'function') { try { _alloFocusTrigger.focus(); } catch(e) {} _alloFocusTrigger = null; } }
+
 const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, onApplyGroup, onSyncToSession, onBatchGenerate, activeSessionCode, t, isParentMode, isIndependentMode }) => {
   const [newGroupName, setNewGroupName] = useState('');
   const [newGroupColor, setNewGroupColor] = useState('#4F46E5');
@@ -118,7 +125,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
   const LANG_OPTIONS = ['English', 'Spanish', 'French', 'Arabic', 'Somali', 'Vietnamese', 'Portuguese', 'Mandarin', 'Korean', 'Tagalog', 'Russian', 'Japanese'];
   const ProfileField = ({ label, value, field, gId, type = 'text', options }) => (
     <div className="flex items-center gap-2 text-xs">
-      <span className="font-bold text-slate-500 w-24 shrink-0">{label}:</span>
+      <span className="font-bold text-slate-600 w-24 shrink-0">{label}:</span>
       {type === 'select' ? (
         <select value={value || ''} onChange={e => handleUpdateGroupProfile(gId, field, e.target.value)}
           aria-label={label}
@@ -136,7 +143,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
         </div>
       ) : type === 'toggle' ? (
         <button onClick={() => handleUpdateGroupProfile(gId, field, !value)}
-          className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${value ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}`}>
+          className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${value ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'}`}>
           {value ? 'On' : 'Off'}
         </button>
       ) : (
@@ -154,10 +161,10 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
             <h2 className="text-lg font-black text-slate-800 flex items-center gap-2">
               <ClipboardList size={20} className="text-indigo-500" /> {isParentMode ? 'Family Learning Profiles' : (isIndependentMode ? 'My Learning Profile' : (t('roster.title') || 'Class Roster & Progress Tracking'))}
             </h2>
-            <p className="text-xs text-slate-500 mt-0.5">{isParentMode ? 'Manage family member profiles and track learning progress' : (isIndependentMode ? 'Manage your learning profile and track your progress' : (t('roster.subtitle') || 'Organize student groups with differentiated profiles for instruction'))}</p>
+            <p className="text-xs text-slate-600 mt-0.5">{isParentMode ? 'Manage family member profiles and track learning progress' : (isIndependentMode ? 'Manage your learning profile and track your progress' : (t('roster.subtitle') || 'Organize student groups with differentiated profiles for instruction'))}</p>
           </div>
           <button onClick={onClose} className="p-2 rounded-full hover:bg-slate-100 transition-colors" aria-label={t('common.close')}>
-            <X size={20} className="text-slate-500" />
+            <X size={20} className="text-slate-600" />
           </button>
         </div>
         <div className="flex flex-wrap gap-2 px-5 py-3 border-b border-slate-50 bg-slate-50/50">
@@ -179,7 +186,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
         </div>
         <div className="flex-1 overflow-y-auto p-5 space-y-3 custom-scrollbar">
           <div className="flex items-center gap-2 mb-2">
-            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('roster.class_name') || 'Class Name'}:</label>
+            <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">{t('roster.class_name') || 'Class Name'}:</label>
             <input type="text" value={rosterKey?.className || ''} onChange={e => setRosterKey(prev => ({ ...(prev || { groups: {}, students: {} }), className: e.target.value }))}
               placeholder={t('common.placeholder_ms_smith_period_3')}
               aria-label={t('roster.class_name') || 'Class name'}
@@ -196,7 +203,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
                   <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: group.color || '#4F46E5' }} />
                   <div className="flex-1 min-w-0">
                     <div className="font-bold text-sm text-slate-800 truncate">{group.name}</div>
-                    <div className="text-[10px] text-slate-500">{gStudents.length} student{gStudents.length !== 1 ? 's' : ''} · {group.profile?.gradeLevel || '—'} · {group.profile?.leveledTextLanguage || '—'}</div>
+                    <div className="text-[11px] text-slate-600">{gStudents.length} student{gStudents.length !== 1 ? 's' : ''} · {group.profile?.gradeLevel || '—'} · {group.profile?.leveledTextLanguage || '—'}</div>
                   </div>
                   <ChevronDown size={16} className={`text-slate-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                 </button>
@@ -226,13 +233,13 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
                       <ProfileField label={t('roster.custom') || 'Custom Instr.'} value={group.profile?.leveledTextCustomInstructions} field="leveledTextCustomInstructions" gId={gId} />
                     </div>
                     <div>
-                      <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('roster.students_in_group') || 'Students'}</div>
+                      <div className="text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('roster.students_in_group') || 'Students'}</div>
                       <div className="flex flex-wrap gap-1.5">
                         {gStudents.map(name => (
                           <span key={name} className="inline-flex items-center gap-1 px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-full text-xs font-medium">
                             {name}
                             {rosterKey?.progressHistory?.[name]?.length > 0 && (
-                              <span className="text-[9px] bg-indigo-100 text-indigo-500 px-1 py-0.5 rounded-full font-mono" title={`${rosterKey.progressHistory[name].length} sessions`}>
+                              <span className="text-[11px] bg-indigo-100 text-indigo-500 px-1 py-0.5 rounded-full font-mono" title={`${rosterKey.progressHistory[name].length} sessions`}>
                                 {rosterKey.progressHistory[name].length}s
                               </span>
                             )}
@@ -241,7 +248,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
                             </button>
                           </span>
                         ))}
-                        {gStudents.length === 0 && <span className="text-xs text-slate-500 italic">{t('roster.no_students') || 'No students assigned'}</span>}
+                        {gStudents.length === 0 && <span className="text-xs text-slate-600 italic">{t('roster.no_students') || 'No students assigned'}</span>}
                       </div>
                     </div>
                     <div className="flex gap-2 pt-2 border-t border-slate-100">
@@ -280,7 +287,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
                <Users size={14} /> {t('roster.manage_students') || 'Manage Students'}
              </div>
              <div className="flex flex-col gap-2">
-               <div className="flex items-center gap-2 text-[10px]">
+               <div className="flex items-center gap-2 text-[11px]">
                  <button onClick={() => { setUseCustomName(false); if (!rosterAdj || !rosterAnimal) randomizeRosterName(); }}
                    className={`px-2 py-1 rounded-full font-bold transition-all ${!useCustomName ? 'bg-teal-100 text-teal-800 border border-teal-300' : 'text-slate-400 hover:text-slate-600'}`}>
                    🎲 Codename Only
@@ -305,7 +312,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
                          <option value="">{t('codenames.pick_animal') || '— Animal —'}</option>
                          {rosterAnimals.map(a => <option key={a} value={a}>{a}</option>)}
                        </select>
-                       <button onClick={randomizeRosterName} title={t('common.randomize') || 'Randomize'} className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-500 transition-colors">
+                       <button onClick={randomizeRosterName} title={t('common.randomize') || 'Randomize'} className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors">
                          <RefreshCw size={12} />
                        </button>
                      </div>
@@ -339,19 +346,19 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
            </div>
           {getUnassigned().length > 0 && (
             <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl mt-2">
-              <div className="text-[10px] font-bold text-amber-700 uppercase tracking-wider mb-1.5">{t('roster.unassigned_students') || 'Unassigned Students'}</div>
+              <div className="text-[11px] font-bold text-amber-700 uppercase tracking-wider mb-1.5">{t('roster.unassigned_students') || 'Unassigned Students'}</div>
               <div className="flex flex-wrap gap-1.5">
                 {getUnassigned().map(name => (
                   <span key={name} className="inline-flex items-center gap-1 px-2.5 py-1 bg-white text-amber-800 rounded-full text-xs font-medium border border-amber-200">
                     {name}
                     {rosterKey?.progressHistory?.[name]?.length > 0 && (
-                      <span className="text-[9px] bg-amber-100 text-amber-600 px-1 py-0.5 rounded-full font-mono ml-0.5" title={`${rosterKey.progressHistory[name].length} sessions`}>
+                      <span className="text-[11px] bg-amber-100 text-amber-600 px-1 py-0.5 rounded-full font-mono ml-0.5" title={`${rosterKey.progressHistory[name].length} sessions`}>
                         {rosterKey.progressHistory[name].length}s
                       </span>
                     )}
                     <select onChange={e => { if (e.target.value) handleMoveStudent(name, e.target.value); }} value=""
                       aria-label={'Move ' + name + ' to group'}
-                      className="text-[10px] bg-transparent border-none focus:outline-none focus:ring-2 focus:ring-amber-300 cursor-pointer text-amber-600 ml-1 w-4">
+                      className="text-[11px] bg-transparent border-none focus:outline-none focus:ring-2 focus:ring-amber-300 cursor-pointer text-amber-600 ml-1 w-4">
                       <option value="">→</option>
                       {groupIds.map(gId => <option key={gId} value={gId}>{groups[gId].name}</option>)}
                     </select>
@@ -364,7 +371,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
             </div>
           )}
           {rosterKey && (
-            <div className="flex gap-4 pt-3 border-t border-slate-100 text-[10px] text-slate-500 font-medium">
+            <div className="flex gap-4 pt-3 border-t border-slate-100 text-[11px] text-slate-600 font-medium">
               <span>{groupIds.length} group{groupIds.length !== 1 ? 's' : ''}</span>
               <span>{Object.keys(students).length} student{Object.keys(students).length !== 1 ? 's' : ''}</span>
               <span>{getUnassigned().length} unassigned</span>
@@ -384,7 +391,7 @@ const SimpleBarChart = React.memo(({ data, color = "indigo" }) => {
   const margin = 20;
   const chartHeight = height - margin * 2;
   const chartWidth = width - margin * 2;
-  if (!data || data.length === 0) return <div className="text-xs text-slate-500 italic text-center py-8">{t('dashboard.empty.no_data')}</div>;
+  if (!data || data.length === 0) return <div className="text-xs text-slate-600 italic text-center py-8">{t('dashboard.empty.no_data')}</div>;
   const maxValue = Math.max(...data.map(d => d.value), 1);
   const barWidth = Math.min(40, (chartWidth / data.length) * 0.6);
   const gap = (chartWidth - (barWidth * data.length)) / (data.length + 1);
@@ -409,7 +416,7 @@ const SimpleBarChart = React.memo(({ data, color = "indigo" }) => {
                 x={x + barWidth / 2}
                 y={y - 5}
                 textAnchor="middle"
-                className="fill-slate-500 text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity"
+                className="fill-slate-500 text-[11px] font-bold opacity-0 group-hover:opacity-100 transition-opacity"
               >
                 {d.value}
               </text>
@@ -417,7 +424,7 @@ const SimpleBarChart = React.memo(({ data, color = "indigo" }) => {
                 x={x + barWidth / 2}
                 y={height - 5}
                 textAnchor="middle"
-                className="fill-slate-400 text-[9px] uppercase tracking-wider font-medium"
+                className="fill-slate-400 text-[11px] uppercase tracking-wider font-medium"
               >
                 {d.label.length > 5 ? d.label.substring(0, 4) + '.' : d.label}
               </text>
@@ -462,7 +469,7 @@ const SimpleDonutChart = ({ percentage, label, color = "indigo" }) => {
           <span className={`text-xl font-black text-${color}-600`}>{Math.round(safePercent)}%</span>
         </div>
       </div>
-      <span className="text-xs font-bold text-slate-500 uppercase tracking-wider mt-2 text-center leading-tight">{label}</span>
+      <span className="text-xs font-bold text-slate-600 uppercase tracking-wider mt-2 text-center leading-tight">{label}</span>
     </div>
   );
 };
@@ -657,7 +664,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
         <div className="text-center text-white animate-in zoom-in duration-500">
           <div className="text-9xl mb-6 animate-pulse">💀</div>
           <h2 className="text-5xl font-black mb-4 text-red-400">{t('escape_room.game_over')}</h2>
-          <p className="text-2xl text-slate-500 mb-6">{t('escape_room.life_lost')}</p>
+          <p className="text-2xl text-slate-600 mb-6">{t('escape_room.life_lost')}</p>
           <div className="flex gap-4 justify-center text-lg">
             <span className="px-4 py-2 bg-slate-800 rounded-lg">
               {t('escape_room.puzzles_remaining')}: {puzzles.length - solvedPuzzlesSet.size}
@@ -738,7 +745,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
         </div>
       </div>
       <div className="fixed right-4 top-24 bg-slate-800/80 backdrop-blur-sm rounded-xl p-4 border border-purple-500/30 z-40" data-help-key="escape_room_leaderboard">
-        <h4 className="text-xs font-bold text-slate-500 uppercase mb-3">{t('escape_room.live_progress')}</h4>
+        <h4 className="text-xs font-bold text-slate-600 uppercase mb-3">{t('escape_room.live_progress')}</h4>
         {allTeams.map(team => {
           const progress = escapeState.teamProgress?.[team] || { solvedPuzzles: [] };
           const solved = (progress.solvedPuzzles || []).length;
@@ -830,7 +837,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
                     className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-colors whitespace-nowrap ${
                       (escapeState.hintsRemaining || 0) > 0
                         ? 'bg-yellow-500/20 text-yellow-300 hover:bg-yellow-500/30 border border-yellow-500/40'
-                        : 'bg-slate-700 text-slate-500 cursor-not-allowed'
+                        : 'bg-slate-700 text-slate-600 cursor-not-allowed'
                     }`}
                   >
                     <span className="text-sm">💡</span>
@@ -1083,7 +1090,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
                 </div>
                 {matchingPairs.length > 0 && (
                   <div className="bg-slate-900 p-3 rounded-lg" role="list" aria-label={t('escape_room.matched_pairs') || 'Matched pairs'}>
-                    <p className="text-xs text-slate-500 mb-2" aria-hidden="true">{t('escape_room.matched_pairs')}</p>
+                    <p className="text-xs text-slate-600 mb-2" aria-hidden="true">{t('escape_room.matched_pairs')}</p>
                     <div className="space-y-1">
                       {matchingPairs.map((pair, idx) => (
                         <div key={idx} role="listitem" className="text-sm text-green-400">✓ {pair.left} ↔ {pair.right}</div>
@@ -1122,7 +1129,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
             <span className="text-3xl">🚪</span>
             <div>
               <p className="text-white font-bold">{t('escape_room.team_escaped', { team: teamEscapeToast })}</p>
-              <p className="text-slate-500 text-sm">{t('escape_room.hurry_up')}</p>
+              <p className="text-slate-600 text-sm">{t('escape_room.hurry_up')}</p>
             </div>
           </div>
         </div>
@@ -1248,7 +1255,7 @@ const EscapeRoomTeacherControls = React.memo(({ sessionData, activeSessionCode, 
             <div key={team} className={`p-3 rounded-xl border-2 ${escaped ? 'border-green-400 bg-green-50' : 'border-slate-200 bg-white'}`}>
               <div className="flex items-center justify-between mb-2">
                 <span className={`font-bold ${colors.text}`}>{team}</span>
-                <span className="text-xs text-slate-500">{memberCount} 👤</span>
+                <span className="text-xs text-slate-600">{memberCount} 👤</span>
               </div>
               <div className="w-full h-3 bg-slate-200 rounded-full overflow-hidden mb-2">
                 <div className={`h-full ${colors.bg} transition-all duration-500`} style={{ width: `${percent}%` }} />
@@ -1355,14 +1362,14 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                             </div>
                             <div className="text-right min-w-[50px]">
                                 <div className="font-black text-slate-800 text-sm">{stat.value}</div>
-                                <div className="text-[10px] text-slate-500 font-mono">{stat.percent}%</div>
+                                <div className="text-[11px] text-slate-600 font-mono">{stat.percent}%</div>
                             </div>
                         </div>
                     </div>
                 ))}
             </div>
             <div className="mt-4 pt-3 border-t border-slate-100 flex justify-between items-center text-xs">
-                <span className="font-bold text-slate-500 uppercase tracking-wider">{t('quiz.total_responses')}</span>
+                <span className="font-bold text-slate-600 uppercase tracking-wider">{t('quiz.total_responses')}</span>
                 <span className="font-mono font-black text-lg text-indigo-600 bg-indigo-50 px-3 py-0.5 rounded-full border border-indigo-100">
                     {answeredCount}
                 </span>
@@ -1638,7 +1645,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
             <div className="bg-slate-50 border-b border-slate-200 p-4">
                 <div className="flex flex-col md:flex-row gap-4">
                     <div className="flex-1">
-                        <h4 className="text-xs font-bold text-slate-500 uppercase mb-2">{t('groups.title')}</h4>
+                        <h4 className="text-xs font-bold text-slate-600 uppercase mb-2">{t('groups.title')}</h4>
                         <div className="flex gap-2 mb-3">
                              <input aria-label={t('common.new_group_name')}
                                 type="text"
@@ -1661,11 +1668,11 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                     <div className="flex justify-between items-center">
                                         <div className="flex items-center gap-2">
                                             <span className="text-sm font-bold text-indigo-900">{group.name}</span>
-                                            <button onClick={() => handleDeleteGroup(gid)} className="text-[10px] text-red-400 hover:text-red-600 font-bold focus:outline-none focus:ring-2 focus:ring-red-400 rounded">{t('groups.remove_button')}</button>
+                                            <button onClick={() => handleDeleteGroup(gid)} className="text-[11px] text-red-400 hover:text-red-600 font-bold focus:outline-none focus:ring-2 focus:ring-red-400 rounded">{t('groups.remove_button')}</button>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <span className="text-[10px] uppercase font-bold text-slate-500">{t('groups.resource_label')}</span>
+                                        <span className="text-[11px] uppercase font-bold text-slate-600">{t('groups.resource_label')}</span>
                                         <select aria-label={t('common.selection')}
                                             value={group.resourceId || ""} data-help-key="quiz_group_resource_select"
                                             onChange={(e) => handleSetGroupResource(gid, e.target.value)}
@@ -1678,7 +1685,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                         </select>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <span className="text-[10px] uppercase font-bold text-slate-500">{t('groups.language_label') || 'Quiz Language'}</span>
+                                        <span className="text-[11px] uppercase font-bold text-slate-600">{t('groups.language_label') || 'Quiz Language'}</span>
                                         <select aria-label={t('common.selection')}
                                             value={group.language || ""} data-help-key="quiz_group_language_select"
                                             onChange={(e) => handleSetGroupLanguage(gid, e.target.value)}
@@ -1699,7 +1706,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                         </select>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <span className="text-[10px] uppercase font-bold text-slate-500">{t('groups.reading_level_label') || 'Reading Level'}</span>
+                                        <span className="text-[11px] uppercase font-bold text-slate-600">{t('groups.reading_level_label') || 'Reading Level'}</span>
                                         <select aria-label={t('common.reading_level')}
                                             value={group.readingLevel || ""} data-help-key="group_reading_level_select"
                                             onChange={(e) => handleSetGroupProfile(gid, 'readingLevel', e.target.value || null)}
@@ -1720,7 +1727,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                         </select>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <span className="text-[10px] uppercase font-bold text-slate-500">{t('groups.visual_density_label') || 'Visuals'}</span>
+                                        <span className="text-[11px] uppercase font-bold text-slate-600">{t('groups.visual_density_label') || 'Visuals'}</span>
                                         <select aria-label={t('common.visual_density')}
                                             value={group.visualDensity || "normal"} data-help-key="group_visual_density_select"
                                             onChange={(e) => handleSetGroupProfile(gid, 'visualDensity', e.target.value)}
@@ -1733,7 +1740,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                         </select>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <span className="text-[10px] uppercase font-bold text-slate-500">{t('groups.tts_speed_label') || 'TTS Speed'}</span>
+                                        <span className="text-[11px] uppercase font-bold text-slate-600">{t('groups.tts_speed_label') || 'TTS Speed'}</span>
                                         <select aria-label={t('common.tts_speed')}
                                             value={group.ttsSpeed ?? 1.0} data-help-key="group_tts_speed_select"
                                             onChange={(e) => handleSetGroupProfile(gid, 'ttsSpeed', parseFloat(e.target.value))}
@@ -1748,16 +1755,16 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                         </select>
                                     </div>
                                     <div className="flex items-center gap-2 flex-wrap">
-                                        <label className="flex items-center gap-1 text-[10px] font-bold text-slate-500 cursor-pointer" title={t('groups.karaoke_tooltip') || 'Auto-enable word highlighting for this group'}>
+                                        <label className="flex items-center gap-1 text-[11px] font-bold text-slate-600 cursor-pointer" title={t('groups.karaoke_tooltip') || 'Auto-enable word highlighting for this group'}>
                                             <input type="checkbox" checked={group.karaokeMode || false} onChange={(e) => handleSetGroupProfile(gid, 'karaokeMode', e.target.checked)} className="rounded border-slate-300 text-indigo-500 focus:ring-indigo-400" />
                                             {t('groups.karaoke_label') || 'Karaoke Mode'}
                                         </label>
                                     <div className="flex items-center gap-3 mt-1">
-                                        <label className="flex items-center gap-1 text-[10px] font-bold text-slate-500 cursor-pointer" title={t('common.toggle_emoji_usage_for_this_group')}>
+                                        <label className="flex items-center gap-1 text-[11px] font-bold text-slate-600 cursor-pointer" title={t('common.toggle_emoji_usage_for_this_group')}>
                                             <input type="checkbox" checked={g.profile?.useEmojis || false} onChange={(e) => handleSetGroupProfile(gid, 'useEmojis', e.target.checked)} className="rounded border-slate-300 text-indigo-500 focus:ring-indigo-400" />
                                             {t('roster.emojis_label') || 'Use Emojis'}
                                         </label>
-                                        <select aria-label={t('common.text_format')} value={g.profile?.textFormat || 'Standard Text'} onChange={(e) => handleSetGroupProfile(gid, 'textFormat', e.target.value)} className="text-[10px] p-1 rounded border border-slate-200 bg-slate-50">
+                                        <select aria-label={t('common.text_format')} value={g.profile?.textFormat || 'Standard Text'} onChange={(e) => handleSetGroupProfile(gid, 'textFormat', e.target.value)} className="text-[11px] p-1 rounded border border-slate-200 bg-slate-50">
                                             <option value="Standard Text">{t('roster.format_standard') || 'Standard'}</option>
                                             <option value="Bullet Points">{t('roster.format_bullets') || 'Bullets'}</option>
                                             <option value="Outline">{t('roster.format_outline') || 'Outline'}</option>
@@ -1767,12 +1774,12 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                 </div>
                             ))}
                             {activeGroups.length === 0 && (
-                                <div className="text-xs text-slate-500 italic text-center py-2">{t('groups.no_groups')}</div>
+                                <div className="text-xs text-slate-600 italic text-center py-2">{t('groups.no_groups')}</div>
                             )}
                         </div>
                     </div>
                     <div className="flex-[2] border-l border-slate-200 pl-4">
-                        <h4 className="text-xs font-bold text-slate-500 uppercase mb-2">{t('groups.roster_title')}</h4>
+                        <h4 className="text-xs font-bold text-slate-600 uppercase mb-2">{t('groups.roster_title')}</h4>
                         <div className="bg-white rounded border border-slate-200 p-3 max-h-52 overflow-y-auto custom-scrollbar">
                             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
                                 {Object.entries(roster || {}).map(([uid, student]) => {
@@ -1781,7 +1788,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                     return (
                                         <div key={uid} className={`relative p-2 rounded border text-xs ${groupName ? 'bg-indigo-50 border-indigo-200' : 'bg-slate-50 border-slate-100'}`}>
                                             <div className="font-bold truncate" title={student.displayName}>{student.displayName || "Anonymous"}</div>
-                                            <div className={`mt-1 text-[10px] font-mono truncat ${groupName ? 'text-indigo-600' : 'text-slate-500'}`}>
+                                            <div className={`mt-1 text-[11px] font-mono truncat ${groupName ? 'text-indigo-600' : 'text-slate-600'}`}>
                                                 {groupName || t('groups.main_class')}
                                             </div>
                                             <select aria-label={t('common.selection')}
@@ -1800,7 +1807,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                 })}
                             </div>
                              {(!roster || Object.keys(roster).length === 0) && (
-                                <div className="text-center text-slate-500 italic py-4">{t('groups.waiting_students')}</div>
+                                <div className="text-center text-slate-600 italic py-4">{t('groups.waiting_students')}</div>
                             )}
                         </div>
                     </div>
@@ -1809,7 +1816,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
             <div className="p-6 grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="flex flex-col justify-between h-full">
                      <div className="mb-6">
-                         <span className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-2">
+                         <span className="text-xs font-bold text-slate-600 uppercase tracking-widest block mb-2">
                              {t('quiz.question_progress', {
                                  current: currentQuestionIndex + 1,
                                  total: generatedContent?.data.questions.length
@@ -1854,7 +1861,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                 <div className="bg-slate-50 rounded-xl border border-slate-200 p-6 flex flex-col items-center justify-center min-h-[300px] relative">
                      {(showLocalStats || mode === 'live-pulse') ? (
                          answeredCount > 0 ? renderAnalytics() : (
-                            <div className="text-slate-500 italic flex flex-col items-center gap-2 h-full justify-center">
+                            <div className="text-slate-600 italic flex flex-col items-center gap-2 h-full justify-center">
                                 <Layout size={48} className="opacity-20"/>
                                 <span className="text-sm font-medium">{t('quiz.waiting_responses')}</span>
                             </div>
@@ -1933,7 +1940,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                              ) : bossStats.lastDamage > 0 ? (
                                                  <div className="text-red-500 font-bold">{t('quiz.boss.attack_msg', { damage: bossStats.lastDamage })}</div>
                                              ) : (
-                                                 <div className="text-slate-500 font-bold">{t('quiz.boss.miss_msg')}</div>
+                                                 <div className="text-slate-600 font-bold">{t('quiz.boss.miss_msg')}</div>
                                              )}
                                          </div>
                                      )}
@@ -1955,7 +1962,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                                         className={`w-full rounded-t-lg transition-all duration-700 ease-out ${colors[team]} shadow-lg`}
                                                         style={{ height: `${height}%` }}
                                                      ></div>
-                                                     <span className="mt-2 text-xs font-bold uppercase text-slate-500">{t(`quiz.teams.${team.toLowerCase()}`)}</span>
+                                                     <span className="mt-2 text-xs font-bold uppercase text-slate-600">{t(`quiz.teams.${team.toLowerCase()}`)}</span>
                                                      {phase === 'revealed' && sessionData.quizState.lastRoundStats?.[team]?.points > 0 && (
                                                          <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-yellow-300 text-indigo-900 text-xs font-black px-2 py-1 rounded shadow-sm animate-bounce whitespace-nowrap z-10">
                                                              +{sessionData.quizState.lastRoundStats[team].points}
@@ -1965,14 +1972,14 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                              );
                                          })}
                                      </div>
-                                     <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">{t('quiz.team_leaderboard')}</p>
+                                     <p className="text-xs text-slate-600 font-bold uppercase tracking-wider">{t('quiz.team_leaderboard')}</p>
                                  </div>
                             ) : null}
                          </>
                      )}
                      {phase === 'revealed' && (
                          <div className="mt-6 w-full bg-green-100 border border-green-200 text-green-800 p-4 rounded-xl text-center animate-in slide-in-from-bottom-2 shadow-sm z-10">
-                             <span className="block text-[10px] font-black uppercase tracking-widest text-green-600 mb-1">{t('quiz.correct_answer_label')}</span>
+                             <span className="block text-[11px] font-black uppercase tracking-widest text-green-600 mb-1">{t('quiz.correct_answer_label')}</span>
                              <span className="text-lg font-bold">{question.correctAnswer}</span>
                          </div>
                      )}
@@ -2068,7 +2075,7 @@ const calculateAnalyticsMetrics = (dashboardData) => {
 const LongitudinalProgressChart = React.memo(({ logs }) => {
     const { t } = useContext(LanguageContext);
     if (!logs || logs.length < 2) return (
-        <div className="w-full bg-white p-6 rounded-xl border border-slate-200 shadow-sm mt-4 flex flex-col items-center justify-center text-slate-500 italic gap-2">
+        <div className="w-full bg-white p-6 rounded-xl border border-slate-200 shadow-sm mt-4 flex flex-col items-center justify-center text-slate-600 italic gap-2">
             <History size={24} className="opacity-50"/>
             <span className="text-xs">{t('dashboard.progress_chart.empty_msg')}</span>
         </div>
@@ -2087,7 +2094,7 @@ const LongitudinalProgressChart = React.memo(({ logs }) => {
     }).join(" ");
     return (
         <div className="w-full bg-white p-6 rounded-xl border border-slate-200 shadow-sm mt-6 animate-in slide-in-from-bottom-2">
-            <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-6 flex items-center gap-2">
+            <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-6 flex items-center gap-2">
                 <Trophy size={14} className="text-yellow-500"/> {t('dashboard.progress_chart.title')}
             </h4>
             <div className="w-full overflow-x-auto">
@@ -2110,7 +2117,7 @@ const LongitudinalProgressChart = React.memo(({ logs }) => {
                              <g key={i} className="group cursor-pointer">
                                  <circle cx={x} cy={y} r="5" className="fill-white stroke-indigo-600 stroke-2 transition-all duration-300 group-hover:r-7 group-hover:fill-indigo-50" />
                                  <foreignObject x={Math.min(width - 120, Math.max(0, x - 60))} y={y - 50} width="120" height="50" className="opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
-                                     <div className="bg-slate-800 text-white text-[10px] px-3 py-2 rounded-lg text-center shadow-xl">
+                                     <div className="bg-slate-800 text-white text-[11px] px-3 py-2 rounded-lg text-center shadow-xl">
                                          <div className="font-bold">{new Date(l.timestamp).toLocaleDateString()}</div>
                                          <div className="text-yellow-300 font-mono">{l.xp} XP</div>
                                      </div>
@@ -2120,7 +2127,7 @@ const LongitudinalProgressChart = React.memo(({ logs }) => {
                     })}
                 </svg>
             </div>
-            <div className="flex justify-between text-[10px] text-slate-500 font-medium mt-2 px-2">
+            <div className="flex justify-between text-[11px] text-slate-600 font-medium mt-2 px-2">
                 <span>{t('dashboard.progress_chart.label_start')}: {new Date(logs[0].timestamp).toLocaleDateString()}</span>
                 <span>{t('dashboard.progress_chart.label_current')}: {new Date(logs[logs.length-1].timestamp).toLocaleDateString()}</span>
             </div>
@@ -2185,7 +2192,7 @@ const LearnerProgressView = React.memo(({
                         </div>
                         {heading}
                     </h2>
-                    <p className="text-sm text-slate-500 mt-1 font-medium">
+                    <p className="text-sm text-slate-600 mt-1 font-medium">
                         {isParentMode ? "Track your family's learning growth" : "Track your learning growth over time"}
                     </p>
                 </div>
@@ -2195,7 +2202,7 @@ const LearnerProgressView = React.memo(({
                         className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all ${
                             showDiagnostics
                                 ? 'bg-indigo-100 text-indigo-700 ring-1 ring-indigo-300'
-                                : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                         }`}
                         title={showDiagnostics ? "Hide detailed metrics" : "Show detailed metrics"}
                     >
@@ -2203,7 +2210,7 @@ const LearnerProgressView = React.memo(({
                         {showDiagnostics ? 'Details On' : 'Details'}
                     </button>
                     {onClose && (
-                        <button onClick={onClose} className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-500 transition-colors">
+                        <button onClick={onClose} className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors">
                             <X size={18} />
                         </button>
                     )}
@@ -2233,7 +2240,7 @@ const LearnerProgressView = React.memo(({
                             >
                                 {child.name}
                                 {child.sessionCount > 0 && (
-                                    <span className="text-[10px] bg-indigo-100 text-indigo-600 px-1.5 py-0.5 rounded-full font-mono">
+                                    <span className="text-[11px] bg-indigo-100 text-indigo-600 px-1.5 py-0.5 rounded-full font-mono">
                                         {child.sessionCount} sessions
                                     </span>
                                 )}
@@ -2247,12 +2254,12 @@ const LearnerProgressView = React.memo(({
                     <div className="flex items-center gap-3 mb-4">
                         <div className="w-14 h-14 bg-yellow-400 rounded-full flex items-center justify-center border-4 border-indigo-900 shadow-lg relative">
                             <Trophy size={28} className="text-indigo-900 fill-current" />
-                            <div className="absolute -bottom-2 bg-indigo-900 text-yellow-400 text-[10px] font-black px-2 py-0.5 rounded-full border border-white">
+                            <div className="absolute -bottom-2 bg-indigo-900 text-yellow-400 text-[11px] font-black px-2 py-0.5 rounded-full border border-white">
                                 Lvl {globalLevel}
                             </div>
                         </div>
                         <div className="flex-1">
-                            <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('learner.total_xp')}</div>
+                            <div className="text-xs font-bold text-slate-600 uppercase tracking-wider">{t('learner.total_xp')}</div>
                             <div className="text-2xl font-black text-indigo-900">{globalPoints.toLocaleString()}</div>
                         </div>
                         {stats.trend > 0 && (
@@ -2281,7 +2288,7 @@ const LearnerProgressView = React.memo(({
                                     <span className="text-lg">🔥</span>
                                     <div>
                                         <div className="text-sm font-black text-orange-600">{wordSoundsScore.streak} Streak</div>
-                                        <div className="text-[9px] text-orange-400 font-bold uppercase">{t('learner.current_run')}</div>
+                                        <div className="text-[11px] text-orange-400 font-bold uppercase">{t('learner.current_run')}</div>
                                     </div>
                                 </div>
                             )}
@@ -2302,7 +2309,7 @@ const LearnerProgressView = React.memo(({
                                         <span className="text-lg">📅</span>
                                         <div>
                                             <div className="text-sm font-black text-red-600">{dayStreak} Days</div>
-                                            <div className="text-[9px] text-red-400 font-bold uppercase">{t('learner.daily_streak')}</div>
+                                            <div className="text-[11px] text-red-400 font-bold uppercase">{t('learner.daily_streak')}</div>
                                         </div>
                                     </div>
                                 ) : null;
@@ -2310,21 +2317,21 @@ const LearnerProgressView = React.memo(({
                         </div>
                     )}
                     <div className="space-y-1.5">
-                        <div className="flex justify-between text-[10px] font-bold text-slate-500 uppercase">
+                        <div className="flex justify-between text-[11px] font-bold text-slate-600 uppercase">
                             <span>Level {globalLevel}</span>
                             <span>{Math.round(globalProgress)}%</span>
                         </div>
                         <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
                             <div className="h-full bg-gradient-to-r from-yellow-400 to-orange-500 transition-all duration-1000 rounded-full" style={{ width: `${Math.max(5, globalProgress)}%` }} />
                         </div>
-                        <div className="flex justify-between text-[10px] font-mono text-slate-500">
+                        <div className="flex justify-between text-[11px] font-mono text-slate-600">
                             <span>{currentLevelXP} XP</span>
                             <span>{globalXPNext} XP to next</span>
                         </div>
                     </div>
                 </div>
                 <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 hover:shadow-md transition-shadow">
-                    <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 flex items-center gap-1.5">
+                    <h3 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-4 flex items-center gap-1.5">
                         <Activity size={14} /> Activities Completed
                     </h3>
                     <div className="text-3xl font-black text-slate-800 mb-4">{stats.totalActivities}</div>
@@ -2337,17 +2344,17 @@ const LearnerProgressView = React.memo(({
                         ].map(item => (
                             <div key={item.label} className={`${item.color} rounded-lg px-3 py-2 text-center`}>
                                 <div className="text-lg font-black">{item.icon} {item.value}</div>
-                                <div className="text-[10px] font-bold uppercase tracking-wider opacity-80">{item.label}</div>
+                                <div className="text-[11px] font-bold uppercase tracking-wider opacity-80">{item.label}</div>
                             </div>
                         ))}
                     </div>
                 </div>
                 <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 hover:shadow-md transition-shadow">
-                    <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                    <h3 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-3 flex items-center gap-1.5">
                         <Target size={14} /> Skills Progress
                     </h3>
                     {stats.wsTotal === 0 && Object.keys(phonemeMastery).length === 0 ? (
-                        <div className="text-center py-6 text-slate-500 italic text-sm">
+                        <div className="text-center py-6 text-slate-600 italic text-sm">
                             <BookOpen size={32} className="mx-auto mb-2 opacity-40" />
                             Start practicing to see your skills grow!
                         </div>
@@ -2371,7 +2378,7 @@ const LearnerProgressView = React.memo(({
                             )}
                             {stats.masteredPhonemes.length > 0 && (
                                 <div>
-                                    <div className="text-[10px] font-bold text-green-600 uppercase tracking-wider mb-1.5">
+                                    <div className="text-[11px] font-bold text-green-600 uppercase tracking-wider mb-1.5">
                                         ✨ {stats.masteredPhonemes.length} Sounds Mastered
                                     </div>
                                     <div className="flex flex-wrap gap-1">
@@ -2390,7 +2397,7 @@ const LearnerProgressView = React.memo(({
                             )}
                             {showDiagnostics && stats.practicingPhonemes.length > 0 && (
                                 <div>
-                                    <div className="text-[10px] font-bold text-amber-600 uppercase tracking-wider mb-1.5">
+                                    <div className="text-[11px] font-bold text-amber-600 uppercase tracking-wider mb-1.5">
                                         🔄 {stats.practicingPhonemes.length} Sounds In Progress
                                     </div>
                                     <div className="flex flex-wrap gap-1">
@@ -2406,7 +2413,7 @@ const LearnerProgressView = React.memo(({
                     )}
                 </div>
                 <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 hover:shadow-md transition-shadow">
-                    <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                    <h3 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-3 flex items-center gap-1.5">
                         <Award size={14} /> Achievements
                     </h3>
                     {(() => {
@@ -2429,24 +2436,24 @@ const LearnerProgressView = React.memo(({
                                         {earned.map(m => (
                                             <div key={m.name} className="bg-yellow-50 border border-yellow-200 rounded-xl px-3 py-2 text-center min-w-[80px] hover:shadow-sm transition-shadow" title={m.desc}>
                                                 <div className="text-xl">{m.icon}</div>
-                                                <div className="text-[10px] font-bold text-yellow-800 mt-0.5">{m.name}</div>
+                                                <div className="text-[11px] font-bold text-yellow-800 mt-0.5">{m.name}</div>
                                             </div>
                                         ))}
                                     </div>
                                 )}
                                 {earned.length === 0 && (
-                                    <div className="text-center py-4 text-slate-500 italic text-sm">
+                                    <div className="text-center py-4 text-slate-600 italic text-sm">
                                         Complete activities to earn achievements! 🌟
                                     </div>
                                 )}
                                 {showDiagnostics && locked.length > 0 && (
                                     <div>
-                                        <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('learner.coming_up')}</div>
+                                        <div className="text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('learner.coming_up')}</div>
                                         <div className="flex flex-wrap gap-1.5">
                                             {locked.slice(0, 4).map(m => (
                                                 <div key={m.name} className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-center opacity-50" title={m.desc}>
                                                     <div className="text-sm grayscale">{m.icon}</div>
-                                                    <div className="text-[9px] font-bold text-slate-500">{m.name}</div>
+                                                    <div className="text-[11px] font-bold text-slate-600">{m.name}</div>
                                                 </div>
                                             ))}
                                         </div>
@@ -2470,15 +2477,15 @@ const LearnerProgressView = React.memo(({
                         <div className="grid grid-cols-3 gap-3 mb-3">
                             <div className="bg-white rounded-xl p-3 text-center border border-blue-100">
                                 <div className="text-lg font-black text-blue-700">{todayXP.reduce((s,e) => s + (e.points || 0), 0)}</div>
-                                <div className="text-[10px] font-bold text-blue-400 uppercase">{t('learner.xp_earned')}</div>
+                                <div className="text-[11px] font-bold text-blue-400 uppercase">{t('learner.xp_earned')}</div>
                             </div>
                             <div className="bg-white rounded-xl p-3 text-center border border-blue-100">
                                 <div className="text-lg font-black text-blue-700">{todayXP.length}</div>
-                                <div className="text-[10px] font-bold text-blue-400 uppercase">Activities</div>
+                                <div className="text-[11px] font-bold text-blue-400 uppercase">Activities</div>
                             </div>
                             <div className="bg-white rounded-xl p-3 text-center border border-blue-100">
                                 <div className="text-lg font-black text-blue-700">{todayWords.filter(w => w.correct).length}/{todayWords.length}</div>
-                                <div className="text-[10px] font-bold text-blue-400 uppercase">{t('learner.words_today')}</div>
+                                <div className="text-[11px] font-bold text-blue-400 uppercase">{t('learner.words_today')}</div>
                             </div>
                         </div>
                         {todayXP.length > 0 && (
@@ -2517,24 +2524,24 @@ const LearnerProgressView = React.memo(({
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
                             <div className="bg-white rounded-xl p-3 text-center border border-emerald-100">
                                 <div className="text-lg font-black text-emerald-700">{weekTotalXP}</div>
-                                <div className="text-[10px] font-bold text-emerald-400 uppercase">{t('learner.xp_this_week')}</div>
+                                <div className="text-[11px] font-bold text-emerald-400 uppercase">{t('learner.xp_this_week')}</div>
                                 {xpDelta !== 0 && (
-                                    <div className={`text-[10px] font-bold mt-0.5 ${xpDelta > 0 ? 'text-green-500' : 'text-red-400'}`}>
+                                    <div className={`text-[11px] font-bold mt-0.5 ${xpDelta > 0 ? 'text-green-500' : 'text-red-400'}`}>
                                         {xpDelta > 0 ? '↑' : '↓'} {Math.abs(xpDelta)} vs last week
                                     </div>
                                 )}
                             </div>
                             <div className="bg-white rounded-xl p-3 text-center border border-emerald-100">
                                 <div className="text-lg font-black text-emerald-700">{weekXP.length}</div>
-                                <div className="text-[10px] font-bold text-emerald-400 uppercase">Activities</div>
+                                <div className="text-[11px] font-bold text-emerald-400 uppercase">Activities</div>
                             </div>
                             <div className="bg-white rounded-xl p-3 text-center border border-emerald-100">
                                 <div className="text-lg font-black text-emerald-700">{weekWords.filter(w => w.correct).length}/{weekWords.length}</div>
-                                <div className="text-[10px] font-bold text-emerald-400 uppercase">{t('learner.words_this_week')}</div>
+                                <div className="text-[11px] font-bold text-emerald-400 uppercase">{t('learner.words_this_week')}</div>
                             </div>
                             <div className="bg-white rounded-xl p-3 text-center border border-emerald-100">
                                 <div className="text-lg font-black text-emerald-700">{weekAccuracy !== null ? weekAccuracy + '%' : '—'}</div>
-                                <div className="text-[10px] font-bold text-emerald-400 uppercase">Accuracy</div>
+                                <div className="text-[11px] font-bold text-emerald-400 uppercase">Accuracy</div>
                             </div>
                         </div>
                         {weekGames.length > 0 && (
@@ -2547,7 +2554,7 @@ const LearnerProgressView = React.memo(({
             })()}
             {studentProgressLog.length >= 2 && (
                 <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 hover:shadow-md transition-shadow">
-                    <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                    <h3 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-1.5">
                         <TrendingUp size={14} /> Growth Over Time
                     </h3>
                     <LongitudinalProgressChart logs={studentProgressLog} />
@@ -2555,30 +2562,30 @@ const LearnerProgressView = React.memo(({
             )}
             {showDiagnostics && (
                 <div className="bg-slate-50 rounded-2xl border border-slate-200 p-5 space-y-4 animate-in slide-in-from-top-2 duration-300">
-                    <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                    <h3 className="text-xs font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5">
                         <BarChart3 size={14} /> Detailed Metrics
                     </h3>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                         <div className="bg-white rounded-xl p-3 border border-slate-200 text-center">
                             <div className="text-lg font-black text-slate-700">{stats.wsCorrect}/{stats.wsTotal}</div>
-                            <div className="text-[10px] font-bold text-slate-500 uppercase">{t('learner.words_correct')}</div>
+                            <div className="text-[11px] font-bold text-slate-600 uppercase">{t('learner.words_correct')}</div>
                         </div>
                         <div className="bg-white rounded-xl p-3 border border-slate-200 text-center">
                             <div className="text-lg font-black text-slate-700">{Object.keys(phonemeMastery).length}</div>
-                            <div className="text-[10px] font-bold text-slate-500 uppercase">{t('learner.phonemes_touched')}</div>
+                            <div className="text-[11px] font-bold text-slate-600 uppercase">{t('learner.phonemes_touched')}</div>
                         </div>
                         <div className="bg-white rounded-xl p-3 border border-slate-200 text-center">
                             <div className="text-lg font-black text-slate-700">{stats.sessionCount}</div>
-                            <div className="text-[10px] font-bold text-slate-500 uppercase">Sessions</div>
+                            <div className="text-[11px] font-bold text-slate-600 uppercase">Sessions</div>
                         </div>
                         <div className="bg-white rounded-xl p-3 border border-slate-200 text-center">
                             <div className="text-lg font-black text-slate-700">{stats.labelChallenges}</div>
-                            <div className="text-[10px] font-bold text-slate-500 uppercase">{t('learner.label_challenges')}</div>
+                            <div className="text-[11px] font-bold text-slate-600 uppercase">{t('learner.label_challenges')}</div>
                         </div>
                     </div>
                     {pointHistory.length > 0 && (
                         <div>
-                            <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">{t('learner.recent_activity')}</h4>
+                            <h4 className="text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2">{t('learner.recent_activity')}</h4>
                             <div className="space-y-1 max-h-32 overflow-y-auto">
                                 {pointHistory.slice(0, 10).map((entry, i) => (
                                     <div key={entry.id || i} className="flex justify-between items-center text-xs px-2 py-1 rounded hover:bg-white">
@@ -2686,6 +2693,19 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
   const [studentFilter, setStudentFilter] = useState('all');
   const [activeTab, setActiveTab] = useState('students');
   const [showClearConfirm, setShowClearConfirm] = useState(false);
+  // WCAG 2.1.2 + 2.4.3: Escape closes the Clear Confirm modal + restores focus.
+  // Proper top-of-component useEffect — previously in module.js only, wedged inside
+  // an st.tools.map() callback (React Hook Rules violation). Fixed April 2026.
+  useEffect(function() {
+    function _alloEscHandler(e) {
+      if (e.key === 'Escape' && showClearConfirm) {
+        setShowClearConfirm(false);
+        if (typeof alloRestoreFocus === 'function') alloRestoreFocus();
+      }
+    }
+    document.addEventListener('keydown', _alloEscHandler);
+    return function() { document.removeEventListener('keydown', _alloEscHandler); };
+  }, [showClearConfirm]);
   const toggleGraded = (id) => {
       setGradedIds(prev => {
           const next = new Set(prev);
@@ -3202,7 +3222,7 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                 )}
                 <button
                 onClick={onClose}
-                className="p-2 rounded-full text-slate-500 hover:bg-slate-100 focus:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+                className="p-2 rounded-full text-slate-600 hover:bg-slate-100 focus:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
                 autoFocus
                 aria-label={t('common.close_dashboard')}
                 >
@@ -3214,25 +3234,25 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
               <div className="flex px-6 gap-6">
                   <button
                       onClick={() => setActiveTab('students')}
-                      className={`pb-3 text-sm font-bold border-b-2 transition-all ${activeTab === 'students' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                      className={`pb-3 text-sm font-bold border-b-2 transition-all ${activeTab === 'students' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
                   >
                       {t('dashboard.tab_students')} ({dashboardData.length})
                   </button>
                   <button
                       onClick={() => setActiveTab('insights')}
-                      className={`pb-3 text-sm font-bold border-b-2 transition-all ${activeTab === 'insights' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                      className={`pb-3 text-sm font-bold border-b-2 transition-all ${activeTab === 'insights' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
                   >
                       {t('dashboard.tab_insights')}
                   </button>
                   <button
                       onClick={() => setActiveTab('behavior')}
-                      className={`pb-3 text-sm font-bold border-b-2 transition-all ${activeTab === 'behavior' ? 'border-orange-600 text-orange-700' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                      className={`pb-3 text-sm font-bold border-b-2 transition-all ${activeTab === 'behavior' ? 'border-orange-600 text-orange-700' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
                   >
                       🔍 {t('behavior_lens.hub.title') || 'Behavior'}
                   </button>
                   <button
                       onClick={() => setActiveTab('stems')}
-                      className={`pb-3 text-sm font-bold border-b-2 transition-all ${activeTab === 'stems' ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                      className={`pb-3 text-sm font-bold border-b-2 transition-all ${activeTab === 'stems' ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
                   >
                       🔬 STEM Stations
                   </button>
@@ -3266,7 +3286,7 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                                 {selectedStudent.studentNickname}
                              </h2>
                              <div className="flex items-center gap-3 mt-2 flex-wrap">
-                                 <p className="text-xs text-slate-500 font-mono bg-slate-100 px-2 py-1 rounded border border-slate-200">
+                                 <p className="text-xs text-slate-600 font-mono bg-slate-100 px-2 py-1 rounded border border-slate-200">
                                     {new Date(selectedStudent.timestamp).toLocaleString()}
                                  </p>
                                  <div className="h-4 w-px bg-slate-300 hidden sm:block"></div>
@@ -3289,7 +3309,7 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                              </div>
                          </div>
                      </div>
-                     <label className={`flex items-center gap-2 cursor-pointer px-4 py-2 rounded-full border-2 transition-all select-none shadow-sm ${gradedIds.has(selectedStudent.id) ? 'bg-green-50 border-green-500 text-green-800' : 'bg-white border-slate-200 text-slate-500 hover:border-indigo-300'}`}>
+                     <label className={`flex items-center gap-2 cursor-pointer px-4 py-2 rounded-full border-2 transition-all select-none shadow-sm ${gradedIds.has(selectedStudent.id) ? 'bg-green-50 border-green-500 text-green-800' : 'bg-white border-slate-200 text-slate-600 hover:border-indigo-300'}`}>
                         <input aria-label={t('common.text_field')}
                             type="checkbox"
                             className="hidden"
@@ -3305,7 +3325,7 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                  )}
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 mt-6">
                     <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                        <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">{t('dashboard.charts.student_vs_class')}</h4>
+                        <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-4">{t('dashboard.charts.student_vs_class')}</h4>
                         <div className="flex items-center gap-6">
                             <div className="w-1/2">
                                 <SimpleBarChart
@@ -3319,34 +3339,34 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                             <div className="w-1/2 flex flex-col justify-center gap-2">
                                 <div className="p-3 bg-slate-50 rounded-lg border border-slate-100 text-center">
                                     <div className="text-2xl font-black text-indigo-900">{studentAvg}%</div>
-                                    <div className="text-[10px] font-bold text-slate-500 uppercase">{t('dashboard.charts.student_avg')}</div>
+                                    <div className="text-[11px] font-bold text-slate-600 uppercase">{t('dashboard.charts.student_avg')}</div>
                                 </div>
                                 <div className="p-3 bg-slate-50 rounded-lg border border-slate-100 text-center">
                                     <div className="text-xl font-bold text-slate-600">{analytics.averageScore}%</div>
-                                    <div className="text-[10px] font-bold text-slate-500 uppercase">{t('dashboard.charts.class_avg')}</div>
+                                    <div className="text-[11px] font-bold text-slate-600 uppercase">{t('dashboard.charts.class_avg')}</div>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-center">
-                        <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{t('dashboard.charts.quiz_participation')}</h4>
+                        <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">{t('dashboard.charts.quiz_participation')}</h4>
                         <div className="flex items-end gap-2">
                             <span className="text-4xl font-black text-slate-800">{quizHistory.length}</span>
-                            <span className="text-sm font-medium text-slate-500 mb-1">{t('dashboard.charts.quizzes_taken')}</span>
+                            <span className="text-sm font-medium text-slate-600 mb-1">{t('dashboard.charts.quizzes_taken')}</span>
                         </div>
                     </div>
                  </div>
                  {(selectedStudent.probeHistory || selectedStudent.interventionLogs || selectedStudent.surveyResponses || selectedStudent.fluencyAssessments) && (
                      <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm mb-6 mt-6">
-                         <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+                         <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-4 flex items-center gap-2">
                              📊 Assessment & Research Data
                          </h4>
                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                              {selectedStudent.probeHistory && Object.keys(selectedStudent.probeHistory).length > 0 && (
                                  <div className="bg-amber-50 rounded-xl p-4 border border-amber-200">
                                      <div className="text-2xl font-black text-amber-700">{Object.values(selectedStudent.probeHistory).flat().length}</div>
-                                     <div className="text-[10px] font-bold text-amber-600 uppercase mt-1">{t('probes.probe_results')}</div>
-                                     <div className="text-[10px] text-slate-500 mt-2">
+                                     <div className="text-[11px] font-bold text-amber-600 uppercase mt-1">{t('probes.probe_results')}</div>
+                                     <div className="text-[11px] text-slate-600 mt-2">
                                          {Object.keys(selectedStudent.probeHistory).map(name => (
                                              <div key={name} className="flex justify-between">
                                                  <span>{name}</span>
@@ -3359,14 +3379,14 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                              {selectedStudent.interventionLogs && selectedStudent.interventionLogs.length > 0 && (
                                  <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
                                      <div className="text-2xl font-black text-blue-700">{selectedStudent.interventionLogs.length}</div>
-                                     <div className="text-[10px] font-bold text-blue-600 uppercase mt-1">{t('research.intervention_logs')}</div>
+                                     <div className="text-[11px] font-bold text-blue-600 uppercase mt-1">{t('research.intervention_logs')}</div>
                                  </div>
                              )}
                              {selectedStudent.surveyResponses && selectedStudent.surveyResponses.length > 0 && (
                                  <div className="bg-purple-50 rounded-xl p-4 border border-purple-200">
                                      <div className="text-2xl font-black text-purple-700">{selectedStudent.surveyResponses.length}</div>
-                                     <div className="text-[10px] font-bold text-purple-600 uppercase mt-1">{t('research.survey_responses')}</div>
-                                     <div className="text-[10px] text-slate-500 mt-2">
+                                     <div className="text-[11px] font-bold text-purple-600 uppercase mt-1">{t('research.survey_responses')}</div>
+                                     <div className="text-[11px] text-slate-600 mt-2">
                                          {selectedStudent.surveyResponses.slice(-1).map((r, i) => (
                                              <div key={i}>Latest: {r.type || 'survey'} ({new Date(r.timestamp || Date.now()).toLocaleDateString()})</div>
                                          ))}
@@ -3376,28 +3396,28 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                              {selectedStudent.sessionCounter !== undefined && (
                                  <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-200">
                                      <div className="text-2xl font-black text-emerald-700">{selectedStudent.sessionCounter}</div>
-                                     <div className="text-[10px] font-bold text-emerald-600 uppercase mt-1">{t('research.sessions_completed')}</div>
+                                     <div className="text-[11px] font-bold text-emerald-600 uppercase mt-1">{t('research.sessions_completed')}</div>
                                      {selectedStudent.fidelityLog && selectedStudent.fidelityLog.length > 0 && (
-                                         <div className="text-[10px] text-slate-500 mt-2">{selectedStudent.fidelityLog.length} fidelity records</div>
+                                         <div className="text-[11px] text-slate-600 mt-2">{selectedStudent.fidelityLog.length} fidelity records</div>
                                      )}
                                  </div>
                              )}
                          </div>
                          {selectedStudent.probeHistory && Object.keys(selectedStudent.probeHistory).length > 0 && (
                              <div className="mt-4 space-y-2">
-                                 <h5 className="text-[10px] font-bold text-slate-500 uppercase">{t('research.recent_probe_results')}</h5>
+                                 <h5 className="text-[11px] font-bold text-slate-600 uppercase">{t('research.recent_probe_results')}</h5>
                                  <div className="space-y-1.5">
                                      {Object.entries(selectedStudent.probeHistory).flatMap(([name, probes]) =>
                                          probes.slice(-3).map((p, i) => (
                                              <div key={name + '-' + i} className="flex items-center justify-between bg-slate-50 rounded-lg px-3 py-2 border border-slate-100 text-xs">
                                                  <span className="font-bold text-slate-700">{name}</span>
                                                  <div className="flex items-center gap-3">
-                                                     <span className="text-slate-500">{p.probeType || p.type || 'Probe'}</span>
+                                                     <span className="text-slate-600">{p.probeType || p.type || 'Probe'}</span>
                                                      {p.wcpm !== undefined && <span className="font-mono font-bold text-amber-700">{p.wcpm} WCPM</span>}
                                                      {p.dcpm !== undefined && <span className="font-mono font-bold text-amber-700">{p.dcpm} DCPM</span>}
                                                      {p.accuracy !== undefined && <span className="font-mono font-bold text-emerald-700">{Math.round(p.accuracy * 100)}%</span>}
                                                      {p.score !== undefined && <span className="font-mono font-bold text-indigo-700">{p.score}</span>}
-                                                     <span className="text-slate-500">{new Date(p.timestamp || p.date || Date.now()).toLocaleDateString()}</span>
+                                                     <span className="text-slate-600">{new Date(p.timestamp || p.date || Date.now()).toLocaleDateString()}</span>
                                                  </div>
                                              </div>
                                          ))
@@ -3407,11 +3427,11 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                          )}
                          {selectedStudent.externalCBMScores && Object.keys(selectedStudent.externalCBMScores).length > 0 && (
                              <div className="mt-4">
-                                 <h5 className="text-[10px] font-bold text-slate-500 uppercase mb-2">{t('research.external_cbm_scores')}</h5>
+                                 <h5 className="text-[11px] font-bold text-slate-600 uppercase mb-2">{t('research.external_cbm_scores')}</h5>
                                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                                      {Object.entries(selectedStudent.externalCBMScores).map(([source, scores]) => (
                                          <div key={source} className="bg-slate-50 rounded-lg px-3 py-2 border border-slate-100">
-                                             <div className="text-[10px] font-bold text-slate-600 uppercase">{source}</div>
+                                             <div className="text-[11px] font-bold text-slate-600 uppercase">{source}</div>
                                              {Array.isArray(scores) ? scores.slice(-1).map((s, i) => (
                                                  <div key={i} className="text-sm font-bold text-slate-800">{s.score || s.value || JSON.stringify(s)}</div>
                                              )) : <div className="text-sm font-bold text-slate-800">{JSON.stringify(scores)}</div>}
@@ -3430,12 +3450,12 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                                     <h3 className="font-bold text-lg text-slate-800">{item.title || "Untitled Resource"}</h3>
                                     <span className="text-xs font-bold text-indigo-600 uppercase tracking-wider bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">{item.type}</span>
                                 </div>
-                                <span className="text-xs text-slate-500 font-mono">
+                                <span className="text-xs text-slate-600 font-mono">
                                     {new Date(item.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                                 </span>
                             </div>
                             {item.meta && (
-                                <p className="text-sm text-slate-500 italic border-l-2 border-slate-200 pl-3 mb-4">
+                                <p className="text-sm text-slate-600 italic border-l-2 border-slate-200 pl-3 mb-4">
                                     {item.meta}
                                 </p>
                             )}
@@ -3452,7 +3472,7 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                 </div>
                 ))}
                 {selectedStudent.history.length === 0 && (
-                    <div className="text-center py-12 text-slate-500 italic">
+                    <div className="text-center py-12 text-slate-600 italic">
                         {t('dashboard.empty.no_history')}
                     </div>
                 )}
@@ -3461,11 +3481,11 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
     ) : (
              <>
                  {dashboardData.length === 0 ? (
-                     <div className="relative flex flex-col items-center justify-center h-full text-slate-500 gap-4 border-4 border-dashed border-slate-300 rounded-3xl hover:bg-slate-100 hover:border-indigo-300 hover:text-indigo-500 transition-all cursor-pointer group min-h-[400px] bg-white">
+                     <div className="relative flex flex-col items-center justify-center h-full text-slate-600 gap-4 border-4 border-dashed border-slate-300 rounded-3xl hover:bg-slate-100 hover:border-indigo-300 hover:text-indigo-500 transition-all cursor-pointer group min-h-[400px] bg-white">
                          <div className="bg-slate-50 p-6 rounded-full shadow-sm mb-2 group-hover:scale-110 transition-transform">
-                              <Upload size={48} className="text-slate-500 group-hover:text-indigo-500" />
+                              <Upload size={48} className="text-slate-600 group-hover:text-indigo-500" />
                          </div>
-                         <h3 className="text-2xl font-black text-slate-500 group-hover:text-indigo-700">{t('dashboard.drop_files')}</h3>
+                         <h3 className="text-2xl font-black text-slate-600 group-hover:text-indigo-700">{t('dashboard.drop_files')}</h3>
                          <p className="text-sm font-bold opacity-70 bg-slate-200 px-3 py-1 rounded-full group-hover:bg-indigo-100 group-hover:text-indigo-600 transition-colors">{t('dashboard.batch_supported')}</p>
                          <input aria-label={t('common.upload_json_file')}
                             type="file"
@@ -3484,14 +3504,14 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                                  <div className="bg-blue-100 p-3 rounded-full text-blue-600"><Users size={24}/></div>
                                  <div>
                                      <div className="text-2xl font-black text-slate-800">{dashboardData.length}</div>
-                                     <div className="text-xs font-bold text-slate-500 uppercase">{t('dashboard.stats.students_loaded')}</div>
+                                     <div className="text-xs font-bold text-slate-600 uppercase">{t('dashboard.stats.students_loaded')}</div>
                                  </div>
                              </div>
                              <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center gap-4 relative group cursor-pointer hover:border-indigo-300 transition-colors">
                                  <div className="bg-green-100 p-3 rounded-full text-green-600"><Upload size={24}/></div>
                                  <div>
                                      <div className="text-sm font-bold text-green-700">{t('dashboard.stats.add_files')}</div>
-                                     <div className="text-xs text-slate-500">{t('dashboard.stats.click_upload')}</div>
+                                     <div className="text-xs text-slate-600">{t('dashboard.stats.click_upload')}</div>
                                  </div>
                                  <input aria-label={t('common.upload_json_file')}
                                     type="file"
@@ -3504,7 +3524,7 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                                  <div className="bg-red-100 p-3 rounded-full text-red-600"><Trash2 size={24}/></div>
                                  <div>
                                      <div className="text-sm font-bold text-red-700">{t('dashboard.stats.clear_dashboard')}</div>
-                                     <div className="text-xs text-slate-500">{t('dashboard.stats.clear_desc')}</div>
+                                     <div className="text-xs text-slate-600">{t('dashboard.stats.clear_desc')}</div>
                                  </div>
                              </div>
                          </div>
@@ -3523,7 +3543,7 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                          </div>
                          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-x-auto">
                              <table className="w-full text-left text-sm text-slate-600 min-w-[600px]">
-                                 <thead className="bg-slate-50 text-xs uppercase font-bold text-slate-500">
+                                 <thead className="bg-slate-50 text-xs uppercase font-bold text-slate-600">
                                      <tr>
                                          <th className="p-4">{t('dashboard.header_nickname')}</th>
                                          <th className="p-4">{t('dashboard.header_date')}</th>
@@ -3550,13 +3570,13 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                                                          )}
                                                      </div>
                                                      {student.studentNickname}
-                                                     {isGraded && <span className="text-[10px] font-bold text-green-700 bg-green-100 px-1.5 py-0.5 rounded ml-2 uppercase tracking-wider">{t('dashboard.table.graded')}</span>}
+                                                     {isGraded && <span className="text-[11px] font-bold text-green-700 bg-green-100 px-1.5 py-0.5 rounded ml-2 uppercase tracking-wider">{t('dashboard.table.graded')}</span>}
                                                  
-                                                      {student.probeHistory && Object.keys(student.probeHistory).length > 0 && <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded ml-1 border border-amber-200" title={Object.values(student.probeHistory).flat().length + ' probes'}>📊</span>}
-                                                      {student.surveyResponses && student.surveyResponses.length > 0 && <span className="text-[10px] font-bold text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded ml-1 border border-purple-200" title={student.surveyResponses.length + ' surveys'}>📝</span>}
-                                                      {student.sessionCounter > 0 && <span className="text-[10px] font-bold text-cyan-700 bg-cyan-50 px-1.5 py-0.5 rounded ml-1 border border-cyan-200" title={student.sessionCounter + ' sessions'}>🔄</span>}
+                                                      {student.probeHistory && Object.keys(student.probeHistory).length > 0 && <span className="text-[11px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded ml-1 border border-amber-200" title={Object.values(student.probeHistory).flat().length + ' probes'}>📊</span>}
+                                                      {student.surveyResponses && student.surveyResponses.length > 0 && <span className="text-[11px] font-bold text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded ml-1 border border-purple-200" title={student.surveyResponses.length + ' surveys'}>📝</span>}
+                                                      {student.sessionCounter > 0 && <span className="text-[11px] font-bold text-cyan-700 bg-cyan-50 px-1.5 py-0.5 rounded ml-1 border border-cyan-200" title={student.sessionCounter + ' sessions'}>🔄</span>}
                                                   </td>
-                                                 <td className="p-4 text-slate-500 font-mono text-xs">
+                                                 <td className="p-4 text-slate-600 font-mono text-xs">
                                                      {new Date(student.timestamp).toLocaleDateString()} <span className="hidden sm:inline">{new Date(student.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                                                  </td>
                                                  <td className="p-4">
@@ -3570,7 +3590,7 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                                                              <MapIcon size={10} /> Lvl {level}
                                                          </span>
                                                      ) : (
-                                                         <span className="text-slate-500 text-xs">-</span>
+                                                         <span className="text-slate-600 text-xs">-</span>
                                                      )}
                                                  </td>
                                                  <td className="p-4 text-right">
@@ -3597,7 +3617,7 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                             <div className="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-slate-200">
                                 <div>
                                     <h3 className="font-bold text-lg text-slate-800">{t('dashboard.insights.class_performance')}</h3>
-                                    <p className="text-xs text-slate-500">{t('dashboard.insights.generated_date')} {new Date().toLocaleDateString()}</p>
+                                    <p className="text-xs text-slate-600">{t('dashboard.insights.generated_date')} {new Date().toLocaleDateString()}</p>
                                 </div>
                                 <button
                                     aria-label={t('common.export_file')}
@@ -3609,7 +3629,7 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col items-center">
-                                    <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">{t('dashboard.insights.avg_score')}</h3>
+                                    <h3 className="text-sm font-bold text-slate-600 uppercase tracking-wider mb-4">{t('dashboard.insights.avg_score')}</h3>
                                     <SimpleDonutChart
                                         percentage={analytics.averageScore}
                                         label={`${analytics.averageScore}%`}
@@ -3617,21 +3637,21 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                                     />
                                 </div>
                                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col items-center">
-                                    <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">{t('dashboard.insights.quiz_completion')}</h3>
+                                    <h3 className="text-sm font-bold text-slate-600 uppercase tracking-wider mb-4">{t('dashboard.insights.quiz_completion')}</h3>
                                     <SimpleDonutChart
                                         percentage={analytics.quizCompletionRate}
                                         label={`${Math.round(analytics.quizCompletionRate)}%`}
                                         color="blue"
                                     />
-                                    <p className="text-xs text-slate-500 mt-2 text-center">{t('dashboard.insights.students_participating')}</p>
+                                    <p className="text-xs text-slate-600 mt-2 text-center">{t('dashboard.insights.students_participating')}</p>
                                 </div>
                                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-center">
-                                    <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">{t('dashboard.insights.avg_adv_level')}</h3>
+                                    <h3 className="text-sm font-bold text-slate-600 uppercase tracking-wider mb-2">{t('dashboard.insights.avg_adv_level')}</h3>
                                     <div className="text-5xl font-black text-purple-600 text-center mb-2">{analytics.avgAdventureLevel.toFixed(1)}</div>
                                     <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
                                         <div className="bg-purple-500 h-full" style={{ width: `${Math.min(100, (analytics.avgAdventureLevel / 10) * 100)}%` }}></div>
                                     </div>
-                                    <p className="text-xs text-slate-500 mt-2 text-center">{t('dashboard.insights.adv_level_desc')}</p>
+                                    <p className="text-xs text-slate-600 mt-2 text-center">{t('dashboard.insights.adv_level_desc')}</p>
                                 </div>
                             </div>
                             <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
@@ -3658,7 +3678,7 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                                         </div>
                                     </div>
                                 ) : (
-                                    <div className="text-center py-10 text-slate-500 italic">
+                                    <div className="text-center py-10 text-slate-600 italic">
                                         {t('dashboard.insights.no_misconceptions')}
                                     </div>
                                 )}
@@ -3685,17 +3705,17 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                                         React.createElement('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-4' },
                                             React.createElement('div', { className: 'bg-amber-50 rounded-xl p-4 text-center border border-amber-100' },
                                                 React.createElement('div', { className: 'text-3xl font-black text-amber-700' }, allProbes.length),
-                                                React.createElement('div', { className: 'text-[10px] font-bold text-amber-500 uppercase mt-1' }, t('dashboard.insights.total_probes'))),
+                                                React.createElement('div', { className: 'text-[11px] font-bold text-amber-500 uppercase mt-1' }, t('dashboard.insights.total_probes'))),
                                             React.createElement('div', { className: 'bg-amber-50 rounded-xl p-4 text-center border border-amber-100' },
                                                 React.createElement('div', { className: 'text-3xl font-black text-amber-700' }, studentsWithProbes),
-                                                React.createElement('div', { className: 'text-[10px] font-bold text-amber-500 uppercase mt-1' }, t('dashboard.insights.students_assessed'))),
+                                                React.createElement('div', { className: 'text-[11px] font-bold text-amber-500 uppercase mt-1' }, t('dashboard.insights.students_assessed'))),
                                             (() => {
                                                 const wcpmProbes = allProbes.filter(p => p.wcpm !== undefined);
                                                 if (wcpmProbes.length === 0) return null;
                                                 const avgWcpm = Math.round(wcpmProbes.reduce((s,p) => s + p.wcpm, 0) / wcpmProbes.length);
                                                 return React.createElement('div', { className: 'bg-amber-50 rounded-xl p-4 text-center border border-amber-100' },
                                                     React.createElement('div', { className: 'text-3xl font-black text-amber-700' }, avgWcpm),
-                                                    React.createElement('div', { className: 'text-[10px] font-bold text-amber-500 uppercase mt-1' }, t('dashboard.insights.avg_wcpm')));
+                                                    React.createElement('div', { className: 'text-[11px] font-bold text-amber-500 uppercase mt-1' }, t('dashboard.insights.avg_wcpm')));
                                             })(),
                                             (() => {
                                                 const dcpmProbes = allProbes.filter(p => p.dcpm !== undefined);
@@ -3703,7 +3723,7 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                                                 const avgDcpm = Math.round(dcpmProbes.reduce((s,p) => s + p.dcpm, 0) / dcpmProbes.length);
                                                 return React.createElement('div', { className: 'bg-amber-50 rounded-xl p-4 text-center border border-amber-100' },
                                                     React.createElement('div', { className: 'text-3xl font-black text-amber-700' }, avgDcpm),
-                                                    React.createElement('div', { className: 'text-[10px] font-bold text-amber-500 uppercase mt-1' }, t('dashboard.insights.avg_dcpm')));
+                                                    React.createElement('div', { className: 'text-[11px] font-bold text-amber-500 uppercase mt-1' }, t('dashboard.insights.avg_dcpm')));
                                             })(),
                                             (() => {
                                                 const accProbes = allProbes.filter(p => p.accuracy !== undefined);
@@ -3711,7 +3731,7 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                                                 const avgAcc = Math.round(accProbes.reduce((s,p) => s + p.accuracy, 0) / accProbes.length * 100);
                                                 return React.createElement('div', { className: 'bg-amber-50 rounded-xl p-4 text-center border border-amber-100' },
                                                     React.createElement('div', { className: 'text-3xl font-black text-amber-700' }, avgAcc + '%'),
-                                                    React.createElement('div', { className: 'text-[10px] font-bold text-amber-500 uppercase mt-1' }, t('dashboard.insights.avg_accuracy')));
+                                                    React.createElement('div', { className: 'text-[11px] font-bold text-amber-500 uppercase mt-1' }, t('dashboard.insights.avg_accuracy')));
                                             })()
                                         )
                                     ),
@@ -3722,10 +3742,10 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                                         React.createElement('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-4 mb-4' },
                                             React.createElement('div', { className: 'bg-purple-50 rounded-xl p-4 text-center border border-purple-100' },
                                                 React.createElement('div', { className: 'text-3xl font-black text-purple-700' }, allSurveys.length),
-                                                React.createElement('div', { className: 'text-[10px] font-bold text-purple-500 uppercase mt-1' }, t('dashboard.insights.total_responses'))),
+                                                React.createElement('div', { className: 'text-[11px] font-bold text-purple-500 uppercase mt-1' }, t('dashboard.insights.total_responses'))),
                                             React.createElement('div', { className: 'bg-purple-50 rounded-xl p-4 text-center border border-purple-100' },
                                                 React.createElement('div', { className: 'text-3xl font-black text-purple-700' }, studentsWithSurveys),
-                                                React.createElement('div', { className: 'text-[10px] font-bold text-purple-500 uppercase mt-1' }, t('dashboard.insights.respondents')))
+                                                React.createElement('div', { className: 'text-[11px] font-bold text-purple-500 uppercase mt-1' }, t('dashboard.insights.respondents')))
                                         ),
                                         (() => {
                                             const tamIds = ['perceived_usefulness', 'ease_of_use', 'intention'];
@@ -3742,13 +3762,13 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                                             return React.createElement('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-4' },
                                                 ...constructs.map(c => 
                                                     React.createElement('div', { key: c.id, className: 'rounded-xl p-4 border ' + c.bg },
-                                                        React.createElement('div', { className: 'text-xs font-bold text-slate-500 uppercase tracking-wider mb-2' }, c.label),
+                                                        React.createElement('div', { className: 'text-xs font-bold text-slate-600 uppercase tracking-wider mb-2' }, c.label),
                                                         React.createElement('div', { className: 'flex items-end gap-2' },
                                                             React.createElement('span', { className: 'text-3xl font-black ' + c.color }, c.avg),
-                                                            React.createElement('span', { className: 'text-xs text-slate-500 mb-1' }, '/ 5.0')),
+                                                            React.createElement('span', { className: 'text-xs text-slate-600 mb-1' }, '/ 5.0')),
                                                         React.createElement('div', { className: 'w-full bg-slate-200 rounded-full h-2 mt-2 overflow-hidden' },
                                                             React.createElement('div', { className: 'h-full rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 transition-all', style: { width: (parseFloat(c.avg) / 5 * 100) + '%' } })),
-                                                        React.createElement('div', { className: 'text-[10px] text-slate-500 mt-1' }, 'n = ' + c.n + ' responses')
+                                                        React.createElement('div', { className: 'text-[11px] text-slate-600 mt-1' }, 'n = ' + c.n + ' responses')
                                                     )
                                                 )
                                             );
@@ -3761,17 +3781,17 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                                         React.createElement('div', { className: 'grid grid-cols-2 md:grid-cols-3 gap-4' },
                                             React.createElement('div', { className: 'bg-emerald-50 rounded-xl p-4 text-center border border-emerald-100' },
                                                 React.createElement('div', { className: 'text-3xl font-black text-emerald-700' }, totalSessions),
-                                                React.createElement('div', { className: 'text-[10px] font-bold text-emerald-500 uppercase mt-1' }, t('dashboard.insights.total_sessions'))),
+                                                React.createElement('div', { className: 'text-[11px] font-bold text-emerald-500 uppercase mt-1' }, t('dashboard.insights.total_sessions'))),
                                             React.createElement('div', { className: 'bg-emerald-50 rounded-xl p-4 text-center border border-emerald-100' },
                                                 React.createElement('div', { className: 'text-3xl font-black text-emerald-700' }, 
                                                     dashboardData.length > 0 ? (totalSessions / dashboardData.length).toFixed(1) : '0'),
-                                                React.createElement('div', { className: 'text-[10px] font-bold text-emerald-500 uppercase mt-1' }, t('dashboard.insights.avg_per_student'))),
+                                                React.createElement('div', { className: 'text-[11px] font-bold text-emerald-500 uppercase mt-1' }, t('dashboard.insights.avg_per_student'))),
                                             (() => {
                                                 const totalFidelity = dashboardData.reduce((sum, s) => sum + (s.fidelityLog ? s.fidelityLog.length : 0), 0);
                                                 if (totalFidelity === 0) return null;
                                                 return React.createElement('div', { className: 'bg-emerald-50 rounded-xl p-4 text-center border border-emerald-100' },
                                                     React.createElement('div', { className: 'text-3xl font-black text-emerald-700' }, totalFidelity),
-                                                    React.createElement('div', { className: 'text-[10px] font-bold text-emerald-500 uppercase mt-1' }, t('dashboard.insights.fidelity_records')));
+                                                    React.createElement('div', { className: 'text-[11px] font-bold text-emerald-500 uppercase mt-1' }, t('dashboard.insights.fidelity_records')));
                                             })()
                                         )
                                     ),
@@ -3781,7 +3801,7 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                                             '📈 Probe Trends Over Time'),
                                         (() => {
                                             const sorted = allProbes.filter(p => p.date && p.wcpm !== undefined).sort((a,b) => new Date(a.date) - new Date(b.date));
-                                            if (sorted.length < 2) return React.createElement('p', { className: 'text-sm text-slate-500 italic' }, 'Need at least 2 probes with dates to show trends.');
+                                            if (sorted.length < 2) return React.createElement('p', { className: 'text-sm text-slate-600 italic' }, 'Need at least 2 probes with dates to show trends.');
                                             const maxWcpm = Math.max(...sorted.map(p => p.wcpm), 10);
                                             const chartH = 160;
                                             const barW = Math.max(20, Math.min(50, 600 / sorted.length));
@@ -3791,14 +3811,14 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                                                         const h = Math.max(4, (p.wcpm / maxWcpm) * chartH);
                                                         const color = p.wcpm >= 100 ? '#059669' : p.wcpm >= 60 ? '#d97706' : '#dc2626';
                                                         return React.createElement('div', { key: i, className: 'flex flex-col items-center', style: { width: barW + 'px' } },
-                                                            React.createElement('div', { className: 'text-[9px] font-bold mb-1', style: { color } }, p.wcpm),
+                                                            React.createElement('div', { className: 'text-[11px] font-bold mb-1', style: { color } }, p.wcpm),
                                                             React.createElement('div', { style: { width: (barW - 4) + 'px', height: h + 'px', background: color, borderRadius: '4px 4px 0 0', transition: 'height 0.3s ease' } }),
-                                                            React.createElement('div', { className: 'text-[8px] text-slate-500 mt-1 text-center', style: { width: barW + 'px' } }, 
+                                                            React.createElement('div', { className: 'text-[11px] text-slate-600 mt-1 text-center', style: { width: barW + 'px' } }, 
                                                                 p.date ? new Date(p.date).toLocaleDateString('en', { month: 'short', day: 'numeric' }) : '')
                                                         );
                                                     })
                                                 ),
-                                                React.createElement('div', { className: 'flex items-center gap-4 text-[10px] text-slate-500' },
+                                                React.createElement('div', { className: 'flex items-center gap-4 text-[11px] text-slate-600' },
                                                     React.createElement('span', null, '🟢 ≥100 WCPM'),
                                                     React.createElement('span', null, '🟡 60-99 WCPM'),
                                                     React.createElement('span', null, '🔴 <60 WCPM'),
@@ -3816,7 +3836,7 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                              <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 text-center">
                                  <div className="text-5xl mb-4">🔍</div>
                                  <h3 className="text-2xl font-black text-slate-800 mb-2">{t('behavior_lens.hub.title') || 'BehaviorLens'}</h3>
-                                 <p className="text-sm text-slate-500 mb-6 max-w-md mx-auto">{t('behavior_lens.hub.subtitle') || 'Functional Behavior Assessment, ABC data collection, and Behavior Intervention Plan tools.'}</p>
+                                 <p className="text-sm text-slate-600 mb-6 max-w-md mx-auto">{t('behavior_lens.hub.subtitle') || 'Functional Behavior Assessment, ABC data collection, and Behavior Intervention Plan tools.'}</p>
                                  <button
                                      onClick={() => { if (onOpenBehaviorLens) onOpenBehaviorLens(); }}
                                      className="px-6 py-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all text-sm flex items-center gap-2 mx-auto"
@@ -3839,8 +3859,8 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                                          return (
                                              <div className="text-center py-8">
                                                  <div className="text-4xl mb-3">📌</div>
-                                                 <p className="text-sm text-slate-500">No STEM Stations created yet.</p>
-                                                 <p className="text-xs text-slate-500 mt-1">Generate a lesson plan to get AI-recommended STEM tools.</p>
+                                                 <p className="text-sm text-slate-600">No STEM Stations created yet.</p>
+                                                 <p className="text-xs text-slate-600 mt-1">Generate a lesson plan to get AI-recommended STEM tools.</p>
                                              </div>
                                          );
                                      }
@@ -3873,15 +3893,15 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                                                              <div className="flex items-center gap-2">
                                                                  <span className="text-lg">📌</span>
                                                                  <h4 className="font-bold text-sm text-slate-800">{st.name}</h4>
-                                                                 <span className="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                                                                 <span className="bg-emerald-100 text-emerald-700 text-[11px] font-bold px-2 py-0.5 rounded-full">
                                                                      {st.tools.length} tool{st.tools.length !== 1 ? 's' : ''}
                                                                  </span>
                                                              </div>
                                                              <div className="flex items-center gap-3">
-                                                                 <span className="text-xs text-slate-500">
+                                                                 <span className="text-xs text-slate-600">
                                                                      {new Date(st.createdAt).toLocaleDateString()}
                                                                  </span>
-                                                                 <span className="bg-indigo-100 text-indigo-700 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                                                                 <span className="bg-indigo-100 text-indigo-700 text-[11px] font-bold px-2 py-0.5 rounded-full">
                                                                      {totalXP} XP
                                                                  </span>
                                                              </div>
@@ -3891,14 +3911,14 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
                                                                  const registry = window.STEM_TOOL_REGISTRY || [];
                                                                  const meta = registry.find(r => r.id === toolId);
                                                                  return (
-                                                                     <span key={toolId} className="bg-white text-slate-600 text-[10px] font-medium px-2 py-1 rounded-lg border border-slate-200">
+                                                                     <span key={toolId} className="bg-white text-slate-600 text-[11px] font-medium px-2 py-1 rounded-lg border border-slate-200">
                                                                          🧪 {meta ? meta.name : toolId}
                                                                      </span>
                                                                  );
                                                              })}
                                                          </div>
                                                          {st.teacherNote && (
-                                                             <p className="text-xs text-slate-500 italic mt-2">"{st.teacherNote}"</p>
+                                                             <p className="text-xs text-slate-600 italic mt-2">"{st.teacherNote}"</p>
                                                          )}
                                                      </div>
                                                  );

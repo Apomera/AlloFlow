@@ -1,0 +1,1702 @@
+// ═══════════════════════════════════════════
+// stem_tool_allobotsage.js — AlloBot: Starbound Sage
+// A roguelite spell-crafter where AlloBot's spells unlock as students
+// master skills in other STEM Lab tools. Casting a spell requires a
+// short retrieval-practice micro-challenge tied to the source tool.
+// Phase 1 MVP: single-player, 10 spells, single-encounter expeditions.
+// ═══════════════════════════════════════════
+
+// ═══ Defensive StemLab guard ═══
+window.StemLab = window.StemLab || {
+  _registry: {},
+  _order: [],
+  registerTool: function(id, config) {
+    config.id = id;
+    config.ready = config.ready !== false;
+    this._registry[id] = config;
+    if (this._order.indexOf(id) === -1) this._order.push(id);
+    console.log('[StemLab] Registered tool: ' + id);
+  },
+  getRegisteredTools: function() {
+    var self = this;
+    return this._order.map(function(id) { return self._registry[id]; }).filter(Boolean);
+  },
+  isRegistered: function(id) { return !!this._registry[id]; },
+  renderTool: function(id, ctx) {
+    var tool = this._registry[id];
+    if (!tool || !tool.render) return null;
+    try { return tool.render(ctx); } catch(e) { console.error('[StemLab] Error rendering ' + id, e); return null; }
+  }
+};
+// ═══ End Guard ═══
+
+if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))) {
+
+(function() {
+  'use strict';
+
+  // ── Audio ──
+  var _absAC = null;
+  function getAC() { if (!_absAC) { try { _absAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_absAC && _absAC.state === 'suspended') { try { _absAC.resume(); } catch(e) {} } return _absAC; }
+  function absTone(f, d, t, v) { var ac = getAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = t||'sine'; o.frequency.value = f; g.gain.setValueAtTime(v||0.06, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
+  function sfxCastReady() { absTone(660, 0.08, 'sine', 0.05); setTimeout(function() { absTone(880, 0.1, 'sine', 0.06); }, 70); }
+  function sfxCastHit()   { absTone(440, 0.05, 'sawtooth', 0.05); setTimeout(function() { absTone(220, 0.15, 'sawtooth', 0.06); }, 50); }
+  function sfxCastCrit()  { absTone(880, 0.06, 'square', 0.06); setTimeout(function() { absTone(1320, 0.08, 'sine', 0.07); }, 50); setTimeout(function() { absTone(1760, 0.12, 'sine', 0.08); }, 120); }
+  function sfxBackfire()  { absTone(180, 0.15, 'sawtooth', 0.07); setTimeout(function() { absTone(120, 0.2, 'square', 0.05); }, 100); }
+  function sfxUnlock()    { absTone(523, 0.08, 'sine', 0.06); setTimeout(function() { absTone(784, 0.1, 'sine', 0.07); }, 70); setTimeout(function() { absTone(1047, 0.2, 'sine', 0.08); }, 150); }
+  function sfxVictory()   { [523, 659, 784, 1047].forEach(function(f, i) { setTimeout(function() { absTone(f, 0.12, 'sine', 0.07); }, i * 80); }); }
+  function sfxClick()     { absTone(600, 0.03, 'sine', 0.04); }
+
+  // ── a11y CSS + live region ──
+  if (!document.getElementById('abs-a11y-css')) {
+    var _s = document.createElement('style');
+    _s.id = 'abs-a11y-css';
+    _s.textContent = '@media (prefers-reduced-motion: reduce) { .abs-anim, .abs-pulse, .abs-float { animation: none !important; transition: none !important; } }'
+      + ' @keyframes absPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); } }'
+      + ' @keyframes absFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }'
+      + ' @keyframes absSpin { to { transform: rotate(360deg); } }'
+      + ' @keyframes absFade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }'
+      + ' .abs-pulse { animation: absPulse 1.4s ease-in-out infinite; }'
+      + ' .abs-float { animation: absFloat 3s ease-in-out infinite; }'
+      + ' .abs-spin  { animation: absSpin 3s linear infinite; }'
+      + ' .abs-fade  { animation: absFade 0.3s ease-out; }';
+    document.head.appendChild(_s);
+  }
+  (function() {
+    if (document.getElementById('allo-live-allobotsage')) return;
+    var lr = document.createElement('div');
+    lr.id = 'allo-live-allobotsage';
+    lr.setAttribute('aria-live', 'polite');
+    lr.setAttribute('aria-atomic', 'true');
+    lr.setAttribute('role', 'status');
+    lr.className = 'sr-only';
+    lr.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(lr);
+  })();
+  function announceSR(msg) {
+    var el = document.getElementById('allo-live-allobotsage');
+    if (el) { el.textContent = ''; setTimeout(function() { el.textContent = msg; }, 50); }
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // SPELLBOOK — Phase 1 MVP: 10 spells across 3 source tools
+  // Each spell has:
+  //   unlock(d)      — predicate over toolData; returns true when spell is earned
+  //   unlockHint     — human-readable condition shown on locked spells
+  //   challengeBank  — array of {prompt, options, correctIndex, explain}
+  //   baseDamage, critMultiplier, element, icon, color
+  // ═══════════════════════════════════════════════════════════════
+  var SPELLBOOK = [
+    // ── Space Explorer spells ─────────────────────────────────
+    {
+      id: 'quantum_leap',
+      name: 'Quantum Leap',
+      element: 'aether',
+      icon: '\u2728',
+      color: '#a855f7',
+      sourceTool: 'spaceExplorer',
+      sourceLabel: 'Space Explorer',
+      unlock: function(d) { return ((d.spaceExplorer || {}).completedMissions || 0) >= 1; },
+      unlockHint: 'Complete 1 mission in Space Explorer',
+      baseDamage: 22,
+      critMultiplier: 2.0,
+      flavor: 'A shimmer of quantum probability lances toward the foe.',
+      challengeBank: [
+        { prompt: 'Which planet orbits the Sun most quickly?', options: ['Jupiter', 'Mercury', 'Neptune', 'Saturn'], correctIndex: 1, explain: 'Closer orbits = faster orbital periods (Kepler\u2019s third law).' },
+        { prompt: 'Light from the Sun takes roughly how long to reach Earth?', options: ['8 minutes', '8 seconds', '8 hours', '8 days'], correctIndex: 0, explain: 'About 8 minutes \u2014 150 million km \u00f7 c.' },
+        { prompt: 'What is a light-year a unit of?', options: ['time', 'speed', 'distance', 'mass'], correctIndex: 2, explain: 'Distance light travels in one year \u2014 ~9.46 trillion km.' },
+        { prompt: 'Which force keeps planets in orbit around the Sun?', options: ['friction', 'magnetism', 'gravity', 'tension'], correctIndex: 2, explain: 'Gravity between Sun and planet provides the centripetal pull.' },
+        { prompt: 'Which planet has the most moons?', options: ['Earth', 'Mars', 'Jupiter', 'Saturn'], correctIndex: 3, explain: 'Saturn currently holds the title with 140+ confirmed moons.' },
+        { prompt: 'Which planet is known as the Red Planet?', options: ['Venus', 'Mars', 'Jupiter', 'Mercury'], correctIndex: 1, explain: 'Iron oxide (rust) on Mars\u2019 surface gives it the reddish color.' },
+        { prompt: 'Which is LARGEST by volume?', options: ['Earth', 'Mars', 'Neptune', 'Jupiter'], correctIndex: 3, explain: 'Jupiter \u2014 you could fit about 1,300 Earths inside it.' }
+      ]
+    },
+    {
+      id: 'gravity_well',
+      name: 'Gravity Well',
+      element: 'gravity',
+      icon: '\uD83C\uDF0C',
+      color: '#6366f1',
+      sourceTool: 'spaceExplorer',
+      sourceLabel: 'Space Explorer',
+      unlock: function(d) { return ((d.spaceExplorer || {}).completedMissions || 0) >= 3; },
+      unlockHint: 'Complete 3 missions in Space Explorer',
+      baseDamage: 30,
+      critMultiplier: 2.2,
+      flavor: 'Bends spacetime into a crushing singularity at the target.',
+      challengeBank: [
+        { prompt: 'Which of these has the STRONGEST surface gravity?', options: ['Moon', 'Mars', 'Earth', 'Jupiter'], correctIndex: 3, explain: 'Jupiter\u2019s surface gravity is ~2.5\u00d7 Earth\u2019s.' },
+        { prompt: 'On the Moon (g = 1.62 m/s\u00b2), objects fall how compared to Earth?', options: ['slower', 'faster', 'same', 'sideways'], correctIndex: 0, explain: 'Lower g \u2192 smaller acceleration \u2192 slower fall.' },
+        { prompt: 'What happens to your weight on Mars vs Earth?', options: ['3\u00d7 heavier', 'same', 'about 38% of Earth', 'zero'], correctIndex: 2, explain: 'Mars g = 3.72 m/s\u00b2 \u2248 38% of Earth\u2019s 9.8 m/s\u00b2.' },
+        { prompt: 'A black hole\u2019s event horizon is the point where...', options: ['light can escape easily', 'not even light escapes', 'gravity reverses', 'time stops globally'], correctIndex: 1, explain: 'Past the event horizon, escape velocity exceeds the speed of light.' },
+        { prompt: 'Astronauts on the ISS feel weightless because they are...', options: ['outside Earth\u2019s gravity', 'in continuous free fall', 'too small to feel gravity', 'spinning fast'], correctIndex: 1, explain: 'The ISS and astronauts fall around Earth together \u2014 free fall = apparent weightlessness.' },
+        { prompt: 'Which pair of objects experiences the STRONGEST gravity between them?', options: ['2 apples next to each other', 'Earth and a bowling ball', 'Earth and the Moon', 'You and your phone'], correctIndex: 2, explain: 'F = Gm\u2081m\u2082/r\u00b2 \u2014 huge masses dominate even at large distance.' }
+      ]
+    },
+    {
+      id: 'solar_flare',
+      name: 'Solar Flare',
+      element: 'flame',
+      icon: '\u2600\uFE0F',
+      color: '#f59e0b',
+      sourceTool: 'spaceExplorer',
+      sourceLabel: 'Space Explorer',
+      unlock: function(d) { return ((d.spaceExplorer || {}).totalScience || 0) >= 150; },
+      unlockHint: 'Earn 150 science points in Space Explorer',
+      baseDamage: 26,
+      critMultiplier: 2.0,
+      flavor: 'A lance of plasma erupts from AlloBot\u2019s wand.',
+      challengeBank: [
+        { prompt: 'The Sun is mostly made of which element?', options: ['oxygen', 'iron', 'hydrogen', 'carbon'], correctIndex: 2, explain: 'Hydrogen (~74%) fusing into helium powers the Sun.' },
+        { prompt: 'What process releases energy in the Sun\u2019s core?', options: ['combustion', 'fission', 'fusion', 'friction'], correctIndex: 2, explain: 'Nuclear fusion \u2014 hydrogen nuclei merging into helium.' },
+        { prompt: 'Which layer of the Sun do we see with our eyes?', options: ['core', 'photosphere', 'corona', 'radiative zone'], correctIndex: 1, explain: 'The photosphere is the visible surface layer.' },
+        { prompt: 'Solar flares are bursts of...', options: ['solid matter', 'radiation and charged particles', 'liquid sunlight', 'silent vibration'], correctIndex: 1, explain: 'Magnetic reconnection releases radiation + accelerated particles.' },
+        { prompt: 'When a solar flare hits Earth\u2019s atmosphere, it can cause...', options: ['auroras', 'earthquakes', 'tides', 'eclipses'], correctIndex: 0, explain: 'Charged particles exciting upper-atmosphere gases produce the aurora.' },
+        { prompt: 'Which star is closest to Earth?', options: ['Proxima Centauri', 'Sirius', 'the Sun', 'Polaris'], correctIndex: 2, explain: 'The Sun is our star \u2014 only ~8 light-minutes away.' }
+      ]
+    },
+    {
+      id: 'nebula_cloak',
+      name: 'Nebula Cloak',
+      element: 'void',
+      icon: '\uD83C\uDF2B\uFE0F',
+      color: '#0ea5e9',
+      sourceTool: 'spaceExplorer',
+      sourceLabel: 'Space Explorer',
+      unlock: function(d) { return (((d.spaceExplorer || {}).unlockedTech) || []).length >= 2; },
+      unlockHint: 'Unlock 2 technologies in Space Explorer',
+      baseDamage: 18,
+      critMultiplier: 1.8,
+      flavor: 'A shroud of cosmic dust protects the caster and strikes foes.',
+      challengeBank: [
+        { prompt: 'A nebula is mostly made of...', options: ['gas and dust', 'solid rock', 'liquid water', 'plasma fields only'], correctIndex: 0, explain: 'Interstellar gas (mostly hydrogen) and dust grains.' },
+        { prompt: 'Stars are born in...', options: ['black holes', 'nebulae', 'galaxies only', 'supernovae only'], correctIndex: 1, explain: 'Gravitational collapse inside nebulae forms new stars.' },
+        { prompt: 'A supernova is...', options: ['a newborn star', 'an exploding massive star', 'a cold dead planet', 'a type of aurora'], correctIndex: 1, explain: 'End-of-life explosion of a massive star, seeding heavy elements.' },
+        { prompt: 'The rainbow colors you see when starlight passes through a prism reveal the star\u2019s...', options: ['age only', 'mass only', 'composition', 'temperature only'], correctIndex: 2, explain: 'Absorption lines in a spectrum identify elements present.' },
+        { prompt: 'Which telescope type uses a curved mirror to focus light?', options: ['refracting', 'reflecting', 'prismatic', 'laser'], correctIndex: 1, explain: 'Reflectors (like Hubble) use mirrors; refractors use lenses.' },
+        { prompt: 'A galaxy is a collection of...', options: ['planets only', 'billions of stars + gas + dust', 'solar systems in one star', 'black holes only'], correctIndex: 1, explain: 'Typical galaxy: 100 million to 1 trillion stars plus interstellar medium.' }
+      ]
+    },
+
+    // ── Math Lab spells ─────────────────────────────────
+    {
+      id: 'fraction_fire',
+      name: 'Fraction Fire',
+      element: 'flame',
+      icon: '\uD83D\uDD25',
+      color: '#ef4444',
+      sourceTool: 'mathLab',
+      sourceLabel: 'Math Lab (Fractions)',
+      // Soft unlock: any activity in fractions tool. Field names are pragmatic
+      // guesses \u2014 tolerant of absent data.
+      unlock: function(d) {
+        var m = d.fractions || d.mathLab || {};
+        var f = d.fractions || {};
+        return (m.activitiesCompleted || 0) >= 2 || (f.problemsSolved || 0) >= 2 || (m.fractionsCompleted || 0) >= 1;
+      },
+      unlockHint: 'Solve 2 problems in Math Lab \u2192 Fractions',
+      baseDamage: 20,
+      critMultiplier: 2.0,
+      flavor: 'Flames in exact proportion incinerate the enemy.',
+      challengeBank: [
+        { prompt: 'Simplify 6/8', options: ['3/4', '2/4', '6/8', '1/2'], correctIndex: 0, explain: '6\u00f72 / 8\u00f72 = 3/4.' },
+        { prompt: 'Which fraction equals 1/2?', options: ['2/5', '3/6', '4/10', '5/9'], correctIndex: 1, explain: '3/6 = 1/2.' },
+        { prompt: '1/4 + 1/4 = ?', options: ['2/8', '1/2', '2/4 only', 'undefined'], correctIndex: 1, explain: '2/4 simplifies to 1/2.' },
+        { prompt: 'Which is greater: 2/3 or 3/5?', options: ['2/3', '3/5', 'equal', 'cannot compare'], correctIndex: 0, explain: '2/3 \u2248 0.67 > 3/5 = 0.60.' },
+        { prompt: 'Simplify 10/15', options: ['2/3', '5/6', '3/4', '1/2'], correctIndex: 0, explain: '10\u00f75 / 15\u00f75 = 2/3.' },
+        { prompt: '1/3 + 1/6 = ?', options: ['1/9', '2/9', '1/2', '2/3'], correctIndex: 2, explain: 'LCD 6: 2/6 + 1/6 = 3/6 = 1/2.' },
+        { prompt: '2/3 of 12 is...', options: ['4', '6', '8', '9'], correctIndex: 2, explain: '12 \u00f7 3 = 4; 4 \u00d7 2 = 8.' },
+        { prompt: 'Which decimal equals 3/4?', options: ['0.34', '0.43', '0.75', '0.80'], correctIndex: 2, explain: '3 \u00f7 4 = 0.75.' }
+      ]
+    },
+    {
+      id: 'algebra_arc',
+      name: 'Algebra Arc',
+      element: 'lightning',
+      icon: '\u26A1',
+      color: '#eab308',
+      sourceTool: 'mathLab',
+      sourceLabel: 'Math Lab (Algebra)',
+      unlock: function(d) {
+        var a = d.algebraCAS || d.inequality || d.funcGrapher || {};
+        var m = d.mathLab || {};
+        return (a.solved || 0) >= 1 || (m.algebraProblems || 0) >= 1;
+      },
+      unlockHint: 'Solve 1 equation in Math Lab \u2192 Algebra',
+      baseDamage: 28,
+      critMultiplier: 2.1,
+      flavor: 'A bolt of variables arcs between foes.',
+      challengeBank: [
+        { prompt: 'Solve for x: x + 7 = 12', options: ['x = 5', 'x = 19', 'x = 12', 'x = -5'], correctIndex: 0, explain: '12 - 7 = 5.' },
+        { prompt: 'Solve for x: 3x = 21', options: ['x = 3', 'x = 7', 'x = 18', 'x = 24'], correctIndex: 1, explain: '21 \u00f7 3 = 7.' },
+        { prompt: 'Solve for x: 2x + 4 = 10', options: ['x = 2', 'x = 3', 'x = 4', 'x = 7'], correctIndex: 1, explain: '2x = 6 \u2192 x = 3.' },
+        { prompt: 'Solve for x: 5x \u2212 3 = 22', options: ['x = 4', 'x = 5', 'x = 6', 'x = 25'], correctIndex: 1, explain: '5x = 25 \u2192 x = 5.' },
+        { prompt: 'If y = 2x + 1 and x = 3, what is y?', options: ['5', '6', '7', '9'], correctIndex: 2, explain: 'y = 2(3)+1 = 7.' },
+        { prompt: 'Solve: x/4 = 3', options: ['x = 0.75', 'x = 4', 'x = 7', 'x = 12'], correctIndex: 3, explain: 'Multiply both sides by 4 \u2192 x = 12.' },
+        { prompt: 'Simplify: 3(x + 2)', options: ['3x + 2', '3x + 6', 'x + 6', '3x \u2212 6'], correctIndex: 1, explain: 'Distribute: 3\u00b7x + 3\u00b72 = 3x + 6.' }
+      ]
+    },
+    {
+      id: 'geometry_grasp',
+      name: 'Geometry Grasp',
+      element: 'stone',
+      icon: '\u25C7',
+      color: '#10b981',
+      sourceTool: 'mathLab',
+      sourceLabel: 'Math Lab (Geometry)',
+      unlock: function(d) {
+        var g = d.geoSandbox || d.geometryWorld || d.angles || d.areamodel || {};
+        return (g.activitiesCompleted || 0) >= 1 || (g.shapesBuilt || 0) >= 1 || (g.correct || 0) >= 1;
+      },
+      unlockHint: 'Complete 1 activity in Math Lab \u2192 Geometry',
+      baseDamage: 24,
+      critMultiplier: 1.9,
+      flavor: 'Crystalline shards arrange themselves in perfect polygons.',
+      challengeBank: [
+        { prompt: 'How many sides does a hexagon have?', options: ['5', '6', '7', '8'], correctIndex: 1, explain: 'Hex- = 6.' },
+        { prompt: 'A triangle has angles 60\u00b0, 70\u00b0, and ?', options: ['40\u00b0', '50\u00b0', '60\u00b0', '90\u00b0'], correctIndex: 1, explain: 'Angles sum to 180\u00b0: 180 - 60 - 70 = 50.' },
+        { prompt: 'Area of a rectangle with sides 4 and 5?', options: ['9', '18', '20', '25'], correctIndex: 2, explain: 'Area = length \u00d7 width = 4 \u00d7 5 = 20.' },
+        { prompt: 'Perimeter of a square with side length 6?', options: ['12', '18', '24', '36'], correctIndex: 2, explain: 'Perimeter = 4 \u00d7 side = 4 \u00d7 6 = 24.' },
+        { prompt: 'Area of a triangle with base 8 and height 5?', options: ['13', '20', '30', '40'], correctIndex: 1, explain: 'Area = \u00bd \u00d7 base \u00d7 height = \u00bd \u00d7 8 \u00d7 5 = 20.' },
+        { prompt: 'Angles in a right angle measure how many degrees?', options: ['45\u00b0', '60\u00b0', '90\u00b0', '180\u00b0'], correctIndex: 2, explain: 'Right angle = 90\u00b0 (a quarter turn).' },
+        { prompt: 'Area of a circle with radius 3 (use \u03c0 \u2248 3.14)?', options: ['~9.4', '~18.8', '~28.3', '~38.5'], correctIndex: 2, explain: 'A = \u03c0r\u00b2 = \u03c0 \u00d7 9 \u2248 28.3.' }
+      ]
+    },
+
+    // ── RoadReady spells ─────────────────────────────────
+    {
+      id: 'road_ward',
+      name: 'Road Ward',
+      element: 'stone',
+      icon: '\uD83D\uDEE1\uFE0F',
+      color: '#64748b',
+      sourceTool: 'roadReady',
+      sourceLabel: 'RoadReady',
+      unlock: function(d) {
+        var r = d.roadReady || {};
+        return (r.permitAnswered || 0) >= 3 || (r.scenariosCompleted || 0) >= 1 || r.permitPassed === true;
+      },
+      unlockHint: 'Answer 3 permit questions in RoadReady',
+      baseDamage: 20,
+      critMultiplier: 1.9,
+      flavor: 'A wall of defensive driving instinct blocks the attack.',
+      challengeBank: [
+        { prompt: 'At a 4-way stop, a car arrives the same moment as you on your RIGHT. Who goes first?', options: ['you go first', 'the other car', 'whoever honks', 'both at once'], correctIndex: 1, explain: 'The car on your right has right-of-way at a 4-way stop.' },
+        { prompt: 'A flashing RED traffic light means...', options: ['treat as stop sign', 'go faster', 'yield only', 'construction ahead'], correctIndex: 0, explain: 'Flashing red = full stop, then proceed when safe.' },
+        { prompt: 'When you see a school bus with flashing red lights stopped ahead, you must...', options: ['pass carefully', 'honk and pass', 'stop completely', 'slow to 15 mph'], correctIndex: 2, explain: 'Stop and wait until the lights stop flashing (most US states).' },
+        { prompt: 'Safe following distance is typically measured by the...', options: ['3-second rule', '1-minute rule', 'license-plate rule', 'coin-flip rule'], correctIndex: 0, explain: 'Stay at least 3 seconds behind the car in front (more in bad weather).' },
+        { prompt: 'Hydroplaning is most likely to happen when...', options: ['driving slow on dry road', 'driving fast on wet road', 'parked', 'backing up'], correctIndex: 1, explain: 'Water lifts tires off the road \u2014 worst at high speed on wet surfaces.' },
+        { prompt: 'If your tires lose grip and the rear slides out, you should...', options: ['slam the brakes', 'steer the way you want to go', 'turn the wheel opposite', 'accelerate hard'], correctIndex: 1, explain: '\u201cSteer into the skid\u201d \u2014 point the wheels where you want to go.' },
+        { prompt: 'Seat belts work best because they...', options: ['look nice', 'spread crash forces across the body', 'warm you up', 'increase comfort'], correctIndex: 1, explain: 'They distribute deceleration forces over the strong parts of the skeleton.' }
+      ]
+    },
+    {
+      id: 'signal_sigil',
+      name: 'Signal Sigil',
+      element: 'aether',
+      icon: '\uD83D\uDEA6',
+      color: '#8b5cf6',
+      sourceTool: 'roadReady',
+      sourceLabel: 'RoadReady',
+      unlock: function(d) {
+        var r = d.roadReady || {};
+        return (r.signsIdentified || 0) >= 3 || (r.permitAnswered || 0) >= 5;
+      },
+      unlockHint: 'Identify 3 signs in RoadReady',
+      baseDamage: 22,
+      critMultiplier: 2.0,
+      flavor: 'A glowing glyph forces enemies to obey traffic law.',
+      challengeBank: [
+        { prompt: 'A YELLOW diamond sign usually means...', options: ['mandatory action', 'warning', 'regulation', 'rest area'], correctIndex: 1, explain: 'Yellow diamonds are warning signs.' },
+        { prompt: 'A RED octagon sign means...', options: ['yield', 'stop', 'merge', 'no entry'], correctIndex: 1, explain: 'Red octagon = STOP.' },
+        { prompt: 'An inverted (upside-down) TRIANGLE means...', options: ['yield', 'stop', 'school zone', 'construction'], correctIndex: 0, explain: 'Yield to cross traffic.' },
+        { prompt: 'A PENTAGON-shaped sign usually means...', options: ['gas station', 'school zone / school crossing', 'hospital', 'rest stop'], correctIndex: 1, explain: 'Pentagon = school zone in US signage.' },
+        { prompt: 'ORANGE signs usually indicate...', options: ['construction / work zone', 'hospital', 'campground', 'tourist info'], correctIndex: 0, explain: 'Orange = construction and temporary traffic controls.' },
+        { prompt: 'A WHITE rectangle with black text usually means...', options: ['a warning', 'a regulation (speed limit, etc.)', 'a service', 'a scenic route'], correctIndex: 1, explain: 'White rectangles = regulatory signs (speed limits, one-way, etc.).' },
+        { prompt: 'A GREEN sign usually gives...', options: ['warnings', 'directional / guidance info', 'regulations', 'hazards'], correctIndex: 1, explain: 'Green = guide signs (directions, distances, exits).' }
+      ]
+    },
+    {
+      id: 'hypermile_hex',
+      name: 'Hypermile Hex',
+      element: 'gravity',
+      icon: '\u26FD',
+      color: '#059669',
+      sourceTool: 'roadReady',
+      sourceLabel: 'RoadReady',
+      unlock: function(d) {
+        var r = d.roadReady || {};
+        return (r.hypermileSessions || 0) >= 1 || (r.bestMPG || 0) >= 30;
+      },
+      unlockHint: 'Complete 1 Hypermile session in RoadReady',
+      baseDamage: 32,
+      critMultiplier: 2.3,
+      flavor: 'Converts the enemy\u2019s wasted motion into energy drain.',
+      challengeBank: [
+        { prompt: 'Which driving habit BEST improves fuel efficiency?', options: ['rapid acceleration', 'steady speed', 'slamming brakes', 'idling often'], correctIndex: 1, explain: 'Steady speed \u2192 less kinetic energy wasted in braking/acceleration.' },
+        { prompt: 'Air resistance (drag) grows how with speed?', options: ['linearly', 'quadratically', 'not at all', 'exponentially then drops'], correctIndex: 1, explain: 'Drag \u221d v\u00b2 \u2014 doubling speed quadruples drag.' },
+        { prompt: 'Why is highway MPG often higher than city MPG?', options: ['fewer hills', 'less stopping and accelerating', 'warmer engine', 'softer tires'], correctIndex: 1, explain: 'Cities waste energy in stop-and-go; highways are closer to steady-state.' },
+        { prompt: 'Underinflated tires...', options: ['improve MPG', 'increase rolling resistance (hurt MPG)', 'have no MPG effect', 'are always safer'], correctIndex: 1, explain: 'More deformation = more rolling resistance = lower MPG.' },
+        { prompt: 'Idling for 2 minutes uses about as much fuel as driving...', options: ['1 mile', '5 miles', '10 miles', '50 miles'], correctIndex: 0, explain: 'Roughly ~1 mile \u2014 modern guidance: restart if stopped >30s.' },
+        { prompt: 'A car doing 70 mph uses much more fuel than one doing 55 mph mostly because of...', options: ['gravity', 'drag (air resistance)', 'engine heat', 'tire noise'], correctIndex: 1, explain: 'Drag rises with v\u00b2 \u2014 the 70\u219255 gap has an outsized energy cost.' },
+        { prompt: 'Regenerative braking on hybrids/EVs recovers energy as...', options: ['sound', 'heat only', 'electrical energy in the battery', 'gasoline'], correctIndex: 2, explain: 'The motor acts as a generator, charging the battery while slowing the car.' }
+      ]
+    },
+
+    // ── Word Sounds spells ─────────────────────────────────
+    {
+      id: 'phonic_bolt',
+      name: 'Phonic Bolt',
+      element: 'lightning',
+      icon: '\uD83D\uDD0A',
+      color: '#0ea5e9',
+      sourceTool: 'wordSounds',
+      sourceLabel: 'Word Sounds',
+      unlock: function(d) {
+        var w = d.wordSounds || d.wordSoundsSetup || {};
+        return (w.wordsCompleted || 0) >= 3 || (w.soundsMastered || 0) >= 2 || (w.sessionsCompleted || 0) >= 1;
+      },
+      unlockHint: 'Complete 3 words in Word Sounds',
+      baseDamage: 22,
+      critMultiplier: 2.0,
+      flavor: 'A clear, ringing phoneme cracks the foe.',
+      challengeBank: [
+        { prompt: 'Which sound starts the word \u201cthunder\u201d?', options: ['/t/', '/th/', '/d/', '/n/'], correctIndex: 1, explain: 'Digraph \u201cth\u201d is a single sound \u2014 the voiceless \u201cth\u201d in thunder.' },
+        { prompt: 'Which pair RHYMES?', options: ['cat / dog', 'moon / spoon', 'cup / cap', 'leaf / loaf'], correctIndex: 1, explain: 'Rhymes share ending sounds \u2014 moon/spoon both end in /u:n/.' },
+        { prompt: 'How many syllables in \u201cbutterfly\u201d?', options: ['1', '2', '3', '4'], correctIndex: 2, explain: 'but-ter-fly \u2014 3 syllables (clap it out).' },
+        { prompt: 'Which word has a SHORT \u201ca\u201d sound?', options: ['cake', 'mat', 'rain', 'play'], correctIndex: 1, explain: 'Short \u201ca\u201d = /\u00e6/ as in mat. The others use long \u201ca\u201d = /e\u026a/.' },
+        { prompt: 'The digraph \u201csh\u201d makes what sound?', options: ['/s/ + /h/ separately', '/sh/ as in \u201cshoe\u201d', '/ch/', '/z/'], correctIndex: 1, explain: 'Digraph = two letters, one sound. \u201csh\u201d = /\u0283/ as in shoe.' },
+        { prompt: 'Which word BLENDS three consonants at the start?', options: ['stop', 'slip', 'strap', 'smile'], correctIndex: 2, explain: '\u201cstrap\u201d begins with the blend /s/+/t/+/r/.' }
+      ]
+    },
+    {
+      id: 'rhyme_ring',
+      name: 'Rhyme Ring',
+      element: 'aether',
+      icon: '\uD83D\uDD14',
+      color: '#22d3ee',
+      sourceTool: 'wordSounds',
+      sourceLabel: 'Word Sounds',
+      unlock: function(d) {
+        var w = d.wordSounds || d.wordSoundsSetup || {};
+        return (w.wordsCompleted || 0) >= 8 || (w.rhymesMatched || 0) >= 4 || (w.sessionsCompleted || 0) >= 3;
+      },
+      unlockHint: 'Complete 8 words (or 4 rhymes) in Word Sounds',
+      baseDamage: 24,
+      critMultiplier: 2.0,
+      flavor: 'A ringing echo of paired sounds stuns the target.',
+      challengeBank: [
+        { prompt: 'Which word does NOT rhyme with the others?', options: ['bright', 'fight', 'kite', 'kit'], correctIndex: 3, explain: '\u201ckit\u201d has short /i/; the others share long /a\u026at/.' },
+        { prompt: 'Which word rhymes with \u201cblue\u201d?', options: ['bow', 'bee', 'shoe', 'by'], correctIndex: 2, explain: '\u201cshoe\u201d and \u201cblue\u201d both end in /u:/.' },
+        { prompt: 'Which is a near-rhyme (same ending vowel, different consonant)?', options: ['cat / dog', 'red / head', 'bike / boat', 'day / dock'], correctIndex: 1, explain: 'Both end in /\u025bd/.' },
+        { prompt: 'Which word has TWO syllables?', options: ['happy', 'cat', 'banana', 'elephant'], correctIndex: 0, explain: 'hap-py = 2. Cat = 1. Banana = 3. Elephant = 3.' },
+        { prompt: 'The onset of \u201cplay\u201d is...', options: ['p', 'l', 'pl', 'ay'], correctIndex: 2, explain: 'Onset = all consonants BEFORE the first vowel. \u201cpl\u201d is the onset; \u201cay\u201d is the rime.' },
+        { prompt: 'Which word has a SILENT letter?', options: ['cat', 'knee', 'ball', 'jump'], correctIndex: 1, explain: 'The \u201ck\u201d in \u201cknee\u201d is silent.' }
+      ]
+    },
+
+    // ── WriteCraft spells ─────────────────────────────────
+    {
+      id: 'narrative_nova',
+      name: 'Narrative Nova',
+      element: 'flame',
+      icon: '\uD83D\uDCD6',
+      color: '#f97316',
+      sourceTool: 'writeCraft',
+      sourceLabel: 'WriteCraft',
+      unlock: function(d) {
+        var w = d.writeCraft || {};
+        return (w.storiesDrafted || 0) >= 1 || (w.paragraphsWritten || 0) >= 3 || (w.sessionsCompleted || 0) >= 1;
+      },
+      unlockHint: 'Draft 1 story (or 3 paragraphs) in WriteCraft',
+      baseDamage: 30,
+      critMultiplier: 2.2,
+      flavor: 'A narrative arc ignites, scorching the foe across acts.',
+      challengeBank: [
+        { prompt: 'Which element is MOST essential for a story?', options: ['a character with a goal', 'a glossary', 'a bibliography', 'page numbers'], correctIndex: 0, explain: 'A character pursuing something is the spine of narrative.' },
+        { prompt: 'The \u201cclimax\u201d of a story is usually...', options: ['the opening line', 'the peak moment of tension', 'the last paragraph', 'the author\u2019s name'], correctIndex: 1, explain: 'Climax = the turning point where conflict peaks.' },
+        { prompt: 'Which opening HOOKS the reader best?', options: ['\u201cIt was a normal Tuesday.\u201d', '\u201cThe phone rang for the twenty-first time that morning.\u201d', '\u201cThis is a story.\u201d', '\u201cChapter 1.\u201d'], correctIndex: 1, explain: 'Specific, curious detail pulls readers in.' },
+        { prompt: '\u201cShowing, not telling\u201d means...', options: ['no dialogue allowed', 'describe behavior and senses instead of stating feelings', 'use bullet points', 'write in past tense only'], correctIndex: 1, explain: 'Instead of \u201cshe was nervous,\u201d write \u201cher hands trembled on the door handle.\u201d' },
+        { prompt: 'A story told from \u201cshe ran, she thought, she wondered\u201d uses which POV?', options: ['first person', 'second person', 'third person', 'no POV'], correctIndex: 2, explain: 'Third person uses she/he/they as the narrator\u2019s referent.' },
+        { prompt: 'What is a \u201cstakes\u201d question in a story?', options: ['what the hero ate', 'what the character stands to lose or gain', 'the publication date', 'page count'], correctIndex: 1, explain: 'Stakes are what matters \u2014 without them, tension collapses.' }
+      ]
+    },
+    {
+      id: 'verb_vortex',
+      name: 'Verb Vortex',
+      element: 'void',
+      icon: '\uD83C\uDF2A\uFE0F',
+      color: '#d946ef',
+      sourceTool: 'writeCraft',
+      sourceLabel: 'WriteCraft',
+      unlock: function(d) {
+        var w = d.writeCraft || {};
+        return (w.revisionsMade || 0) >= 1 || (w.strongVerbsUsed || 0) >= 3 || (w.paragraphsWritten || 0) >= 5;
+      },
+      unlockHint: 'Revise 1 passage (or use 3 strong verbs) in WriteCraft',
+      baseDamage: 20,
+      critMultiplier: 2.4,
+      flavor: 'Weak verbs are replaced mid-strike \u2014 the blow lands twice.',
+      challengeBank: [
+        { prompt: 'Which is the STRONGEST verb?', options: ['walked', 'went', 'strode', 'moved'], correctIndex: 2, explain: '\u201cStrode\u201d carries purpose and rhythm; the others are vague.' },
+        { prompt: 'Which sentence uses active voice?', options: ['The ball was thrown by Maya.', 'Maya threw the ball.', 'The ball was thrown.', 'Thrown was the ball.'], correctIndex: 1, explain: 'Active voice = subject acts on object (Maya \u2192 threw \u2192 ball).' },
+        { prompt: 'Which word is a VERB?', options: ['quick', 'jump', 'yellow', 'table'], correctIndex: 1, explain: '\u201cJump\u201d is an action; the others are adjective/adjective/noun.' },
+        { prompt: 'Replace \u201cgot\u201d in \u201cShe got the book\u201d with a stronger verb:', options: ['grabbed', 'wanted', 'thought', 'was'], correctIndex: 0, explain: '\u201cGrabbed\u201d is vivid; \u201cwanted/thought/was\u201d changes meaning.' },
+        { prompt: 'An adverb USUALLY describes...', options: ['a noun', 'a verb', 'a preposition', 'a comma'], correctIndex: 1, explain: 'Adverbs modify verbs (\u201cshe ran quickly\u201d) \u2014 also adjectives and other adverbs.' },
+        { prompt: 'Which is a compound sentence?', options: ['It rained.', 'It rained hard all morning.', 'It rained, and the garden flooded.', 'Rain.'], correctIndex: 2, explain: 'Compound = two independent clauses joined by a conjunction (here, \u201cand\u201d).' }
+      ]
+    },
+
+    // ── Immersive Reader spells ─────────────────────────────────
+    {
+      id: 'focus_flare',
+      name: 'Focus Flare',
+      element: 'aether',
+      icon: '\uD83D\uDD0D',
+      color: '#14b8a6',
+      sourceTool: 'immersiveReader',
+      sourceLabel: 'Immersive Reader',
+      unlock: function(d) {
+        var r = d.immersiveReader || {};
+        return (r.sessionsCompleted || 0) >= 1 || (r.wordsRead || 0) >= 50 || (r.timeSpent || 0) >= 120;
+      },
+      unlockHint: 'Complete 1 Immersive Reader session',
+      baseDamage: 24,
+      critMultiplier: 2.0,
+      flavor: 'Focus narrows the world to a single point of light.',
+      challengeBank: [
+        { prompt: 'The BEST strategy if you hit an unknown word is...', options: ['skip and guess', 'use context clues from surrounding sentences', 'give up on the passage', 'only check the title'], correctIndex: 1, explain: 'Context clues unlock meaning without breaking flow.' },
+        { prompt: '\u201cMain idea\u201d of a paragraph means...', options: ['the longest sentence', 'the overall point it\u2019s making', 'the first word', 'any quote'], correctIndex: 1, explain: 'Main idea = what the paragraph is really saying, not just details.' },
+        { prompt: 'Which is a SIGNAL of a supporting detail?', options: ['\u201cfor example\u201d', '\u201cin conclusion\u201d', '\u201cwho are you\u201d', '\u201cpage 1\u201d'], correctIndex: 0, explain: '\u201cFor example\u201d introduces a detail supporting the main idea.' },
+        { prompt: 'When reading, to tell FACT from OPINION, ask...', options: ['does it rhyme?', 'can it be proven or tested?', 'is it short?', 'is it in italics?'], correctIndex: 1, explain: 'Facts are verifiable; opinions are beliefs or judgments.' },
+        { prompt: 'If a text defines a key word in a glossary, you should...', options: ['ignore it', 'use it to clarify meaning', 'memorize the page number', 'skip to the end'], correctIndex: 1, explain: 'Glossary entries are reading aids \u2014 use them actively.' },
+        { prompt: 'Re-reading a confusing passage is...', options: ['always unnecessary', 'a strong strategy used by skilled readers', 'against the rules', 'for beginners only'], correctIndex: 1, explain: 'Skilled readers re-read constantly \u2014 it\u2019s a core comprehension tool.' }
+      ]
+    },
+    {
+      id: 'context_cipher',
+      name: 'Context Cipher',
+      element: 'void',
+      icon: '\uD83D\uDD76\uFE0F',
+      color: '#6d28d9',
+      sourceTool: 'immersiveReader',
+      sourceLabel: 'Immersive Reader',
+      unlock: function(d) {
+        var r = d.immersiveReader || {};
+        return (r.sessionsCompleted || 0) >= 3 || (r.wordsRead || 0) >= 200 || (r.definitionsViewed || 0) >= 5;
+      },
+      unlockHint: 'Complete 3 Immersive Reader sessions (or view 5 definitions)',
+      baseDamage: 18,
+      critMultiplier: 2.5,
+      flavor: 'Turns an enemy\u2019s meaning against it \u2014 devastating when truly understood.',
+      challengeBank: [
+        { prompt: 'What does \u201cinfer\u201d mean?', options: ['ignore', 'figure out from clues', 'repeat word-for-word', 'avoid'], correctIndex: 1, explain: 'To infer = to draw a conclusion from evidence you\u2019re given.' },
+        { prompt: 'A prefix like \u201cun-\u201d usually makes a word...', options: ['opposite / negative', 'louder', 'longer', 'fancier'], correctIndex: 0, explain: '\u201cUn-\u201d flips meaning: happy \u2192 unhappy.' },
+        { prompt: 'A \u201cthesis\u201d in nonfiction is...', options: ['a picture', 'the main claim the author argues', 'a joke', 'an index entry'], correctIndex: 1, explain: 'Thesis = the central argument the rest of the text supports.' },
+        { prompt: '\u201cSkim\u201d reading means...', options: ['read every word slowly', 'scan quickly for the gist', 'skip entirely', 'read upside down'], correctIndex: 1, explain: 'Skimming = fast sweep for main ideas, not deep comprehension.' },
+        { prompt: 'The suffix \u201c-less\u201d usually means...', options: ['more', 'without / lacking', 'again', 'before'], correctIndex: 1, explain: 'Hope + less = without hope.' },
+        { prompt: 'If a character says one thing but does the OPPOSITE, that\u2019s...', options: ['sarcasm', 'irony', 'alliteration', 'plagiarism'], correctIndex: 1, explain: 'Irony: a contrast between expectation and reality.' }
+      ]
+    },
+
+    // ── Typing Practice spells ─────────────────────────────────
+    // Pull-based integration: predicates read d.typingPractice directly.
+    // Encourages structured-drill progression + accommodation exploration.
+    {
+      id: 'home_row_focus',
+      name: 'Home Row Focus',
+      element: 'focus',
+      icon: '\u2328\uFE0F',
+      color: '#60a5fa',
+      sourceTool: 'typingPractice',
+      sourceLabel: 'Typing Practice',
+      unlock: function(d) { return ((d.typingPractice || {}).masteryLevel || 0) >= 1; },
+      unlockHint: 'Clear the Home Row tier in Typing Practice',
+      baseDamage: 18,
+      critMultiplier: 2.0,
+      flavor: 'Steady fingers anchor to the home row, and the spell lands precisely where intended.',
+      challengeBank: [
+        { prompt: 'Which keys are the LEFT-HAND home row (resting fingers)?', options: ['q w e r', 'a s d f', 'z x c v', '1 2 3 4'], correctIndex: 1, explain: 'Left home row: a (pinky), s (ring), d (middle), f (index).' },
+        { prompt: 'Which keys are the RIGHT-HAND home row?', options: ['p o i u', 'j k l ;', 'n m , .', '7 8 9 0'], correctIndex: 1, explain: 'Right home row: j (index), k (middle), l (ring), ; (pinky).' },
+        { prompt: 'Touch typing means you...', options: ['type while tapping the screen', 'type without looking at the keys', 'type very softly', 'type only one finger at a time'], correctIndex: 1, explain: 'Eyes stay on the screen; fingers find keys by muscle memory.' },
+        { prompt: 'Which finger should press the letter F?', options: ['left middle', 'left index', 'right index', 'left thumb'], correctIndex: 1, explain: 'The left index finger rests on F (notice the small bump that helps you find it without looking).' },
+        { prompt: 'Which finger presses the space bar?', options: ['index', 'pinky', 'either thumb', 'ring finger'], correctIndex: 2, explain: 'Thumbs hover over the space bar; use whichever is free.' },
+        { prompt: 'The small bump on the F and J keys is called...', options: ['a decoration', 'a home bump', 'a finger rest ridge', 'a lock'], correctIndex: 2, explain: 'The ridges help you find the home row without looking down.' },
+        { prompt: 'WPM stands for...', options: ['Words Per Minute', 'Writing Practice Mode', 'Weight Per Millisecond', 'Word Placement Model'], correctIndex: 0, explain: 'WPM = (characters typed / 5) divided by minutes.' }
+      ]
+    },
+    {
+      id: 'fluent_keys',
+      name: 'Fluent Keys',
+      element: 'aether',
+      icon: '\uD83E\uDE84',
+      color: '#a855f7',
+      sourceTool: 'typingPractice',
+      sourceLabel: 'Typing Practice',
+      unlock: function(d) { return (((d.typingPractice || {}).sessions || []).length) >= 10; },
+      unlockHint: 'Complete 10 Typing Practice sessions',
+      baseDamage: 24,
+      critMultiplier: 2.2,
+      flavor: 'Words flow from mind to screen without friction \u2014 the enemy cannot keep up.',
+      challengeBank: [
+        { prompt: 'Which accommodation would MOST help a student with dyslexia type?', options: ['racing mode', 'OpenDyslexic font', 'louder beeps', 'a smaller keyboard'], correctIndex: 1, explain: 'Dyslexia-friendly fonts reduce letter-confusion (b/d, p/q).' },
+        { prompt: '\u201cError-tolerant mode\u201d helps most with...', options: ['dysgraphia', 'running fast', 'memory loss', 'hearing'], correctIndex: 0, explain: 'Dysgraphia can make motor output mismatch intent \u2014 auto-advance keeps progress flowing.' },
+        { prompt: 'If your accuracy is 90%, out of 100 keystrokes you got how many right?', options: ['10', '90', '100', '9'], correctIndex: 1, explain: '90% of 100 = 90 correct keystrokes.' },
+        { prompt: 'Consistent practice with LOW bars (e.g., 10 WPM at 80% accuracy) is called...', options: ['cheating', 'mastery learning', 'pressure typing', 'speed racing'], correctIndex: 1, explain: 'Mastery learning: meeting thresholds at your pace builds durable skill.' },
+        { prompt: 'Which is NOT a healthy typing habit?', options: ['look at the screen', 'rest your wrists neutrally', 'press as hard as you can', 'take breaks'], correctIndex: 2, explain: 'Light keystrokes protect your joints; hard pressing adds injury risk.' },
+        { prompt: '\u201cPersonal best\u201d tracking compares you to...', options: ['every other student', 'only yourself', 'the class average', 'a national standard'], correctIndex: 1, explain: 'Personal best = you vs. your past self. No peer ranking.' },
+        { prompt: 'In typing, a \u201cbaseline\u201d is...', options: ['the bottom of the keyboard', 'your first measured score', 'a warning light', 'the target WPM'], correctIndex: 1, explain: 'Baseline = starting measurement, so growth over time is visible.' }
+      ]
+    },
+    {
+      id: 'ready_words',
+      name: 'Ready Words',
+      element: 'word',
+      icon: '\uD83D\uDCDD',
+      color: '#34d399',
+      sourceTool: 'typingPractice',
+      sourceLabel: 'Typing Practice',
+      unlock: function(d) {
+        var pb = ((d.typingPractice || {}).personalBest || {})['common-words'];
+        return pb && pb.wpm >= 15;
+      },
+      unlockHint: 'Reach 15 WPM on Common Words in Typing Practice',
+      baseDamage: 28,
+      critMultiplier: 2.1,
+      flavor: 'Ready words strike like arrows \u2014 precise, certain, and fast.',
+      challengeBank: [
+        { prompt: 'The word \u201cthe\u201d is the MOST common word in English. True or false?', options: ['true', 'false'], correctIndex: 0, explain: '\u201cThe\u201d ranks #1 by frequency in English corpora.' },
+        { prompt: 'High-frequency words that students should read without sounding out are called...', options: ['sight words', 'rhyme words', 'silent words', 'long words'], correctIndex: 0, explain: 'Sight words are recognized instantly \u2014 speeds up reading + writing.' },
+        { prompt: 'Which is an example of a compound word?', options: ['kindness', 'playground', 'running', 'quickly'], correctIndex: 1, explain: 'Compound = two whole words combined: play + ground.' },
+        { prompt: 'Reading fluency is measured by speed AND...', options: ['volume', 'accuracy + expression', 'handwriting', 'spelling only'], correctIndex: 1, explain: 'Fluent reading = accurate + paced + expressive (prosody).' },
+        { prompt: 'If a student types \u201cteh\u201d instead of \u201cthe,\u201d that\u2019s a...', options: ['transposition error', 'missed letter', 'capital letter problem', 'space error'], correctIndex: 0, explain: 'Transposition = two letters swapped. Common in fast typing.' },
+        { prompt: 'Which punctuation usually ends a sentence?', options: ['comma', 'period', 'apostrophe', 'colon'], correctIndex: 1, explain: 'Periods end declarative statements. Questions end with ? and strong emotion with !.' },
+        { prompt: 'The word \u201cIEP\u201d in schools stands for...', options: ['Incredible Education Plan', 'Individualized Education Program', 'International Exam Panel', 'Instructional Education Project'], correctIndex: 1, explain: 'IEP = federal plan for students receiving special education services.' }
+      ]
+    }
+  ];
+
+  // ═══════════════════════════════════════════════════════════════
+  // ENEMIES — expanded pool
+  // ═══════════════════════════════════════════════════════════════
+  var ENEMIES = [
+    { id: 'void_imp',     name: 'Void Imp',        icon: '\uD83D\uDC7E', hp: 40,  atk: 8,  flavor: 'A mischievous wisp of nothingness.' },
+    { id: 'data_gremlin', name: 'Data Gremlin',    icon: '\uD83D\uDC79', hp: 55,  atk: 11, flavor: 'Corrupts your grimoire if given the chance.' },
+    { id: 'star_wraith',  name: 'Star Wraith',     icon: '\uD83D\uDC7B', hp: 70,  atk: 14, flavor: 'A remnant of a collapsed star.' },
+    { id: 'rune_moth',    name: 'Rune Moth',       icon: '\uD83E\uDD8B', hp: 35,  atk: 10, flavor: 'Fragile but quick \u2014 flutters through logic.' },
+    { id: 'signal_shade', name: 'Signal Shade',    icon: '\uD83D\uDC7A', hp: 60,  atk: 12, flavor: 'A phantom of distorted transmission.' },
+    { id: 'glyph_golem',  name: 'Glyph Golem',     icon: '\uD83D\uDDFF', hp: 85,  atk: 13, flavor: 'Slow, heavy, inscribed with forgotten runes.' },
+    { id: 'spiral_spook', name: 'Spiral Spook',    icon: '\uD83C\uDF00', hp: 65,  atk: 12, flavor: 'A recursive echo that repeats itself.' },
+    // ── Bosses ──
+    { id: 'lichcopy',      name: 'The Lichcopy',    icon: '\uD83D\uDC80', hp: 120, atk: 18, flavor: 'A mirror-self of AlloBot gone cold.', boss: true },
+    { id: 'void_leviathan',name: 'Void Leviathan',  icon: '\uD83D\uDC32', hp: 140, atk: 17, flavor: 'A drifting titan of cosmic silence.', boss: true },
+    { id: 'paradox_clone', name: 'The Paradox Clone', icon: '\uD83D\uDD78\uFE0F', hp: 130, atk: 19, flavor: 'An impossible contradiction of AlloBot\u2019s runes.', boss: true }
+  ];
+
+  // ═══════════════════════════════════════════════════════════════
+  // SECTORS — themed expedition locations
+  // Each sector has a background gradient, essence multiplier, boss pool,
+  // and an unlock threshold (expeditions completed).
+  // ═══════════════════════════════════════════════════════════════
+  var SECTORS = [
+    {
+      id: 'crystal_nebula',
+      name: 'Crystal Nebula',
+      subtitle: 'Glittering dust and slow-moving shards',
+      bgGradient: 'linear-gradient(135deg, #1e1b4b 0%, #3b0764 100%)',
+      accent: '#a855f7',
+      essenceMult: 1.0,
+      bossPool: ['lichcopy'],
+      unlockAt: 0,
+      flavor: 'Where AlloBot first learned to spark a spell. Gentle, but full of lessons.'
+    },
+    {
+      id: 'whispering_archive',
+      name: 'Whispering Archive',
+      subtitle: 'A library of forgotten runes, guarded by words',
+      bgGradient: 'linear-gradient(135deg, #7c2d12 0%, #b45309 100%)',
+      accent: '#f59e0b',
+      essenceMult: 1.15,
+      bossPool: ['paradox_clone', 'lichcopy'],
+      unlockAt: 1,
+      flavor: 'Literary spells ring louder here. Pages turn on their own.'
+    },
+    {
+      id: 'ember_clockwork',
+      name: 'Ember Clockwork',
+      subtitle: 'Gears of starlight and tides of molten logic',
+      bgGradient: 'linear-gradient(135deg, #0c4a6e 0%, #0ea5e9 100%)',
+      accent: '#38bdf8',
+      essenceMult: 1.3,
+      bossPool: ['void_leviathan', 'paradox_clone'],
+      unlockAt: 3,
+      flavor: 'The hardest trials \u2014 but the richest essence. Masters only.'
+    }
+  ];
+
+  function sectorById(id) { for (var i = 0; i < SECTORS.length; i++) if (SECTORS[i].id === id) return SECTORS[i]; return SECTORS[0]; }
+
+  // ═══════════════════════════════════════════════════════════════
+  // Helpers
+  // ═══════════════════════════════════════════════════════════════
+  var ROOMS_PER_EXPEDITION = 3;
+  var PER_ROOM_ESSENCE = [6, 9, 18];       // reward per cleared room (last room = boss)
+  var SPELL_LEVEL_CAP = 5;
+  var DAMAGE_PER_LEVEL = 3;
+
+  function pickRandom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+  function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+  // Upgrade cost curve: lvl 1 = 10, lvl 2 = 15, lvl 3 = 20, lvl 4 = 25, lvl 5 = 30
+  function upgradeCost(currentLevel) { return 10 + currentLevel * 5; }
+  function getSpellDamage(spell, level) { return spell.baseDamage + (level || 0) * DAMAGE_PER_LEVEL; }
+
+  // Build a 3-room plan for a given sector.
+  // Room 0: combat (easy). Room 1: 40% shrine / 60% combat (scaled). Room 2: boss (from sector pool).
+  function buildRoomsPlan(sectorId) {
+    var sector = sectorById(sectorId);
+    var nonBoss = ENEMIES.filter(function(e) { return !e.boss; });
+    var bossCandidates = ENEMIES.filter(function(e) {
+      return e.boss && sector.bossPool.indexOf(e.id) !== -1;
+    });
+    if (bossCandidates.length === 0) bossCandidates = ENEMIES.filter(function(e) { return e.boss; });
+
+    function combatRoom(mult) {
+      var e = pickRandom(nonBoss);
+      return {
+        type: 'combat',
+        id: e.id, name: e.name, icon: e.icon, flavor: e.flavor,
+        hp: Math.round(e.hp * mult), maxHp: Math.round(e.hp * mult),
+        atk: e.atk, boss: false
+      };
+    }
+    function bossRoom() {
+      var e = pickRandom(bossCandidates);
+      return {
+        type: 'combat',
+        id: e.id, name: e.name, icon: e.icon, flavor: e.flavor,
+        hp: e.hp, maxHp: e.hp, atk: e.atk, boss: true
+      };
+    }
+    function shrineRoom() {
+      return {
+        type: 'shrine',
+        id: 'shrine',
+        name: 'Quiet Shrine',
+        icon: '\u26E9\uFE0F',
+        flavor: 'A pocket of stillness. The Spellforge\u2019s warmth reaches here.',
+        hp: 0, maxHp: 0, atk: 0, boss: false
+      };
+    }
+
+    var middle = Math.random() < 0.4 ? shrineRoom() : combatRoom(1.15);
+    return [ combatRoom(1.0), middle, bossRoom() ];
+  }
+
+  // Compute which spells are currently unlocked.
+  function computeUnlockedSpells(toolData) {
+    return SPELLBOOK.filter(function(s) { try { return !!s.unlock(toolData || {}); } catch(e) { return false; } }).map(function(s) { return s.id; });
+  }
+
+  // Compute spells newly unlocked since last visit (set difference vs seenSpells).
+  function computeNewlyUnlocked(toolData, seen) {
+    var unlocked = computeUnlockedSpells(toolData);
+    var seenSet = {};
+    (seen || []).forEach(function(id) { seenSet[id] = true; });
+    return unlocked.filter(function(id) { return !seenSet[id]; });
+  }
+
+  function findSpell(id) { for (var i = 0; i < SPELLBOOK.length; i++) if (SPELLBOOK[i].id === id) return SPELLBOOK[i]; return null; }
+
+  // ═══════════════════════════════════════════════════════════════
+  // Register tool
+  // ═══════════════════════════════════════════════════════════════
+  window.StemLab.registerTool('alloBotSage', {
+    icon: '\uD83E\uDDD9\u200D\u2642\uFE0F',
+    label: 'AlloBot: Starbound Sage',
+    desc: 'A cozy sci-fi roguelite where AlloBot\u2019s spells unlock as you master other STEM Lab tools. Cast by demonstrating what you learned.',
+    color: 'violet',
+    category: 'Games',
+    questHooks: [
+      { id: 'first_expedition',  label: 'Complete your first Expedition',  icon: '\u2728',        check: function(d) { return ((d.alloBotSage || {}).expeditionsCompleted || 0) >= 1; }, progress: function(d) { return ((d.alloBotSage || {}).expeditionsCompleted || 0) >= 1 ? 'Done!' : 'Not yet'; } },
+      { id: 'learn_3_spells',    label: 'Unlock 3 spells from other tools', icon: '\uD83D\uDCDC', check: function(d) { return computeUnlockedSpells(d).length >= 3; }, progress: function(d) { return computeUnlockedSpells(d).length + '/3'; } },
+      { id: 'cast_10',           label: 'Cast 10 spells across expeditions', icon: '\uD83D\uDD2E', check: function(d) { return ((d.alloBotSage || {}).totalCasts || 0) >= 10; }, progress: function(d) { return ((d.alloBotSage || {}).totalCasts || 0) + '/10'; } },
+      { id: 'crit_first',        label: 'Land a critical cast',              icon: '\u2B50',       check: function(d) { return ((d.alloBotSage || {}).critCasts || 0) >= 1; }, progress: function(d) { return ((d.alloBotSage || {}).critCasts || 0) >= 1 ? 'Done!' : 'Not yet'; } }
+    ],
+    render: function(ctx) {
+      var React = window.React;
+      var h = React.createElement;
+      var toolData = ctx.toolData || {};
+      var addToast = ctx.addToast || function() {};
+      var ArrowLeft = ctx.icons && ctx.icons.ArrowLeft;
+      var setStemLabTool = ctx.setStemLabTool || function() {};
+      var awardXP = ctx.awardXP || function() {};
+
+      var d = toolData.alloBotSage || {};
+
+      // Helpers to patch alloBotSage state.
+      function updSage(patch) { ctx.updateMulti('alloBotSage', patch); }
+      function updKey(k, v) { ctx.update('alloBotSage', k, v); }
+
+      // ── Persistent state ──
+      var phase            = d.phase || 'hub'; // hub | loadout | expedition | debrief
+      var essence          = d.essence || 0;
+      var expeditionsDone  = d.expeditionsCompleted || 0;
+      var totalCasts       = d.totalCasts || 0;
+      var critCasts        = d.critCasts || 0;
+      var seenSpells       = d.seenSpells || [];
+      var equippedLoadout  = d.equippedLoadout || [];
+
+      // ── Transient expedition state ──
+      var expedition       = d.expedition || null;
+      // expedition shape: { enemy: {id, hp, maxHp, atk, icon, name, flavor}, turn: 'player'|'enemy', log: [], playerHp, playerMaxHp }
+
+      // Unlock detection
+      var currentlyUnlocked = computeUnlockedSpells(toolData);
+      var newlyUnlocked = computeNewlyUnlocked(toolData, seenSpells);
+
+      // If new spells just appeared, fire toasts + mark them seen.
+      if (newlyUnlocked.length > 0 && phase === 'hub') {
+        newlyUnlocked.forEach(function(id) {
+          var s = findSpell(id);
+          if (!s) return;
+          try { addToast(s.icon + ' New rune! \u201c' + s.name + '\u201d sparks in your grimoire', 'success'); } catch(e) {}
+          announceSR('New spell unlocked: ' + s.name);
+        });
+        sfxUnlock();
+        var mergedSeen = seenSpells.concat(newlyUnlocked);
+        // Defer so we don't loop inside render — context deferSafe already wraps setToolData.
+        updKey('seenSpells', mergedSeen);
+      }
+
+      // ─────────────────────────────────────────────────
+      // ── Shared UI helpers
+      // ─────────────────────────────────────────────────
+      function backBtn(onClick, label) {
+        return h('button', {
+          onClick: onClick,
+          className: 'inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 focus:ring-2 focus:ring-violet-400 focus:outline-none',
+          'aria-label': label || 'Back'
+        }, ArrowLeft ? h(ArrowLeft, { className: 'w-3.5 h-3.5' }) : h('span', null, '\u2190'), h('span', null, label || 'Back'));
+      }
+
+      function spellCard(s, opts) {
+        opts = opts || {};
+        var unlocked = opts.unlocked;
+        var onClick = opts.onClick;
+        var equipped = opts.equipped;
+        return h('button', {
+          key: s.id,
+          onClick: onClick,
+          disabled: !unlocked && !opts.alwaysClickable,
+          className: 'text-left p-3 rounded-xl border-2 transition-all focus:outline-none focus:ring-2 focus:ring-violet-400 '
+            + (unlocked
+              ? (equipped ? 'border-violet-500 bg-violet-50' : 'border-slate-200 bg-white hover:border-violet-400 hover:bg-violet-50/50')
+              : 'border-slate-200 bg-slate-50 opacity-60 cursor-not-allowed'),
+          'aria-label': s.name + (unlocked ? (equipped ? ' (equipped)' : ' (unlocked)') : ' (locked: ' + s.unlockHint + ')'),
+          style: unlocked ? { boxShadow: '0 1px 0 ' + s.color + '20' } : {}
+        },
+          h('div', { className: 'flex items-center gap-2 mb-1' },
+            h('span', { className: 'text-2xl', 'aria-hidden': 'true', style: { filter: unlocked ? '' : 'grayscale(1)' } }, unlocked ? s.icon : '\uD83D\uDD12'),
+            h('span', { className: 'font-bold text-sm', style: { color: unlocked ? s.color : '#94a3b8' } }, s.name),
+            equipped && h('span', { className: 'ml-auto text-[10px] font-bold text-violet-600 uppercase tracking-wide' }, 'Equipped')
+          ),
+          h('div', { className: 'text-[11px] text-slate-500 leading-snug' },
+            unlocked
+              ? (s.sourceLabel + ' \u00b7 ' + s.baseDamage + ' dmg \u00b7 crit \u00d7' + s.critMultiplier.toFixed(1))
+              : ('Locked \u2014 ' + s.unlockHint)
+          ),
+          unlocked && h('div', { className: 'mt-1 text-[10px] italic text-slate-400 leading-snug' }, s.flavor)
+        );
+      }
+
+      // AlloBot avatar (simple inline SVG \u2014 wizard variant).
+      function allobotAvatar(mood) {
+        var moodColor = mood === 'cast' ? '#a855f7'
+                      : mood === 'hurt' ? '#ef4444'
+                      : mood === 'happy' ? '#34d399'
+                      : mood === 'sad' ? '#94a3b8'
+                      : '#6366f1';
+        var sadMouth = (mood === 'hurt' || mood === 'sad');
+        return h('svg', { viewBox: '0 0 120 140', className: 'abs-float', width: 96, height: 112, 'aria-hidden': 'true' },
+          h('defs', null,
+            h('radialGradient', { id: 'absVisor' },
+              h('stop', { offset: '0%', stopColor: '#67e8f9' }),
+              h('stop', { offset: '100%', stopColor: '#0e7490' })
+            )
+          ),
+          // Wizard hat
+          h('polygon', { points: '60,2 38,44 82,44', fill: '#4c1d95' }),
+          h('polygon', { points: '55,12 55,44 65,44 65,12', fill: '#7c3aed' }),
+          h('circle', { cx: 60, cy: 6, r: 3, fill: '#fbbf24' }),
+          // Body/robe
+          h('ellipse', { cx: 60, cy: 110, rx: 36, ry: 22, fill: '#4c1d95' }),
+          // Head
+          h('circle', { cx: 60, cy: 70, r: 28, fill: '#e0e7ff', stroke: moodColor, strokeWidth: 2 }),
+          // Visor
+          h('rect', { x: 40, y: 62, width: 40, height: 14, rx: 7, fill: 'url(#absVisor)' }),
+          // Eyes
+          h('circle', { cx: 50, cy: 69, r: 2.5, fill: '#fff' }),
+          h('circle', { cx: 70, cy: 69, r: 2.5, fill: '#fff' }),
+          // Mouth
+          h('path', { d: sadMouth ? 'M 52 82 Q 60 76 68 82' : 'M 52 80 Q 60 86 68 80', stroke: moodColor, strokeWidth: 2, fill: 'none', strokeLinecap: 'round' }),
+          // Wand
+          h('line', { x1: 92, y1: 96, x2: 116, y2: 66, stroke: '#78350f', strokeWidth: 3, strokeLinecap: 'round' }),
+          h('circle', { cx: 116, cy: 66, r: 5, fill: moodColor, className: 'abs-pulse' })
+        );
+      }
+
+      // ─────────────────────────────────────────────────
+      // ── PHASE: HUB (Spellforge)
+      // ─────────────────────────────────────────────────
+      if (phase === 'hub') {
+        var lockedSpells   = SPELLBOOK.filter(function(s) { return currentlyUnlocked.indexOf(s.id) === -1; });
+        var unlockedSpells = SPELLBOOK.filter(function(s) { return currentlyUnlocked.indexOf(s.id) !== -1; });
+
+        // ── Daily essence bonus ──
+        // Claimed once per calendar day (local time). Bonus scales with unique source tools mastered.
+        var todayStr = new Date().toISOString().slice(0, 10);
+        var lastClaim = d.dailyClaimedOn || null;
+        var dailyAvailable = lastClaim !== todayStr;
+        function claimDaily() {
+          var sourcesTouched = {};
+          unlockedSpells.forEach(function(s) { sourcesTouched[s.sourceTool] = true; });
+          var n = Math.max(1, Object.keys(sourcesTouched).length);
+          var bonus = 5 + n * 3;
+          sfxUnlock();
+          updSage({ dailyClaimedOn: todayStr, essence: essence + bonus, lastVisit: Date.now() });
+          addToast('\u2B50 Daily bonus: +' + bonus + ' essence (' + n + ' domains tended)', 'success');
+          announceSR('Daily bonus claimed: plus ' + bonus + ' essence.');
+        }
+
+        // ── AlloBot mood by time-since-visit ──
+        var nowMs = Date.now();
+        var daysSinceVisit = d.lastVisit ? (nowMs - d.lastVisit) / 86400000 : 0;
+        var visitMood = !d.lastVisit ? 'idle'
+                      : daysSinceVisit < 1 ? 'happy'
+                      : daysSinceVisit < 3 ? 'idle'
+                      : 'sad';
+        var greeting = !d.lastVisit
+          ? 'AlloBot gently hums \u2014 the Spellforge is waking for the first time.'
+          : daysSinceVisit < 0.1 ? 'AlloBot bobs excitedly \u2014 ready for another expedition?'
+          : daysSinceVisit < 1 ? 'AlloBot glances up from the grimoire. \u201cBack so soon? Wonderful.\u201d'
+          : daysSinceVisit < 3 ? 'AlloBot is quietly re-reading your spells, waiting for you.'
+          : daysSinceVisit < 7 ? 'AlloBot\u2019s visor dims slightly. They missed you.'
+          : 'AlloBot blinks awake. \u201cIt\u2019s been a while. I kept your grimoire safe.\u201d';
+
+        // Mark visit (fire-and-forget; throttled by setToolData\u2019s state equality)
+        if (!d.lastVisit || (nowMs - d.lastVisit) > 60000) {
+          updKey('lastVisit', nowMs);
+        }
+
+        // ── Trophy shelf: one trophy per source tool with unlocked spells ──
+        var sourceTally = {};
+        unlockedSpells.forEach(function(s) {
+          if (!sourceTally[s.sourceTool]) sourceTally[s.sourceTool] = { label: s.sourceLabel.split(' ')[0], icon: s.icon, count: 0, color: s.color };
+          sourceTally[s.sourceTool].count += 1;
+        });
+        // Canonical source-tool list (keeps empty slots visible as "Yet to earn")
+        var canonicalSources = [
+          { key: 'spaceExplorer',   label: 'Space Explorer',   icon: '\uD83C\uDF0C' },
+          { key: 'mathLab',         label: 'Math Lab',         icon: '\uD83D\uDD22' },
+          { key: 'roadReady',       label: 'RoadReady',        icon: '\uD83D\uDE97' },
+          { key: 'wordSounds',      label: 'Word Sounds',      icon: '\uD83D\uDD24' },
+          { key: 'writeCraft',      label: 'WriteCraft',       icon: '\u270D\uFE0F' },
+          { key: 'immersiveReader', label: 'Immersive Reader', icon: '\uD83D\uDCD6' }
+        ];
+
+        return h('div', { className: 'max-w-4xl mx-auto p-4 md:p-6 abs-fade' },
+          // Header
+          h('div', { className: 'flex items-center gap-3 mb-4' },
+            backBtn(function() { sfxClick(); setStemLabTool(null); }, 'Back to Lab'),
+            h('div', { className: 'flex-1' }),
+            h('div', { className: 'text-[10px] text-slate-500 font-semibold uppercase tracking-wider' }, 'Spellforge')
+          ),
+
+          // Hero row: AlloBot + headline
+          h('div', { className: 'rounded-2xl p-4 md:p-6 mb-4', style: { background: 'linear-gradient(135deg, #0f172a 0%, #4c1d95 100%)', color: 'white' } },
+            h('div', { className: 'flex items-center gap-4' },
+              allobotAvatar(visitMood),
+              h('div', { className: 'flex-1 min-w-0' },
+                h('h1', { className: 'text-xl md:text-2xl font-bold' }, 'AlloBot: Starbound Sage'),
+                h('p', { className: 'text-sm text-violet-200 mt-1 italic' }, greeting),
+                h('div', { className: 'flex flex-wrap gap-2 mt-3 text-xs' },
+                  h('div', { className: 'px-2.5 py-1 rounded-lg bg-white/10' }, '\u2728 ' + unlockedSpells.length + '/' + SPELLBOOK.length + ' spells'),
+                  h('div', { className: 'px-2.5 py-1 rounded-lg bg-white/10' }, '\uD83D\uDD2E ' + totalCasts + ' casts'),
+                  h('div', { className: 'px-2.5 py-1 rounded-lg bg-white/10' }, '\uD83C\uDF0C ' + expeditionsDone + ' expeditions'),
+                  h('div', { className: 'px-2.5 py-1 rounded-lg bg-amber-400/20 text-amber-200 font-semibold' }, '\u2B50 ' + essence + ' essence')
+                )
+              )
+            )
+          ),
+
+          // Daily bonus
+          dailyAvailable && unlockedSpells.length > 0 && h('button', {
+            onClick: claimDaily,
+            className: 'w-full mb-3 rounded-xl p-3 text-left border-2 border-amber-300 bg-gradient-to-r from-amber-50 to-yellow-50 hover:from-amber-100 hover:to-yellow-100 focus:ring-2 focus:ring-amber-400 focus:outline-none transition abs-pulse',
+            'aria-label': 'Claim daily essence bonus'
+          },
+            h('div', { className: 'flex items-center gap-3' },
+              h('div', { className: 'text-3xl' }, '\uD83C\uDF81'),
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'font-bold text-sm text-amber-900' }, 'Daily Bonus ready!'),
+                h('div', { className: 'text-[11px] text-amber-700' }, 'Essence scales with how many source tools you\u2019ve tended.')
+              ),
+              h('div', { className: 'text-amber-600 font-bold' }, '\u2192')
+            )
+          ),
+
+          // Call-to-action row
+          h('div', { className: 'flex flex-col md:flex-row gap-2 mb-5' },
+            unlockedSpells.length === 0
+              ? h('div', { className: 'rounded-xl p-4 bg-amber-50 border border-amber-200 text-sm text-amber-800 w-full' },
+                  h('strong', null, 'No spells yet! '),
+                  'Play any STEM Lab tool \u2014 Space Explorer, Math Lab, or RoadReady \u2014 to start earning spells. AlloBot is watching your progress.'
+                )
+              : [
+                  h('button', {
+                    key: 'expedition',
+                    onClick: function() {
+                      sfxClick();
+                      var defaults = unlockedSpells.slice(0, 3).map(function(s) { return s.id; });
+                      updSage({ phase: 'loadout', equippedLoadout: equippedLoadout.length >= 1 ? equippedLoadout : defaults });
+                    },
+                    className: 'flex-1 px-6 py-3 rounded-xl font-bold text-white bg-violet-600 hover:bg-violet-700 focus:ring-2 focus:ring-violet-400 focus:outline-none shadow-lg'
+                  }, '\uD83C\uDF0C Begin Expedition (3 rooms \u2192 boss)'),
+                  h('button', {
+                    key: 'shop',
+                    onClick: function() { sfxClick(); updKey('phase', 'shop'); },
+                    className: 'px-5 py-3 rounded-xl font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border-2 border-amber-200 focus:ring-2 focus:ring-amber-400 focus:outline-none'
+                  }, '\uD83D\uDD2E Spell Shop')
+                ]
+          ),
+
+          // Trophy shelf
+          unlockedSpells.length > 0 && h('section', { 'aria-label': 'Trophy shelf', className: 'mb-5' },
+            h('h2', { className: 'text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2' }, '\uD83C\uDFC6 Trophy Shelf'),
+            h('div', { className: 'rounded-xl p-3 border-2 border-amber-200/50 bg-gradient-to-b from-amber-50/50 to-white' },
+              h('div', { className: 'grid grid-cols-3 gap-2' },
+                canonicalSources.map(function(src) {
+                  var tally = sourceTally[src.key];
+                  var earned = !!tally && tally.count > 0;
+                  return h('div', {
+                    key: src.key,
+                    className: 'text-center p-2 rounded-lg ' + (earned ? 'bg-white border border-amber-200' : 'bg-slate-50 border border-dashed border-slate-300'),
+                    'aria-label': src.label + (earned ? ': ' + tally.count + ' spells earned' : ': no spells yet')
+                  },
+                    h('div', { className: 'text-2xl', style: { filter: earned ? '' : 'grayscale(1) opacity(0.5)' } }, src.icon),
+                    h('div', { className: 'text-[11px] font-bold mt-1 ' + (earned ? 'text-amber-900' : 'text-slate-400') }, src.label),
+                    h('div', { className: 'text-[10px] ' + (earned ? 'text-amber-700' : 'text-slate-400') },
+                      earned ? (tally.count + ' spell' + (tally.count > 1 ? 's' : '')) : 'yet to earn'
+                    )
+                  );
+                })
+              )
+            )
+          ),
+
+          // Grimoire
+          h('section', { 'aria-label': 'Grimoire', className: 'mb-4' },
+            h('h2', { className: 'text-sm font-bold text-slate-700 mb-2 flex items-center gap-2' },
+              h('span', null, '\uD83D\uDCDC Grimoire'),
+              unlockedSpells.length > 0 && h('span', { className: 'text-[10px] font-normal text-slate-500' },
+                '(' + unlockedSpells.length + ' unlocked)'
+              )
+            ),
+            unlockedSpells.length > 0 && h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2 mb-4' },
+              unlockedSpells.map(function(s) { return spellCard(s, { unlocked: true, onClick: function() {} }); })
+            ),
+            lockedSpells.length > 0 && h('div', null,
+              h('h3', { className: 'text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2' }, 'Yet to discover (' + lockedSpells.length + ')'),
+              h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
+                lockedSpells.map(function(s) { return spellCard(s, { unlocked: false }); })
+              )
+            )
+          )
+        );
+      }
+
+      // ─────────────────────────────────────────────────
+      // ── PHASE: LOADOUT
+      // ─────────────────────────────────────────────────
+      if (phase === 'loadout') {
+        var loadoutSet = {};
+        equippedLoadout.forEach(function(id) { loadoutSet[id] = true; });
+        var available = SPELLBOOK.filter(function(s) { return currentlyUnlocked.indexOf(s.id) !== -1; });
+        function toggleSpell(id) {
+          var next;
+          if (loadoutSet[id]) {
+            next = equippedLoadout.filter(function(x) { return x !== id; });
+          } else {
+            if (equippedLoadout.length >= 3) {
+              addToast('Loadout is full \u2014 unequip a spell first', 'info');
+              return;
+            }
+            next = equippedLoadout.concat([id]);
+          }
+          sfxClick();
+          updKey('equippedLoadout', next);
+        }
+        return h('div', { className: 'max-w-3xl mx-auto p-4 md:p-6 abs-fade' },
+          h('div', { className: 'flex items-center gap-3 mb-4' },
+            backBtn(function() { sfxClick(); updKey('phase', 'hub'); }, 'Back to Spellforge'),
+            h('div', { className: 'flex-1' }),
+            h('div', { className: 'text-[10px] text-slate-500 font-semibold uppercase tracking-wider' }, 'Loadout')
+          ),
+          h('h2', { className: 'text-lg font-bold mb-1' }, 'Choose your spells'),
+          h('p', { className: 'text-sm text-slate-500 mb-4' },
+            'Equip up to 3 spells. You can only cast equipped spells on this Expedition.'
+          ),
+          h('div', { className: 'mb-4 p-3 rounded-lg bg-violet-50 border border-violet-200 text-xs text-violet-900' },
+            h('strong', null, 'Equipped: '),
+            equippedLoadout.length,
+            '/3 '
+          ),
+
+          // Sector picker
+          h('section', { 'aria-label': 'Sector', className: 'mb-4' },
+            h('h3', { className: 'text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2' }, '\uD83C\uDF0C Choose a sector'),
+            h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-2' },
+              SECTORS.map(function(sec) {
+                var unlocked = expeditionsDone >= sec.unlockAt;
+                var selected = (d.selectedSector || 'crystal_nebula') === sec.id;
+                var labelAria = sec.name + (unlocked ? (selected ? ' (selected)' : ' (unlocked)') : ' (locked: complete ' + sec.unlockAt + ' expeditions)');
+                return h('button', {
+                  key: sec.id,
+                  disabled: !unlocked,
+                  onClick: function() {
+                    if (!unlocked) return;
+                    sfxClick();
+                    updKey('selectedSector', sec.id);
+                  },
+                  className: 'text-left p-3 rounded-xl border-2 transition focus:outline-none focus:ring-2 focus:ring-violet-400 '
+                    + (unlocked
+                      ? (selected ? 'border-violet-500' : 'border-slate-200 hover:border-violet-400')
+                      : 'border-slate-200 bg-slate-50 opacity-60 cursor-not-allowed'),
+                  style: unlocked
+                    ? { background: selected ? sec.bgGradient : '#fff', color: selected ? '#fff' : '#0f172a' }
+                    : {},
+                  'aria-label': labelAria
+                },
+                  h('div', { className: 'flex items-center gap-2' },
+                    h('div', { className: 'text-2xl', 'aria-hidden': 'true' }, unlocked ? '\uD83C\uDF0C' : '\uD83D\uDD12'),
+                    h('div', { className: 'flex-1 min-w-0' },
+                      h('div', { className: 'font-bold text-sm truncate' }, sec.name),
+                      h('div', { className: 'text-[10px] ' + (selected ? 'opacity-90' : 'text-slate-500') },
+                        unlocked
+                          ? ('Essence \u00d7' + sec.essenceMult.toFixed(2))
+                          : ('Clear ' + sec.unlockAt + ' expedition' + (sec.unlockAt > 1 ? 's' : '') + ' to unlock')
+                      )
+                    )
+                  ),
+                  h('div', { className: 'text-[10px] mt-1 ' + (selected ? 'opacity-90' : 'text-slate-500') + ' italic leading-snug' }, sec.subtitle)
+                );
+              })
+            )
+          ),
+
+          // Spells
+          h('h3', { className: 'text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2' }, '\uD83D\uDCDC Equip spells (' + equippedLoadout.length + '/3)'),
+          h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2 mb-5' },
+            available.map(function(s) {
+              return spellCard(s, {
+                unlocked: true,
+                equipped: !!loadoutSet[s.id],
+                onClick: function() { toggleSpell(s.id); }
+              });
+            })
+          ),
+          h('button', {
+            disabled: equippedLoadout.length === 0,
+            onClick: function() {
+              if (equippedLoadout.length === 0) return;
+              sfxClick();
+              var pickedSectorId = d.selectedSector || 'crystal_nebula';
+              var sector = sectorById(pickedSectorId);
+              var roomsPlan = buildRoomsPlan(sector.id);
+              var firstRoom = roomsPlan[0];
+              var exp = {
+                sectorId: sector.id,
+                sectorName: sector.name,
+                essenceMult: sector.essenceMult,
+                roomsPlan: roomsPlan,
+                roomIndex: 0,
+                roomsCleared: 0,
+                essenceEarned: 0,
+                enemy: Object.assign({}, firstRoom),
+                playerHp: 60, playerMaxHp: 60,
+                turn: 'player',
+                log: [
+                  { text: 'Expedition begins \u2014 sector: ' + sector.name + '.', kind: 'info' },
+                  firstRoom.type === 'shrine'
+                    ? { text: 'A ' + firstRoom.name + ' greets you. ' + firstRoom.flavor, kind: 'info' }
+                    : { text: 'A ' + firstRoom.name + ' materializes. ' + firstRoom.flavor, kind: 'info' }
+                ],
+                pendingCast: null
+              };
+              updSage({ phase: 'expedition', expedition: exp });
+              announceSR('Expedition begins in the ' + sector.name + '. ' + firstRoom.name + ' appears in room 1 of ' + ROOMS_PER_EXPEDITION + '.');
+            },
+            className: 'w-full py-3 rounded-xl font-bold text-white bg-violet-600 hover:bg-violet-700 disabled:bg-slate-300 disabled:cursor-not-allowed focus:ring-2 focus:ring-violet-400 focus:outline-none'
+          }, equippedLoadout.length === 0 ? 'Equip at least 1 spell' : '\u2728 Launch Expedition (3 rooms)')
+        );
+      }
+
+      // ─────────────────────────────────────────────────
+      // ── PHASE: EXPEDITION (single encounter MVP)
+      // ─────────────────────────────────────────────────
+      if (phase === 'expedition' && expedition) {
+        var exp = expedition;
+        var enemy = exp.enemy;
+        var pendingCast = exp.pendingCast || null;
+        var spellLevels = d.spellLevels || {};
+        var roomsPlan = exp.roomsPlan || [];
+        var roomIndex = exp.roomIndex || 0;
+        var totalRooms = roomsPlan.length || ROOMS_PER_EXPEDITION;
+        var isBossRoom = !!(enemy && enemy.boss);
+
+        function mutateExp(patch) { updKey('expedition', Object.assign({}, exp, patch)); }
+        function appendLog(entry) {
+          var nl = (exp.log || []).concat([entry]);
+          if (nl.length > 18) nl = nl.slice(-18);
+          mutateExp({ log: nl });
+        }
+
+        var sectorMult = (exp.essenceMult != null) ? exp.essenceMult : 1.0;
+        function scaledReward(baseReward) { return Math.max(1, Math.round(baseReward * sectorMult)); }
+
+        function finishExpedition(victory) {
+          var baseEarned = exp.essenceEarned || 0;
+          var bonus = victory ? scaledReward(5) : 0; // completion bonus for last boss
+          var reward = baseEarned + bonus;
+          announceSR(victory ? 'Expedition complete! +' + reward + ' essence earned.' : 'Expedition ended after ' + (exp.roomsCleared || 0) + ' rooms. +' + reward + ' essence earned.');
+          updSage({
+            phase: 'debrief',
+            expedition: Object.assign({}, exp, { result: victory ? 'victory' : 'defeat', reward: reward })
+          });
+          if (victory) {
+            sfxVictory();
+            updKey('expeditionsCompleted', expeditionsDone + 1);
+            try { awardXP('alloBotSage', 15 + (exp.roomsCleared || 0) * 3); } catch(e) {}
+          }
+          updKey('essence', essence + reward);
+        }
+
+        // Advance to the next room after clearing the current one.
+        // `clearReward` is the essence granted for clearing THIS room (0 by default).
+        function advanceRoom(clearReward) {
+          var clearedIdx = roomIndex;
+          var reward = clearReward || 0;
+          var nextIdx = clearedIdx + 1;
+          if (nextIdx >= totalRooms) {
+            return null;
+          }
+          var nextRoom = Object.assign({}, roomsPlan[nextIdx]);
+          var healAmount = Math.round(exp.playerMaxHp * 0.2);
+          var newPlayerHp = Math.min(exp.playerMaxHp, exp.playerHp + healAmount);
+          var roomLabel = (nextIdx + 1) + ' of ' + totalRooms + (nextRoom.boss ? ' (BOSS)' : nextRoom.type === 'shrine' ? ' (Shrine)' : '');
+          var nextLog = (exp.log || []).concat([
+            { text: '\u2728 Room ' + (clearedIdx + 1) + ' cleared! +' + reward + ' essence. (+' + healAmount + ' HP restored)', kind: 'player' },
+            { text: 'Room ' + roomLabel + ': ' + nextRoom.name + ' appears. ' + nextRoom.flavor, kind: (nextRoom.type === 'shrine' ? 'info' : 'info') }
+          ]);
+          if (nextLog.length > 18) nextLog = nextLog.slice(-18);
+          mutateExp({
+            roomIndex: nextIdx,
+            roomsCleared: (exp.roomsCleared || 0) + 1,
+            essenceEarned: (exp.essenceEarned || 0) + reward,
+            enemy: nextRoom,
+            playerHp: newPlayerHp,
+            turn: 'player',
+            pendingCast: null,
+            log: nextLog
+          });
+          announceSR('Room cleared. Room ' + roomLabel + ' begins. ' + nextRoom.name + '.');
+          return nextIdx;
+        }
+
+        // Shrine room: rest action (restore HP + small essence).
+        function restAtShrine() {
+          if (!enemy || enemy.type !== 'shrine') return;
+          sfxUnlock();
+          var healAmount = Math.round(exp.playerMaxHp * 0.35);
+          var newPlayerHp = Math.min(exp.playerMaxHp, exp.playerHp + healAmount);
+          var shrineEssence = scaledReward(3);
+          var entry = { text: '\u26E9\uFE0F Rested at the shrine (+' + healAmount + ' HP, +' + shrineEssence + ' essence).', kind: 'player' };
+          // Announce and advance.
+          mutateExp({ playerHp: newPlayerHp, log: (exp.log || []).concat([entry]) });
+          announceSR('Rested at shrine. Advancing.');
+          // Use advanceRoom so shrine "clear" counts toward roomsCleared + gives essence.
+          setTimeout(function() {
+            if (roomIndex < totalRooms - 1) {
+              advanceRoom(shrineEssence);
+            } else {
+              // Edge case (shouldn\u2019t happen \u2014 boss is always last): just finish.
+              mutateExp({ essenceEarned: (exp.essenceEarned || 0) + shrineEssence, roomsCleared: (exp.roomsCleared || 0) + 1 });
+              setTimeout(function() { finishExpedition(true); }, 80);
+            }
+          }, 600);
+        }
+
+        function enemyTurn() {
+          var dmg = Math.max(1, enemy.atk - Math.floor(Math.random() * 4));
+          var newHp = Math.max(0, exp.playerHp - dmg);
+          var entry = { text: enemy.name + ' strikes for ' + dmg + ' damage.', kind: 'enemy' };
+          var nextLog = (exp.log || []).concat([entry]);
+          if (nextLog.length > 18) nextLog = nextLog.slice(-18);
+          if (newHp <= 0) {
+            // Defeat path
+            mutateExp({ playerHp: 0, log: nextLog });
+            setTimeout(function() { finishExpedition(false); }, 600);
+            return;
+          }
+          mutateExp({ playerHp: newHp, turn: 'player', log: nextLog });
+          announceSR(entry.text + ' Your turn.');
+        }
+
+        // If we have a pendingCast, we're in the challenge overlay.
+        function startCast(spellId) {
+          var s = findSpell(spellId);
+          if (!s) return;
+          if (exp.turn !== 'player') return;
+          var challenge = pickRandom(s.challengeBank);
+          sfxCastReady();
+          mutateExp({
+            pendingCast: {
+              spellId: spellId,
+              challenge: challenge,
+              startedAt: Date.now(),
+              selectedIndex: null,
+              resolved: false
+            }
+          });
+          announceSR('Casting ' + s.name + '. ' + challenge.prompt);
+        }
+
+        function resolveChallenge(selectedIndex) {
+          if (!pendingCast || pendingCast.resolved) return;
+          var s = findSpell(pendingCast.spellId);
+          var challenge = pendingCast.challenge;
+          var lvl = spellLevels[s.id] || 0;
+          var leveledBase = getSpellDamage(s, lvl);
+          var elapsed = (Date.now() - pendingCast.startedAt) / 1000;
+          var correct = selectedIndex === challenge.correctIndex;
+          var fast = elapsed < 6;
+          var dmg = 0;
+          var result;
+          if (correct && fast) {
+            dmg = Math.round(leveledBase * s.critMultiplier);
+            result = 'crit';
+            sfxCastCrit();
+          } else if (correct) {
+            dmg = leveledBase;
+            result = 'hit';
+            sfxCastHit();
+          } else {
+            dmg = Math.floor(leveledBase / 3);
+            result = 'backfire';
+            sfxBackfire();
+          }
+          var newEnemyHp = Math.max(0, enemy.hp - dmg);
+          var lvlTag = lvl > 0 ? ' [Lv' + lvl + ']' : '';
+          var text;
+          if (result === 'crit') text = '\u2B50 CRITICAL ' + s.name + lvlTag + ' \u2014 ' + dmg + ' dmg! (' + elapsed.toFixed(1) + 's)';
+          else if (result === 'hit') text = s.name + lvlTag + ' strikes for ' + dmg + ' dmg.';
+          else text = '\u26A1 ' + s.name + lvlTag + ' backfires. Enemy grazed for ' + dmg + '. (' + challenge.explain + ')';
+          var nextLog = (exp.log || []).concat([{ text: text, kind: result === 'backfire' ? 'backfire' : 'player' }]);
+          if (nextLog.length > 18) nextLog = nextLog.slice(-18);
+
+          // Stats
+          updKey('totalCasts', totalCasts + 1);
+          if (result === 'crit') updKey('critCasts', critCasts + 1);
+
+          var nextEnemy = Object.assign({}, enemy, { hp: newEnemyHp });
+          mutateExp({
+            enemy: nextEnemy,
+            pendingCast: Object.assign({}, pendingCast, { selectedIndex: selectedIndex, resolved: true, damage: dmg, result: result }),
+            log: nextLog
+          });
+          announceSR(text);
+
+          setTimeout(function() {
+            if (newEnemyHp <= 0) {
+              var clearReward = scaledReward(PER_ROOM_ESSENCE[roomIndex] || 10);
+              if (roomIndex < totalRooms - 1) {
+                advanceRoom(clearReward);
+              } else {
+                // Final room cleared \u2192 expedition victory
+                mutateExp({
+                  pendingCast: null,
+                  roomsCleared: (exp.roomsCleared || 0) + 1,
+                  essenceEarned: (exp.essenceEarned || 0) + clearReward
+                });
+                setTimeout(function() { finishExpedition(true); }, 100);
+              }
+              return;
+            }
+            // Enemy turn
+            mutateExp({ pendingCast: null, turn: 'enemy' });
+            setTimeout(function() { enemyTurn(); }, 550);
+          }, 1400);
+        }
+
+        // ── Render encounter ──
+        var enemyPct = Math.round((enemy.hp / enemy.maxHp) * 100);
+        var playerPct = Math.round((exp.playerHp / exp.playerMaxHp) * 100);
+
+        return h('div', { className: 'max-w-3xl mx-auto p-4 md:p-6 abs-fade' },
+          // Top bar
+          h('div', { className: 'flex items-center gap-3 mb-3' },
+            h('button', {
+              onClick: function() {
+                if (confirm('Abandon this Expedition? Progress in this run will be lost.')) {
+                  sfxClick();
+                  updSage({ phase: 'hub', expedition: null });
+                }
+              },
+              className: 'text-xs font-semibold text-slate-500 hover:text-slate-800 underline'
+            }, 'Abandon'),
+            h('div', { className: 'flex-1 text-center' },
+              h('div', { className: 'text-[10px] font-bold uppercase tracking-widest text-violet-600' },
+                (exp.sectorName || 'Expedition')
+                + (enemy && enemy.type === 'shrine' ? ' \u00b7 Shrine'
+                    : isBossRoom ? ' \u00b7 Boss'
+                    : '')
+              ),
+              h('div', { className: 'flex items-center justify-center gap-1 mt-0.5', 'aria-label': 'Room ' + (roomIndex + 1) + ' of ' + totalRooms },
+                roomsPlan.map(function(_r, i) {
+                  var cleared = i < (exp.roomsCleared || 0);
+                  var current = i === roomIndex;
+                  return h('span', {
+                    key: 'room-' + i,
+                    className: 'inline-block w-2.5 h-2.5 rounded-full ' + (cleared ? 'bg-emerald-500' : current ? 'bg-violet-500 abs-pulse' : 'bg-slate-300'),
+                    'aria-hidden': 'true'
+                  });
+                }),
+                h('span', { className: 'ml-2 text-[10px] text-slate-500' }, 'Room ' + (roomIndex + 1) + '/' + totalRooms)
+              )
+            ),
+            h('div', { className: 'text-xs text-slate-500' }, 'Turn: ', h('span', { className: 'font-bold ' + (exp.turn === 'player' ? 'text-violet-600' : 'text-red-600') }, exp.turn === 'player' ? 'You' : enemy.name))
+          ),
+
+          // Battlefield (sector-tinted gradient)
+          enemy.type !== 'shrine' && h('div', { className: 'rounded-2xl p-5 mb-3', style: { background: (sectorById(exp.sectorId).bgGradient || 'linear-gradient(135deg, #1e1b4b 0%, #3b0764 100%)'), color: 'white' } },
+            h('div', { className: 'flex items-center justify-between gap-4' },
+              // Player
+              h('div', { className: 'text-center flex-1' },
+                allobotAvatar(exp.playerHp < exp.playerMaxHp * 0.3 ? 'hurt' : 'happy'),
+                h('div', { className: 'text-xs font-bold mt-1' }, 'AlloBot'),
+                h('div', { className: 'w-full h-2 bg-white/20 rounded-full mt-1 overflow-hidden' },
+                  h('div', {
+                    className: 'h-full transition-all',
+                    style: { width: playerPct + '%', background: playerPct > 50 ? '#34d399' : playerPct > 25 ? '#fbbf24' : '#ef4444' }
+                  })
+                ),
+                h('div', { className: 'text-[10px] mt-0.5 text-violet-200' }, exp.playerHp + ' / ' + exp.playerMaxHp + ' HP')
+              ),
+              h('div', { className: 'text-3xl text-violet-300 abs-pulse', 'aria-hidden': 'true' }, 'VS'),
+              // Enemy
+              h('div', { className: 'text-center flex-1' },
+                h('div', { className: 'text-6xl abs-float', style: { filter: enemy.hp < enemy.maxHp * 0.3 ? 'hue-rotate(-30deg)' : '' } }, enemy.icon),
+                h('div', { className: 'text-xs font-bold mt-1' }, enemy.name),
+                h('div', { className: 'w-full h-2 bg-white/20 rounded-full mt-1 overflow-hidden' },
+                  h('div', {
+                    className: 'h-full transition-all',
+                    style: { width: enemyPct + '%', background: '#ef4444' }
+                  })
+                ),
+                h('div', { className: 'text-[10px] mt-0.5 text-violet-200' }, enemy.hp + ' / ' + enemy.maxHp + ' HP')
+              )
+            ),
+            h('p', { className: 'text-[11px] text-center text-violet-200 mt-3 italic' }, enemy.flavor)
+          ),
+
+          // Shrine room (peaceful \u2014 rest + small essence)
+          enemy.type === 'shrine' && h('div', { className: 'rounded-2xl p-6 mb-3 text-center', style: { background: 'linear-gradient(135deg, #064e3b 0%, #14b8a6 100%)', color: 'white' } },
+            h('div', { className: 'flex items-center justify-center gap-6 mb-3' },
+              allobotAvatar(exp.playerHp < exp.playerMaxHp * 0.5 ? 'idle' : 'happy'),
+              h('div', { className: 'text-7xl abs-float', 'aria-hidden': 'true' }, enemy.icon)
+            ),
+            h('h3', { className: 'text-lg font-bold' }, enemy.name),
+            h('p', { className: 'text-sm text-emerald-100 italic mt-1 mb-4' }, enemy.flavor),
+            h('div', { className: 'flex flex-wrap gap-2 justify-center mb-4' },
+              h('div', { className: 'px-3 py-1.5 rounded-lg bg-white/15 text-xs' }, '+' + Math.round(exp.playerMaxHp * 0.35) + ' HP'),
+              h('div', { className: 'px-3 py-1.5 rounded-lg bg-amber-400/20 text-amber-100 text-xs font-bold' }, '+' + scaledReward(3) + ' \u2B50 Essence')
+            ),
+            h('button', {
+              onClick: function() { restAtShrine(); },
+              className: 'px-6 py-2.5 rounded-xl font-bold text-emerald-800 bg-white hover:bg-emerald-50 focus:ring-2 focus:ring-white focus:outline-none shadow-lg'
+            }, '\u26E9\uFE0F Rest at the shrine')
+          ),
+
+          // Spell bar (combat rooms only, player turn, no active cast)
+          enemy.type !== 'shrine' && exp.turn === 'player' && !pendingCast && h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-2 mb-3' },
+            equippedLoadout.map(function(id) {
+              var s = findSpell(id);
+              if (!s) return null;
+              var lvl = spellLevels[s.id] || 0;
+              var leveledDmg = getSpellDamage(s, lvl);
+              return h('button', {
+                key: id,
+                onClick: function() { startCast(id); },
+                className: 'p-3 rounded-xl border-2 border-slate-200 bg-white hover:border-violet-500 hover:bg-violet-50 focus:ring-2 focus:ring-violet-400 focus:outline-none transition text-left',
+                style: { borderLeft: '4px solid ' + s.color },
+                'aria-label': 'Cast ' + s.name + ' (Level ' + lvl + ') \u2014 ' + leveledDmg + ' base damage'
+              },
+                h('div', { className: 'flex items-center gap-2' },
+                  h('span', { className: 'text-xl' }, s.icon),
+                  h('div', { className: 'flex-1 min-w-0' },
+                    h('div', { className: 'font-bold text-sm flex items-center gap-1', style: { color: s.color } },
+                      s.name,
+                      lvl > 0 && h('span', { className: 'text-[9px] px-1 py-0.5 rounded bg-amber-100 text-amber-700 font-bold' }, 'Lv' + lvl)
+                    ),
+                    h('div', { className: 'text-[10px] text-slate-500' }, leveledDmg + ' dmg \u00b7 ' + s.sourceLabel)
+                  )
+                )
+              );
+            })
+          ),
+
+          // Cast challenge overlay
+          pendingCast && (function() {
+            var s = findSpell(pendingCast.spellId);
+            var c = pendingCast.challenge;
+            var resolved = pendingCast.resolved;
+            return h('div', {
+              className: 'rounded-2xl p-4 mb-3 border-2 abs-fade',
+              style: {
+                borderColor: s.color,
+                background: 'linear-gradient(135deg, #fff 0%, ' + s.color + '15 100%)'
+              }
+            },
+              h('div', { className: 'flex items-center gap-2 mb-2' },
+                h('span', { className: 'text-2xl abs-spin', 'aria-hidden': 'true' }, s.icon),
+                h('div', null,
+                  h('div', { className: 'text-[10px] font-bold uppercase tracking-widest', style: { color: s.color } }, 'Casting'),
+                  h('div', { className: 'text-base font-bold', style: { color: s.color } }, s.name)
+                ),
+                h('div', { className: 'ml-auto text-[10px] text-slate-500' }, 'Faster + correct = critical!')
+              ),
+              h('p', { className: 'text-sm font-semibold text-slate-800 mb-3', role: 'group', 'aria-label': 'Challenge prompt' }, c.prompt),
+              h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
+                c.options.map(function(opt, i) {
+                  var isSelected = resolved && pendingCast.selectedIndex === i;
+                  var isCorrect = resolved && i === c.correctIndex;
+                  return h('button', {
+                    key: i,
+                    disabled: resolved,
+                    onClick: function() { if (!resolved) resolveChallenge(i); },
+                    className: 'text-left px-3 py-2.5 rounded-lg border-2 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-violet-400 '
+                      + (resolved
+                        ? (isCorrect ? 'border-emerald-400 bg-emerald-50 text-emerald-900'
+                          : (isSelected ? 'border-red-400 bg-red-50 text-red-900' : 'border-slate-200 bg-slate-50 text-slate-400'))
+                        : 'border-slate-300 bg-white hover:border-violet-500 hover:bg-violet-50')
+                  },
+                    h('span', { className: 'inline-block w-6 h-6 mr-2 rounded-full text-[11px] font-bold text-center leading-6 ' + (resolved && isCorrect ? 'bg-emerald-500 text-white' : resolved && isSelected ? 'bg-red-500 text-white' : 'bg-slate-200 text-slate-600') }, String.fromCharCode(65 + i)),
+                    opt
+                  );
+                })
+              ),
+              resolved && h('div', { className: 'mt-3 p-2 rounded-lg bg-slate-50 text-[11px] text-slate-700' },
+                h('strong', null, pendingCast.result === 'crit' ? 'Critical hit!' : pendingCast.result === 'hit' ? 'Hit.' : 'Backfire.'),
+                ' ', c.explain
+              )
+            );
+          })(),
+
+          // Log
+          h('div', { className: 'rounded-xl bg-slate-50 border border-slate-200 p-3 max-h-40 overflow-y-auto' },
+            h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1' }, 'Log'),
+            (exp.log || []).slice().reverse().slice(0, 8).map(function(entry, i) {
+              var color = entry.kind === 'player' ? 'text-violet-700'
+                        : entry.kind === 'enemy'  ? 'text-red-700'
+                        : entry.kind === 'backfire' ? 'text-amber-700'
+                        : 'text-slate-600';
+              return h('div', { key: i, className: 'text-xs leading-snug ' + color }, entry.text);
+            })
+          )
+        );
+      }
+
+      // ─────────────────────────────────────────────────
+      // ── PHASE: DEBRIEF
+      // ─────────────────────────────────────────────────
+      if (phase === 'debrief' && expedition) {
+        var result = expedition.result || 'victory';
+        var reward = expedition.reward || 0;
+        var roomsCleared = expedition.roomsCleared || 0;
+        var totalRoomsD = (expedition.roomsPlan || []).length || ROOMS_PER_EXPEDITION;
+        return h('div', { className: 'max-w-2xl mx-auto p-4 md:p-6 text-center abs-fade' },
+          h('div', {
+            className: 'rounded-2xl p-6 mb-4',
+            style: {
+              background: result === 'victory'
+                ? 'linear-gradient(135deg, #065f46 0%, #10b981 100%)'
+                : 'linear-gradient(135deg, #7c2d12 0%, #ea580c 100%)',
+              color: 'white'
+            }
+          },
+            h('div', { className: 'text-6xl mb-2 abs-pulse' }, result === 'victory' ? '\u2728' : '\uD83D\uDCA5'),
+            h('h2', { className: 'text-2xl font-bold mb-1' }, result === 'victory' ? 'Expedition Complete' : 'Valiant Effort'),
+            h('p', { className: 'text-sm opacity-90 mb-2' },
+              result === 'victory'
+                ? 'You cleared all ' + totalRoomsD + ' rooms of the ' + (expedition.sectorName || 'sector') + '. AlloBot returns with new understanding.'
+                : 'Cleared ' + roomsCleared + '/' + totalRoomsD + ' rooms. The Spellforge heals AlloBot. Your runes remain \u2014 try again when ready.'
+            ),
+            h('div', { className: 'inline-flex gap-1 mb-3 justify-center', 'aria-hidden': 'true' },
+              Array.from({ length: totalRoomsD }).map(function(_r, i) {
+                var cleared = i < roomsCleared;
+                return h('span', {
+                  key: 'debrief-room-' + i,
+                  className: 'inline-block w-3 h-3 rounded-full ' + (cleared ? 'bg-white' : 'bg-white/30')
+                });
+              })
+            ),
+            h('div', { className: 'mt-1 inline-block px-4 py-2 rounded-xl bg-white/20 font-bold text-lg' }, '+' + reward + ' \u2B50 Essence')
+          ),
+          h('div', { className: 'grid grid-cols-3 gap-2 mb-4 text-sm' },
+            h('div', { className: 'p-3 rounded-xl bg-slate-50 border border-slate-200' },
+              h('div', { className: 'text-[10px] font-bold text-slate-500 uppercase' }, 'Total Casts'),
+              h('div', { className: 'text-xl font-bold text-violet-600' }, totalCasts)
+            ),
+            h('div', { className: 'p-3 rounded-xl bg-slate-50 border border-slate-200' },
+              h('div', { className: 'text-[10px] font-bold text-slate-500 uppercase' }, 'Critical Casts'),
+              h('div', { className: 'text-xl font-bold text-amber-600' }, critCasts)
+            ),
+            h('div', { className: 'p-3 rounded-xl bg-slate-50 border border-slate-200' },
+              h('div', { className: 'text-[10px] font-bold text-slate-500 uppercase' }, 'Rooms Cleared'),
+              h('div', { className: 'text-xl font-bold text-emerald-600' }, roomsCleared + '/' + totalRoomsD)
+            )
+          ),
+          h('div', { className: 'flex flex-wrap gap-2 justify-center' },
+            h('button', {
+              onClick: function() { sfxClick(); updSage({ phase: 'hub', expedition: null }); },
+              className: 'px-5 py-2.5 rounded-xl font-bold text-white bg-violet-600 hover:bg-violet-700 focus:ring-2 focus:ring-violet-400 focus:outline-none'
+            }, 'Return to Spellforge'),
+            h('button', {
+              onClick: function() { sfxClick(); updSage({ phase: 'shop', expedition: null }); },
+              className: 'px-5 py-2.5 rounded-xl font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 focus:ring-2 focus:ring-amber-400 focus:outline-none'
+            }, '\u2B50 Visit Spell Shop'),
+            h('button', {
+              onClick: function() { sfxClick(); updSage({ phase: 'loadout', expedition: null }); },
+              className: 'px-5 py-2.5 rounded-xl font-bold text-violet-600 bg-violet-50 hover:bg-violet-100 border border-violet-200 focus:ring-2 focus:ring-violet-400 focus:outline-none'
+            }, 'Another Expedition')
+          )
+        );
+      }
+
+      // ─────────────────────────────────────────────────
+      // ── PHASE: SHOP (spend essence to upgrade spells)
+      // ─────────────────────────────────────────────────
+      if (phase === 'shop') {
+        var spellLvls = d.spellLevels || {};
+        var unlockedSpells2 = SPELLBOOK.filter(function(s) { return currentlyUnlocked.indexOf(s.id) !== -1; });
+
+        function upgrade(spellId) {
+          var s = findSpell(spellId);
+          if (!s) return;
+          var lvl = spellLvls[spellId] || 0;
+          if (lvl >= SPELL_LEVEL_CAP) { addToast(s.name + ' is already at max level', 'info'); return; }
+          var cost = upgradeCost(lvl);
+          if (essence < cost) { addToast('Need ' + cost + ' essence (you have ' + essence + ')', 'error'); return; }
+          sfxUnlock();
+          var newLvls = Object.assign({}, spellLvls);
+          newLvls[spellId] = lvl + 1;
+          updSage({ spellLevels: newLvls, essence: essence - cost });
+          addToast('\u2728 ' + s.name + ' \u2192 Lv' + (lvl + 1), 'success');
+          announceSR(s.name + ' upgraded to level ' + (lvl + 1) + '.');
+        }
+
+        return h('div', { className: 'max-w-3xl mx-auto p-4 md:p-6 abs-fade' },
+          h('div', { className: 'flex items-center gap-3 mb-4' },
+            backBtn(function() { sfxClick(); updKey('phase', 'hub'); }, 'Back to Spellforge'),
+            h('div', { className: 'flex-1' }),
+            h('div', { className: 'text-[10px] text-slate-500 font-semibold uppercase tracking-wider' }, 'Spell Shop')
+          ),
+          h('div', { className: 'rounded-2xl p-4 mb-4', style: { background: 'linear-gradient(135deg, #78350f 0%, #f59e0b 100%)', color: 'white' } },
+            h('div', { className: 'flex items-center gap-3' },
+              h('div', { className: 'text-4xl abs-float' }, '\uD83D\uDD2E'),
+              h('div', { className: 'flex-1' },
+                h('h1', { className: 'text-xl font-bold' }, 'Etching Workshop'),
+                h('p', { className: 'text-sm text-amber-100 mt-1' }, 'Spend essence to deepen the runes of each spell. Higher levels = more base damage + bigger crits.')
+              ),
+              h('div', { className: 'text-right' },
+                h('div', { className: 'text-[10px] font-bold text-amber-200 uppercase' }, 'Essence'),
+                h('div', { className: 'text-2xl font-bold' }, '\u2B50 ' + essence)
+              )
+            )
+          ),
+          unlockedSpells2.length === 0
+            ? h('div', { className: 'rounded-xl p-6 text-center bg-slate-50 border border-slate-200 text-sm text-slate-600' },
+                'No spells to upgrade yet. Unlock spells by playing other STEM Lab tools.'
+              )
+            : h('div', { className: 'space-y-2' },
+                unlockedSpells2.map(function(s) {
+                  var lvl = spellLvls[s.id] || 0;
+                  var maxed = lvl >= SPELL_LEVEL_CAP;
+                  var cost = maxed ? 0 : upgradeCost(lvl);
+                  var canAfford = essence >= cost;
+                  var currentDmg = getSpellDamage(s, lvl);
+                  var nextDmg = maxed ? currentDmg : getSpellDamage(s, lvl + 1);
+                  return h('div', {
+                    key: s.id,
+                    className: 'flex items-center gap-3 p-3 rounded-xl border-2 border-slate-200 bg-white',
+                    style: { borderLeft: '4px solid ' + s.color }
+                  },
+                    h('span', { className: 'text-2xl' }, s.icon),
+                    h('div', { className: 'flex-1 min-w-0' },
+                      h('div', { className: 'font-bold text-sm flex items-center gap-1', style: { color: s.color } },
+                        s.name,
+                        lvl > 0 && h('span', { className: 'text-[9px] px-1 py-0.5 rounded bg-amber-100 text-amber-700 font-bold' }, 'Lv' + lvl),
+                        maxed && h('span', { className: 'text-[9px] px-1 py-0.5 rounded bg-emerald-100 text-emerald-700 font-bold' }, 'MAX')
+                      ),
+                      h('div', { className: 'text-[11px] text-slate-500' }, s.sourceLabel),
+                      // Level pips
+                      h('div', { className: 'flex gap-1 mt-1' },
+                        Array.from({ length: SPELL_LEVEL_CAP }).map(function(_p, i) {
+                          return h('span', {
+                            key: 'pip-' + i,
+                            className: 'inline-block w-3 h-2 rounded-sm ' + (i < lvl ? '' : 'bg-slate-200'),
+                            style: i < lvl ? { background: s.color } : {},
+                            'aria-hidden': 'true'
+                          });
+                        })
+                      )
+                    ),
+                    h('div', { className: 'text-right' },
+                      h('div', { className: 'text-[10px] text-slate-500' }, 'Damage'),
+                      h('div', { className: 'text-sm font-bold' },
+                        maxed
+                          ? h('span', { style: { color: s.color } }, currentDmg)
+                          : h('span', null,
+                              h('span', { className: 'text-slate-600' }, currentDmg),
+                              h('span', { className: 'text-slate-400 mx-1' }, '\u2192'),
+                              h('span', { style: { color: s.color } }, nextDmg)
+                            )
+                      )
+                    ),
+                    h('button', {
+                      disabled: maxed || !canAfford,
+                      onClick: function() { upgrade(s.id); },
+                      className: 'px-3 py-2 rounded-lg font-bold text-xs focus:ring-2 focus:ring-amber-400 focus:outline-none '
+                        + (maxed
+                          ? 'bg-emerald-100 text-emerald-700 cursor-default'
+                          : canAfford
+                            ? 'bg-amber-500 hover:bg-amber-600 text-white'
+                            : 'bg-slate-100 text-slate-400 cursor-not-allowed'),
+                      'aria-label': maxed ? s.name + ' is maxed' : 'Upgrade ' + s.name + ' for ' + cost + ' essence'
+                    }, maxed ? 'Maxed' : ('\u2B50 ' + cost))
+                  );
+                })
+              )
+        );
+      }
+
+      // Fallback
+      return h('div', { className: 'text-center p-6 text-slate-600 text-sm' }, 'Loading AlloBot Sage...');
+    }
+  });
+
+  console.log('[StemLab Plugin] Loaded: stem_lab/stem_tool_allobotsage.js');
+})();
+
+} // end dedup guard

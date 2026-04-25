@@ -1379,7 +1379,7 @@ const d = labToolData.artStudio || {};
                 ].map(function(tool) {
                   return React.createElement("div", { key: tool.name, className: "bg-white rounded-lg p-2 border border-slate-100 text-center shadow-sm hover:shadow-md transition-shadow cursor-default" },
                     React.createElement("div", { className: "text-lg" }, tool.icon),
-                    React.createElement("div", { className: "text-[9px] font-bold text-slate-700 mt-0.5" }, tool.name),
+                    React.createElement("div", { className: "text-[10px] font-bold text-slate-700 mt-0.5" }, tool.name),
                     React.createElement("div", { className: "text-[8px] text-slate-500 mt-0.5 leading-tight" }, tool.desc)
                   );
                 })

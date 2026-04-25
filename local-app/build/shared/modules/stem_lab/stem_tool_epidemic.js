@@ -46,7 +46,7 @@ window.StemLab = window.StemLab || {
   function sfxEpClick() { epTone(600, 0.03, 'sine', 0.04); }
 
   // WCAG 2.1 AA: Accessibility CSS
-  if (!document.getElementById('ep-a11y-css')) { var _s = document.createElement('style'); _s.id = 'ep-a11y-css'; _s.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .text-slate-400 { color: #64748b !important; }'; document.head.appendChild(_s); }
+  if (!document.getElementById('ep-a11y-css')) { var _s = document.createElement('style'); _s.id = 'ep-a11y-css'; _s.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .text-slate-200 { color: #64748b !important; }'; document.head.appendChild(_s); }
 
 
   // ═══════════════════════════════════════════════════════
@@ -885,7 +885,7 @@ window.StemLab = window.StemLab || {
       function slider(label, value, min, max, step, key, fmt) {
         return h('div', { className: 'space-y-1' },
           h('div', { className: 'flex justify-between items-center' },
-            h('span', { className: 'text-[10px] font-bold text-slate-500 uppercase tracking-wide' }, label),
+            h('span', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wide' }, label),
             h('span', { className: 'text-xs font-mono font-bold', style: { color: key === 'r0' ? r0Color(value) : '#334155' } }, fmt ? fmt(value) : value)
           ),
           h('input', {
@@ -1231,7 +1231,7 @@ window.StemLab = window.StemLab || {
               h('span', { className: 'text-2xl' }, '\uD83E\uDDA0'),
               h('div', null,
                 h('h3', { className: 'text-base font-bold text-slate-800' }, 'Epidemic Modeling Lab'),
-                h('p', { className: 'text-[10px] text-slate-500' }, gradeText(gradeBand,
+                h('p', { className: 'text-[11px] text-slate-600' }, gradeText(gradeBand,
                   'Watch how germs spread!',
                   'Model how diseases move through populations',
                   'Simulate SIR/SEIR compartmental models',
@@ -1263,19 +1263,19 @@ window.StemLab = window.StemLab || {
         // ── Disease presets (shared across SIR/SEIR/R0/Vaccination) ──
         (tab === 'sir' || tab === 'seir' || tab === 'r0explorer' || tab === 'vaccination' || tab === 'interventions') &&
         h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: glassCard },
-          h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-2' }, 'Disease Presets'),
+          h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wide mb-2' }, 'Disease Presets'),
           h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-1.5' },
             PRESETS.map(function(p, idx) {
               var active = selectedPreset === idx;
               return h('button', { 'aria-label': 'Apply Preset',
                 key: p.name,
                 onClick: function() { applyPreset(idx); },
-                className: 'px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all ' + (active ? 'text-white shadow-md' : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'),
+                className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ' + (active ? 'text-white shadow-md' : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'),
                 style: active ? { backgroundColor: p.color } : {}
               }, p.name);
             })
           ),
-          h('p', { className: 'text-[10px] text-slate-500 mt-1 italic' }, PRESETS[selectedPreset].desc)
+          h('p', { className: 'text-[11px] text-slate-600 mt-1 italic' }, PRESETS[selectedPreset].desc)
         ),
 
         // ═══════════════════════════════════════════
@@ -1284,7 +1284,7 @@ window.StemLab = window.StemLab || {
         tab === 'sir' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4' },
           // Sliders
           h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: glassCard + ' space-y-3' },
-            h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase tracking-wide' }, 'Parameters'),
+            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wide' }, 'Parameters'),
             slider('R\u2080 (Basic Reproduction Number)', r0, 0.5, 12, 0.1, 'r0', function(v) { return v.toFixed(1); }),
             slider('Vaccination Rate (%)', vaccRate, 0, 95, 1, 'vaccRate', function(v) { return v + '%'; }),
             slider('Infectious Period (days)', infectPeriod, 2, 30, 1, 'infectPeriod'),
@@ -1293,7 +1293,7 @@ window.StemLab = window.StemLab || {
           ),
           // Chart
           h('div', { className: glassCard },
-            h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-2' }, 'SIR Curves'),
+            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wide mb-2' }, 'SIR Curves'),
             renderSVGChart(sirData, ['S', 'I', 'R'])
           ),
           // Stats
@@ -1305,19 +1305,19 @@ window.StemLab = window.StemLab || {
               { label: 'Herd Threshold', value: herdThresh.toFixed(0) + '%', sub: vaccRate >= herdThresh && herdThresh > 0 ? '\u2705 Achieved' : 'Not yet', color: '#6366f1' }
             ].map(function(s) {
               return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: s.label, className: glassCard + ' text-center' },
-                h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase' }, s.label),
+                h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, s.label),
                 h('p', { className: 'text-lg font-bold', style: { color: s.color } }, s.value),
-                h('p', { className: 'text-[10px] text-slate-500' }, s.sub)
+                h('p', { className: 'text-[11px] text-slate-600' }, s.sub)
               );
             })
           ),
           // Particle sim
           h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: glassCard },
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-between mb-2' },
-              h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase tracking-wide' }, 'Particle Simulation'),
+              h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wide' }, 'Particle Simulation'),
               h('button', { 'aria-label': 'Change particle running',
                 onClick: function() { upd('particleRunning', !particleRunning); },
-                className: 'px-3 py-1 text-[10px] font-bold rounded-lg ' + (particleRunning ? 'bg-red-100 text-red-600' : 'bg-emerald-100 text-emerald-600')
+                className: 'px-3 py-1 text-[11px] font-bold rounded-lg ' + (particleRunning ? 'bg-red-100 text-red-600' : 'bg-emerald-100 text-emerald-600')
               }, particleRunning ? '\u23F9 Stop' : '\u25B6 Start')
             ),
             h('canvas', { 'aria-label': 'Epidemic visualization', 
@@ -1329,12 +1329,12 @@ window.StemLab = window.StemLab || {
           // Equations (grade-dependent)
           (gradeBand === '6-8' || gradeBand === '9-12') &&
           h('div', { className: glassCard },
-            h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-2' }, 'SIR Equations'),
+            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wide mb-2' }, 'SIR Equations'),
             h('div', { className: 'font-mono text-xs text-slate-700 space-y-1 bg-slate-50 rounded-lg p-3' },
               h('p', null, 'dS/dt = -\u03B2 \u00D7 S \u00D7 I'),
               h('p', null, 'dI/dt = \u03B2 \u00D7 S \u00D7 I - \u03B3 \u00D7 I'),
               h('p', null, 'dR/dt = \u03B3 \u00D7 I'),
-              h('p', { className: 'pt-1 border-t border-slate-200 text-[10px] text-slate-500' },
+              h('p', { className: 'pt-1 border-t border-slate-200 text-[11px] text-slate-600' },
                 '\u03B2 = ' + beta.toFixed(4) + ' | \u03B3 = ' + gamma.toFixed(4) + ' | R\u2080 = \u03B2/\u03B3 = ' + r0.toFixed(2))
             )
           )
@@ -1345,7 +1345,7 @@ window.StemLab = window.StemLab || {
         // ═══════════════════════════════════════════
         tab === 'seir' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4' },
           h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: glassCard + ' space-y-3' },
-            h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase tracking-wide' }, 'SEIR Parameters'),
+            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wide' }, 'SEIR Parameters'),
             slider('R\u2080', r0, 0.5, 12, 0.1, 'r0', function(v) { return v.toFixed(1); }),
             slider('Vaccination Rate (%)', vaccRate, 0, 95, 1, 'vaccRate', function(v) { return v + '%'; }),
             slider('Infectious Period (days)', infectPeriod, 2, 30, 1, 'infectPeriod'),
@@ -1354,7 +1354,7 @@ window.StemLab = window.StemLab || {
             h('button', { 'aria-label': 'Run SEIR Simulation', onClick: runSim, className: 'w-full py-2 text-sm font-bold bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-all shadow-md' }, '\u25B6 Run SEIR Simulation')
           ),
           h('div', { className: glassCard },
-            h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-2' }, 'SEIR Curves'),
+            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wide mb-2' }, 'SEIR Curves'),
             renderSVGChart(seirData, ['S', 'E', 'I', 'R'])
           ),
           h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2' },
@@ -1365,26 +1365,26 @@ window.StemLab = window.StemLab || {
               { label: 'Herd Threshold', value: herdThresh.toFixed(0) + '%', sub: vaccRate >= herdThresh ? '\u2705 Achieved' : 'Not yet', color: '#6366f1' }
             ].map(function(s) {
               return h('div', { key: s.label, className: glassCard + ' text-center' },
-                h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase' }, s.label),
+                h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, s.label),
                 h('p', { className: 'text-lg font-bold', style: { color: s.color } }, s.value),
-                h('p', { className: 'text-[10px] text-slate-500' }, s.sub)
+                h('p', { className: 'text-[11px] text-slate-600' }, s.sub)
               );
             })
           ),
           (gradeBand === '6-8' || gradeBand === '9-12') &&
           h('div', { className: glassCard },
-            h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-2' }, 'SEIR Equations'),
+            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wide mb-2' }, 'SEIR Equations'),
             h('div', { className: 'font-mono text-xs text-slate-700 space-y-1 bg-slate-50 rounded-lg p-3' },
               h('p', null, 'dS/dt = -\u03B2 \u00D7 S \u00D7 I'),
               h('p', null, 'dE/dt = \u03B2 \u00D7 S \u00D7 I - \u03C3 \u00D7 E'),
               h('p', null, 'dI/dt = \u03C3 \u00D7 E - \u03B3 \u00D7 I'),
               h('p', null, 'dR/dt = \u03B3 \u00D7 I'),
-              h('p', { className: 'pt-1 border-t border-slate-200 text-[10px] text-slate-500' },
+              h('p', { className: 'pt-1 border-t border-slate-200 text-[11px] text-slate-600' },
                 '\u03B2=' + beta.toFixed(4) + ' | \u03B3=' + gamma.toFixed(4) + ' | \u03C3=' + (1/latentPeriod).toFixed(4) + ' | R\u2080=' + r0.toFixed(2))
             )
           ),
           h('div', { className: glassCard },
-            h('p', { className: 'text-[10px] font-bold text-indigo-600 mb-1' }, '\uD83D\uDCA1 ' + gradeText(gradeBand,
+            h('p', { className: 'text-[11px] font-bold text-indigo-600 mb-1' }, '\uD83D\uDCA1 ' + gradeText(gradeBand,
               'The "E" group are people who caught the germ but aren\'t sick yet!',
               'SEIR adds an "Exposed" group \u2014 people infected but not yet contagious. This delay is the latent period.',
               'The SEIR model adds an Exposed compartment between S and I. The parameter \u03C3 = 1/latent period controls the E\u2192I transition rate.',
@@ -1398,7 +1398,7 @@ window.StemLab = window.StemLab || {
         tab === 'r0explorer' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4' },
           h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: glassCard },
             h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, '\uD83C\uDF21\uFE0F R\u2080 Explorer'),
-            h('p', { className: 'text-xs text-slate-500 mb-3' }, gradeText(gradeBand,
+            h('p', { className: 'text-xs text-slate-600 mb-3' }, gradeText(gradeBand,
               'See how contagious different diseases are!',
               'Compare how fast different diseases spread by their R\u2080 number.',
               'Explore how R\u2080 affects epidemic dynamics. Add comparisons to the table below.',
@@ -1415,13 +1415,13 @@ window.StemLab = window.StemLab || {
           ),
           // R0 Visual Scale
           h('div', { className: glassCard },
-            h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase mb-2' }, 'R\u2080 Danger Scale'),
+            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-2' }, 'R\u2080 Danger Scale'),
             h('div', { className: 'relative h-8 rounded-full overflow-hidden' },
               h('div', { className: 'absolute inset-0', style: { background: 'linear-gradient(to right, #22c55e, #84cc16, #f59e0b, #ef4444, #dc2626)' } }),
               h('div', { className: 'absolute top-0 bottom-0 w-0.5 bg-white', style: { left: Math.min(95, (r0 / 18) * 100) + '%', boxShadow: '0 0 6px rgba(0,0,0,0.5)' } }),
-              h('div', { className: 'absolute -top-5 text-[10px] font-bold text-slate-700', style: { left: Math.min(90, (r0 / 18) * 100) + '%' } }, 'R\u2080=' + r0.toFixed(1))
+              h('div', { className: 'absolute -top-5 text-[11px] font-bold text-slate-700', style: { left: Math.min(90, (r0 / 18) * 100) + '%' } }, 'R\u2080=' + r0.toFixed(1))
             ),
-            h('div', { className: 'flex justify-between text-[8px] text-slate-500 mt-1' },
+            h('div', { className: 'flex justify-between text-[11px] text-slate-600 mt-1' },
               h('span', null, 'Dies out (<1)'),
               h('span', null, 'Low (1-2)'),
               h('span', null, 'Moderate (2-4)'),
@@ -1431,9 +1431,9 @@ window.StemLab = window.StemLab || {
           ),
           // Comparison table
           r0Compared.length > 0 && h('div', { className: glassCard },
-            h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase mb-2' }, 'Comparison Table'),
+            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-2' }, 'Comparison Table'),
             h('div', { className: 'overflow-x-auto' },
-              h('table', { className: 'w-full text-[10px]' },
+              h('table', { className: 'w-full text-[11px]' },
                 h('caption', { className: 'sr-only' }, 'Extreme (>8)'), h('thead', null,
                   h('tr', { className: 'border-b border-slate-200' },
                     ['Disease', 'R\u2080', 'R_eff', 'Vacc%', 'Herd%', 'Peak I%', 'Peak Day', 'Total%'].map(function(col) {
@@ -1460,7 +1460,7 @@ window.StemLab = window.StemLab || {
           ),
           // Mini chart for current
           h('div', { className: glassCard },
-            h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase mb-2' }, 'Current SIR Curve (R\u2080=' + r0.toFixed(1) + ')'),
+            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-2' }, 'Current SIR Curve (R\u2080=' + r0.toFixed(1) + ')'),
             renderSVGChart(sirData, ['S', 'I', 'R'], 700, 200)
           )
         ),
@@ -1471,7 +1471,7 @@ window.StemLab = window.StemLab || {
         tab === 'vaccination' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4' },
           h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: glassCard },
             h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, '\uD83D\uDC89 Vaccination Strategy'),
-            h('p', { className: 'text-xs text-slate-500' }, gradeText(gradeBand,
+            h('p', { className: 'text-xs text-slate-600' }, gradeText(gradeBand,
               'Vaccines protect people from getting sick! Slide the bar to see what happens.',
               'See how vaccinating different percentages of the population changes the epidemic curve.',
               'Explore how vaccination rate affects herd immunity, R_effective, and peak infection.',
@@ -1485,13 +1485,13 @@ window.StemLab = window.StemLab || {
           ),
           // Herd immunity visual
           h('div', { className: glassCard },
-            h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase mb-2' }, 'Herd Immunity Status'),
+            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-2' }, 'Herd Immunity Status'),
             h('div', { className: 'relative h-6 bg-slate-200 rounded-full overflow-hidden' },
               h('div', { className: 'absolute inset-y-0 left-0 rounded-full transition-all', style: { width: Math.min(100, vaccRate) + '%', background: vaccRate >= herdThresh && herdThresh > 0 ? '#22c55e' : '#3b82f6' } }),
               herdThresh > 0 && herdThresh < 100 && h('div', { className: 'absolute top-0 bottom-0 w-0.5 bg-red-500', style: { left: herdThresh + '%' } }),
-              herdThresh > 0 && h('div', { className: 'absolute -top-5 text-[8px] font-bold text-red-600', style: { left: Math.min(90, herdThresh) + '%' } }, 'Threshold: ' + herdThresh.toFixed(0) + '%')
+              herdThresh > 0 && h('div', { className: 'absolute -top-5 text-[11px] font-bold text-red-600', style: { left: Math.min(90, herdThresh) + '%' } }, 'Threshold: ' + herdThresh.toFixed(0) + '%')
             ),
-            h('div', { className: 'flex justify-between text-[10px] text-slate-500 mt-1' },
+            h('div', { className: 'flex justify-between text-[11px] text-slate-600 mt-1' },
               h('span', null, '0% Vaccinated'),
               h('span', { className: 'font-bold', style: { color: vaccRate >= herdThresh && herdThresh > 0 ? '#22c55e' : '#ef4444' } },
                 vaccRate >= herdThresh && herdThresh > 0 ? '\uD83D\uDEE1\uFE0F Herd Immunity Achieved!' : 'Need ' + Math.max(0, herdThresh - vaccRate).toFixed(0) + '% more'),
@@ -1503,14 +1503,14 @@ window.StemLab = window.StemLab || {
           ),
           h('div', { className: 'grid grid-cols-2 gap-2' },
             h('div', { className: glassCard + ' text-center' },
-              h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase' }, 'Without Vaccination'),
+              h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, 'Without Vaccination'),
               h('p', { className: 'text-lg font-bold text-red-600' }, (function() { var d2 = solveSIR({ r0: r0, vaccRate: 0, infectPeriod: infectPeriod, popSize: popSize }); var pk = 0; for (var j = 0; j < d2.length; j++) if (d2[j].I > pk) pk = d2[j].I; return pk.toFixed(1) + '%'; })()),
-              h('p', { className: 'text-[10px] text-slate-500' }, 'Peak Infected')
+              h('p', { className: 'text-[11px] text-slate-600' }, 'Peak Infected')
             ),
             h('div', { className: glassCard + ' text-center' },
-              h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase' }, 'With ' + vaccRate + '% Vaccinated'),
+              h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, 'With ' + vaccRate + '% Vaccinated'),
               h('p', { className: 'text-lg font-bold text-emerald-600' }, peakI.toFixed(1) + '%'),
-              h('p', { className: 'text-[10px] text-slate-500' }, 'Peak Infected')
+              h('p', { className: 'text-[11px] text-slate-600' }, 'Peak Infected')
             )
           )
         ),
@@ -1521,7 +1521,7 @@ window.StemLab = window.StemLab || {
         tab === 'interventions' && h('div', { className: 'space-y-4' },
           h('div', { className: glassCard },
             h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, '\uD83D\uDE37 Non-Pharmaceutical Interventions'),
-            h('p', { className: 'text-xs text-slate-500' }, gradeText(gradeBand,
+            h('p', { className: 'text-xs text-slate-600' }, gradeText(gradeBand,
               'Pick ways to slow down germs! Masks, handwashing, and staying apart all help!',
               'Choose different interventions to see how they flatten the epidemic curve.',
               'Toggle NPIs to modify the effective transmission rate \u03B2. Observe combined effects on R_eff and peak infection.',
@@ -1529,7 +1529,7 @@ window.StemLab = window.StemLab || {
           ),
           // NPI toggles
           h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: glassCard + ' space-y-2' },
-            h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-2' }, 'Select Interventions'),
+            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wide mb-2' }, 'Select Interventions'),
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'grid grid-cols-2 sm:grid-cols-4 gap-2' },
               NPI_INTERVENTIONS.map(function(npi) {
                 var active = activeNPIs.indexOf(npi.id) >= 0;
@@ -1540,10 +1540,10 @@ window.StemLab = window.StemLab || {
                 },
                   h('div', { className: 'flex items-center gap-1.5' },
                     h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-lg' }, npi.icon),
-                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold ' + (active ? 'text-teal-700' : 'text-slate-600') }, npi.label)
+                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold ' + (active ? 'text-teal-700' : 'text-slate-600') }, npi.label)
                   ),
-                  h('p', { className: 'text-[8px] text-slate-500 mt-0.5' }, '-' + (npi.betaReduction * 100) + '% transmission'),
-                  h('p', { className: 'text-[8px] text-slate-500' }, 'Cost: ' + npi.cost)
+                  h('p', { className: 'text-[11px] text-slate-600 mt-0.5' }, '-' + (npi.betaReduction * 100) + '% transmission'),
+                  h('p', { className: 'text-[11px] text-slate-600' }, 'Cost: ' + npi.cost)
                 );
               })
             )
@@ -1559,15 +1559,15 @@ window.StemLab = window.StemLab || {
           npiResult && h('div', { className: glassCard },
             h('div', { className: 'grid grid-cols-3 gap-3 text-center' },
               h('div', null,
-                h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase' }, '\u03B2 Reduction'),
+                h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, '\u03B2 Reduction'),
                 h('p', { className: 'text-lg font-bold text-teal-600' }, (npiResult.totalReduction * 100).toFixed(0) + '%')
               ),
               h('div', null,
-                h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase' }, 'R_effective'),
+                h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, 'R_effective'),
                 h('p', { className: 'text-lg font-bold', style: { color: r0Color(npiResult.effR0) } }, npiResult.effR0.toFixed(2))
               ),
               h('div', null,
-                h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase' }, 'Status'),
+                h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, 'Status'),
                 h('p', { className: 'text-lg font-bold ' + (npiResult.effR0 < 1 ? 'text-emerald-600' : 'text-red-600') }, npiResult.effR0 < 1 ? 'Contained!' : 'Spreading')
               )
             )
@@ -1575,17 +1575,17 @@ window.StemLab = window.StemLab || {
           // Side-by-side curves
           npiResult && npiBaseline && h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
             h('div', { className: glassCard },
-              h('p', { className: 'text-[10px] font-bold text-red-500 uppercase mb-1' }, 'Without Interventions'),
+              h('p', { className: 'text-[11px] font-bold text-red-500 uppercase mb-1' }, 'Without Interventions'),
               renderSVGChart(npiBaseline.data, ['S', 'I', 'R'], 350, 200)
             ),
             h('div', { className: glassCard },
-              h('p', { className: 'text-[10px] font-bold text-teal-500 uppercase mb-1' }, 'With ' + activeNPIs.length + ' NPIs Active'),
+              h('p', { className: 'text-[11px] font-bold text-teal-500 uppercase mb-1' }, 'With ' + activeNPIs.length + ' NPIs Active'),
               renderSVGChart(npiResult.data, ['S', 'I', 'R'], 350, 200)
             )
           ),
           // Hospital capacity overlay
           npiResult && h('div', { className: glassCard },
-            h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase mb-2' }, '\uD83C\uDFE5 Hospital Capacity'),
+            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-2' }, '\uD83C\uDFE5 Hospital Capacity'),
             h('div', { className: 'space-y-2' },
               (function() {
                 var maxHosp = 0;
@@ -1598,7 +1598,7 @@ window.StemLab = window.StemLab || {
                     h('div', { className: 'absolute inset-y-0 left-0 rounded-full transition-all', style: { width: Math.min(100, maxHosp) + '%', background: exceeded ? '#ef4444' : '#22c55e' } }),
                     h('div', { className: 'absolute top-0 bottom-0 w-0.5 bg-red-800', style: { left: '100%' } })
                   ),
-                  h('p', { className: 'text-[10px] font-bold mt-1 ' + (exceeded ? 'text-red-600' : 'text-emerald-600') },
+                  h('p', { className: 'text-[11px] font-bold mt-1 ' + (exceeded ? 'text-red-600' : 'text-emerald-600') },
                     exceeded ? '\u26A0\uFE0F Peak hospital use: ' + maxHosp.toFixed(0) + '% of capacity \u2014 OVERWHELMED' : '\u2705 Peak hospital use: ' + maxHosp.toFixed(0) + '% of capacity')
                 );
               })()
@@ -1606,7 +1606,7 @@ window.StemLab = window.StemLab || {
           ),
           // NPI explanation
           h('div', { className: glassCard },
-            h('p', { className: 'text-[10px] font-bold text-indigo-600' }, '\uD83D\uDCA1 ' + gradeText(gradeBand,
+            h('p', { className: 'text-[11px] font-bold text-indigo-600' }, '\uD83D\uDCA1 ' + gradeText(gradeBand,
               'Each way to stay safe makes germs spread slower. Using more than one is even better!',
               'Each intervention reduces how fast the disease spreads. Using multiple interventions together gives better protection than any single one!',
               'NPIs reduce the effective \u03B2 multiplicatively. With masks (-40%) and distancing (-30%), \u03B2_eff = \u03B2 \u00D7 0.60 \u00D7 0.70 = \u03B2 \u00D7 0.42 (58% reduction). This is why layered strategies work.',
@@ -1620,25 +1620,25 @@ window.StemLab = window.StemLab || {
         tab === 'outbreakmap' && h('div', { className: 'space-y-4' },
           h('div', { className: glassCard },
             h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, '\uD83D\uDDFA\uFE0F Outbreak Map'),
-            h('p', { className: 'text-xs text-slate-500' }, gradeText(gradeBand,
+            h('p', { className: 'text-xs text-slate-600' }, gradeText(gradeBand,
               'Watch germs spread on a map! Blue = healthy, Red = sick, Green = better.',
               'See how diseases spread through different populations on a grid map.',
               'Agent-based grid simulation showing spatial disease transmission.',
               'Stochastic cellular automaton modeling spatial SIR dynamics with 8-neighbor contact topology.'))
           ),
           h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: glassCard + ' space-y-3' },
-            h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase mb-1' }, 'Scenario'),
+            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-1' }, 'Scenario'),
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-1.5' },
               MAP_SCENARIOS.map(function(sc, idx) {
                 var active = mapScenario === idx;
                 return h('button', { 'aria-label': 'Change map running',
                   key: sc.name,
                   onClick: function() { updMulti({ mapScenario: idx, mapGrid: null, mapHistory: [] }); },
-                  className: 'px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all ' + (active ? 'bg-indigo-600 text-white' : 'bg-white text-slate-600 border border-slate-200')
+                  className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ' + (active ? 'bg-indigo-600 text-white' : 'bg-white text-slate-600 border border-slate-200')
                 }, sc.name);
               })
             ),
-            h('p', { className: 'text-[10px] text-slate-500 italic' }, MAP_SCENARIOS[mapScenario].desc),
+            h('p', { className: 'text-[11px] text-slate-600 italic' }, MAP_SCENARIOS[mapScenario].desc),
             slider('R\u2080', r0, 0.5, 8, 0.1, 'r0', function(v) { return v.toFixed(1); }),
             slider('Pre-vaccinated (%)', mapVacc, 0, 90, 5, 'mapVacc', function(v) { return v + '%'; }),
             slider('Hospital Beds (% of pop)', hospitalBeds, 1, 15, 1, 'hospitalBeds', function(v) { return v + '%'; }),
@@ -1653,10 +1653,10 @@ window.StemLab = window.StemLab || {
           // Grid display
           mapGrid && h('div', { className: glassCard },
             h('div', { className: 'flex items-center justify-between mb-2' },
-              h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase' }, 'Step: ' + mapStep),
+              h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, 'Step: ' + mapStep),
               (function() {
                 var c = mapGrid ? countGrid(mapGrid) : { S: 0, I: 0, R: 0 };
-                return h('div', { className: 'flex gap-3 text-[10px] font-bold' },
+                return h('div', { className: 'flex gap-3 text-[11px] font-bold' },
                   h('span', { className: 'text-blue-600' }, '\u25CF S:' + c.S),
                   h('span', { className: 'text-red-600' }, '\u25CF I:' + c.I),
                   h('span', { className: 'text-emerald-600' }, '\u25CF R:' + c.R)
@@ -1676,32 +1676,32 @@ window.StemLab = window.StemLab || {
           // Quarantine zones + hospital capacity
           mapGrid && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: glassCard + ' space-y-3' },
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-between' },
-              h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase' }, '\uD83D\uDEA7 Quarantine Zones (' + mapQuarantineZones.length + ')'),
+              h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, '\uD83D\uDEA7 Quarantine Zones (' + mapQuarantineZones.length + ')'),
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2' },
                 h('button', { 'aria-label': '+ Add Zone',
                   onClick: function() {
                     var sc = MAP_SCENARIOS[mapScenario];
                     addQuarantineZone(Math.floor(Math.random() * sc.gridSize), Math.floor(Math.random() * sc.gridSize));
                   },
-                  className: 'px-2 py-1 text-[10px] font-bold bg-amber-100 text-amber-700 rounded-lg'
+                  className: 'px-2 py-1 text-[11px] font-bold bg-amber-100 text-amber-700 rounded-lg'
                 }, '+ Add Zone'),
                 mapQuarantineZones.length > 0 && h('button', { 'aria-label': 'Clear',
                   onClick: function() { upd('mapQuarantineZones', []); },
-                  className: 'px-2 py-1 text-[10px] font-bold bg-slate-100 text-slate-500 rounded-lg'
+                  className: 'px-2 py-1 text-[11px] font-bold bg-slate-100 text-slate-600 rounded-lg'
                 }, 'Clear')
               )
             ),
-            mapQuarantineZones.length > 0 && h('p', { className: 'text-[8px] text-amber-600 italic' }, 'Quarantine zones reduce transmission by 80% and speed recovery by 50% within the zone.'),
+            mapQuarantineZones.length > 0 && h('p', { className: 'text-[11px] text-amber-600 italic' }, 'Quarantine zones reduce transmission by 80% and speed recovery by 50% within the zone.'),
             // Hospital capacity bar
             h('div', null,
-              h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase mb-1' }, '\uD83C\uDFE5 Hospital Capacity'),
+              h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-1' }, '\uD83C\uDFE5 Hospital Capacity'),
               (function() {
                 var hospPct = d.mapHospPct || 0;
                 var exceeded = hospPct > 100;
                 return h('div', null,
                   h('div', { className: 'relative h-5 bg-slate-200 rounded-full overflow-hidden' },
                     h('div', { className: 'absolute inset-y-0 left-0 rounded-full transition-all', style: { width: Math.min(100, hospPct) + '%', background: exceeded ? '#ef4444' : hospPct > 70 ? '#f59e0b' : '#22c55e' } }),
-                    h('div', { className: 'absolute inset-0 flex items-center justify-center text-[8px] font-bold ' + (hospPct > 50 ? 'text-white' : 'text-slate-600') },
+                    h('div', { className: 'absolute inset-0 flex items-center justify-center text-[11px] font-bold ' + (hospPct > 50 ? 'text-white' : 'text-slate-600') },
                       hospPct.toFixed(0) + '% used (' + hospitalBeds + '% beds)')
                   ),
                   exceeded && h('p', { className: 'text-[11px] font-bold text-red-600 mt-0.5' }, '\u26A0\uFE0F HOSPITALS OVERWHELMED \u2014 mortality increases!')
@@ -1711,7 +1711,7 @@ window.StemLab = window.StemLab || {
           ),
           // Map history mini chart
           mapHistory && mapHistory.length > 2 && h('div', { className: glassCard },
-            h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase mb-2' }, 'Outbreak Timeline'),
+            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-2' }, 'Outbreak Timeline'),
             (function() {
               var w2 = 700, ht2 = 150, padL2 = 40, padR2 = 10, padT2 = 10, padB2 = 20;
               var pw = w2 - padL2 - padR2, ph = ht2 - padT2 - padB2;
@@ -1757,7 +1757,7 @@ window.StemLab = window.StemLab || {
         tab === 'contacttrace' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4' },
           h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: glassCard },
             h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, '\uD83D\uDD17 Contact Tracing'),
-            h('p', { className: 'text-xs text-slate-500' }, gradeText(gradeBand,
+            h('p', { className: 'text-xs text-slate-600' }, gradeText(gradeBand,
               'Be a disease detective! Find all the sick people by following who they talked to!',
               'Trace the chain of infection by clicking on people connected to known cases.',
               'Identify all infected individuals in a contact network. Start from Patient Zero and trace the infection chain.',
@@ -1766,14 +1766,14 @@ window.StemLab = window.StemLab || {
           !ctNetwork ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: glassCard + ' text-center space-y-3' },
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-5xl mb-2' }, '\uD83D\uDD0D'),
             h('p', { className: 'text-sm font-bold text-slate-700' }, 'Trace the infection chain!'),
-            h('p', { className: 'text-xs text-slate-500' }, 'Click on people connected to known cases to test if they\'re infected.'),
+            h('p', { className: 'text-xs text-slate-600' }, 'Click on people connected to known cases to test if they\'re infected.'),
             h('button', { 'aria-label': 'Start Tracing', onClick: startContactTrace, className: 'px-6 py-2 text-sm font-bold bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all' }, '\uD83D\uDD17 Start Tracing')
           ) : h('div', { className: 'space-y-3' },
             // Score/status bar
             h('div', { className: glassCard + ' flex items-center justify-between' },
               h('div', { className: 'flex gap-3 text-xs' },
                 h('span', { className: 'font-bold text-indigo-600' }, '\uD83C\uDFAF Score: ' + ctScore),
-                h('span', { className: 'font-bold text-slate-500' }, 'Traces: ' + ctGuesses),
+                h('span', { className: 'font-bold text-slate-600' }, 'Traces: ' + ctGuesses),
                 h('span', { className: 'font-bold text-red-600' }, 'Infected: ' + ctNetwork.solution.length)
               ),
               ctComplete ? h('span', { className: 'text-xs font-bold text-emerald-800 bg-emerald-50 px-2 py-1 rounded-lg' }, '\u2705 All Found!') :
@@ -1845,7 +1845,7 @@ window.StemLab = window.StemLab || {
               h('p', { className: 'text-xs text-slate-700 leading-relaxed whitespace-pre-line' }, d.ctAnalysis)
             ),
             // Legend
-            h('div', { className: 'flex gap-4 text-[10px] text-slate-500 px-2' },
+            h('div', { className: 'flex gap-4 text-[11px] text-slate-600 px-2' },
               h('span', null, '\uD83D\uDD34 Patient Zero'),
               h('span', null, '\uD83D\uDD35 Unknown (clickable if connected)'),
               h('span', null, '\uD83D\uDFE2 Tested Clear'),
@@ -1860,7 +1860,7 @@ window.StemLab = window.StemLab || {
         tab === 'history' && h('div', { className: 'space-y-4' },
           h('div', { className: glassCard },
             h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, '\uD83D\uDCDC Historical Pandemics'),
-            h('p', { className: 'text-xs text-slate-500' }, gradeText(gradeBand,
+            h('p', { className: 'text-xs text-slate-600' }, gradeText(gradeBand,
               'Learn about big sicknesses from long ago and what people did to stop them!',
               'Explore the major pandemics in human history and what we learned from each one.',
               'Study how historical pandemics shaped public health, society, and our understanding of disease transmission.',
@@ -1889,10 +1889,10 @@ window.StemLab = window.StemLab || {
                         h('span', { className: 'text-lg' }, p.icon),
                         h('div', { className: 'flex-1' },
                           h('p', { className: 'text-sm font-bold text-slate-700' }, p.name + ' (' + p.year + ')'),
-                          h('p', { className: 'text-[10px] text-slate-500' }, p.pathogen)
+                          h('p', { className: 'text-[11px] text-slate-600' }, p.pathogen)
                         ),
-                        h('span', { className: 'text-[10px] font-bold px-2 py-0.5 rounded-full', style: { backgroundColor: p.color + '20', color: p.color } }, p.deaths + ' deaths'),
-                        viewed && h('span', { className: 'text-[10px]' }, '\u2705')
+                        h('span', { className: 'text-[11px] font-bold px-2 py-0.5 rounded-full', style: { backgroundColor: p.color + '20', color: p.color } }, p.deaths + ' deaths'),
+                        viewed && h('span', { className: 'text-[11px]' }, '\u2705')
                       )
                     ),
                     // Expanded details
@@ -1908,17 +1908,17 @@ window.StemLab = window.StemLab || {
                           { label: 'Transmission', value: p.transmission, color: '#6366f1' }
                         ].map(function(s) {
                           return h('div', { key: s.label, className: 'bg-slate-50 rounded-lg p-2 text-center' },
-                            h('p', { className: 'text-[8px] font-bold text-slate-500 uppercase' }, s.label),
-                            h('p', { className: 'text-[10px] font-bold', style: { color: s.color } }, s.value)
+                            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, s.label),
+                            h('p', { className: 'text-[11px] font-bold', style: { color: s.color } }, s.value)
                           );
                         })
                       ),
                       // Key facts
                       h('div', null,
-                        h('p', { className: 'text-[10px] font-bold text-slate-600 mb-1' }, 'Key Facts:'),
+                        h('p', { className: 'text-[11px] font-bold text-slate-600 mb-1' }, 'Key Facts:'),
                         h('ul', { className: 'space-y-1' },
                           p.keyFacts.map(function(fact, fi) {
-                            return h('li', { key: fi, className: 'text-[10px] text-slate-600 flex gap-1' },
+                            return h('li', { key: fi, className: 'text-[11px] text-slate-600 flex gap-1' },
                               h('span', null, '\u2022'),
                               h('span', null, fact)
                             );
@@ -1927,8 +1927,8 @@ window.StemLab = window.StemLab || {
                       ),
                       // Actions
                       h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 pt-2 border-t border-slate-100' },
-                        callTTS && h('button', { 'aria-label': 'Read Aloud', onClick: function() { callTTS(p.gradeSummary[gradeBand] || p.gradeSummary['3-5']); }, className: 'px-3 py-1.5 text-[10px] font-bold bg-blue-50 text-blue-600 rounded-lg' }, '\uD83D\uDD0A Read Aloud'),
-                        h('button', { 'aria-label': 'Simulate', onClick: function() { applyPreset(PRESETS.findIndex(function(pr) { return pr.name === 'COVID-19'; }) || 0); updMulti({ tab: 'sir' }); }, className: 'px-3 py-1.5 text-[10px] font-bold bg-violet-50 text-violet-600 rounded-lg' }, '\uD83D\uDD2C Simulate')
+                        callTTS && h('button', { 'aria-label': 'Read Aloud', onClick: function() { callTTS(p.gradeSummary[gradeBand] || p.gradeSummary['3-5']); }, className: 'px-3 py-1.5 text-[11px] font-bold bg-blue-50 text-blue-600 rounded-lg' }, '\uD83D\uDD0A Read Aloud'),
+                        h('button', { 'aria-label': 'Simulate', onClick: function() { applyPreset(PRESETS.findIndex(function(pr) { return pr.name === 'COVID-19'; }) || 0); updMulti({ tab: 'sir' }); }, className: 'px-3 py-1.5 text-[11px] font-bold bg-violet-50 text-violet-600 rounded-lg' }, '\uD83D\uDD2C Simulate')
                       )
                     )
                   );
@@ -1938,7 +1938,7 @@ window.StemLab = window.StemLab || {
           ),
           // Progress
           h('div', { className: glassCard + ' text-center' },
-            h('p', { className: 'text-[10px] font-bold text-slate-500' },
+            h('p', { className: 'text-[11px] font-bold text-slate-600' },
               'Explored: ' + Object.keys(historyViewed).length + '/' + HISTORICAL_PANDEMICS.length +
               (Object.keys(historyViewed).length >= HISTORICAL_PANDEMICS.length ? ' \uD83C\uDFC6 Historian Badge!' : ''))
           )
@@ -1950,7 +1950,7 @@ window.StemLab = window.StemLab || {
         tab === 'scenarios' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4' },
           h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: glassCard },
             h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, '\uD83C\uDFAD Outbreak Scenarios'),
-            h('p', { className: 'text-xs text-slate-500' }, gradeText(gradeBand,
+            h('p', { className: 'text-xs text-slate-600' }, gradeText(gradeBand,
               'A pretend sickness is spreading! Pick the best way to stop it!',
               'AI creates a fictional disease outbreak. Choose the best response strategy!',
               'AI generates a novel outbreak scenario. Analyze the parameters and choose the optimal public health response.',
@@ -1959,9 +1959,9 @@ window.StemLab = window.StemLab || {
           !scenarioData && !d.scenarioLoading ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: glassCard + ' text-center space-y-3' },
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-5xl mb-2' }, '\uD83C\uDFAD'),
             h('p', { className: 'text-sm font-bold text-slate-700' }, 'AI Outbreak Scenario Generator'),
-            h('p', { className: 'text-xs text-slate-500' }, 'Gemini will create a unique fictional outbreak for you to respond to.'),
+            h('p', { className: 'text-xs text-slate-600' }, 'Gemini will create a unique fictional outbreak for you to respond to.'),
             callGemini ? h('button', { 'aria-label': 'Generate Scenario', onClick: generateScenario, className: 'px-6 py-2 text-sm font-bold bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-all' }, '\uD83E\uDDE0 Generate Scenario') :
-            h('p', { className: 'text-xs text-slate-500 italic' }, 'AI not available \u2014 requires Gemini integration.')
+            h('p', { className: 'text-xs text-slate-600 italic' }, 'AI not available \u2014 requires Gemini integration.')
           ) : d.scenarioLoading ? h('div', { className: glassCard + ' text-center py-6' },
             h('div', { className: 'text-3xl animate-pulse mb-2' }, '\uD83E\uDDE0'),
             h('p', { className: 'text-sm font-bold text-purple-600' }, 'Generating outbreak scenario...')
@@ -1981,15 +1981,15 @@ window.StemLab = window.StemLab || {
                   { label: 'Symptoms', value: scenarioData.symptoms || 'Varies', color: '#ef4444' }
                 ].map(function(s) {
                   return h('div', { key: s.label, className: 'bg-slate-50 rounded-lg p-2 text-center' },
-                    h('p', { className: 'text-[8px] font-bold text-slate-500 uppercase' }, s.label),
-                    h('p', { className: 'text-[10px] font-bold', style: { color: s.color } }, s.value)
+                    h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, s.label),
+                    h('p', { className: 'text-[11px] font-bold', style: { color: s.color } }, s.value)
                   );
                 })
               )
             ),
             // Response options
             !scenarioChoice && scenarioData.options && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: glassCard },
-              h('p', { className: 'text-[10px] font-bold text-slate-500 uppercase mb-3' }, 'Choose Your Response Strategy'),
+              h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-3' }, 'Choose Your Response Strategy'),
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-2' },
                 scenarioData.options.map(function(opt, idx) {
                   var letters = ['A', 'B', 'C'];
@@ -2004,7 +2004,7 @@ window.StemLab = window.StemLab || {
                       h('span', { className: 'text-sm font-bold px-2 py-0.5 rounded-full text-white', style: { backgroundColor: colors[idx] } }, letters[idx]),
                       h('div', null,
                         h('p', { className: 'text-xs font-bold text-slate-700' }, opt.label || opt.strategy),
-                        h('p', { className: 'text-[10px] text-slate-500 mt-0.5' }, opt.strategy)
+                        h('p', { className: 'text-[11px] text-slate-600 mt-0.5' }, opt.strategy)
                       )
                     )
                   );
@@ -2020,7 +2020,7 @@ window.StemLab = window.StemLab || {
               ),
               h('p', { className: 'text-xs text-slate-700 leading-relaxed' }, scenarioResult.outcome),
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-2 flex items-center gap-2' },
-                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold text-slate-500' }, 'Effectiveness:'),
+                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold text-slate-600' }, 'Effectiveness:'),
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex-1 h-3 bg-slate-200 rounded-full overflow-hidden' },
                   h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'h-full rounded-full transition-all', style: { width: scenarioResult.score + '%', background: scenarioResult.score >= 70 ? '#22c55e' : scenarioResult.score >= 40 ? '#f59e0b' : '#ef4444' } })
                 ),
@@ -2048,7 +2048,7 @@ window.StemLab = window.StemLab || {
                 return h('button', { 'aria-label': 'Change chal answer',
                   key: t,
                   onClick: function() { updMulti({ chalTier: t, chalIdx: 0, chalFeedback: '', chalAnswer: '', chalUseAI: null }); },
-                  className: 'px-3 py-1.5 rounded-lg text-[10px] font-bold ' + (chalTier === t ? colors[t] + ' ring-2 ring-offset-1' : 'bg-white text-slate-500 border border-slate-200')
+                  className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold ' + (chalTier === t ? colors[t] + ' ring-2 ring-offset-1' : 'bg-white text-slate-600 border border-slate-200')
                 }, labels[t]);
               })
             ),
@@ -2063,7 +2063,7 @@ window.StemLab = window.StemLab || {
               h('p', { className: 'text-xs text-purple-600 font-bold' }, 'AI generating question...')
             ) : h('div', { className: 'space-y-3' },
               activeChalQ && h('div', null,
-                d.chalUseAI != null && h('span', { className: 'px-1.5 py-0.5 bg-purple-100 text-purple-600 text-[8px] font-bold rounded-full mr-2' }, '\uD83E\uDDE0 AI'),
+                d.chalUseAI != null && h('span', { className: 'px-1.5 py-0.5 bg-purple-100 text-purple-600 text-[11px] font-bold rounded-full mr-2' }, '\uD83E\uDDE0 AI'),
                 h('p', { className: 'text-sm font-medium text-slate-700 mt-1' }, activeChalQ.q)
               ),
               h('input', {
@@ -2091,7 +2091,7 @@ window.StemLab = window.StemLab || {
         tab === 'battle' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4' },
           h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: glassCard },
             h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, '\u2694\uFE0F Outbreak Defense'),
-            h('p', { className: 'text-xs text-slate-500' }, gradeText(gradeBand,
+            h('p', { className: 'text-xs text-slate-600' }, gradeText(gradeBand,
               'Fight the virus by answering questions! Don\'t let it win!',
               'Battle a virus outbreak! Answer epidemiology questions to fight back.',
               'Defeat the virus by answering SIR/SEIR and epidemiology questions. Each correct answer damages the virus.',
@@ -2122,12 +2122,12 @@ window.StemLab = window.StemLab || {
                 h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-mono font-bold w-10 text-right' }, battleEnemyHP + '%')
               )
             ),
-            h('p', { className: 'text-[10px] text-slate-500 mb-2' }, 'Round ' + (battleRound + 1) + (battleUseAI ? ' \uD83E\uDDE0 AI Mode' : '')),
+            h('p', { className: 'text-[11px] text-slate-600 mb-2' }, 'Round ' + (battleRound + 1) + (battleUseAI ? ' \uD83E\uDDE0 AI Mode' : '')),
             // Battle content
             battleOver ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-center space-y-2 py-4' },
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-4xl mb-2' }, battleWon ? '\uD83C\uDFC6' : '\uD83E\uDDA0'),
               h('p', { className: 'text-lg font-bold ' + (battleWon ? 'text-emerald-700' : 'text-red-700') }, battleWon ? 'Victory! Outbreak Contained!' : 'Defeated! Virus Wins!'),
-              h('p', { className: 'text-xs text-slate-500' }, 'Your HP: ' + battlePlayerHP + ' | Virus HP: ' + battleEnemyHP),
+              h('p', { className: 'text-xs text-slate-600' }, 'Your HP: ' + battlePlayerHP + ' | Virus HP: ' + battleEnemyHP),
               battleFeedback && h('p', { className: 'text-xs font-bold mt-1 ' + (battleFeedback[0] === '\u2705' ? 'text-emerald-600' : 'text-red-600') }, battleFeedback),
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 justify-center mt-2' },
                 h('button', { 'aria-label': 'Play Again', onClick: function() { startBattle(false); }, className: 'px-4 py-2 text-sm font-bold bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all' }, '\u21BA Play Again'),
@@ -2144,7 +2144,7 @@ window.StemLab = window.StemLab || {
                 var q = getCurrentBattleQ();
                 if (!q) return null;
                 return h('div', { className: 'space-y-3' },
-                  battleUseAI && h('span', { className: 'px-1.5 py-0.5 bg-purple-100 text-purple-600 text-[8px] font-bold rounded-full' }, '\uD83E\uDDE0 AI-GENERATED'),
+                  battleUseAI && h('span', { className: 'px-1.5 py-0.5 bg-purple-100 text-purple-600 text-[11px] font-bold rounded-full' }, '\uD83E\uDDE0 AI-GENERATED'),
                   h('p', { className: 'text-sm font-medium text-slate-700' }, q.q),
                   h('input', { type: 'text', value: battleAnswer, onChange: function(e) { upd('battleAnswer', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') battleAttack(); }, placeholder: 'Type your answer...', className: 'w-full px-4 py-2 border border-slate-200 rounded-xl text-sm font-mono focus:border-red-400 outline-none', 'aria-label': 'Battle answer' }),
                   h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2' },
@@ -2164,7 +2164,7 @@ window.StemLab = window.StemLab || {
         tab === 'learn' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4' },
           h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: glassCard },
             h('h4', { className: 'text-sm font-bold text-slate-700 mb-3' }, '\uD83D\uDCDA Learn \u2014 Epidemiology Concepts'),
-            h('p', { className: 'text-xs text-slate-500 mb-4' }, 'Explore key topics adapted to your grade level (' + gradeBand + ').')
+            h('p', { className: 'text-xs text-slate-600 mb-4' }, 'Explore key topics adapted to your grade level (' + gradeBand + ').')
           ),
           LEARN_TOPICS.map(function(topic) {
             var content = topic.content[gradeBand] || topic.content['3-5'];
@@ -2175,8 +2175,8 @@ window.StemLab = window.StemLab || {
               ),
               h('p', { className: 'text-xs text-slate-600 leading-relaxed' }, content),
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 pt-2 border-t border-slate-100' },
-                h('button', { 'aria-label': 'Try It', onClick: function() { markLearnRead(topic.title); updMulti({ tab: topic.tryIt }); announceToSR('Switched to ' + topic.tryIt); }, className: 'px-3 py-1.5 text-[10px] font-bold bg-violet-50 text-violet-600 rounded-lg hover:bg-violet-100 transition-all' }, '\uD83D\uDD2C Try It'),
-                callTTS && h('button', { 'aria-label': 'Read Aloud', onClick: function() { markLearnRead(topic.title); callTTS(content); }, className: 'px-3 py-1.5 text-[10px] font-bold bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-all' }, '\uD83D\uDD0A Read Aloud')
+                h('button', { 'aria-label': 'Try It', onClick: function() { markLearnRead(topic.title); updMulti({ tab: topic.tryIt }); announceToSR('Switched to ' + topic.tryIt); }, className: 'px-3 py-1.5 text-[11px] font-bold bg-violet-50 text-violet-600 rounded-lg hover:bg-violet-100 transition-all' }, '\uD83D\uDD2C Try It'),
+                callTTS && h('button', { 'aria-label': 'Read Aloud', onClick: function() { markLearnRead(topic.title); callTTS(content); }, className: 'px-3 py-1.5 text-[11px] font-bold bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-all' }, '\uD83D\uDD0A Read Aloud')
               )
             );
           })
@@ -2191,8 +2191,8 @@ window.StemLab = window.StemLab || {
               return h('div', { key: b.id, className: 'flex items-center gap-2 p-2 rounded-lg ' + (earned ? 'bg-amber-50 border border-amber-200' : 'bg-slate-50 border border-slate-200 opacity-50') },
                 h('span', { className: 'text-lg' + (earned ? '' : ' grayscale') }, b.icon),
                 h('div', null,
-                  h('p', { className: 'text-[10px] font-bold ' + (earned ? 'text-amber-700' : 'text-slate-500') }, b.name),
-                  h('p', { className: 'text-[8px] text-slate-500' }, b.desc)
+                  h('p', { className: 'text-[11px] font-bold ' + (earned ? 'text-amber-700' : 'text-slate-200') }, b.name),
+                  h('p', { className: 'text-[11px] text-slate-600' }, b.desc)
                 )
               );
             })

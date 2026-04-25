@@ -466,12 +466,12 @@ window.StemLab = window.StemLab || {
               ),
               // Quick range presets
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-1.5' },
-                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold text-slate-500 self-center' }, 'Presets:'),
+                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold text-slate-600 self-center' }, 'Presets:'),
                 [[0, 10], [0, 20], [0, 100], [-10, 10], [-20, 20], [0, 1000]].map(function(pr) {
                   return h('button', { 'aria-label': 'Sfx Click',
                     key: pr.join('-'),
                     onClick: function() { sfxClick(); upd({ range: { min: pr[0], max: pr[1] } }); },
-                    className: 'px-2 py-1 rounded-lg text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition-all'
+                    className: 'px-2 py-1 rounded-lg text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition-all'
                   }, pr[0] + ' to ' + pr[1]);
                 })
               ),
@@ -533,12 +533,12 @@ window.StemLab = window.StemLab || {
                         return h('button', { 'aria-label': 'Sfx Click',
                           key: d, onClick: function() { sfxClick(); upd({ difficulty: d }); },
                           className: 'text-[11px] font-bold px-1.5 py-0.5 rounded-full transition-all ' +
-                            (difficulty === d ? (d === 'easy' ? 'bg-green-700 text-white' : d === 'hard' ? 'bg-red-700 text-white' : 'bg-blue-700 text-white') : 'bg-slate-100 text-slate-500 hover:bg-slate-200')
+                            (difficulty === d ? (d === 'easy' ? 'bg-green-700 text-white' : d === 'hard' ? 'bg-red-700 text-white' : 'bg-blue-700 text-white') : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
                         }, d);
                       })
                     )
                   ),
-                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-slate-500' }, Object.keys(challengeTypesUsed).length + '/6 types')
+                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-slate-600' }, Object.keys(challengeTypesUsed).length + '/6 types')
                 ),
 
                 !challenge
@@ -618,7 +618,7 @@ window.StemLab = window.StemLab || {
               ),
               // Quick skip presets
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-1.5' },
-                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold text-slate-500 self-center' }, 'Count by:'),
+                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold text-slate-600 self-center' }, 'Count by:'),
                 [2, 3, 5, 10, 25, 100].map(function(s) {
                   return h('button', { 'aria-label': 'Sfx Click',
                     key: s,
@@ -643,7 +643,7 @@ window.StemLab = window.StemLab || {
                         (i === 0 ? 'bg-violet-200 border-violet-400 shadow-sm' : 'bg-white border-violet-200 hover:bg-violet-50')
                     },
                       h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-sm font-bold ' + (i === 0 ? 'text-violet-800' : 'text-violet-700') }, val),
-                      h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-violet-400 block' }, i === 0 ? 'start' : '+' + skipBy)
+                      h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-violet-400 block' }, i === 0 ? 'start' : '+' + skipBy)
                     );
                   })
                 ),
@@ -653,7 +653,7 @@ window.StemLab = window.StemLab || {
               // Toggle
               h('button', { 'aria-label': 'Sfx Click',
                 onClick: function() { sfxClick(); upd({ showSkipMarkers: !showSkipMarkers }); },
-                className: 'text-xs font-bold ' + (showSkipMarkers ? 'text-violet-600' : 'text-slate-500') + ' hover:text-violet-800 transition-colors'
+                className: 'text-xs font-bold ' + (showSkipMarkers ? 'text-violet-600' : 'text-slate-600') + ' hover:text-violet-800 transition-colors'
               }, showSkipMarkers ? '\uD83D\uDC41 Hide markers on line' : '\uD83D\uDC41 Show markers on line')
             );
           };
@@ -663,7 +663,7 @@ window.StemLab = window.StemLab || {
             var earned = Object.keys(badges).length;
             if (earned === 0) return null;
             return h('div', { className: 'bg-amber-50 rounded-xl border border-amber-200 p-3' },
-              h('p', { className: 'text-[10px] font-bold text-amber-600 uppercase tracking-wider mb-2' },
+              h('p', { className: 'text-[11px] font-bold text-amber-600 uppercase tracking-wider mb-2' },
                 '\uD83C\uDFC5 Badges (' + earned + '/' + BADGES.length + ')'
               ),
               h('div', { className: 'flex flex-wrap gap-1.5' },
@@ -711,7 +711,7 @@ window.StemLab = window.StemLab || {
                   return h('button', { 'aria-label': 'Ask question',
                     key: q,
                     onClick: function() { upd({ aiQuestion: q }); },
-                    className: 'px-2 py-1 text-[10px] font-bold bg-sky-100 text-sky-700 rounded-full hover:bg-sky-200 transition-all'
+                    className: 'px-2 py-1 text-[11px] font-bold bg-sky-100 text-sky-700 rounded-full hover:bg-sky-200 transition-all'
                   }, q);
                 })
               ),
@@ -730,11 +730,11 @@ window.StemLab = window.StemLab || {
             // Header
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-3 mb-2' },
               h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': 'Back' },
-                h(ArrowLeft, { size: 18, className: 'text-slate-500' })),
+                h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
               h('h3', { className: 'text-lg font-bold text-blue-800' }, '\uD83D\uDCCF Number Line'),
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'ml-auto flex items-center gap-3' },
                 streak > 0 && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-orange-600' }, '\uD83D\uDD25 ' + streak),
-                bestStreak > 0 && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-500' }, 'Best: ' + bestStreak),
+                bestStreak > 0 && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-slate-600' }, 'Best: ' + bestStreak),
                 h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-blue-600' }, score.correct + '/' + score.total)
               )
             ),
@@ -770,7 +770,7 @@ window.StemLab = window.StemLab || {
             renderAITutor(),
 
             // Keyboard hints
-            h('div', { className: 'text-center text-[11px] text-slate-500 mt-2' },
+            h('div', { className: 'text-center text-[11px] text-slate-600 mt-2' },
               '\u2328\uFE0F 1-3: tabs | N: new challenge | ?: AI tutor'
             )
           );

@@ -49,6 +49,71 @@ const BACKUP = path.join(ROOT, 'prismflow-deploy', 'src', 'AlloFlowANTI.txt');
 // Each module: { name, filename, cdnTemplate }
 const MODULES = [
     {
+        name: 'AlloData',
+        filename: 'allo_data_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'PromptsLibraryModule',
+        filename: 'prompts_library_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'TextPipelineHelpersModule',
+        filename: 'text_pipeline_helpers_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'AdaptiveControllerModule',
+        filename: 'adaptive_controller_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'UdlChatModule',
+        filename: 'udl_chat_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'AdventureHandlersModule',
+        filename: 'adventure_handlers_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'GlossaryHelpersModule',
+        filename: 'glossary_helpers_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'ViewRenderersModule',
+        filename: 'view_renderers_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'LargeFileModule',
+        filename: 'large_file_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'KeyConceptMapModule',
+        filename: 'key_concept_map_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'UtilsPure',
+        filename: 'utils_pure_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'MiscComponents',
+        filename: 'misc_components_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'RemediationAudio',
+        filename: 'remediation_audio_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         name: 'StemLab',
         filename: 'shared/modules/stem_lab/stem_lab_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
@@ -129,6 +194,11 @@ const MODULES = [
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
+        name: 'TimelineRevisionModule',
+        filename: 'timeline_revision_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         name: 'StudentInteractionModule',
         filename: 'student_interaction_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
@@ -161,6 +231,26 @@ const MODULES = [
     {
         name: 'ContentEngineModule',
         filename: 'content_engine_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'GeminiAPI',
+        filename: 'gemini_api_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'TTS',
+        filename: 'tts_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'Personas',
+        filename: 'personas_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'Export',
+        filename: 'export_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     }
 ];
@@ -238,6 +328,9 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_singing.js',
     'stem_lab/stem_tool_applab.js',
     'stem_lab/stem_tool_migration.js',
+    'stem_lab/stem_tool_echotrainer.js',
+    'stem_lab/stem_tool_bakingscience.js',
+    'stem_lab/stem_tool_allobotsage.js',
     'sel_hub/sel_safety_layer.js',  // MUST load before any sel_tool_*.js
     'sel_hub/sel_tool_zones.js', 'sel_hub/sel_tool_emotions.js',
     'sel_hub/sel_tool_coping.js', 'sel_hub/sel_tool_mindfulness.js',
@@ -263,10 +356,260 @@ const PLUGIN_FILES = [
     'sel_hub/sel_tool_upstander.js'
 ];
 
+// ── Source → Module compilation ─────────────────────────────────
+// Each pair below describes a *_source.jsx ↔ *_module.js mapping. The compiler
+// reads source, wraps it in the module's specific IIFE + registration, writes
+// the module file (+ copies to prismflow-deploy/public), and syntax-checks it.
+//
+// Currently implemented for doc_pipeline only (source has no JSX — a simple
+// cat+wrap). JSX-bearing modules (games, teacher, etc.) need Babel and will
+// be added in a follow-up pass.
+//
+// Runs automatically at the start of `--mode=prod` so the dirty-tree guard
+// below will catch any compilation-produced changes that weren't committed.
+// Run `node build.js --compile` standalone to just do the compile step.
+// Lazy-loaded Babel handle — only required if a JSX-bearing pair is compiled.
+// Keeps the common --mode=prod path fast when no JSX modules are enrolled yet.
+let _babel = null;
+function getBabel() {
+    if (_babel) return _babel;
+    try { _babel = require('@babel/core'); }
+    catch (e) { console.error('❌ @babel/core is required for JSX compilation but is not installed.'); process.exit(1); }
+    return _babel;
+}
+
+function compileJsx(src) {
+    const babel = getBabel();
+    const r = babel.transformSync(src, {
+        plugins: ['@babel/plugin-transform-react-jsx'], // classic runtime → React.createElement output
+        configFile: false,
+        babelrc: false,
+    });
+    return r.code;
+}
+
+const COMPILE_PAIRS = [
+    {
+        name: 'DocPipeline',
+        srcPath: path.join(ROOT, 'doc_pipeline_source.jsx'),
+        modPath: path.join(ROOT, 'doc_pipeline_module.js'),
+        publicPath: path.join(ROOT, 'prismflow-deploy', 'public', 'doc_pipeline_module.js'),
+        wrap(src) {
+            // Idempotency guard + IIFE. Source.jsx already contains its own
+            // window.AlloModules registration, so the footer only needs to close
+            // the IIFE. Matches the hand-compiled output users have been producing.
+            // Match the bash one-liner output byte-for-byte so recompiling an
+            // already-compiled module produces no diff. Source.jsx typically
+            // ends with its own trailing newline; we just append the footer.
+            const trailingNewline = src.endsWith('\n') ? '' : '\n';
+            return (
+                '(function(){"use strict";\n'
+                + 'if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}\n'
+                + src + trailingNewline
+                + '\n'
+                + 'window.AlloModules = window.AlloModules || {};\n'
+                + 'window.AlloModules.createDocPipeline = createDocPipeline;\n'
+                + 'window.AlloModules.DocPipelineModule = true;\n'
+                + "console.log('[DocPipelineModule] Pipeline factory registered');\n"
+                + '})();\n'
+            );
+        },
+    },
+    {
+        // ── persona_ui ── JSX-bearing module, verified zero-diff vs deployed module.js after
+        // the April 2026 WCAG back-port (slate-500→600 + text-[10px]→[11px]). First JSX module
+        // onboarded to Phase 2 auto-compile. To add more modules, verify `_phase2_diff_audit.js`
+        // reports PERFECT for that module after any needed source back-ports, then add an
+        // entry here with the module's specific wrapper.
+        name: 'PersonaUI',
+        srcPath: path.join(ROOT, 'persona_ui_source.jsx'),
+        modPath: path.join(ROOT, 'persona_ui_module.js'),
+        publicPath: path.join(ROOT, 'prismflow-deploy', 'public', 'persona_ui_module.js'),
+        wrap(src) {
+            const compiled = compileJsx(src);
+            return (
+                '(function() {\n'
+                + "'use strict';\n"
+                + '  // WCAG 2.1 AA: Accessibility CSS\n'
+                + '  if (!document.getElementById("persona-ui-module-a11y")) { var _s = document.createElement("style"); _s.id = "persona-ui-module-a11y"; _s.textContent = "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .text-slate-600 { color: #64748b !important; }"; document.head.appendChild(_s); }\n'
+                + "if (window.AlloModules && window.AlloModules.PersonaUIModule) { console.log('[CDN] PersonaUIModule already loaded, skipping'); return; }\n"
+                + compiled
+                + '\n})();\n'
+            );
+        },
+    },
+    {
+        // ── gemini_api ── Pure HTTP wrappers for Gemini text/vision/image-edit calls.
+        // Factory pattern: createGeminiAPI({apiKey, GEMINI_MODELS, fetchWithExponentialBackoff,
+        // optimizeImage, warnLog, debugLog, _isCanvasEnv, getAbortSignal}) -> {callGemini,
+        // callGeminiImageEdit, callGeminiVision}. No React state, no module-level mutable state.
+        name: 'GeminiAPI',
+        srcPath: path.join(ROOT, 'gemini_api_source.jsx'),
+        modPath: path.join(ROOT, 'gemini_api_module.js'),
+        publicPath: path.join(ROOT, 'prismflow-deploy', 'public', 'gemini_api_module.js'),
+        wrap(src) {
+            const compiled = compileJsx(src);
+            return (
+                '(function() {\n'
+                + "'use strict';\n"
+                + "if (window.AlloModules && window.AlloModules.GeminiAPI) { console.log('[CDN] GeminiAPI already loaded, skipping'); return; }\n"
+                + compiled
+                + '\n})();\n'
+            );
+        },
+    },
+    {
+        // ── tts ── Text-to-speech orchestration: fetchTTSBytes + callTTS + callTTSDirect.
+        // Factory pattern: createTTS({state, apiKey, GEMINI_MODELS, AVAILABLE_VOICES,
+        // _isCanvasEnv, pcmToWav, languageToTTSCode, isGlobalMuted, warnLog, debugLog,
+        // getLeveledTextLanguage, getCurrentUiLanguage, getAiUserConfig, getAi,
+        // setShowKokoroOfferModal}) -> {fetchTTSBytes, callTTS, callTTSDirect}.
+        // Module-level state (queue/botQueue/urlCache/rateLimitedUntil) passed by reference
+        // so window.__clearAlloTtsCacheForWord in monolith can still touch the same cache.
+        name: 'TTS',
+        srcPath: path.join(ROOT, 'tts_source.jsx'),
+        modPath: path.join(ROOT, 'tts_module.js'),
+        publicPath: path.join(ROOT, 'prismflow-deploy', 'public', 'tts_module.js'),
+        wrap(src) {
+            const compiled = compileJsx(src);
+            return (
+                '(function() {\n'
+                + "'use strict';\n"
+                + "if (window.AlloModules && window.AlloModules.TTS) { console.log('[CDN] TTS already loaded, skipping'); return; }\n"
+                + compiled
+                + '\n})();\n'
+            );
+        },
+    },
+    {
+        // ── personas ── Historical character interview subsystem (16 handlers).
+        // Pairs with persona_ui_module.js (which handles presentational components).
+        // Factory: createPersonas({liveRef, warnLog, debugLog, cleanJson, safeJsonParse,
+        // fisherYatesShuffle, SafetyContentChecker}) -> {16 handlers}.
+        // liveRef pattern: component updates liveRef.current every render with state,
+        // setters, refs, and component-scoped helpers (callImagen, addToast, etc.).
+        // window.callGemini / window.callGeminiImageEdit used directly (avoids closure
+        // capture of fallback if Personas module loads before GeminiAPI module).
+        name: 'Personas',
+        srcPath: path.join(ROOT, 'personas_source.jsx'),
+        modPath: path.join(ROOT, 'personas_module.js'),
+        publicPath: path.join(ROOT, 'prismflow-deploy', 'public', 'personas_module.js'),
+        wrap(src) {
+            const compiled = compileJsx(src);
+            return (
+                '(function() {\n'
+                + "'use strict';\n"
+                + "if (window.AlloModules && window.AlloModules.Personas) { console.log('[CDN] Personas already loaded, skipping'); return; }\n"
+                + compiled
+                + '\n})();\n'
+            );
+        },
+    },
+    {
+        // ── export ── Export pipeline (8 handlers): JSON bundles (language pack,
+        // research, profiles), standards-compliant packages (QTI, IMS), slide decks
+        // (PPTX via window.PptxGenJS), flashcard HTML, adventure storybook (HTML
+        // print window). Skipped: handleExport / handleExportPDF /
+        // executeExportFromPreview / generateExportAudio — tightly coupled to the
+        // preview-modal iframe system.
+        // Factory: createExport({liveRef, warnLog, debugLog, escapeXml, generateUUID})
+        // -> {8 handlers}. Inline helpers: getDefaultTitle, cleanTextForPptx.
+        // window.callGemini accessed directly from inside handleExportStorybook.
+        name: 'Export',
+        srcPath: path.join(ROOT, 'export_source.jsx'),
+        modPath: path.join(ROOT, 'export_module.js'),
+        publicPath: path.join(ROOT, 'prismflow-deploy', 'public', 'export_module.js'),
+        wrap(src) {
+            const compiled = compileJsx(src);
+            return (
+                '(function() {\n'
+                + "'use strict';\n"
+                + "if (window.AlloModules && window.AlloModules.Export) { console.log('[CDN] Export already loaded, skipping'); return; }\n"
+                + compiled
+                + '\n})();\n'
+            );
+        },
+    },
+];
+
+function compileSources() {
+    const results = [];
+    for (const pair of COMPILE_PAIRS) {
+        if (!fs.existsSync(pair.srcPath)) {
+            results.push({ name: pair.name, status: 'skipped', reason: 'source not found' });
+            continue;
+        }
+        const src = fs.readFileSync(pair.srcPath, 'utf-8');
+        let compiled;
+        try {
+            compiled = pair.wrap(src);
+        } catch (e) {
+            results.push({ name: pair.name, status: 'error', reason: 'wrap failed: ' + e.message });
+            continue;
+        }
+        const existing = fs.existsSync(pair.modPath) ? fs.readFileSync(pair.modPath, 'utf-8') : null;
+        // Match existing file's line endings so recompiling an unchanged source
+        // produces no diff (on Windows, committed files typically use CRLF).
+        const useCRLF = existing && existing.includes('\r\n');
+        const finalOutput = useCRLF ? compiled.replace(/(?<!\r)\n/g, '\r\n') : compiled;
+        const changed = existing !== finalOutput;
+        if (changed) {
+            fs.writeFileSync(pair.modPath, finalOutput, 'utf-8');
+            if (pair.publicPath) {
+                try {
+                    if (!fs.existsSync(path.dirname(pair.publicPath))) {
+                        fs.mkdirSync(path.dirname(pair.publicPath), { recursive: true });
+                    }
+                    fs.writeFileSync(pair.publicPath, finalOutput, 'utf-8');
+                } catch (e) { /* public copy is best-effort */ }
+            }
+        }
+        // Syntax-check the output so we fail loudly on any regression.
+        try {
+            execSync('node -c "' + pair.modPath + '"', { stdio: 'pipe' });
+        } catch (e) {
+            results.push({ name: pair.name, status: 'syntax-error', reason: (e.stderr && e.stderr.toString()) || e.message });
+            continue;
+        }
+        results.push({ name: pair.name, status: changed ? 'compiled' : 'unchanged', bytes: compiled.length });
+    }
+    return results;
+}
+
+// Standalone compile mode — run just the compilation step and exit.
+if (args.includes('--compile')) {
+    console.log('── Compiling source modules ──');
+    const results = compileSources();
+    let hadError = false;
+    for (const r of results) {
+        const icon = r.status === 'compiled' ? '🔧' : r.status === 'unchanged' ? '✓' : r.status === 'skipped' ? '↩️' : '❌';
+        console.log(`  ${icon} ${r.name}: ${r.status}${r.reason ? ' — ' + r.reason : ''}${r.bytes ? ' (' + r.bytes + ' bytes)' : ''}`);
+        if (r.status === 'error' || r.status === 'syntax-error') hadError = true;
+    }
+    process.exit(hadError ? 1 : 0);
+}
+
 // ── Read source ─────────────────────────────────────────────────
 if (!fs.existsSync(SOURCE)) {
     console.error(`❌ Source file not found: ${SOURCE}`);
     process.exit(1);
+}
+
+// Run compilation automatically in prod mode. Any compilation-produced changes
+// will be caught by the dirty-tree guard further down, forcing the user to
+// commit them before the CDN can pick them up.
+if (mode === 'prod') {
+    console.log('── Compiling source modules ──');
+    const compileResults = compileSources();
+    for (const r of compileResults) {
+        const icon = r.status === 'compiled' ? '🔧' : r.status === 'unchanged' ? '✓' : r.status === 'skipped' ? '↩️' : '❌';
+        console.log(`  ${icon} ${r.name}: ${r.status}${r.reason ? ' — ' + r.reason : ''}`);
+    }
+    if (compileResults.some(r => r.status === 'error' || r.status === 'syntax-error')) {
+        console.error('❌ Compilation failed. Aborting build.');
+        process.exit(1);
+    }
+    console.log('');
 }
 
 let content = fs.readFileSync(SOURCE, 'utf-8');
@@ -355,6 +698,48 @@ if (mode === 'prod') {
         } catch (e) {
             console.warn('⚠️  Could not check for stale hash: ' + e.message);
         }
+    }
+
+    // ── Module shrink guard: block if any managed module lost significant content vs HEAD ──
+    // Protects against the failure mode where `git add -A` bundles a stale local copy of a
+    // module file that is behind the remote version, silently reverting ~100s of lines of work.
+    // This happened on 2026-04-13 when af4f52f silently dropped ~900 lines from doc_pipeline_source.jsx.
+    if (!forceFlag) {
+        const SHRINK_THRESHOLD_LINES = 200; // refuse a prod build if any module lost >200 lines vs HEAD
+        try {
+            const allManagedFiles = MODULES.map(m => m.filename).concat(PLUGIN_FILES);
+            const shrunk = [];
+            for (const rel of allManagedFiles) {
+                const abs = path.join(ROOT, rel);
+                if (!fs.existsSync(abs)) continue;
+                try {
+                    const headContent = execSync(`git show HEAD:"${rel}"`, { cwd: ROOT, encoding: 'utf-8' });
+                    const headLines = headContent.split('\n').length;
+                    const currentLines = fs.readFileSync(abs, 'utf-8').split('\n').length;
+                    const loss = headLines - currentLines;
+                    if (loss > SHRINK_THRESHOLD_LINES) {
+                        shrunk.push({ file: rel, headLines, currentLines, loss });
+                    }
+                } catch(fileErr) {
+                    // File may be new / not in HEAD — skip shrink check
+                }
+            }
+            if (shrunk.length > 0) {
+                console.error('');
+                console.error('❌ MODULE SHRINK GUARD — One or more module files lost significant content vs HEAD:');
+                shrunk.forEach(s => console.error(`   ${s.file}: ${s.headLines} lines in HEAD → ${s.currentLines} lines now (lost ${s.loss} lines)`));
+                console.error('');
+                console.error('   This often indicates a stale local copy clobbered the authoritative one.');
+                console.error('   Investigate: compare your local file to HEAD (git diff HEAD -- <file>).');
+                console.error('   If the shrink is intentional, re-run with --force to override this check.');
+                console.error('');
+                process.exit(1);
+            }
+        } catch (e) {
+            console.warn('⚠️  Could not run module shrink guard: ' + e.message);
+        }
+    } else {
+        console.warn('⚠️  --force flag: skipping module shrink guard');
     }
 }
 

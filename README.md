@@ -31,6 +31,8 @@ AlloFlow is an **open-source, privacy-first AI differentiation engine** built fo
 4. **Start a Live Session** to push resources to student devices in real-time
 
 > 💡 For self-hosted deployment on district hardware, see [School Box](#-local-first-the-school-box) below.
+>
+> 🏫 **District decision-maker?** See the 2-page [Admin Brief](./AdminBrief.md) — cost comparison, privacy/compliance, and pilot-path summary.
 
 ---
 
@@ -223,6 +225,9 @@ Every feature maps to [CAST's UDL Guidelines](https://udlguidelines.cast.org/):
 
 | Resource | Link |
 |----------|------|
+| 🏫 Admin Brief (for districts) | [AdminBrief.md](./AdminBrief.md) |
+| ♿ VPAT 2.5 (accessibility conformance) | [VPAT-2.5-WCAG-AlloFlow.md](./VPAT-2.5-WCAG-AlloFlow.md) |
+| ♿ WCAG AA Audit Report | [alloflow_wcag_aa_audit_report.md](./alloflow_wcag_aa_audit_report.md) |
 | 📖 Complete User Manual | [AlloFlow Complete User Manual.md](./AlloFlow%20Complete%20User%20Manual.md) |
 | 🖨️ Quick Reference Cards | [QuickReferenceCards.md](./QuickReferenceCards.md) |
 | 🏗️ Architecture Overview | [architecture.md](./architecture.md) |

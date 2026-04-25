@@ -1,7 +1,11 @@
 # AlloFlow PDF Accessibility Pipeline — Technical Architecture
 
+> **⚠ DEPRECATED — April 2026.** This document is a historical snapshot from April 1, 2026 and has drifted from the current implementation (phase count, deterministic fix count, Phase 3c surgical tools, and several export formats differ).
+>
+> **Canonical reference:** [PIPELINE_ARCHITECTURE.md](PIPELINE_ARCHITECTURE.md). Use that for collaborator onboarding, audits, and documentation updates. This file is retained for historical context only and will not be updated further.
+
 **Version:** 1.0 | **Date:** April 1, 2026 | **Author:** Aaron Pomeranz, PsyD
-**Status:** Production (deployed at prismflow-911fe.web.app) | **License:** GNU AGPL v3
+**Status:** Deprecated — see PIPELINE_ARCHITECTURE.md | **License:** GNU AGPL v3
 
 ---
 

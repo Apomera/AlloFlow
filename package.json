@@ -5,6 +5,7 @@
   },
   "devDependencies": {
     "@babel/cli": "^7.28.6",
-    "@babel/plugin-transform-react-jsx": "^7.28.6"
+    "@babel/plugin-transform-react-jsx": "^7.28.6",
+    "playwright": "^1.59.1"
   }
 }

@@ -388,7 +388,7 @@ window.SelHub = window.SelHub || {
           h('div', { style: { textAlign: 'center', marginBottom: '24px' } },
             h('div', { style: { fontSize: '48px', marginBottom: '8px' } }, '🔊'),
             h('h2', { style: { fontSize: '24px', fontWeight: 900, color: '#1e293b' } }, 'Voice Detective'),
-            h('p', { style: { color: '#64748b', fontSize: '14px', maxWidth: '400px', margin: '0 auto' } },
+            h('p', { style: { color: '#9ca3af', fontSize: '14px', maxWidth: '400px', margin: '0 auto' } },
               'Listen carefully to how people say things — not just what they say. Can you tell how someone feels just from their voice?')
           ),
           // Difficulty selector
@@ -588,7 +588,7 @@ window.SelHub = window.SelHub || {
           scoreBar,
           h('div', { style: { textAlign: 'center', marginBottom: '16px' } },
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: '#1e293b' } }, '🔀 Same Words, Different Feelings'),
-            h('p', { style: { color: '#64748b', fontSize: '13px' } }, 'Each voice says the same sentence — but with a different emotion. Match each one!')
+            h('p', { style: { color: '#9ca3af', fontSize: '13px' } }, 'Each voice says the same sentence — but with a different emotion. Match each one!')
           ),
           h('p', { style: { textAlign: 'center', fontSize: '14px', color: '#475569', fontStyle: 'italic', marginBottom: '16px', background: '#f8fafc', padding: '10px', borderRadius: '10px' } }, '"' + (variants[0] || {}).sentence + '"'),
           feedbackBar,
@@ -622,7 +622,7 @@ window.SelHub = window.SelHub || {
           scoreBar,
           h('div', { style: { textAlign: 'center', marginBottom: '16px' } },
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: '#1e293b' } }, '🎬 Match the Scene'),
-            h('p', { style: { color: '#64748b', fontSize: '13px' } }, 'Read what happened, then pick the voice that matches how the person would feel.')
+            h('p', { style: { color: '#9ca3af', fontSize: '13px' } }, 'Read what happened, then pick the voice that matches how the person would feel.')
           ),
           // Scene description
           h('div', { style: { background: 'linear-gradient(135deg, #fef3c7, #fef9c3)', border: '2px solid #fde68a', borderRadius: '14px', padding: '20px', marginBottom: '16px', textAlign: 'center' } },

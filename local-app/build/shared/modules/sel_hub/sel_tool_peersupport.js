@@ -305,7 +305,7 @@ window.SelHub = window.SelHub || {
           h('div', { style: { textAlign: 'center', marginBottom: '24px' } },
             h('div', { style: { fontSize: '48px', marginBottom: '8px' } }, '🤝'),
             h('h2', { style: { fontSize: '24px', fontWeight: 900, color: '#1e293b' } }, 'Peer Support Coach'),
-            h('p', { style: { color: '#64748b', fontSize: '14px', maxWidth: '480px', margin: '0 auto' } },
+            h('p', { style: { color: '#9ca3af', fontSize: '14px', maxWidth: '480px', margin: '0 auto' } },
               'Learn to be a supportive listener. Not a counselor — a better friend. These skills help people find their own answers.')
           ),
           // OARS overview cards

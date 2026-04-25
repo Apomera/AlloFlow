@@ -26,7 +26,37 @@ description: Sync AlloFlowANTI.txt to App.jsx, build, and deploy to Firebase
 > commit, the CDN will serve **stale code**. This caused a real incident on 2026-03-24.
 > `build.js` now includes a safety guard that blocks prod builds with uncommitted module files.
 
-1. Copy updated module files to `prismflow-deploy/public/`:
+1. **Compile source modules** (if any `*_source.jsx` files were edited):
+
+For `doc_pipeline_source.jsx` → `doc_pipeline_module.js`:
+```bash
+{ echo '(function(){"use strict";'; echo 'if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}'; cat doc_pipeline_source.jsx; echo ''; echo 'window.AlloModules = window.AlloModules || {};'; echo 'window.AlloModules.createDocPipeline = createDocPipeline;'; echo 'window.AlloModules.DocPipelineModule = true;'; echo "console.log('[DocPipelineModule] Pipeline factory registered');"; echo '})();'; } > doc_pipeline_module.js && cp doc_pipeline_module.js prismflow-deploy/public/doc_pipeline_module.js && node -c doc_pipeline_module.js && echo "✓ doc_pipeline compiled"
+```
+Working directory: `C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated`
+
+> **Source → Module mapping:**
+> - `doc_pipeline_source.jsx` (root) → `doc_pipeline_module.js` (+ copy to `prismflow-deploy/public/`)
+> - `games_source.jsx` (root) → `games_module.js`  ← **canonical is ROOT, not prismflow-deploy/src**
+> - `adventure_source.jsx` (root) → `adventure_module.js`
+> - `content_engine_source.jsx` (root) → `content_engine_module.js`
+>
+> **Note on prismflow-deploy/src/ duplicates:** `prismflow-deploy/src/` previously
+> contained duplicate `games_source.jsx`, `adventure_source.jsx`, and
+> `content_engine_source.jsx` files. These are **kept in sync** with root (the
+> pre-commit hook enforces byte-identity) but the **root** version is the one
+> that gets compiled to `*_module.js`. An earlier version of this doc listed the
+> `prismflow-deploy/src/` paths as canonical; that was wrong — verified by
+> checking `games_module.js` for root-only props like `onExplainIncorrect` which
+> matched the root source verbatim, not the stale dup.
+>
+> Each compiled module wraps the source in an IIFE with a duplicate-load guard.
+> **Always run `node -c <module>.js` after compiling to verify syntax.**
+>
+> **Automated:** `node build.js --compile` (and `--mode=prod`) now runs the
+> doc_pipeline compile step automatically. Other modules (games/teacher/etc.)
+> still require manual compilation until Phase 2 of the JSX compiler lands.
+
+1b. Copy updated module files to `prismflow-deploy/public/`:
 ```
 Copy-Item -Path stem_lab\stem_lab_module.js -Destination prismflow-deploy\public\stem_lab_module.js -Force
 ```

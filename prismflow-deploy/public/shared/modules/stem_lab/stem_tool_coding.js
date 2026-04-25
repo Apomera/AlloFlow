@@ -1702,11 +1702,7 @@
                 cdef ? cdef.label : child.type,
                 cdef && cdef.param && child.type !== 'color' ? ' ' + (child[cdef.param] || cdef.defaultVal) + (cdef.unit || '') : ''
               ),
-<<<<<<< HEAD:prismflow-deploy/public/shared/modules/stem_lab/stem_tool_coding.js
-              React.createElement("button", { "aria-label": "Multiply", onClick: function () { removeChildBlock(parentIdx, ci, isElse); }, className: "text-white/50 hover:text-red-300 text-xs" }, "×")
-=======
               React.createElement("button", { "aria-label": "Remove child block", onClick: function () { removeChildBlock(parentIdx, ci, isElse); }, className: "text-white/50 hover:text-red-300 text-xs" }, "×")
->>>>>>> upstream/main:prismflow-deploy/public/stem_tool_coding.js
             );
           }
 
@@ -1716,7 +1712,7 @@
               ['forward', 'backward', 'right', 'left', 'circle', 'color', 'playNote', 'random'].map(function (ct) {
                 return React.createElement("button", { "aria-label": "Add Child Block",
                   key: ct, onClick: function () { addChildBlock(parentIdx, ct, isElse); },
-                  className: "px-2 py-0.5 rounded text-[10px] bg-slate-600 text-slate-300 hover:bg-slate-500 transition-colors"
+                  className: "px-2 py-0.5 rounded text-[11px] bg-slate-600 text-slate-300 hover:bg-slate-500 transition-colors"
                 }, ct === 'forward' ? '+🐢' : ct === 'backward' ? '+🔙' : ct === 'right' ? '+↩️' : ct === 'left' ? '+↪️' : ct === 'circle' ? '+⭕' : ct === 'playNote' ? '+🎵' : ct === 'random' ? '+🎲' : '+🎨');
               })
             );
@@ -1733,13 +1729,9 @@
             },
               React.createElement("div", { className: "flex items-center justify-between mb-3" },
                 React.createElement("h3", { className: "text-sm font-bold text-amber-300" }, "📂 Starter Templates"),
-<<<<<<< HEAD:prismflow-deploy/public/shared/modules/stem_lab/stem_tool_coding.js
-                React.createElement("button", { "aria-label": "Multiply",
-=======
                 React.createElement("button", { "aria-label": "Close templates panel",
->>>>>>> upstream/main:prismflow-deploy/public/stem_tool_coding.js
                   onClick: function () { upd('showTemplates', false); },
-                  className: "text-slate-400 hover:text-white text-lg px-2"
+                  className: "text-slate-200 hover:text-white text-lg px-2"
                 }, "×")
               ),
               React.createElement("div", {
@@ -1754,7 +1746,7 @@
                   },
                     React.createElement("span", { className: "text-2xl group-hover:scale-110 transition-transform" }, tmpl.icon),
                     React.createElement("span", { className: "text-xs font-bold text-white text-center" }, tmpl.name),
-                    React.createElement("span", { className: "text-[10px] text-slate-400 text-center leading-tight" }, tmpl.desc),
+                    React.createElement("span", { className: "text-[11px] text-slate-200 text-center leading-tight" }, tmpl.desc),
                     React.createElement("span", { className: "text-[11px] text-amber-400/70 mt-0.5" }, tmpl.blocks.length + ' blocks')
                   );
                 })
@@ -1778,7 +1770,7 @@
                         React.createElement("span", { className: "text-lg font-bold text-indigo-300 mt-0.5" }, (si + 1) + '.'),
                         React.createElement("div", null,
                           React.createElement("span", { className: "text-xs font-bold text-indigo-200" }, step.title),
-                          React.createElement("p", { className: "text-[10px] text-indigo-300/70 leading-snug mt-0.5" }, step.text)
+                          React.createElement("p", { className: "text-[11px] text-indigo-300/70 leading-snug mt-0.5" }, step.text)
                         )
                       );
                     })
@@ -1808,11 +1800,7 @@
               // Playground Mode Tabs (Turtle / Robot)
               React.createElement("div", { className: "flex rounded-lg overflow-hidden border border-white/20 mr-2" },
                 [{ key: 'turtle', icon: '\uD83D\uDC22', label: 'Turtle' }, { key: 'robot', icon: '\uD83E\uDD16', label: 'Robot' }].map(function(tab) {
-<<<<<<< HEAD:prismflow-deploy/public/shared/modules/stem_lab/stem_tool_coding.js
-                  return React.createElement("button", { "aria-label": "Change playground mode",
-=======
                   return React.createElement("button", { "aria-label": "Switch to " + tab.label + " playground mode",
->>>>>>> upstream/main:prismflow-deploy/public/stem_tool_coding.js
                     key: tab.key,
                     onClick: function() { upd('playgroundMode', tab.key); },
                     className: "px-3 py-1.5 text-xs font-bold transition-all " +
@@ -1874,21 +1862,21 @@
                   onClick: handleExplainCode,
                   disabled: aiLoading || blocks.length === 0,
                   title: "AI explains what your code does",
-                  className: "px-2.5 py-1.5 text-[10px] font-bold transition-all " +
+                  className: "px-2.5 py-1.5 text-[11px] font-bold transition-all " +
                     (aiLoading ? "bg-white/5 text-white/30 cursor-wait" : "bg-white/10 text-white/80 hover:bg-white/20")
                 }, aiLoading ? "⏳" : "🤖 Explain"),
                 React.createElement("button", { "aria-label": "Suggest",
                   onClick: handleSuggestNext,
                   disabled: aiLoading,
                   title: "AI suggests what to try next",
-                  className: "px-2.5 py-1.5 text-[10px] font-bold transition-all border-l border-white/20 " +
+                  className: "px-2.5 py-1.5 text-[11px] font-bold transition-all border-l border-white/20 " +
                     (aiLoading ? "bg-white/5 text-white/30" : "bg-white/10 text-white/80 hover:bg-white/20")
                 }, "💡 Suggest"),
                 React.createElement("button", { "aria-label": "Debug",
                   onClick: handleDebugHelp,
                   disabled: aiLoading || challengeIdx < 0,
                   title: "AI helps debug your challenge attempt",
-                  className: "px-2.5 py-1.5 text-[10px] font-bold transition-all border-l border-white/20 " +
+                  className: "px-2.5 py-1.5 text-[11px] font-bold transition-all border-l border-white/20 " +
                     (aiLoading || challengeIdx < 0 ? "bg-white/5 text-white/30" : "bg-white/10 text-white/80 hover:bg-white/20")
                 }, "🐛 Debug")
               ),
@@ -1904,11 +1892,7 @@
 
 
               // 3D Mode toggle
-<<<<<<< HEAD:prismflow-deploy/public/shared/modules/stem_lab/stem_tool_coding.js
-              React.createElement("button", { "aria-label": "Change show3 d",
-=======
               React.createElement("button", { "aria-label": "Toggle 3D rendering mode",
->>>>>>> upstream/main:prismflow-deploy/public/stem_tool_coding.js
                 onClick: function() { upd('show3D', !show3D); if (!show3D) { upd('pitchAngle', 0); upd('yawAngle', 0); } },
                 title: show3D ? 'Switch to 2D mode' : 'Switch to 3D isometric mode',
                 className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " +
@@ -1959,32 +1943,20 @@
                   (canvasLayer === 'background' ? "bg-purple-700 text-white" : "bg-white/15 text-white hover:bg-white/25")
               }, canvasLayer === 'background' ? "🎨 BG" : "🎨 FG"),
               // Canvas controls
-<<<<<<< HEAD:prismflow-deploy/public/shared/modules/stem_lab/stem_tool_coding.js
-              React.createElement("button", { "aria-label": "Change show grid",
-=======
               React.createElement("button", { "aria-label": "Toggle canvas grid overlay",
->>>>>>> upstream/main:prismflow-deploy/public/stem_tool_coding.js
                 onClick: function () { upd('showGrid', !showGrid); },
                 title: showGrid ? 'Hide grid' : 'Show grid',
                 className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " +
                   (showGrid ? 'bg-white/20 text-white' : 'bg-white/5 text-white/40')
               }, "⊞"),
-<<<<<<< HEAD:prismflow-deploy/public/shared/modules/stem_lab/stem_tool_coding.js
-              React.createElement("button", { "aria-label": "Show tutorial",
-=======
               React.createElement("button", { "aria-label": "Toggle canvas coordinate display",
->>>>>>> upstream/main:prismflow-deploy/public/stem_tool_coding.js
                 onClick: function () { upd('showCoords', !showCoords); },
                 title: showCoords ? 'Hide coordinates' : 'Show coordinates',
                 className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " +
                   (showCoords ? 'bg-white/20 text-white' : 'bg-white/5 text-white/40')
               }, "📐"),
               // Tutorial help button
-<<<<<<< HEAD:prismflow-deploy/public/shared/modules/stem_lab/stem_tool_coding.js
-              tutorialDismissed && React.createElement("button", { "aria-label": "Show tutorial",
-=======
               tutorialDismissed && React.createElement("button", { "aria-label": "Reopen coding tutorial",
->>>>>>> upstream/main:prismflow-deploy/public/stem_tool_coding.js
                 onClick: function () { upd('tutorialDismissed', false); },
                 title: 'Show tutorial',
                 className: "px-2.5 py-1.5 rounded-lg text-xs font-bold bg-white/10 text-white/70 hover:bg-white/20 hover:text-white transition-all"
@@ -1997,14 +1969,10 @@
             playgroundMode === 'robot' && React.createElement("div", { className: "col-span-2 grid gap-4", style: { gridTemplateColumns: "200px 1fr 260px" } },
               // Robot Toolbox
               React.createElement("div", { className: "coding-toolbox bg-slate-800/80 backdrop-blur-sm rounded-xl p-3 border border-slate-700/60 shadow-lg", style: { maxHeight: '500px', overflowY: 'auto' } },
-                React.createElement("h3", { className: "text-xs font-bold text-slate-400 uppercase tracking-wider mb-2" }, "\uD83E\uDD16 Robot Commands"),
+                React.createElement("h3", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider mb-2" }, "\uD83E\uDD16 Robot Commands"),
                 React.createElement("div", { className: "space-y-1" },
                   ROBOT_BLOCKS.map(function(rb) {
-<<<<<<< HEAD:prismflow-deploy/public/shared/modules/stem_lab/stem_tool_coding.js
-                    return React.createElement("button", { "aria-label": "Add",
-=======
                     return React.createElement("button", { "aria-label": "Add robot command: " + rb.label,
->>>>>>> upstream/main:prismflow-deploy/public/stem_tool_coding.js
                       key: rb.type,
                       onClick: function() { addRobotBlock(rb.type); },
                       disabled: robotRunning,
@@ -2018,7 +1986,7 @@
                   })
                 ),
                 React.createElement("div", { className: "mt-3 p-2 rounded-lg bg-slate-700/50 border border-slate-600/30" },
-                  React.createElement("p", { className: "text-[10px] text-slate-400 leading-relaxed" },
+                  React.createElement("p", { className: "text-[11px] text-slate-600 leading-relaxed" },
                     "\uD83D\uDCA1 Drag commands into your program. Use If/While blocks for smart navigation!"
                   )
                 )
@@ -2107,18 +2075,14 @@
                 // Robot Program
                 React.createElement("div", { className: "bg-slate-800/60 rounded-xl p-3 border border-slate-700/50", style: { maxHeight: '200px', overflowY: 'auto' } },
                   React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                    React.createElement("h3", { className: "text-xs font-bold text-slate-400 uppercase tracking-wider" }, "\uD83D\uDCDD Program (" + robotBlocks.length + ")"),
+                    React.createElement("h3", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider" }, "\uD83D\uDCDD Program (" + robotBlocks.length + ")"),
                     React.createElement("div", { className: "flex gap-1" },
                       React.createElement("button", { "aria-label": "Clear",
                         onClick: function() { upd('robotBlocks', []); },
                         disabled: robotBlocks.length === 0,
-                        className: "px-2 py-1 rounded text-[10px] font-bold text-slate-400 hover:text-white bg-slate-700/50 hover:bg-slate-600 transition-all"
+                        className: "px-2 py-1 rounded text-[11px] font-bold text-slate-200 hover:text-white bg-slate-700/50 hover:bg-slate-600 transition-all"
                       }, "\uD83D\uDDD1 Clear"),
-<<<<<<< HEAD:prismflow-deploy/public/shared/modules/stem_lab/stem_tool_coding.js
-                      React.createElement("button", { "aria-label": "Reset",
-=======
                       React.createElement("button", { "aria-label": "Reset robot grid",
->>>>>>> upstream/main:prismflow-deploy/public/stem_tool_coding.js
                         onClick: function() {
                           if (robotChallengeIdx >= 0) {
                             var ch = ROBOT_CHALLENGES[robotChallengeIdx];
@@ -2126,18 +2090,18 @@
                             updMulti({ robotGrid: grid, robotPos: { x: ch.start[0], y: ch.start[1], dir: ch.startDir }, robotTrail: [{ x: ch.start[0], y: ch.start[1] }], robotRunning: false });
                           }
                         },
-                        className: "px-2 py-1 rounded text-[10px] font-bold text-slate-400 hover:text-white bg-slate-700/50 hover:bg-slate-600 transition-all"
+                        className: "px-2 py-1 rounded text-[11px] font-bold text-slate-200 hover:text-white bg-slate-700/50 hover:bg-slate-600 transition-all"
                       }, "\u21BA Reset"),
                       React.createElement("button", { "aria-label": "Handle Robot Run",
                         onClick: handleRobotRun,
                         disabled: robotBlocks.length === 0 || robotRunning || robotChallengeIdx < 0,
-                        className: "px-3 py-1 rounded text-[10px] font-bold transition-all " +
-                          (robotBlocks.length > 0 && !robotRunning && robotChallengeIdx >= 0 ? "bg-emerald-700 text-white hover:bg-emerald-600" : "bg-slate-700 text-slate-500 cursor-not-allowed")
+                        className: "px-3 py-1 rounded text-[11px] font-bold transition-all " +
+                          (robotBlocks.length > 0 && !robotRunning && robotChallengeIdx >= 0 ? "bg-emerald-700 text-white hover:bg-emerald-600" : "bg-slate-700 text-slate-600 cursor-not-allowed")
                       }, robotRunning ? "\u23F3 Running..." : "\u25B6 Run")
                     )
                   ),
                   robotBlocks.length === 0 ?
-                    React.createElement("p", { className: "text-[10px] text-slate-500 text-center py-3 italic" }, "Click commands from the toolbox to build your program!") :
+                    React.createElement("p", { className: "text-[11px] text-slate-600 text-center py-3 italic" }, "Click commands from the toolbox to build your program!") :
                     React.createElement("div", { className: "space-y-1" },
                       robotBlocks.map(function(b, bi) {
                         var bdef = ROBOT_BLOCKS.find(function(rb) { return rb.type === b.type; });
@@ -2148,13 +2112,9 @@
                               type: "number", min: 1, max: 20, value: b.times || 3,
                               'aria-label': 'Repeat count',
                               onChange: function(e) { var updated = robotBlocks.map(function(rb2, i2) { if (i2 === bi) { return Object.assign({}, rb2, { times: parseInt(e.target.value) || 3 }); } return rb2; }); upd('robotBlocks', updated); },
-                              className: "w-10 px-1 py-0.5 bg-white/20 rounded text-[10px] text-white text-center border-0 outline-none focus:ring-2 focus:ring-indigo-400"
+                              className: "w-10 px-1 py-0.5 bg-white/20 rounded text-[11px] text-white text-center border-0 outline-none focus:ring-2 focus:ring-indigo-400"
                             }),
-<<<<<<< HEAD:prismflow-deploy/public/shared/modules/stem_lab/stem_tool_coding.js
-                            React.createElement("button", { "aria-label": "Select option",
-=======
                             React.createElement("button", { "aria-label": "Remove robot block",
->>>>>>> upstream/main:prismflow-deploy/public/stem_tool_coding.js
                               onClick: function() { removeRobotBlock(bi); },
                               className: "text-white/60 hover:text-white text-xs px-1"
                             }, "\u2715")
@@ -2163,25 +2123,17 @@
                             React.createElement("div", { className: "ml-4 mt-1 space-y-1 border-l-2 pl-2", style: { borderColor: bdef ? bdef.color + '60' : '#475569' } },
                               (b.children || []).map(function(child, ci) {
                                 var cdef = ROBOT_BLOCKS.find(function(rb) { return rb.type === child.type; });
-                                return React.createElement("div", { key: ci, className: "flex items-center gap-1 px-2 py-1 rounded text-[10px] font-bold text-white", style: { backgroundColor: cdef ? cdef.color : '#475569' } },
+                                return React.createElement("div", { key: ci, className: "flex items-center gap-1 px-2 py-1 rounded text-[11px] font-bold text-white", style: { backgroundColor: cdef ? cdef.color : '#475569' } },
                                   React.createElement("span", { className: "flex-1" }, cdef ? cdef.label : child.type),
-<<<<<<< HEAD:prismflow-deploy/public/shared/modules/stem_lab/stem_tool_coding.js
-                                  React.createElement("button", { "aria-label": "Select option", onClick: function() {
-=======
                                   React.createElement("button", { "aria-label": "Remove child block", onClick: function() {
->>>>>>> upstream/main:prismflow-deploy/public/stem_tool_coding.js
                                     var updated = robotBlocks.map(function(rb2, i2) { if (i2 === bi) { var nb = Object.assign({}, rb2); nb.children = (nb.children || []).filter(function(_, k) { return k !== ci; }); return nb; } return rb2; });
                                     upd('robotBlocks', updated);
-                                  }, className: "text-white/60 hover:text-white text-[10px]" }, "\u2715")
+                                  }, className: "text-white/60 hover:text-white text-[11px]" }, "\u2715")
                                 );
                               }),
                               React.createElement("div", { className: "flex gap-1 flex-wrap" },
                                 ROBOT_BLOCKS.filter(function(rb) { return ['moveForward','turnRight','turnLeft','collectGem','paintCell'].indexOf(rb.type) >= 0; }).map(function(rb) {
-<<<<<<< HEAD:prismflow-deploy/public/shared/modules/stem_lab/stem_tool_coding.js
-                                  return React.createElement("button", { "aria-label": "ELSE:",
-=======
                                   return React.createElement("button", { "aria-label": "Add child command: " + rb.label,
->>>>>>> upstream/main:prismflow-deploy/public/stem_tool_coding.js
                                     key: rb.type,
                                     onClick: function() { addRobotChildBlock(bi, rb.type, false); },
                                     className: "px-1.5 py-0.5 rounded text-[11px] font-bold text-white/80 hover:text-white transition-all",
@@ -2190,28 +2142,20 @@
                                 })
                               ),
                               (b.type === 'ifWall' || b.type === 'ifGem') && React.createElement("div", null,
-                                React.createElement("div", { className: "text-[11px] font-bold text-slate-500 mt-1" }, "ELSE:"),
+                                React.createElement("div", { className: "text-[11px] font-bold text-slate-600 mt-1" }, "ELSE:"),
                                 (b.elseChildren || []).map(function(child, ci) {
                                   var cdef = ROBOT_BLOCKS.find(function(rb) { return rb.type === child.type; });
-                                  return React.createElement("div", { key: 'e' + ci, className: "flex items-center gap-1 px-2 py-1 rounded text-[10px] font-bold text-white mt-1", style: { backgroundColor: cdef ? cdef.color : '#475569' } },
+                                  return React.createElement("div", { key: 'e' + ci, className: "flex items-center gap-1 px-2 py-1 rounded text-[11px] font-bold text-white mt-1", style: { backgroundColor: cdef ? cdef.color : '#475569' } },
                                     React.createElement("span", { className: "flex-1" }, cdef ? cdef.label : child.type),
-<<<<<<< HEAD:prismflow-deploy/public/shared/modules/stem_lab/stem_tool_coding.js
-                                    React.createElement("button", { "aria-label": "Select option", onClick: function() {
-=======
                                     React.createElement("button", { "aria-label": "Remove else block", onClick: function() {
->>>>>>> upstream/main:prismflow-deploy/public/stem_tool_coding.js
                                       var updated = robotBlocks.map(function(rb2, i2) { if (i2 === bi) { var nb = Object.assign({}, rb2); nb.elseChildren = (nb.elseChildren || []).filter(function(_, k) { return k !== ci; }); return nb; } return rb2; });
                                       upd('robotBlocks', updated);
-                                    }, className: "text-white/60 hover:text-white text-[10px]" }, "\u2715")
+                                    }, className: "text-white/60 hover:text-white text-[11px]" }, "\u2715")
                                   );
                                 }),
                                 React.createElement("div", { className: "flex gap-1 flex-wrap mt-1" },
                                   ROBOT_BLOCKS.filter(function(rb) { return ['moveForward','turnRight','turnLeft','collectGem','paintCell'].indexOf(rb.type) >= 0; }).map(function(rb) {
-<<<<<<< HEAD:prismflow-deploy/public/shared/modules/stem_lab/stem_tool_coding.js
-                                    return React.createElement("button", { "aria-label": "Add",
-=======
                                     return React.createElement("button", { "aria-label": "Add else block: " + rb.label,
->>>>>>> upstream/main:prismflow-deploy/public/stem_tool_coding.js
                                       key: 'e' + rb.type,
                                       onClick: function() { addRobotChildBlock(bi, rb.type, true); },
                                       className: "px-1.5 py-0.5 rounded text-[11px] font-bold text-white/80 hover:text-white transition-all",
@@ -2228,7 +2172,7 @@
               ),
               // Right sidebar — Robot Challenges
               React.createElement("div", { className: "bg-slate-800/60 backdrop-blur-sm rounded-xl p-3 border border-slate-700/50", style: { maxHeight: '600px', overflowY: 'auto' } },
-                React.createElement("h3", { className: "text-xs font-bold text-slate-400 uppercase tracking-wider mb-2" }, "\uD83C\uDFAF Robot Challenges"),
+                React.createElement("h3", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider mb-2" }, "\uD83C\uDFAF Robot Challenges"),
                 React.createElement("div", { className: "space-y-1.5" },
                   ROBOT_CHALLENGES.map(function(ch, ci) {
                     var done = robotCompleted.indexOf(ch.id) >= 0;
@@ -2243,7 +2187,7 @@
                         React.createElement("span", { className: "text-sm" }, done ? "\u2705" : active ? "\u25B6\uFE0F" : "\u2B1C"),
                         React.createElement("div", { className: "flex-1 min-w-0" },
                           React.createElement("div", { className: "text-xs font-bold " + (done ? "text-emerald-300" : active ? "text-indigo-300" : "text-slate-300") }, ch.title),
-                          React.createElement("div", { className: "text-[10px] " + (done ? "text-emerald-400/60" : "text-slate-500") + " truncate" }, ch.desc)
+                          React.createElement("div", { className: "text-[11px] " + (done ? "text-emerald-400/60" : "text-slate-600") + " truncate" }, ch.desc)
                         ),
                         React.createElement("span", { className: "text-[11px] px-1.5 py-0.5 rounded-full border " +
                           (ch.concept === 'Sequencing' ? "border-blue-500/40 text-blue-400 bg-blue-500/10" :
@@ -2252,13 +2196,13 @@
                            "border-amber-500/40 text-amber-400 bg-amber-500/10")
                         }, ch.concept)
                       ),
-                      active && ch.hint && React.createElement("div", { className: "mt-2 text-[10px] text-indigo-300/70 bg-indigo-900/40 rounded-lg p-2 border border-indigo-500/20" }, "\uD83D\uDCA1 " + ch.hint)
+                      active && ch.hint && React.createElement("div", { className: "mt-2 text-[11px] text-indigo-300/70 bg-indigo-900/40 rounded-lg p-2 border border-indigo-500/20" }, "\uD83D\uDCA1 " + ch.hint)
                     );
                   })
                 ),
                 React.createElement("div", { className: "mt-3 p-2 rounded-lg bg-slate-700/50 border border-slate-600/30" },
-                  React.createElement("div", { className: "flex items-center justify-between text-[10px]" },
-                    React.createElement("span", { className: "text-slate-400 font-bold" }, "Progress"),
+                  React.createElement("div", { className: "flex items-center justify-between text-[11px]" },
+                    React.createElement("span", { className: "text-slate-200 font-bold" }, "Progress"),
                     React.createElement("span", { className: "text-emerald-400 font-bold" }, robotCompleted.length + "/" + ROBOT_CHALLENGES.length)
                   ),
                   React.createElement("div", { className: "w-full h-1.5 bg-slate-700 rounded-full mt-1 overflow-hidden" },
@@ -2295,7 +2239,7 @@
                 React.createElement("h3", { className: "text-xs font-bold text-indigo-300 uppercase tracking-wider mb-2" },
                   "📋 Program (" + blocks.length + " blocks)"
                 ),
-                blocks.length === 0 && React.createElement("p", { className: "text-slate-400 text-xs italic text-center py-4" },
+                blocks.length === 0 && React.createElement("p", { className: "text-slate-200 text-xs italic text-center py-4" },
                   'Click blocks above or load a template to start'
                 ),
                 React.createElement("div", { className: "flex flex-col gap-1" },
@@ -2319,7 +2263,7 @@
                       },
                         // Drag handle
                         React.createElement("span", {
-                          className: "text-white/40 text-[10px] cursor-grab mr-0.5 select-none",
+                          className: "text-white/40 text-[11px] cursor-grab mr-0.5 select-none",
                           title: "Drag to reorder"
                         }, "⠿"),
                         React.createElement("span", { className: "flex-1 truncate" },
@@ -2342,20 +2286,20 @@
                         }),
                         // Goto dual param editor (x, y)
                         b.type === 'goto' && React.createElement("span", { className: "flex items-center gap-0.5" },
-                          React.createElement("span", { className: "text-[10px] text-white/60" }, "x"),
+                          React.createElement("span", { className: "text-[11px] text-white/60" }, "x"),
                           React.createElement("input", {
                             type: "number", value: b.x != null ? b.x : 250,
                             'aria-label': 'Goto X coordinate',
                             onChange: function (e) { updateBlockParam(idx, 'x', parseInt(e.target.value) || 0); },
-                            className: "w-10 px-1 py-0.5 rounded text-[10px] bg-white/20 text-white text-center",
+                            className: "w-10 px-1 py-0.5 rounded text-[11px] bg-white/20 text-white text-center",
                             style: { appearance: 'textfield' }
                           }),
-                          React.createElement("span", { className: "text-[10px] text-white/60" }, "y"),
+                          React.createElement("span", { className: "text-[11px] text-white/60" }, "y"),
                           React.createElement("input", {
                             type: "number", value: b.y != null ? b.y : 250,
                             'aria-label': 'Goto Y coordinate',
                             onChange: function (e) { updateBlockParam(idx, 'y', parseInt(e.target.value) || 0); },
-                            className: "w-10 px-1 py-0.5 rounded text-[10px] bg-white/20 text-white text-center",
+                            className: "w-10 px-1 py-0.5 rounded text-[11px] bg-white/20 text-white text-center",
                             style: { appearance: 'textfield' }
                           })
                         ),
@@ -2372,15 +2316,15 @@
                             type: "text", value: b.varName || 'size',
                             'aria-label': 'Variable name',
                             onChange: function (e) { updateBlockParam(idx, 'varName', e.target.value || 'size'); },
-                            className: "w-12 px-1 py-0.5 rounded text-[10px] bg-white/20 text-white text-center",
+                            className: "w-12 px-1 py-0.5 rounded text-[11px] bg-white/20 text-white text-center",
                             placeholder: "name"
                           }),
-                          React.createElement("span", { className: "text-[10px] text-white/60" }, "="),
+                          React.createElement("span", { className: "text-[11px] text-white/60" }, "="),
                           React.createElement("input", {
                             type: "number", value: b.varValue != null ? b.varValue : 50,
                             'aria-label': 'Variable value',
                             onChange: function (e) { updateBlockParam(idx, 'varValue', parseFloat(e.target.value) || 0); },
-                            className: "w-12 px-1 py-0.5 rounded text-[10px] bg-white/20 text-white text-center",
+                            className: "w-12 px-1 py-0.5 rounded text-[11px] bg-white/20 text-white text-center",
                             style: { appearance: 'textfield' }
                           })
                         ),
@@ -2390,15 +2334,15 @@
                             type: "text", value: b.varName || 'size',
                             'aria-label': 'Variable name to change',
                             onChange: function (e) { updateBlockParam(idx, 'varName', e.target.value || 'size'); },
-                            className: "w-12 px-1 py-0.5 rounded text-[10px] bg-white/20 text-white text-center",
+                            className: "w-12 px-1 py-0.5 rounded text-[11px] bg-white/20 text-white text-center",
                             placeholder: "name"
                           }),
-                          React.createElement("span", { className: "text-[10px] text-white/60" }, "+="),
+                          React.createElement("span", { className: "text-[11px] text-white/60" }, "+="),
                           React.createElement("input", {
                             type: "number", value: b.varDelta != null ? b.varDelta : 10,
                             'aria-label': 'Change amount',
                             onChange: function (e) { updateBlockParam(idx, 'varDelta', parseFloat(e.target.value) || 0); },
-                            className: "w-12 px-1 py-0.5 rounded text-[10px] bg-white/20 text-white text-center",
+                            className: "w-12 px-1 py-0.5 rounded text-[11px] bg-white/20 text-white text-center",
                             style: { appearance: 'textfield' }
                           })
                         ),
@@ -2407,19 +2351,13 @@
                           type: "text", value: b.condition || 'x > 250',
                           'aria-label': 'If-else condition',
                           onChange: function (e) { updateBlockParam(idx, 'condition', e.target.value); },
-                          className: "w-24 px-1 py-0.5 rounded text-[10px] bg-white/20 text-white text-center font-mono",
+                          className: "w-24 px-1 py-0.5 rounded text-[11px] bg-white/20 text-white text-center font-mono",
                           placeholder: "x > 250"
                         }),
                         // Move / Remove buttons
-<<<<<<< HEAD:prismflow-deploy/public/shared/modules/stem_lab/stem_tool_coding.js
-                        React.createElement("button", { "aria-label": "Multiply", onClick: function () { moveBlock(idx, -1); }, className: "text-white/60 hover:text-white text-[10px]", disabled: idx === 0 }, "▲"),
-                        React.createElement("button", { "aria-label": "Multiply", onClick: function () { moveBlock(idx, 1); }, className: "text-white/60 hover:text-white text-[10px]", disabled: idx === blocks.length - 1 }, "▼"),
-                        React.createElement("button", { "aria-label": "Multiply", onClick: function () { removeBlock(idx); }, className: "text-white/60 hover:text-red-300 text-sm ml-1" }, "×")
-=======
-                        React.createElement("button", { "aria-label": "Move block up", onClick: function () { moveBlock(idx, -1); }, className: "text-white/60 hover:text-white text-[10px]", disabled: idx === 0 }, "▲"),
-                        React.createElement("button", { "aria-label": "Move block down", onClick: function () { moveBlock(idx, 1); }, className: "text-white/60 hover:text-white text-[10px]", disabled: idx === blocks.length - 1 }, "▼"),
+                        React.createElement("button", { "aria-label": "Move block up", onClick: function () { moveBlock(idx, -1); }, className: "text-white/60 hover:text-white text-[11px]", disabled: idx === 0 }, "▲"),
+                        React.createElement("button", { "aria-label": "Move block down", onClick: function () { moveBlock(idx, 1); }, className: "text-white/60 hover:text-white text-[11px]", disabled: idx === blocks.length - 1 }, "▼"),
                         React.createElement("button", { "aria-label": "Remove block", onClick: function () { removeBlock(idx); }, className: "text-white/60 hover:text-red-300 text-sm ml-1" }, "×")
->>>>>>> upstream/main:prismflow-deploy/public/stem_tool_coding.js
                       ),
                       // ── Repeat children ──
                       b.type === 'repeat' && React.createElement("div", { className: "ml-4 mt-1 pl-2 border-l-2 border-purple-400/50 flex flex-col gap-1" },
@@ -2431,14 +2369,14 @@
                         // IF branch
                         React.createElement("div", { className: "pl-2 border-l-2 border-fuchsia-400/50" },
                           React.createElement("span", { className: "text-[11px] font-bold text-fuchsia-300 uppercase tracking-wider" }, "✔ If true"),
-                          (b.children || []).length === 0 && React.createElement("p", { className: "text-[10px] text-slate-500 italic py-1" }, "No blocks yet"),
+                          (b.children || []).length === 0 && React.createElement("p", { className: "text-[11px] text-slate-600 italic py-1" }, "No blocks yet"),
                           (b.children || []).map(function (child, ci) { return renderChildBlock(child, ci, idx, false); }),
                           renderQuickAdd(idx, false)
                         ),
                         // ELSE branch
                         React.createElement("div", { className: "pl-2 border-l-2 border-slate-500/50 mt-1" },
-                          React.createElement("span", { className: "text-[11px] font-bold text-slate-400 uppercase tracking-wider" }, "✖ Else"),
-                          (b.elseChildren || []).length === 0 && React.createElement("p", { className: "text-[10px] text-slate-500 italic py-1" }, "No blocks yet"),
+                          React.createElement("span", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider" }, "✖ Else"),
+                          (b.elseChildren || []).length === 0 && React.createElement("p", { className: "text-[11px] text-slate-600 italic py-1" }, "No blocks yet"),
                           (b.elseChildren || []).map(function (child, ci) { return renderChildBlock(child, ci, idx, true); }),
                           renderQuickAdd(idx, true)
                         )
@@ -2451,15 +2389,33 @@
               // Code editor (text mode)
               codeMode === 'text' && React.createElement("div", { className: "bg-slate-800 rounded-xl p-3 border border-slate-700 flex-1" },
                 React.createElement("h3", { className: "text-xs font-bold text-amber-400 uppercase tracking-wider mb-2" }, "📝 Code Editor"),
-                React.createElement("textarea", {
-                  'aria-label': 'Code editor',
-                  value: textCode,
-                  onChange: function (e) { handleTextChange(e.target.value); },
-                  placeholder: "forward(50)\nright(90)\nbackward(30)\n\nrepeat(4, function() {\n  forward(100)\n  right(90)\n})\n\nsetVar('size', 50)\nchangeVar('size', 10)\n\nif(x > 250, function() {\n  left(45)\n}, function() {\n  right(45)\n})",
-                  className: "w-full h-60 p-3 rounded-lg bg-slate-900 text-green-400 text-xs font-mono border border-slate-600 focus:border-amber-400 focus:ring-1 focus:ring-amber-400 resize-none",
-                  spellCheck: false
-                }),
-                React.createElement("p", { className: "text-slate-500 text-[10px] mt-1" },
+                React.createElement("div", { style: { display: 'flex', borderRadius: '8px', overflow: 'hidden', border: '1px solid #334155' } },
+                  // Line numbers
+                  React.createElement("div", {
+                    'aria-hidden': 'true',
+                    style: { background: '#0f172a', color: '#475569', fontFamily: 'monospace', fontSize: '11px', padding: '12px 8px 12px 6px', textAlign: 'right', lineHeight: '1.5', userSelect: 'none', borderRight: '1px solid #1e293b', minWidth: '28px' }
+                  }, (textCode || '').split('\n').map(function(_, i) { return React.createElement('div', { key: i }, i + 1); })),
+                  React.createElement("textarea", {
+                    'aria-label': 'Code editor',
+                    value: textCode,
+                    onChange: function (e) { handleTextChange(e.target.value); },
+                    placeholder: "forward(50)\nright(90)\nbackward(30)\n\nrepeat(4, function() {\n  forward(100)\n  right(90)\n})",
+                    style: { flex: 1, minHeight: '240px', padding: '12px', background: '#0f172a', color: '#4ade80', fontSize: '12px', fontFamily: "'Fira Code', 'Cascadia Code', 'JetBrains Mono', 'Consolas', monospace", lineHeight: '1.5', border: 'none', outline: 'none', resize: 'none', tabSize: 2, caretColor: '#fbbf24' },
+                    spellCheck: false,
+                    onKeyDown: function(e) {
+                      // Tab inserts 2 spaces instead of changing focus
+                      if (e.key === 'Tab') {
+                        e.preventDefault();
+                        var start = e.target.selectionStart;
+                        var end = e.target.selectionEnd;
+                        var val = e.target.value;
+                        handleTextChange(val.substring(0, start) + '  ' + val.substring(end));
+                        setTimeout(function() { e.target.selectionStart = e.target.selectionEnd = start + 2; }, 0);
+                      }
+                    }
+                  })
+                ),
+                React.createElement("p", { className: "text-slate-200 text-[11px] mt-1" },
                   "Commands: forward(px), backward(px), right(deg), left(deg), penUp(), penDown(), setColor(\"#hex\"), setWidth(px), circle(r), goto(x,y), home(), repeat(n, fn), setVar('name', val), changeVar('name', delta), if(condition, ifFn, elseFn)"
                 )
               )
@@ -2500,20 +2456,12 @@
 
               // Options bar (turtle toggle + cumulative mode)
               React.createElement("div", { className: "flex items-center gap-3 flex-wrap" },
-<<<<<<< HEAD:prismflow-deploy/public/shared/modules/stem_lab/stem_tool_coding.js
-                React.createElement("button", { "aria-label": "Change show turtle",
-=======
                 React.createElement("button", { "aria-label": "Toggle turtle cursor visibility",
->>>>>>> upstream/main:prismflow-deploy/public/stem_tool_coding.js
                   onClick: function () { upd('showTurtle', !showTurtle); },
                   className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all " +
                     (showTurtle ? 'bg-emerald-600/80 text-white hover:bg-emerald-600' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
                 }, showTurtle ? '🐢 Turtle On' : '▸ Cursor Only'),
-<<<<<<< HEAD:prismflow-deploy/public/shared/modules/stem_lab/stem_tool_coding.js
-                React.createElement("button", { "aria-label": "Change cumulative mode",
-=======
                 React.createElement("button", { "aria-label": "Toggle cumulative drawing mode",
->>>>>>> upstream/main:prismflow-deploy/public/stem_tool_coding.js
                   onClick: function () { upd('cumulativeMode', !cumulativeMode); },
                   className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all " +
                     (cumulativeMode ? 'bg-amber-600/80 text-white hover:bg-amber-600 ring-1 ring-amber-400/50' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
@@ -2533,11 +2481,7 @@
                   CHALLENGES.map(function (ch, ci) {
                     var done = completed.indexOf(ch.id) >= 0;
                     var active = challengeIdx === ci;
-<<<<<<< HEAD:prismflow-deploy/public/shared/modules/stem_lab/stem_tool_coding.js
-                    return React.createElement("button", { "aria-label": "Change challenge idx",
-=======
                     return React.createElement("button", { "aria-label": "Select challenge: " + ch.title,
->>>>>>> upstream/main:prismflow-deploy/public/stem_tool_coding.js
                       key: ch.id,
                       onClick: function () { upd('challengeIdx', active ? -1 : ci); },
                       className: "flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-left transition-all " +
@@ -2548,11 +2492,11 @@
                       React.createElement("span", { className: "text-sm" }, done ? '✅' : active ? '🎯' : '⬜'),
                       React.createElement("div", { className: "flex-1" },
                         React.createElement("span", { className: "font-semibold" }, ch.title),
-                        active && React.createElement("p", { className: "text-[10px] text-indigo-300/70 mt-0.5" }, '💡 ' + ch.hint)
+                        active && React.createElement("p", { className: "text-[11px] text-indigo-300/70 mt-0.5" }, '💡 ' + ch.hint)
                       ),
                       React.createElement("span", {
-                        className: "text-[10px] px-1.5 py-0.5 rounded-full " +
-                          (done ? 'bg-green-500/20 text-green-400' : 'bg-slate-600 text-slate-400')
+                        className: "text-[11px] px-1.5 py-0.5 rounded-full " +
+                          (done ? 'bg-green-500/20 text-green-400' : 'bg-slate-600 text-slate-200')
                       }, ch.concept)
                     );
                   })
@@ -2570,7 +2514,7 @@
                 ),
                 // Camera Elevation
                 React.createElement("div", { className: "mb-2" },
-                  React.createElement("label", { className: "text-[11px] text-slate-500 flex justify-between" },
+                  React.createElement("label", { className: "text-[11px] text-slate-600 flex justify-between" },
                     React.createElement("span", null, "Elevation"),
                     React.createElement("span", { className: "text-teal-300 font-bold" }, Math.round(cameraRotX) + "\u00b0")
                   ),
@@ -2584,7 +2528,7 @@
                 ),
                 // Camera Azimuth
                 React.createElement("div", { className: "mb-2" },
-                  React.createElement("label", { className: "text-[11px] text-slate-500 flex justify-between" },
+                  React.createElement("label", { className: "text-[11px] text-slate-600 flex justify-between" },
                     React.createElement("span", null, "Rotation"),
                     React.createElement("span", { className: "text-teal-300 font-bold" }, Math.round(cameraRotZ) + "\u00b0")
                   ),
@@ -2598,7 +2542,7 @@
                 ),
                 // Zoom
                 React.createElement("div", { className: "mb-2" },
-                  React.createElement("label", { className: "text-[11px] text-slate-500 flex justify-between" },
+                  React.createElement("label", { className: "text-[11px] text-slate-600 flex justify-between" },
                     React.createElement("span", null, "Zoom"),
                     React.createElement("span", { className: "text-teal-300 font-bold" }, (cameraZoom * 100).toFixed(0) + "%")
                   ),
@@ -2615,18 +2559,14 @@
                   React.createElement("button", { "aria-label": "Grid",
                     onClick: function() { upd('show3DGrid', !show3DGrid); },
                     className: "flex-1 px-2 py-1 rounded text-[11px] font-bold transition-all " +
-                      (show3DGrid ? "bg-teal-500/30 text-teal-300" : "bg-slate-700/50 text-slate-500")
+                      (show3DGrid ? "bg-teal-500/30 text-teal-300" : "bg-slate-700/50 text-slate-600")
                   }, "\u{2B1C} Grid"),
                   React.createElement("button", { "aria-label": "Axes",
                     onClick: function() { upd('show3DAxes', !show3DAxes); },
                     className: "flex-1 px-2 py-1 rounded text-[11px] font-bold transition-all " +
-                      (show3DAxes ? "bg-teal-500/30 text-teal-300" : "bg-slate-700/50 text-slate-500")
+                      (show3DAxes ? "bg-teal-500/30 text-teal-300" : "bg-slate-700/50 text-slate-600")
                   }, "\u{1F4CD} Axes"),
-<<<<<<< HEAD:prismflow-deploy/public/shared/modules/stem_lab/stem_tool_coding.js
-                  React.createElement("button", { "aria-label": "Reset",
-=======
                   React.createElement("button", { "aria-label": "Reset 3D camera view",
->>>>>>> upstream/main:prismflow-deploy/public/stem_tool_coding.js
                     onClick: function() { updMulti({ cameraRotX: 30, cameraRotZ: 45, cameraZoom: 1.0 }); },
                     className: "flex-1 px-2 py-1 rounded text-[11px] font-bold bg-slate-700/50 text-slate-300 hover:text-white transition-all"
                   }, "\u{1F504} Reset")
@@ -2646,7 +2586,7 @@
               ),
               // ── Animation Timeline ──
               timelineFrames.length > 0 && React.createElement("div", { className: "bg-slate-800/60 rounded-xl p-3 border border-slate-700/40" },
-                React.createElement("h4", { className: "text-xs font-bold text-slate-400 mb-2 flex items-center gap-1" },
+                React.createElement("h4", { className: "text-xs font-bold text-slate-200 mb-2 flex items-center gap-1" },
                   React.createElement("span", null, "⏱️"), " Timeline (" + timelineFrames.length + " frames)"
                 ),
                 React.createElement("input", {
@@ -2659,7 +2599,7 @@
                   className: "w-full h-2 bg-slate-600 rounded-lg appearance-none cursor-pointer accent-indigo-500",
                   style: { accentColor: '#6366f1' }
                 }),
-                React.createElement("div", { className: "flex justify-between text-[11px] text-slate-500 mt-1" },
+                React.createElement("div", { className: "flex justify-between text-[11px] text-slate-600 mt-1" },
                   React.createElement("span", null, "Frame 0"),
                   React.createElement("span", { className: "text-indigo-400 font-bold" }, timelinePos >= 0 ? "Frame " + timelinePos : "—"),
                   React.createElement("span", null, "Frame " + (timelineFrames.length - 1))
@@ -2686,14 +2626,10 @@
 
               // ── Accessibility Controls ──
               React.createElement("div", { className: "flex items-center gap-2" },
-<<<<<<< HEAD:prismflow-deploy/public/shared/modules/stem_lab/stem_tool_coding.js
-                React.createElement("button", { "aria-label": "Change high contrast mode",
-=======
                 React.createElement("button", { "aria-label": "Toggle high contrast mode",
->>>>>>> upstream/main:prismflow-deploy/public/stem_tool_coding.js
                   onClick: function() { upd('highContrastMode', !highContrastMode); },
-                  className: "flex-1 px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all " +
-                    (highContrastMode ? "bg-white text-slate-900" : "bg-slate-700/50 text-slate-400 hover:text-white")
+                  className: "flex-1 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all " +
+                    (highContrastMode ? "bg-white text-slate-900" : "bg-slate-700/50 text-slate-200 hover:text-white")
                 }, highContrastMode ? "◐ Standard Mode" : "◑ High Contrast")
               ),
               // ── AI Assistant Panel ──
@@ -2702,13 +2638,9 @@
                   React.createElement("h4", { className: "text-xs font-bold text-blue-300 flex items-center gap-1" },
                     React.createElement("span", null, "🤖"), " AI Assistant"
                   ),
-<<<<<<< HEAD:prismflow-deploy/public/shared/modules/stem_lab/stem_tool_coding.js
-                  React.createElement("button", { "aria-label": "Thinking...",
-=======
                   React.createElement("button", { "aria-label": "Close AI assistant panel",
->>>>>>> upstream/main:prismflow-deploy/public/stem_tool_coding.js
                     onClick: function() { updMulti({ showAIPanel: false, aiExplanation: '' }); },
-                    className: "text-slate-400 hover:text-white text-sm px-1"
+                    className: "text-slate-200 hover:text-white text-sm px-1"
                   }, "×")
                 ),
                 aiLoading ?
@@ -2725,31 +2657,31 @@
                 ),
                 React.createElement("div", { className: "grid gap-1", style: { gridTemplateColumns: '1fr 1fr' } },
                   // Turtle State
-                  React.createElement("div", { className: "text-[10px] font-mono text-slate-300 bg-slate-700/50 rounded px-2 py-1" },
+                  React.createElement("div", { className: "text-[11px] font-mono text-slate-300 bg-slate-700/50 rounded px-2 py-1" },
                     "🐢 x: ", React.createElement("span", { className: "text-cyan-300 font-bold" }, Math.round(turtleState.x))
                   ),
-                  React.createElement("div", { className: "text-[10px] font-mono text-slate-300 bg-slate-700/50 rounded px-2 py-1" },
+                  React.createElement("div", { className: "text-[11px] font-mono text-slate-300 bg-slate-700/50 rounded px-2 py-1" },
                     "🐢 y: ", React.createElement("span", { className: "text-cyan-300 font-bold" }, Math.round(turtleState.y))
                   ),
-                  React.createElement("div", { className: "text-[10px] font-mono text-slate-300 bg-slate-700/50 rounded px-2 py-1" },
+                  React.createElement("div", { className: "text-[11px] font-mono text-slate-300 bg-slate-700/50 rounded px-2 py-1" },
                     "🧭 angle: ", React.createElement("span", { className: "text-amber-300 font-bold" }, Math.round(turtleState.angle) + "°")
                   ),
-                  React.createElement("div", { className: "text-[10px] font-mono text-slate-300 bg-slate-700/50 rounded px-2 py-1" },
+                  React.createElement("div", { className: "text-[11px] font-mono text-slate-300 bg-slate-700/50 rounded px-2 py-1" },
                     "✏️ pen: ", React.createElement("span", { className: turtleState.penDown ? "text-green-400 font-bold" : "text-red-400 font-bold" }, turtleState.penDown ? "down" : "up")
                   ),
-                  React.createElement("div", { className: "text-[10px] font-mono text-slate-300 bg-slate-700/50 rounded px-2 py-1" },
+                  React.createElement("div", { className: "text-[11px] font-mono text-slate-300 bg-slate-700/50 rounded px-2 py-1" },
                     "📐 lines: ", React.createElement("span", { className: "text-purple-300 font-bold" }, drawnLines.length)
                   ),
-                  React.createElement("div", { className: "text-[10px] font-mono text-slate-300 bg-slate-700/50 rounded px-2 py-1" },
+                  React.createElement("div", { className: "text-[11px] font-mono text-slate-300 bg-slate-700/50 rounded px-2 py-1" },
                     "⚡ step: ", React.createElement("span", { className: "text-orange-300 font-bold" }, stepIdx >= 0 ? stepIdx : "—")
                   )
                 ),
                 // User-defined variables
                 d._vars && Object.keys(d._vars).length > 0 && React.createElement("div", { className: "mt-2 border-t border-slate-600/30 pt-2" },
-                  React.createElement("span", { className: "text-[11px] font-bold text-slate-500 uppercase tracking-wider" }, "User Variables"),
+                  React.createElement("span", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider" }, "User Variables"),
                   React.createElement("div", { className: "grid gap-1 mt-1", style: { gridTemplateColumns: '1fr 1fr' } },
                     Object.keys(d._vars || {}).filter(function(k) { return k.indexOf('__func_') !== 0; }).map(function(vk) {
-                      return React.createElement("div", { key: vk, className: "text-[10px] font-mono text-slate-300 bg-emerald-900/30 rounded px-2 py-1 border border-emerald-700/20" },
+                      return React.createElement("div", { key: vk, className: "text-[11px] font-mono text-slate-300 bg-emerald-900/30 rounded px-2 py-1 border border-emerald-700/20" },
                         "$" + vk + " = ", React.createElement("span", { className: "text-emerald-300 font-bold" }, String(d._vars[vk]))
                       );
                     })

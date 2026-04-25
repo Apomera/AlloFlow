@@ -170,7 +170,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
   if (!document.getElementById('mm-a11y-css')) {
     var mmStyle = document.createElement('style');
     mmStyle.id = 'mm-a11y-css';
-    mmStyle.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .text-slate-400 { color: #64748b !important; }';
+    mmStyle.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .text-slate-200 { color: #64748b !important; }';
     document.head.appendChild(mmStyle);
   }
 
@@ -363,6 +363,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       var ArrowLeft = ctx.icons.ArrowLeft;
       var awardStemXP = ctx.awardXP;
       var callTTS = ctx.callTTS;
+      var callGemini = ctx.callGemini;
+      var sourceText = ctx.sourceText || ctx.inputText || '';
       var announceToSR = ctx.announceToSR;
       var gradeLevel = ctx.gradeLevel;
 
@@ -393,12 +395,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         if (typeof announceToSR === 'function') announceToSR('Mission phase ' + (p + 1) + ' of 10: ' + phaseName + '. ' + (PHASES[p] ? PHASES[p].desc : 'The mission is complete.'));
         // Phase-specific sounds + ambient audio
         sfxPhaseAdvance();
-        if (p === 1) { sfxLaunch(); startMissionAmbient('launch'); }           // Launch
-        else if (p === 2) { sfxStageSeparation(); startMissionAmbient('space'); } // Earth Orbit
+        if (p === 1) { sfxLaunch(); startMissionAmbient('launch'); if (window._alloHaptic) window._alloHaptic('launch'); } // Launch
+        else if (p === 2) { sfxStageSeparation(); startMissionAmbient('space'); if (window._alloHaptic) window._alloHaptic('bump'); } // Earth Orbit
         else if (p === 3) { sfxEngineIgnition(); startMissionAmbient('space'); }  // Trans-Lunar
         else if (p === 4) { sfxThrust(); startMissionAmbient('space'); }          // Lunar Orbit
-        else if (p === 5) { sfxThrust(); startMissionAmbient('thrust'); }         // Powered Descent
-        else if (p === 6) { sfxLanding(); startMissionAmbient('eva'); }           // Moonwalk EVA
+        else if (p === 5) { sfxThrust(); startMissionAmbient('thrust'); if (window._alloHaptic) window._alloHaptic('launch'); } // Powered Descent
+        else if (p === 6) { sfxLanding(); startMissionAmbient('eva'); if (window._alloHaptic) window._alloHaptic('land'); } // Moonwalk EVA
         else if (p === 7) { sfxEngineIgnition(); startMissionAmbient('thrust'); } // Lunar Ascent
         else if (p === 8) { sfxStageSeparation(); startMissionAmbient('space'); } // Trans-Earth
         else if (p === 9) { sfxSplashdown(); stopMissionAmbient(); }              // Re-entry
@@ -520,6 +522,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         { q: 'What does the Moon smell like?', opts: ['Nothing', 'Spent gunpowder', 'Sulfur', 'Roses'], a: 1, fact: 'Every Apollo astronaut reported that Moon dust smells like spent gunpowder when brought inside the LM!' },
         { q: 'How old are the oldest Moon rocks collected?', opts: ['1 billion years', '2.5 billion years', '4.4 billion years', '6 billion years'], a: 2, fact: 'The oldest Moon rocks are 4.4 billion years old \u2014 nearly as old as the solar system itself!' }
       ];
+
+      // ── AI-customized content override ──
+      // When the teacher ran "Customize from source text," d.aiBriefing holds a parsed
+      // { objectives, quiz, samples } object. Use that content in place of the hardcoded
+      // defaults so the mission ties to the teacher's uploaded material.
+      if (d.aiBriefing && typeof d.aiBriefing === 'object') {
+        try {
+          if (Array.isArray(d.aiBriefing.samples) && d.aiBriefing.samples.length >= 4) {
+            // Preserve icons/types from defaults; apply AI names/facts/descriptions.
+            LUNAR_SAMPLES_DATA = d.aiBriefing.samples.slice(0, 8).map(function(s, i) {
+              var fallback = LUNAR_SAMPLES_DATA[i] || LUNAR_SAMPLES_DATA[0];
+              return {
+                name: String(s.name || fallback.name).substring(0, 30),
+                icon: fallback.icon,
+                type: String(s.desc || fallback.type).substring(0, 60),
+                xp: typeof s.xp === 'number' ? Math.max(5, Math.min(30, s.xp)) : fallback.xp,
+                fact: String(s.fact || fallback.fact).substring(0, 280)
+              };
+            });
+          }
+          if (Array.isArray(d.aiBriefing.quiz) && d.aiBriefing.quiz.length >= 3) {
+            QUIZ_BANK = d.aiBriefing.quiz.slice(0, 10).filter(function(q) {
+              return q && typeof q.q === 'string' && Array.isArray(q.opts) && q.opts.length >= 2 && typeof q.a === 'number';
+            }).map(function(q) {
+              return {
+                q: String(q.q).substring(0, 220),
+                opts: q.opts.slice(0, 4).map(function(o) { return String(o).substring(0, 80); }),
+                a: Math.max(0, Math.min((q.opts.length - 1), q.a)),
+                fact: String(q.fact || '').substring(0, 220)
+              };
+            });
+            if (QUIZ_BANK.length < 3) {
+              // Fallback: if validation dropped too many, restore defaults.
+              QUIZ_BANK = [
+                { q: 'How far is the Moon from Earth?', opts: ['38,440 km', '384,400 km', '3,844,000 km', '38,440,000 km'], a: 1, fact: 'The Moon is about 384,400 km away \u2014 light takes 1.3 seconds to travel there!' }
+              ];
+            }
+          }
+        } catch (_aiErr) { /* fall back to defaults on any parsing issue */ }
+      }
 
       // ═══════════════════════════════════════════════════════════════
       // MISSION EVENTS — Strategic decision points inspired by real missions
@@ -685,12 +727,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             ),
             h('div', null,
               h('h3', { className: 'text-lg font-black text-slate-800 flex items-center gap-2' }, '\uD83D\uDE80 Apollo Moon Mission'),
-              h('p', { className: 'text-[10px] text-slate-500 -mt-0.5' }, 'Full mission simulation \u2022 Launch to splashdown')
+              h('p', { className: 'text-[11px] text-slate-600 -mt-0.5' }, 'Full mission simulation \u2022 Launch to splashdown')
             )
           ),
           h('div', { className: 'text-right' },
-            h('div', { className: 'text-[10px] text-slate-400 font-mono' }, 'MET ' + getMissionElapsed()),
-            h('div', { className: 'text-[10px] text-indigo-500 font-bold' }, '\u2B50 ' + missionXP + ' XP')
+            h('div', { className: 'text-[11px] text-slate-200 font-mono' }, 'MET ' + getMissionElapsed()),
+            h('div', { className: 'text-[11px] text-indigo-500 font-bold' }, '\u2B50 ' + missionXP + ' XP')
           )
         ),
 
@@ -705,7 +747,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               h('h5', { className: 'text-sm font-bold text-amber-300' }, d.activeEvent.title),
               h('div', { className: 'flex gap-1 mt-0.5' },
                 d.activeEvent.stemConcepts.map(function(c) {
-                  return h('span', { key: c, className: 'px-1.5 py-0.5 rounded-full text-[8px] bg-sky-500/15 text-sky-300 border border-sky-500/20' }, c);
+                  return h('span', { key: c, className: 'px-1.5 py-0.5 rounded-full text-[11px] bg-sky-500/15 text-sky-300 border border-sky-500/20' }, c);
                 })
               )
             )
@@ -724,7 +766,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   h('span', null, opt.icon),
                   h('span', { className: 'text-xs font-bold text-white' }, opt.label)
                 ),
-                diffSettings.showEffects && opt.effects && h('div', { className: 'flex flex-wrap gap-2 text-[9px] mt-1' },
+                diffSettings.showEffects && opt.effects && h('div', { className: 'flex flex-wrap gap-2 text-[11px] mt-1' },
                   Object.keys(opt.effects).map(function(k) {
                     var v = opt.effects[k];
                     return h('span', { key: k, className: v > 0 ? 'text-green-400' : 'text-red-400' },
@@ -736,8 +778,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             })
           ),
           h('details', { className: 'mt-3' },
-            h('summary', { className: 'text-[9px] text-slate-500 cursor-pointer hover:text-slate-400 transition-colors' }, '\uD83D\uDCDA What really happened?'),
-            h('p', { className: 'text-[10px] text-indigo-300 mt-1 pl-3 leading-relaxed' }, d.activeEvent.historical)
+            h('summary', { className: 'text-[11px] text-slate-600 cursor-pointer hover:text-slate-200 transition-colors' }, '\uD83D\uDCDA What really happened?'),
+            h('p', { className: 'text-[11px] text-indigo-300 mt-1 pl-3 leading-relaxed' }, d.activeEvent.historical)
           )
         ),
 
@@ -751,9 +793,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               d.eventOutcome.quality === 'optimal' ? 'Excellent Decision!' : d.eventOutcome.quality === 'adequate' ? 'Acceptable Solution' : 'Suboptimal Choice'
             )
           ),
-          h('p', { className: 'text-[10px] text-slate-400 mb-1' }, '\u201C' + d.eventOutcome.label + '\u201D'),
+          h('p', { className: 'text-[11px] text-slate-200 mb-1' }, '\u201C' + d.eventOutcome.label + '\u201D'),
           h('div', { className: 'bg-sky-500/10 rounded-lg p-3 border border-sky-500/20' },
-            h('p', { className: 'text-[10px] text-sky-200 leading-relaxed' }, '\uD83D\uDD2C ' + d.eventOutcome.outcome)
+            h('p', { className: 'text-[11px] text-sky-200 leading-relaxed' }, '\uD83D\uDD2C ' + d.eventOutcome.outcome)
           ),
           h('button', {
             onClick: function() {
@@ -770,7 +812,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             h('span', { className: 'text-xl' }, '\uD83E\uDDE0'),
             h('div', null,
               h('h5', { className: 'text-sm font-bold text-indigo-300' }, 'Space Knowledge Check'),
-              h('p', { className: 'text-[9px] text-slate-500' }, 'Question ' + (quizIdx + 1) + '/' + QUIZ_BANK.length + ' \u2022 ' + quizCorrect + ' correct so far')
+              h('p', { className: 'text-[11px] text-slate-600' }, 'Question ' + (quizIdx + 1) + '/' + QUIZ_BANK.length + ' \u2022 ' + quizCorrect + ' correct so far')
             )
           ),
           h('p', { className: 'text-xs text-white font-bold mb-3' }, QUIZ_BANK[quizIdx].q),
@@ -808,7 +850,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             })
           ),
           quizAnswered && h('div', { className: 'bg-sky-500/10 rounded-lg p-2 border border-sky-500/20 mb-3' },
-            h('p', { className: 'text-[10px] text-sky-300' }, '\uD83D\uDCA1 ' + QUIZ_BANK[quizIdx].fact)
+            h('p', { className: 'text-[11px] text-sky-300' }, '\uD83D\uDCA1 ' + QUIZ_BANK[quizIdx].fact)
           ),
           quizAnswered && h('button', {
             onClick: function() {
@@ -837,7 +879,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               });
             })
           ),
-          h('div', { className: 'flex justify-between text-[9px] text-slate-400' },
+          h('div', { className: 'flex justify-between text-[11px] text-slate-600' },
             h('span', null, 'Launch'),
             h('span', null, 'Phase ' + (phase + 1) + '/10'),
             h('span', null, 'Splashdown')
@@ -850,17 +892,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             h('div', { className: 'text-center mb-3' },
               h('div', { className: 'text-3xl mb-1' }, '\uD83C\uDF15'),
               h('h4', { className: 'text-lg font-black tracking-wide' }, 'MISSION BRIEFING'),
-              h('p', { className: 'text-xs text-slate-400' }, 'Apollo-style lunar landing mission')
+              h('p', { className: 'text-xs text-slate-600' }, 'Apollo-style lunar landing mission')
             ),
             h('div', { className: 'bg-white/5 rounded-lg p-3 mb-3 border border-white/10' },
-              h('p', { className: 'text-[10px] text-slate-400 font-bold mb-1' }, '\uD83C\uDFAF MISSION OBJECTIVES'),
+              h('p', { className: 'text-[11px] text-slate-200 font-bold mb-1' },
+                '\uD83C\uDFAF MISSION OBJECTIVES',
+                d.aiBriefing && Array.isArray(d.aiBriefing.objectives) && h('span', { className: 'ml-2 text-[10px] text-emerald-300 font-normal' }, '\u2728 AI-customized')
+              ),
               h('div', { className: 'space-y-1' },
-                [
-                  'Launch from Kennedy Space Center aboard Saturn V',
-                  'Enter lunar orbit and descend to the surface',
-                  'Conduct EVA: collect geological samples, deploy instruments',
-                  'Return safely to Earth with lunar samples'
-                ].map(function(obj, i) {
+                ((d.aiBriefing && Array.isArray(d.aiBriefing.objectives) && d.aiBriefing.objectives.length >= 3)
+                  ? d.aiBriefing.objectives.slice(0, 6).map(function(o) { return String(o).substring(0, 120); })
+                  : [
+                      'Launch from Kennedy Space Center aboard Saturn V',
+                      'Enter lunar orbit and descend to the surface',
+                      'Conduct EVA: collect geological samples, deploy instruments',
+                      'Return safely to Earth with lunar samples'
+                    ]
+                ).map(function(obj, i) {
                   return h('div', { key: i, className: 'flex items-start gap-2 text-xs text-slate-300' },
                     h('span', { className: 'text-green-400 mt-0.5' }, '\u25CB'),
                     h('span', null, obj)
@@ -869,21 +917,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               )
             ),
             h('div', { className: 'mb-3' },
-              h('p', { className: 'text-[10px] text-slate-400 font-bold mb-2' }, '\uD83D\uDC68\u200D\uD83D\uDE80 YOUR CREW'),
+              h('p', { className: 'text-[11px] text-slate-200 font-bold mb-2' }, '\uD83D\uDC68\u200D\uD83D\uDE80 YOUR CREW'),
               h('div', { className: 'grid grid-cols-3 gap-2' },
                 CREW_ROLES.map(function(crew, i) {
                   return h('div', { key: i, className: 'bg-white/5 rounded-lg p-2 border border-white/10 text-center' },
                     h('div', { className: 'text-lg mb-0.5' }, i === 0 ? '\uD83E\uDDD1\u200D\uD83D\uDE80' : i === 1 ? '\uD83D\uDC68\u200D\uD83D\uDE80' : '\uD83D\uDC69\u200D\uD83D\uDE80'),
-                    h('p', { className: 'text-[10px] font-bold text-indigo-300' }, crew.role),
-                    h('p', { className: 'text-[9px] text-slate-400' }, crew.name),
-                    h('p', { className: 'text-[9px] text-slate-400 mt-1' }, crew.tasks)
+                    h('p', { className: 'text-[11px] font-bold text-indigo-300' }, crew.role),
+                    h('p', { className: 'text-[11px] text-slate-600' }, crew.name),
+                    h('p', { className: 'text-[11px] text-slate-200 mt-1' }, crew.tasks)
                   );
                 })
               )
             ),
             // Difficulty selector
             h('div', { className: 'mb-3', role: 'radiogroup', 'aria-label': 'Mission difficulty selection' },
-              h('p', { className: 'text-[10px] text-slate-400 font-bold mb-2', id: 'difficulty-label' }, '\uD83C\uDFAE MISSION DIFFICULTY'),
+              h('p', { className: 'text-[11px] text-slate-200 font-bold mb-2', id: 'difficulty-label' }, '\uD83C\uDFAE MISSION DIFFICULTY'),
               h('div', { className: 'grid grid-cols-3 gap-2' },
                 Object.keys(DIFFICULTIES).map(function(key) {
                   var diff = DIFFICULTIES[key];
@@ -898,14 +946,69 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       (isSelected ? 'bg-indigo-600/30 border-indigo-500 ring-1 ring-indigo-400' : 'bg-white/5 border-white/10 hover:border-indigo-400/40')
                   },
                     h('div', { className: 'text-lg' }, diff.icon),
-                    h('p', { className: 'text-[10px] font-bold ' + (isSelected ? 'text-indigo-300' : 'text-slate-300') }, diff.label),
-                    h('p', { className: 'text-[9px] text-slate-400' }, diff.desc)
+                    h('p', { className: 'text-[11px] font-bold ' + (isSelected ? 'text-indigo-300' : 'text-slate-300') }, diff.label),
+                    h('p', { className: 'text-[11px] text-slate-600' }, diff.desc)
                   );
                 })
               )
             ),
             h('div', { className: 'bg-indigo-500/10 rounded-lg p-2 border border-indigo-500/20 mb-3' },
-              h('p', { className: 'text-[10px] text-indigo-300' }, '\uD83D\uDCA1 ' + APOLLO_FACTS[Math.floor(Math.random() * APOLLO_FACTS.length)])
+              h('p', { className: 'text-[11px] text-indigo-300' }, '\uD83D\uDCA1 ' + APOLLO_FACTS[Math.floor(Math.random() * APOLLO_FACTS.length)])
+            ),
+            // AI-customize briefing — pulls in teacher's source text and regenerates objectives,
+            // quiz questions, and sample descriptions tied to that content.
+            callGemini && sourceText && sourceText.trim().length > 120 && h('div', { className: 'bg-emerald-500/10 rounded-lg p-3 border border-emerald-500/30 mb-3' },
+              h('p', { className: 'text-[11px] text-emerald-300 font-bold mb-1' }, d.aiBriefing ? '\u2728 AI-customized briefing active' : '\uD83E\uDDE0 Customize with your source text'),
+              h('p', { className: 'text-[11px] text-emerald-200/80 mb-2' }, d.aiBriefing
+                ? 'Objectives, quiz, and sample facts are tied to your uploaded text.'
+                : 'Generate mission objectives, quiz questions, and sample descriptions from the text you\'ve loaded (\u223C' + Math.round(sourceText.length / 100) * 100 + ' chars available). Adds ~10-15 sec.'),
+              h('button', {
+                disabled: !!d.aiBriefingLoading,
+                'aria-busy': d.aiBriefingLoading ? 'true' : 'false',
+                onClick: function() {
+                  if (d.aiBriefingLoading) return;
+                  upd('aiBriefingLoading', true);
+                  var gradeHint = gradeLevel ? 'Target grade: ' + gradeLevel + '. ' : '';
+                  var prompt = 'You are designing a Moon Mission space-exploration simulator for a student. Customize the mission content using this source text as inspiration.\n\n' +
+                    gradeHint + 'Source text (first 3000 chars):\n"""\n' + sourceText.substring(0, 3000) + '\n"""\n\n' +
+                    'Return ONLY a JSON object with this EXACT structure (no prose, no code fences):\n' +
+                    '{\n' +
+                    '  "objectives": ["4 short mission-phase objectives (one per line, 50-90 chars each, imperative verbs)"],\n' +
+                    '  "quiz": [\n' +
+                    '    {"q": "question text", "opts": ["A","B","C","D"], "a": 0, "fact": "1-sentence explanation"}\n' +
+                    '  ],\n' +
+                    '  "samples": [\n' +
+                    '    {"name": "short sample name", "desc": "1-sentence description tying to source text", "fact": "1 educational fact", "xp": 15}\n' +
+                    '  ]\n' +
+                    '}\n' +
+                    'Constraints: 4 objectives, 6 quiz questions (mix of space science and source-text concepts), 8 sample descriptions. All content must be accurate and age-appropriate.';
+                  callGemini(prompt, true).then(function(raw) {
+                    try {
+                      var cleaned = String(raw || '').trim();
+                      if (cleaned.indexOf('```') !== -1) { cleaned = cleaned.split('```')[1] || cleaned; if (cleaned.indexOf('\n') !== -1) cleaned = cleaned.substring(cleaned.indexOf('\n') + 1); }
+                      var parsed = JSON.parse(cleaned);
+                      if (!parsed || !Array.isArray(parsed.objectives) || !Array.isArray(parsed.quiz) || !Array.isArray(parsed.samples)) throw new Error('malformed');
+                      setLabToolData(function(prev) {
+                        return Object.assign({}, prev, { moonMission: Object.assign({}, (prev && prev.moonMission) || {}, {
+                          aiBriefing: parsed,
+                          aiBriefingLoading: false
+                        })});
+                      });
+                      if (addToast) addToast('\u2728 Mission customized from your source text!', 'success');
+                      if (typeof announceToSR === 'function') announceToSR('Mission customized with your source content. Objectives, quiz, and samples updated.');
+                    } catch (e) {
+                      upd('aiBriefingLoading', false);
+                      if (addToast) addToast('Couldn\'t parse AI response \u2014 using default briefing.', 'error');
+                    }
+                  }).catch(function() {
+                    upd('aiBriefingLoading', false);
+                    if (addToast) addToast('Couldn\'t reach AI \u2014 using default briefing.', 'error');
+                  });
+                },
+                className: 'w-full py-2 rounded-lg text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition-all disabled:opacity-60'
+              }, d.aiBriefingLoading
+                ? '\u231B Customizing mission\u2026'
+                : (d.aiBriefing ? '\uD83D\uDD04 Regenerate from source text' : '\u2728 Customize from my source text'))
             )
           ),
           h('button', {
@@ -913,7 +1016,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             onClick: function() {
               setPhase(1);
               upd('missionStartTime', Date.now());
-              log('\uD83D\uDCCB Mission briefing complete (' + DIFFICULTIES[difficulty].label + ' difficulty)');
+              log('\uD83D\uDCCB Mission briefing complete (' + DIFFICULTIES[difficulty].label + ' difficulty)' + (d.aiBriefing ? ' \u2014 AI customized' : ''));
               addXP(10);
               if (addToast) addToast('\uD83D\uDE80 Mission authorized! Difficulty: ' + DIFFICULTIES[difficulty].label, 'success');
             },
@@ -1201,7 +1304,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     }
 
                     drawVignette(ctx, W, H, 0.3);
-                    requestAnimationFrame(drawLaunch);
+                    if (document.contains(cvEl)) requestAnimationFrame(drawLaunch);
                   }
                   drawLaunch();
                 }
@@ -1211,8 +1314,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             h('div', { className: 'p-3 border-t border-slate-700' },
               h('div', { className: 'flex items-center justify-between' },
                 h('div', null,
-                  h('p', { className: 'text-xs text-slate-400' }, '\uD83D\uDE80 Saturn V \u2022 3 stages \u2022 7.5 million lbs thrust'),
-                  h('p', { className: 'text-[9px] text-slate-500' }, 'Watch the countdown and ascent through Earth\'s atmosphere')
+                  h('p', { className: 'text-xs text-slate-600' }, '\uD83D\uDE80 Saturn V \u2022 3 stages \u2022 7.5 million lbs thrust'),
+                  h('p', { className: 'text-[11px] text-slate-600' }, 'Watch the countdown and ascent through Earth\'s atmosphere')
                 ),
                 h('button', {
                   'aria-label': 'Proceed to Earth orbit phase after successful launch',
@@ -1231,15 +1334,165 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
 
         // ═══ PHASE 2: EARTH ORBIT ═══
         phase === 2 && h('div', { className: 'space-y-3', style: { animation: 'mmFadeSlideIn 0.4s ease-out' } },
-          h('div', { className: 'bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl p-4 text-white' },
+          h('div', { className: 'bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl overflow-hidden border border-slate-700' },
+            // Earth orbit canvas — shows CSM orbiting while TLI window sweeps toward Moon alignment
+            h('div', { className: 'relative', style: { height: '260px' } },
+              h('canvas', {
+                role: 'img',
+                'aria-label': 'Animated view of spacecraft in low Earth orbit at 185 kilometers. CSM completes 1.5 orbits while a trans-lunar injection burn window aligns with the Moon\'s future position. Orbit counter, altitude, velocity, and TLI readiness displayed.',
+                style: { width: '100%', height: '100%', display: 'block' },
+                ref: function(cvEl) {
+                  if (!cvEl || cvEl._orbitLeoInit) return;
+                  cvEl._orbitLeoInit = true;
+                  var ctx = cvEl.getContext('2d');
+                  var W = cvEl.offsetWidth || 500, HL = cvEl.offsetHeight || 260;
+                  cvEl.width = W * 2; cvEl.height = HL * 2; ctx.scale(2, 2);
+                  var tick = 0;
+                  // 1.5 orbits over ~22 seconds of viewing (60fps × 22 = 1320 frames → angSpeed ~0.0071)
+                  var orbitAngSpeed = 0.0071;
+                  // Moon's "future position" sits ~48° ahead of current; TLI must fire when CSM is at the opposite side of its orbit
+                  function drawEarthOrbit() {
+                    tick++;
+                    ctx.clearRect(0, 0, W, HL);
+                    // Space background + stars
+                    ctx.fillStyle = '#020617'; ctx.fillRect(0, 0, W, HL);
+                    drawStarfield(ctx, W, HL, tick, 110);
+                    // Earth (left-of-center)
+                    var eX = W * 0.34, eY = HL * 0.52, eR = Math.min(42, HL * 0.18);
+                    drawDetailedEarth(ctx, eX, eY, eR, tick);
+                    // Orbital ellipse (slight tilt for depth)
+                    var orbR = eR + 26;
+                    var orbRy = orbR * 0.92;
+                    ctx.save();
+                    ctx.strokeStyle = 'rgba(148,163,184,0.35)';
+                    ctx.setLineDash([3, 4]); ctx.lineWidth = 1;
+                    ctx.beginPath(); ctx.ellipse(eX, eY, orbR, orbRy, -0.12, 0, Math.PI * 2); ctx.stroke();
+                    ctx.setLineDash([]);
+                    ctx.restore();
+                    // Moon's future position (far right) with a faint trajectory arc indicating TLI target
+                    var moonX = W - 32, moonY = HL * 0.38, moonR = 10;
+                    drawDetailedMoon(ctx, moonX, moonY, moonR, 42);
+                    ctx.fillStyle = 'rgba(148,163,184,0.7)'; ctx.font = '8px system-ui'; ctx.textAlign = 'center';
+                    ctx.fillText('Moon (in 3 days)', moonX, moonY + moonR + 12);
+                    // Dashed TLI trajectory arc from Earth toward Moon's future position
+                    ctx.save();
+                    ctx.strokeStyle = 'rgba(251,191,36,0.25)';
+                    ctx.setLineDash([2, 5]); ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(eX + orbR * 0.98, eY);
+                    ctx.quadraticCurveTo((eX + moonX) * 0.5, eY - 40, moonX - moonR - 2, moonY);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                    ctx.restore();
+                    // Orbit angle (CCW, starts at 270° = top of orbit — a plausible LEO insertion point)
+                    var orbAng = -Math.PI * 0.5 + tick * orbitAngSpeed;
+                    var orbits = (tick * orbitAngSpeed) / (Math.PI * 2);
+                    // TLI burn window: must fire when CSM is on Earth-side-away-from-Moon
+                    // Correct burn point = orbital position where spacecraft velocity vector points toward Moon's future position (roughly 0 rad = right side of orbit)
+                    var tliTargetAng = 0;
+                    var angDiff = ((orbAng - tliTargetAng + Math.PI) % (Math.PI * 2)) - Math.PI;
+                    var windowHalfWidth = 0.35; // radians ~20°
+                    var inWindow = Math.abs(angDiff) < windowHalfWidth && orbits > 1.35;
+                    // Draw TLI burn window as highlighted arc on the orbit
+                    ctx.save();
+                    ctx.strokeStyle = inWindow ? 'rgba(34,197,94,0.85)' : 'rgba(251,191,36,0.55)';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.ellipse(eX, eY, orbR, orbRy, -0.12, tliTargetAng - windowHalfWidth, tliTargetAng + windowHalfWidth);
+                    ctx.stroke();
+                    ctx.restore();
+                    // Compute CSM position on tilted ellipse
+                    var cosT = Math.cos(-0.12), sinT = Math.sin(-0.12);
+                    var px = Math.cos(orbAng) * orbR, py = Math.sin(orbAng) * orbRy;
+                    var scX = eX + px * cosT - py * sinT;
+                    var scY = eY + px * sinT + py * cosT;
+                    // Orbit trail (last ~60° of arc)
+                    ctx.save();
+                    ctx.strokeStyle = 'rgba(56,189,248,0.45)'; ctx.lineWidth = 1.5;
+                    ctx.beginPath();
+                    ctx.ellipse(eX, eY, orbR, orbRy, -0.12, orbAng - 1.0, orbAng);
+                    ctx.stroke();
+                    ctx.restore();
+                    // CSM + LM stack
+                    ctx.save();
+                    ctx.translate(scX, scY);
+                    // Velocity vector indicator (tangent to orbit, points in direction of motion)
+                    var tanAng = orbAng + Math.PI * 0.5;
+                    ctx.rotate(tanAng - 0.12);
+                    // Service module
+                    ctx.fillStyle = '#c0c8d0'; ctx.fillRect(-6, -2, 8, 4);
+                    // Command module nose
+                    ctx.fillStyle = '#e8ecf0';
+                    ctx.beginPath(); ctx.moveTo(2, 0); ctx.lineTo(-1, -2); ctx.lineTo(-4, -2); ctx.lineTo(-4, 2); ctx.lineTo(-1, 2); ctx.closePath(); ctx.fill();
+                    // LM adapter
+                    ctx.fillStyle = '#a0a8b0'; ctx.fillRect(-10, -2.5, 4, 5);
+                    // Window glint
+                    ctx.fillStyle = '#38bdf8'; ctx.fillRect(-2, -0.8, 1.5, 1.5);
+                    // Engine glow if in TLI window
+                    if (inWindow) {
+                      var glowR = 3 + Math.sin(tick * 0.25) * 1.5;
+                      var glowGrad = ctx.createRadialGradient(-12, 0, 0, -12, 0, glowR + 2);
+                      glowGrad.addColorStop(0, 'rgba(56,189,248,0.9)');
+                      glowGrad.addColorStop(1, 'rgba(56,189,248,0)');
+                      ctx.fillStyle = glowGrad;
+                      ctx.beginPath(); ctx.arc(-12, 0, glowR + 2, 0, Math.PI * 2); ctx.fill();
+                    }
+                    ctx.restore();
+                    // HUD — altitude, velocity, orbit count
+                    ctx.fillStyle = 'rgba(0,0,0,0.55)';
+                    ctx.fillRect(8, 8, 138, 64);
+                    ctx.textAlign = 'left'; ctx.font = 'bold 9px monospace';
+                    ctx.fillStyle = '#38bdf8'; ctx.fillText('ALTITUDE', 14, 22);
+                    ctx.fillStyle = '#fff'; ctx.font = 'bold 13px monospace';
+                    ctx.fillText('185 km', 14, 36);
+                    ctx.font = 'bold 9px monospace'; ctx.fillStyle = '#38bdf8';
+                    ctx.fillText('VELOCITY', 14, 50);
+                    ctx.fillStyle = '#fff'; ctx.font = '11px monospace';
+                    ctx.fillText('7.8 km/s (28,000 km/h)', 14, 64);
+                    // Orbit counter (right side)
+                    ctx.fillStyle = 'rgba(0,0,0,0.55)';
+                    ctx.fillRect(W - 112, 8, 104, 64);
+                    ctx.textAlign = 'right'; ctx.font = 'bold 9px monospace';
+                    ctx.fillStyle = '#fbbf24'; ctx.fillText('ORBITS', W - 14, 22);
+                    ctx.fillStyle = '#fff'; ctx.font = 'bold 18px monospace';
+                    ctx.fillText(Math.min(1.5, orbits).toFixed(2), W - 14, 42);
+                    ctx.font = 'bold 9px monospace'; ctx.fillStyle = inWindow ? '#22c55e' : '#94a3b8';
+                    ctx.fillText(inWindow ? 'TLI WINDOW \u25B6 GO' : 'TLI WINDOW', W - 14, 58);
+                    ctx.font = '8px monospace';
+                    ctx.fillText(orbits >= 1.35 ? (inWindow ? 'BURN NOW' : 'aligning...') : ('in ' + Math.max(0, (1.35 - orbits)).toFixed(2) + ' orbit'), W - 14, 68);
+                    // Footer explainer text (fades in after 3s, cycles)
+                    var lessons = [
+                      'At 7.8 km/s, one orbit takes ~90 minutes.',
+                      'TLI must fire at the right point to hit the Moon\'s future position.',
+                      'The Moon moves ~1 km/s — you aim where it WILL be.',
+                      '1.5 orbits gives Houston time to verify systems before TLI.',
+                      'A 1\u00B0 burn error misses the Moon by thousands of km.'
+                    ];
+                    var lIdx = Math.floor(tick / 260) % lessons.length;
+                    var lFade = Math.min(1, (tick % 260) < 210 ? (tick % 260) / 25 : (260 - tick % 260) / 50);
+                    if (tick > 120) {
+                      ctx.globalAlpha = lFade * 0.85;
+                      ctx.textAlign = 'center'; ctx.font = 'italic 10px system-ui';
+                      ctx.fillStyle = '#a5b4fc';
+                      ctx.fillText(lessons[lIdx], W * 0.5, HL - 10);
+                      ctx.globalAlpha = 1;
+                    }
+                    drawVignette(ctx, W, HL, 0.25);
+                    if (document.contains(cvEl)) requestAnimationFrame(drawEarthOrbit);
+                  }
+                  drawEarthOrbit();
+                }
+              })
+            ),
+            h('div', { className: 'p-4 text-white' },
             h('div', { className: 'text-center mb-3' },
               h('div', { className: 'text-3xl' }, '\uD83C\uDF0D'),
               h('h4', { className: 'text-base font-bold' }, 'Low Earth Orbit'),
-              h('p', { className: 'text-[10px] text-slate-400' }, 'Altitude: 185 km \u2022 Speed: 28,000 km/h \u2022 1.5 orbits before TLI burn')
+              h('p', { className: 'text-[11px] text-slate-600' }, 'Altitude: 185 km \u2022 Speed: 28,000 km/h \u2022 1.5 orbits before TLI burn')
             ),
             h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10 mb-3' },
-              h('p', { className: 'text-[10px] text-sky-300 font-bold mb-1' }, '\uD83D\uDE80 TRANS-LUNAR INJECTION (TLI)'),
-              h('p', { className: 'text-[10px] text-slate-300 leading-relaxed' },
+              h('p', { className: 'text-[11px] text-sky-300 font-bold mb-1' }, '\uD83D\uDE80 TRANS-LUNAR INJECTION (TLI)'),
+              h('p', { className: 'text-[11px] text-slate-300 leading-relaxed' },
                 'The S-IVB third stage will fire for 5 minutes 47 seconds to accelerate from 28,000 km/h to 38,900 km/h \u2014 escape velocity. This single burn sends you on a trajectory to the Moon, 384,400 km away.'),
               h('div', { className: 'grid grid-cols-3 gap-2 mt-2' },
                 [
@@ -1248,14 +1501,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   ['Coast Time', '~3 days']
                 ].map(function(item) {
                   return h('div', { key: item[0], className: 'bg-white/5 rounded p-1.5 text-center' },
-                    h('p', { className: 'text-[9px] text-slate-400' }, item[0]),
+                    h('p', { className: 'text-[11px] text-slate-600' }, item[0]),
                     h('p', { className: 'text-[11px] font-bold text-sky-300' }, item[1])
                   );
                 })
               )
             ),
             h('div', { className: 'bg-indigo-500/10 rounded-lg p-2 border border-indigo-500/20' },
-              h('p', { className: 'text-[10px] text-indigo-300' }, '\uD83D\uDCA1 ' + APOLLO_FACTS[Math.floor(Math.random() * APOLLO_FACTS.length)])
+              h('p', { className: 'text-[11px] text-indigo-300' }, '\uD83D\uDCA1 ' + APOLLO_FACTS[Math.floor(Math.random() * APOLLO_FACTS.length)])
+            )
             )
           ),
           h('button', {
@@ -1361,7 +1615,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     ctx.fillText(commsMessages[commsIdx], W * 0.5, H3 - 12);
                     ctx.globalAlpha = 1;
                     drawVignette(ctx, W, H3, 0.25);
-                    requestAnimationFrame(drawTransit);
+                    if (document.contains(cvEl)) requestAnimationFrame(drawTransit);
                   }
                   drawTransit();
                 }
@@ -1374,11 +1628,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   'The spacecraft rotates slowly ("BBQ roll") to evenly distribute solar heating.',
                   'Even a 1\u00B0 trajectory error would miss the Moon by thousands of kilometers.'
                 ].map(function(fact, i) {
-                  return h('p', { key: i, className: 'text-[9px] text-slate-400' }, '\u2022 ' + fact);
+                  return h('p', { key: i, className: 'text-[11px] text-slate-600' }, '\u2022 ' + fact);
                 })
               ),
               h('div', { className: 'bg-indigo-500/10 rounded p-1.5 border border-indigo-500/20 mb-2' },
-                h('p', { className: 'text-[9px] text-indigo-300' }, '\uD83D\uDCA1 ' + APOLLO_FACTS[Math.floor(Math.random() * APOLLO_FACTS.length)])
+                h('p', { className: 'text-[11px] text-indigo-300' }, '\uD83D\uDCA1 ' + APOLLO_FACTS[Math.floor(Math.random() * APOLLO_FACTS.length)])
               )
             )
           ),
@@ -1459,7 +1713,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     ctx.fillText(orbitComms[ocIdx], W * 0.5, HO - 10);
                     ctx.globalAlpha = 1;
                     drawVignette(ctx, W, HO, 0.2);
-                    requestAnimationFrame(drawOrbit);
+                    if (document.contains(cvEl)) requestAnimationFrame(drawOrbit);
                   }
                   drawOrbit();
                 }
@@ -1474,8 +1728,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   ['\uD83D\uDEF0 CM "Columbia"', 'CMP orbiting solo']
                 ].map(function(item) {
                   return h('div', { key: item[0], className: 'bg-slate-800 rounded p-1.5' },
-                    h('p', { className: 'text-[9px] text-slate-400' }, item[0]),
-                    h('p', { className: 'text-[10px] font-bold text-slate-200' }, item[1])
+                    h('p', { className: 'text-[11px] text-slate-600' }, item[0]),
+                    h('p', { className: 'text-[11px] font-bold text-slate-200' }, item[1])
                   );
                 })
               )
@@ -1499,27 +1753,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
           !d.descentStarted && h('div', { className: 'bg-gradient-to-b from-slate-900 to-indigo-950 rounded-xl p-5 border border-slate-700 text-white text-center' },
             h('div', { className: 'text-4xl mb-3' }, '\u2B07\uFE0F'),
             h('h4', { className: 'text-lg font-black mb-2' }, 'Powered Descent'),
-            h('p', { className: 'text-xs text-slate-400 mb-4' }, 'You are piloting the Lunar Module to the Moon\'s surface. Control your thrust to land softly!'),
+            h('p', { className: 'text-xs text-slate-200 mb-4' }, 'You are piloting the Lunar Module to the Moon\'s surface. Control your thrust to land softly!'),
             h('div', { className: 'grid grid-cols-3 gap-3 mb-4 max-w-sm mx-auto' },
               h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10' },
                 h('div', { className: 'text-2xl mb-1' }, '\u2B06\uFE0F'),
-                h('p', { className: 'text-[10px] font-bold text-sky-300' }, 'W / \u2191'),
-                h('p', { className: 'text-[9px] text-slate-400' }, 'Fire engines (thrust UP)')
+                h('p', { className: 'text-[11px] font-bold text-sky-300' }, 'W / \u2191'),
+                h('p', { className: 'text-[11px] text-slate-600' }, 'Fire engines (thrust UP)')
               ),
               h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10' },
                 h('div', { className: 'text-2xl mb-1' }, '\u2194\uFE0F'),
-                h('p', { className: 'text-[10px] font-bold text-sky-300' }, 'A/D or \u2190/\u2192'),
-                h('p', { className: 'text-[9px] text-slate-400' }, 'Lateral movement')
+                h('p', { className: 'text-[11px] font-bold text-sky-300' }, 'A/D or \u2190/\u2192'),
+                h('p', { className: 'text-[11px] text-slate-600' }, 'Lateral movement')
               ),
               h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10' },
                 h('div', { className: 'text-2xl mb-1' }, '\uD83C\uDFAF'),
-                h('p', { className: 'text-[10px] font-bold text-amber-300' }, 'Goal'),
-                h('p', { className: 'text-[9px] text-slate-400' }, 'V < 3 m/s, H < 5 m/s')
+                h('p', { className: 'text-[11px] font-bold text-amber-300' }, 'Goal'),
+                h('p', { className: 'text-[11px] text-slate-600' }, 'V < 3 m/s, H < 5 m/s')
               )
             ),
             h('div', { className: 'bg-amber-500/10 rounded-lg p-3 border border-amber-500/20 mb-4 max-w-sm mx-auto' },
-              h('p', { className: 'text-[10px] text-amber-300 font-bold mb-1' }, '\u26A0\uFE0F Tips from Mission Control:'),
-              h('ul', { className: 'text-[10px] text-amber-200 space-y-1 text-left pl-4' },
+              h('p', { className: 'text-[11px] text-amber-300 font-bold mb-1' }, '\u26A0\uFE0F Tips from Mission Control:'),
+              h('ul', { className: 'text-[11px] text-amber-200 space-y-1 text-left pl-4' },
                 h('li', null, 'Start slowing down early \u2014 Moon gravity is gentle but relentless'),
                 h('li', null, 'Watch your fuel gauge \u2014 you can\'t thrust without fuel!'),
                 h('li', null, 'Reduce horizontal speed before focusing on vertical'),
@@ -1806,7 +2060,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     }
 
                     drawVignette(ctx, W, H, 0.2);
-                    if (!landed && !crashed) requestAnimationFrame(drawDescent);
+                    if (!landed && !crashed && document.contains(cvEl)) requestAnimationFrame(drawDescent);
                     else {
                       // One more frame render for final state
                       setTimeout(function() { drawDescent(); }, 100);
@@ -1817,7 +2071,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               })
             ),
             h('div', { className: 'p-3 border-t border-slate-700 flex justify-between items-center' },
-              h('p', { className: 'text-[10px] text-slate-400' }, '\u2191/W = thrust \u2022 \u2190\u2192/AD = lateral \u2022 Land gently!'),
+              h('p', { className: 'text-[11px] text-slate-600' }, '\u2191/W = thrust \u2022 \u2190\u2192/AD = lateral \u2022 Land gently!'),
               h('button', {
                 'aria-label': 'Begin extravehicular activity moonwalk to explore the lunar surface and collect geological samples',
                 onClick: function() {
@@ -2121,14 +2375,62 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     var isJumping = false;
                     var speed3d = 0.06; // slower in spacesuit
 
+                    // ── Comfort mode (reduced motion / mouse-sensitivity / vignette) ──
+                    // Auto-enable if OS prefers-reduced-motion; persisted per-student in toolData.
+                    var prefersReducedMotion = false;
+                    try { prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch(_e) {}
+                    var storedComfort = (d && typeof d.comfortMode === 'boolean') ? d.comfortMode : null;
+                    var comfortMode = storedComfort !== null ? storedComfort : prefersReducedMotion;
+                    var lookSensitivity = 0.003;
+                    var applyComfortFactors = function() {
+                      lookSensitivity = comfortMode ? 0.0012 : 0.003; // ~2.5x slower in comfort mode
+                      speed3d = comfortMode ? 0.04 : 0.06;
+                    };
+                    applyComfortFactors();
+                    // Click-to-move toggle (motor-impaired students: point-and-click instead of WASD)
+                    var storedClick = (d && typeof d.clickToMove === 'boolean') ? d.clickToMove : false;
+                    var clickToMove = storedClick;
+                    var clickTarget = null; // THREE.Vector3 or null
+                    // Vignette overlay (reduces peripheral motion-sickness triggers during fast movement)
+                    var vignetteEl = null;
+                    if (comfortMode) {
+                      vignetteEl = document.createElement('div');
+                      vignetteEl.setAttribute('aria-hidden', 'true');
+                      vignetteEl.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:9;background:radial-gradient(ellipse at center, transparent 45%, rgba(0,0,0,0.55) 95%);opacity:0;transition:opacity 0.35s ease';
+                      canvasEl.parentElement.appendChild(vignetteEl);
+                    }
+
                     canvasEl.addEventListener('keydown', function(e) {
                       switch(e.key.toLowerCase()) {
-                        case 'w': case 'arrowup': moveState.forward = true; break;
-                        case 's': case 'arrowdown': moveState.back = true; break;
-                        case 'a': case 'arrowleft': moveState.left = true; break;
-                        case 'd': case 'arrowright': moveState.right = true; break;
+                        case 'w': case 'arrowup': moveState.forward = true; clickTarget = null; break;
+                        case 's': case 'arrowdown': moveState.back = true; clickTarget = null; break;
+                        case 'a': case 'arrowleft': moveState.left = true; clickTarget = null; break;
+                        case 'd': case 'arrowright': moveState.right = true; clickTarget = null; break;
                         case 'f': moveState.sample = true; break;
                         case ' ': if (!isJumping) { playerVelY = 0.12; isJumping = true; } break; // 1/6 gravity jump!
+                        case 'c':
+                          // Toggle comfort mode
+                          comfortMode = !comfortMode;
+                          applyComfortFactors();
+                          try { upd('comfortMode', comfortMode); } catch(_){}
+                          if (vignetteEl) { vignetteEl.parentElement && vignetteEl.parentElement.removeChild(vignetteEl); vignetteEl = null; }
+                          if (comfortMode) {
+                            vignetteEl = document.createElement('div');
+                            vignetteEl.setAttribute('aria-hidden', 'true');
+                            vignetteEl.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:9;background:radial-gradient(ellipse at center, transparent 45%, rgba(0,0,0,0.55) 95%);opacity:0;transition:opacity 0.35s ease';
+                            canvasEl.parentElement.appendChild(vignetteEl);
+                          }
+                          if (addToast) addToast(comfortMode ? '🌿 Comfort mode ON — reduced motion & slower turn' : 'Comfort mode OFF', 'info');
+                          if (typeof announceToSR === 'function') announceToSR(comfortMode ? 'Comfort mode enabled. Mouse sensitivity and walk speed reduced.' : 'Comfort mode disabled.');
+                          break;
+                        case 'm':
+                          // Toggle click-to-move
+                          clickToMove = !clickToMove;
+                          clickTarget = null;
+                          try { upd('clickToMove', clickToMove); } catch(_){}
+                          if (addToast) addToast(clickToMove ? '🖱 Click-to-move ON — click terrain to walk there' : 'Click-to-move OFF', 'info');
+                          if (typeof announceToSR === 'function') announceToSR(clickToMove ? 'Click to move enabled. Click on the ground to walk there.' : 'Click to move disabled.');
+                          break;
                       }
                       e.preventDefault();
                     });
@@ -2142,12 +2444,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       }
                     });
                     var isLooking = false;
-                    canvasEl.addEventListener('mousedown', function() { isLooking = true; canvasEl.requestPointerLock && canvasEl.requestPointerLock(); });
+                    // Mouse down: in click-to-move mode, raycast to terrain; otherwise enable look.
+                    canvasEl.addEventListener('mousedown', function(e) {
+                      if (clickToMove && e.button === 0) {
+                        // Raycast from camera through click point to the terrain plane.
+                        try {
+                          var rect = canvasEl.getBoundingClientRect();
+                          var ndc = new THREE.Vector2(
+                            ((e.clientX - rect.left) / rect.width) * 2 - 1,
+                            -((e.clientY - rect.top) / rect.height) * 2 + 1
+                          );
+                          var raycaster = new THREE.Raycaster();
+                          raycaster.setFromCamera(ndc, camera);
+                          var hits = raycaster.intersectObjects(scene.children, false);
+                          for (var hi = 0; hi < hits.length; hi++) {
+                            // Prefer terrain hit — big plane rotated flat, positioned at y~0.
+                            var hit = hits[hi];
+                            if (hit && hit.point && hit.distance < 150) {
+                              clickTarget = new THREE.Vector3(hit.point.x, 0, hit.point.z);
+                              if (typeof announceToSR === 'function') announceToSR('Walking to selected point.');
+                              break;
+                            }
+                          }
+                        } catch (_rcErr) { /* raycast unavailable, fall through to look */ }
+                        return;
+                      }
+                      isLooking = true;
+                      canvasEl.requestPointerLock && canvasEl.requestPointerLock();
+                    });
                     canvasEl.addEventListener('mouseup', function() { isLooking = false; });
                     function onMM(e) {
                       if (!isLooking && !document.pointerLockElement) return;
-                      yaw -= e.movementX * 0.003;
-                      pitch = Math.max(-1.2, Math.min(1.2, pitch - e.movementY * 0.003));
+                      yaw -= e.movementX * lookSensitivity;
+                      pitch = Math.max(-1.2, Math.min(1.2, pitch - e.movementY * lookSensitivity));
                     }
                     document.addEventListener('mousemove', onMM);
                     canvasEl.focus();
@@ -2161,7 +2490,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       '<span style="color:#64748b">\uD83E\uDEA8</span><span id="eva-samples">0 / ' + LUNAR_SAMPLES_DATA.length + ' samples</span>' +
                       '<span style="color:#64748b">\uD83D\uDC63</span><span id="eva-steps">0 steps</span>' +
                       '</div>' +
-                      '<div style="border-top:1px solid rgba(56,189,248,0.1);margin-top:4px;padding-top:4px;color:#94a3b8;font-size:8px">WASD move \u2022 SPACE jump (1/6g!) \u2022 F collect \u2022 Mouse look</div>';
+                      '<div style="border-top:1px solid rgba(56,189,248,0.1);margin-top:4px;padding-top:4px;color:#94a3b8;font-size:8px">WASD move \u2022 SPACE jump (1/6g!) \u2022 F collect \u2022 Mouse look \u2022 C comfort \u2022 M click-to-move</div>';
                     canvasEl.parentElement.appendChild(evaHud);
 
                     // ── Animation ──
@@ -2177,13 +2506,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
 
                       // Movement
                       var dir = new THREE.Vector3();
-                      if (moveState.forward) dir.z -= 1;
-                      if (moveState.back) dir.z += 1;
-                      if (moveState.left) dir.x -= 1;
-                      if (moveState.right) dir.x += 1;
-                      dir.normalize().multiplyScalar(speed3d);
-                      dir.applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
-                      playerPos.add(dir);
+                      // Click-to-move: auto-walk toward clickTarget; cancels on arrival or manual key press.
+                      if (clickTarget && !moveState.forward && !moveState.back && !moveState.left && !moveState.right) {
+                        var dx = clickTarget.x - playerPos.x;
+                        var dz = clickTarget.z - playerPos.z;
+                        var dist2d = Math.sqrt(dx * dx + dz * dz);
+                        if (dist2d < 0.5) {
+                          clickTarget = null;
+                        } else {
+                          // Walk toward target at speed3d; yaw the camera to face direction.
+                          var walkAngle = Math.atan2(dx, -dz); // -dz because z forward is negative
+                          // Gently ease yaw toward walkAngle (avoid motion-sick snap).
+                          var yawDelta = walkAngle - yaw;
+                          while (yawDelta > Math.PI) yawDelta -= Math.PI * 2;
+                          while (yawDelta < -Math.PI) yawDelta += Math.PI * 2;
+                          yaw += yawDelta * (comfortMode ? 0.05 : 0.1);
+                          dir.set(Math.sin(walkAngle), 0, -Math.cos(walkAngle)).multiplyScalar(speed3d);
+                          playerPos.add(dir);
+                        }
+                      } else {
+                        if (moveState.forward) dir.z -= 1;
+                        if (moveState.back) dir.z += 1;
+                        if (moveState.left) dir.x -= 1;
+                        if (moveState.right) dir.x += 1;
+                        dir.normalize().multiplyScalar(speed3d);
+                        dir.applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
+                        playerPos.add(dir);
+                      }
+
+                      // Vignette intensity: fade in when moving fast (comfort-mode peripheral blur).
+                      if (vignetteEl && comfortMode) {
+                        var movingFast = dir.length() > 0.01 || isJumping;
+                        vignetteEl.style.opacity = movingFast ? '1' : '0.25';
+                      }
 
                       // 1/6 gravity physics
                       playerVelY -= 0.0027; // Moon gravity (1/6 of Earth)
@@ -2342,6 +2697,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       if (document.pointerLockElement === canvasEl) document.exitPointerLock();
                       renderer.dispose();
                       if (evaHud.parentElement) evaHud.parentElement.removeChild(evaHud);
+                      if (vignetteEl && vignetteEl.parentElement) vignetteEl.parentElement.removeChild(vignetteEl);
                     };
                   }
 
@@ -2358,11 +2714,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             h('div', { className: 'p-3 border-t border-slate-700 flex justify-between items-center' },
               h('div', null,
                 h('p', { className: 'text-xs text-white font-bold' }, '\uD83D\uDC68\u200D\uD83D\uDE80 Moonwalk EVA'),
-                h('p', { className: 'text-[9px] text-slate-400' }, 'Explore \u2022 Collect samples \u2022 Jump in 1/6 gravity!')
+                h('p', { className: 'text-[11px] text-slate-600' }, 'Explore \u2022 Collect samples \u2022 Jump in 1/6 gravity!')
               ),
               h('button', {
                 'aria-label': 'End moonwalk EVA and return to Lunar Module. ' + (d.lunarSamples || []).length + ' samples collected.',
                 onClick: function() {
+                  // Clean up EVA canvas (Three.js, RAF, event listeners)
+                  var evaCanvas = document.querySelector('[data-eva-canvas]');
+                  if (evaCanvas && evaCanvas._evaCleanup) evaCanvas._evaCleanup();
                   advancePhase(7);
                   log('\uD83D\uDC68\u200D\uD83D\uDE80 EVA complete. ' + (d.lunarSamples || []).length + ' samples collected. Preparing for ascent.');
                   addXP(25);
@@ -2374,43 +2733,339 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
           )
         ),
 
-        // ═══ PHASES 7-9: RETURN JOURNEY ═══
-        (phase === 7 || phase === 8) && h('div', { className: 'space-y-3', style: { animation: 'mmFadeSlideIn 0.4s ease-out' } },
-          h('div', { className: 'bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl p-4 text-white' },
-            h('div', { className: 'text-center mb-3' },
-              h('div', { className: 'text-3xl' }, phase === 7 ? '\u2B06\uFE0F' : '\uD83C\uDF0D'),
-              h('h4', { className: 'text-base font-bold' }, phase === 7 ? 'Lunar Ascent & Rendezvous' : 'Trans-Earth Coast'),
-              h('p', { className: 'text-[10px] text-slate-400' },
-                phase === 7 ? 'Ascent stage launches from Moon, docks with Columbia' : 'Returning home \u2022 384,400 km \u2022 ~3 days')
+        // ═══ PHASE 7: LUNAR ASCENT & RENDEZVOUS (Animated Canvas) ═══
+        phase === 7 && h('div', { className: 'space-y-3', style: { animation: 'mmFadeSlideIn 0.4s ease-out' } },
+          h('div', { className: 'bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl overflow-hidden border border-slate-700' },
+            h('div', { className: 'relative', style: { height: '300px' } },
+              h('canvas', {
+                role: 'img',
+                'aria-label': 'Animated lunar ascent sequence. Ascent stage lifts off the Moon leaving the descent stage behind, climbs to lunar orbit over 60 kilometers, then rendezvous-docks with the orbiting Command Module Columbia. HUD shows altitude, phase, distance to CSM.',
+                style: { width: '100%', height: '100%', display: 'block' },
+                ref: function(cvEl) {
+                  if (!cvEl || cvEl._ascentInit) return;
+                  cvEl._ascentInit = true;
+                  var ctx = cvEl.getContext('2d');
+                  var W = cvEl.offsetWidth || 500, HA = cvEl.offsetHeight || 300;
+                  cvEl.width = W * 2; cvEl.height = HA * 2; ctx.scale(2, 2);
+                  var tick = 0;
+                  function drawAscent() {
+                    tick++;
+                    ctx.clearRect(0, 0, W, HA);
+                    // Black lunar sky + stars
+                    ctx.fillStyle = '#000008'; ctx.fillRect(0, 0, W, HA);
+                    drawStarfield(ctx, W, HA, tick, 130);
+                    // Phase timing (frames): 0-90 prelaunch, 90-450 ascent, 450-780 rendezvous, 780+ docked
+                    var prelaunch = tick < 90;
+                    var launching = tick >= 90 && tick < 450;
+                    var rendezvous = tick >= 450 && tick < 780;
+                    var docked = tick >= 780;
+                    // Lunar surface with curving horizon (we're on a small world)
+                    var horizonY = HA * 0.78;
+                    ctx.save();
+                    ctx.fillStyle = '#8a8080';
+                    ctx.beginPath();
+                    ctx.moveTo(0, HA); ctx.lineTo(0, horizonY);
+                    ctx.arc(W * 0.5, horizonY + W * 1.14, W * 1.2, -Math.PI * 0.58, -Math.PI * 0.42);
+                    ctx.lineTo(W, HA); ctx.closePath(); ctx.fill();
+                    // Regolith texture
+                    ctx.fillStyle = 'rgba(60,55,50,0.35)';
+                    for (var di = 0; di < 60; di++) {
+                      var dx = (di * 17.3) % W;
+                      var dy = horizonY + 4 + (di * 2.7) % (HA - horizonY - 4);
+                      ctx.fillRect(dx, dy, 2, 1);
+                    }
+                    // Small craters
+                    ctx.fillStyle = 'rgba(45,40,38,0.5)';
+                    for (var ci = 0; ci < 6; ci++) {
+                      var ccx = 40 + ci * 80;
+                      var ccy = horizonY + 18 + (ci % 2) * 16;
+                      ctx.beginPath(); ctx.arc(ccx, ccy, 5 + (ci % 3), 0, Math.PI * 2); ctx.fill();
+                    }
+                    ctx.restore();
+                    // Earthrise on horizon (far left)
+                    drawDetailedEarth(ctx, W * 0.12, horizonY - 24, 14, tick);
+                    ctx.fillStyle = 'rgba(148,163,184,0.7)'; ctx.font = '8px system-ui'; ctx.textAlign = 'center';
+                    ctx.fillText('Earthrise', W * 0.12, horizonY - 44);
+                    // LM descent stage left behind on surface
+                    var descentX = W * 0.44;
+                    var descentY = horizonY - 8;
+                    ctx.save();
+                    ctx.translate(descentX, descentY);
+                    ctx.fillStyle = '#c9a444'; // gold thermal foil
+                    ctx.fillRect(-14, 0, 28, 10);
+                    ctx.fillStyle = '#7a7a7a';
+                    ctx.fillRect(-14, 9, 28, 3);
+                    // Landing legs (4 visible as 2)
+                    ctx.strokeStyle = '#555'; ctx.lineWidth = 1.5;
+                    ctx.beginPath(); ctx.moveTo(-14, 12); ctx.lineTo(-22, 18); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(14, 12); ctx.lineTo(22, 18); ctx.stroke();
+                    ctx.fillStyle = '#444';
+                    ctx.fillRect(-24, 16, 4, 2); ctx.fillRect(20, 16, 4, 2);
+                    // Panel line
+                    ctx.strokeStyle = 'rgba(0,0,0,0.4)'; ctx.lineWidth = 0.5;
+                    ctx.beginPath(); ctx.moveTo(-14, 5); ctx.lineTo(14, 5); ctx.stroke();
+                    // US flag next to stage (post-EVA)
+                    ctx.fillStyle = '#fff';
+                    ctx.fillRect(-34, -4, 5, 3);
+                    ctx.strokeStyle = '#999'; ctx.lineWidth = 0.5;
+                    ctx.beginPath(); ctx.moveTo(-32, -4); ctx.lineTo(-32, 12); ctx.stroke();
+                    ctx.restore();
+                    // CSM orbital position (across the sky)
+                    var csmX, csmY;
+                    if (prelaunch) {
+                      csmX = W * 0.8 - (tick * 0.4);
+                      csmY = HA * 0.15 + Math.sin(tick * 0.02) * 2;
+                    } else if (launching) {
+                      csmX = W * 0.8 - 36 - ((tick - 90) * 0.15);
+                      csmY = HA * 0.17 + Math.sin(tick * 0.02) * 2;
+                    } else if (rendezvous) {
+                      var rF = (tick - 450) / 330;
+                      csmX = W * 0.7 - 18 + rF * 8;
+                      csmY = HA * 0.22 + rF * 6;
+                    } else {
+                      csmX = W * 0.62;
+                      csmY = HA * 0.3;
+                    }
+                    // Ascent stage position
+                    var ascentX, ascentY, ascentAng = 0;
+                    if (prelaunch) {
+                      ascentX = descentX; ascentY = descentY - 10;
+                    } else if (launching) {
+                      var lF = (tick - 90) / 360;
+                      ascentX = descentX + lF * lF * 70;
+                      ascentY = (descentY - 10) - lF * (descentY - 10 - HA * 0.28);
+                      ascentAng = lF * 0.5;
+                    } else if (rendezvous) {
+                      var rF2 = (tick - 450) / 330;
+                      var sX = descentX + 70, sY = HA * 0.28;
+                      ascentX = sX + (csmX - 14 - sX) * rF2;
+                      ascentY = sY + (csmY - sY) * rF2;
+                      ascentAng = 0.5 + rF2 * 0.4;
+                    } else {
+                      ascentX = csmX - 14; ascentY = csmY;
+                      ascentAng = 0.9;
+                    }
+                    // Trajectory trail (dashed arc from descent stage to ascent stage)
+                    if (launching || rendezvous) {
+                      ctx.save();
+                      ctx.strokeStyle = 'rgba(56,189,248,0.3)';
+                      ctx.setLineDash([3, 3]); ctx.lineWidth = 1;
+                      ctx.beginPath();
+                      ctx.moveTo(descentX, descentY - 10);
+                      ctx.quadraticCurveTo(descentX + 50, descentY - 60, ascentX, ascentY);
+                      ctx.stroke();
+                      ctx.setLineDash([]);
+                      ctx.restore();
+                    }
+                    // Dust plume at liftoff
+                    if (tick >= 85 && tick < 220) {
+                      ctx.save();
+                      var dustF = tick - 85;
+                      for (var pi = 0; pi < 18; pi++) {
+                        var pAlpha = Math.max(0, 0.55 - dustF * 0.004 - pi * 0.015);
+                        ctx.globalAlpha = pAlpha;
+                        ctx.fillStyle = pi < 9 ? '#e0d8c8' : '#b8b0a0';
+                        var ppx = descentX + (Math.sin(pi * 1.7) * 35) + (Math.random() - 0.5) * 8;
+                        var ppy = descentY + 10 + (Math.random() - 0.5) * 6;
+                        var ppr = 3 + dustF * 0.1 + Math.random() * 2;
+                        ctx.beginPath(); ctx.arc(ppx, ppy, ppr, 0, Math.PI * 2); ctx.fill();
+                      }
+                      ctx.restore();
+                    }
+                    // Draw CSM (Columbia)
+                    ctx.save();
+                    ctx.translate(csmX, csmY);
+                    // Engine bell (rear)
+                    ctx.fillStyle = '#888';
+                    ctx.beginPath(); ctx.moveTo(-20, -2.5); ctx.lineTo(-24, -4.5); ctx.lineTo(-24, 4.5); ctx.lineTo(-20, 2.5); ctx.closePath(); ctx.fill();
+                    // Service module
+                    ctx.fillStyle = '#c0c8d0';
+                    ctx.fillRect(-20, -3.5, 22, 7);
+                    // Command module cone
+                    ctx.fillStyle = '#e8ecf0';
+                    ctx.beginPath();
+                    ctx.moveTo(7, 0); ctx.lineTo(2, -3.5); ctx.lineTo(-3, -3.5); ctx.lineTo(-3, 3.5); ctx.lineTo(2, 3.5); ctx.closePath(); ctx.fill();
+                    // Docking port
+                    ctx.fillStyle = '#555';
+                    ctx.fillRect(7, -1.5, 2, 3);
+                    // Window
+                    ctx.fillStyle = '#38bdf8';
+                    ctx.fillRect(0, -1.2, 2, 2.4);
+                    // RCS thruster quad
+                    ctx.fillStyle = '#999';
+                    ctx.fillRect(-10, -5, 3, 1.5); ctx.fillRect(-10, 3.5, 3, 1.5);
+                    ctx.restore();
+                    // CSM label
+                    ctx.fillStyle = 'rgba(148,163,184,0.75)';
+                    ctx.font = '8px system-ui'; ctx.textAlign = 'center';
+                    ctx.fillText('CSM "Columbia"', csmX, csmY - 12);
+                    // Draw ascent stage ("Eagle")
+                    ctx.save();
+                    ctx.translate(ascentX, ascentY);
+                    ctx.rotate(ascentAng);
+                    // Octagonal ascent body (gold foil)
+                    ctx.fillStyle = '#c9a444';
+                    ctx.fillRect(-5, -4, 10, 8);
+                    // Top white section (RCS + docking tunnel)
+                    ctx.fillStyle = '#e8ecf0';
+                    ctx.fillRect(-3, -6, 6, 2);
+                    ctx.fillStyle = '#888';
+                    ctx.fillRect(-1, -7, 2, 1);
+                    // Window (front-facing)
+                    ctx.fillStyle = '#38bdf8';
+                    ctx.fillRect(-3.5, -2, 2, 2);
+                    // Antenna
+                    ctx.strokeStyle = '#aaa'; ctx.lineWidth = 0.5;
+                    ctx.beginPath(); ctx.moveTo(0, -6); ctx.lineTo(2, -10); ctx.stroke();
+                    // Engine flame (below)
+                    if (launching || rendezvous) {
+                      var flameLen = launching ? (7 + Math.random() * 5) : (2 + Math.random() * 1.5);
+                      var flameW = launching ? 3 : 1.5;
+                      var fg = ctx.createLinearGradient(0, 4, 0, 4 + flameLen);
+                      fg.addColorStop(0, 'rgba(255,220,100,0.9)');
+                      fg.addColorStop(0.5, 'rgba(255,120,20,0.6)');
+                      fg.addColorStop(1, 'rgba(200,0,0,0)');
+                      ctx.fillStyle = fg;
+                      ctx.beginPath();
+                      ctx.moveTo(-flameW, 4); ctx.lineTo(0, 4 + flameLen); ctx.lineTo(flameW, 4); ctx.closePath();
+                      ctx.fill();
+                    }
+                    ctx.restore();
+                    // Ascent label (only during launch/rendezvous, fades when docked)
+                    if (!docked) {
+                      ctx.fillStyle = 'rgba(251,191,36,0.75)';
+                      ctx.font = '8px system-ui'; ctx.textAlign = 'center';
+                      ctx.fillText('"Eagle" ascent', ascentX, ascentY + 14);
+                    }
+                    // HUD left (altitude + phase)
+                    ctx.fillStyle = 'rgba(0,0,0,0.62)';
+                    ctx.fillRect(8, 8, 140, 74);
+                    ctx.textAlign = 'left'; ctx.font = 'bold 9px monospace';
+                    ctx.fillStyle = '#fbbf24'; ctx.fillText('LM ASCENT STAGE', 14, 22);
+                    ctx.font = 'bold 8px monospace'; ctx.fillStyle = '#94a3b8';
+                    ctx.fillText('ALTITUDE', 14, 36);
+                    ctx.fillStyle = '#fff'; ctx.font = 'bold 12px monospace';
+                    var altKm = 0;
+                    if (launching) altKm = ((tick - 90) / 360) * 110;
+                    else if (rendezvous || docked) altKm = 110;
+                    ctx.fillText(altKm.toFixed(1) + ' km', 14, 50);
+                    ctx.font = 'bold 8px monospace'; ctx.fillStyle = '#94a3b8';
+                    ctx.fillText('PHASE', 14, 64);
+                    ctx.font = 'bold 10px monospace';
+                    ctx.fillStyle = prelaunch ? '#fbbf24' : launching ? '#ef4444' : rendezvous ? '#38bdf8' : '#22c55e';
+                    ctx.fillText(prelaunch ? 'PRE-LAUNCH' : launching ? 'ASCENT' : rendezvous ? 'RENDEZVOUS' : 'DOCKED', 14, 78);
+                    // HUD right (distance to CSM)
+                    ctx.fillStyle = 'rgba(0,0,0,0.62)';
+                    ctx.fillRect(W - 128, 8, 120, 58);
+                    ctx.textAlign = 'right'; ctx.font = 'bold 9px monospace';
+                    ctx.fillStyle = '#fbbf24'; ctx.fillText('DIST TO CSM', W - 14, 22);
+                    var dx1 = csmX - ascentX, dy1 = csmY - ascentY;
+                    var pxDist = Math.sqrt(dx1 * dx1 + dy1 * dy1);
+                    var distKm = (pxDist * 2.5).toFixed(1);
+                    ctx.font = 'bold 17px monospace';
+                    ctx.fillStyle = pxDist < 10 ? '#22c55e' : pxDist < 60 ? '#fbbf24' : '#fff';
+                    ctx.fillText(distKm + ' km', W - 14, 42);
+                    ctx.font = 'bold 8px monospace'; ctx.fillStyle = '#94a3b8';
+                    ctx.fillText(docked ? 'HARD DOCK' : rendezvous ? 'closing...' : prelaunch ? 'aligned' : 'pursuing', W - 14, 56);
+                    // Countdown during prelaunch
+                    if (prelaunch) {
+                      var secs = Math.max(1, Math.ceil((90 - tick) / 30));
+                      ctx.textAlign = 'center'; ctx.font = 'bold 40px monospace';
+                      ctx.globalAlpha = 0.75 + Math.sin(tick * 0.3) * 0.25;
+                      ctx.fillStyle = '#fbbf24';
+                      ctx.fillText('T-' + secs, W * 0.5, HA * 0.38);
+                      ctx.globalAlpha = 1;
+                      ctx.font = '10px system-ui'; ctx.fillStyle = '#94a3b8';
+                      ctx.fillText('Ascent engine — single-start, cannot abort', W * 0.5, HA * 0.46);
+                    }
+                    // DOCKED confirmation
+                    if (docked) {
+                      var dPulse = 0.65 + Math.sin(tick * 0.15) * 0.3;
+                      ctx.globalAlpha = dPulse;
+                      ctx.textAlign = 'center'; ctx.font = 'bold 18px system-ui';
+                      ctx.fillStyle = '#22c55e';
+                      ctx.fillText('\u2705 HARD DOCK CONFIRMED', W * 0.5, HA * 0.52);
+                      ctx.globalAlpha = 1;
+                      ctx.font = '10px system-ui'; ctx.fillStyle = '#94a3b8';
+                      ctx.fillText('Ready to jettison "Eagle" and head home', W * 0.5, HA * 0.58);
+                    }
+                    // Comms chatter
+                    var msgs = prelaunch ? ['Houston: "Eagle, you are GO for ascent."'] :
+                               launching ? ['Aldrin: "We\'re lifting off! Beautiful."', 'Houston: "Nominal ascent, Eagle."'] :
+                               rendezvous ? ['Collins: "I have visual on Eagle."', 'Armstrong: "Closing to 100 feet."'] :
+                                            ['Aldrin: "We are docked, Houston."', 'Houston: "Roger, Eagle. Great job."'];
+                    var mIdx = Math.floor(tick / 180) % msgs.length;
+                    var mFade = Math.min(1, (tick % 180) < 150 ? (tick % 180) / 25 : (180 - tick % 180) / 30);
+                    ctx.globalAlpha = mFade * 0.85;
+                    ctx.textAlign = 'center'; ctx.font = 'italic 10px system-ui';
+                    ctx.fillStyle = '#a5b4fc';
+                    ctx.fillText(msgs[mIdx], W * 0.5, HA - 10);
+                    ctx.globalAlpha = 1;
+                    drawVignette(ctx, W, HA, 0.25);
+                    if (document.contains(cvEl)) requestAnimationFrame(drawAscent);
+                  }
+                  drawAscent();
+                }
+              })
             ),
-            h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10 mb-3' },
-              phase === 7 ?
-                h('div', null,
-                  h('p', { className: 'text-[10px] text-slate-300 leading-relaxed' },
-                    'The Lunar Module\'s ascent engine fires, launching you off the Moon\'s surface. You rendezvous and dock with Columbia in lunar orbit. The Lunar Module "Eagle" is jettisoned \u2014 it will eventually crash into the Moon.'),
-                  h('div', { className: 'mt-2 bg-amber-500/10 rounded p-2 border border-amber-500/20' },
-                    h('p', { className: 'text-[10px] text-amber-300' }, '\uD83E\uDEA8 Samples collected: ' + (d.lunarSamples || []).length + ' / ' + LUNAR_SAMPLES_DATA.length),
-                    (d.lunarSamples || []).map(function(s, i) {
-                      return h('p', { key: i, className: 'text-[9px] text-slate-400 ml-2' }, s.icon + ' ' + s.name + ' (' + s.type + ')');
-                    })
-                  )
-                ) :
-                h('p', { className: 'text-[10px] text-slate-300 leading-relaxed' },
-                  'The Service Module engine fires for the Trans-Earth Injection burn. You coast for 3 days back to Earth, jettison the Service Module, and prepare the Command Module for re-entry \u2014 the most dangerous phase of the mission.')
-            ),
-            h('div', { className: 'bg-indigo-500/10 rounded-lg p-2 border border-indigo-500/20' },
-              h('p', { className: 'text-[10px] text-indigo-300' }, '\uD83D\uDCA1 ' + APOLLO_FACTS[Math.floor(Math.random() * APOLLO_FACTS.length)])
+            h('div', { className: 'p-4 text-white border-t border-slate-700' },
+              h('div', { className: 'text-center mb-3' },
+                h('div', { className: 'text-3xl' }, '\u2B06\uFE0F'),
+                h('h4', { className: 'text-base font-bold' }, 'Lunar Ascent & Rendezvous'),
+                h('p', { className: 'text-[11px] text-slate-600' }, 'Ascent stage launches from Moon, docks with Columbia')
+              ),
+              h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10 mb-3' },
+                h('p', { className: 'text-[11px] text-slate-300 leading-relaxed' },
+                  'The LM\'s ascent engine — a single-start hypergolic motor with no abort option — fires to launch you off the lunar surface. The descent stage serves as the launch pad and stays behind. You rendezvous and dock with Columbia, then jettison "Eagle" (it eventually crashes into the Moon).'),
+                h('div', { className: 'mt-2 bg-amber-500/10 rounded p-2 border border-amber-500/20' },
+                  h('p', { className: 'text-[11px] text-amber-300' }, '\uD83E\uDEA8 Samples collected: ' + (d.lunarSamples || []).length + ' / ' + LUNAR_SAMPLES_DATA.length),
+                  (d.lunarSamples || []).map(function(s, i) {
+                    return h('p', { key: i, className: 'text-[11px] text-slate-600 ml-2' }, s.icon + ' ' + s.name + ' (' + s.type + ')');
+                  })
+                )
+              ),
+              h('div', { className: 'bg-indigo-500/10 rounded-lg p-2 border border-indigo-500/20' },
+                h('p', { className: 'text-[11px] text-indigo-300' }, '\uD83D\uDCA1 ' + APOLLO_FACTS[Math.floor(Math.random() * APOLLO_FACTS.length)])
+              )
             )
           ),
           h('button', {
-            'aria-label': phase === 7 ? 'Fire trans-Earth injection burn to begin 3-day return journey home' : 'Begin atmospheric re-entry sequence at 39,900 kilometers per hour',
+            'aria-label': 'Fire trans-Earth injection burn to begin 3-day return journey home',
             onClick: function() {
-              advancePhase(phase + 1);
-              log(phase === 7 ? '\u2B06\uFE0F Docked with Columbia. LM jettisoned.' : '\uD83C\uDF0D Approaching Earth. Preparing for re-entry.');
+              advancePhase(8);
+              log('\u2B06\uFE0F Docked with Columbia. LM jettisoned.');
+              addXP(15);
+              if (addToast) addToast('\uD83C\uDF0D TEI burn complete. Heading home.', 'success');
+            },
+            className: 'w-full py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg'
+          }, '\uD83D\uDE80 TEI Burn \u2014 Head Home')
+        ),
+
+        // ═══ PHASE 8: TRANS-EARTH COAST ═══
+        phase === 8 && h('div', { className: 'space-y-3', style: { animation: 'mmFadeSlideIn 0.4s ease-out' } },
+          h('div', { className: 'bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl p-4 text-white' },
+            h('div', { className: 'text-center mb-3' },
+              h('div', { className: 'text-3xl' }, '\uD83C\uDF0D'),
+              h('h4', { className: 'text-base font-bold' }, 'Trans-Earth Coast'),
+              h('p', { className: 'text-[11px] text-slate-600' }, 'Returning home \u2022 384,400 km \u2022 ~3 days')
+            ),
+            h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10 mb-3' },
+              h('p', { className: 'text-[11px] text-slate-300 leading-relaxed' },
+                'The Service Module engine fires for the Trans-Earth Injection burn. You coast for 3 days back to Earth, jettison the Service Module, and prepare the Command Module for re-entry \u2014 the most dangerous phase of the mission.')
+            ),
+            h('div', { className: 'bg-indigo-500/10 rounded-lg p-2 border border-indigo-500/20' },
+              h('p', { className: 'text-[11px] text-indigo-300' }, '\uD83D\uDCA1 ' + APOLLO_FACTS[Math.floor(Math.random() * APOLLO_FACTS.length)])
+            )
+          ),
+          h('button', {
+            'aria-label': 'Begin atmospheric re-entry sequence at 39,900 kilometers per hour',
+            onClick: function() {
+              advancePhase(9);
+              log('\uD83C\uDF0D Approaching Earth. Preparing for re-entry.');
               addXP(15);
             },
-            className: 'w-full py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 shadow-lg'
-          }, phase === 7 ? '\uD83D\uDE80 TEI Burn \u2014 Head Home' : '\uD83C\uDF0A Begin Re-entry Sequence')
+            className: 'w-full py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg'
+          }, '\uD83C\uDF0A Begin Re-entry Sequence')
         ),
 
         // ═══ PHASE 9: RE-ENTRY & SPLASHDOWN (Animated Canvas) ═══
@@ -2618,16 +3273,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     ctx.fillText(reComms[reentryPhase], W * 0.5, 16);
                     ctx.globalAlpha = 1;
                     drawVignette(ctx, W, HR, 0.35);
-                    if (reentryPhase < 4) requestAnimationFrame(drawReentry);
+                    if (reentryPhase < 4 && document.contains(cvEl)) requestAnimationFrame(drawReentry);
                   }
                   drawReentry();
                 }
               })
             ),
             h('div', { className: 'p-3 border-t border-orange-900/30' },
-              h('p', { className: 'text-[10px] text-slate-400 mb-2' }, 'Watch the Command Module survive re-entry at 39,900 km/h through 2,760\u00B0C plasma, deploy parachutes, and splash down in the Pacific Ocean.'),
+              h('p', { className: 'text-[11px] text-slate-200 mb-2' }, 'Watch the Command Module survive re-entry at 39,900 km/h through 2,760\u00B0C plasma, deploy parachutes, and splash down in the Pacific Ocean.'),
               h('div', { className: 'bg-indigo-500/10 rounded p-1.5 border border-indigo-500/20' },
-                h('p', { className: 'text-[9px] text-indigo-300' }, '\uD83D\uDCA1 ' + APOLLO_FACTS[Math.floor(Math.random() * APOLLO_FACTS.length)])
+                h('p', { className: 'text-[11px] text-indigo-300' }, '\uD83D\uDCA1 ' + APOLLO_FACTS[Math.floor(Math.random() * APOLLO_FACTS.length)])
               )
             )
           ),
@@ -2658,13 +3313,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               ].map(function(item) {
                 return h('div', { key: item[0], className: 'bg-white/10 rounded-lg p-3' },
                   h('div', { className: 'text-2xl mb-1' }, item[0]),
-                  h('p', { className: 'text-[10px] text-slate-400' }, item[1]),
+                  h('p', { className: 'text-[11px] text-slate-600' }, item[1]),
                   h('p', { className: 'text-xs font-bold' }, item[2])
                 );
               })
             ),
             h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10 text-left mb-3' },
-              h('p', { className: 'text-[10px] text-fuchsia-300 font-bold mb-1' }, '\uD83C\uDFC5 MISSION DEBRIEF'),
+              h('p', { className: 'text-[11px] text-fuchsia-300 font-bold mb-1' }, '\uD83C\uDFC5 MISSION DEBRIEF'),
               h('div', { className: 'grid grid-cols-4 gap-2 mb-2' },
                 [
                   ['\u2B50', (d.missionXP || 0) + ' XP', 'Total'],
@@ -2674,17 +3329,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 ].map(function(s) {
                   return h('div', { key: s[2], className: 'bg-white/5 rounded-lg p-1.5 text-center' },
                     h('div', { className: 'text-sm' }, s[0]),
-                    h('p', { className: 'text-[10px] font-bold text-white' }, s[1]),
-                    h('p', { className: 'text-[9px] text-slate-400' }, s[2])
+                    h('p', { className: 'text-[11px] font-bold text-white' }, s[1]),
+                    h('p', { className: 'text-[11px] text-slate-600' }, s[2])
                   );
                 })
               ),
               // Badges earned
-              h('p', { className: 'text-[9px] text-slate-500 font-bold mb-1' }, '\uD83C\uDFC5 BADGES EARNED:'),
+              h('p', { className: 'text-[11px] text-slate-600 font-bold mb-1' }, '\uD83C\uDFC5 BADGES EARNED:'),
               h('div', { className: 'flex flex-wrap gap-1.5 mb-2' },
                 BADGES.map(function(b) {
                   var earned = !!(d.earnedBadges || {})[b.id];
-                  return h('div', { key: b.id, className: 'flex items-center gap-1 px-2 py-1 rounded-full text-[9px] ' + (earned ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30' : 'bg-white/5 text-slate-600 border border-white/5'), title: b.desc },
+                  return h('div', { key: b.id, className: 'flex items-center gap-1 px-2 py-1 rounded-full text-[11px] ' + (earned ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30' : 'bg-white/5 text-slate-600 border border-white/5'), title: b.desc },
                     h('span', null, earned ? b.icon : '\uD83D\uDD12'),
                     h('span', null, b.name)
                   );
@@ -2692,48 +3347,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               ),
               // Sample gallery
               (d.lunarSamples || []).length > 0 && h('div', { className: 'mt-2' },
-                h('p', { className: 'text-[9px] text-slate-500 font-bold mb-1.5' }, '\uD83E\uDEA8 LUNAR SAMPLE COLLECTION (' + (d.lunarSamples || []).length + '/' + LUNAR_SAMPLES_DATA.length + ')'),
+                h('p', { className: 'text-[11px] text-slate-600 font-bold mb-1.5' }, '\uD83E\uDEA8 LUNAR SAMPLE COLLECTION (' + (d.lunarSamples || []).length + '/' + LUNAR_SAMPLES_DATA.length + ')'),
                 h('div', { className: 'grid grid-cols-2 gap-1.5' },
                   (d.lunarSamples || []).map(function(s, i) {
                     return h('div', { key: i, className: 'bg-white/10 rounded-lg p-2 border border-white/10' },
                       h('div', { className: 'flex items-center gap-1.5 mb-1' },
                         h('span', { className: 'text-lg' }, s.icon),
                         h('div', null,
-                          h('p', { className: 'text-[10px] font-bold text-white' }, s.name),
-                          h('p', { className: 'text-[9px] text-indigo-300' }, s.type)
+                          h('p', { className: 'text-[11px] font-bold text-white' }, s.name),
+                          h('p', { className: 'text-[11px] text-indigo-300' }, s.type)
                         )
                       ),
-                      h('p', { className: 'text-[9px] text-slate-400 leading-relaxed' }, s.fact)
+                      h('p', { className: 'text-[11px] text-slate-600 leading-relaxed' }, s.fact)
                     );
                   })
                 ),
                 // Collection completeness
                 (d.lunarSamples || []).length >= LUNAR_SAMPLES_DATA.length && h('div', { className: 'mt-2 bg-amber-500/10 rounded-lg p-2 border border-amber-500/20 text-center' },
-                  h('p', { className: 'text-[10px] font-bold text-amber-300' }, '\uD83C\uDFC6 COMPLETE COLLECTION! All ' + LUNAR_SAMPLES_DATA.length + ' samples recovered.'),
-                  h('p', { className: 'text-[9px] text-amber-400' }, 'These samples will be studied by scientists for decades to come.')
+                  h('p', { className: 'text-[11px] font-bold text-amber-300' }, '\uD83C\uDFC6 COMPLETE COLLECTION! All ' + LUNAR_SAMPLES_DATA.length + ' samples recovered.'),
+                  h('p', { className: 'text-[11px] text-amber-400' }, 'These samples will be studied by scientists for decades to come.')
                 )
               )
             ),
             // ── Decision Analysis (from Mission Events) ──
             (d.decisionLog || []).length > 0 && h('div', { className: 'mt-3 bg-white/5 rounded-xl p-3 border border-white/10' },
-              h('p', { className: 'text-[9px] text-slate-500 font-bold mb-2' }, '\uD83D\uDCCA DECISION ANALYSIS'),
+              h('p', { className: 'text-[11px] text-slate-600 font-bold mb-2' }, '\uD83D\uDCCA DECISION ANALYSIS'),
               (d.decisionLog || []).map(function(dec, i) {
                 return h('div', { key: i, className: 'bg-white/5 rounded-lg p-2.5 border border-white/10 mb-1.5' },
                   h('div', { className: 'flex justify-between items-center mb-1' },
-                    h('span', { className: 'text-[10px] font-bold text-white' }, dec.title),
-                    h('span', { className: 'text-[9px] px-2 py-0.5 rounded-full ' +
+                    h('span', { className: 'text-[11px] font-bold text-white' }, dec.title),
+                    h('span', { className: 'text-[11px] px-2 py-0.5 rounded-full ' +
                       (dec.quality === 'optimal' ? 'bg-green-500/20 text-green-300' :
                        dec.quality === 'adequate' ? 'bg-yellow-500/20 text-yellow-300' :
                        'bg-red-500/20 text-red-300')
                     }, dec.quality.toUpperCase())
                   ),
-                  h('p', { className: 'text-[9px] text-slate-400' }, 'Your choice: "' + dec.chosen + '"'),
-                  dec.quality !== 'optimal' && h('p', { className: 'text-[9px] text-indigo-300 mt-1' },
+                  h('p', { className: 'text-[11px] text-slate-600' }, 'Your choice: "' + dec.chosen + '"'),
+                  dec.quality !== 'optimal' && h('p', { className: 'text-[11px] text-indigo-300 mt-1' },
                     '\uD83D\uDCA1 Better option: "' + dec.optimal + '"'
                   ),
                   h('details', { className: 'mt-1' },
-                    h('summary', { className: 'text-[8px] text-slate-500 cursor-pointer' }, 'Historical context'),
-                    h('p', { className: 'text-[9px] text-slate-400 mt-1 pl-2' }, dec.historical)
+                    h('summary', { className: 'text-[11px] text-slate-600 cursor-pointer' }, 'Historical context'),
+                    h('p', { className: 'text-[11px] text-slate-200 mt-1 pl-2' }, dec.historical)
                   )
                 );
               }),
@@ -2746,7 +3401,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 return h('div', { className: 'bg-indigo-500/10 rounded-lg p-2 border border-indigo-500/20 mt-2 text-center' },
                   h('p', { className: 'text-xs font-bold ' + (pct >= 80 ? 'text-green-300' : pct >= 50 ? 'text-yellow-300' : 'text-orange-300') },
                     'Decision Score: ' + optCount + '/' + total + ' optimal (' + pct + '%)'),
-                  h('p', { className: 'text-[9px] text-slate-400 mt-0.5' },
+                  h('p', { className: 'text-[11px] text-slate-200 mt-0.5' },
                     pct >= 80 ? 'Outstanding problem-solving! You think like a real mission commander.' :
                     pct >= 50 ? 'Solid decisions. Review the notes above to learn what real astronauts did.' :
                     'Room for improvement \u2014 but every astronaut learns from experience. Try again!')
@@ -2775,12 +3430,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
 
         // Mission Log (collapsible)
         missionLog.length > 0 && h('div', { className: 'mt-3 bg-slate-50 rounded-lg p-2 border border-slate-200' },
-          h('p', { className: 'text-[9px] text-slate-500 font-bold mb-1' }, '\uD83D\uDCCB MISSION LOG (' + missionLog.length + ' entries)'),
+          h('p', { className: 'text-[11px] text-slate-600 font-bold mb-1' }, '\uD83D\uDCCB MISSION LOG (' + missionLog.length + ' entries)'),
           h('div', { className: 'space-y-0.5 max-h-32 overflow-y-auto' },
             missionLog.slice(-8).reverse().map(function(entry, i) {
-              return h('div', { key: i, className: 'flex justify-between text-[9px]' },
+              return h('div', { key: i, className: 'flex justify-between text-[11px]' },
                 h('span', { className: 'text-slate-600' }, entry.text),
-                h('span', { className: 'text-slate-400 font-mono' }, entry.time)
+                h('span', { className: 'text-slate-200 font-mono' }, entry.time)
               );
             })
           )

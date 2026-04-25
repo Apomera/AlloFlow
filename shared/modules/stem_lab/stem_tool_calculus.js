@@ -1,6 +1,14 @@
 window.StemLab = window.StemLab || { registerTool: function(){}, registerModule: function(){} };
 (function() {
   'use strict';
+
+  // ── Audio (auto-injected) ──
+  var _calcAC = null;
+  function getCalcAC() { if (!_calcAC) { try { _calcAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_calcAC && _calcAC.state === "suspended") { try { _calcAC.resume(); } catch(e) {} } return _calcAC; }
+  function calcTone(f,d,tp,v) { var ac = getCalcAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||"sine"; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
+  function sfxCalcClick() { calcTone(600, 0.03, "sine", 0.04); }
+  function sfxCalcSuccess() { calcTone(523, 0.08, "sine", 0.07); setTimeout(function() { calcTone(659, 0.08, "sine", 0.07); }, 70); setTimeout(function() { calcTone(784, 0.1, "sine", 0.08); }, 140); }
+
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-calculus')) return;
@@ -51,6 +59,1490 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             return Object.assign({}, prev, { calculus: Object.assign({}, prev.calculus, { [key]: val }) });
           });
         };
+
+        // ── VISUALIZE: canvas hooks (declared at IIFE top so they fire every render) ──
+        var _vizCvRef = React.useRef(null);
+        var _vizAnimId = React.useRef(0);
+        var _vizTick = React.useRef(0);
+        var _vizLiveState = React.useRef({});
+        var _vizLoopRunning = React.useRef(false);
+
+        // ── FUNCTION REGISTRY (used by Visualize views — unlocks non-quadratics) ──
+        var CALC_FUNCS = {
+          'quadratic':  { label: 'x\u00B2 - 2',          f: function(x){ return x*x - 2; },             df: function(x){ return 2*x; } },
+          'cubic':      { label: 'x\u00B3 / 3 - x',     f: function(x){ return x*x*x/3 - x; },         df: function(x){ return x*x - 1; } },
+          'sin':        { label: 'sin(x)',               f: function(x){ return Math.sin(x); },         df: function(x){ return Math.cos(x); } },
+          'exp':        { label: 'e^(x/2)',              f: function(x){ return Math.exp(x/2); },       df: function(x){ return 0.5*Math.exp(x/2); } },
+          'bell':       { label: 'e^(-x\u00B2/2)',      f: function(x){ return Math.exp(-x*x/2); },    df: function(x){ return -x*Math.exp(-x*x/2); } },
+          'rational':   { label: '1 / (1+x\u00B2)',     f: function(x){ return 1/(1+x*x); },           df: function(x){ return -2*x/Math.pow(1+x*x,2); } }
+        };
+
+        // Pipe live state into ref so the RAF loop always reads fresh values
+        _vizLiveState.current = {
+          tab: d.tab || 'integral',
+          vizView: d.vizView || 'zoom',
+          vizFn: d.vizFn || 'quadratic',
+          vizZoom: d.vizZoom !== undefined ? d.vizZoom : 1,
+          vizX0: d.vizX0 !== undefined ? d.vizX0 : 0,
+          vizFtcX: d.vizFtcX !== undefined ? d.vizFtcX : -1,
+          vizOptimX: d.vizOptimX !== undefined ? d.vizOptimX : null,
+          vizRiemannMode: d.vizRiemannMode || 'midpoint',
+          vizUserInteracted: d.vizUserInteracted || {},
+          vizSlopeSeeds: d.vizSlopeSeeds || [],
+          CALC_FUNCS: CALC_FUNCS
+        };
+
+        // ── RAF LOOP FOR VISUALIZE CANVAS (attach once, dispatch per view) ──
+        React.useEffect(function() {
+          if ((d.tab || 'integral') !== 'visualize') return;
+          var tries = 0, retryTimer = null;
+          function tryInit() {
+            var cv = _vizCvRef.current;
+            if (!cv) {
+              if (tries++ < 12) { retryTimer = setTimeout(tryInit, 50); }
+              else { console.warn('[Calculus Viz] canvas ref never attached'); }
+              return;
+            }
+            var c = cv.getContext('2d');
+            if (!c) return;
+            function resize() {
+              var r = cv.getBoundingClientRect();
+              var dpr = window.devicePixelRatio || 1;
+              cv.width = Math.max(1, Math.floor(r.width * dpr));
+              cv.height = Math.max(1, Math.floor(r.height * dpr));
+              c.setTransform(dpr, 0, 0, dpr, 0, 0);
+            }
+            resize();
+            var resizeObs = null;
+            try { resizeObs = new ResizeObserver(resize); resizeObs.observe(cv); } catch(e) {}
+
+            // Canvas click interaction — maps pointer X/Y into plot coords per view
+            function onClick(ev) {
+              var ls = _vizLiveState.current;
+              if (ls.tab !== 'visualize') return;
+              var r = cv.getBoundingClientRect();
+              var px = ev.clientX - r.left, py = ev.clientY - r.top;
+              var W = r.width, H = r.height;
+              var v = ls.vizView;
+              if (v === 'zoom' || v === 'tangent') {
+                // Map px over the x range [-3, 3]
+                var Lx = 60, Rx = W - 20;
+                if (v === 'tangent') { Lx = 20; Rx = 20 + (W - 20 - 20 - 12) / 2; } // left panel
+                if (px >= Lx && px <= Rx) {
+                  var newX0 = -3 + ((px - Lx) / (Rx - Lx)) * 6;
+                  upd('vizX0', Math.max(-3, Math.min(3, newX0)));
+                  upd('vizUserInteracted', Object.assign({}, ls.vizUserInteracted, { x0: true }));
+                }
+              } else if (v === 'ftc') {
+                var gap = 12;
+                var panelW = (W - gap - 40) / 2;
+                var Lx1 = 20, Rx1 = Lx1 + panelW;
+                if (px >= Lx1 && px <= Rx1) {
+                  var nx = -3 + ((px - Lx1) / (Rx1 - Lx1)) * 6;
+                  upd('vizFtcX', Math.max(-2.95, Math.min(2.95, nx)));
+                  upd('vizUserInteracted', Object.assign({}, ls.vizUserInteracted, { ftc: true }));
+                }
+              } else if (v === 'slope') {
+                var Lxs = 30, Rxs = W - 30, Tys = 46, Bys = H - 36;
+                if (px >= Lxs && px <= Rxs && py >= Tys && py <= Bys) {
+                  var sxR = { min: -3, max: 3 }, syR = { min: -2.5, max: 2.5 };
+                  var seedX = sxR.min + ((px - Lxs) / (Rxs - Lxs)) * (sxR.max - sxR.min);
+                  var seedY = syR.max - ((py - Tys) / (Bys - Tys)) * (syR.max - syR.min);
+                  var seeds = (ls.vizSlopeSeeds || []).slice(-3);
+                  seeds.push({ x: seedX, y: seedY });
+                  upd('vizSlopeSeeds', seeds);
+                }
+              } else if (v === 'optim') {
+                var Lx2 = (function() {
+                  var panelW2 = W * 0.42;
+                  return 20 + panelW2 + 20;
+                })();
+                var Rx2 = W - 20;
+                if (px >= Lx2 && px <= Rx2) {
+                  var xMax = 6 - 0.2;
+                  var nxv = 0 + ((px - Lx2) / (Rx2 - Lx2)) * (xMax + 0.5);
+                  upd('vizOptimX', Math.max(0.05, Math.min(xMax, nxv)));
+                  upd('vizUserInteracted', Object.assign({}, ls.vizUserInteracted, { optim: true }));
+                }
+              }
+            }
+            cv.addEventListener('click', onClick);
+
+            function frame() {
+              _vizTick.current++;
+              var t = _vizTick.current;
+              var ls = _vizLiveState.current;
+              if (ls.tab !== 'visualize') { _vizAnimId.current = requestAnimationFrame(frame); return; }
+              var r = cv.getBoundingClientRect();
+              var W = r.width, H = r.height;
+              // Clear
+              var bg = c.createLinearGradient(0, 0, 0, H);
+              bg.addColorStop(0, '#0f172a'); bg.addColorStop(1, '#1e293b');
+              c.fillStyle = bg; c.fillRect(0, 0, W, H);
+
+              var fn = ls.CALC_FUNCS[ls.vizFn] || ls.CALC_FUNCS.quadratic;
+
+              if (ls.vizView === 'zoom')         { drawZoomToLinearity(c, W, H, fn, ls, t); }
+              else if (ls.vizView === 'tangent') { drawTangentExplorer(c, W, H, fn, ls, t); }
+              else if (ls.vizView === 'ftc')     { drawFTCSweep(c, W, H, fn, ls, t); }
+              else if (ls.vizView === 'motion')  { drawMotionLab(c, W, H, ls, t); }
+              else if (ls.vizView === 'riemann') { drawRiemannAnimator(c, W, H, fn, ls, t); }
+              else if (ls.vizView === 'slope')   { drawSlopeFields(c, W, H, ls, t); }
+              else if (ls.vizView === 'chain')   { drawChainRule(c, W, H, ls, t); }
+              else if (ls.vizView === 'taylor')  { drawTaylorSeries(c, W, H, ls, t); }
+              else if (ls.vizView === 'optim')   { drawOptimization(c, W, H, ls, t); }
+              else if (ls.vizView === 'related') { drawRelatedRates(c, W, H, ls, t); }
+              else if (ls.vizView === 'vor')     { drawVolumeOfRevolution(c, W, H, ls, t); }
+              else if (ls.vizView === 'eps')     { drawEpsilonDelta(c, W, H, ls, t); }
+              else { drawComingSoon(c, W, H, ls.vizView); }
+
+              _vizAnimId.current = requestAnimationFrame(frame);
+            }
+            if (!_vizLoopRunning.current) {
+              _vizLoopRunning.current = true;
+              _vizAnimId.current = requestAnimationFrame(frame);
+            }
+            cv._vizCleanup = function() {
+              _vizLoopRunning.current = false;
+              if (_vizAnimId.current) cancelAnimationFrame(_vizAnimId.current);
+              if (resizeObs) { try { resizeObs.disconnect(); } catch(e) {} }
+              cv.removeEventListener('click', onClick);
+            };
+          }
+          tryInit();
+          return function() {
+            if (retryTimer) clearTimeout(retryTimer);
+            var cv = _vizCvRef.current;
+            if (cv && cv._vizCleanup) cv._vizCleanup();
+          };
+        }, [d.tab]);
+
+        // ── Keyboard shortcuts Shift+1..6 for viz views ──
+        React.useEffect(function() {
+          if ((d.tab || 'integral') !== 'visualize') return;
+          function onKey(e) {
+            if (!e.shiftKey || !/^[0-9]$/.test(e.key)) return;
+            var views = ['zoom','tangent','motion','riemann','ftc','slope','chain','taylor','optim','related'];
+            e.preventDefault();
+            var idx = e.key === '0' ? 9 : parseInt(e.key, 10) - 1;
+            if (views[idx]) upd('vizView', views[idx]);
+          }
+          window.addEventListener('keydown', onKey);
+          return function() { window.removeEventListener('keydown', onKey); };
+        }, [d.tab]);
+
+        // ── VIZ DRAW FUNCTIONS (scoped inside render — OK because IIFE runs each render) ──
+        function drawComingSoon(c, W, H, viewId) {
+          c.fillStyle = '#94a3b8'; c.textAlign = 'center';
+          c.font = 'bold 16px "Inter", sans-serif';
+          c.fillText('\u23F3 View "' + viewId + '" coming soon', W/2, H/2 - 8);
+          c.font = '11px "Inter", sans-serif'; c.fillStyle = '#64748b';
+          c.fillText('Try Zoom, Tangent, or FTC for now', W/2, H/2 + 12);
+        }
+
+        // Helper: plot a function curve onto canvas rect with axis transforms
+        function plotCurve(c, fn, xR, yR, Lx, Rx, Ty, By, color, width) {
+          c.strokeStyle = color; c.lineWidth = width || 2;
+          c.beginPath();
+          var N = 200;
+          for (var i = 0; i <= N; i++) {
+            var x = xR.min + (i / N) * (xR.max - xR.min);
+            var y = fn(x);
+            var sx = Lx + ((x - xR.min) / (xR.max - xR.min)) * (Rx - Lx);
+            var sy = By - ((y - yR.min) / (yR.max - yR.min)) * (By - Ty);
+            if (i === 0) c.moveTo(sx, sy); else c.lineTo(sx, sy);
+          }
+          c.stroke();
+        }
+        function drawAxes(c, Lx, Rx, Ty, By, xR, yR, color) {
+          color = color || 'rgba(148,163,184,0.35)';
+          c.strokeStyle = color; c.lineWidth = 1;
+          // x=0 axis
+          if (xR.min < 0 && xR.max > 0) {
+            var zeroX = Lx + ((0 - xR.min) / (xR.max - xR.min)) * (Rx - Lx);
+            c.beginPath(); c.moveTo(zeroX, Ty); c.lineTo(zeroX, By); c.stroke();
+          }
+          // y=0 axis
+          if (yR.min < 0 && yR.max > 0) {
+            var zeroY = By - ((0 - yR.min) / (yR.max - yR.min)) * (By - Ty);
+            c.beginPath(); c.moveTo(Lx, zeroY); c.lineTo(Rx, zeroY); c.stroke();
+          }
+          // Frame
+          c.strokeStyle = 'rgba(148,163,184,0.25)';
+          c.strokeRect(Lx, Ty, Rx - Lx, By - Ty);
+        }
+
+        // ── VIEW 1: Zoom to Linearity ──
+        function drawZoomToLinearity(c, W, H, fn, ls, t) {
+          // Title
+          c.fillStyle = '#e2e8f0'; c.textAlign = 'center';
+          c.font = 'bold 14px "Inter", sans-serif';
+          c.fillText('\uD83D\uDD0D Zoom to Linearity \u2014 "what IS a derivative?"', W/2, 20);
+          c.font = 'italic 10px "Inter", sans-serif'; c.fillStyle = '#94a3b8';
+          c.fillText('As you zoom, ANY smooth curve becomes a straight line. That line\u2019s slope = f\u2032(x\u2080).', W/2, 36);
+
+          var userX0 = ls.vizUserInteracted && ls.vizUserInteracted.x0;
+          var x0 = userX0 ? ls.vizX0 : Math.sin(t / 90) * 2;
+          // Zoom factor: slow sine ping-pong 1x .. 100x so users see motion even without interacting
+          var autoZoom = 1 + 100 * (1 - Math.cos(t / 90)) / 2;
+          var zoom = ls.vizZoom && ls.vizZoom > 1 ? ls.vizZoom : autoZoom;
+          var halfW_x = 3 / zoom;
+          var xR = { min: x0 - halfW_x, max: x0 + halfW_x };
+
+          // Sample to find dynamic y range
+          // (fn is the CALC_FUNCS wrapper { label, f, df } — call fn.f to evaluate)
+          var samples = [];
+          for (var si = 0; si <= 40; si++) {
+            samples.push(fn.f(xR.min + (si/40) * (xR.max - xR.min)));
+          }
+          var yMin = Math.min.apply(null, samples), yMax = Math.max.apply(null, samples);
+          var yPad = (yMax - yMin) * 0.25 + 0.05;
+          var yR = { min: yMin - yPad, max: yMax + yPad };
+
+          // Plot area
+          var Lx = 60, Rx = W - 20, Ty = 56, By = H - 60;
+
+          drawAxes(c, Lx, Rx, Ty, By, xR, yR);
+
+          // The curve
+          plotCurve(c, fn.f, xR, yR, Lx, Rx, Ty, By, '#f87171', 2.5);
+
+          // The tangent line at x0 (always drawn)
+          var slope = fn.df(x0);
+          var y0 = fn.f(x0);
+          var tanFn = function(x) { return slope * (x - x0) + y0; };
+          plotCurve(c, tanFn, xR, yR, Lx, Rx, Ty, By, 'rgba(52,211,153,0.85)', 2);
+
+          // Marker at (x0, f(x0))
+          var mx = Lx + ((x0 - xR.min) / (xR.max - xR.min)) * (Rx - Lx);
+          var my = By - ((y0 - yR.min) / (yR.max - yR.min)) * (By - Ty);
+          c.fillStyle = '#fde047';
+          c.beginPath(); c.arc(mx, my, 5, 0, Math.PI * 2); c.fill();
+          c.strokeStyle = '#0f172a'; c.lineWidth = 1.5; c.stroke();
+
+          // Zoom meter
+          var zTxt = zoom.toFixed(0) + '\u00D7 zoom';
+          c.fillStyle = 'rgba(15,23,42,0.85)';
+          c.fillRect(Lx + 10, Ty + 10, 120, 40);
+          c.strokeStyle = 'rgba(59,130,246,0.5)'; c.strokeRect(Lx + 10, Ty + 10, 120, 40);
+          c.fillStyle = '#60a5fa'; c.textAlign = 'left';
+          c.font = 'bold 12px "Inter", sans-serif';
+          c.fillText(zTxt, Lx + 18, Ty + 28);
+          c.font = 'bold 10px "Inter", sans-serif'; c.fillStyle = '#34d399';
+          c.fillText('slope \u2192 ' + slope.toFixed(4), Lx + 18, Ty + 44);
+
+          // Small legend
+          c.textAlign = 'right';
+          c.fillStyle = '#f87171'; c.font = 'bold 10px "Inter", sans-serif';
+          c.fillText('\u2014 f(x)', Rx - 10, Ty + 20);
+          c.fillStyle = '#34d399';
+          c.fillText('\u2014 tangent at x\u2080', Rx - 10, Ty + 36);
+
+          // x-axis scrubber at bottom
+          var scrubY = H - 34;
+          c.fillStyle = 'rgba(148,163,184,0.2)';
+          c.fillRect(Lx, scrubY, Rx - Lx, 18);
+          c.strokeStyle = 'rgba(148,163,184,0.4)';
+          c.strokeRect(Lx, scrubY, Rx - Lx, 18);
+          // Map x0 across a fixed -3..3 global range for scrubber
+          var gx = Lx + ((x0 + 3) / 6) * (Rx - Lx);
+          c.fillStyle = '#fde047';
+          c.fillRect(gx - 3, scrubY - 2, 6, 22);
+          c.fillStyle = '#94a3b8'; c.textAlign = 'center';
+          c.font = '9px "Inter", sans-serif';
+          c.fillText('drag x\u2080 below: x\u2080 = ' + x0.toFixed(2), W/2, H - 8);
+        }
+
+        // ── VIEW 2: Tangent Explorer (curve + tangent + f'(x) trace) ──
+        function drawTangentExplorer(c, W, H, fn, ls, t) {
+          // Title
+          c.fillStyle = '#e2e8f0'; c.textAlign = 'center';
+          c.font = 'bold 14px "Inter", sans-serif';
+          c.fillText('\uD83D\uDCCD Tangent Explorer \u2014 the derivative is itself a function', W/2, 20);
+          c.font = 'italic 10px "Inter", sans-serif'; c.fillStyle = '#94a3b8';
+          c.fillText('Left: f(x) with live tangent. Right: f\u2032(x) traced as you move x\u2080.', W/2, 36);
+
+          // Two panels side by side
+          var gap = 12;
+          var panelW = (W - gap - 40) / 2;
+          var Lx1 = 20, Rx1 = Lx1 + panelW;
+          var Lx2 = Rx1 + gap, Rx2 = Lx2 + panelW;
+          var Ty = 56, By = H - 30;
+
+          var xR = { min: -3, max: 3 };
+
+          // Sample y ranges dynamically
+          var fs = [], dfs = [];
+          for (var si = 0; si <= 60; si++) {
+            var x = xR.min + (si/60) * (xR.max - xR.min);
+            fs.push(fn.f(x));
+            dfs.push(fn.df(x));
+          }
+          var yMin = Math.min.apply(null, fs), yMax = Math.max.apply(null, fs);
+          var dyMin = Math.min.apply(null, dfs), dyMax = Math.max.apply(null, dfs);
+          var yR = { min: yMin - 0.5, max: yMax + 0.5 };
+          var dyR = { min: dyMin - 0.5, max: dyMax + 0.5 };
+
+          // Left panel: f(x)
+          drawAxes(c, Lx1, Rx1, Ty, By, xR, yR);
+          plotCurve(c, fn.f, xR, yR, Lx1, Rx1, Ty, By, '#f87171', 2);
+
+          // Auto-sweep x0 (smooth ping-pong) if user hasn't interacted
+          var userX0 = ls.vizUserInteracted && ls.vizUserInteracted.x0;
+          var x0 = userX0 ? ls.vizX0 : Math.sin(t / 60) * 2.5;
+          var slope = fn.df(x0);
+          var y0 = fn.f(x0);
+
+          // Tangent at x0
+          var tanFn = function(x) { return slope * (x - x0) + y0; };
+          plotCurve(c, tanFn, xR, yR, Lx1, Rx1, Ty, By, 'rgba(52,211,153,0.85)', 2);
+
+          // Marker
+          var mx = Lx1 + ((x0 - xR.min) / (xR.max - xR.min)) * (Rx1 - Lx1);
+          var my = By - ((y0 - yR.min) / (yR.max - yR.min)) * (By - Ty);
+          c.fillStyle = '#fde047';
+          c.beginPath(); c.arc(mx, my, 5, 0, Math.PI * 2); c.fill();
+          c.strokeStyle = '#0f172a'; c.lineWidth = 1.2; c.stroke();
+
+          c.fillStyle = '#f87171'; c.textAlign = 'left';
+          c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText('f(x)', Lx1 + 8, Ty + 16);
+
+          // Right panel: f'(x) traced
+          drawAxes(c, Lx2, Rx2, Ty, By, xR, dyR);
+          plotCurve(c, fn.df, xR, dyR, Lx2, Rx2, Ty, By, 'rgba(52,211,153,0.6)', 1.5);
+
+          // A DOT on f'(x) at x0 — this is the "slope on the right matches tangent on the left"
+          var dmx = Lx2 + ((x0 - xR.min) / (xR.max - xR.min)) * (Rx2 - Lx2);
+          var dmy = By - ((slope - dyR.min) / (dyR.max - dyR.min)) * (By - Ty);
+          c.fillStyle = '#fde047';
+          c.beginPath(); c.arc(dmx, dmy, 6, 0, Math.PI * 2); c.fill();
+          c.strokeStyle = '#0f172a'; c.lineWidth = 1.5; c.stroke();
+
+          // Arrow from left marker up to right dot — visual "they're the same"
+          c.strokeStyle = 'rgba(253,224,71,0.35)'; c.lineWidth = 1; c.setLineDash([4, 4]);
+          c.beginPath(); c.moveTo(mx, my); c.lineTo(dmx, dmy); c.stroke();
+          c.setLineDash([]);
+
+          c.fillStyle = '#34d399'; c.textAlign = 'left';
+          c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText("f\u2032(x)", Lx2 + 8, Ty + 16);
+
+          // Bottom readout
+          c.fillStyle = '#fde047'; c.textAlign = 'center';
+          c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText('x\u2080 = ' + x0.toFixed(2) + '   \u2192   f(x\u2080) = ' + y0.toFixed(2) + '   \u2022   f\u2032(x\u2080) = slope = ' + slope.toFixed(2), W/2, H - 12);
+        }
+
+        // ── VIEW 5: FTC Sweep (THE payoff) ──
+        function drawFTCSweep(c, W, H, fn, ls, t) {
+          // Title
+          c.fillStyle = '#e2e8f0'; c.textAlign = 'center';
+          c.font = 'bold 14px "Inter", sans-serif';
+          c.fillText('\u2B50 Fundamental Theorem of Calculus \u2014 area\u2019s slope IS the curve', W/2, 20);
+          c.font = 'italic 10px "Inter", sans-serif'; c.fillStyle = '#94a3b8';
+          c.fillText("Left: shaded area A(x) under f. Right: plot of A(x). Its slope at any x equals f(x).", W/2, 36);
+
+          var gap = 12;
+          var panelW = (W - gap - 40) / 2;
+          var Lx1 = 20, Rx1 = Lx1 + panelW;
+          var Lx2 = Rx1 + gap, Rx2 = Lx2 + panelW;
+          var Ty = 56, By = H - 30;
+
+          var xR = { min: -3, max: 3 };
+          // Sample f and A
+          var N = 240;
+          var dxS = (xR.max - xR.min) / N;
+          var fVals = new Array(N+1), AVals = new Array(N+1);
+          var acc = 0;
+          for (var i = 0; i <= N; i++) {
+            var xi = xR.min + i * dxS;
+            fVals[i] = fn.f(xi);
+            if (i > 0) acc += (fVals[i-1] + fVals[i]) / 2 * dxS; // trapezoidal
+            AVals[i] = acc;
+          }
+          var fMin = Math.min.apply(null, fVals), fMax = Math.max.apply(null, fVals);
+          var aMin = Math.min.apply(null, AVals), aMax = Math.max.apply(null, AVals);
+          var yR = { min: Math.min(fMin - 0.3, 0), max: fMax + 0.3 };
+          var aR = { min: aMin - 0.3, max: aMax + 0.3 };
+
+          drawAxes(c, Lx1, Rx1, Ty, By, xR, yR);
+          drawAxes(c, Lx2, Rx2, Ty, By, xR, aR);
+
+          // Auto-sweep the x pointer if user hasn't touched it
+          var userFtc = ls.vizUserInteracted && ls.vizUserInteracted.ftc;
+          var sweepX = userFtc
+            ? Math.max(xR.min + 0.01, Math.min(xR.max - 0.01, ls.vizFtcX))
+            : (xR.min + ((Math.sin(t/80) + 1) / 2) * (xR.max - xR.min));
+
+          // Shade area [xR.min .. sweepX] under f on left panel
+          var zeroY_L = By - ((0 - yR.min) / (yR.max - yR.min)) * (By - Ty);
+          c.fillStyle = 'rgba(59,130,246,0.28)';
+          c.beginPath();
+          var startSx = Lx1;
+          c.moveTo(startSx, zeroY_L);
+          for (var k = 0; k <= N; k++) {
+            var xi2 = xR.min + k * dxS;
+            if (xi2 > sweepX) break;
+            var sx = Lx1 + ((xi2 - xR.min) / (xR.max - xR.min)) * (Rx1 - Lx1);
+            var sy = By - ((fVals[k] - yR.min) / (yR.max - yR.min)) * (By - Ty);
+            c.lineTo(sx, sy);
+          }
+          // Close bottom
+          var endSx = Lx1 + ((sweepX - xR.min) / (xR.max - xR.min)) * (Rx1 - Lx1);
+          c.lineTo(endSx, zeroY_L);
+          c.closePath();
+          c.fill();
+
+          // Curve on top of shading
+          plotCurve(c, fn.f, xR, yR, Lx1, Rx1, Ty, By, '#f87171', 2.2);
+
+          // Sweep marker on left
+          c.strokeStyle = '#fde047'; c.lineWidth = 1.5;
+          c.beginPath(); c.moveTo(endSx, Ty); c.lineTo(endSx, By); c.stroke();
+          c.fillStyle = '#fde047';
+          c.beginPath(); c.arc(endSx, zeroY_L, 4, 0, Math.PI * 2); c.fill();
+
+          // Right panel: A(x) curve drawn only up to sweepX
+          // First draw full ghost curve
+          plotCurve(c, function(x){
+            var idx = Math.round((x - xR.min) / dxS);
+            if (idx < 0) idx = 0; if (idx > N) idx = N;
+            return AVals[idx];
+          }, xR, aR, Lx2, Rx2, Ty, By, 'rgba(59,130,246,0.18)', 1.5);
+          // Then draw the solid portion
+          c.strokeStyle = '#60a5fa'; c.lineWidth = 2.5;
+          c.beginPath();
+          var drawn = 0;
+          for (var j = 0; j <= N; j++) {
+            var xj = xR.min + j * dxS;
+            if (xj > sweepX) break;
+            var sx2 = Lx2 + ((xj - xR.min) / (xR.max - xR.min)) * (Rx2 - Lx2);
+            var sy2 = By - ((AVals[j] - aR.min) / (aR.max - aR.min)) * (By - Ty);
+            if (drawn === 0) c.moveTo(sx2, sy2); else c.lineTo(sx2, sy2);
+            drawn++;
+          }
+          c.stroke();
+
+          // Tangent to A(x) at sweepX — slope should equal f(sweepX)
+          var idxS = Math.max(0, Math.min(N, Math.round((sweepX - xR.min) / dxS)));
+          var fAtS = fVals[idxS], aAtS = AVals[idxS];
+          var Lx2Offset = Lx2;
+          var sxAtS = Lx2Offset + ((sweepX - xR.min) / (xR.max - xR.min)) * (Rx2 - Lx2);
+          var syAtS = By - ((aAtS - aR.min) / (aR.max - aR.min)) * (By - Ty);
+          // Draw the tangent
+          var tanA = function(x) { return fAtS * (x - sweepX) + aAtS; };
+          plotCurve(c, tanA, xR, aR, Lx2, Rx2, Ty, By, 'rgba(52,211,153,0.85)', 2);
+          // Sweep dot on right
+          c.fillStyle = '#fde047';
+          c.beginPath(); c.arc(sxAtS, syAtS, 5, 0, Math.PI * 2); c.fill();
+          c.strokeStyle = '#0f172a'; c.lineWidth = 1.2; c.stroke();
+
+          // Panel labels
+          c.fillStyle = '#f87171'; c.textAlign = 'left';
+          c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText('f(x) \u2022 shaded area = A(x)', Lx1 + 8, Ty + 16);
+          c.fillStyle = '#60a5fa';
+          c.fillText('A(x) = \u222B f(t) dt', Lx2 + 8, Ty + 16);
+          c.fillStyle = '#34d399'; c.font = 'bold 10px "Inter", sans-serif';
+          c.fillText("slope of tangent = " + fAtS.toFixed(2), Lx2 + 8, Ty + 30);
+
+          // Bottom big insight
+          c.fillStyle = '#fde047'; c.textAlign = 'center';
+          c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText("x = " + sweepX.toFixed(2) + "   \u2022   A(x) = " + aAtS.toFixed(3) + "   \u2022   A\u2032(x) = " + fAtS.toFixed(3) + "   \u2190  same as f(x)!", W/2, H - 10);
+        }
+
+        // ── VIEW 3: Motion Lab (position / velocity / acceleration) ──
+        function drawMotionLab(c, W, H, ls, t) {
+          // Title
+          c.fillStyle = '#e2e8f0'; c.textAlign = 'center';
+          c.font = 'bold 14px "Inter", sans-serif';
+          c.fillText('\uD83D\uDE97 Motion Lab \u2014 position \u2192 velocity \u2192 acceleration', W/2, 18);
+          c.font = 'italic 10px "Inter", sans-serif'; c.fillStyle = '#94a3b8';
+          c.fillText('Position p(t). Velocity = p\u2032(t). Acceleration = v\u2032(t). Each is the slope of the one above.', W/2, 32);
+
+          // Driver function — animated scenario: a car that gently accelerates, cruises, brakes
+          // p(t) = 0.5 * t^2 for t in [0, 2], then linear for [2, 4], then decelerating to stop [4, 6]
+          function pos(tt) {
+            if (tt < 2) return 0.5 * tt * tt;
+            if (tt < 4) return 2 + 2 * (tt - 2);
+            if (tt < 6) return 6 + 2 * (tt - 4) - 0.5 * (tt - 4) * (tt - 4);
+            return 8;
+          }
+          function vel(tt) {
+            if (tt < 2) return tt;
+            if (tt < 4) return 2;
+            if (tt < 6) return 2 - (tt - 4);
+            return 0;
+          }
+          function acc(tt) {
+            if (tt < 2) return 1;
+            if (tt < 4) return 0;
+            if (tt < 6) return -1;
+            return 0;
+          }
+
+          // Live time scrubs back and forth 0..6
+          var phase = (t / 60) % 12;
+          var tNow = phase < 6 ? phase : 12 - phase; // ping-pong
+
+          var gap = 10;
+          var panelY0 = 46;
+          var panelH = (H - panelY0 - 36) / 3 - gap;
+          var Lx = 60, Rx = W - 20;
+          var tR = { min: 0, max: 6 };
+
+          // 3 panels stacked
+          var panels = [
+            { lbl: 'position p(t)', fn: pos,  col: '#60a5fa', yMin: -0.5, yMax: 8.8 },
+            { lbl: 'velocity v(t) = p\u2032(t)', fn: vel, col: '#34d399', yMin: -0.5, yMax: 2.8 },
+            { lbl: 'acceleration a(t) = v\u2032(t)', fn: acc, col: '#fbbf24', yMin: -1.5, yMax: 1.5 }
+          ];
+
+          panels.forEach(function(p, pi) {
+            var Ty = panelY0 + pi * (panelH + gap);
+            var By = Ty + panelH;
+            var yR = { min: p.yMin, max: p.yMax };
+            drawAxes(c, Lx, Rx, Ty, By, tR, yR);
+            plotCurve(c, p.fn, tR, yR, Lx, Rx, Ty, By, p.col, 2);
+            // Label
+            c.fillStyle = p.col; c.textAlign = 'left';
+            c.font = 'bold 10.5px "Inter", sans-serif';
+            c.fillText(p.lbl, Lx + 6, Ty + 12);
+            // Dot at current time
+            var yVal = p.fn(tNow);
+            var sx = Lx + ((tNow - tR.min) / (tR.max - tR.min)) * (Rx - Lx);
+            var sy = By - ((yVal - yR.min) / (yR.max - yR.min)) * (By - Ty);
+            c.fillStyle = '#fde047';
+            c.beginPath(); c.arc(sx, sy, 4.5, 0, Math.PI * 2); c.fill();
+            c.strokeStyle = '#0f172a'; c.lineWidth = 1; c.stroke();
+            // Readout of current value
+            c.fillStyle = '#e2e8f0'; c.textAlign = 'right';
+            c.font = 'bold 10px "Inter", sans-serif';
+            c.fillText('= ' + yVal.toFixed(2), Rx - 6, Ty + 12);
+            // Vertical time indicator line across panel
+            c.strokeStyle = 'rgba(253,224,71,0.35)'; c.lineWidth = 1;
+            c.beginPath(); c.moveTo(sx, Ty); c.lineTo(sx, By); c.stroke();
+          });
+
+          // Animated "car" at the top between t-axis and panel 1
+          var carY = 40;
+          var carX = Lx + (pos(tNow) / 8) * (Rx - Lx);
+          c.fillStyle = '#ef4444';
+          c.fillRect(carX - 10, carY - 6, 20, 10);
+          c.fillStyle = '#1f2937';
+          c.beginPath(); c.arc(carX - 5, carY + 4, 2, 0, Math.PI * 2); c.fill();
+          c.beginPath(); c.arc(carX + 5, carY + 4, 2, 0, Math.PI * 2); c.fill();
+
+          // Bottom timestamp
+          c.fillStyle = '#fde047'; c.textAlign = 'center';
+          c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText('t = ' + tNow.toFixed(2) + ' s   \u2022   each graph\u2019s slope = the graph below', W/2, H - 12);
+        }
+
+        // ── VIEW 4: Riemann Animator (n=1..256 all four methods) ──
+        function drawRiemannAnimator(c, W, H, fn, ls, t) {
+          c.fillStyle = '#e2e8f0'; c.textAlign = 'center';
+          c.font = 'bold 14px "Inter", sans-serif';
+          c.fillText('\uD83C\uDFAC Riemann Animator \u2014 as n grows, all methods converge', W/2, 18);
+          c.font = 'italic 10px "Inter", sans-serif'; c.fillStyle = '#94a3b8';
+          c.fillText('Watch left, right, midpoint, trapezoidal rectangles shrink; errors approach 0.', W/2, 32);
+
+          // n scrubs 2..128 in a log-ish ramp + gentle ping-pong
+          var phase = (t / 4) % 240;
+          var k = phase < 120 ? phase / 120 : (240 - phase) / 120;
+          var n = Math.round(2 + Math.pow(k, 2) * 126);
+
+          // 4 small panels (2x2)
+          var methods = [
+            { id: 'left',      lbl: 'Left',       col: '#f87171' },
+            { id: 'right',     lbl: 'Right',      col: '#fbbf24' },
+            { id: 'midpoint',  lbl: 'Midpoint',   col: '#34d399' },
+            { id: 'trapezoid', lbl: 'Trapezoid',  col: '#60a5fa' }
+          ];
+          var gx = 14, gy = 46;
+          var pw = (W - gx * 3) / 2;
+          var ph = (H - gy - 40) / 2 - gx;
+
+          var xR = { min: -2, max: 2 };
+          var sampleY = [];
+          for (var si = 0; si <= 40; si++) sampleY.push(fn.f(xR.min + (si/40) * (xR.max - xR.min)));
+          var fMin = Math.min.apply(null, sampleY), fMax = Math.max.apply(null, sampleY);
+          var yR = { min: Math.min(fMin - 0.3, 0), max: fMax + 0.3 };
+
+          // Exact via fine-grained trapezoid
+          var exactAcc = 0, NE = 2000, dxE = (xR.max - xR.min) / NE;
+          var prevY = fn.f(xR.min);
+          for (var i = 1; i <= NE; i++) {
+            var curY = fn.f(xR.min + i * dxE);
+            exactAcc += (prevY + curY) / 2 * dxE;
+            prevY = curY;
+          }
+
+          methods.forEach(function(m, mi) {
+            var col = mi % 2, row = Math.floor(mi / 2);
+            var Lx = gx + col * (pw + gx);
+            var Ty = gy + row * (ph + gx);
+            var Rx = Lx + pw, By = Ty + ph;
+
+            drawAxes(c, Lx, Rx, Ty, By, xR, yR);
+            plotCurve(c, fn.f, xR, yR, Lx, Rx, Ty, By, m.col, 1.5);
+
+            // Draw rectangles
+            var dx = (xR.max - xR.min) / n;
+            var approx = 0;
+            var zeroY = By - ((0 - yR.min) / (yR.max - yR.min)) * (By - Ty);
+            c.fillStyle = m.col.replace('#', 'rgba(') ? m.col : m.col; // fallback
+            for (var r = 0; r < n; r++) {
+              var xi = xR.min + r * dx;
+              var yVal;
+              if (m.id === 'left')       yVal = fn.f(xi);
+              else if (m.id === 'right') yVal = fn.f(xi + dx);
+              else if (m.id === 'midpoint') yVal = fn.f(xi + dx/2);
+              else { yVal = (fn.f(xi) + fn.f(xi + dx)) / 2; } // trapezoid area-equivalent for approx
+              approx += yVal * dx;
+
+              var rxL = Lx + ((xi - xR.min) / (xR.max - xR.min)) * (Rx - Lx);
+              var rxR = Lx + ((xi + dx - xR.min) / (xR.max - xR.min)) * (Rx - Lx);
+              var ryT, ryB;
+              if (m.id === 'trapezoid') {
+                // Draw trapezoid polygon
+                var yL = fn.f(xi), yRv = fn.f(xi + dx);
+                var syL = By - ((yL - yR.min) / (yR.max - yR.min)) * (By - Ty);
+                var syR = By - ((yRv - yR.min) / (yR.max - yR.min)) * (By - Ty);
+                c.fillStyle = m.col + '33';
+                c.strokeStyle = m.col; c.lineWidth = 0.6;
+                c.beginPath();
+                c.moveTo(rxL, zeroY); c.lineTo(rxL, syL); c.lineTo(rxR, syR); c.lineTo(rxR, zeroY); c.closePath();
+                c.fill(); c.stroke();
+              } else {
+                var sy = By - ((yVal - yR.min) / (yR.max - yR.min)) * (By - Ty);
+                c.fillStyle = m.col + '33';
+                c.strokeStyle = m.col; c.lineWidth = 0.6;
+                var top = Math.min(sy, zeroY), hr = Math.abs(sy - zeroY);
+                c.fillRect(rxL, top, rxR - rxL, hr);
+                c.strokeRect(rxL, top, rxR - rxL, hr);
+              }
+            }
+            // Panel label + error
+            c.fillStyle = m.col; c.textAlign = 'left';
+            c.font = 'bold 11px "Inter", sans-serif';
+            c.fillText(m.lbl, Lx + 6, Ty + 13);
+            var err = Math.abs(approx - exactAcc);
+            c.fillStyle = '#e2e8f0'; c.textAlign = 'right';
+            c.font = 'bold 10px "Inter", sans-serif';
+            c.fillText('err = ' + err.toFixed(4), Rx - 6, Ty + 13);
+          });
+
+          // Footer: n readout + exact value
+          c.fillStyle = '#fde047'; c.textAlign = 'center';
+          c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText('n = ' + n + '  \u2022  exact \u222B f = ' + exactAcc.toFixed(4) + '  \u2022  each method shrinks error as n \u2192 \u221E', W/2, H - 12);
+        }
+
+        // ── VIEW 6: Slope Fields + trajectories ──
+        function drawSlopeFields(c, W, H, ls, t) {
+          c.fillStyle = '#e2e8f0'; c.textAlign = 'center';
+          c.font = 'bold 14px "Inter", sans-serif';
+          c.fillText('\uD83C\uDF0A Slope Fields \u2014 see an ODE without solving it', W/2, 18);
+          c.font = 'italic 10px "Inter", sans-serif'; c.fillStyle = '#94a3b8';
+          c.fillText("dy/dx = f(x,y). Arrows show direction. Trajectories flow along the field.", W/2, 32);
+
+          // Pick a slope function — auto-cycle through 3 interesting ODEs
+          var odes = [
+            { name: "y' = y",              df: function(x,y){ return y; } },
+            { name: "y' = x \u2212 y",     df: function(x,y){ return x - y; } },
+            { name: "y' = sin(x) \u2212 y", df: function(x,y){ return Math.sin(x) - y; } }
+          ];
+          var odeIdx = Math.floor((t / 300)) % odes.length;
+          var ode = odes[odeIdx];
+
+          var Lx = 30, Rx = W - 30, Ty = 46, By = H - 36;
+          var xR = { min: -3, max: 3 };
+          var yR = { min: -2.5, max: 2.5 };
+          drawAxes(c, Lx, Rx, Ty, By, xR, yR);
+
+          // Grid of arrows
+          var nx = 24, ny = 16;
+          for (var ix = 0; ix < nx; ix++) {
+            for (var iy = 0; iy < ny; iy++) {
+              var x = xR.min + (ix + 0.5) / nx * (xR.max - xR.min);
+              var y = yR.min + (iy + 0.5) / ny * (yR.max - yR.min);
+              var slope;
+              try { slope = ode.df(x, y); } catch(e) { slope = 0; }
+              if (!isFinite(slope)) continue;
+              // Clamp large slopes for display
+              var theta = Math.atan(slope);
+              var len = 12;
+              var sx = Lx + ((x - xR.min) / (xR.max - xR.min)) * (Rx - Lx);
+              var sy = By - ((y - yR.min) / (yR.max - yR.min)) * (By - Ty);
+              var dx = Math.cos(theta) * len / 2;
+              var dy = -Math.sin(theta) * len / 2;
+              // Color by slope magnitude
+              var mag = Math.min(1, Math.abs(slope) / 3);
+              var r = Math.floor(100 + mag * 155);
+              var g = Math.floor(200 - mag * 80);
+              var b = 255 - Math.floor(mag * 120);
+              c.strokeStyle = 'rgba(' + r + ',' + g + ',' + b + ',0.75)';
+              c.lineWidth = 1.2;
+              c.beginPath(); c.moveTo(sx - dx, sy - dy); c.lineTo(sx + dx, sy + dy); c.stroke();
+              // Small arrowhead
+              c.beginPath();
+              c.moveTo(sx + dx, sy + dy);
+              c.lineTo(sx + dx - Math.cos(theta + 0.4) * 3, sy + dy + Math.sin(theta + 0.4) * 3);
+              c.stroke();
+            }
+          }
+
+          // Euler-stepped trajectories from a few seed points
+          var seeds = [
+            { x: -2.8, y: -2.0, col: '#fbbf24' },
+            { x: -2.8, y:  0.0, col: '#34d399' },
+            { x: -2.8, y:  2.0, col: '#60a5fa' },
+            { x:  0.0, y: -2.3, col: '#f472b6' },
+            { x:  0.0, y:  2.3, col: '#a78bfa' }
+          ];
+          // Append up to 4 user-clicked seeds (cycle palette)
+          var userSeeds = ls.vizSlopeSeeds || [];
+          var userCols = ['#fde047', '#22d3ee', '#fb7185', '#84cc16'];
+          userSeeds.slice(-4).forEach(function(s, si) {
+            seeds.push({ x: s.x, y: s.y, col: userCols[si % userCols.length] });
+          });
+          seeds.forEach(function(s) {
+            c.strokeStyle = s.col; c.lineWidth = 2;
+            c.shadowColor = s.col; c.shadowBlur = 4;
+            c.beginPath();
+            var x = s.x, y = s.y;
+            var step = 0.03, steps = 260;
+            var started = false;
+            for (var k = 0; k < steps; k++) {
+              var slope = ode.df(x, y);
+              if (!isFinite(slope)) break;
+              // Clip trajectory to panel
+              if (x < xR.min || x > xR.max || y < yR.min - 0.5 || y > yR.max + 0.5) break;
+              var sx = Lx + ((x - xR.min) / (xR.max - xR.min)) * (Rx - Lx);
+              var sy = By - ((y - yR.min) / (yR.max - yR.min)) * (By - Ty);
+              if (!started) { c.moveTo(sx, sy); started = true; } else { c.lineTo(sx, sy); }
+              // RK2 (midpoint) step for a smoother curve
+              var kx = step, ky = slope * step;
+              var mSlope = ode.df(x + kx/2, y + ky/2);
+              x += step;
+              y += mSlope * step;
+            }
+            c.stroke();
+            c.shadowBlur = 0;
+            // Seed marker
+            var ssx = Lx + ((s.x - xR.min) / (xR.max - xR.min)) * (Rx - Lx);
+            var ssy = By - ((s.y - yR.min) / (yR.max - yR.min)) * (By - Ty);
+            c.fillStyle = s.col;
+            c.beginPath(); c.arc(ssx, ssy, 3.5, 0, Math.PI * 2); c.fill();
+          });
+
+          // ODE label
+          c.fillStyle = 'rgba(15,23,42,0.85)';
+          c.fillRect(Lx + 8, Ty + 8, 140, 26);
+          c.strokeStyle = 'rgba(99,102,241,0.5)';
+          c.strokeRect(Lx + 8, Ty + 8, 140, 26);
+          c.fillStyle = '#c7d2fe'; c.textAlign = 'left';
+          c.font = 'bold 12px "Inter", sans-serif';
+          c.fillText(ode.name, Lx + 18, Ty + 26);
+
+          c.fillStyle = '#fde047'; c.textAlign = 'center';
+          c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText('cycling through 3 ODEs \u2014 each curve is a solution, no formula needed', W/2, H - 12);
+        }
+
+        // ── VIEW 7: Chain Rule (gears metaphor) ──
+        function drawChainRule(c, W, H, ls, t) {
+          c.fillStyle = '#e2e8f0'; c.textAlign = 'center';
+          c.font = 'bold 14px "Inter", sans-serif';
+          c.fillText("\u2699\uFE0F Chain Rule \u2014 rates multiply when functions compose", W/2, 18);
+          c.font = 'italic 10px "Inter", sans-serif'; c.fillStyle = '#94a3b8';
+          c.fillText('Example: u = 2x  (inner),  f = sin(u)  (outer).  df/dx = cos(u) \u00D7 2.', W/2, 32);
+
+          // Animated input: x increases linearly; u = 2x; f = sin(u)
+          var x = Math.sin(t / 90) * 2;
+          var u = 2 * x;
+          var fVal = Math.sin(u);
+          var duDx = 2;
+          var dfDu = Math.cos(u);
+          var dfDx = dfDu * duDx;
+
+          // Three panels: [x axis box] [meshed gears] [f(x) graph]
+          // Gears are the centerpiece
+          var gearY = H * 0.48;
+          var innerX = W * 0.36;
+          var outerX = W * 0.62;
+
+          // Rotation: inner turns at rate proportional to du/dx
+          // Angle accumulates with x (since x is a sin wave here, angle oscillates too)
+          var innerAngle = u * 0.4;          // visually ties to u
+          var outerAngle = -innerAngle * 1.7; // ratio 1.7 = dfDu placeholder (gears visual metaphor, not strict)
+
+          function drawGear(cx, cy, R, teeth, angle, col, col2) {
+            c.save(); c.translate(cx, cy); c.rotate(angle);
+            c.fillStyle = col;
+            c.beginPath();
+            for (var i = 0; i < teeth * 2; i++) {
+              var a = (i / (teeth * 2)) * Math.PI * 2;
+              var r = (i % 2 === 0) ? R : R * 0.88;
+              if (i === 0) c.moveTo(r, 0); else c.lineTo(r * Math.cos(a), r * Math.sin(a));
+            }
+            c.closePath(); c.fill();
+            c.strokeStyle = col2; c.lineWidth = 1.5; c.stroke();
+            // Hub
+            c.fillStyle = col2;
+            c.beginPath(); c.arc(0, 0, R * 0.28, 0, Math.PI * 2); c.fill();
+            // Spoke so rotation is visible
+            c.strokeStyle = '#0f172a'; c.lineWidth = 2;
+            c.beginPath(); c.moveTo(0, 0); c.lineTo(R * 0.75, 0); c.stroke();
+            c.restore();
+          }
+
+          // Inner gear (small, ties to x)
+          drawGear(innerX, gearY, 44, 12, innerAngle, '#60a5fa', '#1e3a8a');
+          // Outer gear (bigger, ties to f)
+          drawGear(outerX, gearY, 64, 18, outerAngle, '#fbbf24', '#78350f');
+
+          // Tangent arrow on inner = du/dx
+          c.strokeStyle = '#38bdf8'; c.lineWidth = 3;
+          c.beginPath();
+          c.moveTo(innerX + 44, gearY);
+          c.lineTo(innerX + 44 + duDx * 18, gearY - 18);
+          c.stroke();
+          // Tangent arrow on outer = df/du
+          c.strokeStyle = '#fbbf24';
+          c.beginPath();
+          c.moveTo(outerX - 64, gearY);
+          c.lineTo(outerX - 64 - dfDu * 20, gearY + 20);
+          c.stroke();
+
+          // Labels above each gear
+          c.fillStyle = '#60a5fa'; c.textAlign = 'center';
+          c.font = 'bold 12px "Inter", sans-serif';
+          c.fillText('u = 2x', innerX, gearY - 64);
+          c.font = 'bold 10.5px "Inter", sans-serif'; c.fillStyle = '#7dd3fc';
+          c.fillText('du/dx = 2', innerX, gearY - 48);
+
+          c.fillStyle = '#fbbf24';
+          c.font = 'bold 12px "Inter", sans-serif';
+          c.fillText('f = sin(u)', outerX, gearY - 84);
+          c.font = 'bold 10.5px "Inter", sans-serif'; c.fillStyle = '#fde68a';
+          c.fillText('df/du = cos(u) = ' + dfDu.toFixed(2), outerX, gearY - 68);
+
+          // Chain rule equation below gears (animated final value)
+          c.fillStyle = '#fde047'; c.textAlign = 'center';
+          c.font = 'bold 14px "Inter", sans-serif';
+          c.fillText('df/dx = df/du \u00D7 du/dx = ' + dfDu.toFixed(2) + ' \u00D7 ' + duDx.toFixed(0) + ' = ' + dfDx.toFixed(2), W/2, gearY + 88);
+
+          // Left input indicator: x input tape
+          var tapeLx = 20, tapeRx = W - 20, tapeY = H - 30;
+          c.fillStyle = 'rgba(148,163,184,0.2)';
+          c.fillRect(tapeLx, tapeY, tapeRx - tapeLx, 16);
+          c.strokeStyle = 'rgba(148,163,184,0.4)';
+          c.strokeRect(tapeLx, tapeY, tapeRx - tapeLx, 16);
+          var tapeX = tapeLx + ((x + 3) / 6) * (tapeRx - tapeLx);
+          c.fillStyle = '#fde047';
+          c.fillRect(tapeX - 3, tapeY - 3, 6, 22);
+
+          // Readout
+          c.fillStyle = '#e2e8f0'; c.textAlign = 'center';
+          c.font = 'bold 10px "Inter", sans-serif';
+          c.fillText('x = ' + x.toFixed(2) + '    u = 2x = ' + u.toFixed(2) + '    f = sin(u) = ' + fVal.toFixed(2), W/2, tapeY - 6);
+        }
+
+        // ── VIEW 8: Taylor Series Builder (approximates sin x by degree) ──
+        function drawTaylorSeries(c, W, H, ls, t) {
+          c.fillStyle = '#e2e8f0'; c.textAlign = 'center';
+          c.font = 'bold 14px "Inter", sans-serif';
+          c.fillText('\u221E Taylor Series \u2014 a polynomial becomes sin(x), one term at a time', W/2, 18);
+          c.font = 'italic 10px "Inter", sans-serif'; c.fillStyle = '#94a3b8';
+          c.fillText('sin(x) = x \u2212 x\u00B3/3! + x\u2075/5! \u2212 x\u2077/7! + \u2026', W/2, 32);
+
+          // Degree ramps 0..13 then back
+          var phase = (t / 4) % 180;
+          var deg = phase < 90 ? Math.floor(phase / 6) + 1 : Math.floor((180 - phase) / 6) + 1;
+          if (deg < 1) deg = 1; if (deg > 13) deg = 13;
+          // Only odd degrees actually change sin's approximation but we still display all
+          // Use the max odd <= deg
+          var nTerms = Math.floor((deg + 1) / 2);
+
+          // Taylor approx: sum_{k=0..nTerms-1} (-1)^k * x^(2k+1) / (2k+1)!
+          function fact(n) { var r = 1; for (var i = 2; i <= n; i++) r *= i; return r; }
+          function taylorSin(x, n) {
+            var s = 0, sgn = 1;
+            for (var k = 0; k < n; k++) {
+              var p = 2 * k + 1;
+              s += sgn * Math.pow(x, p) / fact(p);
+              sgn *= -1;
+            }
+            return s;
+          }
+
+          // Wider x range so convergence is visible
+          var Lx = 50, Rx = W - 30, Ty = 50, By = H - 60;
+          var xR = { min: -7, max: 7 };
+          var yR = { min: -2.5, max: 2.5 };
+          drawAxes(c, Lx, Rx, Ty, By, xR, yR);
+
+          // Draw sin(x) as the target (ghost thick line)
+          plotCurve(c, Math.sin, xR, yR, Lx, Rx, Ty, By, 'rgba(248,113,113,0.85)', 2.6);
+
+          // Draw each degree up to current as fading polylines
+          for (var k = 1; k <= nTerms; k++) {
+            var alpha = 0.12 + 0.75 * (k / nTerms);
+            c.strokeStyle = 'rgba(52,211,153,' + alpha + ')';
+            c.lineWidth = k === nTerms ? 2.5 : 1;
+            c.beginPath();
+            var N = 240;
+            for (var i = 0; i <= N; i++) {
+              var x = xR.min + (i / N) * (xR.max - xR.min);
+              var y = taylorSin(x, k);
+              // Clip massively out-of-range values for readability
+              if (y > yR.max + 5 || y < yR.min - 5) { y = y > 0 ? yR.max + 5 : yR.min - 5; }
+              var sx = Lx + ((x - xR.min) / (xR.max - xR.min)) * (Rx - Lx);
+              var sy = By - ((y - yR.min) / (yR.max - yR.min)) * (By - Ty);
+              if (i === 0) c.moveTo(sx, sy); else c.lineTo(sx, sy);
+            }
+            c.stroke();
+          }
+
+          // Expression bar at top
+          var currentDeg = 2 * nTerms - 1;
+          c.fillStyle = 'rgba(15,23,42,0.85)';
+          c.fillRect(Lx + 8, Ty + 8, 260, 40);
+          c.strokeStyle = 'rgba(52,211,153,0.5)';
+          c.strokeRect(Lx + 8, Ty + 8, 260, 40);
+          c.fillStyle = '#34d399'; c.textAlign = 'left';
+          c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText('degree ' + currentDeg + ' Taylor polynomial', Lx + 18, Ty + 24);
+
+          // Build a readable polynomial string
+          var polyStr = '';
+          for (var m = 0; m < nTerms; m++) {
+            var pow = 2 * m + 1;
+            var sign = (m % 2 === 0) ? (m === 0 ? '' : ' + ') : ' \u2212 ';
+            var denom = fact(pow);
+            polyStr += sign + (pow === 1 ? 'x' : 'x^' + pow + '/' + denom);
+          }
+          c.font = '10.5px monospace'; c.fillStyle = '#a7f3d0';
+          c.fillText(polyStr.slice(0, 50) + (polyStr.length > 50 ? '\u2026' : ''), Lx + 18, Ty + 40);
+
+          // Error callout near x = 5 (where truncated Taylor series diverge visibly)
+          var xCheck = 5;
+          var errAt5 = Math.abs(taylorSin(xCheck, nTerms) - Math.sin(xCheck));
+          c.fillStyle = '#fbbf24'; c.textAlign = 'right';
+          c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText('error at x = 5: ' + errAt5.toExponential(2), Rx - 8, Ty + 24);
+          c.font = '10px "Inter", sans-serif'; c.fillStyle = '#fde68a';
+          c.fillText('(goes to 0 as degree \u2192 \u221E)', Rx - 8, Ty + 40);
+
+          // Legend
+          c.fillStyle = '#f87171'; c.textAlign = 'left';
+          c.font = 'bold 10.5px "Inter", sans-serif';
+          c.fillText('\u2014 target: sin(x)', Lx + 8, By + 18);
+          c.fillStyle = '#34d399';
+          c.fillText('\u2014 Taylor approximations (darker = higher degree)', Lx + 8, By + 34);
+
+          c.fillStyle = '#fde047'; c.textAlign = 'center';
+          c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText('higher-degree polynomial matches sin(x) further from origin \u2014 the key idea of analytic functions', W/2, H - 12);
+        }
+
+        // ── VIEW 9: Optimization (cardboard box) ──
+        function drawOptimization(c, W, H, ls, t) {
+          c.fillStyle = '#e2e8f0'; c.textAlign = 'center';
+          c.font = 'bold 14px "Inter", sans-serif';
+          c.fillText('\uD83D\uDCE6 Optimization \u2014 the cardboard box', W/2, 18);
+          c.font = 'italic 10px "Inter", sans-serif'; c.fillStyle = '#94a3b8';
+          c.fillText('Cut squares of side x from corners of a 20\u00D712 sheet. Fold up. Maximize volume.', W/2, 32);
+
+          // Sheet dimensions (inches)
+          var SW = 20, SH = 12;
+          // Animated x: ping-pong from 0.1 to 5.5 (max allowed = SH/2 = 6 but keeps some material)
+          var xMax = SH / 2 - 0.2;
+          var userOptim = ls.vizUserInteracted && ls.vizUserInteracted.optim;
+          var x;
+          if (userOptim && ls.vizOptimX !== null && ls.vizOptimX !== undefined) {
+            x = Math.max(0.05, Math.min(xMax, ls.vizOptimX));
+          } else {
+            var phase = (t / 80) % 2;
+            x = phase < 1 ? 0.1 + phase * xMax : 0.1 + (2 - phase) * xMax;
+          }
+
+          // V(x) = x(SW - 2x)(SH - 2x)
+          var V = function(xx) { return xx * (SW - 2 * xx) * (SH - 2 * xx); };
+          var dV = function(xx) { return 12 * xx * xx - 128 * xx + 240; }; // derivative for 20x12
+          // Find critical point numerically: V'(x) = 12x^2 - 128x + 240 = 0
+          // x = (128 - sqrt(128^2 - 4*12*240)) / (2*12) = (128 - sqrt(16384 - 11520)) / 24 = (128 - sqrt(4864))/24
+          var xCrit = (128 - Math.sqrt(128 * 128 - 4 * 12 * 240)) / 24; // ~2.43
+          var Vcrit = V(xCrit);
+          var Vnow = V(x);
+
+          // LEFT: top-down view of the sheet with cuts
+          var Lx1 = 20, Ty1 = 52, panelW = W * 0.42, panelH = H * 0.46;
+          var Rx1 = Lx1 + panelW, By1 = Ty1 + panelH;
+          c.fillStyle = '#1e293b'; c.fillRect(Lx1, Ty1, panelW, panelH);
+          c.strokeStyle = 'rgba(148,163,184,0.35)'; c.strokeRect(Lx1, Ty1, panelW, panelH);
+
+          // Scale sheet to fit panel with margin
+          var sheetScale = Math.min((panelW - 30) / SW, (panelH - 30) / SH);
+          var cx = Lx1 + panelW / 2, cy = Ty1 + panelH / 2;
+          var sx = cx - SW * sheetScale / 2, sy = cy - SH * sheetScale / 2;
+          // Sheet base
+          c.fillStyle = '#d97706';
+          c.fillRect(sx, sy, SW * sheetScale, SH * sheetScale);
+          c.strokeStyle = '#78350f'; c.lineWidth = 1.5; c.strokeRect(sx, sy, SW * sheetScale, SH * sheetScale);
+          // Cut-outs at four corners
+          c.fillStyle = '#1e293b';
+          var cs = x * sheetScale;
+          c.fillRect(sx, sy, cs, cs);
+          c.fillRect(sx + SW * sheetScale - cs, sy, cs, cs);
+          c.fillRect(sx, sy + SH * sheetScale - cs, cs, cs);
+          c.fillRect(sx + SW * sheetScale - cs, sy + SH * sheetScale - cs, cs, cs);
+          // Dashed fold lines
+          c.strokeStyle = 'rgba(252,211,77,0.7)'; c.setLineDash([4, 3]); c.lineWidth = 1;
+          c.beginPath(); c.moveTo(sx + cs, sy); c.lineTo(sx + cs, sy + SH * sheetScale); c.stroke();
+          c.beginPath(); c.moveTo(sx + SW * sheetScale - cs, sy); c.lineTo(sx + SW * sheetScale - cs, sy + SH * sheetScale); c.stroke();
+          c.beginPath(); c.moveTo(sx, sy + cs); c.lineTo(sx + SW * sheetScale, sy + cs); c.stroke();
+          c.beginPath(); c.moveTo(sx, sy + SH * sheetScale - cs); c.lineTo(sx + SW * sheetScale, sy + SH * sheetScale - cs); c.stroke();
+          c.setLineDash([]);
+
+          // Dimension labels
+          c.fillStyle = '#e2e8f0'; c.textAlign = 'center';
+          c.font = 'bold 10px "Inter", sans-serif';
+          c.fillText('20 in', cx, sy - 8);
+          c.save(); c.translate(sx - 14, cy); c.rotate(-Math.PI / 2); c.fillText('12 in', 0, 0); c.restore();
+
+          // Panel label
+          c.fillStyle = '#fbbf24'; c.textAlign = 'left';
+          c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText('x = ' + x.toFixed(2) + ' in (cut size)', Lx1 + 10, Ty1 + 16);
+
+          // Small 3D-ish box preview below sheet
+          var bbW = (SW - 2 * x), bbD = (SH - 2 * x), bbH = x;
+          var bX = cx, bY = By1 + 32;
+          var bs = 4; // pixels per inch for small 3D box
+          var baseW = bbW * bs, baseD = bbD * bs * 0.55, baseH = bbH * bs;
+          c.save();
+          c.translate(bX - baseW / 2, bY - baseH);
+          // back face
+          c.fillStyle = '#92400e';
+          c.beginPath();
+          c.moveTo(0, 0); c.lineTo(baseW, 0); c.lineTo(baseW + baseD, -baseD * 0.6); c.lineTo(baseD, -baseD * 0.6); c.closePath();
+          c.fill();
+          // side right
+          c.fillStyle = '#b45309';
+          c.beginPath();
+          c.moveTo(baseW, 0); c.lineTo(baseW, baseH); c.lineTo(baseW + baseD, baseH - baseD * 0.6); c.lineTo(baseW + baseD, -baseD * 0.6); c.closePath();
+          c.fill();
+          // front face
+          c.fillStyle = '#f59e0b';
+          c.fillRect(0, 0, baseW, baseH);
+          c.strokeStyle = '#78350f'; c.lineWidth = 0.8;
+          c.strokeRect(0, 0, baseW, baseH);
+          c.restore();
+          // Dimensions under box
+          c.fillStyle = '#fde68a'; c.textAlign = 'center';
+          c.font = 'bold 9px "Inter", sans-serif';
+          c.fillText(bbW.toFixed(1) + ' \u00D7 ' + bbD.toFixed(1) + ' \u00D7 ' + bbH.toFixed(1) + ' in', bX, bY + 16);
+
+          // RIGHT: V(x) curve
+          var Lx2 = Rx1 + 20, Ty2 = Ty1, Rx2 = W - 20, By2 = By1 + 30;
+          var xRg = { min: 0, max: xMax + 0.5 };
+          var vVals = [];
+          for (var i = 0; i <= 80; i++) vVals.push(V(xRg.min + (i / 80) * (xRg.max - xRg.min)));
+          var vMax = Math.max.apply(null, vVals) * 1.1;
+          var yRg = { min: 0, max: vMax };
+
+          drawAxes(c, Lx2, Rx2, Ty2, By2, xRg, yRg);
+          plotCurve(c, V, xRg, yRg, Lx2, Rx2, Ty2, By2, '#34d399', 2.2);
+
+          // Dotted vertical at xCrit (the maximum)
+          var cX = Lx2 + ((xCrit - xRg.min) / (xRg.max - xRg.min)) * (Rx2 - Lx2);
+          var cY = By2 - ((Vcrit - yRg.min) / (yRg.max - yRg.min)) * (By2 - Ty2);
+          c.strokeStyle = 'rgba(253,224,71,0.55)'; c.lineWidth = 1.2; c.setLineDash([4, 4]);
+          c.beginPath(); c.moveTo(cX, Ty2); c.lineTo(cX, By2); c.stroke();
+          c.setLineDash([]);
+          c.fillStyle = '#fde047';
+          c.beginPath(); c.arc(cX, cY, 6, 0, Math.PI * 2); c.fill();
+          c.strokeStyle = '#0f172a'; c.lineWidth = 1.5; c.stroke();
+          c.fillStyle = '#fde047'; c.textAlign = 'center';
+          c.font = 'bold 10px "Inter", sans-serif';
+          c.fillText('MAX @ x\u2248' + xCrit.toFixed(2), cX, cY - 12);
+
+          // Current x marker
+          var curXp = Lx2 + ((x - xRg.min) / (xRg.max - xRg.min)) * (Rx2 - Lx2);
+          var curYp = By2 - ((Vnow - yRg.min) / (yRg.max - yRg.min)) * (By2 - Ty2);
+          c.fillStyle = '#f87171';
+          c.beginPath(); c.arc(curXp, curYp, 4.5, 0, Math.PI * 2); c.fill();
+          c.strokeStyle = '#0f172a'; c.lineWidth = 1; c.stroke();
+
+          // Panel label
+          c.fillStyle = '#34d399'; c.textAlign = 'left';
+          c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText('V(x) = x(20-2x)(12-2x)', Lx2 + 8, Ty2 + 16);
+
+          // Footer
+          c.fillStyle = '#fde047'; c.textAlign = 'center';
+          c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText('V(' + x.toFixed(2) + ') = ' + Vnow.toFixed(1) + ' in\u00B3    \u2022    max volume = ' + Vcrit.toFixed(1) + ' in\u00B3 at x = ' + xCrit.toFixed(2), W/2, H - 12);
+        }
+
+        // ── VIEW 10: Related Rates (sliding ladder) ──
+        function drawRelatedRates(c, W, H, ls, t) {
+          c.fillStyle = '#e2e8f0'; c.textAlign = 'center';
+          c.font = 'bold 14px "Inter", sans-serif';
+          c.fillText('\uD83D\uDCCF Related Rates \u2014 a sliding ladder', W/2, 18);
+          c.font = 'italic 10px "Inter", sans-serif'; c.fillStyle = '#94a3b8';
+          c.fillText("13-ft ladder. Bottom slides away at 2 ft/s. How fast does the top slide down?", W/2, 32);
+
+          var L = 13; // ladder length
+          var dxDt = 2; // constant bottom velocity (ft/s)
+          // Animate x(t): x starts at 0.5 ft, grows at 2 ft/s until x ≈ 12.8 ft, then resets
+          var periodS = 6;
+          var tS = ((t / 60) % periodS);
+          var xFt = 0.5 + dxDt * tS;
+          if (xFt > L - 0.3) xFt = L - 0.3;
+          var yFt = Math.sqrt(Math.max(0, L * L - xFt * xFt));
+          var dyDt = yFt > 0.01 ? -(xFt / yFt) * dxDt : -Infinity;
+
+          // Scene layout
+          var sceneX = 40, sceneY = H - 50;
+          var pxPerFt = Math.min((W * 0.45 - 60) / L, (H - 100) / L);
+
+          // Wall
+          c.fillStyle = '#64748b';
+          c.fillRect(sceneX - 12, sceneY - L * pxPerFt, 12, L * pxPerFt);
+          // Floor
+          c.fillStyle = '#475569';
+          c.fillRect(sceneX - 12, sceneY, W * 0.55, 10);
+
+          // Ladder
+          var bx = sceneX + xFt * pxPerFt, by = sceneY;
+          var tx = sceneX, ty = sceneY - yFt * pxPerFt;
+          c.strokeStyle = '#fbbf24'; c.lineWidth = 5;
+          c.beginPath(); c.moveTo(bx, by); c.lineTo(tx, ty); c.stroke();
+          // Rungs
+          c.strokeStyle = '#b45309'; c.lineWidth = 2;
+          for (var rg = 1; rg < 10; rg++) {
+            var ra = rg / 10;
+            var rgx = bx * (1 - ra) + tx * ra;
+            var rgy = by * (1 - ra) + ty * ra;
+            var ang = Math.atan2(ty - by, tx - bx) + Math.PI / 2;
+            var rl = 9;
+            c.beginPath();
+            c.moveTo(rgx + Math.cos(ang) * rl, rgy + Math.sin(ang) * rl);
+            c.lineTo(rgx - Math.cos(ang) * rl, rgy - Math.sin(ang) * rl);
+            c.stroke();
+          }
+          // Endpoints
+          c.fillStyle = '#f87171';
+          c.beginPath(); c.arc(bx, by, 6, 0, Math.PI * 2); c.fill();
+          c.fillStyle = '#60a5fa';
+          c.beginPath(); c.arc(tx, ty, 6, 0, Math.PI * 2); c.fill();
+
+          // Velocity arrow on bottom (→ direction at 2 ft/s)
+          c.strokeStyle = '#f87171'; c.lineWidth = 3;
+          c.beginPath();
+          c.moveTo(bx, by + 16); c.lineTo(bx + dxDt * pxPerFt * 0.8, by + 16);
+          c.stroke();
+          // Arrowhead
+          c.beginPath();
+          c.moveTo(bx + dxDt * pxPerFt * 0.8, by + 16);
+          c.lineTo(bx + dxDt * pxPerFt * 0.8 - 8, by + 12);
+          c.lineTo(bx + dxDt * pxPerFt * 0.8 - 8, by + 20);
+          c.closePath();
+          c.fillStyle = '#f87171'; c.fill();
+          c.fillStyle = '#f87171'; c.textAlign = 'left';
+          c.font = 'bold 10px "Inter", sans-serif';
+          c.fillText('dx/dt = +' + dxDt + ' ft/s', bx + 6, by + 32);
+
+          // Velocity arrow on top (↓ direction at |dy/dt| ft/s)
+          var topArrowLen = Math.min(Math.abs(dyDt), 8) * pxPerFt * 0.4;
+          c.strokeStyle = '#60a5fa'; c.lineWidth = 3;
+          c.beginPath();
+          c.moveTo(tx - 16, ty); c.lineTo(tx - 16, ty + topArrowLen);
+          c.stroke();
+          c.beginPath();
+          c.moveTo(tx - 16, ty + topArrowLen);
+          c.lineTo(tx - 20, ty + topArrowLen - 8);
+          c.lineTo(tx - 12, ty + topArrowLen - 8);
+          c.closePath();
+          c.fillStyle = '#60a5fa'; c.fill();
+          c.fillStyle = '#60a5fa'; c.textAlign = 'right';
+          c.font = 'bold 10px "Inter", sans-serif';
+          c.fillText('dy/dt = ' + (isFinite(dyDt) ? dyDt.toFixed(2) + ' ft/s' : '-\u221E'), tx - 22, ty + topArrowLen / 2);
+
+          // x, y dimension labels
+          c.strokeStyle = 'rgba(148,163,184,0.6)'; c.lineWidth = 1; c.setLineDash([3, 3]);
+          c.beginPath(); c.moveTo(sceneX, by + 8); c.lineTo(bx, by + 8); c.stroke();
+          c.beginPath(); c.moveTo(tx - 6, ty); c.lineTo(tx - 6, by); c.stroke();
+          c.setLineDash([]);
+          c.fillStyle = '#e2e8f0'; c.textAlign = 'center';
+          c.font = 'bold 9.5px "Inter", sans-serif';
+          c.fillText('x = ' + xFt.toFixed(2) + ' ft', (sceneX + bx) / 2, by + 22);
+          c.save(); c.translate(tx - 22, (ty + by) / 2); c.rotate(-Math.PI / 2);
+          c.fillText('y = ' + yFt.toFixed(2) + ' ft', 0, 0);
+          c.restore();
+
+          // Right panel: equation derivation
+          var rX = W * 0.55;
+          var rBlockY = 60;
+          c.fillStyle = 'rgba(15,23,42,0.85)';
+          c.fillRect(rX, rBlockY, W - rX - 20, H - rBlockY - 36);
+          c.strokeStyle = 'rgba(99,102,241,0.5)';
+          c.strokeRect(rX, rBlockY, W - rX - 20, H - rBlockY - 36);
+
+          c.fillStyle = '#c7d2fe'; c.textAlign = 'left';
+          c.font = 'bold 12px "Inter", sans-serif';
+          c.fillText('Relationship:', rX + 14, rBlockY + 22);
+          c.font = 'bold 14px monospace'; c.fillStyle = '#fde047';
+          c.fillText('x\u00B2 + y\u00B2 = 169', rX + 14, rBlockY + 44);
+
+          c.fillStyle = '#c7d2fe'; c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText('Differentiate w.r.t. t:', rX + 14, rBlockY + 70);
+          c.font = 'bold 13px monospace'; c.fillStyle = '#34d399';
+          c.fillText('2x(dx/dt) + 2y(dy/dt) = 0', rX + 14, rBlockY + 92);
+
+          c.fillStyle = '#c7d2fe'; c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText('Solve for dy/dt:', rX + 14, rBlockY + 118);
+          c.font = 'bold 13px monospace'; c.fillStyle = '#f472b6';
+          c.fillText('dy/dt = \u2212(x/y)(dx/dt)', rX + 14, rBlockY + 140);
+
+          // Plug in current values
+          c.fillStyle = '#fbbf24'; c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText('At x=' + xFt.toFixed(2) + ', y=' + yFt.toFixed(2) + ':', rX + 14, rBlockY + 172);
+          c.font = 'bold 12px monospace'; c.fillStyle = '#fde047';
+          c.fillText('dy/dt = \u2212(' + xFt.toFixed(2) + '/' + yFt.toFixed(2) + ')(2) = ' + (isFinite(dyDt) ? dyDt.toFixed(3) : '-\u221E') + ' ft/s', rX + 14, rBlockY + 194);
+
+          // Footer
+          c.fillStyle = '#e2e8f0'; c.textAlign = 'center';
+          c.font = 'bold 10.5px "Inter", sans-serif';
+          c.fillText('Bottom moves at CONSTANT 2 ft/s, but the top accelerates as the ladder nears horizontal!', W/2, H - 12);
+        }
+
+        // ── VIEW 11: Volume of Revolution (disks stacking) ──
+        function drawVolumeOfRevolution(c, W, H, ls, t) {
+          c.fillStyle = '#e2e8f0'; c.textAlign = 'center';
+          c.font = 'bold 14px "Inter", sans-serif';
+          c.fillText('\uD83C\uDFAA Volume of Revolution \u2014 spin a curve, get a solid', W/2, 18);
+          c.font = 'italic 10px "Inter", sans-serif'; c.fillStyle = '#94a3b8';
+          c.fillText('Rotate f(x) around the x-axis. Each slice becomes a disk. V = \u03C0 \u222B f(x)\u00B2 dx.', W/2, 32);
+
+          // Left panel: 2D curve + shaded band
+          var Lx1 = 20, Ty1 = 52, panelW1 = W * 0.42, panelH1 = H - 100;
+          var Rx1 = Lx1 + panelW1, By1 = Ty1 + panelH1;
+          var xR = { min: 0, max: 4 };
+          function f(x) { return 0.6 + 0.4 * Math.sin(x * 1.2) + 0.2 * x; }
+          var fVals = [];
+          for (var i = 0; i <= 60; i++) fVals.push(f(xR.min + (i/60) * (xR.max - xR.min)));
+          var fMax = Math.max.apply(null, fVals);
+          var yR = { min: 0, max: fMax * 1.25 };
+          drawAxes(c, Lx1, Rx1, Ty1, By1, xR, yR);
+
+          // Shade area under curve (in blue)
+          var zY = By1 - ((0 - yR.min) / (yR.max - yR.min)) * (By1 - Ty1);
+          c.fillStyle = 'rgba(96,165,250,0.28)';
+          c.beginPath();
+          c.moveTo(Lx1 + ((xR.min - xR.min) / (xR.max - xR.min)) * (Rx1 - Lx1), zY);
+          for (var j = 0; j <= 60; j++) {
+            var x = xR.min + (j/60) * (xR.max - xR.min);
+            var y = f(x);
+            var sxj = Lx1 + ((x - xR.min) / (xR.max - xR.min)) * (Rx1 - Lx1);
+            var syj = By1 - ((y - yR.min) / (yR.max - yR.min)) * (By1 - Ty1);
+            c.lineTo(sxj, syj);
+          }
+          c.lineTo(Lx1 + ((xR.max - xR.min) / (xR.max - xR.min)) * (Rx1 - Lx1), zY);
+          c.closePath(); c.fill();
+          plotCurve(c, f, xR, yR, Lx1, Rx1, Ty1, By1, '#f87171', 2.2);
+
+          // Animated highlight disk position
+          var diskX = xR.min + (((Math.sin(t / 70) + 1) / 2)) * (xR.max - xR.min);
+          var diskR = f(diskX);
+          var dsx = Lx1 + ((diskX - xR.min) / (xR.max - xR.min)) * (Rx1 - Lx1);
+          var dsyTop = By1 - ((diskR - yR.min) / (yR.max - yR.min)) * (By1 - Ty1);
+          c.strokeStyle = '#fde047'; c.lineWidth = 1.5;
+          c.beginPath(); c.moveTo(dsx, zY); c.lineTo(dsx, dsyTop); c.stroke();
+          c.fillStyle = 'rgba(253,224,71,0.35)';
+          c.fillRect(dsx - 3, dsyTop, 6, zY - dsyTop);
+
+          c.fillStyle = '#f87171'; c.textAlign = 'left';
+          c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText('f(x) = 0.6 + 0.4 sin(1.2x) + 0.2x', Lx1 + 8, Ty1 + 16);
+
+          // RIGHT panel: 3D-ish solid built from stacking translucent disks with axonometric tilt
+          var Lx2 = Rx1 + 20, Rx2 = W - 20, Ty2 = Ty1, By2 = By1;
+          var axisY = Ty2 + panelH1 / 2;
+          var solidLx = Lx2 + 30, solidRx = Rx2 - 30;
+          var pxPerX = (solidRx - solidLx) / (xR.max - xR.min);
+
+          // Faint bounding box
+          c.strokeStyle = 'rgba(148,163,184,0.25)';
+          c.strokeRect(Lx2, Ty2, Rx2 - Lx2, By2 - Ty2);
+
+          // Axis line
+          c.strokeStyle = 'rgba(148,163,184,0.55)'; c.setLineDash([4, 3]); c.lineWidth = 1;
+          c.beginPath(); c.moveTo(solidLx, axisY); c.lineTo(solidRx, axisY); c.stroke();
+          c.setLineDash([]);
+
+          // Stack disks from right to left (for correct z-order)
+          var nDisks = 40;
+          var disks = [];
+          for (var k = nDisks - 1; k >= 0; k--) {
+            var xk = xR.min + (k / (nDisks - 1)) * (xR.max - xR.min);
+            var rk = f(xk);
+            disks.push({ x: xk, r: rk });
+          }
+          disks.forEach(function(d2) {
+            var cx = solidLx + d2.x * pxPerX;
+            // Axonometric offset (camera tilt) — fake depth by shifting y slightly
+            var axyTilt = -0.15;
+            var yOffset = (d2.x - xR.min) * pxPerX * axyTilt;
+            var ellipseRx = Math.max(1, d2.r * pxPerX * 0.06); // depth thickness
+            var ellipseRy = Math.max(1, d2.r * 50); // vertical radius of the disk
+            // Body
+            c.fillStyle = 'rgba(96,165,250,0.38)';
+            c.strokeStyle = 'rgba(37,99,235,0.7)'; c.lineWidth = 1;
+            c.beginPath();
+            c.ellipse(cx, axisY + yOffset, ellipseRx, ellipseRy, 0, 0, Math.PI * 2);
+            c.fill(); c.stroke();
+          });
+
+          // Highlight disk (same x as diskX on the left)
+          var hcx = solidLx + diskX * pxPerX;
+          var hOff = (diskX - xR.min) * pxPerX * (-0.15);
+          var hRx = Math.max(1, diskR * pxPerX * 0.12);
+          var hRy = Math.max(2, diskR * 50);
+          c.fillStyle = 'rgba(253,224,71,0.6)';
+          c.strokeStyle = '#fbbf24'; c.lineWidth = 2;
+          c.beginPath();
+          c.ellipse(hcx, axisY + hOff, hRx, hRy, 0, 0, Math.PI * 2);
+          c.fill(); c.stroke();
+
+          // Labels
+          c.fillStyle = '#60a5fa'; c.textAlign = 'left';
+          c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText('solid = stacked disks', Lx2 + 8, Ty2 + 16);
+
+          // Compute volume numerically
+          var volSum = 0, NV = 400, dxV = (xR.max - xR.min) / NV;
+          for (var v = 0; v < NV; v++) {
+            var xv = xR.min + (v + 0.5) * dxV;
+            var rv = f(xv);
+            volSum += Math.PI * rv * rv * dxV;
+          }
+
+          // Footer
+          c.fillStyle = '#fde047'; c.textAlign = 'center';
+          c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText('V = \u03C0 \u222B\u2080\u2074 f(x)\u00B2 dx \u2248 ' + volSum.toFixed(3) + ' cubic units    \u2022    highlighted disk at x = ' + diskX.toFixed(2), W/2, H - 12);
+        }
+
+        // ── VIEW 12: Epsilon-Delta Game ──
+        function drawEpsilonDelta(c, W, H, ls, t) {
+          c.fillStyle = '#e2e8f0'; c.textAlign = 'center';
+          c.font = 'bold 14px "Inter", sans-serif';
+          c.fillText('\uD83C\uDFAF \u03B5\u2013\u03B4 Game \u2014 the FORMAL definition of a limit', W/2, 18);
+          c.font = 'italic 10px "Inter", sans-serif'; c.fillStyle = '#94a3b8';
+          c.fillText('Goal: trap f(x) inside a tolerance \u03B5 by choosing \u03B4. Shrinking \u03B5 \u2192 shrinks required \u03B4.', W/2, 32);
+
+          // Function: f(x) = x^2; limit at x0 = 2 is f(2) = 4
+          function f(x) { return x * x; }
+          var x0 = 2, L = 4;
+
+          var Lx = 60, Rx = W - 40, Ty = 52, By = H - 60;
+          var xR = { min: 0, max: 4 };
+          var yR = { min: 0, max: 18 };
+          drawAxes(c, Lx, Rx, Ty, By, xR, yR);
+
+          // Animate epsilon shrinking: 3 -> 0.5 -> 3 cycle
+          var ePhase = (t / 120) % 2;
+          var eps = ePhase < 1 ? (3 - ePhase * 2.5) : (0.5 + (ePhase - 1) * 2.5);
+
+          // Find delta such that for all x in [x0-delta, x0+delta], f(x) in [L-eps, L+eps]
+          // For f = x^2 at x0=2: need |x^2 - 4| < eps => solve x^2 < 4+eps and x^2 > 4-eps
+          // delta = min(sqrt(4+eps) - 2, 2 - sqrt(Math.max(0, 4-eps)))
+          var upperDelta = Math.sqrt(4 + eps) - 2;
+          var lowerDelta = 2 - Math.sqrt(Math.max(0, 4 - eps));
+          var delta = Math.min(upperDelta, lowerDelta);
+          // Clamp for visual display
+          if (delta < 0.01) delta = 0.01;
+
+          // Horizontal epsilon band around L=4
+          var yBandTop = By - ((L + eps - yR.min) / (yR.max - yR.min)) * (By - Ty);
+          var yBandBot = By - ((L - eps - yR.min) / (yR.max - yR.min)) * (By - Ty);
+          c.fillStyle = 'rgba(96,165,250,0.2)';
+          c.fillRect(Lx, yBandTop, Rx - Lx, yBandBot - yBandTop);
+          c.strokeStyle = 'rgba(96,165,250,0.6)'; c.setLineDash([3, 3]);
+          c.beginPath(); c.moveTo(Lx, yBandTop); c.lineTo(Rx, yBandTop); c.stroke();
+          c.beginPath(); c.moveTo(Lx, yBandBot); c.lineTo(Rx, yBandBot); c.stroke();
+          c.setLineDash([]);
+
+          // Vertical delta band around x0=2
+          var xBandL = Lx + ((x0 - delta - xR.min) / (xR.max - xR.min)) * (Rx - Lx);
+          var xBandR = Lx + ((x0 + delta - xR.min) / (xR.max - xR.min)) * (Rx - Lx);
+          c.fillStyle = 'rgba(52,211,153,0.2)';
+          c.fillRect(xBandL, Ty, xBandR - xBandL, By - Ty);
+          c.strokeStyle = 'rgba(52,211,153,0.6)'; c.setLineDash([3, 3]);
+          c.beginPath(); c.moveTo(xBandL, Ty); c.lineTo(xBandL, By); c.stroke();
+          c.beginPath(); c.moveTo(xBandR, Ty); c.lineTo(xBandR, By); c.stroke();
+          c.setLineDash([]);
+
+          // Plot f
+          plotCurve(c, f, xR, yR, Lx, Rx, Ty, By, '#f87171', 2.5);
+
+          // (x0, L) marker
+          var x0s = Lx + ((x0 - xR.min) / (xR.max - xR.min)) * (Rx - Lx);
+          var Ls = By - ((L - yR.min) / (yR.max - yR.min)) * (By - Ty);
+          c.fillStyle = '#fde047';
+          c.beginPath(); c.arc(x0s, Ls, 6, 0, Math.PI * 2); c.fill();
+          c.strokeStyle = '#0f172a'; c.lineWidth = 1.5; c.stroke();
+
+          // Labels on bands
+          c.fillStyle = '#60a5fa'; c.textAlign = 'left';
+          c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText('\u03B5 = ' + eps.toFixed(2), Rx + 4, (yBandTop + yBandBot) / 2 + 4);
+          c.textAlign = 'left';
+          c.fillText('L = 4', Rx + 4, Ls - 14);
+          c.fillStyle = '#34d399';
+          c.fillText('\u03B4 = ' + delta.toFixed(3), (xBandL + xBandR) / 2 - 20, By + 14);
+          c.fillText('x\u2080 = 2', x0s - 15, By + 26);
+
+          // "Trapped" check: is f(x) inside eps band for all x in [x0-delta, x0+delta]?
+          var trapped = true;
+          for (var tk = 0; tk <= 30; tk++) {
+            var xt = x0 - delta + (tk / 30) * (2 * delta);
+            var ft = f(xt);
+            if (ft < L - eps - 0.001 || ft > L + eps + 0.001) { trapped = false; break; }
+          }
+
+          // STATUS big pill
+          var stX = Lx + 12, stY = Ty + 8, stW = 180, stH = 30;
+          c.fillStyle = trapped ? 'rgba(22,163,74,0.9)' : 'rgba(220,38,38,0.9)';
+          c.fillRect(stX, stY, stW, stH);
+          c.fillStyle = '#fff'; c.textAlign = 'center';
+          c.font = 'bold 13px "Inter", sans-serif';
+          c.fillText(trapped ? '\u2705 TRAPPED inside \u03B5' : '\u26A0 leaks out', stX + stW / 2, stY + 20);
+
+          // Formula callout right side
+          var fX = Lx + 220, fY = Ty + 8;
+          c.fillStyle = 'rgba(15,23,42,0.88)';
+          c.fillRect(fX, fY, W - fX - 20, 46);
+          c.strokeStyle = 'rgba(196,181,253,0.5)';
+          c.strokeRect(fX, fY, W - fX - 20, 46);
+          c.fillStyle = '#c4b5fd'; c.textAlign = 'left';
+          c.font = 'bold 10px "Inter", sans-serif';
+          c.fillText('lim\u2093\u2192\u2082 x\u00B2 = 4   means:', fX + 10, fY + 16);
+          c.font = 'bold 10px monospace'; c.fillStyle = '#fbcfe8';
+          c.fillText('\u2200\u03B5>0, \u2203\u03B4>0 : |x\u22122|<\u03B4 \u21D2 |x\u00B2\u22124|<\u03B5', fX + 10, fY + 36);
+
+          // Footer
+          c.fillStyle = '#fde047'; c.textAlign = 'center';
+          c.font = 'bold 11px "Inter", sans-serif';
+          c.fillText('smaller \u03B5 forces smaller \u03B4 \u2014 and for a continuous function, such a \u03B4 always exists', W/2, H - 12);
+        }
 
         // ── FUNCTION EVALUATION ─────────────────────────────────────────
         var fa = d.a !== undefined ? d.a : 1;
@@ -367,16 +1859,16 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
           // Header
           h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-3 mb-3' },
-            h('button', { onClick: function(){setStemLabTool(null);}, className: 'p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': 'Back' }, h(ArrowLeft, {size:18,className:'text-slate-500'})),
+            h('button', { onClick: function(){setStemLabTool(null);}, className: 'p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': 'Back' }, h(ArrowLeft, {size:18,className:'text-slate-600'})),
             h('h3', { className: 'text-lg font-bold text-slate-800' }, '\u222B Calculus'),
-            h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'px-2 py-0.5 bg-red-100 text-red-700 text-[10px] font-bold rounded-full' }, 'INTERACTIVE'),
-            cScore > 0 && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'ml-auto px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-full' }, '\u2B50 ' + cScore + ' | \uD83D\uDD25 ' + cStreak)
+            h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'px-2 py-0.5 bg-red-100 text-red-700 text-[11px] font-bold rounded-full' }, 'INTERACTIVE'),
+            cScore > 0 && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'ml-auto px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[11px] font-bold rounded-full' }, '\u2B50 ' + cScore + ' | \uD83D\uDD25 ' + cStreak)
           ),
 
           // Tab bar
           h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-0 mb-3 border-b border-slate-200', role: 'tablist', 'aria-label': 'Calculus Tool sections' },
-            [['integral','\u222B Integral'],['derivative','\uD83D\uDCC8 Derivative'],['challenge','\uD83C\uDFAF Challenge'],['discover','\uD83D\uDD2C Discover']].map(function(item){
-              return h('button',{ "aria-label": "Calculus tool action",key:item[0],onClick:function(){upd('tab',item[0]);},role:'tab','aria-selected':tab===item[0],className:'px-3 py-1.5 text-xs font-bold transition-all '+(tab===item[0]?'border-b-2 border-red-600 text-red-700 -mb-px':'text-slate-500 hover:text-slate-700')},item[1]);
+            [['integral','\u222B Integral'],['derivative','\uD83D\uDCC8 Derivative'],['visualize','\uD83C\uDFAC Visualize'],['challenge','\uD83C\uDFAF Challenge'],['discover','\uD83D\uDD2C Discover']].map(function(item){
+              return h('button',{ "aria-label": "Calculus tool action",key:item[0],onClick:function(){upd('tab',item[0]);},role:'tab','aria-selected':tab===item[0],className:'px-3 py-1.5 text-xs font-bold transition-all '+(tab===item[0]?'border-b-2 border-red-600 text-red-700 -mb-px':'text-slate-600 hover:text-slate-700')},item[1]);
             })
           ),
 
@@ -410,7 +1902,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 }, '\u2B07 UNDERestimate'),
                 h('button', { "aria-label": "Calculus tool action",
                   onClick: function(){ upd('overUnderGuess','neither'); upd('overUnderChecked',true); stemBeep&&stemBeep('click'); },
-                  className: 'flex-1 py-2 rounded-lg text-xs font-bold bg-slate-100 text-slate-500 hover:bg-slate-200 transition-all border-2 border-slate-200'
+                  className: 'flex-1 py-2 rounded-lg text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all border-2 border-slate-200'
                 }, '\u2194 Can\'t tell')
               ),
               overUnderChecked && (function(){
@@ -426,7 +1918,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                       ? (fIsIncreasing ? 'The function is rising, so each left endpoint is below where the curve ends up — rectangles miss area above them.' : 'The function is falling, so each left endpoint is above where the curve goes — rectangles overshoot.')
                       : (fIsIncreasing ? 'The function is rising, so each right endpoint is at the highest point — rectangles overshoot the curve.' : 'The function is falling, so each right endpoint is at the lowest point — rectangles miss area.'))
                   ),
-                  h('button', {"aria-label":"Reset", onClick:function(){upd('overUnderChecked',false);upd('overUnderGuess',null);}, className:'mt-1 text-[10px] text-slate-500 hover:text-slate-600 font-bold' }, '\u21BA Reset')
+                  h('button', {"aria-label":"Reset", onClick:function(){upd('overUnderChecked',false);upd('overUnderGuess',null);}, className:'mt-1 text-[11px] text-slate-600 hover:text-slate-600 font-bold' }, '\u21BA Reset')
                 );
               })()
             ),
@@ -437,7 +1929,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 onClick: function(){ upd('predictMode',!predictMode); upd('predictSubmitted',false); upd('predictInput',''); },
                 className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (predictMode?'bg-violet-600 text-white':'bg-violet-50 text-violet-700 border border-violet-200 hover:bg-violet-100')
               }, predictMode ? '\uD83D\uDD2E Predict Mode ON' : '\uD83D\uDD2E Try Predict Mode'),
-              !predictMode && h('span', { className: 'text-[10px] text-slate-500' }, '\u2014 estimate the integral before it\u2019s revealed')
+              !predictMode && h('span', { className: 'text-[11px] text-slate-600' }, '\u2014 estimate the integral before it\u2019s revealed')
             ),
 
             predictMode && !predictSubmitted && h('div', { className: 'bg-violet-50 border-2 border-violet-300 rounded-xl p-4', style:{animation:'calcFade 0.3s ease'} },
@@ -463,23 +1955,23 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                     h('p', { className: 'text-lg font-black text-emerald-700', style:{animation:'calcPop 0.4s ease'} }, exact.toFixed(4))
                   ),
                   h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'p-2 bg-white rounded-lg border border-slate-200' },
-                    h('p', { className: 'text-[11px] font-bold text-slate-500 uppercase' }, '% Off'),
+                    h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, '% Off'),
                     h('p', { className: 'text-sm font-black text-slate-600' }, pctOff.toFixed(1) + '%')
                   )
                 ),
-                h('p', { className: 'text-xs italic ' + (pctOff<5?'text-emerald-600':pctOff<20?'text-amber-600':'text-slate-500') },
+                h('p', { className: 'text-xs italic ' + (pctOff<5?'text-emerald-600':pctOff<20?'text-amber-600':'text-slate-600') },
                   pctOff<5 ? '\uD83C\uDFAF Excellent! Within 5% \u2014 you have strong spatial intuition!' :
                   pctOff<15 ? '\uD83D\uDC4D Good intuition! Within 15%. Tip: think about the average y-value \u00D7 width.' :
                   '\uD83D\uDCA1 Keep at it! Estimation gets better with practice. Try: pick a "middle" y-value and multiply by the width.'
                 ),
-                h('button', {"aria-label":"Try another estimate", onClick:function(){upd('predictSubmitted',false);upd('predictInput','');}, className:'mt-2 text-[10px] text-violet-500 hover:text-violet-700 font-bold' }, '\u21BA Try another estimate')
+                h('button', {"aria-label":"Try another estimate", onClick:function(){upd('predictSubmitted',false);upd('predictInput','');}, className:'mt-2 text-[11px] text-violet-500 hover:text-violet-700 font-bold' }, '\u21BA Try another estimate')
               );
             })(),
 
             // Analysis panel (only show if not in predict mode OR already submitted)
             (!predictMode || predictSubmitted) && h('div', { className: 'mt-3 grid grid-cols-5 gap-3' },
               h('div', { className: 'col-span-3 bg-red-50 rounded-xl border border-red-200 p-3' },
-                h('p', { className: 'text-[10px] font-bold text-red-700 uppercase tracking-wider mb-2' }, '\uD83D\uDCCA Analysis'),
+                h('p', { className: 'text-[11px] font-bold text-red-700 uppercase tracking-wider mb-2' }, '\uD83D\uDCCA Analysis'),
                 h('div', { className: 'grid grid-cols-3 gap-2 text-center' },
                   h('div', { className: 'p-1.5 bg-white rounded-lg border', style:{animation:'calcPop 0.3s ease'} },
                     h('p', { className: 'text-[11px] font-bold text-red-400' }, mode==='trapezoid'?'Trapezoidal':mode==='simpson'?"Simpson's":'Riemann ('+mode+')'),
@@ -494,7 +1986,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                     h('p', { className: 'text-sm font-bold '+(err<0.01?'text-emerald-600':err<0.1?'text-yellow-600':'text-red-600') }, err.toFixed(6))
                   )
                 ),
-                h('p', { className: 'mt-2 text-xs text-slate-500 italic' },
+                h('p', { className: 'mt-2 text-xs text-slate-600 italic' },
                   mode==='simpson'?"\uD83D\uDCA1 Simpson's uses parabolic arcs \u2014 exact for polynomials up to degree 3. Why do you think that is?":
                   mode==='trapezoid'?"\uD83D\uDCA1 Trapezoid error \u221D 1/n\u00B2. What does that mean when you double n?":
                   nRects<=5?"\uD83D\uDCA1 Only " + nRects + " rectangles. Predict: what happens to the error if you triple n?":
@@ -502,7 +1994,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 )
               ),
               h('div', { className: 'col-span-2 bg-slate-50 rounded-xl border p-2' },
-                h('p', { className: 'text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1' }, '\uD83D\uDCC9 Error vs n'),
+                h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1' }, '\uD83D\uDCC9 Error vs n'),
                 h('svg', { viewBox: '0 0 '+CW+' 60', className: 'w-full' },
                   h('line',{x1:Cpad,y1:55,x2:CW-Cpad,y2:55,stroke:'#e2e8f0',strokeWidth:0.5}),
                   h('polyline',{points:convData.map(function(cd){return convToX(cd.n)+','+convToY(cd.err);}).join(' '),fill:'none',stroke:'#ef4444',strokeWidth:1.5}),
@@ -515,8 +2007,8 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             // ── ANTIDERIVATIVE BUILDER ────────────────────────────────────
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-3 bg-cyan-50 rounded-xl border border-cyan-200 p-3' },
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-between mb-1' },
-                h('p', { className: 'text-[10px] font-bold text-cyan-700 uppercase tracking-wider' }, '\u270F\uFE0F Build the Antiderivative'),
-                h('p', { className: 'text-[10px] text-cyan-500 italic' }, 'Power rule: \u222B x\u207F dx = x\u207F\u207A\u00B9/(n+1)')
+                h('p', { className: 'text-[11px] font-bold text-cyan-700 uppercase tracking-wider' }, '\u270F\uFE0F Build the Antiderivative'),
+                h('p', { className: 'text-[11px] text-cyan-500 italic' }, 'Power rule: \u222B x\u207F dx = x\u207F\u207A\u00B9/(n+1)')
               ),
               h('p', { className: 'text-xs text-cyan-800 mb-2' }, 'For f(x) = ' + buildFStr(fa, fb, fc) + ', complete F(x):'),
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-1 flex-wrap' },
@@ -538,7 +2030,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                     h('p',{className:okB?'text-emerald-600':'text-red-500'},(okB?'\u2713':'\u2717')+' x\u00B2/2 coefficient: should be '+fb),
                     h('p',{className:okC?'text-emerald-600':'text-red-500'},(okC?'\u2713':'\u2717')+' x coefficient: should be '+fc)
                   ),
-                  h('button',{"aria-label":"Clear and try again",onClick:function(){upd('antiChecked',false);upd('antiA','');upd('antiB','');upd('antiC2','');},className:'mt-1 text-[10px] text-cyan-600 hover:underline font-bold'},'\u21BA Clear and try again')
+                  h('button',{"aria-label":"Clear and try again",onClick:function(){upd('antiChecked',false);upd('antiA','');upd('antiB','');upd('antiC2','');},className:'mt-1 text-[11px] text-cyan-600 hover:underline font-bold'},'\u21BA Clear and try again')
                 );
               })()
             ),
@@ -555,13 +2047,13 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
             // Presets
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-3 flex flex-wrap gap-1.5 items-center' },
-              h('span',{ role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },className:'text-[10px] font-bold text-slate-500'},'Load:'),
+              h('span',{ role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },className:'text-[11px] font-bold text-slate-600'},'Load:'),
               PRESETS.map(function(p){
                 return h('button',{ "aria-label": "Calculus tool action",key:p.label,onClick:function(){
                   setLabToolData(function(prev){return Object.assign({},prev,{calculus:Object.assign({},prev.calculus,{a:p.a,b:p.b,c:p.c,xMin:p.xMin,xMax:p.xMax,n:p.n,overUnderChecked:false,predictSubmitted:false,antiChecked:false,antiA:'',antiB:'',antiC2:''})});});
                   addToast('\uD83E\uDD14 '+p.tip,'info');
                   stemBeep&&stemBeep('click');
-                },className:'px-2 py-1 rounded-lg text-[10px] font-bold bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 transition-all'},p.label);
+                },className:'px-2 py-1 rounded-lg text-[11px] font-bold bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 transition-all'},p.label);
               })
             ),
 
@@ -576,19 +2068,19 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
             h('div', { className: 'bg-red-50 rounded-xl border border-red-100 p-3 mb-3 grid grid-cols-2 gap-3' },
               h('div', null,
-                h('p',{className:'text-[10px] font-bold text-red-400 uppercase mb-0.5'},'Function'),
+                h('p',{className:'text-[11px] font-bold text-red-400 uppercase mb-0.5'},'Function'),
                 h('p',{className:'text-sm font-bold text-slate-800 font-mono'},fStr)
               ),
               h('div', null,
-                h('p',{className:'text-[10px] font-bold text-red-400 uppercase mb-0.5'},'f\u2032(x\u2080='+x0+') = slope'),
+                h('p',{className:'text-[11px] font-bold text-red-400 uppercase mb-0.5'},'f\u2032(x\u2080='+x0+') = slope'),
                 h('p',{className:'text-base font-black text-red-700',style:{animation:'calcPop 0.3s ease'}},slope.toFixed(4))
               ),
               h('div', null,
-                h('p',{className:'text-[10px] font-bold text-red-400 uppercase mb-0.5'},'Tangent line'),
+                h('p',{className:'text-[11px] font-bold text-red-400 uppercase mb-0.5'},'Tangent line'),
                 h('p',{className:'text-xs font-bold text-slate-700 font-mono'},'y = '+slope.toFixed(2)+'(x\u2212'+x0+') + '+fy0.toFixed(2))
               ),
               h('div', null,
-                h('p',{className:'text-[10px] font-bold text-red-400 uppercase mb-0.5'},'Secant slope (h='+dh.toFixed(2)+')'),
+                h('p',{className:'text-[11px] font-bold text-red-400 uppercase mb-0.5'},'Secant slope (h='+dh.toFixed(2)+')'),
                 h('p',{className:'text-sm font-bold text-amber-600'},secantSlope.toFixed(4)+' \u2192 '+slope.toFixed(4))
               )
             ),
@@ -608,7 +2100,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
             // Limit definition callout
             h('div',{ role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },className:'mt-3 bg-amber-50 rounded-xl border border-amber-200 p-3'},
-              h('p',{className:'text-[10px] font-bold text-amber-700 uppercase tracking-wider mb-1'},'\uD83D\uDD0D The Limit Definition of the Derivative'),
+              h('p',{className:'text-[11px] font-bold text-amber-700 uppercase tracking-wider mb-1'},'\uD83D\uDD0D The Limit Definition of the Derivative'),
               h('p',{className:'text-xs font-mono text-amber-900 mb-2'},"f\u2032(x\u2080) = lim\u2095\u2192\u2080 [f(x\u2080 + h) \u2212 f(x\u2080)] / h"),
               h('p',{className:'text-xs text-amber-700'},'Drag h toward 0 above \u2014 watch the secant slope (\uD83D\uDFE1) converge to the true derivative (\uD83D\uDD34). When are they equal?')
             ),
@@ -616,7 +2108,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             // ── POWER RULE TRAINER ────────────────────────────────────────
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-3 bg-emerald-50 rounded-xl border border-emerald-200 p-3' },
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-between mb-2' },
-                h('p', { className: 'text-[10px] font-bold text-emerald-700 uppercase tracking-wider' }, '\u270F\uFE0F Power Rule Practice'),
+                h('p', { className: 'text-[11px] font-bold text-emerald-700 uppercase tracking-wider' }, '\u270F\uFE0F Power Rule Practice'),
                 h('button', { "aria-label": "Calculus tool action",
                   onClick: function(){ upd('showDerivTrainer', !d.showDerivTrainer); upd('derivInputChecked', false); upd('derivInput1', ''); upd('derivInput2', ''); },
                   className: 'text-xs font-bold text-emerald-600 hover:text-emerald-800'
@@ -627,7 +2119,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               ),
               d.showDerivTrainer && h('div', null,
                 h('p', { className: 'text-sm font-bold text-emerald-800 mb-1' }, 'If f(x) = ' + buildFStr(fa, fb, fc) + ', enter f\u2032(x):'),
-                h('p', { className: 'text-[10px] text-emerald-600 mb-2 italic' }, 'Rules: d/dx[ax\u00B2] = 2ax \u00B7\u00B7\u00B7 d/dx[bx] = b \u00B7\u00B7\u00B7 d/dx[c] = 0'),
+                h('p', { className: 'text-[11px] text-emerald-600 mb-2 italic' }, 'Rules: d/dx[ax\u00B2] = 2ax \u00B7\u00B7\u00B7 d/dx[bx] = b \u00B7\u00B7\u00B7 d/dx[c] = 0'),
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-1 flex-wrap' },
                   h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-sm font-bold text-emerald-900' }, "f\u2032(x) = "),
                   h('input', { type:'number', step:'any', placeholder:'?', value:derivInput1, 'aria-label':'Derivative x coefficient', onChange:function(e){upd('derivInput1',e.target.value);upd('derivInputChecked',false);}, className:'w-12 text-center border-2 border-emerald-300 rounded px-1 py-0.5 text-sm font-bold outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' }),
@@ -643,7 +2135,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                       h('p',{className:ok1?'text-emerald-600':'text-red-500'},(ok1?'\u2713':'\u2717')+' Coefficient of x: '+2*fa+' (d/dx['+fa+'x\u00B2] = 2\u00D7'+fa+'x = '+2*fa+'x)'),
                       h('p',{className:ok2?'text-emerald-600':'text-red-500'},(ok2?'\u2713':'\u2717')+' Constant: '+fb+' (d/dx['+fb+'x] = '+fb+')')
                     ),
-                    h('button',{"aria-label":"Try again",onClick:function(){upd('derivInputChecked',false);upd('derivInput1','');upd('derivInput2','');},className:'mt-1 text-[10px] text-emerald-600 hover:underline font-bold'},'\u21BA Try again')
+                    h('button',{"aria-label":"Try again",onClick:function(){upd('derivInputChecked',false);upd('derivInput1','');upd('derivInput2','');},className:'mt-1 text-[11px] text-emerald-600 hover:underline font-bold'},'\u21BA Try again')
                   );
                 })()
               )
@@ -671,10 +2163,10 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             ),
             h('div',{ role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },className:'flex flex-wrap gap-1.5 mb-2'},
               CALC_CHALLENGES.map(function(cm){
-                return h('button',{ "aria-label": "Start Calc Challenge",key:cm.id,onClick:function(){upd('calcChallengeMode',cm.id);upd('calcQuiz',null);upd('calcHint','');},className:'px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all '+(cMode===cm.id?'bg-'+cm.color+'-600 text-white shadow-md':'bg-slate-100 text-slate-500 hover:bg-slate-200')},cm.label);
+                return h('button',{ "aria-label": "Start Calc Challenge",key:cm.id,onClick:function(){upd('calcChallengeMode',cm.id);upd('calcQuiz',null);upd('calcHint','');},className:'px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all '+(cMode===cm.id?'bg-'+cm.color+'-600 text-white shadow-md':'bg-slate-100 text-slate-600 hover:bg-slate-200')},cm.label);
               })
             ),
-            h('p',{className:'text-[10px] text-slate-500 italic mb-3'},
+            h('p',{className:'text-[11px] text-slate-600 italic mb-3'},
               cMode==='estimate'?'Pick the correct definite integral value from 4 choices.':
               cMode==='overunder'?'Decide if the Riemann sum is an over or underestimate — and understand why.':
               cMode==='method'?'Which approximation method gives the smallest error?':
@@ -697,7 +2189,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             ),
             cq && !cq.answered && cMode==='exact' && h('div',{className:'bg-emerald-50 rounded-xl p-4 border border-emerald-200'},
               h('p',{className:'text-sm font-bold text-emerald-800 mb-1'},cq.question),
-              h('p',{className:'text-[10px] text-emerald-600 mb-3 italic'},'\u222B x\u207F dx = x\u207F\u207A\u00B9/(n+1) + C'),
+              h('p',{className:'text-[11px] text-emerald-600 mb-3 italic'},'\u222B x\u207F dx = x\u207F\u207A\u00B9/(n+1) + C'),
               h('div',{className:'flex gap-2'},
                 h('input',{type:'number',step:'any',autoFocus:true,value:d._calcExactInput||'',onChange:function(e){upd('_calcExactInput',e.target.value);},onKeyDown:function(e){if(e.key==='Enter'&&d._calcExactInput)checkCalcAnswer(d._calcExactInput);},'aria-label': 'Exact calculus answer',placeholder:'Type exact value\u2026',className:'flex-1 px-3 py-2 rounded-lg border-2 border-emerald-300 text-sm font-bold bg-white outline-none focus:border-emerald-500'}),
                 h('button',{"aria-label":"Check",onClick:function(){if(d._calcExactInput)checkCalcAnswer(d._calcExactInput);},className:'px-4 py-2 bg-emerald-700 text-white rounded-lg text-xs font-bold hover:bg-emerald-700'},'Check \u2192')
@@ -709,10 +2201,10 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             ),
             cHint && h('div',{className:'bg-amber-50 rounded-xl p-3 border border-amber-200 mt-2 text-xs text-amber-800',style:{animation:'calcFade 0.3s ease'}},h('span',{className:'font-bold'},'\uD83D\uDCA1 Explanation: '),cHint),
             cq&&cq.answered&&cMode==='method'&&cq.errors&&h('div',{className:'mt-2 bg-slate-50 rounded-lg p-2 border'},
-              h('p',{className:'text-[11px] font-bold text-slate-500 uppercase mb-1'},'Error comparison (n='+cq.n+')'),
+              h('p',{className:'text-[11px] font-bold text-slate-600 uppercase mb-1'},'Error comparison (n='+cq.n+')'),
               h('div',{className:'grid grid-cols-5 gap-1 text-center'},['left','right','midpoint','trapezoid','simpson'].map(function(m){
-                return h('div',{key:m,className:'px-1 py-1 rounded text-[11px] font-bold '+(m===cq.answer?'bg-emerald-100 text-emerald-700 border border-emerald-300':'bg-white text-slate-500 border')},
-                  h('div',null,m==='simpson'?'Simp':m.charAt(0).toUpperCase()+m.slice(1,4)),h('div',{className:'text-[8px]'},cq.errors[m].toFixed(4)));
+                return h('div',{key:m,className:'px-1 py-1 rounded text-[11px] font-bold '+(m===cq.answer?'bg-emerald-100 text-emerald-700 border border-emerald-300':'bg-white text-slate-600 border')},
+                  h('div',null,m==='simpson'?'Simp':m.charAt(0).toUpperCase()+m.slice(1,4)),h('div',{className:'text-[11px]'},cq.errors[m].toFixed(4)));
               }))
             )
           ),
@@ -722,7 +2214,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           // ══════════════════════════════════════════════════════════════
           tab === 'discover' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: 'discover' },
 
-            h('p',{className:'text-xs text-slate-500 italic mb-3'},'Guided investigations \u2014 you measure, predict, and find the pattern. The tool is your calculator, not your teacher.'),
+            h('p',{className:'text-xs text-slate-600 italic mb-3'},'Guided investigations \u2014 you measure, predict, and find the pattern. The tool is your calculator, not your teacher.'),
 
             // Mission selector
             h('div',{ role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },className:'flex gap-2 mb-4 flex-wrap'},
@@ -801,7 +2293,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                         h('p',{className:'text-xs text-slate-600'},'Error at n=4: '+e4.toFixed(4)),
                         h('p',{className:'text-xs text-slate-600'},'Error at n=8: '+e8.toFixed(4)),
                         h('p',{className:'text-sm font-bold text-red-700 mt-1'},'Ratio: '+e4.toFixed(4)+' \u00F7 '+e8.toFixed(4)+' = '+ratio),
-                        h('p',{className:'text-xs text-slate-500 italic mt-1'},'When n doubled (4\u21928), error was divided by about '+ratio+'.')
+                        h('p',{className:'text-xs text-slate-600 italic mt-1'},'When n doubled (4\u21928), error was divided by about '+ratio+'.')
                       ),
                       h('p',{className:'text-xs font-bold text-slate-700 mb-2'},'Now predict: what will the error be at n=16? (Hint: apply the same ratio again)'),
                       h('div',{ role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },className:'flex gap-2 items-center'},
@@ -993,11 +2485,11 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   h('p',{className:'text-xs text-slate-700 mb-3'},'The x-axis is time (seconds), the y-axis is velocity (m/s). The area under the velocity curve is the total distance traveled.'),
                   h('button',{"aria-label":"Load v(t) = 2t, t  [0,3]",onClick:function(){setLabToolData(function(prev){return Object.assign({},prev,{calculus:Object.assign({},prev.calculus,{a:0,b:2,c:0,xMin:0,xMax:3,n:20,mode:'left',tab:'discover'})});});addToast('Loaded v(t) = 2t from t=0 to t=3','success');},className:'px-4 py-2 bg-emerald-700 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 mb-3 block'},'\u25B6 Load v(t) = 2t, t \u2208 [0,3]'),
                   h('p',{className:'text-xs font-bold text-slate-700 mb-2'},'Before computing: the velocity graph from t=0 to t=3 is a triangle. What is the area of this triangle?'),
-                  h('p',{className:'text-xs text-slate-500 mb-2'},'(Hint: Area of triangle = \u00BD \u00D7 base \u00D7 height. Base = 3, height = v(3) = 2\u00D73 = ?)'),
+                  h('p',{className:'text-xs text-slate-600 mb-2'},'(Hint: Area of triangle = \u00BD \u00D7 base \u00D7 height. Base = 3, height = v(3) = 2\u00D73 = ?)'),
                   h('div',{ role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },className:'flex gap-2 items-center'},
                     h('span',{ role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },className:'text-xs font-bold'},'My triangle area:'),
                     h('input',{type:'number',step:'any',placeholder:'? m',value:data.triangleArea||'',onChange:function(e){saveData('triangleArea',e.target.value);},className:'w-20 px-2 py-1 border-2 border-emerald-200 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
-                    h('span',{ role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },className:'text-xs text-slate-500'},'meters'),
+                    h('span',{ role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },className:'text-xs text-slate-600'},'meters'),
                     h('button',{"aria-label":"Got it",disabled:!data.triangleArea,onClick:nextStep,className:'px-3 py-1.5 bg-emerald-700 text-white rounded-lg text-xs font-bold disabled:opacity-40 hover:bg-emerald-700'},'Got it \u2192')
                   )
                 ),
@@ -1037,7 +2529,183 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               );
             })()
 
-          ) // end discover tab
+          ), // end discover tab
+
+          // ══════════════════════════════════════════════════════════════
+          // TAB: VISUALIZE  (canvas-based pedagogical views)
+          // Pedagogy: show intuition BEFORE formulas.
+          // ══════════════════════════════════════════════════════════════
+          tab === 'visualize' && h('div', { key: 'visualize' },
+            (function() {
+              var vizView = d.vizView || 'zoom';
+              var vizFn   = d.vizFn   || 'quadratic';
+              var VIEWS = [
+                { id: 'zoom',    icon: '\uD83D\uDD0D', label: 'Zoom',          desc: 'Zoom to Linearity \u2014 what is a derivative? (Shift+1)' },
+                { id: 'tangent', icon: '\uD83D\uDCCD', label: 'Tangent',       desc: 'Tangent explorer \u2014 derivative as a function (Shift+2)' },
+                { id: 'motion',  icon: '\uD83D\uDE97', label: 'Motion',        desc: 'Position / Velocity / Acceleration (Shift+3)' },
+                { id: 'riemann', icon: '\uD83C\uDFAC', label: 'Riemann',       desc: 'Animated Riemann convergence (Shift+4)' },
+                { id: 'ftc',     icon: '\u2B50',       label: 'FTC',           desc: 'The Fundamental Theorem of Calculus (Shift+5)' },
+                { id: 'slope',   icon: '\uD83C\uDF0A', label: 'Slope Fields',  desc: 'Visualize ODEs without solving them (Shift+6)' },
+                { id: 'chain',   icon: '\u2699\uFE0F', label: 'Chain Rule',    desc: 'Meshed gears \u2014 rates multiply (Shift+7)' },
+                { id: 'taylor',  icon: '\u221E',       label: 'Taylor Series', desc: 'Build sin(x) term by term (Shift+8)' },
+                { id: 'optim',   icon: '\uD83D\uDCE6', label: 'Optimization',  desc: 'The cardboard box \u2014 maximize volume (Shift+9)' },
+                { id: 'related', icon: '\uD83D\uDCCF', label: 'Related Rates', desc: 'Sliding ladder \u2014 two rates linked by geometry (Shift+0)' },
+                { id: 'vor',     icon: '\uD83C\uDFAA', label: 'Vol. of Revolution', desc: 'Spin a curve \u2192 solid; stacked disks' },
+                { id: 'eps',     icon: '\uD83C\uDFAF', label: '\u03B5\u2013\u03B4 Game', desc: 'Formal limit: find the \u03B4 that traps f(x) inside \u03B5' }
+              ];
+              return h(React.Fragment, null,
+                // Header strip
+                h('div', { className: 'flex items-center gap-2 mb-2 text-xs text-slate-600' },
+                  h('span', { className: 'font-bold' }, 'Visualize'),
+                  h('span', { className: 'text-slate-400' }, '\u2022'),
+                  h('span', {}, 'See the ideas before you see the formulas'),
+                  h('span', { className: 'ml-auto px-2 py-0.5 bg-indigo-100 text-indigo-700 text-[10px] font-bold rounded-full' }, 'LIVE CANVAS')
+                ),
+                // Sub-view selector
+                h('div', { className: 'flex gap-1.5 flex-wrap text-xs font-bold mb-2', role: 'tablist', 'aria-label': 'Calculus visualization view' },
+                  VIEWS.map(function(v, vi) {
+                    var active = vizView === v.id;
+                    return h('button', {
+                      key: v.id, role: 'tab', 'aria-selected': active ? 'true' : 'false',
+                      onClick: function() { upd('vizView', v.id); },
+                      title: v.desc,
+                      'aria-keyshortcuts': 'Shift+' + (vi + 1),
+                      className: 'px-3 py-1.5 rounded-lg border transition-all whitespace-nowrap ' + (active
+                        ? 'bg-red-500 border-red-600 text-white shadow-md'
+                        : 'bg-white border-slate-200 text-slate-600 hover:border-red-400')
+                    }, v.icon + ' ' + v.label);
+                  })
+                ),
+                // Function picker (shown only for views that use it)
+                (vizView === 'zoom' || vizView === 'tangent' || vizView === 'ftc' || vizView === 'riemann') &&
+                h('div', { className: 'flex gap-1 flex-wrap text-[11px] mb-2' },
+                  h('span', { className: 'text-slate-500 font-semibold self-center mr-1' }, 'f(x) ='),
+                  Object.keys(CALC_FUNCS).map(function(fid) {
+                    var active = vizFn === fid;
+                    return h('button', {
+                      key: fid,
+                      onClick: function() { upd('vizFn', fid); },
+                      className: 'px-2 py-1 rounded border font-mono font-bold transition-all ' + (active
+                        ? 'bg-indigo-500 border-indigo-600 text-white'
+                        : 'bg-white border-slate-200 text-slate-600 hover:border-indigo-400')
+                    }, CALC_FUNCS[fid].label);
+                  })
+                ),
+                // Canvas wrapper (fullscreen target)
+                h('div', {
+                  id: 'calc-viz-wrap',
+                  className: 'relative rounded-xl overflow-hidden border-2 border-indigo-300',
+                  style: { height: '380px', width: '100%', background: '#0f172a' }
+                },
+                  h('canvas', {
+                    ref: _vizCvRef,
+                    role: 'img',
+                    'aria-label': 'Calculus visualization canvas: ' + (VIEWS.find(function(v){return v.id===vizView;}) || {}).desc,
+                    style: {
+                      width: '100%', height: '100%', display: 'block',
+                      cursor: (vizView === 'zoom' || vizView === 'tangent' || vizView === 'ftc' || vizView === 'optim' || vizView === 'slope') ? 'pointer' : 'default'
+                    }
+                  }),
+                  // Reset interaction button — shown only on interactive views
+                  (vizView === 'zoom' || vizView === 'tangent' || vizView === 'ftc' || vizView === 'optim' || vizView === 'slope') &&
+                  h('button', {
+                    onClick: function() {
+                      upd('vizUserInteracted', {});
+                      upd('vizSlopeSeeds', []);
+                    },
+                    title: 'Return to auto-animation',
+                    'aria-label': 'Reset interaction; resume auto-animation',
+                    className: 'absolute top-2 right-12 px-2 h-8 rounded-lg bg-slate-900/70 text-indigo-200 hover:bg-slate-900/90 text-xs font-bold'
+                  }, '\u21BA auto'),
+                  h('button', {
+                    onClick: function() {
+                      var el = document.getElementById('calc-viz-wrap');
+                      if (!el) return;
+                      if (document.fullscreenElement) { document.exitFullscreen(); }
+                      else if (el.requestFullscreen) { el.requestFullscreen(); }
+                    },
+                    title: 'Toggle fullscreen',
+                    'aria-label': 'Toggle fullscreen',
+                    className: 'absolute top-2 right-2 w-8 h-8 rounded-lg bg-slate-900/70 text-indigo-200 hover:bg-slate-900/90 text-sm font-bold'
+                  }, '\u26F6')
+                ),
+                // Per-view explainer strip
+                h('div', { className: 'mt-2 text-[11px] text-slate-600 leading-relaxed' },
+                  vizView === 'zoom'    && 'Drag the zoom slider. Watch any smooth curve become a straight line up close. That local slope IS the derivative.',
+                  vizView === 'tangent' && 'Drag the x-marker below. As you scan, the tangent line swings; f\u2032(x) traces itself on the right panel.',
+                  vizView === 'motion'  && 'Drag the position curve. Velocity = slope; acceleration = slope of velocity. Three panels update live.',
+                  vizView === 'riemann' && 'Watch n grow from 1 \u2192 256. All four Riemann methods converge to the true area \u2014 but at different speeds.',
+                  vizView === 'ftc'     && 'THE payoff: drag x. Accumulated area A(x) is plotted on the right \u2014 its slope at every x is exactly f(x). That\u2019s the Fundamental Theorem.',
+                  vizView === 'slope'   && 'Each arrow is the slope dy/dx at that point. Click anywhere to drop a solution curve that flows along the field.',
+                  vizView === 'chain'   && 'Inner gear du/dx turns an outer gear df/du. Composed rate = product: df/dx = df/du \u00D7 du/dx.',
+                  vizView === 'taylor'  && 'A Taylor polynomial is an infinite sum of powers that reconstructs a function. Watch degree climb 0 \u2192 13.',
+                  vizView === 'optim'   && 'Cut squares of side x from each corner of a sheet. Volume V(x) peaks where V\u2032(x) = 0.',
+                  vizView === 'related' && "A ladder slides. Bottom moves at 2 ft/s; top\u2019s speed depends on where we are. Geometry links the rates.",
+                  vizView === 'vor'     && 'Spin f(x) around the x-axis. The disks stack into a solid. V = \u03C0 \u222B f(x)\u00B2 dx.',
+                  vizView === 'eps'     && "For every tolerance \u03B5, find a \u03B4 small enough that f(x) stays inside \u03B5 whenever x is within \u03B4 of x\u2080."
+                )
+              );
+            })()
+          ),
+
+          // ── AI Calculus Tutor (reading-level aware) ──
+          (function () {
+            var aiLevel = d.aiLevel || 'grade5';
+            var aiText = d.aiExplain || '';
+            var aiLoading = !!d.aiLoading;
+            var aiError = d.aiError || '';
+            var LEVELS = [
+              { id: 'plain', label: 'Plain', hint: 'using simple everyday words and short sentences, no jargon' },
+              { id: 'grade5', label: 'Grade 5', hint: 'for a 5th grade student, with a concrete everyday example' },
+              { id: 'hs', label: 'AP Calc', hint: 'for an AP Calculus student, using proper calculus terminology' }
+            ];
+            function save(k, v) {
+              setLabToolData(function (prev) { return Object.assign({}, prev, { calculus: Object.assign({}, prev.calculus, (function(){var o={};o[k]=v;return o;})()) }); });
+            }
+            function explain() {
+              if (typeof callGemini !== 'function') { save('aiError', 'AI tutor not available.'); return; }
+              save('aiLoading', true); save('aiError', ''); save('aiExplain', '');
+              var lv = LEVELS.find(function (L) { return L.id === aiLevel; }) || LEVELS[1];
+              var fnStr = (d.a || 1) + 'x\u00B2 + ' + (d.b || 0) + 'x + ' + (d.c || 0);
+              var tabLabel = tab === 'integral' ? 'Integral (Riemann sums)' : tab === 'derivative' ? 'Derivative (slope)' : tab === 'challenge' ? 'Challenge' : 'Discover';
+              var prompt = 'Explain what this calculus tool is showing ' + lv.hint + '. '
+                + 'Current tab: ' + tabLabel + '. Function: f(x) = ' + fnStr + ' on [' + (d.xMin || 0) + ', ' + (d.xMax || 3) + '] with n=' + (d.n || 20) + ' ' + (mode || 'left') + ' rectangles. '
+                + 'In 3 short sentences: (1) What the student is computing. (2) Why this method works (intuition first). (3) One real-world place this shows up. '
+                + 'No markdown, no bullets, no headings. Plain prose.';
+              callGemini(prompt, false, false, 0.5).then(function (resp) {
+                save('aiExplain', String(resp || '').trim()); save('aiLoading', false);
+                if (typeof announceToSR === 'function') announceToSR('Explanation ready.');
+              }).catch(function () {
+                save('aiLoading', false); save('aiError', 'Could not reach AI tutor. Try again in a moment.');
+              });
+            }
+            return h('div', { className: 'mt-3 p-3 rounded-xl border-2 border-purple-200 bg-purple-50', role: 'region', 'aria-label': 'AI calculus tutor' },
+              h('div', { className: 'flex items-center flex-wrap gap-2 mb-1.5' },
+                h('span', { className: 'text-sm font-bold text-purple-700' }, '\u2728 Explain at my level'),
+                h('div', { className: 'ml-auto flex gap-1', role: 'group', 'aria-label': 'Reading level' },
+                  LEVELS.map(function (L) {
+                    var active = aiLevel === L.id;
+                    return h('button', {
+                      key: L.id,
+                      onClick: function () { save('aiLevel', L.id); },
+                      'aria-label': 'Reading level: ' + L.label + (active ? ' (selected)' : ''),
+                      'aria-pressed': active,
+                      className: 'px-2 py-0.5 rounded text-[10px] font-bold ' + (active ? 'bg-purple-600 text-white' : 'bg-white text-purple-700 border border-purple-200 hover:bg-purple-100')
+                    }, L.label);
+                  })
+                ),
+                h('button', {
+                  onClick: explain,
+                  disabled: aiLoading,
+                  'aria-label': 'Generate AI explanation at ' + ((LEVELS.find(function (L) { return L.id === aiLevel; }) || {}).label || 'Grade 5') + ' level',
+                  className: 'px-3 py-1 rounded-lg text-[11px] font-bold bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50'
+                }, aiLoading ? '\u23F3 Thinking...' : (aiText ? '\uD83D\uDD04 Re-explain' : '\uD83E\uDDE0 Explain'))
+              ),
+              aiError && h('p', { className: 'text-[11px] text-rose-600', role: 'alert' }, aiError),
+              aiText && h('p', { className: 'text-xs text-slate-700 leading-relaxed bg-white rounded-lg p-2 border border-purple-100' }, aiText),
+              !aiText && !aiLoading && !aiError && h('p', { className: 'text-[11px] italic text-slate-500' }, 'Click \u201CExplain\u201D for the AI tutor to describe what you\u2019re computing right now.')
+            );
+          })()
 
         );
       })();

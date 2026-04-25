@@ -1,3 +1,15 @@
+// Fisher-Yates shuffle used by the unscramble game. Recurses if shuffle produces the same word.
+var scrambleWord = function(word) {
+  if (!word || word.length < 2) return word;
+  var arr = word.split('');
+  for (var i = arr.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
+  }
+  var result = arr.join('');
+  return result === word ? scrambleWord(word) : result;
+};
+
 const useReducedMotion = () => typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
 
 // ── TTS utility for read-aloud accessibility ──
@@ -62,7 +74,7 @@ const GameThemeToggle = () => {
       type="button"
     >
       <span>{isContrast ? '\uD83D\uDC41' : isDark ? '\uD83C\uDF19' : '\u2600\uFE0F'}</span>
-      <span className="text-[10px] font-bold">{isContrast ? 'Hi-Con' : isDark ? 'Dark' : 'Light'}</span>
+      <span className="text-[11px] font-bold">{isContrast ? 'Hi-Con' : isDark ? 'Dark' : 'Light'}</span>
     </button>
   );
 };
@@ -99,13 +111,13 @@ const GameReviewScreen = ({ score, title, items, onPlayAgain, onClose, t }) => {
               item.status === 'correct' ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
             }`}>
               <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-xs font-black ${
-                item.status === 'correct' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+                item.status === 'correct' ? 'bg-green-700 text-white' : 'bg-red-700 text-white'
               }`}>
                 {item.status === 'correct' ? '\u2713' : '\u2717'}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="font-bold text-sm text-slate-800 truncate">{item.label}</div>
-                {item.detail && <div className="text-xs text-slate-500 truncate">{item.detail}</div>}
+                {item.detail && <div className="text-xs text-slate-600 truncate">{item.detail}</div>}
               </div>
               <SpeakButton text={item.label} size={12} />
             </div>
@@ -135,7 +147,17 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
   const [gameMode, setGameMode] = useState('smart');
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [announcement, setAnnouncement] = useState('');
+  const [mismatchIndices, setMismatchIndices] = useState([]);
+  const [scoreDelta, setScoreDelta] = useState(null);
   const cardRefs = useRef([]);
+  const gridRef = useRef(null);
+  const scoreDeltaTimerRef = useRef(null);
+  const flashScoreDelta = (delta) => {
+    if (scoreDeltaTimerRef.current) clearTimeout(scoreDeltaTimerRef.current);
+    setScoreDelta(delta);
+    scoreDeltaTimerRef.current = setTimeout(() => setScoreDelta(null), 900);
+  };
+  useEffect(() => () => { if (scoreDeltaTimerRef.current) clearTimeout(scoreDeltaTimerRef.current); }, []);
   useEffect(() => {
     initializeGame();
   }, [data, gameMode]);
@@ -216,6 +238,7 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
       const card2 = cards[newFlipped[1]];
       if (card1.pairId === card2.pairId) {
         setScore(s => s + 30);
+        flashScoreDelta(30);
         setTimeout(() => {
           setMatchedPairs(prev => {
             const newSet = new Set(prev);
@@ -227,10 +250,13 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
         }, 500);
       } else {
         setScore(s => Math.max(0, s - 5));
+        flashScoreDelta(-5);
+        setMismatchIndices(newFlipped);
         setTimeout(() => {
           setFlippedIndices([]);
+          setMismatchIndices([]);
           setAnnouncement(t('memory.announcement_mismatch'));
-        }, 2500);
+        }, 1500);
       }
     }
   };
@@ -241,17 +267,15 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
         return;
     }
     const getCols = () => {
-        const width = window.innerWidth;
-        if (isFullscreen) {
-            if (width >= 1024) return 6;
-            if (width >= 768) return 5;
-            if (width >= 640) return 4;
-            return 3;
-        } else {
-            if (width >= 768) return 4;
-            if (width >= 640) return 3;
-            return 2;
+        const grid = gridRef.current;
+        if (!grid || grid.children.length === 0) return 1;
+        const firstTop = grid.children[0].offsetTop;
+        let count = 0;
+        for (const child of grid.children) {
+            if (child.offsetTop === firstTop) count++;
+            else break;
         }
+        return count || 1;
     };
     const cols = getCols();
     const total = cards.length;
@@ -285,28 +309,46 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
         });
       }
     }
-  }, [matchedPairs, cards.length, isWon, onScoreUpdate, score]);
+  }, [matchedPairs, cards.length, isWon, onScoreUpdate, onGameComplete, score, moves]);
+  const totalPairs = cards.length / 2;
+  const progressPct = totalPairs > 0 ? Math.round((matchedPairs.size / totalPairs) * 100) : 0;
   return (
-    <div className={`bg-slate-100 p-6 transition-all duration-300 ${isFullscreen ? 'fixed inset-0 z-[100] overflow-y-auto h-screen w-screen rounded-none' : 'rounded-xl border-2 border-indigo-200 shadow-inner mb-6 relative'}`}>
+    <div className={`p-6 transition-all duration-300 ${isFullscreen ? 'fixed inset-0 z-[100] overflow-y-auto h-screen w-screen rounded-none bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900' : 'rounded-xl border-2 border-indigo-200 shadow-inner mb-6 relative bg-slate-100'}`}>
       <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
-      <div className={`flex flex-col sm:flex-row justify-between items-center mb-6 gap-4 ${isFullscreen ? 'sticky top-0 z-30 bg-slate-100/90 backdrop-blur-sm py-2 border-b border-slate-200' : ''}`}>
+      <div className={`flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4 ${isFullscreen ? 'sticky top-0 z-30 bg-slate-900/70 backdrop-blur-md py-3 px-2 -mx-2 rounded-xl border border-white/10' : ''}`}>
         <div>
-          <h3 className="font-bold text-indigo-900 text-lg flex items-center gap-2">
+          <h3 className={`font-bold text-lg flex items-center gap-2 ${isFullscreen ? 'text-white' : 'text-indigo-900'}`}>
             <Brain size={20} /> {t('memory.title')}
           </h3>
-          <div className="flex items-center gap-3 text-xs text-slate-500 mt-1">
-              <span>{t('memory.moves')}: {moves}</span>
-              <span className="w-px h-3 bg-slate-300"></span>
-              <span className="text-indigo-600 font-bold">{t('memory.score')}: {score}</span>
-              <span className="w-px h-3 bg-slate-300"></span>
-              <span>{t('memory.pairs')}: {matchedPairs.size}/{cards.length / 2}</span>
+          <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+              <span className={`inline-flex items-center gap-1 text-[11px] font-bold border px-2 py-0.5 rounded-full ${isFullscreen ? 'bg-white/10 text-slate-100 border-white/20' : 'bg-slate-100 text-slate-700 border-slate-200'}`}>
+                <RefreshCw size={10} className={isFullscreen ? 'text-slate-300' : 'text-slate-600'} /> {t('memory.moves')}: {moves}
+              </span>
+              <span className={`relative inline-flex items-center gap-1 text-[11px] font-bold border px-2 py-0.5 rounded-full transition-all ${scoreDelta !== null ? (scoreDelta > 0 ? 'ring-2 ring-emerald-400 scale-105' : 'ring-2 ring-red-400 scale-105') : ''} ${isFullscreen ? 'bg-indigo-500/20 text-indigo-100 border-indigo-400/40' : 'bg-indigo-100 text-indigo-700 border-indigo-200'}`}>
+                <Trophy size={10} className="text-yellow-500" /> {t('memory.score')}: {score}
+                {scoreDelta !== null && (
+                  <span className={`absolute -top-5 right-0 text-[11px] font-black pointer-events-none ${scoreDelta > 0 ? 'text-emerald-500' : 'text-red-500'} ${!useReducedMotion() ? 'animate-in fade-in slide-in-from-bottom-1 duration-300' : ''}`}>
+                    {scoreDelta > 0 ? `+${scoreDelta}` : scoreDelta}
+                  </span>
+                )}
+              </span>
+              <span className={`inline-flex items-center gap-1 text-[11px] font-bold border px-2 py-0.5 rounded-full ${isFullscreen ? 'bg-emerald-500/20 text-emerald-100 border-emerald-400/40' : 'bg-emerald-100 text-emerald-700 border-emerald-200'}`}>
+                <CheckCircle2 size={10} className="text-emerald-500" /> {t('memory.pairs')}: {matchedPairs.size}/{totalPairs}
+              </span>
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className={`flex flex-wrap items-center gap-1 p-1 rounded-full shadow-sm ${isFullscreen ? 'bg-white/10 border border-white/20 backdrop-blur-md' : 'bg-white border border-slate-200'}`}>
           <select aria-label={t('common.selection')}
             value={gameMode}
-            onChange={(e) => setGameMode(e.target.value)}
-            className="text-xs font-bold text-indigo-700 bg-white border border-indigo-200 rounded-lg px-2 py-1.5 focus:focus:outline-none focus:ring-2 focus:ring-indigo-200 cursor-pointer shadow-sm"
+            onChange={(e) => {
+                const next = e.target.value;
+                const inProgress = moves > 0 && !isWon;
+                if (inProgress && !window.confirm(t('memory.mode_switch_confirm') || 'Changing the mode will restart this round. Continue?')) {
+                    return;
+                }
+                setGameMode(next);
+            }}
+            className={`text-xs font-bold rounded-full px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-300 cursor-pointer ${isFullscreen ? 'bg-white/10 text-white border-0 [&>option]:text-slate-800' : 'bg-transparent text-indigo-700 border-0'}`}
             data-help-key="memory_mode_select"
           >
             <option value="smart">{t('memory.modes.smart')}</option>
@@ -317,7 +359,7 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
           </select>
           <button
             onClick={initializeGame}
-            className="text-xs flex items-center gap-1 bg-white text-indigo-600 border border-indigo-200 px-3 py-1.5 rounded-full font-bold hover:bg-indigo-50 transition-colors"
+            className={`text-xs flex items-center gap-1 px-3 py-1.5 rounded-full font-bold transition-colors ${isFullscreen ? 'text-white hover:bg-white/10' : 'text-indigo-600 hover:bg-indigo-50'}`}
             aria-label={t('memory.reset')}
             data-help-key="memory_reset_btn"
           >
@@ -325,40 +367,95 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
           </button>
           <button
             onClick={() => setIsFullscreen(prev => !prev)}
-            className="text-slate-500 hover:text-indigo-600 p-1.5 rounded-full hover:bg-indigo-50 transition-colors"
+            className={`p-1.5 rounded-full transition-colors ${isFullscreen ? 'text-white hover:bg-white/10' : 'text-slate-600 hover:text-indigo-600 hover:bg-indigo-50'}`}
             title={isFullscreen ? t('memory.exit_fullscreen') : t('memory.fullscreen')}
             aria-label={isFullscreen ? t('memory.exit_fullscreen') : t('memory.fullscreen')}
             data-help-key="memory_fullscreen_btn"
           >
             {isFullscreen ? <Minimize size={18}/> : <Maximize size={18}/>}
           </button>
-          <button onClick={onClose} className="text-slate-500 hover:text-slate-600 p-1" aria-label={t('memory.close_aria')}><X size={18}/></button>
+          <button onClick={onClose} className={`p-1.5 rounded-full transition-colors ${isFullscreen ? 'text-white hover:bg-white/10' : 'text-slate-600 hover:text-slate-700 hover:bg-slate-100'}`} aria-label={t('memory.close_aria')}><X size={18}/></button>
         </div>
       </div>
-      {isWon ? (
-        <div className={`flex flex-col items-center justify-center py-12 text-center${useReducedMotion() ? '' : ' animate-in zoom-in duration-300'}`}>
-          {!useReducedMotion() && <ConfettiExplosion />}
-          <div className="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center text-yellow-600 mb-4 shadow-lg">
-            <Trophy size={40} className="fill-current" />
+      {!isWon && totalPairs > 0 && (
+        <div className={`mb-5 ${isFullscreen ? '' : ''}`}>
+          <div className={`flex items-center justify-between text-[11px] font-bold uppercase tracking-wider mb-1.5 ${isFullscreen ? 'text-slate-300' : 'text-slate-600'}`}>
+            <span>{t('memory.pairs')}</span>
+            <span>{progressPct}%</span>
           </div>
-          <h2 className="text-2xl font-black text-slate-800 mb-2">{t('memory.victory')}</h2>
-          <div className="text-lg font-bold text-indigo-600 mb-4 bg-indigo-50 px-4 py-2 rounded-full border border-indigo-100">
-              {t('memory.final_score')}: {score}
+          <div className={`h-2 w-full rounded-full overflow-hidden ${isFullscreen ? 'bg-white/10' : 'bg-slate-200'}`}>
+            <div
+              className={`h-full rounded-full bg-gradient-to-r from-indigo-500 via-indigo-500 to-emerald-500 ${!useReducedMotion() ? 'transition-all duration-500 ease-out' : ''}`}
+              style={{ width: `${progressPct}%` }}
+              role="progressbar"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={progressPct}
+            />
           </div>
-          <p className="text-slate-600 mb-6">{t('memory.cleared_message', { moves })}</p>
-          <button
-              aria-label={t('common.start_game')}
-            onClick={initializeGame}
-            className="bg-indigo-600 text-white px-6 py-3 rounded-full font-bold shadow-lg hover:scale-105 transition-transform"
-          >
-            {t('memory.play_again')}
-          </button>
         </div>
-      ) : (
-        <div className={`grid gap-4 ${isFullscreen ? 'grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6' : 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4'}`} role="grid" aria-label={t('memory.board_aria')}>
+      )}
+      {isWon ? (() => {
+          const perfect = totalPairs > 0 && moves === totalPairs;
+          const great = totalPairs > 0 && moves <= Math.ceil(totalPairs * 1.5);
+          const stars = perfect ? 3 : great ? 2 : 1;
+          const accuracy = moves > 0 ? Math.round((totalPairs / moves) * 100) : 100;
+          const cardBg = isFullscreen ? 'bg-white/10 border-white/20 backdrop-blur-md' : 'bg-white border-slate-200';
+          const labelColor = isFullscreen ? 'text-slate-300' : 'text-slate-600';
+          const valueColor = isFullscreen ? 'text-white' : 'text-slate-900';
+          return (
+          <div className={`flex flex-col items-center justify-center py-8 px-4 text-center${useReducedMotion() ? '' : ' animate-in zoom-in duration-300'}`}>
+            {!useReducedMotion() && <ConfettiExplosion />}
+            <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-4 shadow-lg ${isFullscreen ? 'bg-yellow-400/20 text-yellow-300 ring-2 ring-yellow-400/40' : 'bg-yellow-100 text-yellow-600'}`}>
+              <Trophy size={40} className="fill-current" />
+            </div>
+            <h2 className={`text-2xl font-black mb-3 ${isFullscreen ? 'text-white' : 'text-slate-800'}`}>{t('memory.victory')}</h2>
+            <div className={`flex items-center gap-1 mb-4 ${!useReducedMotion() ? 'animate-in zoom-in duration-500' : ''}`} aria-label={`${stars} out of 3 stars`}>
+              {[0, 1, 2].map(i => (
+                <Star
+                  key={i}
+                  size={32}
+                  className={i < stars ? 'text-yellow-400 fill-yellow-400 drop-shadow-md' : (isFullscreen ? 'text-white/20' : 'text-slate-300')}
+                  strokeWidth={1.5}
+                />
+              ))}
+            </div>
+            <div className={`grid grid-cols-3 gap-2 sm:gap-3 w-full max-w-md mb-6`}>
+              <div className={`rounded-xl border p-3 ${cardBg}`}>
+                <div className={`text-[11px] font-bold uppercase tracking-wider mb-1 ${labelColor}`}>{t('memory.score')}</div>
+                <div className={`text-xl font-black ${valueColor}`}>{score}</div>
+              </div>
+              <div className={`rounded-xl border p-3 ${cardBg}`}>
+                <div className={`text-[11px] font-bold uppercase tracking-wider mb-1 ${labelColor}`}>{t('memory.moves')}</div>
+                <div className={`text-xl font-black ${valueColor}`}>{moves}</div>
+              </div>
+              <div className={`rounded-xl border p-3 ${cardBg}`}>
+                <div className={`text-[11px] font-bold uppercase tracking-wider mb-1 ${labelColor}`}>Accuracy</div>
+                <div className={`text-xl font-black ${valueColor}`}>{accuracy}%</div>
+              </div>
+            </div>
+            <p className={`text-sm mb-6 ${isFullscreen ? 'text-slate-300' : 'text-slate-600'}`}>{t('memory.cleared_message', { moves })}</p>
+            <button
+                aria-label={t('common.start_game')}
+              onClick={initializeGame}
+              className="bg-gradient-to-br from-indigo-600 to-indigo-700 text-white px-8 py-3 rounded-full font-bold shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 hover:scale-105 transition-all active:scale-95"
+            >
+              {t('memory.play_again')}
+            </button>
+          </div>
+          );
+      })() : (
+        <div
+          ref={gridRef}
+          className="grid gap-2 sm:gap-3"
+          style={{ gridTemplateColumns: `repeat(auto-fill, minmax(${isFullscreen ? '130px' : '110px'}, 1fr))` }}
+          role="grid"
+          aria-label={t('memory.board_aria')}
+        >
           {cards.map((card, index) => {
             const isFlipped = flippedIndices.includes(index) || matchedPairs.has(card.pairId);
             const isMatched = matchedPairs.has(card.pairId);
+            const isMismatch = mismatchIndices.includes(index);
             let ariaLabel = `${t('memory.card_prefix')} ${index + 1}`;
             if (isMatched) {
                 ariaLabel += `, ${t('memory.matched_suffix')}: ${card.type === 'image' ? t('memory.modes.term_image') : card.content}`;
@@ -377,16 +474,19 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
                 role="button"
                 aria-label={ariaLabel}
                 aria-disabled={isFlipped || isMatched}
-                className={`aspect-[3/4] cursor-pointer perspective-1000 group relative ${isMatched ? 'opacity-100 cursor-default' : ''} focus:outline-none focus:ring-4 focus:ring-indigo-400 focus:ring-offset-2 rounded-xl`}
+                className={`aspect-square cursor-pointer perspective-1000 group relative ${isMatched ? 'opacity-100 cursor-default' : ''} ${isMismatch && !useReducedMotion() ? 'animate-shake' : ''} focus:outline-none focus:ring-4 focus:ring-indigo-400 focus:ring-offset-2 rounded-xl transition-transform ${!isFlipped && !isMatched ? 'hover:-translate-y-1 hover:scale-[1.03]' : ''}`}
                 data-help-key="memory_card_item"
               >
-                <div className={`w-full h-full transition-all duration-500 transform-style-3d rounded-xl shadow-sm border-2 ${isFlipped ? 'rotate-y-180 border-indigo-300' : 'rotate-y-0 border-slate-300 bg-white'}`}>
-                  <div className="absolute inset-0 backface-hidden bg-indigo-100 flex items-center justify-center rounded-xl group-hover:bg-indigo-200 transition-colors">
-                    <div className="w-8 h-8 rounded-full bg-indigo-200 flex items-center justify-center text-indigo-600">
-                      <HelpCircle size={16} />
+                <div className={`w-full h-full transition-all duration-500 transform-style-3d rounded-xl border-2 ${isFlipped ? `rotate-y-180 ${isMismatch ? 'border-red-400 shadow-lg shadow-red-200' : isMatched ? 'border-green-400 shadow-lg shadow-green-200' : 'border-indigo-300 shadow-md'}` : 'rotate-y-0 border-slate-200 bg-white shadow-sm group-hover:shadow-md'}`}>
+                  <div className="absolute inset-0 backface-hidden flex items-center justify-center rounded-xl overflow-hidden bg-gradient-to-br from-indigo-100 via-indigo-100 to-indigo-200 group-hover:from-indigo-200 group-hover:to-indigo-300 transition-colors">
+                    <div className="absolute inset-0 opacity-40" style={{
+                      backgroundImage: 'radial-gradient(circle at 20% 20%, rgba(255,255,255,0.6) 0, transparent 40%), radial-gradient(circle at 80% 80%, rgba(99,102,241,0.25) 0, transparent 45%)'
+                    }}></div>
+                    <div className="relative w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center text-indigo-600 shadow-inner ring-1 ring-indigo-200/60">
+                      <HelpCircle size={20} strokeWidth={2.25} />
                     </div>
                   </div>
-                  <div className="absolute inset-0 backface-hidden rotate-y-180 bg-white rounded-xl flex items-center justify-center p-3 text-center overflow-hidden">
+                  <div className={`absolute inset-0 backface-hidden rotate-y-180 rounded-xl flex items-center justify-center p-2 text-center overflow-hidden ${isMismatch ? 'bg-red-50' : isMatched ? 'bg-green-50' : 'bg-white'}`}>
                     {card.type === 'image' ? (
                       <img loading="lazy"
                         src={card.content}
@@ -395,8 +495,8 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
                         decoding="async"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center overflow-y-auto custom-scrollbar">
-                          <p className={`font-bold text-slate-800 w-full ${card.isTerm ? 'text-sm sm:text-lg' : 'text-[10px] sm:text-xs font-normal text-slate-600 leading-snug'}`}>
+                      <div className="w-full h-full flex items-center justify-center overflow-y-auto custom-scrollbar px-1">
+                          <p className={`font-bold w-full leading-tight ${isMismatch ? 'text-red-900' : isMatched ? 'text-green-900' : 'text-slate-800'} ${card.isTerm ? 'text-xs sm:text-sm' : 'text-[11px] sm:text-[11px] font-normal text-slate-600 leading-snug'}`}>
                             {card.content}
                           </p>
                       </div>
@@ -427,19 +527,27 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
   const canvasRef = useRef(null);
   const termRefs = useRef({});
   const defRefs = useRef({});
+  const shuffleDefinitions = (validItems) => {
+      const defs = validItems.map(item => ({ id: item.term, text: item.def }));
+      if (defs.length <= 1) return defs;
+      const originalOrder = defs.map(d => d.id);
+      for (let attempt = 0; attempt < 20; attempt++) {
+          for (let i = defs.length - 1; i > 0; i--) {
+              const j = Math.floor(Math.random() * (i + 1));
+              [defs[i], defs[j]] = [defs[j], defs[i]];
+          }
+          if (defs.some((d, i) => d.id !== originalOrder[i])) return defs;
+      }
+      return defs;
+  };
   useEffect(() => {
     const validItems = data.filter(d => d.term && d.def).slice(0, 8).map((item, i) => ({
         id: item.term,
         term: item.term,
         def: item.def
     }));
-    const defs = validItems.map(item => ({ id: item.term, text: item.def }));
-    for (let i = defs.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [defs[i], defs[j]] = [defs[j], defs[i]];
-    }
     setItems(validItems);
-    setRightCol(defs);
+    setRightCol(shuffleDefinitions(validItems));
     setConnections([]);
     setIsChecked(false);
     setSnapTarget(null);
@@ -550,7 +658,7 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                   const filtered = prev.filter(c => c.defId !== hitDefId);
                   return [...filtered, { termId, defId: hitDefId, status: 'pending' }];
               });
-              playSound('click');
+              if (playSound) playSound('click');
           }
           setTempLine(null);
           setSnapTarget(null);
@@ -568,8 +676,7 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
       const earnedPoints = correctCount * 25;
       setScore(earnedPoints);
       if (onScoreUpdate && isPerfect) onScoreUpdate(earnedPoints, "Matching Worksheet Complete");
-      if (isPerfect) playSound('correct');
-      else playSound('incorrect');
+      if (playSound) playSound(isPerfect ? 'correct' : 'incorrect');
       if (onGameComplete) {
         onGameComplete('matching', {
           score: earnedPoints,
@@ -584,42 +691,47 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
       setIsChecked(false);
       setScore(0);
       setKeyboardSelectedTerm(null);
+      setRightCol(shuffleDefinitions(items));
+      setAnnouncement('');
   };
   return (
     <div className={`fixed inset-0 z-[100] bg-slate-50 flex flex-col overflow-hidden${useReducedMotion() ? '' : ' animate-in fade-in duration-300'}`}>
         <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
-        <div className="bg-white border-b border-slate-200 p-4 flex justify-between items-center shadow-sm no-print z-20 relative">
+        <div className="bg-white border-b border-slate-200 p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shadow-sm no-print z-20 relative">
             <div>
                  <h3 className="font-bold text-lg flex items-center gap-2 text-indigo-900">
                      <GitMerge size={20} className="text-orange-500"/> {t('matching.title')}
                  </h3>
-                 <p className="text-xs text-slate-500">{t('matching.instructions')}</p>
+                 <p className="text-xs text-slate-600">{t('matching.instructions')}</p>
+                 <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+                     <span className="inline-flex items-center gap-1 text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200 px-2 py-0.5 rounded-full">
+                         <GitMerge size={10} className="text-slate-600"/> {t('matching.pairs') || 'Pairs'}: {connections.length}/{items.length}
+                     </span>
+                     {isChecked && (
+                         <span className={`inline-flex items-center gap-1 text-[11px] font-bold border px-2 py-0.5 rounded-full ${score === items.length * 25 ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 'bg-indigo-100 text-indigo-700 border-indigo-200'} ${!useReducedMotion() ? 'animate-in zoom-in duration-300' : ''}`}>
+                             <Trophy size={10} className="text-yellow-500"/> {t('matching.score_display')}: {score} pts
+                         </span>
+                     )}
+                 </div>
             </div>
-            <div className="flex items-center gap-4">
-                {isChecked && (
-                    <div className={`bg-indigo-900 text-yellow-400 px-4 py-1.5 rounded-full font-bold text-sm shadow-sm border border-indigo-700${useReducedMotion() ? '' : ' animate-in zoom-in'}`}>
-                        {t('matching.score_display')}: {score} pts
-                    </div>
-                )}
-                <div className="flex items-center gap-2">
-                    <button
-                        onClick={reset}
-                        className="p-2 hover:bg-slate-100 rounded-full text-slate-500 transition-colors"
-                        title={t('matching.reset_aria')}
-                        aria-label={t('matching.reset_aria')}
-                        data-help-key="matching_reset_btn"
-                    >
-                        <RefreshCw size={18}/>
-                    </button>
-                    <button
-                        onClick={onClose}
-                        className="p-2 hover:bg-red-50 rounded-full text-slate-500 hover:text-red-500 transition-colors"
-                        title={t('common.close')}
-                        aria-label={t('matching.close_aria')}
-                    >
-                        <X size={20}/>
-                    </button>
-                </div>
+            <div className="flex items-center gap-1 p-1 rounded-full bg-slate-50 border border-slate-200 shadow-sm self-end sm:self-auto">
+                <button
+                    onClick={reset}
+                    className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors"
+                    title={t('matching.reset_aria')}
+                    aria-label={t('matching.reset_aria')}
+                    data-help-key="matching_reset_btn"
+                >
+                    <RefreshCw size={14}/> {t('memory.reset') || 'Reset'}
+                </button>
+                <button
+                    onClick={onClose}
+                    className="p-1.5 hover:bg-red-50 rounded-full text-slate-600 hover:text-red-500 transition-colors"
+                    title={t('common.close')}
+                    aria-label={t('matching.close_aria')}
+                >
+                    <X size={18}/>
+                </button>
             </div>
         </div>
         <div
@@ -643,7 +755,13 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                     className="max-w-4xl mx-auto relative min-h-[600px]"
                 >
                     <svg className="absolute inset-0 w-full h-full pointer-events-none z-10 print:hidden">
-                        {connections.map((conn, i) => {
+                        <defs>
+                            <filter id="matching-glow" x="-50%" y="-50%" width="200%" height="200%">
+                                <feGaussianBlur stdDeviation="2" result="blur"/>
+                                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                            </filter>
+                        </defs>
+                        {connections.map((conn) => {
                             const start = getDotPos(termRefs.current[conn.termId]);
                             const end = getDotPos(defRefs.current[conn.defId]);
                             let color = "#6366f1";
@@ -655,20 +773,28 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                             const midX = (start.x + end.x) / 2;
                             const midY = (start.y + end.y) / 2;
                             return (
-                                <g key={i}>
+                                <g key={`${conn.termId}-${conn.defId}`}>
                                     <line
                                         x1={start.x} y1={start.y}
                                         x2={end.x} y2={end.y}
                                         stroke={color}
-                                        strokeWidth="3"
+                                        strokeWidth={isCorrect ? "4" : "3"}
                                         strokeLinecap="round"
                                         strokeDasharray={isIncorrect ? "8,4" : "none"}
+                                        opacity={isIncorrect ? "0.75" : "1"}
+                                        filter={isCorrect ? "url(#matching-glow)" : undefined}
                                     />
                                     {isCorrect && (
-                                        <text x={midX} y={midY - 6} textAnchor="middle" fill="#22c55e" fontSize="18" fontWeight="bold" aria-hidden="true">✓</text>
+                                        <g>
+                                            <circle cx={midX} cy={midY} r="11" fill="#22c55e" opacity="0.15"/>
+                                            <text x={midX} y={midY + 5} textAnchor="middle" fill="#16a34a" fontSize="18" fontWeight="bold" aria-hidden="true">✓</text>
+                                        </g>
                                     )}
                                     {isIncorrect && (
-                                        <text x={midX} y={midY - 6} textAnchor="middle" fill="#ef4444" fontSize="18" fontWeight="bold" aria-hidden="true">✗</text>
+                                        <g>
+                                            <circle cx={midX} cy={midY} r="11" fill="#ef4444" opacity="0.15"/>
+                                            <text x={midX} y={midY + 5} textAnchor="middle" fill="#dc2626" fontSize="16" fontWeight="bold" aria-hidden="true">✗</text>
+                                        </g>
                                     )}
                                 </g>
                             );
@@ -677,10 +803,11 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                             <line
                                 x1={tempLine.start.x} y1={tempLine.start.y}
                                 x2={tempLine.end.x} y2={tempLine.end.y}
-                                stroke="#6366f1"
+                                stroke={snapTarget ? "#22c55e" : "#6366f1"}
                                 strokeWidth="3"
-                                strokeDasharray="5,5"
+                                strokeDasharray="6,4"
                                 strokeLinecap="round"
+                                style={!useReducedMotion() ? { animation: 'dashflow 0.6s linear infinite' } : undefined}
                             />
                         )}
                     </svg>
@@ -793,12 +920,29 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
             />
           </div>
         )}
-        <div className="p-4 bg-slate-50 border-t border-slate-200 flex justify-end no-print z-30">
+        <div className="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-3 no-print z-30">
+             <div className="flex-1 max-w-md">
+                 {!isChecked && items.length > 0 && (
+                     <div className="flex items-center gap-2">
+                         <div className="h-1.5 flex-grow rounded-full bg-slate-200 overflow-hidden">
+                             <div
+                                 className={`h-full rounded-full bg-gradient-to-r from-indigo-500 to-emerald-500 ${!useReducedMotion() ? 'transition-all duration-500 ease-out' : ''}`}
+                                 style={{ width: `${Math.min(100, (connections.length / items.length) * 100)}%` }}
+                                 role="progressbar"
+                                 aria-valuemin={0}
+                                 aria-valuemax={items.length}
+                                 aria-valuenow={connections.length}
+                             />
+                         </div>
+                         <span className="text-[11px] font-bold uppercase tracking-wider text-slate-600 tabular-nums">{connections.length}/{items.length}</span>
+                     </div>
+                 )}
+             </div>
              <button
                  aria-label={t('common.check_answers')}
                 onClick={checkAnswers}
                 disabled={isChecked || connections.length === 0}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-full shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+                className="bg-gradient-to-br from-indigo-600 to-indigo-700 hover:shadow-indigo-500/50 text-white font-bold py-2.5 px-6 rounded-full shadow-lg shadow-indigo-500/30 disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none transition-all active:scale-95 flex items-center gap-2"
                 data-help-key="matching_check_btn"
              >
                  <CheckCircle2 size={18}/> {t('matching.check_answers')}
@@ -807,83 +951,116 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
     </div>
   );
 });
-const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete }) => {
+const TIMELINE_PASTEL_COLORS = [
+  'bg-blue-50 border-blue-200 hover:border-blue-300 text-blue-900',
+  'bg-emerald-50 border-emerald-200 hover:border-emerald-300 text-emerald-900',
+  'bg-amber-50 border-amber-200 hover:border-amber-300 text-amber-900',
+  'bg-purple-50 border-purple-200 hover:border-purple-300 text-purple-900',
+  'bg-pink-50 border-pink-200 hover:border-pink-300 text-pink-900',
+  'bg-cyan-50 border-cyan-200 hover:border-cyan-300 text-cyan-900',
+  'bg-rose-50 border-rose-200 hover:border-rose-300 text-rose-900',
+  'bg-indigo-50 border-indigo-200 hover:border-indigo-300 text-indigo-900',
+  'bg-teal-50 border-teal-200 hover:border-teal-300 text-teal-900',
+  'bg-lime-50 border-lime-200 hover:border-lime-300 text-lime-900',
+  'bg-fuchsia-50 border-fuchsia-200 hover:border-fuchsia-300 text-fuchsia-900',
+  'bg-violet-50 border-violet-200 hover:border-violet-300 text-violet-900',
+  'bg-sky-50 border-sky-200 hover:border-sky-300 text-sky-900',
+  'bg-orange-50 border-orange-200 hover:border-orange-300 text-orange-900',
+  'bg-green-50 border-green-200 hover:border-green-300 text-green-900',
+  'bg-red-50 border-red-200 hover:border-red-300 text-red-900'
+];
+const createTimelineDerangement = (arr) => {
+  const n = arr.length;
+  if (n <= 1) return arr;
+  let attempts = 0;
+  const maxAttempts = 100;
+  while (attempts < maxAttempts) {
+    const next = [...arr];
+    for (let i = n - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [next[i], next[j]] = [next[j], next[i]];
+    }
+    if (next.every((item, idx) => item.originalIndex !== idx)) return next;
+    attempts++;
+  }
+  const rotated = [...arr];
+  const first = rotated.shift();
+  rotated.push(first);
+  return rotated;
+};
+const normalizeTimelineData = (data, fallbackLabel) => {
+  if (!data) return { itemsArray: [], label: fallbackLabel, labelEn: '' };
+  if (Array.isArray(data)) {
+    return { itemsArray: data, label: fallbackLabel, labelEn: '' };
+  }
+  return {
+    itemsArray: Array.isArray(data.items) ? data.items : [],
+    label: data.progressionLabel || fallbackLabel,
+    labelEn: data.progressionLabel_en || ''
+  };
+};
+const indexTimelineItems = (itemsArray) => itemsArray.map((item, i) => ({
+    ...item,
+    originalIndex: i,
+    id: `evt-${i}`,
+    colorIdx: Math.floor(Math.random() * TIMELINE_PASTEL_COLORS.length)
+}));
+const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete, onExplainIncorrect, initialImageSize }) => {
   const { t } = useContext(LanguageContext);
   const [items, setItems] = useState([]);
   const [isWon, setIsWon] = useState(false);
   const [attempts, setAttempts] = useState(0);
   const [draggingIdx, setDraggingIdx] = useState(null);
   const [score, setScore] = useState(0);
+  const [bestScore, setBestScore] = useState(0);
   const [announcement, setAnnouncement] = useState('');
   const [keyboardLiftedIdx, setKeyboardLiftedIdx] = useState(null);
   const [progressionLabel, setProgressionLabel] = useState('');
+  // In-game image size slider — initial value comes from teacher's preview size
+  // (passed via initialImageSize prop). Student can adjust live for accessibility.
+  const [imageSize, setImageSize] = useState(() => {
+    const n = parseInt(initialImageSize, 10);
+    return Number.isFinite(n) && n >= 64 && n <= 300 ? n : 96;
+  });
+  const [progressionLabelEn, setProgressionLabelEn] = useState('');
+  const [hintsUsed, setHintsUsed] = useState(0);
+  const [lastCorrectCount, setLastCorrectCount] = useState(null); // null until first check
+  const [explanations, setExplanations] = useState({}); // originalIndex -> text | 'loading'
+  const [hintHidden, setHintHidden] = useState(false);
+  const [answerRevealed, setAnswerRevealed] = useState(false);
   const itemRefs = useRef([]);
-  const pastelColors = [
-    'bg-blue-50 border-blue-200 hover:border-blue-300 text-blue-900',
-    'bg-emerald-50 border-emerald-200 hover:border-emerald-300 text-emerald-900',
-    'bg-amber-50 border-amber-200 hover:border-amber-300 text-amber-900',
-    'bg-purple-50 border-purple-200 hover:border-purple-300 text-purple-900',
-    'bg-pink-50 border-pink-200 hover:border-pink-300 text-pink-900',
-    'bg-cyan-50 border-cyan-200 hover:border-cyan-300 text-cyan-900',
-    'bg-rose-50 border-rose-200 hover:border-rose-300 text-rose-900',
-    'bg-indigo-50 border-indigo-200 hover:border-indigo-300 text-indigo-900',
-    'bg-teal-50 border-teal-200 hover:border-teal-300 text-teal-900',
-    'bg-lime-50 border-lime-200 hover:border-lime-300 text-lime-900',
-    'bg-fuchsia-50 border-fuchsia-200 hover:border-fuchsia-300 text-fuchsia-900',
-    'bg-violet-50 border-violet-200 hover:border-violet-300 text-violet-900',
-    'bg-sky-50 border-sky-200 hover:border-sky-300 text-sky-900',
-    'bg-orange-50 border-orange-200 hover:border-orange-300 text-orange-900',
-    'bg-green-50 border-green-200 hover:border-green-300 text-green-900',
-    'bg-red-50 border-red-200 hover:border-red-300 text-red-900'
-  ];
+  const normalizedItemsRef = useRef([]);
   useEffect(() => {
     if (!data) return;
-    let itemsArray = [];
-    let label = t('timeline.progression_label_default') || 'Sequential Order';
-    if (Array.isArray(data)) {
-      itemsArray = data;
-    } else if (data.items && Array.isArray(data.items)) {
-      itemsArray = data.items;
-      if (data.progressionLabel) label = data.progressionLabel;
-    }
+    const fallback = t('timeline.progression_label_default') || 'Sequential Order';
+    const { itemsArray, label, labelEn } = normalizeTimelineData(data, fallback);
+    normalizedItemsRef.current = itemsArray;
     setProgressionLabel(label);
-    const indexed = itemsArray.map((item, i) => ({
-        ...item,
-        originalIndex: i,
-        id: `evt-${i}`,
-        colorIdx: Math.floor(Math.random() * pastelColors.length)
-    }));
-    const createDerangement = (arr) => {
-      const n = arr.length;
-      if (n <= 1) return arr;
-      const result = [...arr];
-      let isDerangement = false;
-      let attempts = 0;
-      const maxAttempts = 100;
-      while (!isDerangement && attempts < maxAttempts) {
-        for (let i = n - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [result[i], result[j]] = [result[j], result[i]];
-        }
-        isDerangement = result.every((item, idx) => item.originalIndex !== idx);
-        attempts++;
-      }
-      if (!isDerangement && n > 1) {
-        const rotated = [...arr];
-        const first = rotated.shift();
-        rotated.push(first);
-        return rotated;
-      }
-      return result;
-    };
-    const shuffled = createDerangement(indexed);
-    setItems(shuffled);
+    setProgressionLabelEn(labelEn);
+    setItems(createTimelineDerangement(indexTimelineItems(itemsArray)));
     setIsWon(false);
     setAttempts(0);
     setScore(0);
+    setBestScore(0);
+    setHintsUsed(0);
+    setLastCorrectCount(null);
+    setExplanations({});
+    setHintHidden(false);
+    setAnswerRevealed(false);
     setAnnouncement(t('timeline.game.start_announcement'));
     setKeyboardLiftedIdx(null);
   }, [data]);
+  useEffect(() => {
+    if (keyboardLiftedIdx === null) return;
+    const el = itemRefs.current[keyboardLiftedIdx];
+    if (el && typeof el.focus === 'function') el.focus();
+  }, [keyboardLiftedIdx, items]);
+  useEffect(() => {
+    if (draggingIdx === null) return;
+    const blockScroll = (e) => { e.preventDefault(); };
+    document.addEventListener('touchmove', blockScroll, { passive: false });
+    return () => document.removeEventListener('touchmove', blockScroll);
+  }, [draggingIdx]);
   const handleDragStart = (e, index) => {
     setDraggingIdx(index);
     e.dataTransfer.effectAllowed = "move";
@@ -970,18 +1147,12 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
               if (index > 0) {
                   moveItem(index, 'up');
                   setKeyboardLiftedIdx(index - 1);
-                  requestAnimationFrame(() => {
-                      if (itemRefs.current[index - 1]) itemRefs.current[index - 1].focus();
-                  });
               }
           } else if (e.key === 'ArrowDown') {
               e.preventDefault();
               if (index < items.length - 1) {
                   moveItem(index, 'down');
                   setKeyboardLiftedIdx(index + 1);
-                  requestAnimationFrame(() => {
-                      if (itemRefs.current[index + 1]) itemRefs.current[index + 1].focus();
-                  });
               }
           }
       }
@@ -992,41 +1163,94 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
         if (item.originalIndex === i) correctCount++;
     });
     const isCorrect = correctCount === items.length;
-    let currentScore = correctCount * 20;
+    const hintPenalty = hintsUsed * 15;
+    // Tuned bonus: linear decay 100 → 10 across attempts, no long plateau.
+    const attemptBonus = Math.max(10, 100 - (attempts * 12));
+    let currentScore = Math.max(0, (correctCount * 20) - hintPenalty);
+    setLastCorrectCount(correctCount);
     if (isCorrect) {
         setIsWon(true);
-        const bonus = Math.max(20, 100 - (attempts * 10));
-        const totalPoints = currentScore + bonus;
+        const totalPoints = Math.max(0, currentScore + attemptBonus);
         setScore(totalPoints);
+        setBestScore(prev => Math.max(prev, totalPoints));
+        setAnnouncement(t('timeline.game.win_announcement', { score: totalPoints }) || `Sequence complete! ${totalPoints} points.`);
         if (onScoreUpdate) onScoreUpdate(totalPoints, "Sequence Builder");
         if (onGameComplete) {
           onGameComplete('timeline', {
             score: totalPoints,
             eventsOrdered: items.length,
             totalEvents: items.length,
-            attempts: attempts + 1
+            attempts: attempts + 1,
+            hintsUsed,
+            bestScore: Math.max(bestScore, totalPoints)
           });
         }
         if (playSound) playSound('correct');
     } else {
         setAttempts(prev => prev + 1);
         setScore(currentScore);
+        setAnnouncement(
+            t('timeline.game.partial_correct', { correct: correctCount, total: items.length }) ||
+            `${correctCount} of ${items.length} in the correct position — keep trying!`
+        );
         if (playSound) playSound('incorrect');
     }
   };
+  const handleExplainClick = async (item) => {
+      if (!onExplainIncorrect) return;
+      const key = item.originalIndex;
+      if (explanations[key] && explanations[key] !== 'loading') {
+          setExplanations(prev => { const next = { ...prev }; delete next[key]; return next; });
+          return;
+      }
+      setExplanations(prev => ({ ...prev, [key]: 'loading' }));
+      try {
+          const currentPosition = items.findIndex(i => i.originalIndex === item.originalIndex);
+          const correctPosition = item.originalIndex;
+          const sortedByCorrect = [...normalizedItemsRef.current];
+          const text = await onExplainIncorrect(item, correctPosition, currentPosition, progressionLabel, sortedByCorrect);
+          setExplanations(prev => ({ ...prev, [key]: text || t('timeline.game.why_none') || 'No explanation available.' }));
+      } catch (e) {
+          setExplanations(prev => ({ ...prev, [key]: t('timeline.game.why_failed') || "Couldn't generate an explanation right now." }));
+      }
+  };
+  const useHint = () => {
+      if (isWon) return;
+      // Find the first item that is NOT in its correct position; move it to where it belongs.
+      const wrongIdx = items.findIndex((it, i) => it.originalIndex !== i);
+      if (wrongIdx === -1) return;
+      const target = items[wrongIdx].originalIndex;
+      const next = [...items];
+      const [moved] = next.splice(wrongIdx, 1);
+      next.splice(target, 0, moved);
+      setItems(next);
+      setHintsUsed(prev => prev + 1);
+      setAnnouncement(t('timeline.game.hint_used', { item: moved.event }) || `Hint: "${moved.event}" moved to its correct spot.`);
+      if (playSound) playSound('click');
+  };
+  const revealAnswer = () => {
+      if (isWon) return;
+      // Sort items into their correct order by originalIndex. Reveal = no points.
+      const sorted = [...items].sort((a, b) => a.originalIndex - b.originalIndex);
+      setItems(sorted);
+      setAnswerRevealed(true);
+      setIsWon(true);
+      setScore(0);
+      setAnnouncement(t('timeline.game.answer_revealed_announce') || 'Answer revealed. No points awarded.');
+      if (playSound) playSound('reveal');
+  };
   const reset = () => {
-     const indexed = data.map((item, i) => ({
-         ...item,
-         originalIndex: i,
-         id: `evt-${i}`,
-         colorIdx: Math.floor(Math.random() * pastelColors.length)
-     }));
-     setItems(fisherYatesShuffle(indexed));
+     const itemsArray = normalizedItemsRef.current || [];
+     setItems(createTimelineDerangement(indexTimelineItems(itemsArray)));
      setIsWon(false);
-     setAttempts(0);
+     setAttempts(prev => prev + 1);
      setScore(0);
+     setHintsUsed(0);
+     setLastCorrectCount(null);
+     setExplanations({});
      setAnnouncement(t('timeline.game.reset_announcement'));
      setKeyboardLiftedIdx(null);
+     // bestScore intentionally preserved across resets within the same game session.
   };
   return (
     <div className={`fixed inset-0 z-[100] bg-slate-50 flex flex-col${useReducedMotion() ? '' : ' animate-in fade-in duration-300'}`}>
@@ -1043,12 +1267,28 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                    <Trophy size={14} className="text-yellow-400"/>
                    <span className="font-bold text-sm">{score} pts</span>
                </div>
+               <label className="hidden sm:flex items-center gap-1.5 text-[10px] text-indigo-100 bg-indigo-800/50 px-2.5 py-1.5 rounded-full border border-indigo-500 cursor-pointer" title={t('timeline.game.image_size_title') || 'Adjust card image size for accessibility'}>
+                   <span className="font-bold uppercase tracking-wider text-[9px]">{t('timeline.game.image_size_label') || 'Image'}</span>
+                   <input
+                       type="range" min={64} max={300} step={16}
+                       value={imageSize}
+                       onChange={(e) => setImageSize(parseInt(e.target.value, 10) || 96)}
+                       className="w-20 accent-yellow-400"
+                       aria-label={t('timeline.game.image_size_label') || 'Image size'}
+                   />
+                   <span className="font-bold w-7 text-right tabular-nums">{imageSize}</span>
+               </label>
                <GameThemeToggle />
                <button onClick={onClose} className="p-2 hover:bg-indigo-500 rounded-full transition-colors" aria-label={t('timeline.game.close_aria')}><X size={24}/></button>
            </div>
        </div>
        <div className="flex-grow overflow-y-auto p-6 bg-slate-100 relative custom-scrollbar">
-           {isWon && !useReducedMotion() && <ConfettiExplosion />}
+           {isWon && !answerRevealed && !useReducedMotion() && <ConfettiExplosion />}
+           {answerRevealed && (
+               <div className="max-w-3xl mx-auto mb-4 px-4 py-3 bg-slate-100 border border-slate-300 rounded-lg text-slate-700 text-sm font-medium text-center">
+                   👁 {t('timeline.game.answer_revealed_banner') || 'Answer revealed — no points this round. Play again to try for a score.'}
+               </div>
+           )}
            <div className="max-w-3xl mx-auto relative min-h-full pb-20">
                {!isWon && (
                    <div className="sticky top-0 z-30 flex flex-col items-center gap-2 mb-8">
@@ -1056,8 +1296,36 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                            <ArrowDown size={14} /> {t('timeline.game.arrange_instruction')} <ArrowDown size={14} />
                        </div>
                        {progressionLabel && (
-                           <div className={`bg-indigo-600 text-white px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-2 shadow-md${useReducedMotion() ? '' : ' animate-in slide-in-from-top-3'}`}>
-                               <span className="opacity-70">{t('timeline.order_by')}</span> {progressionLabel}
+                           <div className={`bg-indigo-600 text-white px-4 py-1.5 rounded-full text-xs font-bold flex flex-col items-center gap-0.5 shadow-md${useReducedMotion() ? '' : ' animate-in slide-in-from-top-3'}`}>
+                               <div className="flex items-center gap-2">
+                                   <span className="opacity-70">{t('timeline.order_by')}</span> {progressionLabel}
+                               </div>
+                               {progressionLabelEn && progressionLabelEn !== progressionLabel && (
+                                   <div className="text-[11px] font-normal italic opacity-80">{progressionLabelEn}</div>
+                               )}
+                           </div>
+                       )}
+                       <div className="flex flex-wrap gap-2 justify-center">
+                           {lastCorrectCount !== null && !isWon && (
+                               <div className="bg-amber-50 text-amber-800 border border-amber-200 px-3 py-1 rounded-full text-[11px] font-bold shadow-sm">
+                                   {lastCorrectCount} / {items.length} {t('timeline.game.in_correct_position') || 'in correct position'}
+                               </div>
+                           )}
+                           {bestScore > 0 && (
+                               <div className="bg-indigo-50 text-indigo-700 border border-indigo-200 px-3 py-1 rounded-full text-[11px] font-bold shadow-sm">
+                                   {t('timeline.game.best') || 'Best'}: {bestScore} pts
+                               </div>
+                           )}
+                           {hintsUsed > 0 && (
+                               <div className="bg-purple-50 text-purple-700 border border-purple-200 px-3 py-1 rounded-full text-[11px] font-bold shadow-sm">
+                                   {t('timeline.game.hints_used', { n: hintsUsed }) || `${hintsUsed} hint${hintsUsed === 1 ? '' : 's'} used`}
+                               </div>
+                           )}
+                       </div>
+                       {!hintHidden && attempts === 0 && keyboardLiftedIdx === null && items.length > 0 && (
+                           <div className="text-[11px] text-slate-600 italic flex items-center gap-2">
+                               <span>{t('timeline.game.keyboard_hint') || 'Keyboard: Enter to lift, ↑/↓ to move, Enter to drop.'}</span>
+                               <button onClick={() => setHintHidden(true)} className="underline hover:text-slate-700" aria-label={t('common.dismiss') || 'Dismiss'}>×</button>
                            </div>
                        )}
                    </div>
@@ -1066,7 +1334,7 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                    <div className="absolute left-3 sm:left-1/2 top-0 bottom-0 w-1.5 bg-indigo-100 rounded-full -translate-x-1/2 z-0"></div>
                    <div className="space-y-6 sm:space-y-0" role="list">
                        {items.map((item, idx) => {
-                           const colorClass = pastelColors[item.colorIdx % pastelColors.length];
+                           const colorClass = TIMELINE_PASTEL_COLORS[item.colorIdx % TIMELINE_PASTEL_COLORS.length];
                            const isLeft = idx % 2 === 0;
                            const isDragging = draggingIdx === idx;
                            const isLifted = keyboardLiftedIdx === idx;
@@ -1076,7 +1344,8 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                                ref={el => itemRefs.current[idx] = el}
                                tabIndex={isWon ? -1 : 0}
                                role="listitem"
-                               aria-grabbed={isLifted}
+                               aria-roledescription="draggable item"
+                               aria-pressed={isLifted}
                                aria-label={`${item.event}. ${t('timeline.game.position_aria', {pos: idx + 1, total: items.length})}. ${isLifted ? t('timeline.game.lifted_aria') : t('timeline.game.lift_aria')}`}
                                onKeyDown={(e) => handleKeyDown(e, idx)}
                                draggable={!isWon}
@@ -1103,23 +1372,53 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                                            : `${colorClass} hover:-translate-y-1 hover:shadow-md cursor-grab active:cursor-grabbing`
                                        }
                                    `}>
-                                       <div className={`absolute top-3 ${isLeft ? 'right-3 sm:left-3 sm:right-auto' : 'right-3'} w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black ${isWon ? 'bg-green-200 text-green-800' : 'bg-black/5 text-slate-600'}`}>
+                                       <div className={`absolute top-3 ${isLeft ? 'right-3 sm:left-3 sm:right-auto' : 'right-3'} w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-black ${isWon ? 'bg-green-200 text-green-800' : 'bg-black/5 text-slate-600'}`}>
                                            {idx + 1}
                                        </div>
                                        <div className="pr-6 sm:px-2">
                                            {isWon && (item.date || item.date_en) && (
-                                               <div className={`inline-block px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider mb-2 bg-green-100 text-green-800 animate-in zoom-in`}>
+                                               <div className={`inline-block px-2 py-0.5 rounded-md text-[11px] font-black uppercase tracking-wider mb-2 bg-green-100 text-green-800 animate-in zoom-in`}>
                                                    {item.date}
                                                </div>
+                                           )}
+                                           {item.image && (
+                                               <img
+                                                   loading="lazy"
+                                                   src={item.image}
+                                                   alt={`${item.date || ''}: ${item.event || ''}`}
+                                                   className={`mx-auto mb-2 object-contain rounded-lg bg-white border ${isWon ? 'border-green-200' : 'border-slate-200'}`}
+                                                   style={{ width: imageSize, height: imageSize }}
+                                               />
                                            )}
                                            <div className={`text-sm font-bold leading-snug flex items-center gap-1 ${isWon ? 'text-green-900' : ''}`}>
                                                {item.event}
                                                {!isWon && <SpeakButton text={item.event} size={11} />}
                                            </div>
                                            {item.event_en && (
-                                               <div className={`text-xs italic mt-1 ${isWon ? 'text-green-700/70' : 'text-slate-500'}`}>
+                                               <div className={`text-xs italic mt-1 ${isWon ? 'text-green-700/70' : 'text-slate-600'}`}>
                                                    {item.event_en}
                                                </div>
+                                           )}
+                                           {onExplainIncorrect && !isWon && lastCorrectCount !== null && item.originalIndex !== idx && (
+                                               <>
+                                                   <button
+                                                       onClick={(e) => { e.stopPropagation(); handleExplainClick(item); }}
+                                                       className="mt-2 text-[11px] font-bold text-indigo-700 hover:text-indigo-900 bg-white/70 border border-indigo-200 hover:border-indigo-400 rounded px-2 py-0.5 transition-colors inline-flex items-center gap-1"
+                                                       aria-label={t('timeline.game.why_aria') || 'Explain why this is out of place'}
+                                                       aria-busy={explanations[item.originalIndex] === 'loading'}
+                                                   >
+                                                       {explanations[item.originalIndex] === 'loading'
+                                                           ? (t('timeline.game.why_loading') || '…')
+                                                           : (explanations[item.originalIndex]
+                                                               ? (t('timeline.game.why_hide') || 'Hide why')
+                                                               : (t('timeline.game.why_label') || 'Why?'))}
+                                                   </button>
+                                                   {explanations[item.originalIndex] && explanations[item.originalIndex] !== 'loading' && (
+                                                       <div className="mt-1 p-2 bg-indigo-50 border border-indigo-200 rounded text-[11px] text-indigo-900 leading-snug text-left">
+                                                           {explanations[item.originalIndex]}
+                                                       </div>
+                                                   )}
+                                               </>
                                            )}
                                        </div>
                                        {!isWon && (
@@ -1129,8 +1428,8 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                                        )}
                                        {!isWon && (
                                             <div className="absolute -right-3 top-1/2 -translate-y-1/2 flex flex-col gap-1 sm:hidden opacity-0 group-hover:opacity-100 transition-opacity bg-white/80 rounded-full p-1 shadow-sm">
-                                                <button onClick={() => moveItem(idx, 'up')} disabled={idx === 0} className="p-1 text-slate-500 hover:text-indigo-600 disabled:opacity-0 focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded" aria-label={t('move_up')} data-help-key="timeline_move_up"><ArrowUp size={14}/></button>
-                                                <button onClick={() => moveItem(idx, 'down')} disabled={idx === items.length - 1} className="p-1 text-slate-500 hover:text-indigo-600 disabled:opacity-0 focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded" aria-label={t('move_down')} data-help-key="timeline_move_down"><ArrowDown size={14}/></button>
+                                                <button onClick={() => moveItem(idx, 'up')} disabled={idx === 0} className="p-1 text-slate-600 hover:text-indigo-600 disabled:opacity-0 focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded" aria-label={t('move_up')} data-help-key="timeline_move_up"><ArrowUp size={14}/></button>
+                                                <button onClick={() => moveItem(idx, 'down')} disabled={idx === items.length - 1} className="p-1 text-slate-600 hover:text-indigo-600 disabled:opacity-0 focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded" aria-label={t('move_down')} data-help-key="timeline_move_down"><ArrowDown size={14}/></button>
                                             </div>
                                        )}
                                    </div>
@@ -1158,7 +1457,7 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
            )}
        </div>
        <div className="p-4 bg-white border-t border-slate-200 flex justify-between items-center shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20">
-           <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+           <div className="text-xs font-bold text-slate-600 uppercase tracking-wider">
                {isWon ? <span className="text-green-600 flex items-center gap-1"><CheckCircle2 size={16}/> {t('timeline.game.complete')}</span> : t('timeline.game.attempts', { attempts })}
            </div>
            <div className="flex gap-3">
@@ -1170,6 +1469,28 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                >
                    <RefreshCw size={14}/> {t('timeline.game.reset')}
                </button>
+               {!isWon && items.length > 0 && hintsUsed < Math.ceil(items.length / 3) && (
+                   <button
+                       onClick={useHint}
+                       className="px-5 py-2.5 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition-colors flex items-center gap-2"
+                       aria-label={t('timeline.game.hint_aria') || 'Use a hint'}
+                       title={t('timeline.game.hint_tooltip') || 'Move one item to its correct position (-15 pts)'}
+                       data-help-key="timeline_hint_btn"
+                   >
+                       💡 {t('timeline.game.hint') || 'Hint'} <span className="text-[11px] opacity-60">({Math.ceil(items.length / 3) - hintsUsed} {t('common.left') || 'left'})</span>
+                   </button>
+               )}
+               {!isWon && (
+                   <button
+                       onClick={revealAnswer}
+                       className="px-5 py-2.5 rounded-full text-xs font-bold bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100 transition-colors flex items-center gap-2"
+                       aria-label={t('timeline.game.reveal_aria') || 'Show the correct answer (no points awarded)'}
+                       title={t('timeline.game.reveal_tooltip') || 'Reveal the correct order — no points awarded'}
+                       data-help-key="timeline_reveal_btn"
+                   >
+                       👁 {t('timeline.game.reveal') || 'Show answer'}
+                   </button>
+               )}
                {!isWon && (
                    <button
                        aria-label={t('common.check_order')}
@@ -1185,16 +1506,25 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
     </div>
   );
 });
-const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, onScoreUpdate, onGameComplete }) => {
+const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, onScoreUpdate, onGameComplete, onExplainIncorrect }) => {
   const { t } = useContext(LanguageContext);
   const [items, setItems] = useState([]);
   const [buckets, setBuckets] = useState([]);
   const [isChecked, setIsChecked] = useState(false);
   const [score, setScore] = useState(0);
+  const [bestScore, setBestScore] = useState(0);
+  const [attempts, setAttempts] = useState(0);
   const [draggedItem, setDraggedItem] = useState(null);
   const [newItemText, setNewItemText] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   const [keyboardSelectedItemId, setKeyboardSelectedItemId] = useState(null);
+  const [hasUsedKeyboardCard, setHasUsedKeyboardCard] = useState(false);
+  const [hintAutoHidden, setHintAutoHidden] = useState(false);
+  const [explanations, setExplanations] = useState({}); // itemId -> text | 'loading'
+  const [imageFailCount, setImageFailCount] = useState(0);
+  const deckScrollRef = useRef(null);
+  const [deckCanScrollRight, setDeckCanScrollRight] = useState(false);
+  const [deckCanScrollLeft, setDeckCanScrollLeft] = useState(false);
   const menuRef = useRef(null);
   const isWon = isChecked && items.length > 0 && items.every(i => i.currentContainer === i.categoryId);
   const pastelColors = [
@@ -1224,7 +1554,8 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
   useEffect(() => {
     if (!data) return;
     setBuckets(data.categories || []);
-    const initItems = (data.items || []).map((item, i) => ({
+    const rawItems = data.items || [];
+    const initItems = rawItems.map((item, i) => ({
         ...item,
         currentContainer: 'deck',
         colorIdx: Math.floor(Math.random() * pastelColors.length)
@@ -1233,10 +1564,18 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
         const j = Math.floor(Math.random() * (i + 1));
         [initItems[i], initItems[j]] = [initItems[j], initItems[i]];
     }
+    // Detect partial image coverage: if SOME items have images but not all, the rest failed.
+    const withImg = rawItems.filter(it => it.image).length;
+    const failed = (withImg > 0 && withImg < rawItems.length) ? (rawItems.length - withImg) : 0;
+    setImageFailCount(failed);
     setItems(initItems);
     setIsChecked(false);
     setScore(0);
+    setBestScore(0);
+    setAttempts(0);
+    setExplanations({});
     setKeyboardSelectedItemId(null);
+    setHasUsedKeyboardCard(false);
   }, [data]);
   const handleDragStart = (e, item) => {
     setDraggedItem(item);
@@ -1263,6 +1602,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
               setKeyboardSelectedItemId(null);
           } else {
               setKeyboardSelectedItemId(item.id);
+              setHasUsedKeyboardCard(true);
               if (playSound) playSound('click');
           }
       }
@@ -1320,6 +1660,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
     const earnedPoints = Math.max(0, (correctCount * 20) - (incorrectCount * 5));
     const total = items.length;
     setScore(earnedPoints);
+    setBestScore(prev => Math.max(prev, earnedPoints));
     setIsChecked(true);
     if (onScoreUpdate && correctCount === total) onScoreUpdate(earnedPoints, "Concept Sort Complete");
     if (correctCount === total) {
@@ -1329,12 +1670,30 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
             score: earnedPoints,
             correctPlacements: correctCount,
             totalItems: total,
-            isPerfect: incorrectCount === 0
+            isPerfect: incorrectCount === 0,
+            attempts: attempts + 1,
+            bestScore: Math.max(bestScore, earnedPoints)
           });
         }
     } else {
         if(playSound) playSound('reveal');
     }
+  };
+  const handleExplainClick = async (item) => {
+      if (!onExplainIncorrect) return;
+      if (explanations[item.id] && explanations[item.id] !== 'loading') {
+          setExplanations(prev => { const next = { ...prev }; delete next[item.id]; return next; });
+          return;
+      }
+      setExplanations(prev => ({ ...prev, [item.id]: 'loading' }));
+      try {
+          const correct = buckets.find(b => b.id === item.categoryId);
+          const chosen = buckets.find(b => b.id === item.currentContainer);
+          const text = await onExplainIncorrect(item, correct, chosen);
+          setExplanations(prev => ({ ...prev, [item.id]: text || t('concept_sort.why_none') || "No explanation available." }));
+      } catch (e) {
+          setExplanations(prev => ({ ...prev, [item.id]: t('concept_sort.why_failed') || "Couldn't generate an explanation right now." }));
+      }
   };
   const reset = () => {
     const resetItems = items.map(i => ({ ...i, currentContainer: 'deck' }));
@@ -1345,6 +1704,8 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
     setItems(resetItems);
     setIsChecked(false);
     setScore(0);
+    setAttempts(prev => prev + 1);
+    setExplanations({});
   };
   const renderCard = (item) => {
     let statusClass = `${pastelColors[item.colorIdx % pastelColors.length]} border-2`;
@@ -1379,7 +1740,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
             <div className="flex flex-col items-center gap-2">
                 <img loading="lazy"
                     src={item.image}
-                    alt="visual"
+                    alt={item.content || ''}
                     className="w-16 h-16 object-contain rounded bg-white/50"
                     decoding="async"
                 />
@@ -1396,22 +1757,67 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
         )}
         {isChecked && item.currentContainer !== 'deck' && item.currentContainer !== item.categoryId && (
              <>
-               <div className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-0.5"><X size={12}/></div>
-               <div className="mt-1 text-[10px] font-bold text-red-600 text-center leading-tight">
+               <div className="absolute -top-2 -right-2 bg-red-700 text-white rounded-full p-0.5"><X size={12}/></div>
+               <div className="mt-1 text-[11px] font-bold text-red-600 text-center leading-tight">
                  ✗ → {buckets.find(b => b.id === item.categoryId)?.label}
                </div>
+               {onExplainIncorrect && (
+                 <button
+                   onClick={(e) => { e.stopPropagation(); handleExplainClick(item); }}
+                   className="mt-1 w-full text-[11px] font-bold text-indigo-600 hover:text-indigo-800 bg-white border border-indigo-200 hover:border-indigo-400 rounded px-1 py-0.5 transition-colors"
+                   aria-label="Explain why this was incorrect"
+                 >
+                   {explanations[item.id] === 'loading' ? (t('concept_sort.why_loading') || '…') : (explanations[item.id] ? (t('concept_sort.why_hide') || 'Hide why') : (t('concept_sort.why_label') || 'Why?'))}
+                 </button>
+               )}
+               {explanations[item.id] && explanations[item.id] !== 'loading' && (
+                 <div className="mt-1 p-1.5 bg-indigo-50 border border-indigo-200 rounded text-[11px] text-indigo-900 leading-snug text-left">
+                   {explanations[item.id]}
+                 </div>
+               )}
              </>
         )}
         {isChecked && item.currentContainer === item.categoryId && (
              <>
-               <div className="absolute -top-2 -right-2 bg-green-500 text-white rounded-full p-0.5"><CheckCircle2 size={12}/></div>
-               <div className="mt-1 text-[10px] font-bold text-green-600 text-center">✓</div>
+               <div className="absolute -top-2 -right-2 bg-green-700 text-white rounded-full p-0.5"><CheckCircle2 size={12}/></div>
+               <div className="mt-1 text-[11px] font-bold text-green-600 text-center">✓</div>
              </>
         )}
       </div>
     );
   };
   const deckItems = useMemo(() => items.filter(i => i.currentContainer === 'deck'), [items]);
+  const resolveBucketStyles = (rawColor) => {
+      const fallbackKey = 'blue';
+      if (!rawColor) return bucketColorMap[fallbackKey];
+      const cleaned = String(rawColor).replace(/^bg-/, '').replace(/-\d+$/, '').trim().toLowerCase();
+      if (bucketColorMap[cleaned]) return bucketColorMap[cleaned];
+      if (typeof console !== 'undefined' && console.warn) {
+          console.warn('[ConceptSort] Unknown bucket color:', rawColor, '— falling back to blue');
+      }
+      return bucketColorMap[fallbackKey];
+  };
+  useEffect(() => {
+      const el = deckScrollRef.current;
+      if (!el) return;
+      const checkScroll = () => {
+          setDeckCanScrollRight(el.scrollWidth - el.clientWidth - el.scrollLeft > 4);
+          setDeckCanScrollLeft(el.scrollLeft > 4);
+      };
+      checkScroll();
+      el.addEventListener('scroll', checkScroll, { passive: true });
+      window.addEventListener('resize', checkScroll);
+      return () => {
+          el.removeEventListener('scroll', checkScroll);
+          window.removeEventListener('resize', checkScroll);
+      };
+  }, [deckItems.length]);
+  // Auto-hide the keyboard tip after 15 seconds if user never engages with it.
+  useEffect(() => {
+      if (hasUsedKeyboardCard || hintAutoHidden) return;
+      const id = setTimeout(() => setHintAutoHidden(true), 15000);
+      return () => clearTimeout(id);
+  }, [hasUsedKeyboardCard, hintAutoHidden]);
   return (
     <div className="fixed inset-0 z-[100] bg-slate-50 flex flex-col animate-in fade-in duration-300" data-help-key="concept_sort_game">
       <div className="p-4 bg-indigo-600 text-white flex justify-between items-center shrink-0 shadow-md z-20">
@@ -1433,9 +1839,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
       <div className="flex-grow overflow-y-auto p-6 relative">
            <div className="flex flex-wrap justify-center gap-6 mb-12 min-h-[300px]">
                {buckets.map((bucket) => {
-                   const rawColor = bucket.color || 'blue';
-                   const colorKey = rawColor.replace('bg-', '').replace('-500', '').trim();
-                   const styles = bucketColorMap[colorKey] || bucketColorMap['default'];
+                   const styles = resolveBucketStyles(bucket.color);
                    return (
                        <div
                             key={bucket.id}
@@ -1450,7 +1854,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                            <div className="flex-grow space-y-2 min-h-[100px]">
                                {items.filter(i => i.currentContainer === bucket.id).map(item => <React.Fragment key={item.id}>{renderCard(item)}</React.Fragment>)}
                                {items.filter(i => i.currentContainer === bucket.id).length === 0 && (
-                                   <div className="text-center text-slate-500 text-xs italic py-8 opacity-50">{t('concept_sort.drop_placeholder')}</div>
+                                   <div className="text-center text-slate-600 text-xs italic py-8 opacity-50">{t('concept_sort.drop_placeholder')}</div>
                                )}
                            </div>
                            {keyboardSelectedItemId && (
@@ -1485,9 +1889,31 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                 onDrop={(e) => handleDrop(e, 'deck')}
                 className={`bg-white border-t border-slate-200 fixed bottom-0 left-0 right-0 p-4 z-20 shadow-[0_-4px_20px_rgba(0,0,0,0.1)] transition-transform duration-300 ${isChecked ? '' : 'hover:bg-slate-50'}`}
             >
-               <div className="max-w-6xl mx-auto">
+               <div className="max-w-6xl mx-auto relative">
                    <div className="flex justify-between items-start mb-2">
-                       <h4 className="text-sm font-bold text-slate-500 uppercase tracking-wider">{t('concept_sort.unsorted_cards')} ({deckItems.length})</h4>
+                       <div className="flex items-center gap-3 flex-wrap">
+                           <h4 className="text-sm font-bold text-slate-600 uppercase tracking-wider">{t('concept_sort.unsorted_cards')} ({deckItems.length})</h4>
+                           {keyboardSelectedItemId && !hasUsedKeyboardCard && (
+                               <span className="text-[11px] font-medium text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-full">
+                                   Now pick a category to drop this card into.
+                               </span>
+                           )}
+                           {!keyboardSelectedItemId && !hasUsedKeyboardCard && !hintAutoHidden && items.length > 0 && (
+                               <span className="text-[11px] text-slate-600 italic">
+                                   Tip: press Enter on a card to sort with the keyboard.
+                               </span>
+                           )}
+                           {attempts > 0 && (
+                               <span className="text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
+                                   Try {attempts + 1}{bestScore > 0 ? ` · Best: ${bestScore} pts` : ''}
+                               </span>
+                           )}
+                           {imageFailCount > 0 && (
+                               <span className="text-[11px] font-medium text-orange-700 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full">
+                                   {imageFailCount} card visual{imageFailCount === 1 ? '' : 's'} couldn't load — text only.
+                               </span>
+                           )}
+                       </div>
                        <div className="flex gap-2">
                            <button
                                 data-help-key="concept_sort_reset"
@@ -1508,7 +1934,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                            </button>
                        </div>
                    </div>
-                   <div className="flex gap-3 overflow-x-auto pb-4 pt-2 px-1 custom-scrollbar min-h-[140px]">
+                   <div ref={deckScrollRef} className="flex gap-3 overflow-x-auto pb-4 pt-2 px-1 custom-scrollbar min-h-[140px] relative">
                        <div className="min-w-[160px] w-[160px] h-[120px] bg-slate-50 border-2 border-dashed border-slate-300 rounded-lg flex flex-col items-center justify-center p-3 shrink-0 hover:border-indigo-300 transition-colors group">
                            {isAdding ? (
                                <div className="text-center text-indigo-500 text-xs font-bold animate-pulse">{t('concept_sort.generating_item')}</div>
@@ -1541,11 +1967,35 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                            </div>
                        ))}
                        {deckItems.length === 0 && !isWon && (
-                           <div className="text-slate-500 italic font-bold text-sm mt-4 text-center w-full">
+                           <div className="text-slate-600 italic font-bold text-sm mt-4 text-center w-full">
                                {t('concept_sort.word_bank_empty')}
                            </div>
                        )}
                    </div>
+                   {deckCanScrollLeft && (
+                       <button
+                           onClick={() => {
+                               const el = deckScrollRef.current;
+                               if (el) el.scrollBy({ left: -300, behavior: 'smooth' });
+                           }}
+                           className="absolute left-2 top-1/2 -translate-y-1/2 bg-white border border-slate-300 rounded-full w-8 h-8 flex items-center justify-center shadow-md hover:bg-slate-50 text-slate-600"
+                           aria-label="Scroll deck left"
+                       >
+                           ‹
+                       </button>
+                   )}
+                   {deckCanScrollRight && (
+                       <button
+                           onClick={() => {
+                               const el = deckScrollRef.current;
+                               if (el) el.scrollBy({ left: 300, behavior: 'smooth' });
+                           }}
+                           className="absolute right-2 top-1/2 -translate-y-1/2 bg-white border border-slate-300 rounded-full w-8 h-8 flex items-center justify-center shadow-md hover:bg-slate-50 text-slate-600"
+                           aria-label="Scroll deck right to see more cards"
+                       >
+                           ›
+                       </button>
+                   )}
                </div>
            </div>
            <div ref={menuRef} className="sr-only">
@@ -1745,7 +2195,7 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
                 <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
                     <div className="bg-white p-8 rounded-3xl text-center shadow-2xl animate-bounce">
                         <h2 className="text-4xl font-black text-indigo-600 mb-2">{t('concept_map.venn.victory_title')}</h2>
-                        <p className="text-slate-500">{t('concept_map.venn.victory_desc')}</p>
+                        <p className="text-slate-600">{t('concept_map.venn.victory_desc')}</p>
                     </div>
                     <ConfettiExplosion />
                 </div>
@@ -1782,7 +2232,7 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
                                 {t('concept_map.venn.return_bank')}
                             </button>
                         </div>
-                        <button data-help-key="venn_move_cancel" onClick={() => setKeyboardSelectedItemId(null)} className="mt-2 text-xs text-slate-500 hover:text-slate-600 underline text-center focus:outline-none focus:ring-2 focus:ring-slate-400 rounded">{t('concept_map.venn.cancel_selection')}</button>
+                        <button data-help-key="venn_move_cancel" onClick={() => setKeyboardSelectedItemId(null)} className="mt-2 text-xs text-slate-600 hover:text-slate-600 underline text-center focus:outline-none focus:ring-2 focus:ring-slate-400 rounded">{t('concept_map.venn.cancel_selection')}</button>
                     </div>
                 </div>
               )}
@@ -1856,7 +2306,7 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
                       `}
                       data-help-key="venn_drop_zone_shared"
                   >
-                      <h4 className="font-black text-purple-800 uppercase tracking-widest bg-white/90 px-3 py-1 rounded-full mb-2 shadow-sm text-[10px] border border-purple-100 opacity-60 hover:opacity-100 transition-opacity">{t('concept_map.venn.shared_label')}</h4>
+                      <h4 className="font-black text-purple-800 uppercase tracking-widest bg-white/90 px-3 py-1 rounded-full mb-2 shadow-sm text-[11px] border border-purple-100 opacity-60 hover:opacity-100 transition-opacity">{t('concept_map.venn.shared_label')}</h4>
                       <div className="flex flex-wrap gap-1.5 justify-center w-full overflow-y-auto max-h-[80%] p-2 custom-scrollbar">
                           {vennShared.map(item => (
                               <div
@@ -1867,7 +2317,7 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
                                 aria-pressed={keyboardSelectedItemId === item.id}
                                 onKeyDown={(e) => handleItemKeyDown(e, item)}
                                 onClick={() => { if (keyboardSelectedItemId === item.id) { setKeyboardSelectedItemId(null); } else { setKeyboardSelectedItemId(item.id); if (playSound) playSound('click'); } }}
-                                data-help-key="venn_sorted_item" className={`bg-white text-purple-700 px-2 py-1 rounded shadow-sm text-[10px] font-bold border-b-2 border-purple-200 animate-in zoom-in cursor-pointer hover:bg-purple-50 focus:outline-none focus:ring-2 focus:ring-purple-500 ${keyboardSelectedItemId === item.id ? 'ring-4 ring-yellow-400 z-50 scale-110' : ''}`}
+                                data-help-key="venn_sorted_item" className={`bg-white text-purple-700 px-2 py-1 rounded shadow-sm text-[11px] font-bold border-b-2 border-purple-200 animate-in zoom-in cursor-pointer hover:bg-purple-50 focus:outline-none focus:ring-2 focus:ring-purple-500 ${keyboardSelectedItemId === item.id ? 'ring-4 ring-yellow-400 z-50 scale-110' : ''}`}
                               >
                                 {getText(item)}
                               </div>
@@ -1877,7 +2327,7 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
               </div>
           </div>
           <div className="h-44 bg-slate-50 border-t border-slate-200 p-4 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] z-40" data-help-key="venn_item_bank">
-              <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 text-center">{t('concept_sort.instructions')}</div>
+              <div className="text-[11px] font-bold text-slate-600 uppercase tracking-widest mb-2 text-center">{t('concept_sort.instructions')}</div>
               <div className="flex flex-wrap gap-3 justify-center overflow-y-auto h-full pb-8">
                   {vennBank.map(item => (
                       <div
@@ -1897,7 +2347,7 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
                       </div>
                   ))}
                   {vennBank.length === 0 && !isWon && (
-                      <div className="text-slate-500 italic font-bold text-sm mt-4 text-center w-full">
+                      <div className="text-slate-600 italic font-bold text-sm mt-4 text-center w-full">
                           {t('concept_map.venn.bank_empty')}
                       </div>
                   )}
@@ -2273,7 +2723,7 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
                           aria-selected={isSelected}
                           aria-label={`Row ${r+1} Column ${c+1} ${cell.number ? 'Clue ' + cell.number : ''} ${userChar ? 'Value ' + userChar : 'Empty'}`}
                         >
-                           {cell.number && <span className="absolute top-0.5 left-0.5 text-[8px] sm:text-[10px] leading-none text-slate-500 font-normal">{cell.number}</span>}
+                           {cell.number && <span className="absolute top-0.5 left-0.5 text-[11px] sm:text-[11px] leading-none text-slate-600 font-normal">{cell.number}</span>}
                            {userChar}
                         </div>
                      );
@@ -2283,7 +2733,7 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
          </div>
          <div className="w-full md:w-1/3 bg-white border-l border-slate-200 flex flex-col h-1/2 md:h-full" data-help-key="crossword_clues_list">
              <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                 <div className="text-sm font-bold text-slate-500">
+                 <div className="text-sm font-bold text-slate-600">
                     {clues.across.length + clues.down.length} {t('games.crossword.clues')}
                  </div>
                  <div className="flex gap-2" data-help-key="crossword_controls">
@@ -2342,7 +2792,7 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
                 onBlur={(e) => e.target.focus()}
                 aria-hidden="true"
              />
-             <div className="p-2 bg-slate-50 text-[10px] text-center text-slate-500 border-t">
+             <div className="p-2 bg-slate-50 text-[11px] text-center text-slate-600 border-t">
                  {t('games.crossword.footer_tip')}
              </div>
              {isWon && <div className="p-3"><GameReviewScreen score={score} title={t('games.crossword_title')} items={[...clues.across, ...clues.down].map(c => ({ label: c.word, detail: c.clue, status: 'correct' }))} onPlayAgain={() => { setIsWon(false); setScore(0); setUserState({}); }} onClose={onClose} t={t} /></div>}
@@ -2459,12 +2909,12 @@ const SyntaxScramble = React.memo(({ text, onClose, playSound, onScoreUpdate, on
                </div>
            ) : (
                <>
-                <div className="w-full flex justify-between text-xs font-bold text-slate-500 uppercase tracking-wider">
+                <div className="w-full flex justify-between text-xs font-bold text-slate-600 uppercase tracking-wider">
                     <span>{t('games.syntax.progress', { current: currentSentenceIndex + 1, total: sentences.length })}</span>
                     <span>{t('games.syntax.subtitle')}</span>
                 </div>
                 <div className={`w-full min-h-[80px] p-4 rounded-xl border-2 border-dashed flex flex-wrap gap-2 items-center justify-center transition-colors ${gameStatus === 'correct' ? 'bg-green-50 border-green-400' : 'bg-white border-slate-300'}`}>
-                    {userOrder.length === 0 && <span className="text-slate-500 italic pointer-events-none select-none">{t('games.syntax.empty_zone')}</span>}
+                    {userOrder.length === 0 && <span className="text-slate-600 italic pointer-events-none select-none">{t('games.syntax.empty_zone')}</span>}
                     {userOrder.map((word) => (
                         <button
                             aria-label={t('common.continue')}
@@ -2481,7 +2931,7 @@ const SyntaxScramble = React.memo(({ text, onClose, playSound, onScoreUpdate, on
                         <button aria-label={t('common.next')}
                             data-help-key="syntax_next" onClick={nextRound}
                             autoFocus
-                            className="bg-green-500 hover:bg-green-600 text-white px-8 py-3 rounded-full font-bold shadow-lg flex items-center gap-2 animate-in bounce-in"
+                            className="bg-green-700 hover:bg-green-800 text-white px-8 py-3 rounded-full font-bold shadow-lg flex items-center gap-2 animate-in bounce-in"
                         >
                             {t('games.syntax.next')} <ArrowRight size={18}/>
                         </button>
@@ -2630,7 +3080,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
         <div className="bg-white w-full max-w-6xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[95vh] p-6 relative bingo-modal-container">
             <button
                 onClick={onClose}
-                className="absolute top-4 right-4 text-slate-500 hover:text-slate-600 transition-colors no-print rounded-full p-1 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                className="absolute top-4 right-4 text-slate-600 hover:text-slate-600 transition-colors no-print rounded-full p-1 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 autoFocus
                 data-help-key="bingo_close_btn" aria-label={t('bingo.close_generator')}
             >
@@ -2640,7 +3090,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                 <h2 className="text-2xl font-black text-slate-800 mb-1 flex items-center justify-center gap-2">
                     <Gamepad2 className="text-rose-500" /> {isCallerMode ? t('bingo.caller_title') : t('bingo.generator_title')}
                 </h2>
-                <p className="text-slate-500 text-sm">{isCallerMode ? t('bingo.teacher_mode_desc') : t('bingo.generated_desc').replace('{count}', bingoState.cards ? bingoState.cards.length : 0)}</p>
+                <p className="text-slate-600 text-sm">{isCallerMode ? t('bingo.teacher_mode_desc') : t('bingo.generated_desc').replace('{count}', bingoState.cards ? bingoState.cards.length : 0)}</p>
             </div>
             <div className="flex flex-wrap justify-center items-center gap-4 mb-4 no-print bg-slate-50 p-3 rounded-xl border border-slate-200 shrink-0">
                 {!isCallerMode ? (
@@ -2671,7 +3121,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                         </label>
                         <button
                             onClick={onGenerate}
-                            className="flex items-center gap-2 bg-rose-500 hover:bg-rose-600 text-white px-5 py-2 rounded-full font-bold text-xs transition-colors shadow-sm active:scale-95"
+                            className="flex items-center gap-2 bg-rose-700 hover:bg-rose-800 text-white px-5 py-2 rounded-full font-bold text-xs transition-colors shadow-sm active:scale-95"
                             data-help-key="bingo_regenerate_btn" aria-label={t('bingo.regenerate')}
                         >
                             <RefreshCw size={14}/> {t('bingo.regenerate')}
@@ -2692,7 +3142,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                         <div className="w-px h-6 bg-slate-300 mx-2"></div>
                         <button
                             onClick={startCaller}
-                            className="bg-teal-600 text-white px-6 py-2 rounded-full font-bold text-xs shadow-lg hover:bg-teal-700 transition-colors flex items-center gap-2 active:scale-95"
+                            className="bg-teal-700 text-white px-6 py-2 rounded-full font-bold text-xs shadow-lg hover:bg-teal-700 transition-colors flex items-center gap-2 active:scale-95"
                             data-help-key="bingo_launch_caller_btn" aria-label={t('bingo.launch_caller_aria')}
                         >
                             <Mic size={16}/> {t('bingo.launch_caller')}
@@ -2702,14 +3152,14 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                     <div className="flex items-center gap-4 w-full justify-between">
                          <button
                             onClick={() => setIsCallerMode(false)}
-                            className="flex items-center gap-2 text-slate-500 hover:text-slate-700 font-bold text-xs"
+                            className="flex items-center gap-2 text-slate-600 hover:text-slate-700 font-bold text-xs"
                             data-help-key="bingo_exit_caller_btn" aria-label={t('bingo.exit_caller_aria')}
                         >
                             <ArrowDown className="rotate-90" size={14}/> {t('bingo.exit_caller')}
                         </button>
                         <div className="flex items-center gap-4">
                             <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm">
-                                <span className="text-xs font-bold text-slate-500 uppercase">{t('bingo.speed')}</span>
+                                <span className="text-xs font-bold text-slate-600 uppercase">{t('bingo.speed')}</span>
                                 <input
                                     type="range"
                                     min="3" max="15" step="1"
@@ -2723,7 +3173,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                             </div>
                             <button
                                 onClick={() => setIsHistoryVisible(prev => !prev)}
-                                className={`p-2 rounded-full transition-colors ${isHistoryVisible ? 'bg-slate-200 text-slate-600 hover:bg-slate-300' : 'bg-slate-700 text-slate-500 hover:bg-slate-600'}`}
+                                className={`p-2 rounded-full transition-colors ${isHistoryVisible ? 'bg-slate-200 text-slate-600 hover:bg-slate-300' : 'bg-slate-700 text-slate-600 hover:bg-slate-600'}`}
                                 title={isHistoryVisible ? t('bingo.hide_list') : t('bingo.show_list')}
                                 data-help-key="bingo_toggle_history" aria-label={isHistoryVisible ? t('bingo.hide_list') : t('bingo.show_list')}
                             >
@@ -2740,7 +3190,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                             </button>
                             <button
                                 onClick={toggleAutoPlay}
-                                className={`flex items-center gap-2 px-6 py-2 rounded-full font-bold text-sm shadow-md transition-all ${isAutoPlaying ? 'bg-red-500 text-white hover:bg-red-600' : 'bg-teal-600 text-white hover:bg-teal-700'}`}
+                                className={`flex items-center gap-2 px-6 py-2 rounded-full font-bold text-sm shadow-md transition-all ${isAutoPlaying ? 'bg-red-700 text-white hover:bg-red-600' : 'bg-teal-700 text-white hover:bg-teal-700'}`}
                                 data-help-key="bingo_toggle_autoplay" aria-label={isAutoPlaying ? t('bingo.stop_auto') : t('bingo.start_auto')}
                             >
                                 {isAutoPlaying ? <span className="flex items-center gap-2"><StopCircle size={16}/> {t('bingo.stop_auto')}</span> : <span className="flex items-center gap-2"><MonitorPlay size={16}/> {t('bingo.start_auto')}</span>}
@@ -2755,7 +3205,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                                 <ArrowDown className="-rotate-90" size={20}/>
                             </button>
                         </div>
-                        <div className="text-xs font-bold text-slate-500">
+                        <div className="text-xs font-bold text-slate-600">
                             {currentCallIndex + 1} / {callerQueue.length}
                         </div>
                     </div>
@@ -2796,7 +3246,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                                 )}
                             </div>
                         ) : (
-                            <div className="text-slate-500">
+                            <div className="text-slate-600">
                                 <p className="text-xl font-bold">{t('bingo.ready')}</p>
                                 <p className="text-sm">{t('bingo.ready_sub')}</p>
                             </div>
@@ -2805,7 +3255,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                     <div className="w-64 bg-slate-50 rounded-2xl border border-slate-200 flex flex-col overflow-hidden shrink-0">
                         <div className="bg-slate-200 p-3 text-center font-bold text-slate-600 text-xs uppercase tracking-wider border-b border-slate-300 flex justify-between items-center px-4">
                             <span>{t('bingo.called_terms')}</span>
-                            <span className="bg-white/50 px-2 py-0.5 rounded text-slate-500">{currentCallIndex + 1}</span>
+                            <span className="bg-white/50 px-2 py-0.5 rounded text-slate-600">{currentCallIndex + 1}</span>
                         </div>
                         <div className="flex-grow overflow-y-auto p-2 custom-scrollbar space-y-1 relative">
                             {isHistoryVisible ? (
@@ -2813,13 +3263,13 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                                     {callerQueue.slice(0, currentCallIndex + 1).reverse().map((item, i) => (
                                         <div key={i} className="bg-white p-3 rounded border border-slate-200 shadow-sm flex items-center justify-between animate-in slide-in-from-left-2">
                                             <span className="font-bold text-slate-800 text-sm">{item.term}</span>
-                                            <span className="text-[10px] text-slate-500 font-mono">#{currentCallIndex - i + 1}</span>
+                                            <span className="text-[11px] text-slate-600 font-mono">#{currentCallIndex - i + 1}</span>
                                         </div>
                                     ))}
-                                    {currentCallIndex === -1 && <p className="text-center text-slate-500 text-xs py-4 italic">{t('bingo.history_empty')}</p>}
+                                    {currentCallIndex === -1 && <p className="text-center text-slate-600 text-xs py-4 italic">{t('bingo.history_empty')}</p>}
                                 </>
                             ) : (
-                                <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-500/50">
+                                <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-600/50">
                                     <EyeOff size={48} className="mb-2"/>
                                     <p className="text-sm font-bold">{t('bingo.hide_list')}</p>
                                 </div>
@@ -2847,7 +3297,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                                         {card.map((cell, cellIdx) => (
                                             <div
                                                 key={cellIdx}
-                                                className={`border border-slate-300 flex flex-col items-center justify-center text-center p-1 text-[10px] sm:text-xs font-bold leading-tight overflow-hidden break-words ${cell.type === 'free' ? 'bg-yellow-400 text-black print:bg-black print:text-white border-yellow-500' : 'bg-slate-50 text-slate-700'}`}
+                                                className={`border border-slate-300 flex flex-col items-center justify-center text-center p-1 text-[11px] sm:text-xs font-bold leading-tight overflow-hidden break-words ${cell.type === 'free' ? 'bg-yellow-400 text-black print:bg-black print:text-white border-yellow-500' : 'bg-slate-50 text-slate-700'}`}
                                             >
                                                 {cell.type === 'free' ? (
                                                     <span className="text-black font-black print:text-white">★ {t('bingo.free_space')} ★</span>
@@ -2872,7 +3322,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                     </div>
                 ) : (
                     <div className="flex-grow flex items-center justify-center bg-slate-50 rounded-xl border-2 border-dashed border-slate-200 m-4 h-64">
-                         <div className="flex flex-col items-center gap-3 text-slate-500">
+                         <div className="flex flex-col items-center gap-3 text-slate-600">
                              <RefreshCw size={32} className="animate-spin text-rose-400"/>
                              <span className="font-bold text-sm">{t('bingo.initializing_board')}</span>
                          </div>
@@ -3273,7 +3723,7 @@ const StudentBingoGame = React.memo(({ data, onClose, playSound, onGameComplete 
                                     {cell.imageUrl && (
                                         <img src={cell.imageUrl} alt={cell.text} className={`w-8 h-8 sm:w-10 sm:h-10 object-contain rounded mb-0.5 ${isMarked && cell.type !== 'free' ? 'opacity-40' : ''}`} />
                                     )}
-                                    <span className={`text-[10px] sm:text-xs font-bold leading-tight break-words ${isMarked && cell.type !== 'free' ? 'opacity-40' : ''}`}>
+                                    <span className={`text-[11px] sm:text-xs font-bold leading-tight break-words ${isMarked && cell.type !== 'free' ? 'opacity-40' : ''}`}>
                                         {cell.text}
                                     </span>
                                     {isMarked && (
@@ -3386,7 +3836,7 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }
         <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col relative p-8 text-center border-4 border-indigo-500">
             <button
                 onClick={onClose}
-                className="absolute top-4 right-4 p-2 rounded-full text-slate-500 hover:text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors"
+                className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors"
                 aria-label={t('common.close')}
             >
                 <X size={24} />
@@ -3396,7 +3846,7 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }
                     <Type size={32} />
                 </div>
                 <h2 className="text-3xl font-black text-indigo-900 mb-2">{t('games.scramble.title')}</h2>
-                <p className="text-slate-500 font-medium">{t('games.scramble.subtitle')}</p>
+                <p className="text-slate-600 font-medium">{t('games.scramble.subtitle')}</p>
             </div>
             <div className="flex-grow flex flex-col items-center justify-center min-h-[300px] bg-slate-50 rounded-xl border-2 border-dashed border-slate-200 p-6 gap-6">
                 {isGameOver ? (
@@ -3419,11 +3869,11 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }
                 ) : gameItems.length > 0 ? (
                     <>
                         <div className="flex items-center justify-between w-full px-4 border-b border-slate-200 pb-2">
-                             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('games.scramble.progress', { current: currentIndex + 1, total: gameItems.length })}</span>
+                             <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">{t('games.scramble.progress', { current: currentIndex + 1, total: gameItems.length })}</span>
                              <div className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full font-bold text-sm">{t('flashcards.score_label')} {score}</div>
                         </div>
                         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm max-w-lg w-full">
-                            <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1 justify-center"><Search size={12}/> {t('games.scramble.hint_label')}</h4>
+                            <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-1 justify-center"><Search size={12}/> {t('games.scramble.hint_label')}</h4>
                             <div className="flex items-center justify-center gap-2">
                                 <p className="text-lg font-medium text-slate-700 leading-relaxed">"{gameItems[currentIndex].def}"</p>
                                 <SpeakButton text={gameItems[currentIndex].def} />
@@ -3469,7 +3919,7 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }
                                     aria-label={t('common.skip')}
                                     data-help-key="wizard_skip_btn"
                     onClick={handleSkip}
-                                    className="flex-1 py-3 rounded-xl font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 transition-colors"
+                                    className="flex-1 py-3 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors"
                                 >
                                     {t('games.scramble.skip')}
                                 </button>
@@ -3484,7 +3934,7 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }
                         </div>
                     </>
                 ) : (
-                    <p className="text-slate-500 italic">{t('games.scramble.loading')}</p>
+                    <p className="text-slate-600 italic">{t('games.scramble.loading')}</p>
                 )}
             </div>
         </div>

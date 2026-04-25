@@ -107,7 +107,7 @@ const SpeechBubble = React.memo(({ text, isVisible, isTruncated, onReadMore, onT
                     e.stopPropagation();
                     if (onReadMore) onReadMore();
                 }}
-                className="block mt-1 text-[10px] font-black text-indigo-500 hover:text-indigo-700 underline cursor-pointer pointer-events-auto"
+                className="block mt-1 text-[11px] font-black text-indigo-500 hover:text-indigo-700 underline cursor-pointer pointer-events-auto"
             >
                 {t('common.read_more')}
             </button>
@@ -1613,7 +1613,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                              handleSleep(e);
                         }}
                         onPointerDown={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}
-                        className="absolute -top-2 -right-2 bg-slate-200 hover:bg-red-100 text-slate-500 hover:text-red-500 rounded-full p-1 shadow-md opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity z-50 scale-75 hover:scale-100 duration-200 border-2 border-white focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-red-400"
+                        className="absolute -top-2 -right-2 bg-slate-200 hover:bg-red-100 text-slate-600 hover:text-red-500 rounded-full p-1 shadow-md opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity z-50 scale-75 hover:scale-100 duration-200 border-2 border-white focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-red-400"
                         title={t('bot.sleep_title')}
                         aria-label={t('bot.sleep_aria')}
                     >
@@ -1642,7 +1642,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                                 onToggleMute();
                             }}
                             onPointerDown={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}
-                            className={`absolute -bottom-1 -right-2 rounded-full p-1.5 shadow-md opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity z-50 scale-75 hover:scale-100 duration-200 border-2 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-indigo-400 ${!soundEnabled ? 'bg-slate-100 text-slate-500 border-slate-200' : 'bg-white hover:bg-indigo-50 text-indigo-500 hover:text-indigo-700 border-indigo-100'}`}
+                            className={`absolute -bottom-1 -right-2 rounded-full p-1.5 shadow-md opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity z-50 scale-75 hover:scale-100 duration-200 border-2 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-indigo-400 ${!soundEnabled ? 'bg-slate-100 text-slate-600 border-slate-200' : 'bg-white hover:bg-indigo-50 text-indigo-500 hover:text-indigo-700 border-indigo-100'}`}
                             title={soundEnabled ? t('bot.mute_on_title') : t('bot.mute_off_title')}
                             aria-label={soundEnabled ? t('bot.mute_on_aria') : t('bot.mute_off_aria')}
                         >
@@ -1658,7 +1658,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                                 onMicClick();
                             }}
                             onPointerDown={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}
-                            className={`absolute -bottom-1 -left-2 rounded-full p-1.5 shadow-md opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity z-50 scale-75 hover:scale-100 duration-200 border-2 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-indigo-400 ${isListening ? 'bg-red-700 text-white border-red-400 animate-pulse' : 'bg-white hover:bg-indigo-50 text-slate-500 hover:text-indigo-500 border-slate-100'}`}
+                            className={`absolute -bottom-1 -left-2 rounded-full p-1.5 shadow-md opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity z-50 scale-75 hover:scale-100 duration-200 border-2 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-indigo-400 ${isListening ? 'bg-red-700 text-white border-red-400 animate-pulse' : 'bg-white hover:bg-indigo-50 text-slate-600 hover:text-indigo-500 border-slate-100'}`}
                             title={isListening ? t('bot.mic_stop_title') : t('bot.mic_start_title')}
                             aria-label={isListening ? t('bot.mic_stop_aria') : t('bot.mic_start_aria')}
                         >

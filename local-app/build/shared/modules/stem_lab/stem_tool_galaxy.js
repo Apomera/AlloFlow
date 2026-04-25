@@ -29,6 +29,14 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
+
+  // ── Audio (auto-injected) ──
+  var _galAC = null;
+  function getGalAC() { if (!_galAC) { try { _galAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_galAC && _galAC.state === "suspended") { try { _galAC.resume(); } catch(e) {} } return _galAC; }
+  function galTone(f,d,tp,v) { var ac = getGalAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||"sine"; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
+  function sfxGalClick() { galTone(600, 0.03, "sine", 0.04); }
+  function sfxGalSuccess() { galTone(523, 0.08, "sine", 0.07); setTimeout(function() { galTone(659, 0.08, "sine", 0.07); }, 70); setTimeout(function() { galTone(784, 0.1, "sine", 0.08); }, 140); }
+
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-galaxy')) return;
@@ -1336,7 +1344,7 @@ if (!window._galaxyHasLoadedOnce) {
 
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
 
-              React.createElement("button", { onClick: function () { var cv = document.querySelector('[data-galaxy-canvas]'); if (cv && cv._galaxyCleanup) cv._galaxyCleanup(); setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-500" })),
+              React.createElement("button", { onClick: function () { var cv = document.querySelector('[data-galaxy-canvas]'); if (cv && cv._galaxyCleanup) cv._galaxyCleanup(); setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-200" })),
 
               React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDF0C Galaxy Explorer"),
 
@@ -1388,7 +1396,7 @@ if (!window._galaxyHasLoadedOnce) {
                         }
                       }
 
-                    }, className: "px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all " + (isActive ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-white')
+                    }, className: "px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all " + (isActive ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-700 hover:bg-white')
 
                   }, m.icon + ' ' + m.label);
 
@@ -1525,7 +1533,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                     onClick: function () { toggleLayer(lt.key); },
 
-                    className: "flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold border transition-all hover:scale-105 " + (isOn ? 'border-indigo-300 bg-indigo-50 text-indigo-700' : 'border-slate-200 bg-slate-50 text-slate-500')
+                    className: "flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold border transition-all hover:scale-105 " + (isOn ? 'border-indigo-300 bg-indigo-50 text-indigo-700' : 'border-slate-200 bg-slate-50 text-slate-200')
 
                   }, lt.icon + " " + lt.label);
 
@@ -1539,7 +1547,7 @@ if (!window._galaxyHasLoadedOnce) {
 
               React.createElement("div", { className: "flex items-center gap-3 mt-3 px-1" },
 
-                React.createElement("span", { className: "text-[11px] font-bold text-slate-500 whitespace-nowrap" }, "\u2B50 Stars: " + starCount.toLocaleString()),
+                React.createElement("span", { className: "text-[11px] font-bold text-slate-600 whitespace-nowrap" }, "\u2B50 Stars: " + starCount.toLocaleString()),
 
                 React.createElement("input", {
 
@@ -1563,7 +1571,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                 }),
 
-                React.createElement("span", { className: "text-[10px] text-slate-500 w-12 text-right" }, starCount >= 50000 ? "Dense" : starCount >= 15000 ? "Normal" : "Sparse")
+                React.createElement("span", { className: "text-[11px] text-slate-600 w-12 text-right" }, starCount >= 50000 ? "Dense" : starCount >= 15000 ? "Normal" : "Sparse")
 
               ),
 
@@ -1679,7 +1687,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                 // Milestone labels
 
-                React.createElement("div", { className: "flex justify-between mt-2 text-[8px] text-violet-400" },
+                React.createElement("div", { className: "flex justify-between mt-2 text-[11px] text-violet-400" },
 
                   [
 
@@ -1733,7 +1741,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                       React.createElement("p", { className: "text-[11px] font-bold text-violet-800" }, epoch.title + " (" + epoch.age + " Gyr)"),
 
-                      React.createElement("p", { className: "text-[10px] text-violet-600 leading-relaxed" }, epoch.desc)
+                      React.createElement("p", { className: "text-[11px] text-violet-600 leading-relaxed" }, epoch.desc)
 
                     )
 
@@ -1783,7 +1791,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                 React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed mb-2" }, selStar.desc),
 
-                React.createElement("div", { className: "grid grid-cols-3 gap-2 text-[10px]" },
+                React.createElement("div", { className: "grid grid-cols-3 gap-2 text-[11px]" },
 
                   [
 
@@ -1803,7 +1811,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                     return React.createElement("div", { key: item.label, className: "bg-slate-50 rounded-lg p-2 text-center" },
 
-                      React.createElement("div", { className: "font-bold text-slate-500" }, item.label),
+                      React.createElement("div", { className: "font-bold text-slate-600" }, item.label),
 
                       React.createElement("div", { className: "font-bold", style: { color: selStar.color } }, item.val)
 
@@ -1817,9 +1825,9 @@ if (!window._galaxyHasLoadedOnce) {
 
                 selStar.whyItMatters && React.createElement("div", { className: "mt-3 p-3 rounded-lg bg-amber-50 border border-amber-200" },
 
-                  React.createElement("p", { className: "text-[10px] font-bold text-amber-700 mb-1" }, "\uD83D\uDCA1 Why It Matters"),
+                  React.createElement("p", { className: "text-[11px] font-bold text-amber-700 mb-1" }, "\uD83D\uDCA1 Why It Matters"),
 
-                  React.createElement("p", { className: "text-[10px] text-amber-800 leading-relaxed" }, selStar.whyItMatters)
+                  React.createElement("p", { className: "text-[11px] text-amber-800 leading-relaxed" }, selStar.whyItMatters)
 
                 ),
 
@@ -1841,11 +1849,11 @@ if (!window._galaxyHasLoadedOnce) {
 
                 React.createElement("h4", { className: "font-bold text-sm mb-1", style: { color: selNeb.color } }, "\u2728 " + selNeb.name),
 
-                React.createElement("div", { className: "flex gap-3 mb-2 text-[10px]" },
+                React.createElement("div", { className: "flex gap-3 mb-2 text-[11px]" },
 
                   React.createElement("span", { className: "px-2 py-0.5 rounded-full font-bold", style: { background: selNeb.color + '20', color: selNeb.color } }, selNeb.type || t('stem.galaxy.nebula')),
 
-                  selNeb.dist && React.createElement("span", { className: "text-slate-500" }, "\uD83D\uDCCD " + selNeb.dist)
+                  selNeb.dist && React.createElement("span", { className: "text-slate-200" }, "\uD83D\uDCCD " + selNeb.dist)
 
                 ),
 
@@ -1904,7 +1912,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                         else { upd("quizStreak", 0); }
 
-                      }, className: "px-3 py-2 text-xs font-bold rounded-lg border-2 transition-all hover:scale-[1.02] " + (d.quizFeedback ? (opt === quizQ.a ? "border-green-400 bg-green-50 text-green-700" : d.quizFeedback && !d.quizFeedback.correct && opt !== quizQ.a ? "border-slate-200 bg-white text-slate-500 opacity-50" : "border-slate-200 bg-white text-slate-600") : "border-indigo-200 bg-white text-slate-700 hover:border-indigo-400")
+                      }, className: "px-3 py-2 text-xs font-bold rounded-lg border-2 transition-all hover:scale-[1.02] " + (d.quizFeedback ? (opt === quizQ.a ? "border-green-400 bg-green-50 text-green-700" : d.quizFeedback && !d.quizFeedback.correct && opt !== quizQ.a ? "border-slate-200 bg-white text-slate-200 opacity-50" : "border-slate-200 bg-white text-slate-600") : "border-indigo-200 bg-white text-slate-700 hover:border-indigo-400")
 
                     }, opt);
 
@@ -1987,7 +1995,7 @@ if (!window._galaxyHasLoadedOnce) {
                       var stage = cvEl._stellarStage || 'main_sequence';
                       var cx = W * 0.5, cy = H * 0.5;
                       var dim = Math.min(W, H);
-                      var baseR = Math.max(dim * 0.06, Math.min(dim * 0.35, Math.pow(mass, 0.55) * (dim * 0.09)));
+                      var baseR = Math.max(dim * 0.10, Math.min(dim * 0.40, Math.pow(mass, 0.55) * (dim * 0.14)));
 
                       // Determine star color based on mass
                       var coreColor, glowColor, coronaColor;
@@ -2374,21 +2382,77 @@ if (!window._galaxyHasLoadedOnce) {
                         }
                       }
 
-                      // ── HUD Labels ──
+                      // ── HUD Labels + Physical Properties ──
                       ctx.textAlign = 'center';
                       // Stage name (top)
-                      ctx.font = 'bold 13px Inter, system-ui, sans-serif';
-                      ctx.fillStyle = 'rgba(255,255,255,0.7)';
-                      ctx.fillText(stageLabel, cx, 24);
-                      // Mass label (bottom)
-                      ctx.font = 'bold 10px Inter, system-ui, sans-serif';
-                      ctx.fillStyle = 'rgba(255,255,255,0.5)';
-                      ctx.fillText(mass + ' Solar Masses', cx, H - 12);
+                      ctx.font = 'bold 14px Inter, system-ui, sans-serif';
+                      ctx.fillStyle = 'rgba(255,255,255,0.8)';
+                      ctx.fillText(stageLabel, cx, 22);
                       // Classification
                       var cls = mass < 0.45 ? 'M-type Red Dwarf' : mass < 0.8 ? 'K-type Orange' : mass < 1.04 ? 'G-type (Sun-like)' : mass < 1.4 ? 'F-type Yellow-White' : mass < 2.1 ? 'A-type White' : mass < 16 ? 'B-type Blue-White' : 'O-type Blue Giant';
-                      ctx.font = '9px Inter, system-ui, sans-serif';
+                      ctx.font = '10px Inter, system-ui, sans-serif';
+                      ctx.fillStyle = 'rgba(255,255,255,0.45)';
+                      ctx.fillText(cls, cx, 36);
+
+                      // ── Physical properties panel (bottom center) ──
+                      var surfTemp = mass < 0.45 ? 3200 : mass < 0.8 ? 4500 : mass < 1.04 ? 5778 : mass < 1.4 ? 6500 : mass < 2.1 ? 8500 : mass < 16 ? 20000 : 40000;
+                      var luminosity = Math.pow(mass, 3.5);
+                      var radius = mass < 0.8 ? Math.pow(mass, 0.8) : mass < 2 ? Math.pow(mass, 0.57) : Math.pow(mass, 0.78);
+                      var lifetime = mass < 0.2 ? '>100' : (10 / Math.pow(mass, 2.5)).toFixed(mass < 1 ? 0 : 1);
+                      ctx.font = 'bold 10px Inter, system-ui, sans-serif';
+                      ctx.fillStyle = 'rgba(255,255,255,0.55)';
+                      ctx.fillText(mass + ' Solar Masses', cx, H - 40);
+                      ctx.font = '9px monospace';
                       ctx.fillStyle = 'rgba(255,255,255,0.35)';
-                      ctx.fillText(cls, cx, H - 2);
+                      ctx.fillText('T: ' + surfTemp.toLocaleString() + ' K  |  L: ' + (luminosity < 100 ? luminosity.toFixed(1) : Math.round(luminosity).toLocaleString()) + ' L\u2609  |  R: ' + radius.toFixed(2) + ' R\u2609', cx, H - 26);
+                      ctx.fillText('Lifespan: ' + lifetime + ' billion years', cx, H - 14);
+
+                      // ── Radiative/Convective zone indicators (on main sequence stars) ──
+                      if (stage === 'main_sequence' || stage === 'protostar') {
+                        ctx.save(); ctx.globalAlpha = 0.12;
+                        // Inner radiative zone ring
+                        var rzR = baseR * 0.5;
+                        ctx.beginPath(); ctx.arc(cx, cy, rzR, 0, Math.PI * 2);
+                        ctx.setLineDash([2, 3]); ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 0.8; ctx.stroke(); ctx.setLineDash([]);
+                        // Outer convective zone ring
+                        ctx.beginPath(); ctx.arc(cx, cy, baseR * 0.85, 0, Math.PI * 2);
+                        ctx.setLineDash([3, 2]); ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 0.6; ctx.stroke(); ctx.setLineDash([]);
+                        ctx.restore();
+                        // Zone labels (left side)
+                        ctx.save(); ctx.globalAlpha = 0.2;
+                        ctx.font = '6px monospace'; ctx.textAlign = 'right'; ctx.fillStyle = '#fbbf24';
+                        ctx.fillText('Radiative', cx - rzR - 4, cy - 2);
+                        ctx.fillStyle = '#ef4444';
+                        ctx.fillText('Convective', cx - baseR * 0.85 - 4, cy + 8);
+                        ctx.restore();
+                      }
+
+                      // ── Solar wind particles (emanating outward from star) ──
+                      if (stage === 'main_sequence' || stage === 'red_giant' || stage === 'blue_giant') {
+                        ctx.save(); ctx.globalAlpha = 0.15;
+                        for (var swi = 0; swi < 12; swi++) {
+                          var swAngle = (swi / 12) * Math.PI * 2 + tick * 0.003;
+                          var swDist = baseR * 1.5 + (tick * 0.5 + swi * 30) % (dim * 0.4);
+                          var swx = cx + Math.cos(swAngle) * swDist;
+                          var swy = cy + Math.sin(swAngle) * swDist;
+                          if (swx > 0 && swx < W && swy > 0 && swy < H) {
+                            ctx.beginPath(); ctx.arc(swx, swy, 1, 0, Math.PI * 2);
+                            ctx.fillStyle = glowColor; ctx.fill();
+                          }
+                        }
+                        ctx.restore();
+                      }
+
+                      // ── Size comparison reference (bottom-left) ──
+                      ctx.save(); ctx.globalAlpha = 0.25;
+                      ctx.font = '7px monospace'; ctx.textAlign = 'left'; ctx.fillStyle = '#94a3b8';
+                      var sunRefR = dim * 0.14; // reference: what 1 solar mass looks like
+                      if (mass !== 1 && stage === 'main_sequence') {
+                        ctx.fillText('Sun (1 M\u2609)', 12, H - 50);
+                        ctx.beginPath(); ctx.arc(12 + sunRefR * 0.3, H - 60, sunRefR * 0.3, 0, Math.PI * 2);
+                        ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 0.5; ctx.setLineDash([1, 2]); ctx.stroke(); ctx.setLineDash([]);
+                      }
+                      ctx.restore();
 
 
 
@@ -2415,7 +2479,7 @@ if (!window._galaxyHasLoadedOnce) {
                 }),
 
                 // ── Snapshot button (overlay, bottom-right of canvas) ──
-                React.createElement("button", { "aria-label": "Snapshot", onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'sl-' + Date.now(), tool: 'galaxy', label: 'Star Life: ' + lifecycleMass + ' M\u2609', data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Star life snapshot saved!', 'success'); }, className: "px-3 py-1.5 text-[10px] font-bold text-white bg-gradient-to-r from-amber-500 to-orange-500 rounded-full hover:from-amber-600 hover:to-orange-600 shadow-md hover:shadow-lg transition-all", style: { position: 'absolute', bottom: '12px', right: '12px', zIndex: 10 } }, "\uD83D\uDCF8 Snapshot")
+                React.createElement("button", { "aria-label": "Snapshot", onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'sl-' + Date.now(), tool: 'galaxy', label: 'Star Life: ' + lifecycleMass + ' M\u2609', data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Star life snapshot saved!', 'success'); }, className: "px-3 py-1.5 text-[11px] font-bold text-white bg-gradient-to-r from-amber-500 to-orange-500 rounded-full hover:from-amber-600 hover:to-orange-600 shadow-md hover:shadow-lg transition-all", style: { position: 'absolute', bottom: '12px', right: '12px', zIndex: 10 } }, "\uD83D\uDCF8 Snapshot")
 
               )
 
@@ -2441,7 +2505,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                     React.createElement("h4", { className: "text-sm font-bold text-white" }, "Star Mass & Classification"),
 
-                    React.createElement("p", { className: "text-[10px] text-slate-500" }, "Adjust mass to explore how different stars live and die")
+                    React.createElement("p", { className: "text-[11px] text-slate-600" }, "Adjust mass to explore how different stars live and die")
 
                   ),
 
@@ -2455,7 +2519,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                 React.createElement("div", { className: "flex items-center gap-3 mb-3" },
 
-                  React.createElement("span", { className: "text-[10px] text-amber-300/70 whitespace-nowrap w-8" }, "0.5"),
+                  React.createElement("span", { className: "text-[11px] text-amber-300/70 whitespace-nowrap w-8" }, "0.5"),
 
                   React.createElement("input", {
 
@@ -2475,7 +2539,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                   }),
 
-                  React.createElement("span", { className: "text-[10px] text-amber-300/70 whitespace-nowrap w-8 text-right" }, "50")
+                  React.createElement("span", { className: "text-[11px] text-amber-300/70 whitespace-nowrap w-8 text-right" }, "50")
 
                 ),
 
@@ -2485,7 +2549,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                   React.createElement("span", {
 
-                    className: "px-3 py-1 rounded-full text-[10px] font-bold " +
+                    className: "px-3 py-1 rounded-full text-[11px] font-bold " +
 
                       (lifecycleMass < 0.5 ? "bg-stone-800 text-stone-300 border border-stone-600" :
 
@@ -2515,7 +2579,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                   ),
 
-                  React.createElement("span", { className: "text-[11px] text-slate-500 italic" },
+                  React.createElement("span", { className: "text-[11px] text-slate-600 italic" },
 
                     lifecycleMass < 0.5 ? "Too small for hydrogen fusion" :
 
@@ -2572,7 +2636,7 @@ if (!window._galaxyHasLoadedOnce) {
                       showBranch ? React.createElement("div", { className: "flex justify-center py-2" },
                         React.createElement("div", { className: "flex items-center gap-2 px-4 py-1 rounded-full border", style: { borderColor: lifecycleMass < 8 ? '#818cf855' : '#f59e0b55', background: lifecycleMass < 8 ? '#818cf815' : '#f59e0b15' } },
                           React.createElement("span", { className: "text-sm" }, branchEmoji),
-                          React.createElement("span", { className: "text-[10px] font-bold", style: { color: lifecycleMass < 8 ? '#a5b4fc' : '#fbbf24' } }, branchLabel)
+                          React.createElement("span", { className: "text-[11px] font-bold", style: { color: lifecycleMass < 8 ? '#a5b4fc' : '#fbbf24' } }, branchLabel)
                         )
                       ) : null,
 
@@ -2588,9 +2652,9 @@ if (!window._galaxyHasLoadedOnce) {
                         React.createElement("div", { className: "w-8 h-8 rounded-lg flex items-center justify-center text-xl flex-shrink-0", style: { background: s.color + '25' } }, s.emoji),
                         React.createElement("div", { className: "flex-1 min-w-0" },
                           React.createElement("p", { className: "text-[11px] font-bold leading-tight", style: { color: s.color } }, s.name),
-                          React.createElement("p", { className: "text-[11px] text-slate-500 leading-tight" }, s.desc)
+                          React.createElement("p", { className: "text-[11px] text-slate-600 leading-tight" }, s.desc)
                         ),
-                        React.createElement("span", { className: "text-[8px] text-slate-600 flex-shrink-0" },
+                        React.createElement("span", { className: "text-[11px] text-slate-600 flex-shrink-0" },
                           s.id === 'nebula' ? "" :
                           s.id === 'protostar' ? "~100K yr" :
                           s.id === 'main_sequence' ? (lifecycleMass < 0.8 ? "~Trillions of yr" : lifecycleMass < 2 ? "~10 Gyr" : lifecycleMass < 8 ? "~1 Gyr" : lifecycleMass < 25 ? "~10 Myr" : "~3 Myr") :
@@ -2663,7 +2727,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                       React.createElement("p", { className: "text-xs font-black", style: { color: st.color } }, st.id),
 
-                      React.createElement("p", { className: "text-[8px] text-slate-500 leading-tight" }, st.temp + "K"),
+                      React.createElement("p", { className: "text-[11px] text-slate-600 leading-tight" }, st.temp + "K"),
 
                       isMatch ? React.createElement("div", { className: "mt-1 w-1.5 h-1.5 rounded-full bg-indigo-500 mx-auto animate-pulse" }) : null
 
@@ -2693,7 +2757,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                     ),
 
-                    React.createElement("p", { className: "text-[10px] text-slate-600 leading-relaxed mb-2" }, st.desc),
+                    React.createElement("p", { className: "text-[11px] text-slate-600 leading-relaxed mb-2" }, st.desc),
 
                     React.createElement("div", { className: "grid grid-cols-3 gap-2 text-[11px]" },
 
@@ -2701,7 +2765,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                         return React.createElement("div", { key: item.l, className: "bg-white rounded-lg p-1.5 text-center border border-slate-100" },
 
-                          React.createElement("div", { className: "text-slate-500 font-bold" }, item.l),
+                          React.createElement("div", { className: "text-slate-600 font-bold" }, item.l),
 
                           React.createElement("div", { className: "font-bold", style: { color: st.color } }, item.v)
 
@@ -2771,7 +2835,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                     React.createElement("div", { className: "rounded-full bg-gradient-to-br from-amber-300 to-amber-500 shadow-lg shadow-amber-200", style: { width: '40px', height: '40px' } }),
 
-                    React.createElement("span", { className: "text-[11px] text-slate-500 mt-1 font-bold" }, "Sun (1 M\u2609)")
+                    React.createElement("span", { className: "text-[11px] text-slate-600 mt-1 font-bold" }, "Sun (1 M\u2609)")
 
                   ),
 
@@ -2807,13 +2871,13 @@ if (!window._galaxyHasLoadedOnce) {
 
                     }),
 
-                    React.createElement("span", { className: "text-[11px] text-slate-500 mt-1 font-bold" }, lifecycleMass + " M\u2609")
+                    React.createElement("span", { className: "text-[11px] text-slate-600 mt-1 font-bold" }, lifecycleMass + " M\u2609")
 
                   )
 
                 ),
 
-                React.createElement("p", { className: "text-center text-[10px] text-slate-500 italic mt-2" },
+                React.createElement("p", { className: "text-center text-[11px] text-slate-600 italic mt-2" },
 
                   "Main-sequence radius scales roughly as M" + "\u2070\u00B7\u2078" + ". " +
 

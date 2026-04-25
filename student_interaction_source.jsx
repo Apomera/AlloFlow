@@ -84,7 +84,7 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
       <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative border-4 border-indigo-100 transform transition-all animate-in zoom-in-95 duration-300">
         <button
             onClick={onClose}
-            className="absolute top-4 right-4 p-2 rounded-full text-slate-500 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+            className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
             aria-label={t('common.close')}
         >
             <X size={20} />
@@ -94,10 +94,10 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
                 <Send size={32} className="text-indigo-600 ml-1" />
             </div>
             <h2 className="text-2xl font-black text-slate-800 mb-1">{t('modals.submit_title')}</h2>
-            <p className="text-slate-500 text-sm font-medium">{t('modals.submit_ready')}</p>
+            <p className="text-slate-600 text-sm font-medium">{t('modals.submit_ready')}</p>
         </div>
         <div className="mb-6">
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 text-center">{t('modals.student_name_label')}</label>
+            <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 text-center">{t('modals.student_name_label')}</label>
             <div className="bg-indigo-50 p-4 rounded-xl border border-indigo-100">
                 <div className="flex gap-2 mb-3">
                     <select
@@ -140,7 +140,7 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
             </div>
         </div>
         <div className="bg-slate-50 rounded-xl p-4 border border-slate-200 mb-6">
-            <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3 border-b border-slate-200 pb-2">{t('modals.work_summary')}</h4>
+            <h4 className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-3 border-b border-slate-200 pb-2">{t('modals.work_summary')}</h4>
             <div className="grid grid-cols-2 gap-3 mb-3">
                 <div className="flex items-center gap-2 text-sm text-slate-700">
                     <CheckSquare size={16} className="text-teal-500"/>
@@ -159,7 +159,7 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
                     <span className="font-bold">{stats.scaffolds}</span> {t('modals.summary_scaffolds')}
                 </div>
             </div>
-            <div className="text-xs text-slate-500 italic text-center mt-2 pt-2 border-t border-slate-200/50">
+            <div className="text-xs text-slate-600 italic text-center mt-2 pt-2 border-t border-slate-200/50">
                 "{getSummaryString()}"
             </div>
         </div>
@@ -172,7 +172,7 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
             >
                 <Download size={18} /> {t('modals.download_submission')}
             </button>
-            <p className="text-xs text-center text-slate-500 font-medium px-4">
+            <p className="text-xs text-center text-slate-600 font-medium px-4">
                 {t('modals.upload_instruction')}
             </p>
             <button
@@ -217,7 +217,7 @@ const DraftFeedbackInterface = React.memo(({
               <div key={idx} className="p-4 md:p-6">
                 <div className="mb-3 flex justify-between items-end">
                     <h4 className="font-bold text-indigo-900 text-sm uppercase tracking-wider">{grade.criterion || "Criterion"}</h4>
-                    <span className="text-xs font-medium text-slate-500">{t('mastery.achieved_level')}: {grade.score}/{grade.max || 5}</span>
+                    <span className="text-xs font-medium text-slate-600">{t('mastery.achieved_level')}: {grade.score}/{grade.max || 5}</span>
                 </div>
                 {grade.reason && (
                     <div className={`mt-2 text-sm p-3 rounded-lg border-l-4 ${grade.score >= (grade.max || 5) * 0.8 ? 'bg-green-50 border-green-400 text-green-800' : 'bg-orange-50 border-orange-400 text-orange-800'}`}>
@@ -279,7 +279,7 @@ const DraftFeedbackInterface = React.memo(({
             </div>
         </div>
         <h3 className="mt-6 text-xl font-bold text-slate-700 animate-pulse">{t('mastery.analyzing')}</h3>
-        <p className="text-slate-500 mt-2">{t('mastery.criteria_check')}</p>
+        <p className="text-slate-600 mt-2">{t('mastery.criteria_check')}</p>
       </div>
     );
   }
@@ -301,17 +301,17 @@ const DraftFeedbackInterface = React.memo(({
                      <Star size={16} className="text-yellow-500 fill-current" />
                      <span className="text-xs font-bold text-slate-600">{t('mastery.current_progress')}: {gradingDetails?.rawScore}/100</span>
                  </div>
-                 <button onClick={onCancel} className="p-2 text-slate-500 hover:text-slate-600" aria-label={t('common.close')}><X size={20}/></button>
+                 <button onClick={onCancel} className="p-2 text-slate-600 hover:text-slate-600" aria-label={t('common.close')}><X size={20}/></button>
              </div>
         </div>
         {renderRubric()}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="flex flex-col gap-2">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+                <label className="text-xs font-bold text-slate-600 uppercase tracking-wider flex items-center gap-2">
                     <History size={14} /> {t('mastery.locked_draft', { count: draftCount })}
                 </label>
-                <div className="bg-slate-100 text-slate-500 p-6 rounded-xl border border-slate-200 h-96 overflow-y-auto font-serif relative whitespace-pre-wrap">
-                    <div className="absolute top-4 right-4 text-slate-500">
+                <div className="bg-slate-100 text-slate-600 p-6 rounded-xl border border-slate-200 h-96 overflow-y-auto font-serif relative whitespace-pre-wrap">
+                    <div className="absolute top-4 right-4 text-slate-600">
                         <Lock size={20} />
                     </div>
                     {previousDraft}

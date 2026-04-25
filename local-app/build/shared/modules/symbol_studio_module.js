@@ -29,7 +29,7 @@
     + ' @keyframes ss-garden-levelup{0%{transform:scale(0.95);opacity:0}20%{transform:scale(1.03)}100%{transform:scale(1);opacity:1}}'
     + ' .ss-garden-levelup{animation:ss-garden-levelup 0.6s ease-out}'
     + ' @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}.ss-garden-seed,.ss-garden-mastered,.ss-garden-tapped,.ss-garden-levelup{animation:none!important}}'
-    + ' .text-slate-400{color:#64748b!important}';
+    + ' .text-slate-600{color:#64748b!important}';
     document.head.appendChild(style);
   })();
 
@@ -465,6 +465,10 @@
     var importFileRef = useRef(null);
     var importBoardRef = useRef(null);
     var qbUploadRef = useRef(null);
+    // Holds FCT metadata (function + phase + optional goal text) between the moment the
+    // Communication Builder builds a new board and the moment the save pipeline persists
+    // it. Consumed by the board-save effect below and cleared after use.
+    var pendingFctMetaRef = useRef(null);
 
     // Symbols tab state
     var _gallery = useState(function () { return load(STORAGE_GALLERY, []); });
@@ -501,6 +505,7 @@
     // Board drag-to-reorder
     var _dragBoardId = useState(null); var dragBoardId = _dragBoardId[0]; var setDragBoardId = _dragBoardId[1];
     var _dragOverBoardId = useState(null); var dragOverBoardId = _dragOverBoardId[0]; var setDragOverBoardId = _dragOverBoardId[1];
+    var touchDragRef = useRef(null);
     // Board display options
     var _boardTextPos = useState('below'); var boardTextPos = _boardTextPos[0]; var setBoardTextPos = _boardTextPos[1];
     var _boardTextSize = useState(11); var boardTextSize = _boardTextSize[0]; var setBoardTextSize = _boardTextSize[1];
@@ -581,6 +586,17 @@
 
     // Quick Boards state
     var _qbMode = useState('firstthen'); var qbMode = _qbMode[0]; var setQbMode = _qbMode[1];
+    // Communication Builder wizard state — lives on the Quick Boards tab as a top card.
+    //   cbPath        'fct' | 'goal' — which sub-wizard is active
+    //   cbFunction    FCT function id (Attention/Escape/Tangible/Sensory)
+    //   cbPhase       phase number 1-4 corresponding to FCT_PHASE_TEMPLATES rows
+    //   cbGoalText    free-text input for the goal-driven path
+    //   cbGoalBusy    true while Gemini is generating from the goal text
+    var _cbPath = useState('fct'); var cbPath = _cbPath[0]; var setCbPath = _cbPath[1];
+    var _cbFunction = useState('Escape'); var cbFunction = _cbFunction[0]; var setCbFunction = _cbFunction[1];
+    var _cbPhase = useState(2); var cbPhase = _cbPhase[0]; var setCbPhase = _cbPhase[1];
+    var _cbGoalText = useState(''); var cbGoalText = _cbGoalText[0]; var setCbGoalText = _cbGoalText[1];
+    var _cbGoalBusy = useState(false); var cbGoalBusy = _cbGoalBusy[0]; var setCbGoalBusy = _cbGoalBusy[1];
     // First-Then
     var _ftFirstLabel = useState(''); var ftFirstLabel = _ftFirstLabel[0]; var setFtFirstLabel = _ftFirstLabel[1];
     var _ftFirstImage = useState(null); var ftFirstImage = _ftFirstImage[0]; var setFtFirstImage = _ftFirstImage[1];
@@ -1448,11 +1464,20 @@
     var saveBoard = useCallback(function () {
       if (!boardWords.length && (!boardPages || boardPages.every(function (p) { return !p.words.length; }))) return;
       var finalPages = boardPages ? commitCurrentPage(boardPages, activePageIdx, boardWords, boardCols, null) : null;
+      // If the Communication Builder populated this board, attach its metadata so the
+      // saved record can be filtered or analytically grouped by FCT function / phase.
+      var fctMeta = pendingFctMetaRef.current || null;
       var saved = {
         id: uid(), title: boardTitle || boardTopic, profileId: activeProfileId || null, createdAt: Date.now(),
         words: boardWords, cols: boardCols,
-        pages: finalPages || null
+        pages: finalPages || null,
+        fctFunction: fctMeta && fctMeta.fctFunction || null,
+        fctPhase: fctMeta && fctMeta.fctPhase != null ? fctMeta.fctPhase : null,
+        fctGoal: fctMeta && fctMeta.fctGoal || null
       };
+      // Consume the pending metadata after saving so the next save (manual or template-only)
+      // doesn't accidentally inherit it.
+      pendingFctMetaRef.current = null;
       var updated = [saved].concat(savedBoards);
       setSavedBoards(updated); store(STORAGE_BOARDS, updated);
       addToast && addToast('Board saved!' + (finalPages && finalPages.length > 1 ? ' (' + finalPages.length + ' pages)' : ''), 'success');
@@ -1473,6 +1498,102 @@
       setBoardTopic(template.label);
       addToast && addToast(template.label + ' template loaded — click ✨ Generate Images to start!', 'success');
     }, [addToast]);
+
+    // ── FCT template loader — Communication Builder entry point ──────────────
+    // Loads one of the FCT_PHASE_TEMPLATES entries into the Board Builder, auto-switches
+    // to the Board tab, and kicks off Imagen generation for any cells not already cached
+    // in the gallery. Tags the new board with fctFunction + fctPhase metadata so later
+    // analytics / filtering can group FCT boards by function.
+    var applyFctTemplate = useCallback(function (functionId, phase) {
+      var fmap = FCT_MAP[functionId];
+      var labels = (FCT_PHASE_TEMPLATES[functionId] && FCT_PHASE_TEMPLATES[functionId][phase]) || [];
+      if (!labels.length || !fmap) {
+        addToast && addToast('Invalid FCT template', 'error');
+        return;
+      }
+      var words = labels.map(function (lbl) {
+        return { id: uid(), label: lbl, category: fctWordCategory(lbl), description: fmap.tip || '', image: null };
+      });
+      setBoardWords(words);
+      var phaseMeta = FCT_PHASE_META[phase] || { label: 'Phase ' + phase };
+      var title = fmap.label + ' — ' + phaseMeta.label;
+      setBoardTitle(title);
+      setBoardTopic(fmap.label);
+      // Set cell count to match phase (keeps the grid tight).
+      // 1 cell → 1 col; 3 → 3 cols; 6 → 3 cols (2 rows); 12 → 4 cols (3 rows).
+      var cols = phase === 1 ? 1 : phase === 2 ? 3 : phase === 3 ? 3 : 4;
+      setBoardCols(cols);
+      // Jump to Board Builder so the teacher can see the board populating.
+      setTab('board');
+      addToast && addToast('🗣 ' + title + ' — images generating…', 'success');
+      // Kick off image generation on the next tick so setBoardWords has committed.
+      // We temporarily store the fct metadata on a ref so the save pipeline picks it up.
+      pendingFctMetaRef.current = { fctFunction: functionId, fctPhase: phase };
+      setTimeout(function () { try { generateBoardImages(); } catch (_) {} }, 80);
+    }, [addToast, generateBoardImages]);
+
+    // ── Free-text goal → board builder (uses Gemini to interpret the goal) ─
+    // Asks Gemini for 3–6 symbol labels + an inferred FCT function. Falls back to an
+    // empty 6-cell scaffold + a toast when the model returns malformed JSON or when
+    // onCallGemini isn't available (offline or School Box mode).
+    var buildBoardFromGoal = useCallback(async function (goalText) {
+      var goal = String(goalText || '').trim();
+      if (!goal) { addToast && addToast('Enter a communication goal first', 'error'); return; }
+      // Offline / no-Gemini fallback: empty 6-cell scaffold with the goal as title.
+      if (!onCallGemini) {
+        var scaffold = [];
+        for (var si = 0; si < 6; si++) scaffold.push({ id: uid(), label: '', category: 'other', description: '', image: null });
+        setBoardWords(scaffold);
+        setBoardTitle('Goal: ' + goal);
+        setBoardTopic(goal);
+        setBoardCols(3);
+        setTab('board');
+        addToast && addToast('AI goal parser unavailable — blank 6-cell board ready to edit', 'info');
+        return;
+      }
+      addToast && addToast('🧠 Planning symbols for "' + goal + '"…', 'info');
+      try {
+        var prompt = [
+          'You are helping build a communication board for a non-verbal or emerging-communicator student.',
+          'The communication goal is: "' + goal + '".',
+          'Return ONLY a compact JSON object (no markdown fences, no prose) with this shape:',
+          '{ "words": ["label1", "label2", ...], "function": "attention"|"escape"|"tangible"|"sensory", "rationale": "one sentence" }',
+          'Rules:',
+          '- "words" must have 3 to 6 short symbol labels (1-2 words each).',
+          '- Choose concrete, imageable labels — they will be rendered as picture symbols.',
+          '- Include small function words like "I", "want", "please" where they help form a phrase.',
+          '- "function" is the ABA behavioral function this goal serves.',
+          '- Keep "rationale" under 20 words.'
+        ].join('\n');
+        var raw = await onCallGemini(prompt);
+        // Gemini usually returns text; strip any code fences it slipped in.
+        var stripped = String(raw || '').trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
+        var parsed; try { parsed = JSON.parse(stripped); } catch (pe) { parsed = null; }
+        if (!parsed || !Array.isArray(parsed.words) || parsed.words.length === 0) {
+          addToast && addToast('Goal parser returned unexpected output — try rewording', 'error');
+          return;
+        }
+        var labels = parsed.words.map(function (w) { return String(w).trim(); }).filter(function (w) { return w; }).slice(0, 6);
+        if (!labels.length) { addToast && addToast('No usable labels from goal — try rewording', 'error'); return; }
+        var words = labels.map(function (lbl) {
+          return { id: uid(), label: lbl, category: fctWordCategory(lbl), description: '', image: null };
+        });
+        setBoardWords(words);
+        setBoardTitle('Goal: ' + goal);
+        setBoardTopic(goal);
+        setBoardCols(labels.length <= 3 ? labels.length : 3);
+        setTab('board');
+        // Capitalise the function tag to match FCT_MAP keys if recognized.
+        var fnRaw = String(parsed.function || '').trim().toLowerCase();
+        var fnMap = { attention: 'Attention', escape: 'Escape', tangible: 'Tangible', sensory: 'Sensory' };
+        var fnNormalized = fnMap[fnRaw] || null;
+        pendingFctMetaRef.current = fnNormalized ? { fctFunction: fnNormalized, fctPhase: null, fctGoal: goal } : { fctGoal: goal };
+        addToast && addToast('🗣 Board ready' + (fnNormalized ? ' (' + fnNormalized + ')' : '') + ' — images generating…', 'success');
+        setTimeout(function () { try { generateBoardImages(); } catch (_) {} }, 80);
+      } catch (err) {
+        addToast && addToast('Could not reach AI goal parser — try again', 'error');
+      }
+    }, [addToast, onCallGemini, generateBoardImages]);
 
     var loadBoard = useCallback(function (board) {
       var pages = board.pages && board.pages.length > 0 ? board.pages : null;
@@ -2076,20 +2197,40 @@
     }, [onCallGemini, addToast]);
 
     // ── IEP Goal Tracking helpers ──
+    // Schema expanded beyond the original {text, type, targetCount} so goals carry the fields SLPs
+    // actually need in team meetings: priority tier, baseline level, target date, cue-level required,
+    // accommodations, and how trial data is collected. All new fields are optional — older goals
+    // loaded from localStorage stay valid (missing fields just don't render in the UI).
     var addIepGoal = useCallback(function (goal) {
       var g = {
         id: Date.now().toString(36),
         text: goal.text || '',
-        type: goal.type || 'expressive',  // expressive | receptive | social
+        type: goal.type || 'expressive',  // expressive | receptive | social | pragmatic | articulation
         targetCount: goal.targetCount || 20,
         currentCount: 0,
         trials: [],
         createdAt: new Date().toISOString(),
-        profileId: activeProfileId || 'default'
+        profileId: activeProfileId || 'default',
+        // New IEP-team fields (all optional)
+        priority: goal.priority || 'standard',        // 'high' | 'standard' | 'maintenance'
+        baseline: goal.baseline || '',                // free-text starting performance (e.g. "2/10 accuracy")
+        targetDate: goal.targetDate || '',            // ISO date string; blank = no deadline
+        cueLevel: goal.cueLevel || 'independent',     // 'independent' | 'visual' | 'verbal' | 'gestural' | 'physical'
+        accommodations: goal.accommodations || '',    // free-text: supports the student needs during trials
+        dataMethod: goal.dataMethod || 'frequency',   // 'frequency' | 'percentage' | 'duration' | 'rubric'
+        linkedIepSection: goal.linkedIepSection || '' // e.g. "Communication" / "Social-Emotional" — paper IEP mapping
       };
       setIepGoals(function (prev) { var updated = prev.concat([g]); store(STORAGE_GOALS, updated); return updated; });
       return g;
     }, [activeProfileId]);
+
+    var updateIepGoal = useCallback(function (goalId, patch) {
+      setIepGoals(function (prev) {
+        var updated = prev.map(function (g) { return g.id === goalId ? Object.assign({}, g, patch) : g; });
+        store(STORAGE_GOALS, updated);
+        return updated;
+      });
+    }, []);
 
     var recordIepTrial = useCallback(function (goalId, success, context) {
       setIepGoals(function (prev) {
@@ -2125,6 +2266,35 @@
     }, []);
 
     var activeGoals = iepGoals.filter(function (g) { return g.profileId === (activeProfileId || 'default'); });
+
+    // ── Cross-tool bridge: window.AlloStudent ──
+    // Publishes the current student profile and their communication goals so that OTHER AlloFlow
+    // tools (Document Builder, Leveled Reader, Quiz Gen, etc.) can read them WITHOUT tight
+    // coupling to SymbolStudio. The API is intentionally minimal:
+    //   window.AlloStudent.getProfile()   → { id, name, description, codename, image } | null
+    //   window.AlloStudent.getGoals()     → [ { id, text, type, priority, cueLevel, ... } ]
+    //   window.AlloStudent.onChange(cb)   → () => unsubscribe
+    // This is the thin-central-store pattern described in the student-profile proposal.
+    // When AlloFlow eventually grows a proper StudentProfile module, the same three methods can
+    // be reimplemented against that central store and no consumer has to change.
+    React.useEffect(function () {
+      var api = window.AlloStudent = window.AlloStudent || { _subs: [] };
+      var activeProfile = (profiles || []).filter(function (p) { return p.id === activeProfileId; })[0] || null;
+      api.getProfile = function () { return activeProfile ? Object.assign({}, activeProfile) : null; };
+      api.getGoals = function () { return activeGoals.map(function (g) { return Object.assign({}, g); }); };
+      // subscribe/unsubscribe: gives consumers a change notification whenever the student or
+      // their goals change. Consumer owns its own re-read via getProfile / getGoals.
+      api.onChange = api.onChange || function (cb) {
+        if (typeof cb !== 'function') return function () {};
+        (api._subs = api._subs || []).push(cb);
+        return function () { api._subs = (api._subs || []).filter(function (f) { return f !== cb; }); };
+      };
+      // Fire subscribers exactly once per render where profile or goals changed. React's effect
+      // deps below make this automatic: the effect only runs when the compared values change.
+      (api._subs || []).forEach(function (cb) {
+        try { cb({ profile: api.getProfile(), goals: api.getGoals() }); } catch (e) { /* subscriber errors don't crash the bridge */ }
+      });
+    }, [activeProfileId, profiles, iepGoals]);
 
     var speakPage = useCallback(function (text) {
       if (!onCallTTS) return;
@@ -2463,14 +2633,57 @@
     var _srchStats = useState(function () { return load(STORAGE_SEARCH_STATS, { sessions: 0, totalCorrect: 0, totalTrials: 0, bestStreak: 0 }); });
     var srchStats = _srchStats[0]; var setSrchStats = _srchStats[1];
     var srchTimerRef = useRef(null);
+    // Pedagogy-improvement refs (session-scoped, no render needed):
+    //   srchLastTargetRef — id of the most recently picked target. Blocks back-to-back repetition
+    //                       so the student doesn't drift into memory-matching instead of recognition.
+    //   srchRecentMissRef — FIFO queue of labels the student recently got wrong. These get a weight
+    //                       boost in srchPickRound so failed items come back sooner (real spaced
+    //                       repetition behavior, not just "low questCorrect = high weight").
+    var srchLastTargetRef = useRef(null);
+    var srchRecentMissRef = useRef([]);
+    // Keep the recent-miss queue short — 4 entries is enough to guarantee a failed item surfaces
+    // within a round or two without dominating the session.
+    var SRCH_RECENT_MISS_LIMIT = 4;
+    // Errorless learning mode — for pre-receptive / early-intervention students where any wrong
+    // answer risks forming an incorrect association. When enabled:
+    //   • Forces 2 choices regardless of difficulty setting
+    //   • Distractors are drawn from OFF-category pool (maximum contrast)
+    //   • Wrong picks don't break streak or count as failed trials; student retries same target
+    //   • No red feedback — warm "Try again" + re-speak
+    var _srchErrorless = useState(false); var srchErrorless = _srchErrorless[0]; var setSrchErrorless = _srchErrorless[1];
+    // Optional session length. `null` = unlimited (legacy behavior). Numeric = auto-end after N trials.
+    var _srchSessionLength = useState(null); var srchSessionLength = _srchSessionLength[0]; var setSrchSessionLength = _srchSessionLength[1];
+    // Set of labels missed at least once this session. Used to populate the summary card's
+    // "words to practice next time" chip row. Ref because we don't need to re-render on changes.
+    var srchMissedSetRef = useRef({});
+    // Session-level UX state added in the UX refinement pass:
+    //   srchCategoryFilter — which symbol category to draw from on the menu (null = all)
+    //   srchLastCelebratedStreak — last streak value we already celebrated, prevents re-firing
+    //                              the confetti/toast for the same streak after minor re-renders.
+    //   srchShowSummary — when true, renders the "session summary" card before returning to menu
+    //                     instead of jumping straight back. Populated when the player taps Back.
+    var _srchCategoryFilter = useState(null); var srchCategoryFilter = _srchCategoryFilter[0]; var setSrchCategoryFilter = _srchCategoryFilter[1];
+    var _srchLastCelebratedStreak = useState(0); var srchLastCelebratedStreak = _srchLastCelebratedStreak[0]; var setSrchLastCelebratedStreak = _srchLastCelebratedStreak[1];
+    var _srchShowSummary = useState(false); var srchShowSummary = _srchShowSummary[0]; var setSrchShowSummary = _srchShowSummary[1];
+    // Snapshot of the session's final stats (captured when the player ends a session) so the
+    // summary card keeps showing numbers even after we've reset srchCorrect/srchTotal/srchStreak.
+    var _srchSummaryData = useState(null); var srchSummaryData = _srchSummaryData[0]; var setSrchSummaryData = _srchSummaryData[1];
 
     // ── Symbol Search logic ──
-    function srchSpeakWord(label) {
+    // speed: 1.0 = normal, 0.7 = slow replay for students with auditory-processing needs.
+    function srchSpeakWord(label, speed) {
+      var rate = typeof speed === 'number' ? speed : 1;
       setSrchSpeaking(true);
       setSrchRevealed(false);
       if (onCallTTS) {
-        onCallTTS(label, selectedVoice || 'Kore', 1).then(function (url) {
-          if (url) { var a = new Audio(url); a.play().catch(function () {}); }
+        onCallTTS(label, selectedVoice || 'Kore', rate).then(function (url) {
+          if (url) {
+            var a = new Audio(url);
+            // Chain the playback rate onto the Audio element too, so a slow request
+            // that gets fulfilled at normal speed still plays back slowly.
+            try { a.playbackRate = rate; } catch (_) {}
+            a.play().catch(function () {});
+          }
           setSrchSpeaking(false);
         }).catch(function () {
           // Fallback to browser TTS
@@ -2478,6 +2691,7 @@
             window.speechSynthesis.cancel();
             var utt = new SpeechSynthesisUtterance(label);
             applyVoice(utt);
+            utt.rate = rate;
             utt.onend = function () { setSrchSpeaking(false); };
             window.speechSynthesis.speak(utt);
           } else { setSrchSpeaking(false); }
@@ -2486,6 +2700,7 @@
         window.speechSynthesis.cancel();
         var utt = new SpeechSynthesisUtterance(label);
         applyVoice(utt);
+        utt.rate = rate;
         utt.onend = function () { setSrchSpeaking(false); };
         window.speechSynthesis.speak(utt);
       } else { setSrchSpeaking(false); }
@@ -2494,17 +2709,34 @@
     function srchPickRound(mode, pool) {
       if (pool.length < 2) return;
       var famData = familiarity || {};
-      // Garden-aware: prefer words at sprout/growing level
+      var lastId = srchLastTargetRef.current;
+      var missSet = {};
+      (srchRecentMissRef.current || []).forEach(function (lbl) { missSet[String(lbl).toLowerCase()] = true; });
+
+      // Eligible pool for THIS round's target: exclude the previous round's target to stop
+      // back-to-back repetition from becoming a memory game. If the pool has only 2 items
+      // (can't avoid repetition), fall back to the full pool — better to repeat than to freeze.
+      var targetPool = pool.length > 2 ? pool.filter(function (it) { return it.id !== lastId; }) : pool;
+
+      // Weighted target selection. Same three-tier mastery weighting as before PLUS an explicit
+      // "recently missed" boost: if the student just got a word wrong, that word gets +2 so it
+      // surfaces again within a round or two. This is what real spaced-repetition does — the
+      // old formula only demoted mastered items, never promoted failed ones.
       var target;
-      if (pool.length >= 4) {
-        var weighted = pool.map(function (item) {
+      if (targetPool.length >= 4) {
+        var weighted = targetPool.map(function (item) {
           var k = item.label.trim().toLowerCase();
           var entry = famData[k];
-          if (!entry) return { item: item, weight: 3 };
-          var score = ((entry.taps || 0) + (entry.questCorrect || 0) * 2 + (entry.exposures || 0) * 0.3) / 25;
-          if (score < 0.15) return { item: item, weight: 3 };
-          if (score < 0.45) return { item: item, weight: 2 };
-          return { item: item, weight: 1 };
+          var w;
+          if (!entry) w = 3;
+          else {
+            var score = ((entry.taps || 0) + (entry.questCorrect || 0) * 2 + (entry.exposures || 0) * 0.3) / 25;
+            if (score < 0.15) w = 3;
+            else if (score < 0.45) w = 2;
+            else w = 1;
+          }
+          if (missSet[k]) w += 2; // urgency boost for recently-missed labels
+          return { item: item, weight: w };
         });
         var totalWeight = weighted.reduce(function (s, w) { return s + w.weight; }, 0);
         var roll = Math.random() * totalWeight;
@@ -2515,7 +2747,43 @@
           if (roll < cum) { target = weighted[wi].item; break; }
         }
       } else {
-        target = pool[Math.floor(Math.random() * pool.length)];
+        target = targetPool[Math.floor(Math.random() * targetPool.length)];
+      }
+
+      // Pick distractors for a target. Behavior depends on mode:
+      //   • Standard: 70% same-category (challenges semantic discrimination) + 30% off-category.
+      //   • Errorless: 100% off-category (maximum contrast — answer is obvious so student
+      //     builds confidence without risk of forming wrong associations).
+      function pickDistractors(forTarget, count) {
+        var cat = forTarget.category;
+        var sameCat = pool.filter(function (it) { return it.id !== forTarget.id && it.category === cat; });
+        var otherCat = pool.filter(function (it) { return it.id !== forTarget.id && it.category !== cat; });
+        function shuf(a) {
+          for (var si = a.length - 1; si > 0; si--) {
+            var sj = Math.floor(Math.random() * (si + 1));
+            var st = a[si]; a[si] = a[sj]; a[sj] = st;
+          }
+          return a;
+        }
+        shuf(sameCat); shuf(otherCat);
+        if (srchErrorless) {
+          // Errorless: prefer off-category distractors for maximum visual + semantic contrast.
+          // Fall back to same-category only if off-category pool is too thin.
+          var ePrimary = otherCat.slice(0, count);
+          if (ePrimary.length < count) {
+            ePrimary = ePrimary.concat(sameCat.slice(0, count - ePrimary.length));
+          }
+          return shuf(ePrimary);
+        }
+        // Standard: 70% same-category, 30% off-category.
+        var same = sameCat.slice(0, Math.ceil(count * 0.7));
+        var rest = otherCat.slice(0, count - same.length);
+        var combined = same.concat(rest);
+        if (combined.length < count) {
+          var leftover = sameCat.slice(same.length).concat(otherCat.slice(rest.length));
+          combined = combined.concat(leftover.slice(0, count - combined.length));
+        }
+        return shuf(combined);
       }
 
       if (mode === 'build') {
@@ -2526,12 +2794,18 @@
           var r = pool[Math.floor(Math.random() * pool.length)];
           if (!phraseWords.find(function (w) { return w.id === r.id; })) phraseWords.push(r);
         }
-        // Build a shuffled option pool (phrase words + distractors)
-        var buildPool = phraseWords.slice();
-        while (buildPool.length < Math.min(pool.length, phraseLen + 3)) {
-          var d = pool[Math.floor(Math.random() * pool.length)];
-          if (!buildPool.find(function (w) { return w.id === d.id; })) buildPool.push(d);
+        // Option pool = phrase words + category-aware distractors so "bowl" can appear alongside
+        // "cup" and "plate" instead of random unrelated items.
+        var extraDistractorCount = Math.max(0, Math.min(pool.length, phraseLen + 3) - phraseWords.length);
+        var buildExtras = [];
+        if (extraDistractorCount > 0) {
+          // Distractors should not already be in phraseWords
+          var excludeIds = {};
+          phraseWords.forEach(function (p) { excludeIds[p.id] = true; });
+          var candidates = pickDistractors(target, extraDistractorCount * 2).filter(function (c) { return !excludeIds[c.id]; });
+          buildExtras = candidates.slice(0, extraDistractorCount);
         }
+        var buildPool = phraseWords.concat(buildExtras);
         // Shuffle build pool
         for (var bi = buildPool.length - 1; bi > 0; bi--) {
           var bj = Math.floor(Math.random() * (bi + 1));
@@ -2544,19 +2818,18 @@
         setSrchOptions([]);
         setSrchFeedback(null);
         setSrchRevealed(false);
+        srchLastTargetRef.current = target.id;
         // Speak the phrase
         var phraseText = phraseWords.map(function (w) { return w.label; }).join(' ');
         setTimeout(function () { srchSpeakWord(phraseText); }, 300);
         return;
       }
 
-      // Listen & Find mode (single word)
-      var numOpts = Math.max(2, Math.min(srchDifficulty, pool.length));
-      var opts = [target];
-      while (opts.length < numOpts) {
-        var r2 = pool[Math.floor(Math.random() * pool.length)];
-        if (!opts.find(function (o) { return o.id === r2.id; })) opts.push(r2);
-      }
+      // Listen & Find mode (single word). In errorless mode, force to 2 choices regardless
+      // of the difficulty setting — students in errorless mode need maximum success rate.
+      var effectiveDifficulty = srchErrorless ? 2 : srchDifficulty;
+      var numOpts = Math.max(2, Math.min(effectiveDifficulty, pool.length));
+      var opts = [target].concat(pickDistractors(target, numOpts - 1));
       // Shuffle
       for (var si = opts.length - 1; si > 0; si--) {
         var sj = Math.floor(Math.random() * (si + 1));
@@ -2566,19 +2839,67 @@
       setSrchOptions(opts);
       setSrchFeedback(null);
       setSrchRevealed(false);
+      srchLastTargetRef.current = target.id;
       // Auto-speak the word after a short delay
       setTimeout(function () { srchSpeakWord(target.label); }, 300);
+    }
+
+    // Build the active pool for a round, respecting the category filter set on the menu.
+    // Kept in one place so every call site picks up the filter. (Named `srchPool` to avoid
+    // colliding with `srchBuildPool`, which is the state variable holding the shuffled option
+    // tiles in Listen & Build mode.)
+    function srchPool() {
+      var p = gallery.filter(function (g) { return g.image; });
+      if (srchCategoryFilter) p = p.filter(function (g) { return g.category === srchCategoryFilter; });
+      return p;
+    }
+
+    // Fires a small celebration toast at streak milestones. The guard in
+    // srchLastCelebratedStreak prevents re-firing if a re-render re-runs
+    // the check handler for the same streak count.
+    function srchMaybeCelebrate(streak) {
+      var milestones = [3, 5, 10, 15, 20];
+      if (milestones.indexOf(streak) === -1) return;
+      if (streak <= srchLastCelebratedStreak) return;
+      setSrchLastCelebratedStreak(streak);
+      var msg = streak >= 20 ? '🏆 ' + streak + ' in a row! Legendary!' :
+                streak >= 15 ? '🎉 ' + streak + ' in a row! Incredible!' :
+                streak >= 10 ? '🔥 ' + streak + ' in a row! On fire!' :
+                streak >= 5  ? '⚡ ' + streak + ' in a row! Keep going!' :
+                                '✨ ' + streak + ' in a row!';
+      if (addToast) addToast(msg);
     }
 
     function srchCheckAnswer(picked) {
       if (!srchTarget) return;
       var correct = picked.id === srchTarget.id;
+      // Light haptic (mobile only). Ignored on desktop + Safari where vibrate isn't supported.
+      try { if (navigator.vibrate) navigator.vibrate(correct ? 40 : [40, 60, 40]); } catch (_) {}
+      // Errorless mode: wrong picks don't count as trials, don't break streak, don't record a
+      // failed IEP trial. Student just retries the same target. This is the core errorless-
+      // learning contract — no chance to learn the wrong association.
+      if (srchErrorless && !correct) {
+        setSrchFeedback({ ok: false, msg: '💛 Not that one. Listen again — try "' + srchTarget.label + '".' });
+        recordFamiliarity(srchTarget.label, 'exposure');
+        // Re-speak the correct label right away so the pairing sticks.
+        var speakErrLabel = srchTarget.label;
+        setTimeout(function () { srchSpeakWord(speakErrLabel); }, 600);
+        // Clear feedback and let the student try again on the SAME target.
+        srchTimerRef.current = setTimeout(function () { setSrchFeedback(null); }, 2200);
+        return;
+      }
       setSrchTotal(function (t) { return t + 1; });
       recordFamiliarity(srchTarget.label, correct ? 'quest-correct' : 'quest-wrong');
       if (!correct && picked.label) recordFamiliarity(picked.label, 'exposure');
       // IEP trial
       var receptiveGoal = activeGoals.find(function (g) { return g.type === 'receptive' && g.currentCount < g.targetCount; });
       if (receptiveGoal) recordIepTrial(receptiveGoal.id, correct, 'search:listen:' + srchTarget.label);
+      // Track missed labels for the end-of-session miss list. Use a ref-backed set so we don't
+      // re-render the active-session UI on each miss.
+      if (!correct) {
+        srchMissedSetRef.current = srchMissedSetRef.current || {};
+        srchMissedSetRef.current[srchTarget.label] = (srchMissedSetRef.current[srchTarget.label] || 0) + 1;
+      }
       if (correct) {
         var ns = srchStreak + 1;
         setSrchStreak(ns);
@@ -2587,14 +2908,35 @@
         setSrchScore(function (s) { return s + pts; });
         setSrchCorrect(function (c) { return c + 1; });
         setSrchFeedback({ ok: true, msg: '✅ Correct! +' + pts + (ns >= 3 ? ' 🔥x' + ns : '') });
-        var pool = gallery.filter(function (g) { return g.image; });
-        srchTimerRef.current = setTimeout(function () { srchPickRound(srchMode, pool); }, 1200);
+        srchMaybeCelebrate(ns);
+        // Session-length check: auto-end if we've hit the target trial count.
+        var nextTotalOk = (srchTotal + 1);
+        if (srchSessionLength && nextTotalOk >= srchSessionLength) {
+          srchTimerRef.current = setTimeout(function () { srchEndSession(); }, 1200);
+        } else {
+          srchTimerRef.current = setTimeout(function () { srchPickRound(srchMode, srchPool()); }, 1200);
+        }
       } else {
         setSrchStreak(0);
+        setSrchLastCelebratedStreak(0);
         setSrchRevealed(true);
         setSrchFeedback({ ok: false, msg: '❌ That was "' + picked.label + '". Listen for "' + srchTarget.label + '".' });
-        var pool2 = gallery.filter(function (g) { return g.image; });
-        srchTimerRef.current = setTimeout(function () { srchPickRound(srchMode, pool2); }, 2500);
+        (function () {
+          var q = (srchRecentMissRef.current || []).slice();
+          var key = srchTarget.label;
+          q = q.filter(function (l) { return l !== key; });
+          q.push(key);
+          while (q.length > SRCH_RECENT_MISS_LIMIT) q.shift();
+          srchRecentMissRef.current = q;
+        })();
+        var speakTargetLabel = srchTarget.label;
+        setTimeout(function () { srchSpeakWord(speakTargetLabel); }, 900);
+        var nextTotalMiss = (srchTotal + 1);
+        if (srchSessionLength && nextTotalMiss >= srchSessionLength) {
+          srchTimerRef.current = setTimeout(function () { srchEndSession(); }, 3000);
+        } else {
+          srchTimerRef.current = setTimeout(function () { srchPickRound(srchMode, srchPool()); }, 3000);
+        }
       }
     }
 
@@ -2605,6 +2947,7 @@
       var correct = picked.id === expected.id;
       recordFamiliarity(expected.label, correct ? 'quest-correct' : 'quest-wrong');
       if (correct) {
+        try { if (navigator.vibrate) navigator.vibrate(40); } catch (_) {}
         var newSentence = srchSentence.concat([picked]);
         setSrchSentence(newSentence);
         if (newSentence.length === srchSentenceTarget.length) {
@@ -2619,32 +2962,57 @@
           // IEP trial for expressive goal
           var expressiveGoal = activeGoals.find(function (g) { return g.type === 'expressive' && g.currentCount < g.targetCount; });
           if (expressiveGoal) recordIepTrial(expressiveGoal.id, true, 'search:build:' + srchSentenceTarget.map(function (w) { return w.label; }).join('+'));
-          var pool3 = gallery.filter(function (g) { return g.image; });
-          srchTimerRef.current = setTimeout(function () { srchPickRound('build', pool3); }, 1800);
+          srchMaybeCelebrate(ns2);
+          srchTimerRef.current = setTimeout(function () { srchPickRound('build', srchPool()); }, 1800);
         } else {
           setSrchFeedback({ ok: true, msg: '✅ ' + picked.label + '!' });
         }
       } else {
         setSrchStreak(0);
+        setSrchLastCelebratedStreak(0);
         setSrchTotal(function (t) { return t + 1; });
         setSrchFeedback({ ok: false, msg: '❌ Next word should be "' + expected.label + '"' });
-        // Reset the sentence and retry
+        try { if (navigator.vibrate) navigator.vibrate([40, 60, 40]); } catch (_) {}
+        // Track the miss so future rounds surface this label sooner, AND so it shows up on
+        // the end-of-session miss list.
+        (function () {
+          var q = (srchRecentMissRef.current || []).slice();
+          q = q.filter(function (l) { return l !== expected.label; });
+          q.push(expected.label);
+          while (q.length > SRCH_RECENT_MISS_LIMIT) q.shift();
+          srchRecentMissRef.current = q;
+          srchMissedSetRef.current = srchMissedSetRef.current || {};
+          srchMissedSetRef.current[expected.label] = (srchMissedSetRef.current[expected.label] || 0) + 1;
+        })();
+        // Record IEP trial for Build-mode misses too — was previously only logged on full-phrase
+        // success, which masked struggling students in the goal data. Expressive goals need to
+        // see failures to pace progress correctly.
+        var buildExpressiveGoal = activeGoals.find(function (g) { return g.type === 'expressive' && g.currentCount < g.targetCount; });
+        if (buildExpressiveGoal) recordIepTrial(buildExpressiveGoal.id, false, 'search:build:' + expected.label);
+        // Partial-retry pedagogy: keep the words the student already locked in correct, and let
+        // them re-attempt just the failed position. Speaking only the expected word (not the
+        // whole phrase) keeps the audio cue tight and relevant. Previously a wrong pick reset
+        // the entire sentence — punitive and unnecessary.
+        var expectedLabelForSpeak = expected.label;
         srchTimerRef.current = setTimeout(function () {
-          setSrchSentence([]);
           setSrchFeedback(null);
-          // Re-speak
-          var phraseText = srchSentenceTarget.map(function (w) { return w.label; }).join(' ');
-          srchSpeakWord(phraseText);
-        }, 2000);
+          srchSpeakWord(expectedLabelForSpeak);
+        }, 1800);
       }
     }
 
     function srchStartSession(mode) {
       setSrchMode(mode);
       setSrchScore(0); setSrchTotal(0); setSrchCorrect(0); setSrchStreak(0); setSrchBest(0);
+      setSrchLastCelebratedStreak(0);
       setSrchFeedback(null); setSrchSentence([]); setSrchSentenceTarget([]); setSrchBuildPool([]);
-      var pool = gallery.filter(function (g) { return g.image; });
-      srchPickRound(mode, pool);
+      setSrchShowSummary(false); setSrchSummaryData(null);
+      // Reset pedagogy refs for a fresh session — last-target, recent-miss queue, and the
+      // session-wide miss set shouldn't leak across sessions.
+      srchLastTargetRef.current = null;
+      srchRecentMissRef.current = [];
+      srchMissedSetRef.current = {};
+      srchPickRound(mode, srchPool());
       // Increment session count
       setSrchStats(function (prev) {
         var upd = Object.assign({}, prev, { sessions: (prev.sessions || 0) + 1 });
@@ -2665,6 +3033,29 @@
         store(STORAGE_SEARCH_STATS, upd);
         return upd;
       });
+      // If the student actually played any rounds this session, capture a snapshot and show
+      // the summary card before returning to the menu. Zero-round sessions jump straight back
+      // (no point showing a "you got 0/0" recap).
+      if (srchTotal > 0) {
+        // Sort missed labels by miss count descending — the labels the student struggled with
+        // most appear first. That's what the SLP wants to see at the top.
+        var missedMap = srchMissedSetRef.current || {};
+        var missedLabels = Object.keys(missedMap)
+          .sort(function (a, b) { return (missedMap[b] || 0) - (missedMap[a] || 0); })
+          .slice(0, 8); // cap at 8 so the card stays scannable
+        setSrchSummaryData({
+          mode: srchMode,
+          correct: srchCorrect,
+          total: srchTotal,
+          score: srchScore,
+          bestStreak: srchBest,
+          accuracy: srchTotal > 0 ? Math.round((srchCorrect / srchTotal) * 100) : 0,
+          filter: srchCategoryFilter,
+          missedLabels: missedLabels,
+          errorless: srchErrorless
+        });
+        setSrchShowSummary(true);
+      }
       setSrchMode('menu');
       setSrchTarget(null); setSrchOptions([]); setSrchFeedback(null);
       setSrchSentence([]); setSrchSentenceTarget([]); setSrchBuildPool([]);
@@ -3066,6 +3457,74 @@
     };
     var FCT_FUNCTIONS = ['Attention', 'Escape', 'Tangible', 'Sensory'];
 
+    // ── FCT Phase Templates ────────────────────────────────────────────────
+    // Four functions × four pedagogical phases. Each entry is a short word list that
+    // the Communication Builder wizard uses to auto-populate a board.
+    // Phase 1 = single FCR (Functional Communication Response) — isolated
+    // Phase 2 = 3-cell carrier phrase (e.g. "I + WANT + BREAK")
+    // Phase 3 = 6-cell mixed (FCR + common frames)
+    // Phase 4 = 12-cell with integrated core vocabulary
+    // Word lists are derived from FCT_MAP.priorityWords — same data, shaped into phases.
+    var FCT_PHASE_TEMPLATES = {
+      Attention: {
+        1: ['look'],
+        2: ['look', 'at', 'me'],
+        3: ['look', 'hi', 'come here', 'help', 'play', 'friend'],
+        4: ['look', 'hi', 'come here', 'help', 'play', 'friend', 'my turn', 'watch me', 'excuse me', 'please', 'yes', 'no']
+      },
+      Escape: {
+        1: ['break'],
+        2: ['I', 'want', 'break'],
+        3: ['break', 'stop', 'all done', 'help', 'too hard', 'wait'],
+        4: ['break', 'stop', 'all done', 'help', 'too hard', 'wait', 'need help', 'not now', 'finished', 'no', 'yes', 'please']
+      },
+      Tangible: {
+        1: ['want'],
+        2: ['I', 'want', 'it'],
+        3: ['want', 'more', 'please', 'give', 'my turn', 'eat'],
+        4: ['want', 'more', 'please', 'give', 'my turn', 'eat', 'drink', 'play', 'open', 'can I', 'yes', 'no']
+      },
+      Sensory: {
+        1: ['break'],
+        2: ['need', 'quiet', 'please'],
+        3: ['need break', 'too loud', 'too bright', 'need quiet', 'help', 'deep breath'],
+        4: ['need break', 'too loud', 'too bright', 'need quiet', 'need to move', 'need fidget', 'need headphones', 'feel overwhelmed', 'deep breath', 'help', 'yes', 'no']
+      }
+    };
+    // Metadata for each phase, used by the wizard to explain the choice to the teacher.
+    var FCT_PHASE_META = {
+      1: { label: 'Phase 1 · Single FCR', desc: '1 symbol — teach the replacement in isolation.' },
+      2: { label: 'Phase 2 · Carrier phrase', desc: '3 symbols — combine into a short sentence.' },
+      3: { label: 'Phase 3 · Mixed', desc: '6 symbols — FCR plus common frames.' },
+      4: { label: 'Phase 4 · Integrated', desc: '12 symbols — full board with core vocabulary.' }
+    };
+    // Word → category mapping for the few FCT-specific words that aren't in any existing
+    // template. Prevents every word from defaulting to "other" when applied to a board.
+    var FCT_WORD_CATEGORY = {
+      'I': 'other', 'me': 'other', 'it': 'other', 'at': 'other',
+      'yes': 'other', 'no': 'other', 'please': 'other', 'hi': 'other',
+      'more': 'other', 'all done': 'other',
+      'look': 'verb', 'want': 'verb', 'need': 'verb', 'give': 'verb',
+      'help': 'verb', 'stop': 'verb', 'wait': 'verb', 'come here': 'verb',
+      'play': 'verb', 'eat': 'verb', 'drink': 'verb', 'open': 'verb',
+      'watch me': 'verb', 'excuse me': 'verb', 'need help': 'verb',
+      'need break': 'verb', 'need quiet': 'verb', 'need headphones': 'verb',
+      'need to move': 'verb', 'need fidget': 'verb', 'deep breath': 'verb',
+      'break': 'noun', 'friend': 'noun', 'my turn': 'noun',
+      'too loud': 'adjective', 'too bright': 'adjective', 'too hard': 'adjective',
+      'quiet': 'adjective', 'finished': 'adjective', 'feel overwhelmed': 'adjective',
+      'not now': 'adjective', 'can I': 'other'
+    };
+    function fctWordCategory(label) {
+      var key = String(label || '').trim().toLowerCase();
+      // Scan the map case-insensitively so "I" and "i" both resolve
+      var keys = Object.keys(FCT_WORD_CATEGORY);
+      for (var i = 0; i < keys.length; i++) {
+        if (keys[i].toLowerCase() === key) return FCT_WORD_CATEGORY[keys[i]];
+      }
+      return 'other';
+    }
+
     function computeWordBank() {
       var bank = {};
       function ensure(lbl, cat) { var k = lbl.trim().toLowerCase(); if (!k) return null; if (!bank[k]) bank[k] = { d: lbl.trim(), cat: cat || 'other', cx: [], img: null, hasVoice: false }; return k; }
@@ -3266,26 +3725,162 @@
       // Menu screen
       if (srchMode === 'menu') {
         var allTimeAcc = srchStats.totalTrials > 0 ? Math.round((srchStats.totalCorrect / srchStats.totalTrials) * 100) : 0;
+        // Count symbols per category so the category chips can show live counts and auto-disable
+        // categories with no symbols (nothing to practice).
+        var catCounts = { verb: 0, noun: 0, adjective: 0, other: 0 };
+        pool.forEach(function (g) { if (catCounts[g.category] !== undefined) catCounts[g.category]++; });
+        var filteredPoolSize = srchCategoryFilter ? (catCounts[srchCategoryFilter] || 0) : pool.length;
         return e('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '30px', gap: '16px', overflowY: 'auto' } },
+          // ── Session summary card (shown briefly after ending a session) ──
+          srchShowSummary && srchSummaryData && e('div', {
+            style: {
+              width: '100%', maxWidth: '420px', padding: '18px 20px',
+              background: 'linear-gradient(135deg, #f0fdf4, #ecfccb)',
+              border: '2px solid #86efac', borderRadius: '16px',
+              boxShadow: '0 6px 20px rgba(34,197,94,0.15)'
+            }
+          },
+            e('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' } },
+              e('div', { style: { fontWeight: 800, fontSize: '14px', color: '#166534' } }, '🎯 Session complete'),
+              e('button', { onClick: function () { setSrchShowSummary(false); }, 'aria-label': 'Dismiss session summary', style: { background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer', fontSize: '14px', padding: '0 4px' } }, '✕')
+            ),
+            e('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '12px' } },
+              e('div', { style: { textAlign: 'center' } },
+                e('div', { style: { fontSize: '22px', fontWeight: 800, color: '#15803d' } }, srchSummaryData.correct + '/' + srchSummaryData.total),
+                e('div', { style: { fontSize: '10px', color: '#6b7280' } }, 'correct')
+              ),
+              e('div', { style: { textAlign: 'center' } },
+                e('div', { style: { fontSize: '22px', fontWeight: 800, color: PURPLE } }, srchSummaryData.accuracy + '%'),
+                e('div', { style: { fontSize: '10px', color: '#6b7280' } }, 'accuracy')
+              ),
+              e('div', { style: { textAlign: 'center' } },
+                e('div', { style: { fontSize: '22px', fontWeight: 800, color: '#d97706' } }, srchSummaryData.bestStreak + 'x'),
+                e('div', { style: { fontSize: '10px', color: '#6b7280' } }, 'best streak')
+              )
+            ),
+            // Miss list — "Words to practice next time". Only shown when there were actually
+            // missed items; otherwise a "✓ No misses!" celebration replaces it.
+            srchSummaryData.missedLabels && srchSummaryData.missedLabels.length > 0
+              ? e('div', { style: { marginBottom: '12px' } },
+                  e('div', { style: { fontSize: '10px', fontWeight: 700, color: '#374151', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Words to practice next time'),
+                  e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '4px' } },
+                    srchSummaryData.missedLabels.map(function (lbl, li) {
+                      return e('span', {
+                        key: li,
+                        title: 'Tap to hear',
+                        onClick: function () { srchSpeakWord(lbl); },
+                        style: { cursor: 'pointer', background: '#fef3c7', border: '1px solid #fcd34d', color: '#92400e', padding: '2px 8px', borderRadius: '999px', fontSize: '11px', fontWeight: 600 }
+                      }, lbl);
+                    })
+                  )
+                )
+              : (srchSummaryData.total > 0 && e('div', { style: { fontSize: '11px', color: '#166534', fontWeight: 700, marginBottom: '10px', textAlign: 'center' } }, '✨ No misses — every target correct!')),
+            e('div', { style: { display: 'flex', gap: '8px' } },
+              e('button', {
+                onClick: function () { setSrchShowSummary(false); srchStartSession(srchSummaryData.mode); },
+                'aria-label': 'Play another session',
+                style: Object.assign({}, S.btn(PURPLE, '#fff', false), { flex: 1 })
+              }, '▶ Play again'),
+              e('button', {
+                onClick: function () { setSrchShowSummary(false); },
+                'aria-label': 'Dismiss summary',
+                style: Object.assign({}, S.btn('#f3f4f6', '#374151', false), { flex: 1 })
+              }, 'Close')
+            )
+          ),
           e('div', { style: { fontSize: '48px' } }, '🔍'),
           e('h3', { style: { fontWeight: 800, fontSize: '22px', color: '#374151', margin: 0 } }, 'Symbol Search'),
           e('p', { style: { fontSize: '13px', color: '#6b7280', textAlign: 'center', maxWidth: '420px', margin: 0 } },
             'Train the auditory-to-visual connection that AAC learners need. Hear a word or phrase, then find the matching symbol(s).'),
-          // Difficulty selector
-          e('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#374151' } },
+          // Category filter — lets SLPs run targeted practice sessions (e.g. verbs-only).
+          // "All" keeps the default behavior (draws from every category).
+          e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', justifyContent: 'center', fontSize: '12px', color: '#374151', maxWidth: '420px' } },
+            e('span', { style: { fontWeight: 600 } }, 'Practice:'),
+            [
+              { id: null, label: 'All', icon: '🎯', count: pool.length },
+              { id: 'verb', label: 'Verbs', icon: '🏃', count: catCounts.verb },
+              { id: 'noun', label: 'Nouns', icon: '📦', count: catCounts.noun },
+              { id: 'adjective', label: 'Adjectives', icon: '🎨', count: catCounts.adjective },
+              { id: 'other', label: 'Core', icon: '💬', count: catCounts.other }
+            ].map(function (c) {
+              var sel = srchCategoryFilter === c.id;
+              var disabled = c.count < 3;
+              return e('button', {
+                key: String(c.id),
+                onClick: function () { if (!disabled) setSrchCategoryFilter(c.id); },
+                disabled: disabled,
+                'aria-label': c.label + (disabled ? ' — need at least 3 symbols' : ' · ' + c.count + ' symbols'),
+                'aria-pressed': sel,
+                title: disabled ? 'Need at least 3 ' + c.label.toLowerCase() + ' symbols' : c.count + ' symbol' + (c.count === 1 ? '' : 's'),
+                style: {
+                  padding: '5px 12px', borderRadius: '999px', border: '2px solid ' + (sel ? PURPLE : '#d1d5db'),
+                  background: sel ? LIGHT_PURPLE : disabled ? '#f3f4f6' : '#fff',
+                  color: sel ? PURPLE : disabled ? '#9ca3af' : '#374151',
+                  fontWeight: sel ? 700 : 500, fontSize: '12px',
+                  cursor: disabled ? 'not-allowed' : 'pointer',
+                  opacity: disabled ? 0.6 : 1,
+                  display: 'inline-flex', alignItems: 'center', gap: '4px'
+                }
+              }, c.icon + ' ' + c.label, e('span', { style: { fontSize: '10px', opacity: 0.7, fontWeight: 500 } }, '(' + c.count + ')'));
+            })
+          ),
+          // Difficulty selector. In errorless mode the difficulty is forced to 2 internally,
+          // so we visually disable the difficulty chips to avoid confusion about what's in effect.
+          e('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#374151', opacity: srchErrorless ? 0.5 : 1 } },
             e('span', { style: { fontWeight: 600 } }, 'Difficulty:'),
             [2, 3, 4, 6].map(function (n) {
               return e('button', {
                 key: n,
-                onClick: function () { setSrchDifficulty(n); },
+                onClick: function () { if (!srchErrorless) setSrchDifficulty(n); },
+                disabled: srchErrorless,
+                title: srchErrorless ? 'Errorless mode uses 2 choices' : '',
                 'aria-label': n + ' options',
                 style: {
-                  padding: '4px 12px', borderRadius: '16px', border: '2px solid ' + (srchDifficulty === n ? PURPLE : '#d1d5db'),
-                  background: srchDifficulty === n ? LIGHT_PURPLE : '#f9fafb',
-                  color: srchDifficulty === n ? PURPLE : '#6b7280',
-                  fontWeight: srchDifficulty === n ? 700 : 500, fontSize: '12px', cursor: 'pointer'
+                  padding: '4px 12px', borderRadius: '16px',
+                  border: '2px solid ' + ((!srchErrorless && srchDifficulty === n) ? PURPLE : '#d1d5db'),
+                  background: (!srchErrorless && srchDifficulty === n) ? LIGHT_PURPLE : '#f9fafb',
+                  color: (!srchErrorless && srchDifficulty === n) ? PURPLE : '#6b7280',
+                  fontWeight: (!srchErrorless && srchDifficulty === n) ? 700 : 500, fontSize: '12px',
+                  cursor: srchErrorless ? 'not-allowed' : 'pointer'
                 }
               }, n + ' choices');
+            })
+          ),
+          // Errorless learning mode toggle — for pre-receptive students. When on, wrong answers
+          // don't penalize the student; distractors are always off-category; difficulty forced to 2.
+          e('label', { style: { display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#374151', cursor: 'pointer', background: srchErrorless ? '#fef3c7' : 'transparent', padding: '4px 10px', borderRadius: '999px', border: '1px solid ' + (srchErrorless ? '#fcd34d' : 'transparent') } },
+            e('input', {
+              type: 'checkbox',
+              checked: srchErrorless,
+              onChange: function (ev) { setSrchErrorless(ev.target.checked); },
+              'aria-label': 'Toggle errorless learning mode'
+            }),
+            e('span', { style: { fontWeight: 600 } }, '💛 Errorless mode'),
+            e('span', { style: { fontSize: '10px', color: '#6b7280' } }, '(beginner — wrong picks retry same target)')
+          ),
+          // Session length selector — optional auto-end after N rounds. Default "Unlimited" matches
+          // legacy behavior. Good for structured practice blocks or data-probe sessions.
+          e('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#374151', flexWrap: 'wrap' } },
+            e('span', { style: { fontWeight: 600 } }, 'Session length:'),
+            [
+              { val: null, label: 'Unlimited' },
+              { val: 10, label: '10 rounds' },
+              { val: 20, label: '20 rounds' },
+              { val: 30, label: '30 rounds' }
+            ].map(function (opt) {
+              var sel = srchSessionLength === opt.val;
+              return e('button', {
+                key: String(opt.val),
+                onClick: function () { setSrchSessionLength(opt.val); },
+                'aria-label': opt.label,
+                'aria-pressed': sel,
+                style: {
+                  padding: '4px 12px', borderRadius: '16px', border: '2px solid ' + (sel ? PURPLE : '#d1d5db'),
+                  background: sel ? LIGHT_PURPLE : '#f9fafb',
+                  color: sel ? PURPLE : '#6b7280',
+                  fontWeight: sel ? 700 : 500, fontSize: '12px', cursor: 'pointer'
+                }
+              }, opt.label);
             })
           ),
           // All-time stats
@@ -3303,11 +3898,12 @@
               e('div', { style: { fontSize: '9px', color: '#6b7280' } }, 'best streak')
             )
           ),
-          // Mode selection
+          // Mode selection — now respects the category filter; if the filtered pool is too
+          // small, the mode card becomes disabled and explains why.
           e('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px', width: '100%', maxWidth: '400px' } },
             SEARCH_MODES.map(function (m) {
               var minPool = m.id === 'build' ? 4 : 3;
-              var disabled = pool.length < minPool;
+              var disabled = filteredPoolSize < minPool;
               return e('button', {
                 key: m.id,
                 onClick: function () { if (!disabled) srchStartSession(m.id); },
@@ -3343,7 +3939,11 @@
       // Active session — controls bar
       var backBtn = e('button', { onClick: function () { srchEndSession(); }, 'aria-label': 'Back to menu', style: S.btn('#f3f4f6', '#374151', false) }, '← Back');
       var pctAcc = srchTotal > 0 ? Math.round((srchCorrect / srchTotal) * 100) : 0;
-      var scoreBar = e('div', { 'aria-live': 'polite', 'aria-label': 'Score: ' + srchScore + ', Accuracy: ' + pctAcc + '%', style: { display: 'flex', gap: '8px', alignItems: 'center', fontSize: '11px', color: '#6b7280' } },
+      // Round counter gives students/SLPs a sense of session length. Starts at 1 once the first
+      // round loads so there isn't a confusing "Round 0".
+      var roundNum = (srchTotal || 0) + (srchFeedback ? 0 : 1);
+      var scoreBar = e('div', { 'aria-live': 'polite', 'aria-label': 'Round ' + roundNum + ', Score: ' + srchScore + ', Accuracy: ' + pctAcc + '%', style: { display: 'flex', gap: '8px', alignItems: 'center', fontSize: '11px', color: '#6b7280', flexWrap: 'wrap' } },
+        e('span', { style: { fontWeight: 600, color: '#64748b' } }, 'Round ' + roundNum),
         e('span', { style: { fontWeight: 700, color: PURPLE } }, '⭐ ' + srchScore),
         e('span', null, '🎯 ' + srchCorrect + '/' + srchTotal),
         srchStreak >= 2 && e('span', { style: { color: '#f97316', fontWeight: 700 } }, '🔥 x' + srchStreak),
@@ -3355,22 +3955,37 @@
       if (srchMode === 'listen') {
         return e('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', padding: '14px', gap: '12px', overflowY: 'auto' } },
           e('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } }, backBtn, scoreBar),
-          // Audio prompt area
+          // Audio prompt area — main 🔊 plays at normal speed, 🐢 plays at 0.7× for students
+          // with auditory-processing delays or unfamiliar words.
           e('div', { style: { textAlign: 'center', padding: '20px', background: 'linear-gradient(135deg, #faf5ff, #ede9fe)', borderRadius: '16px', border: '2px solid #c4b5fd' } },
             e('div', { style: { fontSize: '11px', fontWeight: 600, color: '#6b7280', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '1px' } }, 'Listen carefully...'),
-            e('button', {
-              onClick: function () { if (srchTarget) srchSpeakWord(srchTarget.label); },
-              disabled: srchSpeaking,
-              'aria-label': 'Play word audio',
-              style: {
-                padding: '14px 28px', fontSize: '24px', background: srchSpeaking ? '#e5e7eb' : PURPLE, color: '#fff',
-                border: 'none', borderRadius: '50%', cursor: srchSpeaking ? 'wait' : 'pointer',
-                boxShadow: srchSpeaking ? 'none' : '0 4px 16px rgba(124,58,237,0.3)', transition: 'all 0.2s',
-                width: '72px', height: '72px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center'
-              }
-            }, srchSpeaking ? '⏳' : '🔊'),
+            e('div', { style: { display: 'inline-flex', alignItems: 'center', gap: '10px' } },
+              e('button', {
+                onClick: function () { if (srchTarget) srchSpeakWord(srchTarget.label); },
+                disabled: srchSpeaking,
+                'aria-label': 'Play word audio',
+                style: {
+                  padding: '14px 28px', fontSize: '24px', background: srchSpeaking ? '#e5e7eb' : PURPLE, color: '#fff',
+                  border: 'none', borderRadius: '50%', cursor: srchSpeaking ? 'wait' : 'pointer',
+                  boxShadow: srchSpeaking ? 'none' : '0 4px 16px rgba(124,58,237,0.3)', transition: 'all 0.2s',
+                  width: '72px', height: '72px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center'
+                }
+              }, srchSpeaking ? '⏳' : '🔊'),
+              e('button', {
+                onClick: function () { if (srchTarget) srchSpeakWord(srchTarget.label, 0.7); },
+                disabled: srchSpeaking,
+                'aria-label': 'Play word audio at slow speed',
+                title: 'Slow replay (0.7× speed)',
+                style: {
+                  padding: '8px', fontSize: '16px', background: srchSpeaking ? '#e5e7eb' : '#fff', color: PURPLE,
+                  border: '2px solid ' + (srchSpeaking ? '#e5e7eb' : '#c4b5fd'),
+                  borderRadius: '50%', cursor: srchSpeaking ? 'wait' : 'pointer',
+                  width: '48px', height: '48px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center'
+                }
+              }, '🐢')
+            ),
             e('div', { style: { marginTop: '8px', fontSize: '12px', color: '#7c3aed', fontWeight: 600 } },
-              srchSpeaking ? 'Playing...' : 'Tap to hear again'),
+              srchSpeaking ? 'Playing...' : 'Tap 🔊 to hear again · 🐢 for slow'),
             // Reveal hint
             srchRevealed && srchTarget && e('div', { style: { marginTop: '8px', fontSize: '16px', fontWeight: 800, color: '#059669', background: '#dcfce7', display: 'inline-block', padding: '4px 14px', borderRadius: '8px' } },
               '→ ' + srchTarget.label)
@@ -3422,19 +4037,33 @@
           // Audio prompt
           e('div', { style: { textAlign: 'center', padding: '16px', background: 'linear-gradient(135deg, #faf5ff, #ede9fe)', borderRadius: '16px', border: '2px solid #c4b5fd' } },
             e('div', { style: { fontSize: '11px', fontWeight: 600, color: '#6b7280', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '1px' } }, 'Build the phrase:'),
-            e('button', {
-              onClick: function () { srchSpeakWord(phraseText); },
-              disabled: srchSpeaking,
-              'aria-label': 'Replay phrase',
-              style: {
-                padding: '12px 24px', fontSize: '20px', background: srchSpeaking ? '#e5e7eb' : PURPLE, color: '#fff',
-                border: 'none', borderRadius: '50%', cursor: srchSpeaking ? 'wait' : 'pointer',
-                boxShadow: srchSpeaking ? 'none' : '0 4px 16px rgba(124,58,237,0.3)',
-                width: '64px', height: '64px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center'
-              }
-            }, srchSpeaking ? '⏳' : '🔊'),
+            e('div', { style: { display: 'inline-flex', alignItems: 'center', gap: '10px' } },
+              e('button', {
+                onClick: function () { srchSpeakWord(phraseText); },
+                disabled: srchSpeaking,
+                'aria-label': 'Replay phrase',
+                style: {
+                  padding: '12px 24px', fontSize: '20px', background: srchSpeaking ? '#e5e7eb' : PURPLE, color: '#fff',
+                  border: 'none', borderRadius: '50%', cursor: srchSpeaking ? 'wait' : 'pointer',
+                  boxShadow: srchSpeaking ? 'none' : '0 4px 16px rgba(124,58,237,0.3)',
+                  width: '64px', height: '64px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center'
+                }
+              }, srchSpeaking ? '⏳' : '🔊'),
+              e('button', {
+                onClick: function () { srchSpeakWord(phraseText, 0.7); },
+                disabled: srchSpeaking,
+                'aria-label': 'Replay phrase at slow speed',
+                title: 'Slow replay (0.7× speed)',
+                style: {
+                  padding: '8px', fontSize: '14px', background: srchSpeaking ? '#e5e7eb' : '#fff', color: PURPLE,
+                  border: '2px solid ' + (srchSpeaking ? '#e5e7eb' : '#c4b5fd'),
+                  borderRadius: '50%', cursor: srchSpeaking ? 'wait' : 'pointer',
+                  width: '44px', height: '44px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center'
+                }
+              }, '🐢')
+            ),
             e('div', { style: { marginTop: '6px', fontSize: '11px', color: '#7c3aed', fontWeight: 600 } },
-              srchSpeaking ? 'Playing...' : srchSentenceTarget.length + ' words — tap to hear again'),
+              srchSpeaking ? 'Playing...' : srchSentenceTarget.length + ' words — 🔊 normal · 🐢 slow'),
             // Reveal full phrase hint
             srchRevealed && e('div', { style: { marginTop: '8px', fontSize: '14px', fontWeight: 800, color: '#059669', background: '#dcfce7', display: 'inline-block', padding: '4px 14px', borderRadius: '8px' } },
               phraseText)
@@ -4777,7 +5406,136 @@
         );
       }
 
+      // ── Communication Builder card ─────────────────────────────────────────
+      // Two-path wizard that auto-populates a Board Builder board:
+      //   (a) Guided FCT: pick function + phase → `applyFctTemplate(...)`
+      //   (b) Free-text:  type a goal → `buildBoardFromGoal(...)`
+      // The card is always at the top of the Quick Boards tab; existing sub-modes
+      // (First-Then, Choice, etc.) are unchanged underneath it.
+      var fctPhasePreview = (FCT_PHASE_TEMPLATES[cbFunction] && FCT_PHASE_TEMPLATES[cbFunction][cbPhase]) || [];
+      var activeFctMeta = FCT_MAP[cbFunction] || {};
+      // Confirm before replacing an in-progress board. Only prompts when the user
+      // actually has work at risk — a blank builder skips the dialog entirely.
+      var confirmReplaceBoard = function () {
+        if (!boardWords || boardWords.length === 0) return true;
+        try { return window.confirm('Replace the current board? Unsaved cells will be lost.'); }
+        catch (_) { return true; }
+      };
+      var fctChipStyle = function (selected, color) {
+        return {
+          padding: '6px 12px', borderRadius: '999px',
+          border: '2px solid ' + (selected ? (color || PURPLE) : '#d1d5db'),
+          background: selected ? (color ? color + '18' : LIGHT_PURPLE) : '#fff',
+          color: selected ? (color || PURPLE) : '#374151',
+          fontWeight: selected ? 700 : 500, fontSize: '12px', cursor: 'pointer',
+          display: 'inline-flex', alignItems: 'center', gap: '5px'
+        };
+      };
+      var commBuilderCard = e('div', { className: 'ss-no-print', style: { margin: '10px 12px 0', padding: '14px', background: 'linear-gradient(135deg, #faf5ff, #f0fdf4)', border: '1px solid #c4b5fd', borderRadius: '14px' } },
+        // Header
+        e('div', { style: { display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '4px', flexWrap: 'wrap' } },
+          e('span', { style: { fontSize: '18px' } }, '🗣'),
+          e('span', { style: { fontWeight: 800, fontSize: '14px', color: '#374151' } }, 'Communication Builder'),
+          e('span', { style: { fontSize: '11px', color: '#6b7280' } }, 'Auto-populated boards, ready to drag-and-drop. FCT-ready.')
+        ),
+        // Path toggle
+        e('div', { style: { display: 'flex', gap: '6px', marginTop: '10px', marginBottom: '10px' } },
+          e('button', { onClick: function () { setCbPath('fct'); }, 'aria-label': 'Guided FCT mode', 'aria-pressed': cbPath === 'fct', style: fctChipStyle(cbPath === 'fct') }, '🎯 Guided (FCT)'),
+          e('button', { onClick: function () { setCbPath('goal'); }, 'aria-label': 'Free-text goal mode', 'aria-pressed': cbPath === 'goal', style: fctChipStyle(cbPath === 'goal') }, '✍️ Free-text goal')
+        ),
+        // Guided (FCT) path
+        cbPath === 'fct' && e('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px' } },
+          // Function chips
+          e('div', null,
+            e('div', { style: { fontSize: '11px', fontWeight: 700, color: '#374151', marginBottom: '5px' } }, 'Function'),
+            e('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
+              FCT_FUNCTIONS.map(function (fn) {
+                var meta = FCT_MAP[fn];
+                var sel = cbFunction === fn;
+                return e('button', { key: fn, onClick: function () { setCbFunction(fn); }, 'aria-label': meta.label + ' function', 'aria-pressed': sel, title: meta.desc, style: fctChipStyle(sel, meta.color) },
+                  e('span', null, meta.icon), e('span', null, meta.label));
+              })
+            )
+          ),
+          // Phase chips
+          e('div', null,
+            e('div', { style: { fontSize: '11px', fontWeight: 700, color: '#374151', marginBottom: '5px' } }, 'Phase'),
+            e('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
+              [1, 2, 3, 4].map(function (ph) {
+                var sel = cbPhase === ph;
+                var meta = FCT_PHASE_META[ph];
+                var count = (FCT_PHASE_TEMPLATES[cbFunction] && FCT_PHASE_TEMPLATES[cbFunction][ph] || []).length;
+                return e('button', { key: ph, onClick: function () { setCbPhase(ph); }, 'aria-label': meta.label + ' (' + count + ' symbols)', 'aria-pressed': sel, title: meta.desc, style: fctChipStyle(sel) },
+                  e('span', null, meta.label),
+                  e('span', { style: { fontSize: '10px', background: sel ? '#fff' : '#f3f4f6', color: sel ? PURPLE : '#6b7280', padding: '1px 6px', borderRadius: '999px', fontWeight: 700, marginLeft: '2px', border: sel ? '1px solid ' + PURPLE : '1px solid transparent' } }, count));
+              })
+            ),
+            FCT_PHASE_META[cbPhase] && e('div', { style: { fontSize: '10px', color: '#6b7280', marginTop: '5px', fontStyle: 'italic' } }, FCT_PHASE_META[cbPhase].desc)
+          ),
+          // Preview + build button
+          e('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', justifyContent: 'space-between' } },
+            e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', flex: 1, minWidth: '200px' } },
+              e('span', { style: { fontSize: '10px', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.04em' } }, 'Preview (' + fctPhasePreview.length + (fctPhasePreview.length === 1 ? ' symbol' : ' symbols') + '):'),
+              fctPhasePreview.map(function (lbl, li) {
+                return e('span', { key: li, style: { background: '#fff', border: '1px solid ' + (activeFctMeta.color || '#d1d5db'), color: activeFctMeta.color || '#374151', padding: '2px 8px', borderRadius: '999px', fontSize: '11px', fontWeight: 600 } }, lbl);
+              })
+            ),
+            e('button', {
+              onClick: function () { if (confirmReplaceBoard()) applyFctTemplate(cbFunction, cbPhase); },
+              disabled: !fctPhasePreview.length,
+              'aria-label': 'Build board from FCT template',
+              style: Object.assign({}, S.btn(activeFctMeta.color || PURPLE, '#fff', !fctPhasePreview.length), { whiteSpace: 'nowrap' })
+            }, 'Build board →')
+          ),
+          // Tip from FCT_MAP
+          activeFctMeta.tip && e('div', { style: { fontSize: '11px', color: '#4b5563', background: 'rgba(255,255,255,0.7)', border: '1px dashed ' + (activeFctMeta.color || '#d1d5db'), borderRadius: '8px', padding: '8px 10px', lineHeight: 1.4 } },
+            e('strong', null, 'Tip: '), activeFctMeta.tip)
+        ),
+        // Free-text goal path
+        cbPath === 'goal' && e('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px' } },
+          e('label', { htmlFor: 'comm-builder-goal', style: { fontSize: '11px', fontWeight: 700, color: '#374151' } }, 'Communication goal'),
+          e('input', {
+            id: 'comm-builder-goal', type: 'text',
+            value: cbGoalText,
+            onChange: function (ev) { setCbGoalText(ev.target.value); },
+            onKeyDown: function (ev) { if (ev.key === 'Enter' && cbGoalText.trim() && !cbGoalBusy) { ev.preventDefault(); if (!confirmReplaceBoard()) return; setCbGoalBusy(true); buildBoardFromGoal(cbGoalText).finally(function () { setCbGoalBusy(false); }); } },
+            placeholder: 'e.g. request a break at recess, ask a peer to play, tell me you need help',
+            style: Object.assign({}, S.input, { margin: 0, fontSize: '13px' }),
+            'aria-label': 'Communication goal'
+          }),
+          // Example starters — one-tap populate the goal input
+          e('div', { style: { display: 'flex', gap: '5px', flexWrap: 'wrap', alignItems: 'center' } },
+            e('span', { style: { fontSize: '10px', color: '#6b7280', fontWeight: 600 } }, 'Try:'),
+            [
+              'Request a break at work',
+              'Ask a peer to play',
+              'Tell me you need help',
+              'Request a snack at lunch',
+              'Say hello to a friend'
+            ].map(function (ex) {
+              return e('button', {
+                key: ex, onClick: function () { setCbGoalText(ex); },
+                'aria-label': 'Use example goal: ' + ex,
+                style: { fontSize: '10px', padding: '3px 9px', borderRadius: '999px', border: '1px dashed #a7f3d0', background: '#f0fdf4', color: '#15803d', cursor: 'pointer', fontWeight: 500 }
+              }, ex);
+            })
+          ),
+          e('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' } },
+            e('button', {
+              onClick: function () { if (!confirmReplaceBoard()) return; setCbGoalBusy(true); buildBoardFromGoal(cbGoalText).finally(function () { setCbGoalBusy(false); }); },
+              disabled: !cbGoalText.trim() || cbGoalBusy,
+              'aria-label': 'Build board from goal',
+              style: S.btn(PURPLE, '#fff', !cbGoalText.trim() || cbGoalBusy)
+            }, cbGoalBusy ? '⏳ Thinking…' : 'Build board →'),
+            !onCallGemini && e('span', { style: { fontSize: '10px', color: '#92400e', background: '#fef3c7', padding: '3px 8px', borderRadius: '6px', border: '1px solid #fde68a' } }, 'AI offline — will create a blank scaffold.'),
+            e('span', { style: { fontSize: '10px', color: '#6b7280', fontStyle: 'italic' } }, 'AI picks 3-6 symbols + detects function.')
+          )
+        )
+      );
+
       return e('div', { style: { display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' } },
+        // Communication Builder wizard — always visible at top of Quick Boards tab.
+        commBuilderCard,
         // Sub-mode switcher
         e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '4px', padding: '10px 12px 0', background: '#f9fafb', borderBottom: '1px solid #e5e7eb', overflowX: 'auto' } },
           subModes.map(function (sm) {
@@ -5189,14 +5947,37 @@
               var pct = g.targetCount > 0 ? Math.round((g.currentCount / g.targetCount) * 100) : 0;
               var recentTrials = (g.trials || []).slice(-10);
               var recentAcc = recentTrials.length > 0 ? Math.round((recentTrials.filter(function (t) { return t.success; }).length / recentTrials.length) * 100) : 0;
-              var goalTypeColors = { expressive: '#7c3aed', receptive: '#2563eb', social: '#059669' };
+              var goalTypeColors = { expressive: '#7c3aed', receptive: '#2563eb', social: '#059669', pragmatic: '#c026d3', articulation: '#ea580c' };
               var typeColor = goalTypeColors[g.type] || '#6b7280';
+              // Compute a days-until-target readout (if a target date is set).
+              var daysTo = null;
+              if (g.targetDate) {
+                var dt = new Date(g.targetDate);
+                if (!isNaN(dt.getTime())) { daysTo = Math.ceil((dt.getTime() - Date.now()) / 86400000); }
+              }
+              var priorityBadge = (g.priority && g.priority !== 'standard')
+                ? { high: { bg: '#fef2f2', color: '#991b1b', border: '#fecaca', label: 'HIGH PRIORITY' }, maintenance: { bg: '#f0fdf4', color: '#166534', border: '#bbf7d0', label: 'MAINTENANCE' } }[g.priority]
+                : null;
               return e('div', { key: g.id, style: { background: '#f9fafb', borderRadius: '8px', padding: '8px 10px', border: '1px solid #e5e7eb' } },
-                e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '5px' } },
+                e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '5px', flexWrap: 'wrap' } },
                   e('span', { style: { fontSize: '9px', background: typeColor, color: '#fff', borderRadius: '4px', padding: '1px 6px', fontWeight: 700, textTransform: 'uppercase' } }, g.type),
-                  e('span', { style: { fontSize: '11px', fontWeight: 700, color: '#374151', flex: 1 } }, g.text),
+                  priorityBadge && e('span', { style: { fontSize: '9px', background: priorityBadge.bg, color: priorityBadge.color, border: '1px solid ' + priorityBadge.border, borderRadius: '4px', padding: '1px 6px', fontWeight: 700 } }, priorityBadge.label),
+                  daysTo !== null && e('span', {
+                    style: { fontSize: '9px', background: daysTo < 0 ? '#fef2f2' : daysTo <= 14 ? '#fef3c7' : '#eff6ff', color: daysTo < 0 ? '#991b1b' : daysTo <= 14 ? '#92400e' : '#1e40af', border: '1px solid', borderColor: daysTo < 0 ? '#fecaca' : daysTo <= 14 ? '#fde68a' : '#bfdbfe', borderRadius: '4px', padding: '1px 6px', fontWeight: 700 },
+                    title: 'Target: ' + g.targetDate
+                  }, daysTo < 0 ? 'OVERDUE · ' + Math.abs(daysTo) + 'd' : daysTo === 0 ? 'DUE TODAY' : daysTo + 'd left'),
+                  e('span', { style: { fontSize: '11px', fontWeight: 700, color: '#374151', flex: 1, minWidth: '120px' } }, g.text),
                   e('button', { onClick: function () { removeIepGoal(g.id); }, 'aria-label': '✕', style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: '10px', color: '#dc2626', padding: '0 3px' } }, '✕')
                 ),
+                // Meta row: cue level, data method, and IEP section — collapses if none are set.
+                (g.cueLevel || g.dataMethod || g.linkedIepSection) && e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '5px', fontSize: '9px', color: '#6b7280' } },
+                  g.cueLevel && g.cueLevel !== 'independent' && e('span', { style: { background: '#ede9fe', color: '#5b21b6', padding: '1px 6px', borderRadius: '999px', fontWeight: 600 }, title: 'Cue level currently required' }, '🫳 ' + g.cueLevel + ' cue'),
+                  g.cueLevel === 'independent' && e('span', { style: { background: '#dcfce7', color: '#166534', padding: '1px 6px', borderRadius: '999px', fontWeight: 600 }, title: 'Independent — no cue needed' }, '⭐ independent'),
+                  g.dataMethod && e('span', { style: { background: '#f1f5f9', color: '#334155', padding: '1px 6px', borderRadius: '999px' }, title: 'Data collection method' }, '📊 ' + g.dataMethod),
+                  g.linkedIepSection && e('span', { style: { background: '#fff7ed', color: '#9a3412', padding: '1px 6px', borderRadius: '999px', fontStyle: 'italic' }, title: 'Linked IEP section' }, '📎 ' + g.linkedIepSection)
+                ),
+                g.baseline && e('div', { style: { fontSize: '9px', color: '#6b7280', marginBottom: '4px', fontStyle: 'italic' }, title: 'Starting performance' }, 'Baseline: ' + g.baseline),
+                g.accommodations && e('div', { style: { fontSize: '9px', color: '#6b7280', marginBottom: '4px', fontStyle: 'italic' }, title: 'Required supports' }, 'Accommodations: ' + g.accommodations),
                 // Progress bar
                 e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } },
                   e('div', { style: { flex: 1, height: '8px', background: '#e5e7eb', borderRadius: '4px', overflow: 'hidden' } },
@@ -5227,9 +6008,9 @@
             })
           ),
           activeGoals.length === 0 && e('p', { style: { fontSize: '11px', color: '#6b7280', fontStyle: 'italic', margin: '0 0 8px' } }, 'No goals set for this profile yet.'),
-          // Add goal form
+          // Add goal form — progressive disclosure: primary fields visible, IEP-meta under a toggle.
           e('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
-            e('div', { style: { display: 'flex', gap: '6px' } },
+            e('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
               e('select', {
                 id: 'iep-goal-type',
                 'aria-label': 'IEP goal type',
@@ -5237,14 +6018,16 @@
               },
                 e('option', { value: 'expressive' }, 'Expressive'),
                 e('option', { value: 'receptive' }, 'Receptive'),
-                e('option', { value: 'social' }, 'Social')
+                e('option', { value: 'social' }, 'Social'),
+                e('option', { value: 'pragmatic' }, 'Pragmatic'),
+                e('option', { value: 'articulation' }, 'Articulation')
               ),
               e('input', {
                 id: 'iep-goal-text',
                 type: 'text',
                 placeholder: 'e.g. Request items using 2-word phrases',
                 'aria-label': 'IEP goal description',
-                style: Object.assign({}, S.input, { flex: 1, margin: 0, fontSize: '11px' })
+                style: Object.assign({}, S.input, { flex: 1, margin: 0, fontSize: '11px', minWidth: '200px' })
               }),
               e('input', {
                 id: 'iep-goal-target',
@@ -5254,15 +6037,83 @@
                 style: { width: '60px', fontSize: '11px', border: '1px solid #d1d5db', borderRadius: '6px', padding: '4px 6px', textAlign: 'center' }
               })
             ),
+            // Collapsible IEP-team metadata — priority, baseline, target date, cue level, etc.
+            // Hidden by default so quick adds stay fast; SLPs get the full field set when they need it.
+            e('details', { style: { fontSize: '10px' } },
+              e('summary', { style: { cursor: 'pointer', color: '#6b7280', fontWeight: 700, padding: '2px 0' } }, '+ IEP team details (priority, baseline, target date, cue level)'),
+              e('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '6px', marginTop: '6px' } },
+                e('label', { style: { display: 'flex', flexDirection: 'column', gap: '2px' } },
+                  e('span', { style: { color: '#374151', fontWeight: 700 } }, 'Priority'),
+                  e('select', { id: 'iep-goal-priority', style: { fontSize: '11px', padding: '4px 6px', border: '1px solid #d1d5db', borderRadius: '6px' } },
+                    e('option', { value: 'standard' }, 'Standard'),
+                    e('option', { value: 'high' }, 'High'),
+                    e('option', { value: 'maintenance' }, 'Maintenance')
+                  )
+                ),
+                e('label', { style: { display: 'flex', flexDirection: 'column', gap: '2px' } },
+                  e('span', { style: { color: '#374151', fontWeight: 700 } }, 'Cue level'),
+                  e('select', { id: 'iep-goal-cue', style: { fontSize: '11px', padding: '4px 6px', border: '1px solid #d1d5db', borderRadius: '6px' }, title: 'Support required for the student to succeed on this goal' },
+                    e('option', { value: 'independent' }, 'Independent'),
+                    e('option', { value: 'visual' }, 'Visual cue'),
+                    e('option', { value: 'verbal' }, 'Verbal cue'),
+                    e('option', { value: 'gestural' }, 'Gestural cue'),
+                    e('option', { value: 'physical' }, 'Physical prompt')
+                  )
+                ),
+                e('label', { style: { display: 'flex', flexDirection: 'column', gap: '2px' } },
+                  e('span', { style: { color: '#374151', fontWeight: 700 } }, 'Data method'),
+                  e('select', { id: 'iep-goal-datamethod', style: { fontSize: '11px', padding: '4px 6px', border: '1px solid #d1d5db', borderRadius: '6px' } },
+                    e('option', { value: 'frequency' }, 'Frequency count'),
+                    e('option', { value: 'percentage' }, 'Percentage accuracy'),
+                    e('option', { value: 'duration' }, 'Duration'),
+                    e('option', { value: 'rubric' }, 'Rubric score')
+                  )
+                ),
+                e('label', { style: { display: 'flex', flexDirection: 'column', gap: '2px' } },
+                  e('span', { style: { color: '#374151', fontWeight: 700 } }, 'Target date'),
+                  e('input', { id: 'iep-goal-targetdate', type: 'date', style: { fontSize: '11px', padding: '4px 6px', border: '1px solid #d1d5db', borderRadius: '6px' } })
+                ),
+                e('label', { style: { display: 'flex', flexDirection: 'column', gap: '2px', gridColumn: '1 / -1' } },
+                  e('span', { style: { color: '#374151', fontWeight: 700 } }, 'Baseline'),
+                  e('input', { id: 'iep-goal-baseline', type: 'text', placeholder: 'e.g. 2/10 accuracy on probe trials (Sept 2026)', style: { fontSize: '11px', padding: '4px 6px', border: '1px solid #d1d5db', borderRadius: '6px' } })
+                ),
+                e('label', { style: { display: 'flex', flexDirection: 'column', gap: '2px', gridColumn: '1 / -1' } },
+                  e('span', { style: { color: '#374151', fontWeight: 700 } }, 'Accommodations'),
+                  e('input', { id: 'iep-goal-accom', type: 'text', placeholder: 'e.g. AAC device available, visual supports, extended time', style: { fontSize: '11px', padding: '4px 6px', border: '1px solid #d1d5db', borderRadius: '6px' } })
+                ),
+                e('label', { style: { display: 'flex', flexDirection: 'column', gap: '2px', gridColumn: '1 / -1' } },
+                  e('span', { style: { color: '#374151', fontWeight: 700 } }, 'Linked IEP section (optional)'),
+                  e('input', { id: 'iep-goal-iepsection', type: 'text', placeholder: 'e.g. Communication — Expressive Language', style: { fontSize: '11px', padding: '4px 6px', border: '1px solid #d1d5db', borderRadius: '6px' } })
+                )
+              )
+            ),
             e('button', {
               onClick: function () {
                 var text = document.getElementById('iep-goal-text');
                 var type = document.getElementById('iep-goal-type');
                 var target = document.getElementById('iep-goal-target');
                 if (!text || !text.value.trim()) return;
-                addIepGoal({ text: text.value.trim(), type: type ? type.value : 'expressive', targetCount: target ? (parseInt(target.value, 10) || 20) : 20 });
+                // Pull the enriched fields too. Each getElementById is guarded because the details
+                // block may not be rendered yet if the browser hasn't expanded it.
+                var g = (function (id) { var el = document.getElementById(id); return el ? el.value : ''; });
+                addIepGoal({
+                  text: text.value.trim(),
+                  type: type ? type.value : 'expressive',
+                  targetCount: target ? (parseInt(target.value, 10) || 20) : 20,
+                  priority: g('iep-goal-priority') || 'standard',
+                  cueLevel: g('iep-goal-cue') || 'independent',
+                  dataMethod: g('iep-goal-datamethod') || 'frequency',
+                  targetDate: g('iep-goal-targetdate') || '',
+                  baseline: g('iep-goal-baseline') || '',
+                  accommodations: g('iep-goal-accom') || '',
+                  linkedIepSection: g('iep-goal-iepsection') || ''
+                });
+                // Clear text + numeric fields; leave select defaults as-is for the next entry.
                 text.value = '';
                 if (target) target.value = '';
+                ['iep-goal-targetdate', 'iep-goal-baseline', 'iep-goal-accom', 'iep-goal-iepsection'].forEach(function (id) {
+                  var el = document.getElementById(id); if (el) el.value = '';
+                });
               },
               'aria-label': 'Add new IEP goal',
               style: S.btn(PURPLE, '#fff', false)
@@ -5751,6 +6602,7 @@
                   return e('div', {
                     key: word.id,
                     className: 'ss-board-cell',
+                    'data-board-cell-id': word.id,
                     draggable: true,
                     onDragStart: function (ev) { ev.dataTransfer.effectAllowed = 'move'; setDragBoardId(word.id); },
                     onDragOver: function (ev) { ev.preventDefault(); ev.dataTransfer.dropEffect = 'move'; setDragOverBoardId(word.id); },
@@ -5765,6 +6617,43 @@
                       setDragBoardId(null); setDragOverBoardId(null);
                     },
                     onDragEnd: function () { setDragBoardId(null); setDragOverBoardId(null); },
+                    onTouchStart: function (ev) {
+                      if (ev.touches && ev.touches.length > 1) return;
+                      touchDragRef.current = { fromId: word.id, startX: ev.touches[0].clientX, startY: ev.touches[0].clientY, active: false };
+                    },
+                    onTouchMove: function (ev) {
+                      var td = touchDragRef.current;
+                      if (!td) return;
+                      var t = ev.touches[0];
+                      if (!td.active) {
+                        var dx = t.clientX - td.startX, dy = t.clientY - td.startY;
+                        if ((dx * dx + dy * dy) < 64) return;
+                        td.active = true;
+                        setDragBoardId(td.fromId);
+                      }
+                      if (ev.cancelable) ev.preventDefault();
+                      var el = document.elementFromPoint(t.clientX, t.clientY);
+                      while (el && el !== document.body && !(el.getAttribute && el.getAttribute('data-board-cell-id'))) el = el.parentElement;
+                      var overId = el && el.getAttribute ? el.getAttribute('data-board-cell-id') : null;
+                      if (overId && overId !== td.fromId) setDragOverBoardId(overId); else setDragOverBoardId(null);
+                    },
+                    onTouchEnd: function () {
+                      var td = touchDragRef.current;
+                      touchDragRef.current = null;
+                      if (!td || !td.active) { setDragBoardId(null); setDragOverBoardId(null); return; }
+                      var fromId = td.fromId;
+                      var toId = dragOverBoardId;
+                      if (toId && toId !== fromId) {
+                        setBoardWords(function (prev) {
+                          var from = prev.findIndex(function (w) { return w.id === fromId; });
+                          var to = prev.findIndex(function (w) { return w.id === toId; });
+                          if (from < 0 || to < 0) return prev;
+                          var next = prev.slice(); next.splice(to, 0, next.splice(from, 1)[0]); return next;
+                        });
+                      }
+                      setDragBoardId(null); setDragOverBoardId(null);
+                    },
+                    onTouchCancel: function () { touchDragRef.current = null; setDragBoardId(null); setDragOverBoardId(null); },
                     onClick: function () { speakCell(word.label); },
                     style: { background: bg, border: border, borderRadius: '10px', padding: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', cursor: 'grab', minHeight: '100px', transition: 'border-color 0.1s, opacity 0.1s', position: 'relative', opacity: dragBoardId === word.id ? 0.45 : 1 }
                   },

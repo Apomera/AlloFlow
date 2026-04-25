@@ -121,13 +121,13 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
                     <span>{mode.replace(/-/g, ' ')}</span>
                 </h2>
                 {teamColor && (
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase mt-2 inline-block shadow-sm ${getTeamBadgeColor(teamColor)}`}>
+                    <span className={`text-[11px] font-bold px-2 py-0.5 rounded uppercase mt-2 inline-block shadow-sm ${getTeamBadgeColor(teamColor)}`}>
                         {t('quiz.team_label', { color: teamColor })}
                     </span>
                 )}
             </div>
              <div className="flex flex-col items-end">
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{t('quiz.question_label')}</span>
+                <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">{t('quiz.question_label')}</span>
                 <span className="text-3xl font-mono font-black text-white leading-none">
                     {currentQuestionIndex + 1} <span className="text-lg text-white/50">/ {generatedContent?.data.questions.length}</span>
                 </span>
@@ -174,7 +174,7 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
                          )}
                      </div>
                      <div className="w-full">
-                         <div className="flex justify-between text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">
+                         <div className="flex justify-between text-xs font-bold text-slate-600 mb-1 uppercase tracking-wider">
                              <span>{bossStats.name || "Boss"} HP</span>
                              <span>{Math.round(bossStats.currentHP)} / {bossStats.maxHP}</span>
                          </div>
@@ -186,7 +186,7 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
                          </div>
                      </div>
                      <div className="w-full mt-3">
-                         <div className="flex justify-between text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">
+                         <div className="flex justify-between text-xs font-bold text-slate-600 mb-1 uppercase tracking-wider">
                              <span>{t('quiz.boss.class_hp')}</span>
                              <span>{Math.round(bossStats.classHP ?? 100)} / {bossStats.classMaxHP || 100}</span>
                          </div>
@@ -229,15 +229,15 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
                             btnClass = 'bg-red-500 text-white border-red-600 opacity-90';
                             letterClass = 'bg-white text-red-600 border-white';
                         } else {
-                            btnClass = 'bg-slate-800 text-slate-500 border-slate-900 opacity-50';
-                            letterClass = 'bg-slate-700 text-slate-500 border-slate-600';
+                            btnClass = 'bg-slate-800 text-slate-600 border-slate-900 opacity-50';
+                            letterClass = 'bg-slate-700 text-slate-600 border-slate-600';
                         }
                     } else if (isSelected) {
                         btnClass = 'bg-yellow-400 text-indigo-900 border-yellow-600 scale-[1.02] ring-4 ring-yellow-200/50 z-10';
                         letterClass = 'bg-indigo-900 text-yellow-400 border-indigo-900';
                     } else if (isDisabled) {
-                         btnClass = 'bg-slate-800 text-slate-500 border-slate-900 opacity-60 cursor-not-allowed';
-                         letterClass = 'bg-slate-700 text-slate-500 border-slate-600';
+                         btnClass = 'bg-slate-800 text-slate-600 border-slate-900 opacity-60 cursor-not-allowed';
+                         letterClass = 'bg-slate-700 text-slate-600 border-slate-600';
                     }
                     return (
                         <button
@@ -341,7 +341,7 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
                                  />
                                  {showTranslated && currentQuestion.factCheck_en && (
                                      <div className="mt-3 pt-3 border-t border-slate-200">
-                                         <p className="text-xs text-slate-500 italic whitespace-pre-wrap">
+                                         <p className="text-xs text-slate-600 italic whitespace-pre-wrap">
                                              {currentQuestion.factCheck_en}
                                          </p>
                                      </div>
@@ -377,7 +377,7 @@ const TeacherGate = React.memo(({ isOpen, onClose, onUnlock }) => {
       <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full text-center border-4 border-indigo-100 relative transform transition-all animate-in zoom-in-95">
         <button
             onClick={onClose}
-            className="absolute top-4 right-4 text-slate-500 hover:text-slate-600 transition-colors p-1 rounded-full hover:bg-slate-100"
+            className="absolute top-4 right-4 text-slate-600 hover:text-slate-600 transition-colors p-1 rounded-full hover:bg-slate-100"
             aria-label={t('common.cancel')}
         >
             <X size={20} />
@@ -386,7 +386,7 @@ const TeacherGate = React.memo(({ isOpen, onClose, onUnlock }) => {
             <Lock size={32} className="text-red-600" />
         </div>
         <h2 className="text-2xl font-black text-slate-800 mb-2">{t('modals.teacher_gate.title')}</h2>
-        <p className="text-slate-500 mb-6 text-sm font-medium">{t('modals.teacher_gate.helper')}</p>
+        <p className="text-slate-600 mb-6 text-sm font-medium">{t('modals.teacher_gate.helper')}</p>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div>
                 <input
@@ -397,7 +397,7 @@ const TeacherGate = React.memo(({ isOpen, onClose, onUnlock }) => {
                         setError(false);
                     }}
                     placeholder={t('modals.teacher_gate.access_code_placeholder')}
-                    className={`w-full text-center text-lg p-3 border-2 rounded-xl outline-none focus:ring-4 transition-all placeholder:text-slate-500 ${error ? 'border-red-400 bg-red-50 focus:ring-red-200 text-red-900' : 'border-slate-200 focus:border-indigo-500 focus:ring-indigo-500/20 text-indigo-900'}`}
+                    className={`w-full text-center text-lg p-3 border-2 rounded-xl outline-none focus:ring-4 transition-all placeholder:text-slate-600 ${error ? 'border-red-400 bg-red-50 focus:ring-red-200 text-red-900' : 'border-slate-200 focus:border-indigo-500 focus:ring-indigo-500/20 text-indigo-900'}`}
                     autoFocus
                     aria-label={t('modals.teacher_gate.access_code_placeholder')}
                     data-help-key="teacher_gate_input"
@@ -477,7 +477,7 @@ const RoleSelectionModal = React.memo(({ onSelect, onGateRequired }) => {
         </div>
       </div>
       <h2 className="text-3xl font-black text-slate-800 mb-2 tracking-tight">{t('roles.title')}</h2>
-      <p className="text-slate-500 mb-8 font-medium">{t('roles.subtitle')}</p>
+      <p className="text-slate-600 mb-8 font-medium">{t('roles.subtitle')}</p>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <button
             onClick={() => handleRoleClick('student')}
@@ -522,7 +522,7 @@ const RoleSelectionModal = React.memo(({ onSelect, onGateRequired }) => {
         </button>
       </div>
       <div className="border-t border-slate-100 pt-4">
-          <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-2">{t('roles.mic_setup')}</p>
+          <p className="text-[11px] text-slate-600 uppercase tracking-widest font-bold mb-2">{t('roles.mic_setup')}</p>
           <button
               aria-label={t('common.confirm')}
             onClick={handleMicCheck}
@@ -530,8 +530,8 @@ const RoleSelectionModal = React.memo(({ onSelect, onGateRequired }) => {
             className={`flex items-center justify-center gap-2 w-full py-2 rounded-lg text-xs font-bold transition-all ${
                 micStatus === 'granted' ? 'bg-green-100 text-green-700 cursor-default' :
                 micStatus === 'denied' ? 'bg-red-50 text-red-500 border border-red-100' :
-                micStatus === 'requesting' ? 'bg-slate-100 text-slate-500' :
-                'bg-white border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-indigo-600'
+                micStatus === 'requesting' ? 'bg-slate-100 text-slate-600' :
+                'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-indigo-600'
             }`}
           >
               {micStatus === 'granted' ? <CheckCircle size={14} /> :
@@ -544,7 +544,7 @@ const RoleSelectionModal = React.memo(({ onSelect, onGateRequired }) => {
                t('roles.mic_enable')}
           </button>
           {micStatus === 'idle' && (
-              <p className="text-[11px] text-slate-500 mt-2">
+              <p className="text-[11px] text-slate-600 mt-2">
                   {t('roles.mic_tip')}
               </p>
           )}
@@ -593,13 +593,13 @@ const StudentEntryModal = React.memo(({ isOpen, onClose, onConfirm }) => {
       <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center border-4 border-indigo-100 transform transition-all animate-in zoom-in-95 duration-300 relative">
         <button
             onClick={onClose}
-            className="absolute top-4 right-4 p-2 rounded-full text-slate-500 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+            className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
             aria-label={t('common.close')}
         >
             <X size={20} />
         </button>
         <h2 className="text-2xl font-black text-slate-800 mb-2">{t('wizard.step_codename') || 'Pick Your Codename!'}</h2>
-        <p className="text-slate-500 mb-6 font-medium">{t('modals.student_entry_sub')}</p>
+        <p className="text-slate-600 mb-6 font-medium">{t('modals.student_entry_sub')}</p>
         <div className="bg-indigo-50 p-4 rounded-xl border border-indigo-100 mb-6">
             <div className="flex gap-2 mb-4">
                 <select
@@ -640,7 +640,7 @@ const StudentEntryModal = React.memo(({ isOpen, onClose, onConfirm }) => {
                 </button>
             </div>
         </div>
-        <p className="text-xs text-slate-500 font-bold flex items-center justify-center gap-1 mb-6">
+        <p className="text-xs text-slate-600 font-bold flex items-center justify-center gap-1 mb-6">
             <ShieldCheck size={12} className="text-green-500"/> {t('entry.warning')}
         </p>
         <div className="flex flex-col gap-3">
@@ -663,7 +663,7 @@ const StudentEntryModal = React.memo(({ isOpen, onClose, onConfirm }) => {
                 <Upload size={16} /> {t('entry.load')}
             </button>
         </div>
-        <button onClick={onClose} className="mt-4 text-sm text-slate-500 hover:text-slate-600 underline focus:outline-none focus:ring-2 focus:ring-slate-400 rounded">{t('common.cancel')}</button>
+        <button onClick={onClose} className="mt-4 text-sm text-slate-600 hover:text-slate-600 underline focus:outline-none focus:ring-2 focus:ring-slate-400 rounded">{t('common.cancel')}</button>
       </div>
     </div>
   );
@@ -684,7 +684,7 @@ const StudentWelcomeModal = React.memo(({ isOpen, onClose, onUpload }) => {
       <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center border-4 border-teal-100 transform transition-all animate-in zoom-in-95 duration-300 relative">
         <button
             onClick={onClose}
-            className="absolute top-4 right-4 p-2 rounded-full text-slate-500 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+            className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
             aria-label={t('welcome.close_aria')}
         >
             <X size={20} />
@@ -695,7 +695,7 @@ const StudentWelcomeModal = React.memo(({ isOpen, onClose, onUpload }) => {
           </div>
         </div>
         <h2 className="text-2xl font-black text-slate-800 mb-2">{t('modals.student_welcome')}</h2>
-        <p className="text-slate-500 mb-8 font-medium">{t('welcome.prompt')}</p>
+        <p className="text-slate-600 mb-8 font-medium">{t('welcome.prompt')}</p>
         <div className="space-y-3">
             <button
                 aria-label={t('common.upload')}
@@ -711,7 +711,7 @@ const StudentWelcomeModal = React.memo(({ isOpen, onClose, onUpload }) => {
             <button
                 aria-label={t('common.close')}
                 onClick={onClose}
-                className="w-full p-3 rounded-xl text-slate-500 font-bold hover:bg-slate-100 transition-colors active:scale-95"
+                className="w-full p-3 rounded-xl text-slate-600 font-bold hover:bg-slate-100 transition-colors active:scale-95"
                 data-help-key="welcome_skip_btn"
             >
                 {t('welcome.skip')}

@@ -2465,7 +2465,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
           ? 'bg-slate-800 border border-slate-700 rounded-xl p-4'
           : 'bg-white border border-slate-200 rounded-xl p-4 shadow-sm';
         var headingClass = isDark ? 'text-white font-bold' : 'text-slate-900 font-bold';
-        var subTextClass = isDark ? 'text-slate-400 text-xs' : 'text-slate-600 text-xs';
+        var subTextClass = isDark ? 'text-slate-200 text-xs' : 'text-slate-600 text-xs';
         var btnPrimary = 'px-4 py-2 rounded-lg font-bold text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ' +
           (isDark ? 'bg-violet-600 hover:bg-violet-500 text-white focus:ring-violet-400' : 'bg-violet-600 hover:bg-violet-700 text-white focus:ring-violet-500');
         var btnSecondary = 'px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors focus:outline-none focus:ring-2 ' +
@@ -2585,7 +2585,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                 ].map(function(zone) {
                   return h('span', { key: zone.label, className: 'flex items-center gap-1', role: 'listitem' },
                     h('span', { style: { color: zone.color } }, zone.pattern),
-                    h('span', { className: isDark ? 'text-slate-400' : 'text-slate-600' }, zone.label));
+                    h('span', { className: isDark ? 'text-slate-200' : 'text-slate-600' }, zone.label));
                 }))
             ),
 
@@ -3308,7 +3308,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                     h('div', null,
                       h('div', { className: headingClass + ' text-sm' }, pat.label),
                       h('div', { className: subTextClass + ' mb-1' }, pat.desc),
-                      h('div', { className: 'text-xs italic ' + (isDark ? 'text-slate-400' : 'text-slate-600') }, '"' + pat.phrase + '"'))));
+                      h('div', { className: 'text-xs italic ' + (isDark ? 'text-slate-200' : 'text-slate-600') }, '"' + pat.phrase + '"'))));
               }))
           );
         }
@@ -3635,7 +3635,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                 className: 'flex-1 px-3 py-2 rounded-lg text-xs font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-violet-400 ' +
                   (isActive
                     ? (isDark ? 'bg-violet-600 text-white shadow-sm' : 'bg-white text-violet-700 shadow-sm')
-                    : (isDark ? 'text-slate-400 hover:text-slate-200' : 'text-slate-600 hover:text-slate-700')),
+                    : (isDark ? 'text-slate-200 hover:text-slate-200' : 'text-slate-600 hover:text-slate-700')),
                 onClick: function() { setActiveTab(tab.id); },
                 onKeyDown: function(e) {
                   var tabIds = TABS.map(function(t) { return t.id; });

@@ -27,6 +27,14 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
+
+  // ── Audio (auto-injected) ──
+  var _gsAC = null;
+  function getGsAC() { if (!_gsAC) { try { _gsAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_gsAC && _gsAC.state === "suspended") { try { _gsAC.resume(); } catch(e) {} } return _gsAC; }
+  function gsTone(f,d,tp,v) { var ac = getGsAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||"sine"; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
+  function sfxGsClick() { gsTone(600, 0.03, "sine", 0.04); }
+  function sfxGsSuccess() { gsTone(523, 0.08, "sine", 0.07); setTimeout(function() { gsTone(659, 0.08, "sine", 0.07); }, 70); setTimeout(function() { gsTone(784, 0.1, "sine", 0.08); }, 140); }
+
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-gamestudio')) return;
@@ -773,7 +781,7 @@ window.StemLab = window.StemLab || {
                 h('p', { className: 'text-xs text-rose-600' }, 'Build playable 2D games \u2022 Learn game design \u2022 Earn XP')
               ),
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-right' },
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold text-rose-400' }, 'TILES PLACED'),
+                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold text-rose-400' }, 'TILES PLACED'),
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-lg font-black text-rose-700' }, Object.keys(tiles).length)
               )
             )
@@ -944,7 +952,7 @@ window.StemLab = window.StemLab || {
             ),
 
             // Stats bar
-            h('div', { className: 'flex flex-wrap gap-3 text-[10px] text-rose-500 font-bold' },
+            h('div', { className: 'flex flex-wrap gap-3 text-[11px] text-rose-500 font-bold' },
               h('span', null, '\uD83D\uDD0D ' + gridW + '\u00D7' + gridH + ' = ' + (gridW * gridH) + ' tiles'),
               h('span', null, '\uD83E\uDDD1 Players: ' + countTile(tiles, 'player')),
               h('span', null, '\uD83D\uDC7E Enemies: ' + countTile(tiles, 'enemy')),
@@ -1161,7 +1169,7 @@ window.StemLab = window.StemLab || {
                 sprEvents.map(function(rule, ri) {
                   return h('div', { key: ri, className: 'p-3 rounded-xl border border-rose-200 bg-white' },
                     h('div', { className: 'flex gap-2 items-center flex-wrap' },
-                      h('span', { className: 'text-xs font-bold text-slate-500' }, 'When'),
+                      h('span', { className: 'text-xs font-bold text-slate-600' }, 'When'),
                       h('select', {
                         value: rule.trigger || 'onKey',
                         onChange: function(e) {
@@ -1186,7 +1194,7 @@ window.StemLab = window.StemLab || {
                           className: 'text-xs border border-rose-200 rounded px-1.5 py-1'
                         }, h('option', { value: '' }, '\u2014'), trig.params.map(function(p) { return h('option', { key: p, value: p }, p); }));
                       })(),
-                      h('span', { className: 'text-xs font-bold text-slate-500' }, '\u2192'),
+                      h('span', { className: 'text-xs font-bold text-slate-600' }, '\u2192'),
                       h('select', {
                         value: rule.action || 'move',
                         onChange: function(e) {
@@ -1218,7 +1226,7 @@ window.StemLab = window.StemLab || {
                         className: 'ml-auto text-rose-300 hover:text-red-500 transition-colors text-sm font-bold'
                       }, '\u2715')
                     ),
-                    advancedCode && h('pre', { className: 'mt-2 p-2 rounded-lg bg-slate-900 text-green-400 text-[10px] font-mono overflow-x-auto' }, genCode(rule))
+                    advancedCode && h('pre', { className: 'mt-2 p-2 rounded-lg bg-slate-900 text-green-400 text-[11px] font-mono overflow-x-auto' }, genCode(rule))
                   );
                 }),
                 sprEvents.length < 8 && h('button', { 'aria-label': 'Add Rule (',
@@ -1246,9 +1254,9 @@ window.StemLab = window.StemLab || {
                 '\u2764\uFE0F ' + Array.from({ length: Math.max(0, Math.min(playLives, 10)) }, function() { return '\u2665'; }).join('')
               ),
               playKeys > 0 && h('span', { className: 'text-xs font-bold text-yellow-600' }, '\uD83D\uDD11 \u00D7' + playKeys),
-              h('span', { className: 'text-xs font-bold text-slate-500' }, '\uD83D\uDC63 Moves: ' + playMoves),
+              h('span', { className: 'text-xs font-bold text-slate-600' }, '\uD83D\uDC63 Moves: ' + playMoves),
               playCoinsCollected > 0 && h('span', { className: 'text-xs font-bold text-amber-500' }, '\uD83E\uDE99 ' + playCoinsCollected + ' collected'),
-              h('span', { className: 'text-xs font-bold text-slate-500 ml-auto' },
+              h('span', { className: 'text-xs font-bold text-slate-600 ml-auto' },
                 gameType === 'topdown' ? '\uD83D\uDD3D Top-Down' : gameType === 'platformer' ? '\uD83C\uDFC3 Platformer' : '\uD83E\uDDE9 Puzzle'
               )
             ),
@@ -1328,13 +1336,13 @@ window.StemLab = window.StemLab || {
                 },
                 className: 'px-4 py-2 rounded-xl text-xs font-bold text-white bg-blue-700 hover:bg-blue-600 shadow-md transition-all'
               }, '\uD83D\uDD04 Play Again'),
-              h('div', { className: 'text-[10px] text-slate-500 self-center ml-2' }, 'Arrow keys / WASD to move \u2022 Click game area first')
+              h('div', { className: 'text-[11px] text-slate-600 self-center ml-2' }, 'Arrow keys / WASD to move \u2022 Click game area first')
             ),
 
             // Mechanics guide
             h('div', { className: 'p-3 rounded-xl border border-slate-200 bg-slate-50' },
               h('div', { className: 'text-xs font-bold text-slate-700 mb-2' }, '\uD83C\uDFAE Game Mechanics'),
-              h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2 text-[10px] text-slate-600' },
+              h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] text-slate-600' },
                 [
                   ['\uD83E\uDE99 Coin', '+10 points'],
                   ['\uD83D\uDC8E Gem', '+50 points'],
@@ -1393,7 +1401,7 @@ window.StemLab = window.StemLab || {
                 ),
                 h('div', { className: 'text-right' },
                   h('div', { className: 'text-lg font-black text-indigo-700' }, Object.keys(learnCompleted).length + '/' + LESSONS.length),
-                  h('div', { className: 'text-[10px] font-bold text-indigo-400' }, 'COMPLETED')
+                  h('div', { className: 'text-[11px] font-bold text-indigo-400' }, 'COMPLETED')
                 )
               ),
               // Progress bar
@@ -1516,7 +1524,7 @@ window.StemLab = window.StemLab || {
                         h('span', { className: 'text-sm font-black ' + (isComplete ? 'text-green-800' : 'text-indigo-900') }, lesson.title),
                         isComplete && h('span', { className: 'text-xs font-bold text-green-800 bg-green-200 px-1.5 py-0.5 rounded' }, '\u2713')
                       ),
-                      h('p', { className: 'text-[11px] text-slate-500 mt-0.5' }, lesson.desc)
+                      h('p', { className: 'text-[11px] text-slate-600 mt-0.5' }, lesson.desc)
                     ),
                     h('span', { className: 'text-xs font-bold ' + (isComplete ? 'text-green-500' : 'text-indigo-400') }, 'Lesson ' + (li + 1))
                   )
@@ -1541,7 +1549,7 @@ window.StemLab = window.StemLab || {
                 ),
                 h('div', { className: 'text-right' },
                   h('div', { className: 'text-lg font-black text-amber-700' }, Object.keys(challengeCompleted).length + '/' + CHALLENGES.length),
-                  h('div', { className: 'text-[10px] font-bold text-amber-400' }, 'COMPLETED')
+                  h('div', { className: 'text-[11px] font-bold text-amber-400' }, 'COMPLETED')
                 )
               )
             ),
@@ -1563,7 +1571,7 @@ window.StemLab = window.StemLab || {
                   h('div', { className: 'flex-1' },
                     h('div', { className: 'flex items-center gap-2' },
                       h('span', { className: 'text-sm font-black ' + (isComplete ? 'text-green-800' : 'text-amber-900') }, ch.title),
-                      h('span', { className: 'text-[10px] font-bold px-1.5 py-0.5 rounded ' +
+                      h('span', { className: 'text-[11px] font-bold px-1.5 py-0.5 rounded ' +
                         (ch.difficulty === 1 ? 'bg-green-200 text-green-700' : ch.difficulty === 2 ? 'bg-amber-200 text-amber-700' : 'bg-red-200 text-red-700')
                       }, ch.difficulty === 1 ? 'Beginner' : ch.difficulty === 2 ? 'Intermediate' : 'Advanced'),
                       isComplete && h('span', { className: 'text-xs font-bold text-green-800 bg-green-200 px-1.5 py-0.5 rounded' }, '\u2713 +' + ch.xp + ' XP')
@@ -1577,9 +1585,9 @@ window.StemLab = window.StemLab || {
                   results.map(function(r, ri) {
                     return h('div', {
                       key: ri,
-                      className: 'flex items-center gap-2 text-xs ' + (r.passed ? 'text-green-700' : 'text-slate-500')
+                      className: 'flex items-center gap-2 text-xs ' + (r.passed ? 'text-green-700' : 'text-slate-200')
                     },
-                      h('span', { className: 'w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ' +
+                      h('span', { className: 'w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-bold ' +
                         (r.passed ? 'bg-green-200 text-green-700' : 'bg-gray-200 text-gray-500')
                       }, r.passed ? '\u2713' : (ri + 1)),
                       h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: r.passed ? 'line-through' : '' }, r.text)
@@ -1588,7 +1596,7 @@ window.StemLab = window.StemLab || {
                 ),
 
                 // Hint
-                !isComplete && !allPassed && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'p-2 rounded-lg bg-amber-50 border border-amber-200 text-[10px] text-amber-700 mb-2' },
+                !isComplete && !allPassed && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'p-2 rounded-lg bg-amber-50 border border-amber-200 text-[11px] text-amber-700 mb-2' },
                   h('strong', null, 'Hint: '), ch.hint
                 ),
 
@@ -1743,7 +1751,7 @@ window.StemLab = window.StemLab || {
                   },
                     h('div', { className: 'text-2xl mb-1' }, starter.icon),
                     h('div', { className: 'text-xs font-bold text-rose-800' }, starter.name),
-                    h('div', { className: 'text-[10px] text-rose-500' }, starter.desc)
+                    h('div', { className: 'text-[11px] text-rose-500' }, starter.desc)
                   );
                 })
               )
@@ -1755,7 +1763,7 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'grid grid-cols-3 gap-3 text-center' },
                 h('div', null,
                   h('div', { className: 'text-lg font-black text-slate-800' }, Object.keys(tiles).length),
-                  h('div', { className: 'text-[10px] text-slate-500' }, 'Tiles Placed')
+                  h('div', { className: 'text-[11px] text-slate-600' }, 'Tiles Placed')
                 ),
                 h('div', null,
                   h('div', { className: 'text-lg font-black text-slate-800' }, (function() {
@@ -1763,11 +1771,11 @@ window.StemLab = window.StemLab || {
                     Object.keys(tiles).forEach(function(k) { types[tiles[k]] = true; });
                     return Object.keys(types).length;
                   })()),
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-500' }, 'Tile Types')
+                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-slate-600' }, 'Tile Types')
                 ),
                 h('div', null,
                   h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-lg font-black text-slate-800' }, Object.keys(spritePixels).length),
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-500' }, 'Pixels Drawn')
+                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-slate-600' }, 'Pixels Drawn')
                 )
               )
             )

@@ -9,7 +9,7 @@
 (function() {
   'use strict';
   // WCAG 2.1 AA: Accessibility CSS
-  if (!document.getElementById("visual-panel-a11y")) { var _s = document.createElement("style"); _s.id = "visual-panel-a11y"; _s.textContent = "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .text-slate-400 { color: #64748b !important; }"; document.head.appendChild(_s); }
+  if (!document.getElementById("visual-panel-a11y")) { var _s = document.createElement("style"); _s.id = "visual-panel-a11y"; _s.textContent = "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .text-slate-600 { color: #64748b !important; }"; document.head.appendChild(_s); }
 
   // ── Duplicate-load guard ──
   if (window.__visualPanelModuleLoaded) {
@@ -24,11 +24,6 @@
   var useState = React.useState;
   var useEffect = React.useEffect;
   var useRef = React.useRef;
-  // WCAG 2.4.3: Focus management — save/restore focus on modal open/close
-  var _alloFocusTrigger = null;
-  function alloSaveFocus() { _alloFocusTrigger = document.activeElement; }
-  function alloRestoreFocus() { if (_alloFocusTrigger && typeof _alloFocusTrigger.focus === 'function') { try { _alloFocusTrigger.focus(); } catch(e) {} _alloFocusTrigger = null; } }
-
   var useCallback = React.useCallback;
   var useMemo = React.useMemo;
 

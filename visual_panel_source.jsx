@@ -1,3 +1,19 @@
+// HTML sanitizer — strips <script>, inline handlers, dangerous tags, and javascript: URLs.
+// Delegates to window.sanitizeHtml if AlloFlowANTI.txt's version is loaded; falls back to
+// inline regex-based stripping when this module runs standalone.
+function sanitizeHtml(html) {
+  var fn = (typeof window !== 'undefined' && window.sanitizeHtml);
+  if (typeof fn === 'function' && fn !== sanitizeHtml) return fn(html);
+  if (!html || typeof html !== 'string') return '';
+  var clean = html.replace(/<script[\s\S]*?<\/script>/gi, '');
+  clean = clean.replace(/\s+on\w+\s*=\s*["'][^"']*["']/gi, '');
+  clean = clean.replace(/\s+on\w+\s*=\s*\S+/gi, '');
+  clean = clean.replace(/<\/?(iframe|object|embed|form|link|meta|base)[^>]*>/gi, '');
+  clean = clean.replace(/href\s*=\s*["']?javascript:/gi, 'href="');
+  clean = clean.replace(/src\s*=\s*["']?javascript:/gi, 'src="');
+  return clean;
+}
+
 const LABEL_POSITIONS = {
     'top-left': { position: 'absolute', top: '6%', left: '6%', zIndex: 4 },
     'top-center': { position: 'absolute', top: '6%', left: '50%', transform: 'translateX(-50%)', zIndex: 4 },
