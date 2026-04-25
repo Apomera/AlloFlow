@@ -13302,6 +13302,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   }
                 }
               }
+              // ── Glacial erratic boulders in rural fields ──
+              // New England fields are studded with rounded gray boulders left
+              // by retreating glaciers (the same ones that built the fieldstone
+              // walls). Two or three per rural chunk, scattered well off the
+              // shoulder so they don't look like they were dumped by a truck.
+              // Skip on snow weather since they'd be buried anyway.
+              if (chunk.biome === 'rural' && scn.weather !== 'snow') {
+                var rkRng = seededRandom(chunk.index * 41039 + 11);
+                var rkPalette = [0x6b6b6b, 0x787878, 0x5e5e5e, 0x808080];
+                var rkCount = 2 + Math.floor(rkRng() * 2);
+                for (var rkI = 0; rkI < rkCount; rkI++) {
+                  var rkLocalZ = 2 + rkRng() * (CHUNK_SIZE - 4);
+                  var rkSampleY = ci * CHUNK_SIZE + rkLocalZ;
+                  // Skip near landmark footprint
+                  if (chunk.landmark && Math.abs(rkLocalZ - chunk.landmark.centerY) < chunk.landmark.type.size * 0.7) continue;
+                  var rkSide = rkRng() < 0.5 ? -1 : 1;
+                  var rkRoadX = iw.spline ? (iw.spline.centerAt(rkSampleY) - MAP_SIZE / 2) : 0;
+                  // Place 5-15m off the road edge — well into the field
+                  var rkOffset = roadHalfW + 5 + rkRng() * 10;
+                  var rkX = rkRoadX + rkSide * rkOffset;
+                  if (rkX < -halfMap + 1 || rkX > halfMap - 1) continue;
+                  var rkHt = iw.spline ? iw.spline.heightAt(rkSampleY) : 0;
+                  var rkSize = 0.3 + rkRng() * 0.5;
+                  var rkColor = rkPalette[Math.floor(rkRng() * rkPalette.length)];
+                  var rkMat = new T.MeshLambertMaterial({ color: rkColor });
+                  // Sphere with non-uniform scale + slight rotation reads as a
+                  // weathered glacial boulder rather than a gray ball.
+                  var rkMesh = new T.Mesh(new T.SphereGeometry(rkSize, 7, 5), rkMat);
+                  rkMesh.scale.set(1.0 + rkRng() * 0.4, 0.6 + rkRng() * 0.3, 1.0 + rkRng() * 0.4);
+                  rkMesh.rotation.set(rkRng() * 0.6, rkRng() * Math.PI * 2, rkRng() * 0.4);
+                  rkMesh.position.set(rkX, rkHt + rkSize * 0.45, chunkWorldZ + rkLocalZ);
+                  rkMesh.castShadow = true;
+                  chunkGroup.add(rkMesh);
+                }
+              }
               // ── Mile markers (rural / suburban, every 4 chunks) ──
               // Small green panel on a thin post showing the running mile count.
               // Maine DOT uses these on Routes 1, 9, 27, 201 etc. so drivers can
