@@ -30,7 +30,6 @@ var RefreshCw = _lazyIcon('RefreshCw');
 var Sparkles = _lazyIcon('Sparkles');
 var Unlock = _lazyIcon('Unlock');
 var Unplug = _lazyIcon('Unplug');
-var X = _lazyIcon('X');
 const renderFormattedText = (text, enableGlossary = true, isDarkBg = false, deps) => {
   const { sanitizeTruncatedCitations, warnLog, SimpleBarChart, SimpleDonutChart, formatInlineText, normalizeResourceLinks } = deps;
   try {
