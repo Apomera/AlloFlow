@@ -53,6 +53,9 @@ DEPS_RENDER_OUTLINE_CONTENT = [
     'generatedContent', 'isInteractiveVenn', 'isProcessing', 'isTeacherMode',
     'isVennPlaying', 'leveledTextLanguage', 'outlineTranslationMode',
     'vennGameData', 'vennInputs',
+    # useState values added in G.2 hotfix (audit's JSX-attribute stripper missed
+    # both — they're referenced inside `{x ? ... : ...}` expressions).
+    'isEditingOutline', 'isMapLocked',
     # useState setters
     'setOutlineTranslationMode', 'setVennInputs',
     # React-body helpers (handlers + utilities + i18n)
@@ -69,10 +72,13 @@ DEPS_RENDER_INTERACTIVE_MAP = [
     'activeChallengeMode', 'challengeFeedback', 'challengeModeType',
     'generatedContent', 'isChallengeActive', 'isCheckingChallenge',
     'isProcessing', 'isTeacherMode', 'letterSpacing', 'nodeInputText',
+    # useState val added in G.2 hotfix (gates disabled state on lots of UI;
+    # missed by the JSX-attribute stripper).
+    'isMapLocked',
     # useReducer-derived bindings (destructured from csState at L3775,
     # in scope in the React component body — manually added since the
     # audit classifier doesn't trace destructure patterns).
-    'conceptMapNodes', 'conceptMapEdges',
+    'conceptMapNodes', 'conceptMapEdges', 'draggedNodeId',
     # useState setters
     'setChallengeModeType', 'setConnectingSourceId',
     'setIsInteractiveMap', 'setIsInteractiveVenn', 'setNodeInputText',
