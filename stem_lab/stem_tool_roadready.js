@@ -13403,6 +13403,76 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   }
                 }
               }
+              // ── Wind turbines on far horizon (rural, ~1 per 8 chunks) ──
+              // Maine has the largest wind farms in New England (Mars Hill,
+              // Stetson, Kibby Mountain). One distant turbine every 8 rural
+              // chunks placed 35-55m off the road in the field reads as the
+              // ridge-top wind farms you actually see driving Routes 1, 9, or
+              // 11. Static blade rotation seeded per chunk so each turbine has
+              // its own pose (no per-frame animation cost). Skipped on snow /
+              // fog (visibility) and when a landmark sits in the chunk.
+              if (chunk.biome === 'rural' && (ci % 8 === 0) && !chunk.landmark
+                  && scn.weather !== 'snow' && scn.weather !== 'fog') {
+                var wtRng = seededRandom(chunk.index * 67891 + 23);
+                var wtSide = wtRng() < 0.5 ? -1 : 1;
+                var wtLocalZ = 6 + wtRng() * (CHUNK_SIZE - 12);
+                var wtSampleY = ci * CHUNK_SIZE + wtLocalZ;
+                var wtRoadX = iw.spline ? (iw.spline.centerAt(wtSampleY) - MAP_SIZE / 2) : 0;
+                var wtOffset = roadHalfW + 35 + wtRng() * 20; // 35-55m into field
+                var wtX = wtRoadX + wtSide * wtOffset;
+                if (wtX > -halfMap + 4 && wtX < halfMap - 4) {
+                  var wtHt = iw.spline ? iw.spline.heightAt(wtSampleY) : 0;
+                  var wtZ = chunkWorldZ + wtLocalZ;
+                  // Tower — tapered tall white cylinder
+                  var wtTowerMat = new T.MeshLambertMaterial({ color: 0xf3f4f6 });
+                  var wtTowerH = 18;
+                  var wtTower = new T.Mesh(new T.CylinderGeometry(0.35, 0.7, wtTowerH, 10), wtTowerMat);
+                  wtTower.position.set(wtX, wtHt + wtTowerH / 2, wtZ);
+                  wtTower.castShadow = true;
+                  chunkGroup.add(wtTower);
+                  // Nacelle (housing at the top — small horizontal box facing road)
+                  var wtNacelleMat = new T.MeshLambertMaterial({ color: 0xe5e7eb });
+                  var wtNacelle = new T.Mesh(new T.BoxGeometry(2.2, 0.9, 1.0), wtNacelleMat);
+                  wtNacelle.position.set(wtX, wtHt + wtTowerH + 0.45, wtZ);
+                  // Rotate so the nacelle's long axis (rotor shaft) points toward the road
+                  wtNacelle.rotation.y = wtSide > 0 ? -Math.PI / 2 : Math.PI / 2;
+                  chunkGroup.add(wtNacelle);
+                  // Hub (small cap at the rotor end)
+                  var wtHub = new T.Mesh(new T.SphereGeometry(0.42, 8, 6), wtTowerMat);
+                  wtHub.position.set(wtX - wtSide * 1.2, wtHt + wtTowerH + 0.45, wtZ);
+                  chunkGroup.add(wtHub);
+                  // Three blades arranged at 120° intervals, rotated by a
+                  // chunk-seeded base angle so each turbine catches the wind
+                  // differently. Blades extend in the plane perpendicular to
+                  // the road (horizontal Z-axis spin plane from driver POV).
+                  var wtBladeMat = new T.MeshLambertMaterial({ color: 0xfafafa });
+                  var wtBaseRot = wtRng() * Math.PI * 2;
+                  for (var wbi = 0; wbi < 3; wbi++) {
+                    var wbAngle = wtBaseRot + (wbi / 3) * Math.PI * 2;
+                    // Blade is long thin tapered box; place midpoint outward from hub
+                    var wbLen = 8;
+                    var wbBlade = new T.Mesh(new T.BoxGeometry(0.18, wbLen, 0.5), wtBladeMat);
+                    // Position blade midpoint at distance wbLen/2 from hub center
+                    var wbDx = Math.cos(wbAngle) * (wbLen / 2);
+                    var wbDy = Math.sin(wbAngle) * (wbLen / 2);
+                    wbBlade.position.set(wtX - wtSide * 1.4, wtHt + wtTowerH + 0.45 + wbDy, wtZ + wbDx);
+                    // Rotate blade so its long axis aligns with the angle
+                    wbBlade.rotation.x = wbAngle - Math.PI / 2;
+                    chunkGroup.add(wbBlade);
+                  }
+                  // Aviation warning light — small red dot atop the nacelle.
+                  // Real turbines have FAA-required obstruction lights; on
+                  // dark scenarios they pulse. Simple static red bulb is
+                  // enough at this distance.
+                  var wtLitNow = scn.time === 'night' || scn.id === 'dawn';
+                  if (wtLitNow) {
+                    var wtLightMat = new T.MeshBasicMaterial({ color: 0xef4444 });
+                    var wtLight = new T.Mesh(new T.SphereGeometry(0.15, 6, 5), wtLightMat);
+                    wtLight.position.set(wtX, wtHt + wtTowerH + 1.1, wtZ);
+                    chunkGroup.add(wtLight);
+                  }
+                }
+              }
               // ── Glacial erratic boulders in rural fields ──
               // New England fields are studded with rounded gray boulders left
               // by retreating glaciers (the same ones that built the fieldstone
