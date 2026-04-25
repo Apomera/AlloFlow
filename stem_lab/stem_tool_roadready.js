@@ -11419,6 +11419,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                                  : chunk.biome === 'industrial' ? bH + 0.4 : bH + 0.18;
                       snowCap.position.set(wx, terrainYb + capY, wz);
                       chunkGroup.add(snowCap);
+                      // ── Christmas light strand along the eaves (snow only) ──
+                      // Maine homes hang lights from Thanksgiving through March
+                      // and never quite take them down. About 40% of residential
+                      // / suburban homes get a strand of red/green/warm-white
+                      // bulbs along the road-facing eave. Tiny additive points
+                      // so they read as "lit" without needing a real light per
+                      // bulb. Skipped on commercial / industrial.
+                      var canHaveLights = (chunk.biome === 'residential' || chunk.biome === 'suburban') && (bHash & 7) < 3;
+                      if (canHaveLights) {
+                        var clPalette = [0xef4444, 0x16a34a, 0xfff0a8, 0x3b82f6];
+                        var clEaveY = terrainYb + bH + 0.05;
+                        var clCount = Math.max(3, Math.floor(bW * 4));
+                        for (var cli = 0; cli < clCount; cli++) {
+                          var clT = (cli + 0.5) / clCount;
+                          var clX = wx - bW / 2 + clT * bW;
+                          var clColor = clPalette[(bHash + cli * 3) % clPalette.length];
+                          var clMat = new T.MeshBasicMaterial({ color: clColor });
+                          var clBulb = new T.Mesh(new T.SphereGeometry(0.045, 5, 4), clMat);
+                          clBulb.position.set(clX, clEaveY, wz + bW / 2 + 0.04);
+                          chunkGroup.add(clBulb);
+                        }
+                      }
                     }
                     // Windows: bright dots at night, dark squares by day.
                     // TV FLICKER: in residential / suburban biomes at night,
