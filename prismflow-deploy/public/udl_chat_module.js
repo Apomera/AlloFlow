@@ -23,6 +23,10 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
     brainstormCustomInstructions, faqCustomInstructions, outlineCustomInstructions,
     visualCustomInstructions, lessonCustomAdditions, timelineTopic, fillInTheBlank,
     resourceCount, fullPackTargetGroup, expandedTools, dokOptions, audioBank, voiceMap,
+    // Latent-bug fix from auditor: STATE_QUERY intent ("what's my voice speed?")
+    // references these as bare refs in the settings-summary builder.
+    HELP_STRINGS, includeSourceCitations, selectedVoice, textFormat,
+    voiceSpeed, voiceVolume,
     // Refs
     uiDispatch,
     // State setters

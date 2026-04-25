@@ -18740,6 +18740,14 @@ ${t('export.readme_json_desc')}`;
       dokOptions: typeof dokOptions !== 'undefined' ? dokOptions : undefined,
       audioBank: typeof audioBank !== 'undefined' ? audioBank : undefined,
       voiceMap: typeof voiceMap !== 'undefined' ? voiceMap : undefined,
+      // Latent-bug fix from auditor: STATE_QUERY intent ("what's my voice speed?")
+      // references these as bare refs in the settings-summary builder.
+      HELP_STRINGS: typeof HELP_STRINGS !== 'undefined' ? HELP_STRINGS : undefined,
+      includeSourceCitations: typeof includeSourceCitations !== 'undefined' ? includeSourceCitations : undefined,
+      selectedVoice: typeof selectedVoice !== 'undefined' ? selectedVoice : undefined,
+      textFormat: typeof textFormat !== 'undefined' ? textFormat : undefined,
+      voiceSpeed: typeof voiceSpeed !== 'undefined' ? voiceSpeed : undefined,
+      voiceVolume: typeof voiceVolume !== 'undefined' ? voiceVolume : undefined,
       uiDispatch,
       setActiveBlueprint, setActiveView, setAdventureInputMode, setDokLevel,
       setExpandedTools, setFillInTheBlank, setFrameType, setFullPackTargetGroup,
