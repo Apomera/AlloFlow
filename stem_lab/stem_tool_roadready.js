@@ -12045,6 +12045,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     flag._flagSeed = (ci * 37.3 + lm.centerY * 0.91) % 6.28;
                     flag._flagBaseY = 0;
                     chunkGroup.add(flag);
+                    // ── Parked school bus on the lot ──
+                    // Iconic yellow body + black window strip + black hood +
+                    // 6 wheels (single front, dual rear). The folded STOP arm
+                    // sits flush against the driver-side body — the existing
+                    // school-bus-stop-arm lesson covers what happens when the
+                    // arm is extended; this static version just establishes
+                    // the silhouette for "this is a school" recognition.
+                    var sbBodyMat = new T.MeshLambertMaterial({ color: 0xfacc15 });
+                    var sbWinMat = new T.MeshLambertMaterial({ color: 0x1e293b });
+                    var sbHoodMat = new T.MeshLambertMaterial({ color: 0x111111 });
+                    var sbWheelMat = new T.MeshLambertMaterial({ color: 0x1a1a1a });
+                    var sbStopArmMat = new T.MeshLambertMaterial({ color: 0xdc2626 });
+                    var sbX = lmCenterWX + lm.side * (lt.size * 0.55);
+                    var sbZ = lmCenterWZ - lt.size * 0.25;
+                    // Long body (school buses are long)
+                    var sbBody = new T.Mesh(new T.BoxGeometry(3.2, 1.3, 1.0), sbBodyMat);
+                    sbBody.position.set(sbX, 0.75, sbZ);
+                    sbBody.castShadow = true;
+                    chunkGroup.add(sbBody);
+                    // Black window band along both sides (offset just outside the body)
+                    [-0.51, 0.51].forEach(function(sbWZ) {
+                      var sbWinBand = new T.Mesh(new T.BoxGeometry(2.4, 0.45, 0.04), sbWinMat);
+                      sbWinBand.position.set(sbX - 0.2, 1.05, sbZ + sbWZ);
+                      chunkGroup.add(sbWinBand);
+                    });
+                    // Black hood band on the front (this is the cab nose)
+                    var sbHood = new T.Mesh(new T.BoxGeometry(0.8, 0.7, 1.0), sbHoodMat);
+                    sbHood.position.set(sbX + 1.4, 0.55, sbZ);
+                    chunkGroup.add(sbHood);
+                    // 6 wheels — single front, dual rear
+                    [
+                      { x: 1.25, z: -0.50 }, { x: 1.25, z: 0.50 },
+                      { x: -0.55, z: -0.50 }, { x: -0.55, z: 0.50 },
+                      { x: -1.05, z: -0.50 }, { x: -1.05, z: 0.50 }
+                    ].forEach(function(sbwp) {
+                      var sbWheel = new T.Mesh(new T.CylinderGeometry(0.20, 0.20, 0.13, 8), sbWheelMat);
+                      sbWheel.rotation.x = Math.PI / 2;
+                      sbWheel.position.set(sbX + sbwp.x, 0.20, sbZ + sbwp.z);
+                      chunkGroup.add(sbWheel);
+                    });
+                    // Folded STOP arm flush against the driver-side body
+                    var sbStopArm = new T.Mesh(new T.BoxGeometry(0.45, 0.45, 0.05), sbStopArmMat);
+                    sbStopArm.position.set(sbX - 0.6, 0.85, sbZ - (lm.side > 0 ? 0.55 : -0.55));
+                    chunkGroup.add(sbStopArm);
                   } else if (lt.id === 'post') {
                     // Small American flag out front — real US post offices always have one.
                     var poFlagPole = new T.Mesh(new T.CylinderGeometry(0.05, 0.05, 3.2, 6), new T.MeshLambertMaterial({ color: 0xd1d5db }));
