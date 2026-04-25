@@ -30,12 +30,20 @@ if (!fs.existsSync(SOURCE)) {
 
 const source = fs.readFileSync(SOURCE, 'utf-8');
 
-// Lucide icons used across the three renderers (from c:/tmp/audit_g2_deps.py).
-// Total of 13 unique icons. _lazyIcon defers resolution to call-time so the
+// Lucide icons used across the three renderers. Determined by scanning the
+// extracted source for `<[A-Z][A-Za-z0-9]+\b` JSX patterns intersected with
+// known Lucide icon names. _lazyIcon defers resolution to call-time so the
 // module doesn't have to wait for window.AlloIcons to be populated.
+//
+// History:
+// - First pass shipped 13 icons. Missed Unlock + Unplug (used inside the
+//   concept-map lock-toggle button), surfaced as runtime ReferenceError.
+// - Adding both. window.AlloIcons in the monolith has also been extended
+//   to expose them.
 const ICONS = [
   'AlertCircle', 'ArrowDown', 'ArrowRight', 'CheckCircle2', 'Gamepad2',
-  'Layout', 'List', 'ListOrdered', 'Lock', 'Plus', 'RefreshCw', 'Sparkles', 'X',
+  'Layout', 'List', 'ListOrdered', 'Lock', 'Plus', 'RefreshCw', 'Sparkles',
+  'Unlock', 'Unplug', 'X',
 ];
 
 const entry = `

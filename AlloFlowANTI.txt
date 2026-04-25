@@ -4928,7 +4928,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       Sparkles, Star, StopCircle, Target, Trash2, TrendingUp, Trophy, Type, Upload, Users,
       Volume2, VolumeX, Wrench, X, Zap,
       ArrowLeft, ChevronRight, FolderOpen, Heart, List, Pause, Pencil,
-      School, Settings2, UserCircle2, XCircle
+      School, Settings2, UserCircle2, XCircle, Unlock, Unplug
     };
   }, []);
   React.useEffect(() => {
