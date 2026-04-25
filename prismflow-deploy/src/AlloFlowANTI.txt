@@ -5952,48 +5952,48 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     })();
     // AlloData: pure-data bundle (phoneme guide, prompts, i18n strings, shop items, timeline modes).
     // Registers window.AlloModules.AlloData and calls _upgradeAlloData() to populate monolith shim.
-    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a66e47a/allo_data_module.js');
+    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/allo_data_module.js');
     // LargeFileModule: chunked audio/video transcription (LargeFileHandler + LargeFileTranscriptionModal).
-    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a66e47a/large_file_module.js');
+    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/large_file_module.js');
     // KeyConceptMapModule: SVG-overlay Bezier concept map view (used by renderOutlineContent).
-    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a66e47a/key_concept_map_module.js');
+    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/key_concept_map_module.js');
     // UtilsPure: 14 pure utilities (JSON, storage, network, image) — populates monolith shim via _upgradeUtilsPure().
-    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a66e47a/utils_pure_module.js');
+    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/utils_pure_module.js');
     // GeminiAPI: callGemini + callGeminiVision + callGeminiImageEdit — populates monolith shim via _upgradeGeminiAPI().
-    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a66e47a/gemini_api_module.js');
+    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/gemini_api_module.js');
     // TTS: fetchTTSBytes + callTTS + callTTSDirect — populates monolith shim via _upgradeTTS().
-    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a66e47a/tts_module.js');
+    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/tts_module.js');
     // Personas: 16 handlers for historical character interview subsystem — populates monolith shim via _upgradePersonas().
-    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a66e47a/personas_module.js');
+    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/personas_module.js');
     // Export: 8 export-pipeline handlers (QTI/IMS/PPTX/flashcards/storybook/JSON) — populates monolith shim via _upgradeExport().
-    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a66e47a/export_module.js');
+    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/export_module.js');
     // MiscComponents: WordSoundsReviewPanel + AnimatedNumber + ClozeInput (pure-props components).
-    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a66e47a/misc_components_module.js');
+    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/misc_components_module.js');
     // RemediationAudio: Web Audio feedback beeps (chunk good/bad/medium, session complete, etc).
-    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a66e47a/remediation_audio_module.js');
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a66e47a/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a66e47a/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a66e47a/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a66e47a/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a66e47a/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a66e47a/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a66e47a/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a66e47a/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a66e47a/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a66e47a/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a66e47a/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a66e47a/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a66e47a/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a66e47a/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a66e47a/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a66e47a/student_interaction_module.js');
-    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a66e47a/math_fluency_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a66e47a/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a66e47a/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a66e47a/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a66e47a/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a66e47a/content_engine_module.js');
-    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a66e47a/timeline_revision_module.js');
+    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/remediation_audio_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/student_interaction_module.js');
+    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/math_fluency_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/content_engine_module.js');
+    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/timeline_revision_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -6009,7 +6009,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a66e47a/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -51637,7 +51637,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                         <span className="text-slate-500 text-[11px]">(ground-truth extraction unavailable — use Diff view to inspect source ↔ HTML manually, or Re-check to retry)</span>
                                         <div className="ml-auto inline-flex items-center gap-1 shrink-0">
                                           <button
-                                            onClick={() => { _ensureDiffLib(); setDiffViewOpen(true); }}
+                                            onClick={async () => {
+                                            console.debug('[Diff] Button clicked — diffLibReady=' + diffLibReady + ', window.Diff=' + !!window.Diff);
+                                            setDiffViewOpen(true);
+                                            const ok = await _ensureDiffLib();
+                                            if (!ok) {
+                                              console.warn('[Diff] _ensureDiffLib returned false — script load failed');
+                                              if (typeof addToast === 'function') addToast('Diff engine failed to load (network blocked?). Check your connection and try again.', 'error');
+                                            }
+                                          }}
                                             className="text-[10px] px-2 py-1 bg-white border border-slate-300 text-slate-700 rounded-md hover:bg-slate-50 font-bold inline-flex items-center gap-1"
                                             aria-label="Open diff view of source PDF text vs. final HTML"
                                             title="Side-by-side word-level diff: see every insertion, deletion, and paraphrase between the source PDF and the remediated HTML."
@@ -51660,7 +51668,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                     <div className="ml-auto inline-flex items-center gap-1 shrink-0">
                                       {_hasDiffInputs && (
                                         <button
-                                          onClick={() => { _ensureDiffLib(); setDiffViewOpen(true); }}
+                                          onClick={async () => {
+                                            console.debug('[Diff] Button clicked — diffLibReady=' + diffLibReady + ', window.Diff=' + !!window.Diff);
+                                            setDiffViewOpen(true);
+                                            const ok = await _ensureDiffLib();
+                                            if (!ok) {
+                                              console.warn('[Diff] _ensureDiffLib returned false — script load failed');
+                                              if (typeof addToast === 'function') addToast('Diff engine failed to load (network blocked?). Check your connection and try again.', 'error');
+                                            }
+                                          }}
                                           className="text-[10px] px-2 py-1 bg-white border border-slate-300 text-slate-700 rounded-md hover:bg-slate-50 font-bold inline-flex items-center gap-1"
                                           aria-label="Open diff view of source PDF text vs. final HTML"
                                           title="Side-by-side word-level diff: see every insertion, deletion, and paraphrase between the source PDF and the remediated HTML."
@@ -51794,7 +51810,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                           )}
                                           {pdfFixResult.sourceText && pdfFixResult.finalText && (
                                             <button
-                                              onClick={() => { _ensureDiffLib(); setDiffViewOpen(true); }}
+                                              onClick={async () => {
+                                            console.debug('[Diff] Button clicked — diffLibReady=' + diffLibReady + ', window.Diff=' + !!window.Diff);
+                                            setDiffViewOpen(true);
+                                            const ok = await _ensureDiffLib();
+                                            if (!ok) {
+                                              console.warn('[Diff] _ensureDiffLib returned false — script load failed');
+                                              if (typeof addToast === 'function') addToast('Diff engine failed to load (network blocked?). Check your connection and try again.', 'error');
+                                            }
+                                          }}
                                               className="ml-auto text-[10px] px-2 py-1 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 font-bold inline-flex items-center gap-1"
                                               title="Open the word-level diff view"
                                             >
@@ -53355,7 +53379,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             buried by doc-specific state — this one is discoverable. */}
                         {pdfFixResult.sourceText && pdfFixResult.finalText && (
                           <button
-                            onClick={() => { _ensureDiffLib(); setDiffViewOpen(true); }}
+                            onClick={async () => {
+                                            console.debug('[Diff] Button clicked — diffLibReady=' + diffLibReady + ', window.Diff=' + !!window.Diff);
+                                            setDiffViewOpen(true);
+                                            const ok = await _ensureDiffLib();
+                                            if (!ok) {
+                                              console.warn('[Diff] _ensureDiffLib returned false — script load failed');
+                                              if (typeof addToast === 'function') addToast('Diff engine failed to load (network blocked?). Check your connection and try again.', 'error');
+                                            }
+                                          }}
                             className="px-4 py-2.5 bg-slate-100 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-200 transition-colors flex items-center gap-1.5"
                             aria-label="Open word-level diff view between source PDF and remediated HTML"
                             title="Open the word-level diff modal — see every insertion, deletion, and paraphrase between the source PDF text and the remediated HTML, with click-to-reject and Apply &amp; Export."
@@ -57447,7 +57479,15 @@ Return ONLY the plain language summary in ${lang}.`, false);
                         compare against, so the button stays hidden in that mode. */}
                     {pdfFixResult && pdfFixResult.sourceText && pdfFixResult.finalText && (
                       <button
-                        onClick={() => { _ensureDiffLib(); setDiffViewOpen(true); }}
+                        onClick={async () => {
+                                            console.debug('[Diff] Button clicked — diffLibReady=' + diffLibReady + ', window.Diff=' + !!window.Diff);
+                                            setDiffViewOpen(true);
+                                            const ok = await _ensureDiffLib();
+                                            if (!ok) {
+                                              console.warn('[Diff] _ensureDiffLib returned false — script load failed');
+                                              if (typeof addToast === 'function') addToast('Diff engine failed to load (network blocked?). Check your connection and try again.', 'error');
+                                            }
+                                          }}
                         className="text-xs font-bold flex items-center gap-1 px-2 py-1 rounded text-slate-600 hover:text-indigo-600 hover:bg-slate-100 transition-all"
                         title="Open the word-level diff view comparing the source PDF text to the remediated HTML — see every insertion, deletion, and paraphrase with click-to-reject."
                         aria-label="Open word-level diff view between source PDF and remediated HTML"
