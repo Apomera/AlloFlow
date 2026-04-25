@@ -3036,6 +3036,9 @@ const getBilingualPromptInstruction = (targetLang) => {
 // collapses to English-only output). For English targetLang, it just runs the
 // base prompt and returns the result with no translation block.
 const generateBilingualText = async (basePrompt, targetLang, callGeminiFn) => {
+    const _m = window.AlloModules && window.AlloModules.TextPipelineHelpers;
+    if (_m && typeof _m.generateBilingualText === 'function') return _m.generateBilingualText(basePrompt, targetLang, callGeminiFn);
+    // Fallback inline body if TextPipelineHelpers failed to load.
     const stripFences = (s) => String(s || "")
         .replace(/^```[a-zA-Z]*\n/i, '')
         .replace(/^```\s*/, '')
@@ -3079,6 +3082,9 @@ ${targetResult}
 // Extract the English portion from bilingual content (or return full text if not bilingual)
 // Also returns metadata about what was found
 const extractSourceTextForProcessing = (text, preferEnglish = true) => {
+    const _m = window.AlloModules && window.AlloModules.TextPipelineHelpers;
+    if (_m && typeof _m.extractSourceTextForProcessing === 'function') return _m.extractSourceTextForProcessing(text, preferEnglish);
+    // Fallback inline body if TextPipelineHelpers failed to load.
     if (!text) return { text: '', isBilingual: false, targetLangBlock: '', englishBlock: '' };
     const delimiter = '--- ENGLISH TRANSLATION ---';
     const idx = text.indexOf(delimiter);
@@ -3101,6 +3107,9 @@ const LENGTH_THRESHOLDS = {
     MAX_VARIANCE: 1.4
 };
 const scrambleWord = (word) => {
+    const _m = window.AlloModules && window.AlloModules.TextPipelineHelpers;
+    if (_m && typeof _m.scrambleWord === 'function') return _m.scrambleWord(word);
+    // Fallback inline body if TextPipelineHelpers failed to load.
   if (!word || word.length < 2) return word;
   const arr = word.split('');
   for (let i = arr.length - 1; i > 0; i--) {
@@ -3114,6 +3123,9 @@ const scrambleWord = (word) => {
   return result;
 };
 const toSuperscript = (num) => {
+    const _m = window.AlloModules && window.AlloModules.TextPipelineHelpers;
+    if (_m && typeof _m.toSuperscript === 'function') return _m.toSuperscript(num);
+    // Fallback inline body if TextPipelineHelpers failed to load.
     const map = {
         '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴',
         '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹',
@@ -3121,6 +3133,9 @@ const toSuperscript = (num) => {
     return num.toString().split('').map(d => map[d] || d).join('');
 };
 const fixCitationPlacement = (text) => {
+    const _m = window.AlloModules && window.AlloModules.TextPipelineHelpers;
+    if (_m && typeof _m.fixCitationPlacement === 'function') return _m.fixCitationPlacement(text);
+    // Fallback inline body if TextPipelineHelpers failed to load.
     if (!text) return text;
     let fixed = text;
     fixed = fixed.replace(/(^|\n)(#{1,6})([^\s#])/gm, '$1$2 $3');
@@ -3129,6 +3144,9 @@ const fixCitationPlacement = (text) => {
     return fixed;
 };
 const processMathHTML = (text) => {
+    const _m = window.AlloModules && window.AlloModules.TextPipelineHelpers;
+    if (_m && typeof _m.processMathHTML === 'function') return _m.processMathHTML(text);
+    // Fallback inline body if TextPipelineHelpers failed to load.
     if (text == null || text === '') return '';
     let content = String(text).replace(/^\$\$/, '').replace(/\$\$$/, '');
     content = content.replace(/^\$/, '').replace(/\$$/, '');
@@ -3302,6 +3320,9 @@ const AdventureAmbience = React.memo((props) => {
 // Without this, users see raw fragments like [⁽¹⁴⁾](https://www.webmd.  and stray # at the end of
 // the simplified text. Mirrors repairSourceMarkdown in content_engine_source.jsx.
 const sanitizeTruncatedCitations = (text) => {
+    const _m = window.AlloModules && window.AlloModules.TextPipelineHelpers;
+    if (_m && typeof _m.sanitizeTruncatedCitations === 'function') return _m.sanitizeTruncatedCitations(text);
+    // Fallback inline body if TextPipelineHelpers failed to load.
     if (!text) return text;
     // REPAIR RULES first (preferred — fix the content). STRIP RULES last (only after repair fails).
     // Rule R1: Normalize whitespace INSIDE citation URLs. Gemini quirk: inserts spaces at URL dots
@@ -3343,6 +3364,9 @@ const sanitizeTruncatedCitations = (text) => {
     return text;
 };
 const normalizeCitationPlacement = (text) => {
+    const _m = window.AlloModules && window.AlloModules.TextPipelineHelpers;
+    if (_m && typeof _m.normalizeCitationPlacement === 'function') return _m.normalizeCitationPlacement(text);
+    // Fallback inline body if TextPipelineHelpers failed to load.
     if (!text) return text;
     const CIT = '\\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\\]\\([^)]+\\)';
     const CIT_RE = new RegExp(CIT, 'g');
@@ -3390,6 +3414,9 @@ const normalizeCitationPlacement = (text) => {
 };
 // Filter out non-educational sources from grounding chunks (YouTube music, IMDB, social media, etc.)
 const filterEducationalSources = (chunks) => {
+    const _m = window.AlloModules && window.AlloModules.TextPipelineHelpers;
+    if (_m && typeof _m.filterEducationalSources === 'function') return _m.filterEducationalSources(chunks);
+    // Fallback inline body if TextPipelineHelpers failed to load.
     if (!chunks || !Array.isArray(chunks)) return chunks;
     const rejectUrl = [/youtube\.com\/watch/i, /youtu\.be\//i, /imdb\.com/i, /spotify\.com/i, /tiktok\.com/i, /instagram\.com/i, /facebook\.com/i, /twitter\.com|x\.com/i, /reddit\.com/i, /pinterest\.com/i, /amazon\.com\/(?!science)/i, /ebay\.com/i, /yelp\.com/i, /tripadvisor\.com/i, /rottentomatoes\.com/i, /fandom\.com/i, /letterboxd\.com/i];
     const rejectTitle = [/official\s*(music\s*)?video/i, /\(official\s*video\)/i, /\blyrics?\b/i, /\bremaster(ed)?\b/i, /\bmovie\s*trailer\b/i, /\bfull\s*movie\b/i];
@@ -3402,6 +3429,9 @@ const filterEducationalSources = (chunks) => {
     });
 };
 const generateBibliographyString = (metadata, citationStyle = 'Links Only', title = 'Verified Sources') => {
+    const _m = window.AlloModules && window.AlloModules.TextPipelineHelpers;
+    if (_m && typeof _m.generateBibliographyString === 'function') return _m.generateBibliographyString(metadata, citationStyle, title);
+    // Fallback inline body if TextPipelineHelpers failed to load.
     if (!metadata || !metadata.groundingChunks || metadata.groundingChunks.length === 0) return "";
     const chunks = filterEducationalSources(metadata.groundingChunks);
     if (chunks.length === 0) return "";
@@ -5952,53 +5982,57 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     })();
     // AlloData: pure-data bundle (phoneme guide, prompts, i18n strings, shop items, timeline modes).
     // Registers window.AlloModules.AlloData and calls _upgradeAlloData() to populate monolith shim.
-    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/allo_data_module.js');
+    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f03acc7/allo_data_module.js');
     // LargeFileModule: chunked audio/video transcription (LargeFileHandler + LargeFileTranscriptionModal).
-    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/large_file_module.js');
+    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f03acc7/large_file_module.js');
     // KeyConceptMapModule: SVG-overlay Bezier concept map view (used by renderOutlineContent).
-    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/key_concept_map_module.js');
+    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f03acc7/key_concept_map_module.js');
     // UtilsPure: 14 pure utilities (JSON, storage, network, image) — populates monolith shim via _upgradeUtilsPure().
-    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/utils_pure_module.js');
+    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f03acc7/utils_pure_module.js');
     // GeminiAPI: callGemini + callGeminiVision + callGeminiImageEdit — populates monolith shim via _upgradeGeminiAPI().
-    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/gemini_api_module.js');
+    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f03acc7/gemini_api_module.js');
     // TTS: fetchTTSBytes + callTTS + callTTSDirect — populates monolith shim via _upgradeTTS().
-    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/tts_module.js');
+    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f03acc7/tts_module.js');
     // Personas: 16 handlers for historical character interview subsystem — populates monolith shim via _upgradePersonas().
-    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/personas_module.js');
+    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f03acc7/personas_module.js');
     // Export: 8 export-pipeline handlers (QTI/IMS/PPTX/flashcards/storybook/JSON) — populates monolith shim via _upgradeExport().
-    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/export_module.js');
+    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f03acc7/export_module.js');
     // MiscComponents: WordSoundsReviewPanel + AnimatedNumber + ClozeInput (pure-props components).
-    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/misc_components_module.js');
+    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f03acc7/misc_components_module.js');
     // RemediationAudio: Web Audio feedback beeps (chunk good/bad/medium, session complete, etc).
-    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/remediation_audio_module.js');
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/student_interaction_module.js');
-    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/math_fluency_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/content_engine_module.js');
-    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/timeline_revision_module.js');
+    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f03acc7/remediation_audio_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f03acc7/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f03acc7/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f03acc7/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f03acc7/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f03acc7/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f03acc7/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f03acc7/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f03acc7/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f03acc7/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f03acc7/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f03acc7/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f03acc7/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f03acc7/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f03acc7/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f03acc7/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f03acc7/student_interaction_module.js');
+    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f03acc7/math_fluency_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f03acc7/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f03acc7/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f03acc7/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f03acc7/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f03acc7/content_engine_module.js');
+    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f03acc7/timeline_revision_module.js');
     // PromptsLibrary — pure prompt builders (lesson plan, parent guide, study guide).
     // Module self-instantiates and registers window.AlloModules.PromptsLibrary
     // at load time using window.STEM_TOOL_REGISTRY. If loading fails, the
     // inline shims (below) fall back to byte-identical inline implementations.
-    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/prompts_library_module.js');
+    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f03acc7/prompts_library_module.js');
+    // TextPipelineHelpers — pure citation/text/source helpers + DOM_TO_TOOL_ID_MAP.
+    // Module self-instantiates; the inline shims above delegate to
+    // window.AlloModules.TextPipelineHelpers if loaded, fall back inline if not.
+    loadModule('TextPipelineHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f03acc7/text_pipeline_helpers_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -6014,7 +6048,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f03acc7/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -7774,7 +7808,9 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
   const [isSpotlightMode, setIsSpotlightMode] = useState(false);
   const [spotlightMessage, setSpotlightMessage] = useState(null);
   const [botSpotlightPos, setBotSpotlightPos] = useState(null);
-  const DOM_TO_TOOL_ID_MAP = {
+  // Lifted to text_pipeline_helpers_module.js. Re-created at module-level
+  // instead of per-render, fixing a perf bug. Inline fallback for race-safety.
+  const DOM_TO_TOOL_ID_MAP = (window.AlloModules && window.AlloModules.TextPipelineHelpers && window.AlloModules.TextPipelineHelpers.DOM_TO_TOOL_ID_MAP) || {
     'tour-input-panel': 'source-input',
     'tour-tool-analysis': 'analysis',
     'ui-tool-glossary': 'glossary',
@@ -14046,6 +14082,9 @@ const ImmersiveWord = React.memo((props) => {
     return Ext ? <Ext {...props} /> : null;
 });
 const parseTaggedContent = (text) => {
+    const _m = window.AlloModules && window.AlloModules.TextPipelineHelpers;
+    if (_m && typeof _m.parseTaggedContent === 'function') return _m.parseTaggedContent(text);
+    // Fallback inline body if TextPipelineHelpers failed to load.
     if (!text) return [];
     text = text.replace(/<([nvad])>([^<]*?)(?=<[nvad]>|<\/|\n|$)/g, (match, tag, content) => {
         if (!match.includes('</' + tag + '>')) {
