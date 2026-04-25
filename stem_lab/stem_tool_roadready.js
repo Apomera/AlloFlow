@@ -16312,7 +16312,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
           // ── Mini-map radar (bottom-left corner) ──
           // Free Explore gets a larger map with infinite-world road sampling + landmark pips.
-          var isFE = !!d.freeExplore;
+          // Defensive `d &&` — drawHUD runs through the rAF step, which can fire
+          // once after unmount when `d` has been cleared (same race as the
+          // d.highBeams crash at ~9963 and the d.rideshareMode crash at ~15240).
+          var isFE = !!(d && d.freeExplore);
           var mmSize = isFE ? 140 : 90;
           var mmX = 10, mmY = H - (isFE ? 250 : 200);
           var mmScale = isFE ? 0.9 : 1.4; // world units per pixel — tighter zoom in FE
@@ -16413,6 +16416,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             gfx.beginPath(); gfx.arc(qmx, qmy, 5, 0, Math.PI * 2); gfx.stroke();
           }
           // ── Ghost Replay: faded trail of the best previous drive on this seed ──
+          // d-guard inherited from isFE above (d is non-null whenever isFE is true).
           if (isFE && d.bestGhosts) {
             var ghKey = String(d.worldSeed || 'random');
             var ghost = d.bestGhosts[ghKey];
