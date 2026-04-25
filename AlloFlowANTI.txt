@@ -1,3 +1,17 @@
+// @mode react
+/*
+    AlloFlow - Adaptive Levels, Layers, & Outputs
+    Copyright (C) 2026 Aaron Pomeranz, PsyD
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, version 3
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
 import React, { useState, useEffect, useRef, useCallback, useContext, useMemo, useReducer } from 'react';
 import ReactDOM from 'react-dom';
 import { ArrowRight, ArrowLeft, ArrowUp, ArrowDown, ArrowUpRight, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Move, ExternalLink, DoorOpen, Link } from 'lucide-react';
@@ -21355,7 +21369,27 @@ Return ONLY JSON.`;
               return;
           }
           if (navMatch) {
-              const viewMap = { glossary: 'glossary', vocabulary: 'glossary', vocab: 'glossary', terms: 'glossary', quiz: 'quiz', 'exit ticket': 'quiz', assessment: 'quiz', test: 'quiz', questions: 'quiz', simplified: 'simplified', adapted: 'simplified', 'leveled text': 'simplified', analysis: 'analysis', 'content analysis': 'analysis', outline: 'outline', organizer: 'outline', 'visual organizer': 'outline', image: 'image', images: 'image', gallery: 'image', pictures: 'image', faq: 'faq', 'frequently asked': 'faq', 'sentence frames': 'sentence-frames', scaffolds: 'sentence-frames', 'writing frames': 'sentence-frames', brainstorm: 'brainstorm', 'brainstorming': 'brainstorm', persona: 'persona', interview: 'persona', character: 'persona', timeline: 'timeline', sequence: 'timeline', 'concept sort': 'concept-sort', 'concept map': 'concept-sort', sorting: 'concept-sort', math: 'math', stem: 'math', calculator: 'math', adventure: 'adventure', story: 'adventure', game: 'adventure', 'lesson plan': 'lesson-plan', 'resource pack': 'lesson-plan', dashboard: 'dashboard', analytics: 'dashboard', input: 'input', source: 'input', 'source material': 'input', 'word sounds': 'word-sounds', phonics: 'word-sounds', 'alignment report': 'alignment-report', standards: 'alignment-report' };
+              const viewMap = {
+                glossary: 'glossary', vocabulary: 'glossary', vocab: 'glossary', terms: 'glossary',
+                quiz: 'quiz', 'exit ticket': 'quiz', assessment: 'quiz', test: 'quiz', questions: 'quiz',
+                simplified: 'simplified', adapted: 'simplified', 'leveled text': 'simplified',
+                analysis: 'analysis', 'content analysis': 'analysis',
+                outline: 'outline', organizer: 'outline', 'visual organizer': 'outline',
+                image: 'image', images: 'image', gallery: 'image', pictures: 'image',
+                faq: 'faq', 'frequently asked': 'faq',
+                'sentence frames': 'sentence-frames', scaffolds: 'sentence-frames', 'writing frames': 'sentence-frames',
+                brainstorm: 'brainstorm', 'brainstorming': 'brainstorm',
+                persona: 'persona', interview: 'persona', character: 'persona',
+                timeline: 'timeline', sequence: 'timeline',
+                'concept sort': 'concept-sort', 'concept map': 'concept-sort', sorting: 'concept-sort',
+                math: 'math', stem: 'math', calculator: 'math',
+                adventure: 'adventure', story: 'adventure', game: 'adventure',
+                'lesson plan': 'lesson-plan', 'resource pack': 'lesson-plan',
+                dashboard: 'dashboard', analytics: 'dashboard',
+                input: 'input', source: 'input', 'source material': 'input',
+                'word sounds': 'word-sounds', phonics: 'word-sounds',
+                'alignment report': 'alignment-report', standards: 'alignment-report'
+              };
               const rawTarget = navMatch[1].replace(/[?.!]/g, '').trim();
               const viewId = viewMap[rawTarget] || Object.keys(viewMap).find(k => rawTarget.includes(k));
               if (viewId) {
