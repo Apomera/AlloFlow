@@ -33,10 +33,8 @@ import { initializeApp } from 'firebase/app';
 import { getAuth, signInAnonymously as _fbSignInAnonymously, signInWithCustomToken, onAuthStateChanged as _fbOnAuthStateChanged } from 'firebase/auth';
 import { getFirestore, terminate as terminateFirestore, doc as _fbDoc, setDoc as _fbSetDoc, onSnapshot as _fbOnSnapshot, updateDoc as _fbUpdateDoc, getDoc as _fbGetDoc, deleteDoc as _fbDeleteDoc, deleteField as _fbDeleteField, collection as _fbCollection, query as _fbQuery, where as _fbWhere, getDocs as _fbGetDocs, writeBatch as _fbWriteBatch, limit as _fbLimit } from 'firebase/firestore';
 
-// ─── Firebase Shim Bridge ────────────────────────────────────────────────────
 // Starts as passthrough to raw Firebase SDK. When ai_backend_module.js loads
 // from CDN, _upgradeShims() reassigns these to the full shim layer.
-// ─────────────────────────────────────────────────────────────────────────────
 let doc = (...args) => _fbDoc(...args);
 let setDoc = (ref, data, opts) => _fbSetDoc(ref, data, opts);
 let updateDoc = (ref, data) => _fbUpdateDoc(ref, data);
@@ -80,14 +78,12 @@ function _upgradeAIBackend() {
 }
 _upgradeAIBackend(); // Immediate call — no-op in Canvas (CDN not loaded yet), works in deploy (blocking script)
 
-// ─── AlloData Shim Bridge (loaded from allo_data_module.js via CDN) ────────
 // These `let` bindings are populated by _upgradeAlloData() after the CDN
 // module registers window.AlloModules.AlloData. Initial values are empty
 // containers / empty strings so parse-time + early-render code sees a safe
 // no-op rather than ReferenceError. All references to these names inside
 // AlloFlowContent run at render/callback time, well after the CDN script
 // has loaded and called _upgradeAlloData().
-// ───────────────────────────────────────────────────────────────────────────
 let WORD_SOUNDS_STRINGS = {};
 let WORD_FAMILY_PRESETS = {};
 let SIGHT_WORD_PRESETS = {};
@@ -141,15 +137,12 @@ function _upgradeAlloData() {
     console.log('[AlloData] Monolith shim upgraded from CDN module.');
 }
 window._upgradeAlloData = _upgradeAlloData;
-// ───────────────────────────────────────────────────────────────────────────
 
 
-// ─── UtilsPure Shim Bridge (loaded from utils_pure_module.js via CDN) ─────
 // These `let` bindings are populated by _upgradeUtilsPure() after the CDN
 // module registers window.AlloModules.UtilsPure. Initial stubs provide
 // safe fallbacks in case any code calls them before the CDN loads.
 // Mirrors the AlloData / Firebase shim bridge pattern.
-// ──────────────────────────────────────────────────────────────────────────
 let safeJsonParse = (text) => { try { return text ? JSON.parse(text) : null; } catch { return null; } };
 let cleanJson = (text) => (text || '').replace(/^```json\s*|\s*```$/g, '').trim();
 let calculateTextEntropy = () => 1;
@@ -196,7 +189,6 @@ window._upgradeUtilsPure = _upgradeUtilsPure;
 // a TDZ ReferenceError ("Cannot access 'Pf' before initialization") in the
 // minified Firebase bundle. See the mirror block at the bottom of the GEMINI_MODELS
 // declaration instead.
-// ──────────────────────────────────────────────────────────────────────────
 
 // ─── GeminiAPI Shim Bridge (loaded from gemini_api_module.js via CDN) ─────
 // Fallback stubs; populated by _upgradeGeminiAPI() when the CDN module registers.
@@ -226,9 +218,7 @@ function _upgradeGeminiAPI() {
     console.log('[GeminiAPI] Monolith shim upgraded from CDN module.');
 }
 if (typeof window !== 'undefined') window._upgradeGeminiAPI = _upgradeGeminiAPI;
-// ──────────────────────────────────────────────────────────────────────────
 
-// ─── TTS Shim Bridge (loaded from tts_module.js via CDN) ──────────────
 // Fallback stubs; populated by _upgradeTTS() when the CDN module registers.
 // Unlike GeminiAPI, TTS needs live getters for component state (leveledTextLanguage,
 // currentUiLanguage, _aiUserConfig, ai, setShowKokoroOfferModal). Those are mirrored
@@ -270,9 +260,7 @@ function _upgradeTTS() {
     console.log('[TTS] Monolith shim upgraded from CDN module.');
 }
 if (typeof window !== 'undefined') window._upgradeTTS = _upgradeTTS;
-// ──────────────────────────────────────────────────────────────────────────
 
-// ─── Personas Shim Bridge (loaded from personas_module.js via CDN) ─────
 // Fallback stubs; populated by _upgradePersonas() when the CDN module registers.
 // _personasLiveRef is mirrored each render inside AlloFlowContent so the factory's
 // handlers always read fresh React state, setters, refs, and component-scoped
@@ -322,9 +310,7 @@ function _upgradePersonas() {
     console.log('[Personas] Monolith shim upgraded from CDN module.');
 }
 if (typeof window !== 'undefined') window._upgradePersonas = _upgradePersonas;
-// ──────────────────────────────────────────────────────────────────────────
 
-// ─── Export Shim Bridge (loaded from export_module.js via CDN) ────────
 // Fallback stubs; populated by _upgradeExport() when the CDN module registers.
 // _exportLiveRef is mirrored each render inside AlloFlowContent AFTER line 17328
 // (where parseMarkdownToHTML / generateResourceHTML are declared) so the 8
@@ -357,7 +343,6 @@ function _upgradeExport() {
     console.log('[Export] Monolith shim upgraded from CDN module.');
 }
 if (typeof window !== 'undefined') window._upgradeExport = _upgradeExport;
-// ──────────────────────────────────────────────────────────────────────────
 
 let _AUDIO_BANK = null;
 const _AUDIO_BANK_URL = 'https://raw.githubusercontent.com/Apomera/AlloFlow/main/audio_bank.json';
@@ -411,7 +396,6 @@ async function loadWordAudioBank() {
 // (Adaptive Controller / global gamepad code extracted to
 //  adaptive_controller_module.js on 2026-04-24 - see Phase D-light.)
 
-// #region --- CONFIGURATION & SETUP ---
 const firebaseConfig = typeof __firebase_config !== 'undefined'
   ? JSON.parse(__firebase_config)
   : {
@@ -438,7 +422,6 @@ window.addEventListener('beforeunload', () => {
     try { terminateFirestore(db).catch(() => {}); } catch(e) {}
 });
 
-// ─── DataProvider / PocketBase Integration ─────────────────────────────────
 // Initialize the backend-agnostic data layer. This auto-detects PocketBase,
 // falls back to Firebase, then localStorage. All session CRUD flows through
 // the alloData shim which handles Firestore path flattening transparently.
@@ -567,7 +550,6 @@ const safeSetItem = (key, value) => {
 const safeRemoveItem = (key) => {
     try { localStorage.removeItem(key); } catch(e) { /* silent */ }
 };
-// ── Text surgery on HTML (used by the Diff view's Apply & Export) ──────────
 // Given an existing accessible HTML string and the user-approved text content
 // that the result should match, modify ONLY the text nodes of the HTML so
 // its textContent becomes (approximately) effectiveText. All markup is
@@ -886,7 +868,7 @@ if (typeof window !== 'undefined') window.getSpeechLangCode = getSpeechLangCode;
 // Convert friendly language name → 2-letter ISO 639-1 code for TTS routing
 const languageToTTSCode = (friendlyName) => {
     const bcp47 = getSpeechLangCode(friendlyName); // e.g. 'es-ES'
-    return bcp47.split('-')[0].toLowerCase();        // e.g. 'es'
+    return bcp47.split('-')[0].toLowerCase(); // e.g. 'es'
 };
 const isRtlLang = (languageName) => {
     if (!languageName) return false;
@@ -899,7 +881,6 @@ const isRtlLang = (languageName) => {
 const getContentDirection = (languageName) => {
     return isRtlLang(languageName) ? 'rtl' : 'ltr';
 };
-// #endregion
 // @section SAFETY_CHECKER — Content safety monitoring
 const SafetyContentChecker = {
     patterns: {
@@ -1075,7 +1056,6 @@ if (typeof window !== 'undefined') {
     window.GEMINI_MODELS = GEMINI_MODELS;
 }
 
-// ─── AIProvider Instance (Model-Agnostic) ──────────────────────────────────
 // In Canvas mode: uses Gemini GA models (same as today)
 // In Deploy mode: reads from localStorage config, defaults to Gemini preview models  
 // In Self-hosted: user configures LocalAI/Ollama via Settings UI
@@ -1088,7 +1068,7 @@ const _CANVAS_MODELS = {
   tts: 'gemini-3-flash-preview',
   safety: 'gemini-2.5-flash-lite',
   vision: 'gemini-3-flash-preview',
-  quality: 'gemini-2.5-pro',       // For clinical reports, high-stakes operations
+  quality: 'gemini-2.5-pro', // For clinical reports, high-stakes operations
 };
 const _DEPLOY_MODELS = {
   default: 'gemini-3-flash-preview',
@@ -1412,14 +1392,12 @@ const LABEL_POSITIONS = {
     'bottom-center': { position: 'absolute', top: '85%', left: '50%', transform: 'translateX(-50%)', zIndex: 4 },
     'bottom-right': { position: 'absolute', top: '85%', right: '6%', zIndex: 4 },
 };
-// ═══════════════════════════════════════════════════════════════════════════════
 // CDN MODULE WRAPPERS — Thin delegators for components loaded via external modules
 // These replace ~8,000 lines of inline definitions with ~120 lines of wrappers.
 // Each wrapper checks window.AlloModules at render time and delegates to the CDN
 // version if loaded, otherwise shows a brief loading fallback.
 // Source modules: teacher_module.js, adventure_module.js, quickstart_module.js,
 //                 visual_panel_module.js, word_sounds_module.js
-// ═══════════════════════════════════════════════════════════════════════════════
 
 // @section VISUAL_PANEL — CDN wrapper (source: visual_panel_source.jsx → visual_panel_module.js)
 const VisualPanelGrid = React.memo((props) => {
@@ -1514,7 +1492,6 @@ const loadPsychometricProbes = async () => {
         }
     }
 };
-// #endregion
 // @section STUDENT_ANALYTICS — RTI probes and student analytics (MODULARIZED → student_analytics_module.js)
 // Dynamic lookup: must check window.AlloModules at render time, NOT parse time,
 // because the external script loads via useEffect AFTER this const is evaluated.
@@ -1900,7 +1877,6 @@ if (typeof window !== 'undefined') { window.FONT_OPTIONS = FONT_OPTIONS; }
         el.setAttribute('data-was-disabled', 'true');
     });
 })();
-// #region --- LOCALIZATION STRINGS ---
 let UI_STRINGS = {};
 let HELP_STRINGS = {};
 (async () => {
@@ -1948,7 +1924,6 @@ let HELP_STRINGS = {};
                 // help_strings.js is authored as a JavaScript object literal (single-quoted
                 // keys, embedded newlines in strings, etc.), NOT strict JSON. So JSON.parse
                 // always fails on it. Fallback: evaluate as a JS expression.
-                //
                 // RCE posture: the content is fetched from this app's OWN GitHub repo
                 // (Apomera/AlloFlow/main/help_strings.js) — the same repo that serves
                 // AlloFlowANTI.txt itself. An attacker who can modify help_strings.js can
@@ -1971,8 +1946,6 @@ let HELP_STRINGS = {};
         console.warn("HELP_STRINGS fetch failed, using cache or defaults:", e.message);
     }
 })();
-// #endregion
-// #region --- HELPERS & UTILITIES ---
 const getDifferentiationGrades = (targetGrade, range) => {
     if (range === 'None') return [targetGrade];
     const targetIdx = GRADE_ORDER.indexOf(targetGrade);
@@ -2269,8 +2242,6 @@ const useTranslation = (targetLanguage, apiKey) => {
   }, [languagePack]);
   return { t, isTranslating, progress, statusMessage, regenerateLanguage, exportLanguagePack, importLanguagePack };
 };
-// #endregion
-// #region --- CONTEXTS & PROVIDERS ---
 export const LanguageContext = React.createContext();
 window.AlloLanguageContext = LanguageContext;
 export const LanguageProvider = ({ children }) => {
@@ -2311,8 +2282,6 @@ export const LanguageProvider = ({ children }) => {
     </LanguageContext.Provider>
   );
 };
-// #endregion
-// #region --- UI COMPONENTS ---
 const UiLanguageSelector = () => {
   const { t, currentUiLanguage, setUiLanguage, isTranslating, progress, statusMessage, regenerateLanguage, exportLanguagePack, importLanguagePack } = React.useContext(LanguageContext);
   const [manualInput, setManualInput] = useState('');
@@ -2573,13 +2542,11 @@ const AlloBot = React.memo(React.forwardRef((props, ref) => {
     return null;
 }));
 const GEMINI_VOICES = [
-  // ── Confirmed descriptions (from Google documentation) ──
   { id: "Kore",       label: "Kore — Bright, energetic female" },
   { id: "Puck",       label: "Puck — Energetic, expressive male" },
   { id: "Charon",     label: "Charon — Deep, warm male" },
   { id: "Fenrir",     label: "Fenrir — Friendly, clear male" },
   { id: "Aoede",      label: "Aoede — Warm, articulate female" },
-  // ── Additional voices (test to confirm character) ──
   { id: "Leda",       label: "Leda" },
   { id: "Orus",       label: "Orus" },
   { id: "Zephyr",     label: "Zephyr" },
@@ -2606,9 +2573,7 @@ const GEMINI_VOICES = [
   { id: "Sadaltager", label: "Sadaltager" },
   { id: "Sulafat",    label: "Sulafat" },
 ];
-// ─── Kokoro TTS Voices (Canvas mode — WASM, Apache 2.0) ────────────
 const KOKORO_VOICES = [
-  // ── American English — Female ──
   { id: 'af_heart',     label: '❤️ Heart — Warm female (English US)' },
   { id: 'af_nova',      label: '⭐ Nova — Clear female (English US)' },
   { id: 'af_sky',       label: '🌤️ Sky — Bright female (English US)' },
@@ -2620,7 +2585,6 @@ const KOKORO_VOICES = [
   { id: 'af_jessica',   label: '💐 Jessica — Friendly female (English US)' },
   { id: 'af_kore',      label: '🌿 Kore — Calm female (English US)' },
   { id: 'af_river',     label: '🌊 River — Smooth female (English US)' },
-  // ── American English — Male ──
   { id: 'am_adam',      label: '🧑 Adam — Natural male (English US)' },
   { id: 'am_michael',   label: '🎙️ Michael — Deep male (English US)' },
   { id: 'am_echo',      label: '📡 Echo — Resonant male (English US)' },
@@ -2629,7 +2593,6 @@ const KOKORO_VOICES = [
   { id: 'am_liam',      label: '📘 Liam — Steady male (English US)' },
   { id: 'am_onyx',      label: '🖤 Onyx — Rich male (English US)' },
   { id: 'am_puck',      label: '🃏 Puck — Playful male (English US)' },
-  // ── British English ──
   { id: 'bf_emma',      label: '🇬🇧 Emma — British female' },
   { id: 'bf_isabella',  label: '🇬🇧 Isabella — British female' },
   { id: 'bf_alice',     label: '🇬🇧 Alice — British female' },
@@ -3530,7 +3493,6 @@ const ClozeInput = React.memo((props) => {
     const Ext = (typeof window !== 'undefined') && window.AlloModules && window.AlloModules.ClozeInput;
     return Ext ? <Ext {...props} /> : null;
 });
-// ═══ Game Components (loaded from CDN games_module.js) ═══
 // Proxy components that delegate to CDN-loaded implementations.
 // Games load during app init; by the time user opens a game, they're available.
 const MemoryGame = React.memo((props) => {
@@ -3826,8 +3788,6 @@ const getAdventureGlossaryTerms = (history, adventureLanguageMode) => {
     });
     return termsList.join(', ');
 };
-// #endregion
-// #region --- MAIN APPLICATION ---
 const QUIZ_INITIAL_STATE = {
   isEditingQuiz: false,
   isFlashcardQuizMode: false,
@@ -4021,13 +3981,11 @@ const AlloFlowContent = () => {
   useEffect(() => {
       return onAuthStateChanged(auth, (u) => setUser(u));
   }, []);
-  // ── LMS Integration (LTI 1.3 + Bookmarklet) ──
   const [lmsSession, setLmsSession] = useState(null);
   const [lmsAuditUrls, setLmsAuditUrls] = useState([]);
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const params = new URLSearchParams(window.location.search);
-    // ── LTI 1.3: Detect launch from LMS ──
     if (params.get('lti') === '1' && params.get('session')) {
       const sessionToken = params.get('session');
       const host = window.location.hostname;
@@ -4066,7 +4024,6 @@ const AlloFlowContent = () => {
       cleanUrl.searchParams.delete('user');
       window.history.replaceState({}, '', cleanUrl.toString());
     }
-    // ── Bookmarklet: Detect audit_urls from LMS page scanner ──
     if (params.get('audit_urls')) {
       const urls = params.get('audit_urls').split(',').map(u => decodeURIComponent(u)).filter(Boolean);
       if (urls.length > 0) {
@@ -4752,7 +4709,6 @@ const AlloFlowContent = () => {
           const regionText = region ? `Constraint (Region or Framework): ${region}` : "Context: General/US";
           const isLocalBackend = ai?.backend === 'ollama' || ai?.backend === 'localai';
 
-          // ── For local backends: search web first, then parse with LLM ──
           if (isLocalBackend) {
               const searchQuery = `${region || 'CCSS'} ${grade} "${goal}" educational standard`;
               let searchContext = '';
@@ -5411,7 +5367,6 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // If module fails to load, gamepad simply does not work (no crash).
     loadModule('AdaptiveControllerModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7f26a63/adaptive_controller_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
-    // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
       var s = document.createElement('script');
       s.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjs/13.2.0/math.min.js';
@@ -5420,7 +5375,6 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       s.onerror = function() { console.warn('[MathJS] Failed to load — graphCalc analysis unavailable'); };
       document.head.appendChild(s);
     })();
-    // ── Load registered STEM Lab tool modules (Plugin Architecture, Phase 2) ──
     // These files self-register via window.StemLab.registerTool()
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
@@ -5532,7 +5486,6 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       });
       }); // end waitForRegistry callback
     }, 600);
-    // ─── TTS Engine Loading Strategy ──────────────────────────────
     // Canvas: DON'T auto-load Kokoro (40MB, no persistent cache). Load on demand:
     //   - When user selects Kokoro voice in settings → auto-download with progress
     //   - When Gemini TTS fails (401/quota) → modal offers Kokoro download
@@ -5596,7 +5549,6 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     !_isCanvasEnv ? { loading: true, stage: 'Preparing voice engine...', pct: 0 } : null
   );
   const [showKokoroOfferModal, setShowKokoroOfferModal] = useState(false);
-  // ─── Poll Kokoro TTS progress (robust fallback for callback) ─────
   React.useEffect(() => {
     if (!_isCanvasEnv) return;
     const poll = setInterval(() => {
@@ -5609,7 +5561,6 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     return () => clearInterval(poll);
   }, []);
 
-  // ── SW Version-Change Auto-Reload ──
   // When a new service worker takes control (after deploy), auto-reload
   // to ensure users always get the latest code, not stale cached version.
   // SKIP in Canvas/iframe — SW API is restricted and throws errors.
@@ -5717,7 +5668,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       });
   };
   const startMathFluencyProbe = (useStandardized = false, grade, form) => {
-      setActiveView('math');  // Switch to math panel so probe runs as its own resource
+      setActiveView('math'); // Switch to math panel so probe runs as its own resource
       let problems;
       let timeLimit = mathFluencyTimeLimit;
       if (useStandardized && window.MATH_PROBE_BANKS) {
@@ -6999,7 +6950,6 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
   const [isPersonaChatOpen, setIsPersonaChatOpen] = useState(false);
   const [isGeneratingPersona, setIsGeneratingPersona] = useState(false);
   const personaScrollRef = useRef(null);
-  // ── Centralized persona interview reset ──
   // Single source of truth for clearing ALL persona-related state when starting a new interview.
   // Prevents stale state (chat history, harmony score, badges, refs, etc.) from leaking between interviews.
   // Note: deliberately preserves personaAutoRead and personaAutoSend (user preferences).
@@ -7694,7 +7644,6 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
   useEffect(() => {
       addToastRef.current = addToast;
   }, []);
-  // ── Research data JSON export/import ──
   // handleExportResearchJSON moved to export_module.js (via _upgradeExport shim).
 
   const handleImportResearchJSON = useCallback((file) => {
@@ -9639,7 +9588,6 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                   } else {
                     setVisualSupportsPayload(null);
                   }
-                  // ── StoryForge payload (student story submissions) ──
                   if (data.storyForgePayload && data.storyForgePayload.timestamp) {
                     setStoryForgeSubmissions(prev => {
                       const existing = prev || [];
@@ -10120,18 +10068,16 @@ Return only the corrected version of this exact text:`;
     try { return localStorage.getItem('alloflow_concept_sort_image_style') || ''; } catch (e) { return ''; }
   });
   React.useEffect(() => { try { localStorage.setItem('alloflow_concept_sort_image_style', conceptSortImageStyle); } catch (e) {} }, [conceptSortImageStyle]);
-  // ── Concept Sort Pre-Activity Review state ──
   // Teachers edit AI-generated categories/items BEFORE students see them.
   // Inline edit uses { kind, id, text }; only one target editable at a time.
   const [csEdit, setCsEdit] = useState(null);
-  const [csBusyId, setCsBusyId] = useState(null);      // item id regenerating
+  const [csBusyId, setCsBusyId] = useState(null); // item id regenerating
   const [csAddingCatId, setCsAddingCatId] = useState(null); // which category is prompting for a new item
   const [csAddingText, setCsAddingText] = useState('');
   const [languageInput, setLanguageInput] = useState('');
   const [selectedLanguages, setSelectedLanguages] = useState([]);
   const [glossarySearchTerm, setGlossarySearchTerm] = useState('');
   const [leveledTextLanguage, setLeveledTextLanguage] = useState('English');
-  // ─── Piper language preload removed (was causing fatal crash) ─────
   // Piper is now on-demand only: downloads when a Piper voice is selected
   // or when Gemini TTS fails for a language Piper supports but Kokoro doesn't.
   // See callTTS fallback chain for the lazy-load logic.
@@ -10153,7 +10099,6 @@ Return only the corrected version of this exact text:`;
   const [isExtracting, setIsExtracting] = useState(false);
   const [showLargeFileModal, setShowLargeFileModal] = useState(false);
   const [pendingLargeFile, setPendingLargeFile] = useState(null);
-  // ── PDF Accessibility Audit ──
   const [pdfAuditResult, setPdfAuditResult] = useState(null);
   const [pdfAuditLoading, setPdfAuditLoading] = useState(false);
   const [pendingPdfBase64, setPendingPdfBase64] = useState(null);
@@ -10679,7 +10624,6 @@ Return only the corrected version of this exact text:`;
     }));
     return true;
   };
-  // ── Live chunk review state ──
   // Tracks per-chunk events dispatched by doc_pipeline_module during remediation
   const [liveChunkStream, setLiveChunkStream] = useState([]); // array of chunk event details
   const [liveChunkSessionActive, setLiveChunkSessionActive] = useState(false);
@@ -10694,7 +10638,6 @@ Return only the corrected version of this exact text:`;
   const [imageReinsertionReport, setImageReinsertionReport] = useState(null); // { total, placed, missingSrc, droppedByAi, missingSrcDetails } — surfaces image reinsertion failures
   const [autoRestoreSummary, setAutoRestoreSummary] = useState(null); // { restored, unplaceable, beforeFidelity, afterFidelity } — result of the last auto- or manual-restore pass
 
-  // ── Live chunk review: listen for events from doc_pipeline during remediation ──
   // MUST be in AlloFlowContent (not useTranslation) so setLiveChunkStream etc. are in scope
   useEffect(() => {
     const onSessionStart = () => { setLiveChunkStream([]); setLiveChunkSessionActive(true); setLiveChunkExpanded({}); setLiveChunkRejected({}); setChunkResumePrompt(null); setTimeout(() => { const el = document.getElementById('live-remediation-panel'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 300); };
@@ -10779,7 +10722,6 @@ Return only the corrected version of this exact text:`;
       if (cw) cw.__alloflowExtractedImages = extractedImagesList || [];
     } catch (_) {}
   }, [extractedImagesList, pdfPreviewOpen]);
-  // ── PDF Batch Mode ──
   const [pdfBatchMode, setPdfBatchMode] = useState(false);
   const [pdfWebMode, setPdfWebMode] = useState(false);
   const [pdfBatchQueue, setPdfBatchQueue] = useState([]);
@@ -10789,11 +10731,9 @@ Return only the corrected version of this exact text:`;
   const [pdfBatchSummary, setPdfBatchSummary] = useState(null);
   const [pdfExperimentMode, setPdfExperimentMode] = useState(false);
   const [pdfExperimentRuns, setPdfExperimentRuns] = useState(3);
-  // ── Custom Export Style ──
   const [customExportCSS, setCustomExportCSS] = useState('');
   const [exportStylePrompt, setExportStylePrompt] = useState('');
   const [isGeneratingStyle, setIsGeneratingStyle] = useState(false);
-  // ── Export Preview Modal ──
   const [showExportPreview, setShowExportPreview] = useState(false);
   const [exportPreviewMode, setExportPreviewMode] = useState('print'); // 'print' | 'worksheet' | 'html'
   const [exportConfig, setExportConfig] = useState({
@@ -10821,7 +10761,6 @@ Return only the corrected version of this exact text:`;
   const [a11yInspectMode, setA11yInspectMode] = useState(false);
   const [exportAuditResult, setExportAuditResult] = useState(null);
   const [exportAuditLoading, setExportAuditLoading] = useState(false);
-  // ── Export Presets ──
   const BUILT_IN_PRESETS = {
     fullPack: { name: 'Full Pack', emoji: '📦', config: { includeAnalysis: true, includeUdlAdvice: true, includeBrainstorm: true, includeLessonPlan: true, includeSimplified: true, includeOutline: true, includeGlossary: true, includeQuiz: true, includeFaq: true, includeSentenceFrames: true, includeImage: true, includeMath: true, includeDbq: true, includeStudentResponses: true, includeTeacherKey: true, includeAudioSource: false, includeAudioLeveled: false, fontSize: 16, useAppFont: false }, theme: 'professional', format: 'print' },
     studentWorksheet: { name: 'Student Worksheet', emoji: '📝', config: { includeAnalysis: false, includeUdlAdvice: false, includeBrainstorm: false, includeLessonPlan: false, includeSimplified: true, includeOutline: true, includeGlossary: true, includeQuiz: true, includeFaq: false, includeSentenceFrames: true, includeImage: true, includeMath: true, includeDbq: false, includeStudentResponses: true, includeTeacherKey: false, includeAudioSource: false, includeAudioLeveled: false, fontSize: 16, useAppFont: false }, theme: 'colorful', format: 'worksheet' },
@@ -13478,7 +13417,6 @@ const parseTaggedContent = (text) => {
       }, 1000);
       return () => clearInterval(interval);
   }, [fluencyStatus, fluencyTimeLimit]);
-  // ─── AIProvider Instance (Model-Agnostic AI Backend) ─────────────────────
   // This provides the actual AI backend abstraction. All existing functions
   // (callGemini, callImagen, etc.) can delegate to this instance internally.
   // In Canvas mode: Gemini GA models. In Deploy: Gemini preview or user config.
@@ -14251,12 +14189,10 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
       setIsGradingReflection, setIsGeneratingReflectionPrompt, setPanelTtsPending,
       setShowPersonaHints, setPersonaTurnHintsViewed, setIsPersonaReflectionOpen,
       setPlayingContentId, setPlaybackState,
-      // Refs
       alloBotRef, personaDefinitionCache, lastReadPersonaIndexRef, showPersonaHintsRef,
       // Component-scoped helpers (injected because they close over state/refs)
       callImagen, addToast, playSound, handleScoreUpdate, handleAiSafetyFlag,
       resilientJsonParse,
-      // i18n
       t,
   };
   const generatePixelArtItem = useCallback(async (itemName, itemDescription) => {
@@ -14600,7 +14536,6 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
         flyToElement('tour-source-input');
       }
   };
-  // ── PDF Accessibility Audit ──
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -14650,7 +14585,6 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
         reader.readAsText(file);
         return;
     }
-    // ── PDF Accessibility Audit Route ──
     // For PDFs, read the file and show choice: audit first or skip to extraction
     const DOCUMENT_TYPES = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.openxmlformats-officedocument.presentationml.presentation'];
     const isDocx = file.name.endsWith('.docx');
@@ -14669,7 +14603,6 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     }
     if (file.type.startsWith('image/') || file.type.startsWith('video/') || file.type.startsWith('audio/')) {
         try {
-            // ── PDF chunking moved to proceedWithPdfTransform ──
             if (false) { // PDF handling now goes through audit route above
                 const pdfReader = new FileReader();
                 pdfReader.onloadend = async () => {
@@ -14760,7 +14693,6 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
       debugLog(`Repairing text: ${issue} (Target: ~${targetLength} words)`);
       const citationRule = preserveCitations ? '\n                - CRITICAL: Preserve all citation markers in the format [⁽¹⁾](url). Keep them exactly as-is — do not remove, merge, or reformat them. They are important hyperlinks.' : '';
 
-      // ── Citation extraction (pre-repair) ──
       const citationRegex = /\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\([^)]+\)/g;
       let extractedCitations = [];
       if (preserveCitations) {
@@ -14813,7 +14745,6 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
           let result = await callGemini(prompt);
           if (!result) return originalText;
 
-          // ── Citation recovery (post-repair) ──
           if (preserveCitations && extractedCitations.length > 0) {
               const survivedCount = extractedCitations.filter(c => result.includes(c.marker)).length;
               const lostCitations = extractedCitations.filter(c => !result.includes(c.marker));
@@ -15158,7 +15089,6 @@ Return ONLY valid JSON:
   const repairSourceMarkdown = (rawText) => {
     if (!rawText) return rawText;
 
-    // ── Step 0: Repair trailing sentence fragments (incomplete final sentence) ──
     const bibMatch = rawText.match(/(\n---\n|\n#{2,3} Source Text References)/s);
     let body = bibMatch ? rawText.substring(0, bibMatch.index) : rawText;
     const bib = bibMatch ? rawText.substring(bibMatch.index) : '';
@@ -15179,7 +15109,6 @@ Return ONLY valid JSON:
     }
     rawText = body + bib;
 
-    // ── Step 1: Split inline headers ("...text.## Header" → "...text.\n\n## Header") ──
     rawText = rawText.replace(/([.!?])\s*(#{1,6}\s+)/g, '$1\n\n$2');
 
     let lines = rawText.split('\n');
@@ -15207,7 +15136,6 @@ Return ONLY valid JSON:
         return line;
     });
 
-    // ── Step 2: Ensure blank line before # headings (required for Markdown rendering) ──
     const finalLines = [];
     for (let i = 0; i < repairedLines.length; i++) {
         const line = repairedLines[i];
@@ -15221,7 +15149,6 @@ Return ONLY valid JSON:
     }
     return finalLines.join('\n');
   };
-  // ── Content Engine delegated to content_engine_module.js ──
   // Expose callTTS globally for CDN modules (games, etc.) that need it
   window.__alloCallTTS = callTTS;
   window.__alloSelectedVoice = selectedVoice;
@@ -15472,20 +15399,20 @@ Return ONLY valid JSON:
           }
            // Strip markdown formatting before TTS (prevents reading # * _ etc.)
            textToSpeak = textToSpeak
-               .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1')  // [link](url) → link
-               .replace(/\[?⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]?/g, '')   // superscript citations ⁽³⁾
-               .replace(/\[Source\s+\d+\]/gi, '')            // [Source N] text markers
-               .replace(/\[\d+\]/g, '')                      // [1] numeric refs
-               .replace(/^#{1,6}\s+/gm, '')                  // # headers
-               .replace(/\*\*/g, '')                           // bold
-               .replace(/\*/g, '')                             // italic
-               .replace(/__|_/g, '')                           // underscores
-               .replace(/~~/g, '')                             // strikethrough
-               .replace(/`/g, '')                              // inline code
-               .replace(/^>\s?/gm, '')                        // blockquotes
-               .replace(/^[-*+]\s/gm, '')                     // list markers
-               .replace(/^\d+\.\s/gm, '')                     // numbered lists
-               .replace(/\s+/g, ' ')                          // collapse whitespace
+               .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1') // [link](url) → link
+               .replace(/\[?⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]?/g, '') // superscript citations ⁽³⁾
+               .replace(/\[Source\s+\d+\]/gi, '') // [Source N] text markers
+               .replace(/\[\d+\]/g, '') // [1] numeric refs
+               .replace(/^#{1,6}\s+/gm, '') // # headers
+               .replace(/\*\*/g, '') // bold
+               .replace(/\*/g, '') // italic
+               .replace(/__|_/g, '') // underscores
+               .replace(/~~/g, '') // strikethrough
+               .replace(/`/g, '') // inline code
+               .replace(/^>\s?/gm, '') // blockquotes
+               .replace(/^[-*+]\s/gm, '') // list markers
+               .replace(/^\d+\.\s/gm, '') // numbered lists
+               .replace(/\s+/g, ' ') // collapse whitespace
                .trim();
           // Browser-TTS fallback is opt-in. Users who'd rather hear *something* when
           // Gemini refuses or exhausts retries can enable alloflow_ai_config.browserTtsFallback.
@@ -15629,9 +15556,9 @@ Return ONLY valid JSON:
               let targetText = sentences[targetIdx].trim();
               let textToPreload = targetText
                   .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1')
-                  .replace(/\[?⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]?/g, '')   // superscript citations ⁽³⁾
-                  .replace(/\[Source\s+\d+\]/gi, '')            // [Source N] markers
-                  .replace(/\[\d+\]/g, '')                      // [1] numeric refs
+                  .replace(/\[?⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]?/g, '') // superscript citations ⁽³⁾
+                  .replace(/\[Source\s+\d+\]/gi, '') // [Source N] markers
+                  .replace(/\[\d+\]/g, '') // [1] numeric refs
                   .replace(/^#{1,6}\s+/gm, '')
                   .replace(/\*\*/g, '').replace(/\*/g, '')
                   .replace(/__|_/g, '').replace(/~~/g, '').replace(/`/g, '')
@@ -16197,7 +16124,6 @@ Return ONLY valid JSON:
       .map(([id, s]) => [id, { name: s.name, emoji: s.emoji, ...s.cssVars }])
   );
   const [exportTheme, setExportTheme] = useState('professional');
-  // ── PDF Pipeline delegated to doc_pipeline_module.js ──
   // Expose current state for doc_pipeline_module.js functions via window ref
   // Updated every render so CDN functions always access fresh state
   window.__docPipelineState = {
@@ -16239,7 +16165,6 @@ Return ONLY valid JSON:
   const refixChunk = _docPipeline ? _docPipeline.refixChunk : async () => {};
   const getChunkState = _docPipeline ? _docPipeline.getChunkState : () => null;
 
-  // ── Timeline / Sequence Builder module (pure validator + explain-item AI call) ──
   const _createTimelineRevision = window.AlloModules && window.AlloModules.createTimelineRevision;
   const _timelineRevision = _createTimelineRevision
     ? _createTimelineRevision({ callGemini, gradeLevel })
@@ -16457,7 +16382,6 @@ Return ONLY valid JSON:
       setIsProcessing, setShowStorybookExportModal,
       // Component-scoped helpers (injected via live-ref because they close over state/refs)
       addToast, parseMarkdownToHTML, generateResourceHTML, rehydrateHistoryWithImages,
-      // i18n
       t,
   };
   // Expert Workbench — Advanced remediation mode. Guards check the specific method (not just
@@ -16501,7 +16425,6 @@ Return ONLY valid JSON:
     return { missing, totalSrc, totalRem, totalMissing, fidelity };
   };
 
-  // ── Auto fidelity + auto-restore (fidelity v2) ──
   // When pdfFixLoading transitions true → false, the remediation pipeline has just finished.
   // Run fidelity against the source OCR; if any words are missing, auto-restore them in place
   // (fully hands-off per user spec). Multi-session gate: skip if the user is mid-run and hasn't
@@ -17106,13 +17029,11 @@ Return ONLY valid JSON:
           addToast(t('toasts.copy_failed'), "error");
       }
   };
-  // ── Open export preview modal instead of immediately printing ──
   const openExportPreview = (mode = 'print') => {
     setExportPreviewMode(mode);
     setShowExportPreview(true);
     setShowExportMenu(false);
   };
-  // ── Export filtering: strip interactive/generative resources that can't be rendered as static documents ──
   const NON_EXPORTABLE_TYPES = new Set(['adventure', 'persona', 'word-sounds', 'storyforge-config', 'storyforge-submission', 'math-fluency-probe', 'explore-challenge', 'stem-assessment']);
   const getExportableHistory = () => history.filter(item => item && !NON_EXPORTABLE_TYPES.has(item.type));
   const getSkippedResources = () => {
@@ -17267,7 +17188,6 @@ Return ONLY valid JSON:
     setTimeout(updateExportPreview, 50);
   };
 
-  // ── Accessibility Inspect Overlay for Export Preview ──
   const toggleA11yInspect = React.useCallback(() => {
     setA11yInspectMode(prev => {
       const next = !prev;
@@ -17416,7 +17336,6 @@ Return ONLY valid JSON:
     });
   }, []);
 
-  // ── Generate TTS audio for export embedding ──
   const generateExportAudio = async (text, label) => {
     if (!text || !callTTS) return '';
     try {
@@ -17450,7 +17369,6 @@ Return ONLY valid JSON:
     let htmlContent;
     const iframe = exportPreviewRef.current;
     const iframeDoc = iframe?.contentDocument;
-    // ── Detect whether the iframe actually contains the generated pack ──
     // Bug: previously any truthy iframeDoc made us take the iframe path, even when
     // the iframe hadn't yet loaded the generated HTML (empty body = blank export).
     // Fix: verify the iframe body has real content before trusting it.
@@ -17487,7 +17405,6 @@ Return ONLY valid JSON:
       return;
     }
 
-    // ── Inject TTS audio if toggled on ──
     const needsAudio = exportConfig.includeAudioSource || exportConfig.includeAudioLeveled;
     if (needsAudio && callTTS) {
       addToast && addToast('Generating read-aloud audio... this may take a moment.', 'info');
@@ -17582,7 +17499,6 @@ Return ONLY valid JSON:
       return;
     }
 
-    // ── Blind Output Accessibility Audit (runs in background, non-blocking) ──
     if (mode === 'print') {
       auditOutputAccessibility(htmlContent).then(outputAudit => {
         if (outputAudit && outputAudit.score >= 0) {
@@ -23601,7 +23517,6 @@ Return ONLY JSON.`;
               break;
           }
       }
-      // ─── UNIFIED SIMPLIFIED-TEXT GENERATION ─────────────────────────────
       // One looping path handles 1..N chunks. A ≤600-word input simply runs
       // the loop once. Word-count repair runs AFTER the loop, gated on
       // chunks.length === 1 (single-chunk needs it; multi-chunk gets implicit
@@ -23731,7 +23646,6 @@ Return ONLY JSON.`;
           setHistory(prev => prev.map(item => item.id === newId ? updatedItem : item));
           if (!isLast) await new Promise(r => setTimeout(r, 800));
       }
-      // ─── Post-loop word-count repair (single-chunk only) ─────────────────
       // Single-chunk generation is one Gemini pass — no averaging across chunks
       // to save length misses. Multi-chunk gets implicit length control from
       // chunking and does not need repair.
@@ -25025,7 +24939,6 @@ ${modeListForAuto}
          const _dbqCustomDocs = document.getElementById('dbq-custom-docs')?.value || '';
          const _dbqCustomEssayFocus = document.getElementById('dbq-custom-essay-focus')?.value || '';
          const _dbqTeacherLinks = document.getElementById('dbq-teacher-links')?.value || '';
-         // ── Web search for real primary sources (search + links modes) ──
          let _dbqSearchResults = '';
          if ((_dbqMode === 'search' || _dbqMode === 'links') && (window._webSearch || window._aiBackend?.webSearch)) {
            try {
@@ -27127,8 +27040,8 @@ Return ONLY JSON:
             const newData = [...prev.data];
             newData[liveIdx] = {
                 ...newData[liveIdx],
-                etymology: primaryProse,               // legacy single-string field
-                etymologyByLang,                        // new per-language map
+                etymology: primaryProse, // legacy single-string field
+                etymologyByLang, // new per-language map
                 roots: roots.length ? roots : undefined,
             };
             const updated = { ...prev, data: newData };
@@ -27196,7 +27109,6 @@ Return ONLY JSON:
           return null;
       }
   }, [gradeLevel, callGemini, callImagen, conceptImageMode, conceptSortImageStyle]);
-  // ── Concept Sort editor mutators (operate on generatedContent.data) ──
   const csUpdateData = useCallback((mutator) => {
       setGeneratedContent(prev => {
           if (!prev || !prev.data) return prev;
@@ -27496,7 +27408,6 @@ Return ONLY JSON:
           const isLocalBackend = ai?.backend === 'ollama' || ai?.backend === 'localai';
           let textToParse = "";
 
-          // ── For local backends: search web first, then parse with LLM ──
           if (isLocalBackend) {
               const searchQuery = `${aiStandardRegion || 'CCSS'} ${effectiveGrade} "${aiStandardQuery}" educational standard`;
               let searchContext = '';
@@ -49884,13 +49795,11 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               html = html.replace(/<img([^>]*)>/gi, (m, a) => /alt\s*=/.test(a) ? m : `<img alt="Document image"${a}>`);
                               html = html.replace(/<th(?![^>]*scope)/gi, '<th scope="col"');
                               html = html.replace(/<a([^>]*)>\s*<\/a>/gi, (m, a) => { const h = a.match(/href="([^"]*)"/); return `<a${a}>${h ? h[1].replace(/https?:\/\//, '').substring(0, 40) : 'Link'}</a>`; });
-                              // ── Tiered cascade: Tier 2 → Tier 2.5 → Tier 3 ──
                               // Each tier has its own bounded blast radius and atomic
                               // accept/reject discipline. Earlier tiers handle what they
                               // can without the next tier ever running. Same architecture
                               // the main pipeline uses; this is "incremental remediation"
                               // brought into structural alignment.
-                              //
                               // Tier 2: per-element axe rules (image-alt, link-name,
                               //         button-name, frame-title, etc.). ≤2 KB ancestor.
                               // Tier 2.5: section-scoped axe rules (heading-order, region,
@@ -50801,7 +50710,6 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   // del→add sharing a pairId) is one user decision, not two.
                                   // Track pairIds already counted so the badge shows
                                   // "Apply & Export (3)" when the user rejected 3 paraphrases,
-                                  // not 6.
                                   const _countedPairs = new Set();
                                   if (_chunks) {
                                     _chunks.forEach(c => {
@@ -50880,7 +50788,6 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                     try {
                                       const _prevHtml = pdfFixResult?.accessibleHtml || '';
                                       const _prevFinal = pdfFixResult?.finalText || '';
-                                      // ── PRIMARY PATH: text surgery on the existing HTML's DOM ──
                                       // Walk the DOM, splice only text nodes to match _effectiveText,
                                       // and serialize back. Images/tables/attributes/ids are
                                       // preserved by construction (we never touch non-text nodes),
@@ -50957,7 +50864,6 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                           }
                                         }
                                       }
-                                      // ── Commit or rollback ──
                                       // On success, snapshot _prevHtml into _preApplyHtml so the
                                       // "Revert last Apply" button can restore the prior state.
                                       // Also record which path was used, for diagnostic display.
@@ -52214,7 +52120,6 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             doc.write(html);
                             doc.close();
 
-                            // ── Compare view toolbar functions ──
                             var _bionicOn = false;
                             function toggleBionic() {
                               _bionicOn = !_bionicOn;
@@ -57024,7 +56929,6 @@ Return ONLY the plain language summary in ${lang}.`, false);
                             await updateDoc(sRef, { storyForgePayload: deleteField() });
                         },
                     } : null,
-                    // ── Resource integration ──
                     initialConfig: generatedContent?.type === 'storyforge-config' ? generatedContent.data : null,
                     onSaveConfig: isTeacherMode ? (config) => {
                         const item = { id: Date.now().toString() + Math.random().toString(36).substr(2, 9), type: 'storyforge-config', title: '📖 ' + (config.storyTitle || 'StoryForge Assignment'), data: config, timestamp: new Date(), meta: `${config.vocabTerms?.length || 0} vocab · ${config.genre || 'free'}` };
@@ -57233,8 +57137,6 @@ Return ONLY the plain language summary in ${lang}.`, false);
       </div>
   );
 }
-// #endregion
-// #region --- APP EXPORT ---
 // Error Boundary to prevent permanent white-screen crashes
 class AlloFlowErrorBoundary extends React.Component {
   constructor(props) {
@@ -57276,7 +57178,6 @@ class AlloFlowErrorBoundary extends React.Component {
   }
 }
 
-// ─── Canvas Loading Tips (shown during Kokoro TTS preload) ──────────────────
 const CANVAS_LOADING_TIPS = [
   "💡 Use the Wizard to auto-generate complete lesson plans in seconds",
   "🎨 Explore 18+ interactive STEM lab tools from the lesson toolbar",
@@ -57336,4 +57237,3 @@ if (typeof __firebase_config !== 'undefined') {
     }
   }
 }
-// #endregion
