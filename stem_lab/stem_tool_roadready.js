@@ -11421,15 +11421,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       chunkGroup.add(snowCap);
                     }
                     // Windows: bright dots at night, dark squares by day.
+                    // TV FLICKER: in residential / suburban biomes at night,
+                    // a small fraction of homes get one window tinted cool
+                    // blue (TV glow) instead of warm yellow. Adds a layer of
+                    // "people are home" detail without an animation cost.
                     var isNightWin = currentScenario.time === 'night' || currentScenario.id === 'night';
-                    var winColor = isNightWin ? ((bHash & 3) === 0 ? 0x1a1a2e : 0xfff0a8) : 0x3a4a5e;
-                    var winMat = new T.MeshBasicMaterial({ color: winColor });
+                    var canHaveTV = isNightWin && (chunk.biome === 'residential' || chunk.biome === 'suburban');
+                    var hasTVWindow = canHaveTV && ((bHash & 7) === 0); // ~12.5% of homes
+                    var warmWinMat = new T.MeshBasicMaterial({ color: isNightWin ? ((bHash & 3) === 0 ? 0x1a1a2e : 0xfff0a8) : 0x3a4a5e });
+                    var tvWinMat = hasTVWindow ? new T.MeshBasicMaterial({ color: 0x4a6ad8 }) : null;
+                    var tvWindowFace = hasTVWindow ? ((bHash >> 3) & 1 ? 1 : -1) : 0;
+                    var tvWindowRow = hasTVWindow ? ((bHash >> 4) & 1) : 0;
                     var windowRows = Math.max(1, Math.floor(bH / 1.1));
                     for (var wri = 0; wri < windowRows; wri++) {
                       var wrY = terrainYb + 0.9 + wri * 1.1;
                       if (wrY > terrainYb + bH - 0.3) break;
                       [-1, 1].forEach(function(wFace) {
-                        var w1 = new T.Mesh(new T.PlaneGeometry(bW * 0.22, 0.4), winMat);
+                        var useTV = hasTVWindow && wFace === tvWindowFace && wri === tvWindowRow;
+                        var w1 = new T.Mesh(new T.PlaneGeometry(bW * 0.22, 0.4), useTV ? tvWinMat : warmWinMat);
                         w1.position.set(wx + wFace * (bW / 2 + 0.002), wrY, wz);
                         w1.rotation.y = wFace > 0 ? -Math.PI / 2 : Math.PI / 2;
                         chunkGroup.add(w1);
