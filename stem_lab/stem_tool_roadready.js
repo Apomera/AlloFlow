@@ -6039,6 +6039,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               // perpendicular drift introduced by spline-aligned forward motion on bends.
               var xLerp = 1 - Math.exp(-dt / 0.12);
               t.x -= xErr * xLerp;
+              // ── Defensive lane-discipline guard ──
+              // Legal lane offsets in play range from −2.4 to +2.4 (the
+              // emergency-vehicle pull-over at line 5627 is the widest at
+              // ±2.4; default lanes are ±1.5; overtake inner lane ±0.5).
+              // If t.x ever drifts more than 5.0 units from the spline
+              // center, something has gone wrong (off-road) and the soft
+              // 0.12s lerp won't catch up before the car is visibly
+              // through a tree or in oncoming traffic. Hard-snap back to
+              // the legal lane offset and reset heading to the spline
+              // tangent so the car re-joins traffic cleanly. Also reset
+              // any pending lane change so the snap isn't immediately
+              // undone by stale state.
+              var laneDriftDist = Math.abs(t.x - laneSplineCenter);
+              if (laneDriftDist > 5.0) {
+                t.x = targetX;
+                t._pendingLaneOffset = null;
+                t._pendingLaneTimer = 0;
+                t.blinker = 0;
+                if (iwTraf && iwTraf.spline) {
+                  var snapHd = iwTraf.spline.headingAt(t.y);
+                  var snapIsSouth = t.heading > 0;
+                  t.heading = snapIsSouth ? (Math.PI / 2 - snapHd) : (-Math.PI / 2 - snapHd);
+                }
+              }
             } else {
               // Cross-street: straight motion is fine (no spline curvature on cross streets).
               t.y += Math.sin(t.heading) * t.speed * dt / 5;
@@ -12753,6 +12777,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 }
                 // Restore chunkGroup after the landmark block (we'd shadowed it with a
                 // road-elevated subgroup at the start of `if (chunk.landmark)`).
+                // ⚠ ANY landmark mesh added BELOW this line goes back to the raw
+                // chunkGroup at world Y=0 — it will float on flat terrain and sink
+                // into hills. Add new landmark furniture ABOVE this line, or call
+                // `lmGroup.add(mesh)` explicitly + use local Y like the parked
+                // vehicles in the hospital/police/fire/school/post branches do.
                 chunkGroup = _origChunkGroup_lm;
               }
 
