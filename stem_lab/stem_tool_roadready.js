@@ -12580,6 +12580,55 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       mktHalo.rotation.y = lm.side > 0 ? -Math.PI / 2 : Math.PI / 2;
                       chunkGroup.add(mktHalo);
                     }
+                    // ── Customer parking lot: 2 rows of 2 cars + a shopping cart corral ──
+                    // Markets are the busiest landmark; a small lot makes them
+                    // read as 'open and shopping'. Two rows facing each other so
+                    // the layout looks like real angled parking. Each car color
+                    // is picked from the chunk seed.
+                    var mktRng = seededRandom(chunk.index * 27191 + 7);
+                    var mktCarColors = [0xdc2626, 0x1e40af, 0x059669, 0xf59e0b, 0x4b5563, 0xfef3c7, 0x7c3aed];
+                    var mktWheelMat = new T.MeshLambertMaterial({ color: 0x1a1a1a });
+                    var mktWinMat = new T.MeshLambertMaterial({ color: 0x1e293b });
+                    var mktLotX = lmCenterWX + lm.side * (lt.size * 0.55);
+                    [
+                      { dx: 0,    dz: -1.6 }, { dx: 0,    dz: 0 }, { dx: 0,    dz: 1.6 },
+                      { dx: -1.4, dz: -0.8 }, { dx: -1.4, dz: 0.8 }
+                    ].forEach(function(mp, mpi) {
+                      var mktColor = mktCarColors[Math.floor(mktRng() * mktCarColors.length)];
+                      var mktBodyMat = new T.MeshLambertMaterial({ color: mktColor });
+                      var mktCabMat = new T.MeshLambertMaterial({ color: Math.max(0, mktColor - 0x202020) });
+                      var mcX = mktLotX + mp.dx;
+                      var mcZ = lmCenterWZ + mp.dz;
+                      var mcBody = new T.Mesh(new T.BoxGeometry(0.85, 0.55, 1.7), mktBodyMat);
+                      mcBody.position.set(mcX, 0.5, mcZ);
+                      mcBody.castShadow = true;
+                      chunkGroup.add(mcBody);
+                      var mcCab = new T.Mesh(new T.BoxGeometry(0.65, 0.45, 0.95), mktCabMat);
+                      mcCab.position.set(mcX, 1.05, mcZ - 0.05);
+                      chunkGroup.add(mcCab);
+                      var mcWinF = new T.Mesh(new T.BoxGeometry(0.5, 0.35, 0.06), mktWinMat);
+                      mcWinF.position.set(mcX, 1.05, mcZ + 0.45);
+                      chunkGroup.add(mcWinF);
+                      [[-0.35, -0.6], [0.35, -0.6], [-0.35, 0.6], [0.35, 0.6]].forEach(function(mwp) {
+                        var mcWheel = new T.Mesh(new T.CylinderGeometry(0.18, 0.18, 0.12, 8), mktWheelMat);
+                        mcWheel.rotation.x = Math.PI / 2;
+                        mcWheel.position.set(mcX + mwp[0], 0.22, mcZ + mwp[1]);
+                        chunkGroup.add(mcWheel);
+                      });
+                    });
+                    // Shopping cart corral — small wire-frame structure between
+                    // the two parking rows so the lot reads as a real grocery lot.
+                    var mktCorralMat = new T.MeshLambertMaterial({ color: 0xa1a1aa });
+                    var mktCorralBase = new T.Mesh(new T.BoxGeometry(0.06, 1.0, 1.4), mktCorralMat);
+                    mktCorralBase.position.set(mktLotX - 0.7, 0.5, lmCenterWZ);
+                    chunkGroup.add(mktCorralBase);
+                    // Two stacked carts (small boxes) inside the corral
+                    var mktCartMat = new T.MeshLambertMaterial({ color: 0xef4444 });
+                    [-0.3, 0.0].forEach(function(cZOff) {
+                      var mktCart = new T.Mesh(new T.BoxGeometry(0.42, 0.3, 0.55), mktCartMat);
+                      mktCart.position.set(mktLotX - 0.7, 0.4, lmCenterWZ + cZOff);
+                      chunkGroup.add(mktCart);
+                    });
                   } else if (lt.id === 'farm') {
                     // ── Farm outbuildings — barn + silo + split-rail fence ──
                     // A Maine farm that's just a house doesn't read as a farm. Real
