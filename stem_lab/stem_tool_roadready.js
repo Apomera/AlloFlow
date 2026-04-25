@@ -13035,6 +13035,61 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               var road = new T.Mesh(roadGeo, roadMat);
               road.receiveShadow = true;
               chunkGroup.add(road);
+              // ── Dirt shoulder ribbons (one per side) ──
+              // Real rural roads have a 0.5-1m tan band of compacted dirt /
+              // gravel between the asphalt edge and the grass. Without this
+              // the asphalt-to-bright-green transition reads as cartoony.
+              // Two thin BufferGeometry strips that follow the same spline as
+              // the road ribbon, sitting between road Y (heightAt+0.011) and
+              // grass Y (heightAt-0.01). Color is tan in fair weather, snow-
+              // gray when scn.weather is snow (plowed shoulder slush).
+              {
+                var shldColor = scn.weather === 'snow' ? 0xb8c0c8
+                              : scn.weather === 'rain' ? 0x6e5a40
+                              : (chunk.biome === 'rural' || chunk.biome === 'residential') ? 0x9b8364
+                              : 0x808288; // commercial/industrial: cleaner curb
+                var shldMat = new T.MeshLambertMaterial({ color: shldColor });
+                var shldWidth = 0.6;
+                [-1, 1].forEach(function(shldSide) {
+                  var shldVerts = new Float32Array(ribbonRows * 2 * 3);
+                  var shldIdx = new Uint16Array((ribbonRows - 1) * 6);
+                  for (var sR = 0; sR < ribbonRows; sR++) {
+                    var sY2 = ribbonChunkBaseY + sR;
+                    var sCenter = iw.spline ? iw.spline.centerAt(sY2) : (chunk.roadCenters[Math.min(sR, CHUNK_SIZE - 1)]);
+                    var sWX = sCenter - MAP_SIZE / 2;
+                    var sWZ = chunkWorldZ + sR;
+                    var sH = (iw.spline ? iw.spline.heightAt(sY2) : 0) + 0.006;
+                    // Inner edge: at the road's outer edge (touches asphalt)
+                    var innerX = sWX + shldSide * roadHalfW;
+                    var outerX = sWX + shldSide * (roadHalfW + shldWidth);
+                    shldVerts[(sR * 2 + 0) * 3 + 0] = innerX;
+                    shldVerts[(sR * 2 + 0) * 3 + 1] = sH;
+                    shldVerts[(sR * 2 + 0) * 3 + 2] = sWZ;
+                    shldVerts[(sR * 2 + 1) * 3 + 0] = outerX;
+                    shldVerts[(sR * 2 + 1) * 3 + 1] = sH;
+                    shldVerts[(sR * 2 + 1) * 3 + 2] = sWZ;
+                  }
+                  for (var sI = 0; sI < ribbonRows - 1; sI++) {
+                    var sBase = sI * 6;
+                    var sV0 = sI * 2;
+                    // Wind both sides correctly so the face is up regardless of side.
+                    if (shldSide > 0) {
+                      shldIdx[sBase + 0] = sV0 + 0; shldIdx[sBase + 1] = sV0 + 2; shldIdx[sBase + 2] = sV0 + 1;
+                      shldIdx[sBase + 3] = sV0 + 1; shldIdx[sBase + 4] = sV0 + 2; shldIdx[sBase + 5] = sV0 + 3;
+                    } else {
+                      shldIdx[sBase + 0] = sV0 + 0; shldIdx[sBase + 1] = sV0 + 1; shldIdx[sBase + 2] = sV0 + 2;
+                      shldIdx[sBase + 3] = sV0 + 1; shldIdx[sBase + 4] = sV0 + 3; shldIdx[sBase + 5] = sV0 + 2;
+                    }
+                  }
+                  var shldGeo = new T.BufferGeometry();
+                  shldGeo.setAttribute('position', new T.BufferAttribute(shldVerts, 3));
+                  shldGeo.setIndex(new T.BufferAttribute(shldIdx, 1));
+                  shldGeo.computeVertexNormals();
+                  var shld = new T.Mesh(shldGeo, shldMat);
+                  shld.receiveShadow = true;
+                  chunkGroup.add(shld);
+                });
+              }
 
               // ─── ROAD MARKINGS (painted on the road surface) ───
               // LOD: markings only on near chunks (this is the biggest perf win — saves ~40 meshes per distant chunk)
