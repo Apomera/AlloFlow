@@ -12266,14 +12266,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     var sgTex = new T.CanvasTexture(sgCan);
                     var sgMat = new T.MeshBasicMaterial({ map: sgTex, transparent: true, side: T.DoubleSide });
                     var sgMesh = new T.Mesh(faceGeo, sgMat);
-                    sgMesh.position.set(roadShoulderX, 2.0, postZ);
+                    // Shift sign face toward the road (-lm.side direction) so
+                    // the cylinder post sits behind the sign instead of
+                    // visibly bisecting the sign face.
+                    sgMesh.position.set(roadShoulderX - lm.side * 0.08, 2.0, postZ);
                     sgMesh.rotation.y = lm.side === 1 ? -Math.PI / 2 : Math.PI / 2;
                     chunkGroup.add(sgMesh);
                   } catch (sgErr) {
-                    // Fallback: plain colored square
+                    // Fallback: plain colored square — same road-ward offset
                     var faceMat = new T.MeshBasicMaterial({ color: faceColor, side: T.DoubleSide });
                     var faceMesh = new T.Mesh(faceGeo, faceMat);
-                    faceMesh.position.set(roadShoulderX, 2.0, postZ);
+                    faceMesh.position.set(roadShoulderX - lm.side * 0.08, 2.0, postZ);
                     faceMesh.rotation.y = lm.side === 1 ? -Math.PI / 2 : Math.PI / 2;
                     chunkGroup.add(faceMesh);
                   }
@@ -12921,7 +12924,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     var sTex = new T.CanvasTexture(sc);
                     var sMat = new T.MeshBasicMaterial({ map: sTex, side: T.DoubleSide });
                     var sFace = new T.Mesh(new T.PlaneGeometry(0.55, 0.7), sMat);
-                    sFace.position.set(slX, slHy + 2.3, slZ);
+                    // Shift the sign toward the road (slSide < 0 means left
+                    // side, so sign nudges +X to be in front of the post; slSide
+                    // > 0 means right side, sign nudges -X). Without this offset
+                    // the post sat at the same X as the sign and visibly
+                    // obscured the speed number from the driver's POV.
+                    sFace.position.set(slX - slSide * 0.08, slHy + 2.3, slZ);
                     sFace.rotation.y = slSide < 0 ? Math.PI / 2 : -Math.PI / 2;
                     chunkGroup.add(sFace);
                   } catch (signErr) {}
@@ -13159,7 +13167,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     : new T.MeshLambertMaterial({ color: 0xfde047 });
                   var msPanel = new T.Mesh(new T.BoxGeometry(0.85, 0.85, 0.04), msPanelMat);
                   msPanel.rotation.z = Math.PI / 4;
-                  msPanel.position.set(msX, msHt + 2.4, msZ);
+                  // Shift panel toward the road (away from msSide) so the
+                  // post sits BEHIND the panel from the driver's POV.
+                  msPanel.position.set(msX - msSide * 0.08, msHt + 2.4, msZ);
                   msPanel.rotation.y = msSide < 0 ? Math.PI / 2 : -Math.PI / 2;
                   chunkGroup.add(msPanel);
                   // Moose silhouette — drawn to a canvas texture and slapped on
@@ -13189,7 +13199,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     var msTex = new T.CanvasTexture(mc);
                     var msIconMat = new T.MeshBasicMaterial({ map: msTex, transparent: true, side: T.DoubleSide });
                     var msIcon = new T.Mesh(new T.PlaneGeometry(0.6, 0.6), msIconMat);
-                    msIcon.position.set(msX + (msSide < 0 ? -0.025 : 0.025), msHt + 2.4, msZ);
+                    // Icon sits just in front of the panel (further toward road
+                    // than the panel's -msSide*0.08 shift) so the silhouette
+                    // never z-fights with the panel face.
+                    msIcon.position.set(msX - msSide * 0.105, msHt + 2.4, msZ);
                     msIcon.rotation.y = msSide < 0 ? Math.PI / 2 : -Math.PI / 2;
                     chunkGroup.add(msIcon);
                   } catch (msErr) {}
