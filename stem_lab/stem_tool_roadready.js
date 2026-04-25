@@ -11654,6 +11654,76 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     beamPivot.add(beam);
                     chunkGroup.add(beamPivot);
                   }
+                  // ── Lobster traps + buoys at the lighthouse base ──
+                  // Every working Maine lighthouse village has a stack of wire
+                  // lobster traps and a rack of brightly painted buoys nearby.
+                  // 4-trap pyramid on the road-facing side + a horizontal buoy
+                  // rack with three painted floats. Tied to the lighthouse so
+                  // they only render where they belong (no buoys on inland
+                  // schools / libraries).
+                  var lhRng = seededRandom(chunk.index * 23117 + 7);
+                  var trapWoodMat = new T.MeshLambertMaterial({ color: 0x6a4a2a });
+                  var trapWireMat = new T.MeshLambertMaterial({ color: 0x808a90 });
+                  // Traps stacked 2-2-1 like a small pyramid, off to the side
+                  var trapBaseX = lmCenterWX + lm.side * 1.6;
+                  var trapBaseZ = lmCenterWZ + 1.4;
+                  var trapPositions = [
+                    { dx: 0,    dz: 0,    y: 0.18 },
+                    { dx: 0.55, dz: 0,    y: 0.18 },
+                    { dx: 0.28, dz: 0.5,  y: 0.18 },
+                    { dx: 0.28, dz: 0.25, y: 0.50 } // top of the pyramid
+                  ];
+                  trapPositions.forEach(function(tp) {
+                    // Wooden base box (flat-ish)
+                    var trap = new T.Mesh(new T.BoxGeometry(0.5, 0.28, 0.5), trapWoodMat);
+                    trap.position.set(trapBaseX + tp.dx, tp.y, trapBaseZ + tp.dz);
+                    chunkGroup.add(trap);
+                    // Wire mesh top — narrower box one row up so the silhouette reads as wire-on-wood
+                    var trapTop = new T.Mesh(new T.BoxGeometry(0.46, 0.06, 0.46), trapWireMat);
+                    trapTop.position.set(trapBaseX + tp.dx, tp.y + 0.17, trapBaseZ + tp.dz);
+                    chunkGroup.add(trapTop);
+                  });
+                  // Buoy rack: horizontal cross-pole between two short posts
+                  // with three painted lobster buoys hanging from it. Each
+                  // family / boat uses a unique color combo by Maine law, so
+                  // we vary the palette per lighthouse via the chunk seed.
+                  var buoyRackY = 1.2;
+                  var buoyRackX = lmCenterWX + lm.side * 2.6;
+                  var buoyRackZ = lmCenterWZ - 1.2;
+                  var rackPostMat = new T.MeshLambertMaterial({ color: 0x5a3a20 });
+                  var rackPoleMat = new T.MeshLambertMaterial({ color: 0x4b3018 });
+                  [-0.7, 0.7].forEach(function(rpZOff) {
+                    var rackPost = new T.Mesh(new T.BoxGeometry(0.08, 1.4, 0.08), rackPostMat);
+                    rackPost.position.set(buoyRackX, 0.7, buoyRackZ + rpZOff);
+                    chunkGroup.add(rackPost);
+                  });
+                  var rackPole = new T.Mesh(new T.CylinderGeometry(0.04, 0.04, 1.6, 6), rackPoleMat);
+                  rackPole.rotation.x = Math.PI / 2;
+                  rackPole.position.set(buoyRackX, buoyRackY, buoyRackZ);
+                  chunkGroup.add(rackPole);
+                  // Three painted buoys hanging from the cross-pole
+                  var buoyPalette = [
+                    [0xef4444, 0xfacc15], // red+yellow
+                    [0x1d4ed8, 0xffffff], // navy+white
+                    [0x16a34a, 0xff8b3a], // green+orange
+                    [0x7c3aed, 0xfde047]  // purple+yellow
+                  ];
+                  for (var bi = 0; bi < 3; bi++) {
+                    var bpZ = buoyRackZ - 0.6 + bi * 0.6;
+                    var bpColors = buoyPalette[Math.floor(lhRng() * buoyPalette.length)];
+                    // Body — short fat capsule (cylinder + two end caps approximated as one cyl)
+                    var buoyBody = new T.Mesh(new T.CylinderGeometry(0.09, 0.09, 0.32, 8), new T.MeshLambertMaterial({ color: bpColors[0] }));
+                    buoyBody.position.set(buoyRackX, buoyRackY - 0.32, bpZ);
+                    chunkGroup.add(buoyBody);
+                    // Painted stripe — narrow ring of accent color
+                    var buoyStripe = new T.Mesh(new T.CylinderGeometry(0.092, 0.092, 0.07, 8), new T.MeshLambertMaterial({ color: bpColors[1] }));
+                    buoyStripe.position.set(buoyRackX, buoyRackY - 0.28, bpZ);
+                    chunkGroup.add(buoyStripe);
+                    // Short rope from cross-pole to buoy top
+                    var buoyRope = new T.Mesh(new T.CylinderGeometry(0.012, 0.012, 0.16, 4), new T.MeshLambertMaterial({ color: 0x2a2a2a }));
+                    buoyRope.position.set(buoyRackX, buoyRackY - 0.08, bpZ);
+                    chunkGroup.add(buoyRope);
+                  }
                 } else if (lt.id === 'church') {
                   // Church: main hall + steeple
                   var chBase = new T.Mesh(new T.BoxGeometry(lt.size * 0.6, lt.height * 0.5, lt.size * 0.8), lmMainMat);
