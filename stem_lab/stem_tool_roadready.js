@@ -13288,6 +13288,57 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   }
                 }
               }
+              // ── Mile markers (rural / suburban, every 4 chunks) ──
+              // Small green panel on a thin post showing the running mile count.
+              // Maine DOT uses these on Routes 1, 9, 27, 201 etc. so drivers can
+              // call in their location to dispatch in an emergency. Always on the
+              // RIGHT side of travel (north-bound default = +1 side). Numbered by
+              // chunk index so the value advances 1 per ~0.07 miles of driving —
+              // close enough to the real 1/10-mile markers Maine uses.
+              if ((chunk.biome === 'rural' || chunk.biome === 'suburban') && (ci % 4 === 0) && !chunk.hasIntersection) {
+                var mmZ = chunkWorldZ + CHUNK_SIZE / 2;
+                var mmCenter = iw.spline ? iw.spline.centerAt(mmZ - chunkWorldZ + ribbonChunkBaseY) : 0;
+                var mmWX = mmCenter - MAP_SIZE / 2;
+                var mmHt = iw.spline ? iw.spline.heightAt(mmZ - chunkWorldZ + ribbonChunkBaseY) : 0;
+                var mmSide = 1; // right shoulder (north-bound = +X)
+                // Skip if landmark sits at this Z
+                var mmSkip = false;
+                if (chunk.landmark && Math.abs((CHUNK_SIZE / 2) - chunk.landmark.centerY) < chunk.landmark.type.size * 0.7) mmSkip = true;
+                if (!mmSkip) {
+                  var mmX = mmWX + mmSide * (roadHalfW + 0.85);
+                  // Green metal post (shorter than warning sign posts — knee-high)
+                  var mmPostMat = new T.MeshLambertMaterial({ color: 0x4b5563 });
+                  var mmPost = new T.Mesh(new T.CylinderGeometry(0.025, 0.025, 1.0, 5), mmPostMat);
+                  mmPost.position.set(mmX, mmHt + 0.5, mmZ);
+                  chunkGroup.add(mmPost);
+                  // Green panel with white text "MILE N"
+                  try {
+                    var mmCan = document.createElement('canvas');
+                    mmCan.width = 64; mmCan.height = 96;
+                    var mmCx = mmCan.getContext('2d');
+                    mmCx.fillStyle = '#0b5e2c'; // interstate green
+                    mmCx.fillRect(0, 0, 64, 96);
+                    mmCx.strokeStyle = '#ffffff';
+                    mmCx.lineWidth = 3;
+                    mmCx.strokeRect(2, 2, 60, 92);
+                    mmCx.fillStyle = '#ffffff';
+                    mmCx.font = 'bold 14px system-ui, sans-serif';
+                    mmCx.textAlign = 'center';
+                    mmCx.fillText('MILE', 32, 30);
+                    mmCx.font = 'bold 32px system-ui, sans-serif';
+                    mmCx.fillText(String(Math.abs(ci)), 32, 70);
+                    var mmTex = new T.CanvasTexture(mmCan);
+                    var mmMat = new T.MeshBasicMaterial({ map: mmTex, side: T.DoubleSide });
+                    var mmFace = new T.Mesh(new T.PlaneGeometry(0.32, 0.48), mmMat);
+                    // Sit just above the post — and shifted toward the road so
+                    // the post doesn't bisect the panel (same fix pattern as
+                    // the speed-limit + warning signs).
+                    mmFace.position.set(mmX - mmSide * 0.04, mmHt + 1.05, mmZ);
+                    mmFace.rotation.y = mmSide < 0 ? Math.PI / 2 : -Math.PI / 2;
+                    chunkGroup.add(mmFace);
+                  } catch (mmErr) {}
+                }
+              }
               // ── Roadside reflector posts (rural / fog / dawn / snow) ──
               // Short white delineator posts every ~12m along the shoulder of
               // unlit rural roads. Reflective amber disc faces oncoming traffic
