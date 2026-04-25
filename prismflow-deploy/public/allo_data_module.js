@@ -637,7 +637,7 @@ If they are asking to change settings (like grade level, topic, interests, langu
   "language": "string (optional - e.g. 'Spanish', 'French')",
   "customInstructions": "string (optional)",
   "tone": "string (optional - one of: 'informative', 'conversational', 'narrative', 'humorous', 'step-by-step', 'persuasive')",
-  "length": "string (optional - one of: 'short', 'standard', 'detailed', 'exhaustive')",
+  "length": "string (optional - one of: 'short' (~150w), 'standard' (~250w), 'detailed' (~500w), 'exhaustive' (~1000w), OR a numeric word count like '400' if the user specifies one. Map relative phrasing: 'shorter'/'briefer'/'more concise'/'condense' -> 'short'; 'longer'/'wordier'/'lengthier'/'more detailed'/'elaborate'/'expand' -> 'detailed'; 'much longer'/'comprehensive' -> 'exhaustive')",
   "format": "string (optional - one of: 'prose', 'bullets', 'numbered')",
   "dokLevel": "string (optional - DOK rigor level, one of: 'Level 1', 'Level 2', 'Level 3', 'Level 4')",
   "imageStyle": "string (optional - one of: 'Default', 'Pixel Art', 'Isometric Diagram', 'Watercolor', 'Realistic', 'Cartoon')",

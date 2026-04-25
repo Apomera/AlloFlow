@@ -13280,8 +13280,17 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
           changes.push(`Tone: ${params.tone}`);
       }
       if (params.length) {
-          setSourceLength(params.length);
-          changes.push(`Length: ${params.length}`);
+          const _rawLen = String(params.length).trim().toLowerCase();
+          const _lenMap = { short: '150', standard: '250', medium: '250', normal: '250', detailed: '500', long: '500', exhaustive: '1000' };
+          let _mappedLen = _lenMap[_rawLen];
+          if (!_mappedLen) {
+              const _n = parseInt(_rawLen, 10);
+              if (!Number.isNaN(_n) && _n > 0) _mappedLen = String(_n);
+          }
+          if (_mappedLen) {
+              setSourceLength(_mappedLen);
+              changes.push(`Length: ~${_mappedLen} words`);
+          }
       }
       if (params.language) {
           setLeveledTextLanguage(params.language);
@@ -13363,8 +13372,20 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
       changes.push(`Tone: ${config.tone}`);
     }
     if (config.length) {
-      setSourceLength(config.length);
-      changes.push(`Length: ${config.length}`);
+      // sourceLength UI is a numeric word-count input ('250' default). Map
+      // categorical values from the AI ('short' | 'standard' | 'detailed' |
+      // 'exhaustive') to word counts; pass through plain numeric strings.
+      const _rawLen = String(config.length).trim().toLowerCase();
+      const _lenMap = { short: '150', standard: '250', medium: '250', normal: '250', detailed: '500', long: '500', exhaustive: '1000' };
+      let _mappedLen = _lenMap[_rawLen];
+      if (!_mappedLen) {
+        const _n = parseInt(_rawLen, 10);
+        if (!Number.isNaN(_n) && _n > 0) _mappedLen = String(_n);
+      }
+      if (_mappedLen) {
+        setSourceLength(_mappedLen);
+        changes.push(`Length: ~${_mappedLen} words`);
+      }
     }
     if (config.format) {
       setTextFormat(config.format);

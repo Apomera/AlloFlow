@@ -708,7 +708,7 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
              setIsChatProcessing(false);
              return;
         }
-        const looksLikeCommand = /show|find|where|change|update|set|create|generate|start|make|go\s+to|navigate|open|take\s+me|switch\s+to|read\s+(this|the|my|me)|launch|load|hear|how\s+do\s+i|what\s+does|can\s+i|is\s+there/i.test(textToSend);
+        const looksLikeCommand = /show|find|where|change|update|set|create|generate|start|make|go\s+to|navigate|open|take\s+me|switch\s+to|read\s+(this|the|my|me)|launch|load|hear|how\s+do\s+i|what\s+does|can\s+i|is\s+there|shorter|longer|shorten|lengthen|briefer|brief|concise|detailed|exhaustive|wordier|lengthier|condense|expand|elaborate|trim|shrink|less\s+(words?|wordy|long)|more\s+(words?|wordy|detail|brief|concise|long)|word\s+count|tone|format|grade\s+level|interest/i.test(textToSend);
         if (isAutoFillMode || isShowMeMode || looksLikeCommand) {
             try {
                 const promptForIntent = isShowMeMode && !/show|find|where/i.test(textToSend)
