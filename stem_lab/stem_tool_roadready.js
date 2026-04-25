@@ -11880,6 +11880,45 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       chunkGroup.add(sgW);
                     }
                   }
+                  // ── Sunday-morning parking lot (3 cars beside the church) ──
+                  // Real Maine churches always have at least a few cars in the
+                  // side lot. Three parked sedans in different colors aligned
+                  // along the road-facing side. Deterministic per-chunk seed
+                  // so the same congregation always parks the same way.
+                  var chRng = seededRandom(chunk.index * 30013 + 41);
+                  var chCarColors = [0x1e40af, 0xdc2626, 0x059669, 0x4b5563, 0xfef3c7, 0x7c3aed];
+                  for (var chCi = 0; chCi < 3; chCi++) {
+                    var chCarColor = chCarColors[Math.floor(chRng() * chCarColors.length)];
+                    var chCarBodyMat = new T.MeshLambertMaterial({ color: chCarColor });
+                    var chCarCabMat = new T.MeshLambertMaterial({ color: Math.max(0, chCarColor - 0x202020) });
+                    var chCarWheelMat = new T.MeshLambertMaterial({ color: 0x1a1a1a });
+                    var chCarWinMat = new T.MeshLambertMaterial({ color: 0x1e293b });
+                    var chCarX = lmCenterWX + lm.side * (lt.size * 0.5);
+                    var chCarZ = lmCenterWZ - 1.6 + chCi * 1.6;
+                    // Body (parallel to road = long axis along Z)
+                    var chCarBody = new T.Mesh(new T.BoxGeometry(0.85, 0.55, 1.7), chCarBodyMat);
+                    chCarBody.position.set(chCarX, 0.5, chCarZ);
+                    chCarBody.castShadow = true;
+                    chunkGroup.add(chCarBody);
+                    // Cabin
+                    var chCarCab = new T.Mesh(new T.BoxGeometry(0.65, 0.45, 0.95), chCarCabMat);
+                    chCarCab.position.set(chCarX, 1.05, chCarZ - 0.05);
+                    chunkGroup.add(chCarCab);
+                    // Front + back windows
+                    var chCarWinF = new T.Mesh(new T.BoxGeometry(0.5, 0.35, 0.06), chCarWinMat);
+                    chCarWinF.position.set(chCarX, 1.05, chCarZ + 0.45);
+                    chunkGroup.add(chCarWinF);
+                    var chCarWinB = new T.Mesh(new T.BoxGeometry(0.5, 0.35, 0.06), chCarWinMat);
+                    chCarWinB.position.set(chCarX, 1.05, chCarZ - 0.55);
+                    chunkGroup.add(chCarWinB);
+                    // Wheels
+                    [[-0.35, -0.6], [0.35, -0.6], [-0.35, 0.6], [0.35, 0.6]].forEach(function(chwp) {
+                      var chCarWheel = new T.Mesh(new T.CylinderGeometry(0.18, 0.18, 0.12, 8), chCarWheelMat);
+                      chCarWheel.rotation.x = Math.PI / 2;
+                      chCarWheel.position.set(chCarX + chwp[0], 0.22, chCarZ + chwp[1]);
+                      chunkGroup.add(chCarWheel);
+                    });
+                  }
                 } else if (lt.id === 'gas') {
                   // Gas station: small building + canopy with pumps
                   var gsBldg = new T.Mesh(new T.BoxGeometry(lt.size * 0.5, lt.height, lt.size * 0.5), lmMainMat);
