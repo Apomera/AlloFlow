@@ -5994,6 +5994,11 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/doc_pipeline_module.js');
     loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/content_engine_module.js');
     loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/timeline_revision_module.js');
+    // PromptsLibrary — pure prompt builders (lesson plan, parent guide, study guide).
+    // Module self-instantiates and registers window.AlloModules.PromptsLibrary
+    // at load time using window.STEM_TOOL_REGISTRY. If loading fails, the
+    // inline shims (below) fall back to byte-identical inline implementations.
+    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/prompts_library_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -19215,7 +19220,15 @@ ${t('export.readme_json_desc')}`;
       }
       return context;
   };
+  // Phase A CDN extraction: prompt builders now live in
+  // prompts_library_module.js (loaded via loadModule('PromptsLibrary', ...)).
+  // These shims preserve the old positional-arg signatures so existing
+  // callsites work unchanged; they pass closure-captured gradeLevel +
+  // sourceTopic into the module's options-object API.
   const buildLessonPlanPrompt = (context, assetManifest, language, customAdditions) => {
+      const _pl = window.AlloModules && window.AlloModules.PromptsLibrary;
+      if (_pl) return _pl.buildLessonPlanPrompt({ context, assetManifest, language, customAdditions, gradeLevel, sourceTopic });
+      // Fallback inline body if PromptsLibrary failed to load.
       const hasCustom = customAdditions && customAdditions.trim().length > 0;
       const extensionInstruction = hasCustom
         ? `USER CUSTOM REQUESTS: "${customAdditions}"\nTASK: Generate 3 specific, actionable lesson extensions/activities STRICTLY based on these requests. Do not generate unrelated generic ideas. If the request is singular, break it down into 3 distinct variations or steps.`
@@ -19302,6 +19315,9 @@ ${t('export.readme_json_desc')}`;
       `;
   };
   const buildParentGuidePrompt = (context, language) => {
+      const _pl = window.AlloModules && window.AlloModules.PromptsLibrary;
+      if (_pl) return _pl.buildParentGuidePrompt({ context, language, gradeLevel, sourceTopic });
+      // Fallback inline body if PromptsLibrary failed to load.
       return `
         You are a friendly, encouraging Family Tutor helping a parent support their child's learning at home.
         Create a simple "Family Learning Guide" based on the following context.
@@ -19344,6 +19360,9 @@ ${t('export.readme_json_desc')}`;
       `;
   };
   const buildStudyGuidePrompt = (context, language) => {
+      const _pl = window.AlloModules && window.AlloModules.PromptsLibrary;
+      if (_pl) return _pl.buildStudyGuidePrompt({ context, language, gradeLevel, sourceTopic });
+      // Fallback inline body if PromptsLibrary failed to load.
       return `
         You are a supportive Study Tutor creating a personal study guide for a student.
         ${context}

@@ -13133,6 +13133,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   });
                 }
               }
+              // ── Rain puddles on the shoulder (rain weather only) ──
+              // Real rural shoulders pool water along low spots in heavy rain.
+              // Small dark glossy ovals scattered along the dirt shoulder give
+              // the right "everything is wet" feel without needing a real
+              // reflection pass. Phong material so the directional sun/moon
+              // catches a specular highlight that reads as "wet shine."
+              if (scn.weather === 'rain') {
+                var puRng = seededRandom(chunk.index * 50341 + 17);
+                var puMat = new T.MeshPhongMaterial({
+                  color: 0x1a2028, specular: 0x6a8aaa, shininess: 80,
+                  transparent: true, opacity: 0.85
+                });
+                for (var puZ = chunkWorldZ + 1.5; puZ < chunkWorldZ + CHUNK_SIZE - 1.5; puZ += 2.4 + puRng() * 1.2) {
+                  if (chunk.hasIntersection && Math.abs((puZ - chunkWorldZ) - chunk.intersectionY) < 4) continue;
+                  if (puRng() > 0.6) continue; // 40% spawn rate per slot — feels organic, not lined-up
+                  var puCenter = iw.spline ? iw.spline.centerAt(puZ - chunkWorldZ + ribbonChunkBaseY) : 0;
+                  var puWX = puCenter - MAP_SIZE / 2;
+                  var puHt = iw.spline ? iw.spline.heightAt(puZ - chunkWorldZ + ribbonChunkBaseY) : 0;
+                  var puSide = puRng() < 0.5 ? -1 : 1;
+                  // Sit IN the dirt shoulder, just outside the road edge
+                  var puX = puWX + puSide * (roadHalfW + 0.25 + puRng() * 0.3);
+                  var puZj = puZ + (puRng() - 0.5) * 0.6;
+                  var puLen = 0.5 + puRng() * 0.7;
+                  var puWid = 0.35 + puRng() * 0.25;
+                  // Use CircleGeometry rotated flat for an oval puddle.
+                  var puMesh = new T.Mesh(new T.CircleGeometry(0.3, 12), puMat);
+                  puMesh.scale.set(puWid / 0.3, puLen / 0.3, 1);
+                  puMesh.rotation.x = -Math.PI / 2;
+                  puMesh.position.set(puX, puHt + 0.012, puZj);
+                  chunkGroup.add(puMesh);
+                }
+              }
               // ── Moose crossing warning signs (rural, ~1 per 3 chunks) ──
               // Yellow diamond MUTCD warning with a moose silhouette — Maine
               // DOT places these on Routes 1, 11, 27, 201 and other rural
