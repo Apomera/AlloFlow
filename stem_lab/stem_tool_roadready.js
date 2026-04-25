@@ -13125,6 +13125,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   });
                 }
               }
+              // ── Roadside reflector posts (rural / fog / dawn / snow) ──
+              // Short white delineator posts every ~12m along the shoulder of
+              // unlit rural roads. Reflective amber disc faces oncoming traffic
+              // (right-side post = amber facing you, left-side = red). At night,
+              // the discs swap to MeshBasicMaterial so they read as "lit" by the
+              // car's headlights without needing a real light. These are real
+              // Maine DOT-standard markers on Routes 1, 9, 27, etc., and they
+              // teach students to read shoulder cues at distance.
+              if (chunk.biome === 'rural' && !chunk.hasIntersection) {
+                var rpRng = seededRandom(chunk.index * 81799 + 5);
+                var rpDarkPath = scn.time === 'night' || scn.weather === 'fog' || scn.id === 'dawn';
+                var rpPostMat = new T.MeshLambertMaterial({ color: 0xf3f4f6 });
+                var rpAmberMat = rpDarkPath
+                  ? new T.MeshBasicMaterial({ color: 0xfbbf24 })
+                  : new T.MeshLambertMaterial({ color: 0xfbbf24 });
+                var rpRedMat = rpDarkPath
+                  ? new T.MeshBasicMaterial({ color: 0xef4444 })
+                  : new T.MeshLambertMaterial({ color: 0xef4444 });
+                for (var rpZ = chunkWorldZ + 2; rpZ < chunkWorldZ + CHUNK_SIZE - 2; rpZ += 12) {
+                  var rpJitter = (rpRng() - 0.5) * 1.4;
+                  var rpZj = rpZ + rpJitter;
+                  // Skip near landmark footprint
+                  if (chunk.landmark && Math.abs((rpZj - chunkWorldZ) - chunk.landmark.centerY) < chunk.landmark.type.size * 0.7) continue;
+                  var rpCenter = iw.spline ? iw.spline.centerAt(rpZj - chunkWorldZ + ribbonChunkBaseY) : 0;
+                  var rpWX = rpCenter - MAP_SIZE / 2;
+                  var rpHt = iw.spline ? iw.spline.heightAt(rpZj - chunkWorldZ + ribbonChunkBaseY) : 0;
+                  [-1, 1].forEach(function(rpSide) {
+                    var rpX = rpWX + rpSide * (roadHalfW + 1.0);
+                    // White vertical post
+                    var rpPost = new T.Mesh(new T.BoxGeometry(0.05, 1.0, 0.05), rpPostMat);
+                    rpPost.position.set(rpX, rpHt + 0.5, rpZj);
+                    chunkGroup.add(rpPost);
+                    // Reflective disc at the top — amber on right, red on left
+                    var rpDiscMat = rpSide > 0 ? rpAmberMat : rpRedMat;
+                    var rpDisc = new T.Mesh(new T.BoxGeometry(0.04, 0.18, 0.16), rpDiscMat);
+                    rpDisc.position.set(rpX, rpHt + 0.95, rpZj);
+                    chunkGroup.add(rpDisc);
+                  });
+                }
+              }
 
               // ─── ROAD MARKINGS (painted on the road surface) ───
               // LOD: markings only on near chunks (this is the biggest perf win — saves ~40 meshes per distant chunk)
