@@ -13090,6 +13090,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   chunkGroup.add(shld);
                 });
               }
+              // ── Plowed snowbanks along the shoulder (snow weather only) ──
+              // Real Maine winter roads are bordered by chunky uneven snowbanks
+              // pushed up by plows. Tagged jaggedy boxes (varying length / height
+              // / width) along the spline give the right messy ridge silhouette
+              // without paying for a curved mesh strip per side. Slight per-bank
+              // jitter so it never reads as a straight wall. Skip on intersection
+              // rows so the cross-street isn't blocked.
+              if (scn.weather === 'snow') {
+                var sbRng = seededRandom(chunk.index * 60013 + 41);
+                var sbBaseColor = 0xf2f5f8;     // crisp top
+                var sbDirtyColor = 0xc8d0d4;    // road-spray-tinted base
+                var sbBaseMat = new T.MeshLambertMaterial({ color: sbBaseColor });
+                var sbDirtyMat = new T.MeshLambertMaterial({ color: sbDirtyColor });
+                for (var sbZ = chunkWorldZ + 1.2; sbZ < chunkWorldZ + CHUNK_SIZE - 1.2; sbZ += 1.7 + sbRng() * 0.6) {
+                  // Skip near intersection so cross-street stays plowed open
+                  if (chunk.hasIntersection && Math.abs((sbZ - chunkWorldZ) - chunk.intersectionY) < 4) continue;
+                  var sbCenter = iw.spline ? iw.spline.centerAt(sbZ - chunkWorldZ + ribbonChunkBaseY) : 0;
+                  var sbWX = sbCenter - MAP_SIZE / 2;
+                  var sbHt = iw.spline ? iw.spline.heightAt(sbZ - chunkWorldZ + ribbonChunkBaseY) : 0;
+                  [-1, 1].forEach(function(sbSide) {
+                    var sbHeight = 0.35 + sbRng() * 0.25;       // 0.35-0.60 tall
+                    var sbWidth  = 0.55 + sbRng() * 0.30;       // 0.55-0.85 wide
+                    var sbLength = 1.2  + sbRng() * 0.6;        // 1.2-1.8 long
+                    var sbX = sbWX + sbSide * (roadHalfW + 0.6 + sbWidth / 2 + sbRng() * 0.08);
+                    // Dirty base (road-spray gray) — slightly wider, lower
+                    var sbBase = new T.Mesh(new T.BoxGeometry(sbWidth + 0.08, sbHeight * 0.55, sbLength), sbDirtyMat);
+                    sbBase.position.set(sbX, sbHt + sbHeight * 0.275, sbZ + (sbRng() - 0.5) * 0.2);
+                    chunkGroup.add(sbBase);
+                    // Crisp white top — narrower so the silhouette has a peak
+                    var sbTop = new T.Mesh(new T.BoxGeometry(sbWidth * 0.7, sbHeight * 0.55, sbLength * 0.85), sbBaseMat);
+                    sbTop.position.set(sbX + (sbRng() - 0.5) * 0.05, sbHt + sbHeight * 0.7, sbZ + (sbRng() - 0.5) * 0.2);
+                    chunkGroup.add(sbTop);
+                  });
+                }
+              }
 
               // ─── ROAD MARKINGS (painted on the road surface) ───
               // LOD: markings only on near chunks (this is the biggest perf win — saves ~40 meshes per distant chunk)
