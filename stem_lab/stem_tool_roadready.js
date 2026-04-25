@@ -11381,6 +11381,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       var mBox = new T.Mesh(new T.BoxGeometry(bW * 0.4, 0.35, bW * 0.4), new T.MeshLambertMaterial({ color: 0x55606a }));
                       mBox.position.set(wx, terrainYb + bH + 0.175, wz);
                       chunkGroup.add(mBox);
+                      // ── Smokestack on ~30% of industrial buildings ──
+                      // Tall thin tapered cylinder with a darker cap and
+                      // (in cold-feeling scenarios) a steam plume rising from
+                      // the top. Adds the missing "industrial silhouette" cue
+                      // that lets the player ID the biome at distance.
+                      if ((bHash & 7) < 2) {
+                        var stkMat = new T.MeshLambertMaterial({ color: 0x8a7a6a });
+                        var stkCapMat = new T.MeshLambertMaterial({ color: 0x3a3a3a });
+                        var stkH = 3.5 + (bHash & 3) * 0.4;
+                        var stkX = wx + (bHash & 1 ? 0.25 : -0.25);
+                        var stkZ = wz + (bHash & 2 ? 0.25 : -0.25);
+                        var stack = new T.Mesh(new T.CylinderGeometry(0.16, 0.22, stkH, 8), stkMat);
+                        stack.position.set(stkX, terrainYb + bH + stkH / 2, stkZ);
+                        stack.castShadow = true;
+                        chunkGroup.add(stack);
+                        // Cap (slightly wider darker ring at the top)
+                        var stkCap = new T.Mesh(new T.CylinderGeometry(0.20, 0.20, 0.18, 8), stkCapMat);
+                        stkCap.position.set(stkX, terrainYb + bH + stkH + 0.04, stkZ);
+                        chunkGroup.add(stkCap);
+                        // Steam plume — three offset puff spheres rising,
+                        // tagged 'smoke_puff' so the existing animator at
+                        // line ~14723 sways them. Only on cold-feeling
+                        // scenarios so the plume reads as visible vapor
+                        // rather than industrial soot.
+                        var stkPlumeOn = scn.weather === 'snow' || scn.id === 'dawn' || scn.weather === 'fog';
+                        if (stkPlumeOn) {
+                          var stkPuffMat = new T.MeshBasicMaterial({ color: 0xe5e7eb, transparent: true, opacity: 0.5, depthWrite: false });
+                          for (var stpi = 0; stpi < 3; stpi++) {
+                            var stPuff = new T.Mesh(new T.SphereGeometry(0.32 + stpi * 0.10, 6, 5), stkPuffMat);
+                            stPuff.position.set(stkX, terrainYb + bH + stkH + 0.5 + stpi * 0.7, stkZ);
+                            stPuff.name = 'smoke_puff';
+                            stPuff._sBaseY = stPuff.position.y;
+                            stPuff._sPhase = (bHash + stpi * 19) * 0.17;
+                            chunkGroup.add(stPuff);
+                          }
+                        }
+                      }
                     } else if (chunk.biome === 'commercial') {
                       // Flat roof + small parapet cap
                       var cap = new T.Mesh(new T.BoxGeometry(bW + 0.08, 0.12, bW + 0.08), new T.MeshLambertMaterial({ color: 0x2a2a2a }));
