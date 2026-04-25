@@ -11982,6 +11982,58 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       hcLight.position.set(lmCenterWX, lt.height + 0.5, lmCenterWZ);
                       chunkGroup.add(hcLight);
                     }
+                    // ── Parked ambulance at the ER entrance ──
+                    // Boxy white body with orange-red Star of Life stripe along
+                    // the side, dark cab, and a roof-mounted light bar tagged
+                    // 'rr_policeBeacon' so it pulses with the other emergency
+                    // beacons. Completes the hospital-police-fire silhouette
+                    // trio so all three emergency landmarks have a parked
+                    // emergency vehicle out front.
+                    var amBodyMat = new T.MeshLambertMaterial({ color: 0xfafafa });
+                    var amStripeMat = new T.MeshLambertMaterial({ color: 0xf97316 });
+                    var amCabMat = new T.MeshLambertMaterial({ color: 0xe5e7eb });
+                    var amWheelMat = new T.MeshLambertMaterial({ color: 0x1a1a1a });
+                    var amWinMat = new T.MeshLambertMaterial({ color: 0x1e293b });
+                    var amX = lmCenterWX + lm.side * (lt.size * 0.5);
+                    var amZ = lmCenterWZ + lt.size * 0.3;
+                    // Tall boxy patient body
+                    var amBody = new T.Mesh(new T.BoxGeometry(2.2, 1.3, 1.0), amBodyMat);
+                    amBody.position.set(amX, 0.85, amZ);
+                    amBody.castShadow = true;
+                    chunkGroup.add(amBody);
+                    // Orange-red Star of Life stripe along the road-facing side
+                    var amStripe = new T.Mesh(new T.BoxGeometry(2.21, 0.18, 1.01), amStripeMat);
+                    amStripe.position.set(amX, 0.7, amZ);
+                    chunkGroup.add(amStripe);
+                    // Cab section (front 35%, slightly shorter than body)
+                    var amCab = new T.Mesh(new T.BoxGeometry(0.85, 1.0, 1.0), amCabMat);
+                    amCab.position.set(amX + 1.05, 0.7, amZ);
+                    chunkGroup.add(amCab);
+                    // Cab windshield
+                    var amWin = new T.Mesh(new T.BoxGeometry(0.08, 0.5, 0.85), amWinMat);
+                    amWin.position.set(amX + 1.50, 0.95, amZ);
+                    chunkGroup.add(amWin);
+                    // 4 wheels — single front + dual rear axle (rear set is
+                    // tighter to suggest a cargo van chassis)
+                    [
+                      { x: 0.85, z: -0.50 }, { x: 0.85, z: 0.50 },
+                      { x: -0.75, z: -0.50 }, { x: -0.75, z: 0.50 }
+                    ].forEach(function(amwp) {
+                      var amWheel = new T.Mesh(new T.CylinderGeometry(0.20, 0.20, 0.13, 8), amWheelMat);
+                      amWheel.rotation.x = Math.PI / 2;
+                      amWheel.position.set(amX + amwp.x, 0.20, amZ + amwp.z);
+                      chunkGroup.add(amWheel);
+                    });
+                    // Roof light bar — red+white tagged for the chunk-walk
+                    // beacon animator
+                    var amBarMat = new T.MeshBasicMaterial({
+                      color: 0xff3a3a, transparent: true, opacity: 0.6,
+                      blending: T.AdditiveBlending, depthWrite: false
+                    });
+                    var amBar = new T.Mesh(new T.BoxGeometry(0.7, 0.10, 0.18), amBarMat);
+                    amBar.position.set(amX, 1.55, amZ);
+                    amBar.name = 'rr_policeBeacon';
+                    chunkGroup.add(amBar);
                   } else if (lt.id === 'school') {
                     // Flagpole with American flag (waves in wind via chunk-walk loop)
                     var flagPole = new T.Mesh(new T.CylinderGeometry(0.06, 0.06, 4, 6), new T.MeshLambertMaterial({ color: 0xd1d5db }));
