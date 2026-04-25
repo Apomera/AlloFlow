@@ -12089,20 +12089,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     var sbStopArm = new T.Mesh(new T.BoxGeometry(0.45, 0.45, 0.05), sbStopArmMat);
                     sbStopArm.position.set(sbX - 0.6, 0.85, sbZ - (lm.side > 0 ? 0.55 : -0.55));
                     chunkGroup.add(sbStopArm);
-                  } else if (lt.id === 'post') {
-                    // Small American flag out front — real US post offices always have one.
-                    var poFlagPole = new T.Mesh(new T.CylinderGeometry(0.05, 0.05, 3.2, 6), new T.MeshLambertMaterial({ color: 0xd1d5db }));
-                    poFlagPole.position.set(lmCenterWX + lm.side * 1.8, 1.6, lmCenterWZ + 1.2);
-                    chunkGroup.add(poFlagPole);
-                    var poFlag = new T.Mesh(new T.BoxGeometry(0.7, 0.42, 0.02), new T.MeshLambertMaterial({ color: 0x1e3a5f }));
-                    poFlag.position.set(lmCenterWX + lm.side * 1.8 + lm.side * 0.35, 2.85, lmCenterWZ + 1.2);
-                    poFlag.name = 'rr_chunkFlag';
-                    poFlag._flagSeed = (ci * 19.7 + lm.centerY * 0.73 + 3.14) % 6.28;
-                    poFlag._flagBaseY = 0;
-                    chunkGroup.add(poFlag);
                     // ── Flashing yellow school-zone beacons on both sides of the road ──
                     // Two poles with twin flashing amber lamps — alternating at ~1.2 Hz.
-                    // Placed on the APPROACH side of the school (~6m before the landmark Z).
+                    // Placed on the APPROACH side of the school (~6m before the
+                    // landmark Z). Previously this block was misplaced inside the
+                    // post-office branch, so post offices got school-zone beacons
+                    // and schools got nothing — moved here where it belongs.
                     var beaconZ = lmCenterWZ - 6;
                     s3.flashingBeacons = s3.flashingBeacons || [];
                     [-1, 1].forEach(function(bSide) {
@@ -12126,6 +12118,58 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                         chunkGroup.add(lampMesh);
                         s3.flashingBeacons.push({ mesh: lampMesh, phase: (bi + (bSide > 0 ? 1 : 0)) % 2 });
                       });
+                    });
+                  } else if (lt.id === 'post') {
+                    // Small American flag out front — real US post offices always have one.
+                    var poFlagPole = new T.Mesh(new T.CylinderGeometry(0.05, 0.05, 3.2, 6), new T.MeshLambertMaterial({ color: 0xd1d5db }));
+                    poFlagPole.position.set(lmCenterWX + lm.side * 1.8, 1.6, lmCenterWZ + 1.2);
+                    chunkGroup.add(poFlagPole);
+                    var poFlag = new T.Mesh(new T.BoxGeometry(0.7, 0.42, 0.02), new T.MeshLambertMaterial({ color: 0x1e3a5f }));
+                    poFlag.position.set(lmCenterWX + lm.side * 1.8 + lm.side * 0.35, 2.85, lmCenterWZ + 1.2);
+                    poFlag.name = 'rr_chunkFlag';
+                    poFlag._flagSeed = (ci * 19.7 + lm.centerY * 0.73 + 3.14) % 6.28;
+                    poFlag._flagBaseY = 0;
+                    chunkGroup.add(poFlag);
+                    // ── Parked USPS LLV (mail truck) ──
+                    // Iconic small white step-van with red+blue accent stripe.
+                    // Right-hand drive (passenger side) so it parks on the
+                    // road-facing side without obstructing mail delivery —
+                    // matches the real Grumman LLV that every rural Maine
+                    // post office still uses.
+                    var ptBodyMat = new T.MeshLambertMaterial({ color: 0xfafafa });
+                    var ptStripeMat = new T.MeshLambertMaterial({ color: 0x1e40af });
+                    var ptStripeRedMat = new T.MeshLambertMaterial({ color: 0xdc2626 });
+                    var ptWheelMat = new T.MeshLambertMaterial({ color: 0x1a1a1a });
+                    var ptWinMat = new T.MeshLambertMaterial({ color: 0x1e293b });
+                    var ptX = lmCenterWX + lm.side * (lt.size * 0.5);
+                    var ptZ = lmCenterWZ - 1.4;
+                    // Boxy white step-van body
+                    var ptBody = new T.Mesh(new T.BoxGeometry(1.7, 1.2, 0.85), ptBodyMat);
+                    ptBody.position.set(ptX, 0.7, ptZ);
+                    ptBody.castShadow = true;
+                    chunkGroup.add(ptBody);
+                    // Blue accent stripe along the side, with a thin red stripe under it
+                    [-0.43, 0.43].forEach(function(ptStripeZOff) {
+                      var ptStripe = new T.Mesh(new T.BoxGeometry(1.71, 0.10, 0.04), ptStripeMat);
+                      ptStripe.position.set(ptX, 0.95, ptZ + ptStripeZOff);
+                      chunkGroup.add(ptStripe);
+                      var ptStripeRed = new T.Mesh(new T.BoxGeometry(1.71, 0.04, 0.04), ptStripeRedMat);
+                      ptStripeRed.position.set(ptX, 0.85, ptZ + ptStripeZOff);
+                      chunkGroup.add(ptStripeRed);
+                    });
+                    // Windshield — tall narrow up front
+                    var ptWin = new T.Mesh(new T.BoxGeometry(0.06, 0.55, 0.7), ptWinMat);
+                    ptWin.position.set(ptX + 0.86, 1.05, ptZ);
+                    chunkGroup.add(ptWin);
+                    // 4 wheels — small (LLVs are tiny)
+                    [
+                      { x: 0.55, z: -0.42 }, { x: 0.55, z: 0.42 },
+                      { x: -0.55, z: -0.42 }, { x: -0.55, z: 0.42 }
+                    ].forEach(function(ptwp) {
+                      var ptWheel = new T.Mesh(new T.CylinderGeometry(0.16, 0.16, 0.10, 8), ptWheelMat);
+                      ptWheel.rotation.x = Math.PI / 2;
+                      ptWheel.position.set(ptX + ptwp.x, 0.16, ptZ + ptwp.z);
+                      chunkGroup.add(ptWheel);
                     });
                   } else if (lt.id === 'pharmacy') {
                     // Rooftop green plus — iconic pharmacy symbol. Lambert by day,
