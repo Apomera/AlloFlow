@@ -27,9 +27,12 @@ SOURCE_OUT = os.path.join(ROOT, 'glossary_helpers_source.jsx')
 HANDLERS = ['applyAIConfig', 'handleGenerateTermEtymology']
 
 DEPS_VERIFIED = [
-    # State VALUES read by handlers
+    # State VALUES read by handlers. NOTE: 'effectiveLanguage' is intentionally
+    # NOT here — it's a local const declared inside handleGenerate (line ~20507),
+    # NOT a top-level closure var. Including it broke the shim with
+    # ReferenceError. Module body now uses leveledTextLanguage directly.
     'inputText', 'selectedLanguages', 'studentInterests', 'generatedContent',
-    'gradeLevel', 'effectiveLanguage',
+    'gradeLevel', 'leveledTextLanguage',
     # State SETTERS (applyAIConfig)
     'setGradeLevel', 'setSourceTopic', 'setInputText', 'setSelectedLanguages',
     'setLeveledTextLanguage', 'setStudentInterests', 'setLeveledTextCustomInstructions',
@@ -43,6 +46,15 @@ DEPS_VERIFIED = [
 ]
 
 DEPS_UNCERTAIN = []  # All deps verified; nothing uncertain.
+
+# Body rewrites — apply to the extracted source after dumping handler bodies.
+# Maps `bare_ref_in_original` -> `replacement_in_module`.
+BODY_REWRITES = {
+    # effectiveLanguage was a local const inside handleGenerate; in the etymology
+    # context (where this rewrite applies), it equals leveledTextLanguage since
+    # there's no langOverride arg. Use the top-level state directly.
+    'effectiveLanguage': 'leveledTextLanguage',
+}
 
 ALL_DEPS = DEPS_VERIFIED + DEPS_UNCERTAIN
 
@@ -97,10 +109,21 @@ def main():
         new_opener = f'const {hname} = {async_kw + " " if async_kw else ""}({new_args}) => {{\n'
         destructure = f'  const {{ {", ".join(ALL_DEPS)} }} = deps;\n'
         body_inner = body_lines[1:-1]
+        # Apply BODY_REWRITES to substitute closure-local refs that aren't
+        # in the component-body scope where shims sit.
+        rewritten_body = []
+        for ln in body_inner:
+            new_ln = ln
+            for old, new in BODY_REWRITES.items():
+                # Word-boundary replace, preserving non-bare uses (e.g.
+                # `obj.effectiveLanguage` would still match \b but we don't
+                # have any of those in this case).
+                new_ln = re.sub(r'\b' + re.escape(old) + r'\b', new, new_ln)
+            rewritten_body.append(new_ln)
         src_parts.append(new_opener)
         src_parts.append(destructure)
         src_parts.append(f'  try {{ if (window._DEBUG_GLOSSARY) console.log("[GlossaryHelpers] {hname} fired"); }} catch(_) {{}}\n')
-        src_parts.extend(body_inner)
+        src_parts.extend(rewritten_body)
         src_parts.append('};\n\n')
 
     src_parts.append('window.AlloModules = window.AlloModules || {};\n')

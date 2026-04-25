@@ -6,7 +6,7 @@ if (window.AlloModules && window.AlloModules.GlossaryHelpersModule) { console.lo
 // 2026-04-25 using the (args, deps) shim pattern.
 
 const applyAIConfig = (config, deps) => {
-  const { inputText, selectedLanguages, studentInterests, generatedContent, gradeLevel, effectiveLanguage, setGradeLevel, setSourceTopic, setInputText, setSelectedLanguages, setLeveledTextLanguage, setStudentInterests, setLeveledTextCustomInstructions, setSourceTone, setSourceLength, setTextFormat, setDokLevel, setVisualStyle, setIncludeSourceCitations, setFullPackTargetGroup, setDifferentiationRange, setTargetStandards, setVoiceSpeed, setVoiceVolume, setSelectedVoice, setIsGeneratingEtymology, setGeneratedContent, setHistory, callGemini, warnLog, addToast, t } = deps;
+  const { inputText, selectedLanguages, studentInterests, generatedContent, gradeLevel, leveledTextLanguage, setGradeLevel, setSourceTopic, setInputText, setSelectedLanguages, setLeveledTextLanguage, setStudentInterests, setLeveledTextCustomInstructions, setSourceTone, setSourceLength, setTextFormat, setDokLevel, setVisualStyle, setIncludeSourceCitations, setFullPackTargetGroup, setDifferentiationRange, setTargetStandards, setVoiceSpeed, setVoiceVolume, setSelectedVoice, setIsGeneratingEtymology, setGeneratedContent, setHistory, callGemini, warnLog, addToast, t } = deps;
   try { if (window._DEBUG_GLOSSARY) console.log("[GlossaryHelpers] applyAIConfig fired"); } catch(_) {}
     if (!config) return [];
     const changes = [];
@@ -136,7 +136,7 @@ const applyAIConfig = (config, deps) => {
 };
 
 const handleGenerateTermEtymology = async (index, term, deps) => {
-  const { inputText, selectedLanguages, studentInterests, generatedContent, gradeLevel, effectiveLanguage, setGradeLevel, setSourceTopic, setInputText, setSelectedLanguages, setLeveledTextLanguage, setStudentInterests, setLeveledTextCustomInstructions, setSourceTone, setSourceLength, setTextFormat, setDokLevel, setVisualStyle, setIncludeSourceCitations, setFullPackTargetGroup, setDifferentiationRange, setTargetStandards, setVoiceSpeed, setVoiceVolume, setSelectedVoice, setIsGeneratingEtymology, setGeneratedContent, setHistory, callGemini, warnLog, addToast, t } = deps;
+  const { inputText, selectedLanguages, studentInterests, generatedContent, gradeLevel, leveledTextLanguage, setGradeLevel, setSourceTopic, setInputText, setSelectedLanguages, setLeveledTextLanguage, setStudentInterests, setLeveledTextCustomInstructions, setSourceTone, setSourceLength, setTextFormat, setDokLevel, setVisualStyle, setIncludeSourceCitations, setFullPackTargetGroup, setDifferentiationRange, setTargetStandards, setVoiceSpeed, setVoiceVolume, setSelectedVoice, setIsGeneratingEtymology, setGeneratedContent, setHistory, callGemini, warnLog, addToast, t } = deps;
   try { if (window._DEBUG_GLOSSARY) console.log("[GlossaryHelpers] handleGenerateTermEtymology fired"); } catch(_) {}
     if (!generatedContent || generatedContent.type !== 'glossary') return;
     setIsGeneratingEtymology(prev => ({ ...prev, [index]: true }));
@@ -242,7 +242,7 @@ const handleGenerateTermEtymology = async (index, term, deps) => {
             warnLog('Etymology JSON parse failed — falling back to raw prose:', parseErr?.message, 'raw response preview:', (stripped || '').substring(0, 200));
             etymologyByLang['English'] = stripped;
         }
-        const primaryProse = etymologyByLang[effectiveLanguage] || etymologyByLang['English']
+        const primaryProse = etymologyByLang[leveledTextLanguage] || etymologyByLang['English']
             || etymologyByLang[Object.keys(etymologyByLang)[0]] || '';
         if (!primaryProse || primaryProse === 'NONE') {
             addToast(t('glossary.actions.etymology_none') || "No useful etymology for this term.", "info");
