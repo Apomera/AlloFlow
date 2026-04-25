@@ -11323,11 +11323,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               var buildMats = [new T.MeshLambertMaterial({ color: 0xb08c64 }), new T.MeshLambertMaterial({ color: 0xa09078 }), new T.MeshLambertMaterial({ color: 0x8c7a62 })];
               // Tree palette varies by species. Materials reused across all trees
               // in a chunk for batching. Snow biomes desaturate everything.
+              // FALL FOLIAGE: dawn / fog scenarios get Maine's iconic autumn
+              // colors — red maple, orange maple2, yellow birch — since those
+              // moody-light scenarios are most evocative of October mornings.
+              // Pines stay dark green (conifers don't turn).
               var snowy = scn.weather === 'snow';
+              var fallTinted = !snowy && (scn.id === 'dawn' || scn.weather === 'fog');
               var pineLeaf = new T.MeshLambertMaterial({ color: snowy ? 0xb8c4d0 : 0x1f5d2c });
-              var maple    = new T.MeshLambertMaterial({ color: snowy ? 0xc8d0d8 : 0x3a8a3a });
-              var maple2   = new T.MeshLambertMaterial({ color: snowy ? 0xc8d0d8 : 0x6ba84f });
-              var birch    = new T.MeshLambertMaterial({ color: snowy ? 0xd6dde6 : 0xa8c66c });
+              var maple    = new T.MeshLambertMaterial({ color: snowy ? 0xc8d0d8 : (fallTinted ? 0xc62828 : 0x3a8a3a) });
+              var maple2   = new T.MeshLambertMaterial({ color: snowy ? 0xc8d0d8 : (fallTinted ? 0xed7d31 : 0x6ba84f) });
+              var birch    = new T.MeshLambertMaterial({ color: snowy ? 0xd6dde6 : (fallTinted ? 0xfbbf24 : 0xa8c66c) });
               var darkBark = new T.MeshLambertMaterial({ color: 0x4a2e18 });
               var lightBark= new T.MeshLambertMaterial({ color: 0xe8e0d4 });
               for (var cy = 0; cy < CHUNK_SIZE; cy++) {
