@@ -1,6 +1,6 @@
 (function() {
 'use strict';
-if (window.AlloModules && window.AlloModules.AdventureHandlers) { console.log('[CDN] AdventureHandlers already loaded, skipping'); return; }
+if (window.AlloModules && window.AlloModules.AdventureHandlersModule) { console.log('[CDN] AdventureHandlersModule already loaded, skipping'); return; }
 // adventure_handlers_source.jsx - 5 adventure interaction handlers extracted
 // from AlloFlowANTI.txt 2026-04-25 (Phase F of CDN modularization).
 //
@@ -1156,5 +1156,6 @@ window.AlloModules.AdventureHandlers = {
   handleAdventureChoice,
 };
 
+window.AlloModules.AdventureHandlersModule = true;
 console.log('[AdventureHandlers] 5 handlers registered');
 })();

@@ -13,8 +13,9 @@ const source = fs.readFileSync(SOURCE, 'utf-8');
 const outputCode =
 `(function() {
 'use strict';
-if (window.AlloModules && window.AlloModules.AdventureHandlers) { console.log('[CDN] AdventureHandlers already loaded, skipping'); return; }
+if (window.AlloModules && window.AlloModules.AdventureHandlersModule) { console.log('[CDN] AdventureHandlersModule already loaded, skipping'); return; }
 ${source}
+window.AlloModules.AdventureHandlersModule = true;
 console.log('[AdventureHandlers] 5 handlers registered');
 })();
 `;
