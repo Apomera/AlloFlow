@@ -2482,6 +2482,31 @@ const AdventureAmbience = React.memo((props) => {
     if (Ext) return <Ext {...props} />;
     return null;
 });
+// Math problem taskType -> directive prefix.
+// Renderer prepends `<directive>: ` to the question text. Word_problem is
+// intentionally empty (the prose IS the directive). Unknown / missing
+// taskType falls through to '' (no prefix), matching the pre-taskType
+// rendering for backward-compat with old history items.
+const MATH_TASK_DIRECTIVES = {
+    simplify: 'Simplify',
+    solve: 'Solve for x',
+    evaluate: 'Evaluate',
+    factor: 'Factor',
+    graph: 'Graph',
+    compute: 'Calculate',
+    word_problem: '',
+    prove: 'Prove',
+    convert: 'Convert',
+};
+const formatMathQuestion = (problem) => {
+    const baseText = (problem && (problem.question || problem.problem)) || '';
+    const directive = MATH_TASK_DIRECTIVES[problem && problem.taskType];
+    if (!directive) return baseText;
+    // Don't double-prepend if the AI happened to include the directive anyway.
+    const alreadyHas = /^(simplify|solve|evaluate|factor|graph|calculate|find|determine|compute|factor|prove|convert)\b/i.test(baseText.trim());
+    return alreadyHas ? baseText : `${directive}: ${baseText}`;
+};
+
 const sanitizeTruncatedCitations = (text) => {
     const _m = window.AlloModules && window.AlloModules.TextPipelineHelpers;
     if (_m && typeof _m.sanitizeTruncatedCitations === 'function') return _m.sanitizeTruncatedCitations(text);
@@ -4984,48 +5009,48 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b33a5d/allo_data_module.js');
-    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b33a5d/large_file_module.js');
-    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b33a5d/key_concept_map_module.js');
-    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b33a5d/utils_pure_module.js');
-    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b33a5d/gemini_api_module.js');
-    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b33a5d/tts_module.js');
-    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b33a5d/personas_module.js');
-    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b33a5d/export_module.js');
-    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b33a5d/misc_components_module.js');
-    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b33a5d/remediation_audio_module.js');
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b33a5d/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b33a5d/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b33a5d/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b33a5d/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b33a5d/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b33a5d/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b33a5d/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b33a5d/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b33a5d/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b33a5d/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b33a5d/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b33a5d/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b33a5d/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b33a5d/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b33a5d/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b33a5d/student_interaction_module.js');
-    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b33a5d/math_fluency_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b33a5d/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b33a5d/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b33a5d/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b33a5d/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b33a5d/content_engine_module.js');
-    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b33a5d/timeline_revision_module.js');
-    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b33a5d/prompts_library_module.js');
-    loadModule('TextPipelineHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b33a5d/text_pipeline_helpers_module.js');
-    loadModule('AdaptiveControllerModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b33a5d/adaptive_controller_module.js');
-    loadModule('UdlChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b33a5d/udl_chat_module.js');
-    loadModule('AdventureHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b33a5d/adventure_handlers_module.js');
-    loadModule('GlossaryHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b33a5d/glossary_helpers_module.js');
-    loadModule('ViewRenderersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b33a5d/view_renderers_module.js');
-    loadModule('AudioHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b33a5d/audio_helpers_module.js');
-    loadModule('GenerationHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b33a5d/generation_helpers_module.js');
+    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/allo_data_module.js');
+    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/large_file_module.js');
+    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/key_concept_map_module.js');
+    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/utils_pure_module.js');
+    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/gemini_api_module.js');
+    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/tts_module.js');
+    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/personas_module.js');
+    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/export_module.js');
+    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/misc_components_module.js');
+    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/remediation_audio_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/student_interaction_module.js');
+    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/math_fluency_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/content_engine_module.js');
+    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/timeline_revision_module.js');
+    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/prompts_library_module.js');
+    loadModule('TextPipelineHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/text_pipeline_helpers_module.js');
+    loadModule('AdaptiveControllerModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/adaptive_controller_module.js');
+    loadModule('UdlChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/udl_chat_module.js');
+    loadModule('AdventureHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/adventure_handlers_module.js');
+    loadModule('GlossaryHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/glossary_helpers_module.js');
+    loadModule('ViewRenderersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/view_renderers_module.js');
+    loadModule('AudioHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/audio_helpers_module.js');
+    loadModule('GenerationHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/generation_helpers_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     (function() {
       var s = document.createElement('script');
@@ -5036,7 +5061,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       document.head.appendChild(s);
     })();
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9b33a5d/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1b32902/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -11111,33 +11136,35 @@ Return only the corrected version of this exact text:`;
       setIsMathEditingChat(true);
       try {
           const currentProblems = generatedContent.data.problems.map((p, i) =>
-              `Problem ${i+1}: ${p.question} (Answer: ${p.answer})`
+              `Problem ${i+1} [${p.taskType || 'simplify'}]: ${p.question} (Answer: ${p.answer})`
           ).join("\n");
           const prompt = `
               You are an Expert Math Curriculum Designer.
               ${leveledTextLanguage && leveledTextLanguage !== 'English' ? 'IMPORTANT: Generate ALL text content (questions, explanations, steps, real-world applications) in ' + leveledTextLanguage + '. After each text field, include an English translation in parentheses. Keep mathematical expressions and JSON keys in English.' : ''}
               A teacher has an existing problem set and wants to modify it.
-              
-              CURRENT PROBLEMS:
+
+              CURRENT PROBLEMS (the [bracket] tag is the taskType — preserve unless edit specifically changes the action):
               ${currentProblems}
-              
+
               TEACHER'S EDIT REQUEST: "${editInstruction}"
               Grade Level: ${gradeLevel}
               Subject: ${mathSubject}
-              
+
               INSTRUCTIONS:
               Apply the teacher's requested changes to the problem set.
               This may include: making problems easier/harder, adding more problems,
               changing topics, adjusting difficulty, adding specific problem types,
               changing the theme/context, or any other modification.
               Keep problems the teacher didn't mention unchanged unless the edit applies to all.
-              
+              The "question" field must NOT include a leading directive verb (no "Simplify:" / "Solve:") — the renderer prepends it from taskType.
+
               Return ONLY the MODIFIED problem set as JSON:
               {
                 "title": "Modified Problem Set",
                 "problems": [
                   {
-                    "question": "Problem text...",
+                    "question": "Problem text without leading directive...",
+                    "taskType": "simplify | solve | evaluate | factor | graph | compute | word_problem | prove | convert",
                     "expression": "Math expression",
                     "answer": "The answer",
                     "steps": [{ "explanation": "Clear step-by-step explanation", "latex": "Math expression" }],
@@ -11170,9 +11197,19 @@ Return only the corrected version of this exact text:`;
               if (!Array.isArray(steps)) return [];
               return steps.map(s => typeof s === "string" ? { explanation: s, latex: "" } : s);
           };
+          const VALID_TT = new Set(['simplify','solve','evaluate','factor','graph','compute','word_problem','prove','convert']);
+          const normTaskType = (raw, fallback) => {
+              const t = (raw || '').toString().trim().toLowerCase();
+              if (VALID_TT.has(t)) return t;
+              return VALID_TT.has(fallback) ? fallback : 'simplify';
+          };
           const normalizedContent = {
               title: rawContent.title || generatedContent.data.title || "Modified Problems",
-              problems: (rawContent.problems || []).map(p => ({ ...p, steps: normalizeSteps(p.steps) })),
+              problems: (rawContent.problems || []).map((p, i) => ({
+                  ...p,
+                  taskType: normTaskType(p.taskType, generatedContent.data.problems?.[i]?.taskType),
+                  steps: normalizeSteps(p.steps)
+              })),
               graphData: rawContent.graphData || generatedContent.data.graphData || null
           };
           setGeneratedContent(prev => ({ ...prev, data: normalizedContent }));
@@ -20924,7 +20961,7 @@ ${t('export.readme_json_desc')}`;
                        return `${t('export.categories_label')} ${d.categories.map(c => c.label).join(', ')}. ${t('export.items_label')} ${d.items.map(i => i.content).join(', ')}`;
                  case 'math':
                        const probs = d.problems || [d];
-                       return probs.map(p => `${t('export.problem_label')} ${p.question || p.problem}. ${t('export.answer_label')} ${p.answer}`).join('\n');
+                       return probs.map(p => `${t('export.problem_label')} ${formatMathQuestion(p)}. ${t('export.answer_label')} ${p.answer}`).join('\n');
                  case 'brainstorm':
                        if (!Array.isArray(d)) return t('export.no_ideas');
                        return d.map(b => `${t('export.activity_label')} ${b.title} - ${b.description}`).join('\n');
@@ -38626,7 +38663,7 @@ Return only the corrected version of this exact text:`;
                                     <button
                                         aria-label={t('common.copy')}
                                         onClick={() => {
-                                            const text = generatedContent?.data.problems.map((p, i) => `${i+1}. ${p.question}\nAnswer: ${p.answer}`).join('\n\n');
+                                            const text = generatedContent?.data.problems.map((p, i) => `${i+1}. ${formatMathQuestion(p)}\nAnswer: ${p.answer}`).join('\n\n');
                                             copyToClipboard(text);
                                         }}
                                         className="text-indigo-600 hover:text-indigo-600 p-1.5 rounded-md hover:bg-indigo-100 transition-colors"
@@ -38674,7 +38711,7 @@ Return only the corrected version of this exact text:`;
                                             />
                                         ) : (
                                             <div className="text-lg font-medium text-slate-800 font-serif">
-                                                {formatInlineText(problem.question || problem.problem, false)}
+                                                {formatInlineText(formatMathQuestion(problem), false)}
                                             </div>
                                         )}
                                         {problem._verification && <span style={{ fontSize: "11px", marginLeft: "6px", opacity: 0.8 }} title={problem._verification.verified ? "Answer computationally verified" : problem._verification.autoCorrected ? "Answer auto-corrected by evaluator" : ""}>{problem._verification.verified ? "✅" : problem._verification.autoCorrected ? "🔧" : problem._verification.edited ? "✏️" : ""}</span>}
