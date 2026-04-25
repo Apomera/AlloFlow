@@ -200,6 +200,17 @@ def main():
         ]
         new_lines[start-1:end] = shim
 
+    # Inject the loadModule call so a fresh extraction-from-backup re-wires
+    # the runtime loader. (Lesson from Phase F: restoring the backup loses
+    # this line if it's only ever added by hand.)
+    LOADER_LINE = "    loadModule('AdventureHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@MAIN/adventure_handlers_module.js');\n"
+    if not any('AdventureHandlersModule' in ln and 'loadModule' in ln for ln in new_lines):
+        for i, ln in enumerate(new_lines):
+            if "loadModule('UdlChatModule'" in ln:
+                new_lines.insert(i + 1, LOADER_LINE)
+                print(f'[wire] inserted loadModule call after line {i+1}')
+                break
+
     with open(MONOLITH, 'w', encoding='utf-8') as f:
         f.writelines(new_lines)
     print(f'[edit] AlloFlowANTI.txt: {len(lines)} -> {len(new_lines)} lines  (delta {len(new_lines) - len(lines)})')
