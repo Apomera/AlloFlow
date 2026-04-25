@@ -4984,43 +4984,43 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       };
       document.head.appendChild(s);
     })();
-    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c35f964/allo_data_module.js');
-    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c35f964/large_file_module.js');
-    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c35f964/key_concept_map_module.js');
-    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c35f964/utils_pure_module.js');
-    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c35f964/gemini_api_module.js');
-    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c35f964/tts_module.js');
-    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c35f964/personas_module.js');
-    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c35f964/export_module.js');
-    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c35f964/misc_components_module.js');
-    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c35f964/remediation_audio_module.js');
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c35f964/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c35f964/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c35f964/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c35f964/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c35f964/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c35f964/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c35f964/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c35f964/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c35f964/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c35f964/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c35f964/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c35f964/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c35f964/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c35f964/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c35f964/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c35f964/student_interaction_module.js');
-    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c35f964/math_fluency_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c35f964/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c35f964/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c35f964/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c35f964/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c35f964/content_engine_module.js');
-    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c35f964/timeline_revision_module.js');
-    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c35f964/prompts_library_module.js');
-    loadModule('TextPipelineHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c35f964/text_pipeline_helpers_module.js');
-    loadModule('AdaptiveControllerModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c35f964/adaptive_controller_module.js');
-    loadModule('UdlChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c35f964/udl_chat_module.js');
+    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bba8530/allo_data_module.js');
+    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bba8530/large_file_module.js');
+    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bba8530/key_concept_map_module.js');
+    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bba8530/utils_pure_module.js');
+    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bba8530/gemini_api_module.js');
+    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bba8530/tts_module.js');
+    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bba8530/personas_module.js');
+    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bba8530/export_module.js');
+    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bba8530/misc_components_module.js');
+    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bba8530/remediation_audio_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bba8530/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bba8530/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bba8530/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bba8530/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bba8530/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bba8530/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bba8530/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bba8530/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bba8530/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bba8530/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bba8530/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bba8530/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bba8530/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bba8530/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bba8530/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bba8530/student_interaction_module.js');
+    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bba8530/math_fluency_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bba8530/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bba8530/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bba8530/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bba8530/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bba8530/content_engine_module.js');
+    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bba8530/timeline_revision_module.js');
+    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bba8530/prompts_library_module.js');
+    loadModule('TextPipelineHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bba8530/text_pipeline_helpers_module.js');
+    loadModule('AdaptiveControllerModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bba8530/adaptive_controller_module.js');
+    loadModule('UdlChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bba8530/udl_chat_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     (function() {
       var s = document.createElement('script');
@@ -5031,7 +5031,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
       document.head.appendChild(s);
     })();
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c35f964/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bba8530/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -20317,81 +20317,72 @@ Do NOT force all characters into every scene — let the narrative decide natura
   const handleSendUDLMessage = async (manualText = null) => {
     const _m = window.AlloModules && window.AlloModules.UdlChat;
     if (_m && typeof _m.handleSendUDLMessage === "function") return _m.handleSendUDLMessage(manualText, {
-      activeBlueprint,
-      activeView,
-      alloBotRef,
-      currentUiLanguage,
-      guidedFlowState,
-      isAutoFillMode,
-      sourceTopic,
-      udlMessages,
-      udlInput,
-      leveledTextLanguage,
-      persistedLessonDNA,
+      activeBlueprint, activeView, alloBotRef, currentUiLanguage, guidedFlowState,
+      isAutoFillMode, isShowMeMode, isBotVisible, sourceTopic, udlMessages, udlInput,
+      leveledTextLanguage, persistedLessonDNA, history, inputText, standardsInput,
+      targetStandards, dokLevel, sourceLength, sourceTone, quizMcqCount,
+      differentiationRange, outlineType, visualStyle,
+      vocabularyType: typeof vocabularyType !== 'undefined' ? vocabularyType : undefined,
+      frameType: typeof frameType !== 'undefined' ? frameType : undefined,
+      pdfFixResult: typeof pdfFixResult !== 'undefined' ? pdfFixResult : undefined,
+      generatedContent, studentInterests, gradeLevel,
+      gradeLevelInput: typeof gradeLevelInput !== 'undefined' ? gradeLevelInput : undefined,
+      selectedLanguages,
+      leveledTextCustomInstructions: typeof leveledTextCustomInstructions !== 'undefined' ? leveledTextCustomInstructions : undefined,
+      quizCustomInstructions: typeof quizCustomInstructions !== 'undefined' ? quizCustomInstructions : undefined,
+      glossaryCustomInstructions: typeof glossaryCustomInstructions !== 'undefined' ? glossaryCustomInstructions : undefined,
+      frameCustomInstructions: typeof frameCustomInstructions !== 'undefined' ? frameCustomInstructions : undefined,
+      adventureCustomInstructions: typeof adventureCustomInstructions !== 'undefined' ? adventureCustomInstructions : undefined,
+      brainstormCustomInstructions: typeof brainstormCustomInstructions !== 'undefined' ? brainstormCustomInstructions : undefined,
+      faqCustomInstructions: typeof faqCustomInstructions !== 'undefined' ? faqCustomInstructions : undefined,
+      outlineCustomInstructions: typeof outlineCustomInstructions !== 'undefined' ? outlineCustomInstructions : undefined,
+      visualCustomInstructions: typeof visualCustomInstructions !== 'undefined' ? visualCustomInstructions : undefined,
+      lessonCustomAdditions: typeof lessonCustomAdditions !== 'undefined' ? lessonCustomAdditions : undefined,
+      timelineTopic: typeof timelineTopic !== 'undefined' ? timelineTopic : undefined,
+      fillInTheBlank: typeof fillInTheBlank !== 'undefined' ? fillInTheBlank : undefined,
+      resourceCount: typeof resourceCount !== 'undefined' ? resourceCount : undefined,
+      fullPackTargetGroup: typeof fullPackTargetGroup !== 'undefined' ? fullPackTargetGroup : undefined,
+      expandedTools: typeof expandedTools !== 'undefined' ? expandedTools : undefined,
+      dokOptions: typeof dokOptions !== 'undefined' ? dokOptions : undefined,
+      audioBank: typeof audioBank !== 'undefined' ? audioBank : undefined,
+      voiceMap: typeof voiceMap !== 'undefined' ? voiceMap : undefined,
       uiDispatch,
-      setActiveBlueprint,
-      setActiveView,
-      setAdventureInputMode,
-      setDokLevel,
-      setExpandedTools,
-      setFillInTheBlank,
-      setFrameType,
-      setFullPackTargetGroup,
-      setGeneratedContent,
-      setGradeLevel,
-      setGuidedFlowState,
-      setIsAutoFillMode,
-      setIsChatProcessing,
-      setLeveledTextLanguage,
-      setOutlineType,
-      setQuizMcqCount,
-      setResourceCount,
-      setSelectedLanguages,
-      setShowBehaviorLens,
-      setShowEducatorHub,
-      setShowReadThisPage,
-      setShowReportWriter,
-      setShowSelHub,
-      setShowSourceGen,
-      setShowStemLab,
-      setShowStoryForge,
-      setSourceLength,
-      setSourceTone,
-      setSourceTopic,
-      setSpotlightMessage,
-      setStudentInterests,
-      setUdlInput,
-      setUdlMessages,
-      addToast,
-      t,
-      warnLog,
-      callGemini,
+      setActiveBlueprint, setActiveView, setAdventureInputMode, setDokLevel,
+      setExpandedTools, setFillInTheBlank, setFrameType, setFullPackTargetGroup,
+      setGeneratedContent, setGradeLevel, setGuidedFlowState, setIsAutoFillMode,
+      setIsChatProcessing, setLeveledTextLanguage, setOutlineType, setQuizMcqCount,
+      setResourceCount, setSelectedLanguages, setShowBehaviorLens, setShowEducatorHub,
+      setShowReadThisPage, setShowReportWriter, setShowSelHub, setShowSourceGen,
+      setShowStemLab, setShowStoryForge, setSourceLength, setSourceTone,
+      setSourceTopic, setSpotlightMessage, setStudentInterests, setUdlInput, setUdlMessages,
+      setDifferentiationRange: typeof setDifferentiationRange !== 'undefined' ? setDifferentiationRange : (() => {}),
+      setVisualStyle: typeof setVisualStyle !== 'undefined' ? setVisualStyle : (() => {}),
+      setVocabularyType: typeof setVocabularyType !== 'undefined' ? setVocabularyType : (() => {}),
+      setStandardsInput: typeof setStandardsInput !== 'undefined' ? setStandardsInput : (() => {}),
+      setTargetStandards: typeof setTargetStandards !== 'undefined' ? setTargetStandards : (() => {}),
+      setLessonCustomAdditions: typeof setLessonCustomAdditions !== 'undefined' ? setLessonCustomAdditions : (() => {}),
+      setTimelineTopic: typeof setTimelineTopic !== 'undefined' ? setTimelineTopic : (() => {}),
+      addToast, t, warnLog, callGemini,
+      callGeminiVision: typeof callGeminiVision !== 'undefined' ? callGeminiVision : null,
       cleanJson,
-      applyAIConfig,
-      applyWorkflowModification,
-      autoConfigureSettings,
-      captureIntentSnapshot,
-      detectWorkflowIntent,
-      flyToElement,
-      generateDynamicBridge,
-      generateStandardChatResponse,
-      getReadableContent,
-      getStageElementId,
-      getWorkflowContext,
-      handleExecuteBlueprint,
-      handleGenerate,
-      handleGenerateFullPack,
-      handleGenerateLessonPlan,
-      handleGenerateSource,
-      handleSettingsIntent,
-      handleShowUiIntent,
-      handleStartAdventure,
-      handleUrlFetch,
-      modifyBlueprintWithAI,
-      parseUserIntent,
-      performHighlight,
-      restoreIntentSnapshot,
+      applyAIConfig, applyWorkflowModification, autoConfigureSettings,
+      captureIntentSnapshot, detectWorkflowIntent, flyToElement,
+      generateDynamicBridge, generateStandardChatResponse, getReadableContent,
+      getStageElementId, getWorkflowContext, handleExecuteBlueprint,
+      handleGenerate, handleGenerateFullPack, handleGenerateLessonPlan,
+      handleGenerateSource, handleSettingsIntent, handleShowUiIntent,
+      handleStartAdventure, handleUrlFetch, modifyBlueprintWithAI,
+      parseUserIntent, performHighlight, restoreIntentSnapshot,
       formatLessonDNA,
+      handleScoreUpdate: typeof handleScoreUpdate !== 'undefined' ? handleScoreUpdate : null,
+      getDifferentiationGrades: typeof getDifferentiationGrades !== 'undefined' ? getDifferentiationGrades : null,
+      extractSourceTextForProcessing: typeof extractSourceTextForProcessing !== 'undefined' ? extractSourceTextForProcessing : null,
+      processGrounding: typeof processGrounding !== 'undefined' ? processGrounding : null,
+      sanitizeTruncatedCitations: typeof sanitizeTruncatedCitations !== 'undefined' ? sanitizeTruncatedCitations : null,
+      normalizeCitationPlacement: typeof normalizeCitationPlacement !== 'undefined' ? normalizeCitationPlacement : null,
+      fixCitationPlacement: typeof fixCitationPlacement !== 'undefined' ? fixCitationPlacement : null,
+      generateBibliographyString: typeof generateBibliographyString !== 'undefined' ? generateBibliographyString : null,
+      storageDB: typeof storageDB !== 'undefined' ? storageDB : null,
       });
     throw new Error("[handleSendUDLMessage] UdlChat module not loaded - reload the page");
   };
