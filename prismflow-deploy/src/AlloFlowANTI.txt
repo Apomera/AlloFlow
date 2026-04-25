@@ -5952,48 +5952,53 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     })();
     // AlloData: pure-data bundle (phoneme guide, prompts, i18n strings, shop items, timeline modes).
     // Registers window.AlloModules.AlloData and calls _upgradeAlloData() to populate monolith shim.
-    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/allo_data_module.js');
+    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/allo_data_module.js');
     // LargeFileModule: chunked audio/video transcription (LargeFileHandler + LargeFileTranscriptionModal).
-    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/large_file_module.js');
+    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/large_file_module.js');
     // KeyConceptMapModule: SVG-overlay Bezier concept map view (used by renderOutlineContent).
-    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/key_concept_map_module.js');
+    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/key_concept_map_module.js');
     // UtilsPure: 14 pure utilities (JSON, storage, network, image) — populates monolith shim via _upgradeUtilsPure().
-    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/utils_pure_module.js');
+    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/utils_pure_module.js');
     // GeminiAPI: callGemini + callGeminiVision + callGeminiImageEdit — populates monolith shim via _upgradeGeminiAPI().
-    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/gemini_api_module.js');
+    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/gemini_api_module.js');
     // TTS: fetchTTSBytes + callTTS + callTTSDirect — populates monolith shim via _upgradeTTS().
-    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/tts_module.js');
+    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/tts_module.js');
     // Personas: 16 handlers for historical character interview subsystem — populates monolith shim via _upgradePersonas().
-    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/personas_module.js');
+    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/personas_module.js');
     // Export: 8 export-pipeline handlers (QTI/IMS/PPTX/flashcards/storybook/JSON) — populates monolith shim via _upgradeExport().
-    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/export_module.js');
+    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/export_module.js');
     // MiscComponents: WordSoundsReviewPanel + AnimatedNumber + ClozeInput (pure-props components).
-    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/misc_components_module.js');
+    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/misc_components_module.js');
     // RemediationAudio: Web Audio feedback beeps (chunk good/bad/medium, session complete, etc).
-    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/remediation_audio_module.js');
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/story_stage_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/student_interaction_module.js');
-    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/math_fluency_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/content_engine_module.js');
-    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/timeline_revision_module.js');
+    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/remediation_audio_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/story_stage_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/student_interaction_module.js');
+    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/math_fluency_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/content_engine_module.js');
+    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/timeline_revision_module.js');
+    // PromptsLibrary — pure prompt builders (lesson plan, parent guide, study guide).
+    // Module self-instantiates and registers window.AlloModules.PromptsLibrary
+    // at load time using window.STEM_TOOL_REGISTRY. If loading fails, the
+    // inline shims (below) fall back to byte-identical inline implementations.
+    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/prompts_library_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     // ── Load math.js for graphCalc (lazy, non-blocking) ──
     (function() {
@@ -6009,7 +6014,7 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
     // They load AFTER stem_lab_module.js to ensure the registry API exists.
     // If they fail to load, inline IIFEs in the monolith serve as fallback.
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@8944acc/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@da12ee3/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -19215,7 +19220,15 @@ ${t('export.readme_json_desc')}`;
       }
       return context;
   };
+  // Phase A CDN extraction: prompt builders now live in
+  // prompts_library_module.js (loaded via loadModule('PromptsLibrary', ...)).
+  // These shims preserve the old positional-arg signatures so existing
+  // callsites work unchanged; they pass closure-captured gradeLevel +
+  // sourceTopic into the module's options-object API.
   const buildLessonPlanPrompt = (context, assetManifest, language, customAdditions) => {
+      const _pl = window.AlloModules && window.AlloModules.PromptsLibrary;
+      if (_pl) return _pl.buildLessonPlanPrompt({ context, assetManifest, language, customAdditions, gradeLevel, sourceTopic });
+      // Fallback inline body if PromptsLibrary failed to load.
       const hasCustom = customAdditions && customAdditions.trim().length > 0;
       const extensionInstruction = hasCustom
         ? `USER CUSTOM REQUESTS: "${customAdditions}"\nTASK: Generate 3 specific, actionable lesson extensions/activities STRICTLY based on these requests. Do not generate unrelated generic ideas. If the request is singular, break it down into 3 distinct variations or steps.`
@@ -19302,6 +19315,9 @@ ${t('export.readme_json_desc')}`;
       `;
   };
   const buildParentGuidePrompt = (context, language) => {
+      const _pl = window.AlloModules && window.AlloModules.PromptsLibrary;
+      if (_pl) return _pl.buildParentGuidePrompt({ context, language, gradeLevel, sourceTopic });
+      // Fallback inline body if PromptsLibrary failed to load.
       return `
         You are a friendly, encouraging Family Tutor helping a parent support their child's learning at home.
         Create a simple "Family Learning Guide" based on the following context.
@@ -19344,6 +19360,9 @@ ${t('export.readme_json_desc')}`;
       `;
   };
   const buildStudyGuidePrompt = (context, language) => {
+      const _pl = window.AlloModules && window.AlloModules.PromptsLibrary;
+      if (_pl) return _pl.buildStudyGuidePrompt({ context, language, gradeLevel, sourceTopic });
+      // Fallback inline body if PromptsLibrary failed to load.
       return `
         You are a supportive Study Tutor creating a personal study guide for a student.
         ${context}
