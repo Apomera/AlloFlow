@@ -15,6 +15,15 @@ window.SelHub = window.SelHub || {
 (function() {
   'use strict';
 
+  // ── Live region (WCAG 4.1.3) ──
+  (function() {
+    if (document.getElementById('allo-live-restorativecircle')) return;
+    var lr = document.createElement('div');
+    lr.id = 'allo-live-restorativecircle'; lr.setAttribute('aria-live', 'polite'); lr.setAttribute('aria-atomic', 'true'); lr.setAttribute('role', 'status'); lr.className = 'sr-only';
+    lr.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(lr);
+  })();
+
   // ── Audio + WCAG (auto-injected) ──
   var _restorAC = null;
   function getRestorAC() { if (!_restorAC) { try { _restorAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_restorAC && _restorAC.state==="suspended") { try { _restorAC.resume(); } catch(e) {} } return _restorAC; }

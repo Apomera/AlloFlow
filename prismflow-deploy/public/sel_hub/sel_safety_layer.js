@@ -66,7 +66,7 @@
               : 'If what you share indicates serious danger \u2014 to yourself or others \u2014 a trusted adult at your school will be notified and may access what you wrote. This applies to situations involving physical harm, weapons, self-harm, or abuse.'
           )
         ),
-        h('p', { style: { fontSize: '13px', lineHeight: 1.7, color: '#6b7280', margin: 0 } },
+        h('p', { style: { fontSize: '13px', lineHeight: 1.7, color: '#475569', margin: 0 } },
           isYoung
             ? 'This is the same rule school counselors follow. It exists because your safety matters more than anything else.'
             : 'This follows the same confidentiality standard as school counseling. We tell you now so you can make an informed choice about what to share.'

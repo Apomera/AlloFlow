@@ -403,7 +403,7 @@ window.SelHub = window.SelHub || {
             ),
             // Show crisis resources if last message was flagged Tier 3
             (d._lastTier >= 3 && window.SelHub.renderCrisisResources) && window.SelHub.renderCrisisResources(h, band),
-            coachHist.length > 0 && h('div', { role: 'log', 'aria-label': 'Safe space conversation', 'aria-live': 'polite', style: { maxHeight: '280px', overflowY: 'auto', marginBottom: '12px', display: 'flex', flexDirection: 'column', gap: '8px' } },
+            coachHist.length > 0 && h('div', { role: 'log', 'aria-label': 'Safe space conversation', 'aria-live': 'polite', 'aria-busy': coachLoad ? 'true' : 'false', style: { maxHeight: '280px', overflowY: 'auto', marginBottom: '12px', display: 'flex', flexDirection: 'column', gap: '8px' } },
               coachHist.map(function(m, i) {
                 var u = m.role === 'user';
                 return h('div', { key: i, style: { display: 'flex', justifyContent: u ? 'flex-end' : 'flex-start' } },

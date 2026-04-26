@@ -738,7 +738,7 @@ window.SelHub = window.SelHub || {
             h('p', { style: { fontSize: '13px', color: '#94a3b8', margin: 0 } }, 'Share a struggle or a fixed mindset thought. Your coach will help you reframe it. Conversations are monitored for your safety.')
           ),
           // Chat history
-          coachHistory.length > 0 && h('div', { role: 'log', 'aria-label': 'Conversation with Growth Coach', 'aria-live': 'polite', style: { maxHeight: '300px', overflowY: 'auto', marginBottom: '12px', display: 'flex', flexDirection: 'column', gap: '8px' } },
+          coachHistory.length > 0 && h('div', { role: 'log', 'aria-label': 'Conversation with Growth Coach', 'aria-live': 'polite', 'aria-busy': coachLoading ? 'true' : 'false', style: { maxHeight: '300px', overflowY: 'auto', marginBottom: '12px', display: 'flex', flexDirection: 'column', gap: '8px' } },
             coachHistory.map(function(msg, i) {
               var isUser = msg.role === 'user';
               return h('div', { key: i, style: { display: 'flex', justifyContent: isUser ? 'flex-end' : 'flex-start' } },

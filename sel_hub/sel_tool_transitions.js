@@ -591,7 +591,7 @@ window.SelHub = window.SelHub || {
             phaseContext && h('span', null, phaseContext.emoji + ' Currently in: ' + phaseContext.phase + ' phase')
           ),
           // Chat
-          coachHistory.length > 0 && h('div', { role: 'log', 'aria-label': 'Conversation with transition support coach', 'aria-live': 'polite', style: { maxHeight: '300px', overflowY: 'auto', marginBottom: '12px', display: 'flex', flexDirection: 'column', gap: '8px' } },
+          coachHistory.length > 0 && h('div', { role: 'log', 'aria-label': 'Conversation with transition support coach', 'aria-live': 'polite', 'aria-busy': coachLoading ? 'true' : 'false', style: { maxHeight: '300px', overflowY: 'auto', marginBottom: '12px', display: 'flex', flexDirection: 'column', gap: '8px' } },
             coachHistory.map(function(msg, i) {
               var isUser = msg.role === 'user';
               return h('div', { key: i, style: { display: 'flex', justifyContent: isUser ? 'flex-end' : 'flex-start' } },

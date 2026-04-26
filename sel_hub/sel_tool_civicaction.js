@@ -15,6 +15,15 @@ window.SelHub = window.SelHub || {
 (function() {
   'use strict';
 
+  // ── Live region (WCAG 4.1.3) ──
+  (function() {
+    if (document.getElementById('allo-live-civicaction')) return;
+    var lr = document.createElement('div');
+    lr.id = 'allo-live-civicaction'; lr.setAttribute('aria-live', 'polite'); lr.setAttribute('aria-atomic', 'true'); lr.setAttribute('role', 'status'); lr.className = 'sr-only';
+    lr.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(lr);
+  })();
+
   // ── Audio + WCAG (auto-injected) ──
   var _civicAC = null;
   function getCivicAC() { if (!_civicAC) { try { _civicAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_civicAC && _civicAC.state==="suspended") { try { _civicAC.resume(); } catch(e) {} } return _civicAC; }
@@ -1783,7 +1792,7 @@ window.SelHub = window.SelHub || {
                     'aria-label': s.label + (sectionDone ? ' (complete)' : ''),
                     onClick: function() { updMulti({ rightsSection: s.id, rightsIdx: 0, rightsScenarioAnswer: '' }); },
                     className: 'flex-1 px-2 py-2 rounded-lg text-[10px] font-bold transition-all whitespace-nowrap ' +
-                      (isActive ? 'bg-white text-indigo-700 shadow-sm' : sectionDone ? 'text-emerald-600/70' : 'text-slate-500 hover:text-slate-700')
+                      (isActive ? 'bg-white text-indigo-700 shadow-sm' : sectionDone ? 'text-emerald-700' : 'text-slate-600 hover:text-slate-800')
                   }, s.icon + ' ' + s.label);
                 })
               ),
@@ -1828,14 +1837,14 @@ window.SelHub = window.SelHub || {
                   h('span', { className: 'text-3xl flex-shrink-0' }, item.icon),
                   h('div', { className: 'flex-1' },
                     h('h4', { className: 'text-sm font-bold text-indigo-700' }, item.title + (item.year ? ' (' + item.year + ')' : '')),
-                    item.summary && h('p', { className: 'text-xs text-slate-500 italic mt-0.5' }, item.summary)
+                    item.summary && h('p', { className: 'text-xs text-slate-600 italic mt-0.5' }, item.summary)
                   )
                 ),
                 h('div', { className: 'bg-indigo-50 rounded-xl p-4 border border-indigo-200' },
                   h('p', { className: 'text-sm text-slate-700 leading-relaxed' }, item.body)
                 ),
-                item.primarySource && h('div', { className: 'text-[10px] text-slate-500 px-1' },
-                  h('span', { className: 'font-bold uppercase tracking-widest text-slate-400 mr-1' }, 'Primary source:'),
+                item.primarySource && h('div', { className: 'text-[10px] text-slate-700 px-1' },
+                  h('span', { className: 'font-bold uppercase tracking-widest text-slate-600 mr-1' }, 'Primary source:'),
                   item.primarySource
                 ),
                 callTTS && h('button', {

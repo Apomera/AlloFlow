@@ -20,6 +20,14 @@ window.SelHub = window.SelHub || {
 
 (function() {
   'use strict';
+  // Reduced-motion CSS (WCAG 2.3.3) — guards Pomodoro animations and transitions.
+  (function() {
+    if (document.getElementById('allo-execfunction-a11y-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-execfunction-a11y-css';
+    st.textContent = '@media (prefers-reduced-motion: reduce) { .selh-execfunction *, .selh-execfunction *::before, .selh-execfunction *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    document.head.appendChild(st);
+  })();
   (function() {
     if (document.getElementById('allo-live-execfunction')) return;
     var lr = document.createElement('div');
@@ -334,7 +342,7 @@ window.SelHub = window.SelHub || {
                             upd('mapAnswers', nm);
                             if (soundOn) sfxClick();
                           },
-                          style: { flex: 1, padding: '6px 4px', fontSize: '11px', fontWeight: 700, borderRadius: '6px', cursor: 'pointer', border: sel ? '2px solid ' + CYAN : '1px solid #e5e7eb', background: sel ? CYAN_LIGHT : '#fff', color: sel ? CYAN_DARK : '#6b7280' }
+                          style: { flex: 1, padding: '6px 4px', fontSize: '11px', fontWeight: 700, borderRadius: '6px', cursor: 'pointer', border: sel ? '2px solid ' + CYAN : '1px solid #e5e7eb', background: sel ? CYAN_LIGHT : '#fff', color: sel ? CYAN_DARK : '#94a3b8' }
                         }, lbl);
                       })
                     )
@@ -358,7 +366,7 @@ window.SelHub = window.SelHub || {
                 h('span', { style: { fontSize: '20px' } }, dom.icon),
                 h('div', { style: { flex: 1 } },
                   h('div', { style: { fontSize: '13px', fontWeight: 800, color: CYAN_DARK } }, (ri + 1) + '. ' + dom.label + ' (score: ' + s + '/6)'),
-                  h('div', { style: { fontSize: '11px', color: '#6b7280', marginTop: '2px' } }, dom.pitch)
+                  h('div', { style: { fontSize: '11px', color: '#94a3b8', marginTop: '2px' } }, dom.pitch)
                 ),
                 h('span', { style: { fontSize: '14px', color: CYAN } }, '→')
               );
@@ -389,7 +397,7 @@ window.SelHub = window.SelHub || {
                 key: s.id,
                 'aria-label': s.title,
                 onClick: function() { upd('initIdx', i); if (soundOn) sfxClick(); },
-                style: { flexShrink: 0, padding: '8px 12px', borderRadius: '8px', border: sel ? '2px solid ' + CYAN : '1px solid #cffafe', background: sel ? CYAN_LIGHT : '#fff', color: sel ? CYAN_DARK : '#6b7280', fontSize: '11px', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }
+                style: { flexShrink: 0, padding: '8px 12px', borderRadius: '8px', border: sel ? '2px solid ' + CYAN : '1px solid #cffafe', background: sel ? CYAN_LIGHT : '#fff', color: sel ? CYAN_DARK : '#94a3b8', fontSize: '11px', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }
               }, s.icon + ' ' + s.title);
             })
           ),
@@ -484,7 +492,7 @@ window.SelHub = window.SelHub || {
                 key: s.id,
                 'aria-label': s.title,
                 onClick: function() { upd('holdIdx', i); if (soundOn) sfxClick(); },
-                style: { flexShrink: 0, padding: '8px 12px', borderRadius: '8px', border: sel ? '2px solid ' + CYAN : '1px solid #cffafe', background: sel ? CYAN_LIGHT : '#fff', color: sel ? CYAN_DARK : '#6b7280', fontSize: '11px', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }
+                style: { flexShrink: 0, padding: '8px 12px', borderRadius: '8px', border: sel ? '2px solid ' + CYAN : '1px solid #cffafe', background: sel ? CYAN_LIGHT : '#fff', color: sel ? CYAN_DARK : '#94a3b8', fontSize: '11px', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }
               }, s.icon + ' ' + s.title);
             })
           ),
@@ -521,7 +529,7 @@ window.SelHub = window.SelHub || {
               h('button', {
                 onClick: function() { upd('brainDump', ''); },
                 disabled: !brainDump,
-                style: { padding: '8px 12px', background: 'transparent', color: '#6b7280', border: '1px solid #e5e7eb', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: brainDump ? 'pointer' : 'not-allowed' }
+                style: { padding: '8px 12px', background: 'transparent', color: '#94a3b8', border: '1px solid #e5e7eb', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: brainDump ? 'pointer' : 'not-allowed' }
               }, 'Clear')
             ),
             brainDumps.length > 0 && h('div', { style: { marginTop: '12px' } },
@@ -605,12 +613,12 @@ window.SelHub = window.SelHub || {
           // Schedule output
           schedule.length > 0 && h('div', { style: { background: 'linear-gradient(135deg, #ecfeff, #cffafe)', border: '2px solid ' + CYAN, borderRadius: '14px', padding: '14px' } },
             h('h4', { style: { fontSize: '13px', fontWeight: 800, color: CYAN_DARK, margin: '0 0 10px' } }, '🗓️ Your schedule'),
-            h('p', { style: { fontSize: '11px', color: '#6b7280', fontStyle: 'italic', margin: '0 0 10px' } }, 'Goal: ' + (planGoal || '(name your goal above)')),
+            h('p', { style: { fontSize: '11px', color: '#94a3b8', fontStyle: 'italic', margin: '0 0 10px' } }, 'Goal: ' + (planGoal || '(name your goal above)')),
             schedule.map(function(s, si) {
               var isLast = si === schedule.length - 1;
               var dt = s.due.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
               return h('div', { key: si, style: { display: 'flex', gap: '10px', alignItems: 'center', padding: '8px 10px', background: '#fff', borderRadius: '8px', marginBottom: '6px', border: isLast ? '2px solid ' + CYAN : '1px solid #e5e7eb' } },
-                h('div', { style: { fontSize: '11px', fontWeight: 800, color: isLast ? CYAN : '#6b7280', flexShrink: 0, minWidth: '90px' } }, dt + (isLast ? ' (deadline)' : '')),
+                h('div', { style: { fontSize: '11px', fontWeight: 800, color: isLast ? CYAN : '#94a3b8', flexShrink: 0, minWidth: '90px' } }, dt + (isLast ? ' (deadline)' : '')),
                 h('div', { style: { fontSize: '13px', color: '#374151' } }, s.chunk)
               );
             }),
@@ -659,7 +667,7 @@ window.SelHub = window.SelHub || {
                   min: '1', max: '600',
                   style: { width: '80px', border: '1px solid #cffafe', borderRadius: '6px', padding: '8px', fontSize: '14px', textAlign: 'center', boxSizing: 'border-box' }
                 }),
-                h('span', { style: { fontSize: '13px', color: '#6b7280' } }, 'minutes'),
+                h('span', { style: { fontSize: '13px', color: '#94a3b8' } }, 'minutes'),
                 h('button', {
                   onClick: function() {
                     if (!timeGuess) return;
@@ -732,6 +740,7 @@ window.SelHub = window.SelHub || {
             ),
             coachHistory.length > 0 && h('div', {
               role: 'log', 'aria-label': 'Coach conversation', 'aria-live': 'polite',
+              'aria-busy': coachLoading ? 'true' : 'false',
               style: { maxHeight: '300px', overflowY: 'auto', marginBottom: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }
             },
               coachHistory.map(function(msg, i) {
@@ -805,7 +814,7 @@ window.SelHub = window.SelHub || {
       }
 
       var content = mapContent || startContent || holdContent || planContent || timeContent || coachContent;
-      return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%' } },
+      return h('div', { className: 'selh-execfunction', style: { display: 'flex', flexDirection: 'column', height: '100%' } },
         tabBar,
         h('div', { style: { flex: 1, overflow: 'auto' } }, content)
       );

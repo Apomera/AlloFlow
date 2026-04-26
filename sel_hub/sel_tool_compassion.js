@@ -393,7 +393,7 @@ window.SelHub = window.SelHub || {
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: PD, margin: '0 0 4px' } }, 'Compassion Coach'),
             h('p', { style: { fontSize: '13px', color: '#94a3b8', margin: 0 } }, 'Share what your inner critic is saying. This space is monitored for your safety.')
           ),
-          coachHistory.length > 0 && h('div', { role: 'log', 'aria-label': 'Compassion coach conversation', 'aria-live': 'polite', style: { maxHeight: '300px', overflowY: 'auto', marginBottom: '12px', display: 'flex', flexDirection: 'column', gap: '8px' } },
+          coachHistory.length > 0 && h('div', { role: 'log', 'aria-label': 'Compassion coach conversation', 'aria-live': 'polite', 'aria-busy': coachLoading ? 'true' : 'false', style: { maxHeight: '300px', overflowY: 'auto', marginBottom: '12px', display: 'flex', flexDirection: 'column', gap: '8px' } },
             coachHistory.map(function(msg, i) {
               var isUser = msg.role === 'user';
               return h('div', { key: i, style: { display: 'flex', justifyContent: isUser ? 'flex-end' : 'flex-start' } },
@@ -499,7 +499,7 @@ window.SelHub = window.SelHub || {
                       h('h4', { style: { fontSize: '15px', fontWeight: 800, color: PD, margin: 0 } }, p.title),
                       done && h('span', { style: { fontSize: '10px', fontWeight: 700, color: PURPLE, background: PL, padding: '2px 8px', borderRadius: '10px' } }, '\u2713 done')
                     ),
-                    h('p', { style: { fontSize: '12px', color: '#6b7280', margin: '4px 0 0' } }, p.steps.length + ' steps \u00b7 ' + p.duration + ' \u00b7 ' + p.source)
+                    h('p', { style: { fontSize: '12px', color: '#475569', margin: '4px 0 0' } }, p.steps.length + ' steps \u00b7 ' + p.duration + ' \u00b7 ' + p.source)
                   )
                 );
               })
