@@ -34,8 +34,16 @@
   // ── Shared hooks & utilities from host app ──
   var _hooks = window.__alloHooks || {};
   var useFocusTrap = _hooks.useFocusTrap || function() {};
-  var fetchAndCleanUrl = (window.__alloUtils || {}).fetchAndCleanUrl || function() { return Promise.resolve(''); };
-  var isGoogleRedirect = (window.__alloUtils || {}).isGoogleRedirect || function() { return false; };
+  var fetchAndCleanUrl = function() {
+    var u = window.AlloModules && window.AlloModules.UtilsPure;
+    var fn = (u && u.fetchAndCleanUrl) || (window.__alloUtils && window.__alloUtils.fetchAndCleanUrl);
+    return fn ? fn.apply(this, arguments) : Promise.resolve(null);
+  };
+  var isGoogleRedirect = function() {
+    var u = window.AlloModules && window.AlloModules.UtilsPure;
+    var fn = (u && u.isGoogleRedirect) || (window.__alloUtils && window.__alloUtils.isGoogleRedirect);
+    return fn ? fn.apply(this, arguments) : false;
+  };
 
   // ── Lucide icons from host app ──
   var _icons = window.AlloIcons || {};
