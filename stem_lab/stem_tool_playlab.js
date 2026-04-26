@@ -440,7 +440,12 @@ window.StemLab = window.StemLab || {
             showRoutes: true,
             showOpen: true,
             playsViewed: { slant: true },
-            coveragesViewed: { cover2: true }
+            coveragesViewed: { cover2: true },
+            // Custom-play overrides — when the student drags players,
+            // their new (x, y) positions land here keyed by player id.
+            // null entry = follow the play's preset position. Cleared
+            // when a different play preset is loaded.
+            customPositions: {}
           }});
         });
         return h('div', { className: 'p-8 text-center text-slate-600' }, 'Loading PlayLab…');
@@ -455,20 +460,40 @@ window.StemLab = window.StemLab || {
 
       var play = PLAYS.find(function(p) { return p.id === d.playId; }) || PLAYS[0];
       var coverage = COVERAGES.find(function(c) { return c.id === d.coverageId; }) || COVERAGES[0];
-      var formation = applyPlayToFormation(defaultFormation(d.losX), play);
+      // Build the base formation, apply any custom drag overrides FIRST,
+      // then run the play's routes against the (possibly moved) snap
+      // positions — so a dragged WR's route still starts from where they
+      // are now.
+      var rawFormation = defaultFormation(d.losX).map(function(p) {
+        var override = (d.customPositions || {})[p.id];
+        if (override) return Object.assign({}, p, { x: override.x, y: override.y });
+        return p;
+      });
+      var formation = applyPlayToFormation(rawFormation, play);
       var zones = buildZones(d.coverageId, d.losX);
       var analysis = openReceiverAnalysis(formation, zones);
       var openReceiverId = analysis.length ? analysis[0].id : null;
 
       function loadPlay(pid) {
         var seen = Object.assign({}, d.playsViewed || {}); seen[pid] = true;
+        // Loading a new preset wipes any custom drag positions — students
+        // get a clean slate for the new play. Their previous edits are
+        // gone unless they save first (future feature).
         setLabToolData(function(prev) {
           return Object.assign({}, prev, { playlab: Object.assign({}, prev.playlab, {
-            playId: pid, playsViewed: seen
+            playId: pid, playsViewed: seen, customPositions: {}
           })});
         });
         var p = PLAYS.find(function(P) { return P.id === pid; });
         plAnnounce('Loaded play: ' + (p ? p.label : pid) + '. ' + (p ? p.teach : ''));
+      }
+      function resetPositions() {
+        setLabToolData(function(prev) {
+          return Object.assign({}, prev, { playlab: Object.assign({}, prev.playlab, {
+            customPositions: {}
+          })});
+        });
+        plAnnounce('Player positions reset to preset.');
       }
       function loadCoverage(cid) {
         var seen = Object.assign({}, d.coveragesViewed || {}); seen[cid] = true;
@@ -479,6 +504,68 @@ window.StemLab = window.StemLab || {
         });
         var cv = COVERAGES.find(function(c) { return c.id === cid; });
         plAnnounce('Defense changed to: ' + (cv ? cv.label : cid) + '. ' + (cv ? cv.teach : ''));
+      }
+
+      // ── Drag-to-place player editing ──
+      // dragRef tracks the in-flight drag (playerId + last canvas coords).
+      // mousedown picks the closest player within a generous radius;
+      // mousemove updates customPositions (snapped to whole-yard grid);
+      // mouseup ends the drag. Live region announces the start + end so
+      // SR users know what changed and can read the new yard line.
+      var dragRef = React.useRef({ playerId: null });
+      function canvasYardCoords(evt) {
+        var canvas = canvasRef.current; if (!canvas) return null;
+        var rect = canvas.getBoundingClientRect();
+        // Match the marginL/marginR/marginT/marginB used by the renderer
+        var marginL = 30, marginR = 30, marginT = 18, marginB = 32;
+        // Canvas may be CSS-resized vs its native 720x360 — scale by the
+        // actual displayed size, not the buffer size.
+        var nx = (evt.clientX - rect.left) * (canvas.width / rect.width);
+        var ny = (evt.clientY - rect.top) * (canvas.height / rect.height);
+        var fieldPxW = canvas.width - marginL - marginR;
+        var fieldPxH = canvas.height - marginT - marginB;
+        var yardX = (nx - marginL) / fieldPxW * FIELD_LENGTH;
+        var yardY = (ny - marginT) / fieldPxH * FIELD_WIDTH;
+        return { yardX: yardX, yardY: yardY };
+      }
+      function nearestPlayer(yardX, yardY, players) {
+        var best = null, bestD = Infinity;
+        players.forEach(function(p) {
+          var dx = p.x - yardX, dy = p.y - yardY;
+          var dist = Math.sqrt(dx * dx + dy * dy);
+          // Within 4 yards = a generous click target since players render as 6px circles
+          if (dist < 4 && dist < bestD) { bestD = dist; best = p; }
+        });
+        return best;
+      }
+      function handleMouseDown(evt) {
+        var c = canvasYardCoords(evt); if (!c) return;
+        var p = nearestPlayer(c.yardX, c.yardY, formation);
+        if (!p) return;
+        dragRef.current = { playerId: p.id };
+        plAnnounce('Dragging ' + p.id + '. Move to reposition.');
+      }
+      function handleMouseMove(evt) {
+        if (!dragRef.current || !dragRef.current.playerId) return;
+        var c = canvasYardCoords(evt); if (!c) return;
+        // Snap to whole-yard grid + clamp to inside the field of play
+        var snappedX = Math.max(0.5, Math.min(FIELD_LENGTH - 0.5, Math.round(c.yardX)));
+        var snappedY = Math.max(0.5, Math.min(FIELD_WIDTH - 0.5, Math.round(c.yardY)));
+        var pid = dragRef.current.playerId;
+        setLabToolData(function(prev) {
+          var existing = Object.assign({}, prev.playlab.customPositions || {});
+          existing[pid] = { x: snappedX, y: snappedY };
+          return Object.assign({}, prev, { playlab: Object.assign({}, prev.playlab, {
+            customPositions: existing
+          })});
+        });
+      }
+      function handleMouseUp() {
+        var pid = dragRef.current && dragRef.current.playerId;
+        if (pid) {
+          plAnnounce('Released ' + pid + '. Position saved.');
+        }
+        dragRef.current = { playerId: null };
       }
 
       // ── Field canvas ──
@@ -670,11 +757,16 @@ window.StemLab = window.StemLab || {
               ref: canvasRef, width: 720, height: 360,
               role: 'img', tabIndex: 0, 'data-pl-focusable': 'true',
               'aria-label': 'Football field, ' + play.label + ' against ' + coverage.label
-                + (openReceiverId ? '. Most open receiver: ' + openReceiverId : ''),
-              style: { width: '100%', maxWidth: 720, height: 'auto', borderRadius: 10, border: '1px solid #334155', background: '#0f172a' }
+                + (openReceiverId ? '. Most open receiver: ' + openReceiverId : '')
+                + '. Click and drag a player to reposition them.',
+              onMouseDown: handleMouseDown,
+              onMouseMove: handleMouseMove,
+              onMouseUp: handleMouseUp,
+              onMouseLeave: handleMouseUp,
+              style: { width: '100%', maxWidth: 720, height: 'auto', borderRadius: 10, border: '1px solid #334155', background: '#0f172a', cursor: 'pointer', touchAction: 'none' }
             }),
-            // Toggle row
-            h('div', { style: { marginTop: 8, display: 'flex', gap: 16, fontSize: 12, color: '#cbd5e1', flexWrap: 'wrap' } },
+            // Toggle row + reset positions
+            h('div', { style: { marginTop: 8, display: 'flex', gap: 12, fontSize: 12, color: '#cbd5e1', flexWrap: 'wrap', alignItems: 'center' } },
               h('label', { style: { cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 } },
                 h('input', { type: 'checkbox', checked: !!d.showZones, 'data-pl-focusable': 'true',
                   onChange: function(e) { upd('showZones', e.target.checked); } }),
@@ -686,8 +778,28 @@ window.StemLab = window.StemLab || {
               h('label', { style: { cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 } },
                 h('input', { type: 'checkbox', checked: !!d.showOpen, 'data-pl-focusable': 'true',
                   onChange: function(e) { upd('showOpen', e.target.checked); } }),
-                'Open-receiver halo')
+                'Open-receiver halo'),
+              // "Custom edits" indicator + Reset button. Only renders when the
+              // student has actually moved a player, so the UI stays clean
+              // when running stock plays.
+              Object.keys(d.customPositions || {}).length > 0 ? h('span', {
+                style: { marginLeft: 'auto', fontSize: 11, color: '#fbbf24', fontStyle: 'italic' }
+              }, '✎ ' + Object.keys(d.customPositions).length + ' custom position' + (Object.keys(d.customPositions).length === 1 ? '' : 's')) : null,
+              Object.keys(d.customPositions || {}).length > 0 ? h('button', {
+                onClick: resetPositions,
+                'data-pl-focusable': 'true',
+                'aria-label': 'Reset all custom player positions to the play preset',
+                style: {
+                  padding: '4px 10px', minHeight: 24, borderRadius: 4, cursor: 'pointer',
+                  border: '1px solid #475569', background: '#1e293b', color: '#cbd5e1', fontSize: 11
+                }
+              }, 'Reset positions') : null
             ),
+            // Drag hint — only on first load (no custom edits yet) so it
+            // doesn't nag returning students
+            !Object.keys(d.customPositions || {}).length ? h('div', {
+              style: { marginTop: 6, fontSize: 11, color: '#94a3b8', fontStyle: 'italic' }
+            }, '💡 Tip: click and drag any player on the field to reposition them. The route stays attached so you can design your own play.') : null,
             // Analysis panel
             h('section', {
               'aria-labelledby': 'pl-analysis-heading',
