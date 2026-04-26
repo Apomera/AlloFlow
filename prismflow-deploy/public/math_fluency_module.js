@@ -34,7 +34,8 @@
       '.allo-gate-shake { animation: alloGateShake 480ms cubic-bezier(.36,.07,.19,.97) both; }',
       '@keyframes alloGateOpen { 0% { transform: translate(-50%,-50%) scale(1); filter: brightness(1); } 35% { transform: translate(-50%,-50%) scale(1.06); filter: brightness(1.4); } 100% { transform: translate(-50%,-50%) scale(1.04); filter: brightness(1.2); } }',
       '.allo-gate-open { animation: alloGateOpen 220ms ease-out forwards; }',
-      '@media (prefers-reduced-motion: reduce) { .allo-gate-shake, .allo-gate-open { animation: none !important; } }',
+      '@keyframes alloStreakPulse { 0% { transform: translateX(-50%) scale(0.8); opacity: 0; } 18% { transform: translateX(-50%) scale(1.08); opacity: 1; } 35% { transform: translateX(-50%) scale(1); opacity: 1; } 80% { transform: translateX(-50%) scale(1); opacity: 1; } 100% { transform: translateX(-50%) scale(0.94); opacity: 0; } }',
+      '@media (prefers-reduced-motion: reduce) { .allo-gate-shake, .allo-gate-open { animation: none !important; } [style*="alloStreakPulse"] { animation-duration: 0.01ms !important; } }',
     ].join('\n');
     document.head.appendChild(mfA11yStyle);
   }
@@ -1038,6 +1039,17 @@
     var minimapTickRef = useRef(0);
     // Bump when we want the "wrong answer" screen shake to fire.
     var shakeRef = useRef(0);
+    // Per-gate wrong-attempt counter — surfaces "Attempt 2" / "Attempt 3"
+    // on the gate so retries feel acknowledged. Resets to 0 in tryMove
+    // when a new problem appears.
+    var attemptCountState = useState(0);
+    var attemptCount = attemptCountState[0], setAttemptCount = attemptCountState[1];
+    // Streak milestone banner — text shown briefly when streak hits a
+    // multiple of 3 (3, 6, 9...). Cleared by setTimeout so it doesn't
+    // linger. Lives in maze view, not the gate, so it survives gate
+    // dismissal on correct.
+    var streakBannerState = useState('');
+    var streakBanner = streakBannerState[0], setStreakBanner = streakBannerState[1];
 
     function makeProblem() {
       var a, b, op = operation === 'mixed' ? ['add','sub','mul','div'][Math.floor(Math.random() * 4)] : operation;
@@ -1179,6 +1191,7 @@
       // Show a problem to solve before moving
       setCurrentProblem({ dir: dir, targetR: newR, targetC: newC, problem: makeProblem() });
       setUserInput('');
+      setAttemptCount(0);
       setTimeout(function() { if (inputRef.current) inputRef.current.focus(); }, 50);
     }
 
@@ -1203,6 +1216,8 @@
         var streakBonus = 0;
         if (nextStreak > 0 && nextStreak % 3 === 0) {
           streakBonus = 5 + nextStreak; // 8 @3, 11 @6, 14 @9, …
+          setStreakBanner('\uD83D\uDD25 STREAK x' + nextStreak + '! +' + streakBonus + ' bonus');
+          setTimeout(function() { setStreakBanner(''); }, 1500);
           if (addToast) addToast('\uD83D\uDD25 Streak x' + nextStreak + '! +' + streakBonus + ' bonus', 'success');
           // Quick ascending chime for the milestone
           playTone(880, 0.06, 'sine', 0.05);
@@ -1324,10 +1339,22 @@
           _mfAnnounce('Maze complete! ' + (correct + 1) + ' gates unlocked in ' + elapsed + ' seconds.');
           if (addToast) addToast('\uD83C\uDFC6 Maze complete! ' + (correct + 1) + ' correct in ' + elapsed + 's', 'success');
           if (handleScoreUpdate) handleScoreUpdate(Math.round((correct + 1) / Math.max(1, elapsed) * 60) + medalBonus, 'Fluency Maze Complete', 'fluency-maze');
-          // Save high score
+          // Save high score — keyed per (operation, size, difficulty) so
+          // distinct practice modes don't overwrite each other's bests.
+          // Legacy 'fluency_maze_best' (single global) is preserved as a
+          // fallback so existing students don't lose their prior best.
           try {
-            var hs = JSON.parse(localStorage.getItem('fluency_maze_best') || '{}');
-            if (!hs.score || finalScore > hs.score) {
+            var bestKey = operation + '|' + mazeSize + '|' + difficulty;
+            var bestStore = JSON.parse(localStorage.getItem('fluency_maze_bests') || '{}');
+            var prior = bestStore[bestKey];
+            if (!prior || finalScore > prior.score) {
+              bestStore[bestKey] = { score: finalScore, correct: correct + 1, wrong: wrong, time: elapsed, op: operation, size: mazeSize, difficulty: difficulty, savedAt: Date.now() };
+              localStorage.setItem('fluency_maze_bests', JSON.stringify(bestStore));
+              if (prior) _mfAnnounce('New personal best for this mode: ' + finalScore + ' points.');
+            }
+            // Keep legacy global record in sync so the old key still works
+            var legacy = JSON.parse(localStorage.getItem('fluency_maze_best') || '{}');
+            if (!legacy.score || finalScore > legacy.score) {
               localStorage.setItem('fluency_maze_best', JSON.stringify({ score: finalScore, correct: correct + 1, wrong: wrong, time: elapsed, op: operation, size: mazeSize }));
             }
           } catch(e) {}
@@ -1401,6 +1428,7 @@
         setStreak(0);
         setFeedback('wrong');
         _mfAnnounce('Wrong combination. The gate stays locked. Try again.');
+        setAttemptCount(function(p) { return p + 1; });
         playTone(220, 0.1, 'triangle', 0.04);
         // Lower harmonic clang so the wrong-answer audio reads as a locked
         // gate rejecting the wrong combination.
@@ -2188,10 +2216,15 @@
       // wrapper from AlloFlowContent and reads like an unrolled scroll on
       // a torchlit table. Replaces the previous slate/violet palette which
       // clashed with the warm dungeon visuals on the canvas.
-      // Read prior personal-best so students see what they're chasing.
-      // Stored as a single global record (not per op/size) at line ~1318.
+      // Read prior personal-best for this exact (op, size, difficulty).
+      // Falls back to the legacy global record so students see something
+      // even before they've completed a run in the new keyed-store era.
       var bestRecord = null;
-      try { bestRecord = JSON.parse(localStorage.getItem('fluency_maze_best') || 'null'); } catch (e) { bestRecord = null; }
+      try {
+        var bestKey = operation + '|' + mazeSize + '|' + difficulty;
+        var keyed = JSON.parse(localStorage.getItem('fluency_maze_bests') || '{}');
+        bestRecord = keyed[bestKey] || JSON.parse(localStorage.getItem('fluency_maze_best') || 'null');
+      } catch (e) { bestRecord = null; }
       return h('div', { style: { maxWidth: 460, margin: '0 auto', padding: '20px 24px', textAlign: 'center', background: 'linear-gradient(180deg, #fef3c7 0%, #fed7aa 100%)', borderRadius: '14px', border: '2px solid #d97706', boxShadow: '0 8px 24px rgba(146,64,14,0.15), inset 0 0 32px rgba(217,119,6,0.08)' } },
         h('div', { style: { fontSize: '36px', marginBottom: '8px' } }, '\uD83C\uDFAF'),
         h('h2', { style: { fontSize: '22px', fontWeight: 900, color: '#78350f', marginBottom: '2px', letterSpacing: '0.04em' } }, 'Fluency Maze'),
@@ -2206,7 +2239,7 @@
             boxShadow: '0 2px 6px rgba(180,83,9,0.25)'
           },
           'aria-label': 'Personal best: ' + bestRecord.score + ' points in ' + bestRecord.time + ' seconds'
-        }, '\uD83C\uDFC6 Best: ' + bestRecord.score + ' pts ' + (bestRecord.time ? '(' + bestRecord.time + 's)' : '')),
+        }, '\uD83C\uDFC6 Best (this mode): ' + bestRecord.score + ' pts ' + (bestRecord.time ? '(' + bestRecord.time + 's)' : '')),
         // Operation selector
         h('div', { style: { display: 'flex', gap: '6px', justifyContent: 'center', marginBottom: '12px', flexWrap: 'wrap' } },
           ['add', 'sub', 'mul', 'div', 'mixed'].map(function(op) {
@@ -2358,6 +2391,22 @@
       // 3D View (or 2D fallback)
       has3D ? h('div', { ref: maze3dRef, style: { width: '100%', height: '320px', borderRadius: '10px', overflow: 'hidden', border: '2px solid #7c3aed', position: 'relative', background: '#0a0a1a' } }) :
       h('canvas', { ref: canvasRef, style: { width: '100%', height: 'auto', borderRadius: '10px', border: '3px solid #78350f', display: 'block', boxShadow: '0 4px 16px rgba(58,46,38,0.4)' } }),
+      // Streak milestone banner — center-top of the maze area, fades in
+      // and out via opacity transition. Pointer-events:none so it never
+      // blocks the gate or arrow buttons underneath.
+      streakBanner && h('div', {
+        role: 'status', 'aria-live': 'polite',
+        style: {
+          position: 'absolute', top: '52px', left: '50%', transform: 'translateX(-50%)',
+          background: 'linear-gradient(135deg, #f59e0b, #b91c1c)', color: '#fef3c7',
+          padding: '8px 18px', borderRadius: '999px', fontWeight: 900, fontSize: '13px',
+          letterSpacing: '0.08em', textTransform: 'uppercase',
+          border: '2px solid #fbbf24',
+          boxShadow: '0 0 28px rgba(251,191,36,0.6), inset 0 1px 0 rgba(255,255,255,0.25)',
+          pointerEvents: 'none', zIndex: 12,
+          animation: 'alloStreakPulse 1500ms ease-out forwards'
+        }
+      }, streakBanner),
       // 2D minimap overlay (top-right of 3D view)
       has3D && maze && h('canvas', { ref: canvasRef, style: { position: 'absolute', top: '44px', right: '4px', width: '100px', height: '100px', borderRadius: '8px', border: '1px solid rgba(100,116,139,0.3)', opacity: 0.8 } }),
       // Gate overlay (when at junction). Styled as a stone-gate with a
@@ -2409,7 +2458,7 @@
         // Hidden input still present for keyboard users + autofocus + Enter handling
         h('input', { ref: inputRef, type: 'number', value: userInput, onChange: function(e) { setUserInput(e.target.value); },
           'aria-label': 'Type your answer to ' + currentProblem.problem.text,
-          onKeyDown: function(e) { if (e.key === 'Enter') submitAnswer(); },
+          onKeyDown: function(e) { if (e.key === 'Enter') submitAnswer(); else if (e.key === 'Escape') setUserInput(''); },
           style: { position: 'absolute', opacity: 0, pointerEvents: 'none', width: '1px', height: '1px' },
           inputMode: 'numeric', autoFocus: true
         }),
@@ -2462,7 +2511,8 @@
             }
           }, '\ud83d\udd11 Unlock')
         ),
-        h('p', { style: { fontSize: '10px', color: '#a8957d', marginTop: '10px', marginBottom: 0 } }, 'Tap pad or use keyboard \u2022 Enter to submit')
+        attemptCount > 0 && h('div', { style: { marginTop: '8px', fontSize: '11px', fontWeight: 700, color: '#fbbf24', letterSpacing: '0.06em', textTransform: 'uppercase' }, 'aria-live': 'off' }, 'Attempt ' + (attemptCount + 1)),
+        h('p', { style: { fontSize: '10px', color: '#a8957d', marginTop: attemptCount > 0 ? '4px' : '10px', marginBottom: 0 } }, 'Tap pad or use keyboard \u2022 Enter to submit \u2022 Esc to clear')
       ),
       // Arrow buttons (mobile friendly)
       h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '4px', maxWidth: '160px', margin: '8px auto 0' } },
