@@ -634,7 +634,7 @@ window.SelHub = window.SelHub || {
 
         // ── Weekly Check-in state ──
         var weeklyCheckins = d.weeklyCheckins || [];
-        var weeklyDraft = d.weeklyDraft || { obstacles: '',  '', rating: 0 };
+        var weeklyDraft = d.weeklyDraft || { obstacles: '', focus: '', rating: 0 };
 
         // ── Milestone tracking state ──
         var milestonesShown = d.milestonesShown || {};
@@ -980,14 +980,14 @@ window.SelHub = window.SelHub || {
             weekOf: new Date().toISOString().slice(0, 10),
             progressSummary: summary,
             obstacles: weeklyDraft.obstacles || '',
-             weeklyDraft.focus || '',
+            focus: weeklyDraft.focus || '',
             rating: weeklyDraft.rating || 0
           };
           var newCheckins = weeklyCheckins.concat([checkin]);
           sfxComplete();
           if (awardXP) awardXP(10);
           if (addToast) addToast('\uD83D\uDCDD Weekly check-in saved! +10 XP', 'success');
-          upd({ weeklyCheckins: newCheckins, weeklyDraft: { obstacles: '',  '', rating: 0 } });
+          upd({ weeklyCheckins: newCheckins, weeklyDraft: { obstacles: '', focus: '', rating: 0 } });
         };
 
         var updateWeeklyDraft = function(field, value) {
