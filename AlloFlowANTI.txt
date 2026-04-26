@@ -34137,9 +34137,21 @@ Return only the corrected version of this exact text:`;
                                      {idea.guide ? (
                                          <div className="bg-slate-50 rounded-lg p-4 text-sm text-slate-700 border border-slate-200" data-help-key="brainstorm_guide">
                                              <h5 className="font-bold text-slate-800 mb-2 flex items-center gap-2"><ListChecks size={16}/> {t('brainstorm.teacher_guide')}</h5>
-                                             <div className="prose prose-sm max-w-none">
-                                                 {renderFormattedText(idea.guide)}
-                                             </div>
+                                             {isEditingBrainstorm ? (
+                                                 <textarea
+                                                     aria-label={t('brainstorm.edit_guide') || 'Edit teacher guide'}
+                                                     value={idea.guide}
+                                                     onChange={(e) => handleBrainstormChange(idx, 'guide', e.target.value)}
+                                                     className="w-full bg-white border border-slate-300 hover:border-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 rounded px-3 py-2 outline-none resize-y transition-all font-mono text-xs leading-relaxed"
+                                                     rows={Math.max(8, getRows(idea.guide))}
+                                                     placeholder={t('brainstorm.placeholder_guide') || 'Step-by-step teacher guide (markdown supported)…'}
+                                                     readOnly={!isTeacherMode}
+                                                 />
+                                             ) : (
+                                                 <div className="prose prose-sm max-w-none">
+                                                     {renderFormattedText(idea.guide)}
+                                                 </div>
+                                             )}
                                          </div>
                                      ) : (
                                          <button
