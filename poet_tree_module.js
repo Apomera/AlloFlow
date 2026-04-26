@@ -358,6 +358,13 @@
     // Spark Words: 5 random concrete nouns/images to break a creative block
     var _sparkWords = useState(null); var sparkWords = _sparkWords[0]; var setSparkWords = _sparkWords[1];
     var _sparkLoading = useState(false); var sparkLoading = _sparkLoading[0]; var setSparkLoading = _sparkLoading[1];
+    // Title generator
+    var _titleSuggestions = useState(null); var titleSuggestions = _titleSuggestions[0]; var setTitleSuggestions = _titleSuggestions[1];
+    var _titleLoading = useState(false); var titleLoading = _titleLoading[0]; var setTitleLoading = _titleLoading[1];
+    // Cross-form rewrite (poem → target form)
+    var _rewriteResult = useState(null); var rewriteResult = _rewriteResult[0]; var setRewriteResult = _rewriteResult[1];
+    var _rewriteLoading = useState(false); var rewriteLoading = _rewriteLoading[0]; var setRewriteLoading = _rewriteLoading[1];
+    var _rewriteTargetId = useState(''); var rewriteTargetId = _rewriteTargetId[0]; var setRewriteTargetId = _rewriteTargetId[1];
 
     // ── Persistence helpers ──
     var savePrefs = useCallback(function (next) {
@@ -548,6 +555,68 @@
         setSparkLoading(false);
       }
     }, [onCallGemini, gradeLevel, addToast]);
+
+    // ── Title Generator: suggest 5 titles for the current poem ──
+    var generateTitles = useCallback(async function () {
+      if (!onCallGemini || !poemText.trim()) return;
+      setTitleLoading(true);
+      setTitleSuggestions(null);
+      try {
+        var formHint = form ? ' The poem is in the form: ' + form.name + '.' : '';
+        var prompt = 'Suggest 5 distinct titles for this poem.' + formHint + ' Mix styles: one literal/descriptive, one image-driven, one one-word, one two-to-three word, one a phrase from the poem itself. Avoid clichés. Match a ' + gradeLevel + ' student\'s register.\n\n'
+          + 'Poem:\n"""\n' + poemText + '\n"""\n\n'
+          + 'Return JSON: {"titles":["...","...","...","...","..."]}';
+        var result = await onCallGemini(prompt, true);
+        var clean = String(result).trim().replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```$/, '').trim();
+        var parsed = JSON.parse(clean);
+        setTitleSuggestions(parsed.titles || []);
+        announcePT((parsed.titles || []).length + ' title suggestions ready.');
+      } catch (err) {
+        warnLog('Title gen failed:', err && err.message);
+        addToast && addToast('Couldn\'t generate titles.', 'error');
+      } finally {
+        setTitleLoading(false);
+      }
+    }, [onCallGemini, poemText, form, gradeLevel, addToast]);
+
+    // ── Cross-form Rewrite: transform the existing poem into a different form ──
+    // Pedagogical idea: students see how form constraints reshape the same source idea.
+    var rewriteAsForm = useCallback(async function (targetFormId) {
+      if (!onCallGemini || !poemText.trim() || !targetFormId) return;
+      var targetForm = FORMS.find(function (f) { return f.id === targetFormId; });
+      if (!targetForm) return;
+      setRewriteLoading(true);
+      setRewriteResult(null);
+      try {
+        var prompt = 'You are a poetry teacher demonstrating form. Rewrite this student\'s poem in the form of ' + targetForm.name + '. Preserve the core image and feeling; reshape the language to fit the new form\'s rules.\n\n'
+          + 'Target form rules: ' + targetForm.structure + '\n'
+          + (targetForm.syllablesPerLine ? 'Required syllables per line: ' + targetForm.syllablesPerLine.join(', ') + '\n' : '')
+          + (targetForm.rhymeScheme ? 'Rhyme scheme: ' + targetForm.rhymeScheme + '\n' : '')
+          + '\nOriginal poem' + (form ? ' (currently in ' + form.name + ' form)' : '') + ':\n"""\n' + poemText + '\n"""\n\n'
+          + 'Return JSON: {"poem":"<the rewritten poem text, line breaks preserved>","note":"<one sentence on what shifted: which images survived, what the form forced you to add or cut>"}\n\n'
+          + 'Be honest if the form simply doesn\'t fit the source — if you have to mangle the original, say so in the note.';
+        var result = await onCallGemini(prompt, true);
+        var clean = String(result).trim().replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```$/, '').trim();
+        var parsed = JSON.parse(clean);
+        setRewriteResult({ targetForm: targetForm, poem: parsed.poem || '', note: parsed.note || '' });
+        announcePT('Rewritten as ' + targetForm.name + '. ' + (parsed.note || ''));
+      } catch (err) {
+        warnLog('Rewrite failed:', err && err.message);
+        setRewriteResult({ error: 'Couldn\'t rewrite right now.' });
+      } finally {
+        setRewriteLoading(false);
+      }
+    }, [onCallGemini, poemText, form]);
+
+    var applyRewrite = useCallback(function () {
+      if (!rewriteResult || !rewriteResult.poem) return;
+      setPoemText(rewriteResult.poem);
+      if (rewriteResult.targetForm) setForm(rewriteResult.targetForm);
+      setRewriteResult(null);
+      setRewriteTargetId('');
+      addToast && addToast('Replaced with the rewrite. Your old version is gone — Library save first if you want both.', 'info');
+      announcePT('Replaced with ' + (rewriteResult.targetForm ? rewriteResult.targetForm.name : 'rewrite') + '.');
+    }, [rewriteResult, addToast]);
 
     // ── Meter analysis (Gemini-on-demand) ──
     var analyzeMeter = useCallback(async function () {
@@ -883,12 +952,31 @@
               }, '🔠 ' + (largeText ? 'Reading mode on' : 'Reading mode'))
             ),
 
-            // Title
-            e('label', { htmlFor: 'pt-title', style: { fontSize: '11px', fontWeight: 700, color: '#374151' } }, 'Title (optional)'),
+            // Title with inline AI title generator
+            e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' } },
+              e('label', { htmlFor: 'pt-title', style: { fontSize: '11px', fontWeight: 700, color: '#374151' } }, 'Title (optional)'),
+              onCallGemini && e('button', {
+                onClick: generateTitles,
+                disabled: !poemText.trim() || titleLoading,
+                'aria-busy': titleLoading ? 'true' : 'false',
+                'aria-label': titleLoading ? 'Generating title suggestions' : 'Suggest 5 titles based on the poem',
+                style: { padding: '3px 10px', borderRadius: '6px', border: 'none', background: poemText.trim() && !titleLoading ? '#7c3aed' : '#e5e7eb', color: poemText.trim() && !titleLoading ? '#fff' : '#94a3b8', fontSize: '10px', fontWeight: 700, cursor: poemText.trim() && !titleLoading ? 'pointer' : 'not-allowed' }
+              }, titleLoading ? '⏳…' : '✨ Suggest titles')
+            ),
             e('input', { id: 'pt-title', type: 'text', value: poemTitle, onChange: function (ev) { setPoemTitle(ev.target.value); },
               placeholder: 'Untitled',
               style: { padding: '8px 12px', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: largeText ? '15px' : '13px', fontFamily: largeText ? 'system-ui, -apple-system, sans-serif' : 'inherit' }
             }),
+            // Title suggestions chips
+            titleSuggestions && Array.isArray(titleSuggestions) && titleSuggestions.length > 0 && e('div', { role: 'region', 'aria-label': 'Title suggestions', 'aria-live': 'polite', style: { display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '-4px' } },
+              titleSuggestions.map(function (t, ti) {
+                return e('button', { key: ti,
+                  onClick: function () { setPoemTitle(t); setTitleSuggestions(null); announcePT('Title set to "' + t + '."'); },
+                  'aria-label': 'Use title: ' + t,
+                  style: { padding: '4px 12px', background: '#faf5ff', border: '1px solid #d8b4fe', borderRadius: '14px', fontSize: '12px', cursor: 'pointer', color: '#6b21a8', fontFamily: 'Georgia, serif', fontStyle: 'italic' }
+                }, '"' + t + '"');
+              })
+            ),
 
             // Found-poetry source (only when form is found)
             form && form.id === 'found' && e('div', null,
@@ -959,6 +1047,57 @@
               onCallTTS && e('button', { onClick: function () { setActiveTab('perform'); },
                 style: { padding: '8px 14px', background: '#fff', color: TEAL_DARK, border: '1px solid ' + TEAL, borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }
               }, '🎙️ Perform')
+            ),
+
+            // ── Cross-form Rewrite (transform existing poem into a different form) ──
+            // Pedagogical: makes form constraints visible. The student sees how their image shifts.
+            onCallGemini && poemText.trim() && e('div', { style: { background: '#faf5ff', border: '1px solid #ddd6fe', borderRadius: '10px', padding: '10px 12px' } },
+              e('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' } },
+                e('label', { htmlFor: 'pt-rewrite-target', style: { fontSize: '11px', fontWeight: 800, color: '#581c87', margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' } }, '🔁 Rewrite as'),
+                e('select', { id: 'pt-rewrite-target', value: rewriteTargetId,
+                  onChange: function (ev) { setRewriteTargetId(ev.target.value); },
+                  'aria-label': 'Choose target form for rewrite',
+                  style: { padding: '5px 8px', borderRadius: '6px', border: '1px solid #c4b5fd', fontSize: '12px', background: '#fff' }
+                },
+                  e('option', { value: '' }, '— pick a form —'),
+                  FORMS.filter(function (f) { return !form || f.id !== form.id; }).map(function (f) {
+                    return e('option', { key: f.id, value: f.id }, f.icon + ' ' + f.name);
+                  })
+                ),
+                e('button', { onClick: function () { rewriteAsForm(rewriteTargetId); },
+                  disabled: !rewriteTargetId || rewriteLoading,
+                  'aria-busy': rewriteLoading ? 'true' : 'false',
+                  'aria-label': rewriteLoading ? 'Rewriting, please wait' : 'Rewrite the poem in the chosen form',
+                  style: { padding: '5px 12px', borderRadius: '6px', border: 'none', background: rewriteTargetId && !rewriteLoading ? '#7c3aed' : '#e5e7eb', color: rewriteTargetId && !rewriteLoading ? '#fff' : '#94a3b8', fontSize: '11px', fontWeight: 700, cursor: rewriteTargetId && !rewriteLoading ? 'pointer' : 'not-allowed' }
+                }, rewriteLoading ? '⏳ Rewriting…' : '🔁 Rewrite'),
+                rewriteResult && e('button', { onClick: function () { setRewriteResult(null); setRewriteTargetId(''); },
+                  'aria-label': 'Dismiss rewrite preview',
+                  style: { marginLeft: 'auto', padding: '4px 10px', background: 'transparent', border: '1px solid #d1d5db', color: '#475569', borderRadius: '6px', fontSize: '10px', fontWeight: 700, cursor: 'pointer' }
+                }, '✕ Dismiss')
+              ),
+              !rewriteResult && !rewriteLoading && e('p', { style: { fontSize: '10px', color: '#581c87', margin: '6px 0 0', fontStyle: 'italic' } }, 'See how your image holds up in a different form. Original stays intact unless you replace it.'),
+              rewriteResult && rewriteResult.error && e('p', { style: { fontSize: '11px', color: '#b91c1c', fontStyle: 'italic', margin: '6px 0 0' } }, rewriteResult.error),
+              rewriteResult && !rewriteResult.error && e('div', { role: 'region', 'aria-label': 'Rewrite preview', 'aria-live': 'polite', style: { marginTop: '10px' } },
+                e('div', { style: { background: '#fff', border: '2px solid #c4b5fd', borderRadius: '10px', padding: '14px 16px' } },
+                  e('div', { style: { fontSize: '10px', fontWeight: 800, color: '#581c87', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' } }, 'Rewrite preview' + (rewriteResult.targetForm ? ' (' + rewriteResult.targetForm.icon + ' ' + rewriteResult.targetForm.name + ')' : '')),
+                  e('pre', { style: { whiteSpace: 'pre-wrap', fontFamily: 'Georgia, serif', fontSize: largeText ? '15px' : '14px', color: '#1e293b', margin: 0, lineHeight: largeText ? 1.85 : 1.7 } }, rewriteResult.poem),
+                  rewriteResult.note && e('p', { style: { fontSize: '11px', color: '#475569', margin: '10px 0 0', fontStyle: 'italic', borderTop: '1px dashed #e5e7eb', paddingTop: '8px' } }, '✏️ ' + rewriteResult.note)
+                ),
+                e('div', { style: { display: 'flex', gap: '6px', marginTop: '8px' } },
+                  e('button', { onClick: applyRewrite,
+                    'aria-label': 'Replace your poem with this rewrite',
+                    style: { padding: '6px 14px', background: '#7c3aed', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }
+                  }, '✓ Replace mine'),
+                  e('button', { onClick: function () { try { navigator.clipboard.writeText(rewriteResult.poem); addToast && addToast('Rewrite copied to clipboard.', 'success'); } catch (er) {} },
+                    'aria-label': 'Copy rewrite to clipboard',
+                    style: { padding: '6px 14px', background: '#fff', color: '#581c87', border: '1px solid #c4b5fd', borderRadius: '6px', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }
+                  }, '📋 Copy'),
+                  e('button', { onClick: function () { setRewriteResult(null); setRewriteTargetId(''); announcePT('Kept original.'); },
+                    'aria-label': 'Keep original poem, discard rewrite',
+                    style: { padding: '6px 14px', background: 'transparent', color: '#475569', border: '1px solid #d1d5db', borderRadius: '6px', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }
+                  }, 'Keep mine')
+                )
+              )
             ),
 
             // Inline meter analysis (rendered here so writers see it next to their text)
