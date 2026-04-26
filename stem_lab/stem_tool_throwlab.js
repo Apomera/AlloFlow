@@ -1458,6 +1458,82 @@ window.StemLab = window.StemLab || {
         tlAnnounce('Selected club: ' + gt.label + '. Carry ' + gt.carryYd + ' yards, ' + gt.aimDegV + ' degree launch.');
       }
 
+      // ── Custom scenarios ──
+      // Save the current setup (mode + preset + gravity + wind) as a
+      // personalized scenario. Persisted in toolData.customScenarios.
+      // Capped at 12 entries (FIFO) so the toolData blob doesn't grow
+      // unbounded across sessions. Each custom scenario carries the
+      // same parameter shape as the built-in SCENARIOS, plus a
+      // `custom: true` flag so the UI can mark + offer delete.
+      var MAX_CUSTOM_SCENARIOS = 12;
+
+      function saveCustomScenario() {
+        var defaultName;
+        var modeLbl = (MODES[d.mode] || {}).label || d.mode;
+        var presetId = d.mode === 'pitching' ? d.pitchType
+                     : d.mode === 'freethrow' ? d.shotType
+                     : d.mode === 'freekick' ? d.kickType
+                     : d.mode === 'fieldgoal' ? d.goalType
+                     : d.mode === 'bowling' ? d.bowlType
+                     : d.mode === 'golf' ? d.golfClub
+                     : d.serveType;
+        var presetList = d.mode === 'pitching' ? PITCH_TYPES
+                       : d.mode === 'freethrow' ? SHOT_TYPES
+                       : d.mode === 'freekick' ? KICK_TYPES
+                       : d.mode === 'fieldgoal' ? GOAL_TYPES
+                       : d.mode === 'bowling' ? CRICKET_DELIVERIES
+                       : d.mode === 'golf' ? GOLF_TYPES
+                       : VOLLEYBALL_TYPES;
+        var preset = presetList.find(function(p) { return p.id === presetId; });
+        var gravLbl = (GRAVITY_PRESETS.find(function(g) { return g.id === (d.gravityId || 'earth'); }) || {}).label || 'Earth';
+        defaultName = (preset ? preset.label : modeLbl) + ' on ' + gravLbl
+                    + (d.windMph ? ' + ' + d.windMph + ' mph wind' : '');
+        var name = (typeof window !== 'undefined' && typeof window.prompt === 'function')
+          ? window.prompt('Name this scenario:', defaultName)
+          : defaultName;
+        if (!name) return; // user cancelled
+        name = String(name).trim().slice(0, 60);
+        if (!name) return;
+        var newScenario = {
+          id: 'custom_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+          label: name,
+          icon: '⭐',
+          mode: d.mode,
+          presetId: presetId,
+          gravityId: d.gravityId || 'earth',
+          windMph: d.windMph || 0,
+          windDirDeg: d.windDirDeg || 0,
+          aimDegV: d.aimDegV,
+          aimDegH: d.aimDegH || 0,
+          releaseHeight: d.releaseHeight,
+          custom: true,
+          createdAt: Date.now(),
+          teach: 'Custom scenario you saved on ' + new Date().toLocaleDateString() + '. Adjust any parameter and re-throw to compare against the saved baseline.'
+        };
+        setLabToolData(function(prev) {
+          var existing = (prev.throwlab.customScenarios || []).slice();
+          existing.push(newScenario);
+          while (existing.length > MAX_CUSTOM_SCENARIOS) existing.shift(); // FIFO eviction
+          var next = Object.assign({}, prev.throwlab, { customScenarios: existing });
+          return Object.assign({}, prev, { throwlab: next });
+        });
+        tlAnnounce('Saved custom scenario: ' + name);
+        if (addToast) addToast('⭐ Saved: ' + name);
+      }
+
+      function deleteCustomScenario(scenarioId) {
+        setLabToolData(function(prev) {
+          var existing = (prev.throwlab.customScenarios || []).filter(function(s) { return s.id !== scenarioId; });
+          var next = Object.assign({}, prev.throwlab, { customScenarios: existing });
+          // If the active scenario was the one deleted, clear the briefing
+          if (prev.throwlab.activeScenarioId === scenarioId) {
+            next.activeScenarioId = null;
+          }
+          return Object.assign({}, prev, { throwlab: next });
+        });
+        tlAnnounce('Custom scenario removed.');
+      }
+
       // Open a printable activity sheet listing every ThrowLab
       // scenario with its teach + 3 discussion questions, formatted
       // for in-class handout. Triggers window.print() so the teacher
@@ -1520,6 +1596,10 @@ window.StemLab = window.StemLab || {
 
       function applyScenario(scenarioId) {
         var s = SCENARIOS.find(function(sc) { return sc.id === scenarioId; });
+        if (!s) {
+          // Fall back to custom scenarios
+          s = (d.customScenarios || []).find(function(sc) { return sc.id === scenarioId; });
+        }
         if (!s) return;
         var presetList = s.mode === 'pitching' ? PITCH_TYPES
                        : s.mode === 'freethrow' ? SHOT_TYPES
@@ -3449,7 +3529,7 @@ window.StemLab = window.StemLab || {
         },
           h('summary', {
             style: { cursor: 'pointer', fontSize: 12, color: '#cbd5e1', fontWeight: 600 }
-          }, '🎬 Scenarios — one-click teaching demos (' + SCENARIOS.length + ')'),
+          }, '🎬 Scenarios — one-click teaching demos (' + SCENARIOS.length + ' built-in' + ((d.customScenarios || []).length ? ' + ' + (d.customScenarios || []).length + ' custom' : '') + ')'),
           h('div', {
             role: 'group', 'aria-label': 'Scenarios',
             style: { display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap', alignItems: 'center' }
@@ -3468,7 +3548,54 @@ window.StemLab = window.StemLab || {
                   color: '#f1f5f9', fontSize: 11, fontWeight: 600
                 }
               }, sc.icon + ' ' + sc.label);
-            }).concat([
+            }).concat(
+              // Custom scenarios — same pill style + small delete button
+              (d.customScenarios || []).map(function(sc) {
+                return h('span', {
+                  key: 'csc-' + sc.id,
+                  style: { display: 'inline-flex', alignItems: 'stretch', borderRadius: 6, overflow: 'hidden' }
+                },
+                  h('button', {
+                    onClick: function() { applyScenario(sc.id); },
+                    'aria-label': sc.label + ' (custom): ' + (sc.teach || ''),
+                    'data-tl-focusable': 'true',
+                    title: sc.teach || sc.label,
+                    style: {
+                      padding: '6px 11px', cursor: 'pointer',
+                      border: '1px solid #a78bfa',
+                      borderRight: 'none',
+                      background: 'rgba(167,139,250,0.10)',
+                      color: '#a78bfa', fontSize: 11, fontWeight: 600
+                    }
+                  }, sc.icon + ' ' + sc.label),
+                  h('button', {
+                    onClick: function() { deleteCustomScenario(sc.id); },
+                    'aria-label': 'Delete custom scenario: ' + sc.label,
+                    'data-tl-focusable': 'true',
+                    title: 'Delete this custom scenario',
+                    style: {
+                      padding: '6px 8px', cursor: 'pointer',
+                      border: '1px solid #a78bfa',
+                      background: 'rgba(167,139,250,0.10)',
+                      color: '#a78bfa', fontSize: 11
+                    }
+                  }, '✕')
+                );
+              })
+            ).concat([
+              // Save current as scenario
+              h('button', {
+                key: 'sc-save',
+                onClick: saveCustomScenario,
+                'aria-label': 'Save current setup as a custom scenario',
+                'data-tl-focusable': 'true',
+                title: 'Save the current mode + preset + gravity + wind as a personalized scenario',
+                style: {
+                  padding: '6px 11px', borderRadius: 6, cursor: 'pointer',
+                  border: '1px dashed #a78bfa', background: 'transparent',
+                  color: '#a78bfa', fontSize: 11, fontWeight: 700
+                }
+              }, '⭐ Save current'),
               h('button', {
                 key: 'sc-print',
                 onClick: printThrowLabActivitySheet,
@@ -3493,7 +3620,8 @@ window.StemLab = window.StemLab || {
         // gives them ready-made physics-discussion prompts.
         (function() {
           var active = d.activeScenarioId
-            ? SCENARIOS.find(function(sc) { return sc.id === d.activeScenarioId; })
+            ? (SCENARIOS.find(function(sc) { return sc.id === d.activeScenarioId; })
+               || (d.customScenarios || []).find(function(sc) { return sc.id === d.activeScenarioId; }))
             : null;
           if (!active) return null;
           return h('section', {
