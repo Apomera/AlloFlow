@@ -1138,28 +1138,70 @@
     }, [onCallGemini, saved, gradeLevel]);
 
     // ── Mentor Match: pair the student's poem with a public-domain master poem for study ──
-    // Gemini picks a real PD poem (or a short excerpt) on a similar theme/in a similar form,
-    // then explains what's shared and what specific craft move is worth borrowing. The prompt
-    // explicitly asks Gemini to acknowledge uncertainty rather than fabricate attribution.
+    // Two-stage flow:
+    //   1. Gemini extracts 3-5 search keywords from the student's poem (concrete images / themes).
+    //   2. WebSearchProvider (Serper.dev → SearXNG → DuckDuckGo) fetches real public-domain poetry
+    //      results from the open web (Poetry Foundation, PoetryArchive, Project Gutenberg, etc.).
+    //   3. Gemini receives the search snippets as grounding context and picks the best mentor —
+    //      now with a real sourceUrl the student can click to read the full poem.
+    // Anti-fabrication: hard-restricts to authors-died-pre-1929 + canonical translations + traditional;
+    // the uncertain flag asks Gemini to skip the text rather than invent it.
     var findMentorPoem = useCallback(async function () {
       if (!onCallGemini || !poemText.trim()) return;
       setMentorLoading(true);
       setMentorMatch(null);
       try {
+        // Stage 1 — extract search keywords from the student's poem
+        var keywords = '';
+        try {
+          var queryPrompt = 'Extract 3-5 keywords from this poem that would help find a similar PUBLIC-DOMAIN master poem online. Focus on concrete images, themes, and emotional tone, not function words. Return JSON: {"keywords":["...","..."]}\n\nPoem:\n"""\n' + poemText + '\n"""';
+          var queryResult = await onCallGemini(queryPrompt, true);
+          var queryClean = String(queryResult).trim().replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```$/, '').trim();
+          var queryParsed = JSON.parse(queryClean);
+          keywords = (queryParsed.keywords || []).slice(0, 5).join(' ');
+        } catch (e) { warnLog('Keyword extract failed:', e && e.message); }
+
+        // Stage 2 — actual web search for real PD poetry (Serper → SearXNG → DDG)
+        var searchContext = '';
+        var searchResults = [];
+        if (window.WebSearchProvider && keywords) {
+          try {
+            var formHint = form && form.name !== 'Free Verse' ? form.name + ' ' : '';
+            var searchQuery = keywords + ' ' + formHint + 'famous public domain poem poetryfoundation';
+            announcePT('Searching for similar master poems…');
+            var searchResult = await window.WebSearchProvider.search(searchQuery, 8);
+            if (searchResult && searchResult.results && searchResult.results.length > 0) {
+              searchResults = searchResult.results.slice(0, 8);
+              searchContext = '\n\nWeb search results for similar public-domain poetry. Treat these as your candidate set — strongly prefer suggesting a poem from this list because the URL anchors the recommendation in something the student can actually go read. Do not pick a result that\'s clearly behind a paywall, modern (post-1929), or not actually a poem.\n\n'
+                + searchResults.map(function (r, i) {
+                  return (i + 1) + '. ' + (r.title || 'Untitled') + '\n   URL: ' + (r.url || r.link || '') + '\n   ' + String(r.snippet || '').slice(0, 220);
+                }).join('\n\n');
+            }
+          } catch (e) {
+            warnLog('Web search failed, falling back to Gemini-only:', e && e.message);
+          }
+        }
+
+        // Stage 3 — Gemini picks the best mentor, ideally from the real results
         var formContext = form
-          ? 'The student is writing a ' + form.name + '. Pick a master poem ideally in the same form, or in a closely related form, to model from.'
+          ? 'The student is writing a ' + form.name + '. Prefer a mentor in the same form, or a closely related form.'
           : 'The student is writing in free verse / open form. Pick a master poem on a similar theme.';
-        var prompt = 'You are a poetry mentor. A ' + gradeLevel + ' student wrote the poem below. Your job: surface ONE public-domain master poem (or a short PD excerpt) that this student would learn from sitting alongside.\n\n'
+        var prompt = 'You are a poetry mentor. A ' + gradeLevel + ' student wrote the poem below. Surface ONE public-domain master poem to set alongside theirs for study.\n\n'
           + 'Student poem:\n"""\n' + poemText + '\n"""\n\n'
-          + formContext + '\n\n'
-          + 'CRITICAL: only suggest poems whose author died before 1929 (US PD-safe), or older translations of pre-modern works (Bashō, Sappho, Rumi, Ono no Komachi, etc.), or anonymous traditional works. If you are NOT confident a poem is genuinely public domain AND that you are quoting it accurately, set "uncertain":true and skip the text — just describe the poem in prose. Never fabricate a quote.\n\n'
-          + 'Return JSON: {"mentor":{"title":"<title>","author":"<author>","year":<year as number or null>,"text":"<poem text or short excerpt, line breaks as \\\\n; LEAVE BLANK if uncertain>","uncertain":false},"sharedTheme":"<one sentence on what your poem and theirs share — image, feeling, form>","craftToBorrow":"<one specific craft move from the master that this student could try in their next revision>","studentEcho":"<where in their poem they\'re already doing something similar, with a quoted phrase from their poem>"}\n\n'
+          + formContext + searchContext + '\n\n'
+          + 'CRITICAL anti-fabrication rules:\n'
+          + '- ONLY suggest poems whose author died before 1929 (US PD-safe), older translations of pre-modern works (Bashō, Sappho, Rumi, Ono no Komachi, etc.), or anonymous traditional works.\n'
+          + (searchContext ? '- Strongly prefer one of the search results above. Include its URL in "sourceUrl".\n' : '- (No web search results available — pick from canonical PD poets only: Whitman, Dickinson, Shakespeare, Poe, Frost (early work), Yeats (early), Wordsworth, Keats, Browning, Bashō, Issa, etc.)\n')
+          + '- If you are NOT confident in the exact text or attribution, set "uncertain":true and LEAVE THE TEXT FIELD BLANK — describe the poem in prose. Never fabricate a quote.\n\n'
+          + 'Return JSON: {"mentor":{"title":"<title>","author":"<author>","year":<number or null>,"text":"<poem text or short excerpt, line breaks as \\\\n; BLANK if uncertain>","sourceUrl":"<URL from search results, or null>","uncertain":false},"sharedTheme":"<one sentence on what the two poems share — image, feeling, form>","craftToBorrow":"<one specific craft move from the master worth trying>","studentEcho":"<where the student is already doing something similar, with a quoted phrase from their own poem>"}\n\n'
           + 'Match register to a ' + gradeLevel + ' student. Be specific, be honest, never invent.';
         var result = await onCallGemini(prompt, true);
         var clean = String(result).trim().replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```$/, '').trim();
         var parsed = JSON.parse(clean);
+        // Stamp grounding info onto the result so the UI can disclose how the recommendation was built.
+        parsed._grounding = { searchUsed: searchResults.length > 0, resultCount: searchResults.length, keywords: keywords };
         setMentorMatch(parsed);
-        announcePT('Mentor poem found: ' + (parsed.mentor && parsed.mentor.title) + ' by ' + (parsed.mentor && parsed.mentor.author) + '.');
+        announcePT('Mentor poem found: ' + (parsed.mentor && parsed.mentor.title) + ' by ' + (parsed.mentor && parsed.mentor.author) + (searchResults.length > 0 ? ' (verified via web search)' : '') + '.');
       } catch (err) {
         warnLog('Mentor match failed:', err && err.message);
         setMentorMatch({ error: 'Couldn\'t find a mentor poem right now. Try again in a moment.' });
@@ -1725,8 +1767,21 @@
                     e('p', { style: { fontSize: '11px', color: '#475569', margin: '2px 0 0', fontStyle: 'italic' } }, '— ' + (mentorMatch.mentor.author || 'Unknown') + (mentorMatch.mentor.year ? ', ' + mentorMatch.mentor.year : '') + ' (public domain)')
                   ),
                   mentorMatch.mentor.uncertain
-                    ? e('p', { style: { fontSize: '12px', color: '#475569', fontStyle: 'italic', margin: 0, padding: '8px 10px', background: '#fefce8', borderRadius: '6px', borderLeft: '3px solid #facc15' } }, 'The mentor recommends this poem but couldn\'t verify the exact text — search for it to read the original.')
-                    : e('pre', { style: { whiteSpace: 'pre-wrap', fontFamily: 'Georgia, serif', fontSize: largeText ? '15px' : '14px', color: '#1e293b', margin: 0, lineHeight: largeText ? 1.85 : 1.7 } }, mentorMatch.mentor.text || '')
+                    ? e('p', { style: { fontSize: '12px', color: '#475569', fontStyle: 'italic', margin: 0, padding: '8px 10px', background: '#fefce8', borderRadius: '6px', borderLeft: '3px solid #facc15' } }, 'The mentor recommends this poem but couldn\'t verify the exact text — use the link below to read the original.')
+                    : e('pre', { style: { whiteSpace: 'pre-wrap', fontFamily: 'Georgia, serif', fontSize: largeText ? '15px' : '14px', color: '#1e293b', margin: 0, lineHeight: largeText ? 1.85 : 1.7 } }, mentorMatch.mentor.text || ''),
+                  // Source URL (when search grounded the recommendation) — student can click to verify / read full poem
+                  mentorMatch.mentor.sourceUrl && e('p', { style: { fontSize: '11px', margin: '10px 0 0' } },
+                    e('a', { href: mentorMatch.mentor.sourceUrl, target: '_blank', rel: 'noopener noreferrer',
+                      'aria-label': 'Open the source for ' + (mentorMatch.mentor.title || 'this poem') + ' in a new tab',
+                      style: { color: '#86198f', textDecoration: 'underline', fontWeight: 700 }
+                    }, '🔗 Read full poem at source ↗')
+                  ),
+                  // Grounding disclosure — tells the user whether the recommendation came from real search results or canonical-only fallback
+                  mentorMatch._grounding && e('p', { style: { fontSize: '10px', color: '#64748b', margin: '8px 0 0', fontStyle: 'italic' } },
+                    mentorMatch._grounding.searchUsed
+                      ? '✓ Verified via web search (' + mentorMatch._grounding.resultCount + ' candidates considered, keyword search: "' + mentorMatch._grounding.keywords + '")'
+                      : 'ℹ Web search unavailable; recommendation drawn from canonical public-domain poets only.'
+                  )
                 ),
                 // Analysis cards
                 mentorMatch.sharedTheme && e('div', { style: { background: '#fff', border: '1px solid #f5d0fe', borderRadius: '10px', padding: '10px 12px' } },
