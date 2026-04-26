@@ -275,7 +275,7 @@ window.SelHub = window.SelHub || {
           var historyText = chatHistory.map(function(m) { return (m.role === 'user' ? 'Student' : aiScenario.peerName) + ': ' + m.text; }).join('\n');
           var oarsSummary = OARS.map(function(s) { return s.label + ': ' + (oarsUsed[s.id] || 0) + ' times'; }).join(', ');
           var prompt = 'You are a warm peer support skills coach evaluating a ' + gradeBand + ' student\'s supportive conversation.\n\n'
-            + 'Scenario: ' + aiScenario.setup + '\nSkill focus: ' + aiScenario.skill + '\nGoal: ' + aiScenario.goal + '\n'
+            + 'Scenario: ' + aiScenario.setup + '\nSkill  ' + aiScenario.skill + '\nGoal: ' + aiScenario.goal + '\n'
             + 'Final rapport: ' + rapport + '/100 (started at 50)\n'
             + 'OARS skills used: ' + oarsSummary + '\n'
             + (safetyTriggered ? 'SAFETY: A safety moment occurred. Did the student recognize it and suggest getting adult help?\n' : '')

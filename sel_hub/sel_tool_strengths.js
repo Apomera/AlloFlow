@@ -1068,7 +1068,7 @@ window.SelHub = window.SelHub || {
           ),
 
           // Tabs (scrollable row)
-          h('div', { role: 'tablist', 'aria-label': 'Strengths Finder tabs', style: { display: 'flex', overflowX: 'auto', borderBottom: '1px solid rgba(245,158,11,0.15)', background: 'rgba(15,23,42,0.8)', scrollbarWidth: 'none' } },
+          h('div', { role: 'tablist', style: { display: 'flex', overflowX: 'auto', borderBottom: '1px solid rgba(245,158,11,0.15)', background: 'rgba(15,23,42,0.8)', scrollbarWidth: 'none' } },
             [{ id: 'discover', label: '\u2B50 Discover' }, { id: 'interview', label: '\uD83C\uDF99\uFE0F Interview' }, { id: 'scenarios', label: '\uD83C\uDFAD Scenarios' }, { id: 'quiz', label: '\uD83E\uDDE9 Quiz' }, { id: 'reflect', label: '\uD83D\uDCDD Reflect' }, { id: 'stories', label: '\uD83D\uDCD6 Stories' }, { id: 'compare', label: '\uD83D\uDD0D Compare' }, { id: 'challenge', label: '\u26A1 Challenge' }, { id: 'gratitude', label: '\uD83D\uDE4F Gratitude' }, { id: 'planner', label: '\uD83D\uDCCB Planner' }, { id: 'peers', label: '\uD83D\uDC65 Peers' }, { id: 'affirm', label: '\uD83D\uDCAC Affirm' }, { id: 'coach', label: '\uD83E\uDD16 Coach' }, { id: 'profile', label: '\uD83D\uDCCA Profile' }].map(function(t) {
               var active = tab === t.id;
               return h('button', { 'aria-label': 'nowrap', key: t.id, role: 'tab', 'aria-selected': active, onClick: function() { sfxSelect(); var tv = tabsVisited.indexOf(t.id) < 0 ? tabsVisited.concat([t.id]) : tabsVisited; upd({ tab: t.id, tabsVisited: tv }); }, style: { flex: '0 0 auto', padding: '10px 10px', fontSize: 10, fontWeight: 'bold', color: active ? '#fbbf24' : '#94a3b8', background: active ? 'rgba(245,158,11,0.1)' : 'transparent', border: 'none', borderBottom: active ? '2px solid #f59e0b' : '2px solid transparent', cursor: 'pointer', whiteSpace: 'nowrap' } }, t.label);
@@ -1207,7 +1207,7 @@ window.SelHub = window.SelHub || {
                 h('div', { style: { padding: 16, borderRadius: 14, background: 'linear-gradient(135deg, rgba(245,158,11,0.1), rgba(234,179,8,0.05))', border: '1px solid rgba(245,158,11,0.25)', marginBottom: 16 } },
                   h('p', { style: { fontSize: 15, fontWeight: 'bold', color: '#fde68a', lineHeight: 1.6, marginBottom: 8 } }, q.question),
                   h('p', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic', marginBottom: 12 } }, '\uD83D\uDCA1 ' + q.hint),
-                  callTTS ? h('button', { 'aria-label': 'Read aloud', onClick: function() { speak(q.question + '. ' + q.hint); }, style: { background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 6, padding: '3px 8px', color: '#fbbf24', fontSize: 10, cursor: 'pointer', marginBottom: 8 } }, '\uD83D\uDD0A Read aloud') : null,
+                  callTTS ? h('button', { onClick: function() { speak(q.question + '. ' + q.hint); }, style: { background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 6, padding: '3px 8px', color: '#fbbf24', fontSize: 10, cursor: 'pointer', marginBottom: 8 } }, '\uD83D\uDD0A Read aloud') : null,
                   h('textarea', { value: interviewAnswers[q.id] || '', 'aria-label': 'Interview answer', onChange: function(e) {
                     var newAnswers = Object.assign({}, interviewAnswers);
                     newAnswers[q.id] = e.target.value;
@@ -1574,7 +1574,7 @@ window.SelHub = window.SelHub || {
                 h('div', { style: { padding: 16, borderRadius: 14, background: 'linear-gradient(135deg, rgba(245,158,11,0.1), rgba(234,179,8,0.05))', border: '1px solid rgba(245,158,11,0.25)', marginBottom: 12 } },
                   h('p', { style: { fontSize: 14, fontWeight: 'bold', color: '#fde68a', lineHeight: 1.6, marginBottom: 6 } }, promptLabel),
                   h('p', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic', marginBottom: 10 } }, '\uD83D\uDCA1 ' + currentStoryPrompt.hint),
-                  callTTS ? h('button', { 'aria-label': 'Read aloud', onClick: function() { speak(promptLabel + '. ' + currentStoryPrompt.hint); }, style: { background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 6, padding: '3px 8px', color: '#fbbf24', fontSize: 10, cursor: 'pointer', marginBottom: 8 } }, '\uD83D\uDD0A Read aloud') : null,
+                  callTTS ? h('button', { onClick: function() { speak(promptLabel + '. ' + currentStoryPrompt.hint); }, style: { background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 6, padding: '3px 8px', color: '#fbbf24', fontSize: 10, cursor: 'pointer', marginBottom: 8 } }, '\uD83D\uDD0A Read aloud') : null,
                   h('textarea', { value: storyDraft[currentStoryPrompt.id] || '', 'aria-label': 'Strength story response', onChange: function(e) {
                     var newDraft = Object.assign({}, storyDraft);
                     newDraft[currentStoryPrompt.id] = e.target.value;
@@ -1588,7 +1588,7 @@ window.SelHub = window.SelHub || {
                     storyStep < storyPrompts.length - 1 ?
                       h('button', { 'aria-label': 'Next', onClick: function() { upd({ storyStep: storyStep + 1 }); }, style: { padding: '8px 16px', borderRadius: 8, background: '#f59e0b', color: '#0f172a', border: 'none', fontSize: 12, fontWeight: 'bold', cursor: 'pointer' } }, 'Next \u2192') :
                       h('div', { style: { display: 'flex', gap: 6 } },
-                        callGemini ? h('button', { 'aria-label': 'Save Story', onClick: getAiFeedback, disabled: !allFilled || storyAiLoading, style: { padding: '8px 14px', borderRadius: 8, background: allFilled ? 'rgba(99,102,241,0.15)' : '#334155', color: allFilled ? '#a5b4fc' : '#94a3b8', border: '1px solid ' + (allFilled ? 'rgba(99,102,241,0.3)' : 'transparent'), fontSize: 12, cursor: allFilled ? 'pointer' : 'default' } }, storyAiLoading ? '\u23F3 Getting feedback...' : '\uD83E\uDD16 Get AI Feedback') : null,
+                        callGemini ? h('button', { onClick: getAiFeedback, disabled: !allFilled || storyAiLoading, style: { padding: '8px 14px', borderRadius: 8, background: allFilled ? 'rgba(99,102,241,0.15)' : '#334155', color: allFilled ? '#a5b4fc' : '#94a3b8', border: '1px solid ' + (allFilled ? 'rgba(99,102,241,0.3)' : 'transparent'), fontSize: 12, cursor: allFilled ? 'pointer' : 'default' } }, storyAiLoading ? '\u23F3 Getting feedback...' : '\uD83E\uDD16 Get AI Feedback') : null,
                         h('button', { 'aria-label': 'Save Story', onClick: saveStory, disabled: !allFilled, style: { padding: '8px 20px', borderRadius: 8, background: allFilled ? '#22c55e' : '#334155', color: allFilled ? '#0f172a' : '#94a3b8', border: 'none', fontSize: 12, fontWeight: 'bold', cursor: allFilled ? 'pointer' : 'default' } }, '\uD83D\uDCBE Save Story')
                       )
                   )
@@ -1815,7 +1815,7 @@ window.SelHub = window.SelHub || {
                   h('div', { style: { fontSize: 36, marginBottom: 10 } }, todayStrength.emoji),
                   h('div', { style: { fontSize: 12, color: todayDone ? '#34d399' : '#fbbf24', fontWeight: 'bold', marginBottom: 10 } }, 'Use your ' + todayStrength.label + ' strength:'),
                   h('p', { style: { fontSize: 15, fontWeight: 'bold', color: todayDone ? '#6ee7b7' : '#fde68a', lineHeight: 1.6, maxWidth: 400, margin: '0 auto 16px' } }, todayChallenge),
-                  callTTS ? h('button', { 'aria-label': 'Read Aloud', onClick: function() { speak('Today\u0027s challenge: Use your ' + todayStrength.label + ' strength. ' + todayChallenge); }, style: { background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 8, padding: '6px 14px', color: '#fbbf24', fontSize: 11, cursor: 'pointer', marginBottom: 12 } }, '\uD83D\uDD0A Read Aloud') : null,
+                  callTTS ? h('button', { onClick: function() { speak('Today\u0027s challenge: Use your ' + todayStrength.label + ' strength. ' + todayChallenge); }, style: { background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 8, padding: '6px 14px', color: '#fbbf24', fontSize: 11, cursor: 'pointer', marginBottom: 12 } }, '\uD83D\uDD0A Read Aloud') : null,
                   todayDone ?
                     h('div', { style: { fontSize: 13, color: '#34d399', fontWeight: 'bold' } }, '\uD83C\uDF1F Great job! Come back tomorrow for a new challenge.') :
                     h('button', { 'aria-label': 'I Did It! (+10 XP)', onClick: completeChallenge, style: { padding: '12px 30px', borderRadius: 10, background: '#22c55e', color: '#0f172a', border: 'none', fontSize: 14, fontWeight: 'bold', cursor: 'pointer' } }, '\u2705 I Did It! (+10 XP)')
@@ -2167,7 +2167,7 @@ window.SelHub = window.SelHub || {
               ) : null,
               h('div', { style: { display: 'flex', gap: 6 } },
                 h('input', { type: 'text', value: aiInput, onChange: function(e) { upd({ aiInput: e.target.value }); }, onKeyDown: function(e) { if (e.key === 'Enter' && aiInput.trim()) askAI(); }, placeholder: band === 'elementary' ? 'Ask me about your strengths...' : 'Ask about your strengths, growth areas, or how to apply them...', style: { flex: 1, padding: '10px 12px', borderRadius: 8, border: '1px solid rgba(245,158,11,0.2)', background: 'rgba(15,23,42,0.6)', color: '#e2e8f0', fontSize: 12 } }),
-                h('button', { 'aria-label': 'div', onClick: askAI, disabled: aiLoading, style: { padding: '10px 16px', borderRadius: 8, background: '#f59e0b', color: '#0f172a', border: 'none', fontWeight: 'bold', fontSize: 12, cursor: aiLoading ? 'wait' : 'pointer' } }, aiLoading ? '\u23F3' : '\u2191')
+                h('button', { onClick: askAI, disabled: aiLoading, style: { padding: '10px 16px', borderRadius: 8, background: '#f59e0b', color: '#0f172a', border: 'none', fontWeight: 'bold', fontSize: 12, cursor: aiLoading ? 'wait' : 'pointer' } }, aiLoading ? '\u23F3' : '\u2191')
               ),
               // Quick questions
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 12 } },

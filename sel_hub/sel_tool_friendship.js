@@ -300,7 +300,7 @@ window.SelHub = window.SelHub || {
             h('div', { style: { fontSize: '12px', color: '#94a3b8', lineHeight: 1.5 } }, '\uD83D\uDCA1 Why it works: ' + cur.why)
           ),
           h('div', { style: { display: 'flex', justifyContent: 'center', gap: '8px' } },
-            h('button', { onClick: function() { upd('starterIdx', (starterIdx - 1 + starters.length) % starters.length); }, 'aria-label': 'Previous starter', style: { padding: '8px 16px', background: '#fff', border: '2px solid #e5e7eb', borderRadius: '10px', cursor: 'pointer', fontWeight: 600, fontSize: '13px', color: '#374151' } }, '\u2190 Prev'),
+            h('button', { onClick: function() { upd('starterIdx', (starterIdx - 1 + starters.length) % starters.length); }, style: { padding: '8px 16px', background: '#fff', border: '2px solid #e5e7eb', borderRadius: '10px', cursor: 'pointer', fontWeight: 600, fontSize: '13px', color: '#374151' } }, '\u2190 Prev'),
             h('span', { style: { display: 'flex', alignItems: 'center', fontSize: '12px', color: '#94a3b8' } }, (starterIdx % starters.length + 1) + ' / ' + starters.length),
             h('button', { onClick: function() { upd('starterIdx', (starterIdx + 1) % starters.length); if (soundEnabled) sfxClick(); }, 'aria-label': 'Next starter', style: { padding: '8px 16px', background: AMBER, border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 600, fontSize: '13px', color: '#fff' } }, 'Next \u2192')
           )
@@ -405,7 +405,7 @@ window.SelHub = window.SelHub || {
             )
           ),
           h('div', { style: { display: 'flex', justifyContent: 'center', gap: '8px' } },
-            h('button', { onClick: function() { upd('repairIdx', (repairIdx - 1 + steps.length) % steps.length); }, 'aria-label': 'Previous step', style: { padding: '8px 16px', background: '#fff', border: '2px solid #e5e7eb', borderRadius: '10px', cursor: 'pointer', fontWeight: 600, fontSize: '13px', color: '#374151' } }, '\u2190 Prev'),
+            h('button', { onClick: function() { upd('repairIdx', (repairIdx - 1 + steps.length) % steps.length); }, style: { padding: '8px 16px', background: '#fff', border: '2px solid #e5e7eb', borderRadius: '10px', cursor: 'pointer', fontWeight: 600, fontSize: '13px', color: '#374151' } }, '\u2190 Prev'),
             h('button', { onClick: function() { upd('repairIdx', (repairIdx + 1) % steps.length); if (soundEnabled) sfxClick(); }, 'aria-label': 'Next step', style: { padding: '8px 16px', background: AMBER, border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 600, fontSize: '13px', color: '#fff' } }, 'Next \u2192')
           )
         );

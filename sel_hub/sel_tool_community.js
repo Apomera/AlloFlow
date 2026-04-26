@@ -1872,8 +1872,7 @@ window.SelHub = window.SelHub || {
                 (band === 'elementary' ? ['What is Diwali?', 'Why do people speak different languages?', 'How can I be a good friend to everyone?', 'Why is my name important?'] :
                  band === 'middle' ? ['What is a microaggression?', 'How do I be a better ally?', 'What is code-switching?', 'How do stereotypes form?'] :
                  ['What is intersectionality?', 'How does systemic bias work?', 'What is cultural humility?', 'How can I take action for equity?']).map(function(q) {
-                  return h('button', { 'aria-label': 'div',
-                    key: q, onClick: function() { upd({ aiPrompt: q }); },
+                  return h('button', { key: q, onClick: function() { upd({ aiPrompt: q }); },
                     style: { padding: '4px 10px', borderRadius: 6, border: '1px solid #334155', background: '#0f172a', color: '#94a3b8', fontSize: 10, cursor: 'pointer' }
                   }, q);
                 })

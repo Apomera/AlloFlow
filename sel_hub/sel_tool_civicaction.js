@@ -822,7 +822,7 @@ window.SelHub = window.SelHub || {
         ),
 
         // ── Tab Navigation ──
-        h('div', { role: 'tablist', 'aria-label': 'Civic Action tabs', className: 'flex gap-1 bg-teal-50 rounded-xl p-1 border border-teal-200 overflow-x-auto' },
+        h('div', { role: 'tablist', className: 'flex gap-1 bg-teal-50 rounded-xl p-1 border border-teal-200 overflow-x-auto' },
           TABS.map(function(t) {
             return h('button', { 'aria-label': t.label,
               key: t.id,
@@ -1132,7 +1132,7 @@ window.SelHub = window.SelHub || {
                 onClick: function() { upd('plannerStep', plannerStep - 1); },
                 className: 'px-4 py-2 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50'
               }, '\u2190 Previous') : h('div'),
-              plannerStep < PLANNER_STEPS.length - 1 ? h('button', { 'aria-label': 'Next',
+              plannerStep < PLANNER_STEPS.length - 1 ? h('button', { 
                 onClick: function() { upd('plannerStep', plannerStep + 1); ctx.awardXP(5); },
                 className: 'px-4 py-2 bg-teal-700 text-white rounded-lg text-xs font-bold hover:bg-teal-700'
               }, 'Next \u2192') : h('button', { 'aria-label': 'Next',
@@ -1977,7 +1977,7 @@ window.SelHub = window.SelHub || {
                       onClick: function() { updMulti({ rightsIdx: rightsIdx - 1, rightsScenarioAnswer: '' }); },
                       className: 'px-4 py-2 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50'
                     }, '\u2190 Previous Right') : h('div'),
-                    rightsIdx < rightsInfo.rights.length - 1 ? h('button', { 'aria-label': 'Next Right',
+                    rightsIdx < rightsInfo.rights.length - 1 ? h('button', { 
                       onClick: function() { updMulti({ rightsIdx: rightsIdx + 1, rightsScenarioAnswer: '' }); },
                       className: 'px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700'
                     }, 'Next Right \u2192') : h('button', { 'aria-label': 'Complete Rights Explorer',
@@ -2097,7 +2097,7 @@ window.SelHub = window.SelHub || {
                     onClick: function() { upd('servicePhase', servicePhase - 1); },
                     className: 'px-4 py-2 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50'
                   }, '\u2190 Previous Phase') : h('div'),
-                  servicePhase < SERVICE_PHASES.length - 1 ? h('button', { 'aria-label': 'Next Phase',
+                  servicePhase < SERVICE_PHASES.length - 1 ? h('button', { 
                     onClick: function() { upd('servicePhase', servicePhase + 1); ctx.awardXP(5); },
                     className: 'px-4 py-2 bg-teal-700 text-white rounded-lg text-xs font-bold hover:bg-teal-700'
                   }, 'Next Phase \u2192') : h('button', { 'aria-label': 'Next Phase',

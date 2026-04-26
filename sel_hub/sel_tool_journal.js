@@ -741,7 +741,7 @@ window.SelHub = window.SelHub || {
           { id: 'badges',   icon: '\uD83C\uDFC5', label: 'Badges' }
         ];
 
-        var tabBar = h('div', { role: 'tablist', 'aria-label': 'Journal tabs', style: { display: 'flex', borderBottom: '1px solid #1e293b', padding: '0 8px', alignItems: 'center', flexShrink: 0 } },
+        var tabBar = h('div', { role: 'tablist', style: { display: 'flex', borderBottom: '1px solid #1e293b', padding: '0 8px', alignItems: 'center', flexShrink: 0 } },
           TABS.map(function(t) {
             var isActive = activeTab === t.id;
             return h('button', { 'aria-label': t.icon + ' ' + t.label,

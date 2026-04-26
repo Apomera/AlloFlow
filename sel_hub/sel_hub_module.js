@@ -453,7 +453,7 @@
             })
           ),
           // CASEL category filter chips
-          h('div', { role: 'group', 'aria-label': 'Filter by CASEL competency', style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 16 } },
+          h('div', { role: 'group', style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 16 } },
             h('button', {
               onClick: function() { setSelCategoryFilter(null); announceToSR('Showing all categories'); },
               'aria-label': 'Show all categories',
