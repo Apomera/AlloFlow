@@ -1970,7 +1970,10 @@
                                                               "close_generator": "Close Generator",
                                                                 "exit_caller_aria": "Exit Bingo Caller",
                                                                   "launch_caller_aria": "Launch Bingo Caller",
-                                                                    "pause_duration": "Pause Duration"
+                                                                    "pause_duration": "Pause Duration",
+                                                                      "toggle_images_aria": "Toggle picture cards on or off",
+                                                                        "show_images_title": "Show pictures on cards",
+                                                                          "hide_images_title": "Hide pictures from cards"
   },
   "audio_player": {
     "resume": "Resume Audio",
