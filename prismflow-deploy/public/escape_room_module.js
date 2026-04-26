@@ -1996,6 +1996,7 @@ inputText.substring(0, 6000) + '\n' +
             }, t('common.cancel')),
             h('button', {
               'aria-label': t('common.launch_escape_room'),
+              'aria-busy': !!escapeRoomState.isGenerating,
               onClick: handlers.launchEscapeRoomWithSettings,
               disabled: !hasSourceOrAnalysis,
               className: 'flex-1 py-3 rounded-xl bg-amber-700 text-white font-bold hover:bg-amber-600 transition-all shadow-lg hover:shadow-amber-500/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2'
@@ -2035,7 +2036,7 @@ inputText.substring(0, 6000) + '\n' +
           ),
           // Room theme banner
           h('div', { className: 'mb-4 p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl border border-amber-200' },
-            h('h3', { className: 'font-bold text-amber-800 text-lg' }, '\uD83C\uDFF0 ' + escapeRoomState.room.theme),
+            h('h3', { className: 'font-bold text-amber-800 text-lg' }, h('span', { 'aria-hidden': 'true' }, '\uD83C\uDFF0 '), escapeRoomState.room.theme),
             h('p', { className: 'text-amber-700 text-sm mt-1' }, escapeRoomState.room.description)
           ),
           // Puzzles list
@@ -2154,7 +2155,7 @@ inputText.substring(0, 6000) + '\n' +
           // Final door puzzle
           escapeRoomState.finalDoorPuzzle
             ? h('div', { className: 'mb-6 p-4 bg-gradient-to-r from-red-50 to-orange-50 rounded-2xl border border-red-200' },
-                h('h4', { className: 'font-bold text-red-800 mb-2' }, '\uD83D\uDEAA Final Door Puzzle'),
+                h('h4', { className: 'font-bold text-red-800 mb-2' }, h('span', { 'aria-hidden': 'true' }, '\uD83D\uDEAA '), 'Final Door Puzzle'),
                 h('input', {
                   type: 'text',
                   value: escapeRoomState.finalDoorPuzzle.sentence || '',

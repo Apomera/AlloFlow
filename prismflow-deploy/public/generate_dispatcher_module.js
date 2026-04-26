@@ -1920,6 +1920,7 @@ ${modeListForAuto}
              throw new Error("Failed to parse Concept Sort JSON. The AI response was not valid.");
          }
       } else if (type === 'dbq') {
+         console.log('[DBQ] Branch entered. gradeLevel=' + gradeLevel + ', textToProcess length=' + (textToProcess?.length || 0) + ', effectiveLanguage=' + effectiveLanguage);
          setGenerationStep('Creating Document-Based Questions...');
          const isElementary = /k|1st|2nd|3rd|4th|5th/i.test(gradeLevel);
          const isMiddle = /6th|7th|8th/i.test(gradeLevel);
@@ -1928,6 +1929,7 @@ ${modeListForAuto}
          const _dbqCustomDocs = document.getElementById('dbq-custom-docs')?.value || '';
          const _dbqCustomEssayFocus = document.getElementById('dbq-custom-essay-focus')?.value || '';
          const _dbqTeacherLinks = document.getElementById('dbq-teacher-links')?.value || '';
+         console.log('[DBQ] Mode=' + _dbqMode + ', focusTopic=' + _dbqFocusTopic.substring(0, 60) + ', hasCustomDocs=' + !!_dbqCustomDocs + ', hasTeacherLinks=' + !!_dbqTeacherLinks);
          let _dbqSearchResults = '';
          if ((_dbqMode === 'search' || _dbqMode === 'links') && (window._webSearch || window._aiBackend?.webSearch)) {
            try {
@@ -2053,14 +2055,18 @@ Return ONLY JSON:
   ],
   "teacherNotes": "Brief notes on scaffolding, differentiation, or extension ideas"
 }`;
+         console.log('[DBQ] About to call Gemini. Prompt length=' + dbqPrompt.length);
          const result = await callGemini(dbqPrompt, true);
+         console.log('[DBQ] Gemini returned. Result length=' + (result?.length || 0) + '. Preview: ' + String(result || '').substring(0, 200));
          try {
              content = JSON.parse(cleanJson(result));
              if (!content.documents) content.documents = [];
              if (!content.rubric) content.rubric = [];
-             meta = `${content.documents?.length || 0} documents · ${content.rubric?.length || 0} rubric criteria`;
+             metaInfo = `${content.documents?.length || 0} documents · ${content.rubric?.length || 0} rubric criteria`;
+             console.log('[DBQ] Parsed successfully. ' + metaInfo);
          } catch (parseErr) {
              warnLog("DBQ Parse Error:", parseErr);
+             console.error('[DBQ] JSON parse failed. Raw response (first 1000 chars):', String(result || '').substring(0, 1000));
              throw new Error("Failed to parse DBQ JSON. The AI response was not valid.");
          }
       } else if (type === 'lesson-plan') {

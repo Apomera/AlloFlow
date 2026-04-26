@@ -1857,7 +1857,7 @@ Return ONLY valid JSON:
                 !extracting && h('div', { className: 'space-y-2 max-h-[400px] overflow-y-auto' },
                     factChunks.length === 0 && h('div', { className: 'text-center py-8 text-slate-600' },
                         h('p', { className: 'text-sm' }, 'No fact chunks yet'),
-                        h('button', { 'aria-label': '🔍 Extract Facts', className: 'mt-2 px-3 py-1.5 bg-violet-600 text-white text-xs rounded-lg', onClick: extractFactChunks }, '🔍 Extract Facts')
+                        h('button', { 'aria-label': 'Extract facts', className: 'mt-2 px-3 py-1.5 bg-violet-600 text-white text-xs rounded-lg', onClick: extractFactChunks }, '🔍 Extract Facts')
                     ),
                     factChunks.map(chunk =>
                         h('div', { key: chunk.id, className: `rounded-lg p-3 border transition-all ${chunk.verified ? 'bg-green-50 border-green-200' : 'bg-amber-50 border-amber-200'}` },
@@ -1873,7 +1873,7 @@ Return ONLY valid JSON:
                                     chunk.devNormResult?.explanation && h('p', { className: `text-[11px] mt-0.5 ${cText(chunk.devNormResult.color)}` }, chunk.devNormResult.explanation)
                                 ),
                                 !chunk.verified && h('div', { className: 'flex items-center gap-1' },
-                                    h('button', { className: 'px-2 py-1 bg-green-700 text-white text-[11px] rounded hover:bg-green-700', onClick: () => verifyChunk(chunk.id), title: 'Verify & Lock' }, '✅'),
+                                    h('button', { 'aria-label': 'Verify and lock this fact chunk', className: 'px-2 py-1 bg-green-700 text-white text-[11px] rounded hover:bg-green-700', onClick: () => verifyChunk(chunk.id), title: 'Verify & Lock' }, '✅'),
                                     h('button', { 'aria-label': 'Reject fact chunk', className: 'px-2 py-1 bg-red-100 text-red-600 text-[11px] rounded hover:bg-red-200', onClick: () => rejectChunk(chunk.id), title: 'Reject' }, '✕')
                                 )
                             )
@@ -2186,7 +2186,7 @@ Return ONLY valid JSON:
                             h('p', { className: 'text-lg font-bold text-violet-700' }, `${accuracyResults.length > 0 ? Math.round((accuracyResults.filter(r => r.status === 'verified').length / accuracyResults.length) * 100) : 0}%`),
                             h('p', { className: 'text-[11px] text-slate-600' }, 'Accuracy')
                         ),
-                        h('button', { 'aria-label': '🔄 Re-check', className: 'px-3 py-1 bg-violet-100 text-violet-700 text-[11px] rounded-lg hover:bg-violet-200', onClick: runAccuracyCheck }, '🔄 Re-check')
+                        h('button', { 'aria-label': 'Re-check accuracy', className: 'px-3 py-1 bg-violet-100 text-violet-700 text-[11px] rounded-lg hover:bg-violet-200', onClick: runAccuracyCheck }, '🔄 Re-check')
                     ),
                     // Claim-by-claim results
                     accuracyResults.length > 0 && h('div', { className: 'space-y-1 max-h-[350px] overflow-y-auto' },
@@ -2204,7 +2204,7 @@ Return ONLY valid JSON:
                     ),
                     accuracyResults.length === 0 && h('div', { className: 'text-center py-8' },
                         h('p', { className: 'text-slate-600 text-xs' }, 'No accuracy results yet'),
-                        h('button', { 'aria-label': '🎯 Run Accuracy Check', className: 'mt-2 px-4 py-2 bg-violet-600 text-white text-xs rounded-lg', onClick: runAccuracyCheck }, '🎯 Run Accuracy Check')
+                        h('button', { 'aria-label': 'Run accuracy check', className: 'mt-2 px-4 py-2 bg-violet-600 text-white text-xs rounded-lg', onClick: runAccuracyCheck }, '🎯 Run Accuracy Check')
                     )
                 ),
                 h('div', { className: 'flex justify-between pt-2' },

@@ -75,6 +75,10 @@
     var kokoroVoices = props.kokoroVoices || [];
     var studentNickname = props.studentNickname || '';
     var handleScoreUpdate = props.handleScoreUpdate;
+    // Resource-history integration (teacher-scaffold path; mirrors StoryForge / PoetTree)
+    var initialConfig = props.initialConfig || null;
+    var onSaveConfig = props.onSaveConfig || null;        // non-null => teacher mode
+    var onSaveSubmission = props.onSaveSubmission || null; // non-null => save to portfolio enabled
 
     var e = React.createElement;
     var useState = React.useState;
@@ -147,6 +151,28 @@
     // Saved scripts
     var _savedScripts = useState(function () { return load(STORAGE_SCRIPTS, []); });
     var savedScripts = _savedScripts[0]; var setSavedScripts = _savedScripts[1];
+
+    // Teacher-scaffold field (saved into the resource-history config payload).
+    // teacherPrompt: a focus-note / performance instructions the teacher writes for the assignment.
+    var _teacherPrompt = useState(''); var teacherPrompt = _teacherPrompt[0]; var setTeacherPrompt = _teacherPrompt[1];
+
+    // Hydrate from a saved teacher assignment (initialConfig) the first time it shows up.
+    var _hydratedFromConfig = useRef(false);
+    React.useEffect(function () {
+      if (_hydratedFromConfig.current) return;
+      if (!initialConfig) return;
+      _hydratedFromConfig.current = true;
+      try {
+        if (initialConfig.sourceText) setSourceText(initialConfig.sourceText);
+        if (initialConfig.storyTitle) setStoryTitle(initialConfig.storyTitle);
+        if (initialConfig.teacherPrompt) setTeacherPrompt(initialConfig.teacherPrompt);
+        if (initialConfig.genGenre) setGenGenre(initialConfig.genGenre);
+        if (initialConfig.genLength) setGenLength(initialConfig.genLength);
+        if (initialConfig.genGradeLevel) setGenGradeLevel(initialConfig.genGradeLevel);
+        if (initialConfig.inputMode) setInputMode(initialConfig.inputMode);
+        if (addToast) addToast('Assignment loaded!', 'success');
+      } catch (err) { console.warn('[LitLab] initialConfig hydration failed:', err && err.message); }
+    }, [initialConfig]);
 
     // Scene illustration
     var _sceneImage = useState(null); var sceneImage = _sceneImage[0]; var setSceneImage = _sceneImage[1];
@@ -489,6 +515,47 @@
       setSourceText(entry.sourceText || '');
       setPhase('assign');
     }, []);
+
+    // ── Resource-history hooks (mirror StoryForge / PoetTree) ──
+    // saveAsAssignment: teacher captures source text + title + focus prompt into a
+    // 'litlab-config' resource so students can load it pre-populated.
+    var saveAsAssignment = useCallback(function () {
+      if (!onSaveConfig) return;
+      var config = {
+        storyTitle: storyTitle,
+        sourceText: sourceText,
+        teacherPrompt: teacherPrompt,
+        gradeLevel: gradeLevel,
+        inputMode: inputMode,
+        genGenre: genGenre,
+        genLength: genLength,
+        genGradeLevel: genGradeLevel,
+        savedAt: new Date().toISOString()
+      };
+      onSaveConfig(config);
+      addToast && addToast('LitLab assignment saved!', 'success');
+    }, [onSaveConfig, storyTitle, sourceText, teacherPrompt, gradeLevel, inputMode, genGenre, genLength, genGradeLevel, addToast]);
+
+    // saveSubmissionToPortfolio: student saves their performed/analyzed work as a
+    // 'litlab-submission' resource for portfolio review.
+    var saveSubmissionToPortfolio = useCallback(function () {
+      if (!onSaveSubmission) return;
+      if (!script) { addToast && addToast('Generate or load a script first!', 'info'); return; }
+      var submission = {
+        storyTitle: storyTitle || (script && script.title) || 'My Performance',
+        scriptTitle: script.title || '',
+        characterCount: (script.characters || []).length,
+        lineCount: (script.lines || []).length,
+        characters: (script.characters || []).map(function (c) { return { name: c.name, voice: c.voice, color: c.color }; }),
+        analysisFeedback: analysisFeedback || null,
+        myRole: myRole,
+        author: studentNickname || 'Student',
+        gradeLevel: gradeLevel,
+        savedAt: new Date().toISOString()
+      };
+      onSaveSubmission(submission);
+      addToast && addToast('Performance saved to portfolio!', 'success');
+    }, [onSaveSubmission, script, storyTitle, analysisFeedback, myRole, studentNickname, gradeLevel, addToast]);
 
     // ── Generate Character Portraits ──
     var generatePortrait = useCallback(async function (charId) {
@@ -895,6 +962,39 @@
               e('h3', { style: { fontSize: '22px', fontWeight: 800, color: '#1e293b' } }, '🎭 Create Your Performance'),
               e('p', { style: { color: '#475569', fontSize: '14px' } }, 'Paste a story, import from URL, or let AI write one — then bring it to life with character voices.')
             ),
+
+            // ── Assignment prompt banner (visible to students when teacher set a prompt) ──
+            teacherPrompt && !onSaveConfig && e('div', { role: 'note', 'aria-label': 'Assignment prompt from teacher', style: { background: '#fffbeb', border: '2px solid #fde68a', borderRadius: '12px', padding: '12px 14px', marginBottom: '16px' } },
+              e('div', { style: { fontSize: '11px', fontWeight: 800, color: '#92400e', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px' } }, '📋 Assignment'),
+              e('p', { style: { fontSize: '13px', color: '#78350f', margin: 0, lineHeight: 1.6 } }, teacherPrompt)
+            ),
+
+            // ── Teacher Assignment Builder (visible only when onSaveConfig is provided) ──
+            onSaveConfig && e('div', { role: 'region', 'aria-label': 'Teacher Assignment Builder', style: { background: '#eff6ff', border: '2px solid #bfdbfe', borderRadius: '12px', padding: '14px', marginBottom: '16px' } },
+              e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', flexWrap: 'wrap', gap: '6px' } },
+                e('h4', { style: { fontSize: '13px', fontWeight: 800, color: '#1e40af', margin: 0 } }, '🧑‍🏫 Teacher Assignment Builder'),
+                e('span', { style: { fontSize: '10px', color: '#1e40af', background: '#dbeafe', padding: '2px 8px', borderRadius: '999px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' } }, 'Teacher mode')
+              ),
+              e('p', { style: { fontSize: '11px', color: '#1e3a8a', margin: '0 0 10px', lineHeight: 1.5 } },
+                'Paste or generate the source text below, give it a title, and add a focus prompt. Save it as an assignment so students can load it from My Resources.'
+              ),
+              e('label', { htmlFor: 'll-teacher-prompt', style: { display: 'block', fontSize: '11px', fontWeight: 700, color: '#1e40af', marginBottom: '4px' } }, 'Performance focus / instructions for students'),
+              e('textarea', {
+                id: 'll-teacher-prompt',
+                value: teacherPrompt,
+                onChange: function (ev) { setTeacherPrompt(ev.target.value); },
+                placeholder: 'e.g. "Read aloud with feeling — vary your voice for each character. Pay attention to where the narrator changes mood."',
+                rows: 3,
+                style: { width: '100%', padding: '8px 10px', borderRadius: '8px', border: '1px solid #bfdbfe', fontSize: '13px', fontFamily: 'inherit', resize: 'vertical', background: '#fff', boxSizing: 'border-box' }
+              }),
+              e('button', {
+                onClick: saveAsAssignment,
+                disabled: !sourceText.trim() && !storyTitle.trim() && !teacherPrompt.trim(),
+                'aria-label': 'Save this LitLab setup as an assignment in My Resources',
+                style: { marginTop: '10px', padding: '8px 16px', background: !sourceText.trim() && !storyTitle.trim() && !teacherPrompt.trim() ? '#cbd5e1' : '#2563eb', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: !sourceText.trim() && !storyTitle.trim() && !teacherPrompt.trim() ? 'not-allowed' : 'pointer' }
+              }, '💾 Save as Assignment')
+            ),
+
             // Mode selector
             e('div', { style: { display: 'flex', gap: '8px', marginBottom: '16px', justifyContent: 'center' } },
               [['paste', '📋 Paste Text'], ['generate', '✨ AI Generate']].map(function (pair) {
@@ -1106,8 +1206,9 @@
                 );
               })
             ),
-            e('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center' } },
+            e('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' } },
               e('button', { onClick: saveScript, style: S.btn('#f1f5f9', '#374151', false) }, '💾 Save Script'),
+              onSaveSubmission && e('button', { onClick: saveSubmissionToPortfolio, 'aria-label': 'Save this performance to your portfolio (My Resources)', style: S.btn('#7c3aed', '#fff', false) }, '📚 Save to Portfolio'),
               e('button', { onClick: function () { setPhase('perform'); setCurrentLine(0); }, style: S.btn(PURPLE, '#fff', false) }, '🎭 Start Performance →')
             )
           ),
@@ -1117,11 +1218,11 @@
             // Controls bar
             e('div', { style: { display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', padding: '12px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e5e7eb' } },
               !isPlaying
-                ? e('button', { onClick: function () { playFromLine(currentLine); }, autoFocus: true, 'aria-label': 'Play performance', style: S.btn('#22c55e', '#fff', false) }, '▶ Play')
+                ? e('button', { onClick: function () { playFromLine(currentLine); }, autoFocus: true, style: S.btn('#22c55e', '#fff', false) }, '▶ Play')
                 : null,
               isPlaying && (isPaused
-                ? e('button', { onClick: resumePlayback, 'aria-label': 'Resume playback', style: S.btn('#22c55e', '#fff', false) }, '▶ Resume')
-                : e('button', { onClick: pausePlayback, 'aria-label': 'Pause playback after current line', style: S.btn('#f59e0b', '#fff', false) }, '⏸ Pause')),
+                ? e('button', { onClick: resumePlayback, style: S.btn('#22c55e', '#fff', false) }, '▶ Resume')
+                : e('button', { onClick: pausePlayback, style: S.btn('#f59e0b', '#fff', false) }, '⏸ Pause')),
               isPlaying && e('button', { onClick: stopPlayback, 'aria-label': 'Stop playback', style: S.btn('#ef4444', '#fff', false) }, '⏹ Stop'),
               e('div', { style: { display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: '#475569' } },
                 e('span', null, 'Speed:'),

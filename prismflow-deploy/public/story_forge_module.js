@@ -2319,6 +2319,8 @@ show();
     {
       key,
       onClick: () => setGenre(key),
+      'aria-label': g.label + (g.desc ? ' — ' + g.desc : '') + (genre === key ? ' (selected)' : ''),
+      'aria-pressed': genre === key,
       className: `p-3 rounded-xl border-2 text-center text-xs font-bold transition-all ${genre === key ? "border-indigo-500 bg-indigo-50 text-indigo-700 shadow-md" : "border-slate-200 text-slate-600 hover:border-indigo-300"}`
     },
     g.emoji,
@@ -2360,6 +2362,8 @@ show();
     {
       key: style,
       onClick: () => setArtStyle(style),
+      'aria-label': style + ' art style' + (artStyle === style ? ' (selected)' : ''),
+      'aria-pressed': artStyle === style,
       className: `p-3 rounded-xl border-2 text-center text-xs font-bold capitalize transition-all ${artStyle === style ? "border-purple-500 bg-purple-50 text-purple-700 shadow-md" : "border-slate-200 text-slate-600 hover:border-purple-300"}`
     },
     style === "storybook" ? "\u{1F4DA}" : style === "pixel" ? "\u{1F47E}" : style === "cinematic" ? "\u{1F3AC}" : style === "anime" ? "\u2728" : "\u{1F58D}\uFE0F",
