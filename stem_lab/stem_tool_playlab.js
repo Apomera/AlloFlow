@@ -428,6 +428,8 @@ window.StemLab = window.StemLab || {
       var setStemLabTool = ctx.setStemLabTool;
       var ArrowLeft = ctx.icons && ctx.icons.ArrowLeft;
       var addToast = ctx.addToast;
+      var callGemini = ctx.callGemini;
+      var awardXP = ctx.awardXP;
 
       // State init
       if (!labToolData || !labToolData.playlab) {
@@ -445,7 +447,12 @@ window.StemLab = window.StemLab || {
             // their new (x, y) positions land here keyed by player id.
             // null entry = follow the play's preset position. Cleared
             // when a different play preset is loaded.
-            customPositions: {}
+            customPositions: {},
+            // Coach Mode — Gemini-powered analysis of the active play
+            // against the active coverage. Same shape as ThrowLab's coach.
+            coachLoading: false,
+            coachReply: '',
+            coachError: ''
           }});
         });
         return h('div', { className: 'p-8 text-center text-slate-600' }, 'Loading PlayLab…');
@@ -494,6 +501,67 @@ window.StemLab = window.StemLab || {
           })});
         });
         plAnnounce('Player positions reset to preset.');
+      }
+
+      // ── Coach Mode (Gemini) ──
+      // Sends the active play, the active coverage, the open-receiver
+      // analysis, and any custom-position edits to Gemini for tactical
+      // feedback. Coaches a specific adjustment for THIS play vs THIS
+      // defense, not generic advice.
+      function askCoach() {
+        if (typeof callGemini !== 'function') {
+          setLabToolData(function(prev) {
+            return Object.assign({}, prev, { playlab: Object.assign({}, prev.playlab, {
+              coachError: 'Coach is offline (AI not available in this build).'
+            })});
+          });
+          plAnnounce('Coach is offline.');
+          return;
+        }
+        setLabToolData(function(prev) {
+          return Object.assign({}, prev, { playlab: Object.assign({}, prev.playlab, {
+            coachLoading: true, coachReply: '', coachError: ''
+          })});
+        });
+        // Compact representation of the formation so the prompt is small.
+        // Round to 1 yd to keep numbers human-readable.
+        var formationDigest = formation.filter(function(p) {
+          return p.role === 'WR' || p.role === 'TE' || p.role === 'RB' || p.role === 'QB';
+        }).map(function(p) {
+          var endX = p.route ? p.route[p.route.length - 1].x : p.x;
+          var endY = p.route ? p.route[p.route.length - 1].y : p.y;
+          return p.id + ' starts (' + p.x.toFixed(0) + ',' + p.y.toFixed(0) + ')'
+            + (p.route && p.route.length > 1 ? ' → route ends (' + endX.toFixed(0) + ',' + endY.toFixed(0) + ')' : ' [no route]');
+        }).join('; ');
+        var topOpen = analysis.slice(0, 3).map(function(r) {
+          return r.id + ' (' + r.opennessYd.toFixed(1) + ' yd from nearest defender, near ' + r.nearestZone + ')';
+        }).join(', ');
+        var customEdits = Object.keys(d.customPositions || {}).length;
+        var prompt = 'You are a football coach analyzing a student\'s play call. '
+          + 'Active play: "' + play.label + '". Concept: ' + play.teach + ' '
+          + 'Active defense: ' + coverage.label + '. Note: ' + coverage.teach + ' '
+          + 'Field is 100×53.33 yards. LOS at x=' + d.losX + '. '
+          + 'Eligible receivers + their routes: ' + formationDigest + '. '
+          + 'Open-receiver analysis (top 3): ' + topOpen + '. '
+          + (customEdits ? 'Student has made ' + customEdits + ' custom position edits to the preset. ' : '')
+          + 'Give 3-4 sentences of warm, specific coaching: (1) acknowledge what the play attacks against THIS coverage, (2) name the most-open receiver and explain WHY they\'re open in geometric terms (not just "no defender nearby"), (3) suggest ONE concrete adjustment (move a player N yards, change a route depth, swap a coverage), (4) tie the suggestion to the math the student can see on the field. '
+          + 'Plain prose, no markdown, no bullets, no headings.';
+        callGemini(prompt, false, false, 0.7).then(function(resp) {
+          var reply = String(resp || '').trim();
+          setLabToolData(function(prev) {
+            return Object.assign({}, prev, { playlab: Object.assign({}, prev.playlab, {
+              coachLoading: false, coachReply: reply, coachError: ''
+            })});
+          });
+          plAnnounce('Coach: ' + reply);
+          if (awardXP) awardXP('playlab', 5, 'Asked the coach');
+        }).catch(function() {
+          setLabToolData(function(prev) {
+            return Object.assign({}, prev, { playlab: Object.assign({}, prev.playlab, {
+              coachLoading: false, coachError: 'Could not reach the coach. Try again in a moment.'
+            })});
+          });
+        });
       }
       function loadCoverage(cid) {
         var seen = Object.assign({}, d.coveragesViewed || {}); seen[cid] = true;
@@ -800,6 +868,25 @@ window.StemLab = window.StemLab || {
             !Object.keys(d.customPositions || {}).length ? h('div', {
               style: { marginTop: 6, fontSize: 11, color: '#94a3b8', fontStyle: 'italic' }
             }, '💡 Tip: click and drag any player on the field to reposition them. The route stays attached so you can design your own play.') : null,
+            // ── Coach Mode bubble ──
+            // Renders only when there's a reply, error, or in-flight request.
+            // Sits between the toggles and the analysis panel so coaching
+            // appears prominently right under the field.
+            (d.coachReply || d.coachError || d.coachLoading) ? h('section', {
+              'aria-labelledby': 'pl-coach-heading',
+              'aria-busy': !!d.coachLoading,
+              style: { marginTop: 10, padding: 12, background: 'linear-gradient(135deg, rgba(217,70,239,0.10), rgba(124,58,237,0.10))', border: '1px solid #d946ef', borderRadius: 10 }
+            },
+              h('h3', { id: 'pl-coach-heading',
+                style: { fontSize: 12, margin: 0, marginBottom: 6, color: '#d946ef', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 600 }
+              }, '🤖 Coach analysis'),
+              d.coachLoading
+                ? h('div', { style: { color: '#cbd5e1', fontSize: 12, fontStyle: 'italic' } }, 'Analyzing the play vs the coverage…')
+                : d.coachError
+                ? h('div', { style: { color: '#ef4444', fontSize: 12 } }, d.coachError)
+                : h('div', { style: { color: '#f1f5f9', fontSize: 13, lineHeight: 1.5 } }, d.coachReply)
+            ) : null,
+
             // Analysis panel
             h('section', {
               'aria-labelledby': 'pl-analysis-heading',
@@ -850,6 +937,24 @@ window.StemLab = window.StemLab || {
                 '🛡️ ' + coverage.label),
               h('div', { style: { fontSize: 13, color: '#cbd5e1', lineHeight: 1.5 } }, coverage.teach)
             ),
+            // Coach button — only renders if Gemini is available. The
+            // analysis itself appears in the bubble under the field canvas
+            // (left column) so it doesn't squeeze the narrow right column.
+            typeof callGemini === 'function' ? h('button', {
+              onClick: askCoach,
+              disabled: !!d.coachLoading,
+              'aria-busy': !!d.coachLoading,
+              'aria-label': d.coachLoading ? 'Coach is thinking' : 'Ask the coach to analyze this play vs the active coverage',
+              'data-pl-focusable': 'true',
+              style: {
+                width: '100%', marginBottom: 10,
+                padding: '10px 14px', minHeight: 36, borderRadius: 6,
+                cursor: d.coachLoading ? 'wait' : 'pointer',
+                border: '1px solid #d946ef',
+                background: d.coachLoading ? '#1e293b' : 'rgba(217, 70, 239, 0.18)',
+                color: '#f1f5f9', fontSize: 12, fontWeight: 600
+              }
+            }, d.coachLoading ? '🤖 Coach is analyzing…' : '🤖 Ask the coach') : null,
             h('div', { style: { fontSize: 11, color: '#94a3b8', display: 'flex', justifyContent: 'space-between' } },
               h('span', null, 'Plays seen: ' + Object.keys(d.playsViewed || {}).length + ' / ' + PLAYS.length),
               h('span', null, 'Coverages seen: ' + Object.keys(d.coveragesViewed || {}).length + ' / ' + COVERAGES.length)
