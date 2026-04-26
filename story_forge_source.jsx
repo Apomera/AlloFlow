@@ -1539,24 +1539,42 @@ Return ONLY JSON:
       const audio = audioSegments[p.id];
       const safeText = escapeHtml(p.text);
       if (isComic) {
-        chaptersHtml += `<div class="panel">`;
-        if (img) chaptersHtml += `<img src="${img}" class="panel-img" loading="lazy" alt="Panel ${idx + 1}" />`;
-        chaptersHtml += `<div class="speech-bubble">${safeText.length > 200 ? safeText.substring(0, 200) + '...' : safeText.replace(/\n/g, '<br/>')}</div>`;
-        chaptersHtml += `</div>`;
+        // Pull dialogue/sticker overlay data — these were rendered in-app but previously dropped on export.
+        const panel = panelDialogue[p.id] || {};
+        const safeSpeaker = panel.speaker ? escapeHtml(panel.speaker) : '';
+        const safeSpeech = panel.speech ? escapeHtml(panel.speech) : '';
+        const safeThought = panel.thought ? escapeHtml(panel.thought) : '';
+        const safeSfx = panel.sfx ? escapeHtml(panel.sfx) : '';
+        const sticker = panelStickers[p.id] || '';
+        chaptersHtml += `<article class="panel" aria-label="Comic panel ${idx + 1}">`;
+        if (img) chaptersHtml += `<div class="panel-img-wrap">`;
+        if (img) chaptersHtml += `<img src="${img}" class="panel-img" loading="lazy" alt="Comic panel ${idx + 1} illustration" />`;
+        if (img && safeSfx) chaptersHtml += `<span class="sfx-tag" aria-label="Sound effect: ${safeSfx}">${safeSfx}</span>`;
+        if (img && sticker) chaptersHtml += `<span class="panel-sticker" aria-hidden="true">${escapeHtml(sticker)}</span>`;
+        if (img) chaptersHtml += `</div>`;
+        if (safeSpeech) {
+          chaptersHtml += `<div class="dialogue-bubble">`;
+          if (safeSpeaker) chaptersHtml += `<div class="dialogue-speaker">${safeSpeaker}:</div>`;
+          chaptersHtml += `<div class="dialogue-speech">${safeSpeech}</div>`;
+          chaptersHtml += `</div>`;
+        }
+        if (safeThought) chaptersHtml += `<div class="thought-bubble" aria-label="Inner thought">💭 ${safeThought}</div>`;
+        chaptersHtml += `<div class="speech-bubble panel-caption">${safeText.length > 200 ? safeText.substring(0, 200) + '...' : safeText.replace(/\n/g, '<br/>')}</div>`;
+        chaptersHtml += `</article>`;
       } else {
-        chaptersHtml += `<div class="chapter">`;
+        chaptersHtml += `<article class="chapter" aria-label="Paragraph ${idx + 1}">`;
         if (img) chaptersHtml += `<img src="${img}" class="scene-img" loading="lazy" alt="Illustration for paragraph ${idx + 1}" />`;
         chaptersHtml += `<p class="story-text">${safeText.replace(/\n/g, '<br/>')}</p>`;
         if (audio?.studentAudioBase64) {
-          chaptersHtml += `<audio controls src="data:audio/webm;base64,${audio.studentAudioBase64}" style="width:100%;margin-top:8px;"></audio>`;
+          chaptersHtml += `<audio controls src="data:audio/webm;base64,${audio.studentAudioBase64}" style="width:100%;margin-top:8px;" aria-label="Audio narration for paragraph ${idx + 1}"></audio>`;
         }
-        chaptersHtml += `</div>`;
-        if (idx < paragraphs.length - 1) chaptersHtml += `<div class="separator">&mdash;</div>`;
+        chaptersHtml += `</article>`;
+        if (idx < paragraphs.length - 1) chaptersHtml += `<div class="separator" aria-hidden="true">&mdash;</div>`;
       }
     });
     if (isComic) chaptersHtml += '</div>';
 
-    let vocabHtml = '<div class="vocab-section"><h3>Vocabulary Terms Used</h3><div class="vocab-grid">';
+    let vocabHtml = '<div class="vocab-section"><h2 id="vocab-heading">Vocabulary Terms Used</h2><div class="vocab-grid">';
     vocabTerms.forEach(v => {
       const used = vocabUsage[v.term];
       vocabHtml += `<div class="vocab-chip ${used ? 'used' : 'unused'}">${used ? '✓' : '✗'} ${escapeHtml(v.term)}</div>`;
@@ -1566,8 +1584,8 @@ Return ONLY JSON:
     let feedbackHtml = '';
     if (gradingResult) {
       feedbackHtml = `<div class="feedback-section">
-        <h3>Teacher Feedback</h3>
-        <div class="score-badge">${escapeHtml(gradingResult.totalScore || '')}</div>
+        <h2 id="feedback-heading">Teacher Feedback</h2>
+        <div class="score-badge" aria-label="Score: ${escapeHtml(gradingResult.totalScore || '')}">${escapeHtml(gradingResult.totalScore || '')}</div>
         <div class="glow-grow">
           <div class="glow"><strong>✨ Glow:</strong> ${escapeHtml(gradingResult.feedback?.glow || '')}</div>
           <div class="grow"><strong>🌱 Grow:</strong> ${escapeHtml(gradingResult.feedback?.grow || '')}</div>
@@ -1576,9 +1594,14 @@ Return ONLY JSON:
     }
 
     const html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title>
+<meta name="author" content="${author}">
+<meta name="description" content="A storybook by ${author}, made with StoryForge.">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
+.skip-link{position:absolute;left:-9999px;top:0;padding:8px 14px;background:#0f172a;color:#fff;text-decoration:none;font-weight:700}
+.skip-link:focus{left:0;top:0;z-index:1000}
 body{font-family:Georgia,'Times New Roman',serif;line-height:1.8;color:#1e293b;max-width:800px;margin:0 auto;padding:40px 20px;background:#fefce8}
+main{display:block}
 .cover{text-align:center;padding:60px 20px;border:4px double #d4af37;border-radius:12px;margin-bottom:40px;background:linear-gradient(135deg,#fffbeb,#fef3c7)}
 .cover h1{font-size:2.5em;color:#92400e;margin-bottom:8px}
 .cover .meta{color:#78716c;font-size:0.9em;font-style:italic}
@@ -1598,26 +1621,41 @@ body{font-family:Georgia,'Times New Roman',serif;line-height:1.8;color:#1e293b;m
 .glow-grow{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .glow{background:#f0fdf4;padding:12px;border-radius:8px;border:1px solid #bbf7d0;font-size:0.9em}
 .grow{background:#fffbeb;padding:12px;border-radius:8px;border:1px solid #fde68a;font-size:0.9em}
-.footer{text-align:center;margin-top:40px;color:#94a3b8;font-size:0.8em}
+.colophon{text-align:center;margin-top:40px;color:#475569;font-size:0.8em;padding-top:20px;border-top:1px solid #e5e7eb}
 .print-btn{position:fixed;top:16px;right:16px;padding:8px 20px;background:#4f46e5;color:white;border:none;border-radius:8px;font-weight:bold;cursor:pointer;font-size:0.9em;box-shadow:0 2px 8px rgba(79,70,229,0.3);z-index:100}
 .print-btn:hover{background:#4338ca}
+.print-btn:focus{outline:3px solid #fbbf24;outline-offset:2px}
 .comic-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:20px;background:#1e293b;border-radius:8px}
-.panel{background:white;border:3px solid #0f172a;border-radius:8px;overflow:hidden}
-.panel-img{width:100%;aspect-ratio:1;object-fit:cover}
-.speech-bubble{padding:12px;font-size:0.95em;line-height:1.5;border-top:2px solid #e2e8f0;position:relative}
-@media print{.print-btn{display:none}.chapter,.panel{break-inside:avoid}}
+.panel{background:white;border:3px solid #0f172a;border-radius:8px;overflow:hidden;display:flex;flex-direction:column;position:relative}
+.panel-img-wrap{position:relative}
+.panel-img{width:100%;aspect-ratio:1;object-fit:cover;display:block}
+.sfx-tag{position:absolute;top:8px;right:8px;background:#fbbf24;color:#7c2d12;font-weight:900;font-style:italic;padding:4px 12px;border-radius:8px;border:2px solid #7c2d12;font-family:'Comic Sans MS','Marker Felt',sans-serif;font-size:0.95em;transform:rotate(-6deg);box-shadow:2px 2px 0 #7c2d12;text-transform:uppercase;letter-spacing:0.05em}
+.panel-sticker{position:absolute;bottom:8px;left:8px;font-size:2em;filter:drop-shadow(0 2px 3px rgba(0,0,0,0.3))}
+.dialogue-bubble{margin:8px;padding:10px 14px;background:#fff;border:2px solid #1e293b;border-radius:14px;font-size:0.92em;line-height:1.4;position:relative}
+.dialogue-speaker{font-weight:bold;color:#1d4ed8;font-size:0.78em;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px}
+.dialogue-speech{color:#1e293b}
+.thought-bubble{margin:8px;padding:8px 12px;background:#f0f9ff;border:2px dashed #7c3aed;border-radius:14px;color:#5b21b6;font-style:italic;font-size:0.88em;line-height:1.4}
+.panel-caption{font-size:0.85em;color:#475569;font-style:italic}
+.speech-bubble{padding:12px;font-size:0.95em;line-height:1.5;border-top:2px solid #e2e8f0;position:relative;background:#fff}
+@media print{.skip-link,.print-btn{display:none}.chapter,.panel{break-inside:avoid}body{background:#fff !important}.cover{background:#fffbeb !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}.comic-grid{background:#1e293b !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+@media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important}}
 </style></head><body>
-<button class="print-btn" onclick="window.print()">🖨️ Print</button>
-<div class="cover">
-  ${coverArt ? `<img src="${coverArt}" style="max-width:300px;border-radius:12px;margin:0 auto 16px;display:block;box-shadow:0 4px 16px rgba(0,0,0,0.15)" alt="Book cover" />` : ''}
-  <h1>${title}</h1>
+<a class="skip-link" href="#story-content">Skip to story</a>
+<button class="print-btn" onclick="window.print()" aria-label="Print this storybook or save as PDF">🖨️ Print</button>
+<header class="cover" role="banner">
+  ${coverArt ? `<img src="${coverArt}" style="max-width:300px;border-radius:12px;margin:0 auto 16px;display:block;box-shadow:0 4px 16px rgba(0,0,0,0.15)" alt="Cover illustration for ${title}" />` : ''}
+  <h1 id="story-title">${title}</h1>
   <p class="meta">Written by ${author}</p>
   <p class="meta">${escapeHtml(date)} · ${escapeHtml(GENRE_TEMPLATES[genre]?.label || 'Creative Writing')} · Art style: ${escapeHtml(artStyle)}</p>
-</div>
+</header>
+<main id="story-content" role="main" aria-labelledby="story-title">
 ${chaptersHtml}
+</main>
+<aside class="vocab-aside" aria-labelledby="vocab-heading">
 ${vocabHtml}
-${feedbackHtml}
-<div class="footer">Created with StoryForge · AlloFlow</div>
+</aside>
+${feedbackHtml ? `<aside class="feedback-aside" aria-label="Teacher feedback">${feedbackHtml}</aside>` : ''}
+<footer class="colophon" role="contentinfo">Created with StoryForge · AlloFlow</footer>
 </body></html>`;
 
     try {
