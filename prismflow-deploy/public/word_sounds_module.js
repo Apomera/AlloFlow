@@ -3187,7 +3187,7 @@
                   },
                   /*#__PURE__*/ React.createElement(
                     "span",
-                    { className: "bg-amber-200 p-1 rounded" },
+                    { className: "bg-amber-200 p-1 rounded", "aria-hidden": "true" },
                     "\u270F\uFE0F",
                   ),
                   " Edit Spelling Word",
@@ -3487,7 +3487,7 @@
                       },
                       /*#__PURE__*/ React.createElement(
                         "span",
-                        { className: "bg-violet-200 p-1 rounded" },
+                        { className: "bg-violet-200 p-1 rounded", "aria-hidden": "true" },
                         "\uD83C\uDFE0",
                       ),
                       " Family Members",
@@ -10489,6 +10489,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               ref: canvasRef,
               width: 320,
               height: 320,
+              tabIndex: 0,
+              role: "img",
+              "aria-label": "Letter tracing canvas. Use mouse or touch to trace the letter shape. Use the surrounding controls to skip, get a hint, or hear the letter sound.",
               onMouseDown: startDraw,
               onMouseMove: draw,
               onMouseUp: endDraw,
@@ -10518,6 +10521,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 "span",
                 {
                   className: `text-4xl filter drop-shadow-lg transform -rotate-12 block ${isAnimating ? "scale-110" : ""}`,
+                  "aria-hidden": "true",
                 },
                 "\uD83D\uDC49",
               ),

@@ -343,7 +343,7 @@ window.SelHub = window.SelHub || {
           ),
           h('div', { style: { background: '#faf5ff', borderRadius: '16px', padding: '20px', border: '2px solid #ddd6fe', marginBottom: '16px' } },
             h('div', { style: { fontSize: '13px', color: PURPLE, fontStyle: 'italic', marginBottom: '8px' } }, 'Dear Me,'),
-            h('textarea', { value: letterDraft, onChange: function(ev) { upd('letterDraft', ev.target.value); }, 'aria-label': 'Write a compassionate letter to yourself', placeholder: 'I know you\u2019re going through a hard time right now...', style: { width: '100%', border: 'none', background: 'transparent', fontSize: '14px', fontFamily: 'Georgia, serif', lineHeight: 1.8, color: '#374151', resize: 'vertical', minHeight: '120px', boxSizing: 'border-box', outline: 'none' } }),
+            h('textarea', { value: letterDraft, onChange: function(ev) { upd('letterDraft', ev.target.value); }, 'aria-label': 'Write a compassionate letter to yourself', placeholder: 'I know you\u2019re going through a hard time right now...', onFocus: function(e) { e.target.style.boxShadow = '0 0 0 3px rgba(124,58,237,0.4)'; }, onBlur: function(e) { e.target.style.boxShadow = 'none'; }, style: { width: '100%', border: 'none', background: 'transparent', fontSize: '14px', fontFamily: 'Georgia, serif', lineHeight: 1.8, color: '#374151', resize: 'vertical', minHeight: '120px', boxSizing: 'border-box', outline: 'none', borderRadius: '6px' } }),
             h('div', { style: { display: 'flex', justifyContent: 'flex-end', marginTop: '8px' } },
               h('button', { onClick: function() {
                 if (!letterDraft.trim()) return;

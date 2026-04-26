@@ -3391,6 +3391,11 @@ show();
                     </button>
                   )}
                   {!gradingResult && (
+                    <button onClick={findMentorStory} disabled={mentorLoading || isProcessing} className="px-4 py-2.5 bg-fuchsia-100 text-fuchsia-700 rounded-full text-sm font-bold hover:bg-fuchsia-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-fuchsia-200" title="Find a public-domain master story to study alongside yours">
+                      🎓 {mentorLoading ? 'Searching...' : (mentorMatch && !mentorMatch.error ? 'Find another' : 'Mentor Match')}
+                    </button>
+                  )}
+                  {!gradingResult && (
                     <button onClick={gradeStory} disabled={isProcessing || (!selfAssessmentSubmitted)} className="px-5 py-2.5 bg-indigo-600 text-white rounded-full text-sm font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center gap-2" title={!selfAssessmentSubmitted ? 'Complete or skip self-assessment first' : 'Get AI feedback'}>
                       <Sparkles size={16} /> {isProcessing ? 'Grading...' : 'Get Feedback'}
                     </button>
@@ -3491,6 +3496,67 @@ show();
                   {sensesResult.suggestion && (
                     <div className="mt-3 bg-yellow-50 border border-yellow-200 rounded-xl p-3 text-xs text-yellow-900 leading-relaxed">
                       <strong>Try this:</strong> {sensesResult.suggestion}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ═══ Mentor Match Result ═══ */}
+              {mentorMatch && (
+                <div role="region" aria-label="Mentor story and analysis" className="bg-white border-2 border-fuchsia-200 rounded-2xl p-5 shadow-sm">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-sm font-bold text-fuchsia-700 uppercase tracking-wider flex items-center gap-2">🎓 Mentor Match</h4>
+                    <button onClick={() => setMentorMatch(null)} className="text-[11px] text-slate-400 hover:text-slate-700 font-bold" aria-label="Dismiss mentor match">Dismiss</button>
+                  </div>
+                  {mentorMatch.error && (
+                    <p className="text-xs text-red-600 italic">{mentorMatch.error}</p>
+                  )}
+                  {!mentorMatch.error && (
+                    <div className="space-y-3">
+                      {mentorMatch.mentor && (
+                        <article className="bg-fuchsia-50/40 border border-fuchsia-100 rounded-xl p-4">
+                          <div className="mb-2">
+                            <h5 className="text-base font-black text-fuchsia-900">{mentorMatch.mentor.title || 'Untitled'}</h5>
+                            <p className="text-[11px] text-slate-600 italic mt-0.5">— {mentorMatch.mentor.author || 'Unknown'}{mentorMatch.mentor.year ? `, ${mentorMatch.mentor.year}` : ''} (public domain)</p>
+                          </div>
+                          {mentorMatch.mentor.uncertain
+                            ? <p className="text-xs text-slate-700 italic leading-relaxed">{mentorMatch.mentor.text || 'Excerpt withheld — open the source link to read in context.'}</p>
+                            : <pre className="whitespace-pre-wrap font-serif text-sm text-slate-800 leading-relaxed bg-white border border-fuchsia-100 rounded-lg p-3">{mentorMatch.mentor.text || ''}</pre>
+                          }
+                          {mentorMatch.mentor.sourceUrl && (
+                            <p className="text-[11px] mt-2">
+                              <a href={mentorMatch.mentor.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-fuchsia-700 hover:text-fuchsia-900 font-bold underline" aria-label={`Open source for ${mentorMatch.mentor.title || 'mentor story'} in a new tab`}>
+                                Read the full story ↗
+                              </a>
+                            </p>
+                          )}
+                          {mentorMatch._grounding && (
+                            <p className="text-[10px] text-slate-500 italic mt-2">
+                              {mentorMatch._grounding.searchUsed
+                                ? `✓ Verified via web search (${mentorMatch._grounding.resultCount} candidates considered, keywords: "${mentorMatch._grounding.keywords}")`
+                                : '⚠ No web search available — recommendation comes from the model\'s memory, please double-check.'}
+                            </p>
+                          )}
+                        </article>
+                      )}
+                      {mentorMatch.sharedTheme && (
+                        <div className="bg-white border border-fuchsia-100 rounded-xl p-3">
+                          <div className="text-[11px] font-bold text-fuchsia-600 uppercase tracking-widest mb-1">Shared theme</div>
+                          <p className="text-xs text-slate-800 leading-relaxed">{mentorMatch.sharedTheme}</p>
+                        </div>
+                      )}
+                      {mentorMatch.craftToBorrow && (
+                        <div className="bg-amber-50 border border-amber-200 rounded-xl p-3">
+                          <div className="text-[11px] font-bold text-amber-700 uppercase tracking-widest mb-1">Craft to borrow</div>
+                          <p className="text-xs text-amber-900 leading-relaxed">{mentorMatch.craftToBorrow}</p>
+                        </div>
+                      )}
+                      {mentorMatch.studentEcho && (
+                        <div className="bg-green-50 border border-green-200 rounded-xl p-3">
+                          <div className="text-[11px] font-bold text-green-700 uppercase tracking-widest mb-1">You're already doing this</div>
+                          <p className="text-xs text-green-900 leading-relaxed">{mentorMatch.studentEcho}</p>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
