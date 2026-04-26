@@ -2501,6 +2501,27 @@
           h('span', null, feedback === 'correct' ? 'Gate Opens!' : (feedback === 'wrong' ? 'Wrong Combination \u2014 Try Again' : 'Locked Gate')),
           h('span', { style: { fontSize: '18px' } }, feedback === 'correct' ? '\ud83d\udd13' : '\ud83d\udd12')
         ),
+        // Operation tag — small pill showing which fact family this gate
+        // tests (e.g. "MULTIPLICATION" / "DIVISION"). Detected from the
+        // operator characters in the problem text so it stays accurate
+        // even when operation === 'mixed'.
+        (function() {
+          var ptxt = (currentProblem.problem.text || '');
+          var opLabel = ptxt.indexOf('\u00D7') >= 0 || ptxt.indexOf('x') >= 0 || ptxt.indexOf('*') >= 0 ? 'Multiplication'
+            : ptxt.indexOf('\u00F7') >= 0 || ptxt.indexOf('/') >= 0 ? 'Division'
+            : ptxt.indexOf('+') >= 0 ? 'Addition'
+            : (ptxt.indexOf('\u2212') >= 0 || ptxt.indexOf('-') >= 0) ? 'Subtraction'
+            : 'Math';
+          return h('div', {
+            style: {
+              display: 'inline-block', fontSize: '9px', fontWeight: 800,
+              letterSpacing: '0.14em', textTransform: 'uppercase',
+              color: '#fbbf24', background: 'rgba(251,191,36,0.12)',
+              border: '1px solid rgba(251,191,36,0.35)',
+              padding: '2px 8px', borderRadius: '999px', marginBottom: '6px'
+            }
+          }, opLabel + ' Gate');
+        })(),
         // The "combination" \u2014 math problem
         h('div', { style: { fontSize: '30px', fontWeight: 800, color: '#fef3c7', marginBottom: '10px', fontFamily: 'monospace', textShadow: '0 0 12px rgba(251,191,36,0.45)' } }, currentProblem.problem.text + ' = ?'),
         // Answer display (read-only echo of userInput so taps on numpad show)
