@@ -150,6 +150,54 @@
         'You can change line breaks freely. You cannot add words that aren\'t in the source.',
         'Found poetry can change the meaning of a text just by what you choose to keep.'
       ]
+    },
+    {
+      id: 'acrostic',
+      name: 'Acrostic',
+      icon: '🔤',
+      tagline: 'The first letters of each line spell a word or phrase.',
+      structure: 'Pick a word (a name, a season, a feeling). Each line of the poem starts with the next letter of that word. The lines themselves describe or relate to the chosen word.',
+      lineCount: null,
+      syllablesPerLine: null,
+      rhymeScheme: null,
+      example: 'Quiet at sunrise, before the day begins,\nUnder a sky still pale with stars,\nIt waits, the world, just for a moment,\nEvery breath held —\nThen morning happens.',
+      tips: [
+        'Pick a subject first (often a single word). Write that word vertically before you start.',
+        'You don\'t need to rhyme — focus on filling each letter with an image.',
+        'For a longer poem, use a phrase instead of a single word.'
+      ]
+    },
+    {
+      id: 'cinquain',
+      name: 'Cinquain',
+      icon: '🪆',
+      tagline: '5 lines: 2–4–6–8–2 syllables. A small structure with a sting.',
+      structure: '5 lines. Line 1 has 2 syllables, line 2 has 4, line 3 has 6, line 4 has 8, line 5 has 2. (Adelaide Crapsey form.) The final 2-syllable line often gives the poem its shape — a turn, a surprise, or a quiet conclusion.',
+      lineCount: 5,
+      syllablesPerLine: [2, 4, 6, 8, 2],
+      rhymeScheme: null,
+      example: 'Listen…\nWith faint dry sound,\nLike steps of passing ghosts,\nThe leaves, frost-crisp\'d, break from the trees\nAnd fall.\n\n— Adelaide Crapsey, "November Night"',
+      tips: [
+        'The two-syllable opening and closing lines work best when they hint at something larger.',
+        'A cinquain doesn\'t have to rhyme. The shape does the work.',
+        'Read it aloud — if a line feels rushed or stretched, count syllables again.'
+      ]
+    },
+    {
+      id: 'diamante',
+      name: 'Diamante',
+      icon: '💎',
+      tagline: '7 lines, diamond-shaped. Often pairs opposites.',
+      structure: '7 lines forming a diamond. Line 1: one noun (your starting topic). Line 2: two adjectives describing line 1. Line 3: three -ing verbs about line 1. Line 4: four nouns — the first two relate to line 1, the last two transition toward line 7. Line 5: three -ing verbs about line 7. Line 6: two adjectives describing line 7. Line 7: one contrasting (or related) noun.',
+      lineCount: 7,
+      syllablesPerLine: null,
+      rhymeScheme: null,
+      example: 'Day\nBright, busy\nRunning, laughing, working\nSunlight, voices — silence, shadows\nSettling, slowing, dreaming\nQuiet, cool\nNight',
+      tips: [
+        'Diamantes are great for opposites: hot/cold, summer/winter, love/hate, child/adult.',
+        'The middle line (line 4) is the pivot — first two words belong to line 1, last two belong to line 7.',
+        'Verbs end in -ing on lines 3 and 5. That repetition is the form\'s rhythm.'
+      ]
     }
   ];
 
@@ -259,6 +307,16 @@
 
     var ttsCancelRef = useRef(false);
 
+    // Writing helpers (Daily Prompt / Rhymes / Stronger Verbs)
+    var _helpersOpen = useState(false); var helpersOpen = _helpersOpen[0]; var setHelpersOpen = _helpersOpen[1];
+    var _dailyPrompt = useState(''); var dailyPrompt = _dailyPrompt[0]; var setDailyPrompt = _dailyPrompt[1];
+    var _dailyPromptLoading = useState(false); var dailyPromptLoading = _dailyPromptLoading[0]; var setDailyPromptLoading = _dailyPromptLoading[1];
+    var _rhymeQuery = useState(''); var rhymeQuery = _rhymeQuery[0]; var setRhymeQuery = _rhymeQuery[1];
+    var _rhymeResults = useState(null); var rhymeResults = _rhymeResults[0]; var setRhymeResults = _rhymeResults[1];
+    var _rhymeLoading = useState(false); var rhymeLoading = _rhymeLoading[0]; var setRhymeLoading = _rhymeLoading[1];
+    var _verbSuggestions = useState(null); var verbSuggestions = _verbSuggestions[0]; var setVerbSuggestions = _verbSuggestions[1];
+    var _verbLoading = useState(false); var verbLoading = _verbLoading[0]; var setVerbLoading = _verbLoading[1];
+
     // ── Persistence helpers ──
     var savePrefs = useCallback(function (next) {
       try { localStorage.setItem(STORAGE_PREFS, JSON.stringify(next)); } catch (e) {}
@@ -334,6 +392,79 @@
     }, [onCallGemini, poemText, poemTitle, form, gradeLevel, handleScoreUpdate, addToast]);
 
     function entry_safe(s) { return String(s || 'untitled').toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 30); }
+
+    // ── Writing helpers ──
+
+    var generateDailyPrompt = useCallback(async function () {
+      if (!onCallGemini) return;
+      setDailyPromptLoading(true);
+      try {
+        var formHint = form ? ' They are writing in the form: ' + form.name + '.' : '';
+        var prompt = 'You are a creative-writing teacher for a ' + gradeLevel + ' student.' + formHint + ' Generate ONE inspiring poem prompt — concrete, image-rich, emotionally accessible, age-appropriate. Avoid abstractions. Avoid trauma topics unless gently. 1-2 sentences. Return only the prompt itself, no quotes, no preamble.';
+        var result = await onCallGemini(prompt, false);
+        var clean = String(result || '').trim().replace(/^["“]|["”]$/g, '').replace(/^prompt:\s*/i, '');
+        setDailyPrompt(clean);
+        announcePT('New writing prompt: ' + clean);
+      } catch (err) {
+        warnLog('Daily prompt failed:', err && err.message);
+        addToast && addToast('Couldn\'t fetch a prompt right now.', 'error');
+      } finally {
+        setDailyPromptLoading(false);
+      }
+    }, [onCallGemini, form, gradeLevel, addToast]);
+
+    var fetchRhymes = useCallback(async function () {
+      if (!onCallGemini || !rhymeQuery.trim()) return;
+      setRhymeLoading(true);
+      setRhymeResults(null);
+      try {
+        var word = rhymeQuery.trim().toLowerCase().replace(/[^a-z'-]/g, '');
+        var prompt = 'Return JSON: {"perfect":["..."],"slant":["..."]} — 6-8 perfect rhymes (same vowel and ending consonants) and 4-6 slant rhymes (similar but not exact) for the word "' + word + '". Skip vulgarity, slurs, and offensive words. Order each list from most useful to less useful for poetry. If no rhymes are possible (rare words), return both arrays empty.';
+        var result = await onCallGemini(prompt, true);
+        var clean = String(result).trim().replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```$/, '').trim();
+        var parsed = JSON.parse(clean);
+        setRhymeResults({ word: word, perfect: parsed.perfect || [], slant: parsed.slant || [] });
+        announcePT((parsed.perfect || []).length + ' perfect rhymes and ' + (parsed.slant || []).length + ' slant rhymes for ' + word + '.');
+      } catch (err) {
+        warnLog('Rhymes failed:', err && err.message);
+        setRhymeResults({ error: 'Couldn\'t fetch rhymes. Try a more common word.' });
+      } finally {
+        setRhymeLoading(false);
+      }
+    }, [onCallGemini, rhymeQuery]);
+
+    var copyRhyme = useCallback(function (word) {
+      try {
+        navigator.clipboard.writeText(word);
+        addToast && addToast('"' + word + '" copied to clipboard.', 'success');
+        announcePT('Copied ' + word + ' to clipboard.');
+      } catch (e) {
+        addToast && addToast('Copy failed — long-press the word instead.', 'info');
+      }
+    }, [addToast]);
+
+    var findStrongerVerbs = useCallback(async function () {
+      if (!onCallGemini || !poemText.trim()) return;
+      setVerbLoading(true);
+      setVerbSuggestions(null);
+      try {
+        var prompt = 'Read this poem. Identify up to 5 lines that rely on weak verbs (forms of "to be" — is, was, were, am, are; or "have", "has", "do", "get", "got", "make"). For each, return the original line, the weak verb, and 2-3 stronger more specific alternatives that would fit the poem\'s tone and image.\n\n'
+          + 'Poem:\n"""\n' + poemText + '\n"""\n\n'
+          + 'Return JSON: {"suggestions":[{"line":"<exact original line from the poem>","weakVerb":"<verb>","alternatives":["<verb1>","<verb2>","<verb3>"]}]}\n\n'
+          + 'Only suggest where the line genuinely benefits — sometimes "is" is the right word. If no weak verbs are found, return {"suggestions":[]}.';
+        var result = await onCallGemini(prompt, true);
+        var clean = String(result).trim().replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```$/, '').trim();
+        var parsed = JSON.parse(clean);
+        setVerbSuggestions(parsed.suggestions || []);
+        var n = (parsed.suggestions || []).length;
+        announcePT(n === 0 ? 'No weak verbs detected — your verbs are working hard.' : n + ' verb suggestion' + (n === 1 ? '' : 's') + '.');
+      } catch (err) {
+        warnLog('Verb booster failed:', err && err.message);
+        setVerbSuggestions({ error: 'Couldn\'t analyze verbs right now.' });
+      } finally {
+        setVerbLoading(false);
+      }
+    }, [onCallGemini, poemText]);
 
     // ── Meter analysis (Gemini-on-demand) ──
     var analyzeMeter = useCallback(async function () {
@@ -635,6 +766,120 @@
                 )
               ),
               e('p', { style: { fontSize: '10px', color: '#475569', fontStyle: 'italic', margin: '6px 0 0' } }, '/ = stressed syllable, u = unstressed. Read the line aloud to verify.')
+            ),
+
+            // ── Writing helpers (collapsible panel: Daily Prompt, Rhymes, Stronger Verbs) ──
+            onCallGemini && e('div', { style: { background: '#f8fafc', borderRadius: '10px', border: '1px solid #e2e8f0', overflow: 'hidden' } },
+              e('button', {
+                onClick: function () { setHelpersOpen(!helpersOpen); },
+                'aria-expanded': helpersOpen ? 'true' : 'false',
+                'aria-controls': 'pt-helpers-panel',
+                'aria-label': helpersOpen ? 'Collapse writing helpers' : 'Expand writing helpers',
+                style: { width: '100%', padding: '10px 14px', background: 'transparent', border: 'none', textAlign: 'left', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', fontSize: '13px', fontWeight: 800, color: TEAL_DARK }
+              },
+                e('span', null, '✨ Writing helpers'),
+                e('span', { 'aria-hidden': 'true', style: { fontSize: '11px', color: '#475569' } }, helpersOpen ? '▼' : '▶')
+              ),
+              helpersOpen && e('div', { id: 'pt-helpers-panel', style: { padding: '0 14px 14px', display: 'flex', flexDirection: 'column', gap: '14px', borderTop: '1px solid #e2e8f0' } },
+                // ── Daily Prompt ──
+                e('div', null,
+                  e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '6px', marginTop: '10px' } },
+                    e('h4', { style: { fontSize: '12px', fontWeight: 800, color: TEAL_DARK, margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' } }, '💡 Daily Prompt'),
+                    e('button', { onClick: generateDailyPrompt, disabled: dailyPromptLoading,
+                      'aria-busy': dailyPromptLoading ? 'true' : 'false',
+                      'aria-label': dailyPromptLoading ? 'Fetching prompt, please wait' : (dailyPrompt ? 'Get another prompt' : 'Get a prompt'),
+                      style: { padding: '4px 12px', borderRadius: '6px', border: 'none', background: dailyPromptLoading ? '#cbd5e1' : TEAL, color: '#fff', fontSize: '11px', fontWeight: 700, cursor: dailyPromptLoading ? 'wait' : 'pointer' }
+                    }, dailyPromptLoading ? '⏳…' : (dailyPrompt ? '🔄 New prompt' : '💡 Inspire me'))
+                  ),
+                  dailyPrompt && e('div', { role: 'region', 'aria-live': 'polite', 'aria-label': 'Daily prompt', style: { background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '8px', padding: '10px 12px', fontSize: '13px', color: '#78350f', fontFamily: 'Georgia, serif', fontStyle: 'italic', lineHeight: 1.5 } },
+                    '"' + dailyPrompt + '"',
+                    e('button', { onClick: function () { try { navigator.clipboard.writeText(dailyPrompt); addToast && addToast('Prompt copied.', 'success'); } catch (er) {} },
+                      'aria-label': 'Copy prompt to clipboard',
+                      style: { marginLeft: '8px', padding: '2px 8px', background: 'transparent', border: '1px solid #fcd34d', color: '#78350f', borderRadius: '4px', fontSize: '10px', fontWeight: 700, cursor: 'pointer', verticalAlign: 'middle' }
+                    }, '📋 copy')
+                  ),
+                  !dailyPrompt && e('p', { style: { fontSize: '11px', color: '#475569', margin: 0, fontStyle: 'italic' } }, 'Stuck? Get a fresh idea to start from.')
+                ),
+
+                // ── Rhymes ──
+                e('div', null,
+                  e('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' } },
+                    e('label', { htmlFor: 'pt-rhyme-input', style: { fontSize: '12px', fontWeight: 800, color: TEAL_DARK, margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' } }, '🔁 Rhymes for…')
+                  ),
+                  e('div', { style: { display: 'flex', gap: '6px' } },
+                    e('input', { id: 'pt-rhyme-input', type: 'text', value: rhymeQuery,
+                      onChange: function (ev) { setRhymeQuery(ev.target.value); },
+                      onKeyDown: function (ev) { if (ev.key === 'Enter') { ev.preventDefault(); fetchRhymes(); } },
+                      placeholder: 'word to rhyme (e.g. orange, light, hope)',
+                      style: { flex: 1, padding: '6px 10px', borderRadius: '6px', border: '1px solid #d1d5db', fontSize: '12px' }
+                    }),
+                    e('button', { onClick: fetchRhymes, disabled: !rhymeQuery.trim() || rhymeLoading,
+                      'aria-busy': rhymeLoading ? 'true' : 'false',
+                      'aria-label': rhymeLoading ? 'Fetching rhymes' : 'Find rhymes',
+                      style: { padding: '6px 12px', borderRadius: '6px', border: 'none', background: rhymeQuery.trim() && !rhymeLoading ? TEAL : '#cbd5e1', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: rhymeQuery.trim() && !rhymeLoading ? 'pointer' : 'not-allowed' }
+                    }, rhymeLoading ? '⏳' : '🔍')
+                  ),
+                  rhymeResults && rhymeResults.error && e('p', { style: { fontSize: '11px', color: '#b91c1c', fontStyle: 'italic', margin: '6px 0 0' } }, rhymeResults.error),
+                  rhymeResults && !rhymeResults.error && e('div', { role: 'region', 'aria-label': 'Rhyme results', 'aria-live': 'polite', style: { marginTop: '8px' } },
+                    rhymeResults.perfect && rhymeResults.perfect.length > 0 && e('div', { style: { marginBottom: '6px' } },
+                      e('div', { style: { fontSize: '10px', fontWeight: 700, color: '#475569', marginBottom: '4px' } }, 'Perfect rhymes for "' + rhymeResults.word + '"'),
+                      e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '4px' } },
+                        rhymeResults.perfect.map(function (w, wi) {
+                          return e('button', { key: 'p' + wi, onClick: function () { copyRhyme(w); },
+                            'aria-label': 'Rhyme ' + w + ' — copy to clipboard',
+                            style: { padding: '3px 10px', background: TEAL_LIGHT, border: '1px solid #99f6e4', borderRadius: '12px', fontSize: '12px', cursor: 'pointer', color: TEAL_DARK, fontFamily: 'Georgia, serif' }
+                          }, w);
+                        })
+                      )
+                    ),
+                    rhymeResults.slant && rhymeResults.slant.length > 0 && e('div', null,
+                      e('div', { style: { fontSize: '10px', fontWeight: 700, color: '#475569', marginBottom: '4px' } }, 'Slant rhymes (close, not exact)'),
+                      e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '4px' } },
+                        rhymeResults.slant.map(function (w, wi) {
+                          return e('button', { key: 's' + wi, onClick: function () { copyRhyme(w); },
+                            'aria-label': 'Slant rhyme ' + w + ' — copy to clipboard',
+                            style: { padding: '3px 10px', background: '#fff', border: '1px dashed #99f6e4', borderRadius: '12px', fontSize: '12px', cursor: 'pointer', color: TEAL_DARK, fontFamily: 'Georgia, serif' }
+                          }, w);
+                        })
+                      )
+                    ),
+                    (!rhymeResults.perfect || rhymeResults.perfect.length === 0) && (!rhymeResults.slant || rhymeResults.slant.length === 0) && e('p', { style: { fontSize: '11px', color: '#475569', fontStyle: 'italic', margin: 0 } }, 'No rhymes found — try a more common word.')
+                  )
+                ),
+
+                // ── Stronger Verbs ──
+                e('div', null,
+                  e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '6px' } },
+                    e('h4', { style: { fontSize: '12px', fontWeight: 800, color: TEAL_DARK, margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' } }, '💪 Stronger Verbs'),
+                    e('button', { onClick: findStrongerVerbs, disabled: !poemText.trim() || verbLoading,
+                      'aria-busy': verbLoading ? 'true' : 'false',
+                      'aria-label': verbLoading ? 'Analyzing verbs' : 'Find stronger verbs',
+                      style: { padding: '4px 12px', borderRadius: '6px', border: 'none', background: poemText.trim() && !verbLoading ? TEAL : '#cbd5e1', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: poemText.trim() && !verbLoading ? 'pointer' : 'not-allowed' }
+                    }, verbLoading ? '⏳…' : '🔍 Scan')
+                  ),
+                  verbSuggestions && verbSuggestions.error && e('p', { style: { fontSize: '11px', color: '#b91c1c', fontStyle: 'italic', margin: 0 } }, verbSuggestions.error),
+                  verbSuggestions && Array.isArray(verbSuggestions) && verbSuggestions.length === 0 && e('p', { style: { fontSize: '12px', color: '#166534', fontStyle: 'italic', margin: 0, background: '#f0fdf4', border: '1px solid #86efac', borderRadius: '6px', padding: '8px 10px' } }, '✓ No weak verbs detected — your verbs are working hard.'),
+                  verbSuggestions && Array.isArray(verbSuggestions) && verbSuggestions.length > 0 && e('div', { role: 'region', 'aria-label': 'Verb suggestions', 'aria-live': 'polite', style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
+                    verbSuggestions.map(function (s, si) {
+                      return e('div', { key: si, style: { background: '#fff', border: '1px solid #fde68a', borderRadius: '8px', padding: '8px 10px' } },
+                        e('p', { style: { fontFamily: 'Georgia, serif', fontSize: '12px', color: '#1e293b', margin: '0 0 4px', fontStyle: 'italic' } }, '"' + s.line + '"'),
+                        e('div', { style: { fontSize: '10px', color: '#475569' } },
+                          e('span', null, 'Weak verb: '),
+                          e('span', { style: { fontWeight: 700, color: '#b45309' } }, s.weakVerb),
+                          e('span', null, ' → try: '),
+                          (s.alternatives || []).map(function (alt, ai) {
+                            return e('button', { key: ai, onClick: function () { copyRhyme(alt); },
+                              'aria-label': 'Stronger verb ' + alt + ' — copy to clipboard',
+                              style: { display: 'inline-block', margin: '0 3px 2px 0', padding: '2px 8px', background: TEAL_LIGHT, border: '1px solid #99f6e4', borderRadius: '10px', fontSize: '11px', cursor: 'pointer', color: TEAL_DARK }
+                            }, alt);
+                          })
+                        )
+                      );
+                    })
+                  ),
+                  !verbSuggestions && e('p', { style: { fontSize: '11px', color: '#475569', margin: 0, fontStyle: 'italic' } }, 'Find weak verbs (is, was, have…) and get stronger alternatives.')
+                )
+              )
             )
           ),
 
