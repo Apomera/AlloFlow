@@ -2416,7 +2416,7 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
     {
       tabIndex: 0,
       onKeyDown: handleKeyDown,
-      className: "absolute inset-0 pointer-events-none focus:outline-none",
+      className: "absolute inset-0 pointer-events-none focus:",
       autoFocus: true,
       "aria-label": t("games.crossword.grid_capture_aria")
     }

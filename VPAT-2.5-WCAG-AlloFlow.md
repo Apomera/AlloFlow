@@ -128,6 +128,11 @@ All 80 STEM Lab files pass `node --check`. All canvases keyboard-accessible. All
 **Top-level modules pass (begun April 26, 2026)**: Beyond STEM Lab + SEL Hub, large standalone modules are being audited individually. First completed:
 
 - **behavior_lens_module.js** (27,688 lines, FBA / behavior-observation tool): 205 mechanical fixes including 87 bogus auto-generated aria-labels removed, 78 duplicate aria-label attrs cleaned, **40 AI/loading buttons got `aria-busy`** via regex-based bulk injection (the densest aria-busy adoption in the codebase due to many ABA-specific AI analysis steps), 6 generic 'Close' aria-labels replaced with context-specific labels, 4 form inputs got aria-label, 1 SVG data-point editor got role=button + onKeyDown for manual edit mode, 1 bare checkbox got aria-label. Full ✓-grades on all 9 per-tool criteria.
+- **word_sounds_module.js** (24,600 lines, Word Garden / phonics): Already exceptionally clean — 0 hits on every cross-cutting sweep. 4 surgical fixes: tracing canvas got tabIndex + role="img" + descriptive aria-label documenting mouse/touch requirement; 3 decorative emoji aria-hidden. Full ✓ on 8 of 9 criteria; 4.1.3 partial (16 callGemini calls but their trigger buttons don't follow `disabled: aiLoading` convention so bulk aria-busy didn't apply).
+- **doc_pipeline_module.js** (13,013 lines, accessible HTML/PDF generator): N/A across all 9 per-tool criteria — pure backend processing module with 0 onClick / onChange / onKeyDown handlers. The 75 aria-label references are in code that EMITS aria-label attributes in the GENERATED documents.
+- **student_analytics_module.js** (7,394 lines, teacher-facing dashboard): Found same SEL-Hub stray-role-button anti-pattern at lower volume (5 layout divs + 12 bogus 'Close dialog' aria-labels stripped), 5 duplicate aria-labels cleaned, 3 chart canvases got role="img" + descriptive aria-label. Open: 4.1.3 partial (low-priority print template placeholder-only inputs).
+
+**4 top-level modules audited so far. ~20+ smaller modules remain (story_forge, report_writer, math_fluency, escape_room, poet_tree, allobot, story_stage, etc.).**
 
 **Pending runtime verification (3 criteria — substantially fewer than April 3 due to per-tool audit):**
 

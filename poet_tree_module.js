@@ -1577,7 +1577,7 @@
                       style: { padding: '4px 12px', borderRadius: '6px', border: 'none', background: dailyPromptLoading ? '#cbd5e1' : TEAL, color: '#fff', fontSize: '11px', fontWeight: 700, cursor: dailyPromptLoading ? 'wait' : 'pointer' }
                     }, dailyPromptLoading ? '⏳…' : (dailyPrompt ? '🔄 New prompt' : '💡 Inspire me'))
                   ),
-                  dailyPrompt && e('div', { role: 'region', 'aria-live': 'polite', 'aria-label': 'Daily prompt', style: { background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '8px', padding: '10px 12px', fontSize: '13px', color: '#78350f', fontFamily: 'Georgia, serif', fontStyle: 'italic', lineHeight: 1.5 } },
+                  dailyPrompt && e('div', { role: 'region', 'aria-live': 'polite', style: { background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '8px', padding: '10px 12px', fontSize: '13px', color: '#78350f', fontFamily: 'Georgia, serif', fontStyle: 'italic', lineHeight: 1.5 } },
                     '"' + dailyPrompt + '"',
                     e('button', { onClick: function () { try { navigator.clipboard.writeText(dailyPrompt); addToast && addToast('Prompt copied.', 'success'); } catch (er) {} },
                       'aria-label': 'Copy prompt to clipboard',
@@ -1715,7 +1715,7 @@
                       style: { padding: '4px 12px', borderRadius: '6px', border: 'none', background: sparkLoading ? '#cbd5e1' : TEAL, color: '#fff', fontSize: '11px', fontWeight: 700, cursor: sparkLoading ? 'wait' : 'pointer' }
                     }, sparkLoading ? '⏳…' : (sparkWords ? '🔄 Re-roll' : '🎲 Roll'))
                   ),
-                  sparkWords && Array.isArray(sparkWords) && sparkWords.length > 0 && e('div', { role: 'region', 'aria-label': 'Spark words', 'aria-live': 'polite', style: { display: 'flex', flexWrap: 'wrap', gap: '6px' } },
+                  sparkWords && Array.isArray(sparkWords) && sparkWords.length > 0 && e('div', { role: 'region', 'aria-live': 'polite', style: { display: 'flex', flexWrap: 'wrap', gap: '6px' } },
                     sparkWords.map(function (w, wi) {
                       return e('button', { key: wi, onClick: function () { copyRhyme(w); },
                         'aria-label': 'Spark word ' + w + ' — copy to clipboard',
@@ -1733,7 +1733,7 @@
           activeTab === 'feedback' && e('div', { style: { maxWidth: '700px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '12px' } },
             e('h3', { style: { fontSize: '16px', fontWeight: 800, color: TEAL_DARK, margin: 0 } }, '✨ AI Feedback'),
             !poemText.trim() && e('p', { style: { color: '#475569', fontSize: '13px', margin: 0 } }, 'Write a poem in the Write tab first, then come back for feedback.'),
-            poemText.trim() && e('button', { onClick: getAiFeedback, disabled: aiLoading,
+            poemText.trim() && e('button', { onClick: getAiFeedback, disabled: aiLoading, 'aria-busy': aiLoading,
               'aria-busy': aiLoading ? 'true' : 'false',
               'aria-label': aiLoading ? 'Getting feedback, please wait' : 'Get AI feedback on this poem',
               style: { padding: '10px 18px', background: aiLoading ? '#cbd5e1' : '#7c3aed', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '13px', cursor: aiLoading ? 'wait' : 'pointer', alignSelf: 'flex-start' }
@@ -1844,7 +1844,7 @@
                 !ttsPlaying
                   ? e('button', { onClick: playPoem, disabled: !onCallTTS,
                       autoFocus: true,
-                      'aria-label': 'Play poem with text-to-speech',
+                      
                       style: { padding: '10px 20px', background: '#22c55e', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 800, fontSize: '14px', cursor: onCallTTS ? 'pointer' : 'not-allowed', opacity: onCallTTS ? 1 : 0.5 }
                     }, '▶ Play')
                   : e('button', { onClick: stopPoem, 'aria-label': 'Stop playback',
@@ -1902,10 +1902,10 @@
                 ),
                 // Hint + controls (don't propagate clicks to advance)
                 e('div', { onClick: function (ev) { ev.stopPropagation(); }, style: { display: 'flex', gap: '14px', alignItems: 'center', cursor: 'default' } },
-                  e('button', { onClick: rewindReadAloud, 'aria-label': 'Previous line',
+                  e('button', { onClick: rewindReadAloud, 
                     style: { padding: '8px 14px', background: 'transparent', color: '#cbd5e1', border: '1px solid #475569', borderRadius: '8px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }
                   }, '◀ Back'),
-                  e('button', { onClick: advanceReadAloud, autoFocus: true, 'aria-label': 'Next line',
+                  e('button', { onClick: advanceReadAloud, autoFocus: true, 
                     style: { padding: '12px 28px', background: '#0d9488', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '15px', fontWeight: 800, cursor: 'pointer' }
                   }, 'Next ▶'),
                   e('button', { onClick: stopReadAloud, 'aria-label': 'Exit read-aloud mode',

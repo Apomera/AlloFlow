@@ -2556,7 +2556,7 @@ show();
       id: `sf-beat-${p.id}`,
       value: p.plotBeat || "",
       onChange: (e) => updateParagraphBeat(idx, e.target.value),
-      className: "text-xs px-2 py-1 rounded-md border border-indigo-200 bg-white text-indigo-800 font-medium outline-none focus:border-indigo-500",
+      className: "text-xs px-2 py-1 rounded-md border border-indigo-200 bg-white text-indigo-800 font-medium focus:border-indigo-500",
       "aria-label": `Plot beat for paragraph ${idx + 1} (optional)`
     },
     PLOT_BEATS.map((b) => /* @__PURE__ */ React.createElement("option", { key: b.value || "none", value: b.value }, b.label))
@@ -2570,7 +2570,7 @@ show();
       {
         value: p.text,
         onChange: (e) => updateParagraph(idx, e.target.value),
-        className: "w-full p-2.5 text-xs resize-none outline-none border-2 border-amber-200 rounded-lg bg-amber-50 focus:border-amber-400 transition-colors italic",
+        className: "w-full p-2.5 text-xs resize-none border-2 border-amber-200 rounded-lg bg-amber-50 focus:border-amber-400 transition-colors italic",
         style: { minHeight: "50px" },
         placeholder: "What's happening in this panel? (narrator voice)",
         "aria-label": `Panel ${idx + 1} narration`
@@ -2581,7 +2581,7 @@ show();
         type: "text",
         value: (panelDialogue[p.id] || {}).speaker || "",
         onChange: (e) => updatePanelDialogue(p.id, "speaker", e.target.value),
-        className: "w-20 p-1.5 text-[11px] border border-blue-200 rounded-lg outline-none focus:border-blue-400 font-bold text-blue-700",
+        className: "w-20 p-1.5 text-[11px] border border-blue-200 rounded-lg focus:border-blue-400 font-bold text-blue-700",
         placeholder: "Who?",
         "aria-label": `Panel ${idx + 1} speaker name`
       }
@@ -2590,7 +2590,7 @@ show();
       {
         value: (panelDialogue[p.id] || {}).speech || "",
         onChange: (e) => updatePanelDialogue(p.id, "speech", e.target.value),
-        className: "flex-1 p-2 text-xs resize-none outline-none border-2 border-blue-200 rounded-xl bg-white focus:border-blue-400 transition-colors",
+        className: "flex-1 p-2 text-xs resize-none border-2 border-blue-200 rounded-xl bg-white focus:border-blue-400 transition-colors",
         style: { minHeight: "36px", borderRadius: "16px" },
         placeholder: '"What the character says out loud..."',
         "aria-label": `Panel ${idx + 1} speech`
@@ -2600,7 +2600,7 @@ show();
       {
         value: (panelDialogue[p.id] || {}).thought || "",
         onChange: (e) => updatePanelDialogue(p.id, "thought", e.target.value),
-        className: "w-full p-2 text-xs resize-none outline-none border-2 border-purple-200 rounded-xl bg-purple-50/30 focus:border-purple-400 transition-colors italic",
+        className: "w-full p-2 text-xs resize-none border-2 border-purple-200 rounded-xl bg-purple-50/30 focus:border-purple-400 transition-colors italic",
         style: { minHeight: "30px", borderRadius: "20px", borderStyle: "dashed" },
         placeholder: "What the character is thinking...",
         "aria-label": `Panel ${idx + 1} thought`
@@ -2611,7 +2611,7 @@ show();
         type: "text",
         value: (panelDialogue[p.id] || {}).sfx || "",
         onChange: (e) => updatePanelDialogue(p.id, "sfx", e.target.value),
-        className: "flex-1 p-1.5 text-xs border border-red-200 rounded-lg outline-none focus:border-red-400 font-black text-red-600 uppercase",
+        className: "flex-1 p-1.5 text-xs border border-red-200 rounded-lg focus:border-red-400 font-black text-red-600 uppercase",
         placeholder: "BOOM! CRASH! WHOOSH!",
         "aria-label": `Panel ${idx + 1} sound effect`
       }
@@ -2623,7 +2623,7 @@ show();
       {
         value: p.text,
         onChange: (e) => updateParagraph(idx, e.target.value),
-        className: `w-full p-4 text-sm resize-none outline-none transition-colors ${layoutMode === "dark" ? "bg-slate-800 text-slate-100 placeholder:text-slate-600 focus:bg-slate-750 caret-cyan-400" : layoutMode === "journal" ? "bg-amber-50 text-amber-900 placeholder:text-amber-400 focus:bg-amber-100/50" : "focus:bg-rose-50/30"}`,
+        className: `w-full p-4 text-sm resize-none transition-colors ${layoutMode === "dark" ? "bg-slate-800 text-slate-100 placeholder:text-slate-600 focus:bg-slate-750 caret-cyan-400" : layoutMode === "journal" ? "bg-amber-50 text-amber-900 placeholder:text-amber-400 focus:bg-amber-100/50" : "focus:bg-rose-50/30"}`,
         style: {
           minHeight: "120px",
           fontFamily: layoutMode === "journal" ? "'Georgia', 'Times New Roman', serif" : "inherit",
