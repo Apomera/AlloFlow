@@ -295,6 +295,29 @@ window.StemLab = window.StemLab || {
           poly: [[midStart, 18], [midStart, W - 18], [deepStart, W - 18], [deepStart, 18]] }
       ];
     }
+    if (coverageId === 'cover4') {
+      // Cover 4 / Quarters — four deep zones split into quarters of the field.
+      // Three underneath defenders. Modern college + Saban Alabama staple
+      // because EVERY deep route gets a defender. Beat with: short-and-quick
+      // (Stick, Slant) since the underneath is light. Hard to beat deep.
+      var quarter = W / 4;
+      return [
+        { label: 'Deep quarter — right outside', color: 'rgba(96,165,250,0.18)',
+          poly: [[deepStart, 0], [deepStart, quarter], [deepEnd, quarter], [deepEnd, 0]] },
+        { label: 'Deep quarter — right inside', color: 'rgba(96,165,250,0.18)',
+          poly: [[deepStart, quarter], [deepStart, 2 * quarter], [deepEnd, 2 * quarter], [deepEnd, quarter]] },
+        { label: 'Deep quarter — left inside', color: 'rgba(96,165,250,0.18)',
+          poly: [[deepStart, 2 * quarter], [deepStart, 3 * quarter], [deepEnd, 3 * quarter], [deepEnd, 2 * quarter]] },
+        { label: 'Deep quarter — left outside', color: 'rgba(96,165,250,0.18)',
+          poly: [[deepStart, 3 * quarter], [deepStart, W], [deepEnd, W], [deepEnd, 3 * quarter]] },
+        { label: 'Hook — right', color: 'rgba(34,197,94,0.16)',
+          poly: [[losX, 0], [losX, 18], [deepStart, 18], [deepStart, 0]] },
+        { label: 'Hook — middle', color: 'rgba(34,197,94,0.16)',
+          poly: [[midStart, 18], [midStart, W - 18], [deepStart, W - 18], [deepStart, 18]] },
+        { label: 'Hook — left', color: 'rgba(34,197,94,0.16)',
+          poly: [[losX, W - 18], [losX, W], [deepStart, W], [deepStart, W - 18]] }
+      ];
+    }
     if (coverageId === 'tampa2') {
       // Cover 2 but the MLB drops deep into the middle hole — closes the
       // seam that beats traditional Cover 2.
@@ -322,8 +345,44 @@ window.StemLab = window.StemLab || {
     { id: 'cover3', label: 'Cover 3', short: 'C3',
       teach: 'Three deep thirds + four underneath. Beat with: short crossing routes, slants, or smash (corner+hitch from same side).' },
     { id: 'tampa2', label: 'Tampa 2', short: 'T2',
-      teach: 'Cover 2 with the MLB dropping into the deep middle to close the seam. Beat with: deep over routes, intermediate digs, or attacking the curl-flat between defenders.' }
+      teach: 'Cover 2 with the MLB dropping into the deep middle to close the seam. Beat with: deep over routes, intermediate digs, or attacking the curl-flat between defenders.' },
+    { id: 'cover4', label: 'Cover 4 (Quarters)', short: 'C4',
+      teach: 'Four deep zones — every deep route is covered. Modern college + Saban Alabama staple. Beat with: short-and-quick (Stick, Slant) — the underneath is LIGHT (only 3 defenders). Hard to beat deep, easy to nickel-and-dime.' }
   ];
+
+  // ═══════════════════════════════════════════
+  // DRILLS — challenge sequences
+  // ═══════════════════════════════════════════
+  // Same pattern as ThrowLab drills: each task has goal + test(stats) +
+  // progress(stats). Tasks complete in order; the active task shows above
+  // the canvas. Stats accumulate from "Run Play" outcomes — drills only
+  // count animated runs, not just toggling between coverages, so the
+  // student has to actually execute the play to advance.
+  var PLAYLAB_DRILLS = {
+    label: 'Coordinator Drills',
+    tasks: [
+      { id: 'beat-each-coverage',
+        goal: 'Complete a pass against EVERY coverage',
+        test: function(s) { return s.coveragesBeaten >= 4; },
+        progress: function(s) { return s.coveragesBeaten + ' / 4 coverages beaten ✓'; },
+        tip: 'Switch the defense after each completion. Different plays beat different coverages — that\'s the whole game.' },
+      { id: 'three-different-plays',
+        goal: 'Complete passes with 3 DIFFERENT plays',
+        test: function(s) { return Object.keys(s.completionsByPlay || {}).length >= 3; },
+        progress: function(s) { return Object.keys(s.completionsByPlay || {}).length + ' / 3 different plays completed'; },
+        tip: 'Variety matters — a great offense has multiple concepts, not just a favorite play.' },
+      { id: 'beat-cover-2-with-smash',
+        goal: 'Beat Cover 2 specifically with the Smash concept',
+        test: function(s) { return s.smashVsCover2; },
+        progress: function(s) { return s.smashVsCover2 ? 'Done!' : 'Pick Smash + Cover 2, then Run Play'; },
+        tip: 'Smash is THE Cover-2 beater. The hi-lo corner attacks the deep half safety while the hitch sits under the corner.' },
+      { id: 'design-and-complete',
+        goal: 'Design a custom play (drag at least 2 players) and complete it',
+        test: function(s) { return s.completedCustomPlay; },
+        progress: function(s) { return s.completedCustomPlay ? 'Done!' : 'Drag 2+ players, then Run Play and complete the throw'; },
+        tip: 'Move your slot WR wider, push your TE deeper, see if you can find a new window. Coach Mode can help analyze.' }
+    ]
+  };
 
   // ═══════════════════════════════════════════
   // GEOMETRY HELPERS — convert play data → absolute field coords
@@ -458,7 +517,19 @@ window.StemLab = window.StemLab || {
             // running phase, then THROW_DURATION = 0.8s ball flight.
             runActive: false,
             runT: 0,
-            runOutcome: null           // { receiverId, location: 'caught' | 'broken-up' | 'incomplete', etc. }
+            runOutcome: null,           // { receiverId, location: 'caught' | 'broken-up' | 'incomplete', etc. }
+            // Drills — coordinator challenge sequence. Stats accumulate
+            // from animated "Run Play" outcomes so the student has to
+            // actually execute, not just stare at the field.
+            drillActive: false,
+            drillTaskIdx: 0,
+            drillStats: {
+              coveragesBeaten: 0,
+              coveragesBeatenSet: {},
+              completionsByPlay: {},
+              smashVsCover2: false,
+              completedCustomPlay: false
+            }
           }});
         });
         return h('div', { className: 'p-8 text-center text-slate-600' }, 'Loading PlayLab…');
@@ -685,9 +756,38 @@ window.StemLab = window.StemLab || {
             else if (topOpenness >= 3) loc = (Math.random() > 0.5) ? 'caught' : 'brokenup';
             else loc = 'brokenup';
             var outcome = { receiverId: targetId, location: loc, opennessYd: topOpenness };
+            // ── Drill stat updates — only on a completion ──
+            // We capture the play / coverage / custom-edit count at the
+            // moment the play resolves (closure over render-time vars).
+            var newStats = Object.assign({
+              coveragesBeaten: 0, coveragesBeatenSet: {},
+              completionsByPlay: {}, smashVsCover2: false, completedCustomPlay: false
+            }, d.drillStats || {});
+            if (loc === 'caught') {
+              if (!newStats.coveragesBeatenSet[d.coverageId]) {
+                newStats.coveragesBeatenSet = Object.assign({}, newStats.coveragesBeatenSet);
+                newStats.coveragesBeatenSet[d.coverageId] = true;
+                newStats.coveragesBeaten = Object.keys(newStats.coveragesBeatenSet).length;
+              }
+              newStats.completionsByPlay = Object.assign({}, newStats.completionsByPlay);
+              newStats.completionsByPlay[d.playId] = true;
+              if (d.playId === 'smash' && d.coverageId === 'cover2') newStats.smashVsCover2 = true;
+              if (Object.keys(d.customPositions || {}).length >= 2) newStats.completedCustomPlay = true;
+            }
+            // Active-drill task progression
+            var newDrillTaskIdx = d.drillTaskIdx || 0;
+            var taskJustCompleted = null;
+            if (d.drillActive && newDrillTaskIdx < PLAYLAB_DRILLS.tasks.length) {
+              var task = PLAYLAB_DRILLS.tasks[newDrillTaskIdx];
+              if (task && task.test(newStats)) {
+                taskJustCompleted = task;
+                newDrillTaskIdx = newDrillTaskIdx + 1;
+              }
+            }
             setLabToolData(function(prev) {
               return Object.assign({}, prev, { playlab: Object.assign({}, prev.playlab, {
-                runActive: false, runT: TOTAL_DURATION, runOutcome: outcome
+                runActive: false, runT: TOTAL_DURATION, runOutcome: outcome,
+                drillStats: newStats, drillTaskIdx: newDrillTaskIdx
               })});
             });
             plAnnounce(loc === 'caught'
@@ -695,6 +795,20 @@ window.StemLab = window.StemLab || {
               : loc === 'brokenup' ? 'Pass broken up by the defense at ' + targetId + '.'
               : 'Incomplete pass.');
             if (loc === 'caught' && awardXP) awardXP('playlab', 8, 'Completion');
+            if (taskJustCompleted) {
+              var allDone = newDrillTaskIdx >= PLAYLAB_DRILLS.tasks.length;
+              setTimeout(function() {
+                if (allDone) {
+                  plAnnounce('Drill complete! All ' + PLAYLAB_DRILLS.tasks.length + ' coordinator tasks finished.');
+                  if (addToast) addToast('🏆 Coordinator Drills complete!');
+                  if (awardXP) awardXP('playlab', 25, 'Drill complete');
+                } else {
+                  plAnnounce('Task done. Next goal: ' + PLAYLAB_DRILLS.tasks[newDrillTaskIdx].goal);
+                  if (addToast) addToast('✅ Drill task ' + (newDrillTaskIdx) + ' complete');
+                  if (awardXP) awardXP('playlab', 12, 'Drill task');
+                }
+              }, 800);
+            }
             return;
           }
           setLabToolData(function(prev) {
@@ -1019,6 +1133,76 @@ window.StemLab = window.StemLab || {
             return pillBtn(c.label, d.coverageId === c.id, function() { loadCoverage(c.id); });
           })
         ),
+
+        // ── Drills panel ──
+        // Toggle + active goal display, mirrors ThrowLab. Tasks advance only
+        // when the student RUNS a play (not just toggles between settings),
+        // so the drill rewards genuine play execution.
+        (function() {
+          var taskIdx = d.drillTaskIdx || 0;
+          var allDone = taskIdx >= PLAYLAB_DRILLS.tasks.length;
+          var task = PLAYLAB_DRILLS.tasks[Math.min(taskIdx, PLAYLAB_DRILLS.tasks.length - 1)];
+          var stats = d.drillStats || {};
+          if (!d.drillActive) {
+            return h('div', { style: { marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' } },
+              h('button', {
+                onClick: function() {
+                  setLabToolData(function(prev) {
+                    return Object.assign({}, prev, { playlab: Object.assign({}, prev.playlab, {
+                      drillActive: true, drillTaskIdx: 0,
+                      drillStats: {
+                        coveragesBeaten: 0, coveragesBeatenSet: {},
+                        completionsByPlay: {}, smashVsCover2: false, completedCustomPlay: false
+                      }
+                    })});
+                  });
+                  plAnnounce('Drill started: ' + PLAYLAB_DRILLS.tasks[0].goal);
+                },
+                'data-pl-focusable': 'true',
+                style: {
+                  padding: '8px 14px', borderRadius: 999, cursor: 'pointer',
+                  border: '1px solid #10b981', background: 'rgba(16,185,129,0.18)',
+                  color: '#f1f5f9', fontSize: 12, fontWeight: 600
+                }
+              }, '🎯 Start ' + PLAYLAB_DRILLS.label),
+              h('span', { style: { fontSize: 11, color: '#94a3b8' } },
+                PLAYLAB_DRILLS.tasks.length + ' tasks · sandbox stays open while a drill runs'));
+          }
+          return h('section', {
+            'aria-labelledby': 'pl-drill-heading',
+            style: { marginBottom: 14, padding: 12,
+              background: allDone ? 'rgba(16,185,129,0.12)' : 'rgba(16,185,129,0.06)',
+              border: '1px solid #10b981', borderRadius: 10 }
+          },
+            h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 6, flexWrap: 'wrap' } },
+              h('h3', { id: 'pl-drill-heading', style: { margin: 0, fontSize: 12, color: '#10b981', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700 } },
+                allDone ? '🏆 Drill complete · Coordinator Drills' : '🎯 Coordinator Drills · Task ' + (taskIdx + 1) + ' of ' + PLAYLAB_DRILLS.tasks.length),
+              h('button', {
+                onClick: function() {
+                  setLabToolData(function(prev) {
+                    return Object.assign({}, prev, { playlab: Object.assign({}, prev.playlab, {
+                      drillActive: false, drillTaskIdx: 0
+                    })});
+                  });
+                  plAnnounce('Drill stopped.');
+                },
+                'aria-label': 'Stop the current drill',
+                'data-pl-focusable': 'true',
+                style: { padding: '4px 8px', minHeight: 24, borderRadius: 4, cursor: 'pointer',
+                  border: '1px solid #475569', background: '#1e293b', color: '#cbd5e1', fontSize: 11 }
+              }, allDone ? 'Close' : 'Stop')),
+            allDone
+              ? h('div', { style: { fontSize: 13, color: '#cbd5e1' } },
+                  'You finished all ' + PLAYLAB_DRILLS.tasks.length + ' coordinator tasks. Mix any play with any coverage to keep practicing, or hit Stop to close the drill.')
+              : h('div', null,
+                  h('div', { style: { fontSize: 14, color: '#f1f5f9', fontWeight: 600, marginBottom: 4 } }, task.goal),
+                  h('div', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 4 } },
+                    h('span', { style: { color: '#10b981', fontWeight: 700, marginRight: 6 } }, 'Progress:'),
+                    task.progress(stats)),
+                  task.tip ? h('div', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic' } },
+                    h('span', { style: { color: '#fbbf24' } }, '💡 '), task.tip) : null)
+          );
+        })(),
 
         // Two-column layout
         h('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 320px', gap: 16 } },
