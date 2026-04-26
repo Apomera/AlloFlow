@@ -687,6 +687,7 @@ window.StemLab = window.StemLab || {
       label: 'Tiki-Taka',
       icon: '🔁',
       teach: 'Short, sharp passes in tight triangles. Goal: keep possession until the defense commits, then exploit the gap. Math: ~85% of passes < 15 m. The triangle is geometrically optimal — every player has 2 passing options at all times.',
+      beats: ['lowblock', 'midblock'], struggles: ['highpress'],
       passes: [
         ['CDM', 'RCM'], ['RCM', 'RW'], ['RW', 'ST'],
         ['CDM', 'LCM'], ['LCM', 'LW'], ['LW', 'ST'],
@@ -696,6 +697,7 @@ window.StemLab = window.StemLab || {
       label: 'Counter-Attack',
       icon: '⚡',
       teach: 'Win the ball, hit a long ball over the top to a sprinting forward. Klopp / Mourinho staple. Math: averaged ~3 passes per goal (vs 8+ for possession teams). Wins by EXPLOITING space the opponent leaves while attacking.',
+      beats: ['highpress'], struggles: ['lowblock'],
       passes: [
         ['GK', 'CDM'], ['CDM', 'RW'], ['RW', 'ST'],
         ['CDM', 'LW'], ['LW', 'ST']
@@ -704,6 +706,7 @@ window.StemLab = window.StemLab || {
       label: 'Gegenpress (Counter-Press)',
       icon: '🔥',
       teach: 'Klopp\'s "5-second rule" — when you LOSE the ball, all 11 players sprint to win it back within 5 seconds. Why? Because the opponent is at their LEAST organized in those first seconds. Math: a turnover during transition is geometrically a worse position for the defense than a static set play.',
+      beats: ['highpress', 'midblock'], struggles: ['lowblock'],
       passes: [
         // Recovery + immediate attack — passes drawn from the press point
         ['CDM', 'CAM'], ['CAM', 'ST'], ['CAM', 'RW'], ['CAM', 'LW']
@@ -797,6 +800,7 @@ window.StemLab = window.StemLab || {
       label: 'Goal Kick — Long Ball',
       icon: '⚡',
       setPiece: true,
+      beats: ['highpress'], struggles: ['midblock'],
       teach: 'Restart from inside the 6-yd box after the attacking team puts it over the byline. Long: keeper booms it 60+ m to the halfway line, contesting an aerial duel with the striker. Math: ball spends ~3 s in the air, so all 22 players reposition during flight — turns the restart into a 50/50 second-ball scramble. Used by direct teams (Burnley, Bielsa-era Leeds against the press).',
       passes: [
         ['GK', 'ST'],     // long boomed ball to the striker
@@ -806,6 +810,7 @@ window.StemLab = window.StemLab || {
       label: 'Goal Kick — Build From Back',
       icon: '🧩',
       setPiece: true,
+      beats: ['lowblock'], struggles: ['highpress'],
       teach: 'Modern alternative since the 2019 rule change (defenders can receive inside the box). Keeper plays short to a CB, who breaks the press with a vertical pass to a midfielder. Math: 4-vs-3 numbers advantage at the back creates a passing triangle that is almost impossible to press without leaving someone open. City + Brighton score ~5% of their goals from sequences that started here.',
       passes: [
         ['GK', 'RCB'],    // short to right CB
@@ -1233,6 +1238,53 @@ window.StemLab = window.StemLab || {
       grade: 'okay', emoji: '👍', color: '#f59e0b', bg: 'rgba(245,158,11,0.12)',
       label: 'Workable',
       reason: 'Neither great nor terrible. Execution + adjustments will decide it. Try the Coach Mode for specifics.'
+    };
+  }
+
+  // Soccer matchup — concept vs defensive shape. Set-pieces (corner /
+  // free kick / throw-in / penalty) are mostly shape-neutral because
+  // dead-ball restarts override normal team shape; we tag those with
+  // a separate "set-piece" flavor that doesn't grade them. Goal-kicks
+  // DO interact with shape (long ball vs press is the classic).
+  function getSoccerMatchup(concept, shape) {
+    if (!concept || !shape) return null;
+    // Penalty kicks ignore the defending shape (1v1 by rule)
+    if (concept.id === 'penalty') {
+      return {
+        grade: 'okay', emoji: '🎯', color: '#a78bfa', bg: 'rgba(167,139,250,0.12)',
+        label: 'Spot kick',
+        reason: 'Penalty: 1v1 striker vs keeper. Defensive shape doesn\'t apply — only striker placement vs keeper guess matters.'
+      };
+    }
+    // Corner / free kick / throw-in — neutral matchup; the shape teach
+    // describes general defensive principles but doesn\'t grade the call.
+    if (concept.setPiece && !(concept.beats || concept.struggles)) {
+      return {
+        grade: 'okay', emoji: '⚐', color: '#a78bfa', bg: 'rgba(167,139,250,0.12)',
+        label: 'Set-piece',
+        reason: 'Set-pieces interrupt normal shape — defenders organize around the dead ball, not their usual press/block. Execution + run patterns decide it.'
+      };
+    }
+    var beats = concept.beats || [];
+    var struggles = concept.struggles || [];
+    if (beats.indexOf(shape.id) !== -1) {
+      return {
+        grade: 'great', emoji: '✅', color: '#16a34a', bg: 'rgba(22,163,74,0.12)',
+        label: 'Great match',
+        reason: concept.label + ' specifically exploits ' + shape.label + '. Geometry favors you.'
+      };
+    }
+    if (struggles.indexOf(shape.id) !== -1) {
+      return {
+        grade: 'tough', emoji: '⚠️', color: '#dc2626', bg: 'rgba(220,38,38,0.12)',
+        label: 'Tough match',
+        reason: shape.label + ' is built to neutralize ' + concept.label + '. Switch concepts or move players to create new passing lanes.'
+      };
+    }
+    return {
+      grade: 'okay', emoji: '👍', color: '#f59e0b', bg: 'rgba(245,158,11,0.12)',
+      label: 'Workable',
+      reason: 'Concept and shape are roughly neutral. Execution + adjustments will decide it.'
     };
   }
 
@@ -2602,16 +2654,16 @@ window.StemLab = window.StemLab || {
           })
         ),
 
-        // ── Matchup badge (football only) ──
-        // Reads the play's `beats` / `struggles` arrays vs the active
-        // coverage and shows an instant grade so students see whether
-        // their call is geometrically favorable BEFORE running the play.
-        // Three tiers: ✅ great / 👍 workable / ⚠️ tough — each with a
-        // one-line geometric reason. Hidden in soccer mode (set-pieces
-        // and concepts vs defensive shapes don't have the same clean
-        // matchup math football play-calling does).
-        (!isSoccer && play && coverage) ? (function() {
-          var matchup = getMatchup(play, coverage);
+        // ── Matchup badge ──
+        // Football: reads the play's `beats` / `struggles` arrays vs the
+        // active coverage. Soccer: reads the concept's same arrays vs the
+        // active defensive shape (or a set-piece-flavored neutral grade
+        // for corners / FKs / throw-ins / penalties where shape doesn\'t
+        // apply). Three tiers in both: ✅ great / 👍 workable / ⚠️ tough.
+        (function() {
+          var matchup = isSoccer
+            ? getSoccerMatchup(concept, soccerShape)
+            : (play && coverage ? getMatchup(play, coverage) : null);
           if (!matchup) return null;
           return h('div', {
             role: 'status',
@@ -2629,7 +2681,7 @@ window.StemLab = window.StemLab || {
               h('span', null, matchup.reason)
             )
           );
-        })() : null,
+        })(),
 
         // ── Drills panel ──
         // Toggle + active goal display, mirrors ThrowLab. Tasks advance only
