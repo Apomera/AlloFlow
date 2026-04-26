@@ -19503,6 +19503,7 @@ ${t('export.readme_json_desc')}`;
         gradeLevel,
         outlineType,
         visualStyle,
+        visualLayoutMode,
         quizMcqCount,
         persistedLessonDNA,
         leveledTextCustomInstructions,
