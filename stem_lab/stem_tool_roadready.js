@@ -40,6 +40,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     document.body.appendChild(lr);
   })();
 
+  // ── Focus-visible outline (WCAG 2.4.7) ──
+  // Inline styles on the ~287 buttons across this tool would otherwise
+  // suppress the browser's default focus ring, breaking keyboard nav.
+  // Scoped CSS restores a 3px amber outline on keyboard focus only
+  // (mouse clicks won't trigger it). Limited to elements tagged
+  // `data-rr-focusable` so we don't fight any host-app focus styles.
+  (function() {
+    if (document.getElementById('allo-rr-focus-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-rr-focus-css';
+    st.textContent = '[data-rr-focusable]:focus-visible{outline:3px solid #fbbf24!important;outline-offset:2px!important;border-radius:6px}';
+    if (document.head) document.head.appendChild(st);
+  })();
+
+  // ── Live-region announcer with rapid-fire protection (WCAG 4.1.3) ──
+  // Setting textContent twice within ~60ms can drop the first announcement
+  // before the SR engine picks it up. We clear → wait one tick → set, so
+  // each call produces a distinct mutation. Pending announcements stack
+  // via micro-queue: only the LAST queued message wins (avoid reading 3
+  // stale messages back-to-back), but it always fires in a fresh tick so
+  // it can't be clobbered by a same-tick second call.
+  // Stored on the IIFE scope; called as `rrAnnounce(text)`.
+  var _rrAnnounceTimer = null;
+  function rrAnnounce(text) {
+    var lr = document.getElementById('allo-live-roadready');
+    if (!lr) return;
+    if (_rrAnnounceTimer) clearTimeout(_rrAnnounceTimer);
+    lr.textContent = '';
+    _rrAnnounceTimer = setTimeout(function() {
+      lr.textContent = String(text || '');
+      _rrAnnounceTimer = null;
+    }, 25);
+  }
+
 
   // ─────────────────────────────────────────────────────────
   // SECTION 1: VEHICLES — Real specs for accurate physics
@@ -18478,17 +18512,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // ── DRIVING VIEW ──
       if (view === 'driving') {
         return h('div', { style: { position: 'relative', width: '100%', height: '100%', minHeight: '520px', maxHeight: 'calc(100vh - 80px)', background: '#000', borderRadius: '12px', overflow: 'hidden' } },
-          // Three.js WebGL canvas (behind)
+          // Three.js WebGL canvas (behind). role=img + aria-label so SR users
+          // hear what the 3D scene contains; the HUD canvas above carries the
+          // live driving data + controls reference.
           h('canvas', {
             ref: canvas3dRef,
+            role: 'img',
+            'aria-label': 'Three-dimensional driving scene: road, traffic, scenery, weather conditions, and other vehicles ahead. The scene updates as you drive.',
             style: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'block' }
           }),
-          // 2D HUD overlay canvas (on top, transparent)
+          // 2D HUD overlay canvas (on top, transparent). aria-label now
+          // describes BOTH the live data shown (speed, score, time, warnings)
+          // AND the controls — was previously only the controls.
           h('canvas', {
             ref: canvasRef,
             role: 'application',
-            'aria-label': 'RoadReady driving simulator. W/S throttle and brake, A/D steering, C camera toggle, Space pause.',
+            'aria-label': 'RoadReady driving HUD: shows current speed in mph, score, elapsed time, fuel, and active warnings (seatbelt, speed limit, hazards). Controls: W or up arrow to accelerate, S or down arrow to brake, A and D or left and right arrows to steer, C to cycle camera, L to toggle high beams, Space to pause, Escape to end the drive.',
             tabIndex: 0,
+            'data-rr-focusable': 'true',
             style: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'block', pointerEvents: 'none', zIndex: 2 }
           }),
           // Controls legend
