@@ -669,6 +669,34 @@ window.StemLab = window.StemLab || {
         ['LW', 'LCM'],    // short throw to receiving mid
         ['LCM', 'LW'],    // give-and-go return
         ['LW', 'CAM']     // turn and play forward
+      ] },
+    { id: 'penalty',
+      label: 'Penalty Kick',
+      icon: '⚽',
+      setPiece: true,
+      teach: 'Spot kick from 11 m (12 yd). 1v1: striker vs keeper, no defenders in the box. Math: ball travels 11 m in ~0.4 s at 70 mph; keeper\'s reaction time + dive is ~0.6 s. Top corners are physically unsavable — the keeper can\'t reach them in time. Bottom corners need precision (~30 cm tolerance) but the keeper can theoretically reach. Elite-league conversion rate: ~76%. Strategy: PICK A CORNER and commit; "down the middle" works ~80% but only if the keeper dives, which they do ~75% of the time.',
+      passes: [
+        ['CAM', 'ST'],    // run-up coordination — CAM (or whoever) sets the kick
+        ['ST', 'CAM']     // rebound option if keeper saves (fastest player to 2nd ball wins)
+      ] },
+    { id: 'goalkick-long',
+      label: 'Goal Kick — Long Ball',
+      icon: '⚡',
+      setPiece: true,
+      teach: 'Restart from inside the 6-yd box after the attacking team puts it over the byline. Long: keeper booms it 60+ m to the halfway line, contesting an aerial duel with the striker. Math: ball spends ~3 s in the air, so all 22 players reposition during flight — turns the restart into a 50/50 second-ball scramble. Used by direct teams (Burnley, Bielsa-era Leeds against the press).',
+      passes: [
+        ['GK', 'ST'],     // long boomed ball to the striker
+        ['ST', 'CAM']     // flick-on / second-ball winner
+      ] },
+    { id: 'goalkick-short',
+      label: 'Goal Kick — Build From Back',
+      icon: '🧩',
+      setPiece: true,
+      teach: 'Modern alternative since the 2019 rule change (defenders can receive inside the box). Keeper plays short to a CB, who breaks the press with a vertical pass to a midfielder. Math: 4-vs-3 numbers advantage at the back creates a passing triangle that is almost impossible to press without leaving someone open. City + Brighton score ~5% of their goals from sequences that started here.',
+      passes: [
+        ['GK', 'RCB'],    // short to right CB
+        ['RCB', 'CDM'],   // CB breaks press to defensive mid
+        ['CDM', 'CAM']    // mid switches to attacking mid → forward play
       ] }
   ];
 
