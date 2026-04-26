@@ -1927,6 +1927,35 @@ window.StemLab = window.StemLab || {
               tlAnnounce('Short of a length — ball bounced too far in front of the batter.');
               if (addToast) addToast('Short of length');
             }
+          } else if (d.mode === 'volleyball') {
+            if (loc === 'ace') {
+              sfxStrike(); sfxStrike();
+              tlAnnounce('ACE! Serve landed in the deep corner — untouchable.' + describeShape(result));
+              if (addToast) addToast('🏐 ACE!');
+              if (awardXP) awardXP('throwlab', 12, 'Service ace');
+              if (celebrate) celebrate();
+            } else if (loc === 'in') {
+              sfxStrike();
+              tlAnnounce('Serve in. Receivable, but landed in court — point stays in play.');
+              if (addToast) addToast('🏐 In');
+              if (awardXP) awardXP('throwlab', 5, 'Serve in');
+            } else if (loc === 'net') {
+              sfxBall();
+              tlAnnounce('Net! Hit the tape — service error. Add launch angle by 2-4°.');
+              if (addToast) addToast('Net');
+            } else if (loc === 'out') {
+              sfxBall();
+              tlAnnounce('Out wide of the sideline — adjust horizontal aim.');
+              if (addToast) addToast('Out');
+            } else if (loc === 'long') {
+              sfxBall();
+              tlAnnounce('Long — past the back line. Reduce speed by 5-8 mph or steepen launch slightly.');
+              if (addToast) addToast('Long');
+            } else {
+              sfxBall();
+              tlAnnounce('Short — landed on your side of the net. Add power.');
+              if (addToast) addToast('Short');
+            }
           } else if (d.mode === 'golf') {
             if (loc === 'green') {
               sfxStrike(); sfxStrike();
@@ -1998,6 +2027,7 @@ window.StemLab = window.StemLab || {
                        : d.mode === 'fieldgoal' ? (fgGoalZ + 5)
                        : d.mode === 'bowling' ? modeMeta.targetZ
                        : d.mode === 'golf' ? (golfTargetZ + 30)
+                       : d.mode === 'volleyball' ? (modeMeta.targetZ + 2)
                        : 6.5;
         // For top-down: maxB = lateral half-width × 2 ≈ 12m so a curling shot
         // with 1.5m of curl + the 7.32m goal both fit. Field goal apex can hit
@@ -2009,6 +2039,7 @@ window.StemLab = window.StemLab || {
                  : d.mode === 'fieldgoal' ? 18
                  : d.mode === 'bowling' ? 3.2
                  : d.mode === 'golf' ? 60
+                 : d.mode === 'volleyball' ? 6.0
                  : 4.5;
         // For top-down, B is symmetrical around 0 (lateral X); we map [-maxB, +maxB] to canvas height.
         // For side-view, B is from 0 (ground) up to +maxB.
@@ -2036,14 +2067,14 @@ window.StemLab = window.StemLab || {
           for (var ms = 0; ms < W; ms += 60) gfx.fillRect(ms, 0, 30, H);
         } else {
           // Side view: sky gradient + ground band
-          var skyTop = d.mode === 'pitching' || d.mode === 'bowling' ? '#1e3a5f' : d.mode === 'golf' ? '#1e4d6f' : '#3a2e2a';
-          var skyBot = d.mode === 'pitching' || d.mode === 'bowling' ? '#5a7ba8' : d.mode === 'golf' ? '#7fb5c8' : '#6e5a48';
+          var skyTop = d.mode === 'pitching' || d.mode === 'bowling' ? '#1e3a5f' : d.mode === 'golf' ? '#1e4d6f' : d.mode === 'volleyball' ? '#27316b' : '#3a2e2a';
+          var skyBot = d.mode === 'pitching' || d.mode === 'bowling' ? '#5a7ba8' : d.mode === 'golf' ? '#7fb5c8' : d.mode === 'volleyball' ? '#5b6cb5' : '#6e5a48';
           var skyGrad = gfx.createLinearGradient(0, 0, 0, marginT + fieldH);
           skyGrad.addColorStop(0, skyTop);
           skyGrad.addColorStop(1, skyBot);
           gfx.fillStyle = skyGrad;
           gfx.fillRect(0, 0, W, marginT + fieldH);
-          gfx.fillStyle = d.mode === 'pitching' ? '#3a7a26' : d.mode === 'bowling' ? '#a47b4f' : d.mode === 'golf' ? '#5fa83a' : '#c8965a';
+          gfx.fillStyle = d.mode === 'pitching' ? '#3a7a26' : d.mode === 'bowling' ? '#a47b4f' : d.mode === 'golf' ? '#5fa83a' : d.mode === 'volleyball' ? '#b8854d' : '#c8965a';
           gfx.fillRect(0, marginT + fieldH, W, H - (marginT + fieldH));
           if (d.mode === 'freethrow') {
             // Hardwood plank lines for the gym floor
