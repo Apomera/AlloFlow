@@ -3787,6 +3787,80 @@ window.StemLab = window.StemLab || {
                 h('div', { style: { fontWeight: 700, marginBottom: 2 } }, 'Grip:'),
                 activePreset.grip)
             ),
+            // ── Preset Compendium (study table) ──
+            // A side-by-side comparison of EVERY preset in the active
+            // sport — speed / spin / axis / launch / release height (+
+            // carry distance for golf). Lets students see how the
+            // presets relate to each other parameter-by-parameter
+            // without flipping back and forth. Click any row to load
+            // that preset. Collapsed by default to keep the layout tight.
+            h('details', {
+              style: { background: '#0f172a', border: '1px solid #1e293b', borderRadius: 10, padding: '8px 12px', marginBottom: 12 }
+            },
+              h('summary', {
+                style: { cursor: 'pointer', fontSize: 11, color: '#cbd5e1', fontWeight: 600 }
+              }, '📋 Preset compendium — compare every ' + (isPitching ? 'pitch' : isFreeKick ? 'kick' : isFieldGoal ? 'distance' : isBowling ? 'delivery' : isGolf ? 'club' : isVolleyball ? 'serve' : 'shot') + ' in this sport'),
+              h('div', {
+                role: 'table',
+                'aria-label': 'Preset comparison — ' + modeMeta.label,
+                style: { marginTop: 8, fontSize: 11, color: '#cbd5e1' }
+              },
+                // Header row
+                h('div', { role: 'row', style: { display: 'flex', borderBottom: '1px solid #334155', paddingBottom: 4, marginBottom: 4, fontWeight: 700, color: '#94a3b8' } },
+                  h('div', { style: { flex: '0 0 110px' } }, 'Preset'),
+                  h('div', { style: { flex: '0 0 50px', textAlign: 'right' } }, 'Speed'),
+                  h('div', { style: { flex: '0 0 60px', textAlign: 'right' } }, 'Spin'),
+                  h('div', { style: { flex: '0 0 50px', textAlign: 'right' } }, 'Axis'),
+                  h('div', { style: { flex: '0 0 50px', textAlign: 'right' } }, 'Launch'),
+                  h('div', { style: { flex: '0 0 50px', textAlign: 'right' } }, isGolf ? 'Carry' : 'Height')
+                ),
+                // Data rows
+                modeMeta.presets.map(function(pt) {
+                  var activePresetId = isPitching ? d.pitchType
+                                     : isFreeThrow ? d.shotType
+                                     : isFreeKick ? d.kickType
+                                     : isFieldGoal ? d.goalType
+                                     : isBowling ? d.bowlType
+                                     : isGolf ? d.golfClub
+                                     : d.serveType;
+                  var sel = pt.id === activePresetId;
+                  return h('button', {
+                    key: 'comp-' + pt.id,
+                    role: 'row',
+                    onClick: function() {
+                      if (isPitching) applyPitchPreset(pt.id);
+                      else if (isFreeKick) applyKickPreset(pt.id);
+                      else if (isFieldGoal) applyGoalPreset(pt.id);
+                      else if (isBowling) applyBowlPreset(pt.id);
+                      else if (isGolf) applyGolfPreset(pt.id);
+                      else if (isVolleyball) applyVolleyPreset(pt.id);
+                      else applyShotPreset(pt.id);
+                    },
+                    'aria-label': pt.label + ': ' + pt.speedMph + ' mph, ' + pt.spinRpm + ' rpm, axis ' + pt.spinAxisDeg + '°, launch ' + pt.aimDegV + '°',
+                    'aria-pressed': sel,
+                    'data-tl-focusable': 'true',
+                    style: {
+                      display: 'flex', alignItems: 'center',
+                      width: '100%', padding: '4px 6px', borderRadius: 4,
+                      border: sel ? '1px solid #fbbf24' : '1px solid transparent',
+                      background: sel ? 'rgba(251,191,36,0.10)' : 'transparent',
+                      color: sel ? '#fbbf24' : '#cbd5e1',
+                      cursor: 'pointer', fontSize: 11, fontWeight: sel ? 700 : 500,
+                      marginBottom: 1
+                    }
+                  },
+                    h('div', { style: { flex: '0 0 110px', textAlign: 'left' } }, pt.icon + ' ' + pt.label),
+                    h('div', { style: { flex: '0 0 50px', textAlign: 'right', fontFamily: 'ui-monospace, monospace' } }, pt.speedMph + ' mph'),
+                    h('div', { style: { flex: '0 0 60px', textAlign: 'right', fontFamily: 'ui-monospace, monospace' } }, pt.spinRpm + ' rpm'),
+                    h('div', { style: { flex: '0 0 50px', textAlign: 'right', fontFamily: 'ui-monospace, monospace' } }, pt.spinAxisDeg + '°'),
+                    h('div', { style: { flex: '0 0 50px', textAlign: 'right', fontFamily: 'ui-monospace, monospace' } }, pt.aimDegV + '°'),
+                    h('div', { style: { flex: '0 0 50px', textAlign: 'right', fontFamily: 'ui-monospace, monospace' } },
+                      isGolf ? (pt.carryYd + ' yd') : (pt.releaseHeight.toFixed(2) + ' m'))
+                  );
+                })
+              )
+            ),
+
             // Sliders — ranges scale with mode
             h('div', { style: { background: '#0f172a', border: '1px solid #1e293b', borderRadius: 10, padding: 12, marginBottom: 12 } },
               h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Release controls'),
