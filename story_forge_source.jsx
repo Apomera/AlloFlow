@@ -637,6 +637,9 @@ const StoryForge = React.memo(({
   // Revision Plan — synthesizes whichever helpers ran into one prioritized to-do list
   const [revisionPlan, setRevisionPlan] = useState(null);
   const [revisionPlanLoading, setRevisionPlanLoading] = useState(false);
+  // Dialogue Tag Tune-Up — counts tag usage, flags overuse of "said", proposes context-aware swaps
+  const [dialogueReport, setDialogueReport] = useState(null);
+  const [dialogueLoading, setDialogueLoading] = useState(false);
   const [draftCount, setDraftCount] = useState(1);
 
   // ── Init vocab from glossary ──
@@ -1557,6 +1560,7 @@ Return ONLY JSON:
     setShowTellResult(null);
     setArcReport(null);
     setRevisionPlan(null);
+    setDialogueReport(null);
     changePhase('write');
   };
 
@@ -1814,6 +1818,60 @@ Return ONLY JSON:
     setArcLoading(false);
   };
 
+  // ── Dialogue Tag Tune-Up ──
+  // Surfaces dialogue mechanics issues that middle-school writers commonly miss:
+  // overuse of a single tag (especially "said"), untagged dialogue where the
+  // speaker is unclear, and lack of action beats around long exchanges.
+  // Returns concrete in-context tag replacements rather than a generic word list.
+  const analyzeDialogue = async () => {
+    if (!onCallGemini) return;
+    const fullText = paragraphs.map((p, i) => `[Paragraph ${i + 1}] ${p.text.trim()}`).filter(Boolean).join('\n\n');
+    if (!fullText.includes('"') && !fullText.includes('"') && !fullText.includes('"')) {
+      if (addToast) addToast('No dialogue detected — try adding a quoted line', 'info');
+      setDialogueReport({ tagCounts: {}, overusedTag: null, issues: [], summary: 'No dialogue found yet.' });
+      return;
+    }
+    setDialogueLoading(true);
+    try {
+      const targetGrade = gradeLevel || '5th grade';
+      const prompt = `You are a writing coach analyzing dialogue mechanics for a ${targetGrade} student.
+
+Story:
+"""
+${fullText}
+"""
+
+Tasks:
+1. Count occurrences of each dialogue tag verb (said, asked, replied, whispered, shouted, etc.). Treat "said" specially — it's invisible and grade-appropriate, but using it more than ~70% of the time signals overuse. List counts in descending order.
+2. Identify up to 3 specific dialogue lines where the tag could be more precise (offer ONE concrete in-context swap per line — match tone, don't go thesaurus-purple). Include the original line verbatim and the proposed revision.
+3. Flag up to 2 lines where the speaker is unclear (untagged dialogue with no nearby attribution).
+4. If there is no dialogue at all, return empty arrays and an encouraging note that adding even one line of dialogue can make characters come alive.
+
+Return ONLY JSON:
+{
+  "tagCounts": { "<tag verb>": <count>, ... },
+  "overusedTag": "<tag string or null>",
+  "issues": [
+    { "type": "tag-swap", "line": "<exact dialogue line>", "suggestion": "<replacement with new tag>", "why": "<short reason>" },
+    { "type": "missing-tag", "line": "<exact dialogue line>", "suggestion": "<add tag/action beat>", "why": "<short reason>" }
+  ],
+  "summary": "<one short sentence — encouraging if dialogue is strong, gentle if not>"
+}`;
+
+      const result = await onCallGemini(prompt, true);
+      const data = JSON.parse(cleanJson(result));
+      setDialogueReport(data);
+      if (addToast) addToast('Dialogue tune-up ready!', 'success');
+      const issueCount = (data.issues || []).length;
+      sfAnnounce(issueCount === 0 ? 'Dialogue mechanics check: no issues found.' : `Dialogue mechanics check: ${issueCount} suggestion${issueCount === 1 ? '' : 's'}.`);
+      awardXP(5, 'Tuned up dialogue');
+    } catch (err) {
+      console.warn('Dialogue analysis failed:', err);
+      if (addToast) addToast('Dialogue tune-up failed — try again', 'error');
+    }
+    setDialogueLoading(false);
+  };
+
   // ── Revision Plan synthesizer ──
   // Pulls together whichever helpers have run (Senses, Show-vs-Tell, Character
   // Arcs, Mentor Match, Self-Assessment) into a single prioritized 3-item
@@ -1842,6 +1900,10 @@ Return ONLY JSON:
       }
       if (mentorMatch && !mentorMatch.error && mentorMatch.craftToBorrow) {
         helperContext.push(`MENTOR MATCH:\n  reading: ${mentorMatch.mentor?.title || 'unknown'} by ${mentorMatch.mentor?.author || 'unknown'}\n  craft to borrow: ${mentorMatch.craftToBorrow}`);
+      }
+      if (dialogueReport && (dialogueReport.issues || []).length > 0) {
+        const top = dialogueReport.issues.slice(0, 3).map(i => `  - ${i.type}: "${i.line}" → ${i.suggestion}`).join('\n');
+        helperContext.push(`DIALOGUE TUNE-UP:\n  overused tag: ${dialogueReport.overusedTag || 'none'}\n${top}`);
       }
       if (selfAssessmentSubmitted && Object.keys(selfAssessment).length > 0) {
         const lowest = Object.entries(selfAssessment).sort((a, b) => a[1] - b[1]).slice(0, 2);
@@ -1896,6 +1958,7 @@ Return ONLY JSON:
     if (showTellResult && Array.isArray(showTellResult.tellings)) n++;
     if (arcReport && Array.isArray(arcReport.characters)) n++;
     if (mentorMatch && !mentorMatch.error) n++;
+    if (dialogueReport && Array.isArray(dialogueReport.issues)) n++;
     if (selfAssessmentSubmitted && Object.keys(selfAssessment).length > 0) n++;
     return n >= 2;
   };
@@ -3612,6 +3675,11 @@ show();
                   {!gradingResult && (
                     <button onClick={analyzeCharacterArcs} disabled={arcLoading || isProcessing} className="px-4 py-2.5 bg-sky-100 text-sky-700 rounded-full text-sm font-bold hover:bg-sky-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-sky-200" title="Audit each character's arc: introduction, want, change, resolution">
                       🎬 {arcLoading ? 'Analyzing...' : 'Character Arcs'}
+                    </button>
+                  )}
+                  {!gradingResult && (
+                    <button onClick={analyzeDialogue} disabled={dialogueLoading || isProcessing} className="px-4 py-2.5 bg-orange-100 text-orange-700 rounded-full text-sm font-bold hover:bg-orange-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-orange-200" title="Tune up dialogue tag variety and speaker clarity">
+                      💬 {dialogueLoading ? 'Analyzing...' : 'Dialogue Tune-Up'}
                     </button>
                   )}
                   {!gradingResult && helpersAvailableForPlan() && (
