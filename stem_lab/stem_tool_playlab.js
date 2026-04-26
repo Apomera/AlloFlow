@@ -1085,10 +1085,10 @@ window.StemLab = window.StemLab || {
     label: 'Coordinator Drills',
     tasks: [
       { id: 'beat-each-coverage',
-        goal: 'Complete a pass against EVERY coverage',
-        test: function(s) { return s.coveragesBeaten >= 4; },
-        progress: function(s) { return s.coveragesBeaten + ' / 4 coverages beaten ✓'; },
-        tip: 'Switch the defense after each completion. Different plays beat different coverages — that\'s the whole game.' },
+        goal: 'Complete a pass against 6 different coverages',
+        test: function(s) { return s.coveragesBeaten >= 6; },
+        progress: function(s) { return s.coveragesBeaten + ' / 6 coverages beaten ✓'; },
+        tip: 'Switch the defense after each completion. With 8 coverages in the library, you\'ll need at least 6 distinct looks. Different plays beat different coverages — that\'s the whole game.' },
       { id: 'three-different-plays',
         goal: 'Complete passes with 3 DIFFERENT plays',
         test: function(s) { return Object.keys(s.completionsByPlay || {}).length >= 3; },
@@ -1099,6 +1099,21 @@ window.StemLab = window.StemLab || {
         test: function(s) { return s.smashVsCover2; },
         progress: function(s) { return s.smashVsCover2 ? 'Done!' : 'Pick Smash + Cover 2, then Run Play'; },
         tip: 'Smash is THE Cover-2 beater. The hi-lo corner attacks the deep half safety while the hitch sits under the corner.' },
+      { id: 'beat-cover-0-with-hot',
+        goal: 'Beat Cover 0 (all-out blitz) with a hot route — Slant, Bubble, or Stick',
+        test: function(s) { return s.c0WithHot; },
+        progress: function(s) { return s.c0WithHot ? 'Done!' : 'Pick Slant / Bubble / Stick + Cover 0, then Run Play'; },
+        tip: 'Cover 0 = no deep safety + 7 rushers. The QB has ~2 seconds. Hot routes (3-step concepts) are the only safe answer — anything longer gets sacked.' },
+      { id: 'beat-cover-6-with-trips',
+        goal: 'Beat Cover 6 (split-field) with the Trips Bunch concept',
+        test: function(s) { return s.c6WithTrips; },
+        progress: function(s) { return s.c6WithTrips ? 'Done!' : 'Pick Trips Bunch + Cover 6, then Run Play'; },
+        tip: 'Cover 6 = quarters one side, halves the other. The seam between coverages is the soft spot. Trips Bunch overloads ONE side — pick the side facing halves to triangle the lone safety.' },
+      { id: 'beat-robber-with-mesh',
+        goal: 'Beat Robber coverage with the Mesh concept',
+        test: function(s) { return s.robberWithMesh; },
+        progress: function(s) { return s.robberWithMesh ? 'Done!' : 'Pick Mesh + Robber, then Run Play'; },
+        tip: 'The Robber lives at ~10 yd in the middle hole, baiting digs. Mesh sends two crossers under the robber\'s area — he picks one, the other comes wide open.' },
       { id: 'design-and-complete',
         goal: 'Design a custom play (drag at least 2 players) and complete it',
         test: function(s) { return s.completedCustomPlay; },
@@ -1282,6 +1297,9 @@ window.StemLab = window.StemLab || {
               coveragesBeatenSet: {},
               completionsByPlay: {},
               smashVsCover2: false,
+              c0WithHot: false,
+              c6WithTrips: false,
+              robberWithMesh: false,
               completedCustomPlay: false,
               // Soccer
               highXgShot: false,
@@ -1740,7 +1758,9 @@ window.StemLab = window.StemLab || {
             // moment the play resolves (closure over render-time vars).
             var newStats = Object.assign({
               coveragesBeaten: 0, coveragesBeatenSet: {},
-              completionsByPlay: {}, smashVsCover2: false, completedCustomPlay: false
+              completionsByPlay: {}, smashVsCover2: false,
+              c0WithHot: false, c6WithTrips: false, robberWithMesh: false,
+              completedCustomPlay: false
             }, d.drillStats || {});
             if (loc === 'caught') {
               if (!newStats.coveragesBeatenSet[d.coverageId]) {
@@ -1751,6 +1771,10 @@ window.StemLab = window.StemLab || {
               newStats.completionsByPlay = Object.assign({}, newStats.completionsByPlay);
               newStats.completionsByPlay[d.playId] = true;
               if (d.playId === 'smash' && d.coverageId === 'cover2') newStats.smashVsCover2 = true;
+              // New drill flags for the expanded coverage library
+              if (d.coverageId === 'cover0' && (d.playId === 'slant' || d.playId === 'bubble' || d.playId === 'stick')) newStats.c0WithHot = true;
+              if (d.coverageId === 'cover6' && d.playId === 'trips') newStats.c6WithTrips = true;
+              if (d.coverageId === 'robber' && d.playId === 'mesh') newStats.robberWithMesh = true;
               if (Object.keys(d.customPositions || {}).length >= 2) newStats.completedCustomPlay = true;
             }
             // Active-drill task progression
