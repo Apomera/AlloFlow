@@ -4915,55 +4915,55 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       document.head.appendChild(s);
     })();
-    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7d57edc/allo_data_module.js');
-    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7d57edc/large_file_module.js');
-    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7d57edc/key_concept_map_module.js');
-    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7d57edc/utils_pure_module.js');
-    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7d57edc/gemini_api_module.js');
-    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7d57edc/tts_module.js');
-    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7d57edc/personas_module.js');
-    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7d57edc/export_module.js');
-    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7d57edc/misc_components_module.js');
-    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7d57edc/remediation_audio_module.js');
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7d57edc/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7d57edc/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7d57edc/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7d57edc/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7d57edc/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7d57edc/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7d57edc/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7d57edc/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7d57edc/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7d57edc/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7d57edc/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7d57edc/story_stage_module.js');
+    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bf79945/allo_data_module.js');
+    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bf79945/large_file_module.js');
+    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bf79945/key_concept_map_module.js');
+    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bf79945/utils_pure_module.js');
+    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bf79945/gemini_api_module.js');
+    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bf79945/tts_module.js');
+    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bf79945/personas_module.js');
+    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bf79945/export_module.js');
+    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bf79945/misc_components_module.js');
+    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bf79945/remediation_audio_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bf79945/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bf79945/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bf79945/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bf79945/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bf79945/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bf79945/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bf79945/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bf79945/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bf79945/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bf79945/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bf79945/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bf79945/story_stage_module.js');
     loadModule('PoetTree', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2a924cb/poet_tree_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7d57edc/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7d57edc/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7d57edc/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7d57edc/student_interaction_module.js');
-    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7d57edc/math_fluency_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7d57edc/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7d57edc/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7d57edc/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7d57edc/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7d57edc/content_engine_module.js');
-    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7d57edc/timeline_revision_module.js');
-    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7d57edc/prompts_library_module.js');
-    loadModule('TextPipelineHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7d57edc/text_pipeline_helpers_module.js');
-    loadModule('AdaptiveControllerModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7d57edc/adaptive_controller_module.js');
-    loadModule('UdlChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7d57edc/udl_chat_module.js');
-    loadModule('AdventureHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7d57edc/adventure_handlers_module.js');
-    loadModule('GlossaryHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7d57edc/glossary_helpers_module.js');
-    loadModule('ViewRenderersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7d57edc/view_renderers_module.js');
-    loadModule('AudioHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7d57edc/audio_helpers_module.js');
-    loadModule('GenerationHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7d57edc/generation_helpers_module.js');
-    loadModule('MiscHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7d57edc/misc_handlers_module.js');
-    loadModule('PureHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7d57edc/pure_helpers_module.js');
-    loadModule('MathHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7d57edc/math_helpers_module.js');
-    loadModule('CmapHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7d57edc/concept_map_handlers_module.js');
-    loadModule('GenDispatcherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7d57edc/generate_dispatcher_module.js');
-    loadModule('PhaseKHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7d57edc/phase_k_helpers_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bf79945/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bf79945/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bf79945/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bf79945/student_interaction_module.js');
+    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bf79945/math_fluency_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bf79945/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bf79945/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bf79945/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bf79945/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bf79945/content_engine_module.js');
+    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bf79945/timeline_revision_module.js');
+    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bf79945/prompts_library_module.js');
+    loadModule('TextPipelineHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bf79945/text_pipeline_helpers_module.js');
+    loadModule('AdaptiveControllerModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bf79945/adaptive_controller_module.js');
+    loadModule('UdlChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bf79945/udl_chat_module.js');
+    loadModule('AdventureHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bf79945/adventure_handlers_module.js');
+    loadModule('GlossaryHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bf79945/glossary_helpers_module.js');
+    loadModule('ViewRenderersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bf79945/view_renderers_module.js');
+    loadModule('AudioHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bf79945/audio_helpers_module.js');
+    loadModule('GenerationHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bf79945/generation_helpers_module.js');
+    loadModule('MiscHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bf79945/misc_handlers_module.js');
+    loadModule('PureHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bf79945/pure_helpers_module.js');
+    loadModule('MathHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bf79945/math_helpers_module.js');
+    loadModule('CmapHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bf79945/concept_map_handlers_module.js');
+    loadModule('GenDispatcherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bf79945/generate_dispatcher_module.js');
+    loadModule('PhaseKHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bf79945/phase_k_helpers_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     (function() {
       var s = document.createElement('script');
@@ -4974,7 +4974,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       document.head.appendChild(s);
     })();
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7d57edc/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@bf79945/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -23723,7 +23723,7 @@ ${t('export.readme_json_desc')}`;
                     setShowStorybookExportModal(false);
                     handleExportStorybook(true);
                   }}
-                  disabled={isProcessing}
+                  disabled={isProcessing} aria-busy={isProcessing}
                   className="w-full px-6 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all flex items-center justify-center gap-3 shadow-lg hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
                   data-help-key="export_storybook_images"
                 >
@@ -23735,7 +23735,7 @@ ${t('export.readme_json_desc')}`;
                     setShowStorybookExportModal(false);
                     handleExportStorybook(false);
                   }}
-                  disabled={isProcessing}
+                  disabled={isProcessing} aria-busy={isProcessing}
                   className="w-full px-6 py-3 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition-colors flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
                   data-help-key="export_storybook_text"
                 >
@@ -25106,7 +25106,7 @@ ${t('export.readme_json_desc')}`;
                      <button
                          aria-label={t('common.refresh')}
                         onClick={() => fileInputRef.current.click()}
-                        disabled={isExtracting || isGeneratingSource}
+                        disabled={isExtracting || isGeneratingSource} aria-busy={isGeneratingSource}
                         className="text-xs flex items-center gap-1 bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 px-3 py-1.5 rounded-full font-medium transition-colors shadow-sm"
                         title={t('input.upload_tooltip')}
                      >
@@ -25149,7 +25149,7 @@ ${t('export.readme_json_desc')}`;
                             }
                             setShowUrlInput(!showUrlInput);
                         }}
-                        disabled={isExtracting || isGeneratingSource}
+                        disabled={isExtracting || isGeneratingSource} aria-busy={isGeneratingSource}
                         className="text-xs flex items-center gap-1 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 px-3 py-1.5 rounded-full font-medium transition-colors"
                      >
                         <Link size={12} />
@@ -25163,7 +25163,7 @@ ${t('export.readme_json_desc')}`;
                             }
                             setShowSourceGen(!showSourceGen);
                         }}
-                        disabled={isGeneratingSource || isExtracting}
+                        disabled={isGeneratingSource || isExtracting} aria-busy={isGeneratingSource}
                         className="text-xs flex items-center gap-1 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 px-3 py-1.5 rounded-full font-medium transition-colors"
                      >
                         <Sparkles size={12} />
@@ -25514,7 +25514,7 @@ ${t('export.readme_json_desc')}`;
                       <button aria-label={t('common.generate_source_text')}
                         data-help-key="source_generate_button"
                         onClick={handleGenerateSource}
-                        disabled={(!sourceTopic.trim() && targetStandards.length === 0) || isGeneratingSource}
+                        disabled={(!sourceTopic.trim() && targetStandards.length === 0) || isGeneratingSource} aria-busy={isGeneratingSource}
                         className="w-full bg-indigo-600 text-white text-sm font-medium py-2 rounded-md hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                       >
                         {isGeneratingSource ? <RefreshCw className="animate-spin" size={14} /> : <Pencil size={14} />}
@@ -25560,7 +25560,7 @@ ${t('export.readme_json_desc')}`;
                         }
                     }}
                     placeholder={isGeneratingSource ? t('common.writing_content') : isExtracting ? t('common.scanning_document') : t('input.placeholder')}
-                    disabled={isGeneratingSource || isExtracting}
+                    disabled={isGeneratingSource || isExtracting} aria-busy={isGeneratingSource}
                     className={`w-full h-48 p-3 text-sm border border-slate-300 rounded-lg focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none resize-none transition-all duration-300 ${(isGeneratingSource || isExtracting) ? 'bg-slate-50 text-slate-600' : ''}`}
                     aria-label={t('common.source_material_aria')}
                     data-help-key="input_area"
@@ -25631,7 +25631,7 @@ ${t('export.readme_json_desc')}`;
                         aria-label={t('common.generate')}
                         data-help-key="analysis_generate_button"
                         onClick={() => handleGenerate('analysis')}
-                        disabled={!hasSourceOrAnalysis || isProcessing}
+                        disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                         className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         <span className="text-sm text-slate-600 group-hover:text-violet-700 transition-colors flex items-center gap-2">{t('analysis.run')} <Sparkles size={14} className="text-yellow-600"/></span>
@@ -25796,7 +25796,7 @@ ${t('export.readme_json_desc')}`;
                 <button
                     aria-label={t('common.generate')}
                     onClick={() => handleGenerate('glossary')}
-                    disabled={!hasSourceOrAnalysis || isProcessing}
+                    disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                     className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     <span className="text-sm text-slate-600 group-hover:text-sky-700 transition-colors flex items-center gap-2">{t('glossary.generate')} <Sparkles size={14} className="text-yellow-600"/></span>
@@ -26125,7 +26125,7 @@ ${t('export.readme_json_desc')}`;
                 <button
                     aria-label={t('common.generate')}
                     onClick={() => handleGenerate('simplified')}
-                    disabled={!hasSourceOrAnalysis || isProcessing}
+                    disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                     className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     <span className="text-sm text-slate-600 group-hover:text-indigo-700 transition-colors flex items-center gap-2">{t('simplified.rewrite')} <Sparkles size={14} className="text-yellow-600"/></span>
@@ -26212,7 +26212,7 @@ ${t('export.readme_json_desc')}`;
                     aria-label={t('common.generate')}
                     data-help-key="outline_generate_button"
                     onClick={() => handleGenerate('outline')}
-                    disabled={!hasSourceOrAnalysis || isProcessing}
+                    disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                     className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     <span className="text-sm text-slate-600 group-hover:text-cyan-700 transition-colors flex items-center gap-2">{t('outline.generate')} <Sparkles size={14} className="text-yellow-600"/></span>
@@ -26302,7 +26302,7 @@ ${t('export.readme_json_desc')}`;
                     <button
                         aria-label={t('common.generate')}
                     onClick={() => handleGenerate('image')}
-                    disabled={!hasSourceOrAnalysis || isProcessing}
+                    disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                     className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                     <span className="text-sm text-slate-600 group-hover:text-cyan-700 transition-colors flex items-center gap-2">{t('visuals.generate')} <Sparkles size={14} className="text-yellow-600"/></span>
@@ -26354,7 +26354,7 @@ ${t('export.readme_json_desc')}`;
                     <button
                         aria-label={t('common.generate')}
                     onClick={() => handleGenerate('faq')}
-                    disabled={!hasSourceOrAnalysis || isProcessing}
+                    disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                     className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                     <span className="text-sm text-slate-600 group-hover:text-indigo-700 transition-colors flex items-center gap-2">{t('faq.generate')} <Sparkles size={14} className="text-yellow-600"/></span>
@@ -26418,7 +26418,7 @@ ${t('export.readme_json_desc')}`;
                     <button
                         aria-label={t('common.generate')}
                     onClick={() => handleGenerate('sentence-frames')}
-                    disabled={!hasSourceOrAnalysis || isProcessing}
+                    disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                     className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                     <span className="text-sm text-slate-600 group-hover:text-cyan-700 transition-colors flex items-center gap-2">{t('scaffolds.generate')} <Sparkles size={14} className="text-yellow-600"/></span>
@@ -26456,7 +26456,7 @@ ${t('export.readme_json_desc')}`;
                     <button
                         aria-label={t('common.generate')}
                     onClick={() => handleGenerate('brainstorm')}
-                    disabled={!hasSourceOrAnalysis || isProcessing}
+                    disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                     className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                     <span className="text-sm text-slate-700 group-hover:text-violet-700 transition-colors flex items-center gap-2 font-semibold">{t('brainstorm.generate')} <Sparkles size={14} className="text-yellow-600"/></span>
@@ -26517,7 +26517,7 @@ ${t('export.readme_json_desc')}`;
                             aria-label={t('common.refresh')}
                             data-help-key="brainstorm_generate_button"
                             onClick={() => handleGenerate('gemini-bridge')}
-                            disabled={!hasSourceOrAnalysis || isProcessing}
+                            disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                             className="w-full bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold py-2 rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
                         >
                             {isProcessing ? <RefreshCw size={14} className="animate-spin"/> : <Terminal size={14}/>}
@@ -26591,7 +26591,7 @@ ${t('export.readme_json_desc')}`;
                             handleGeneratePersonas();
                             setActiveView('persona');
                         }}
-                        disabled={!hasSourceOrAnalysis || isGeneratingPersona || isProcessing}
+                        disabled={!hasSourceOrAnalysis || isGeneratingPersona || isProcessing} aria-busy={isProcessing}
                         className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         <span className="text-sm text-slate-600 group-hover:text-purple-700 transition-colors flex items-center gap-2">
@@ -26708,7 +26708,7 @@ ${t('export.readme_json_desc')}`;
                     <button
                         aria-label={t('common.generate')}
                         onClick={() => handleGenerate('timeline')}
-                        disabled={!hasSourceOrAnalysis || isProcessing}
+                        disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                         className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
                         data-help-key="timeline_generate_button"
                     >
@@ -26819,7 +26819,7 @@ ${t('export.readme_json_desc')}`;
                         aria-label={t('common.generate')}
                         data-help-key="concept_sort_generate_button"
                         onClick={() => handleGenerate('concept-sort')}
-                        disabled={!hasSourceOrAnalysis || isProcessing}
+                        disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                         className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         <span className="text-sm text-slate-600 group-hover:text-indigo-700 transition-colors flex items-center gap-2">{t('concept_sort.generate')} <Sparkles size={14} className="text-yellow-600"/></span>
@@ -26870,6 +26870,7 @@ ${t('export.readme_json_desc')}`;
                                     {window._dbqMode === 'search' ? 'Search Topic (optional — refines source hunting)' : window._dbqMode === 'links' ? 'Topic Context (helps AI understand the links)' : 'Perspectives to Compare (optional)'}
                                 </label>
                                 <input type="text" placeholder={window._dbqMode === 'search' ? 'e.g. "Japanese internment primary sources"' : window._dbqMode === 'links' ? 'e.g. "Civil Rights Movement"' : 'e.g. "Federalists vs Anti-Federalists"'}
+                                    aria-label={window._dbqMode === 'search' ? 'Search topic for primary source hunting' : window._dbqMode === 'links' ? 'Topic context for AI link analysis' : 'Perspectives to compare for DBQ'}
                                     className="w-full text-xs border border-rose-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-rose-300 outline-none"
                                     aria-label="DBQ focus topic"
                                     id="dbq-focus-topic" />
@@ -27022,7 +27023,7 @@ ${t('export.readme_json_desc')}`;
                         aria-label="Generate DBQ"
                         data-help-key="dbq_generate_button"
                         onClick={() => handleGenerate('dbq')}
-                        disabled={!hasSourceOrAnalysis || isProcessing}
+                        disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                         className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         <span className="text-sm text-slate-600 group-hover:text-rose-700 transition-colors flex items-center gap-2">{t('dbq.generate') || 'Generate DBQ Packet'} <Sparkles size={14} className="text-yellow-600"/></span>
@@ -27961,7 +27962,7 @@ ${t('export.readme_json_desc')}`;
                             </div>
                             <button aria-label={t('common.next')}
                                 data-help-key="adventure_start_btn" onClick={handleStartAdventure}
-                                disabled={!hasSourceOrAnalysis || isProcessing}
+                                disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                                 className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 <span className="text-sm text-slate-600 group-hover:text-purple-700 transition-colors flex items-center gap-2">{t('adventure.start')} <Sparkles size={14} className="text-yellow-600"/></span>
@@ -28054,7 +28055,7 @@ ${t('export.readme_json_desc')}`;
                          aria-label={t('common.generate')}
                      onClick={() => handleGenerate('quiz')}
                      data-help-key="quiz_generate_button"
-                     disabled={!hasSourceOrAnalysis || isProcessing}
+                     disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                      className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
                      >
                      <span className="text-sm text-slate-600 group-hover:text-indigo-700 transition-colors flex items-center gap-2">{t('quiz.generate')} <Sparkles size={14} className="text-yellow-600"/></span>
@@ -28097,7 +28098,7 @@ ${t('export.readme_json_desc')}`;
                     <button
                         aria-label={t('common.generate_lesson_plan')}
                         onClick={handleGenerateLessonPlan}
-                        disabled={!hasSourceOrAnalysis || isProcessing}
+                        disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                         className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         <span className="text-sm text-slate-600 group-hover:text-cyan-700 transition-colors flex items-center gap-2">
@@ -28159,7 +28160,7 @@ ${t('export.readme_json_desc')}`;
                     aria-label={t('common.generate_full_pack')}
                     data-help-key="fullpack_generate"
                     onClick={handleGenerateFullPack}
-                    disabled={!hasSourceOrAnalysis || isProcessing}
+                    disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                     className="w-full p-3 bg-white rounded-2xl text-left flex justify-between items-center disabled:opacity-80 disabled:cursor-not-allowed"
                 >
                     <div>
@@ -28653,6 +28654,55 @@ ${t('export.readme_json_desc')}`;
                                             }}
                                             className="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 text-red-400 hover:text-red-300 p-1 transition-opacity"
                                             aria-label="Delete station"
+                                        >
+                                            <X size={12} />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    );
+                })()}
+                {/* ── Saved SEL Stations ── */}
+                {(() => {
+                    const stations = JSON.parse(localStorage.getItem('alloflow_sel_stations') || '[]');
+                    if (stations.length === 0) return null;
+                    return (
+                        <div className="mb-3">
+                            <div className="flex items-center justify-between mb-2">
+                                <h4 className="text-[11px] font-bold text-indigo-300 uppercase tracking-wider flex items-center gap-1.5">
+                                    📌 SEL Stations
+                                    <span className="bg-pink-500/30 text-pink-200 text-[11px] px-1.5 py-0.5 rounded-full">{stations.length}</span>
+                                </h4>
+                            </div>
+                            <div className="space-y-1.5">
+                                {stations.map((st) => (
+                                    <div
+                                        key={st.id}
+                                        onClick={() => {
+                                            setActiveSelStation(st);
+                                            setShowSelHub(true);
+                                            setSelHubTab && setSelHubTab('explore');
+                                        }}
+                                        className="group flex items-center gap-2 p-2 rounded-lg bg-pink-900/40 border border-pink-700/50 hover:bg-pink-800/60 cursor-pointer transition-all"
+                                    >
+                                        <div className="p-1.5 rounded-md bg-pink-800 text-pink-300 shrink-0">
+                                            💖
+                                        </div>
+                                        <div className="min-w-0 flex-grow">
+                                            <div className="text-xs font-bold text-pink-100 truncate">{st.name}</div>
+                                            <div className="text-[11px] text-pink-400">{(st.tools || []).length} tool{(st.tools || []).length !== 1 ? 's' : ''}{(st.quests || []).length > 0 ? ` · ${st.quests.length} quest${st.quests.length !== 1 ? 's' : ''}` : ''}</div>
+                                        </div>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                const updated = stations.filter(s => s.id !== st.id);
+                                                localStorage.setItem('alloflow_sel_stations', JSON.stringify(updated));
+                                                if (activeSelStation && activeSelStation.id === st.id) setActiveSelStation(null);
+                                                addToast && addToast('SEL Station removed');
+                                            }}
+                                            className="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 text-red-400 hover:text-red-300 p-1 transition-opacity"
+                                            aria-label={`Delete SEL Station ${st.name}`}
                                         >
                                             <X size={12} />
                                         </button>
@@ -29282,7 +29332,7 @@ ${t('export.readme_json_desc')}`;
                                                      {isTeacherMode && (
                                                          <button aria-label={t('common.auto_correct_selected_errors')}
                                                              onClick={handleAutoCorrectSource}
-                                                             disabled={isProcessing || selectedDiscrepancies.size === 0}
+                                                             disabled={isProcessing || selectedDiscrepancies.size === 0} aria-busy={isProcessing}
                                                              className="w-full flex items-center justify-center gap-2 bg-white border border-red-200 text-red-600 hover:bg-red-100 px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                                                          >
                                                              {isProcessing ? <RefreshCw size={12} className="animate-spin"/> : <Wrench size={12}/>}
@@ -29422,7 +29472,7 @@ Return only the corrected version of this exact text:`;
                                               {isTeacherMode && realGrammarErrors.some(g => !g.startsWith('✓ FIXED:')) && (
                                                   <button aria-label={t('common.fix_grammar_errors')}
                                                       onClick={handleFixGrammarErrors}
-                                                      disabled={isProcessing || selectedGrammarErrors.size === 0}
+                                                      disabled={isProcessing || selectedGrammarErrors.size === 0} aria-busy={isProcessing}
                                                       className="w-full flex items-center justify-center gap-2 bg-white border border-amber-200 text-amber-600 hover:bg-amber-100 px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                                                   >
                                                       {isProcessing ? <RefreshCw size={12} className="animate-spin"/> : <Wand2 size={12}/>}
@@ -29485,12 +29535,12 @@ Return only the corrected version of this exact text:`;
                                             onKeyDown={(e) => e.key === 'Enter' && handleAiRefineSource()}
                                             placeholder={t('analysis.refine_placeholder')}
                                             className="w-full pl-9 pr-3 py-2 text-xs border border-indigo-200 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 outline-none transition-all shadow-sm bg-white"
-                                            disabled={isProcessing}
+                                            disabled={isProcessing} aria-busy={isProcessing}
                                         />
                                     </div>
                                     <button aria-label={t('common.ai_refine_source')}
                                         onClick={handleAiRefineSource}
-                                        disabled={!sourceRefineInstruction.trim() || isProcessing}
+                                        disabled={!sourceRefineInstruction.trim() || isProcessing} aria-busy={isProcessing}
                                         className="bg-indigo-100 text-indigo-700 hover:bg-indigo-200 px-4 py-2 rounded-lg text-xs font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                         {isProcessing ? <RefreshCw size={14} className="animate-spin"/> : <Send size={14}/>}
@@ -32035,7 +32085,7 @@ Return only the corrected version of this exact text:`;
                                       onChange={(e) => setComplexityLevel(parseInt(e.target.value))}
                                       onMouseUp={handleComplexityAdjustment}
                                       onTouchEnd={handleComplexityAdjustment}
-                                      disabled={isProcessing}
+                                      disabled={isProcessing} aria-busy={isProcessing}
                                       className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600 z-10 relative"
                                   />
                               </div>
@@ -32164,7 +32214,7 @@ Return only the corrected version of this exact text:`;
                                          <p className="text-sm text-slate-600 italic mb-2">"{generatedContent.alignmentCheck.improvement}"</p>
                                          <button aria-label={t('common.regenerate_with_rigor')}
                                              onClick={handleRegenerateWithRigor}
-                                             disabled={isProcessing}
+                                             disabled={isProcessing} aria-busy={isProcessing}
                                              className="text-xs font-bold bg-emerald-700 text-white px-3 py-1.5 rounded-full hover:bg-emerald-700 transition-colors flex items-center gap-1 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                                          >
                                              <RefreshCw size={12} className={isProcessing ? "animate-spin" : ""}/> {t('simplified.apply_regenerate')}
@@ -33010,7 +33060,7 @@ Return only the corrected version of this exact text:`;
                             <button
                                 aria-label={t('common.refresh')}
                                 onClick={() => handleGenerate('outline')}
-                                disabled={isProcessing}
+                                disabled={isProcessing} aria-busy={isProcessing}
                                 className={`flex items-center gap-2 bg-orange-100 text-orange-700 px-3 py-1.5 rounded-md text-xs font-bold hover:bg-orange-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${!isTeacherMode ? 'hidden' : ''}`}
                             >
                                 <RefreshCw size={14} className={isProcessing ? "animate-spin" : ""} /> {t('common.regenerate')}
@@ -33060,7 +33110,7 @@ Return only the corrected version of this exact text:`;
                                 <p className="text-slate-600 max-w-md mx-auto mb-6">Review and curate the concepts before generating the interactive diagram.</p>
                                 <button aria-label={t('common.initialize_map')}
                                     onClick={handleInitializeMap}
-                                    disabled={isProcessing}
+                                    disabled={isProcessing} aria-busy={isProcessing}
                                     className="w-full p-4 text-xl font-bold bg-indigo-600 text-white rounded-xl shadow-lg hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {isProcessing ? <RefreshCw size={24} className="animate-spin"/> : <Sparkles size={24} className="text-yellow-400 fill-current"/>}
@@ -34477,7 +34527,7 @@ Return only the corrected version of this exact text:`;
                                             setShowLedger(false);
                                             setShowStorybookExportModal(true);
                                         }}
-                                        disabled={isProcessing || adventureState.history.length === 0}
+                                        disabled={isProcessing || adventureState.history.length === 0} aria-busy={isProcessing}
                                         className="w-full px-6 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                         {isProcessing ? <RefreshCw size={18} className="animate-spin"/> : <Download size={18} />}
@@ -35124,7 +35174,7 @@ Return only the corrected version of this exact text:`;
                                     {adventureState.xp >= studentProjectSettings.adventureMinXP ? (
                                         <button
                                             onClick={handleSetShowStorybookExportModalToTrue}
-                                            disabled={isProcessing}
+                                            disabled={isProcessing} aria-busy={isProcessing}
                                             className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:scale-105 transition-all animate-in slide-in-from-bottom-4"
                                             title={t('adventure.storybook')}
                                             aria-label={t('adventure.storybook')}
@@ -35831,7 +35881,7 @@ Return only the corrected version of this exact text:`;
                                     </div>
                                     <button aria-label={t('common.restore_image')}
                                         onClick={handleRestoreImage}
-                                        disabled={isProcessing}
+                                        disabled={isProcessing} aria-busy={isProcessing}
                                         data-help-key="visuals_regenerate"
                                         className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-full font-bold hover:bg-indigo-700 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
@@ -35862,7 +35912,7 @@ Return only the corrected version of this exact text:`;
                                 />
                                 <button
                                     onClick={handleRefineImage}
-                                    disabled={!imageRefinementInput.trim() || isProcessing}
+                                    disabled={!imageRefinementInput.trim() || isProcessing} aria-busy={isProcessing}
                                     className="bg-yellow-400 hover:bg-yellow-500 text-yellow-900 font-bold p-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                                     title={t('common.apply_nano_edit')}
                                     aria-label={t('common.apply_nano_edit')}
@@ -37169,7 +37219,7 @@ Return only the corrected version of this exact text:`;
                             <div className="mt-8 flex justify-center pb-4">
                                 <button aria-label={t('common.generate_content')}
                                     onClick={handleGenerateSimilar}
-                                    disabled={isProcessing}
+                                    disabled={isProcessing} aria-busy={isProcessing}
                                     className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-full font-bold shadow-lg hover:bg-indigo-700 hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100"
                                     data-help-key="math_generate_similar"
                                 >
@@ -38669,7 +38719,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                             <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30">
                                 <button aria-label={t('common.start_panel_chat')}
                                     onClick={handleStartPanelChat}
-                                    disabled={personaState.selectedCharacters.length !== 2 || isProcessing}
+                                    disabled={personaState.selectedCharacters.length !== 2 || isProcessing} aria-busy={isProcessing}
                                     className="bg-purple-600 text-white px-8 py-4 rounded-full font-black text-lg shadow-xl hover:bg-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-3 active:scale-95"
                                 >
                                     {isProcessing ? <RefreshCw className="animate-spin"/> : <Users size={24}/>}
@@ -41471,7 +41521,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                             border: `1px solid ${_sel ? r.border : 'transparent'}`,
                             transition:'all 0.2s'
                           }}>
-                            <div style={{fontSize:'32px',marginBottom:'4px',transform:_sel?'scale(1.2)':'scale(1)',transition:'transform 0.2s'}}>{r.emoji}</div>
+                            <div style={{fontSize:'32px',marginBottom:'4px',transform:_sel?'scale(1.2)':'scale(1)',transition:'transform 0.2s'}} aria-hidden="true">{r.emoji}</div>
                             <div style={{fontSize:'11px',color:r.text,fontWeight:600}}>{r.label}</div>
                           </button>
                         );
@@ -48036,7 +48086,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
       {showAIBackendModal && _isCanvasEnv && (
         <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setShowAIBackendModal(false)}>
           <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative border-4 border-violet-100 animate-in zoom-in-95 duration-200" role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}>
-            <button onClick={() => setShowAIBackendModal(false)} className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors z-10" aria-label="Close"><X size={20}/></button>
+            <button onClick={() => setShowAIBackendModal(false)} className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors z-10" aria-label={t('common.close') || "Close"}><X size={20}/></button>
             <div className="flex items-center gap-2 mb-5 text-violet-900">
                 <div className="bg-violet-100 p-2 rounded-full"><Settings size={20} className="text-violet-600"/></div>
                 <h3 className="font-black text-lg">Advanced Settings</h3>
@@ -48089,7 +48139,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
       {showAIBackendModal && !_isCanvasEnv && (
         <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setShowAIBackendModal(false)}>
           <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full relative border-4 border-violet-100 animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto" role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}>
-            <button onClick={() => setShowAIBackendModal(false)} className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors z-10" aria-label="Close"><X size={20}/></button>
+            <button onClick={() => setShowAIBackendModal(false)} className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors z-10" aria-label={t('common.close') || "Close"}><X size={20}/></button>
             <div className="flex items-center gap-2 mb-6 text-violet-900">
                 <div className="bg-violet-100 p-2 rounded-full"><Unplug size={20} className="text-violet-600"/></div>
                 <h3 className="font-black text-lg">AI Backend Settings</h3>
@@ -48773,26 +48823,26 @@ Return ONLY the plain language summary in ${lang}.`, false);
             </div>
           )}
           <div className="lp-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '24px', maxWidth: '620px', width: '100%', padding: '0 24px' }}>
-            <div className="lp-card" style={{ animationDelay: '0.1s' }} onClick={() => { setHasSelectedMode(true); }}>
-              <div style={{ fontSize: '40px', marginBottom: '16px', animation: 'float 3s ease-in-out infinite' }}>🚀</div>
+            <div className="lp-card" style={{ animationDelay: '0.1s' }} role="button" tabIndex={0} aria-label={t('launch_pad.full_title') + '. ' + t('launch_pad.full_desc')} onClick={() => { setHasSelectedMode(true); }} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }}>
+              <div style={{ fontSize: '40px', marginBottom: '16px', animation: 'float 3s ease-in-out infinite' }} aria-hidden="true">🚀</div>
               <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'white', margin: '0 0 8px' }}>{t('launch_pad.full_title')}</h2>
               <p style={{ fontSize: '12px', color: 'rgba(165,180,252,0.7)', lineHeight: '1.6', margin: 0 }}>{t('launch_pad.full_desc')}</p>
             </div>
-            <div className="lp-card" style={{ animationDelay: '0.2s' }} onClick={() => { setHasSelectedMode(true); setGuidedMode(true); }}>
+            <div className="lp-card" style={{ animationDelay: '0.2s' }} role="button" tabIndex={0} aria-label={(t('launch_pad.guided_title') || 'Guided Mode') + ' (recommended). ' + t('launch_pad.guided_desc')} onClick={() => { setHasSelectedMode(true); setGuidedMode(true); }} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }}>
               <div style={{ position: 'absolute', top: '12px', right: '12px' }}><span className="lp-badge">{t('launch_pad.badge_recommended')}</span></div>
-              <div style={{ fontSize: '40px', marginBottom: '16px', animation: 'float 3s ease-in-out infinite', animationDelay: '0.5s' }}>🧭</div>
+              <div style={{ fontSize: '40px', marginBottom: '16px', animation: 'float 3s ease-in-out infinite', animationDelay: '0.5s' }} aria-hidden="true">🧭</div>
               <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'white', margin: '0 0 8px' }}>{t('launch_pad.guided_title') || 'Guided Mode'}</h2>
               <p style={{ fontSize: '12px', color: 'rgba(165,180,252,0.7)', lineHeight: '1.6', margin: 0 }}>{t('launch_pad.guided_desc')}</p>
             </div>
-            <div className="lp-card" style={{ animationDelay: '0.3s' }} onClick={() => { setHasSelectedMode(true); setHasSelectedRole(true); setShowWizard(false); setIsTeacherMode(false); setTimeout(() => setShowLearningHub(true), 0); }}>
+            <div className="lp-card" style={{ animationDelay: '0.3s' }} role="button" tabIndex={0} aria-label={(t('launch_pad.learning_tools_title') || 'Learning Tools') + '. ' + (t('launch_pad.learning_tools_desc') || 'STEM Lab, StoryForge & SEL Hub')} onClick={() => { setHasSelectedMode(true); setHasSelectedRole(true); setShowWizard(false); setIsTeacherMode(false); setTimeout(() => setShowLearningHub(true), 0); }} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }}>
               <div style={{ position: 'absolute', top: '12px', right: '12px' }}><span className="lp-badge" style={{ background: 'linear-gradient(135deg, #34d399, #059669)' }}>{t('launch_pad.badge_3_tools') || '3 Tools'}</span></div>
-              <div style={{ fontSize: '40px', marginBottom: '16px', animation: 'float 3s ease-in-out infinite', animationDelay: '1s' }}>{'\uD83E\uDDE9'}</div>
+              <div style={{ fontSize: '40px', marginBottom: '16px', animation: 'float 3s ease-in-out infinite', animationDelay: '1s' }} aria-hidden="true">{'\uD83E\uDDE9'}</div>
               <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'white', margin: '0 0 8px' }}>{t('launch_pad.learning_tools_title') || 'Learning Tools'}</h2>
               <p style={{ fontSize: '12px', color: 'rgba(165,180,252,0.7)', lineHeight: '1.6', margin: 0 }}>{t('launch_pad.learning_tools_desc') || 'STEM Lab, StoryForge & SEL Hub \u2014 explore, create, and grow'}</p>
             </div>
-            <div className="lp-card" style={{ animationDelay: '0.4s' }} onClick={() => { setHasSelectedMode(true); setHasSelectedRole(true); setShowWizard(false); if (APP_CONFIG._cfg_validation_key) { setPendingRole('educator_hub'); setIsGateOpen(true); } else { setIsTeacherMode(true); setShowEducatorHub(true); } }}>
+            <div className="lp-card" style={{ animationDelay: '0.4s' }} role="button" tabIndex={0} aria-label={(t('launch_pad.educator_tools_title') || 'Educator Tools') + '. ' + (t('launch_pad.educator_tools_desc') || 'BehaviorLens, Report Writer') + (APP_CONFIG._cfg_validation_key ? ' (password protected)' : '')} onClick={() => { setHasSelectedMode(true); setHasSelectedRole(true); setShowWizard(false); if (APP_CONFIG._cfg_validation_key) { setPendingRole('educator_hub'); setIsGateOpen(true); } else { setIsTeacherMode(true); setShowEducatorHub(true); } }} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }}>
               <div style={{ position: 'absolute', top: '12px', right: '12px' }}><span className="lp-badge" style={{ background: 'linear-gradient(135deg, #a78bfa, #7c3aed)' }}>{APP_CONFIG._cfg_validation_key ? (t('launch_pad.badge_educator') || '🔒 Educator') : (t('launch_pad.badge_educator_open') || '🛠️ Educator')}</span></div>
-              <div style={{ fontSize: '40px', marginBottom: '16px', animation: 'float 3s ease-in-out infinite', animationDelay: '1.5s' }}>🛠️</div>
+              <div style={{ fontSize: '40px', marginBottom: '16px', animation: 'float 3s ease-in-out infinite', animationDelay: '1.5s' }} aria-hidden="true">🛠️</div>
               <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'white', margin: '0 0 8px' }}>{t('launch_pad.educator_tools_title') || 'Educator Tools'}</h2>
               <p style={{ fontSize: '12px', color: 'rgba(165,180,252,0.7)', lineHeight: '1.6', margin: 0 }}>{t('launch_pad.educator_tools_desc') || 'BehaviorLens, Report Writer, and professional clinical tools — password protected'}</p>
             </div>
@@ -50123,7 +50173,11 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     callTTS, callImagen, callGeminiVision,
                     onSafetyFlag: handleAiSafetyFlag,
                     studentCodename: studentNickname || 'student',
-                    t, ArrowLeft, X, Sparkles, Heart, GripVertical
+                    t, ArrowLeft, X, Sparkles, Heart, GripVertical,
+                    activeStation: activeSelStation,
+                    onSaveStation: (station) => {
+                        setActiveSelStation(station);
+                    }
                 });
             }
             return (

@@ -124,10 +124,13 @@ window.StemLab = window.StemLab || {
   // not included (its surface gravity is so weak the trajectory would walk
   // off the canvas).
   var GRAVITY_PRESETS = [
-    { id: 'earth',   label: 'Earth',   g: 9.81,  icon: '🌍' },
-    { id: 'moon',    label: 'Moon',    g: 1.62,  icon: '🌙' },
-    { id: 'mars',    label: 'Mars',    g: 3.71,  icon: '🔴' },
-    { id: 'jupiter', label: 'Jupiter', g: 24.79, icon: '🪐' }
+    { id: 'earth',   label: 'Earth',   g: 9.81,   icon: '🌍' },
+    { id: 'moon',    label: 'Moon',    g: 1.62,   icon: '🌙' },
+    { id: 'mercury', label: 'Mercury', g: 3.70,   icon: '☿️' },   // closest to Sun, gravity ≈ Mars
+    { id: 'mars',    label: 'Mars',    g: 3.71,   icon: '🔴' },
+    { id: 'saturn',  label: 'Saturn',  g: 10.44,  icon: '🪐' },   // sneaky-close to Earth
+    { id: 'jupiter', label: 'Jupiter', g: 24.79, icon: '⚫' },
+    { id: 'sun',     label: 'Sun',     g: 274.0,  icon: '☀️' }   // 28× Earth — extreme dropper
   ];
   // Conversion helpers
   var MPH_PER_MPS = 2.23694;
