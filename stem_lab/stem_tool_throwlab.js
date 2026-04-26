@@ -132,6 +132,52 @@ window.StemLab = window.StemLab || {
     { id: 'jupiter', label: 'Jupiter', g: 24.79, icon: '⚫' },
     { id: 'sun',     label: 'Sun',     g: 274.0,  icon: '☀️' }   // 28× Earth — extreme dropper
   ];
+  // ── Scenarios ──
+  // One-click teaching demos that combine mode + preset + gravity + wind
+  // into a configured setup. Useful as a "warm up the lab" feature: the
+  // teacher picks a scenario, the simulator snaps to it, students can
+  // immediately throw and discuss WITHOUT manually dialing 6 controls.
+  // Each scenario has a teach blurb describing what the student should
+  // notice when they run it.
+  var SCENARIOS = [
+    { id: 'beckham', label: "Beckham's Curl", icon: '⚽',
+      mode: 'freekick', presetId: 'curling', gravityId: 'earth',
+      windMph: 0, windDirDeg: 0,
+      teach: '22 m free kick with 600 rpm of sidespin. Watch the ball bend ~1.5 m around the wall — that\'s Magnus force in action. The signature soccer free kick.' },
+    { id: 'moon-fg', label: 'Field Goal on the Moon', icon: '🌙',
+      mode: 'fieldgoal', presetId: 'long', gravityId: 'moon',
+      windMph: 0, windDirDeg: 0,
+      teach: '50-yard field goal at 1/6 Earth gravity. The ball stays airborne ~6× as long, traveling far past the goalposts. Same speed + angle, drastically different trajectory — the lesson is that range scales with 1/g.' },
+    { id: 'mariano', label: "Mariano's Cutter", icon: '⚾',
+      mode: 'pitching', presetId: 'slider', gravityId: 'earth',
+      windMph: 0, windDirDeg: 0,
+      teach: 'Mariano Rivera\'s legendary cut fastball: 92 mph with bullet-spin sidespin. Watch the ball slide ~6 inches laterally just before the plate. The pitch that built a Hall of Fame career.' },
+    { id: 'parker-floater', label: "Tony Parker Floater", icon: '☔',
+      mode: 'freethrow', presetId: 'floater', gravityId: 'earth',
+      windMph: 0, windDirDeg: 0,
+      teach: 'Slow, ultra-high (~62°) arc over a contesting big man. The hangtime is ~1.5 s; the defender\'s hand is on the way DOWN by the time the ball drops through. Geometry beats reach.' },
+    { id: 'headwind-hailmary', label: 'Hail Mary into Headwind', icon: '💨',
+      mode: 'fieldgoal', presetId: 'hailmary', gravityId: 'earth',
+      windMph: 15, windDirDeg: 0,
+      teach: '60-yard kick into a 15 mph headwind. The headwind both slows the ball AND increases drag-induced lift loss — total range drops ~8-12 yards. A demonstration of why kickers check the flags.' },
+    { id: 'warne-googly', label: "Warne's Googly", icon: '🌪️',
+      mode: 'bowling', presetId: 'legspin', gravityId: 'earth',
+      windMph: 0, windDirDeg: 0,
+      teach: 'Shane Warne territory: 50 mph leg-spin delivery with the spin axis pulling the ball into the off-stump line. After bouncing, the ball turns ~40-60 cm — wider than any other delivery in cricket. The "Ball of the Century" rolled into one preset.' },
+    { id: 'driver-tail', label: 'Driver in a Tailwind', icon: '🏌️',
+      mode: 'golf', presetId: 'driver', gravityId: 'earth',
+      windMph: 8, windDirDeg: 180,
+      teach: '250 yd driver with an 8 mph tailwind. The wind pushes the ball forward AND reduces drag (relative wind speed drops), adding ~20-30 yards of carry. PGA pros chase tailwind days for personal-best drives.' },
+    { id: 'olympic-jump', label: 'Olympic Jump Serve', icon: '🏐',
+      mode: 'volleyball', presetId: 'jump', gravityId: 'earth',
+      windMph: 0, windDirDeg: 0,
+      teach: '70 mph jump serve from a 3.0 m release height with topspin. The Magnus force pulls the ball DOWN past the net at speed — the receiver has ~0.5 s to react. Wilfredo Leon territory.' },
+    { id: 'jupiter-pitcher', label: 'Pitching on Jupiter', icon: '⚫',
+      mode: 'pitching', presetId: '4seam', gravityId: 'jupiter',
+      windMph: 0, windDirDeg: 0,
+      teach: 'A 92 mph 4-seam fastball at 2.5× Earth gravity. The ball drops dramatically — strike zone almost impossible. Lesson: gravity rules trajectory; without backspin lift, the ball falls a meter from release to plate.' }
+  ];
+
   // Wind presets — quick-pick alternatives to manually setting speed +
   // direction. Direction convention: 0° = head (against the throw), 90° =
   // R-to-L cross, 180° = tail (with the throw), 270° = L-to-R cross.
@@ -1365,6 +1411,47 @@ window.StemLab = window.StemLab || {
           return Object.assign({}, prev, { throwlab: next });
         });
         tlAnnounce('Selected club: ' + gt.label + '. Carry ' + gt.carryYd + ' yards, ' + gt.aimDegV + ' degree launch.');
+      }
+
+      function applyScenario(scenarioId) {
+        var s = SCENARIOS.find(function(sc) { return sc.id === scenarioId; });
+        if (!s) return;
+        var presetList = s.mode === 'pitching' ? PITCH_TYPES
+                       : s.mode === 'freethrow' ? SHOT_TYPES
+                       : s.mode === 'freekick' ? KICK_TYPES
+                       : s.mode === 'fieldgoal' ? GOAL_TYPES
+                       : s.mode === 'bowling' ? CRICKET_DELIVERIES
+                       : s.mode === 'golf' ? GOLF_TYPES
+                       : VOLLEYBALL_TYPES;
+        var preset = presetList.find(function(p) { return p.id === s.presetId; });
+        if (!preset) return;
+        var presetIdField = s.mode === 'pitching' ? 'pitchType'
+                          : s.mode === 'freethrow' ? 'shotType'
+                          : s.mode === 'freekick' ? 'kickType'
+                          : s.mode === 'fieldgoal' ? 'goalType'
+                          : s.mode === 'bowling' ? 'bowlType'
+                          : s.mode === 'golf' ? 'golfClub'
+                          : 'serveType';
+        setLabToolData(function(prev) {
+          var nextThrowlab = Object.assign({}, prev.throwlab, {
+            mode: s.mode,
+            speedMph: preset.speedMph,
+            spinRpm: preset.spinRpm,
+            spinAxisDeg: preset.spinAxisDeg,
+            aimDegV: s.aimDegV != null ? s.aimDegV : preset.aimDegV,
+            aimDegH: s.aimDegH != null ? s.aimDegH : 0,
+            releaseHeight: s.releaseHeight != null ? s.releaseHeight : preset.releaseHeight,
+            windMph: s.windMph || 0,
+            windDirDeg: s.windDirDeg || 0,
+            gravityId: s.gravityId || 'earth',
+            lastResult: null, replayActive: false, replayT: 0,
+            coachReply: '', coachError: ''
+          });
+          nextThrowlab[presetIdField] = s.presetId;
+          if (s.mode === 'fieldgoal' && preset.distanceYd) nextThrowlab.fgDistanceYd = preset.distanceYd;
+          return Object.assign({}, prev, { throwlab: nextThrowlab });
+        });
+        tlAnnounce('Scenario loaded: ' + s.label + '. ' + s.teach);
       }
 
       function applyVolleyPreset(vid) {
@@ -3179,6 +3266,40 @@ window.StemLab = window.StemLab || {
               }
             }, mm.icon + ' ' + mm.label);
           })
+        ),
+
+        // ── Scenarios ──
+        // One-click teaching demos. Each pill snaps mode + preset +
+        // gravity + wind into a configured setup. Useful as a warm-up
+        // for class discussion: pick a scenario, throw it, talk about
+        // the physics. Hidden behind a collapsed details so it doesn't
+        // dominate the UI for students who want to free-explore.
+        h('details', {
+          style: { marginBottom: 14, background: '#0f172a', border: '1px solid #1e293b', borderRadius: 10, padding: '8px 12px' }
+        },
+          h('summary', {
+            style: { cursor: 'pointer', fontSize: 12, color: '#cbd5e1', fontWeight: 600 }
+          }, '🎬 Scenarios — one-click teaching demos (' + SCENARIOS.length + ')'),
+          h('div', {
+            role: 'group', 'aria-label': 'Scenarios',
+            style: { display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }
+          },
+            SCENARIOS.map(function(sc) {
+              return h('button', {
+                key: 'sc-' + sc.id,
+                onClick: function() { applyScenario(sc.id); },
+                'aria-label': sc.label + ' scenario: ' + sc.teach,
+                'data-tl-focusable': 'true',
+                title: sc.teach,
+                style: {
+                  padding: '6px 11px', borderRadius: 6, cursor: 'pointer',
+                  border: '1px solid #334155',
+                  background: '#1e293b',
+                  color: '#f1f5f9', fontSize: 11, fontWeight: 600
+                }
+              }, sc.icon + ' ' + sc.label);
+            })
+          )
         ),
 
         // Difficulty / scaffold tier selector — IEP / UDL onramp.
