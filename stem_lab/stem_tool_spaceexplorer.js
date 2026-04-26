@@ -1373,7 +1373,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
           // Event card — WCAG: keyboard shortcuts (1/2/3), focus management, aria-describedby
           activeEvent && missionPhase === 'event' && h('div', {
             className: 'bg-gradient-to-br from-amber-950 to-slate-900 rounded-xl p-4 border border-amber-700/50 shadow-lg',
-            role: 'alertdialog', 'aria-label': 'Mission event: ' + activeEvent.title,
+            role: 'alertdialog', 'aria-modal': 'true', 'aria-label': 'Mission event: ' + activeEvent.title,
             'aria-describedby': 'se-event-desc',
             tabIndex: -1,
             onKeyDown: function(e) {

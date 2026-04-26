@@ -3614,7 +3614,9 @@ const StudentBingoGame = React.memo(({ data, onClose, playSound, onGameComplete 
                   row.push({ type: 'free', text: t('bingo.free_space') });
               } else {
                   const matchingEntry = data.find(d => d.term === shuffled[termIdx]);
-                  row.push({ type: 'term', text: shuffled[termIdx], imageUrl: matchingEntry?.imageUrl || null });
+                  // Glossary items store the generated picture under `image` (data URL or http URL).
+                  // Falls back to `imageUrl` for any future variants.
+                  row.push({ type: 'term', text: shuffled[termIdx], imageUrl: matchingEntry?.image || matchingEntry?.imageUrl || null });
                   termIdx++;
               }
           }

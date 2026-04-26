@@ -528,8 +528,7 @@ window.StemLab = window.StemLab || {
         _ext.showBadges && h('div', { className: 'bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl p-3 border-2 border-amber-200' },
           h('div', { className: 'flex items-center justify-between mb-2' },
             h('p', { className: 'text-sm font-bold text-amber-800' }, '\uD83C\uDFC5 Badges (' + earnedCount + '/' + BADGES.length + ')'),
-            h('button', { 'aria-label': 'Ext Upd',
-              onClick: function() { extUpd({ showBadges: false }); },
+            h('button', { onClick: function() { extUpd({ showBadges: false }); },
               className: 'text-xs text-slate-600 hover:text-slate-600'
             }, '\u2715')
           ),
@@ -553,8 +552,7 @@ window.StemLab = window.StemLab || {
         _ext.showAI && h('div', { className: 'bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-3 border-2 border-purple-200' },
           h('div', { className: 'flex items-center justify-between mb-2' },
             h('p', { className: 'text-sm font-bold text-purple-800' }, '\uD83E\uDDE0 AI Math Tutor'),
-            h('button', { 'aria-label': 'Ext Upd',
-              onClick: function() { extUpd({ showAI: false }); },
+            h('button', { onClick: function() { extUpd({ showAI: false }); },
               className: 'text-xs text-slate-600 hover:text-slate-600'
             }, '\u2715')
           ),
@@ -574,8 +572,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'flex gap-1 flex-wrap' },
           diffModes.map(function(dm) {
             var active = exploreDifficulty === dm.id;
-            return h('button', { 'aria-label': 'Set Explore Difficulty',
-              key: dm.id,
+            return h('button', { key: dm.id,
               onClick: function() { setExploreDifficulty(dm.id); },
               className: 'px-3 py-1 rounded-lg text-[11px] font-bold transition-all ' +
                 (active

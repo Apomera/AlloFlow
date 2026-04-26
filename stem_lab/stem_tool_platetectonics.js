@@ -1240,7 +1240,7 @@ var d = labToolData.plateTectonics || {};
 
                 React.createElement("label", { className: "text-xs font-bold text-red-700" }, "\u23F1 Speed:"),
 
-                React.createElement("input", { type: "range", min: "0.5", max: "4", step: "0.5", value: speed, onChange: function(e) { upd({ speed: parseFloat(e.target.value) }); }, className: "w-24 accent-red-500" }),
+                React.createElement("input", { type: "range", "aria-label": "Simulation speed multiplier", min: "0.5", max: "4", step: "0.5", value: speed, onChange: function(e) { upd({ speed: parseFloat(e.target.value) }); }, className: "w-24 accent-red-500" }),
 
                 React.createElement("span", { className: "text-xs font-bold text-red-500" }, speed + "\u00D7"),
 
@@ -1357,7 +1357,7 @@ var d = labToolData.plateTectonics || {};
 
                   React.createElement("span", { className: "text-xs font-bold text-red-600 w-20" }, "Magnitude:"),
 
-                  React.createElement("input", { type: "range", min: "1", max: "9", step: "0.1", value: eqMagnitude, onChange: function(e) { upd({ eqMagnitude: parseFloat(e.target.value) }); }, className: "flex-1 accent-red-500" }),
+                  React.createElement("input", { type: "range", "aria-label": "Earthquake magnitude (Richter scale)", min: "1", max: "9", step: "0.1", value: eqMagnitude, onChange: function(e) { upd({ eqMagnitude: parseFloat(e.target.value) }); }, className: "flex-1 accent-red-500" }),
 
                   React.createElement("span", { className: "text-lg font-black px-3 py-1 rounded-lg", style: { background: eqMagnitude >= 7 ? '#dc2626' : eqMagnitude >= 5 ? '#f59e0b' : '#22c55e', color: 'white' } }, eqMagnitude.toFixed(1))
 

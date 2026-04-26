@@ -357,6 +357,8 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               title: 'View badges (B)'
             }, '\uD83C\uDFC5 ' + earnedCount + '/' + BADGES.length),
             h('button', { onClick: askTutor,
+              'aria-label': tutorLoading ? 'AI Tutor thinking' : 'Ask AI Tutor',
+              'aria-busy': !!tutorLoading,
               className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-purple-50 border border-purple-200 text-purple-600 hover:bg-purple-100 transition-all',
               title: 'AI Tutor (?)'
             }, '\uD83E\uDDE0 AI')
@@ -542,13 +544,13 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   h('div', null,
                     h('p', { className: 'text-[11px] font-bold text-cyan-600 mb-1' }, d.value + ' ' + d.fromUnit),
                     h('div', { className: 'h-5 rounded-full overflow-hidden bg-slate-200' },
-                      h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', className: 'h-full bg-gradient-to-r from-cyan-400 to-cyan-600 rounded-full transition-all duration-500', style: { width: normF + '%' } })
+                      h('div', { role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': Math.round(normF), 'aria-label': 'From value: ' + d.value + ' ' + d.fromUnit, className: 'h-full bg-gradient-to-r from-cyan-400 to-cyan-600 rounded-full transition-all duration-500', style: { width: normF + '%' } })
                     )
                   ),
                   h('div', null,
                     h('p', { className: 'text-[11px] font-bold text-indigo-600 mb-1' }, fmtResult + ' ' + d.toUnit),
                     h('div', { className: 'h-5 rounded-full overflow-hidden bg-slate-200' },
-                      h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', className: 'h-full bg-gradient-to-r from-indigo-400 to-indigo-600 rounded-full transition-all duration-500', style: { width: normT + '%' } })
+                      h('div', { role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': Math.round(normT), 'aria-label': 'Converted to: ' + fmtResult + ' ' + d.toUnit, className: 'h-full bg-gradient-to-r from-indigo-400 to-indigo-600 rounded-full transition-all duration-500', style: { width: normT + '%' } })
                     )
                   )
                 );

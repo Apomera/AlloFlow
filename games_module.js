@@ -3105,7 +3105,7 @@ const StudentBingoGame = React.memo(({ data, onClose, playSound, onGameComplete 
           row.push({ type: "free", text: t("bingo.free_space") });
         } else {
           const matchingEntry = data.find((d) => d.term === shuffled[termIdx]);
-          row.push({ type: "term", text: shuffled[termIdx], imageUrl: (matchingEntry == null ? void 0 : matchingEntry.imageUrl) || null });
+          row.push({ type: "term", text: shuffled[termIdx], imageUrl: (matchingEntry == null ? void 0 : (matchingEntry.image || matchingEntry.imageUrl)) || null });
           termIdx++;
         }
       }

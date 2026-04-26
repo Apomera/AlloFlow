@@ -514,6 +514,9 @@
     // Theme tracker — patterns across the student's saved poems
     var _themeReport = useState(null); var themeReport = _themeReport[0]; var setThemeReport = _themeReport[1];
     var _themeLoading = useState(false); var themeLoading = _themeLoading[0]; var setThemeLoading = _themeLoading[1];
+    // Mentor Match — pairs the student's poem with a public-domain master poem for study
+    var _mentorMatch = useState(null); var mentorMatch = _mentorMatch[0]; var setMentorMatch = _mentorMatch[1];
+    var _mentorLoading = useState(false); var mentorLoading = _mentorLoading[0]; var setMentorLoading = _mentorLoading[1];
 
     // ── Persistence helpers ──
     var savePrefs = useCallback(function (next) {
@@ -1134,6 +1137,37 @@
       }
     }, [onCallGemini, saved, gradeLevel]);
 
+    // ── Mentor Match: pair the student's poem with a public-domain master poem for study ──
+    // Gemini picks a real PD poem (or a short excerpt) on a similar theme/in a similar form,
+    // then explains what's shared and what specific craft move is worth borrowing. The prompt
+    // explicitly asks Gemini to acknowledge uncertainty rather than fabricate attribution.
+    var findMentorPoem = useCallback(async function () {
+      if (!onCallGemini || !poemText.trim()) return;
+      setMentorLoading(true);
+      setMentorMatch(null);
+      try {
+        var formContext = form
+          ? 'The student is writing a ' + form.name + '. Pick a master poem ideally in the same form, or in a closely related form, to model from.'
+          : 'The student is writing in free verse / open form. Pick a master poem on a similar theme.';
+        var prompt = 'You are a poetry mentor. A ' + gradeLevel + ' student wrote the poem below. Your job: surface ONE public-domain master poem (or a short PD excerpt) that this student would learn from sitting alongside.\n\n'
+          + 'Student poem:\n"""\n' + poemText + '\n"""\n\n'
+          + formContext + '\n\n'
+          + 'CRITICAL: only suggest poems whose author died before 1929 (US PD-safe), or older translations of pre-modern works (Bashō, Sappho, Rumi, Ono no Komachi, etc.), or anonymous traditional works. If you are NOT confident a poem is genuinely public domain AND that you are quoting it accurately, set "uncertain":true and skip the text — just describe the poem in prose. Never fabricate a quote.\n\n'
+          + 'Return JSON: {"mentor":{"title":"<title>","author":"<author>","year":<year as number or null>,"text":"<poem text or short excerpt, line breaks as \\\\n; LEAVE BLANK if uncertain>","uncertain":false},"sharedTheme":"<one sentence on what your poem and theirs share — image, feeling, form>","craftToBorrow":"<one specific craft move from the master that this student could try in their next revision>","studentEcho":"<where in their poem they\'re already doing something similar, with a quoted phrase from their poem>"}\n\n'
+          + 'Match register to a ' + gradeLevel + ' student. Be specific, be honest, never invent.';
+        var result = await onCallGemini(prompt, true);
+        var clean = String(result).trim().replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```$/, '').trim();
+        var parsed = JSON.parse(clean);
+        setMentorMatch(parsed);
+        announcePT('Mentor poem found: ' + (parsed.mentor && parsed.mentor.title) + ' by ' + (parsed.mentor && parsed.mentor.author) + '.');
+      } catch (err) {
+        warnLog('Mentor match failed:', err && err.message);
+        setMentorMatch({ error: 'Couldn\'t find a mentor poem right now. Try again in a moment.' });
+      } finally {
+        setMentorLoading(false);
+      }
+    }, [onCallGemini, poemText, form, gradeLevel]);
+
     // ── Found poetry helper: pick word ──
     var addFoundWord = useCallback(function (word) {
       var clean = String(word || '').replace(/[^\w'-]/g, '');
@@ -1667,6 +1701,47 @@
                 e('p', { style: { fontSize: '12px', color: '#1e293b', margin: 0, lineHeight: 1.6 } }, aiFeedback.suggestion)
               ),
               aiFeedback.encouragement && e('p', { style: { fontSize: '13px', color: '#475569', fontStyle: 'italic', margin: '4px 0 0', textAlign: 'center' } }, aiFeedback.encouragement)
+            ),
+            // ── Mentor Match: pair student's poem with a public-domain master poem ──
+            poemText.trim() && onCallGemini && e('div', { style: { background: '#fdf4ff', border: '1px solid #f5d0fe', borderRadius: '12px', padding: '14px', marginTop: '4px' } },
+              e('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', marginBottom: '6px' } },
+                e('div', { style: { flex: 1, minWidth: '180px' } },
+                  e('h4', { style: { fontSize: '13px', fontWeight: 800, color: '#86198f', margin: 0 } }, '🎓 Mentor Match'),
+                  e('p', { style: { fontSize: '11px', color: '#475569', margin: '2px 0 0' } }, 'Sit with a master poet on a similar theme. Read theirs, then come back to yours.')
+                ),
+                e('button', { onClick: findMentorPoem,
+                  disabled: mentorLoading,
+                  'aria-busy': mentorLoading ? 'true' : 'false',
+                  'aria-label': mentorLoading ? 'Finding a mentor poem, please wait' : (mentorMatch ? 'Find a different mentor poem' : 'Find a mentor poem'),
+                  style: { padding: '7px 14px', background: mentorLoading ? '#cbd5e1' : '#a21caf', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: mentorLoading ? 'wait' : 'pointer' }
+                }, mentorLoading ? '⏳ Searching…' : (mentorMatch ? '🔄 Find another' : '🎓 Find a mentor'))
+              ),
+              mentorMatch && mentorMatch.error && e('p', { style: { fontSize: '11px', color: '#b91c1c', fontStyle: 'italic', margin: '6px 0 0' } }, mentorMatch.error),
+              mentorMatch && !mentorMatch.error && e('div', { role: 'region', 'aria-label': 'Mentor poem and analysis', 'aria-live': 'polite', style: { display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '8px' } },
+                // Mentor poem card
+                mentorMatch.mentor && e('article', { style: { background: '#fff', border: '1px solid #f5d0fe', borderRadius: '10px', padding: '14px' } },
+                  e('header', { style: { marginBottom: '8px' } },
+                    e('h5', { style: { fontSize: '14px', fontWeight: 800, color: '#86198f', margin: 0 } }, mentorMatch.mentor.title || 'Untitled'),
+                    e('p', { style: { fontSize: '11px', color: '#475569', margin: '2px 0 0', fontStyle: 'italic' } }, '— ' + (mentorMatch.mentor.author || 'Unknown') + (mentorMatch.mentor.year ? ', ' + mentorMatch.mentor.year : '') + ' (public domain)')
+                  ),
+                  mentorMatch.mentor.uncertain
+                    ? e('p', { style: { fontSize: '12px', color: '#475569', fontStyle: 'italic', margin: 0, padding: '8px 10px', background: '#fefce8', borderRadius: '6px', borderLeft: '3px solid #facc15' } }, 'The mentor recommends this poem but couldn\'t verify the exact text — search for it to read the original.')
+                    : e('pre', { style: { whiteSpace: 'pre-wrap', fontFamily: 'Georgia, serif', fontSize: largeText ? '15px' : '14px', color: '#1e293b', margin: 0, lineHeight: largeText ? 1.85 : 1.7 } }, mentorMatch.mentor.text || '')
+                ),
+                // Analysis cards
+                mentorMatch.sharedTheme && e('div', { style: { background: '#fff', border: '1px solid #f5d0fe', borderRadius: '10px', padding: '10px 12px' } },
+                  e('div', { style: { fontSize: '10px', fontWeight: 800, color: '#86198f', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '3px' } }, '🔗 What you share'),
+                  e('p', { style: { fontSize: '12px', color: '#1e293b', margin: 0, lineHeight: 1.6 } }, mentorMatch.sharedTheme)
+                ),
+                mentorMatch.craftToBorrow && e('div', { style: { background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '10px', padding: '10px 12px' } },
+                  e('div', { style: { fontSize: '10px', fontWeight: 800, color: '#78350f', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '3px' } }, '🛠️ Craft move to borrow'),
+                  e('p', { style: { fontSize: '12px', color: '#1e293b', margin: 0, lineHeight: 1.6 } }, mentorMatch.craftToBorrow)
+                ),
+                mentorMatch.studentEcho && e('div', { style: { background: '#f0fdf4', border: '1px solid #86efac', borderRadius: '10px', padding: '10px 12px' } },
+                  e('div', { style: { fontSize: '10px', fontWeight: 800, color: '#166534', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '3px' } }, '✨ You\'re already doing this'),
+                  e('p', { style: { fontSize: '12px', color: '#1e293b', margin: 0, lineHeight: 1.6 } }, mentorMatch.studentEcho)
+                )
+              )
             )
           ),
 

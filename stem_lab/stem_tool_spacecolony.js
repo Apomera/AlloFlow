@@ -2284,6 +2284,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                 !maintChallenge.options && React.createElement('div', { className: 'flex gap-2' },
                   React.createElement('input', {
                     type: 'text', value: d.maintInput || '',
+                    'aria-label': 'Your answer to the maintenance challenge',
                     onChange: function (e) { upd('maintInput', e.target.value); },
                     onKeyDown: function (e) { if (e.key === 'Enter') document.getElementById('kepler-maint-btn').click(); },
                     placeholder: 'Type your answer...',
@@ -2476,7 +2477,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                 // Free Response Mode
                 !scienceGate.options && React.createElement('div', { className: 'flex gap-2' },
                   React.createElement('input', {
-                    type: 'text', value: d.scienceGateInput || '', onChange: function (e) { upd('scienceGateInput', e.target.value); },
+                    type: 'text', value: d.scienceGateInput || '',
+                    'aria-label': 'Your answer to the science gate challenge',
+                    onChange: function (e) { upd('scienceGateInput', e.target.value); },
                     onKeyDown: function (e) { if (e.key === 'Enter') document.getElementById('kepler-gate-btn').click(); },
                     placeholder: 'Type your answer...', className: 'flex-1 px-3 py-2 bg-purple-950 border-2 border-purple-600 rounded-xl text-xs text-white focus:border-purple-400'
                   }),

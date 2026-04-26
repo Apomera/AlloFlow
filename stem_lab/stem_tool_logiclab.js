@@ -1094,7 +1094,9 @@ window.StemLab = window.StemLab || {
 
                       className: "px-3 py-1 rounded-full text-xs font-bold border transition-all " + (aiExplain ? "bg-purple-100 text-purple-700 border-purple-300" : "bg-violet-50 text-violet-600 border-violet-200 hover:bg-violet-100"),
 
-                      disabled: aiLoading
+                      disabled: aiLoading,
+
+                    'aria-busy': aiLoading
 
                     }, aiExplain ? "\u25B2 Hide" : "\uD83E\uDDE0 Explain")
 
@@ -1240,7 +1242,9 @@ window.StemLab = window.StemLab || {
 
                     style: { background: 'linear-gradient(135deg, #7c3aed, #a78bfa)', color: 'white', boxShadow: '0 2px 8px rgba(124,58,237,0.3)' },
 
-                    disabled: aiLoading
+                    disabled: aiLoading,
+
+                  'aria-busy': aiLoading
 
                   }, "\uD83E\uDD16 AI-Generate Proof Challenge"),
 
@@ -1664,7 +1668,9 @@ window.StemLab = window.StemLab || {
 
                         style: { background: 'linear-gradient(135deg, #7c3aed, #a78bfa)', color: 'white', boxShadow: '0 2px 8px rgba(124,58,237,0.3)' },
 
-                        disabled: aiLoading
+                        disabled: aiLoading,
+
+                      'aria-busy': aiLoading
 
                       }, "\uD83E\uDD16 AI Generate")
 
@@ -1746,7 +1752,9 @@ window.StemLab = window.StemLab || {
 
                       style: { background: 'linear-gradient(135deg, #7c3aed, #a78bfa)', color: 'white' },
 
-                      disabled: aiLoading
+                      disabled: aiLoading,
+
+                    'aria-busy': aiLoading
 
                     }, "\uD83E\uDD16 Generate Another")
 
@@ -1948,7 +1956,9 @@ window.StemLab = window.StemLab || {
 
                         style: { background: 'linear-gradient(135deg, #7c3aed, #a78bfa)', color: 'white', boxShadow: '0 2px 8px rgba(124,58,237,0.3)' },
 
-                        disabled: aiLoading
+                        disabled: aiLoading,
+
+                      'aria-busy': aiLoading
 
                       }, "\uD83D\uDD75\uFE0F AI Mystery")
 
@@ -2014,7 +2024,9 @@ window.StemLab = window.StemLab || {
 
                       style: { background: 'linear-gradient(135deg, #7c3aed, #a78bfa)', color: 'white' },
 
-                      disabled: aiLoading
+                      disabled: aiLoading,
+
+                    'aria-busy': aiLoading
 
                     }, "\uD83D\uDD75\uFE0F Generate Another")
 

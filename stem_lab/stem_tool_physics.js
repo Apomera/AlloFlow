@@ -1643,7 +1643,9 @@ const d = labToolData.physics;
 
               }, "\uD83D\uDE80 Launch!"),
 
-              React.createElement("button", { "aria-label": "Air Drag",
+              React.createElement("button", { "aria-label": "Air drag, currently " + (d.airResist ? "on" : "off") + ". Click to toggle.",
+
+                "aria-pressed": !!d.airResist,
 
                 onClick: function () { upd('airResist', !d.airResist); },
 
@@ -1651,22 +1653,26 @@ const d = labToolData.physics;
 
               }, "\uD83C\uDF2C\uFE0F Air Drag " + (d.airResist ? 'ON' : 'OFF')),
 
-              React.createElement("button", { "aria-label": "Vectors",
+              React.createElement("button", { "aria-label": "Force vectors, currently " + (d.showVectors ? "on" : "off") + ". Click to toggle.",
+                "aria-pressed": !!d.showVectors,
                 onClick: function () { upd('showVectors', !d.showVectors); },
                 className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showVectors ? 'bg-purple-700 text-white shadow-md' : 'bg-purple-50 text-purple-700 border border-purple-200')
               }, "\u2197\uFE0F Vectors " + (d.showVectors ? 'ON' : 'OFF')),
 
-              React.createElement("button", { "aria-label": "Learn",
+              React.createElement("button", { "aria-label": "Energy display, currently " + (d.showEnergy ? "on" : "off") + ". Click to toggle.",
+                "aria-pressed": !!d.showEnergy,
                 onClick: function () { upd('showEnergy', !d.showEnergy); },
                 className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showEnergy ? 'bg-blue-700 text-white shadow-md' : 'bg-blue-50 text-blue-700 border border-blue-200')
               }, "\u26A1 Energy " + (d.showEnergy ? 'ON' : 'OFF')),
 
-              React.createElement("button", { "aria-label": "Learn",
+              React.createElement("button", { "aria-label": "Learn panel, currently " + (d.showLearn ? "on" : "off") + ". Click to toggle.",
+                "aria-pressed": !!d.showLearn,
                 onClick: function () { upd('showLearn', !d.showLearn); },
                 className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showLearn ? 'bg-emerald-700 text-white shadow-md' : 'bg-emerald-50 text-emerald-700 border border-emerald-200')
               }, "\uD83D\uDCD6 Learn"),
 
-              React.createElement("button", { "aria-label": "Data",
+              React.createElement("button", { "aria-label": "Flight data, currently " + (d.showFlightData ? "on" : "off") + ". Click to toggle.",
+                "aria-pressed": !!d.showFlightData,
                 onClick: function () { upd('showFlightData', !d.showFlightData); },
                 className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showFlightData ? 'bg-cyan-700 text-white shadow-md' : 'bg-cyan-50 text-cyan-700 border border-cyan-200')
               }, "\uD83D\uDCCA Data " + (d.showFlightData ? 'ON' : 'OFF')),
@@ -1696,7 +1702,7 @@ const d = labToolData.physics;
 
                   React.createElement("span", { className: "text-sm font-bold block " + (isLocked ? 'text-red-700' : 'text-slate-700') }, d[s.k]),
 
-                  React.createElement("input", { type: "range", min: s.min, max: s.max, step: s.step, value: d[s.k], disabled: isLocked, onChange: function (e) {
+                  React.createElement("input", { type: "range", "aria-label": s.label, min: s.min, max: s.max, step: s.step, value: d[s.k], disabled: isLocked, onChange: function (e) {
                     if (!isLocked) {
                       var newVal = parseFloat(e.target.value);
                       upd(s.k, newVal);
