@@ -1634,6 +1634,66 @@ window.StemLab = window.StemLab || {
       var analysis = isSoccer ? [] : openReceiverAnalysis(formation, defenders);
       var openReceiverId = analysis.length ? analysis[0].id : null;
 
+      // Open a printable activity sheet with all scenarios for the
+      // active sport — title + teach + numbered questions with blank
+      // lines for student answers. Triggers window.print() so the
+      // teacher can print or save as PDF directly.
+      function printPlayLabActivitySheet() {
+        var activeSport = d.sport || 'football';
+        var sportLabel = activeSport === 'soccer' ? 'Soccer' : 'American Football';
+        var scenarios = PLAYLAB_SCENARIOS.filter(function(sc) { return sc.sport === activeSport; });
+        if (!scenarios.length) {
+          plAnnounce('No scenarios available for ' + sportLabel + '.');
+          return;
+        }
+        var dateStr = new Date().toLocaleDateString();
+        var sheetHtml = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">'
+          + '<title>PlayLab Activity Sheet — ' + sportLabel + '</title>'
+          + '<style>'
+          + 'body{font-family:Georgia,serif;max-width:780px;margin:30px auto;padding:0 20px;color:#1a1a1a;line-height:1.5}'
+          + 'h1{font-size:22px;border-bottom:3px solid #1a1a1a;padding-bottom:6px;margin-bottom:6px}'
+          + '.meta{color:#666;font-size:11px;margin-bottom:24px}'
+          + '.scenario{margin-bottom:32px;page-break-inside:avoid;border:1px solid #cbd5e1;border-radius:6px;padding:14px}'
+          + '.scenario h2{font-size:16px;margin:0 0 4px 0}'
+          + '.scenario .icon{margin-right:6px}'
+          + '.scenario .teach{font-size:12px;color:#334155;margin:6px 0 10px 0;font-style:italic}'
+          + '.scenario .qhead{font-weight:bold;font-size:11px;color:#475569;text-transform:uppercase;letter-spacing:0.5px;margin-top:10px}'
+          + '.scenario ol{margin:6px 0 0 22px;padding:0;font-size:12px}'
+          + '.scenario ol li{margin-bottom:4px}'
+          + '.answer-line{border-bottom:1px solid #94a3b8;height:18px;margin:4px 0}'
+          + 'footer{font-size:10px;color:#94a3b8;text-align:center;margin-top:30px;padding-top:10px;border-top:1px solid #cbd5e1}'
+          + '@media print{.scenario{break-inside:avoid}}'
+          + '</style></head><body>'
+          + '<h1>PlayLab Activity Sheet — ' + sportLabel + '</h1>'
+          + '<div class="meta">Name: ____________________________________  Date: ' + dateStr + '</div>';
+        scenarios.forEach(function(sc) {
+          sheetHtml += '<div class="scenario">'
+            + '<h2><span class="icon">' + sc.icon + '</span>' + sc.label + '</h2>'
+            + '<div class="teach">' + sc.teach + '</div>'
+            + '<div class="qhead">Discussion Questions</div>'
+            + '<ol>';
+          (sc.questions || []).forEach(function(q) {
+            sheetHtml += '<li>' + q
+              + '<div class="answer-line"></div><div class="answer-line"></div><div class="answer-line"></div>'
+              + '</li>';
+          });
+          sheetHtml += '</ol></div>';
+        });
+        sheetHtml += '<footer>PlayLab — STEM Lab tool for tactical play design · AlloFlow</footer>'
+          + '</body></html>';
+        try {
+          var win = window.open('', '_blank');
+          if (win) {
+            win.document.write(sheetHtml);
+            win.document.close();
+            setTimeout(function() { try { win.print(); } catch(e) {} }, 300);
+          } else if (addToast) addToast('Pop-up blocked — allow pop-ups to print', 'error');
+        } catch(e) {
+          if (addToast) addToast('Print failed', 'error');
+        }
+        plAnnounce('Activity sheet opened for ' + sportLabel + ' with ' + scenarios.length + ' scenarios.');
+      }
+
       function applyPlayLabScenario(scenarioId) {
         var s = PLAYLAB_SCENARIOS.find(function(sc) { return sc.id === scenarioId; });
         if (!s) return;
@@ -2764,7 +2824,7 @@ window.StemLab = window.StemLab || {
           }, '🎬 Scenarios — one-click teaching demos (' + PLAYLAB_SCENARIOS.filter(function(sc) { return sc.sport === (d.sport || 'football'); }).length + ' for ' + (isSoccer ? 'soccer' : 'football') + ')'),
           h('div', {
             role: 'group', 'aria-label': 'Tactical scenarios',
-            style: { display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }
+            style: { display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap', alignItems: 'center' }
           },
             PLAYLAB_SCENARIOS.filter(function(sc) {
               return sc.sport === (d.sport || 'football');
@@ -2782,7 +2842,20 @@ window.StemLab = window.StemLab || {
                   color: '#f1f5f9', fontSize: 11, fontWeight: 600
                 }
               }, sc.icon + ' ' + sc.label);
-            })
+            }).concat([
+              h('button', {
+                key: 'plsc-print',
+                onClick: printPlayLabActivitySheet,
+                'aria-label': 'Print activity sheet for ' + (isSoccer ? 'soccer' : 'football') + ' scenarios',
+                'data-pl-focusable': 'true',
+                title: 'Open a printable activity sheet with all scenarios + discussion questions',
+                style: {
+                  padding: '6px 11px', borderRadius: 6, cursor: 'pointer',
+                  border: '1px solid #fbbf24', background: 'rgba(251,191,36,0.10)',
+                  color: '#fbbf24', fontSize: 11, fontWeight: 700, marginLeft: 4
+                }
+              }, '📄 Print activity sheet')
+            ])
           )
         ),
 

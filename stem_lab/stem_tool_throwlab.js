@@ -1458,6 +1458,66 @@ window.StemLab = window.StemLab || {
         tlAnnounce('Selected club: ' + gt.label + '. Carry ' + gt.carryYd + ' yards, ' + gt.aimDegV + ' degree launch.');
       }
 
+      // Open a printable activity sheet listing every ThrowLab
+      // scenario with its teach + 3 discussion questions, formatted
+      // for in-class handout. Triggers window.print() so the teacher
+      // can print or save as PDF.
+      function printThrowLabActivitySheet() {
+        if (!SCENARIOS.length) return;
+        var dateStr = new Date().toLocaleDateString();
+        var sheetHtml = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">'
+          + '<title>ThrowLab Activity Sheet</title>'
+          + '<style>'
+          + 'body{font-family:Georgia,serif;max-width:780px;margin:30px auto;padding:0 20px;color:#1a1a1a;line-height:1.5}'
+          + 'h1{font-size:22px;border-bottom:3px solid #1a1a1a;padding-bottom:6px;margin-bottom:6px}'
+          + '.meta{color:#666;font-size:11px;margin-bottom:24px}'
+          + '.scenario{margin-bottom:32px;page-break-inside:avoid;border:1px solid #cbd5e1;border-radius:6px;padding:14px}'
+          + '.scenario h2{font-size:16px;margin:0 0 4px 0}'
+          + '.scenario .icon{margin-right:6px}'
+          + '.scenario .setup{font-size:11px;color:#666;margin:2px 0 4px 0}'
+          + '.scenario .teach{font-size:12px;color:#334155;margin:6px 0 10px 0;font-style:italic}'
+          + '.scenario .qhead{font-weight:bold;font-size:11px;color:#475569;text-transform:uppercase;letter-spacing:0.5px;margin-top:10px}'
+          + '.scenario ol{margin:6px 0 0 22px;padding:0;font-size:12px}'
+          + '.scenario ol li{margin-bottom:4px}'
+          + '.answer-line{border-bottom:1px solid #94a3b8;height:18px;margin:4px 0}'
+          + 'footer{font-size:10px;color:#94a3b8;text-align:center;margin-top:30px;padding-top:10px;border-top:1px solid #cbd5e1}'
+          + '@media print{.scenario{break-inside:avoid}}'
+          + '</style></head><body>'
+          + '<h1>ThrowLab Activity Sheet — Sports Physics</h1>'
+          + '<div class="meta">Name: ____________________________________  Date: ' + dateStr + '</div>';
+        SCENARIOS.forEach(function(sc) {
+          var modeLbl = (MODES[sc.mode] || {}).label || sc.mode;
+          var gravLbl = (GRAVITY_PRESETS.find(function(g) { return g.id === sc.gravityId; }) || {}).label || 'Earth';
+          var setup = modeLbl + ' · gravity: ' + gravLbl
+            + (sc.windMph ? ' · wind: ' + sc.windMph + ' mph @ ' + sc.windDirDeg + '°' : '');
+          sheetHtml += '<div class="scenario">'
+            + '<h2><span class="icon">' + sc.icon + '</span>' + sc.label + '</h2>'
+            + '<div class="setup">Setup: ' + setup + '</div>'
+            + '<div class="teach">' + sc.teach + '</div>'
+            + '<div class="qhead">Discussion Questions</div>'
+            + '<ol>';
+          (sc.questions || []).forEach(function(q) {
+            sheetHtml += '<li>' + q
+              + '<div class="answer-line"></div><div class="answer-line"></div><div class="answer-line"></div>'
+              + '</li>';
+          });
+          sheetHtml += '</ol></div>';
+        });
+        sheetHtml += '<footer>ThrowLab — STEM Lab tool for sports physics · AlloFlow</footer>'
+          + '</body></html>';
+        try {
+          var win = window.open('', '_blank');
+          if (win) {
+            win.document.write(sheetHtml);
+            win.document.close();
+            setTimeout(function() { try { win.print(); } catch(e) {} }, 300);
+          } else if (addToast) addToast('Pop-up blocked — allow pop-ups to print', 'error');
+        } catch(e) {
+          if (addToast) addToast('Print failed', 'error');
+        }
+        tlAnnounce('Activity sheet opened with ' + SCENARIOS.length + ' scenarios.');
+      }
+
       function applyScenario(scenarioId) {
         var s = SCENARIOS.find(function(sc) { return sc.id === scenarioId; });
         if (!s) return;
@@ -3328,7 +3388,7 @@ window.StemLab = window.StemLab || {
           }, '🎬 Scenarios — one-click teaching demos (' + SCENARIOS.length + ')'),
           h('div', {
             role: 'group', 'aria-label': 'Scenarios',
-            style: { display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }
+            style: { display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap', alignItems: 'center' }
           },
             SCENARIOS.map(function(sc) {
               return h('button', {
@@ -3344,7 +3404,20 @@ window.StemLab = window.StemLab || {
                   color: '#f1f5f9', fontSize: 11, fontWeight: 600
                 }
               }, sc.icon + ' ' + sc.label);
-            })
+            }).concat([
+              h('button', {
+                key: 'sc-print',
+                onClick: printThrowLabActivitySheet,
+                'aria-label': 'Print activity sheet for all scenarios',
+                'data-tl-focusable': 'true',
+                title: 'Open a printable activity sheet with all scenarios + discussion questions',
+                style: {
+                  padding: '6px 11px', borderRadius: 6, cursor: 'pointer',
+                  border: '1px solid #fbbf24', background: 'rgba(251,191,36,0.10)',
+                  color: '#fbbf24', fontSize: 11, fontWeight: 700, marginLeft: 4
+                }
+              }, '📄 Print activity sheet')
+            ])
           )
         ),
 
