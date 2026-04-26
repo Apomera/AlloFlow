@@ -1338,8 +1338,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: glassCard },
             h('div', { className: 'flex items-center justify-between mb-2' },
               h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wide' }, 'Particle Simulation'),
-              h('button', { 'aria-label': 'Change particle running',
-                onClick: function() { upd('particleRunning', !particleRunning); },
+              h('button', { onClick: function() { upd('particleRunning', !particleRunning); },
                 className: 'px-3 py-1 text-[11px] font-bold rounded-lg ' + (particleRunning ? 'bg-red-100 text-red-600' : 'bg-emerald-100 text-emerald-600')
               }, particleRunning ? '\u23F9 Stop' : '\u25B6 Start')
             ),
@@ -1654,8 +1653,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex flex-wrap gap-1.5' },
               MAP_SCENARIOS.map(function(sc, idx) {
                 var active = mapScenario === idx;
-                return h('button', { 'aria-label': 'Change map running',
-                  key: sc.name,
+                return h('button', { key: sc.name,
                   onClick: function() { updMulti({ mapScenario: idx, mapGrid: null, mapHistory: [] }); },
                   className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ' + (active ? 'bg-indigo-600 text-white' : 'bg-white text-slate-600 border border-slate-200')
                 }, sc.name);
@@ -1667,8 +1665,7 @@ window.StemLab = window.StemLab || {
             slider('Hospital Beds (% of pop)', hospitalBeds, 1, 15, 1, 'hospitalBeds', function(v) { return v + '%'; }),
             h('div', { className: 'flex gap-2' },
               h('button', { onClick: initMap, className: 'flex-1 py-2 text-sm font-bold bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all' }, '\uD83D\uDDFA\uFE0F Generate Map'),
-              mapGrid && h('button', { 'aria-label': 'Change map running',
-                onClick: function() { upd('mapRunning', !mapRunning); },
+              mapGrid && h('button', { onClick: function() { upd('mapRunning', !mapRunning); },
                 className: 'px-4 py-2 text-sm font-bold rounded-xl ' + (mapRunning ? 'bg-red-600 text-white' : 'bg-emerald-700 text-white')
               }, mapRunning ? '\u23F9 Stop' : '\u25B6 Run')
             )
@@ -1760,8 +1757,7 @@ window.StemLab = window.StemLab || {
           // AI Analysis
           callGemini && mapHistory && mapHistory.length > 5 && h('div', { className: glassCard },
             d.mapAnalysis ? h('div', { className: 'text-xs text-slate-700 leading-relaxed whitespace-pre-line' }, d.mapAnalysis) :
-            h('button', { 'aria-label': 'Change map analysis loading',
-              onClick: function() {
+            h('button', { onClick: function() {
                 upd('mapAnalysisLoading', true);
                 var lastC = countGrid(mapGrid);
                 callGemini('Analyze this outbreak simulation for a ' + gradeBand + ' student. Scenario: ' + MAP_SCENARIOS[mapScenario].name + ', R0=' + r0 + ', vaccination=' + mapVacc + '%, steps=' + mapStep + '. Final counts: S=' + lastC.S + ', I=' + lastC.I + ', R=' + lastC.R + '. Provide 2-3 key observations and one question for the student.').then(function(res) {
@@ -1853,8 +1849,7 @@ window.StemLab = window.StemLab || {
             // Controls
             h('div', { className: 'flex gap-2' },
               h('button', { onClick: startContactTrace, className: 'px-4 py-2 text-sm font-bold bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all' }, '\u21BA New Network'),
-              ctComplete && callGemini && h('button', { 'aria-label': 'Change ct analysis loading',
-                onClick: function() {
+              ctComplete && callGemini && h('button', { onClick: function() {
                   upd('ctAnalysisLoading', true);
                   callGemini('A ' + gradeBand + ' student completed a contact tracing exercise. Network had ' + ctNetwork.nodes.length + ' people, ' + ctNetwork.solution.length + ' were infected. Student used ' + ctGuesses + ' traces and scored ' + ctScore + '. Give 2 sentences of encouraging feedback and one real-world contact tracing fact.').then(function(res) {
                     updMulti({ ctAnalysis: res, ctAnalysisLoading: false });
@@ -2068,8 +2063,7 @@ window.StemLab = window.StemLab || {
               [1, 2, 3].map(function(t) {
                 var labels = { 1: 'Easy', 2: 'Medium', 3: 'Hard' };
                 var colors = { 1: 'bg-emerald-100 text-emerald-700', 2: 'bg-amber-100 text-amber-700', 3: 'bg-red-100 text-red-700' };
-                return h('button', { 'aria-label': 'Change chal answer',
-                  key: t,
+                return h('button', { key: t,
                   onClick: function() { updMulti({ chalTier: t, chalIdx: 0, chalFeedback: '', chalAnswer: '', chalUseAI: null }); },
                   className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold ' + (chalTier === t ? colors[t] + ' ring-2 ring-offset-1' : 'bg-white text-slate-600 border border-slate-200')
                 }, labels[t]);

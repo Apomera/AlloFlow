@@ -1207,8 +1207,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'bg-gradient-to-br from-sky-50 to-blue-50 rounded-xl border-2 border-sky-200 p-4 space-y-3' },
         h('div', { className: 'flex items-center justify-between' },
           h('h4', { className: 'text-sm font-bold text-sky-800' }, '\uD83E\uDD16 AI Fraction Tutor'),
-          h('button', { 'aria-label': 'Change fraction type',
-            onClick: function() { upd({ showAITutor: false }); },
+          h('button', { onClick: function() { upd({ showAITutor: false }); },
             className: 'text-sky-400 hover:text-sky-600 text-lg font-bold'
           }, '\u00D7')
         ),

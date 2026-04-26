@@ -5627,9 +5627,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               ].map(function (tab) {
 
-                return React.createElement("button", { "aria-label": "Change mode",
-
-                  key: tab.id,
+                return React.createElement("button", { key: tab.id,
 
                   onClick: function () { upd('mode', tab.id); },
 
@@ -5867,9 +5865,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     var isHighlighted = anatomyHighlight === i;
 
-                    return React.createElement("button", { "aria-label": "Change anatomy highlight",
-
-                      key: i,
+                    return React.createElement("button", { key: i,
 
                       onClick: function () { upd('anatomyHighlight', isHighlighted ? null : i); },
 
@@ -6220,7 +6216,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                         React.createElement("h5", { className: "text-xs font-bold text-cyan-800" }, info.icon + " " + info.name),
 
-                        React.createElement("button", { "aria-label": "Change chem tooltip", onClick: function () { upd('chemTooltip', null); }, className: "text-[11px] text-slate-600 hover:text-slate-600" }, "\u2715")
+                        React.createElement("button", { onClick: function () { upd('chemTooltip', null); }, className: "text-[11px] text-slate-600 hover:text-slate-600" }, "\u2715")
 
                       ),
 
@@ -7387,7 +7383,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       React.createElement("span", { className: "text-xs font-bold text-amber-800" }, "Feeding Report"),
 
-                      React.createElement("button", { "aria-label": "Change feeding log", onClick: function () { upd('feedingLog', null); }, className: "ml-auto text-[11px] text-slate-600" }, "\u2715")
+                      React.createElement("button", { onClick: function () { upd('feedingLog', null); }, className: "ml-auto text-[11px] text-slate-600" }, "\u2715")
 
                     ),
 
@@ -7555,7 +7551,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     aiEvent.category && React.createElement("span", { className: "text-[11px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full bg-white/20 text-white/80" }, aiEvent.category === 'ai_generated' ? '\uD83E\uDD16 AI' : aiEvent.category),
 
-                    React.createElement("button", { "aria-label": "Change ai event", onClick: function () { upd('aiEvent', null); }, className: "text-white/60 hover:text-white text-sm ml-1" }, '\u2715')
+                    React.createElement("button", { onClick: function () { upd('aiEvent', null); }, className: "text-white/60 hover:text-white text-sm ml-1" }, '\u2715')
 
                   ),
 
@@ -7629,7 +7625,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     React.createElement("span", { style: { animation: 'xpPop 0.5s ease-out' }, className: "text-sm font-bold px-2 py-0.5 rounded-full bg-white/25 text-white" }, '+' + (aiEvent.chosenXp || 0) + ' XP'),
 
-                    React.createElement("button", { "aria-label": "Change ai event", onClick: function () { upd('aiEvent', null); }, className: "text-white/60 hover:text-white text-sm ml-1" }, '\u2715')
+                    React.createElement("button", { onClick: function () { upd('aiEvent', null); }, className: "text-white/60 hover:text-white text-sm ml-1" }, '\u2715')
 
                   ),
 
@@ -8005,9 +8001,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   React.createElement("span", { className: "text-xs font-bold text-slate-600" }, "\uD83D\uDCC5 Season"),
 
-                  React.createElement("button", { "aria-label": "Change is open season",
-
-                    onClick: function () { upd('isOpenSeason', !isOpenSeason); },
+                  React.createElement("button", { onClick: function () { upd('isOpenSeason', !isOpenSeason); },
 
                     className: "px-4 py-1.5 text-xs font-bold rounded-full transition-all " + (isOpenSeason ? "bg-green-700 text-white" : "bg-red-100 text-red-700 border border-red-200")
 
@@ -8181,9 +8175,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     ),
 
-                    React.createElement("button", { "aria-label": "Change selected species",
-
-                      onClick: function () { upd('selectedSpecies', null); },
+                    React.createElement("button", { onClick: function () { upd('selectedSpecies', null); },
 
                       className: "text-slate-200 hover:text-slate-600 text-lg"
 

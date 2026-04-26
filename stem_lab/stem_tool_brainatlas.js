@@ -3493,9 +3493,7 @@ var d = labToolData.brainAtlas || {};
 
                 var v = VIEWS[key];
 
-                return React.createElement("button", { "aria-label": "Change view",
-
-                  key: key,
+                return React.createElement("button", { key: key,
 
                   onClick: function () { upd('view', key); upd('selectedRegion', null); upd('quizMode', false); upd('search', ''); },
 
@@ -3523,9 +3521,7 @@ var d = labToolData.brainAtlas || {};
 
               }),
 
-              React.createElement("button", { "aria-label": "Change quiz mode",
-
-                onClick: function () { upd('quizMode', !d.quizMode); upd('quizIdx', 0); upd('quizScore', 0); upd('quizFeedback', null); },
+              React.createElement("button", { onClick: function () { upd('quizMode', !d.quizMode); upd('quizIdx', 0); upd('quizScore', 0); upd('quizFeedback', null); },
 
                 className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.quizMode ? 'bg-green-700 text-white' : 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100')
 
@@ -3547,9 +3543,7 @@ var d = labToolData.brainAtlas || {};
 
                   var isActive = simScenario === s.id;
 
-                  return React.createElement("button", { "aria-label": "Change sim scenario",
-
-                    key: s.id,
+                  return React.createElement("button", { key: s.id,
 
                     onClick: function () { upd('simScenario', s.id); },
 
@@ -3778,9 +3772,7 @@ var d = labToolData.brainAtlas || {};
 
                         var isActive = (d.brainwaveType || 'alpha') === waveType;
 
-                        return React.createElement("button", { "aria-label": "Change brainwave type",
-
-                          key: waveType,
+                        return React.createElement("button", { key: waveType,
 
                           onClick: function () { upd('brainwaveType', waveType); },
 
@@ -4292,9 +4284,7 @@ var d = labToolData.brainAtlas || {};
 
                     filtered.map(function (r) {
 
-                      return React.createElement("button", { "aria-label": "Change selected region",
-
-                        key: r.id,
+                      return React.createElement("button", { key: r.id,
 
                         onClick: function () { upd('selectedRegion', r.id); },
 

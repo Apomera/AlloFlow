@@ -758,7 +758,7 @@ window.StemLab = window.StemLab || {
       // ── Tab button helper ──
       var tabBtn = function(id, label, icon) {
         var active = activeTab === id;
-        return h('button', { 'aria-label': 'Change active tab', onClick: function() { upd('activeTab', id); }, role: 'tab', 'aria-selected': active, className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (active ? 'bg-teal-700 text-white shadow-md' : 'bg-white text-teal-700 hover:bg-teal-50 border border-teal-200') }, icon + ' ' + label);
+        return h('button', { onClick: function() { upd('activeTab', id); }, role: 'tab', 'aria-selected': active, className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (active ? 'bg-teal-700 text-white shadow-md' : 'bg-white text-teal-700 hover:bg-teal-50 border border-teal-200') }, icon + ' ' + label);
       };
 
       // Regression line/curve path

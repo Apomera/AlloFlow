@@ -1505,8 +1505,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 } },
               INDIGENOUS_FIRE_NATIONS.map(function(nation) {
                 var viewed = nationsViewed[nation.id];
-                return h('button', { 'aria-label': 'Change selected nation',
-                  key: nation.id,
+                return h('button', { key: nation.id,
                   onClick: function() { upd('selectedNation', nation.id); },
                   style: {
                     background: viewed ? nation.color + '18' : '#0f172a',
@@ -1599,8 +1598,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 } },
               FIRE_ECOSYSTEMS.map(function(eco) {
                 var viewed = ecosystemsViewed[eco.id];
-                return h('button', { 'aria-label': 'Change selected ecosystem',
-                  key: eco.id,
+                return h('button', { key: eco.id,
                   onClick: function() { upd('selectedEcosystem', eco.id); },
                   style: {
                     background: viewed ? eco.color + '18' : '#0f172a',
@@ -2050,8 +2048,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
           return h('div', null,
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 12 } },
               FIRE_SCIENCE.map(function(concept) {
-                return h('button', { 'aria-label': 'Change selected science',
-                  key: concept.id,
+                return h('button', { key: concept.id,
                   onClick: function() { upd('selectedScience', concept.id); },
                   style: {
                     background: '#0f172a', border: '1px solid #334155', borderRadius: 12,
@@ -2406,8 +2403,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 } },
               CASE_STUDIES.map(function(cs) {
                 var viewed = casesViewed[cs.id];
-                return h('button', { 'aria-label': 'Change selected case',
-                  key: cs.id,
+                return h('button', { key: cs.id,
                   onClick: function() { upd('selectedCase', cs.id); },
                   style: {
                     background: viewed ? cs.color + '18' : '#0f172a',

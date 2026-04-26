@@ -1837,8 +1837,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
               // Tab selector
               React.createElement("div", { className: "flex gap-0.5 ml-auto bg-slate-100 rounded-lg p-0.5" },
                 [{ id: 'play', icon: '\uD83C\uDFB9', label: t('stem.synth.play') }, { id: 'scales', icon: '\uD83C\uDFB5', label: t('stem.synth.scales') }, { id: 'chords', icon: '\uD83C\uDFB6', label: t('stem.synth.chords') }, { id: 'harmonypad', icon: '\uD83C\uDF1F', label: t('stem.synth.harmonypad') }, { id: 'beatpad', icon: '\uD83E\uDD41', label: t('stem.synth.beatpad') || 'Beat Pad' }, { id: 'theory', icon: '\uD83D\uDCDA', label: t('stem.synth.theory') }].map(function (tab) {
-                  return React.createElement("button", { "aria-label": "Change synth tab",
-                    key: tab.id, role: "tab", "aria-selected": synthTab === tab.id,
+                  return React.createElement("button", { key: tab.id, role: "tab", "aria-selected": synthTab === tab.id,
                     onClick: function () { upd('synthTab', tab.id); },
                     className: "px-2.5 py-1 rounded-md text-[11px] font-bold transition-all " + (synthTab === tab.id ? 'bg-white text-purple-700 shadow-sm' : 'text-slate-600 hover:text-slate-700')
                   }, tab.icon + " " + tab.label);
@@ -1917,16 +1916,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                   React.createElement("span", { className: "text-[11px] font-bold text-slate-600 uppercase" }, "Oct"),
                   React.createElement("div", { className: "flex gap-0.5" },
                     [3, 4, 5, 6].map(function (o) {
-                      return React.createElement("button", { "aria-label": "Change octave",
-                        key: o,
+                      return React.createElement("button", { key: o,
                         onClick: function () { upd('octave', o); },
                         className: "w-7 h-7 rounded text-xs font-bold transition-all " + ((d.octave || 4) === o ? 'bg-purple-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
                       }, o);
                     })
                   )
                 ),
-                React.createElement("button", { "aria-label": "Change scale lock",
-                  onClick: function () { upd('scaleLock', !scaleLock); },
+                React.createElement("button", { onClick: function () { upd('scaleLock', !scaleLock); },
                   className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-all " + (scaleLock ? 'bg-green-700 text-white' : 'bg-slate-100 text-slate-200')
                 }, (scaleLock ? '\uD83D\uDD12' : '\uD83D\uDD13') + ' Scale Lock'),
                 React.createElement("select", {
@@ -2016,8 +2013,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                   }, NOTE_NAMES.map(function (n) { return React.createElement("option", { key: n, value: n }, n); })),
                   React.createElement("div", { className: "flex gap-0.5" },
                     [0, 1, 2].map(function (inv) {
-                      return React.createElement("button", { "aria-label": "Change chord inversion",
-                        key: inv,
+                      return React.createElement("button", { key: inv,
                         onClick: function () { upd('chordInversion', inv); },
                         className: "px-1.5 py-0.5 rounded text-[11px] font-bold " + (chordInversion === inv ? 'bg-purple-600 text-white' : 'bg-slate-100 text-slate-200')
                       }, inv === 0 ? 'Root' : inv === 1 ? '1st Inv' : '2nd Inv');
@@ -2031,8 +2027,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                 React.createElement("div", { className: "flex flex-wrap gap-1" },
                   (jazzMode ? ['Maj7', 'Min7', 'Dom7', 'dim7', 'Min9', 'Maj9', '9', '13', '6', 'min6'] : ['Major', 'Minor', 'Diminished', 'Augmented', 'Sus2', 'Sus4', t('stem.circuit.power'), 'Dom7', 'Maj7', 'Min7']).map(function (chType) {
                     var chord = CHORDS[chType]; if (!chord) return null;
-                    return React.createElement("button", { "aria-label": "Change selected chord",
-                      key: chType,
+                    return React.createElement("button", { key: chType,
                       onClick: function () { upd('selectedChord', chType); playChord(chordRoot, chType, chordInversion); },
                       className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + (selectedChord === chType ? 'bg-purple-600 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-purple-50 hover:text-purple-600')
                     }, chordRoot + chord.symbol);
@@ -2185,8 +2180,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                   synthEngine === 'standard' && React.createElement("div", { className: "flex gap-1 mb-2" },
                     ['sine', 'square', 'sawtooth', 'triangle'].map(function (w) {
                       var wi = WAVE_INFO[w];
-                      return React.createElement("button", { "aria-label": "Change wave type",
-                        key: w,
+                      return React.createElement("button", { key: w,
                         onClick: function () { upd('waveType', w); },
                         className: "flex-1 py-1 rounded-lg text-[11px] font-bold text-center transition-all " + ((d.waveType || 'sine') === w ? 'bg-purple-600 text-white' : 'bg-white text-slate-600 hover:bg-purple-50'),
                         title: wi.desc
@@ -2907,8 +2901,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                   var isActive = (d.bpActivePattern || 'A') === p;
                   var colors = { A: 'purple', B: 'blue', C: 'emerald', D: 'amber' };
                   var c = colors[p];
-                  return React.createElement("button", { "aria-label": "Change seq grid",
-                    key: p,
+                  return React.createElement("button", { key: p,
                     onClick: function () {
                       // Save current grid to current pattern
                       var pats = Object.assign({}, d.bpPatterns || {});
@@ -3520,8 +3513,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                       return React.createElement("div", { key: ci, className: "flex items-center gap-2 bg-white rounded-lg px-2 py-1.5 border border-emerald-100" },
                         React.createElement("span", { className: "text-[11px] font-bold text-emerald-700 flex-1 truncate" }, comp.name),
                         React.createElement("span", { className: "text-[11px] text-slate-200" }, (comp.bpm || 120) + " BPM"),
-                        React.createElement("button", { "aria-label": "Change seq grid",
-                          onClick: function () {
+                        React.createElement("button", { onClick: function () {
                             upd('seqGrid', comp.grid || {}); upd('beatMelody', comp.melody || null);
                             upd('seqBPM', comp.bpm || 120); upd('seqSwing', comp.swing || '0');
                             if (comp.scale) upd('bpScale', comp.scale);
@@ -3561,8 +3553,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                   [{ id: 'harp', label: '\uD83C\uDFB5 Harp', desc: t('stem.synth.pure_clean') },
                   { id: 'organ', label: '\u2728 Organ', desc: t('stem.synth.warm_chorus') },
                   { id: 'pad', label: '\uD83C\uDF0A Pad', desc: t('stem.synth.slow_lush') }].map(function (v) {
-                    return React.createElement("button", { "aria-label": "Change omni voice",
-                      key: v.id,
+                    return React.createElement("button", { key: v.id,
                       onClick: function () { upd('omniVoice', v.id); },
                       className: "flex-1 py-2 rounded-lg text-center transition-all " + ((d.omniVoice || 'harp') === v.id ? 'bg-amber-700 text-white shadow-md' : 'bg-white border border-amber-200 text-amber-800 hover:bg-amber-100')
                     },
@@ -3588,8 +3579,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                     return React.createElement("div", { key: ct.type, className: "grid grid-cols-7 gap-1 mt-1" },
                       ['C', 'D', 'E', 'F', 'G', 'A', 'B'].map(function (root) {
                         var isActive = d.omniChordRoot === root && d.omniChordType === ct.type;
-                        return React.createElement("button", { "aria-label": "Change omni chord root",
-                          key: root + ct.type,
+                        return React.createElement("button", { key: root + ct.type,
                           onClick: function () {
                             upd('omniChordRoot', root); upd('omniChordType', ct.type);
                           },
@@ -4177,8 +4167,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                 ),
                 React.createElement("div", { className: "grid grid-cols-3 gap-2" },
                   ['lowpass', 'highpass', 'bandpass'].map(function (ft) {
-                    return React.createElement("button", { "aria-label": "Change filter type",
-                      key: ft,
+                    return React.createElement("button", { key: ft,
                       onClick: function () { upd('filterType', ft); },
                       className: "py-1.5 rounded-lg text-[11px] font-bold capitalize transition-all " + ((d.filterType || 'lowpass') === ft ? 'bg-cyan-700 text-white' : 'bg-slate-100 text-slate-600')
                     }, ft);
@@ -4197,8 +4186,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                   [{ label: '\uD83C\uDFB8 Bright Guitar', brightness: 0.95, damping: 0.998 },
                   { label: '\uD83E\uDE95 Banjo', brightness: 0.99, damping: 0.993 },
                   { label: '\uD83C\uDFBB Warm Bass', brightness: 0.3, damping: 0.999 }].map(function (preset) {
-                    return React.createElement("button", { "aria-label": "Change ks brightness",
-                      key: preset.label,
+                    return React.createElement("button", { key: preset.label,
                       onClick: function () {
                         upd('ksBrightness', preset.brightness); upd('ksDamping', preset.damping); upd('synthEngine', 'plucked');
                         playPlucked(noteFreq(selectedRoot, d.octave || 4), 'ks_demo', preset.brightness, preset.damping);

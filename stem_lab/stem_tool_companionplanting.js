@@ -4762,9 +4762,7 @@ var d = (labToolData.companionPlanting) || {};
 
                 React.createElement("h4", { className: "text-sm font-bold text-indigo-900 flex items-center gap-2" }, eventPopup.emoji + ' ' + eventPopup.title),
 
-                React.createElement("button", { "aria-label": "Change event popup",
-
-                  onClick: function () { upd('eventPopup', null); },
+                React.createElement("button", { onClick: function () { upd('eventPopup', null); },
 
                   className: "text-indigo-400 hover:text-indigo-700 text-lg font-bold"
 
@@ -4890,9 +4888,7 @@ var d = (labToolData.companionPlanting) || {};
 
                     [1, 2, 5].map(function (s) {
 
-                      return React.createElement("button", { "aria-label": "Change grow speed",
-
-                        key: s,
+                      return React.createElement("button", { key: s,
 
                         onClick: function () { upd('growSpeed', s); },
 
@@ -5432,9 +5428,7 @@ var d = (labToolData.companionPlanting) || {};
 
               quizFeedback && React.createElement("div", { className: "text-xs leading-relaxed p-3 rounded-lg " + (quizAnswer === currentQuiz.correct ? 'bg-green-100 text-green-800' : 'bg-red-50 text-red-700') }, quizFeedback),
 
-              quizFeedback && React.createElement("button", { "aria-label": "Change quiz q",
-
-                onClick: function () { upd('quizQ', (quizQ + 1)); upd('quizAnswer', ''); upd('quizFeedback', ''); },
+              quizFeedback && React.createElement("button", { onClick: function () { upd('quizQ', (quizQ + 1)); upd('quizAnswer', ''); upd('quizFeedback', ''); },
 
                 className: "px-4 py-2 text-xs font-bold bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all"
 
@@ -5458,8 +5452,7 @@ var d = (labToolData.companionPlanting) || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-green-800" }, "\u2696\uFE0F Sustainable Farming: Industrial vs Regenerative"),
-                React.createElement("button", { "aria-label": "Change show farm compare",
-                  onClick: function() { upd('showFarmCompare', !d.showFarmCompare); },
+                React.createElement("button", { onClick: function() { upd('showFarmCompare', !d.showFarmCompare); },
                   className: "text-[11px] text-green-600 hover:text-green-800 font-bold"
                 }, d.showFarmCompare ? 'Hide' : 'Compare \u2192')
               ),
@@ -5469,7 +5462,7 @@ var d = (labToolData.companionPlanting) || {};
                 React.createElement("div", { className: "flex gap-1 mb-3" },
                   FARMING_SYSTEMS.map(function(sys) {
                     var isActive = (d.farmSystemIdx || 'industrial') === sys.id;
-                    return React.createElement("button", { "aria-label": "Change farm system idx", key: sys.id,
+                    return React.createElement("button", { key: sys.id,
                       onClick: function() { upd('farmSystemIdx', sys.id); },
                       className: "flex-1 py-2 px-2 rounded-xl border-2 text-center transition-all " + (isActive ? 'scale-105 shadow-md' : 'hover:scale-[1.02]'),
                       style: { borderColor: isActive ? sys.color : sys.color + '30', background: isActive ? sys.color + '10' : '#fff' }
@@ -5556,8 +5549,7 @@ var d = (labToolData.companionPlanting) || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-blue-800" }, "\uD83D\uDE9A Food Miles & Carbon Calculator"),
-                React.createElement("button", { "aria-label": "Change show food miles",
-                  onClick: function() { upd('showFoodMiles', !d.showFoodMiles); },
+                React.createElement("button", { onClick: function() { upd('showFoodMiles', !d.showFoodMiles); },
                   className: "text-[11px] text-blue-600 hover:text-blue-800 font-bold"
                 }, d.showFoodMiles ? 'Hide' : 'Calculate \u2192')
               ),
@@ -5614,8 +5606,7 @@ var d = (labToolData.companionPlanting) || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-cyan-800" }, "\uD83D\uDCA7 Water Footprint of Food"),
-                React.createElement("button", { "aria-label": "Change show water foot",
-                  onClick: function() { upd('showWaterFoot', !d.showWaterFoot); },
+                React.createElement("button", { onClick: function() { upd('showWaterFoot', !d.showWaterFoot); },
                   className: "text-[11px] text-cyan-600 hover:text-cyan-800 font-bold"
                 }, d.showWaterFoot ? 'Hide' : 'View \u2192')
               ),
@@ -5646,8 +5637,7 @@ var d = (labToolData.companionPlanting) || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-violet-800" }, "\uD83C\uDF00 12 Permaculture Principles"),
-                React.createElement("button", { "aria-label": "Change show permaculture",
-                  onClick: function() { upd('showPermaculture', !d.showPermaculture); },
+                React.createElement("button", { onClick: function() { upd('showPermaculture', !d.showPermaculture); },
                   className: "text-[11px] text-violet-600 hover:text-violet-800 font-bold"
                 }, d.showPermaculture ? 'Hide' : 'Explore \u2192')
               ),
@@ -5675,8 +5665,7 @@ var d = (labToolData.companionPlanting) || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-emerald-800" }, "\uD83C\uDF31 Regenerative Practices"),
-                React.createElement("button", { "aria-label": "Change show regen",
-                  onClick: function() { upd('showRegen', !d.showRegen); },
+                React.createElement("button", { onClick: function() { upd('showRegen', !d.showRegen); },
                   className: "text-[11px] text-emerald-600 hover:text-emerald-800 font-bold"
                 }, d.showRegen ? 'Hide' : 'Learn \u2192')
               ),
@@ -5796,8 +5785,7 @@ var d = (labToolData.companionPlanting) || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-teal-800" }, "\uD83D\uDCCB Quick Reference Cards"),
-                React.createElement("button", { "aria-label": "Change show garden ref",
-                  onClick: function() { upd('showGardenRef', !d.showGardenRef); },
+                React.createElement("button", { onClick: function() { upd('showGardenRef', !d.showGardenRef); },
                   className: "text-[11px] text-teal-600 hover:text-teal-800 font-bold"
                 }, d.showGardenRef ? 'Hide' : 'View \u2192')
               ),
@@ -5824,8 +5812,7 @@ var d = (labToolData.companionPlanting) || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-blue-800" }, "\u267B\uFE0F The Nitrogen Cycle"),
-                React.createElement("button", { "aria-label": "Change show nitrogen",
-                  onClick: function() { upd('showNitrogen', !d.showNitrogen); },
+                React.createElement("button", { onClick: function() { upd('showNitrogen', !d.showNitrogen); },
                   className: "text-[11px] text-blue-600 hover:text-blue-800 font-bold"
                 }, d.showNitrogen ? 'Hide' : 'Explore \u2192')
               ),
@@ -5835,8 +5822,7 @@ var d = (labToolData.companionPlanting) || {};
                   NITROGEN_CYCLE.map(function(step, si) {
                     var isActive = (d.nitroCycleIdx || 0) === si;
                     return React.createElement("div", { key: si, className: "flex items-center" },
-                      React.createElement("button", { "aria-label": "Change nitro cycle idx",
-                        onClick: function() { upd('nitroCycleIdx', si); },
+                      React.createElement("button", { onClick: function() { upd('nitroCycleIdx', si); },
                         className: "flex flex-col items-center px-2 py-1.5 rounded-xl border-2 transition-all " + (isActive ? 'scale-110 shadow-md' : 'hover:scale-105'),
                         style: { borderColor: isActive ? step.color : step.color + '30', background: isActive ? step.color + '10' : '#fff' }
                       },
@@ -5901,8 +5887,7 @@ var d = (labToolData.companionPlanting) || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-emerald-800" }, "\uD83D\uDCC5 Seasonal Planting Calendar"),
-                React.createElement("button", { "aria-label": "Change show calendar",
-                  onClick: function() { upd('showCalendar', !d.showCalendar); },
+                React.createElement("button", { onClick: function() { upd('showCalendar', !d.showCalendar); },
                   className: "text-[11px] text-emerald-600 hover:text-emerald-800 font-bold"
                 }, d.showCalendar ? 'Hide' : 'Plan \u2192')
               ),
@@ -5938,8 +5923,7 @@ var d = (labToolData.companionPlanting) || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-purple-800" }, "\u2696\uFE0F Soil pH & Plant Preferences"),
-                React.createElement("button", { "aria-label": "Change show p h",
-                  onClick: function() { upd('showPH', !d.showPH); },
+                React.createElement("button", { onClick: function() { upd('showPH', !d.showPH); },
                   className: "text-[11px] text-purple-600 hover:text-purple-800 font-bold"
                 }, d.showPH ? 'Hide' : 'View \u2192')
               ),
@@ -5987,8 +5971,7 @@ var d = (labToolData.companionPlanting) || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-green-800" }, "\uD83C\uDF31 Companion Planting Guide (" + COMPANION_PAIRS.length + " pairs)"),
-                React.createElement("button", { "aria-label": "Change show pairs",
-                  onClick: function() { upd('showPairs', !d.showPairs); },
+                React.createElement("button", { onClick: function() { upd('showPairs', !d.showPairs); },
                   className: "text-[11px] text-green-600 hover:text-green-800 font-bold"
                 }, d.showPairs ? 'Hide' : 'Explore \u2192')
               ),
@@ -5996,7 +5979,7 @@ var d = (labToolData.companionPlanting) || {};
                 // Filter
                 React.createElement("div", { className: "flex gap-1 mb-2" },
                   ['all', 'friend', 'enemy'].map(function(f) {
-                    return React.createElement("button", { "aria-label": "Change pair filter", key: f,
+                    return React.createElement("button", { key: f,
                       onClick: function() { upd('pairFilter', f); },
                       className: "px-2 py-0.5 rounded-full text-[11px] font-bold " + ((d.pairFilter || 'all') === f ? 'bg-green-700 text-white' : 'bg-white text-green-700 border border-green-200')
                     }, f === 'all' ? 'All' : f === 'friend' ? '\u2705 Friends' : '\u274C Enemies');
@@ -6031,8 +6014,7 @@ var d = (labToolData.companionPlanting) || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-violet-800" }, "\uD83C\uDF3E Plant Families & Crop Rotation"),
-                React.createElement("button", { "aria-label": "Change show families",
-                  onClick: function() { upd('showFamilies', !d.showFamilies); },
+                React.createElement("button", { onClick: function() { upd('showFamilies', !d.showFamilies); },
                   className: "text-[11px] text-violet-600 hover:text-violet-800 font-bold"
                 }, d.showFamilies ? 'Hide' : 'Learn \u2192')
               ),
@@ -6065,8 +6047,7 @@ var d = (labToolData.companionPlanting) || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-amber-800" }, "\uD83E\uDEA8 Soil Types Guide"),
-                React.createElement("button", { "aria-label": "Change show soil types",
-                  onClick: function() { upd('showSoilTypes', !d.showSoilTypes); },
+                React.createElement("button", { onClick: function() { upd('showSoilTypes', !d.showSoilTypes); },
                   className: "text-[11px] text-amber-600 hover:text-amber-800 font-bold"
                 }, d.showSoilTypes ? 'Hide' : 'Explore \u2192')
               ),
@@ -6098,8 +6079,7 @@ var d = (labToolData.companionPlanting) || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-red-800" }, "\uD83D\uDC1E Garden Pests & Allies"),
-                React.createElement("button", { "aria-label": "Change show pests",
-                  onClick: function() { upd('showPests', !d.showPests); },
+                React.createElement("button", { onClick: function() { upd('showPests', !d.showPests); },
                   className: "text-[11px] text-red-600 hover:text-red-800 font-bold"
                 }, d.showPests ? 'Hide' : 'Identify \u2192')
               ),

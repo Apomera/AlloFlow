@@ -2418,8 +2418,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
 
           // ── Live Population Graph Panel ──
           h('div', { className: 'bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden' },
-            h('button', { 'aria-label': 'Change eco graph open',
-              className: 'w-full flex items-center justify-between px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700',
+            h('button', { className: 'w-full flex items-center justify-between px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700',
               onClick: function() { upd('ecoGraphOpen', !ecoGraphOpen); }
             },
               h('span', null, '\uD83D\uDCCA Live Population Graph'),
@@ -2759,8 +2758,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
 
           // ── AI Tutor ──
           callGemini && h('div', { className: 'bg-indigo-50 dark:bg-indigo-900/20 rounded-xl p-3 border border-indigo-200 dark:border-indigo-700 space-y-2' },
-            h('button', { 'aria-label': 'Change show a i',
-              className: 'w-full flex items-center justify-between text-xs font-bold text-indigo-700 dark:text-indigo-300',
+            h('button', { className: 'w-full flex items-center justify-between text-xs font-bold text-indigo-700 dark:text-indigo-300',
               onClick: function() { upd('showAI', !showAI); }
             },
               h('span', null, '\uD83E\uDD16 AI Ecology Tutor'),
@@ -2815,8 +2813,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           // ── Tool selector row ──
           h('div', { className: 'flex gap-1' },
             sandboxTools.map(function(tool) {
-              return h('button', { 'aria-label': 'Change sandbox tool',
-                key: tool.id,
+              return h('button', { key: tool.id,
                 className: 'flex-1 px-1.5 py-2 text-[11px] font-bold rounded-lg border-2 transition-all text-center ' +
                   (sandboxTool === tool.id
                     ? 'border-teal-400 bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 shadow'

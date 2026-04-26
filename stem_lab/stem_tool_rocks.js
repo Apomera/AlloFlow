@@ -1330,9 +1330,7 @@ const d = labToolData.rocks || {};
 
                 ['all', 'igneous', 'sedimentary', 'metamorphic'].map(function (t) {
 
-                  return React.createElement("button", { "aria-label": "Change selected type",
-
-                    key: t, onClick: function () { upd("selectedType", t === 'all' ? null : t); },
+                  return React.createElement("button", { key: t, onClick: function () { upd("selectedType", t === 'all' ? null : t); },
 
                     className: "px-3 py-1 rounded-full text-xs font-bold transition-all " +
 
@@ -1354,9 +1352,7 @@ const d = labToolData.rocks || {};
 
                   const rt = ROCK_TYPES[rock.type];
 
-                  return React.createElement("button", { "aria-label": "Change selected rock",
-
-                    key: rock.id, onClick: function () { upd("selectedRock", d.selectedRock === rock.id ? null : rock.id); upd("selectedMineral", null); },
+                  return React.createElement("button", { key: rock.id, onClick: function () { upd("selectedRock", d.selectedRock === rock.id ? null : rock.id); upd("selectedMineral", null); },
 
                     className: "p-2 rounded-lg text-[11px] font-bold border-2 transition-all hover:scale-105 text-center " +
 
@@ -2021,8 +2017,7 @@ const d = labToolData.rocks || {};
                 // Mineral grid
                 React.createElement("div", { className: "grid grid-cols-4 gap-2 mb-3" },
                   MINERALS.map(function (mineral) {
-                    return React.createElement("button", { "aria-label": "Change selected mineral",
-                      key: mineral.id, onClick: function () { upd("selectedMineral", d.selectedMineral === mineral.id ? null : mineral.id); upd("selectedRock", null); },
+                    return React.createElement("button", { key: mineral.id, onClick: function () { upd("selectedMineral", d.selectedMineral === mineral.id ? null : mineral.id); upd("selectedRock", null); },
                       className: "p-2 rounded-lg text-[11px] font-bold border-2 transition-all hover:scale-105 text-center " +
                         (d.selectedMineral === mineral.id ? 'bg-white shadow-lg border-violet-400' : 'bg-slate-50 border-slate-200 hover:border-violet-200'),
                       style: d.selectedMineral === mineral.id ? { borderColor: '#8b5cf6', color: '#6d28d9' } : {}
@@ -3447,9 +3442,7 @@ const d = labToolData.rockCycle;
 
               ROCKS.map(function (rock) {
 
-                return React.createElement("button", { "aria-label": "Change selected rock",
-
-                  key: rock.id, onClick: function () { upd('selectedRock', rock.id); },
+                return React.createElement("button", { key: rock.id, onClick: function () { upd('selectedRock', rock.id); },
 
                   className: "px-3 py-2 rounded-lg text-xs font-bold transition-all " + (d.selectedRock === rock.id ? 'text-white shadow-md scale-105' : 'border hover:opacity-80'),
 
@@ -3525,9 +3518,7 @@ const d = labToolData.rockCycle;
 
                   var isActive = d.selectedProcess && d.selectedProcess.label === proc.label && d.selectedProcess.from === proc.from;
 
-                  return React.createElement("button", { "aria-label": "Change selected process",
-
-                    key: i, onClick: function () { upd('selectedProcess', proc); },
+                  return React.createElement("button", { key: i, onClick: function () { upd('selectedProcess', proc); },
 
                     className: "p-2 rounded-lg text-left border transition-all " + (isActive ? 'bg-orange-100 border-orange-400 shadow-md' : 'bg-slate-50 border-slate-200 hover:bg-orange-50')
 

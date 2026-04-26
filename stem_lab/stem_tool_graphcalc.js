@@ -663,10 +663,10 @@
               ),
               // Math Pad toggle
               h('div', { style: { padding: '4px 12px', borderTop: '1px solid rgba(99,102,241,0.1)' } },
-                h('button', { onClick: function() { upd('showMathPad', !showMathPad); }, style: { width: '100%', padding: '4px', borderRadius: '6px', background: showMathPad ? '#818cf833' : 'rgba(255,255,255,0.05)', color: showMathPad ? '#a5b4fc' : '#94a3b8', border: showMathPad ? '1px solid #818cf844' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\u2328 Math Pad'),
+                h('button', { onClick: function() { upd('showMathPad', !showMathPad); }, 'aria-pressed': !!showMathPad, style: { width: '100%', padding: '4px', borderRadius: '6px', background: showMathPad ? '#818cf833' : 'rgba(255,255,255,0.05)', color: showMathPad ? '#a5b4fc' : '#94a3b8', border: showMathPad ? '1px solid #818cf844' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\u2328 Math Pad'),
                 showMathPad ? h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '3px', paddingBottom: '4px', paddingTop: '4px' } },
                   visibleSymbols.map(function(sym) {
-                    return h('button', { 'aria-label': 'Table', key: sym.label, onClick: function() { insertSymbol(sym.insert); }, style: { padding: '3px 7px', borderRadius: '5px', background: 'rgba(99,102,241,0.12)', color: '#c7d2fe', border: '1px solid rgba(99,102,241,0.2)', fontSize: '11px', fontFamily: 'monospace', fontWeight: 'bold', cursor: 'pointer' } }, sym.label);
+                    return h('button', { 'aria-label': 'Insert ' + sym.label, key: sym.label, onClick: function() { insertSymbol(sym.insert); }, style: { padding: '3px 7px', borderRadius: '5px', background: 'rgba(99,102,241,0.12)', color: '#c7d2fe', border: '1px solid rgba(99,102,241,0.2)', fontSize: '11px', fontFamily: 'monospace', fontWeight: 'bold', cursor: 'pointer' } }, sym.label);
                   })
                 ) : null
               ),
@@ -773,7 +773,7 @@
               (d._sideTab || 'coach') === 'challenge' ? h('div', { style: { flex: 1, overflowY: 'auto', padding: '8px' } },
                 availableChallenges.map(function(ch, ci) {
                   var isActive = d.activeChallenge === ci;
-                  return h('div', { key: ci, onClick: function() { upd('activeChallenge', isActive ? -1 : ci); }, style: { padding: '10px', marginBottom: '6px', borderRadius: '10px', background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.15)', cursor: 'pointer' } },
+                  return h('div', { key: ci, role: 'button', tabIndex: 0, 'aria-expanded': isActive, 'aria-label': ch.topic + (isActive ? ' (expanded)' : ' (collapsed)'), onClick: function() { upd('activeChallenge', isActive ? -1 : ci); }, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }, style: { padding: '10px', marginBottom: '6px', borderRadius: '10px', background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.15)', cursor: 'pointer' } },
                     h('div', { style: { fontSize: '11px', color: '#a78bfa', fontWeight: 'bold', marginBottom: '3px' } }, ch.topic),
                     h('div', { style: { fontSize: '11px', lineHeight: '1.5', color: '#e2e8f0', marginBottom: '4px' } }, ch.prompt),
                     isActive ? h('div', null,
@@ -798,7 +798,7 @@
                 ),
                 h('div', { style: { display: 'flex', gap: '4px' } },
                   h('input', { type: 'text', value: aiInput, onChange: function(e) { upd('aiInput', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter' && aiInput.trim()) handleAiQuestion(aiInput.trim()); }, placeholder: 'Ask about math...', 'aria-label': 'Ask the math tutor', className: 'focus:ring-2 focus:ring-indigo-500', style: { flex: 1, padding: '6px 8px', borderRadius: '6px', border: '1px solid rgba(99,102,241,0.3)', background: 'rgba(99,102,241,0.08)', color: '#e2e8f0', fontSize: '11px' } }),
-                  h('button', { onClick: function() { if (aiInput.trim()) handleAiQuestion(aiInput.trim()); }, style: { padding: '6px 10px', borderRadius: '6px', background: '#6366f1', color: '#fff', border: 'none', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' } }, '\u2191')
+                  h('button', { onClick: function() { if (aiInput.trim()) handleAiQuestion(aiInput.trim()); }, 'aria-label': 'Send question to AI math tutor', style: { padding: '6px 10px', borderRadius: '6px', background: '#6366f1', color: '#fff', border: 'none', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' } }, '\u2191')
                 )
               ) : null,
               // Badges

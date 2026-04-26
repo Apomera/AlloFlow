@@ -1617,7 +1617,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               h('span', { className: 'text-xs font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') },
                 speciesData.emoji + ' ' + speciesData.name + ' (' + speciesData.subtitle + ')'),
               h('button', {
-                'aria-label': 'Change bat species',
                 onClick: function() { upd('playableSpecies', null); },
                 className: 'px-2 py-0.5 rounded text-[11px] font-bold ' + (isDark ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-slate-200 text-slate-600 hover:bg-slate-300')
               }, 'Change Species')

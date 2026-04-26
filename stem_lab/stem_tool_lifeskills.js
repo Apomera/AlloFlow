@@ -837,7 +837,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'flex flex-wrap gap-1.5', role: 'tablist', },
           SUBTOOLS.map(function(st) {
             var active = tab === st.id;
-            return h('button', { 'aria-label': 'Change pay rate', key: st.id, onClick: function() { updMulti({ tab: st.id }); announceToSR('Switched to ' + st.label); },
+            return h('button', { key: st.id, onClick: function() { updMulti({ tab: st.id }); announceToSR('Switched to ' + st.label); },
               className: 'px-3 py-1.5 rounded-xl text-xs font-bold transition-all ' + (active ? 'bg-teal-700 text-white shadow-md' : 'bg-white/70 text-slate-600 hover:bg-teal-50 border border-slate-200'),
               role: 'tab', 'aria-selected': active
             }, st.icon + ' ' + st.label);
@@ -972,7 +972,7 @@ window.StemLab = window.StemLab || {
           ),
           h('div', { className: 'flex gap-1.5 mb-2' },
             CONTRACTS.map(function(c, i) {
-              return h('button', { 'aria-label': 'Change cr found', key: i, onClick: function() { updMulti({ crLevel: i, crFound: [] }); }, className: 'px-2 py-1 rounded-lg text-[11px] font-bold ' + (crLevel % CONTRACTS.length === i ? 'bg-teal-700 text-white' : 'bg-white border border-slate-200 text-slate-600') }, c.title);
+              return h('button', { key: i, onClick: function() { updMulti({ crLevel: i, crFound: [] }); }, className: 'px-2 py-1 rounded-lg text-[11px] font-bold ' + (crLevel % CONTRACTS.length === i ? 'bg-teal-700 text-white' : 'bg-white border border-slate-200 text-slate-600') }, c.title);
             })
           ),
           h('div', { className: glassCard },
@@ -1170,7 +1170,7 @@ window.StemLab = window.StemLab || {
             h('p', { className: 'text-xs text-slate-700 mb-2' }, '\uD83D\uDD0D Symptom: "' + plumbCurrent.symptom + '"'),
             h('div', { className: 'grid grid-cols-3 gap-1.5' },
               TOILET_PARTS.map(function(part) {
-                return h('button', { 'aria-label': 'Change paint l', key: part.name, onClick: function() {
+                return h('button', { key: part.name, onClick: function() {
                   var correct = part.name === plumbCurrent.answer;
                   stemBeep(correct);
                   updMulti({ plumbFb: correct ? '\u2705 Correct! ' + plumbCurrent.explain : '\u274C Not ' + part.name + '. Try again!' });
@@ -1536,7 +1536,7 @@ window.StemLab = window.StemLab || {
               [1, 2, 3].map(function(t) {
                 var labels = { 1: 'Easy', 2: 'Medium', 3: 'Hard' };
                 var colors = { 1: 'bg-emerald-100 text-emerald-700', 2: 'bg-amber-100 text-amber-700', 3: 'bg-red-100 text-red-700' };
-                return h('button', { 'aria-label': 'Change chal answer', key: t, onClick: function() { updMulti({ chalTier: t, chalIdx: 0, chalFeedback: '', chalAnswer: '' }); },
+                return h('button', { key: t, onClick: function() { updMulti({ chalTier: t, chalIdx: 0, chalFeedback: '', chalAnswer: '' }); },
                   className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold ' + (chalTier === t ? colors[t] + ' ring-2 ring-offset-1' : 'bg-white text-slate-600 border border-slate-200') }, labels[t]);
               })
             ),
@@ -1552,7 +1552,7 @@ window.StemLab = window.StemLab || {
               h('button', { onClick: chalCheck, className: 'px-4 py-2 text-sm font-bold bg-teal-700 text-white rounded-xl' }, 'Check'),
               h('button', { onClick: function() { upd('chalFeedback', '\uD83D\uDCA1 ' + (chalQ.h || 'No hint')); }, className: 'px-3 py-2 text-sm font-bold bg-amber-50 text-amber-600 rounded-xl' }, '\uD83D\uDCA1 Hint'),
               h('button', { onClick: function() { updMulti({ chalIdx: chalIdx + 1, chalFeedback: '', chalAnswer: '' }); }, className: 'px-3 py-2 text-sm font-bold bg-slate-100 text-slate-600 rounded-xl' }, 'Skip \u27A1'),
-              callGemini && h('button', { 'aria-label': 'Change chal a i loading', onClick: function() {
+              callGemini && h('button', { onClick: function() {
                 upd('chalAILoading', true);
                 var tierLabel = chalTier === 1 ? 'easy' : chalTier === 2 ? 'medium' : 'hard';
                 callGemini('Generate one ' + tierLabel + ' life skills question for a ' + gradeBand + ' student about taxes, insurance, home repair, car care, or data literacy. Return JSON: {"q":"question","a":"short answer","h":"hint"}').then(function(res) {

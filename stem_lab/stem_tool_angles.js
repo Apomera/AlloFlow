@@ -624,7 +624,7 @@ window.StemLab = window.StemLab || {
       // ══════════════════════════════════════════════════════════════
       var tabBtn = function(id, label, icon) {
         var active = activeTab === id;
-        return h('button', { 'aria-label': 'Change active tab', onClick: function() { upd('activeTab', id); if (soundEnabled) sfxClick(); },
+        return h('button', { onClick: function() { upd('activeTab', id); if (soundEnabled) sfxClick(); },
           role: 'tab', 'aria-selected': active,
           className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' +
             (active ? 'bg-purple-700 text-white shadow-md' : 'bg-white text-purple-600 hover:bg-purple-50 border border-purple-200')
@@ -1095,7 +1095,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex gap-2 flex-wrap mb-3' },
               polygonData.map(function(p) {
                 var active = selectedPolygon === p.sides;
-                return h('button', { 'aria-label': 'Change selected polygon', key: p.sides, onClick: function() {
+                return h('button', { key: p.sides, onClick: function() {
                   upd('selectedPolygon', p.sides);
                   var explored = Object.assign({}, polygonsExplored);
                   explored[p.sides] = true;

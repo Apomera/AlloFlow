@@ -1024,6 +1024,12 @@ window.StemLab = window.StemLab || {
       var THROW_DURATION = 0.8;
       var OUTCOME_HOLD = 1.2;
       var TOTAL_DURATION = ROUTE_DURATION + THROW_DURATION + OUTCOME_HOLD;
+      // Soccer animation: each pass = 0.55s of travel; +0.7s outcome hold
+      // at the end to show the final xG. Total = passes·0.55 + 0.7.
+      var SOCCER_PASS_DURATION = 0.55;
+      var SOCCER_OUTCOME_HOLD = 0.7;
+      var soccerPassesCount = (concept && concept.passes && concept.passes.length) || 1;
+      var SOCCER_TOTAL = soccerPassesCount * SOCCER_PASS_DURATION + SOCCER_OUTCOME_HOLD;
 
       // Walk a player along their route waypoints at uniform speed.
       // Returns { x, y } at time fraction t in [0, 1] across the entire route.
@@ -1080,7 +1086,11 @@ window.StemLab = window.StemLab || {
             runActive: true, runT: 0, runOutcome: null
           })});
         });
-        plAnnounce('Running play. ' + play.label + ' against ' + coverage.label + '.');
+        if (isSoccer) {
+          plAnnounce('Running sequence. ' + concept.label + ' from ' + formationDef.label + '.');
+        } else {
+          plAnnounce('Running play. ' + play.label + ' against ' + coverage.label + '.');
+        }
       }
 
       // rAF loop — runs only while d.runActive is true. WCAG 2.3.3:
@@ -1090,6 +1100,51 @@ window.StemLab = window.StemLab || {
         if (!d.runActive) return;
         var prefersReduced = false;
         try { prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+
+        // ── Soccer branch ──
+        // Animate the ball along the concept's passing sequence. End at the
+        // final receiver's xG → "Sequence complete: shot from xG 0.32".
+        if (isSoccer) {
+          var passes = (concept.passes || []);
+          var finalReceiver = passes.length > 0 ? formation.find(function(p) { return p.id === passes[passes.length - 1][1]; }) : null;
+          var finalXG = finalReceiver ? computeXG(finalReceiver.x, finalReceiver.y) : 0;
+          var soccerOutcome = { sport: 'soccer', xG: finalXG, finalReceiverId: finalReceiver ? finalReceiver.id : null };
+          if (prefersReduced) {
+            setLabToolData(function(prev) {
+              return Object.assign({}, prev, { playlab: Object.assign({}, prev.playlab, {
+                runActive: false, runT: SOCCER_TOTAL, runOutcome: soccerOutcome
+              })});
+            });
+            plAnnounce('Sequence complete. Final position xG ' + finalXG.toFixed(2) + '.');
+            return;
+          }
+          var sStart = performance.now();
+          var sRaf;
+          function sStep() {
+            var sElapsed = (performance.now() - sStart) / 1000;
+            if (sElapsed >= SOCCER_TOTAL) {
+              setLabToolData(function(prev) {
+                return Object.assign({}, prev, { playlab: Object.assign({}, prev.playlab, {
+                  runActive: false, runT: SOCCER_TOTAL, runOutcome: soccerOutcome
+                })});
+              });
+              var qualLabel = finalXG > 0.30 ? 'high-quality chance' : finalXG > 0.10 ? 'decent shot' : 'low-percentage shot';
+              plAnnounce('Sequence complete. ' + (finalReceiver ? finalReceiver.id : 'Final attacker') + ' arrives at xG ' + finalXG.toFixed(2) + ' — a ' + qualLabel + '.');
+              if (finalXG > 0.20 && awardXP) awardXP('playlab', 8, 'High-xG sequence');
+              return;
+            }
+            setLabToolData(function(prev) {
+              return Object.assign({}, prev, { playlab: Object.assign({}, prev.playlab, {
+                runT: sElapsed
+              })});
+            });
+            sRaf = requestAnimationFrame(sStep);
+          }
+          sRaf = requestAnimationFrame(sStep);
+          return function() { if (sRaf) cancelAnimationFrame(sRaf); };
+        }
+
+        // ── Football branch (original) ──
         if (prefersReduced) {
           var targetId = pickThrowTarget();
           var outcome = targetId ? { receiverId: targetId, location: 'caught' } : { location: 'incomplete' };
@@ -1570,6 +1625,38 @@ window.StemLab = window.StemLab || {
           gfx.fillText(p.id, px, py + 3);
         });
 
+        // ── Soccer ball traveling along the passing sequence ──
+        // During an active run, the ball walks each pass over
+        // SOCCER_PASS_DURATION seconds. The current segment + linear
+        // progress within the segment come from runT.
+        if (isSoccer && d.runActive && concept && concept.passes && concept.passes.length) {
+          var passes = concept.passes;
+          var sIdx = Math.min(passes.length - 1, Math.floor(runT / SOCCER_PASS_DURATION));
+          var sFrac = (runT - sIdx * SOCCER_PASS_DURATION) / SOCCER_PASS_DURATION;
+          var pair = passes[sIdx];
+          var fromP = formation.find(function(p) { return p.id === pair[0]; });
+          var toP = formation.find(function(p) { return p.id === pair[1]; });
+          if (fromP && toP) {
+            var bx = fromP.x + (toP.x - fromP.x) * sFrac;
+            var by = fromP.y + (toP.y - fromP.y) * sFrac;
+            var bpx = fx(bx);
+            var bpy = fy(by);
+            // Soccer ball — white circle with black hex outline
+            gfx.fillStyle = '#fafafa';
+            gfx.beginPath(); gfx.arc(bpx, bpy, 5, 0, Math.PI * 2); gfx.fill();
+            gfx.strokeStyle = '#1a1a1a';
+            gfx.lineWidth = 1;
+            gfx.stroke();
+            // Highlight the active pass segment
+            gfx.strokeStyle = 'rgba(251,191,36,0.85)';
+            gfx.lineWidth = 3;
+            gfx.beginPath();
+            gfx.moveTo(fx(fromP.x), fy(fromP.y));
+            gfx.lineTo(fx(toP.x), fy(toP.y));
+            gfx.stroke();
+          }
+        }
+
         // ── Football in flight ──
         // After the route phase, the ball travels from the QB to the
         // designated target receiver over THROW_DURATION. We use a simple
@@ -1606,7 +1693,30 @@ window.StemLab = window.StemLab || {
         // ── Outcome callout ──
         // After the ball arrives, hold the result on screen for OUTCOME_HOLD
         // seconds. Renders a banner over the field with the verdict.
-        if (d.runOutcome && runT > ROUTE_DURATION + THROW_DURATION) {
+        // Soccer + football share the banner format; the texts differ.
+        var soccerBannerVisible = isSoccer && d.runOutcome && d.runOutcome.sport === 'soccer'
+          && (!d.runActive) && runT >= soccerPassesCount * SOCCER_PASS_DURATION;
+        var footballBannerVisible = !isSoccer && d.runOutcome && runT > ROUTE_DURATION + THROW_DURATION;
+        if (soccerBannerVisible) {
+          var sro = d.runOutcome;
+          var sxg = sro.xG || 0;
+          var sBannerColor = sxg > 0.30 ? 'rgba(16,185,129,0.85)'
+                           : sxg > 0.10 ? 'rgba(251,191,36,0.85)'
+                           : 'rgba(239,68,68,0.85)';
+          var sBannerText = '⚽ ' + (sro.finalReceiverId || 'Final attacker') + ' arrives · xG ' + sxg.toFixed(2);
+          gfx.fillStyle = sBannerColor;
+          gfx.fillRect(W / 2 - 150, marginT + fieldPxH / 2 - 18, 300, 36);
+          gfx.fillStyle = '#0f172a';
+          gfx.font = 'bold 14px system-ui';
+          gfx.textAlign = 'center';
+          gfx.textBaseline = 'middle';
+          gfx.fillText(sBannerText, W / 2, marginT + fieldPxH / 2);
+          gfx.textBaseline = 'alphabetic';
+          gfx.font = '11px system-ui';
+          var sQual = sxg > 0.30 ? 'high-quality chance' : sxg > 0.10 ? 'decent shot' : 'low-percentage shot';
+          gfx.fillText('(' + sQual + ' — toggle xG heatmap to see why)', W / 2, marginT + fieldPxH / 2 + 28);
+        }
+        if (footballBannerVisible) {
           var ro = d.runOutcome;
           var bannerColor = ro.location === 'caught' ? 'rgba(16,185,129,0.85)'
                           : ro.location === 'brokenup' ? 'rgba(251,191,36,0.85)'

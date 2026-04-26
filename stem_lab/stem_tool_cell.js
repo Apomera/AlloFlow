@@ -3346,7 +3346,7 @@ var d = labToolData.cell;
 
                 ["observe", "play", "quiz"].map(function (m) {
 
-                  return React.createElement("button", { "aria-label": "Change mode", key: m, onClick: function () { upd("mode", m); if (m === 'quiz') { upd("quizMode", true); upd("quizIdx", 0); upd("quizScore", 0); upd("quizStreak", 0); upd("quizFeedback", null); } else { upd("quizMode", false); } if (m !== 'play') { upd("playAsOrganism", null); var cv = document.querySelector('[data-cell-sim-canvas]'); if (cv && cv._cellSimSetPlayAs) cv._cellSimSetPlayAs(null); } }, className: "px-3 py-1 rounded-lg text-xs font-bold capitalize " + (d.mode === m ? 'bg-green-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, m);
+                  return React.createElement("button", { key: m, onClick: function () { upd("mode", m); if (m === 'quiz') { upd("quizMode", true); upd("quizIdx", 0); upd("quizScore", 0); upd("quizStreak", 0); upd("quizFeedback", null); } else { upd("quizMode", false); } if (m !== 'play') { upd("playAsOrganism", null); var cv = document.querySelector('[data-cell-sim-canvas]'); if (cv && cv._cellSimSetPlayAs) cv._cellSimSetPlayAs(null); } }, className: "px-3 py-1 rounded-lg text-xs font-bold capitalize " + (d.mode === m ? 'bg-green-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, m);
 
                 })
 
@@ -3570,9 +3570,7 @@ var d = labToolData.cell;
 
               ORGANISMS.map(function (org) {
 
-                return React.createElement("button", { "aria-label": "Change selected organism",
-
-                  key: org.id,
+                return React.createElement("button", { key: org.id,
 
                   onClick: function () {
 

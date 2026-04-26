@@ -1673,9 +1673,7 @@ const d = labToolData.physics;
 
               PRESETS.map(function (p) {
 
-                return React.createElement("button", { "aria-label": "Change gravity",
-
-                  key: p.label, onClick: function () { upd('gravity', p.gravity); },
+                return React.createElement("button", { key: p.label, onClick: function () { upd('gravity', p.gravity); },
 
                   className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.gravity === p.gravity ? 'bg-sky-600 text-white' : 'bg-sky-50 text-sky-700 border border-sky-200 hover:bg-sky-100')
 
@@ -1898,8 +1896,7 @@ const d = labToolData.physics;
                 ].map(function(ch) {
                   var active = d.challengeTier === ch.tier;
                   var completed = d['challenge' + ch.tier + 'Done'];
-                  return React.createElement("button", { "aria-label": "Change challenge tier",
-                    key: ch.tier,
+                  return React.createElement("button", { key: ch.tier,
                     onClick: function() {
                       upd('challengeTier', ch.tier);
                       upd('challengeActive', true);
@@ -2056,9 +2053,7 @@ const d = labToolData.physics;
 
                     var wrong = picked && !correct;
 
-                    return React.createElement("button", { "aria-label": "Change quiz picked",
-
-                      key: oi, disabled: d.quizPicked !== null,
+                    return React.createElement("button", { key: oi, disabled: d.quizPicked !== null,
 
                       onClick: function () {
 

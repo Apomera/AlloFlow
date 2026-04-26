@@ -1487,7 +1487,7 @@ const d = labToolData.wave;
 
               [1, 2, 3, 4, 5, 6].map(function (h) {
 
-                return React.createElement("button", { "aria-label": "Change harmonic", key: h, onClick: function () { upd('harmonic', h); }, className: "w-9 h-9 rounded-lg text-sm font-black transition-all " + ((d.harmonic || 1) === h ? 'bg-cyan-700 text-white shadow-md scale-110' : 'bg-cyan-50 text-cyan-700 border border-cyan-200 hover:bg-cyan-100') }, h);
+                return React.createElement("button", { key: h, onClick: function () { upd('harmonic', h); }, className: "w-9 h-9 rounded-lg text-sm font-black transition-all " + ((d.harmonic || 1) === h ? 'bg-cyan-700 text-white shadow-md scale-110' : 'bg-cyan-50 text-cyan-700 border border-cyan-200 hover:bg-cyan-100') }, h);
 
               }),
 
@@ -1813,9 +1813,7 @@ const d = labToolData.wave;
 
               }, d.matchTarget && !d.matchTarget.isEquation ? "\uD83D\uDD04 New Target" : "\uD83C\uDFAF Match Waveform"),
 
-              React.createElement("button", { "aria-label": "Change match target",
-
-                onClick: function () {
+              React.createElement("button", { onClick: function () {
 
                   var tAmps = [20, 30, 40, 50, 60, 70];
 

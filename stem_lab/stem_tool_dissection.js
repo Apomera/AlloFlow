@@ -6594,9 +6594,7 @@ var d = labToolData.dissection || {};
 
                       var isExplored = (d.exploredOrgans || {})[specimen + '|' + org.id];
 
-                      return React.createElement("button", { "aria-label": "Change selected organ",
-
-                        key: org.id,
+                      return React.createElement("button", { key: org.id,
 
                         id: 'diss-organ-' + org.id,
 
