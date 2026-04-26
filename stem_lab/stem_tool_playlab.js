@@ -663,6 +663,32 @@ window.StemLab = window.StemLab || {
   // the canvas. Stats accumulate from "Run Play" outcomes — drills only
   // count animated runs, not just toggling between coverages, so the
   // student has to actually execute the play to advance.
+  var PLAYLAB_SOCCER_DRILLS = {
+    label: 'Tactical Drills',
+    tasks: [
+      { id: 'highxg-shot',
+        goal: 'Run a sequence ending in a high-xG position (xG > 0.30)',
+        test: function(s) { return s.highXgShot; },
+        progress: function(s) { return s.highXgShot ? 'Done!' : 'Pick a concept that gets the ball into the box, then Run Play'; },
+        tip: 'Toggle the xG heatmap — anything red is > 0.30. Tiki-Taka into a low block tends to thread through; Counter against a high press is also high-xG.' },
+      { id: 'four-concepts',
+        goal: 'Run all 4 tactical concepts at least once',
+        test: function(s) { return Object.keys(s.conceptsRun || {}).length >= 4; },
+        progress: function(s) { return Object.keys(s.conceptsRun || {}).length + ' / 4 concepts run'; },
+        tip: 'Tiki-Taka, Counter-Attack, Corner Kick, Gegenpress — each teaches a different geometric idea about ball movement.' },
+      { id: 'beat-each-shape',
+        goal: 'Get a sequence through each of the 4 defensive shapes',
+        test: function(s) { return Object.keys(s.shapesPlayed || {}).length >= 4; },
+        progress: function(s) { return Object.keys(s.shapesPlayed || {}).length + ' / 4 defensive shapes faced'; },
+        tip: 'High Press, Mid-Block, Low Block, Offside Trap — each demands different ball-progression math.' },
+      { id: 'design-and-shoot',
+        goal: 'Move at least 2 players (custom formation) and end in a > 0.20 xG position',
+        test: function(s) { return s.customHighXg; },
+        progress: function(s) { return s.customHighXg ? 'Done!' : 'Drag 2+ players, then Run Play and aim for a yellow-or-red xG cell'; },
+        tip: 'Push a winger inside, drop the striker between lines, see if you can engineer a better shot. Coach Mode helps analyze your design.' }
+    ]
+  };
+
   var PLAYLAB_DRILLS = {
     label: 'Coordinator Drills',
     tasks: [
@@ -846,11 +872,17 @@ window.StemLab = window.StemLab || {
             drillActive: false,
             drillTaskIdx: 0,
             drillStats: {
+              // Football
               coveragesBeaten: 0,
               coveragesBeatenSet: {},
               completionsByPlay: {},
               smashVsCover2: false,
-              completedCustomPlay: false
+              completedCustomPlay: false,
+              // Soccer
+              highXgShot: false,
+              conceptsRun: {},
+              shapesPlayed: {},
+              customHighXg: false
             }
           }});
         });
@@ -1123,14 +1155,52 @@ window.StemLab = window.StemLab || {
           function sStep() {
             var sElapsed = (performance.now() - sStart) / 1000;
             if (sElapsed >= SOCCER_TOTAL) {
+              // Drill stat updates — track concept + shape coverage and
+              // whether the sequence ended in a high-xG position. Custom
+              // formation success counts when the student moved ≥2 players
+              // AND landed in xG > 0.20.
+              var sStats = Object.assign({
+                highXgShot: false, conceptsRun: {}, shapesPlayed: {}, customHighXg: false
+              }, d.drillStats || {});
+              sStats.conceptsRun = Object.assign({}, sStats.conceptsRun);
+              sStats.conceptsRun[d.conceptId] = true;
+              sStats.shapesPlayed = Object.assign({}, sStats.shapesPlayed);
+              sStats.shapesPlayed[d.shapeId] = true;
+              if (finalXG > 0.30) sStats.highXgShot = true;
+              if (finalXG > 0.20 && Object.keys(d.customPositions || {}).length >= 2) sStats.customHighXg = true;
+              // Active-drill task progression (soccer drill set)
+              var sNewTaskIdx = d.drillTaskIdx || 0;
+              var sTaskJustCompleted = null;
+              if (d.drillActive && sNewTaskIdx < PLAYLAB_SOCCER_DRILLS.tasks.length) {
+                var sTask = PLAYLAB_SOCCER_DRILLS.tasks[sNewTaskIdx];
+                if (sTask && sTask.test(sStats)) {
+                  sTaskJustCompleted = sTask;
+                  sNewTaskIdx = sNewTaskIdx + 1;
+                }
+              }
               setLabToolData(function(prev) {
                 return Object.assign({}, prev, { playlab: Object.assign({}, prev.playlab, {
-                  runActive: false, runT: SOCCER_TOTAL, runOutcome: soccerOutcome
+                  runActive: false, runT: SOCCER_TOTAL, runOutcome: soccerOutcome,
+                  drillStats: sStats, drillTaskIdx: sNewTaskIdx
                 })});
               });
               var qualLabel = finalXG > 0.30 ? 'high-quality chance' : finalXG > 0.10 ? 'decent shot' : 'low-percentage shot';
               plAnnounce('Sequence complete. ' + (finalReceiver ? finalReceiver.id : 'Final attacker') + ' arrives at xG ' + finalXG.toFixed(2) + ' — a ' + qualLabel + '.');
               if (finalXG > 0.20 && awardXP) awardXP('playlab', 8, 'High-xG sequence');
+              if (sTaskJustCompleted) {
+                var sAllDone = sNewTaskIdx >= PLAYLAB_SOCCER_DRILLS.tasks.length;
+                setTimeout(function() {
+                  if (sAllDone) {
+                    plAnnounce('Tactical Drills complete! All ' + PLAYLAB_SOCCER_DRILLS.tasks.length + ' tasks finished.');
+                    if (addToast) addToast('🏆 Tactical Drills complete!');
+                    if (awardXP) awardXP('playlab', 25, 'Drill complete');
+                  } else {
+                    plAnnounce('Task done. Next goal: ' + PLAYLAB_SOCCER_DRILLS.tasks[sNewTaskIdx].goal);
+                    if (addToast) addToast('✅ Drill task ' + sNewTaskIdx + ' complete');
+                    if (awardXP) awardXP('playlab', 12, 'Drill task');
+                  }
+                }, 800);
+              }
               return;
             }
             setLabToolData(function(prev) {
@@ -1849,9 +1919,15 @@ window.StemLab = window.StemLab || {
         // when the student RUNS a play (not just toggles between settings),
         // so the drill rewards genuine play execution.
         (function() {
+          // Pick the right drill set per active sport — football and soccer
+          // each have their own 4-task progression. drillTaskIdx is shared
+          // (it's a single counter; switching sport mid-drill doesn't
+          // currently reset it, which is intentional — the student can
+          // pause a drill, explore, then return).
+          var DRILL_SET = isSoccer ? PLAYLAB_SOCCER_DRILLS : PLAYLAB_DRILLS;
           var taskIdx = d.drillTaskIdx || 0;
-          var allDone = taskIdx >= PLAYLAB_DRILLS.tasks.length;
-          var task = PLAYLAB_DRILLS.tasks[Math.min(taskIdx, PLAYLAB_DRILLS.tasks.length - 1)];
+          var allDone = taskIdx >= DRILL_SET.tasks.length;
+          var task = DRILL_SET.tasks[Math.min(taskIdx, DRILL_SET.tasks.length - 1)];
           var stats = d.drillStats || {};
           if (!d.drillActive) {
             return h('div', { style: { marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' } },
@@ -1862,11 +1938,12 @@ window.StemLab = window.StemLab || {
                       drillActive: true, drillTaskIdx: 0,
                       drillStats: {
                         coveragesBeaten: 0, coveragesBeatenSet: {},
-                        completionsByPlay: {}, smashVsCover2: false, completedCustomPlay: false
+                        completionsByPlay: {}, smashVsCover2: false, completedCustomPlay: false,
+                        highXgShot: false, conceptsRun: {}, shapesPlayed: {}, customHighXg: false
                       }
                     })});
                   });
-                  plAnnounce('Drill started: ' + PLAYLAB_DRILLS.tasks[0].goal);
+                  plAnnounce('Drill started: ' + DRILL_SET.tasks[0].goal);
                 },
                 'data-pl-focusable': 'true',
                 style: {
@@ -1874,9 +1951,9 @@ window.StemLab = window.StemLab || {
                   border: '1px solid #10b981', background: 'rgba(16,185,129,0.18)',
                   color: '#f1f5f9', fontSize: 12, fontWeight: 600
                 }
-              }, '🎯 Start ' + PLAYLAB_DRILLS.label),
+              }, '🎯 Start ' + DRILL_SET.label),
               h('span', { style: { fontSize: 11, color: '#94a3b8' } },
-                PLAYLAB_DRILLS.tasks.length + ' tasks · sandbox stays open while a drill runs'));
+                DRILL_SET.tasks.length + ' tasks · sandbox stays open while a drill runs'));
           }
           return h('section', {
             'aria-labelledby': 'pl-drill-heading',
@@ -1886,7 +1963,7 @@ window.StemLab = window.StemLab || {
           },
             h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 6, flexWrap: 'wrap' } },
               h('h3', { id: 'pl-drill-heading', style: { margin: 0, fontSize: 12, color: '#10b981', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700 } },
-                allDone ? '🏆 Drill complete · Coordinator Drills' : '🎯 Coordinator Drills · Task ' + (taskIdx + 1) + ' of ' + PLAYLAB_DRILLS.tasks.length),
+                allDone ? '🏆 Drill complete · ' + DRILL_SET.label : '🎯 ' + DRILL_SET.label + ' · Task ' + (taskIdx + 1) + ' of ' + DRILL_SET.tasks.length),
               h('button', {
                 onClick: function() {
                   setLabToolData(function(prev) {
@@ -1903,7 +1980,7 @@ window.StemLab = window.StemLab || {
               }, allDone ? 'Close' : 'Stop')),
             allDone
               ? h('div', { style: { fontSize: 13, color: '#cbd5e1' } },
-                  'You finished all ' + PLAYLAB_DRILLS.tasks.length + ' coordinator tasks. Mix any play with any coverage to keep practicing, or hit Stop to close the drill.')
+                  'You finished all ' + DRILL_SET.tasks.length + ' tasks. Mix concepts and shapes to keep practicing, or hit Stop to close the drill.')
               : h('div', null,
                   h('div', { style: { fontSize: 14, color: '#f1f5f9', fontWeight: 600, marginBottom: 4 } }, task.goal),
                   h('div', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 4 } },
