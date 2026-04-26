@@ -1224,8 +1224,22 @@ window.StemLab = window.StemLab || {
       ]);
 
       // ── Replay animator: walk replayT from 0 → 1 over ~1s ──
+      // WCAG 2.3.3 (Animation from Interactions): if the user prefers reduced
+      // motion, skip the replay walk and snap straight to the final trajectory.
+      // The CSS guard at the top of the IIFE only handles CSS animations; the
+      // canvas trajectory is JS-driven so we have to honor the preference here.
       React.useEffect(function() {
         if (!d.replayActive) return;
+        var prefersReduced = false;
+        try {
+          prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        } catch (e) {}
+        if (prefersReduced) {
+          // Snap to end immediately
+          upd('replayT', 1);
+          upd('replayActive', false);
+          return;
+        }
         var start = performance.now();
         var raf;
         function step() {
@@ -1305,6 +1319,68 @@ window.StemLab = window.StemLab || {
              : loc === 'air' ? '💨 Airball (short)'
              : '😬 Miss';
       }
+      // Dynamic explainer — generates outcome-specific feedback after a throw.
+      // Combines what JUST happened (location, parameters) with the underlying
+      // physics so the student gets coaching without needing a Gemini call.
+      // Returns null when there's no result yet (we fall back to the static
+      // grip/teach blurb of the active preset).
+      function explainResult(lr) {
+        if (!lr) return null;
+        var loc = lr.location;
+        // Pitching
+        if (isPitching) {
+          if (loc === 'strike') {
+            var heightIn = Math.round((lr.outcome.plateY || 0) * 39.37);
+            var lateralIn = Math.round(((lr.outcome.plateX || 0)) * 39.37);
+            var lateralWord = Math.abs(lateralIn) < 2 ? 'right down the middle' : (lateralIn > 0 ? lateralIn + ' in to the throwing-arm side' : Math.abs(lateralIn) + ' in to the glove side');
+            return 'Pitch crossed the plate ' + heightIn + ' in up, ' + lateralWord + '. ' + (lr.vBreakIn !== null && Math.abs(lr.vBreakIn) > 4 ? 'That ' + lr.vBreakIn.toFixed(1) + ' in of vertical break is the spin doing its job — Magnus pushing the ball ' + (lr.vBreakIn > 0 ? 'down (topspin)' : 'up (backspin)') + '.' : 'Spin had small effect at this speed.');
+          }
+          if (loc === 'borderline') return 'Just nicked the edge of the strike zone. Real umps would call this either way.';
+          if (loc === 'ball') {
+            var off = (lr.outcome.plateY < 0.45) ? 'low' : lr.outcome.plateY > 1.05 ? 'high' : Math.abs(lr.outcome.plateX) > 0.22 ? 'outside' : 'off-center';
+            return 'Pitch missed ' + off + '. Adjust your release angle: try ' + (lr.outcome.plateY < 0.45 ? 'a higher release point or less negative vertical aim' : 'a lower release or more downward aim') + '.';
+          }
+          return 'Wild pitch. Either the angle was extreme or the spin axis pulled the ball off-target — try a smaller spin axis change next.';
+        }
+        // Free throw
+        if (isFreeThrow) {
+          if (loc === 'swish') return 'Clean swish! Your release angle (' + d.aimDegV.toFixed(1) + '°) and speed (' + d.speedMph + ' mph) line up perfectly for a 15 ft shot from ' + d.releaseHeight.toFixed(2) + ' m.';
+          if (loc === 'made') return 'In with a friendly bounce. Your arc was close to ideal — backspin helped soften the rim contact.';
+          if (loc === 'rim') {
+            var apex = Math.max.apply(null, lr.samples.map(function(s) { return s.y; }));
+            return 'Rim out. Apex was ' + apex.toFixed(2) + ' m. ' + (apex < 3.6 ? 'Try a higher arc — increase release angle by ~3°.' : 'Arc was OK — speed was the issue. Increase by ~1 mph.');
+          }
+          if (loc === 'backboard') return 'Backboard catch. Your shot was too hard or too flat — bank shots need a flatter angle, but your apex still has to clear the rim.';
+          if (loc === 'air') return 'Airball — short of the rim entirely. You need either more speed or steeper release angle.';
+          return 'Missed the rim. Most likely lateral aim was off.';
+        }
+        // Free kick
+        if (isFreeKick) {
+          var curlM = lr.samples ? (Math.max.apply(null, lr.samples.map(function(s) { return s.x; })) - Math.min.apply(null, lr.samples.map(function(s) { return s.x; }))) : 0;
+          if (loc === 'goal') {
+            return 'GOAL! Magnus curl bent the ball ' + curlM.toFixed(2) + ' m laterally — that\'s ' + (d.spinRpm > 400 ? 'classic Beckham work.' : 'a low-spin power finish.');
+          }
+          if (loc === 'post') return 'Inches from glory. Tweak spin axis by ±5° or speed by 1-2 mph and you\'ll find the net.';
+          if (loc === 'over') return 'Over the bar. Reduce launch angle (vertical aim) by 4-6° or lower speed slightly.';
+          if (loc === 'wide') return 'Wide of the goal. Either your aim was off or your spin axis curled the ball away from goal — flip the axis sign.';
+          if (loc === 'blocked') return 'Wall block. The wall is at 9.15 m and ~1.7 m tall. You need either MORE arc (chip over) or MORE spin (curl around).';
+          return 'Short of the goal line. Add 5-10 mph or steepen launch by 3-5°.';
+        }
+        // Field goal
+        if (isFieldGoal) {
+          var apexFG = Math.max.apply(null, lr.samples.map(function(s) { return s.y; }));
+          if (loc === 'good') {
+            return 'GOOD from ' + d.fgDistanceYd + ' yards. Peak height ' + apexFG.toFixed(1) + ' m. Optimal launch angle for this distance was around ' + (d.fgDistanceYd < 30 ? '38°' : d.fgDistanceYd < 45 ? '40°' : '42°') + ' — you used ' + d.aimDegV.toFixed(0) + '°.';
+          }
+          if (loc === 'doink') return 'Doink! The post or crossbar got it by inches. Move your speed up 1-2 mph or shift launch angle by 1-2°.';
+          if (loc === 'shortbar') return 'Under the crossbar. You needed either more launch angle (try ' + Math.min(60, (d.aimDegV + 5)).toFixed(0) + '°) or more power.';
+          if (loc === 'wideclose') return 'Just wide of the upright. Lateral aim is the lever here — check your horizontal aim slider.';
+          if (loc === 'wide') return 'No good — well wide of the goalposts. Reset horizontal aim toward 0°.';
+          return 'Short of the goal line — kick didn\'t carry the distance. Add power, or accept a shorter distance preset.';
+        }
+        return null;
+      }
+
       function outcomeColor(loc) {
         if (isPitching) {
           return loc === 'strike' ? '#10b981' : loc === 'borderline' ? '#fbbf24' : loc === 'ball' ? '#94a3b8' : '#ef4444';
@@ -1395,7 +1471,11 @@ window.StemLab = window.StemLab || {
                           ? (d.spinAxisDeg + '°')
                           : (d.aimDegV.toFixed(1) + '°')))
                   ),
-                  h('div', { style: { marginTop: 8, fontSize: 12, color: '#cbd5e1', fontStyle: 'italic' } }, activePreset.teach)
+                  // Dynamic explainer — outcome-specific feedback after a throw,
+                  // generated from the actual physics result. Falls through to
+                  // the active preset's static teach blurb if there's no result.
+                  h('div', { style: { marginTop: 8, fontSize: 12, color: '#cbd5e1', fontStyle: 'italic' } },
+                    explainResult(lr) || activePreset.teach)
                 )
               ) : h('div', { style: { color: '#94a3b8', fontSize: 13, textAlign: 'center', padding: 16 } },
                 isPitching
