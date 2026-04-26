@@ -1063,16 +1063,26 @@ window.StemLab = window.StemLab || {
         test: function(s) { return s.highXgShot; },
         progress: function(s) { return s.highXgShot ? 'Done!' : 'Pick a concept that gets the ball into the box, then Run Play'; },
         tip: 'Toggle the xG heatmap — anything red is > 0.30. Tiki-Taka into a low block tends to thread through; Counter against a high press is also high-xG.' },
-      { id: 'four-concepts',
-        goal: 'Run all 4 tactical concepts at least once',
-        test: function(s) { return Object.keys(s.conceptsRun || {}).length >= 4; },
-        progress: function(s) { return Object.keys(s.conceptsRun || {}).length + ' / 4 concepts run'; },
-        tip: 'Tiki-Taka, Counter-Attack, Corner Kick, Gegenpress — each teaches a different geometric idea about ball movement.' },
+      { id: 'six-concepts',
+        goal: 'Try 6 different tactical concepts',
+        test: function(s) { return Object.keys(s.conceptsRun || {}).length >= 6; },
+        progress: function(s) { return Object.keys(s.conceptsRun || {}).length + ' / 6 concepts run'; },
+        tip: '13 concepts in the library: 3 build-up (Tiki-Taka / Counter / Gegenpress) + 10 set-pieces. Mix build-up patterns with set-pieces to see different geometric ideas.' },
       { id: 'beat-each-shape',
         goal: 'Get a sequence through each of the 4 defensive shapes',
         test: function(s) { return Object.keys(s.shapesPlayed || {}).length >= 4; },
         progress: function(s) { return Object.keys(s.shapesPlayed || {}).length + ' / 4 defensive shapes faced'; },
         tip: 'High Press, Mid-Block, Low Block, Offside Trap — each demands different ball-progression math.' },
+      { id: 'try-a-set-piece',
+        goal: 'Execute any set-piece concept (corner / FK / throw-in / penalty / goal kick)',
+        test: function(s) { return s.setPieceRun; },
+        progress: function(s) { return s.setPieceRun ? 'Done!' : 'Pick a concept marked with the set-piece icon and Run Play'; },
+        tip: 'Set-pieces account for ~30% of all goals in modern football. The math is geometry — fixed starting position lets you plan the run-up and the runs into the box.' },
+      { id: 'four-set-piece-types',
+        goal: 'Run all 4 set-piece TYPES (corner, free kick, throw-in, penalty/goal-kick)',
+        test: function(s) { return Object.keys(s.setPieceTypesRun || {}).length >= 4; },
+        progress: function(s) { return Object.keys(s.setPieceTypesRun || {}).length + ' / 4 set-piece types tried'; },
+        tip: 'Corners curve toward (in-swinger) or away from (out-swinger) the goal. Free kicks attack the goal directly or serve to the box. Throw-ins skip offside. Penalties are 1v1 math.' },
       { id: 'design-and-shoot',
         goal: 'Move at least 2 players (custom formation) and end in a > 0.20 xG position',
         test: function(s) { return s.customHighXg; },
@@ -1305,7 +1315,9 @@ window.StemLab = window.StemLab || {
               highXgShot: false,
               conceptsRun: {},
               shapesPlayed: {},
-              customHighXg: false
+              customHighXg: false,
+              setPieceRun: false,
+              setPieceTypesRun: {}
             }
           }});
         });
@@ -1670,7 +1682,8 @@ window.StemLab = window.StemLab || {
               // formation success counts when the student moved ≥2 players
               // AND landed in xG > 0.20.
               var sStats = Object.assign({
-                highXgShot: false, conceptsRun: {}, shapesPlayed: {}, customHighXg: false
+                highXgShot: false, conceptsRun: {}, shapesPlayed: {}, customHighXg: false,
+                setPieceRun: false, setPieceTypesRun: {}
               }, d.drillStats || {});
               sStats.conceptsRun = Object.assign({}, sStats.conceptsRun);
               sStats.conceptsRun[d.conceptId] = true;
@@ -1678,6 +1691,22 @@ window.StemLab = window.StemLab || {
               sStats.shapesPlayed[d.shapeId] = true;
               if (finalXG > 0.30) sStats.highXgShot = true;
               if (finalXG > 0.20 && Object.keys(d.customPositions || {}).length >= 2) sStats.customHighXg = true;
+              // Set-piece tracking — derived from the active concept's
+              // setPiece flag + an ID-prefix mapping to a set-piece TYPE
+              // (corner / freekick / throwin / penalty / goalkick). Players
+              // unlock the "all 4 types" task by mixing across the categories.
+              var activeConcept = SOCCER_CONCEPTS.find(function(c) { return c.id === d.conceptId; });
+              if (activeConcept && activeConcept.setPiece) {
+                sStats.setPieceRun = true;
+                var spType = activeConcept.id.indexOf('corner') === 0 ? 'corner'
+                           : activeConcept.id.indexOf('freekick') === 0 ? 'freekick'
+                           : activeConcept.id.indexOf('throwin') === 0 ? 'throwin'
+                           : activeConcept.id.indexOf('penalty') === 0 ? 'penalty'
+                           : activeConcept.id.indexOf('goalkick') === 0 ? 'goalkick'
+                           : 'other';
+                sStats.setPieceTypesRun = Object.assign({}, sStats.setPieceTypesRun);
+                sStats.setPieceTypesRun[spType] = true;
+              }
               // Active-drill task progression (soccer drill set)
               var sNewTaskIdx = d.drillTaskIdx || 0;
               var sTaskJustCompleted = null;
@@ -2499,7 +2528,8 @@ window.StemLab = window.StemLab || {
                       drillStats: {
                         coveragesBeaten: 0, coveragesBeatenSet: {},
                         completionsByPlay: {}, smashVsCover2: false, completedCustomPlay: false,
-                        highXgShot: false, conceptsRun: {}, shapesPlayed: {}, customHighXg: false
+                        highXgShot: false, conceptsRun: {}, shapesPlayed: {}, customHighXg: false,
+                        setPieceRun: false, setPieceTypesRun: {}
                       }
                     })});
                   });
