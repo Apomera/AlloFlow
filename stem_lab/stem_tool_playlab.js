@@ -2969,6 +2969,97 @@ window.StemLab = window.StemLab || {
               expectedPoints(d.yardsToGoal || 75, d.down || 1).toFixed(1)))
         ) : null,
 
+        // ── Matchup Matrix (heatmap of plays × coverages) ──
+        // A compact grid showing every (play, coverage) or (concept, shape)
+        // combination colored by the matchup grade. Cells are click-to-
+        // load — instant combo-swap. Active row + column highlighted so
+        // students can see HOW the current call sits within the broader
+        // tactical landscape. Collapsed by default to keep the layout
+        // tight for free-explore.
+        h('details', {
+          style: { marginBottom: 12, background: '#0f172a', border: '1px solid #1e293b', borderRadius: 10, padding: '8px 12px' }
+        },
+          h('summary', {
+            style: { cursor: 'pointer', fontSize: 12, color: '#cbd5e1', fontWeight: 600 }
+          }, '📊 Matchup matrix — see every ' + (isSoccer ? 'concept × shape' : 'play × coverage') + ' at a glance'),
+          h('div', {
+            role: 'table',
+            'aria-label': 'Matchup grades — rows = ' + (isSoccer ? 'concepts' : 'plays') + ', columns = ' + (isSoccer ? 'shapes' : 'coverages'),
+            style: { marginTop: 10, overflowX: 'auto' }
+          },
+            (function() {
+              var rows = isSoccer ? SOCCER_CONCEPTS : PLAYS;
+              var cols = isSoccer ? SOCCER_SHAPES : COVERAGES;
+              var activeRowId = isSoccer ? d.conceptId : d.playId;
+              var activeColId = isSoccer ? d.shapeId : d.coverageId;
+              var matchupFn = isSoccer ? getSoccerMatchup : getMatchup;
+              return h('div', { style: { display: 'inline-block', minWidth: '100%' } },
+                // Header row — coverage / shape labels
+                h('div', { role: 'row', style: { display: 'flex', alignItems: 'flex-end', gap: 2 } },
+                  [h('div', { key: 'corner-' + 'h', style: { width: 90, flexShrink: 0 } }, '')]
+                  .concat(cols.map(function(c) {
+                    return h('div', {
+                      key: 'col-h-' + c.id, role: 'columnheader',
+                      style: {
+                        width: 38, flexShrink: 0, textAlign: 'center', fontSize: 9,
+                        color: c.id === activeColId ? '#fbbf24' : '#94a3b8',
+                        fontWeight: c.id === activeColId ? 700 : 500,
+                        padding: '2px 0'
+                      }
+                    }, c.short || c.label.split(' ')[0]);
+                  }))
+                ),
+                // Data rows — one per play / concept
+                rows.map(function(r) {
+                  return h('div', {
+                    key: 'row-' + r.id, role: 'row',
+                    style: { display: 'flex', alignItems: 'center', gap: 2, marginTop: 2 }
+                  },
+                    [h('div', {
+                      key: 'row-h-' + r.id, role: 'rowheader',
+                      style: {
+                        width: 90, flexShrink: 0, textAlign: 'right', fontSize: 10,
+                        color: r.id === activeRowId ? '#fbbf24' : '#cbd5e1',
+                        fontWeight: r.id === activeRowId ? 700 : 500,
+                        paddingRight: 4
+                      }
+                    }, r.label.length > 14 ? r.label.slice(0, 14) + '…' : r.label)]
+                    .concat(cols.map(function(c) {
+                      var m = matchupFn(r, c);
+                      var isActive = (r.id === activeRowId && c.id === activeColId);
+                      return h('button', {
+                        key: 'cell-' + r.id + '-' + c.id,
+                        role: 'cell',
+                        onClick: function() {
+                          if (isSoccer) {
+                            upd('conceptId', r.id);
+                            upd('shapeId', c.id);
+                          } else {
+                            loadPlay(r.id);
+                            loadCoverage(c.id);
+                          }
+                        },
+                        'aria-label': r.label + ' vs ' + c.label + (m ? ': ' + m.label : ''),
+                        title: r.label + ' vs ' + c.label + (m ? ' — ' + m.label : ''),
+                        'data-pl-focusable': 'true',
+                        style: {
+                          width: 38, height: 22, flexShrink: 0,
+                          border: isActive ? '2px solid #fbbf24' : '1px solid rgba(15,23,42,0.5)',
+                          background: m ? m.bg.replace('0.12', '0.45') : 'rgba(100,116,139,0.20)',
+                          cursor: 'pointer', padding: 0, fontSize: 12,
+                          color: m ? m.color : '#94a3b8'
+                        }
+                      }, m ? m.emoji : '·');
+                    }))
+                  );
+                })
+              );
+            })()
+          ),
+          h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 8 } },
+            '✅ Great match · 👍 Workable · ⚠️ Tough match' + (isSoccer ? ' · ⚐ 🎯 Set-piece / penalty' : '') + ' · Click any cell to load that combination.')
+        ),
+
         // Coverage / Defensive shape picker
         h('div', { role: 'group', 'aria-label': isSoccer ? 'Defensive shape' : 'Defensive coverage',
           style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12, flexWrap: 'wrap', fontSize: 12 } },
