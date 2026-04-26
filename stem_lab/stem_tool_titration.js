@@ -1,3 +1,13 @@
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+(function() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById('allo-stem-motion-reduce-css')) return;
+  var st = document.createElement('style');
+  st.id = 'allo-stem-motion-reduce-css';
+  st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+  if (document.head) document.head.appendChild(st);
+})();
+
 // ── Titration Lab Plugin v2.0 ──
 // Enhanced: 7 reaction types, lab incident simulator, safety challenge quiz,
 // equipment technique guide, dilution calculator, GHS hazards for all chemicals

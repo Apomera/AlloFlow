@@ -31,6 +31,28 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  (function() {
+    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-stem-motion-reduce-css';
+    st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    document.head.appendChild(st);
+  })();
+
+  // ── Accessibility live region (WCAG 4.1.3) ──
+  (function() {
+    if (document.getElementById('allo-live-dna')) return;
+    var lr = document.createElement('div');
+    lr.id = 'allo-live-dna';
+    lr.setAttribute('aria-live', 'polite');
+    lr.setAttribute('aria-atomic', 'true');
+    lr.setAttribute('role', 'status');
+    lr.className = 'sr-only';
+    lr.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(lr);
+  })();
+
 
   // ── Audio (auto-injected) ──
   var _dnaAC = null;
@@ -98,7 +120,7 @@ window.StemLab = window.StemLab || {
     'Glu':{full:'Glutamic acid',abbr:'E',type:'negative',color:'#a855f7'},
     'His':{full:'Histidine',abbr:'H',type:'positive',color:'#ef4444'},
     'Gln':{full:'Glutamine',abbr:'Q',type:'polar',color:'#3b82f6'},
-    'Stop':{full:'Stop codon',abbr:'*',type:'stop',color:'#6b7280'}
+    'Stop':{full:'Stop codon',abbr:'*',type:'stop',color:'#94a3b8'}
   };
 
   var BASE_COMPLEMENT = { 'A':'T', 'T':'A', 'G':'C', 'C':'G' };
@@ -1447,12 +1469,12 @@ window.StemLab = window.StemLab || {
                 h("text", { x: 200, y: 238, fill: '#22c55e', fontSize: 7, textAnchor: 'middle', fontWeight: 'bold' }, '+ (anode)'),
                 // Size ladder
                 h("rect", { x: 25, y: 18, width: 24, height: 5, fill: '#334155', rx: 1 }),
-                h("text", { x: 37, y: 16, fill: '#64748b', fontSize: 7, textAnchor: 'middle' }, 'Ladder'),
+                h("text", { x: 37, y: 16, fill: '#94a3b8', fontSize: 7, textAnchor: 'middle' }, 'Ladder'),
                 [100, 200, 300, 400, 500, 600, 700].map(function(size) {
                   var y = bandY(size);
                   return h("g", { key: 'l' + size },
                     h("rect", { x: 28, y: y, width: 18, height: 2.5, fill: '#f59e0b', rx: 0.5, opacity: 0.85 }),
-                    h("text", { x: 50, y: y + 2, fill: '#64748b', fontSize: 5.5 }, size + 'bp')
+                    h("text", { x: 50, y: y + 2, fill: '#94a3b8', fontSize: 5.5 }, size + 'bp')
                   );
                 }),
                 // Sample lanes

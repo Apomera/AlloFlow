@@ -29,6 +29,15 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  (function() {
+    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-stem-motion-reduce-css';
+    st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    document.head.appendChild(st);
+  })();
+
 
   // ── Audio (auto-injected) ──
   var _galAC = null;
@@ -1703,7 +1712,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                   ].map(function (m) {
 
-                    return React.createElement("span", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+                    return React.createElement("span", { 
 
                       key: m.age,
 
@@ -2709,7 +2718,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                       (lifecycleMass >= 16 && st.id === 'O');
 
-                    return React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+                    return React.createElement("div", { 
 
                       key: st.id,
 

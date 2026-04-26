@@ -33,6 +33,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
 
 (function() {
   'use strict';
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  (function() {
+    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-stem-motion-reduce-css';
+    st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    document.head.appendChild(st);
+  })();
+
+  // ── Accessibility live region (WCAG 4.1.3) ──
+  (function() {
+    if (document.getElementById('allo-live-oratory')) return;
+    var lr = document.createElement('div');
+    lr.id = 'allo-live-oratory';
+    lr.setAttribute('aria-live', 'polite');
+    lr.setAttribute('aria-atomic', 'true');
+    lr.setAttribute('role', 'status');
+    lr.className = 'sr-only';
+    lr.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(lr);
+  })();
+
 
   // ═══════════════════════════════════════════
   // Module-scoped audio processing functions
@@ -168,7 +190,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
       ctx2d.lineTo(W, y);
       ctx2d.stroke();
       ctx2d.setLineDash([]);
-      ctx2d.fillStyle = isDark ? '#94a3b8' : '#64748b';
+      ctx2d.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
       ctx2d.fillText(zones[zi].label, W - 4, y - 3);
     }
 
@@ -196,7 +218,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
 
     // Draw user pitch curve
     if (!pitchHistory || pitchHistory.length < 2) {
-      ctx2d.fillStyle = isDark ? '#64748b' : '#94a3b8';
+      ctx2d.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
       ctx2d.textAlign = 'center';
       ctx2d.font = '13px sans-serif';
       ctx2d.fillText('Start speaking to see your pitch curve', W / 2, H / 2);
@@ -286,9 +308,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
 
     // Draw tick marks
     ctx2d.lineWidth = 2;
-    ctx2d.strokeStyle = isDark ? '#64748b' : '#94a3b8';
+    ctx2d.strokeStyle = isDark ? '#94a3b8' : '#94a3b8';
     ctx2d.font = '9px sans-serif';
-    ctx2d.fillStyle = isDark ? '#94a3b8' : '#64748b';
+    ctx2d.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
     ctx2d.textAlign = 'center';
     for (var tick = 0; tick <= maxWpm; tick += 20) {
       var tickAngle = startAngle + (tick / maxWpm) * Math.PI;
@@ -390,7 +412,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
     // Zone labels
     ctx2d.font = '8px sans-serif';
     ctx2d.textAlign = 'center';
-    ctx2d.fillStyle = isDark ? '#94a3b8' : '#64748b';
+    ctx2d.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
     ctx2d.fillText('Quiet', barX + (barW * quietEnd) / 2, barY + barH + 12);
     ctx2d.fillText('Good Projection', barX + barW * quietEnd + (barW * (goodEnd - quietEnd)) / 2, barY + barH + 12);
     ctx2d.fillText('Too Loud', barX + barW * goodEnd + (barW * (1 - goodEnd)) / 2, barY + barH + 12);
@@ -419,7 +441,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
 
       ctx2d.font = '10px sans-serif';
       ctx2d.textAlign = 'left';
-      ctx2d.fillStyle = isDark ? '#94a3b8' : '#64748b';
+      ctx2d.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
       ctx2d.fillText('Steadiness:', barX, barY + barH + 28);
       ctx2d.fillStyle = steadyColor;
       ctx2d.font = 'bold 10px sans-serif';
@@ -465,7 +487,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
     // Labels
     ctx2d.font = '9px sans-serif';
     ctx2d.textAlign = 'left';
-    ctx2d.fillStyle = isDark ? '#94a3b8' : '#64748b';
+    ctx2d.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
     ctx2d.fillText('Speech: ' + Math.round(speechPct * 100) + '%', 68, cy - 8);
     ctx2d.fillText('Pauses: ' + Math.round((pauseRatio || 0) * 100) + '%', 68, cy + 4);
 
@@ -484,7 +506,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
 
     // Ideal range note
     ctx2d.font = '8px sans-serif';
-    ctx2d.fillStyle = isDark ? '#64748b' : '#94a3b8';
+    ctx2d.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
     ctx2d.fillText('Ideal pause ratio: 20-30%', 68, H - 4);
   }
 
@@ -619,7 +641,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
 
     // Axis labels
     ctx2d.font = '10px sans-serif';
-    ctx2d.fillStyle = isDark ? '#94a3b8' : '#64748b';
+    ctx2d.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
     ctx2d.textAlign = 'center';
     ctx2d.fillText('F2 (Hz) — High \u2190 \u2192 Low', W / 2, H - 5);
     ctx2d.save();
@@ -633,7 +655,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
     ctx2d.textAlign = 'center';
     for (var f2t = 800; f2t <= 2400; f2t += 400) {
       var tx = f2x(f2t);
-      ctx2d.fillStyle = isDark ? '#64748b' : '#94a3b8';
+      ctx2d.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
       ctx2d.fillText(f2t.toString(), tx, H - pad + 12);
       ctx2d.strokeStyle = isDark ? '#334155' : '#e2e8f0';
       ctx2d.beginPath();
@@ -644,7 +666,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
     ctx2d.textAlign = 'right';
     for (var f1t = 300; f1t <= 700; f1t += 100) {
       var ty = f1y(f1t);
-      ctx2d.fillStyle = isDark ? '#64748b' : '#94a3b8';
+      ctx2d.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
       ctx2d.fillText(f1t.toString(), pad - 5, ty + 3);
       ctx2d.strokeStyle = isDark ? '#334155' : '#e2e8f0';
       ctx2d.beginPath();
@@ -831,7 +853,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
     ctx2d.fillRect(0, 0, W, H);
 
     if (!pitchData || pitchData.length < 2) {
-      ctx2d.fillStyle = isDark ? '#64748b' : '#94a3b8';
+      ctx2d.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
       ctx2d.textAlign = 'center';
       ctx2d.font = '12px sans-serif';
       ctx2d.fillText('No recording data', W / 2, H / 2);
@@ -976,7 +998,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
     ctx2d.fillText('Recording 2', 6, 26);
 
     if (!pitchData1 && !pitchData2) {
-      ctx2d.fillStyle = isDark ? '#64748b' : '#94a3b8';
+      ctx2d.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
       ctx2d.textAlign = 'center';
       ctx2d.font = '12px sans-serif';
       ctx2d.fillText('Select two recordings to compare', W / 2, H / 2);
@@ -997,7 +1019,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
     ctx2d.fillRect(0, 0, W, H);
 
     if (!sessions || sessions.length === 0) {
-      ctx2d.fillStyle = isDark ? '#64748b' : '#94a3b8';
+      ctx2d.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
       ctx2d.textAlign = 'center';
       ctx2d.font = '11px sans-serif';
       ctx2d.fillText('No fluency sessions yet', W / 2, H / 2);
@@ -1014,7 +1036,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
     // Y-axis (0-5 stars)
     ctx2d.font = '8px sans-serif';
     ctx2d.textAlign = 'right';
-    ctx2d.fillStyle = isDark ? '#64748b' : '#94a3b8';
+    ctx2d.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
     for (var si = 0; si <= 5; si++) {
       var sy = pad + plotH - (si / 5) * plotH;
       ctx2d.fillText(si.toString(), pad - 4, sy + 3);
@@ -1048,13 +1070,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
 
       // Session label
       ctx2d.font = '7px sans-serif';
-      ctx2d.fillStyle = isDark ? '#64748b' : '#94a3b8';
+      ctx2d.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
       ctx2d.fillText('#' + (startIdx + bi + 1), bx + barW / 2, pad + plotH + 12);
     }
 
     // Title
     ctx2d.font = 'bold 10px sans-serif';
-    ctx2d.fillStyle = isDark ? '#94a3b8' : '#64748b';
+    ctx2d.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
     ctx2d.textAlign = 'center';
     ctx2d.fillText('Fluency Score History', W / 2, 12);
   }

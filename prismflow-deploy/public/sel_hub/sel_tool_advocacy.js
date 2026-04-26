@@ -1651,7 +1651,9 @@ window.SelHub = window.SelHub || {
                 disabled: voLoading,
                 style: { flex: 1, padding: 12, borderRadius: 10, border: '1px solid #334155', background: '#1e293b', color: '#f1f5f9', fontSize: 13, fontFamily: 'inherit' }
               }),
-              h('button', { 'aria-label': voLoading ? '...' : '\u2191',
+              h('button', {
+                'aria-label': voLoading ? 'Coach is responding, please wait' : 'Send message to coach',
+                'aria-busy': voLoading ? 'true' : 'false',
                 onClick: function() { if (voInputText.trim() && !voLoading) sendVoMessage(); },
                 disabled: voLoading || !voInputText.trim(),
                 style: { padding: '10px 16px', borderRadius: 10, border: 'none', background: voLoading ? '#334155' : ACCENT, color: '#fff', fontWeight: 600, fontSize: 13, cursor: voLoading ? 'default' : 'pointer' }
@@ -1713,18 +1715,23 @@ window.SelHub = window.SelHub || {
                     if (newDone >= 5) tryAwardBadge('voice_5');
                     if (soundEnabled) sfxResolve();
                     celebrate && celebrate();
+                    if (announceToSR) announceToSR('Resolved. The conversation reached a successful outcome.');
                   } else {
                     upd({ voChatHistory: updatedHistory, voConfidence: newConf, voLoading: false });
+                    if (announceToSR) announceToSR('Coach replied. Confidence is now ' + newConf + ' out of 100.');
                   }
                 } else {
                   upd({ voChatHistory: newHistory.concat([{ role: 'authority', text: text.slice(0, 300) }]), voLoading: false });
+                  if (announceToSR) announceToSR('Coach replied.');
                 }
               } catch(e) {
                 upd({ voChatHistory: newHistory.concat([{ role: 'authority', text: text.slice(0, 300) }]), voLoading: false });
+                if (announceToSR) announceToSR('Coach replied.');
               }
             }).catch(function(err) {
               upd('voLoading', false);
               addToast('AI error: ' + err.message, 'error');
+              if (announceToSR) announceToSR('Error: the coach could not respond. Please try again.');
             });
           }
         }

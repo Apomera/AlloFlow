@@ -1,3 +1,13 @@
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+(function() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById('allo-stem-motion-reduce-css')) return;
+  var st = document.createElement('style');
+  st.id = 'allo-stem-motion-reduce-css';
+  st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+  if (document.head) document.head.appendChild(st);
+})();
+
   // ── Coding Playground Audio ──
   var _codeAC = null;
   function getCodeAC() { if (!_codeAC) { try { _codeAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_codeAC && _codeAC.state === 'suspended') { try { _codeAC.resume(); } catch(e) {} } return _codeAC; }
@@ -171,7 +181,7 @@
             var gridSize = 200;
             var step = 40;
             ctx3d.globalAlpha = 0.15;
-            ctx3d.strokeStyle = '#64748b';
+            ctx3d.strokeStyle = '#94a3b8';
             ctx3d.lineWidth = 0.5;
             for (var gx = -gridSize; gx <= gridSize; gx += step) {
               var p1 = project3D(gx, -gridSize, 0);
@@ -1696,7 +1706,7 @@
             return React.createElement("div", {
               key: (isElse ? 'e' : 'i') + ci,
               className: "flex items-center gap-1 px-2 py-1 rounded text-[11px] font-medium text-white",
-              style: { backgroundColor: cdef ? cdef.color : '#64748b', opacity: 0.85 }
+              style: { backgroundColor: cdef ? cdef.color : '#94a3b8', opacity: 0.85 }
             },
               React.createElement("span", { className: "flex-1 truncate" },
                 cdef ? cdef.label : child.type,
@@ -2106,7 +2116,7 @@
                       robotBlocks.map(function(b, bi) {
                         var bdef = ROBOT_BLOCKS.find(function(rb) { return rb.type === b.type; });
                         return React.createElement("div", { key: bi },
-                          React.createElement("div", { className: "flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-[11px] font-bold text-white", style: { backgroundColor: bdef ? bdef.color : '#64748b' } },
+                          React.createElement("div", { className: "flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-[11px] font-bold text-white", style: { backgroundColor: bdef ? bdef.color : '#94a3b8' } },
                             React.createElement("span", { className: "flex-1" }, bdef ? bdef.label : b.type),
                             b.type === 'repeatR' && React.createElement("input", {
                               type: "number", min: 1, max: 20, value: b.times || 3,
@@ -2259,7 +2269,7 @@
                       React.createElement("div", {
                         className: "flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-semibold text-white transition-all " +
                           (isActive ? 'ring-2 ring-yellow-400 scale-105' : ''),
-                        style: { backgroundColor: def ? def.color : '#64748b' }
+                        style: { backgroundColor: def ? def.color : '#94a3b8' }
                       },
                         // Drag handle
                         React.createElement("span", {

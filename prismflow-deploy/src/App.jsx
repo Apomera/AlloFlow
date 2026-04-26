@@ -19962,6 +19962,7 @@ ${t('export.readme_json_desc')}`;
   const renderOutlineContent = () => {
     const _m = window.AlloModules && window.AlloModules.ViewRenderers;
     if (_m && typeof _m.renderOutlineContent === "function") return _m.renderOutlineContent({
+        ErrorBoundary,
         KeyConceptMapView,
         VennGame,
         generatedContent,

@@ -32,6 +32,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('solarSystem'))
 
 (function() {
   'use strict';
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  (function() {
+    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-stem-motion-reduce-css';
+    st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    document.head.appendChild(st);
+  })();
+
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-solarsystem')) return;
@@ -6060,7 +6069,7 @@ const d = labToolData.solarSystem;
                             // moon body
                             var moonGrad = ctx.createRadialGradient(mx - 1, my - 1, 0, mx, my, moonR);
                             moonGrad.addColorStop(0, isHovered ? '#c7d2fe' : '#e2e8f0');
-                            moonGrad.addColorStop(1, isHovered ? '#818cf8' : '#64748b');
+                            moonGrad.addColorStop(1, isHovered ? '#818cf8' : '#94a3b8');
                             ctx.fillStyle = moonGrad;
                             ctx.beginPath();
                             ctx.arc(mx, my, isHovered ? moonR + 1 : moonR, 0, Math.PI * 2);
@@ -7269,7 +7278,7 @@ const d = labToolData.solarSystem;
                             (layer.alt >= 0 ? '+' : '') + layer.alt + ' km'
                           )
                         ),
-                        React.createElement("p", { className: "text-[11px] mt-0.5", style: { color: isActive ? '#e2e8f0' : '#64748b' } }, layer.desc)
+                        React.createElement("p", { className: "text-[11px] mt-0.5", style: { color: isActive ? '#e2e8f0' : '#94a3b8' } }, layer.desc)
                       ),
                       React.createElement("div", { className: "text-right flex-shrink-0" },
                         React.createElement("div", { className: "text-[11px] font-bold", style: { color: '#f59e0b' } }, layer.temp),
@@ -13244,7 +13253,7 @@ const d = labToolData.solarSystem;
                         hctx.font = '8px system-ui';
                         hctx.textAlign = 'left';
                         hctx.fillText('Earth \u2192 ' + sel.name + ' transfer orbit', HW * 0.65, 15);
-                        hctx.fillStyle = '#64748b';
+                        hctx.fillStyle = '#94a3b8';
                         hctx.fillText(HOHMANN[sel.name].travelDays + ' days', HW * 0.65, 27);
                         requestAnimationFrame(drawHohmann);
                       }
@@ -13484,7 +13493,7 @@ const d = labToolData.solarSystem;
               ),
 
               // === TUTORIAL OVERLAY (first visit) ===
-              !d.tutorialDismissed && React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+              !d.tutorialDismissed && React.createElement("div", { 
                 className: "fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50",
                 onClick: function(e) { if (e.target === e.currentTarget) upd('tutorialDismissed', true); }
               },
@@ -13684,10 +13693,10 @@ const d = labToolData.solarSystem;
                 // Quick stats summary
                 React.createElement("div", { className: "mt-2 grid grid-cols-4 gap-1" },
                   [
-                    { label: 'Planets', value: planetsVisited.length + '/9', color: planetsVisited.length >= 9 ? '#22c55e' : '#64748b' },
-                    { label: 'Quiz', value: (d.quiz ? d.quiz.score : 0) + '', color: (d.quiz && d.quiz.score >= 5) ? '#22c55e' : '#64748b' },
-                    { label: 'Journal', value: journalEntries.length + '', color: journalEntries.length > 0 ? '#22c55e' : '#64748b' },
-                    { label: 'Vocab', value: (d.vocabLookedUp || []).length + '/' + Object.keys(VOCAB).length, color: '#64748b' }
+                    { label: 'Planets', value: planetsVisited.length + '/9', color: planetsVisited.length >= 9 ? '#22c55e' : '#94a3b8' },
+                    { label: 'Quiz', value: (d.quiz ? d.quiz.score : 0) + '', color: (d.quiz && d.quiz.score >= 5) ? '#22c55e' : '#94a3b8' },
+                    { label: 'Journal', value: journalEntries.length + '', color: journalEntries.length > 0 ? '#22c55e' : '#94a3b8' },
+                    { label: 'Vocab', value: (d.vocabLookedUp || []).length + '/' + Object.keys(VOCAB).length, color: '#94a3b8' }
                   ].map(function(stat) {
                     return React.createElement("div", { key: stat.label, className: "text-center p-1.5 rounded border " + (isDark ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100') },
                       React.createElement("div", { className: "text-sm font-bold", style: { color: stat.color, fontFamily: 'monospace' } }, stat.value),

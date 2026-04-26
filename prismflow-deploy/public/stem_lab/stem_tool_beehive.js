@@ -33,6 +33,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
 (function() {
   'use strict';
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  (function() {
+    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-stem-motion-reduce-css';
+    st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    document.head.appendChild(st);
+  })();
+
+  // ── Accessibility live region (WCAG 4.1.3) ──
+  (function() {
+    if (document.getElementById('allo-live-beehive')) return;
+    var lr = document.createElement('div');
+    lr.id = 'allo-live-beehive';
+    lr.setAttribute('aria-live', 'polite');
+    lr.setAttribute('aria-atomic', 'true');
+    lr.setAttribute('role', 'status');
+    lr.className = 'sr-only';
+    lr.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(lr);
+  })();
+
 
   // ── Audio System (auto-injected) ──
   var _beeAC = null;
@@ -1076,7 +1098,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                         h('span', { className: 'text-xs font-bold text-amber-200' }, r.role),
                         h('span', { className: 'text-[11px] text-amber-400' }, r.age),
                         h('span', { className: 'text-[11px] text-amber-500 ml-auto' }, fmtPop(r.count) + ' (' + r.pct + '%)')))),
-                  h('div', { className: 'h-1.5 bg-amber-900 rounded-full overflow-hidden mb-1' },
+                  h('div', { className: 'h-1.5 bg-amber-900 rounded-full overflow-hidden mb-1', 'aria-hidden': 'true' },
                     h('div', { style: { width: r.pct + '%' }, className: 'h-full ' + r.color + ' rounded-full' })),
                   h('p', { className: 'text-[11px] text-amber-100/70 leading-relaxed' }, r.desc));
               })),
@@ -2201,7 +2223,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               }},
               { name: 'Hive Scale', desc: 'Digital scale under the hive — tracks daily weight = nectar flow', draw: function(x, y) {
                 // Scale body
-                c.fillStyle = '#6b7280'; c.fillRect(x - 9, y + 14, 18, 9);
+                c.fillStyle = '#94a3b8'; c.fillRect(x - 9, y + 14, 18, 9);
                 c.strokeStyle = '#1f2937'; c.lineWidth = 0.6; c.strokeRect(x - 9, y + 14, 18, 9);
                 // Digital display
                 c.fillStyle = '#064e3b';
@@ -4597,7 +4619,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             var zeroY = gY + gH * 0.7;
             c.beginPath(); c.moveTo(gX, zeroY); c.lineTo(gX + gW, zeroY); c.stroke();
             c.setLineDash([]);
-            c.font = '7px system-ui'; c.fillStyle = '#64748b'; c.textAlign = 'right';
+            c.font = '7px system-ui'; c.fillStyle = '#94a3b8'; c.textAlign = 'right';
             c.fillText('0°C', gX - 2, zeroY + 2);
             // Outside temp curve (sinusoidal year)
             c.strokeStyle = '#3b82f6'; c.lineWidth = 1.5;
@@ -4621,7 +4643,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             c.fillStyle = '#3b82f6';
             c.fillText('━ outside (−10 to 32°C)', gX + gW + 8, gY + 24);
             // Month labels
-            c.font = '8px system-ui'; c.textAlign = 'center'; c.fillStyle = '#64748b';
+            c.font = '8px system-ui'; c.textAlign = 'center'; c.fillStyle = '#94a3b8';
             ['J', 'M', 'M', 'J', 'S', 'N'].forEach(function(m, mi) {
               c.fillText(m, gX + (mi / 5) * gW, gY + gH + 10);
             });
@@ -5322,7 +5344,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             // Direction arrows on path
             c.fillStyle = '#1e40af'; c.font = '10px system-ui';
             c.fillText('→ Thrust', 0, 60);
-            c.fillStyle = '#64748b'; c.font = '9px system-ui';
+            c.fillStyle = '#94a3b8'; c.font = '9px system-ui';
             c.fillText('230 Hz · ~130° arc · near-horizontal plane', 0, 85);
             c.restore();
 
@@ -7716,7 +7738,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.beginPath(); c.arc(pCanopyCenter.x, pCanopyCenter.y, ob.h * 0.25 * pCanopyCenter.s, 0, 6.28); c.fill();
                 c.globalAlpha = 1;
               } else if (ob.type === 'building') {
-                c.fillStyle = '#6b7280';
+                c.fillStyle = '#94a3b8';
                 var bldW = 20 * pBase.s;
                 c.fillRect(pBase.x - bldW / 2, pTop.y, bldW, fullH);
                 c.fillStyle = '#4b5563';
@@ -7966,7 +7988,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             c.moveTo(aiX, aiY - 3); c.lineTo(aiX, aiY + 3);
             c.stroke();
             // Gauge ring
-            c.strokeStyle = '#64748b'; c.lineWidth = 2;
+            c.strokeStyle = '#94a3b8'; c.lineWidth = 2;
             c.beginPath(); c.arc(aiX, aiY, aiR, 0, 6.28); c.stroke();
             // Label
             c.font = 'bold 7px system-ui'; c.textAlign = 'center'; c.fillStyle = '#94a3b8';
@@ -8009,7 +8031,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             c.save();
             c.fillStyle = 'rgba(15,23,42,0.75)';
             c.beginPath(); c.arc(asX, asY, asR + 2, 0, 6.28); c.fill();
-            c.strokeStyle = '#64748b'; c.lineWidth = 2;
+            c.strokeStyle = '#94a3b8'; c.lineWidth = 2;
             c.beginPath(); c.arc(asX, asY, asR, 0, 6.28); c.stroke();
             // Speed needle (0-10 speed maps to 3/4 arc)
             var asAng = -Math.PI * 0.75 + Math.min(1, ds.speed / 10) * Math.PI * 1.5;
@@ -8680,7 +8702,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 var active = viewMode === tab.id;
                 return h('button', { key: tab.id, role: 'tab', 'aria-selected': active ? 'true' : 'false',
                   onClick: function() { upd('viewMode', tab.id); },
-                  className: 'flex-1 py-2 px-3 rounded-lg text-xs font-bold ' + (active ? (dk ? 'bg-amber-700 text-white' : 'bg-white text-amber-800') : (dk ? 'text-slate-400' : 'text-slate-500')) },
+                  className: 'flex-1 py-2 px-3 rounded-lg text-xs font-bold ' + (active ? (dk ? 'bg-amber-700 text-white' : 'bg-white text-amber-800') : (dk ? 'text-slate-400' : 'text-slate-300')) },
                   h('span', { 'aria-hidden': 'true' }, tab.icon), ' ', tab.label);
               })),
             // View selector: educational canvas views (beekeeper only).
@@ -8763,7 +8785,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                         return h('div', { key: p[0], className: 'rounded-lg p-2 border ' + (dk ? 'bg-slate-800 border-purple-700/30' : 'bg-white border-purple-200') },
                           h('div', { className: 'text-lg' }, p[0]),
                           h('div', { className: 'text-[11px] font-bold ' + (dk ? 'text-slate-200' : 'text-slate-700') }, p[1]),
-                          h('div', { className: 'text-[11px] ' + (dk ? 'text-slate-400' : 'text-slate-500') }, p[2]));
+                          h('div', { className: 'text-[11px] ' + (dk ? 'text-slate-400' : 'text-slate-300') }, p[2]));
                       })),
                     h('button', { onClick: startQueenGame,
                       className: 'px-8 py-3 rounded-xl font-bold text-white text-sm shadow-lg transition-all hover:scale-105 ' + (dk ? 'bg-gradient-to-r from-purple-600 to-amber-600' : 'bg-gradient-to-r from-purple-500 to-amber-500'),
@@ -8786,7 +8808,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                             h('div', { className: 'flex items-center gap-1' },
                               h('span', null, qa.icon),
                               h('span', { className: 'text-[11px] font-bold ' + (dk ? 'text-slate-200' : 'text-slate-800') }, qa.label)),
-                            h('div', { className: 'text-[10px] mt-0.5 ' + (dk ? 'text-slate-400' : 'text-slate-500') }, qa.desc));
+                            h('div', { className: 'text-[10px] mt-0.5 ' + (dk ? 'text-slate-400' : 'text-slate-300') }, qa.desc));
                         }))),
                     h('div', { className: 'flex gap-2' },
                       h('button', { onClick: advanceQueenDay,
@@ -8944,7 +8966,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               var active = viewMode === tab.id;
               return h('button', { key: tab.id, role: 'tab', 'aria-selected': active ? 'true' : 'false',
                 onClick: function() { upd('viewMode', tab.id); },
-                className: 'flex-1 py-2 px-3 rounded-lg text-xs font-bold ' + (active ? (dk ? 'bg-amber-700 text-white' : 'bg-white text-amber-800') : (dk ? 'text-slate-400' : 'text-slate-500')) },
+                className: 'flex-1 py-2 px-3 rounded-lg text-xs font-bold ' + (active ? (dk ? 'bg-amber-700 text-white' : 'bg-white text-amber-800') : (dk ? 'text-slate-400' : 'text-slate-300')) },
                 h('span', { 'aria-hidden': 'true' }, tab.icon), ' ', tab.label);
             }));
         });
@@ -8986,21 +9008,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             h('div', { className: 'flex items-center gap-1' },
               // Sound toggle
               h('button', { onClick: function() { upd('soundOn', !soundOn); }, 'aria-label': soundOn ? 'Mute sound effects' : 'Enable sound effects', title: soundOn ? 'Sound on' : 'Sound off',
-                className: 'p-1.5 rounded-lg text-sm transition-all ' + (dk ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-500') }, soundOn ? '🔊' : '🔇'),
+                className: 'p-1.5 rounded-lg text-sm transition-all ' + (dk ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-300') }, soundOn ? '🔊' : '🔇'),
               // Quiz button
               h('button', { onClick: startQuiz, 'aria-label': 'Take the Bee Knowledge Quiz', title: 'Bee Quiz' + (d.bestQuizScore ? ' (Best: ' + d.bestQuizScore + ')' : ''),
-                className: 'p-1.5 rounded-lg text-sm transition-all ' + (dk ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-500') }, '🎓'),
+                className: 'p-1.5 rounded-lg text-sm transition-all ' + (dk ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-300') }, '🎓'),
               // Badges button
               h('button', { onClick: function() { upd('showBadges', !showBadges); }, 'aria-label': 'View badges (' + badgeCount + '/' + BADGE_DEFS.length + ' earned)', title: 'Badges: ' + badgeCount + '/' + BADGE_DEFS.length,
-                className: 'p-1.5 rounded-lg text-sm transition-all relative ' + (dk ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-500') },
+                className: 'p-1.5 rounded-lg text-sm transition-all relative ' + (dk ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-300') },
                 '🏅',
                 badgeCount > 0 && h('span', { className: 'absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full text-[9px] font-bold flex items-center justify-center text-white bg-amber-500' }, badgeCount)),
               // Export colony report
               h('button', { onClick: exportColonyReport, 'aria-label': 'Export colony report as markdown', title: 'Export colony report to clipboard',
-                className: 'p-1.5 rounded-lg text-sm transition-all ' + (dk ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-500') }, '📄'),
+                className: 'p-1.5 rounded-lg text-sm transition-all ' + (dk ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-300') }, '📄'),
               // Keyboard help
               h('button', { onClick: function() { upd('showKeys', !d.showKeys); }, 'aria-label': 'Keyboard shortcuts', title: 'Keyboard shortcuts',
-                className: 'p-1.5 rounded-lg text-sm transition-all ' + (dk ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-500') }, '⌨️'))),
+                className: 'p-1.5 rounded-lg text-sm transition-all ' + (dk ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-300') }, '⌨️'))),
 
           // ═══ MODE SELECTOR TABS ═══
           h('div', { className: 'flex gap-1 p-1 rounded-xl ' + (dk ? 'bg-slate-800' : 'bg-slate-100'), role: 'tablist', 'aria-label': 'Simulation perspective' },
@@ -9013,7 +9035,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               return h('button', { key: tab.id, role: 'tab', 'aria-selected': active ? 'true' : 'false',
                 onClick: function() { upd('viewMode', tab.id); },
                 className: 'flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-bold transition-all ' +
-                  (active ? (dk ? 'bg-amber-700 text-white shadow-md' : 'bg-white text-amber-800 shadow-md') : (dk ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-700' : 'text-slate-500 hover:text-slate-700 hover:bg-white/50')),
+                  (active ? (dk ? 'bg-amber-700 text-white shadow-md' : 'bg-white text-amber-800 shadow-md') : (dk ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-700' : 'text-slate-300 hover:text-slate-700 hover:bg-white/50')),
                 title: tab.desc
               }, h('span', { 'aria-hidden': 'true' }, tab.icon), tab.label);
             })),
@@ -9045,7 +9067,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                       return h('div', { key: g[0], className: 'rounded-lg p-2 border ' + (dk ? 'bg-slate-800 border-indigo-700/30' : 'bg-white border-indigo-200') },
                         h('div', { className: 'text-lg' }, g[0]),
                         h('div', { className: 'text-[11px] font-bold ' + (dk ? 'text-slate-200' : 'text-slate-700') }, g[1]),
-                        h('div', { className: 'text-[11px] ' + (dk ? 'text-slate-400' : 'text-slate-500') }, g[2]));
+                        h('div', { className: 'text-[11px] ' + (dk ? 'text-slate-400' : 'text-slate-300') }, g[2]));
                     })),
                   droneHighScore > 0 && h('div', { className: 'text-xs font-bold ' + (dk ? 'text-amber-400' : 'text-amber-600') }, '🏆 High Score: ' + droneHighScore),
                   // Difficulty selector
@@ -9064,7 +9086,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                         h('div', null, diff.label),
                         h('div', { className: 'text-[10px] mt-0.5 opacity-70' }, diff.desc));
                     })),
-                  h('p', { className: 'text-[11px] ' + (dk ? 'text-slate-500' : 'text-slate-400') }, 'Arrow keys / WASD = steer · Space = climb · Shift = descend · Fly low near glowing flowers to collect pollen!'))
+                  h('p', { className: 'text-[11px] ' + (dk ? 'text-slate-300' : 'text-slate-400') }, 'Arrow keys / WASD = steer · Space = climb · Shift = descend · Fly low near glowing flowers to collect pollen!'))
               : h('div', { className: 'relative rounded-2xl overflow-hidden border-2 ' + (dk ? 'border-indigo-600/50' : 'border-indigo-400'), style: { height: '400px', boxShadow: '0 0 20px rgba(99,102,241,0.15)' } },
                   h('canvas', { ref: _droneCvRef, role: 'img', 'aria-label': 'Drone flight simulation — use arrow keys to fly', style: { width: '100%', height: '100%', display: 'block' } }),
                   // Stop button overlay
@@ -9074,7 +9096,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             droneFlightActive && h('div', { className: 'rounded-xl border p-3 ' + (dk ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200') },
               h('div', { className: 'text-xs font-bold mb-2 ' + (dk ? 'text-indigo-300' : 'text-indigo-800') }, '📚 Drone Science Facts Discovered'),
               (_droneState.current.facts || []).length === 0
-                ? h('p', { className: 'text-[11px] italic ' + (dk ? 'text-slate-500' : 'text-slate-400') }, 'Keep flying to discover facts...')
+                ? h('p', { className: 'text-[11px] italic ' + (dk ? 'text-slate-300' : 'text-slate-400') }, 'Keep flying to discover facts...')
                 : h('div', { className: 'space-y-1' },
                     (_droneState.current.facts || []).map(function(fact, fi) {
                       return h('div', { key: fi, className: 'text-[11px] p-2 rounded-lg border ' + (dk ? 'bg-slate-700 border-slate-600 text-slate-300' : 'bg-indigo-50 border-indigo-100 text-slate-600') }, fact);
@@ -9094,7 +9116,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                       return h('div', { key: p[0], className: 'rounded-lg p-2 border ' + (dk ? 'bg-slate-800 border-purple-700/30' : 'bg-white border-purple-200') },
                         h('div', { className: 'text-lg' }, p[0]),
                         h('div', { className: 'text-[11px] font-bold ' + (dk ? 'text-slate-200' : 'text-slate-700') }, p[1]),
-                        h('div', { className: 'text-[11px] ' + (dk ? 'text-slate-400' : 'text-slate-500') }, p[2]));
+                        h('div', { className: 'text-[11px] ' + (dk ? 'text-slate-400' : 'text-slate-300') }, p[2]));
                     })),
                   // Phase progression explanation
                   h('div', { className: 'text-xs font-bold mt-2 ' + (dk ? 'text-purple-300' : 'text-purple-700') }, '📋 Three Phases of Your Reign'),
@@ -9108,8 +9130,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                         h('div', { className: 'flex items-center gap-1 mb-1' },
                           h('span', null, ph.icon),
                           h('span', { className: 'text-[11px] font-black ' + (dk ? 'text-' + ph.col + '-300' : 'text-' + ph.col + '-700') }, ph.phase)),
-                        h('div', { className: 'text-[10px] font-bold mb-0.5 ' + (dk ? 'text-slate-400' : 'text-slate-500') }, ph.days),
-                        h('div', { className: 'text-[10px] leading-relaxed ' + (dk ? 'text-slate-400' : 'text-slate-500') }, ph.desc));
+                        h('div', { className: 'text-[10px] font-bold mb-0.5 ' + (dk ? 'text-slate-400' : 'text-slate-300') }, ph.days),
+                        h('div', { className: 'text-[10px] leading-relaxed ' + (dk ? 'text-slate-400' : 'text-slate-300') }, ph.desc));
                     })),
                   h('button', { onClick: startQueenGame,
                     className: 'px-8 py-3 rounded-xl font-bold text-white text-sm shadow-lg transition-all hover:scale-105 ' + (dk ? 'bg-gradient-to-r from-purple-600 to-amber-600 hover:from-purple-500 hover:to-amber-500' : 'bg-gradient-to-r from-purple-500 to-amber-500 hover:from-purple-600 hover:to-amber-600'),
@@ -9137,7 +9159,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                           h('div', { className: 'flex items-center gap-1' },
                             h('span', null, qa.icon),
                             h('span', { className: 'text-[11px] font-bold ' + (dk ? 'text-slate-200' : 'text-slate-800') }, qa.label)),
-                          h('div', { className: 'text-[10px] mt-0.5 ' + (dk ? 'text-slate-400' : 'text-slate-500') }, qa.desc));
+                          h('div', { className: 'text-[10px] mt-0.5 ' + (dk ? 'text-slate-400' : 'text-slate-300') }, qa.desc));
                       }))),
                   // Build structures
                   h('div', { className: 'rounded-xl border p-3 ' + (dk ? 'bg-amber-900/20 border-amber-700/40' : 'bg-amber-50 border-amber-200') },
@@ -9151,7 +9173,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                           h('div', { className: 'flex items-center gap-1' },
                             h('span', null, st.icon),
                             h('span', { className: 'text-[11px] font-bold ' + (dk ? 'text-slate-200' : 'text-slate-800') }, st.label)),
-                          h('div', { className: 'text-[10px] mt-0.5 ' + (dk ? 'text-slate-400' : 'text-slate-500') }, costStr || 'Free'));
+                          h('div', { className: 'text-[10px] mt-0.5 ' + (dk ? 'text-slate-400' : 'text-slate-300') }, costStr || 'Free'));
                       }))),
                   // Advance day + events
                   h('div', { className: 'flex gap-2' },
@@ -9167,7 +9189,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                         var evColor = ev.type === 'threat' || ev.type === 'rebellion' || ev.type === 'swarm' || ev.type === 'starve' ? (dk ? 'text-red-400' : 'text-red-600') :
                                      ev.type === 'victory' ? (dk ? 'text-green-400' : 'text-green-600') :
                                      ev.type === 'phase' || ev.type === 'season' ? (dk ? 'text-amber-400' : 'text-amber-700') :
-                                     (dk ? 'text-slate-400' : 'text-slate-500');
+                                     (dk ? 'text-slate-400' : 'text-slate-300');
                         return h('div', { key: ei, className: 'text-[11px] py-1 border-b last:border-0 ' + (dk ? 'border-slate-700 ' : 'border-slate-100 ') + evColor }, ev.text);
                       }))))),
 
@@ -9210,7 +9232,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                       h('div', { className: 'flex items-center gap-2 flex-wrap' },
                         h('span', { className: 'text-sm font-bold ' + (dk ? 'text-slate-100' : 'text-slate-800') }, s.name),
                         h('span', { className: 'text-[11px] italic ' + (dk ? 'text-amber-400' : 'text-amber-600') }, s.sci),
-                        h('span', { className: 'text-[11px] ' + (dk ? 'text-slate-400' : 'text-slate-500') }, '· ' + s.origin),
+                        h('span', { className: 'text-[11px] ' + (dk ? 'text-slate-400' : 'text-slate-300') }, '· ' + s.origin),
                         active && h('span', { className: 'text-[11px] px-1.5 py-0.5 rounded font-bold ' + (dk ? 'bg-amber-500 text-slate-900' : 'bg-amber-500 text-white') }, '✓ Selected')),
                       h('p', { className: 'text-[11px] mt-1 ' + (dk ? 'text-slate-300' : 'text-slate-700') }, s.note),
                       // Trait bars
@@ -9224,7 +9246,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                           var pct = Math.max(0, Math.min(100, Math.round((t.v - 0.5) * 100)));
                           return h('div', { key: ti },
                             h('div', { className: 'flex justify-between text-[10px] mb-0.5' },
-                              h('span', { className: dk ? 'text-slate-400' : 'text-slate-500' }, t.k),
+                              h('span', { className: dk ? 'text-slate-400' : 'text-slate-300' }, t.k),
                               h('span', { className: dk ? 'text-slate-300' : 'text-slate-600' }, Math.round(t.v * 100) + '%')),
                             h('div', { className: 'h-1.5 rounded-full overflow-hidden ' + (dk ? 'bg-slate-700' : 'bg-slate-200') },
                               h('div', { style: { width: pct + '%' }, className: 'h-full bg-' + t.c + '-400 rounded-full' })));
@@ -9259,9 +9281,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                         active && h('span', { className: 'text-[11px] px-1.5 py-0.5 rounded font-bold ' + (dk ? 'bg-green-500 text-slate-900' : 'bg-green-500 text-white') }, '✓ Selected')),
                       h('p', { className: 'text-[11px] mt-1 ' + (dk ? 'text-slate-300' : 'text-slate-700') }, s.note),
                       h('div', { className: 'flex gap-3 mt-2 text-[11px]' },
-                        h('span', { className: s.mods.forage > 1.0 ? (dk ? 'text-green-400' : 'text-green-700') : s.mods.forage < 1.0 ? (dk ? 'text-amber-400' : 'text-amber-700') : (dk ? 'text-slate-400' : 'text-slate-500') },
+                        h('span', { className: s.mods.forage > 1.0 ? (dk ? 'text-green-400' : 'text-green-700') : s.mods.forage < 1.0 ? (dk ? 'text-amber-400' : 'text-amber-700') : (dk ? 'text-slate-400' : 'text-slate-300') },
                           '🌸 Forage ' + Math.round(s.mods.forage * 100) + '%'),
-                        h('span', { className: s.mods.disease < 1.0 ? (dk ? 'text-green-400' : 'text-green-700') : s.mods.disease > 1.0 ? (dk ? 'text-red-400' : 'text-red-700') : (dk ? 'text-slate-400' : 'text-slate-500') },
+                        h('span', { className: s.mods.disease < 1.0 ? (dk ? 'text-green-400' : 'text-green-700') : s.mods.disease > 1.0 ? (dk ? 'text-red-400' : 'text-red-700') : (dk ? 'text-slate-400' : 'text-slate-300') },
                           '🦠 Disease ' + Math.round(s.mods.disease * 100) + '%')))));
               }))),
 
@@ -9338,7 +9360,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     h('div', { className: 'flex items-center gap-1.5' },
                       h('span', { className: 'text-base' }, s.emoji),
                       h('span', { className: 'text-xs font-black ' + (dk ? 'text-amber-300' : 'text-amber-800'), style: { fontFamily: 'monospace' } }, s.val)),
-                    h('div', { className: 'text-[10px] ' + (dk ? 'text-slate-400' : 'text-slate-500') }, s.label));
+                    h('div', { className: 'text-[10px] ' + (dk ? 'text-slate-400' : 'text-slate-300') }, s.label));
                 })),
               // Highlight paragraph
               h('div', { className: 'rounded-lg p-3 border text-xs ' + (dk ? 'bg-slate-800 border-amber-700/30 text-slate-300' : 'bg-white border-amber-200 text-slate-700') },
@@ -9401,8 +9423,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 return h('div', { key: bd.id, className: 'flex items-start gap-2 p-2 rounded-lg border transition-all ' + (earned ? (dk ? 'bg-amber-900/30 border-amber-600/40' : 'bg-amber-50 border-amber-300') : (dk ? 'bg-slate-800/50 border-slate-700/50 opacity-50' : 'bg-slate-50 border-slate-200 opacity-50')), title: bd.desc },
                   h('span', { className: 'text-xl ' + (earned ? '' : 'grayscale') }, bd.icon),
                   h('div', null,
-                    h('div', { className: 'text-[11px] font-bold ' + (earned ? (dk ? 'text-amber-300' : 'text-amber-800') : (dk ? 'text-slate-500' : 'text-slate-400')) }, bd.label),
-                    h('div', { className: 'text-[11px] ' + (dk ? 'text-slate-400' : 'text-slate-500') }, bd.desc),
+                    h('div', { className: 'text-[11px] font-bold ' + (earned ? (dk ? 'text-amber-300' : 'text-amber-800') : (dk ? 'text-slate-300' : 'text-slate-400')) }, bd.label),
+                    h('div', { className: 'text-[11px] ' + (dk ? 'text-slate-400' : 'text-slate-300') }, bd.desc),
                     earned && newBadges[bd.id].day !== undefined && h('div', { className: 'text-[10px] ' + (dk ? 'text-amber-500' : 'text-amber-600') }, '✓ Day ' + newBadges[bd.id].day)));
               }))),
 
@@ -9470,9 +9492,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                         t.moraleCost > 0 && h('span', { className: 'text-[11px] px-1.5 py-0.5 rounded ' + (dk ? 'bg-amber-900/50 text-amber-300' : 'bg-amber-100 text-amber-700') }, '−' + t.moraleCost + ' morale'),
                         h('span', { className: 'text-[11px] px-1.5 py-0.5 rounded ' + (dk ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700') }, t.ap + ' AP'),
                         isIdealSeason && h('span', { className: 'text-[11px] px-1.5 py-0.5 rounded font-bold ' + (dk ? 'bg-green-900/50 text-green-300' : 'bg-green-100 text-green-800') }, '✨ ideal season'),
-                        usedCount > 0 && h('span', { className: 'text-[11px] ' + (dk ? 'text-slate-500' : 'text-slate-400') }, 'used ' + usedCount + '×')),
+                        usedCount > 0 && h('span', { className: 'text-[11px] ' + (dk ? 'text-slate-300' : 'text-slate-400') }, 'used ' + usedCount + '×')),
                       h('p', { className: 'text-[11px] mt-1 ' + (dk ? 'text-slate-300' : 'text-slate-700') }, t.desc),
-                      h('p', { className: 'text-[11px] mt-1 italic leading-relaxed ' + (dk ? 'text-slate-400' : 'text-slate-500') }, '🔬 ' + t.note))));
+                      h('p', { className: 'text-[11px] mt-1 italic leading-relaxed ' + (dk ? 'text-slate-400' : 'text-slate-300') }, '🔬 ' + t.note))));
               })),
             // Legend
             h('div', { className: 'text-[11px] p-2 rounded ' + (dk ? 'bg-slate-800/50 text-slate-400' : 'bg-slate-50 text-slate-600') },
@@ -9607,7 +9629,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   var lx = mx + li * (pw / 4);
                   cCtx.fillStyle = line.color;
                   cCtx.fillRect(lx, cH - 10, 8, 8);
-                  cCtx.fillStyle = dk ? '#94a3b8' : '#64748b';
+                  cCtx.fillStyle = dk ? '#94a3b8' : '#94a3b8';
                   cCtx.fillText(line.label, lx + 11, cH - 3);
                 });
               },
@@ -9720,8 +9742,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                       h('div', { className: 'text-sm' }, seasonNamesShort[e.season] || '')),
                     h('div', { className: 'flex-1 leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-700') }, e.text || '—'));
                 })),
-              !expanded && journalEntries.length > 3 && h('div', { className: 'text-[11px] mt-1 text-center ' + (dk ? 'text-slate-500' : 'text-slate-400') }, '(' + (journalEntries.length - 3) + ' more entries hidden)'),
-              h('p', { className: 'text-[11px] italic mt-2 ' + (dk ? 'text-slate-500' : 'text-slate-500') }, 'Real beekeepers keep hive journals for every inspection. Patterns across weeks reveal colony trajectory that a single reading misses.'));
+              !expanded && journalEntries.length > 3 && h('div', { className: 'text-[11px] mt-1 text-center ' + (dk ? 'text-slate-300' : 'text-slate-400') }, '(' + (journalEntries.length - 3) + ' more entries hidden)'),
+              h('p', { className: 'text-[11px] italic mt-2 ' + (dk ? 'text-slate-300' : 'text-slate-300') }, 'Real beekeepers keep hive journals for every inspection. Patterns across weeks reveal colony trajectory that a single reading misses.'));
           })(),
 
           // Colony collapsed state (beekeeper only)
@@ -9925,7 +9947,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               ),
               aiError && h('p', { className: 'text-[11px] text-rose-500', role: 'alert' }, aiError),
               aiText && h('p', { className: 'text-xs leading-relaxed rounded-lg p-2 ' + (dk ? 'bg-slate-900 text-slate-200 border border-purple-500/30' : 'bg-white text-slate-700 border border-purple-100') }, aiText),
-              !aiText && !aiLoading && !aiError && h('p', { className: 'text-[11px] italic ' + (dk ? 'text-slate-400' : 'text-slate-500') }, 'Click \u201CExplain\u201D for the AI tutor to describe the current view.')
+              !aiText && !aiLoading && !aiError && h('p', { className: 'text-[11px] italic ' + (dk ? 'text-slate-400' : 'text-slate-300') }, 'Click \u201CExplain\u201D for the AI tutor to describe the current view.')
             );
           })(),
 

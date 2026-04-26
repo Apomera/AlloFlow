@@ -1,6 +1,15 @@
 window.StemLab = window.StemLab || { registerTool: function(){}, registerModule: function(){} };
 (function() {
   'use strict';
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  (function() {
+    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-stem-motion-reduce-css';
+    st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    document.head.appendChild(st);
+  })();
+
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-unitconvert')) return;
@@ -335,14 +344,14 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           h('style', null, css),
 
           // Header
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-3 mb-3' },
+          h('div', { className: 'flex items-center gap-3 mb-3' },
             h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': 'Back' },
               h(ArrowLeft, { size: 18, className: 'text-slate-600' })
             ),
             h('h3', { className: 'text-lg font-bold text-slate-800' }, '\uD83D\uDCCF Unit Converter'),
-            h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'px-2 py-0.5 bg-cyan-100 text-cyan-700 text-[11px] font-bold rounded-full' }, 'INTERACTIVE'),
-            (d.score || 0) > 0 && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'px-2 py-0.5 bg-amber-100 text-amber-700 text-[11px] font-bold rounded-full' }, '\u2B50 ' + d.score + ' XP'),
-            (d.streak || 0) >= 2 && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'px-2 py-0.5 bg-orange-100 text-orange-600 text-[11px] font-bold rounded-full animate-pulse' }, '\uD83D\uDD25 ' + d.streak),
+            h('span', { className: 'px-2 py-0.5 bg-cyan-100 text-cyan-700 text-[11px] font-bold rounded-full' }, 'INTERACTIVE'),
+            (d.score || 0) > 0 && h('span', { className: 'px-2 py-0.5 bg-amber-100 text-amber-700 text-[11px] font-bold rounded-full' }, '\u2B50 ' + d.score + ' XP'),
+            (d.streak || 0) >= 2 && h('span', { className: 'px-2 py-0.5 bg-orange-100 text-orange-600 text-[11px] font-bold rounded-full animate-pulse' }, '\uD83D\uDD25 ' + d.streak),
             earnedCount > 0 && h('button', { 'aria-label': 'AI',
               onClick: function() { upd('showBadges', !showBadges); },
               className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100 transition-all',
@@ -356,8 +365,8 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           ),
 
           // ── Badge panel ──
-          showBadges && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl p-3 border-2 border-amber-200 mb-3' },
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-between mb-2' },
+          showBadges && h('div', { className: 'bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl p-3 border-2 border-amber-200 mb-3' },
+            h('div', { className: 'flex items-center justify-between mb-2' },
               h('p', { className: 'text-sm font-bold text-amber-800' }, '\uD83C\uDFC5 Badges (' + earnedCount + '/' + BADGES.length + ')'),
               h('button', { 'aria-label': 'Change show badges', onClick: function() { upd('showBadges', false); }, className: 'text-xs text-slate-600 hover:text-slate-600' }, '\u2715')
             ),
@@ -370,23 +379,23 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                     (earned ? 'bg-white border-amber-300 shadow-sm' : 'bg-slate-50 border-slate-200 opacity-50'),
                   title: badge.desc
                 },
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xl' }, earned ? badge.icon : '\uD83D\uDD12'),
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold mt-0.5 ' + (earned ? 'text-amber-800' : 'text-slate-600') }, badge.label)
+                  h('div', { className: 'text-xl' }, earned ? badge.icon : '\uD83D\uDD12'),
+                  h('div', { className: 'text-[11px] font-bold mt-0.5 ' + (earned ? 'text-amber-800' : 'text-slate-600') }, badge.label)
                 );
               })
             )
           ),
 
           // ── AI Tutor panel ──
-          showTutor && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-3 border-2 border-purple-200 mb-3' },
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-between mb-2' },
+          showTutor && h('div', { className: 'bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-3 border-2 border-purple-200 mb-3' },
+            h('div', { className: 'flex items-center justify-between mb-2' },
               h('p', { className: 'text-sm font-bold text-purple-800' }, '\uD83E\uDDE0 AI Unit Tutor'),
               h('button', { 'aria-label': 'Ask Tutor', onClick: function() { upd('showTutor', false); }, className: 'text-xs text-slate-600 hover:text-slate-600' }, '\u2715')
             ),
             tutorLoading
-              ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2' },
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'w-4 h-4 border-2 border-purple-400 border-t-transparent rounded-full animate-spin' }),
-                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs text-purple-600' }, 'Thinking...')
+              ? h('div', { className: 'flex items-center gap-2' },
+                  h('div', { className: 'w-4 h-4 border-2 border-purple-400 border-t-transparent rounded-full animate-spin' }),
+                  h('span', { className: 'text-xs text-purple-600' }, 'Thinking...')
                 )
               : h('p', { className: 'text-sm text-purple-700 whitespace-pre-wrap leading-relaxed' }, tutorResponse),
             !tutorLoading && h('button', { 'aria-label': 'Ask Again',
@@ -396,7 +405,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           ),
 
           // Category selector
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-1.5 mb-3' },
+          h('div', { className: 'flex flex-wrap gap-1.5 mb-3' },
             Object.entries(CATEGORIES).map(function(e) {
               var k = e[0], v = e[1];
               return h('button', { 'aria-label': 'Change tab',
@@ -415,7 +424,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           ),
 
           // Tool tabs
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-0 mb-3 border-b border-slate-200', role: 'tablist', 'aria-label': 'Unit Converter sections' },
+          h('div', { className: 'flex gap-0 mb-3 border-b border-slate-200', role: 'tablist', 'aria-label': 'Unit Converter sections' },
             [['convert', '\uD83D\uDD04 Convert'], ['table', '\uD83D\uDCCA All Units'], ['quiz', '\uD83E\uDDE0 Quiz'], ['wordproblem', '\uD83D\uDCDD Word Problem']].map(function(item, idx) {
               return h('button', { 'aria-label': 'Change tab',
                 key: item[0],
@@ -484,12 +493,12 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               ),
 
               // Formula row
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-3 bg-slate-50 rounded-lg p-2 text-center' },
-                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-mono text-slate-600' }, '\uD83D\uDCCA ' + getFormula())
+              h('div', { className: 'mt-3 bg-slate-50 rounded-lg p-2 text-center' },
+                h('span', { className: 'text-[11px] font-mono text-slate-600' }, '\uD83D\uDCCA ' + getFormula())
               ),
 
               // Save / Pin / AI buttons
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex justify-center gap-2 mt-3' },
+              h('div', { className: 'flex justify-center gap-2 mt-3' },
                 h('button', { 'aria-label': 'Save',
                   onClick: function() {
                     var entry = { from: d.value + ' ' + d.fromUnit, to: fmtResult + ' ' + d.toUnit, ts: Date.now() };
@@ -579,14 +588,14 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             ),
 
             // Real-world reference
-            refText && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-3 bg-amber-50 rounded-xl border border-amber-200 p-3 text-center' },
+            refText && h('div', { className: 'mt-3 bg-amber-50 rounded-xl border border-amber-200 p-3 text-center' },
               h('p', { className: 'text-[11px] font-bold text-amber-600 uppercase tracking-wider mb-1' }, '\uD83C\uDF0D Real-World Reference'),
               h('p', { className: 'text-sm font-bold text-amber-800' }, refText)
             ),
 
             // Fun fact
-            facts.length > 0 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-3 bg-violet-50 rounded-xl border border-violet-200 p-3 flex items-start gap-2' },
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex-1' },
+            facts.length > 0 && h('div', { className: 'mt-3 bg-violet-50 rounded-xl border border-violet-200 p-3 flex items-start gap-2' },
+              h('div', { className: 'flex-1' },
                 h('p', { className: 'text-[11px] font-bold text-violet-600 uppercase tracking-wider mb-1' }, '\uD83D\uDCA1 Fun Fact'),
                 h('p', { key: factIdx, className: 'text-sm text-violet-800', style: { animation: 'ucFactSlide 0.4s ease-out' } }, currentFact)
               ),
@@ -597,9 +606,9 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             ),
 
             // Pinned conversions
-            d.pinnedConversions && d.pinnedConversions.length > 0 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-3 bg-slate-50 rounded-xl border p-3' },
+            d.pinnedConversions && d.pinnedConversions.length > 0 && h('div', { className: 'mt-3 bg-slate-50 rounded-xl border p-3' },
               h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2' }, '\uD83D\uDCCC Pinned Conversions'),
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-1.5' },
+              h('div', { className: 'flex flex-wrap gap-1.5' },
                 d.pinnedConversions.map(function(p, i) {
                   return h('button', { 'aria-label': 'Unitconvert action',
                     key: p.key,
@@ -613,7 +622,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                     className: 'flex items-center gap-1 px-2 py-1 bg-white border border-amber-200 rounded-full text-xs font-bold text-amber-700 hover:bg-amber-50'
                   },
                     p.label,
-                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+                    h('span', { 
                       onClick: function(e) {
                         e.stopPropagation();
                         upd('pinnedConversions', d.pinnedConversions.filter(function(_, j) { return j !== i; }));
@@ -626,17 +635,17 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             ),
 
             // Conversion history
-            d.history && d.history.length > 0 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-3 bg-slate-50 rounded-xl border p-3' },
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-between mb-2' },
+            d.history && d.history.length > 0 && h('div', { className: 'mt-3 bg-slate-50 rounded-xl border p-3' },
+              h('div', { className: 'flex items-center justify-between mb-2' },
                 h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider' }, '\uD83D\uDCDD History'),
                 h('button', { 'aria-label': 'Clear', onClick: function() { upd('history', []); }, className: 'text-[11px] text-red-400 hover:text-red-600 font-bold' }, 'Clear')
               ),
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-1' },
+              h('div', { className: 'space-y-1' },
                 d.history.map(function(item, i) {
-                  return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: i, className: 'flex items-center gap-2 text-xs bg-white rounded-lg px-2 py-1.5 border' },
-                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-cyan-600 font-bold' }, item.from),
-                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-slate-600' }, '\u2192'),
-                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-indigo-600 font-bold' }, item.to)
+                  return h('div', { key: i, className: 'flex items-center gap-2 text-xs bg-white rounded-lg px-2 py-1.5 border' },
+                    h('span', { className: 'text-cyan-600 font-bold' }, item.from),
+                    h('span', { className: 'text-slate-600' }, '\u2192'),
+                    h('span', { className: 'text-indigo-600 font-bold' }, item.to)
                   );
                 })
               )
@@ -656,18 +665,18 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           ),
 
           // ═══ TAB: ALL UNITS TABLE ═══
-          tab === 'table' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: 'table' },
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-xl border border-slate-200 overflow-hidden' },
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-slate-50 border-b border-slate-200 px-4 py-2 flex items-center justify-between' },
+          tab === 'table' && h('div', { key: 'table' },
+            h('div', { className: 'bg-white rounded-xl border border-slate-200 overflow-hidden' },
+              h('div', { className: 'bg-slate-50 border-b border-slate-200 px-4 py-2 flex items-center justify-between' },
                 h('p', { className: 'text-xs font-bold text-slate-600' }, 'All ' + cat.label.replace(/[^\w\s]/g, '').trim() + ' conversions for:'),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2' },
+                h('div', { className: 'flex items-center gap-2' },
                   h('input', {
                     type: 'number', value: d.value,
                     onChange: function(e) { upd('value', parseFloat(e.target.value) || 0); },
                     className: 'w-24 text-right text-sm font-bold border border-slate-200 rounded-lg px-2 py-1 outline-none focus:ring-2 focus:ring-cyan-500',
                     step: '0.01'
                   }),
-                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-slate-600' }, d.fromUnit),
+                  h('span', { className: 'text-xs font-bold text-slate-600' }, d.fromUnit),
                   h('button', { 'aria-label': 'Change',
                     onClick: function() { upd('tab', 'convert'); },
                     className: 'text-xs text-cyan-600 hover:underline font-bold'
@@ -712,13 +721,13 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           ),
 
           // ═══ TAB: QUIZ ═══
-          tab === 'quiz' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: 'quiz' },
+          tab === 'quiz' && h('div', { key: 'quiz' },
 
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-between mb-3' },
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2 flex-wrap' },
-                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'px-2.5 py-1 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full' }, '\u2B50 ' + (d.score || 0) + ' XP'),
-                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'px-2.5 py-1 bg-orange-100 text-orange-700 text-xs font-bold rounded-full' }, '\uD83D\uDD25 ' + (d.streak || 0)),
-                (d.bestStreak || 0) > 0 && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'px-2.5 py-1 bg-violet-100 text-violet-700 text-xs font-bold rounded-full' }, '\uD83C\uDFC6 Best: ' + d.bestStreak)
+            h('div', { className: 'flex items-center justify-between mb-3' },
+              h('div', { className: 'flex items-center gap-2 flex-wrap' },
+                h('span', { className: 'px-2.5 py-1 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full' }, '\u2B50 ' + (d.score || 0) + ' XP'),
+                h('span', { className: 'px-2.5 py-1 bg-orange-100 text-orange-700 text-xs font-bold rounded-full' }, '\uD83D\uDD25 ' + (d.streak || 0)),
+                (d.bestStreak || 0) > 0 && h('span', { className: 'px-2.5 py-1 bg-violet-100 text-violet-700 text-xs font-bold rounded-full' }, '\uD83C\uDFC6 Best: ' + d.bestStreak)
               ),
               h('button', { 'aria-label': 'Next question (N)',
                 onClick: function() {
@@ -785,21 +794,21 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                         });
                       }
                     }),
-                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs text-slate-600 shrink-0' }, d.quiz.unit + ' \u2014 Enter'),
+                    h('span', { className: 'text-xs text-slate-600 shrink-0' }, d.quiz.unit + ' \u2014 Enter'),
                     h('button', { 'aria-label': 'Ask Tutor',
                       onClick: askTutor,
                       className: 'px-2 py-2 bg-purple-100 text-purple-600 font-bold rounded-lg hover:bg-purple-200 transition-all text-sm',
                       title: 'Get a hint from AI'
                     }, '\uD83E\uDDE0')
                   )
-                : h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { animation: d.quiz.correct ? 'ucCorrect 0.5s ease' : 'ucWrong 0.4s ease' } },
+                : h('div', { style: { animation: d.quiz.correct ? 'ucCorrect 0.5s ease' : 'ucWrong 0.4s ease' } },
                     h('p', { className: 'text-base font-bold mb-1 ' + (d.quiz.correct ? 'text-emerald-600' : 'text-red-500') },
                       d.quiz.correct
                         ? '\u2705 Correct! ' + (d.quiz.xp === 3 ? '\u26A1 Lightning!' : d.quiz.xp === 2 ? '\uD83D\uDE80 Quick!' : '') + ' (' + d.quiz.elapsed + 's)'
                         : '\u274C Answer was: ' + d.quiz.a + ' ' + d.quiz.unit
                     ),
                     d.quiz.correct && d.quiz.xp > 0 && h('p', { className: 'text-xs text-emerald-400 mb-2' }, '+' + d.quiz.xp + ' XP earned'),
-                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2' },
+                    h('div', { className: 'flex gap-2' },
                       h('button', { 'aria-label': 'Next Question',
                         onClick: function() {
                           var q = QUIZ_QS[Math.floor(Math.random() * QUIZ_QS.length)];
@@ -819,9 +828,9 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           ),
 
           // ═══ TAB: WORD PROBLEM ═══
-          tab === 'wordproblem' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: 'wp' },
+          tab === 'wordproblem' && h('div', { key: 'wp' },
 
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-between mb-3' },
+            h('div', { className: 'flex items-center justify-between mb-3' },
               h('p', { className: 'text-sm text-slate-600' }, 'AI generates a real-world word problem for ' + (cat.label.replace(/[^\w\s]/g, '').trim()) + '.'),
               h('button', { 'aria-label': 'Unitconvert action',
                 disabled: !!d.loadingWP,
@@ -854,18 +863,18 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               h('p', { className: 'text-sm text-slate-600 mt-3' }, 'Crafting your word problem...')
             ),
 
-            !d.wordProblem && !d.loadingWP && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-center py-12 bg-slate-50 rounded-xl border border-dashed border-slate-200' },
+            !d.wordProblem && !d.loadingWP && h('div', { className: 'text-center py-12 bg-slate-50 rounded-xl border border-dashed border-slate-200' },
               h('p', { className: 'text-4xl mb-3' }, '\uD83D\uDCDD'),
               h('p', { className: 'text-sm font-bold text-slate-600' }, 'Click Generate for an AI-crafted word problem'),
               h('p', { className: 'text-xs text-slate-600 mt-1' }, 'Category: ' + cat.label)
             ),
 
-            d.wordProblem && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-xl border-2 border-cyan-200 p-5 shadow-sm animate-in fade-in duration-300' },
+            d.wordProblem && h('div', { className: 'bg-white rounded-xl border-2 border-cyan-200 p-5 shadow-sm animate-in fade-in duration-300' },
               d.wordProblem.split('\n').filter(function(line) { return line.trim(); }).map(function(line, i) {
                 var bold = line.startsWith('PROBLEM:') || line.startsWith('SOLUTION') || line.startsWith('ANSWER:');
                 return h('p', { key: i, className: 'mb-2 text-sm ' + (bold ? 'font-bold text-cyan-800' : 'text-slate-700') }, line);
               }),
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-4 flex gap-2' },
+              h('div', { className: 'mt-4 flex gap-2' },
                 h('button', { 'aria-label': 'New Problem',
                   disabled: !!d.loadingWP,
                   onClick: function() {

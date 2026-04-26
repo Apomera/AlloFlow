@@ -1,3 +1,13 @@
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+(function() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById('allo-stem-motion-reduce-css')) return;
+  var st = document.createElement('style');
+  st.id = 'allo-stem-motion-reduce-css';
+  st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+  if (document.head) document.head.appendChild(st);
+})();
+
 // ═══════════════════════════════════════════
 // stem_tool_migration.js — Migration & Wind Patterns Lab
 // V-formation aerodynamics, wind currents, bird migration routes & flight physics
@@ -18,6 +28,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
 (function() {
   'use strict';
+  // ── Accessibility live region (WCAG 4.1.3) ──
+  (function() {
+    if (document.getElementById('allo-live-migration')) return;
+    var lr = document.createElement('div');
+    lr.id = 'allo-live-migration';
+    lr.setAttribute('aria-live', 'polite');
+    lr.setAttribute('aria-atomic', 'true');
+    lr.setAttribute('role', 'status');
+    lr.className = 'sr-only';
+    lr.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(lr);
+  })();
+
 
   // ── Audio + WCAG (auto-injected) ──
   var _migrAC = null;
@@ -52,7 +75,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
     c.closePath();
     c.fill();
     // Wings
-    c.fillStyle = color || (isDark ? '#64748b' : '#334155');
+    c.fillStyle = color || (isDark ? '#94a3b8' : '#334155');
     c.save(); c.rotate(-wa);
     c.beginPath();
     c.moveTo(-size * 0.2, 0);
@@ -179,11 +202,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       c.beginPath();
       c.moveTo(Math.cos(a) * (radius - 6), Math.sin(a) * (radius - 6));
       c.lineTo(Math.cos(a) * (radius - 1), Math.sin(a) * (radius - 1));
-      c.strokeStyle = isDark ? '#94a3b8' : '#64748b';
+      c.strokeStyle = isDark ? '#94a3b8' : '#94a3b8';
       c.lineWidth = 1;
       c.stroke();
       // Label
-      c.fillStyle = isDark ? '#94a3b8' : '#64748b';
+      c.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
       c.fillText(dirs[di], Math.cos(a) * (radius - 12), Math.sin(a) * (radius - 12));
     }
 
@@ -638,7 +661,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             c.textAlign = 'left';
             c.fillText('Formation Efficiency: ' + eff + '%', 14, 26);
             c.font = '10px system-ui';
-            c.fillStyle = isDark ? '#94a3b8' : '#64748b';
+            c.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
             c.fillText('Energy Savings: ' + Math.round(eff * 0.65) + '%', 14, 40);
             c.fillText('Leader Rotations: ' + (leaderRotations || 0), 14, 52);
 
@@ -2233,7 +2256,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             c.closePath();
             c.fillStyle = isDark ? '#475569' : '#94a3b8';
             c.fill();
-            c.strokeStyle = isDark ? '#64748b' : '#64748b';
+            c.strokeStyle = isDark ? '#94a3b8' : '#94a3b8';
             c.lineWidth = 1.5;
             c.stroke();
 
@@ -2386,7 +2409,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             c.strokeRect(graphX - 5, graphY - 5, graphW + 10, graphH + 30);
 
             // Axes
-            c.strokeStyle = isDark ? '#64748b' : '#94a3b8';
+            c.strokeStyle = isDark ? '#94a3b8' : '#94a3b8';
             c.lineWidth = 1;
             c.beginPath();
             c.moveTo(graphX, graphY + graphH);
@@ -2440,7 +2463,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             c.setLineDash([]);
 
             // Graph labels
-            c.fillStyle = isDark ? '#94a3b8' : '#64748b';
+            c.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
             c.font = '8px system-ui';
             c.textAlign = 'center';
             c.fillText('Angle of Attack (\u00B0)', graphX + graphW / 2, graphY + graphH + 22);
@@ -2453,13 +2476,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             // Legend
             c.fillStyle = '#3b82f6';
             c.fillRect(graphX + 4, graphY + 4, 8, 2);
-            c.fillStyle = isDark ? '#94a3b8' : '#64748b';
+            c.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
             c.font = '8px system-ui';
             c.textAlign = 'left';
             c.fillText('Lift (C\u2097)', graphX + 16, graphY + 8);
             c.fillStyle = '#ef4444';
             c.fillRect(graphX + 4, graphY + 16, 8, 2);
-            c.fillStyle = isDark ? '#94a3b8' : '#64748b';
+            c.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
             c.fillText('Drag (C\u2091)', graphX + 16, graphY + 20);
 
             // Best L/D marker

@@ -16,6 +16,15 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  (function() {
+    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-stem-motion-reduce-css';
+    st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    document.head.appendChild(st);
+  })();
+
 
   // ── Audio (auto-injected) ──
   var _applabAC = null;
@@ -485,7 +494,7 @@ window.StemLab = window.StemLab || {
         h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 } },
           h('button', { onClick: function() { ctx.setStemLabTool(null); }, 'aria-label': 'Back to STEM Lab', style: btn('#f1f5f9', '#374151', false) }, h(ArrowLeft, { size: 14 })),
           h('h2', { style: { fontSize: '18px', fontWeight: 900, color: '#1e293b', margin: 0 } }, '\uD83D\uDCA1 AppLab'),
-          h('span', { style: { fontSize: '11px', color: '#6b7280' } }, 'AI Mini-App Generator'),
+          h('span', { style: { fontSize: '11px', color: '#94a3b8' } }, 'AI Mini-App Generator'),
           html && h('div', { style: { marginLeft: 'auto', display: 'flex', gap: '4px' } },
             h('button', { onClick: undo, disabled: !canUndo, style: btn('#f1f5f9', '#374151', !canUndo), 'aria-label': 'Undo', title: 'Undo' }, '↩'),
             h('button', { onClick: redo, disabled: !canRedo, style: btn('#f1f5f9', '#374151', !canRedo), 'aria-label': 'Redo', title: 'Redo' }, '↪'),
@@ -550,14 +559,14 @@ window.StemLab = window.StemLab || {
                       h('div', { style: { display: 'flex', justifyContent: 'center', gap: '2px', marginBottom: '4px' } },
                         ci > 0 && h('button', { onClick: function() { moveAgent(cfg.id, -1); },
                           'aria-label': 'Move ' + agent.name + ' left',
-                          style: { background: 'transparent', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: '10px', padding: '0 2px' } }, '\u25C0'),
+                          style: { background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: '10px', padding: '0 2px' } }, '\u25C0'),
                         ci < pipelineConfig.length - 1 && h('button', { onClick: function() { moveAgent(cfg.id, 1); },
                           'aria-label': 'Move ' + agent.name + ' right',
-                          style: { background: 'transparent', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: '10px', padding: '0 2px' } }, '\u25B6')
+                          style: { background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: '10px', padding: '0 2px' } }, '\u25B6')
                       ),
 
                       h('div', { style: { fontSize: '18px', marginBottom: '2px' } }, agent.icon),
-                      h('div', { style: { fontSize: '9px', fontWeight: 700, color: isOn ? agent.color : '#64748b' } }, agent.name),
+                      h('div', { style: { fontSize: '9px', fontWeight: 700, color: isOn ? agent.color : '#94a3b8' } }, agent.name),
 
                       // Toggle
                       !agent.required && h('button', {
@@ -567,7 +576,7 @@ window.StemLab = window.StemLab || {
                           background: isOn ? 'rgba(34,197,94,0.1)' : 'rgba(220,38,38,0.1)',
                           color: isOn ? '#22c55e' : '#dc2626', fontSize: '8px', fontWeight: 700, cursor: 'pointer' }
                       }, isOn ? 'ON' : 'OFF'),
-                      agent.required && h('div', { style: { marginTop: '4px', fontSize: '8px', color: '#64748b' } }, 'Required')
+                      agent.required && h('div', { style: { marginTop: '4px', fontSize: '8px', color: '#94a3b8' } }, 'Required')
                     ),
 
                     // Arrow between agents
@@ -632,7 +641,7 @@ window.StemLab = window.StemLab || {
                   style: { padding: '10px', borderRadius: '10px', border: '1px solid #e5e7eb', background: '#fff', cursor: 'pointer', textAlign: 'left', fontSize: '11px' }
                 },
                   h('div', { style: { fontWeight: 700, color: '#1e293b', marginBottom: '2px' } }, s.title),
-                  h('div', { style: { color: '#6b7280', fontSize: '10px', lineHeight: 1.4 } }, s.description),
+                  h('div', { style: { color: '#94a3b8', fontSize: '10px', lineHeight: 1.4 } }, s.description),
                   s.difficulty && h('span', { style: { fontSize: '9px', background: s.difficulty === 'Beginner' ? '#dcfce7' : s.difficulty === 'Advanced' ? '#fee2e2' : '#fef3c7', color: s.difficulty === 'Beginner' ? '#166534' : s.difficulty === 'Advanced' ? '#991b1b' : '#92400e', padding: '1px 6px', borderRadius: '6px', marginTop: '4px', display: 'inline-block' } }, s.difficulty)
                 );
               })
@@ -645,7 +654,7 @@ window.StemLab = window.StemLab || {
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
               TEMPLATES.map(function(cat) {
                 return h('div', { key: cat.cat },
-                  h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', marginBottom: '4px' } }, cat.cat),
+                  h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', marginBottom: '4px' } }, cat.cat),
                   h('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap', marginBottom: '6px' } },
                     cat.items.map(function(t) {
                       return h('button', { key: t.title, onClick: function() { setPrompt(t.prompt); },
@@ -706,7 +715,7 @@ window.StemLab = window.StemLab || {
                   // Render children (sub-agents for sections)
                   isSection && h('div', { style: { marginTop: '6px', marginLeft: '20px', display: 'flex', flexDirection: 'column', gap: '3px' } },
                     step.children.map(function(child, ci) {
-                      var childColor = colors[child.agent] || '#64748b';
+                      var childColor = colors[child.agent] || '#94a3b8';
                       return h('div', { key: ci, style: { display: 'flex', gap: '6px', alignItems: 'center', fontSize: '10px', padding: '3px 8px', background: 'rgba(0,0,0,0.2)', borderRadius: '4px', borderLeft: '2px solid ' + childColor } },
                         h('span', null, child.icon),
                         h('span', { style: { color: childColor, fontWeight: 600 } }, child.agent),
@@ -734,7 +743,7 @@ window.StemLab = window.StemLab || {
           // Code editor (left panel when visible)
           showCode && h('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 } },
             h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' } },
-              h('span', { style: { fontSize: '11px', fontWeight: 700, color: '#6b7280' } }, '</> Source Code'),
+              h('span', { style: { fontSize: '11px', fontWeight: 700, color: '#94a3b8' } }, '</> Source Code'),
               h('div', { style: { display: 'flex', gap: '4px' } },
                 h('button', { onClick: applyCodeEdit, disabled: editHtml === html,
                   style: btn(editHtml !== html ? '#22c55e' : '#e5e7eb', editHtml !== html ? '#fff' : '#9ca3af', editHtml === html) }, '▶ Apply Changes'),
@@ -795,7 +804,7 @@ window.StemLab = window.StemLab || {
         ),
 
         // Loading overlay
-        isGenerating && !html && h('div', { style: { textAlign: 'center', padding: '40px', color: '#6b7280' } },
+        isGenerating && !html && h('div', { style: { textAlign: 'center', padding: '40px', color: '#94a3b8' } },
           h('div', { style: { fontSize: '48px', marginBottom: '12px', animation: 'pulse 1.5s infinite' } }, '\uD83D\uDCA1'),
           h('p', { style: { fontSize: '14px', fontWeight: 600 } }, genStep || 'Generating your app...'),
           h('p', { style: { fontSize: '11px', color: '#9ca3af' } }, 'This usually takes 5-15 seconds')

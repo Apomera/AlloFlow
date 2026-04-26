@@ -1,3 +1,13 @@
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+(function() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById('allo-stem-motion-reduce-css')) return;
+  var st = document.createElement('style');
+  st.id = 'allo-stem-motion-reduce-css';
+  st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+  if (document.head) document.head.appendChild(st);
+})();
+
 // ═══════════════════════════════════════════════════════
 // stem_tool_epidemic.js — Epidemic Modeling Lab  v4.0
 // Enhanced STEM Lab tool — 12 sub-tools
@@ -32,6 +42,19 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
+  // ── Accessibility live region (WCAG 4.1.3) ──
+  (function() {
+    if (document.getElementById('allo-live-epidemic')) return;
+    var lr = document.createElement('div');
+    lr.id = 'allo-live-epidemic';
+    lr.setAttribute('aria-live', 'polite');
+    lr.setAttribute('aria-atomic', 'true');
+    lr.setAttribute('role', 'status');
+    lr.className = 'sr-only';
+    lr.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(lr);
+  })();
+
 
   // ── Epidemic Lab Audio System ──
   var _epAC = null;
@@ -840,7 +863,7 @@ window.StemLab = window.StemLab || {
             if (Math.abs(data[hi].day - hoverDay) < Math.abs(closest.day - hoverDay)) closest = data[hi];
           }
           var hx = xPos(closest.day);
-          hoverElements.push(h('line', { key: 'hline', x1: hx, x2: hx, y1: padT, y2: padT + plotH, stroke: '#64748b', strokeWidth: 1, strokeDasharray: '3,2' }));
+          hoverElements.push(h('line', { key: 'hline', x1: hx, x2: hx, y1: padT, y2: padT + plotH, stroke: '#94a3b8', strokeWidth: 1, strokeDasharray: '3,2' }));
           compartments.forEach(function(comp, ci) {
             var hy = yPos(closest[comp]);
             hoverElements.push(h('circle', { key: 'hc' + comp, cx: hx, cy: hy, r: 4, fill: compColors[comp], stroke: 'white', strokeWidth: 1.5 }));
@@ -858,7 +881,7 @@ window.StemLab = window.StemLab || {
         var legendItems = compartments.map(function(comp, idx) {
           return h('g', { key: 'leg' + comp, transform: 'translate(' + (padL + idx * 100) + ',' + (ht - 0) + ')' },
             h('rect', { x: 0, y: -8, width: 10, height: 10, rx: 2, fill: compColors[comp] }),
-            h('text', { x: 14, y: 0, fill: '#64748b', fontSize: 9 }, compLabels[comp])
+            h('text', { x: 14, y: 0, fill: '#94a3b8', fontSize: 9 }, compLabels[comp])
           );
         });
 
@@ -1239,16 +1262,16 @@ window.StemLab = window.StemLab || {
               )
             ),
             // Badge count
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-1 px-2 py-1 bg-amber-50 rounded-lg border border-amber-200' },
-              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs' }, '\uD83C\uDFC6'),
-              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-amber-700' },
+            h('div', { className: 'flex items-center gap-1 px-2 py-1 bg-amber-50 rounded-lg border border-amber-200' },
+              h('span', { className: 'text-xs' }, '\uD83C\uDFC6'),
+              h('span', { className: 'text-xs font-bold text-amber-700' },
                 Object.keys(d.badges || {}).length + '/' + EPI_BADGES.length)
             )
           )
         ),
 
         // ── Sub-tool tabs ──
-        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-1.5', role: 'tablist', 'aria-label': 'Epidemic Simulator sections' },
+        h('div', { className: 'flex flex-wrap gap-1.5', role: 'tablist', 'aria-label': 'Epidemic Simulator sections' },
           SUBTOOLS.map(function(st) {
             var active = tab === st.id;
             return h('button', { 'aria-label': 'Select intervention strategy',
@@ -1262,9 +1285,9 @@ window.StemLab = window.StemLab || {
 
         // ── Disease presets (shared across SIR/SEIR/R0/Vaccination) ──
         (tab === 'sir' || tab === 'seir' || tab === 'r0explorer' || tab === 'vaccination' || tab === 'interventions') &&
-        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: glassCard },
+        h('div', { className: glassCard },
           h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wide mb-2' }, 'Disease Presets'),
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-1.5' },
+          h('div', { className: 'flex flex-wrap gap-1.5' },
             PRESETS.map(function(p, idx) {
               var active = selectedPreset === idx;
               return h('button', { 'aria-label': 'Apply Preset',
@@ -1281,9 +1304,9 @@ window.StemLab = window.StemLab || {
         // ═══════════════════════════════════════════
         // SIR TAB
         // ═══════════════════════════════════════════
-        tab === 'sir' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4' },
+        tab === 'sir' && h('div', { className: 'space-y-4' },
           // Sliders
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: glassCard + ' space-y-3' },
+          h('div', { className: glassCard + ' space-y-3' },
             h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wide' }, 'Parameters'),
             slider('R\u2080 (Basic Reproduction Number)', r0, 0.5, 12, 0.1, 'r0', function(v) { return v.toFixed(1); }),
             slider('Vaccination Rate (%)', vaccRate, 0, 95, 1, 'vaccRate', function(v) { return v + '%'; }),
@@ -1304,7 +1327,7 @@ window.StemLab = window.StemLab || {
               { label: 'Effective R\u2080', value: effR0.toFixed(2), sub: effR0 < 1 ? 'Declining' : 'Spreading', color: r0Color(effR0) },
               { label: 'Herd Threshold', value: herdThresh.toFixed(0) + '%', sub: vaccRate >= herdThresh && herdThresh > 0 ? '\u2705 Achieved' : 'Not yet', color: '#6366f1' }
             ].map(function(s) {
-              return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: s.label, className: glassCard + ' text-center' },
+              return h('div', { key: s.label, className: glassCard + ' text-center' },
                 h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, s.label),
                 h('p', { className: 'text-lg font-bold', style: { color: s.color } }, s.value),
                 h('p', { className: 'text-[11px] text-slate-600' }, s.sub)
@@ -1312,8 +1335,8 @@ window.StemLab = window.StemLab || {
             })
           ),
           // Particle sim
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: glassCard },
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-between mb-2' },
+          h('div', { className: glassCard },
+            h('div', { className: 'flex items-center justify-between mb-2' },
               h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wide' }, 'Particle Simulation'),
               h('button', { 'aria-label': 'Change particle running',
                 onClick: function() { upd('particleRunning', !particleRunning); },
@@ -1343,8 +1366,8 @@ window.StemLab = window.StemLab || {
         // ═══════════════════════════════════════════
         // SEIR TAB
         // ═══════════════════════════════════════════
-        tab === 'seir' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4' },
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: glassCard + ' space-y-3' },
+        tab === 'seir' && h('div', { className: 'space-y-4' },
+          h('div', { className: glassCard + ' space-y-3' },
             h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wide' }, 'SEIR Parameters'),
             slider('R\u2080', r0, 0.5, 12, 0.1, 'r0', function(v) { return v.toFixed(1); }),
             slider('Vaccination Rate (%)', vaccRate, 0, 95, 1, 'vaccRate', function(v) { return v + '%'; }),
@@ -1395,8 +1418,8 @@ window.StemLab = window.StemLab || {
         // ═══════════════════════════════════════════
         // R₀ EXPLORER TAB
         // ═══════════════════════════════════════════
-        tab === 'r0explorer' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4' },
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: glassCard },
+        tab === 'r0explorer' && h('div', { className: 'space-y-4' },
+          h('div', { className: glassCard },
             h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, '\uD83C\uDF21\uFE0F R\u2080 Explorer'),
             h('p', { className: 'text-xs text-slate-600 mb-3' }, gradeText(gradeBand,
               'See how contagious different diseases are!',
@@ -1404,11 +1427,11 @@ window.StemLab = window.StemLab || {
               'Explore how R\u2080 affects epidemic dynamics. Add comparisons to the table below.',
               'Systematically vary R\u2080 and observe effects on peak prevalence, total attack rate, and herd immunity threshold.'))
           ),
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: glassCard + ' space-y-3' },
+          h('div', { className: glassCard + ' space-y-3' },
             slider('R\u2080', r0, 0.5, 18, 0.1, 'r0', function(v) { return v.toFixed(1); }),
             slider('Vaccination (%)', vaccRate, 0, 95, 1, 'vaccRate', function(v) { return v + '%'; }),
             slider('Infectious Period', infectPeriod, 2, 30, 1, 'infectPeriod'),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2' },
+            h('div', { className: 'flex gap-2' },
               h('button', { 'aria-label': '+ Add to Comparison', onClick: function() { runSim(); addR0Comparison(); }, className: 'flex-1 py-2 text-sm font-bold bg-teal-700 text-white rounded-xl hover:bg-teal-700 transition-all' }, '+ Add to Comparison'),
               h('button', { 'aria-label': 'Clear', onClick: function() { upd('r0Compared', []); }, className: 'px-3 py-2 text-sm font-bold bg-slate-100 text-slate-600 rounded-xl' }, 'Clear')
             )
@@ -1468,8 +1491,8 @@ window.StemLab = window.StemLab || {
         // ═══════════════════════════════════════════
         // VACCINATION TAB
         // ═══════════════════════════════════════════
-        tab === 'vaccination' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4' },
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: glassCard },
+        tab === 'vaccination' && h('div', { className: 'space-y-4' },
+          h('div', { className: glassCard },
             h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, '\uD83D\uDC89 Vaccination Strategy'),
             h('p', { className: 'text-xs text-slate-600' }, gradeText(gradeBand,
               'Vaccines protect people from getting sick! Slide the bar to see what happens.',
@@ -1477,7 +1500,7 @@ window.StemLab = window.StemLab || {
               'Explore how vaccination rate affects herd immunity, R_effective, and peak infection.',
               'Analyze the relationship between vaccine coverage, effective reproduction number, and epidemic final size. Find the critical vaccination threshold p_c = 1 - 1/R\u2080.'))
           ),
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: glassCard + ' space-y-3' },
+          h('div', { className: glassCard + ' space-y-3' },
             slider('R\u2080', r0, 0.5, 12, 0.1, 'r0', function(v) { return v.toFixed(1); }),
             slider('Vaccination Rate', vaccRate, 0, 95, 1, 'vaccRate', function(v) { return v + '%'; }),
             slider('Infectious Period', infectPeriod, 2, 30, 1, 'infectPeriod'),
@@ -1528,9 +1551,9 @@ window.StemLab = window.StemLab || {
               'Explore multiplicative NPI effects on \u03B2_eff. Each intervention reduces the remaining transmission probability independently: \u03B2_eff = \u03B2 \u00D7 \u220F(1 - r_i).'))
           ),
           // NPI toggles
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: glassCard + ' space-y-2' },
+          h('div', { className: glassCard + ' space-y-2' },
             h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wide mb-2' }, 'Select Interventions'),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'grid grid-cols-2 sm:grid-cols-4 gap-2' },
+            h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2' },
               NPI_INTERVENTIONS.map(function(npi) {
                 var active = activeNPIs.indexOf(npi.id) >= 0;
                 return h('button', { 'aria-label': 'Subtract',
@@ -1539,8 +1562,8 @@ window.StemLab = window.StemLab || {
                   className: 'p-2 rounded-xl text-left transition-all border ' + (active ? 'bg-teal-50 border-teal-400 ring-2 ring-teal-200' : 'bg-white border-slate-200 hover:border-teal-300')
                 },
                   h('div', { className: 'flex items-center gap-1.5' },
-                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-lg' }, npi.icon),
-                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold ' + (active ? 'text-teal-700' : 'text-slate-600') }, npi.label)
+                    h('span', { className: 'text-lg' }, npi.icon),
+                    h('span', { className: 'text-[11px] font-bold ' + (active ? 'text-teal-700' : 'text-slate-600') }, npi.label)
                   ),
                   h('p', { className: 'text-[11px] text-slate-600 mt-0.5' }, '-' + (npi.betaReduction * 100) + '% transmission'),
                   h('p', { className: 'text-[11px] text-slate-600' }, 'Cost: ' + npi.cost)
@@ -1549,7 +1572,7 @@ window.StemLab = window.StemLab || {
             )
           ),
           // Parameter sliders
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: glassCard + ' space-y-3' },
+          h('div', { className: glassCard + ' space-y-3' },
             slider('R\u2080', r0, 0.5, 12, 0.1, 'r0', function(v) { return v.toFixed(1); }),
             slider('Vaccination (%)', vaccRate, 0, 95, 1, 'vaccRate', function(v) { return v + '%'; }),
             slider('Infectious Period', infectPeriod, 2, 30, 1, 'infectPeriod'),
@@ -1626,9 +1649,9 @@ window.StemLab = window.StemLab || {
               'Agent-based grid simulation showing spatial disease transmission.',
               'Stochastic cellular automaton modeling spatial SIR dynamics with 8-neighbor contact topology.'))
           ),
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: glassCard + ' space-y-3' },
+          h('div', { className: glassCard + ' space-y-3' },
             h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-1' }, 'Scenario'),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-1.5' },
+            h('div', { className: 'flex flex-wrap gap-1.5' },
               MAP_SCENARIOS.map(function(sc, idx) {
                 var active = mapScenario === idx;
                 return h('button', { 'aria-label': 'Change map running',
@@ -1642,7 +1665,7 @@ window.StemLab = window.StemLab || {
             slider('R\u2080', r0, 0.5, 8, 0.1, 'r0', function(v) { return v.toFixed(1); }),
             slider('Pre-vaccinated (%)', mapVacc, 0, 90, 5, 'mapVacc', function(v) { return v + '%'; }),
             slider('Hospital Beds (% of pop)', hospitalBeds, 1, 15, 1, 'hospitalBeds', function(v) { return v + '%'; }),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2' },
+            h('div', { className: 'flex gap-2' },
               h('button', { 'aria-label': 'Generate Map', onClick: initMap, className: 'flex-1 py-2 text-sm font-bold bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all' }, '\uD83D\uDDFA\uFE0F Generate Map'),
               mapGrid && h('button', { 'aria-label': 'Change map running',
                 onClick: function() { upd('mapRunning', !mapRunning); },
@@ -1667,17 +1690,17 @@ window.StemLab = window.StemLab || {
               mapGrid.reduce(function(cells, row, ri) {
                 row.forEach(function(cell, ci) {
                   var bg = cell === 'S' ? '#3b82f6' : cell === 'I' ? '#ef4444' : cell === 'R' ? '#22c55e' : '#1e293b';
-                  cells.push(h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: ri + '-' + ci, style: { width: '14px', height: '14px', backgroundColor: bg, transition: 'background-color 0.15s' } }));
+                  cells.push(h('div', { key: ri + '-' + ci, style: { width: '14px', height: '14px', backgroundColor: bg, transition: 'background-color 0.15s' } }));
                 });
                 return cells;
               }, [])
             )
           ),
           // Quarantine zones + hospital capacity
-          mapGrid && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: glassCard + ' space-y-3' },
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-between' },
+          mapGrid && h('div', { className: glassCard + ' space-y-3' },
+            h('div', { className: 'flex items-center justify-between' },
               h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, '\uD83D\uDEA7 Quarantine Zones (' + mapQuarantineZones.length + ')'),
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2' },
+              h('div', { className: 'flex gap-2' },
                 h('button', { 'aria-label': '+ Add Zone',
                   onClick: function() {
                     var sc = MAP_SCENARIOS[mapScenario];
@@ -1735,8 +1758,8 @@ window.StemLab = window.StemLab || {
             })()
           ),
           // AI Analysis
-          callGemini && mapHistory && mapHistory.length > 5 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: glassCard },
-            d.mapAnalysis ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs text-slate-700 leading-relaxed whitespace-pre-line' }, d.mapAnalysis) :
+          callGemini && mapHistory && mapHistory.length > 5 && h('div', { className: glassCard },
+            d.mapAnalysis ? h('div', { className: 'text-xs text-slate-700 leading-relaxed whitespace-pre-line' }, d.mapAnalysis) :
             h('button', { 'aria-label': 'Change map analysis loading',
               onClick: function() {
                 upd('mapAnalysisLoading', true);
@@ -1754,8 +1777,8 @@ window.StemLab = window.StemLab || {
         // ═══════════════════════════════════════════
         // CONTACT TRACING TAB (NEW)
         // ═══════════════════════════════════════════
-        tab === 'contacttrace' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4' },
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: glassCard },
+        tab === 'contacttrace' && h('div', { className: 'space-y-4' },
+          h('div', { className: glassCard },
             h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, '\uD83D\uDD17 Contact Tracing'),
             h('p', { className: 'text-xs text-slate-600' }, gradeText(gradeBand,
               'Be a disease detective! Find all the sick people by following who they talked to!',
@@ -1763,8 +1786,8 @@ window.StemLab = window.StemLab || {
               'Identify all infected individuals in a contact network. Start from Patient Zero and trace the infection chain.',
               'Perform contact tracing on a stochastic network graph. The infection chain follows edges with probability proportional to contact intensity. Minimize false traces to maximize your score.'))
           ),
-          !ctNetwork ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: glassCard + ' text-center space-y-3' },
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-5xl mb-2' }, '\uD83D\uDD0D'),
+          !ctNetwork ? h('div', { className: glassCard + ' text-center space-y-3' },
+            h('div', { className: 'text-5xl mb-2' }, '\uD83D\uDD0D'),
             h('p', { className: 'text-sm font-bold text-slate-700' }, 'Trace the infection chain!'),
             h('p', { className: 'text-xs text-slate-600' }, 'Click on people connected to known cases to test if they\'re infected.'),
             h('button', { 'aria-label': 'Start Tracing', onClick: startContactTrace, className: 'px-6 py-2 text-sm font-bold bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all' }, '\uD83D\uDD17 Start Tracing')
@@ -1817,18 +1840,18 @@ window.StemLab = window.StemLab || {
                       strokeWidth: isConnected && !revealed ? 3 : 1.5,
                       opacity: canClick && isConnected ? 1 : (revealed ? 1 : 0.5)
                     }),
-                    h('text', { x: node.x, y: node.y + 4, textAnchor: 'middle', fill: revealed ? 'white' : '#64748b', fontSize: 10, fontWeight: 'bold' },
+                    h('text', { x: node.x, y: node.y + 4, textAnchor: 'middle', fill: revealed ? 'white' : '#94a3b8', fontSize: 10, fontWeight: 'bold' },
                       node.isPatientZero ? 'P0' : String.fromCharCode(65 + node.id))
                   );
                 })
               )
             ),
             // Feedback
-            d.ctFeedback && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: glassCard },
+            d.ctFeedback && h('div', { className: glassCard },
               h('p', { className: 'text-sm font-bold ' + (d.ctFeedback[0] === '\u2705' ? 'text-emerald-600' : 'text-red-600') }, d.ctFeedback)
             ),
             // Controls
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2' },
+            h('div', { className: 'flex gap-2' },
               h('button', { 'aria-label': 'New Network', onClick: startContactTrace, className: 'px-4 py-2 text-sm font-bold bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all' }, '\u21BA New Network'),
               ctComplete && callGemini && h('button', { 'aria-label': 'Change ct analysis loading',
                 onClick: function() {
@@ -1867,17 +1890,17 @@ window.StemLab = window.StemLab || {
               'Analyze the epidemiological parameters, intervention strategies, and societal impacts of history\'s most significant pandemics. Compare R\u2080 values, CFRs, and containment outcomes.'))
           ),
           // Timeline
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: glassCard },
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'relative' },
+          h('div', { className: glassCard },
+            h('div', { className: 'relative' },
               // Timeline line
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'absolute left-4 top-0 bottom-0 w-0.5 bg-slate-300' }),
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4 pl-10' },
+              h('div', { className: 'absolute left-4 top-0 bottom-0 w-0.5 bg-slate-300' }),
+              h('div', { className: 'space-y-4 pl-10' },
                 HISTORICAL_PANDEMICS.map(function(p) {
                   var expanded = d.historyExpanded === p.name;
                   var viewed = historyViewed[p.name];
-                  return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: p.name, className: 'relative' },
+                  return h('div', { key: p.name, className: 'relative' },
                     // Timeline dot
-                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'absolute -left-[26px] top-2 w-4 h-4 rounded-full border-2 border-white shadow-sm', style: { backgroundColor: p.color } }),
+                    h('div', { className: 'absolute -left-[26px] top-2 w-4 h-4 rounded-full border-2 border-white shadow-sm', style: { backgroundColor: p.color } }),
                     h('button', { 'aria-label': 'View Pandemic',
                       onClick: function() {
                         viewPandemic(p.name);
@@ -1926,7 +1949,7 @@ window.StemLab = window.StemLab || {
                         )
                       ),
                       // Actions
-                      h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 pt-2 border-t border-slate-100' },
+                      h('div', { className: 'flex gap-2 pt-2 border-t border-slate-100' },
                         callTTS && h('button', { 'aria-label': 'Read Aloud', onClick: function() { callTTS(p.gradeSummary[gradeBand] || p.gradeSummary['3-5']); }, className: 'px-3 py-1.5 text-[11px] font-bold bg-blue-50 text-blue-600 rounded-lg' }, '\uD83D\uDD0A Read Aloud'),
                         h('button', { 'aria-label': 'Simulate', onClick: function() { applyPreset(PRESETS.findIndex(function(pr) { return pr.name === 'COVID-19'; }) || 0); updMulti({ tab: 'sir' }); }, className: 'px-3 py-1.5 text-[11px] font-bold bg-violet-50 text-violet-600 rounded-lg' }, '\uD83D\uDD2C Simulate')
                       )
@@ -1947,8 +1970,8 @@ window.StemLab = window.StemLab || {
         // ═══════════════════════════════════════════
         // AI SCENARIOS TAB (NEW)
         // ═══════════════════════════════════════════
-        tab === 'scenarios' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4' },
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: glassCard },
+        tab === 'scenarios' && h('div', { className: 'space-y-4' },
+          h('div', { className: glassCard },
             h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, '\uD83C\uDFAD Outbreak Scenarios'),
             h('p', { className: 'text-xs text-slate-600' }, gradeText(gradeBand,
               'A pretend sickness is spreading! Pick the best way to stop it!',
@@ -1956,8 +1979,8 @@ window.StemLab = window.StemLab || {
               'AI generates a novel outbreak scenario. Analyze the parameters and choose the optimal public health response.',
               'Evaluate AI-generated scenarios requiring you to consider R\u2080, transmission mode, available resources, and intervention trade-offs. Optimal response depends on epidemiological parameters and social constraints.'))
           ),
-          !scenarioData && !d.scenarioLoading ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: glassCard + ' text-center space-y-3' },
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-5xl mb-2' }, '\uD83C\uDFAD'),
+          !scenarioData && !d.scenarioLoading ? h('div', { className: glassCard + ' text-center space-y-3' },
+            h('div', { className: 'text-5xl mb-2' }, '\uD83C\uDFAD'),
             h('p', { className: 'text-sm font-bold text-slate-700' }, 'AI Outbreak Scenario Generator'),
             h('p', { className: 'text-xs text-slate-600' }, 'Gemini will create a unique fictional outbreak for you to respond to.'),
             callGemini ? h('button', { 'aria-label': 'Generate Scenario', onClick: generateScenario, className: 'px-6 py-2 text-sm font-bold bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-all' }, '\uD83E\uDDE0 Generate Scenario') :
@@ -1988,9 +2011,9 @@ window.StemLab = window.StemLab || {
               )
             ),
             // Response options
-            !scenarioChoice && scenarioData.options && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: glassCard },
+            !scenarioChoice && scenarioData.options && h('div', { className: glassCard },
               h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-3' }, 'Choose Your Response Strategy'),
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-2' },
+              h('div', { className: 'space-y-2' },
                 scenarioData.options.map(function(opt, idx) {
                   var letters = ['A', 'B', 'C'];
                   var colors = ['#3b82f6', '#f59e0b', '#22c55e'];
@@ -2019,16 +2042,16 @@ window.StemLab = window.StemLab || {
                   scenarioResult.score >= 70 ? 'Excellent Response!' : scenarioResult.score >= 40 ? 'Adequate Response' : 'Suboptimal Response')
               ),
               h('p', { className: 'text-xs text-slate-700 leading-relaxed' }, scenarioResult.outcome),
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-2 flex items-center gap-2' },
-                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold text-slate-600' }, 'Effectiveness:'),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex-1 h-3 bg-slate-200 rounded-full overflow-hidden' },
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'h-full rounded-full transition-all', style: { width: scenarioResult.score + '%', background: scenarioResult.score >= 70 ? '#22c55e' : scenarioResult.score >= 40 ? '#f59e0b' : '#ef4444' } })
+              h('div', { className: 'mt-2 flex items-center gap-2' },
+                h('span', { className: 'text-[11px] font-bold text-slate-600' }, 'Effectiveness:'),
+                h('div', { className: 'flex-1 h-3 bg-slate-200 rounded-full overflow-hidden' },
+                  h('div', { className: 'h-full rounded-full transition-all', style: { width: scenarioResult.score + '%', background: scenarioResult.score >= 70 ? '#22c55e' : scenarioResult.score >= 40 ? '#f59e0b' : '#ef4444' } })
                 ),
-                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold font-mono' }, scenarioResult.score + '/100')
+                h('span', { className: 'text-xs font-bold font-mono' }, scenarioResult.score + '/100')
               )
             ),
             // Play again
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2' },
+            h('div', { className: 'flex gap-2' },
               h('button', { 'aria-label': 'New Scenario', onClick: function() { updMulti({ scenarioData: null, scenarioChoice: null, scenarioResult: null }); generateScenario(); }, className: 'px-4 py-2 text-sm font-bold bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-all' }, '\uD83E\uDDE0 New Scenario'),
               scenarioData.r0 && h('button', { 'aria-label': 'Simulate R=', onClick: function() { updMulti({ tab: 'sir', r0: scenarioData.r0 }); }, className: 'px-4 py-2 text-sm font-bold bg-indigo-100 text-indigo-600 rounded-xl' }, '\uD83D\uDD2C Simulate R\u2080=' + scenarioData.r0)
             )
@@ -2038,10 +2061,10 @@ window.StemLab = window.StemLab || {
         // ═══════════════════════════════════════════
         // CHALLENGE TAB
         // ═══════════════════════════════════════════
-        tab === 'challenge' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4' },
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: glassCard },
+        tab === 'challenge' && h('div', { className: 'space-y-4' },
+          h('div', { className: glassCard },
             h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, '\uD83C\uDFAF Epidemiology Challenge'),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 mb-3' },
+            h('div', { className: 'flex gap-2 mb-3' },
               [1, 2, 3].map(function(t) {
                 var labels = { 1: 'Easy', 2: 'Medium', 3: 'Hard' };
                 var colors = { 1: 'bg-emerald-100 text-emerald-700', 2: 'bg-amber-100 text-amber-700', 3: 'bg-red-100 text-red-700' };
@@ -2074,7 +2097,7 @@ window.StemLab = window.StemLab || {
                 className: 'w-full px-4 py-2 border border-slate-200 rounded-xl text-sm focus:border-indigo-400 outline-none',
                 'aria-label': 'Challenge answer'
               }),
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2' },
+              h('div', { className: 'flex gap-2' },
                 h('button', { 'aria-label': 'Check', onClick: chalCheck, className: 'px-4 py-2 text-sm font-bold bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all' }, 'Check'),
                 h('button', { 'aria-label': 'Hint', onClick: function() { upd('chalFeedback', '\uD83D\uDCA1 ' + (activeChalQ.h || 'No hint')); }, className: 'px-3 py-2 text-sm font-bold bg-amber-50 text-amber-600 rounded-xl' }, '\uD83D\uDCA1 Hint'),
                 h('button', { 'aria-label': 'Skip', onClick: chalNext, className: 'px-3 py-2 text-sm font-bold bg-slate-100 text-slate-600 rounded-xl' }, 'Skip \u27A1'),
@@ -2088,8 +2111,8 @@ window.StemLab = window.StemLab || {
         // ═══════════════════════════════════════════
         // BATTLE TAB
         // ═══════════════════════════════════════════
-        tab === 'battle' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4' },
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: glassCard },
+        tab === 'battle' && h('div', { className: 'space-y-4' },
+          h('div', { className: glassCard },
             h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, '\u2694\uFE0F Outbreak Defense'),
             h('p', { className: 'text-xs text-slate-600' }, gradeText(gradeBand,
               'Fight the virus by answering questions! Don\'t let it win!',
@@ -2097,10 +2120,10 @@ window.StemLab = window.StemLab || {
               'Defeat the virus by answering SIR/SEIR and epidemiology questions. Each correct answer damages the virus.',
               'Combat a simulated outbreak using your epidemiological knowledge. Correct answers deal damage; wrong answers let the virus spread.'))
           ),
-          !battleActive ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: glassCard + ' text-center space-y-3' },
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-5xl mb-2' }, '\uD83E\uDDA0'),
+          !battleActive ? h('div', { className: glassCard + ' text-center space-y-3' },
+            h('div', { className: 'text-5xl mb-2' }, '\uD83E\uDDA0'),
             h('p', { className: 'text-sm font-bold text-red-600' }, 'A virus is threatening the population!'),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 justify-center' },
+            h('div', { className: 'flex gap-2 justify-center' },
               h('button', { 'aria-label': 'Start Battle', onClick: function() { startBattle(false); }, className: 'px-4 py-2 text-sm font-bold bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all' }, '\u2694\uFE0F Start Battle'),
               callGemini && h('button', { 'aria-label': 'AI Battle', onClick: function() { startBattle(true); }, className: 'px-4 py-2 text-sm font-bold bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-all' }, '\uD83E\uDDE0 AI Battle')
             )
@@ -2116,20 +2139,20 @@ window.StemLab = window.StemLab || {
               ),
               h('div', { className: 'flex items-center gap-2' },
                 h('span', { className: 'text-xs font-bold text-red-600 w-16' }, '\uD83E\uDDA0 Virus'),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex-1 h-4 bg-slate-200 rounded-full overflow-hidden' },
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'h-full bg-red-500 rounded-full transition-all', style: { width: battleEnemyHP + '%' } })
+                h('div', { className: 'flex-1 h-4 bg-slate-200 rounded-full overflow-hidden' },
+                  h('div', { className: 'h-full bg-red-500 rounded-full transition-all', style: { width: battleEnemyHP + '%' } })
                 ),
-                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-mono font-bold w-10 text-right' }, battleEnemyHP + '%')
+                h('span', { className: 'text-xs font-mono font-bold w-10 text-right' }, battleEnemyHP + '%')
               )
             ),
             h('p', { className: 'text-[11px] text-slate-600 mb-2' }, 'Round ' + (battleRound + 1) + (battleUseAI ? ' \uD83E\uDDE0 AI Mode' : '')),
             // Battle content
-            battleOver ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-center space-y-2 py-4' },
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-4xl mb-2' }, battleWon ? '\uD83C\uDFC6' : '\uD83E\uDDA0'),
+            battleOver ? h('div', { className: 'text-center space-y-2 py-4' },
+              h('div', { className: 'text-4xl mb-2' }, battleWon ? '\uD83C\uDFC6' : '\uD83E\uDDA0'),
               h('p', { className: 'text-lg font-bold ' + (battleWon ? 'text-emerald-700' : 'text-red-700') }, battleWon ? 'Victory! Outbreak Contained!' : 'Defeated! Virus Wins!'),
               h('p', { className: 'text-xs text-slate-600' }, 'Your HP: ' + battlePlayerHP + ' | Virus HP: ' + battleEnemyHP),
               battleFeedback && h('p', { className: 'text-xs font-bold mt-1 ' + (battleFeedback[0] === '\u2705' ? 'text-emerald-600' : 'text-red-600') }, battleFeedback),
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 justify-center mt-2' },
+              h('div', { className: 'flex gap-2 justify-center mt-2' },
                 h('button', { 'aria-label': 'Play Again', onClick: function() { startBattle(false); }, className: 'px-4 py-2 text-sm font-bold bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all' }, '\u21BA Play Again'),
                 callGemini && h('button', { 'aria-label': 'AI Rematch', onClick: function() { startBattle(true); }, className: 'px-4 py-2 text-sm font-bold bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-all' }, '\u2728 AI Rematch')
               )
@@ -2147,7 +2170,7 @@ window.StemLab = window.StemLab || {
                   battleUseAI && h('span', { className: 'px-1.5 py-0.5 bg-purple-100 text-purple-600 text-[11px] font-bold rounded-full' }, '\uD83E\uDDE0 AI-GENERATED'),
                   h('p', { className: 'text-sm font-medium text-slate-700' }, q.q),
                   h('input', { type: 'text', value: battleAnswer, onChange: function(e) { upd('battleAnswer', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') battleAttack(); }, placeholder: 'Type your answer...', className: 'w-full px-4 py-2 border border-slate-200 rounded-xl text-sm font-mono focus:border-red-400 outline-none', 'aria-label': 'Battle answer' }),
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2' },
+                  h('div', { className: 'flex gap-2' },
                     h('button', { 'aria-label': 'Attack!', onClick: battleAttack, className: 'px-4 py-2 text-sm font-bold bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all' }, '\u2694\uFE0F Attack!'),
                     h('button', { 'aria-label': 'Hint', onClick: function() { updMulti({ battleFeedback: '\uD83D\uDCA1 ' + (q.h || 'No hint') }); }, className: 'px-3 py-2 text-sm font-bold bg-amber-50 text-amber-600 rounded-xl' }, '\uD83D\uDCA1 Hint')
                   ),
@@ -2161,20 +2184,20 @@ window.StemLab = window.StemLab || {
         // ═══════════════════════════════════════════
         // LEARN TAB
         // ═══════════════════════════════════════════
-        tab === 'learn' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4' },
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: glassCard },
+        tab === 'learn' && h('div', { className: 'space-y-4' },
+          h('div', { className: glassCard },
             h('h4', { className: 'text-sm font-bold text-slate-700 mb-3' }, '\uD83D\uDCDA Learn \u2014 Epidemiology Concepts'),
             h('p', { className: 'text-xs text-slate-600 mb-4' }, 'Explore key topics adapted to your grade level (' + gradeBand + ').')
           ),
           LEARN_TOPICS.map(function(topic) {
             var content = topic.content[gradeBand] || topic.content['3-5'];
-            return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: topic.title, className: glassCard + ' space-y-3' },
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2' },
-                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-lg' }, topic.icon),
+            return h('div', { key: topic.title, className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center gap-2' },
+                h('span', { className: 'text-lg' }, topic.icon),
                 h('h5', { className: 'text-sm font-bold text-slate-700' }, topic.title)
               ),
               h('p', { className: 'text-xs text-slate-600 leading-relaxed' }, content),
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 pt-2 border-t border-slate-100' },
+              h('div', { className: 'flex gap-2 pt-2 border-t border-slate-100' },
                 h('button', { 'aria-label': 'Try It', onClick: function() { markLearnRead(topic.title); updMulti({ tab: topic.tryIt }); announceToSR('Switched to ' + topic.tryIt); }, className: 'px-3 py-1.5 text-[11px] font-bold bg-violet-50 text-violet-600 rounded-lg hover:bg-violet-100 transition-all' }, '\uD83D\uDD2C Try It'),
                 callTTS && h('button', { 'aria-label': 'Read Aloud', onClick: function() { markLearnRead(topic.title); callTTS(content); }, className: 'px-3 py-1.5 text-[11px] font-bold bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-all' }, '\uD83D\uDD0A Read Aloud')
               )

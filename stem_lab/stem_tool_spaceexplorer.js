@@ -1,3 +1,13 @@
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+(function() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById('allo-stem-motion-reduce-css')) return;
+  var st = document.createElement('style');
+  st.id = 'allo-stem-motion-reduce-css';
+  st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+  if (document.head) document.head.appendChild(st);
+})();
+
 // ═══════════════════════════════════════════
 // stem_tool_spaceexplorer.js — Space Explorer: Roguelike STEM Missions
 // Procedurally generated missions to planets and moons across the solar
@@ -218,7 +228,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
   var RESOURCES = {
     o2:     { label: 'O\u2082', emoji: '\uD83D\uDCA8', color: '#3b82f6', max: 100 },
     power:  { label: 'Power', emoji: '\u26A1', color: '#f59e0b', max: 100 },
-    hull:   { label: 'Hull', emoji: '\uD83D\uDEE1\uFE0F', color: '#6b7280', max: 100 },
+    hull:   { label: 'Hull', emoji: '\uD83D\uDEE1\uFE0F', color: '#94a3b8', max: 100 },
     morale: { label: 'Morale', emoji: '\uD83D\uDE0A', color: '#22c55e', max: 100 },
     fuel:   { label: 'Fuel', emoji: '\u26FD', color: '#8b5cf6', max: 100 },
     science:{ label: 'Science', emoji: '\uD83D\uDD2C', color: '#06b6d4', max: 999 }
@@ -427,7 +437,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
       ctx.fillText(b.toFixed(2), bx, plotY + 10);
     });
     // Y-axis label
-    ctx.fillStyle = '#64748b'; ctx.font = '8px ui-sans-serif'; ctx.textAlign = 'left';
+    ctx.fillStyle = '#94a3b8'; ctx.font = '8px ui-sans-serif'; ctx.textAlign = 'left';
     ctx.save(); ctx.translate(6, plotY + plotH / 2); ctx.rotate(-Math.PI / 2);
     ctx.textAlign = 'center'; ctx.fillText('absorption', 0, 0);
     ctx.restore();
@@ -1176,7 +1186,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                 h('p', { className: 'text-[11px] text-slate-400' }, 'Distribute ' + allocPool + ' pips before Turn ' + (turn + 1) + '/' + maxTurns)
               ),
               h('div', { className: 'text-right' },
-                h('div', { className: 'text-[10px] text-slate-500 uppercase tracking-wide' }, 'Remaining'),
+                h('div', { className: 'text-[10px] text-slate-300 uppercase tracking-wide' }, 'Remaining'),
                 h('div', { className: 'text-lg font-black ' + (allocRemaining === 0 ? 'text-green-400' : allocRemaining > 0 ? 'text-amber-400' : 'text-red-400') }, allocRemaining)
               )
             ),
@@ -1218,7 +1228,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
           ),
           // Projected drain preview
           h('div', { className: 'bg-white/5 rounded-xl p-2.5 border border-white/10', role: 'status' },
-            h('div', { className: 'text-[10px] text-slate-500 uppercase tracking-wide mb-1' }, 'Projected next turn'),
+            h('div', { className: 'text-[10px] text-slate-300 uppercase tracking-wide mb-1' }, 'Projected next turn'),
             h('div', { className: 'flex flex-wrap gap-x-3 gap-y-1 text-[11px]' },
               Object.keys(RESOURCES).filter(function(k) { return RESOURCES[k].max !== 999; }).map(function(k) {
                 var before = resources[k] || 0;
@@ -1234,7 +1244,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
           // helping this mission. Silent systems become visible — a student
           // who bought Recycler can now SEE it working ("O2 saves active").
           unlockedTech.length > 0 && h('div', { className: 'bg-white/5 rounded-xl p-2.5 border border-white/10' },
-            h('div', { className: 'text-[10px] text-slate-500 uppercase tracking-wide mb-1' }, 'Active Tech'),
+            h('div', { className: 'text-[10px] text-slate-300 uppercase tracking-wide mb-1' }, 'Active Tech'),
             h('div', { className: 'flex flex-wrap gap-1', role: 'list', 'aria-label': 'Active ship technologies' },
               TECH_TREE.filter(function(t) { return unlockedTech.indexOf(t.id) >= 0; }).map(function(t) {
                 return h('span', {
@@ -1346,7 +1356,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                 }
                 // Mission stage label
                 var stageLabel = turn < maxTurns * 0.3 ? 'Arrival Phase' : turn < maxTurns * 0.7 ? 'Exploration Phase' : 'Departure Phase';
-                ctx.font = 'bold 8px monospace'; ctx.textAlign = 'right'; ctx.fillStyle = '#64748b';
+                ctx.font = 'bold 8px monospace'; ctx.textAlign = 'right'; ctx.fillStyle = '#94a3b8';
                 ctx.fillText(stageLabel + ' \u2022 Turn ' + turn + '/' + maxTurns, W - 8, 12);
                 // Vignette
                 var vg = ctx.createRadialGradient(W * 0.5, H * 0.5, Math.min(W, H) * 0.3, W * 0.5, H * 0.5, Math.max(W, H) * 0.6);
@@ -1506,7 +1516,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
             crew.length > 0 && h('div', { className: 'mb-3', role: 'group', 'aria-label': 'Consult a specialist about this event' },
               h('div', { className: 'flex items-center justify-between mb-1' },
                 h('div', { className: 'text-[10px] font-bold text-amber-400/80 uppercase tracking-wide' }, '\uD83D\uDCAC Consult a specialist'),
-                h('div', { className: 'text-[10px] text-slate-500' },
+                h('div', { className: 'text-[10px] text-slate-300' },
                   consultUsed ? 'Consulted' : 'One per event'
                 )
               ),
@@ -1705,7 +1715,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                     h('p', { className: 'text-[11px] font-bold text-indigo-200' }, row.label),
                     h('div', { className: 'flex items-center gap-1.5' },
                       spec.count > 1 && h('span', { className: 'text-[10px] text-slate-400' }, '\u00D7' + spec.count),
-                      h('span', { className: 'text-[10px] font-mono text-slate-500' }, 'Bands: ' + row.bands.map(function(b) { return b.toFixed(2) + '\u03BCm'; }).join(', '))
+                      h('span', { className: 'text-[10px] font-mono text-slate-300' }, 'Bands: ' + row.bands.map(function(b) { return b.toFixed(2) + '\u03BCm'; }).join(', '))
                     )
                   ),
                   h('p', { className: 'text-[11px] text-slate-300 leading-relaxed' }, row.teach)

@@ -135,7 +135,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
       setIsFetching(true);
       try {
           const content = await fetchAndCleanUrl(url, onCallGemini, addToast);
-          if (content) {
+          if (typeof content === 'string' && content.trim()) {
               setLocalData(prev => ({ ...prev, fetchedContent: content }));
           }
       } catch (err) {
@@ -478,7 +478,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                       {t('wizard.fetch_action')}
                                   </button>
                               </div>
-                              {localData.fetchedContent && (
+                              {typeof localData.fetchedContent === 'string' && localData.fetchedContent && (
                                   <div className="bg-green-50 border border-green-200 rounded-xl p-5 animate-in fade-in slide-in-from-top-2 shadow-sm">
                                       <div className="flex items-center gap-2 text-green-800 font-bold mb-2">
                                           <CheckCircle size={20} className="fill-green-100 text-green-600" /> {t('wizard.content_loaded')}
@@ -523,7 +523,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                       {isFetching ? t('wizard.finding_button') : t('wizard.find_button')}
                                   </button>
                               </div>
-                              {!localData.fetchedContent && localData.searchOptions && localData.searchOptions.length > 0 && (
+                              {!(typeof localData.fetchedContent === 'string' && localData.fetchedContent) && localData.searchOptions && localData.searchOptions.length > 0 && (
                                   <div className="space-y-3 mb-6 animate-in slide-in-from-bottom-4">
                                       <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider">{t('wizard.select_resource')}</h4>
                                       {localData.searchOptions.map((opt, idx) => (
@@ -563,7 +563,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                       ))}
                                   </div>
                               )}
-                              {localData.fetchedContent && (
+                              {typeof localData.fetchedContent === 'string' && localData.fetchedContent && (
                                   <div className="bg-green-50 border border-green-200 rounded-xl p-5 animate-in fade-in slide-in-from-top-2 shadow-sm">
                                       <div className="flex items-center gap-2 text-green-800 font-bold mb-2">
                                           <CheckCircle size={20} className="fill-green-100 text-green-600" /> {t('wizard.content_loaded')}

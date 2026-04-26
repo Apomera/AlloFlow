@@ -1,3 +1,13 @@
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+(function() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById('allo-stem-motion-reduce-css')) return;
+  var st = document.createElement('style');
+  st.id = 'allo-stem-motion-reduce-css';
+  st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+  if (document.head) document.head.appendChild(st);
+})();
+
 // stem_tool_brainatlas.js - Brain Atlas Explorer plugin
 // Extracted from stem_tool_science.js
 (function() {
@@ -2582,7 +2592,7 @@ var d = labToolData.brainAtlas || {};
 
                 ctx.beginPath(); ctx.moveTo(px2,py2); ctx.lineTo(px2,py2+ph2); ctx.lineTo(px2+pw2,py2+ph2); ctx.stroke();
 
-                ctx.font='bold '+(7*fontScale)+'px Inter,system-ui,sans-serif'; ctx.fillStyle='#64748b'; ctx.textAlign='right';
+                ctx.font='bold '+(7*fontScale)+'px Inter,system-ui,sans-serif'; ctx.fillStyle='#94a3b8'; ctx.textAlign='right';
 
                 ctx.fillText('+30 mV',px2-3,py2+ph2*0.15); ctx.fillText('0 mV',px2-3,py2+ph2*0.38);
 
@@ -2670,7 +2680,7 @@ var d = labToolData.brainAtlas || {};
 
                 ctx.beginPath(); ctx.roundRect(W-pnW2-10,6,pnW2,24,8);
 
-                var pc=phase<1?'#64748b':phase<2?'#eab308':phase<4?'#f97316':phase<5?'#22c55e':'#3b82f6';
+                var pc=phase<1?'#94a3b8':phase<2?'#eab308':phase<4?'#f97316':phase<5?'#22c55e':'#3b82f6';
 
                 ctx.fillStyle=pc+'20'; ctx.fill(); ctx.strokeStyle=pc+'60'; ctx.lineWidth=1; ctx.stroke();
 
@@ -2689,7 +2699,7 @@ var d = labToolData.brainAtlas || {};
                 var sleepCycles = [
                   // ~90 min cycles, 4-5 per night. REM lengthens, SWS shortens across night
                   // Cycle 1 (0-0.19)
-                  {s:'Awake',y:0.05,c:'#64748b',t0:0,t1:0.01},
+                  {s:'Awake',y:0.05,c:'#94a3b8',t0:0,t1:0.01},
                   {s:'N1',y:0.25,c:'#38bdf8',t0:0.01,t1:0.03},
                   {s:'N2',y:0.50,c:'#3b82f6',t0:0.03,t1:0.08},
                   {s:'N3',y:0.80,c:'#4338ca',t0:0.08,t1:0.14},
@@ -2715,7 +2725,7 @@ var d = labToolData.brainAtlas || {};
                   {s:'N1',y:0.25,c:'#38bdf8',t0:0.82,t1:0.84},
                   {s:'N2',y:0.50,c:'#3b82f6',t0:0.84,t1:0.90},
                   {s:'REM',y:0.15,c:'#a855f7',t0:0.90,t1:0.98},
-                  {s:'Awake',y:0.05,c:'#64748b',t0:0.98,t1:1.0}
+                  {s:'Awake',y:0.05,c:'#94a3b8',t0:0.98,t1:1.0}
                 ];
 
                 // Graph area
@@ -2737,7 +2747,7 @@ var d = labToolData.brainAtlas || {};
                 ctx.font = Math.round(10 * fontScale) + 'px Inter, system-ui, sans-serif';
                 ctx.textAlign = 'right';
                 var stageLabels = [
-                  {name:'Awake',y:0.05,color:'#64748b'},
+                  {name:'Awake',y:0.05,color:'#94a3b8'},
                   {name:'REM',y:0.15,color:'#a855f7'},
                   {name:'N1',y:0.25,color:'#38bdf8'},
                   {name:'N2',y:0.50,color:'#3b82f6'},
@@ -2836,7 +2846,7 @@ var d = labToolData.brainAtlas || {};
                 ctx.font = 'bold ' + Math.round(9 * fontScale) + 'px Inter, system-ui, sans-serif';
                 var legendY = H * 0.92;
                 var legendItems = [
-                  {name:'Awake',c:'#64748b'},{name:'REM',c:'#a855f7'},{name:'N1',c:'#38bdf8'},{name:'N2',c:'#3b82f6'},{name:'N3/SWS',c:'#4338ca'}
+                  {name:'Awake',c:'#94a3b8'},{name:'REM',c:'#a855f7'},{name:'N1',c:'#38bdf8'},{name:'N2',c:'#3b82f6'},{name:'N3/SWS',c:'#4338ca'}
                 ];
                 var lx = W * 0.10;
                 legendItems.forEach(function(li) {
@@ -2896,7 +2906,7 @@ var d = labToolData.brainAtlas || {};
                   ctx.fillStyle = isAct ? '#7c3aed' : '#f1f5f9';
                   ctx.fill();
                   ctx.strokeStyle = isAct ? '#6d28d9' : '#cbd5e1'; ctx.lineWidth = 1; ctx.stroke();
-                  ctx.fillStyle = isAct ? '#fff' : '#64748b'; ctx.textAlign = 'center';
+                  ctx.fillStyle = isAct ? '#fff' : '#94a3b8'; ctx.textAlign = 'center';
                   ctx.fillText(EEG_ACTIVITIES[ak].label, bx + actBtnW / 2, actBtnY + 11);
                   canvas._eegBtnRects.push({ key: ak, x: bx / W, y: actBtnY / H, w: actBtnW / W, h: actBtnH / H });
                 });
@@ -3208,7 +3218,7 @@ var d = labToolData.brainAtlas || {};
                 legRow1.forEach(function(li) {
                   ctx.beginPath(); ctx.arc(legX1 + 5, legY1, 4, 0, Math.PI * 2);
                   ctx.fillStyle = li.color; ctx.fill();
-                  ctx.fillStyle = '#64748b'; ctx.textAlign = 'left';
+                  ctx.fillStyle = '#94a3b8'; ctx.textAlign = 'left';
                   ctx.fillText(li.label, legX1 + 13, legY1 + 4);
                   legX1 += ctx.measureText(li.label).width + 30;
                 });
@@ -3221,7 +3231,7 @@ var d = labToolData.brainAtlas || {};
                 legRow2.forEach(function(li) {
                   ctx.beginPath(); ctx.arc(legX2 + 5, legY2, 4, 0, Math.PI * 2);
                   ctx.fillStyle = li.color; ctx.fill();
-                  ctx.fillStyle = '#64748b'; ctx.textAlign = 'left';
+                  ctx.fillStyle = '#94a3b8'; ctx.textAlign = 'left';
                   ctx.fillText(li.label, legX2 + 13, legY2 + 4);
                   legX2 += ctx.measureText(li.label).width + 30;
                 });

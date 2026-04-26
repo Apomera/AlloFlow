@@ -1,3 +1,13 @@
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+(function() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById('allo-stem-motion-reduce-css')) return;
+  var st = document.createElement('style');
+  st.id = 'allo-stem-motion-reduce-css';
+  st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+  if (document.head) document.head.appendChild(st);
+})();
+
 // ═══════════════════════════════════════════
 // stem_tool_flightsim.js — SkySchool: Educational Flight Simulator
 // Teaches aerodynamics, flight mechanics, navigation, and geography
@@ -16,6 +26,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
 
 (function() {
   'use strict';
+  // ── Accessibility live region (WCAG 4.1.3) ──
+  (function() {
+    if (document.getElementById('allo-live-flightsim')) return;
+    var lr = document.createElement('div');
+    lr.id = 'allo-live-flightsim';
+    lr.setAttribute('aria-live', 'polite');
+    lr.setAttribute('aria-atomic', 'true');
+    lr.setAttribute('role', 'status');
+    lr.className = 'sr-only';
+    lr.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(lr);
+  })();
+
 
   // ── WAYPOINTS: Real-world locations with educational facts ──
   var WAYPOINTS = [
@@ -2235,7 +2258,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           if (line) gfx.fillText(line, cardX + 12, lineY);
 
           if (p.pop) {
-            gfx.fillStyle = '#64748b'; gfx.font = '9px system-ui'; gfx.textAlign = 'right';
+            gfx.fillStyle = '#94a3b8'; gfx.font = '9px system-ui'; gfx.textAlign = 'right';
             gfx.fillText('Pop: ' + p.pop, cardX + cardW - 12, cardY + 18);
           }
 
@@ -3757,10 +3780,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         });
 
         if (quiz.showResult) {
-          gfx.fillStyle = '#64748b'; gfx.font = '10px system-ui'; gfx.textAlign = 'center';
+          gfx.fillStyle = '#94a3b8'; gfx.font = '10px system-ui'; gfx.textAlign = 'center';
           gfx.fillText('Press Q for next question, ESC to close quiz', cardX + cardW / 2, cardY + cardH - 8);
         } else {
-          gfx.fillStyle = '#64748b'; gfx.font = '10px system-ui'; gfx.textAlign = 'center';
+          gfx.fillStyle = '#94a3b8'; gfx.font = '10px system-ui'; gfx.textAlign = 'center';
           gfx.fillText('Press 1, 2, 3, or 4 to answer', cardX + cardW / 2, cardY + cardH - 8);
         }
         gfx.restore(); // Restore from fade-in globalAlpha
@@ -4322,7 +4345,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           var twX = termX + termW * 0.35;
           var twW = termW * 0.18;
           var twShaftH = 28;
-          gfx.fillStyle = '#64748b';
+          gfx.fillStyle = '#94a3b8';
           gfx.fillRect(twX, termY - twShaftH, twW, twShaftH);
           // Glass cab (wider than shaft)
           gfx.fillStyle = '#1e293b';
@@ -4354,7 +4377,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             var hH = (H - horizonY) * (0.14 - hi * 0.015);
             var hX = hangBaseX + hi * (hW + 6);
             // Metal siding
-            gfx.fillStyle = hi === 0 ? '#6b7280' : (hi === 1 ? '#7b8390' : '#8a95a3');
+            gfx.fillStyle = hi === 0 ? '#94a3b8' : (hi === 1 ? '#7b8390' : '#8a95a3');
             gfx.fillRect(hX, hangY, hW, hH);
             // Arched roof (half-ellipse)
             gfx.fillStyle = hi === 0 ? '#4b5563' : (hi === 1 ? '#5b6776' : '#6a7888');
@@ -4842,7 +4865,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           gfx.fillText(ls.grade, cardX + cardW / 2, cardY + 28);
           gfx.fillStyle = '#94a3b8'; gfx.font = '12px system-ui';
           gfx.fillText(Math.round(ls.touchdownFPM) + ' fpm  |  ' + Math.round(ls.touchdownSpeed) + ' kts', cardX + cardW / 2, cardY + 48);
-          gfx.fillStyle = '#64748b'; gfx.font = '10px system-ui';
+          gfx.fillStyle = '#94a3b8'; gfx.font = '10px system-ui';
           var tip = ls.touchdownFPM < 200 ? 'Perfect touchdown!' : ls.touchdownFPM < 400 ? 'Try descending more gently — aim for under 200 fpm.' : 'Reduce your descent rate before touchdown. Flare (pitch up gently) just before the runway.';
           gfx.fillText(tip, cardX + cardW / 2, cardY + 66);
           gfx.globalAlpha = 1;
@@ -5264,7 +5287,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             }
           });
 
-          gfx.fillStyle = '#64748b'; gfx.font = '12px system-ui'; gfx.textAlign = 'center';
+          gfx.fillStyle = '#94a3b8'; gfx.font = '12px system-ui'; gfx.textAlign = 'center';
           gfx.fillText('Press ESC to return to menu', cx, H - 20);
         }
       };
@@ -5617,7 +5640,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             gfx.fillStyle = '#94a3b8'; gfx.font = '14px system-ui';
             gfx.fillText('Press Space to resume | I for status | ESC to exit', W / 2, H * 0.5);
             var ktsP = Math.round(flightRef.current.speed * 0.5924838);
-            gfx.fillStyle = '#64748b'; gfx.font = '12px system-ui';
+            gfx.fillStyle = '#94a3b8'; gfx.font = '12px system-ui';
             gfx.fillText('ALT: ' + Math.round(flightRef.current.altitude).toLocaleString() + ' ft  |  SPD: ' + ktsP + ' kts  |  HDG: ' + Math.round(flightRef.current.heading) + '°', W / 2, H * 0.58);
             animRef.current = requestAnimationFrame(loop);
             return;
@@ -7289,7 +7312,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                 gfx.fillText(item[1], 170, shY);
               });
             });
-            gfx.fillStyle = '#64748b'; gfx.font = '11px system-ui'; gfx.textAlign = 'center';
+            gfx.fillStyle = '#94a3b8'; gfx.font = '11px system-ui'; gfx.textAlign = 'center';
             gfx.fillText('Press ? or ESC to close', W / 2, H - 8);
             animRef.current = requestAnimationFrame(loop); return;
           }
@@ -7750,7 +7773,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             h('div', { style: { fontSize: '28px', fontWeight: 900, color: '#fff', letterSpacing: '2px' } }, 'SKYSCHOOL'),
             h('div', { style: { fontSize: '13px', color: '#94a3b8', marginTop: '4px' } }, 'Learn to fly. Learn the world.'),
             // Stats bar
-            (d.totalFlightTime || 0) > 0 && h('div', { style: { display: 'flex', justifyContent: 'center', gap: '16px', marginTop: '8px', fontSize: '10px', color: '#64748b' } },
+            (d.totalFlightTime || 0) > 0 && h('div', { style: { display: 'flex', justifyContent: 'center', gap: '16px', marginTop: '8px', fontSize: '10px', color: '#94a3b8' } },
               h('span', null, '\u23F1 ' + Math.floor((d.totalFlightTime || 0) / 60) + ' min flight time'),
               h('span', null, '\uD83C\uDF0D ' + (d.visitedAirports || []).length + ' airports'),
               h('span', null, '\uD83D\uDCCD ' + Object.keys(d.geoDiscovered || {}).length + ' places discovered')
@@ -7776,19 +7799,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           ),
           // Flight Planner
           h('div', { style: { padding: '0 24px 16px' } },
-            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, '🗺️ Flight Planner'),
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, '🗺️ Flight Planner'),
             h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '12px', border: '1px solid #1e3a5f' } },
               h('div', { style: { display: 'flex', gap: '8px', marginBottom: '8px', alignItems: 'center' } },
                 h('div', { style: { flex: 1 } },
-                  h('div', { style: { fontSize: '8px', color: '#64748b', textTransform: 'uppercase', marginBottom: '2px' } }, 'From'),
+                  h('div', { style: { fontSize: '8px', color: '#94a3b8', textTransform: 'uppercase', marginBottom: '2px' } }, 'From'),
                   h('select', { value: d.planDep || 'kpwm', onChange: function(e) { upd('planDep', e.target.value); },
                     style: { width: '100%', padding: '6px', borderRadius: '6px', border: '1px solid #334155', background: '#1e293b', color: '#fff', fontSize: '11px', fontWeight: 700 },
                     'aria-label': 'Departure airport'
                   }, WAYPOINTS.map(function(wp) { return h('option', { key: wp.id, value: wp.id }, wp.code + ' — ' + wp.name); }))
                 ),
-                h('div', { style: { color: '#64748b', fontSize: '16px', marginTop: '10px' } }, '→'),
+                h('div', { style: { color: '#94a3b8', fontSize: '16px', marginTop: '10px' } }, '→'),
                 h('div', { style: { flex: 1 } },
-                  h('div', { style: { fontSize: '8px', color: '#64748b', textTransform: 'uppercase', marginBottom: '2px' } }, 'To'),
+                  h('div', { style: { fontSize: '8px', color: '#94a3b8', textTransform: 'uppercase', marginBottom: '2px' } }, 'To'),
                   h('select', { value: d.planDest || 'kjfk', onChange: function(e) { upd('planDest', e.target.value); },
                     style: { width: '100%', padding: '6px', borderRadius: '6px', border: '1px solid #334155', background: '#1e293b', color: '#fff', fontSize: '11px', fontWeight: 700 },
                     'aria-label': 'Destination airport'
@@ -7810,7 +7833,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                     [['📏 ' + dist + ' nm', 'Distance'], ['🧭 ' + String(hdg).padStart(3, '0') + '°', 'Heading'], ['⏱️ ~' + estMin + ' min', 'Est. Time'], ['🔝 FL' + (cruiseAlt / 100), 'Cruise Alt']].map(function(s) {
                       return h('div', { key: s[1], style: { background: '#1e293b', borderRadius: '4px', padding: '4px', textAlign: 'center' } },
                         h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#60a5fa' } }, s[0]),
-                        h('div', { style: { fontSize: '7px', color: '#64748b' } }, s[1])
+                        h('div', { style: { fontSize: '7px', color: '#94a3b8' } }, s[1])
                       );
                     })
                   ),
@@ -7832,7 +7855,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           ),
           // Aircraft Selection
           h('div', { style: { padding: '0 24px 16px' } },
-            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, '🛩️ Select Aircraft'),
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, '🛩️ Select Aircraft'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '4px' } },
               AIRCRAFT.map(function(ac) {
                 var isSelected = selectedAircraft === ac.id;
@@ -7841,7 +7864,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                 },
                   h('div', { style: { fontSize: '20px' } }, ac.icon),
                   h('div', { style: { fontSize: '9px', fontWeight: 700, marginTop: '2px', lineHeight: '1.2' } }, ac.name.split(' ')[0]),
-                  h('div', { style: { fontSize: '8px', color: '#64748b', marginTop: '1px' } }, ac.category)
+                  h('div', { style: { fontSize: '8px', color: '#94a3b8', marginTop: '1px' } }, ac.category)
                 );
               })
             ),
@@ -7849,7 +7872,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             h('div', { style: { marginTop: '8px', padding: '10px', background: '#0f172a', borderRadius: '8px', border: '1px solid #1e3a5f' } },
               h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' } },
                 h('span', { style: { fontSize: '13px', fontWeight: 800, color: '#fff' } }, currentAC.icon + ' ' + currentAC.name),
-                h('span', { style: { fontSize: '9px', color: '#64748b', background: '#1e293b', padding: '2px 6px', borderRadius: '4px' } }, currentAC.category)
+                h('span', { style: { fontSize: '9px', color: '#94a3b8', background: '#1e293b', padding: '2px 6px', borderRadius: '4px' } }, currentAC.category)
               ),
               h('p', { style: { fontSize: '10px', color: '#94a3b8', margin: '0 0 6px', lineHeight: '1.4' } }, currentAC.desc),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '4px', marginBottom: '6px' } },
@@ -7863,7 +7886,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                     h('div', { style: { width: '100%', height: '3px', background: 'rgba(255,255,255,0.06)', borderRadius: '2px', marginTop: '3px', overflow: 'hidden' } },
                       h('div', { style: { width: stat[2] + '%', height: '100%', background: stat[3], borderRadius: '2px', transition: 'width 0.5s ease' } })
                     ),
-                    h('div', { style: { fontSize: '8px', color: '#64748b', marginTop: '2px' } }, stat[0])
+                    h('div', { style: { fontSize: '8px', color: '#94a3b8', marginTop: '2px' } }, stat[0])
                   );
                 })
               ),
@@ -7874,7 +7897,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           ),
           // Departure selector
           h('div', { style: { padding: '0 24px 16px' } },
-            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, 'Or choose a departure airport'),
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, 'Or choose a departure airport'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px' } },
               WAYPOINTS.map(function(wp) {
                 var visited = visitedAirports.indexOf(wp.id) >= 0;
@@ -7896,14 +7919,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                   // Name
                   h('div', { style: { fontSize: '10px', color: '#e2e8f0', fontWeight: 600 } }, wp.name),
                   // Region + altitude
-                  h('div', { style: { fontSize: '9px', color: '#64748b', marginTop: '1px' } }, wp.region + ' \u2022 ' + wp.alt.toLocaleString() + ' ft elevation')
+                  h('div', { style: { fontSize: '9px', color: '#94a3b8', marginTop: '1px' } }, wp.region + ' \u2022 ' + wp.alt.toLocaleString() + ' ft elevation')
                 );
               })
             )
           ),
           // Lessons
           h('div', { style: { padding: '0 24px 16px' } },
-            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, '📚 Aerodynamics Lessons'),
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, '📚 Aerodynamics Lessons'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' } },
               Object.keys(LESSONS).map(function(key) {
                 var les = LESSONS[key];
@@ -7917,7 +7940,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           ),
           // Challenges
           h('div', { style: { padding: '0 24px 24px' } },
-            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, '🏆 Flight Challenges'),
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, '🏆 Flight Challenges'),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
               CHALLENGES.map(function(ch) {
                 return h('button', { key: ch.id, onClick: function() { startFlying('kpwm'); updMulti({ selectedChallenge: ch.id }); },
@@ -7934,7 +7957,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           ),
           // HyperJet Geography Sprint
           h('div', { style: { padding: '0 24px 24px' } },
-            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, '🚀 HyperJet Geography Sprint'),
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, '🚀 HyperJet Geography Sprint'),
             h('p', { style: { fontSize: '11px', color: '#94a3b8', marginBottom: '8px' } }, 'Fly at Mach 3 on autopilot — name countries, capitals, and cities as you zoom past! Press 1-4 to answer before you fly by.'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px' } },
               SPRINT_ROUTES.map(function(route) {
@@ -7943,14 +7966,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                 },
                   h('div', { style: { fontSize: '12px', fontWeight: 800, marginBottom: '2px' } }, route.name),
                   h('div', { style: { fontSize: '10px', color: '#a78bfa' } }, route.desc),
-                  h('div', { style: { fontSize: '9px', color: '#64748b', marginTop: '4px' } }, route.places.length + ' stops · ' + Math.round(route.speed * 0.59) + ' kts')
+                  h('div', { style: { fontSize: '9px', color: '#94a3b8', marginTop: '4px' } }, route.places.length + ' stops · ' + Math.round(route.speed * 0.59) + ' kts')
                 );
               })
             )
           ),
           // Achievements
           h('div', { style: { padding: '0 24px 16px' } },
-            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, '🏆 Achievements (' + Object.keys(earnedBadges).length + '/' + ACHIEVEMENTS.length + ')'),
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, '🏆 Achievements (' + Object.keys(earnedBadges).length + '/' + ACHIEVEMENTS.length + ')'),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '4px' } },
               ACHIEVEMENTS.map(function(ach) {
                 var earned = !!earnedBadges[ach.id];
@@ -7965,7 +7988,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             [['W/S or ↑/↓', 'Pitch'], ['A/D or ←/→', 'Bank'], ['Shift/Ctrl', 'Throttle'], ['B', 'Autopilot'], ['F', 'Forces'], ['Q', 'Quiz'], ['Space', 'Pause'], ['?', 'Help'], ['ESC', 'Exit']].map(function(item) {
               return h('div', { key: item[0], style: { textAlign: 'center' } },
                 h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#60a5fa', background: '#1e3a5f', padding: '2px 8px', borderRadius: '4px', fontFamily: 'monospace' } }, item[0]),
-                h('div', { style: { fontSize: '9px', color: '#64748b', marginTop: '2px' } }, item[1])
+                h('div', { style: { fontSize: '9px', color: '#94a3b8', marginTop: '2px' } }, item[1])
               );
             })
           )
@@ -7982,7 +8005,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             h('h2', { style: { fontSize: '20px', fontWeight: 900, textAlign: 'center', marginBottom: '16px' } }, les.title),
             h('p', { style: { fontSize: '14px', lineHeight: '1.7', color: '#cbd5e1', marginBottom: '16px' } }, les.content),
             h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '16px', border: '1px solid #334155' } },
-              h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', marginBottom: '6px' } }, 'Formula'),
+              h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', marginBottom: '6px' } }, 'Formula'),
               h('div', { style: { fontSize: '16px', fontWeight: 800, color: '#22d3ee', fontFamily: 'monospace', marginBottom: '8px' } }, les.formula),
               h('div', { style: { fontSize: '11px', color: '#94a3b8', lineHeight: '1.5' } }, les.variables)
             ),
@@ -8202,7 +8225,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             h('div', { style: { fontSize: '48px', marginBottom: '4px' } }, gradeIcon),
             h('div', { style: { fontSize: '22px', fontWeight: 900, letterSpacing: '1px' } }, 'FLIGHT DEBRIEF'),
             h('div', { style: { fontSize: '15px', color: gradeColor, fontWeight: 800, marginTop: '6px' } }, gradeText),
-            h('div', { style: { fontSize: '11px', color: '#64748b', marginTop: '4px' } }, 'Aircraft: ' + db.aircraft + ' \u2022 +' + gradeXP + ' XP')
+            h('div', { style: { fontSize: '11px', color: '#94a3b8', marginTop: '4px' } }, 'Aircraft: ' + db.aircraft + ' \u2022 +' + gradeXP + ' XP')
           ),
           // Educational tip
           tip && h('div', { style: { padding: '10px 14px', borderRadius: '10px', background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)', marginBottom: '16px', fontSize: '12px', color: '#a5b4fc', lineHeight: 1.5 } }, tip),
@@ -8220,7 +8243,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               return h('div', { key: stat[2], style: { background: '#0f172a', borderRadius: '8px', padding: '10px', textAlign: 'center', border: '1px solid #1e293b' } },
                 h('div', { style: { fontSize: '16px' } }, stat[0]),
                 h('div', { style: { fontSize: '16px', fontWeight: 800, color: '#60a5fa', marginTop: '2px' } }, stat[1]),
-                h('div', { style: { fontSize: '9px', color: '#64748b', marginTop: '2px' } }, stat[2])
+                h('div', { style: { fontSize: '9px', color: '#94a3b8', marginTop: '2px' } }, stat[2])
               );
             })
           ),
@@ -8373,7 +8396,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       }
 
       // Fallback
-      return h('div', { style: { padding: '24px', textAlign: 'center', color: '#64748b' } }, 'Loading SkySchool...');
+      return h('div', { style: { padding: '24px', textAlign: 'center', color: '#94a3b8' } }, 'Loading SkySchool...');
     }
   });
 

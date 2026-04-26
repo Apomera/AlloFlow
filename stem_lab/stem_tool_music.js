@@ -15,6 +15,28 @@ window.StemLab = window.StemLab || {
 if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth'))) {
 (function() {
   'use strict';
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  (function() {
+    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-stem-motion-reduce-css';
+    st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    document.head.appendChild(st);
+  })();
+
+  // ── Accessibility live region (WCAG 4.1.3) ──
+  (function() {
+    if (document.getElementById('allo-live-music')) return;
+    var lr = document.createElement('div');
+    lr.id = 'allo-live-music';
+    lr.setAttribute('aria-live', 'polite');
+    lr.setAttribute('aria-atomic', 'true');
+    lr.setAttribute('role', 'status');
+    lr.className = 'sr-only';
+    lr.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(lr);
+  })();
+
 
   window.StemLab.registerTool('musicSynth', {
     icon: '🎹',
@@ -2552,7 +2574,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
 
             // ═══════════ COMPOSE — redirect to Production Studio ═══════════
             synthTab === 'play' && React.createElement("div", { className: "mt-3" },
-              React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+              React.createElement("div", { 
                 onClick: function () { upd('synthTab', 'beatpad'); },
                 className: "bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-200 p-4 cursor-pointer hover:shadow-md hover:from-purple-100 hover:to-pink-100 transition-all group"
               },
@@ -2601,7 +2623,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                   React.createElement("div", { className: "flex gap-1" },
                     SCALES[selectedScale].intervals.map(function (intv, i) {
                       var nIdx = (rootIdx + intv) % 12;
-                      return React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+                      return React.createElement("div", { 
                         key: i,
                         onClick: function () { playNoteFor(noteFreq(NOTE_NAMES[nIdx], d.octave || 4), 'scale_note_' + i, 500); },
                         className: "flex-1 py-2 rounded-lg text-center cursor-pointer transition-all bg-white border-2 border-purple-200 hover:border-purple-400 hover:bg-purple-100"
@@ -2626,7 +2648,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                   Object.keys(WAVE_INFO).map(function (wType) {
                     var wi = WAVE_INFO[wType];
                     var isActive = (d.waveType || 'sine') === wType;
-                    return React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+                    return React.createElement("div", { 
                       key: wType,
                       onClick: function () { upd('waveType', wType); playNoteFor(noteFreq(selectedRoot, d.octave || 4), 'demo_' + wType, 800); },
                       className: "p-3 rounded-xl border-2 cursor-pointer transition-all " + (isActive ? 'border-purple-400 bg-purple-50 shadow-md' : 'border-slate-200 bg-slate-50 hover:border-purple-200')
@@ -2690,7 +2712,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                   React.createElement("div", { className: "flex gap-1 mb-2" },
                     CHORDS[selectedChord].intervals.map(function (intv, i) {
                       var nIdx = (NOTE_NAMES.indexOf(selectedRoot) + intv) % 12;
-                      return React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+                      return React.createElement("div", { 
                         key: i,
                         onClick: function () { playNoteFor(noteFreq(NOTE_NAMES[nIdx], d.octave || 4), 'chord_note_' + i, 500); },
                         className: "flex-1 py-2 rounded-lg text-center cursor-pointer bg-white border-2 border-purple-200 hover:border-purple-400 hover:bg-purple-100 transition-all"
@@ -3006,7 +3028,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                       var ni = melodySeqBP[i] || 0;
                       var isCur = d.seqPlaying && d.seqCurrentStep === i;
                       var isRec = d.bpStepRec && (d.bpStepRecPos || 0) === i;
-                      return React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+                      return React.createElement("div", { 
                         key: 'mel_' + i,
                         onClick: function () { pushBpUndo(); var nm = (d.beatMelody || new Array(16).fill(0)).slice(); nm[i] = (nm[i] + 1) % (scNotes.notes.length + 1); upd('beatMelody', nm); },
                         onContextMenu: function (e) { e.preventDefault(); pushBpUndo(); var nm = (d.beatMelody || new Array(16).fill(0)).slice(); nm[i] = nm[i] <= 0 ? scNotes.notes.length : nm[i] - 1; upd('beatMelody', nm); },
@@ -3027,7 +3049,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                       var gKey = row + '_' + col; var grid = d.seqGrid || {}; var isOn = grid[gKey];
                       var isCur = d.seqPlaying && d.seqCurrentStep === col;
                       var isRec = d.bpStepRec && (d.bpStepRecPos || 0) === col;
-                      return React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+                      return React.createElement("div", { 
                         key: gKey,
                         onClick: function () { pushBpUndo(); var g = Object.assign({}, d.seqGrid || {}); g[gKey] = g[gKey] ? 0 : 1; upd('seqGrid', g); },
                         className: "flex-1 h-5 rounded-sm cursor-pointer transition-all " +
@@ -4422,7 +4444,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                 ),
                 aiError && React.createElement("p", { className: "text-[11px] text-rose-600", role: "alert" }, aiError),
                 aiText && React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed bg-white rounded-lg p-2 border border-purple-100" }, aiText),
-                !aiText && !aiLoading && !aiError && React.createElement("p", { className: "text-[11px] italic text-slate-500" }, "Click \u201CExplain\u201D for the AI tutor to describe what this view teaches at your chosen reading level.")
+                !aiText && !aiLoading && !aiError && React.createElement("p", { className: "text-[11px] italic text-slate-300" }, "Click \u201CExplain\u201D for the AI tutor to describe what this view teaches at your chosen reading level.")
               );
             })(),
 

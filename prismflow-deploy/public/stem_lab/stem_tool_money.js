@@ -15,6 +15,15 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  (function() {
+    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-stem-motion-reduce-css';
+    st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    document.head.appendChild(st);
+  })();
+
 
   // ── Audio (auto-injected) ──
   var _moneyAC = null;
@@ -590,7 +599,7 @@ window.StemLab = window.StemLab || {
               { name: '\uD83D\uDCDA Education', pct: 10, color: '#8b5cf6' },
               { name: '\uD83C\uDFAE Entertainment', pct: 10, color: '#ec4899' },
               { name: '\uD83D\uDCB0 Savings', pct: 10, color: '#06b6d4' },
-              { name: '\u2764\uFE0F Other', pct: 5, color: '#6b7280' }
+              { name: '\u2764\uFE0F Other', pct: 5, color: '#94a3b8' }
             ];
             var budgetUsed = budgetCats.reduce(function (s, c) { return s + c.pct; }, 0);
 

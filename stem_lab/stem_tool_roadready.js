@@ -1,3 +1,13 @@
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+(function() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById('allo-stem-motion-reduce-css')) return;
+  var st = document.createElement('style');
+  st.id = 'allo-stem-motion-reduce-css';
+  st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+  if (document.head) document.head.appendChild(st);
+})();
+
 // ═══════════════════════════════════════════
 // stem_tool_roadready.js — RoadReady: Driver's Ed & Automotive Science Lab
 // Teaches US driver's ed curriculum (Maine state focus), fuel efficiency physics,
@@ -17,6 +27,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
 (function() {
   'use strict';
+  // ── Accessibility live region (WCAG 4.1.3) ──
+  (function() {
+    if (document.getElementById('allo-live-roadready')) return;
+    var lr = document.createElement('div');
+    lr.id = 'allo-live-roadready';
+    lr.setAttribute('aria-live', 'polite');
+    lr.setAttribute('aria-atomic', 'true');
+    lr.setAttribute('role', 'status');
+    lr.className = 'sr-only';
+    lr.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(lr);
+  })();
+
 
   // ─────────────────────────────────────────────────────────
   // SECTION 1: VEHICLES — Real specs for accurate physics
@@ -1267,7 +1290,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     var count = scenario.traffic === 'light' ? 3 : scenario.traffic === 'medium' ? 7 : 12;
     var centerX = Math.floor(MAP_SIZE / 2);
     var vehicleTypes = [
-      { type: 'car', weight: 50, colors: ['#ef4444', '#3b82f6', '#22c55e', '#a855f7', '#f59e0b', '#ffffff', '#64748b', '#0ea5e9', '#d946ef', '#14b8a6'] },
+      { type: 'car', weight: 50, colors: ['#ef4444', '#3b82f6', '#22c55e', '#a855f7', '#f59e0b', '#ffffff', '#94a3b8', '#0ea5e9', '#d946ef', '#14b8a6'] },
       { type: 'truck', weight: 12, colors: ['#1e293b', '#78350f', '#991b1b', '#1e3a5f'] },
       { type: 'suv', weight: 18, colors: ['#334155', '#1e40af', '#166534', '#7c2d12', '#ffffff'] },
       { type: 'van', weight: 8, colors: ['#ffffff', '#fbbf24', '#dc2626'] },
@@ -1369,7 +1392,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         vx: 0,
         vy: nearIntersection ? 0 : (Math.random() - 0.5) * 0.08 * speedMult,
         color: kind === 'jogger' ? '#22c55e' : kind === 'kid' ? ['#fbbf24', '#ec4899', '#06b6d4'][i % 3] :
-               kind === 'dogWalker' ? '#6b7280' : ['#fbbf24', '#ec4899', '#06b6d4', '#84cc16', '#a78bfa', '#f97316'][i % 6],
+               kind === 'dogWalker' ? '#94a3b8' : ['#fbbf24', '#ec4899', '#06b6d4', '#84cc16', '#a78bfa', '#f97316'][i % 6],
         crossing: false,
         waitingAtCrosswalk: nearIntersection,
         crosswalkY: nearIntersection ? crossYs[i % crossYs.length] : null,
@@ -2053,7 +2076,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       h('div', { style: { marginTop: '10px', padding: '12px', background: '#0f172a', borderRadius: '10px', border: '1px solid #334155' } },
         h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#06b6d4', textTransform: 'uppercase', marginBottom: '6px' } }, '👨‍🏫 Instructor'),
         h('div', { style: { fontSize: '12px', color: '#cbd5e1', lineHeight: '1.5' } }, feedbackText),
-        h('div', { style: { marginTop: '8px', fontSize: '10px', color: '#64748b' } }, 'Tip: Real Maine road test allows 3 attempts. The judges measure curb distance (under 12 inches) and wheel-to-curb angle.')
+        h('div', { style: { marginTop: '8px', fontSize: '10px', color: '#94a3b8' } }, 'Tip: Real Maine road test allows 3 attempts. The judges measure curb distance (under 12 inches) and wheel-to-curb angle.')
       )
     );
   }
@@ -2231,7 +2254,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       h('div', { style: { marginTop: '10px', padding: '12px', background: '#0f172a', borderRadius: '10px', border: '1px solid #334155' } },
         h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#ec4899', textTransform: 'uppercase', marginBottom: '6px' } }, '👨‍🏫 Instructor'),
         h('div', { style: { fontSize: '12px', color: '#cbd5e1', lineHeight: '1.5' } }, fbText),
-        h('div', { style: { marginTop: '8px', fontSize: '10px', color: '#64748b' } }, 'Tip: On the Maine road test, examiner checks that you complete the turn in exactly 3 moves without hitting a curb or crossing traffic. Slow is good.')
+        h('div', { style: { marginTop: '8px', fontSize: '10px', color: '#94a3b8' } }, 'Tip: On the Maine road test, examiner checks that you complete the turn in exactly 3 moves without hitting a curb or crossing traffic. Slow is good.')
       )
     );
   }
@@ -2366,7 +2389,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       h('div', { style: { marginTop: '10px', padding: '12px', background: '#0f172a', borderRadius: '10px', border: '1px solid #334155' } },
         h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#a3a3a3', textTransform: 'uppercase', marginBottom: '6px' } }, '👨‍🏫 Instructor'),
         h('div', { style: { fontSize: '12px', color: '#cbd5e1', lineHeight: '1.5' } }, fbText),
-        h('div', { style: { marginTop: '6px', fontSize: '10px', color: '#64748b' } }, 'Tip: Look over your RIGHT shoulder, not in the mirrors. Use small steering corrections. Press R to reset.')
+        h('div', { style: { marginTop: '6px', fontSize: '10px', color: '#94a3b8' } }, 'Tip: Look over your RIGHT shoulder, not in the mirrors. Use small steering corrections. Press R to reset.')
       )
     );
   }
@@ -9388,7 +9411,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           for (var gti = 0; gti <= gaugeMaxMph; gti += 10) {
             var gAngle = Math.PI + (gti / gaugeMaxMph) * Math.PI;
             var innerR = 90, outerR = 98, numR = 80;
-            gCtx.strokeStyle = '#64748b'; gCtx.lineWidth = gti % 20 === 0 ? 3 : 1;
+            gCtx.strokeStyle = '#94a3b8'; gCtx.lineWidth = gti % 20 === 0 ? 3 : 1;
             gCtx.beginPath();
             gCtx.moveTo(128 + Math.cos(gAngle) * innerR, 128 + Math.sin(gAngle) * innerR);
             gCtx.lineTo(128 + Math.cos(gAngle) * outerR, 128 + Math.sin(gAngle) * outerR);
@@ -9400,7 +9423,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             }
           }
           // "MPH" label
-          gCtx.fillStyle = '#64748b'; gCtx.font = 'bold 14px system-ui';
+          gCtx.fillStyle = '#94a3b8'; gCtx.font = 'bold 14px system-ui';
           gCtx.fillText('MPH', 128, 155);
           // Center dot
           gCtx.fillStyle = '#ffffff';
@@ -15974,7 +15997,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             gfx.lineTo(gaugeX + Math.cos(ta) * (gaugeR + (major ? 10 : 7)), gaugeY + Math.sin(ta) * (gaugeR + (major ? 10 : 7)));
             gfx.stroke();
             if (major) {
-              gfx.fillStyle = '#64748b'; gfx.font = '8px monospace'; gfx.textAlign = 'center';
+              gfx.fillStyle = '#94a3b8'; gfx.font = '8px monospace'; gfx.textAlign = 'center';
               gfx.fillText(ti, gaugeX + Math.cos(ta) * (gaugeR + 17), gaugeY + Math.sin(ta) * (gaugeR + 17) + 2);
             }
           }
@@ -16023,7 +16046,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Tick marks (every 1000 RPM)
           for (var ri = 0; ri <= rpmMax; ri += 1000) {
             var rta = Math.PI + (ri / rpmMax) * Math.PI;
-            gfx.strokeStyle = ri >= rpmRedline ? '#ef4444' : '#64748b'; gfx.lineWidth = 1;
+            gfx.strokeStyle = ri >= rpmRedline ? '#ef4444' : '#94a3b8'; gfx.lineWidth = 1;
             gfx.beginPath();
             gfx.moveTo(rpmX + Math.cos(rta) * (rpmR + 2), rpmY + Math.sin(rta) * (rpmR + 2));
             gfx.lineTo(rpmX + Math.cos(rta) * (rpmR + 6), rpmY + Math.sin(rta) * (rpmR + 6));
@@ -16075,7 +16098,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           gfx.moveTo(0, 0); gfx.lineTo(swR * 0.87, swR * 0.5);
           gfx.moveTo(0, 0); gfx.lineTo(-swR * 0.87, swR * 0.5);
           gfx.stroke();
-          gfx.fillStyle = '#64748b'; gfx.beginPath(); gfx.arc(0, 0, 1.5, 0, Math.PI * 2); gfx.fill();
+          gfx.fillStyle = '#94a3b8'; gfx.beginPath(); gfx.arc(0, 0, 1.5, 0, Math.PI * 2); gfx.fill();
           gfx.restore();
 
           // ── Gear indicator + RPM-style bar (left of speedometer) ──
@@ -16197,7 +16220,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var elapsed = Math.floor((Date.now() - stats.startTime) / 1000);
           var elMin = Math.floor(elapsed / 60);
           var elSec = elapsed % 60;
-          gfx.fillStyle = '#64748b'; gfx.font = '9px monospace'; gfx.textAlign = 'left';
+          gfx.fillStyle = '#94a3b8'; gfx.font = '9px monospace'; gfx.textAlign = 'left';
           var tripLine = 'TRIP: ' + distMi + ' mi  |  ' + elMin + ':' + String(elSec).padStart(2, '0');
           if (stats.landmarkVisits) {
             var totalVisitsHud = Object.values(stats.landmarkVisits).reduce(function(a, b) { return a + b; }, 0);
@@ -16211,7 +16234,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           gfx.fillStyle = gear === 'R' ? '#ef4444' : gear === 'P' ? '#94a3b8' : '#4ade80';
           gfx.font = 'bold 16px monospace'; gfx.textAlign = 'center';
           gfx.fillText(gear, 130, H - 42);
-          gfx.fillStyle = '#64748b'; gfx.font = '8px system-ui';
+          gfx.fillStyle = '#94a3b8'; gfx.font = '8px system-ui';
           gfx.fillText('F=D G=R P=Park', 130, H - 28);
 
           // Top-left info
@@ -16628,12 +16651,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             gfx.fillRect(mirrorX - 10, mirrorY - 10, mirrorW + 20, mirrorH + 20);
           }
           gfx.fillStyle = 'rgba(0,0,0,0.85)'; gfx.fillRect(mirrorX - 3, mirrorY - 3, mirrorW + 6, mirrorH + 6);
-          gfx.strokeStyle = tailgateWarning ? '#ef4444' : '#64748b'; gfx.lineWidth = 2;
+          gfx.strokeStyle = tailgateWarning ? '#ef4444' : '#94a3b8'; gfx.lineWidth = 2;
           gfx.strokeRect(mirrorX - 3, mirrorY - 3, mirrorW + 6, mirrorH + 6);
           // Sky
           var mirrorSky = gfx.createLinearGradient(0, mirrorY, 0, mirrorY + mirrorH / 2);
           if (isNight) { mirrorSky.addColorStop(0, '#020617'); mirrorSky.addColorStop(1, '#0a0f1e'); }
-          else if (isFog) { mirrorSky.addColorStop(0, '#94a3b8'); mirrorSky.addColorStop(1, '#64748b'); }
+          else if (isFog) { mirrorSky.addColorStop(0, '#94a3b8'); mirrorSky.addColorStop(1, '#94a3b8'); }
           else { mirrorSky.addColorStop(0, '#1e3a5f'); mirrorSky.addColorStop(1, '#60a5fa'); }
           gfx.fillStyle = mirrorSky;
           gfx.fillRect(mirrorX, mirrorY, mirrorW, mirrorH / 2);
@@ -16804,7 +16827,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 if (iwCell !== 0 && iwCell !== 3 && iwCell !== 4) continue;
                 var p = worldToMM(wx, wy);
                 if (p.x < mmX || p.x > mmX + mmSize || p.y < mmY || p.y > mmY + mmSize) continue;
-                gfx.fillStyle = iwCell === 3 ? '#facc15' : iwCell === 4 ? '#6b7280' : '#475569';
+                gfx.fillStyle = iwCell === 3 ? '#facc15' : iwCell === 4 ? '#94a3b8' : '#475569';
                 gfx.fillRect(p.x - 0.5, p.y - 0.5, 1.6, 1.6);
               }
             }
@@ -16827,7 +16850,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 if (cell !== 0 && cell !== 3 && cell !== 4) continue;
                 var pp = worldToMM(mmxx, mmy);
                 if (pp.x < mmX || pp.x > mmX + mmSize || pp.y < mmY || pp.y > mmY + mmSize) continue;
-                gfx.fillStyle = cell === 3 ? '#facc15' : cell === 4 ? '#6b7280' : '#475569';
+                gfx.fillStyle = cell === 3 ? '#facc15' : cell === 4 ? '#94a3b8' : '#475569';
                 gfx.fillRect(pp.x - 0.5, pp.y - 0.5, 1.5, 1.5);
               }
             }
@@ -17002,7 +17025,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 gfx.fillStyle = rsSR.tip > 0 ? '#4ade80' : '#94a3b8';
                 gfx.fillText('$' + rsSR.tip.toFixed(2),      cardX + cardW - 28, cardY + 136);
                 if (rsSR.hadDeadline) {
-                  gfx.fillStyle = rsSR.onTime ? '#4ade80' : '#64748b';
+                  gfx.fillStyle = rsSR.onTime ? '#4ade80' : '#94a3b8';
                   gfx.fillText((rsSR.onTime ? '+$' : '$') + (rsSR.onTimeBonus || 0).toFixed(2), cardX + cardW - 28, cardY + 152);
                   gfx.fillStyle = '#fff';
                   gfx.font = 'bold 11px monospace';
@@ -17013,7 +17036,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   gfx.fillText('$' + rsSR.total.toFixed(2), cardX + cardW - 28, cardY + 152);
                 }
                 // Footer — lifetime running totals
-                gfx.fillStyle = '#64748b';
+                gfx.fillStyle = '#94a3b8';
                 gfx.font = '9px system-ui, sans-serif';
                 gfx.textAlign = 'center';
                 gfx.fillText(rsSumm.ridesCompleted + ' rides · $' + rsSumm.totalEarnings.toFixed(2) + ' earned lifetime', cardX + cardW / 2, cardY + cardH - 8);
@@ -17253,7 +17276,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           }
           // Completed quests count
           if (q && q.questsCompleted > 0 && d.freeExplore) {
-            gfx.fillStyle = '#64748b'; gfx.font = '9px system-ui'; gfx.textAlign = 'left';
+            gfx.fillStyle = '#94a3b8'; gfx.font = '9px system-ui'; gfx.textAlign = 'left';
             gfx.fillText('🏁 ' + q.questsCompleted + ' destinations reached', 18, q.completed ? 84 : 114);
           }
 
@@ -17277,7 +17300,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             if (gfx.roundRect) { gfx.beginPath(); gfx.roundRect(ddX, ddY, 210, 75, 12); gfx.stroke(); }
             gfx.fillStyle = '#fff'; gfx.font = 'bold 11px system-ui'; gfx.textAlign = 'left';
             gfx.fillText(dd.msg, ddX + 10, ddY + 22);
-            gfx.fillStyle = '#64748b'; gfx.font = '9px system-ui';
+            gfx.fillStyle = '#94a3b8'; gfx.font = '9px system-ui';
             gfx.fillText('now', ddX + 10, ddY + 38);
             gfx.fillStyle = '#ef4444'; gfx.font = '9px system-ui'; gfx.textAlign = 'center';
             gfx.fillText('🚫 IGNORE IT — keep your eyes on the road!', ddX + 105, ddY + 60);
@@ -17581,7 +17604,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             h('div', null,
               h('div', { style: { fontSize: '16px', fontWeight: 900 } }, 'Free Explore'),
               h('div', { style: { fontSize: '12px', color: '#c4b5fd', marginTop: '2px' } }, 'Open sandbox. No objectives. Toggle weather, time, traffic live. Practice anything. Earn achievements.'),
-              h('div', { style: { fontSize: '10px', color: '#64748b', marginTop: '4px' } }, Object.keys(earnedBadges).length + '/' + ACHIEVEMENTS.length + ' achievements earned')
+              h('div', { style: { fontSize: '10px', color: '#94a3b8', marginTop: '4px' } }, Object.keys(earnedBadges).length + '/' + ACHIEVEMENTS.length + ' achievements earned')
             )
           ),
           // Structured modes
@@ -17986,7 +18009,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     h('div', { style: { height: '100%', background: '#22d3ee', borderRadius: '2px', width: pct + '%', transition: 'width 0.8s ease-out' } })
                   ),
                   h('div', { style: { fontSize: '14px', fontWeight: 800, color: '#22d3ee' } }, h(CountUp, { value: pct, suffix: '%' })),
-                  h('div', { style: { fontSize: '9px', color: '#64748b' } }, 'Scenarios')
+                  h('div', { style: { fontSize: '9px', color: '#94a3b8' } }, 'Scenarios')
                 );
               })(),
               // Achievements
@@ -17997,7 +18020,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     h('div', { style: { height: '100%', background: '#fbbf24', borderRadius: '2px', width: pct + '%', transition: 'width 0.8s ease-out' } })
                   ),
                   h('div', { style: { fontSize: '14px', fontWeight: 800, color: '#fbbf24' } }, h(CountUp, { value: pct, suffix: '%' })),
-                  h('div', { style: { fontSize: '9px', color: '#64748b' } }, 'Badges')
+                  h('div', { style: { fontSize: '9px', color: '#94a3b8' } }, 'Badges')
                 );
               })(),
               // Permit readiness (based on last permit score)
@@ -18009,7 +18032,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     h('div', { style: { height: '100%', background: pct >= 80 ? '#4ade80' : '#f59e0b', borderRadius: '2px', width: pct + '%' } })
                   ),
                   h('div', { style: { fontSize: '14px', fontWeight: 800, color: pct >= 80 ? '#4ade80' : '#f59e0b' } }, pct ? pct + '%' : '—'),
-                  h('div', { style: { fontSize: '9px', color: '#64748b' } }, 'Permit')
+                  h('div', { style: { fontSize: '9px', color: '#94a3b8' } }, 'Permit')
                 );
               })(),
               // Best safety score
@@ -18020,7 +18043,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     h('div', { style: { height: '100%', background: best >= 80 ? '#4ade80' : '#f59e0b', borderRadius: '2px', width: best + '%' } })
                   ),
                   h('div', { style: { fontSize: '14px', fontWeight: 800, color: best >= 80 ? '#4ade80' : '#f59e0b' } }, best || '—'),
-                  h('div', { style: { fontSize: '9px', color: '#64748b' } }, 'Safety')
+                  h('div', { style: { fontSize: '9px', color: '#94a3b8' } }, 'Safety')
                 );
               })()
             )
@@ -18076,7 +18099,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 }
               }),
               h('span', null, 'Reduced motion'),
-              h('span', { style: { color: '#64748b', fontSize: '10px' } }, '— stops cloud drift, camera bob, and skid-shake')
+              h('span', { style: { color: '#94a3b8', fontSize: '10px' } }, '— stops cloud drift, camera bob, and skid-shake')
             ),
             h('label', { style: { display: 'flex', alignItems: 'center', gap: '10px', fontSize: '12px', color: '#cbd5e1', cursor: 'pointer' } },
               h('input', { type: 'checkbox', checked: !!rideAlongRef.current,
@@ -18086,14 +18109,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 }
               }),
               h('span', null, '🎧 Ride-Along mode'),
-              h('span', { style: { color: '#64748b', fontSize: '10px' } }, '— the car drives itself and narrates aloud (for blind/low-vision and keyboard-only learners)')
+              h('span', { style: { color: '#94a3b8', fontSize: '10px' } }, '— the car drives itself and narrates aloud (for blind/low-vision and keyboard-only learners)')
             ),
             h('label', { style: { display: 'flex', alignItems: 'center', gap: '10px', fontSize: '12px', color: '#cbd5e1', cursor: 'pointer', marginTop: '8px' } },
               h('input', { type: 'checkbox', checked: !!d.coachMode,
                 onChange: function(e) { upd('coachMode', e.target.checked); }
               }),
               h('span', null, '🧑‍🏫 Coach Mode'),
-              h('span', { style: { color: '#64748b', fontSize: '10px' } }, '— a calm AI coach gives one specific tip every ~30s during drives')
+              h('span', { style: { color: '#94a3b8', fontSize: '10px' } }, '— a calm AI coach gives one specific tip every ~30s during drives')
             )
           ),
           // ── Progress Save/Load panel ──
@@ -18102,7 +18125,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // School Box and a home install — no account required (zero-PII by design).
           h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '14px', border: '1px solid #334155', marginTop: '12px' } },
             h('div', { style: { fontSize: '12px', fontWeight: 800, color: '#fbbf24', marginBottom: '8px' } }, '💾 Progress'),
-            h('div', { style: { fontSize: '10px', color: '#64748b', marginBottom: '10px', lineHeight: '1.5' } },
+            h('div', { style: { fontSize: '10px', color: '#94a3b8', marginBottom: '10px', lineHeight: '1.5' } },
               'Save a JSON file of your badges and scenario history. Load it on another device to pick up where you left off. No account, no PII.'),
             h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
               h('button', {
@@ -18272,7 +18295,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             h('div', { style: { fontSize: '48px' } }, '🌎'),
             h('h2', { style: { fontSize: '22px', fontWeight: 900, marginBottom: '4px' } }, 'Free Explore'),
             h('div', { style: { fontSize: '12px', color: '#c4b5fd' } }, 'No timer. No score pressure. Just drive, explore, and learn at your own pace.'),
-            h('div', { style: { fontSize: '11px', color: '#64748b', marginTop: '4px' } }, 'All conditions are changeable mid-drive via the toolbar.')
+            h('div', { style: { fontSize: '11px', color: '#94a3b8', marginTop: '4px' } }, 'All conditions are changeable mid-drive via the toolbar.')
           ),
           // Vehicle
           h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '14px', border: '1px solid #334155', marginBottom: '10px' } },
@@ -18345,7 +18368,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // each landmark in order and issue a completion badge at the end.
           h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '14px', border: '1px solid #334155', marginBottom: '14px' } },
             h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#f59e0b', textTransform: 'uppercase', marginBottom: '8px' } }, '🗺️ Road Trip (optional)'),
-            h('div', { style: { fontSize: '10px', color: '#64748b', marginBottom: '8px' } }, 'Pick a curated chain of stops, or leave blank for open exploration.'),
+            h('div', { style: { fontSize: '10px', color: '#94a3b8', marginBottom: '8px' } }, 'Pick a curated chain of stops, or leave blank for open exploration.'),
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' } },
               [{ id: null, icon: '❌', name: 'No trip', desc: 'Open exploration' }].concat(TRIPS).map(function(trip) {
                 var sel = (trip.id || null) === (d.freeExploreTrip || null);
@@ -18356,7 +18379,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 },
                   h('div', { style: { fontWeight: 800, marginBottom: '2px' } }, trip.icon + ' ' + trip.name + (done ? ' ✓' : '')),
                   h('div', { style: { color: '#94a3b8', fontSize: '9px', lineHeight: '1.3' } }, trip.desc || ''),
-                  trip.goals ? h('div', { style: { color: '#64748b', fontSize: '9px', marginTop: '3px' } }, trip.goals.length + ' stops') : null
+                  trip.goals ? h('div', { style: { color: '#94a3b8', fontSize: '9px', marginTop: '3px' } }, trip.goals.length + ' stops') : null
                 );
               })
             )
@@ -18406,7 +18429,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               style: { padding: '4px 10px', borderRadius: '6px', border: '1px solid #334155', background: '#1e293b', color: '#94a3b8', fontSize: '11px', cursor: 'pointer' }
             }, '🎲 Random')
           ),
-          h('div', { style: { marginTop: '10px', fontSize: '10px', color: '#64748b', textAlign: 'center' } },
+          h('div', { style: { marginTop: '10px', fontSize: '10px', color: '#94a3b8', textAlign: 'center' } },
             'Achievements still count in Free Explore. Practice stop signs, lane changes, moose dodging, and more — without the score stress.'
           )
         );
@@ -18429,7 +18452,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   v.icon + ' ' + v.name);
               })
             ),
-            h('div', { style: { fontSize: '10px', color: '#64748b', marginTop: '8px' } }, currentVehicle.desc),
+            h('div', { style: { fontSize: '10px', color: '#94a3b8', marginTop: '8px' } }, currentVehicle.desc),
             h('div', { style: { fontSize: '10px', color: '#94a3b8', marginTop: '4px' } },
               '🔬 Mass ' + currentVehicle.mass + ' kg · Cd ' + currentVehicle.cd + ' · A ' + currentVehicle.area + ' m² · EPA ' + currentVehicle.cityMPG + '/' + currentVehicle.hwyMPG + ' mpg')
           ),
@@ -18445,7 +18468,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 ),
                 h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, s.name),
                 h('div', { style: { fontSize: '10px', color: '#94a3b8', marginTop: '2px' } }, s.speedLimit + ' mph · ' + s.weather + ' · ' + s.time),
-                h('div', { style: { fontSize: '10px', color: '#64748b', marginTop: '4px', lineHeight: '1.4' } }, s.desc)
+                h('div', { style: { fontSize: '10px', color: '#94a3b8', marginTop: '4px', lineHeight: '1.4' } }, s.desc)
               );
             })
           )
@@ -18682,7 +18705,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   h('div', { key: 'pb', style: { height: '6px', background: '#1e293b', borderRadius: '3px', marginTop: '8px', overflow: 'hidden' } },
                     h('div', { style: { height: '100%', width: pct + '%', background: 'linear-gradient(90deg, #22d3ee, #10b981)', transition: 'width 0.2s' } })
                   ),
-                  h('div', { key: 'pt', style: { fontSize: '9px', color: '#64748b', marginTop: '2px', textAlign: 'right' } }, pct + '% · ' + Math.max(0, Math.ceil((ch.active.def.duration || 30) - ch.active.elapsed)) + 's left')
+                  h('div', { key: 'pt', style: { fontSize: '9px', color: '#94a3b8', marginTop: '2px', textAlign: 'right' } }, pct + '% · ' + Math.max(0, Math.ceil((ch.active.def.duration || 30) - ch.active.elapsed)) + 's left')
                 ];
               }
               if (ch.offered) {
@@ -18790,7 +18813,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // Speed limit display
             h('div', { style: { fontSize: '9px', color: '#94a3b8', textAlign: 'center', marginTop: '4px' } }, 'Limit: ' + currentScenario.speedLimit + ' mph'),
             // Distance driven
-            h('div', { style: { fontSize: '9px', color: '#64748b', textAlign: 'center', marginTop: '2px' } }, 'Dist: ' + (statsRef.current.distance / 1609).toFixed(2) + ' mi'),
+            h('div', { style: { fontSize: '9px', color: '#94a3b8', textAlign: 'center', marginTop: '2px' } }, 'Dist: ' + (statsRef.current.distance / 1609).toFixed(2) + ' mi'),
             // Infinite world info + current town
             infiniteWorldRef.current ? h('div', null,
               challengeRef.current && challengeRef.current.currentTown ? h('div', { style: { fontSize: '10px', color: '#fbbf24', textAlign: 'center', marginTop: '3px', fontWeight: 700 } },
@@ -18957,7 +18980,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     h('div', { style: { flex: 1 } },
                       h('div', { style: { fontSize: '13px', fontWeight: 800, marginBottom: '4px' } }, sign.name),
                       h('div', { style: { fontSize: '10px', color: '#cbd5e1', lineHeight: '1.5', marginBottom: '6px' } }, sign.meaning),
-                      h('div', { style: { fontSize: '9px', color: '#64748b', fontStyle: 'italic' } }, '→ ' + sign.when)
+                      h('div', { style: { fontSize: '9px', color: '#94a3b8', fontStyle: 'italic' } }, '→ ' + sign.when)
                     )
                   )
                 );
@@ -19238,7 +19261,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 return h('div', { key: stat[2], style: { background: '#020617', borderRadius: '8px', padding: '10px', textAlign: 'center', border: '1px solid #1e293b' } },
                   h('div', { style: { fontSize: '16px' } }, stat[0]),
                   h('div', { style: { fontSize: '14px', fontWeight: 800, color: '#22d3ee', marginTop: '2px' } }, stat[1]),
-                  h('div', { style: { fontSize: '9px', color: '#64748b', marginTop: '2px' } }, stat[2])
+                  h('div', { style: { fontSize: '9px', color: '#94a3b8', marginTop: '2px' } }, stat[2])
                 );
               })
             ),
@@ -19277,7 +19300,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   ),
                   h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' } },
                     h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#22d3ee', textTransform: 'uppercase' } }, '🎬 Cinematic Replay'),
-                    h('div', { style: { fontSize: '10px', color: '#64748b' } }, events.length + ' events')
+                    h('div', { style: { fontSize: '10px', color: '#94a3b8' } }, events.length + ' events')
                   ),
                   h('svg', {
                     viewBox: '0 0 ' + W + ' ' + H,
@@ -19321,7 +19344,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       style: { offsetPath: 'path("' + pathD + '")', offsetRotate: 'auto', animation: 'rrCineCar 4s linear forwards', filter: 'drop-shadow(0 0 3px #fff)' }
                     })
                   ),
-                  h('div', { style: { fontSize: '9px', color: '#64748b', marginTop: '4px', textAlign: 'center' } }, '● START · ● END · 🏅 events')
+                  h('div', { style: { fontSize: '9px', color: '#94a3b8', marginTop: '4px', textAlign: 'center' } }, '● START · ● END · 🏅 events')
                 );
               })() : null,
               // Legacy canvas path kept for users who want a static view
@@ -19372,7 +19395,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       g.fillStyle = '#ef4444'; g.beginPath(); g.arc(ex, ey, 4, 0, Math.PI * 2); g.fill();
                     }
                     // Legend
-                    g.fillStyle = '#64748b'; g.font = '8px system-ui'; g.textAlign = 'left';
+                    g.fillStyle = '#94a3b8'; g.font = '8px system-ui'; g.textAlign = 'left';
                     g.fillText('🟢 slow  🟡 medium  🔴 fast  ● start  ● end', 4, H - 4);
                   },
                   style: { width: '100%', height: '140px', display: 'block', borderRadius: '8px', background: '#0a1628' }
@@ -19469,7 +19492,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 h('div', { className: 'rr-shimmer', style: { height: '10px', marginBottom: '5px', width: '70%' } })
               ) :
               d.lastReflection ? h('div', { style: { fontSize: '12px', color: '#cbd5e1', lineHeight: '1.7', whiteSpace: 'pre-wrap' } }, d.lastReflection.text) :
-              h('div', { style: { fontSize: '11px', color: '#64748b', lineHeight: '1.5' } }, 'Tap Generate for a personalized coaching reflection based on this drive.')
+              h('div', { style: { fontSize: '11px', color: '#94a3b8', lineHeight: '1.5' } }, 'Tap Generate for a personalized coaching reflection based on this drive.')
             ) : null,
             h('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' } },
               isFreeExplore ? h('button', { onClick: function() { upd('view', 'freeExploreSetup'); },
@@ -19681,9 +19704,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             (pr.errors || []).map(function(e, i) {
               var mm = Math.floor(e.t / 60); var ss = Math.floor(e.t % 60);
               return h('div', { key: i, style: { fontSize: '11px', color: '#cbd5e1', padding: '3px 0', borderBottom: '1px solid #1e293b' } },
-                h('span', { style: { color: '#64748b', fontFamily: 'monospace', marginRight: '8px' } }, (mm < 10 ? '0' : '') + mm + ':' + (ss < 10 ? '0' : '') + ss),
+                h('span', { style: { color: '#94a3b8', fontFamily: 'monospace', marginRight: '8px' } }, (mm < 10 ? '0' : '') + mm + ':' + (ss < 10 ? '0' : '') + ss),
                 h('span', null, catLabels[e.cat] || e.cat),
-                h('span', { style: { color: '#64748b', float: 'right' } }, Math.round(e.speedMph) + ' mph')
+                h('span', { style: { color: '#94a3b8', float: 'right' } }, Math.round(e.speedMph) + ' mph')
               );
             })
           ) : null,
@@ -19801,7 +19824,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             ded.map(function(e, i) {
               var mm = Math.floor(e.t / 60); var ss = Math.floor(e.t % 60);
               return h('div', { key: i, style: { fontSize: '11px', color: '#cbd5e1', padding: '3px 0', borderBottom: '1px solid #1e293b', display: 'flex', justifyContent: 'space-between' } },
-                h('span', { style: { fontFamily: 'monospace', color: '#64748b' } }, (mm < 10 ? '0' : '') + mm + ':' + (ss < 10 ? '0' : '')),
+                h('span', { style: { fontFamily: 'monospace', color: '#94a3b8' } }, (mm < 10 ? '0' : '') + mm + ':' + (ss < 10 ? '0' : '')),
                 h('span', { style: { flex: 1, marginLeft: '10px' } }, e.detail),
                 h('span', { style: { color: '#ef4444', fontWeight: 700 } }, '-' + e.pts)
               );
@@ -19835,7 +19858,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             h('div', { style: { height: '10px', background: '#1e293b', borderRadius: '5px', overflow: 'hidden' } },
               h('div', { style: { height: '100%', width: Math.min(100, totalSec / 3600 / 70 * 100) + '%', background: 'linear-gradient(90deg, #fbbf24, #f59e0b)' } })
             ),
-            h('div', { style: { fontSize: '10px', color: '#64748b', marginTop: '4px', textAlign: 'right' } }, totalHrs + ' / 70 hours (' + Math.round(totalSec / 3600 / 70 * 100) + '%)')
+            h('div', { style: { fontSize: '10px', color: '#94a3b8', marginTop: '4px', textAlign: 'right' } }, totalHrs + ' / 70 hours (' + Math.round(totalSec / 3600 / 70 * 100) + '%)')
           ),
           logbook.length === 0 ? h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '40px', textAlign: 'center', color: '#94a3b8', fontSize: '12px' } },
             '📝 No sessions yet. Complete a drive to start your logbook.'
@@ -21566,7 +21589,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 h('div', { style: { flex: 1 } },
                   h('div', { style: { fontSize: '13px', fontWeight: 800 } }, 'Lesson ' + les.n + ' · ' + les.title + (passed ? ' ✓' : '')),
                   h('div', { style: { fontSize: '10px', color: '#94a3b8', marginTop: '2px', lineHeight: '1.4' } }, les.desc),
-                  h('div', { style: { fontSize: '10px', color: '#64748b', marginTop: '4px' } }, 'Goal: safety ' + les.minSafety + '+ · Best: ' + myBest)
+                  h('div', { style: { fontSize: '10px', color: '#94a3b8', marginTop: '4px' } }, 'Goal: safety ' + les.minSafety + '+ · Best: ' + myBest)
                 ),
                 h('button', {
                   disabled: !unlocked,
@@ -21886,8 +21909,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 h('span', { style: { color: '#1e293b' } }, p.text)
               );
             }),
-            h('div', { style: { textAlign: 'center', marginTop: '16px', fontSize: '11px', color: '#64748b', fontStyle: 'italic' } }, 'Because my life, my passengers\' lives, and the lives of everyone on the road with me matter.'),
-            h('div', { style: { display: 'flex', justifyContent: 'space-around', marginTop: '20px', fontSize: '10px', color: '#64748b' } },
+            h('div', { style: { textAlign: 'center', marginTop: '16px', fontSize: '11px', color: '#94a3b8', fontStyle: 'italic' } }, 'Because my life, my passengers\' lives, and the lives of everyone on the road with me matter.'),
+            h('div', { style: { display: 'flex', justifyContent: 'space-around', marginTop: '20px', fontSize: '10px', color: '#94a3b8' } },
               h('div', { style: { textAlign: 'center' } },
                 h('div', { style: { borderTop: '1px solid #1e293b', width: '180px', marginBottom: '4px' } }),
                 h('div', null, 'Signature (' + (d.driverName || 'name') + ')')
@@ -22360,7 +22383,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         else if (intermediate && intermediateHeld >= 0.75) stage = 'full_license';
         var stages = {
           unstarted: { title: 'Start tracking', icon: '📅', color: '#94a3b8', desc: 'Enter your birth date below to see your Maine GDL stage and what\'s next.' },
-          tooyoung: { title: 'Pre-permit', icon: '🌱', color: '#64748b', desc: 'You must be 15 to apply for a Maine learner\'s permit. Keep studying!' },
+          tooyoung: { title: 'Pre-permit', icon: '🌱', color: '#94a3b8', desc: 'You must be 15 to apply for a Maine learner\'s permit. Keep studying!' },
           eligible_permit: { title: 'Eligible to apply for permit', icon: '📝', color: '#22d3ee', desc: 'You\'re 15+. Apply at the Maine BMV: pass the written test, vision test, $35 fee.' },
           permit_hold: { title: 'Learner\'s Permit (holding period)', icon: '🪪', color: '#fbbf24', desc: 'You must hold the permit 6 months with NO violations. Keep logging practice hours!' },
           permit_waiting: { title: 'Permit held 6+ months — waiting to be 16', icon: '⏳', color: '#fbbf24', desc: 'You\'ve cleared the 6-month hold. Once you\'re 16 AND have 70 supervised hours (including 10 night), apply for intermediate license.' },
@@ -22441,7 +22464,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('div', { style: { height: '100%', width: Math.min(100, totalHrs / 70 * 100) + '%', background: 'linear-gradient(90deg, #10b981, #059669)' } })
             ),
             h('div', { style: { fontSize: '11px', color: '#a7f3d0', textAlign: 'right' } }, totalHrs.toFixed(1) + ' / 70 hours (' + Math.round(totalHrs / 70 * 100) + '%)'),
-            h('div', { style: { fontSize: '10px', color: '#64748b', marginTop: '8px', fontStyle: 'italic' } }, 'Note: the 70-hour Maine requirement is for real supervised driving. RoadReady simulator hours supplement but don\'t replace real road time.')
+            h('div', { style: { fontSize: '10px', color: '#94a3b8', marginTop: '8px', fontStyle: 'italic' } }, 'Note: the 70-hour Maine requirement is for real supervised driving. RoadReady simulator hours supplement but don\'t replace real road time.')
           ) : null
         );
       }
@@ -23108,9 +23131,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             })
           ),
           // Results count
-          h('div', { style: { fontSize: '10px', color: '#64748b', marginBottom: '10px' } }, filtered.length + ' feature' + (filtered.length === 1 ? '' : 's')),
+          h('div', { style: { fontSize: '10px', color: '#94a3b8', marginBottom: '10px' } }, filtered.length + ' feature' + (filtered.length === 1 ? '' : 's')),
           // Results
-          filtered.length === 0 ? h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '28px', textAlign: 'center', color: '#64748b', fontSize: '12px' } },
+          filtered.length === 0 ? h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '28px', textAlign: 'center', color: '#94a3b8', fontSize: '12px' } },
             'No matches. Try different keywords or switch to "All".'
           ) : h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '10px' } },
             filtered.map(function(f) {
@@ -23311,9 +23334,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             h('div', { style: { fontSize: '12px', color: '#a5f3fc', marginBottom: '8px' } },
               (isBaseline ? '🧠 BASELINE TEST' : '🍺 SIMULATED IMPAIRED') + ' · Trial ' + (trialsDone + 1) + ' / 5'
             ),
-            h('div', { style: { fontSize: '11px', color: '#64748b', marginBottom: '20px' } }, isBaseline ? 'Sober reaction' : 'With 0.08 BAC (~280ms added lag)'),
+            h('div', { style: { fontSize: '11px', color: '#94a3b8', marginBottom: '20px' } }, isBaseline ? 'Sober reaction' : 'With 0.08 BAC (~280ms added lag)'),
             h('div', { style: { background: '#0a1628', borderRadius: '16px', padding: '40px 20px', border: '1px solid #1e3a5f', minHeight: '280px', display: 'flex', alignItems: 'center', justifyContent: 'center' } },
-              rtPhase === 'waiting' ? h('div', { style: { fontSize: '18px', color: '#64748b' } }, 'Wait for the colored circle...') :
+              rtPhase === 'waiting' ? h('div', { style: { fontSize: '18px', color: '#94a3b8' } }, 'Wait for the colored circle...') :
               rtPhase === 'react' ? h('button', {
                 onClick: function() {
                   var elapsed = Date.now() - rtStartTime;
@@ -23413,7 +23436,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // Header
             h('div', { style: { borderBottom: '3px double #000', paddingBottom: '8px', marginBottom: '14px' } },
               h('h1', { style: { fontSize: '22px', margin: 0, textAlign: 'center', fontWeight: 900 } }, 'RoadReady Study Cheat Sheet'),
-              h('div', { style: { textAlign: 'center', fontSize: '10px', fontStyle: 'italic', color: '#64748b', marginTop: '2px' } }, 'Maine BMV Permit Test · Condensed key points')
+              h('div', { style: { textAlign: 'center', fontSize: '10px', fontStyle: 'italic', color: '#94a3b8', marginTop: '2px' } }, 'Maine BMV Permit Test · Condensed key points')
             ),
             // 3-column layout
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' } },
@@ -23463,7 +23486,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     h('tr', null, h('td', null, '65 mph'), h('td', { style: { textAlign: 'right' } }, '295 ft'), h('td', { style: { textAlign: 'right' } }, '510 ft'), h('td', { style: { textAlign: 'right' } }, '1500 ft'))
                   )
                 ),
-                h('div', { style: { fontSize: '9px', fontStyle: 'italic', color: '#64748b', marginTop: '2px' } }, '1.5s reaction time. Braking doubles each ~20 mph.')
+                h('div', { style: { fontSize: '9px', fontStyle: 'italic', color: '#94a3b8', marginTop: '2px' } }, '1.5s reaction time. Braking doubles each ~20 mph.')
               ),
               // Right column
               h('div', null,
@@ -23506,7 +23529,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               )
             ),
             // Footer
-            h('div', { style: { borderTop: '2px double #000', paddingTop: '6px', marginTop: '12px', textAlign: 'center', fontSize: '9px', fontStyle: 'italic', color: '#64748b' } },
+            h('div', { style: { borderTop: '2px double #000', paddingTop: '6px', marginTop: '12px', textAlign: 'center', fontSize: '9px', fontStyle: 'italic', color: '#94a3b8' } },
               'RoadReady · AlloFlow · Printed ' + new Date().toLocaleDateString() + ' · Study the official Maine Driver\'s Manual for complete rules.'
             )
           )
@@ -23541,7 +23564,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var maxWeekdayMin = Math.max.apply(null, weekdayMin) || 1;
         // Renders a simple SVG line chart given values 0-100
         var drawLineChart = function(values, color, label) {
-          if (values.length < 2) return h('div', { style: { fontSize: '11px', color: '#64748b', padding: '20px', textAlign: 'center' } }, 'Need 2+ drives');
+          if (values.length < 2) return h('div', { style: { fontSize: '11px', color: '#94a3b8', padding: '20px', textAlign: 'center' } }, 'Need 2+ drives');
           var W = 600, H = 120, pad = 20;
           var stepX = (W - pad * 2) / (values.length - 1);
           var pathD = values.map(function(v, i) {
@@ -23584,12 +23607,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '16px', border: '1px solid #334155', marginBottom: '12px' } },
               h('div', { style: { fontSize: '11px', fontWeight: 800, color: '#4ade80', textTransform: 'uppercase', marginBottom: '8px' } }, '🛡️ Safety Score Trend'),
               drawLineChart(safetyTrend, '#4ade80', 'Safety'),
-              h('div', { style: { fontSize: '10px', color: '#64748b', marginTop: '6px', textAlign: 'right' } }, 'Latest: ' + safetyTrend[safetyTrend.length - 1] + ' · Best: ' + Math.max.apply(null, safetyTrend))
+              h('div', { style: { fontSize: '10px', color: '#94a3b8', marginTop: '6px', textAlign: 'right' } }, 'Latest: ' + safetyTrend[safetyTrend.length - 1] + ' · Best: ' + Math.max.apply(null, safetyTrend))
             ),
             h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '16px', border: '1px solid #334155', marginBottom: '12px' } },
               h('div', { style: { fontSize: '11px', fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', marginBottom: '8px' } }, '🌿 Eco Score Trend'),
               drawLineChart(ecoTrend, '#fbbf24', 'Eco'),
-              h('div', { style: { fontSize: '10px', color: '#64748b', marginTop: '6px', textAlign: 'right' } }, 'Latest: ' + ecoTrend[ecoTrend.length - 1] + ' · Best: ' + Math.max.apply(null, ecoTrend))
+              h('div', { style: { fontSize: '10px', color: '#94a3b8', marginTop: '6px', textAlign: 'right' } }, 'Latest: ' + ecoTrend[ecoTrend.length - 1] + ' · Best: ' + Math.max.apply(null, ecoTrend))
             ),
             // Scenario donut + bests side by side
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' } },
@@ -23622,7 +23645,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                         return h('div', { key: ei, style: { display: 'flex', alignItems: 'center', gap: '6px', padding: '2px 0' } },
                           h('div', { style: { width: '10px', height: '10px', borderRadius: '3px', background: colors[ei % colors.length] } }),
                           h('span', { style: { color: '#cbd5e1', flex: 1 } }, e.name),
-                          h('span', { style: { color: '#64748b' } }, e.count)
+                          h('span', { style: { color: '#94a3b8' } }, e.count)
                         );
                       })
                     )
@@ -23656,7 +23679,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   return h('div', { key: di, style: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' } },
                     h('div', { style: { fontSize: '9px', color: '#94a3b8', marginBottom: '2px' } }, Math.round(mins) + 'm'),
                     h('div', { style: { width: '100%', height: Math.max(4, pct * 60) + 'px', background: 'linear-gradient(0deg, #f472b6, #ec4899)', borderRadius: '4px 4px 0 0' } }),
-                    h('div', { style: { fontSize: '10px', color: '#64748b', marginTop: '4px' } }, day)
+                    h('div', { style: { fontSize: '10px', color: '#94a3b8', marginTop: '4px' } }, day)
                   );
                 })
               )
@@ -23712,7 +23735,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 onChange: function(e) { upd('distractedSpeed', parseInt(e.target.value)); },
                 style: { width: '100%' }
               }),
-              h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: '9px', color: '#64748b' } },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: '9px', color: '#94a3b8' } },
                 h('span', null, '15 (school zone)'),
                 h('span', null, '35 (city)'),
                 h('span', null, '55'),
@@ -23728,7 +23751,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 onChange: function(e) { upd('distractedGlance', parseFloat(e.target.value)); },
                 style: { width: '100%' }
               }),
-              h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: '9px', color: '#64748b' } },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: '9px', color: '#94a3b8' } },
                 h('span', null, '1s (check mirror)'),
                 h('span', null, '3s (read a text)'),
                 h('span', null, '5s'),
@@ -23760,9 +23783,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   var x = r.ft * pxPerFt;
                   if (x > svgW) return null;
                   return h('g', { key: ri },
-                    h('line', { x1: x, y1: 30, x2: x, y2: 100, stroke: '#64748b', strokeWidth: 1, strokeDasharray: '3 3' }),
+                    h('line', { x1: x, y1: 30, x2: x, y2: 100, stroke: '#94a3b8', strokeWidth: 1, strokeDasharray: '3 3' }),
                     h('text', { x: x, y: 20, textAnchor: 'middle', fontSize: '9', fill: '#94a3b8' }, r.ft + ' ft'),
-                    h('text', { x: x, y: 115, textAnchor: 'middle', fontSize: '8', fill: '#64748b' }, r.label)
+                    h('text', { x: x, y: 115, textAnchor: 'middle', fontSize: '8', fill: '#94a3b8' }, r.label)
                   );
                 }),
                 // Glance-distance red bar
@@ -23844,9 +23867,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('path', { d: 'M 65 26 L 82 15 L 118 15 L 135 26 Z', fill: '#1e3a5f', opacity: 0.85 }),
               // Wheels
               h('circle', { cx: 55, cy: 62, r: 8, fill: '#0f172a', stroke: '#475569', strokeWidth: 1.5 }),
-              h('circle', { cx: 55, cy: 62, r: 3, fill: '#64748b' }),
+              h('circle', { cx: 55, cy: 62, r: 3, fill: '#94a3b8' }),
               h('circle', { cx: 145, cy: 62, r: 8, fill: '#0f172a', stroke: '#475569', strokeWidth: 1.5 }),
-              h('circle', { cx: 145, cy: 62, r: 3, fill: '#64748b' }),
+              h('circle', { cx: 145, cy: 62, r: 3, fill: '#94a3b8' }),
               // Headlights
               h('circle', { cx: 168, cy: 35, r: 2.5, fill: '#fff' }),
               h('circle', { cx: 168, cy: 45, r: 2.5, fill: '#fff' }),
@@ -23890,7 +23913,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               onChange: function(e) { upd('driverName', e.target.value); },
               style: { width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #334155', background: '#020617', color: '#fff', fontSize: '13px' }
             }),
-            h('div', { style: { fontSize: '10px', color: '#64748b', marginTop: '4px' } }, 'Shows up on your debrief certificates and journal exports. Stays on your device only — no cloud.')
+            h('div', { style: { fontSize: '10px', color: '#94a3b8', marginTop: '4px' } }, 'Shows up on your debrief certificates and journal exports. Stays on your device only — no cloud.')
           ),
           // License plate
           h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '16px', border: '1px solid #334155', marginBottom: '12px' } },
@@ -23900,7 +23923,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               onChange: function(e) { upd('licensePlate', e.target.value.toUpperCase().replace(/[^A-Z0-9 ]/g, '')); },
               style: { width: '140px', padding: '10px 12px', borderRadius: '6px', border: '2px solid #000', background: '#fff', color: '#000', fontSize: '16px', fontWeight: 900, fontFamily: 'monospace', textAlign: 'center', letterSpacing: '0.1em' }
             }),
-            h('div', { style: { fontSize: '10px', color: '#64748b', marginTop: '4px' } }, '7 characters max. Letters + numbers only. Pure personalization — no lookups or real data.')
+            h('div', { style: { fontSize: '10px', color: '#94a3b8', marginTop: '4px' } }, '7 characters max. Letters + numbers only. Pure personalization — no lookups or real data.')
           ),
           // Reset
           h('button', { onClick: function() { updMulti({ carColor: null, driverName: '', licensePlate: '' }); },
@@ -24007,7 +24030,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       h('div', { style: { position: 'absolute', inset: 0, borderRadius: '50%', background: earned ? c.bg : '#1e293b', animation: earned ? 'rrGalGlow 2.5s ease-in-out infinite' : 'none', color: c.ring } }),
                       h('div', { style: { position: 'relative', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px', filter: earned ? 'none' : 'grayscale(1)' } }, earned ? ach.icon : '🔒')
                     ),
-                    h('div', { style: { fontSize: '11px', fontWeight: 800, color: earned ? '#fff' : '#64748b', marginBottom: '3px' } }, earned ? ach.name : '???'),
+                    h('div', { style: { fontSize: '11px', fontWeight: 800, color: earned ? '#fff' : '#94a3b8', marginBottom: '3px' } }, earned ? ach.name : '???'),
                     h('div', { style: { fontSize: '9px', color: earned ? '#94a3b8' : '#475569', lineHeight: '1.4' } }, ach.desc)
                   );
                 })
@@ -24332,7 +24355,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           },
             style: { width: '100%', padding: '14px', borderRadius: '10px', border: 'none', background: '#ef4444', color: '#fff', fontSize: '15px', fontWeight: 900, cursor: 'pointer' }
           }, '🚨 Start Emergency Drill — Sirens Will Be Frequent'),
-          h('div', { style: { marginTop: '8px', fontSize: '10px', color: '#64748b', textAlign: 'center' } },
+          h('div', { style: { marginTop: '8px', fontSize: '10px', color: '#94a3b8', textAlign: 'center' } },
             'Emergency vehicles will spawn every 20-30 seconds. Practice until the response is automatic. Earns the "First Responder" achievement.'
           )
         );
@@ -24396,7 +24419,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               onChange: function(e) { upd('labReaction', parseFloat(e.target.value)); },
               style: { width: '100%', accentColor: '#22d3ee' }
             }),
-            h('div', { style: { fontSize: '10px', color: '#64748b', marginTop: '4px' } },
+            h('div', { style: { fontSize: '10px', color: '#94a3b8', marginTop: '4px' } },
               labReaction < 1.0 ? 'Race car driver / formula 1 fit.'
                 : labReaction < 1.3 ? 'Sharp teen driver, alert.'
                 : labReaction < 1.7 ? 'Normal alert adult (~1.5 s is DMV standard).'
@@ -24432,12 +24455,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             h('div', { style: { background: '#020617', borderRadius: '10px', padding: '14px', border: '1px solid #1e293b', textAlign: 'center' } },
               h('div', { style: { fontSize: '10px', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 700 } }, 'Reaction Distance'),
               h('div', { style: { fontSize: '24px', fontWeight: 900, color: '#fbbf24', fontFamily: 'monospace', marginTop: '4px' } }, Math.round(sd.reaction_ft) + ' ft'),
-              h('div', { style: { fontSize: '9px', color: '#64748b', marginTop: '2px' } }, 'v × t = distance covered before brakes touch')
+              h('div', { style: { fontSize: '9px', color: '#94a3b8', marginTop: '2px' } }, 'v × t = distance covered before brakes touch')
             ),
             h('div', { style: { background: '#020617', borderRadius: '10px', padding: '14px', border: '1px solid #1e293b', textAlign: 'center' } },
               h('div', { style: { fontSize: '10px', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 700 } }, 'Braking Distance'),
               h('div', { style: { fontSize: '24px', fontWeight: 900, color: '#f87171', fontFamily: 'monospace', marginTop: '4px' } }, Math.round(sd.braking_ft) + ' ft'),
-              h('div', { style: { fontSize: '9px', color: '#64748b', marginTop: '2px' } }, 'v² / (2·μ·g) — grows with v squared')
+              h('div', { style: { fontSize: '9px', color: '#94a3b8', marginTop: '2px' } }, 'v² / (2·μ·g) — grows with v squared')
             )
           ),
           // Total bar
@@ -24455,10 +24478,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '14px', border: '1px solid #334155', marginBottom: '14px' } },
             h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#a78bfa', textTransform: 'uppercase', marginBottom: '8px' } }, '🔬 Live Physics'),
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '11px' } },
-              h('div', null, h('span', { style: { color: '#64748b' } }, 'Friction μ: '), h('b', { style: { color: '#22d3ee' } }, sd.mu.toFixed(2))),
-              h('div', null, h('span', { style: { color: '#64748b' } }, 'Total resist: '), h('b', { style: { color: '#22d3ee' } }, Math.round(resist) + ' N')),
-              h('div', null, h('span', { style: { color: '#64748b' } }, 'Safe follow: '), h('b', { style: { color: '#4ade80' } }, Math.round(followFt) + ' ft')),
-              h('div', null, h('span', { style: { color: '#64748b' } }, 'Cruise MPG: '), h('b', { style: { color: '#4ade80' } }, cruise < 999 ? cruise.toFixed(1) : '—'))
+              h('div', null, h('span', { style: { color: '#94a3b8' } }, 'Friction μ: '), h('b', { style: { color: '#22d3ee' } }, sd.mu.toFixed(2))),
+              h('div', null, h('span', { style: { color: '#94a3b8' } }, 'Total resist: '), h('b', { style: { color: '#22d3ee' } }, Math.round(resist) + ' N')),
+              h('div', null, h('span', { style: { color: '#94a3b8' } }, 'Safe follow: '), h('b', { style: { color: '#4ade80' } }, Math.round(followFt) + ' ft')),
+              h('div', null, h('span', { style: { color: '#94a3b8' } }, 'Cruise MPG: '), h('b', { style: { color: '#4ade80' } }, cruise < 999 ? cruise.toFixed(1) : '—'))
             )
           ),
           // Visual: distance bar
@@ -24468,9 +24491,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('div', { style: { position: 'absolute', left: 0, top: 0, height: '100%', width: Math.min(100, sd.reaction_ft / 400 * 100) + '%', background: '#fbbf24' } }),
               h('div', { style: { position: 'absolute', left: Math.min(100, sd.reaction_ft / 400 * 100) + '%', top: 0, height: '100%', width: Math.min(100 - Math.min(100, sd.reaction_ft / 400 * 100), sd.braking_ft / 400 * 100) + '%', background: '#ef4444' } }),
               h('div', { style: { position: 'absolute', left: '50%', top: 0, bottom: 0, width: '1px', background: 'rgba(255,255,255,0.3)' } }),
-              h('div', { style: { position: 'absolute', left: '50%', bottom: '-14px', transform: 'translateX(-50%)', fontSize: '9px', color: '#64748b' } }, '200 ft')
+              h('div', { style: { position: 'absolute', left: '50%', bottom: '-14px', transform: 'translateX(-50%)', fontSize: '9px', color: '#94a3b8' } }, '200 ft')
             ),
-            h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: '9px', color: '#64748b', marginTop: '4px' } },
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: '9px', color: '#94a3b8', marginTop: '4px' } },
               h('span', null, '0'),
               h('span', null, '400 ft')
             ),
@@ -24761,7 +24784,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 g.fillText('Speed: ' + Math.round(maxSpd) + ' mph max', 4, 12);
                 g.fillStyle = '#60a5fa';
                 g.fillText('Steering', 4, 24);
-                g.fillStyle = '#64748b'; g.textAlign = 'right';
+                g.fillStyle = '#94a3b8'; g.textAlign = 'right';
                 g.fillText('← ' + (replay.length / 60).toFixed(1) + 's before impact', W - 4, H - 4);
                 // Impact marker
                 g.fillStyle = '#fbbf24';
@@ -24826,11 +24849,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               ) : null
             ),
             h('div', { style: { fontSize: '24px', fontWeight: 900, color: '#1e293b', marginBottom: '4px' } }, 'RoadReady'),
-            h('div', { style: { fontSize: '12px', color: '#64748b', marginBottom: '14px', fontStyle: 'italic' } }, "Driver's Education & Automotive Science"),
+            h('div', { style: { fontSize: '12px', color: '#94a3b8', marginBottom: '14px', fontStyle: 'italic' } }, "Driver's Education & Automotive Science"),
             h('div', { style: { width: '60%', height: '1px', background: 'linear-gradient(90deg, transparent, #d4a843, transparent)', margin: '0 auto 16px' } }),
-            h('div', { style: { fontSize: '11px', color: '#64748b', marginBottom: '2px' } }, 'This certifies that'),
+            h('div', { style: { fontSize: '11px', color: '#94a3b8', marginBottom: '2px' } }, 'This certifies that'),
             h('div', { style: { fontSize: '28px', fontWeight: 800, color: '#1e293b', marginBottom: '12px', fontFamily: '"Georgia", "Times New Roman", serif', fontStyle: 'italic' } }, certName),
-            h('div', { style: { fontSize: '11px', color: '#64748b', marginBottom: '14px', maxWidth: '500px', margin: '0 auto 14px', lineHeight: '1.6' } },
+            h('div', { style: { fontSize: '11px', color: '#94a3b8', marginBottom: '14px', maxWidth: '500px', margin: '0 auto 14px', lineHeight: '1.6' } },
               'has completed the RoadReady driver\'s education curriculum including physics of stopping distance, Maine state laws, hazard recognition, and ' + certHours + ' hours of simulated supervised driving practice.'
             ),
             h('div', { style: { fontSize: '10px', color: '#a07830', fontWeight: 700, letterSpacing: '2px', marginBottom: '4px' } }, 'FINAL GRADE'),
@@ -24845,7 +24868,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 return h('div', { key: si, style: { textAlign: 'center', padding: '6px', background: 'rgba(212,168,67,0.1)', borderRadius: '6px', border: '1px solid #d4a843' } },
                   h('div', { style: { fontSize: '14px' } }, s[0]),
                   h('div', { style: { fontSize: '15px', fontWeight: 800, color: '#422006' } }, s[1]),
-                  h('div', { style: { fontSize: '8px', color: '#64748b', textTransform: 'uppercase' } }, s[2])
+                  h('div', { style: { fontSize: '8px', color: '#94a3b8', textTransform: 'uppercase' } }, s[2])
                 );
               })
             ),
@@ -24861,12 +24884,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               ),
               h('div', { style: { textAlign: 'center', opacity: certTotalSec >= 70*3600 ? 1 : certHours > 10 ? 0.7 : 0.3 } },
                 h('div', { style: { fontSize: '24px' } }, '🕙'),
-                h('div', { style: { color: certTotalSec >= 70*3600 ? '#15803d' : '#64748b', fontWeight: 700 } }, certTotalSec >= 70*3600 ? '70+ HOURS' : certHours + ' of 70 hrs')
+                h('div', { style: { color: certTotalSec >= 70*3600 ? '#15803d' : '#94a3b8', fontWeight: 700 } }, certTotalSec >= 70*3600 ? '70+ HOURS' : certHours + ' of 70 hrs')
               )
             ),
             h('div', { style: { width: '60%', height: '1px', background: 'linear-gradient(90deg, transparent, #d4a843, transparent)', margin: '14px auto' } }),
             // Signature lines
-            h('div', { style: { display: 'flex', justifyContent: 'space-around', fontSize: '10px', color: '#64748b', marginTop: '10px' } },
+            h('div', { style: { display: 'flex', justifyContent: 'space-around', fontSize: '10px', color: '#94a3b8', marginTop: '10px' } },
               h('div', { style: { textAlign: 'center' } },
                 h('div', { style: { borderTop: '1px solid #422006', width: '180px', marginBottom: '4px' } }),
                 h('div', null, 'Parent / Guardian Signature')
@@ -25012,7 +25035,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#06b6d4', marginBottom: '4px' } }, 'AGE'),
               h('input', { type: 'range', min: 16, max: 75, value: insAge, onChange: function(e) { upd('insAge', parseInt(e.target.value)); }, style: { width: '100%', accentColor: '#06b6d4' } }),
               h('div', { style: { fontSize: '14px', fontWeight: 800, color: '#fff', textAlign: 'center' } }, insAge + ' years old'),
-              h('div', { style: { fontSize: '9px', color: '#64748b', textAlign: 'center' } }, insAge < 25 ? 'Under 25 = higher rates' : insAge > 64 ? 'Senior rate applies' : 'Standard adult rate')
+              h('div', { style: { fontSize: '9px', color: '#94a3b8', textAlign: 'center' } }, insAge < 25 ? 'Under 25 = higher rates' : insAge > 64 ? 'Senior rate applies' : 'Standard adult rate')
             ),
             h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '12px', border: '1px solid #334155' } },
               h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#06b6d4', marginBottom: '6px' } }, 'DRIVING RECORD'),
@@ -25039,7 +25062,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             h('div', { style: { fontSize: '10px', color: '#94a3b8', marginBottom: '4px' } }, 'ESTIMATED ANNUAL PREMIUM'),
             h('div', { style: { fontSize: '36px', fontWeight: 900, color: annualPremium > 3000 ? '#ef4444' : annualPremium > 2000 ? '#f59e0b' : '#4ade80', fontFamily: 'monospace' } }, '$' + annualPremium.toLocaleString()),
             h('div', { style: { fontSize: '14px', color: '#94a3b8' } }, '$' + monthlyPremium + '/month'),
-            h('div', { style: { fontSize: '10px', color: '#64748b', marginTop: '6px' } },
+            h('div', { style: { fontSize: '10px', color: '#94a3b8', marginTop: '6px' } },
               'Age factor: ' + ageFactor + '× · Record: ' + recordFactor + '× · Vehicle: ' + vehFactor + '×')
           ),
           // Impact comparison
@@ -25098,12 +25121,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   h('span', { style: { fontSize: '18px' } }, mi.icon),
                   h('div', null,
                     h('div', { style: { fontSize: '12px', fontWeight: 700 } }, mi.item),
-                    h('div', { style: { fontSize: '9px', color: '#64748b' } }, 'Every ' + mi.interval.toLocaleString() + ' mi · ' + mi.cost)
+                    h('div', { style: { fontSize: '9px', color: '#94a3b8' } }, 'Every ' + mi.interval.toLocaleString() + ' mi · ' + mi.cost)
                   )
                 ),
                 h('div', { style: { textAlign: 'right' } },
                   h('div', { style: { fontSize: '11px', fontWeight: 700, color: overdue ? '#ef4444' : soon ? '#f59e0b' : '#4ade80' } }, overdue ? 'OVERDUE' : soon ? 'DUE SOON' : 'OK'),
-                  h('div', { style: { fontSize: '9px', color: '#64748b' } }, overdue ? 'Was due at ' + nextDue.toLocaleString() + ' mi' : milesLeft.toLocaleString() + ' mi until next')
+                  h('div', { style: { fontSize: '9px', color: '#94a3b8' } }, overdue ? 'Was due at ' + nextDue.toLocaleString() + ' mi' : milesLeft.toLocaleString() + ' mi until next')
                 )
               ),
               h('div', { style: { fontSize: '10px', color: '#94a3b8', marginTop: '4px', lineHeight: '1.4' } }, mi.desc)
@@ -25231,7 +25254,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               return h('div', { key: r[2], style: { background: '#020617', borderRadius: '8px', padding: '12px', textAlign: 'center', border: '1px solid #1e293b' } },
                 h('div', { style: { fontSize: '18px' } }, r[0]),
                 h('div', { style: { fontSize: '18px', fontWeight: 900, color: '#34d399', marginTop: '4px' } }, r[1]),
-                h('div', { style: { fontSize: '9px', color: '#64748b', marginTop: '2px' } }, r[2])
+                h('div', { style: { fontSize: '9px', color: '#94a3b8', marginTop: '2px' } }, r[2])
               );
             })
           ),
@@ -25344,7 +25367,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 g.font = 'bold 12px monospace'; g.textAlign = 'center';
                 g.fillText('Net: ' + (netF > 0 ? '+' : '') + Math.round(netF) + 'N → ' + (accel > 0 ? 'accelerating' : accel < -0.5 ? 'decelerating' : 'steady'), W / 2, H - 10);
                 // Friction coefficient
-                g.fillStyle = '#64748b'; g.font = '9px system-ui'; g.textAlign = 'right';
+                g.fillStyle = '#94a3b8'; g.font = '9px system-ui'; g.textAlign = 'right';
                 g.fillText('μ = ' + frictionCoef(fwfd).toFixed(2) + ' (' + fdWeather + ')', W - 10, 14);
                 g.fillText('Cd×A = ' + (fdVeh.cd * fdVeh.area).toFixed(2) + ' m²', W - 10, 26);
               },
@@ -25437,7 +25460,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 )
               )
             ),
-            h('div', { style: { display: 'flex', gap: '12px', fontSize: '9px', color: '#64748b' } },
+            h('div', { style: { display: 'flex', gap: '12px', fontSize: '9px', color: '#94a3b8' } },
               h('span', null, '█ Reaction distance'), h('span', null, '█ Braking distance')
             )
           ),
@@ -25584,7 +25607,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     h('td', { style: { padding: '8px', fontFamily: 'monospace', fontWeight: 700, color: w.color } }, Math.round(sd.total_ft) + ' ft'),
                     h('td', { style: { padding: '8px', fontFamily: 'monospace', color: ratio > 2 ? '#ef4444' : ratio > 1.3 ? '#f59e0b' : '#4ade80' } }, ratio.toFixed(1) + '×'),
                     h('td', { style: { padding: '8px' } }, w.following + ' sec'),
-                    h('td', { style: { padding: '8px', color: '#64748b' } }, w.vis)
+                    h('td', { style: { padding: '8px', color: '#94a3b8' } }, w.vis)
                   );
                 })
               )
@@ -25650,10 +25673,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var locked = idx > currentStage;
             return h('div', { key: idx, style: { background: done ? '#0f2a1a' : isCurrent ? '#1e293b' : '#0f172a', borderRadius: '10px', padding: '14px', border: '2px solid ' + (done ? '#4ade80' : isCurrent ? '#f59e0b' : '#1e293b'), marginBottom: '6px', opacity: locked ? 0.5 : 1 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px' } },
-                h('div', { style: { width: '36px', height: '36px', borderRadius: '50%', background: done ? '#4ade80' : isCurrent ? '#f59e0b' : '#334155', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: done ? '16px' : '14px', fontWeight: 900, color: done || isCurrent ? '#000' : '#64748b', flexShrink: 0 } }, done ? '✓' : st.icon),
+                h('div', { style: { width: '36px', height: '36px', borderRadius: '50%', background: done ? '#4ade80' : isCurrent ? '#f59e0b' : '#334155', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: done ? '16px' : '14px', fontWeight: 900, color: done || isCurrent ? '#000' : '#94a3b8', flexShrink: 0 } }, done ? '✓' : st.icon),
                 h('div', { style: { flex: 1 } },
                   h('div', { style: { fontSize: '13px', fontWeight: 800, color: done ? '#4ade80' : isCurrent ? '#f59e0b' : '#94a3b8' } }, 'Stage ' + (idx + 1) + ': ' + st.title),
-                  h('div', { style: { fontSize: '10px', color: '#64748b', marginTop: '2px' } }, st.desc)
+                  h('div', { style: { fontSize: '10px', color: '#94a3b8', marginTop: '2px' } }, st.desc)
                 ),
                 isCurrent && !locked ? h('button', { onClick: function() { upd('view', st.modes[0]); },
                   style: { padding: '6px 14px', borderRadius: '6px', border: 'none', background: '#f59e0b', color: '#78350f', fontSize: '11px', fontWeight: 800, cursor: 'pointer', flexShrink: 0 } }, 'Start →') : null
@@ -25770,7 +25793,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             rtState.phase === 'waiting' ? h('div', null,
               h('div', { style: { fontSize: '24px', fontWeight: 800, marginBottom: '8px' } }, 'Click / Tap to Start'),
               h('div', { style: { fontSize: '12px', color: '#94a3b8' } }, 'Wait for GREEN, then click as fast as you can.'),
-              rtState.times && rtState.times.length > 0 ? h('div', { style: { fontSize: '11px', color: '#64748b', marginTop: '8px' } }, rtState.times.length + ' attempts · Best: ' + rtState.bestTime + ' ms') : null
+              rtState.times && rtState.times.length > 0 ? h('div', { style: { fontSize: '11px', color: '#94a3b8', marginTop: '8px' } }, rtState.times.length + ' attempts · Best: ' + rtState.bestTime + ' ms') : null
             ) :
             rtState.phase === 'ready' ? h('div', null,
               h('div', { style: { fontSize: '48px', fontWeight: 900, color: '#fff' } }, '🔴 WAIT...'),
@@ -25794,7 +25817,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 rtState.lastTime < 500 ? 'Average — room to improve.' :
                 'Slow — this adds significant stopping distance.'
               ),
-              h('div', { style: { fontSize: '11px', color: '#64748b', marginTop: '8px' } }, 'At 60 mph, ' + rtState.lastTime + ' ms = ' + Math.round(rtState.lastTime / 1000 * 88) + ' feet traveled before you even touch the brake.'),
+              h('div', { style: { fontSize: '11px', color: '#94a3b8', marginTop: '8px' } }, 'At 60 mph, ' + rtState.lastTime + ' ms = ' + Math.round(rtState.lastTime / 1000 * 88) + ' feet traveled before you even touch the brake.'),
               h('div', { style: { fontSize: '12px', color: '#22d3ee', marginTop: '10px', fontWeight: 700 } }, 'Click to try again')
             ) : null
           ),
@@ -25818,15 +25841,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginBottom: '8px' } },
               h('div', { style: { textAlign: 'center' } },
                 h('div', { style: { fontSize: '18px', fontWeight: 900, color: '#4ade80' } }, rtState.bestTime + ' ms'),
-                h('div', { style: { fontSize: '9px', color: '#64748b' } }, 'Best')
+                h('div', { style: { fontSize: '9px', color: '#94a3b8' } }, 'Best')
               ),
               h('div', { style: { textAlign: 'center' } },
                 h('div', { style: { fontSize: '18px', fontWeight: 900, color: '#22d3ee' } }, Math.round(rtState.times.reduce(function(a, b) { return a + b; }, 0) / rtState.times.length) + ' ms'),
-                h('div', { style: { fontSize: '9px', color: '#64748b' } }, 'Average')
+                h('div', { style: { fontSize: '9px', color: '#94a3b8' } }, 'Average')
               ),
               h('div', { style: { textAlign: 'center' } },
                 h('div', { style: { fontSize: '18px', fontWeight: 900, color: '#94a3b8' } }, rtState.times.length),
-                h('div', { style: { fontSize: '9px', color: '#64748b' } }, 'Attempts')
+                h('div', { style: { fontSize: '9px', color: '#94a3b8' } }, 'Attempts')
               )
             ),
             h('div', { style: { fontSize: '10px', color: '#94a3b8', lineHeight: '1.5' } },
@@ -26040,13 +26063,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       }
 
       // Fallback
-      return h('div', { style: { padding: '24px', textAlign: 'center', color: '#64748b' } }, 'Loading RoadReady...');
+      return h('div', { style: { padding: '24px', textAlign: 'center', color: '#94a3b8' } }, 'Loading RoadReady...');
     } catch(renderErr) {
       console.error('[RoadReady] Render error:', renderErr);
       return ctx.React.createElement('div', { style: { padding: '24px', color: '#ef4444', textAlign: 'center' } },
         ctx.React.createElement('h3', null, '🚗 RoadReady Error'),
         ctx.React.createElement('p', { style: { fontSize: '12px', color: '#94a3b8', marginTop: '8px' } }, String(renderErr.message || renderErr)),
-        ctx.React.createElement('pre', { style: { fontSize: '10px', color: '#64748b', marginTop: '8px', textAlign: 'left', maxHeight: '200px', overflow: 'auto', background: '#0f172a', padding: '8px', borderRadius: '8px' } }, renderErr.stack || '')
+        ctx.React.createElement('pre', { style: { fontSize: '10px', color: '#94a3b8', marginTop: '8px', textAlign: 'left', maxHeight: '200px', overflow: 'auto', background: '#0f172a', padding: '8px', borderRadius: '8px' } }, renderErr.stack || '')
       );
     }
     }

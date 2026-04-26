@@ -4,6 +4,15 @@
 //   AI tutor, TTS read-aloud, grade-band content, 15 materials
 (function() {
   'use strict';
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  (function() {
+    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-stem-motion-reduce-css';
+    st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    document.head.appendChild(st);
+  })();
+
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-decomposer')) return;
@@ -1138,26 +1147,26 @@
         /* ═══════════════════════════════════════════════════
            Main UI Render
            ═══════════════════════════════════════════════════ */
-        return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'max-w-3xl mx-auto animate-in fade-in duration-200' },
+        return h('div', { className: 'max-w-3xl mx-auto animate-in fade-in duration-200' },
 
           /* ── Header ── */
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-3 mb-3' },
+          h('div', { className: 'flex items-center gap-3 mb-3' },
             h('button', {
               onClick: function() { setStemLabTool(null); },
               className: 'p-1.5 hover:bg-slate-100 rounded-lg',
               'aria-label': 'Back to tools'
             }, h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
             h('h3', { className: 'text-lg font-bold text-slate-800' }, '\u2697\uFE0F Material Decomposer'),
-            h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'px-2 py-0.5 bg-amber-100 text-amber-700 text-[11px] font-bold rounded-full' },
+            h('span', { className: 'px-2 py-0.5 bg-amber-100 text-amber-700 text-[11px] font-bold rounded-full' },
               totalAtoms + ' ATOMS'
             ),
-            badges.length > 0 && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'px-2 py-0.5 bg-purple-100 text-purple-700 text-[11px] font-bold rounded-full' },
+            badges.length > 0 && h('span', { className: 'px-2 py-0.5 bg-purple-100 text-purple-700 text-[11px] font-bold rounded-full' },
               '\uD83C\uDFC5 ' + badges.length + '/' + BADGES.length
             )
           ),
 
           /* ── Grade-band intro ── */
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200 p-3 mb-3' },
+          h('div', { className: 'bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200 p-3 mb-3' },
             h('p', { className: 'text-xs text-slate-700 leading-relaxed' }, gradeBandIntro()),
             h('button', { 'aria-label': 'Read aloud',
               onClick: function() { speakText(gradeBandIntro()); },
@@ -1166,7 +1175,7 @@
           ),
 
           /* ── Tab bar ── */
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-1 mb-4 bg-slate-100 rounded-xl p-1', role: 'tablist', 'aria-label': 'Decomposer Lab sections' },
+          h('div', { className: 'flex gap-1 mb-4 bg-slate-100 rounded-xl p-1', role: 'tablist', 'aria-label': 'Decomposer Lab sections' },
             TABS.map(function(t) {
               var active = tab === t.id;
               return h('button', { 'aria-label': 'Change tab',
@@ -1182,7 +1191,7 @@
           ),
 
           /* ── Material selector chips (always visible) ── */
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-1.5 mb-4' },
+          h('div', { className: 'flex flex-wrap gap-1.5 mb-4' },
             MATERIALS.map(function(m) {
               return h('button', { 'aria-label': 'Decomposer action',
                 key: m.name,
@@ -1213,13 +1222,13 @@
                 h('div', { className: 'flex-1' },
                   h('div', { className: 'flex items-center gap-2' },
                     h('h4', { className: 'font-bold text-slate-800 text-lg' }, sel.name),
-                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'px-2 py-0.5 bg-white rounded-full text-sm font-mono font-bold text-slate-700 border border-slate-200 shadow-sm' }, sel.formula)
+                    h('span', { className: 'px-2 py-0.5 bg-white rounded-full text-sm font-mono font-bold text-slate-700 border border-slate-200 shadow-sm' }, sel.formula)
                   ),
                   h('p', { className: 'text-xs text-slate-600 mt-1 leading-relaxed' }, sel.desc),
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-3 mt-2 text-[11px] font-bold' },
-                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-cyan-600' }, '\uD83D\uDD17 ' + sel.bondType),
-                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-indigo-600' }, '\uD83D\uDCCA ' + sel.state),
-                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-emerald-600' }, '\u2696 ' + sel.molarMass)
+                  h('div', { className: 'flex gap-3 mt-2 text-[11px] font-bold' },
+                    h('span', { className: 'text-cyan-600' }, '\uD83D\uDD17 ' + sel.bondType),
+                    h('span', { className: 'text-indigo-600' }, '\uD83D\uDCCA ' + sel.state),
+                    h('span', { className: 'text-emerald-600' }, '\u2696 ' + sel.molarMass)
                   )
                 )
               ),
@@ -1243,10 +1252,10 @@
               }, decomposed ? '\uD83D\uDD04 Reassemble' : '\u2697\uFE0F Decompose into Elements'),
 
               /* Animated decomposition visual */
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-4 flex items-center justify-center gap-2 min-h-[80px] transition-all duration-500' },
+              h('div', { className: 'mt-4 flex items-center justify-center gap-2 min-h-[80px] transition-all duration-500' },
                 decomposed
                   ? sel.elements.map(function(el, i) {
-                      return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+                      return h('div', { 
                         key: el.sym,
                         className: 'flex flex-col items-center animate-in zoom-in fade-in cursor-pointer',
                         style: { animationDelay: (i * 150) + 'ms', animationFillMode: 'both' },
@@ -1320,7 +1329,7 @@
               var cmpMat = MATERIALS.find(function(m) { return m.name === (d.compareTo || ''); }) || MATERIALS[1];
 
               if (!cmpMode) {
-                return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mb-3' },
+                return h('div', { className: 'mb-3' },
                   h('button', { 'aria-label': 'Compare Molecules',
                     onClick: function() {
                       SOUNDS.compare();
@@ -1333,7 +1342,7 @@
 
               return h('div', { className: 'bg-indigo-50 rounded-xl border-2 border-indigo-200 p-4 mb-3' },
                 h('div', { className: 'flex items-center gap-2 mb-3' },
-                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-sm font-bold text-indigo-800' }, '\u2696 Compare: ' + sel.name + ' vs'),
+                  h('span', { className: 'text-sm font-bold text-indigo-800' }, '\u2696 Compare: ' + sel.name + ' vs'),
                   h('select', {
                     value: d.compareTo || cmpMat.name,
                     onChange: function(e) {
@@ -1390,7 +1399,7 @@
                         ),
                         h('div', { className: 'bg-slate-50 rounded p-1' },
                           h('div', { className: 'font-bold text-slate-600' }, 'State'),
-                          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'font-black text-slate-700' }, mat.state)
+                          h('div', { className: 'font-black text-slate-700' }, mat.state)
                         )
                       )
                     );
@@ -1400,8 +1409,8 @@
             })(),
 
             /* Real-world fact */
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-gradient-to-r from-cyan-50 to-blue-50 rounded-xl border border-cyan-200 p-3 mb-3' },
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-between' },
+            h('div', { className: 'bg-gradient-to-r from-cyan-50 to-blue-50 rounded-xl border border-cyan-200 p-3 mb-3' },
+              h('div', { className: 'flex items-center justify-between' },
                 h('p', { className: 'text-[11px] font-bold text-cyan-600 uppercase tracking-wider mb-1' }, '\uD83C\uDF0D Real World'),
                 h('button', { 'aria-label': 'Speak Text',
                   onClick: function() { speakText(sel.realUse); },
@@ -1414,7 +1423,7 @@
             /* Safety info */
             MATERIAL_EXTRAS[sel.name] ? h('div', { className: 'rounded-xl border p-3 mb-3 ' + (MATERIAL_EXTRAS[sel.name].safety.indexOf('\u26A0') >= 0 || MATERIAL_EXTRAS[sel.name].safety.indexOf('\u2620') >= 0 ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200') },
               h('div', { className: 'flex items-center gap-2' },
-                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold uppercase tracking-wider ' + (MATERIAL_EXTRAS[sel.name].safety.indexOf('\u26A0') >= 0 || MATERIAL_EXTRAS[sel.name].safety.indexOf('\u2620') >= 0 ? 'text-red-600' : 'text-green-600') }, '\uD83D\uDEE1\uFE0F Safety'),
+                h('span', { className: 'text-[11px] font-bold uppercase tracking-wider ' + (MATERIAL_EXTRAS[sel.name].safety.indexOf('\u26A0') >= 0 || MATERIAL_EXTRAS[sel.name].safety.indexOf('\u2620') >= 0 ? 'text-red-600' : 'text-green-600') }, '\uD83D\uDEE1\uFE0F Safety'),
                 h('p', { className: 'text-xs text-slate-700 leading-relaxed' }, MATERIAL_EXTRAS[sel.name].safety)
               )
             ) : null,
@@ -1424,9 +1433,9 @@
               var extras = MATERIAL_EXTRAS[sel.name];
               var facts = extras.facts || [];
               var fi = factIdx % facts.length;
-              return facts.length > 0 ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-gradient-to-r from-violet-50 to-fuchsia-50 rounded-xl border border-violet-200 p-3 mb-3' },
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-between mb-1' },
-                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold text-violet-600 uppercase tracking-wider' }, '\uD83D\uDCA1 Did You Know?'),
+              return facts.length > 0 ? h('div', { className: 'bg-gradient-to-r from-violet-50 to-fuchsia-50 rounded-xl border border-violet-200 p-3 mb-3' },
+                h('div', { className: 'flex items-center justify-between mb-1' },
+                  h('span', { className: 'text-[11px] font-bold text-violet-600 uppercase tracking-wider' }, '\uD83D\uDCA1 Did You Know?'),
                   h('button', { 'aria-label': 'Next',
                     onClick: function() { upd('_factIdx', factIdx + 1); },
                     className: 'text-[11px] text-violet-500 hover:text-violet-700 font-bold'
@@ -1516,13 +1525,13 @@
                   h('h4', { className: 'text-xl font-black text-white mb-1 flex items-center justify-center gap-2' }, '\uD83E\uDDEA Chemistry Hunt'),
                   h('p', { className: 'text-xs text-indigo-300 leading-relaxed max-w-sm mx-auto' }, 'Explore real-world scenes. Can you find the object that contains each chemical compound?'),
                   huntScore > 0 ? h('div', { className: 'flex items-center justify-center gap-3 mt-3' },
-                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-900 border border-amber-500/30' }, '\u2B50 Score: ' + huntScore),
-                    huntStreak >= 2 ? h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'px-3 py-1 rounded-full text-xs font-bold bg-orange-500/20 text-orange-900 border border-orange-500/30' }, '\uD83D\uDD25 Streak: ' + huntStreak) : null
+                    h('span', { className: 'px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-900 border border-amber-500/30' }, '\u2B50 Score: ' + huntScore),
+                    huntStreak >= 2 ? h('span', { className: 'px-3 py-1 rounded-full text-xs font-bold bg-orange-500/20 text-orange-900 border border-orange-500/30' }, '\uD83D\uDD25 Streak: ' + huntStreak) : null
                   ) : null
                 )
               ),
               // Scene cards
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
+              h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
                 SCENES.map(function(scene) {
                   var sceneFound = 0;
                   scene.objects.forEach(function(obj) { if (foundObjects[obj.id]) sceneFound++; });
@@ -1628,7 +1637,7 @@
 
               return h('div', null,
                 // Scene header
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-3 mb-4 rounded-2xl p-3', style: { background: 'linear-gradient(135deg, ' + scene.bgColor + ', ' + scene.accent + '15)' } },
+                h('div', { className: 'flex items-center gap-3 mb-4 rounded-2xl p-3', style: { background: 'linear-gradient(135deg, ' + scene.bgColor + ', ' + scene.accent + '15)' } },
                   h('button', { 'aria-label': 'Exit decomposition scene', onClick: function() { updMulti({ activeScene: null, selectedSceneObj: null, huntTarget: null, huntWrongGuess: null }); }, className: 'p-2 hover:bg-white/60 rounded-xl transition-colors' }, h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
                   h('div', {
                     className: 'flex items-center justify-center shrink-0 rounded-xl',
@@ -1687,13 +1696,13 @@
                 ) : null,
 
                 // Wrong guess feedback
-                wrongObj && wrongMat && !foundObjects[huntWrongGuess] ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'rounded-2xl border-2 border-red-200 p-3 mb-4 overflow-hidden', style: { background: 'linear-gradient(135deg, #fef2f2, #fee2e2)' } },
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-3' },
-                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+                wrongObj && wrongMat && !foundObjects[huntWrongGuess] ? h('div', { className: 'rounded-2xl border-2 border-red-200 p-3 mb-4 overflow-hidden', style: { background: 'linear-gradient(135deg, #fef2f2, #fee2e2)' } },
+                  h('div', { className: 'flex items-center gap-3' },
+                    h('div', { 
                       className: 'flex items-center justify-center shrink-0 rounded-xl',
                       style: { width: 40, height: 40, background: 'white', border: '2px solid #fca5a5' }
-                    }, h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xl' }, wrongObj.emoji)),
-                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex-1' },
+                    }, h('span', { className: 'text-xl' }, wrongObj.emoji)),
+                    h('div', { className: 'flex-1' },
                       h('p', { className: 'text-xs font-bold text-red-700' }, 'Not quite! ' + wrongObj.name + ' contains:'),
                       h('p', { className: 'text-sm font-mono font-bold text-red-800 mt-0.5' }, wrongMat.formula + ' \u2014 ' + wrongMat.name)
                     ),
@@ -1811,7 +1820,7 @@
                         }
                         // Concrete floor
                         var flGrad = c.createLinearGradient(0, ch * 0.6, 0, ch);
-                        flGrad.addColorStop(0, '#9ca3af'); flGrad.addColorStop(1, '#6b7280');
+                        flGrad.addColorStop(0, '#9ca3af'); flGrad.addColorStop(1, '#94a3b8');
                         c.fillStyle = flGrad; c.fillRect(0, ch * 0.6, cw, ch * 0.4);
                         // Oil stain
                         c.fillStyle = 'rgba(55,48,42,0.15)'; c.beginPath(); c.ellipse(cw * 0.35, ch * 0.78, 30, 12, 0, 0, Math.PI * 2); c.fill();
@@ -1829,7 +1838,7 @@
                         c.fillRect(cw * 0.60, ch * 0.18, cw * 0.35, ch * 0.03);
                         c.fillRect(cw * 0.60, ch * 0.36, cw * 0.35, ch * 0.03);
                         // Garage door outline
-                        c.strokeStyle = '#6b7280'; c.lineWidth = 3; c.strokeRect(cw * 0.03, ch * 0.03, cw * 0.50, ch * 0.54);
+                        c.strokeStyle = '#94a3b8'; c.lineWidth = 3; c.strokeRect(cw * 0.03, ch * 0.03, cw * 0.50, ch * 0.54);
                         // Garage door panels
                         c.strokeStyle = '#9ca3af'; c.lineWidth = 1;
                         c.beginPath(); c.moveTo(cw * 0.03, ch * 0.20); c.lineTo(cw * 0.53, ch * 0.20); c.stroke();
@@ -2049,12 +2058,12 @@
                 ),
 
                 // Detail card for selected found object
-                selObj && linkedMat && foundObjects[selObj.id] ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-xl border-2 p-4 mb-3', style: { borderColor: scene.accent } },
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-start gap-3 mb-3' },
-                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-3xl' }, selObj.emoji),
-                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex-1' },
+                selObj && linkedMat && foundObjects[selObj.id] ? h('div', { className: 'bg-white rounded-xl border-2 p-4 mb-3', style: { borderColor: scene.accent } },
+                  h('div', { className: 'flex items-start gap-3 mb-3' },
+                    h('span', { className: 'text-3xl' }, selObj.emoji),
+                    h('div', { className: 'flex-1' },
                       h('h4', { className: 'font-bold text-slate-800' }, selObj.name),
-                      h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[11px] font-bold rounded-full' }, '\u2705 Identified')
+                      h('span', { className: 'px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[11px] font-bold rounded-full' }, '\u2705 Identified')
                     ),
                     h('button', { 'aria-label': 'Change selected scene obj', onClick: function() { upd('selectedSceneObj', null); }, className: 'p-1 hover:bg-slate-100 rounded' }, h(X, { size: 14, className: 'text-slate-600' }))
                   ),
@@ -2066,20 +2075,20 @@
                     ),
                     h('p', { className: 'text-xs text-slate-600 leading-relaxed mb-2' }, linkedMat.desc),
                     h('div', { className: 'flex gap-3 text-[11px] font-bold' },
-                      h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-cyan-600' }, '\uD83D\uDD17 ' + linkedMat.bondType),
-                      h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-indigo-600' }, '\uD83D\uDCCA ' + linkedMat.state),
-                      h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-emerald-600' }, '\u2696 ' + linkedMat.molarMass)
+                      h('span', { className: 'text-cyan-600' }, '\uD83D\uDD17 ' + linkedMat.bondType),
+                      h('span', { className: 'text-indigo-600' }, '\uD83D\uDCCA ' + linkedMat.state),
+                      h('span', { className: 'text-emerald-600' }, '\u2696 ' + linkedMat.molarMass)
                     ),
-                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-1.5 mt-2 pt-2 border-t border-amber-200' },
+                    h('div', { className: 'flex flex-wrap gap-1.5 mt-2 pt-2 border-t border-amber-200' },
                       linkedMat.elements.map(function(el) {
-                        return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: el.sym, className: 'flex items-center gap-1 px-2 py-1 bg-white rounded-lg border border-slate-200' },
-                          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'w-5 h-5 rounded flex items-center justify-center text-white text-[11px] font-bold', style: { background: el.color } }, el.sym),
-                          h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold text-slate-700' }, el.name),
-                          el.count > 1 ? h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-amber-600 font-bold' }, '\u00D7' + el.count) : null
+                        return h('div', { key: el.sym, className: 'flex items-center gap-1 px-2 py-1 bg-white rounded-lg border border-slate-200' },
+                          h('div', { className: 'w-5 h-5 rounded flex items-center justify-center text-white text-[11px] font-bold', style: { background: el.color } }, el.sym),
+                          h('span', { className: 'text-[11px] font-bold text-slate-700' }, el.name),
+                          el.count > 1 ? h('span', { className: 'text-[11px] text-amber-600 font-bold' }, '\u00D7' + el.count) : null
                         );
                       })
                     ),
-                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 mt-3' },
+                    h('div', { className: 'flex gap-2 mt-3' },
                       h('button', { 'aria-label': 'Explore', onClick: function() { updMulti({ selected: linkedMat.name, decomposed: false, tab: 'explore' }); }, className: 'flex-1 py-2 bg-amber-700 text-white font-bold text-xs rounded-lg hover:bg-amber-600 transition-all' }, '\u2697\uFE0F Explore'),
                       h('button', { 'aria-label': 'Visualize', onClick: function() { updMulti({ selected: linkedMat.name, decomposed: false, tab: 'visualize' }); }, className: 'flex-1 py-2 bg-indigo-500 text-white font-bold text-xs rounded-lg hover:bg-indigo-600 transition-all' }, '\uD83C\uDFA8 Visualize'),
                       h('button', { 'aria-label': 'Speak Text', onClick: function() { speakText(selObj.name + ' contains ' + linkedMat.name + '. ' + linkedMat.desc); }, className: 'px-3 py-2 bg-slate-100 text-slate-600 font-bold text-xs rounded-lg hover:bg-slate-200 transition-all' }, '\uD83D\uDD0A')
@@ -2088,9 +2097,9 @@
                 ) : null,
 
                 // Found objects summary
-                sceneFoundCount > 0 ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-slate-50 rounded-xl border border-slate-200 p-3' },
+                sceneFoundCount > 0 ? h('div', { className: 'bg-slate-50 rounded-xl border border-slate-200 p-3' },
                   h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2' }, '\u2705 Identified in ' + scene.name),
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-1.5' },
+                  h('div', { className: 'flex flex-wrap gap-1.5' },
                     scene.objects.filter(function(obj) { return foundObjects[obj.id]; }).map(function(obj) {
                       var mat = MATERIALS.find(function(m) { return m.name === obj.material; });
                       return h('button', { 'aria-label': 'Decomposer action',
@@ -2111,27 +2120,27 @@
              REACTION LAB TAB — Mix two materials
              ═══════════════════════════════════════════════════ */
           tab === 'reactions' && h('div', null,
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-center mb-4' },
+            h('div', { className: 'text-center mb-4' },
               h('h4', { className: 'text-lg font-bold text-slate-800' }, '\uD83C\uDF0B Reaction Lab'),
               h('p', { className: 'text-xs text-slate-600 mt-1' }, 'Pick two materials and see what happens when they react!')
             ),
 
             // Material picker — two slots
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'grid grid-cols-2 gap-4 mb-4' },
+            h('div', { className: 'grid grid-cols-2 gap-4 mb-4' },
               // Slot A
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border-2 border-indigo-200 p-3' },
+              h('div', { className: 'bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border-2 border-indigo-200 p-3' },
                 h('p', { className: 'text-[11px] font-bold text-indigo-600 uppercase tracking-wider mb-2' }, 'Material A'),
-                reactantA ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-center' },
-                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-3xl' }, (MATERIALS.find(function(m) { return m.name === reactantA; }) || {}).emoji || '?'),
+                reactantA ? h('div', { className: 'text-center' },
+                  h('span', { className: 'text-3xl' }, (MATERIALS.find(function(m) { return m.name === reactantA; }) || {}).emoji || '?'),
                   h('p', { className: 'text-xs font-bold text-slate-800 mt-1' }, reactantA),
                   h('button', { 'aria-label': 'Remove', onClick: function() { updMulti({ reactantA: null, activeReaction: null }); }, className: 'text-[11px] text-red-500 font-bold mt-1' }, '\u2715 Remove')
                 ) : h('p', { className: 'text-xs text-indigo-400 text-center py-4' }, 'Select below \u2193')
               ),
               // Slot B
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-gradient-to-br from-rose-50 to-pink-50 rounded-xl border-2 border-rose-200 p-3' },
+              h('div', { className: 'bg-gradient-to-br from-rose-50 to-pink-50 rounded-xl border-2 border-rose-200 p-3' },
                 h('p', { className: 'text-[11px] font-bold text-rose-600 uppercase tracking-wider mb-2' }, 'Material B'),
-                reactantB ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-center' },
-                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-3xl' }, (MATERIALS.find(function(m) { return m.name === reactantB; }) || {}).emoji || '?'),
+                reactantB ? h('div', { className: 'text-center' },
+                  h('span', { className: 'text-3xl' }, (MATERIALS.find(function(m) { return m.name === reactantB; }) || {}).emoji || '?'),
                   h('p', { className: 'text-xs font-bold text-slate-800 mt-1' }, reactantB),
                   h('button', { 'aria-label': 'Remove', onClick: function() { updMulti({ reactantB: null, activeReaction: null }); }, className: 'text-[11px] text-red-500 font-bold mt-1' }, '\u2715 Remove')
                 ) : h('p', { className: 'text-xs text-rose-400 text-center py-4' }, 'Select below \u2193')
@@ -2139,7 +2148,7 @@
             ),
 
             // Material palette
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-1.5 mb-4' },
+            h('div', { className: 'flex flex-wrap gap-1.5 mb-4' },
               MATERIALS.map(function(m) {
                 var isA = reactantA === m.name;
                 var isB = reactantB === m.name;
@@ -2196,19 +2205,19 @@
                     )
                   ),
                   // Equation
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-lg p-3 mb-3 text-center border border-amber-200' },
+                  h('div', { className: 'bg-white rounded-lg p-3 mb-3 text-center border border-amber-200' },
                     h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1' }, 'Chemical Equation'),
                     h('p', { className: 'text-sm font-mono font-bold text-slate-800' }, activeReaction.equation)
                   ),
                   // Description
                   h('p', { className: 'text-xs text-slate-700 leading-relaxed mb-3' }, activeReaction.desc),
                   // Observable
-                  activeReaction.observable ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2 bg-sky-50 rounded-lg p-2 border border-sky-200 mb-3' },
-                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold text-sky-600' }, '\uD83D\uDC41\uFE0F What you\u2019d see:'),
-                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs text-slate-700' }, activeReaction.observable)
+                  activeReaction.observable ? h('div', { className: 'flex items-center gap-2 bg-sky-50 rounded-lg p-2 border border-sky-200 mb-3' },
+                    h('span', { className: 'text-[11px] font-bold text-sky-600' }, '\uD83D\uDC41\uFE0F What you\u2019d see:'),
+                    h('span', { className: 'text-xs text-slate-700' }, activeReaction.observable)
                   ) : null,
                   // TTS + try another
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2' },
+                  h('div', { className: 'flex gap-2' },
                     h('button', { 'aria-label': 'Listen',
                       onClick: function() { speakText(activeReaction.name + '. ' + activeReaction.desc); },
                       className: 'px-3 py-2 bg-slate-100 text-slate-600 font-bold text-xs rounded-lg hover:bg-slate-200'
@@ -2406,7 +2415,7 @@
 
                     // State label in corner
                     var stLabels = { solid: 'SOLID \u2014 Particles vibrate in fixed lattice', liquid: 'LIQUID \u2014 Particles slide past each other', gas: 'GAS \u2014 Particles fly freely, fill container' };
-                    c2.fillStyle = '#64748b'; c2.font = 'bold 9px system-ui, sans-serif'; c2.textAlign = 'left';
+                    c2.fillStyle = '#94a3b8'; c2.font = 'bold 9px system-ui, sans-serif'; c2.textAlign = 'left';
                     c2.fillText(stLabels[state] || '', cw * 0.12, ch2 * 0.97);
 
                     canvas._stateAnimId = requestAnimationFrame(drawState);
@@ -2433,15 +2442,15 @@
                   h('div', { className: 'text-sm font-black text-cyan-900' }, geo.angle || '-')
                 ),
                 h('div', { className: 'bg-red-50 rounded-xl border border-red-200 p-2 text-center' },
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-lg' }, '\uD83D\uDD25'),
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-red-700' }, 'Boiling Point'),
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-sm font-black text-red-900' }, geo.bp !== null ? geo.bp + '\u00B0C' : 'Decomposes')
+                  h('div', { className: 'text-lg' }, '\uD83D\uDD25'),
+                  h('div', { className: 'text-xs font-bold text-red-700' }, 'Boiling Point'),
+                  h('div', { className: 'text-sm font-black text-red-900' }, geo.bp !== null ? geo.bp + '\u00B0C' : 'Decomposes')
                 )
               );
             })(),
 
             // Explanation text
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-slate-50 rounded-xl border border-slate-200 p-3' },
+            h('div', { className: 'bg-slate-50 rounded-xl border border-slate-200 p-3' },
               h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1' }, '\uD83D\uDCDA How it works'),
               h('p', { className: 'text-xs text-slate-600 leading-relaxed' },
                 'All matter is made of particles (atoms or molecules) that are always moving. In a solid, particles vibrate in a fixed arrangement held by strong bonds. As temperature increases, particles gain energy. At the melting point, they break free and flow as a liquid. At the boiling point, they escape into the air as gas.'
@@ -2460,7 +2469,7 @@
           tab === 'visualize' && h('div', null,
 
             /* Canvas */
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-xl border-2 border-indigo-200 overflow-hidden mb-3' },
+            h('div', { className: 'bg-white rounded-xl border-2 border-indigo-200 overflow-hidden mb-3' },
               h('canvas', { 'aria-label': 'Decomposer visualization',
                 ref: canvasRef,
                 className: 'w-full cursor-pointer',
@@ -2470,7 +2479,7 @@
             ),
 
             /* Canvas controls */
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-3 mb-3' },
+            h('div', { className: 'flex items-center gap-3 mb-3' },
               h('button', { 'aria-label': 'Speak Text',
                 onClick: function() {
                   var next = !decomposed;
@@ -2548,17 +2557,17 @@
                 h('h4', { className: 'font-bold text-slate-800' }, '\uD83E\uDDE0 Chemistry Quiz'),
                 h('p', { className: 'text-xs text-slate-600' }, 'Test your knowledge of chemical formulas, elements, and bonds')
               ),
-              quizScore > 0 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-right' },
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-sm font-bold text-emerald-600' }, '\u2B50 ' + quizScore + ' correct'),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs text-slate-600' },
+              quizScore > 0 && h('div', { className: 'text-right' },
+                h('div', { className: 'text-sm font-bold text-emerald-600' }, '\u2B50 ' + quizScore + ' correct'),
+                h('div', { className: 'text-xs text-slate-600' },
                   '\uD83D\uDD25 Streak: ' + quizStreak + ' | Best: ' + bestStreak
                 )
               )
             ),
 
             /* Start quiz / next question button */
-            (!quizMode || !quizQ) && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-center py-8' },
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-5xl mb-3' }, '\uD83E\uDDEA'),
+            (!quizMode || !quizQ) && h('div', { className: 'text-center py-8' },
+              h('div', { className: 'text-5xl mb-3' }, '\uD83E\uDDEA'),
               h('p', { className: 'text-sm text-slate-600 mb-4' }, 'Ready to test your chemistry knowledge?'),
               h('button', { 'aria-label': 'Start Quiz',
                 onClick: function() {
@@ -2625,15 +2634,15 @@
             quizScore > 0 && h('div', { className: 'grid grid-cols-3 gap-2 mb-3' },
               h('div', { className: 'bg-emerald-50 rounded-xl border border-emerald-200 p-3 text-center' },
                 h('div', { className: 'text-2xl font-black text-emerald-700' }, quizScore),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold text-emerald-500' }, 'Correct')
+                h('div', { className: 'text-[11px] font-bold text-emerald-500' }, 'Correct')
               ),
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-orange-50 rounded-xl border border-orange-200 p-3 text-center' },
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-2xl font-black text-orange-700' }, quizStreak),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold text-orange-500' }, 'Current Streak')
+              h('div', { className: 'bg-orange-50 rounded-xl border border-orange-200 p-3 text-center' },
+                h('div', { className: 'text-2xl font-black text-orange-700' }, quizStreak),
+                h('div', { className: 'text-[11px] font-bold text-orange-500' }, 'Current Streak')
               ),
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-purple-50 rounded-xl border border-purple-200 p-3 text-center' },
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-2xl font-black text-purple-700' }, bestStreak),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold text-purple-500' }, 'Best Streak')
+              h('div', { className: 'bg-purple-50 rounded-xl border border-purple-200 p-3 text-center' },
+                h('div', { className: 'text-2xl font-black text-purple-700' }, bestStreak),
+                h('div', { className: 'text-[11px] font-bold text-purple-500' }, 'Best Streak')
               )
             ),
 
@@ -2665,11 +2674,11 @@
               ),
               aiMessages.map(function(msg, i) {
                 var isUser = msg.role === 'user';
-                return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+                return h('div', { 
                   key: i,
                   className: 'flex ' + (isUser ? 'justify-end' : 'justify-start')
                 },
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+                  h('div', { 
                     className: 'max-w-[80%] px-3 py-2 rounded-xl text-xs leading-relaxed '
                       + (isUser
                         ? 'bg-purple-600 text-white rounded-br-sm'
@@ -2714,7 +2723,7 @@
             ),
 
             /* Suggested questions */
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-1.5' },
+            h('div', { className: 'flex flex-wrap gap-1.5' },
               [
                 'Why is ' + sel.name + ' important?',
                 'What kind of bond is in ' + sel.formula + '?',
@@ -2753,10 +2762,10 @@
                   title: b.desc
                 },
                   h('div', { className: 'text-xl' }, earned ? b.icon : '\uD83D\uDD12'),
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold mt-0.5 ' + (earned ? 'text-amber-700' : 'text-slate-600') },
+                  h('div', { className: 'text-[11px] font-bold mt-0.5 ' + (earned ? 'text-amber-700' : 'text-slate-600') },
                     b.label
                   ),
-                  earned && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-amber-500 font-bold' }, '+' + b.xp + ' XP')
+                  earned && h('div', { className: 'text-[11px] text-amber-500 font-bold' }, '+' + b.xp + ' XP')
                 );
               })
             )

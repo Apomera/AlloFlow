@@ -1,3 +1,13 @@
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+(function() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById('allo-stem-motion-reduce-css')) return;
+  var st = document.createElement('style');
+  st.id = 'allo-stem-motion-reduce-css';
+  st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+  if (document.head) document.head.appendChild(st);
+})();
+
 // ═══════════════════════════════════════════
 // stem_tool_echolocation.js — Bat Echolocation & Sound Physics Lab
 // See the world through sound: sonar vision, wave physics, Doppler effect,
@@ -32,6 +42,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
 
 (function() {
   'use strict';
+  // ── Accessibility live region (WCAG 4.1.3) ──
+  (function() {
+    if (document.getElementById('allo-live-echolocation')) return;
+    var lr = document.createElement('div');
+    lr.id = 'allo-live-echolocation';
+    lr.setAttribute('aria-live', 'polite');
+    lr.setAttribute('aria-atomic', 'true');
+    lr.setAttribute('role', 'status');
+    lr.className = 'sr-only';
+    lr.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(lr);
+  })();
+
 
   // ── MODULE-SCOPED CONSTANTS ──
 
@@ -344,7 +367,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
     c.scale(facing, 1);
     var wa = Math.sin(flapPhase) * 0.5;
     // Body (furry oval)
-    c.fillStyle = isDark ? '#6b7280' : '#374151';
+    c.fillStyle = isDark ? '#94a3b8' : '#374151';
     c.beginPath();
     c.ellipse(0, 0, size * 0.6, size * 0.35, 0, 0, Math.PI * 2);
     c.fill();
@@ -1455,7 +1478,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             // HUD overlay
             h('div', { style: { position: 'absolute', top: '8px', left: '8px', zIndex: 10, pointerEvents: 'none', fontSize: '11px', color: '#4ade80', maxWidth: '200px' } },
               h('div', { style: { fontWeight: 700 } }, '\uD83E\uDD87 3D Echolocation Cave'),
-              h('div', { style: { fontSize: '9px', color: '#64748b' } }, 'WASD=fly \u2022 E=sonar \u2022 P=perch \u2022 R=restart'),
+              h('div', { style: { fontSize: '9px', color: '#94a3b8' } }, 'WASD=fly \u2022 E=sonar \u2022 P=perch \u2022 R=restart'),
               // Energy bar
               cave3dEngineRef.current && h('div', { style: { marginTop: '4px' } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' } },
@@ -1475,13 +1498,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 h('div', { style: { color: '#94a3b8' } }, '\u23F1 ' + Math.round(cave3dEngineRef.current.survivalTime || 0) + 's'),
                 cave3dEngineRef.current.highScore && cave3dEngineRef.current.highScore.score > 0 && h('div', { style: { color: '#7c3aed', fontSize: '9px' } }, '\uD83C\uDFC6 Best: ' + cave3dEngineRef.current.highScore.score + ' (' + (cave3dEngineRef.current.highScore.time || 0) + 's)'),
                 cave3dEngineRef.current.perching && h('div', { style: { color: '#60a5fa', fontWeight: 700, marginTop: '2px' } }, '\uD83E\uDD87 Perching (resting...)'),
-                cave3dEngineRef.current.survivalTime > 5 && h('div', { style: { color: '#64748b', fontSize: '8px', marginTop: '2px' } }, '\u26A0 Difficulty: x' + (1 + (cave3dEngineRef.current.survivalTime / 120) * 0.5).toFixed(1)),
+                cave3dEngineRef.current.survivalTime > 5 && h('div', { style: { color: '#94a3b8', fontSize: '8px', marginTop: '2px' } }, '\u26A0 Difficulty: x' + (1 + (cave3dEngineRef.current.survivalTime / 120) * 0.5).toFixed(1)),
                 // Echolocation distance calculation (educational)
                 cave3dEngineRef.current._lastEchoDistance && h('div', { style: { marginTop: '4px', background: 'rgba(0,40,30,0.8)', borderRadius: '6px', padding: '4px 6px', border: '1px solid rgba(0,255,170,0.2)' } },
                   h('div', { style: { color: '#4ade80', fontSize: '9px', fontWeight: 700 } }, '\uD83D\uDCCF Echo Return:'),
                   h('div', { style: { color: '#94a3b8', fontSize: '8px', fontFamily: 'monospace' } },
                     'd = ' + cave3dEngineRef.current._lastEchoDistance.toFixed(1) + 'm'),
-                  h('div', { style: { color: '#64748b', fontSize: '7px', fontFamily: 'monospace' } },
+                  h('div', { style: { color: '#94a3b8', fontSize: '7px', fontFamily: 'monospace' } },
                     't = ' + cave3dEngineRef.current._lastEchoTime + 's'),
                   h('div', { style: { color: '#475569', fontSize: '7px', fontFamily: 'monospace' } },
                     'd = v\u00d7t/2 = 343\u00d7' + cave3dEngineRef.current._lastEchoTime + '/2')
@@ -2982,7 +3005,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
         gfx.stroke();
 
         // Axis labels
-        gfx.fillStyle = isDark ? '#94a3b8' : '#64748b';
+        gfx.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
         gfx.font = '8px system-ui';
         gfx.textAlign = 'center';
         gfx.fillText('Distance \u2192', graphX + graphW / 2, graphY + graphH + 14);

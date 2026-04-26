@@ -16,6 +16,15 @@ window.StemLab = window.StemLab || {
 if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
 (function() {
   'use strict';
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  (function() {
+    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-stem-motion-reduce-css';
+    st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    document.head.appendChild(st);
+  })();
+
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-anatomy')) return;
@@ -1099,7 +1108,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               cCtx.textAlign = 'left'; cCtx.fillText('R', 14, 24);
               cCtx.textAlign = 'right'; cCtx.fillText('L', W - 14, 24);
               // DICOM-style footer info
-              cCtx.font = '7px monospace'; cCtx.fillStyle = '#64748b';
+              cCtx.font = '7px monospace'; cCtx.fillStyle = '#94a3b8';
               cCtx.textAlign = 'left';
               cCtx.fillText('ALLOFLOW ANATOMY', 14, H - 28);
               cCtx.fillText(view === 'anterior' ? 'AP VIEW' : 'PA VIEW', 14, H - 18);
@@ -1737,7 +1746,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 // Condyloid: small oval
                 cCtx.ellipse(jx, jy, jr + 1, jr, 0, 0, Math.PI * 2);
               }
-              cCtx.strokeStyle = '#64748b'; cCtx.lineWidth = 0.6; cCtx.setLineDash([2, 2]); cCtx.stroke(); cCtx.setLineDash([]);
+              cCtx.strokeStyle = '#94a3b8'; cCtx.lineWidth = 0.6; cCtx.setLineDash([2, 2]); cCtx.stroke(); cCtx.setLineDash([]);
               // Joint surface (inner circle)
               cCtx.beginPath(); cCtx.arc(jx, jy, jr, 0, Math.PI * 2);
               cCtx.strokeStyle = '#94a3b8'; cCtx.lineWidth = 1.2; cCtx.stroke();
@@ -1988,7 +1997,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               // ── Vertebral region labels (C/T/L/S brackets) ──
               cCtx.save(); cCtx.globalAlpha = xrayMode ? 0.5 : 0.2;
               cCtx.font = 'bold 5px monospace'; cCtx.textAlign = 'right';
-              cCtx.fillStyle = xrayMode ? '#a0c4ff' : '#64748b';
+              cCtx.fillStyle = xrayMode ? '#a0c4ff' : '#94a3b8';
               var regLabelX = W * 0.44;
               // Cervical (C1-C7): vertebrae 0-6
               cCtx.fillText('C', regLabelX, H * (0.11 + 3 * 0.014) + 2);
@@ -3187,7 +3196,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             cCtx.beginPath(); cCtx.moveTo(compX, compY - 11); cCtx.lineTo(compX, compY + 11);
             cCtx.moveTo(compX - 11, compY); cCtx.lineTo(compX + 11, compY);
             cCtx.strokeStyle = '#94a3b8'; cCtx.lineWidth = 0.5; cCtx.stroke();
-            cCtx.font = 'bold 6px Inter, system-ui, sans-serif'; cCtx.fillStyle = '#64748b'; cCtx.textAlign = 'center';
+            cCtx.font = 'bold 6px Inter, system-ui, sans-serif'; cCtx.fillStyle = '#94a3b8'; cCtx.textAlign = 'center';
             cCtx.fillText('S', compX, compY - 7);  // Superior
             cCtx.fillText('I', compX, compY + 10);  // Inferior
             cCtx.fillText('L', compX - 8, compY + 2);  // Lateral
@@ -3197,7 +3206,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             // ── BODY REGION LABELS (subtle background labels) ──
             if (d._showRegionLabels) {
               cCtx.save(); cCtx.globalAlpha = 0.18;
-              cCtx.font = 'bold 7px Inter, system-ui, sans-serif'; cCtx.textAlign = 'left'; cCtx.fillStyle = '#64748b';
+              cCtx.font = 'bold 7px Inter, system-ui, sans-serif'; cCtx.textAlign = 'left'; cCtx.fillStyle = '#94a3b8';
               cCtx.fillText('HEAD', W * 0.03, H * 0.04);
               cCtx.fillText('THORAX', W * 0.03, H * 0.19);
               cCtx.fillText('ABDOMEN', W * 0.03, H * 0.33);
@@ -3359,7 +3368,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               cCtx.beginPath(); cCtx.roundRect(csX, csY, csW2, csH2, 6);
               cCtx.fillStyle = '#fff'; cCtx.fill();
               cCtx.strokeStyle = '#e2e8f0'; cCtx.lineWidth = 1; cCtx.stroke();
-              cCtx.font = 'bold 7px Inter, system-ui, sans-serif'; cCtx.fillStyle = '#64748b'; cCtx.textAlign = 'left';
+              cCtx.font = 'bold 7px Inter, system-ui, sans-serif'; cCtx.fillStyle = '#94a3b8'; cCtx.textAlign = 'left';
               cCtx.fillText('SKIN CROSS-SECTION', csX + 4, csY + 10);
               // Epidermis layer
               cCtx.fillStyle = '#fef3c7'; cCtx.fillRect(csX + 4, csY + 15, csW2 - 8, csH2 * 0.15);
@@ -3437,7 +3446,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               cCtx.font = '4px Inter, system-ui, sans-serif'; cCtx.fillStyle = '#eab308';
               cCtx.fillText('Pacinian', pcX + 5, pcY + 1);
               // Layer labels with arrows
-              cCtx.fillStyle = '#64748b'; cCtx.font = '4px Inter, system-ui, sans-serif';
+              cCtx.fillStyle = '#94a3b8'; cCtx.font = '4px Inter, system-ui, sans-serif';
               cCtx.fillText('Hair', hfX + 2, hfY0 + 5);
               cCtx.fillText('Sweat gland', sgX + 5, sgY + 6);
               cCtx.restore();
@@ -3557,7 +3566,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   cCtx.moveTo(arrowX + any * 3, arrowY - anx * 3);
                   cCtx.lineTo(arrowX + anx * 5, arrowY + any * 5);
                   cCtx.lineTo(arrowX - any * 3, arrowY + anx * 3);
-                  cCtx.fillStyle = '#64748b'; cCtx.fill();
+                  cCtx.fillStyle = '#94a3b8'; cCtx.fill();
                 }
                 cCtx.restore();
               }
@@ -3931,7 +3940,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               var scaleLen = W * 0.12; // roughly represents ~20cm on an average adult figure
               // Scale bar line
               cCtx.beginPath(); cCtx.moveTo(scaleX, scaleY); cCtx.lineTo(scaleX + scaleLen, scaleY);
-              cCtx.strokeStyle = xrayMode ? '#a0c4ff' : '#64748b'; cCtx.lineWidth = 1.5; cCtx.stroke();
+              cCtx.strokeStyle = xrayMode ? '#a0c4ff' : '#94a3b8'; cCtx.lineWidth = 1.5; cCtx.stroke();
               // End caps
               cCtx.beginPath(); cCtx.moveTo(scaleX, scaleY - 3); cCtx.lineTo(scaleX, scaleY + 3);
               cCtx.moveTo(scaleX + scaleLen, scaleY - 3); cCtx.lineTo(scaleX + scaleLen, scaleY + 3);
@@ -3941,7 +3950,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               cCtx.lineWidth = 0.8; cCtx.stroke();
               // Label
               cCtx.font = 'bold 6px monospace'; cCtx.textAlign = 'center';
-              cCtx.fillStyle = xrayMode ? '#a0c4ff' : '#64748b';
+              cCtx.fillStyle = xrayMode ? '#a0c4ff' : '#94a3b8';
               cCtx.fillText('~20 cm', scaleX + scaleLen / 2, scaleY - 5);
               cCtx.restore();
             }
@@ -3961,7 +3970,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             // ── Subtle AlloFlow watermark ──
             cCtx.save(); cCtx.globalAlpha = xrayMode ? 0.12 : 0.06;
             cCtx.font = 'bold 8px Inter, system-ui, sans-serif';
-            cCtx.fillStyle = xrayMode ? '#64748b' : '#94a3b8';
+            cCtx.fillStyle = xrayMode ? '#94a3b8' : '#94a3b8';
             cCtx.textAlign = 'right';
             cCtx.fillText('AlloFlow Anatomy', W - 6, H - 3);
             cCtx.restore();
@@ -4096,7 +4105,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         return h('div', { className: 'max-w-4xl mx-auto animate-in fade-in duration-200 outline-none focus:ring-2 focus:ring-violet-400 focus:ring-offset-1', tabIndex: 0, onKeyDown: handleKeyNav },
 
           // Header
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-3 mb-3' },
+          h('div', { className: 'flex items-center gap-3 mb-3' },
             h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': 'Back to tools' }, h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
             h('div', null,
               h('h3', { className: 'text-lg font-bold text-slate-800' }, '\uD83E\uDEC0 Human Anatomy Explorer'),
@@ -4165,9 +4174,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   msg.role === 'ai' ? ttsBtn(msg.text) : null
                 );
               }),
-              aiLoading && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs text-violet-500 italic text-center' }, 'Thinking...')
+              aiLoading && h('div', { className: 'text-xs text-violet-500 italic text-center' }, 'Thinking...')
             ),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-1 mb-2' },
+            h('div', { className: 'flex flex-wrap gap-1 mb-2' },
               [
                 'What does the ' + sys.name + ' system do?',
                 sel ? 'Tell me about the ' + sel.name : 'What is the most important structure in this system?',
@@ -4198,19 +4207,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           // ── Tour Tab ──
           activeTab === 'tour' ? h('div', { className: 'bg-white rounded-xl border-2 border-emerald-200 p-4 space-y-3' },
             h('h4', { className: 'font-bold text-emerald-800 text-sm mb-2' }, '\uD83E\uDDED Guided Tour: ' + sys.icon + ' ' + sys.name),
-            tourSteps.length > 0 ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-3' },
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-between mb-2' },
-                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700' }, 'Step ' + (tourStepIdx + 1) + ' of ' + tourSteps.length),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex-1 mx-3 h-1.5 rounded-full bg-emerald-100 overflow-hidden' },
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'h-full rounded-full bg-emerald-500 transition-all', style: { width: (((tourStepIdx + 1) / tourSteps.length) * 100) + '%' } })
+            tourSteps.length > 0 ? h('div', { className: 'space-y-3' },
+              h('div', { className: 'flex items-center justify-between mb-2' },
+                h('span', { className: 'text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700' }, 'Step ' + (tourStepIdx + 1) + ' of ' + tourSteps.length),
+                h('div', { className: 'flex-1 mx-3 h-1.5 rounded-full bg-emerald-100 overflow-hidden' },
+                  h('div', { className: 'h-full rounded-full bg-emerald-500 transition-all', style: { width: (((tourStepIdx + 1) / tourSteps.length) * 100) + '%' } })
                 )
               ),
-              currentTourStep ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-emerald-50 rounded-lg p-4 border border-emerald-200' },
+              currentTourStep ? h('div', { className: 'bg-emerald-50 rounded-lg p-4 border border-emerald-200' },
                 h('h5', { className: 'font-bold text-emerald-900 text-sm mb-2' }, currentTourStep.title),
                 h('p', { className: 'text-xs text-slate-700 leading-relaxed mb-2' }, currentTourStep.narration),
                 ttsBtn(currentTourStep.narration)
               ) : null,
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 justify-between' },
+              h('div', { className: 'flex gap-2 justify-between' },
                 h('button', { 'aria-label': 'Previous',
                   onClick: function() {
                     var prev = tourStepIdx - 1;
@@ -4234,16 +4243,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           ) : null,
 
           // ── Spotter Test Tab ──
-          activeTab === 'spotter' ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-xl border-2 border-amber-200 p-4 space-y-3' },
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-between mb-2' },
+          activeTab === 'spotter' ? h('div', { className: 'bg-white rounded-xl border-2 border-amber-200 p-4 space-y-3' },
+            h('div', { className: 'flex items-center justify-between mb-2' },
               h('h4', { className: 'font-bold text-amber-800 text-sm' }, '\uD83C\uDFAF Anatomy Spotter Test'),
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2' },
-                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-700' }, '\u2705 ' + spotterScore + '/' + spotterTotal),
-                spotterBestTime < 999 ? h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700' }, '\u26A1 Best: ' + spotterBestTime.toFixed(1) + 's') : null
+              h('div', { className: 'flex gap-2' },
+                h('span', { className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-700' }, '\u2705 ' + spotterScore + '/' + spotterTotal),
+                spotterBestTime < 999 ? h('span', { className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700' }, '\u26A1 Best: ' + spotterBestTime.toFixed(1) + 's') : null
               )
             ),
             h('p', { className: 'text-xs text-slate-600 mb-3' }, 'A pin is placed on the anatomical figure. Identify the structure as quickly as you can! Look for the pulsing crosshair on the canvas.'),
-            !spotterActive ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-center py-4' },
+            !spotterActive ? h('div', { className: 'text-center py-4' },
               h('button', { 'aria-label': 'Start Spotter Test',
                 onClick: function() {
                   var pool = filtered.filter(function(s) { return s.fn; });
@@ -4256,12 +4265,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 className: 'px-6 py-2.5 rounded-xl text-sm font-bold bg-amber-700 text-white hover:bg-amber-600 transition-all shadow-sm'
               }, '\uD83C\uDFAF Start Spotter Test'),
               spotterTotal > 0 ? h('p', { className: 'text-[11px] text-slate-600 mt-2' }, 'Score: ' + spotterScore + ' correct out of ' + spotterTotal + ' attempts') : null
-            ) : h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-3' },
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-amber-50 rounded-lg p-3 border border-amber-200 text-center' },
+            ) : h('div', { className: 'space-y-3' },
+              h('div', { className: 'bg-amber-50 rounded-lg p-3 border border-amber-200 text-center' },
                 h('p', { className: 'text-sm font-bold text-amber-900 mb-1' }, 'What structure is marked on the figure?'),
                 h('p', { className: 'text-[11px] text-amber-600' }, 'Look for the pulsing amber crosshair on the canvas')
               ),
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'grid grid-cols-2 gap-2' },
+              h('div', { className: 'grid grid-cols-2 gap-2' },
                 spotterOptions.map(function(opt) {
                   var isCorrect = opt.id === spotterTarget;
                   var showResult = spotterFeedback !== null;
@@ -4288,8 +4297,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   }, (showResult && isCorrect ? '\u2705 ' : showResult && wasChosen ? '\u274C ' : '') + opt.name);
                 })
               ),
-              spotterFeedback ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-2' },
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'rounded-lg p-3 text-xs leading-relaxed ' + (spotterFeedback === spotterTarget ? 'bg-green-50 border border-green-200' : 'bg-amber-50 border border-amber-200') },
+              spotterFeedback ? h('div', { className: 'space-y-2' },
+                h('div', { className: 'rounded-lg p-3 text-xs leading-relaxed ' + (spotterFeedback === spotterTarget ? 'bg-green-50 border border-green-200' : 'bg-amber-50 border border-amber-200') },
                   h('p', { className: 'font-bold ' + (spotterFeedback === spotterTarget ? 'text-green-800' : 'text-amber-800') },
                     spotterFeedback === spotterTarget ? '\u2705 Correct! (' + ((Date.now() - spotterStartTime) / 1000).toFixed(1) + 's)' : '\u274C The answer was: ' + (function() { for (var si3 = 0; si3 < filtered.length; si3++) { if (filtered[si3].id === spotterTarget) return filtered[si3].name; } return ''; })()
                   )
@@ -4314,13 +4323,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           ) : null,
 
           // ── Pathways Tab ──
-          activeTab === 'pathways' ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-xl border-2 border-rose-200 p-4 space-y-3' },
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-between mb-2' },
+          activeTab === 'pathways' ? h('div', { className: 'bg-white rounded-xl border-2 border-rose-200 p-4 space-y-3' },
+            h('div', { className: 'flex items-center justify-between mb-2' },
               h('h4', { className: 'font-bold text-rose-800 text-sm' }, '\uD83D\uDEE4 Physiological Pathways'),
-              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-600' }, Object.keys(pathwaysCompleted).length + '/' + PATHWAYS.length + ' completed')
+              h('span', { className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-600' }, Object.keys(pathwaysCompleted).length + '/' + PATHWAYS.length + ' completed')
             ),
             h('p', { className: 'text-xs text-slate-600 mb-3' }, 'Trace step-by-step how blood flows, air moves, food digests, or nerve signals travel through the body.'),
-            !activePathwayId ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'grid grid-cols-2 gap-2' },
+            !activePathwayId ? h('div', { className: 'grid grid-cols-2 gap-2' },
               PATHWAYS.map(function(pw) {
                 var isDone = pathwaysCompleted[pw.id];
                 return h('button', { 'aria-label': 'Change selected structure',
@@ -4341,27 +4350,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               for (var pwi = 0; pwi < PATHWAYS.length; pwi++) { if (PATHWAYS[pwi].id === activePathwayId) { pw = PATHWAYS[pwi]; break; } }
               if (!pw) return null;
               var step = pw.steps[pathwayStepIdx];
-              return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-3' },
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2 mb-2' },
-                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-lg' }, pw.icon),
-                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-sm font-black', style: { color: pw.color } }, pw.title),
+              return h('div', { className: 'space-y-3' },
+                h('div', { className: 'flex items-center gap-2 mb-2' },
+                  h('span', { className: 'text-lg' }, pw.icon),
+                  h('span', { className: 'text-sm font-black', style: { color: pw.color } }, pw.title),
                   h('button', { 'aria-label': 'Back',
                     onClick: function() { updMulti({ _activePathway: null, _pathwayStep: 0 }); },
                     className: 'ml-auto text-[11px] font-bold text-slate-600 hover:text-slate-600 px-2 py-1 rounded hover:bg-slate-100'
                   }, '\u2190 Back')
                 ),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-between mb-2' },
-                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold px-2 py-0.5 rounded-full', style: { background: pw.color + '18', color: pw.color } }, 'Step ' + (pathwayStepIdx + 1) + ' of ' + pw.steps.length),
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex-1 mx-3 h-1.5 rounded-full bg-slate-100 overflow-hidden' },
-                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'h-full rounded-full transition-all', style: { width: (((pathwayStepIdx + 1) / pw.steps.length) * 100) + '%', background: pw.color } })
+                h('div', { className: 'flex items-center justify-between mb-2' },
+                  h('span', { className: 'text-xs font-bold px-2 py-0.5 rounded-full', style: { background: pw.color + '18', color: pw.color } }, 'Step ' + (pathwayStepIdx + 1) + ' of ' + pw.steps.length),
+                  h('div', { className: 'flex-1 mx-3 h-1.5 rounded-full bg-slate-100 overflow-hidden' },
+                    h('div', { className: 'h-full rounded-full transition-all', style: { width: (((pathwayStepIdx + 1) / pw.steps.length) * 100) + '%', background: pw.color } })
                   )
                 ),
-                step ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'rounded-xl p-4 border-2', style: { borderColor: pw.color + '40', background: pw.color + '08' } },
+                step ? h('div', { className: 'rounded-xl p-4 border-2', style: { borderColor: pw.color + '40', background: pw.color + '08' } },
                   h('h5', { className: 'font-bold text-sm mb-2', style: { color: pw.color } }, (pathwayStepIdx + 1) + '. ' + step.label),
                   h('p', { className: 'text-xs text-slate-700 leading-relaxed mb-2' }, step.detail),
                   ttsBtn(step.detail)
                 ) : null,
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 justify-between' },
+                h('div', { className: 'flex gap-2 justify-between' },
                   h('button', { 'aria-label': 'Previous',
                     onClick: function() {
                       if (pathwayStepIdx > 0) {
@@ -4395,12 +4404,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           ) : null,
 
           // ── Connections Tab ──
-          activeTab === 'connections' ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-xl border-2 border-sky-200 p-4 space-y-3' },
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-between mb-2' },
+          activeTab === 'connections' ? h('div', { className: 'bg-white rounded-xl border-2 border-sky-200 p-4 space-y-3' },
+            h('div', { className: 'flex items-center justify-between mb-2' },
               h('h4', { className: 'font-bold text-sky-800 text-sm' }, '\uD83D\uDD17 How Body Systems Connect'),
-              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-sky-100 text-sky-600' }, Object.keys(connectionsViewed).length + '/' + CONNECTIONS.length + ' explored')
+              h('span', { className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-sky-100 text-sky-600' }, Object.keys(connectionsViewed).length + '/' + CONNECTIONS.length + ' explored')
             ),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-2 max-h-[500px] overflow-y-auto' },
+            h('div', { className: 'space-y-2 max-h-[500px] overflow-y-auto' },
               CONNECTIONS.map(function(conn) {
                 var isViewed = connectionsViewed[conn.id];
                 return h('button', { 'aria-label': 'Play sound',
@@ -4434,13 +4443,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           ) : null,
 
           // ── Flashcard Tab ──
-          activeTab === 'flashcards' ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-xl border-2 border-teal-200 p-4 space-y-3' },
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-between mb-2' },
+          activeTab === 'flashcards' ? h('div', { className: 'bg-white rounded-xl border-2 border-teal-200 p-4 space-y-3' },
+            h('div', { className: 'flex items-center justify-between mb-2' },
               h('h4', { className: 'font-bold text-teal-800 text-sm' }, '\uD83C\uDCCF Anatomy Flashcards'),
-              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-teal-100 text-teal-700' }, (flashcardIdx + 1) + '/' + flashcardPool.length)
+              h('span', { className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-teal-100 text-teal-700' }, (flashcardIdx + 1) + '/' + flashcardPool.length)
             ),
             h('p', { className: 'text-xs text-slate-600 mb-2' }, 'Click the card to flip. Study ' + sys.name + ' structures.'),
-            flashcardPool.length > 0 ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-3' },
+            flashcardPool.length > 0 ? h('div', { className: 'space-y-3' },
               // Flashcard
               h('button', { 'aria-label': 'STRUCTURE NAME',
                 onClick: function() { upd('_flashcardFlipped', !flashcardFlipped); },
@@ -4455,7 +4464,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 ) : h('div', null,
                   h('p', { className: 'text-[11px] font-bold text-teal-600 uppercase mb-2' }, 'FUNCTION'),
                   h('p', { className: 'text-xs text-slate-700 leading-relaxed mb-2' }, flashcardPool[flashcardIdx % flashcardPool.length].fn),
-                  flashcardPool[flashcardIdx % flashcardPool.length].clinical ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-2 pt-2 border-t border-teal-200' },
+                  flashcardPool[flashcardIdx % flashcardPool.length].clinical ? h('div', { className: 'mt-2 pt-2 border-t border-teal-200' },
                     h('p', { className: 'text-[11px] font-bold text-rose-500 uppercase mb-0.5' }, '\u26A0 Clinical'),
                     h('p', { className: 'text-[11px] text-slate-600 leading-relaxed' }, flashcardPool[flashcardIdx % flashcardPool.length].clinical.substring(0, 200))
                   ) : null,
@@ -4463,7 +4472,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 )
               ),
               // Navigation
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 justify-between' },
+              h('div', { className: 'flex gap-2 justify-between' },
                 h('button', { 'aria-label': 'Previous',
                   onClick: function() { var pi = flashcardIdx > 0 ? flashcardIdx - 1 : flashcardPool.length - 1; upd('_flashcardIdx', pi); upd('_flashcardFlipped', false); upd('selectedStructure', flashcardPool[pi].id); },
                   className: 'px-4 py-1.5 rounded-lg text-xs font-bold bg-teal-100 text-teal-700 hover:bg-teal-200 transition-all'
@@ -4487,7 +4496,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           // ── Explore Tab ──
           activeTab === 'explore' ? h('div', null,
             // System tabs
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-1.5 mb-3' },
+            h('div', { className: 'flex flex-wrap gap-1.5 mb-3' },
               Object.keys(SYSTEMS).map(function(key) {
                 var s = SYSTEMS[key];
                 return h('button', { 'aria-label': 'Change system',
@@ -4503,10 +4512,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             ),
 
             // Fun fact banner
-            currentFact ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mb-3 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 flex items-start gap-2' },
-              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-base flex-shrink-0' }, '\uD83D\uDCA1'),
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex-1' },
-                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold text-amber-700 uppercase' }, 'Did you know?'),
+            currentFact ? h('div', { className: 'mb-3 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 flex items-start gap-2' },
+              h('span', { className: 'text-base flex-shrink-0' }, '\uD83D\uDCA1'),
+              h('div', { className: 'flex-1' },
+                h('span', { className: 'text-[11px] font-bold text-amber-700 uppercase' }, 'Did you know?'),
                 h('p', { className: 'text-xs text-amber-900 leading-relaxed' }, currentFact)
               ),
               h('button', { 'aria-label': 'Next',
@@ -4516,7 +4525,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             ) : null,
 
             // Mnemonics section
-            MNEMONICS[sysKey] && MNEMONICS[sysKey].length > 0 ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mb-3' },
+            MNEMONICS[sysKey] && MNEMONICS[sysKey].length > 0 ? h('div', { className: 'mb-3' },
               h('button', { 'aria-label': 'Change _show mnemonics',
                 onClick: function() { upd('_showMnemonics', !d._showMnemonics); },
                 className: 'w-full flex items-center justify-between px-3 py-2 rounded-lg bg-purple-50 border border-purple-200 hover:bg-purple-100 transition-all'
@@ -4524,10 +4533,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 h('span', { className: 'text-[11px] font-bold text-purple-700 uppercase flex items-center gap-1' }, '\uD83E\uDDE0 Mnemonics (' + MNEMONICS[sysKey].length + ')'),
                 h('span', { className: 'text-[11px] text-purple-500' }, d._showMnemonics ? '\u25B2' : '\u25BC')
               ),
-              d._showMnemonics ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-1 space-y-1.5' },
+              d._showMnemonics ? h('div', { className: 'mt-1 space-y-1.5' },
                 MNEMONICS[sysKey].map(function(mn) {
                   var isRevealed = mnemonicsViewed[mn.id];
-                  return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+                  return h('div', { 
                     key: mn.id,
                     className: 'rounded-lg p-2.5 border transition-all ' + (isRevealed ? 'border-purple-300 bg-purple-50' : 'border-slate-200 bg-white')
                   },
@@ -4552,16 +4561,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
 
             // Progress tracker
             h('div', { className: 'mb-3 flex items-center gap-2' },
-              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold text-slate-600' }, sys.icon + ' ' + exploredInSystem + '/' + filtered.length + ' explored'),
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex-1 h-1.5 rounded-full bg-slate-100 overflow-hidden' },
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'h-full rounded-full transition-all', style: { width: progressPct + '%', background: sys.accent } })
+              h('span', { className: 'text-[11px] font-bold text-slate-600' }, sys.icon + ' ' + exploredInSystem + '/' + filtered.length + ' explored'),
+              h('div', { className: 'flex-1 h-1.5 rounded-full bg-slate-100 overflow-hidden' },
+                h('div', { className: 'h-full rounded-full transition-all', style: { width: progressPct + '%', background: sys.accent } })
               ),
-              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold', style: { color: sys.accent } }, progressPct + '%')
+              h('span', { className: 'text-[11px] font-bold', style: { color: sys.accent } }, progressPct + '%')
             ),
 
             // Layer toggle bar
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-1.5 mb-3 flex-wrap bg-slate-50 rounded-xl px-3 py-2 border border-slate-200' },
-              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mr-1' }, '\uD83E\uDDE0 Layers'),
+            h('div', { className: 'flex items-center gap-1.5 mb-3 flex-wrap bg-slate-50 rounded-xl px-3 py-2 border border-slate-200' },
+              h('span', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mr-1' }, '\uD83E\uDDE0 Layers'),
               LAYER_DEFS.map(function(ld) {
                 var isOn = layers[ld.id] || ld.id === autoLayerId;
                 return h('button', { 'aria-label': 'Toggle layer',
@@ -4586,8 +4595,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             ),
 
             // Controls
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2 mb-3 flex-wrap' },
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex rounded-lg border border-slate-200 overflow-hidden' },
+            h('div', { className: 'flex items-center gap-2 mb-3 flex-wrap' },
+              h('div', { className: 'flex rounded-lg border border-slate-200 overflow-hidden' },
                 ['anterior', 'posterior'].map(function(v) {
                   return h('button', { 'aria-label': 'Select option',
                     key: v,
@@ -4609,7 +4618,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 onClick: function() { upd('quizMode', !d.quizMode); upd('quizIdx', 0); upd('quizScore', 0); upd('quizFeedback', null); },
                 className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (d.quizMode ? 'bg-green-700 text-white' : 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100')
               }, d.quizMode ? '\u2705 Quiz On' : '\uD83E\uDDEA Quiz'),
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex rounded-lg border border-slate-200 overflow-hidden' },
+              h('div', { className: 'flex rounded-lg border border-slate-200 overflow-hidden' },
                 [{ v: 1, label: 'K\u20135', tip: 'Elementary' }, { v: 2, label: '6\u20138', tip: 'Middle' }, { v: 3, label: '9\u201312+', tip: 'Advanced' }].map(function(lv) {
                   return h('button', { 'aria-label': 'Change complexity',
                     key: lv.v, title: lv.tip + ' level',
@@ -4618,7 +4627,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   }, lv.label);
                 })
               ),
-              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-slate-600 font-bold' }, filtered.length + ' structures'),
+              h('span', { className: 'text-[11px] text-slate-600 font-bold' }, filtered.length + ' structures'),
               h('button', { 'aria-label': 'Regions',
                 onClick: function() { upd('_showRegionLabels', !d._showRegionLabels); },
                 title: 'Toggle body region labels',
@@ -4652,9 +4661,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             ),
 
             // Main content: canvas + detail panel
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-4', style: { alignItems: 'flex-start' } },
+            h('div', { className: 'flex gap-4', style: { alignItems: 'flex-start' } },
               // Canvas
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex-shrink-0' },
+              h('div', { className: 'flex-shrink-0' },
                 h('canvas', { 'aria-label': 'Anatomy visualization',
                   ref: canvasRef,
                   onClick: handleClick,
@@ -4692,7 +4701,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                       h('p', { className: 'text-sm text-slate-800 font-bold leading-relaxed' }, 'Which structure is affected?'),
                       h('p', { className: 'text-xs text-slate-600 bg-slate-50 rounded-lg p-3 leading-relaxed italic' }, quizQ.clinical ? quizQ.clinical.substring(0, 120) + '...' : quizQ.fn.substring(0, 120) + '...')
                     ),
-                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'grid grid-cols-1 gap-1.5' },
+                    h('div', { className: 'grid grid-cols-1 gap-1.5' },
                       quizOptions.map(function(opt) {
                         var fb = d.quizFeedback;
                         var correctId = quizType === 1 ? 'true' : (quizType === 2 ? sysKey : quizQ.id);
@@ -4722,10 +4731,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                         }, (showResult && isCorrect ? '\u2705 ' : showResult && wasChosen ? '\u274C ' : '') + opt.name);
                       })
                     ),
-                    d.quizFeedback && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'rounded-lg p-3 text-xs leading-relaxed space-y-1.5 ' + (d.quizFeedback.correct ? 'bg-green-50 border border-green-200' : 'bg-amber-50 border border-amber-200') },
+                    d.quizFeedback && h('div', { className: 'rounded-lg p-3 text-xs leading-relaxed space-y-1.5 ' + (d.quizFeedback.correct ? 'bg-green-50 border border-green-200' : 'bg-amber-50 border border-amber-200') },
                       h('p', { className: 'font-black ' + (d.quizFeedback.correct ? 'text-green-800' : 'text-amber-800') }, (d.quizFeedback.correct ? '\u2705 Correct! ' : '\u274C The answer was: ') + quizQ.name),
-                      h('p', { className: 'text-slate-700' }, h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'font-bold text-slate-600' }, 'Function: '), quizQ.fn.substring(0, 150)),
-                      quizQ.clinical && h('p', { className: 'text-slate-600 italic' }, h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'font-bold text-rose-500' }, '\u26A0 Clinical: '), quizQ.clinical.substring(0, 120))
+                      h('p', { className: 'text-slate-700' }, h('span', { className: 'font-bold text-slate-600' }, 'Function: '), quizQ.fn.substring(0, 150)),
+                      quizQ.clinical && h('p', { className: 'text-slate-600 italic' }, h('span', { className: 'font-bold text-rose-500' }, '\u26A0 Clinical: '), quizQ.clinical.substring(0, 120))
                     ),
                     d.quizFeedback && h('button', { 'aria-label': 'Next Question',
                       onClick: function() { upd('quizIdx', (d.quizIdx || 0) + 1); upd('quizFeedback', null); },
@@ -4735,14 +4744,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 ) : (
                   sel ? (
                     // Detail panel
-                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-xl border-2 p-4 space-y-3', style: { borderColor: sys.accent + '40' } },
-                      h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-start justify-between' },
-                        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex-1' },
+                    h('div', { className: 'bg-white rounded-xl border-2 p-4 space-y-3', style: { borderColor: sys.accent + '40' } },
+                      h('div', { className: 'flex items-start justify-between' },
+                        h('div', { className: 'flex-1' },
                           h('h4', { className: 'text-base font-black', style: { color: sys.accent } }, sel.name),
                           PRONUNCIATION[sel.id] ? h('p', { className: 'text-[11px] text-indigo-500 italic mt-0.5' }, '\uD83D\uDD0A ' + PRONUNCIATION[sel.id]) : null,
                           (gradeBand === 'k2' || gradeBand === 'g35') && SIMPLE_DESC[sel.id] && SIMPLE_DESC[sel.id][gradeBand] ? h('p', { className: 'text-xs text-sky-700 bg-sky-50 rounded-lg px-2 py-1.5 mt-1 border border-sky-200 leading-relaxed' }, SIMPLE_DESC[sel.id][gradeBand]) : null
                         ),
-                        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-1' },
+                        h('div', { className: 'flex gap-1' },
                           h('button', { 'aria-label': 'Change _compare structure',
                             onClick: function() {
                               if (compareStructureId === sel.id) { upd('_compareStructure', null); }
@@ -4808,7 +4817,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                                 ),
                                 h('div', { className: 'flex gap-3 mb-1' },
                                   h('span', { className: 'text-[11px] text-slate-600' }, '\u23F1 ', h('span', { className: 'font-bold' }, s.duration)),
-                                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-slate-600' }, '\uD83C\uDF0A ', h('span', { className: 'font-bold' }, s.waves))
+                                  h('span', { className: 'text-[11px] text-slate-600' }, '\uD83C\uDF0A ', h('span', { className: 'font-bold' }, s.waves))
                                 ),
                                 h('p', { className: 'text-[11px] text-slate-600 leading-relaxed mb-1' }, s.desc),
                                 h('p', { className: 'text-[11px] text-rose-600 italic leading-relaxed' }, '\u26A0 ', s.clinical)
@@ -4818,8 +4827,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                         )
                       ),
                       // ── Compare Panel ──
-                      compareSel && compareSel.id !== sel.id ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-3 pt-3 border-t-2 border-violet-200' },
-                        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-between mb-2' },
+                      compareSel && compareSel.id !== sel.id ? h('div', { className: 'mt-3 pt-3 border-t-2 border-violet-200' },
+                        h('div', { className: 'flex items-center justify-between mb-2' },
                           h('p', { className: 'text-[11px] font-bold text-violet-600 uppercase' }, '\u2696 Comparing with:'),
                           h('button', { 'aria-label': 'Clear',
                             onClick: function() { upd('_compareStructure', null); },
@@ -4866,7 +4875,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                     )
                   ) : (
                     // Structure list
-                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-1 max-h-[460px] overflow-y-auto pr-1' },
+                    h('div', { className: 'space-y-1 max-h-[460px] overflow-y-auto pr-1' },
                       filtered.length === 0 && h('p', { className: 'text-xs text-slate-600 italic py-4 text-center' }, 'No structures match your search.'),
                       filtered.map(function(st) {
                         return h('button', { 'aria-label': 'Change selected structure',
@@ -4877,7 +4886,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                           style: d.selectedStructure === st.id ? { borderColor: sys.accent, background: sys.color } : {}
                         },
                           h('div', { className: 'font-bold text-slate-800' }, st.name),
-                          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-slate-600 mt-0.5 line-clamp-1' }, st.fn.substring(0, 80) + (st.fn.length > 80 ? '...' : ''))
+                          h('div', { className: 'text-[11px] text-slate-600 mt-0.5 line-clamp-1' }, st.fn.substring(0, 80) + (st.fn.length > 80 ? '...' : ''))
                         );
                       })
                     )
@@ -4887,25 +4896,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             ),
 
             // Clinical Cases section (advanced only)
-            complexity >= 3 ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-4 bg-rose-50 rounded-xl border border-rose-200 p-3' },
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-between mb-2' },
+            complexity >= 3 ? h('div', { className: 'mt-4 bg-rose-50 rounded-xl border border-rose-200 p-3' },
+              h('div', { className: 'flex items-center justify-between mb-2' },
                 h('p', { className: 'text-[11px] font-bold text-rose-600 uppercase tracking-wider' }, '\uD83E\uDE7A Clinical Cases (' + (d._clinicalSolved || 0) + ' solved)'),
                 h('button', { 'aria-label': 'Select option',
                   onClick: function() { upd('_showClinical', !d._showClinical); },
                   className: 'text-[11px] font-bold px-2 py-0.5 rounded bg-rose-100 text-rose-600 hover:bg-rose-200 transition-all'
                 }, d._showClinical ? 'Hide' : 'Show Cases')
               ),
-              d._showClinical ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-2' },
+              d._showClinical ? h('div', { className: 'space-y-2' },
                 CLINICAL_CASES.filter(function(c) { return !sysKey || c.system === sysKey || sysKey === 'skeletal'; }).slice(0, 3).map(function(cs, ci) {
                   var isActive = activeCaseIdx === ci;
-                  return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: cs.id, className: 'bg-white rounded-lg p-3 border border-rose-200' },
+                  return h('div', { key: cs.id, className: 'bg-white rounded-lg p-3 border border-rose-200' },
                     h('p', { className: 'text-xs font-bold text-rose-800 mb-1' }, cs.title + ' (' + cs.difficulty + ')'),
                     h('p', { className: 'text-[11px] text-slate-600 leading-relaxed mb-2' }, cs.presentation),
                     h('p', { className: 'text-[11px] font-bold text-slate-700 mb-1' }, cs.question),
-                    isActive && activeCaseFeedback ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-2 rounded-lg p-2 ' + (activeCaseFeedback === 'correct' ? 'bg-green-50 border border-green-200' : 'bg-amber-50 border border-amber-200') },
+                    isActive && activeCaseFeedback ? h('div', { className: 'mt-2 rounded-lg p-2 ' + (activeCaseFeedback === 'correct' ? 'bg-green-50 border border-green-200' : 'bg-amber-50 border border-amber-200') },
                       h('p', { className: 'text-[11px] font-bold ' + (activeCaseFeedback === 'correct' ? 'text-green-800' : 'text-amber-800') }, activeCaseFeedback === 'correct' ? '\u2705 Correct!' : '\u274C Answer: ' + cs.answer),
                       h('p', { className: 'text-[11px] text-slate-600 leading-relaxed mt-1' }, cs.explanation)
-                    ) : h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-1 flex-wrap' },
+                    ) : h('div', { className: 'flex gap-1 flex-wrap' },
                       h('button', { 'aria-label': 'I got it!',
                         onClick: function() {
                           upd('_activeCaseIdx', ci);

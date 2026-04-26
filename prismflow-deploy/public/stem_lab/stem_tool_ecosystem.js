@@ -18,6 +18,15 @@ window.StemLab = window.StemLab || {
 if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) {
 (function() {
   'use strict';
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  (function() {
+    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-stem-motion-reduce-css';
+    st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    document.head.appendChild(st);
+  })();
+
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-ecosystem')) return;
@@ -2192,10 +2201,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
         { id: 'wildfire',  icon: '\uD83D\uDD25',   label: 'Wildfire',  color: 'bg-red-500' }
       ];
 
-      return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-3 pb-4' },
+      return h('div', { className: 'space-y-3 pb-4' },
 
         // ── Header ──
-        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2 mb-2' },
+        h('div', { className: 'flex items-center gap-2 mb-2' },
           h('button', {
             className: 'p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700',
             onClick: function() {
@@ -2215,7 +2224,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
 
 
         // ── Biome Selector ──
-        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-1 mb-1' },
+        h('div', { className: 'flex gap-1 mb-1' },
           Object.keys(BIOME_COLORS).map(function(bId) {
             var bInfo = BIOME_COLORS[bId];
             return h('button', { 'aria-label': 'Change Biome',
@@ -2231,7 +2240,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
 
 
         // ── Mode tabs (4 tabs now) ──
-        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1', role: 'tablist', 'aria-label': 'Ecosystem Explorer sections' },
+        h('div', { className: 'flex gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1', role: 'tablist', 'aria-label': 'Ecosystem Explorer sections' },
           ['explore', 'sandbox', 'quiz', 'badges'].map(function(t2) {
             var tabLabel = '';
             if (t2 === 'explore') tabLabel = '\uD83C\uDF3F Explore';
@@ -2278,15 +2287,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               style: { width: '100%', height: '100%', display: 'block' }
             }),
             // Bottom info bar
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/50 to-transparent px-3 py-1.5 flex items-center gap-2' },
-              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-white/80' }, '\uD83D\uDC07 Prey: ' + prey0 + ' start'),
-              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-white/80' }, '\uD83E\uDD8A Pred: ' + pred0 + ' start'),
-              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-white/80 ml-auto' }, 'Watch the ecosystem evolve!')
+            h('div', { className: 'absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/50 to-transparent px-3 py-1.5 flex items-center gap-2' },
+              h('span', { className: 'text-[11px] text-white/80' }, '\uD83D\uDC07 Prey: ' + prey0 + ' start'),
+              h('span', { className: 'text-[11px] text-white/80' }, '\uD83E\uDD8A Pred: ' + pred0 + ' start'),
+              h('span', { className: 'text-[11px] text-white/80 ml-auto' }, 'Watch the ecosystem evolve!')
             )
           ),
 
           // ── NEW: Canvas control bar: pause/resume + speed slider ──
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-3 bg-slate-100 dark:bg-slate-800 rounded-lg px-3 py-2' },
+          h('div', { className: 'flex items-center gap-3 bg-slate-100 dark:bg-slate-800 rounded-lg px-3 py-2' },
             h('button', { 'aria-label': 'Ecosystem action',
               className: 'px-3 py-1 text-xs font-bold rounded-lg transition-all ' +
                 (simPaused
@@ -2327,12 +2336,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                   }
                 }
               }),
-              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold text-emerald-600 min-w-[28px] text-right' }, speedLabel(simSpeed))
+              h('span', { className: 'text-[11px] font-bold text-emerald-600 min-w-[28px] text-right' }, speedLabel(simSpeed))
             )
           ),
 
           // ── NEW: Event injection buttons row ──
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-1 flex-wrap' },
+          h('div', { className: 'flex gap-1 flex-wrap' },
             eventDefs.map(function(ev) {
               return h('button', { 'aria-label': 'Select option',
                 key: ev.id,
@@ -2411,17 +2420,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           ),
 
           // ── Live Population Graph Panel ──
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden' },
+          h('div', { className: 'bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden' },
             h('button', { 'aria-label': 'Change eco graph open',
               className: 'w-full flex items-center justify-between px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700',
               onClick: function() { upd('ecoGraphOpen', !ecoGraphOpen); }
             },
               h('span', null, '\uD83D\uDCCA Live Population Graph'),
-              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs', style: { transform: ecoGraphOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' } }, '\u25BC')
+              h('span', { className: 'text-xs', style: { transform: ecoGraphOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' } }, '\u25BC')
             ),
-            ecoGraphOpen && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'px-3 pb-3 space-y-2' },
+            ecoGraphOpen && h('div', { className: 'px-3 pb-3 space-y-2' },
               // View tabs
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-1' },
+              h('div', { className: 'flex gap-1' },
                 h('button', { 'aria-label': 'Populations',
                   className: 'flex-1 px-2 py-1 text-[11px] font-semibold rounded ' +
                     (ecoGraphView === 'population' ? 'bg-emerald-700 text-white' : 'bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-300'),
@@ -2558,15 +2567,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 h('div', { className: 'text-[11px] font-semibold' }, 'Predators')
               ),
               h('span', { className: 'text-slate-600 text-sm' }, '\u2192'),
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-amber-100 dark:bg-amber-900/30 rounded-lg px-2 py-1' },
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-lg' }, '\uD83C\uDF44'),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-semibold' }, 'Decomposers')
+              h('div', { className: 'bg-amber-100 dark:bg-amber-900/30 rounded-lg px-2 py-1' },
+                h('div', { className: 'text-lg' }, '\uD83C\uDF44'),
+                h('div', { className: 'text-[11px] font-semibold' }, 'Decomposers')
               )
             )
           ),
 
           // ── Description ──
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-start gap-2' },
+          h('div', { className: 'flex items-start gap-2' },
             h('p', { className: 'text-xs text-slate-600 dark:text-slate-200 flex-1' },
               'Model predator\u2013prey dynamics using the Lotka\u2013Volterra equations. Adjust starting populations and interaction rates to observe oscillations, extinction events, and equilibrium states.'
             ),
@@ -2578,7 +2587,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           ),
 
           // ── Preset buttons ──
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-1 flex-wrap' },
+          h('div', { className: 'flex gap-1 flex-wrap' },
             presetNames.map(function(name, idx) {
               return h('button', { 'aria-label': 'Apply Preset',
                 key: name,
@@ -2659,7 +2668,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             h('div', { className: 'space-y-1' },
               h('label', { className: 'text-[11px] font-semibold text-slate-600 dark:text-slate-300 flex justify-between' },
                 h('span', null, 'Pred Birth Rate'),
-                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-blue-600 font-bold' }, predBirth.toFixed(3))
+                h('span', { className: 'text-blue-600 font-bold' }, predBirth.toFixed(3))
               ),
               h('input', {
                 type: 'range', 'aria-label': 'Enter', min: 0.001, max: 0.05, step: 0.001, value: predBirth,
@@ -2734,7 +2743,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                   h('div', { className: 'flex items-center gap-1 mb-1' },
                     h('span', { className: 'text-sm' }, ch.emoji),
                     h('span', { className: 'text-[11px] font-bold ' + (done ? 'text-green-700 dark:text-green-300' : 'text-slate-700 dark:text-slate-200') }, ch.name),
-                    done && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-green-500 font-bold ml-auto' }, '\u2714')
+                    done && h('span', { className: 'text-[11px] text-green-500 font-bold ml-auto' }, '\u2714')
                   ),
                   h('p', { className: 'text-[11px] text-slate-200 dark:text-slate-200 mb-1' }, ch.desc),
                   h('p', { className: 'text-[11px] font-bold ' + (done ? 'text-green-600' : 'text-amber-600') },
@@ -2752,7 +2761,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           }, '\uD83D\uDCF7 Take Snapshot'),
 
           // ── AI Tutor ──
-          callGemini && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-indigo-50 dark:bg-indigo-900/20 rounded-xl p-3 border border-indigo-200 dark:border-indigo-700 space-y-2' },
+          callGemini && h('div', { className: 'bg-indigo-50 dark:bg-indigo-900/20 rounded-xl p-3 border border-indigo-200 dark:border-indigo-700 space-y-2' },
             h('button', { 'aria-label': 'Change show a i',
               className: 'w-full flex items-center justify-between text-xs font-bold text-indigo-700 dark:text-indigo-300',
               onClick: function() { upd('showAI', !showAI); }
@@ -2760,8 +2769,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               h('span', null, '\uD83E\uDD16 AI Ecology Tutor'),
               h('span', null, showAI ? '\u25B2' : '\u25BC')
             ),
-            showAI && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-2' },
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-1 flex-wrap' },
+            showAI && h('div', { className: 'space-y-2' },
+              h('div', { className: 'flex gap-1 flex-wrap' },
                 ['What is Lotka-Volterra?', 'Why do populations oscillate?', 'What is carrying capacity?', 'Explain food webs'].map(function(question) {
                   return h('button', { 'aria-label': 'Thinking...',
                     key: question,
@@ -2771,7 +2780,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 })
               ),
               aiLoading && h('p', { className: 'text-xs text-indigo-500 animate-pulse' }, 'Thinking...'),
-              aiResponse && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white dark:bg-slate-800 rounded-lg p-2 text-xs text-slate-700 dark:text-slate-300 border border-indigo-100 dark:border-indigo-800' },
+              aiResponse && h('div', { className: 'bg-white dark:bg-slate-800 rounded-lg p-2 text-xs text-slate-700 dark:text-slate-300 border border-indigo-100 dark:border-indigo-800' },
                 h('p', null, aiResponse),
                 callTTS && h('button', { 'aria-label': 'Read aloud',
                   className: 'mt-1 text-[11px] text-indigo-500 hover:text-indigo-700',
@@ -2802,13 +2811,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             }),
             // Bottom info bar
             h('div', { className: 'absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/50 to-transparent px-3 py-1.5 flex items-center gap-2' },
-              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-white/80 font-bold' }, '\uD83E\uDDEA Sandbox Mode'),
-              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-white/80 ml-auto' }, 'Click to place entities')
+              h('span', { className: 'text-[11px] text-white/80 font-bold' }, '\uD83E\uDDEA Sandbox Mode'),
+              h('span', { className: 'text-[11px] text-white/80 ml-auto' }, 'Click to place entities')
             )
           ),
 
           // ── Tool selector row ──
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-1' },
+          h('div', { className: 'flex gap-1' },
             sandboxTools.map(function(tool) {
               return h('button', { 'aria-label': 'Change sandbox tool',
                 key: tool.id,
@@ -2822,16 +2831,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                   if (canvasEl) canvasEl.dataset.sandboxTool = tool.id;
                 }
               },
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-lg' }, tool.icon),
+                h('div', { className: 'text-lg' }, tool.icon),
                 h('div', null, tool.label)
               );
             })
           ),
 
           // ── Placement count display ──
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-between bg-teal-50 dark:bg-teal-900/20 rounded-lg px-3 py-2' },
-            h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-semibold text-teal-700 dark:text-teal-300' }, 'Entities Placed:'),
-            h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-sm font-bold text-teal-600' }, sandboxPlaceCount),
+          h('div', { className: 'flex items-center justify-between bg-teal-50 dark:bg-teal-900/20 rounded-lg px-3 py-2' },
+            h('span', { className: 'text-xs font-semibold text-teal-700 dark:text-teal-300' }, 'Entities Placed:'),
+            h('span', { className: 'text-sm font-bold text-teal-600' }, sandboxPlaceCount),
             h('button', { 'aria-label': 'Sync Count',
               className: 'text-[11px] text-teal-500 hover:text-teal-700 underline',
               onClick: syncSandboxCount
@@ -2839,7 +2848,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           ),
 
           // ── Pause/Speed controls (shared) ──
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-3 bg-slate-100 dark:bg-slate-800 rounded-lg px-3 py-2' },
+          h('div', { className: 'flex items-center gap-3 bg-slate-100 dark:bg-slate-800 rounded-lg px-3 py-2' },
             h('button', { 'aria-label': 'Ecosystem action',
               className: 'px-3 py-1 text-xs font-bold rounded-lg transition-all ' +
                 (simPaused
@@ -2866,14 +2875,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                   if (canvasEl) canvasEl.dataset.speed = newSpeed.toString();
                 }
               }),
-              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold text-teal-600 min-w-[28px] text-right' }, speedLabel(simSpeed))
+              h('span', { className: 'text-[11px] font-bold text-teal-600 min-w-[28px] text-right' }, speedLabel(simSpeed))
             )
           ),
 
           // ── Event injection (sandbox version) ──
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-1' },
+          h('div', { className: 'space-y-1' },
             h('p', { className: 'text-[11px] font-bold text-teal-700 dark:text-teal-300' }, '\u26A1 Inject Events'),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-1 flex-wrap' },
+            h('div', { className: 'flex gap-1 flex-wrap' },
               eventDefs.map(function(ev) {
                 return h('button', { 'aria-label': 'Trigger Event',
                   key: 'sb-' + ev.id,
@@ -2960,16 +2969,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               animation: 'pulse 3s ease-in-out infinite'
             }
           },
-            h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-teal-700 dark:text-teal-300' }, lastObservation)
+            h('span', { className: 'text-teal-700 dark:text-teal-300' }, lastObservation)
           )
         ),
 
         // ═══ QUIZ TAB ═══
-        tab === 'quiz' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-3' },
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-4 space-y-3' },
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex justify-between items-center' },
-              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-slate-700 dark:text-slate-200' }, 'Question ' + ((quizIndex % QUIZ_QUESTIONS.length) + 1) + ' of ' + QUIZ_QUESTIONS.length),
-              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs text-emerald-600 font-bold' }, '\u2714 ' + quizCorrect + '/' + quizTotal)
+        tab === 'quiz' && h('div', { className: 'space-y-3' },
+          h('div', { className: 'bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-4 space-y-3' },
+            h('div', { className: 'flex justify-between items-center' },
+              h('span', { className: 'text-xs font-bold text-slate-700 dark:text-slate-200' }, 'Question ' + ((quizIndex % QUIZ_QUESTIONS.length) + 1) + ' of ' + QUIZ_QUESTIONS.length),
+              h('span', { className: 'text-xs text-emerald-600 font-bold' }, '\u2714 ' + quizCorrect + '/' + quizTotal)
             ),
             h('p', { className: 'text-sm font-semibold text-slate-800 dark:text-slate-100' }, currentQ.q),
             callTTS && h('button', { 'aria-label': 'Read question',
@@ -2995,14 +3004,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                   disabled: quizAnswer !== -1,
                   onClick: function() { answerQuiz(idx); }
                 },
-                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'font-semibold mr-2' }, String.fromCharCode(65 + idx) + '.'),
+                  h('span', { className: 'font-semibold mr-2' }, String.fromCharCode(65 + idx) + '.'),
                   choice,
-                  showResult && isCorrectChoice && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'ml-1 text-green-600' }, ' \u2714'),
-                  showResult && isSelected && !isCorrectChoice && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'ml-1 text-red-600' }, ' \u2718')
+                  showResult && isCorrectChoice && h('span', { className: 'ml-1 text-green-600' }, ' \u2714'),
+                  showResult && isSelected && !isCorrectChoice && h('span', { className: 'ml-1 text-red-600' }, ' \u2718')
                 );
               })
             ),
-            quizFeedback && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+            quizFeedback && h('div', { 
               className: 'text-xs font-semibold p-2 rounded-lg ' +
                 (quizAnswer === currentQ.answer ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300')
             }, quizFeedback),
@@ -3072,13 +3081,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
         ),
 
         // ── Tutorial Overlay ──
-        !tutorialDismissed && tutorialStep < 5 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+        !tutorialDismissed && tutorialStep < 5 && h('div', { 
           className: 'fixed inset-0 bg-black/40 flex items-center justify-center z-50',
           style: { backdropFilter: 'blur(2px)' }
         },
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white dark:bg-slate-800 rounded-2xl p-5 max-w-sm mx-4 shadow-2xl border-2 border-emerald-400' },
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-between mb-3' },
-              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-sm font-bold text-emerald-700 dark:text-emerald-300' },
+          h('div', { className: 'bg-white dark:bg-slate-800 rounded-2xl p-5 max-w-sm mx-4 shadow-2xl border-2 border-emerald-400' },
+            h('div', { className: 'flex items-center justify-between mb-3' },
+              h('span', { className: 'text-sm font-bold text-emerald-700 dark:text-emerald-300' },
                 '\uD83C\uDF3F Step ' + (tutorialStep + 1) + ' of 5'),
               h('button', { 'aria-label': 'Dismiss Tutorial', className: 'text-slate-600 hover:text-slate-600 text-sm', onClick: dismissTutorial }, '\u2715')
             ),
@@ -3091,7 +3100,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 '\uD83D\uDCCA Run the graph simulation with Lotka\u2013Volterra equations. Try all 4 presets!'
               ][tutorialStep]
             ),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2' },
+            h('div', { className: 'flex gap-2' },
               tutorialStep > 0 && h('button', { 'aria-label': 'Back',
                 className: 'px-4 py-2 rounded-lg text-xs font-bold text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700',
                 onClick: function() { upd('tutorialStep', tutorialStep - 1); }

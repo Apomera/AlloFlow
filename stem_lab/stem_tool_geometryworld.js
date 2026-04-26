@@ -13,6 +13,15 @@
  */
 (function () {
   'use strict';
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  (function() {
+    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-stem-motion-reduce-css';
+    st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    document.head.appendChild(st);
+  })();
+
   (function() {
     if (document.getElementById('allo-live-geometryworld')) return;
     var lr = document.createElement('div');
@@ -4033,7 +4042,7 @@
           el('div', { style: { fontSize: '18px', fontWeight: 800, color: '#e2e8f0' } }, 'Desktop Recommended'),
           el('div', { style: { fontSize: '13px', color: '#94a3b8', maxWidth: '320px', lineHeight: 1.6 } },
             'Geometry World uses a 3D engine with mouse + keyboard controls (WASD, pointer lock). For the best experience, open this on a laptop or desktop computer.'),
-          el('div', { style: { fontSize: '11px', color: '#64748b', maxWidth: '280px', lineHeight: 1.5 } },
+          el('div', { style: { fontSize: '11px', color: '#94a3b8', maxWidth: '280px', lineHeight: 1.5 } },
             'Touch controls are available! Swipe the right side to look, use the left joystick to move, and tap the action buttons to build, break, measure, and talk to NPCs.'),
           el('button', {
             onClick: function() { upd('_mobileDismissed', true); },
@@ -4041,7 +4050,7 @@
           }, 'Try Anyway \u2192'),
           el('button', {
             onClick: function() { upd('_mobileDismissed', true); },
-            style: { background: 'none', border: 'none', color: '#64748b', fontSize: '11px', cursor: 'pointer', marginTop: '4px' }
+            style: { background: 'none', border: 'none', color: '#94a3b8', fontSize: '11px', cursor: 'pointer', marginTop: '4px' }
           }, 'I\u2019m on a tablet with keyboard')
         );
       }
@@ -4072,7 +4081,7 @@
             el('div', { style: { width: '60%', height: '100%', background: 'linear-gradient(90deg, #7c3aed, #a78bfa)', borderRadius: '4px', animation: 'pulse 1.5s infinite' } })
           ),
           // Rotating tip
-          el('div', { style: { fontSize: '11px', color: '#64748b', maxWidth: '300px', textAlign: 'center', marginTop: '8px', lineHeight: 1.5 } }, loadingTips[tipIdx])
+          el('div', { style: { fontSize: '11px', color: '#94a3b8', maxWidth: '300px', textAlign: 'center', marginTop: '8px', lineHeight: 1.5 } }, loadingTips[tipIdx])
         );
       }
 
@@ -4332,7 +4341,7 @@
         el('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', background: 'rgba(15,23,42,0.85)', backdropFilter: 'blur(10px)', borderBottom: '1px solid rgba(100,116,139,0.15)', flexShrink: 0, flexWrap: 'wrap' } },
           el('span', { style: { fontSize: '18px' } }, '\uD83E\uDDF1'),
           el('span', { style: { fontWeight: 800, color: '#fff', fontSize: '14px' } }, 'Geometry World'),
-          el('span', { style: { fontSize: '11px', color: '#64748b', marginRight: 'auto' } }, currentLesson.title || ''),
+          el('span', { style: { fontSize: '11px', color: '#94a3b8', marginRight: 'auto' } }, currentLesson.title || ''),
           // Score
           // Block counter
           engine && el('span', { style: { fontSize: '11px', color: '#94a3b8', background: '#1e293b', padding: '2px 8px', borderRadius: '6px' } },
@@ -4881,7 +4890,7 @@
                 (allDone ? '✨ ' : '🎯 ') + 'Objectives'),
               objectives.slice(0, 4).map(function(o, i) {
                 return el('div', { key: i, style: { display: 'flex', alignItems: 'start', gap: '5px', fontSize: '10px', lineHeight: 1.3, marginBottom: '1px' } },
-                  el('span', { style: { color: o.done ? '#4ade80' : '#64748b', flexShrink: 0, fontWeight: 700 } }, o.done ? '☑' : '☐'),
+                  el('span', { style: { color: o.done ? '#4ade80' : '#94a3b8', flexShrink: 0, fontWeight: 700 } }, o.done ? '☑' : '☐'),
                   el('span', { style: { color: o.done ? '#94a3b8' : '#cbd5e1', textDecoration: o.done ? 'line-through' : 'none' } }, o.text)
                 );
               })
@@ -5017,7 +5026,7 @@
             openModals.length > 1 && el('span', { style: { fontSize: '10px', padding: '2px 6px', borderRadius: '10px', background: 'rgba(0,0,0,0.25)', fontWeight: 700 } }, 'close all ' + openModals.length)
           ),
           // Keyboard hint (subtle)
-          el('div', { style: { color: '#64748b', fontSize: '9px', fontWeight: 600 } },
+          el('div', { style: { color: '#94a3b8', fontSize: '9px', fontWeight: 600 } },
             openModals.length === 1 ? 'Esc also closes this' : 'Esc closes one · Shift+Esc closes all'
           )
         ),
@@ -5114,14 +5123,14 @@
         showMyLessons && el('div', { style: { position: 'absolute', top: '48px', right: '8px', zIndex: 22, background: 'rgba(15,23,42,0.95)', border: '1px solid #7c3aed', borderRadius: '10px', padding: '12px', fontSize: '11px', color: '#cbd5e1', maxWidth: '280px', maxHeight: '320px', overflowY: 'auto' } },
           el('div', { style: { fontWeight: 800, color: '#a78bfa', fontSize: '12px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between' } },
             '\uD83D\uDCDA My Lessons (' + getMyLessons().length + ')',
-            el('button', { 'aria-label': 'Close My Lessons', onClick: function() { upd('showMyLessons', false); }, style: { background: 'none', border: 'none', color: '#6b7280', fontSize: '14px', cursor: 'pointer' } }, '\u00d7')
+            el('button', { 'aria-label': 'Close My Lessons', onClick: function() { upd('showMyLessons', false); }, style: { background: 'none', border: 'none', color: '#94a3b8', fontSize: '14px', cursor: 'pointer' } }, '\u00d7')
           ),
-          getMyLessons().length === 0 && el('div', { style: { color: '#64748b', fontSize: '10px', padding: '12px 0', textAlign: 'center' } }, 'No saved lessons yet. Generate one with AI!'),
+          getMyLessons().length === 0 && el('div', { style: { color: '#94a3b8', fontSize: '10px', padding: '12px 0', textAlign: 'center' } }, 'No saved lessons yet. Generate one with AI!'),
           getMyLessons().map(function(lesson, li) {
             return el('div', { key: lesson._id || li, style: { display: 'flex', alignItems: 'center', gap: '6px', padding: '6px', borderRadius: '6px', background: 'rgba(30,41,59,0.5)', marginBottom: '4px', border: '1px solid rgba(100,116,139,0.15)' } },
               el('div', { style: { flex: 1, minWidth: 0 } },
                 el('div', { style: { fontWeight: 700, fontSize: '11px', color: '#e2e8f0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, lesson.title || 'Untitled'),
-                el('div', { style: { fontSize: '9px', color: '#64748b' } },
+                el('div', { style: { fontSize: '9px', color: '#94a3b8' } },
                   (lesson.npcs || []).length + ' NPCs \u2022 ' + (lesson.structures || []).length + ' structures' + (lesson._savedAt ? ' \u2022 ' + new Date(lesson._savedAt).toLocaleDateString() : ''))
               ),
               el('button', {
@@ -5143,7 +5152,7 @@
         showLessonEditor && lastGeneratedLesson && el('div', { style: { position: 'absolute', top: '48px', left: '50%', transform: 'translateX(-50%)', zIndex: 26, background: 'rgba(15,23,42,0.97)', border: '2px solid #f59e0b', borderRadius: '12px', padding: '14px', width: '400px', maxHeight: '400px', fontSize: '11px' } },
           el('div', { style: { fontWeight: 800, color: '#f59e0b', fontSize: '13px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
             '\u270F\uFE0F Lesson JSON Editor',
-            el('button', { 'aria-label': 'Close editor', onClick: function() { upd('showLessonEditor', false); }, style: { background: 'none', border: 'none', color: '#6b7280', fontSize: '14px', cursor: 'pointer' } }, '\u00d7')
+            el('button', { 'aria-label': 'Close editor', onClick: function() { upd('showLessonEditor', false); }, style: { background: 'none', border: 'none', color: '#94a3b8', fontSize: '14px', cursor: 'pointer' } }, '\u00d7')
           ),
           el('p', { style: { color: '#94a3b8', fontSize: '9px', margin: '0 0 6px', lineHeight: 1.3 } }, 'Edit the lesson JSON directly. Change NPC dialogue, add questions, move structures. Click Apply to reload.'),
           el('textarea', {
@@ -5187,7 +5196,7 @@
         creatorMode && el('div', { style: { position: 'absolute', top: '48px', left: '50%', transform: 'translateX(-50%)', zIndex: 25, background: 'rgba(15,23,42,0.95)', border: '2px solid #7c3aed', borderRadius: '12px', padding: '14px', width: '320px', fontSize: '11px' } },
           el('div', { style: { fontWeight: 800, color: '#a78bfa', fontSize: '13px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
             '\uD83C\uDFA8 Lesson Creator',
-            el('button', { 'aria-label': 'Close creator panel', onClick: function() { upd('creatorMode', false); }, style: { background: 'none', border: 'none', color: '#6b7280', fontSize: '14px', cursor: 'pointer' } }, '\u00d7')
+            el('button', { 'aria-label': 'Close creator panel', onClick: function() { upd('creatorMode', false); }, style: { background: 'none', border: 'none', color: '#94a3b8', fontSize: '14px', cursor: 'pointer' } }, '\u00d7')
           ),
           el('p', { style: { color: '#94a3b8', fontSize: '10px', margin: '0 0 8px', lineHeight: 1.4 } }, 'Build structures with blocks (right-click), then add an NPC teacher below. Save your world to share with classmates!'),
           // NPC Creator form
@@ -5198,7 +5207,7 @@
             creatorNpcQuestion.trim() && el('div', { style: { display: 'flex', flexDirection: 'column', gap: '3px' } },
               el('input', { type: 'text', value: creatorNpcChoices, onChange: function(ev) { upd('creatorNpcChoices', ev.target.value); }, placeholder: 'Answers separated by | (e.g. 24 units|12 units|36 units)', style: { background: '#0f172a', border: '1px solid #334155', borderRadius: '5px', padding: '4px 8px', color: '#e2e8f0', fontSize: '11px', fontFamily: 'inherit' } }),
               el('div', { style: { display: 'flex', gap: '4px', alignItems: 'center' } },
-                el('span', { style: { color: '#6b7280', fontSize: '10px' } }, 'Correct answer #:'),
+                el('span', { style: { color: '#94a3b8', fontSize: '10px' } }, 'Correct answer #:'),
                 el('input', { type: 'number', min: 1, max: 5, value: creatorNpcCorrect + 1, onChange: function(ev) { upd('creatorNpcCorrect', Math.max(0, parseInt(ev.target.value, 10) - 1)); }, style: { width: '40px', background: '#0f172a', border: '1px solid #334155', borderRadius: '5px', padding: '3px 6px', color: '#e2e8f0', fontSize: '11px', textAlign: 'center' } })
               )
             ),
@@ -5237,14 +5246,14 @@
               disabled: !creatorNpcName.trim() || !creatorNpcDialogue.trim(),
               style: { background: creatorNpcName.trim() && creatorNpcDialogue.trim() ? '#7c3aed' : '#334155', color: '#fff', border: 'none', borderRadius: '6px', padding: '6px 12px', cursor: 'pointer', fontSize: '12px', fontWeight: 700, marginTop: '4px' }
             }, '\uD83E\uDDD1\u200D\uD83C\uDFEB Place NPC Here'),
-            el('p', { style: { color: '#64748b', fontSize: '9px', margin: '4px 0 0' } }, 'The NPC will appear near where you\u2019re standing. Build structures first, then add NPCs that ask questions about them. Save your world with \uD83D\uDCBE to share!')
+            el('p', { style: { color: '#94a3b8', fontSize: '9px', margin: '4px 0 0' } }, 'The NPC will appear near where you\u2019re standing. Build structures first, then add NPCs that ask questions about them. Save your world with \uD83D\uDCBE to share!')
           )
         ),
         // Objectives panel (left side) — glass style with progress bar
         el('div', { style: { position: 'absolute', top: '48px', left: '8px', zIndex: 20, background: 'rgba(15,23,42,0.88)', backdropFilter: 'blur(8px)', border: '1px solid rgba(100,116,139,0.2)', borderRadius: '12px', padding: '10px 12px', maxWidth: '210px', fontSize: '11px', boxShadow: '0 4px 16px rgba(0,0,0,0.2)' } },
           el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' } },
             el('div', { style: { fontWeight: 700, color: '#a78bfa', fontSize: '11px' } }, '\uD83D\uDCCB Objectives'),
-            totalQ > 0 && el('div', { style: { fontSize: '9px', color: '#64748b', fontWeight: 600 } }, score + '/' + totalQ)
+            totalQ > 0 && el('div', { style: { fontSize: '9px', color: '#94a3b8', fontWeight: 600 } }, score + '/' + totalQ)
           ),
           // Progress bar
           totalQ > 0 && el('div', { style: { width: '100%', height: '3px', background: 'rgba(100,116,139,0.2)', borderRadius: '2px', marginBottom: '8px', overflow: 'hidden' } },
@@ -5386,7 +5395,7 @@
         }),
         // Shape selector (above block toolbar) — matching glass style
         el('div', { style: { position: 'absolute', bottom: '54px', left: '50%', transform: 'translateX(-50%)', zIndex: 20, display: 'flex', gap: '3px', background: 'rgba(0,0,0,0.65)', borderRadius: '10px', padding: '3px 5px', alignItems: 'center', backdropFilter: 'blur(6px)', border: '1px solid rgba(255,255,255,0.06)' } },
-          el('span', { style: { fontSize: '9px', color: '#6b7280', padding: '0 4px', fontWeight: 600 } }, 'Shape'),
+          el('span', { style: { fontSize: '9px', color: '#94a3b8', padding: '0 4px', fontWeight: 600 } }, 'Shape'),
           // Rotation badge (only when non-cube shape selected)
           selectedShape > 0 && el('span', {
             style: { fontSize: '8px', color: blockRotation > 0 ? '#fbbf24' : '#475569', padding: '0 3px', fontWeight: 600, cursor: 'pointer' },
@@ -5407,7 +5416,7 @@
                 background: i === selectedShape ? 'rgba(251,191,36,0.2)' : 'transparent' }
             },
               el('span', null, bs.emoji),
-              el('span', { style: { fontSize: '8px', color: i === selectedShape ? '#fbbf24' : '#6b7280', fontWeight: 600 } }, bs.fraction)
+              el('span', { style: { fontSize: '8px', color: i === selectedShape ? '#fbbf24' : '#94a3b8', fontWeight: 600 } }, bs.fraction)
             );
           })
         ),
@@ -5438,7 +5447,7 @@
         engine && engine.camera && el('div', {
           style: { position: 'absolute', bottom: '10px', left: '8px', zIndex: 20, background: 'rgba(0,0,0,0.6)', borderRadius: '8px', padding: '5px 10px', backdropFilter: 'blur(4px)', border: '1px solid rgba(255,255,255,0.06)', fontFamily: 'monospace', fontSize: '10px', color: '#94a3b8', lineHeight: 1.5 }
         },
-          el('div', { style: { color: '#64748b', fontWeight: 600, fontSize: '8px', letterSpacing: '0.5px', marginBottom: '1px' } }, 'POSITION'),
+          el('div', { style: { color: '#94a3b8', fontWeight: 600, fontSize: '8px', letterSpacing: '0.5px', marginBottom: '1px' } }, 'POSITION'),
           el('div', null,
             el('span', { style: { color: '#ef4444' } }, 'X'),
             ' ' + Math.floor(engine.camera.position.x) + '  ',
@@ -5462,7 +5471,7 @@
           })(),
           // Target block line — shows the XYZ of the block the player is aiming at.
           engine._targetGrid && el('div', { style: { marginTop: '3px', paddingTop: '3px', borderTop: '1px solid rgba(255,255,255,0.08)' } },
-            el('span', { style: { color: '#64748b', fontWeight: 600, fontSize: '8px', letterSpacing: '0.5px', marginRight: '4px' } }, 'TARGET'),
+            el('span', { style: { color: '#94a3b8', fontWeight: 600, fontSize: '8px', letterSpacing: '0.5px', marginRight: '4px' } }, 'TARGET'),
             el('span', { style: { color: '#ef4444' } }, 'X'),
             ' ' + engine._targetGrid.x + '  ',
             el('span', { style: { color: '#22c55e' } }, 'Y'),
@@ -5489,7 +5498,7 @@
             title: 'Announce coordinates to screen reader (C)',
             style: { marginTop: '4px', cursor: 'pointer', padding: '2px 6px', borderRadius: '6px', fontSize: '8px', fontWeight: 700, letterSpacing: '0.5px', display: 'inline-block',
               background: engine._coordAnnounce ? 'rgba(34,211,238,0.25)' : 'rgba(100,116,139,0.15)',
-              color: engine._coordAnnounce ? '#67e8f9' : '#64748b',
+              color: engine._coordAnnounce ? '#67e8f9' : '#94a3b8',
               border: '1px solid ' + (engine._coordAnnounce ? 'rgba(34,211,238,0.5)' : 'rgba(100,116,139,0.2)') }
           }, engine._coordAnnounce ? '\uD83D\uDD0A SR ON' : '\uD83D\uDD07 SR OFF')
         ),
@@ -5508,7 +5517,7 @@
               if (addToast) addToast(eng.flyMode ? '\uD83D\uDD4A\uFE0F Fly mode ON — Space=up, Shift=down, double-tap Space to land' : '\uD83D\uDC63 Walk mode', 'info');
             },
             title: 'Toggle fly mode (or double-tap Space)',
-            style: { background: engine.flyMode ? 'rgba(99,102,241,0.35)' : 'rgba(30,41,59,0.6)', border: '1px solid ' + (engine.flyMode ? 'rgba(99,102,241,0.5)' : 'rgba(100,116,139,0.2)'), borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: engine.flyMode ? '#a5b4fc' : '#64748b', fontWeight: 600, cursor: 'pointer', backdropFilter: 'blur(4px)' }
+            style: { background: engine.flyMode ? 'rgba(99,102,241,0.35)' : 'rgba(30,41,59,0.6)', border: '1px solid ' + (engine.flyMode ? 'rgba(99,102,241,0.5)' : 'rgba(100,116,139,0.2)'), borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: engine.flyMode ? '#a5b4fc' : '#94a3b8', fontWeight: 600, cursor: 'pointer', backdropFilter: 'blur(4px)' }
           }, engine.flyMode ? '\uD83D\uDD4A\uFE0F FLY' : '\uD83D\uDD4A\uFE0F Fly'),
           engine._gridHelper && el('div', { style: { background: 'rgba(34,211,238,0.15)', border: '1px solid rgba(34,211,238,0.3)', borderRadius: '6px', padding: '2px 8px', fontSize: '9px', color: '#67e8f9', fontWeight: 600, backdropFilter: 'blur(4px)' } }, '\uD83D\uDCCF GRID'),
           // Undo — conditional
@@ -5679,9 +5688,9 @@
             background: 'rgba(15,23,42,0.8)', backdropFilter: 'blur(6px)', border: '1px solid rgba(100,116,139,0.2)', borderRadius: '8px',
             padding: '6px 8px', fontSize: '9px', color: '#94a3b8', maxWidth: '150px' }
         },
-          el('div', { style: { fontWeight: 700, fontSize: '8px', color: '#64748b', marginBottom: '3px', letterSpacing: '0.5px' } }, '\uD83D\uDCCF MEASUREMENTS'),
+          el('div', { style: { fontWeight: 700, fontSize: '8px', color: '#94a3b8', marginBottom: '3px', letterSpacing: '0.5px' } }, '\uD83D\uDCCF MEASUREMENTS'),
           measureHistory.slice(-5).reverse().map(function(mh, mi) {
-            return el('div', { key: mi, style: { display: 'flex', justifyContent: 'space-between', gap: '4px', color: mi === 0 ? '#e2e8f0' : '#64748b', fontWeight: mi === 0 ? 600 : 400 } },
+            return el('div', { key: mi, style: { display: 'flex', justifyContent: 'space-between', gap: '4px', color: mi === 0 ? '#e2e8f0' : '#94a3b8', fontWeight: mi === 0 ? 600 : 400 } },
               el('span', null, mh.L + '\u00d7' + mh.W + '\u00d7' + mh.H),
               el('span', { style: { color: mi === 0 ? '#fbbf24' : '#475569' } }, '=' + mh.vol)
             );
@@ -5803,7 +5812,7 @@
               '\uD83D\uDCDD V = L \u00d7 W \u00d7 H \u2022 Area = L \u00d7 W'
             ),
             // NPC count
-            el('div', { style: { fontSize: '11px', color: '#64748b', marginBottom: '16px' } },
+            el('div', { style: { fontSize: '11px', color: '#94a3b8', marginBottom: '16px' } },
               (currentLesson.npcs || []).length + ' NPCs \u2022 ' +
               (currentLesson.npcs || []).filter(function(n) { return n.question; }).length + ' questions \u2022 ' +
               (currentLesson.structures || []).length + ' structures'
@@ -5817,7 +5826,7 @@
             // Skip intro for returning students
             el('button', {
               onClick: function() { loadLessonByKey(activeLesson); },
-              style: { display: 'block', margin: '10px auto 0', background: 'none', border: 'none', color: '#64748b', fontSize: '10px', cursor: 'pointer' }
+              style: { display: 'block', margin: '10px auto 0', background: 'none', border: 'none', color: '#94a3b8', fontSize: '10px', cursor: 'pointer' }
             }, 'or press Enter to jump in')
           )
         ),
@@ -5863,7 +5872,7 @@
           el('div', { style: { fontSize: '20px', fontWeight: 800, color: '#fbbf24', marginBottom: '4px' } }, 'Lesson Complete!'),
           el('div', { style: { fontSize: '13px', color: '#94a3b8', marginBottom: '12px', lineHeight: 1.5 } },
             currentLesson.title + ' \u2014 ' + score + '/' + totalQ + ' questions answered'),
-          el('div', { style: { fontSize: '11px', color: '#64748b', marginBottom: '16px' } },
+          el('div', { style: { fontSize: '11px', color: '#94a3b8', marginBottom: '16px' } },
             (engine ? (engine.blocksPlaced || 0) : 0) + ' blocks placed \u2022 ' +
             measureHistory.length + ' measurements taken'),
           // Next Lesson button
@@ -5907,7 +5916,7 @@
                     el('div', { style: { fontSize: '18px', fontWeight: 800, color: '#3b82f6' } }, String(score)),
                     'questions answered')
                 ),
-                el('div', { style: { fontSize: '10px', color: '#64748b', marginTop: '8px', fontStyle: 'italic' } },
+                el('div', { style: { fontSize: '10px', color: '#94a3b8', marginTop: '8px', fontStyle: 'italic' } },
                   '\u201CEvery block you placed made your brain stronger.\u201D')
               )
             );
@@ -6006,7 +6015,7 @@
               title: 'Click to hear translation spoken aloud',
               style: { fontSize: '12px', color: '#fbbf24', lineHeight: 1.5, marginBottom: '10px', fontStyle: 'italic', borderLeft: '3px solid #fbbf24', paddingLeft: '8px', cursor: 'pointer' }
             }, '\uD83D\uDD0A ' + translation.dialogue),
-            homeLang !== 'en' && !translation && el('div', { style: { fontSize: '10px', color: '#64748b', marginBottom: '10px' } }, '\u23F3 Translating...'),
+            homeLang !== 'en' && !translation && el('div', { style: { fontSize: '10px', color: '#94a3b8', marginBottom: '10px' } }, '\u23F3 Translating...'),
             data.question && !isAnswered && (function() {
               // Determine current question (base or follow-up)
               var curStep = npcFollowUpStep[dialogNpcIdx] || 0;
@@ -6146,7 +6155,7 @@
             ),
             // ── AI Chat with NPC (ask anything) ──
             callGemini && el('div', { style: { marginTop: '10px', borderTop: '1px solid #334155', paddingTop: '8px' } },
-              el('div', { style: { fontSize: '10px', fontWeight: 700, color: '#64748b', marginBottom: '4px' } }, '\uD83D\uDCAC Ask ' + data.name + ' anything:'),
+              el('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', marginBottom: '4px' } }, '\uD83D\uDCAC Ask ' + data.name + ' anything:'),
               // Chat history for this NPC
               (npcChatHistory[dialogNpcIdx] || []).length > 0 && el('div', { style: { maxHeight: '100px', overflowY: 'auto', marginBottom: '6px' } },
                 (npcChatHistory[dialogNpcIdx] || []).map(function(msg, mi) {
@@ -6266,11 +6275,11 @@
             el('div', { style: { fontSize: '15px', fontWeight: 800, color: '#c4b5fd' } }, '\uD83D\uDCDA Class World Library'),
             el('div', { style: { display: 'flex', gap: '6px' } },
               el('button', { onClick: loadPeerWorlds, style: { background: 'none', border: 'none', color: '#7c3aed', fontSize: '12px', cursor: 'pointer', fontWeight: 600 } }, '\u21BB Refresh'),
-              el('button', { 'aria-label': 'Close class worlds browser', onClick: function() { upd('showPeerWorlds', false); }, style: { background: 'none', border: 'none', color: '#6b7280', fontSize: '18px', cursor: 'pointer' } }, '\u00d7')
+              el('button', { 'aria-label': 'Close class worlds browser', onClick: function() { upd('showPeerWorlds', false); }, style: { background: 'none', border: 'none', color: '#94a3b8', fontSize: '18px', cursor: 'pointer' } }, '\u00d7')
             )
           ),
           peerWorldsList.length === 0
-            ? el('div', { style: { textAlign: 'center', padding: '24px', color: '#6b7280' } },
+            ? el('div', { style: { textAlign: 'center', padding: '24px', color: '#94a3b8' } },
                 el('div', { style: { fontSize: '32px', marginBottom: '8px' } }, '\uD83C\uDF0D'),
                 el('div', { style: { fontSize: '13px' } }, 'No worlds shared yet! Build something in Creator Mode and click Share.')
               )
@@ -6301,7 +6310,7 @@
                         el('div', { style: { fontWeight: 700, color: '#e2e8f0', fontSize: '13px' } }, '\uD83E\uDDF1 ' + world.title),
                         el('div', { style: { fontSize: '11px', color: '#94a3b8' } }, 'by ' + world.author)
                       ),
-                      el('div', { style: { fontSize: '10px', color: '#64748b' } },
+                      el('div', { style: { fontSize: '10px', color: '#94a3b8' } },
                         world.timestamp ? new Date(world.timestamp).toLocaleTimeString() : '',
                         el('div', null, (world.data.blocks ? world.data.blocks.length + ' blocks' : ''))
                       )
@@ -6317,7 +6326,7 @@
         },
           el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' } },
             el('div', { style: { fontWeight: 800, color: '#f87171', fontSize: '14px' } }, '\uD83D\uDCCA Teacher Dashboard'),
-            el('button', { 'aria-label': 'Close teacher dashboard', onClick: toggleTeacherView, style: { background: 'none', border: 'none', color: '#6b7280', fontSize: '16px', cursor: 'pointer' } }, '\u00d7')
+            el('button', { 'aria-label': 'Close teacher dashboard', onClick: toggleTeacherView, style: { background: 'none', border: 'none', color: '#94a3b8', fontSize: '16px', cursor: 'pointer' } }, '\u00d7')
           ),
           // Live session info
           el('div', { style: { fontSize: '11px', color: '#94a3b8', marginBottom: '10px', padding: '6px 8px', background: '#0f172a', borderRadius: '6px' } },
@@ -6325,7 +6334,7 @@
           ),
           // Student cards
           Object.keys(studentProgressMap).length === 0
-            ? el('div', { style: { textAlign: 'center', padding: '20px', color: '#6b7280' } },
+            ? el('div', { style: { textAlign: 'center', padding: '20px', color: '#94a3b8' } },
                 el('div', { style: { fontSize: '24px', marginBottom: '6px' } }, '\uD83D\uDC65'),
                 'Waiting for students to join...'
               )
@@ -6389,7 +6398,7 @@
             },
               el('div', { style: { width: '8px', height: '8px', borderRadius: '50%', background: p.color || '#34d399' } }),
               el('span', { style: { color: isMe ? '#34d399' : '#cbd5e1', fontWeight: isMe ? 700 : 400 } }, p.name + (isMe ? ' (you)' : '')),
-              p.position && el('span', { style: { color: '#64748b', fontSize: '9px' } },
+              p.position && el('span', { style: { color: '#94a3b8', fontSize: '9px' } },
                 '(' + Math.round(p.position[0]) + ', ' + Math.round(p.position[2]) + ')')
             );
           })

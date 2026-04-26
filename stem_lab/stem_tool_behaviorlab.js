@@ -33,6 +33,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('behaviorLab'))
 
 (function() {
   'use strict';
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  (function() {
+    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-stem-motion-reduce-css';
+    st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    document.head.appendChild(st);
+  })();
+
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-behaviorlab')) return;
@@ -849,7 +858,7 @@ var d = labToolData || {};
 
             pressLever: '#f59e0b', turnLeft: '#f472b6', turnRight: '#f472b6',
 
-            rearUp: '#fb923c', freeze: '#94a3b8', spin: '#c084fc', touchWall: '#6b7280'
+            rearUp: '#fb923c', freeze: '#94a3b8', spin: '#c084fc', touchWall: '#94a3b8'
 
           };
 
@@ -1695,7 +1704,7 @@ var d = labToolData || {};
             // ─ Light indicator (top-left, enlarged + pulsing glow) ─
 
             if (blLevel === 5 || blLevel === 6) {
-              var lightCol = blLightColor === 'green' ? '#22c55e' : (blLightColor === 'red' ? '#ef4444' : '#6b7280');
+              var lightCol = blLightColor === 'green' ? '#22c55e' : (blLightColor === 'red' ? '#ef4444' : '#94a3b8');
               var glowPulse = 0.3 + Math.sin(Date.now() / 400) * 0.15;
               // Pulsing outer glow ring
               ctx.save();
@@ -1740,7 +1749,7 @@ var d = labToolData || {};
 
             // Lever base
 
-            ctx.fillStyle = '#64748b';
+            ctx.fillStyle = '#94a3b8';
 
             ctx.fillRect(leverX - 4, leverY + 25, 16, 8);
 
@@ -1798,7 +1807,7 @@ var d = labToolData || {};
 
             ctx.fillRect(trayX - 15, trayY, 30, 12);
 
-            ctx.strokeStyle = '#64748b';
+            ctx.strokeStyle = '#94a3b8';
 
             ctx.lineWidth = 1;
 
@@ -2012,7 +2021,7 @@ var d = labToolData || {};
               var pdArr = blProxDelta > 0 ? '\u2191' : '\u2193';
               ctx.fillStyle = pdCol; ctx.font = 'bold 10px monospace'; ctx.textAlign = 'left';
               ctx.fillText(pdArr + ' ' + Math.abs(blProxDelta).toFixed(1) + 'px', 25, 35);
-              ctx.fillStyle = '#64748b'; ctx.font = '7px sans-serif';
+              ctx.fillStyle = '#94a3b8'; ctx.font = '7px sans-serif';
               ctx.fillText('distance \u0394', 25, 44);
             }
 
@@ -2204,7 +2213,7 @@ var d = labToolData || {};
 
             ctx.fill();
 
-            ctx.strokeStyle = '#6b7280';
+            ctx.strokeStyle = '#94a3b8';
 
             ctx.lineWidth = 0.8;
 
@@ -2256,7 +2265,7 @@ var d = labToolData || {};
 
             ctx.fill();
 
-            ctx.strokeStyle = '#6b7280';
+            ctx.strokeStyle = '#94a3b8';
 
             ctx.lineWidth = 0.6;
 
@@ -2564,7 +2573,7 @@ var d = labToolData || {};
 
             ctx.rotate(-Math.PI / 2);
 
-            ctx.fillStyle = '#64748b';
+            ctx.fillStyle = '#94a3b8';
 
             ctx.font = '8px sans-serif';
 
@@ -2578,7 +2587,7 @@ var d = labToolData || {};
 
             // X-axis label
 
-            ctx.fillStyle = '#64748b';
+            ctx.fillStyle = '#94a3b8';
 
             ctx.font = '8px sans-serif';
 
@@ -3827,7 +3836,7 @@ var d = labToolData || {};
 
                       background: isActive ? 'rgba(225,29,72,0.35)' : 'rgba(30,41,59,0.5)',
 
-                      color: isActive ? '#fda4af' : '#64748b',
+                      color: isActive ? '#fda4af' : '#94a3b8',
 
                       border: '1px solid ' + (isActive ? 'rgba(225,29,72,0.5)' : 'rgba(71,85,105,0.3)')
 

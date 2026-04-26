@@ -15,6 +15,15 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  (function() {
+    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-stem-motion-reduce-css';
+    st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    document.head.appendChild(st);
+  })();
+
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-angles')) return;
@@ -625,20 +634,20 @@ window.StemLab = window.StemLab || {
       // ══════════════════════════════════════════════════════════════
       // ── RENDER ──
       // ══════════════════════════════════════════════════════════════
-      return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-3 max-w-4xl mx-auto animate-in fade-in duration-200' },
+      return h('div', { className: 'space-y-3 max-w-4xl mx-auto animate-in fade-in duration-200' },
 
         // ── Header ──
-        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-3 mb-1' },
+        h('div', { className: 'flex items-center gap-3 mb-1' },
           h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg transition-colors', 'aria-label': 'Back to tools' },
             h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
           h('h3', { className: 'text-lg font-bold text-purple-800' }, '\uD83D\uDCD0 Angle Explorer'),
           // Score + streak
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2 ml-1' },
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-emerald-600' }, '\u2714 ' + exploreScore.correct + '/' + exploreScore.total),
-            streak > 0 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-amber-500' }, '\uD83D\uDD25 ' + streak),
-            bestStreak > 0 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-slate-600' }, 'Best: ' + bestStreak)
+          h('div', { className: 'flex items-center gap-2 ml-1' },
+            h('div', { className: 'text-xs font-bold text-emerald-600' }, '\u2714 ' + exploreScore.correct + '/' + exploreScore.total),
+            streak > 0 && h('div', { className: 'text-xs font-bold text-amber-500' }, '\uD83D\uDD25 ' + streak),
+            bestStreak > 0 && h('div', { className: 'text-[11px] text-slate-600' }, 'Best: ' + bestStreak)
           ),
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-1 ml-auto' },
+          h('div', { className: 'flex items-center gap-1 ml-auto' },
             // Badge count
             h('button', { 'aria-label': 'Sound effects', onClick: function() { upd('showBadges', !showBadges); }, className: 'text-[11px] font-bold px-2 py-0.5 rounded-full border transition-all ' + (showBadges ? 'bg-amber-100 border-amber-300 text-amber-700' : 'bg-slate-100 border-slate-200 text-slate-600 hover:bg-slate-200') },
               '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + badgeDefs.length),
@@ -705,7 +714,7 @@ window.StemLab = window.StemLab || {
               // Pin markers
               pinElements,
               // Base ray
-              h('line', { x1: cx, y1: cy, x2: cx + rayLen, y2: cy, stroke: '#6b7280', strokeWidth: 2 }),
+              h('line', { x1: cx, y1: cy, x2: cx + rayLen, y2: cy, stroke: '#94a3b8', strokeWidth: 2 }),
               // Angle ray
               h('line', { x1: cx, y1: cy, x2: rayEndX, y2: rayEndY, stroke: '#7c3aed', strokeWidth: 3, strokeLinecap: 'round' }),
               // Bisector ray (dashed)
@@ -781,12 +790,12 @@ window.StemLab = window.StemLab || {
                   '2nd Ray'
                 )
               ),
-              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-slate-600' }, '360\u00B0')
+              h('span', { className: 'text-[11px] text-slate-600' }, '360\u00B0')
             )
           ),
 
           // Quick angle buttons + Pin
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-1.5 flex-wrap' },
+          h('div', { className: 'flex gap-1.5 flex-wrap' },
             [0, 30, 45, 60, 90, 120, 135, 150, 180, 270, 360].map(function(a) {
               return h('button', { 'aria-label': 'Pin', key: a, onClick: function() { setAngleValue(a); setAngleFeedback(null); if (soundEnabled) sfxClick(); logAngle(a, 'quick'); },
                 className: 'px-2 py-1 rounded-lg text-[11px] font-bold transition-all ' + (angleValue === a ? 'bg-purple-700 text-white shadow' : 'bg-purple-50 text-purple-600 hover:bg-purple-100 border border-purple-100')
@@ -796,8 +805,8 @@ window.StemLab = window.StemLab || {
           ),
 
           // Pinned angles
-          anglePins.length > 0 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-1.5 flex-wrap items-center' },
-            h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-slate-600 font-bold' }, 'Pins:'),
+          anglePins.length > 0 && h('div', { className: 'flex gap-1.5 flex-wrap items-center' },
+            h('span', { className: 'text-[11px] text-slate-600 font-bold' }, 'Pins:'),
             anglePins.map(function(pin, i) {
               return h('button', { 'aria-label': 'Complementary', key: i, onClick: function() { removePin(i); }, className: 'px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-700 border border-amber-300 hover:bg-red-100 hover:text-red-600 hover:border-red-300 transition-all', title: 'Click to remove' },
                 pin.deg + '\u00B0 \u2715'
@@ -827,10 +836,10 @@ window.StemLab = window.StemLab || {
           // ── Real-world examples ──
           h('div', { className: cc.bg + ' rounded-xl p-3 border ' + cc.border },
             h('div', { className: 'text-[11px] font-bold ' + cc.text + ' uppercase mb-1.5' }, '\uD83C\uDF0D Real-World ' + angleClass + ' Angles'),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-1' },
+            h('div', { className: 'space-y-1' },
               (realWorldExamples[angleClass] || []).map(function(ex, i) {
-                return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: i, className: 'flex items-center gap-2 text-xs text-slate-700' },
-                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-base' }, ex.icon),
+                return h('div', { key: i, className: 'flex items-center gap-2 text-xs text-slate-700' },
+                  h('span', { className: 'text-base' }, ex.icon),
                   h('span', null, ex.example)
                 );
               })
@@ -838,9 +847,9 @@ window.StemLab = window.StemLab || {
           ),
 
           // ── AI Tutor ──
-          callGemini && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-pink-50 rounded-xl p-3 border border-pink-200' },
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2 mb-1.5' },
-              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold text-pink-600 uppercase' }, '\uD83E\uDD16 AI Angle Tutor'),
+          callGemini && h('div', { className: 'bg-pink-50 rounded-xl p-3 border border-pink-200' },
+            h('div', { className: 'flex items-center gap-2 mb-1.5' },
+              h('span', { className: 'text-[11px] font-bold text-pink-600 uppercase' }, '\uD83E\uDD16 AI Angle Tutor'),
               h('button', { 'aria-label': 'Click to get personalized angle tips!', onClick: askAITutor, disabled: aiLoading, className: 'ml-auto px-3 py-1 text-[11px] font-bold rounded-full transition-all ' + (aiLoading ? 'bg-pink-200 text-pink-400 cursor-wait' : 'bg-pink-700 text-white hover:bg-pink-600 cursor-pointer') },
                 aiLoading ? '\u23F3 Thinking...' : '\u2728 Ask for Tips')
             ),
@@ -853,18 +862,18 @@ window.StemLab = window.StemLab || {
         // ══════════════════════════════════════════════════════════
         // ── TAB: Challenges ──
         // ══════════════════════════════════════════════════════════
-        activeTab === 'challenges' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-3' },
+        activeTab === 'challenges' && h('div', { className: 'space-y-3' },
           // Tolerance indicator
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2 text-[11px]' },
-            h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-slate-600' }, 'Difficulty:'),
-            h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'font-bold ' + (tolerance <= 2 ? 'text-red-500' : tolerance <= 3 ? 'text-orange-500' : 'text-green-500') },
+          h('div', { className: 'flex items-center gap-2 text-[11px]' },
+            h('span', { className: 'text-slate-600' }, 'Difficulty:'),
+            h('span', { className: 'font-bold ' + (tolerance <= 2 ? 'text-red-500' : tolerance <= 3 ? 'text-orange-500' : 'text-green-500') },
               tolerance <= 2 ? '\uD83D\uDD25 Expert (\u00B1' + tolerance + '\u00B0)' : tolerance <= 3 ? '\u26A1 Medium (\u00B1' + tolerance + '\u00B0)' : '\uD83C\uDF3F Easy (\u00B1' + tolerance + '\u00B0)'
             ),
-            streak > 0 && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-amber-500 font-bold' }, '\uD83D\uDD25 Streak: ' + streak)
+            streak > 0 && h('span', { className: 'text-amber-500 font-bold' }, '\uD83D\uDD25 Streak: ' + streak)
           ),
 
           // ── Challenge buttons ──
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'grid grid-cols-2 sm:grid-cols-4 gap-2' },
+          h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2' },
             h('button', { 'aria-label': 'Create',
               onClick: function() {
                 var ta = targetAngles[Math.floor(Math.random() * targetAngles.length)];
@@ -894,19 +903,19 @@ window.StemLab = window.StemLab || {
 
           // ── Speed Round UI ──
           speedActive && h('div', { className: 'bg-red-50 rounded-xl p-4 border-2 border-red-300 animate-in fade-in' },
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-between mb-3' },
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-sm font-bold text-red-700' }, '\u26A1 Speed Round'),
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-3' },
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-lg font-bold text-red-600' }, '\u23F1 ' + speedTimeLeft + 's'),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-lg font-bold text-emerald-600' }, '\u2714 ' + speedScore)
+            h('div', { className: 'flex items-center justify-between mb-3' },
+              h('div', { className: 'text-sm font-bold text-red-700' }, '\u26A1 Speed Round'),
+              h('div', { className: 'flex gap-3' },
+                h('div', { className: 'text-lg font-bold text-red-600' }, '\u23F1 ' + speedTimeLeft + 's'),
+                h('div', { className: 'text-lg font-bold text-emerald-600' }, '\u2714 ' + speedScore)
               )
             ),
             speedTarget && h('div', null,
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-center mb-2' },
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-3xl font-bold text-red-800' }, speedTarget.angle + '\u00B0'),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs text-red-500' }, 'What type of angle is this?')
+              h('div', { className: 'text-center mb-2' },
+                h('div', { className: 'text-3xl font-bold text-red-800' }, speedTarget.angle + '\u00B0'),
+                h('div', { className: 'text-xs text-red-500' }, 'What type of angle is this?')
               ),
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 flex-wrap justify-center' },
+              h('div', { className: 'flex gap-2 flex-wrap justify-center' },
                 ['Acute', t('stem.calculus.right') || 'Right', 'Obtuse', 'Straight', 'Reflex'].map(function(cls) {
                   return h('button', { 'aria-label': 'Answer Speed', key: cls, onClick: function() { answerSpeed(cls); },
                     className: 'px-4 py-2 rounded-lg text-sm font-bold bg-white border-2 border-red-200 text-red-700 hover:bg-red-100 hover:border-red-400 transition-all cursor-pointer'
@@ -917,19 +926,19 @@ window.StemLab = window.StemLab || {
           ),
 
           // ── Estimate Mode UI ──
-          estimateActive && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-amber-50 rounded-xl p-4 border-2 border-amber-300' },
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-sm font-bold text-amber-700 mb-2' }, '\uD83D\uDC41\uFE0F Estimate the Angle!'),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs text-amber-600 mb-3' }, 'Look at the angle on the protractor (number hidden). How many degrees is it?'),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 items-center' },
+          estimateActive && h('div', { className: 'bg-amber-50 rounded-xl p-4 border-2 border-amber-300' },
+            h('div', { className: 'text-sm font-bold text-amber-700 mb-2' }, '\uD83D\uDC41\uFE0F Estimate the Angle!'),
+            h('div', { className: 'text-xs text-amber-600 mb-3' }, 'Look at the angle on the protractor (number hidden). How many degrees is it?'),
+            h('div', { className: 'flex gap-2 items-center' },
               h('input', { type: 'number', min: 0, max: 360, value: estimateGuess, placeholder: 'Your guess...',
                 onChange: function(e) { upd('estimateGuess', e.target.value); },
                 'aria-label': 'Angle estimate guess in degrees',
                 className: 'flex-1 px-3 py-2 border-2 border-amber-300 rounded-lg text-sm font-bold text-amber-800 outline-none focus:border-amber-500'
               }),
-              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-sm text-amber-600' }, '\u00B0'),
+              h('span', { className: 'text-sm text-amber-600' }, '\u00B0'),
               h('button', { 'aria-label': 'Check', onClick: checkEstimate, className: 'px-4 py-2 bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-600 transition-all' }, '\u2714 Check')
             ),
-            estimateResult && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-2 p-2 rounded-lg text-sm font-bold ' + (estimateResult.ok ? 'bg-green-100 text-green-700 border border-green-300' : 'bg-red-100 text-red-700 border border-red-300') },
+            estimateResult && h('div', { className: 'mt-2 p-2 rounded-lg text-sm font-bold ' + (estimateResult.ok ? 'bg-green-100 text-green-700 border border-green-300' : 'bg-red-100 text-red-700 border border-red-300') },
               estimateResult.ok
                 ? (estimateResult.exact ? '\uD83C\uDFAF Perfect! Exactly ' + estimateResult.target + '\u00B0!' : '\u2705 Close! You guessed ' + estimateResult.guess + '\u00B0, actual was ' + estimateResult.target + '\u00B0 (off by ' + estimateResult.diff + '\u00B0)')
                 : '\u274C Off by ' + estimateResult.diff + '\u00B0. You guessed ' + estimateResult.guess + '\u00B0, actual was ' + estimateResult.target + '\u00B0.',
@@ -939,17 +948,17 @@ window.StemLab = window.StemLab || {
           ),
 
           // ── Create/Classify Challenge UI ──
-          angleChallenge && !estimateActive && !speedActive && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-purple-50 rounded-lg p-3 border border-purple-200' },
+          angleChallenge && !estimateActive && !speedActive && h('div', { className: 'bg-purple-50 rounded-lg p-3 border border-purple-200' },
             h('p', { className: 'text-sm font-bold text-purple-800 mb-2' },
               angleChallenge.type === 'create'
                 ? '\uD83C\uDFAF Create a ' + angleChallenge.target + '\u00B0 angle (within \u00B1' + tolerance + '\u00B0)'
                 : '\uD83E\uDDE0 What type of angle is ' + angleChallenge.target + '\u00B0?'
             ),
-            angleChallenge.type === 'create' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 items-center' },
-              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs text-purple-600' }, 'Your angle: ', h('span', { className: 'font-bold text-purple-900' }, angleFeedback ? (angleValue + '\u00B0') : '\u2753')),
+            angleChallenge.type === 'create' && h('div', { className: 'flex gap-2 items-center' },
+              h('span', { className: 'text-xs text-purple-600' }, 'Your angle: ', h('span', { className: 'font-bold text-purple-900' }, angleFeedback ? (angleValue + '\u00B0') : '\u2753')),
               h('button', { 'aria-label': 'Check', onClick: checkAngle, className: 'ml-auto px-4 py-1.5 bg-purple-700 text-white font-bold rounded-lg text-sm hover:bg-purple-600 transition-all' }, '\u2714 Check')
             ),
-            angleChallenge.type === 'classify' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 flex-wrap' },
+            angleChallenge.type === 'classify' && h('div', { className: 'flex gap-2 flex-wrap' },
               ['Acute', t('stem.calculus.right') || 'Right', 'Obtuse', 'Straight', 'Reflex'].map(function(cls) {
                 return h('button', { 'aria-label': 'Angles action',
                   key: cls,
@@ -984,7 +993,7 @@ window.StemLab = window.StemLab || {
           ),
 
           // Reset
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2' },
+          h('div', { className: 'flex gap-2' },
             h('button', { 'aria-label': 'Reset',
               onClick: function() { setAngleValue(45); setAngleChallenge(null); setAngleFeedback(null); upd({ estimateActive: false, speedActive: false, estimateResult: null }); },
               className: 'px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all'
@@ -995,12 +1004,12 @@ window.StemLab = window.StemLab || {
         // ══════════════════════════════════════════════════════════
         // ── TAB: Learn / Reference ──
         // ══════════════════════════════════════════════════════════
-        activeTab === 'reference' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-3' },
+        activeTab === 'reference' && h('div', { className: 'space-y-3' },
 
           // ── Angle Types Reference Chart ──
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-xl p-4 border border-purple-200' },
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-purple-700 uppercase mb-3' }, '\uD83D\uDCD6 Angle Types Reference'),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'grid grid-cols-2 sm:grid-cols-3 gap-3' },
+          h('div', { className: 'bg-white rounded-xl p-4 border border-purple-200' },
+            h('div', { className: 'text-xs font-bold text-purple-700 uppercase mb-3' }, '\uD83D\uDCD6 Angle Types Reference'),
+            h('div', { className: 'grid grid-cols-2 sm:grid-cols-3 gap-3' },
               [
                 { type: 'Acute', range: '0\u00B0 < \u03B8 < 90\u00B0', icon: '\uD83D\uDD35', ex: '45\u00B0', color: 'blue' },
                 { type: 'Right', range: '\u03B8 = 90\u00B0', icon: '\uD83D\uDFE2', ex: '90\u00B0', color: 'green' },
@@ -1009,7 +1018,7 @@ window.StemLab = window.StemLab || {
                 { type: 'Reflex', range: '180\u00B0 < \u03B8 < 360\u00B0', icon: '\uD83D\uDD34', ex: '270\u00B0', color: 'red' },
                 { type: 'Full', range: '\u03B8 = 360\u00B0', icon: '\u2B55', ex: '360\u00B0', color: 'purple' }
               ].map(function(ref) {
-                return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: ref.type, onClick: function() { setAngleValue(parseInt(ref.ex)); if (soundEnabled) sfxClick(); upd('activeTab', 'explore'); },
+                return h('div', { key: ref.type, onClick: function() { setAngleValue(parseInt(ref.ex)); if (soundEnabled) sfxClick(); upd('activeTab', 'explore'); },
                   className: 'p-3 rounded-xl border cursor-pointer transition-all hover:shadow-md bg-' + ref.color + '-50 border-' + ref.color + '-200'
                 },
                   h('div', { className: 'flex items-center gap-2 mb-1' },
@@ -1082,9 +1091,9 @@ window.StemLab = window.StemLab || {
           ),
 
           // ── Polygon Interior Angles ──
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-xl p-4 border border-violet-200' },
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-violet-700 uppercase mb-3' }, '\u2B21 Polygon Interior Angles'),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 flex-wrap mb-3' },
+          h('div', { className: 'bg-white rounded-xl p-4 border border-violet-200' },
+            h('div', { className: 'text-xs font-bold text-violet-700 uppercase mb-3' }, '\u2B21 Polygon Interior Angles'),
+            h('div', { className: 'flex gap-2 flex-wrap mb-3' },
               polygonData.map(function(p) {
                 var active = selectedPolygon === p.sides;
                 return h('button', { 'aria-label': 'Change selected polygon', key: p.sides, onClick: function() {
@@ -1163,10 +1172,10 @@ window.StemLab = window.StemLab || {
                 h('circle', { cx: 60, cy: 60, r: 3, fill: '#0369a1' })
               )
             ),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-center' },
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-2xl font-bold text-sky-800' }, clockAngle.toFixed(1) + '\u00B0'),
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs text-sky-500' }, 'Angle between hands at ' + clockHour + ':' + (clockMinute < 10 ? '0' : '') + clockMinute),
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] mt-1 font-bold ' + (classColors[classifyAngle(Math.round(clockAngle))] || classColors['Acute']).text }, classifyAngle(Math.round(clockAngle)) + ' angle'),
+            h('div', { className: 'text-center' },
+              h('div', { className: 'text-2xl font-bold text-sky-800' }, clockAngle.toFixed(1) + '\u00B0'),
+              h('div', { className: 'text-xs text-sky-500' }, 'Angle between hands at ' + clockHour + ':' + (clockMinute < 10 ? '0' : '') + clockMinute),
+              h('div', { className: 'text-[11px] mt-1 font-bold ' + (classColors[classifyAngle(Math.round(clockAngle))] || classColors['Acute']).text }, classifyAngle(Math.round(clockAngle)) + ' angle'),
               h('button', { 'aria-label': 'Show on protractor', onClick: function() { setAngleValue(Math.round(clockAngle)); upd('activeTab', 'explore'); }, className: 'mt-2 text-[11px] font-bold text-sky-600 underline' }, '\u2192 Show on protractor')
             )
           ),
@@ -1187,24 +1196,24 @@ window.StemLab = window.StemLab || {
                 h('div', { className: 'text-[11px] font-bold text-green-500 uppercase' }, 'Gradians'),
                 h('div', { className: 'text-lg font-bold text-green-800' }, toGradians(angleValue))
               ),
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-green-50 rounded-lg p-3 text-center' },
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold text-green-500 uppercase' }, 'Turns'),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-lg font-bold text-green-800' }, toTurns(angleValue))
+              h('div', { className: 'bg-green-50 rounded-lg p-3 text-center' },
+                h('div', { className: 'text-[11px] font-bold text-green-500 uppercase' }, 'Turns'),
+                h('div', { className: 'text-lg font-bold text-green-800' }, toTurns(angleValue))
               )
             ),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-2 text-[11px] text-green-500 text-center' },
+            h('div', { className: 'mt-2 text-[11px] text-green-500 text-center' },
               '\u03C0 rad = 180\u00B0 = 200 grad = 0.5 turns')
           ),
 
           // ── Angle History ──
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-xl p-4 border border-slate-200' },
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-between mb-2' },
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-slate-700 uppercase' }, '\uD83D\uDCDC Recent Angles'),
+          h('div', { className: 'bg-white rounded-xl p-4 border border-slate-200' },
+            h('div', { className: 'flex items-center justify-between mb-2' },
+              h('div', { className: 'text-xs font-bold text-slate-700 uppercase' }, '\uD83D\uDCDC Recent Angles'),
               angleHistory.length > 0 && h('button', { 'aria-label': 'Clear', onClick: function() { upd('angleHistory', []); }, className: 'text-[11px] text-slate-600 hover:text-red-400' }, 'Clear')
             ),
             angleHistory.length === 0
-              ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs text-slate-600 text-center py-2' }, 'No angles explored yet')
-              : h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-1.5 flex-wrap' },
+              ? h('div', { className: 'text-xs text-slate-600 text-center py-2' }, 'No angles explored yet')
+              : h('div', { className: 'flex gap-1.5 flex-wrap' },
                   angleHistory.slice(0, 15).map(function(entry, i) {
                     return h('button', { 'aria-label': 'Set Angle Value', key: i, onClick: function() { setAngleValue(entry.deg); upd('activeTab', 'explore'); },
                       className: 'px-2 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600 hover:bg-purple-100 hover:text-purple-700 border border-slate-200 transition-all'

@@ -34,6 +34,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('economicsLab')
 
 (function() {
   'use strict';
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  (function() {
+    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-stem-motion-reduce-css';
+    st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    document.head.appendChild(st);
+  })();
+
 
   // ── Audio (auto-injected) ──
   var _ecoAC = null;
@@ -756,7 +765,7 @@ var d = labToolData || {};
 
               var remaining = Math.max(0, pfIncome - totalExp);
 
-              if (remaining > 0) expenses.push({ name: 'Remaining', val: remaining, color: '#64748b' });
+              if (remaining > 0) expenses.push({ name: 'Remaining', val: remaining, color: '#94a3b8' });
 
               var total = expenses.reduce(function (s, e) { return s + e.val; }, 0);
 
@@ -1196,7 +1205,7 @@ var d = labToolData || {};
 
                 ctx.fillStyle = '#ef4444'; ctx.fillText('--- Inflation', mhX + 110, mhY + 15);
 
-                ctx.fillStyle = '#64748b';
+                ctx.fillStyle = '#94a3b8';
 
                 ctx.fillText('Year ' + (macroHistory[0].year || 2025), mhX, mhY + mhH + 15);
 
@@ -1204,7 +1213,7 @@ var d = labToolData || {};
 
               } else {
 
-                ctx.font = '14px Inter, system-ui'; ctx.fillStyle = '#64748b'; ctx.textAlign = 'center';
+                ctx.font = '14px Inter, system-ui'; ctx.fillStyle = '#94a3b8'; ctx.textAlign = 'center';
 
                 ctx.fillText('Click "Next Year" to simulate national economic policy changes', W / 2, H / 2);
 
@@ -1388,7 +1397,7 @@ var d = labToolData || {};
 
               React.createElement('span', { className: 'text-[11px] text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200' }, '\uD83D\uDCDA AI-Powered Learning'),
 
-              econAchievements.length > 0 && React.createElement('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+              econAchievements.length > 0 && React.createElement('span', { 
 
                 className: 'text-[11px] text-amber-800 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200 cursor-pointer',
 
@@ -1396,7 +1405,7 @@ var d = labToolData || {};
 
               }, '\uD83C\uDFC6 ' + econAchievements.length + ' achievements'),
 
-              React.createElement('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+              React.createElement('span', { 
 
                 className: 'text-[11px] text-violet-600 bg-violet-50 px-2 py-0.5 rounded-full border border-violet-200 cursor-pointer',
 
@@ -2150,7 +2159,7 @@ var d = labToolData || {};
                   ECON_SCHOOLS.map(function(school, si) {
                     var isActive = d.econSchoolIdx === si;
                     return React.createElement('div', { key: si },
-                      React.createElement('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+                      React.createElement('div', { 
                         className: 'grid grid-cols-4 cursor-pointer transition-all ' + (isActive ? '' : 'hover:bg-purple-50') + (si % 2 === 0 ? ' bg-white' : ' bg-slate-50'),
                         onClick: function() { upd('econSchoolIdx', isActive ? null : si); },
                         style: isActive ? { background: school.color + '10', borderLeft: '3px solid ' + school.color } : {}

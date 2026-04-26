@@ -12,6 +12,15 @@
  */
 (function () {
   'use strict';
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  (function() {
+    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-stem-motion-reduce-css';
+    st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    document.head.appendChild(st);
+  })();
+
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-archstudio')) return;
@@ -1406,7 +1415,7 @@
         el('button', { onClick: function () { ctx.setStemLabTool(''); }, style: { background: 'rgba(71,85,105,.5)', border: 'none', color: '#e2e8f0', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 13, fontWeight: 600 } }, '\u2190 Back'),
         el('span', { style: { fontSize: 18 } }, styleMode === 'bricks' ? '\uD83E\uDDF1' : '\uD83C\uDFD7\uFE0F'),
         el('span', { style: { fontWeight: 700, fontSize: 15, color: '#f8fafc' } }, styleMode === 'bricks' ? 'Brick Builder' : 'Architecture Studio'),
-        el('span', { style: { fontSize: 10, color: '#64748b' } }, totalBlocks + ' blocks'),
+        el('span', { style: { fontSize: 10, color: '#94a3b8' } }, totalBlocks + ' blocks'),
         // Toggle pills
         pillBtn(styleMode === 'bricks' ? '\uD83E\uDDF1 Bricks' : '\uD83C\uDFDB\uFE0F Architect', true, styleMode === 'bricks' ? 'rgba(239,68,68,.2)' : 'rgba(99,102,241,.15)', styleMode === 'bricks' ? '#f87171' : '#6366f1', styleMode === 'bricks' ? '#fca5a5' : '#a5b4fc', function () { upd('styleMode', styleMode === 'architect' ? 'bricks' : 'architect'); }),
         pillBtn(blueprintView ? '\uD83D\uDCD0 Blueprint' : '\uD83C\uDFD7\uFE0F 3D View', blueprintView, 'rgba(34,211,238,.2)', '#22d3ee', '#67e8f9', function () { upd('blueprintView', !blueprintView); }),
@@ -1492,7 +1501,7 @@
                   flex: 1, padding: '4px 2px', fontSize: 10, fontWeight: 600,
                   border: activeRotation === r.deg ? '2px solid #f59e0b' : '1px solid #334155',
                   borderRadius: 6, background: activeRotation === r.deg ? 'rgba(245,158,11,.12)' : 'transparent',
-                  color: activeRotation === r.deg ? '#fbbf24' : '#64748b', cursor: 'pointer', textAlign: 'center'
+                  color: activeRotation === r.deg ? '#fbbf24' : '#94a3b8', cursor: 'pointer', textAlign: 'center'
                 } }, r.icon + ' ' + r.label);
               })
             )
@@ -1511,7 +1520,7 @@
                 } },
                   el('span', { style: { width: 16, height: 16, borderRadius: 4, background: m.color, display: 'inline-block', flexShrink: 0, border: '1px solid rgba(255,255,255,.15)' } }),
                   m.icon + ' ' + m.label,
-                  budgetEnabled && el('span', { style: { marginLeft: 'auto', fontSize: 11, color: '#64748b' } }, '\uD83D\uDCB2' + m.cost)
+                  budgetEnabled && el('span', { style: { marginLeft: 'auto', fontSize: 11, color: '#94a3b8' } }, '\uD83D\uDCB2' + m.cost)
                 );
               })
             )
@@ -1521,7 +1530,7 @@
           el('div', null,
             el('div', { style: { fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83C\uDFA8 Custom Color'),
             el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 3 } },
-              ['#ef4444','#f97316','#f59e0b','#eab308','#84cc16','#22c55e','#14b8a6','#06b6d4','#3b82f6','#6366f1','#8b5cf6','#a855f7','#ec4899','#f43f5e','#f8fafc','#94a3b8','#64748b','#1e293b'].map(function (c) {
+              ['#ef4444','#f97316','#f59e0b','#eab308','#84cc16','#22c55e','#14b8a6','#06b6d4','#3b82f6','#6366f1','#8b5cf6','#a855f7','#ec4899','#f43f5e','#f8fafc','#94a3b8','#94a3b8','#1e293b'].map(function (c) {
                 return el('button', { key: c, onClick: function () { upd('activeColor', c); }, title: c, style: {
                   width: 20, height: 20, borderRadius: 5, background: c, cursor: 'pointer',
                   border: activeColor === c ? '3px solid #fff' : '1px solid rgba(255,255,255,.2)',
@@ -1554,7 +1563,7 @@
             ),
             // Budget slider
             el('div', { style: { display: 'flex', alignItems: 'center', gap: 4, marginTop: 4 } },
-              el('span', { style: { fontSize: 11, color: '#64748b' } }, '\uD83D\uDCB2' + budget),
+              el('span', { style: { fontSize: 11, color: '#94a3b8' } }, '\uD83D\uDCB2' + budget),
               el('input', { type: 'range', 'aria-label': 'budget', min: 50, max: 500, step: 25, value: budget, onChange: function (e) { upd('budget', parseInt(e.target.value)); }, style: { flex: 1, height: 4, accentColor: '#f59e0b' } })
             )
           ),
@@ -1566,7 +1575,7 @@
               el('span', { style: { fontSize: 10, color: viewLayer === -1 ? '#4ade80' : '#f59e0b', fontWeight: 700, minWidth: 28 } }, viewLayer === -1 ? 'All' : 'Y' + viewLayer),
               el('input', { type: 'range', 'aria-label': 'All', min: -1, max: Math.max(0, maxY), step: 1, value: viewLayer, onChange: function (e) { upd('viewLayer', parseInt(e.target.value)); }, style: { flex: 1, height: 4, accentColor: '#60a5fa' } })
             ),
-            viewLayer >= 0 && el('div', { style: { fontSize: 11, color: '#64748b', marginTop: 2 } },
+            viewLayer >= 0 && el('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 2 } },
               blocks.filter(function (b) { return b.y === viewLayer; }).length + ' blocks at Y=' + viewLayer
             )
           ),
@@ -1587,7 +1596,7 @@
                   el('span', { style: { fontSize: 13, flexShrink: 0 } }, done ? '\u2705' : chItem.icon),
                   el('div', { style: { flex: 1, minWidth: 0 } },
                     el('div', { style: { fontWeight: 700, fontSize: 10 } }, chItem.title),
-                    el('div', { style: { fontSize: 8, color: done ? '#22c55e' : '#64748b' } }, done ? 'Done!' : chItem.desc)
+                    el('div', { style: { fontSize: 8, color: done ? '#22c55e' : '#94a3b8' } }, done ? 'Done!' : chItem.desc)
                   ),
                   el('span', { style: { fontSize: 11, color: done ? '#22c55e' : '#f59e0b', fontWeight: 700, flexShrink: 0 } }, done ? '\u2605' : '+' + chItem.xp)
                 );
@@ -1604,13 +1613,13 @@
           showGallery && el('div', null,
             el('div', { style: { fontSize: 10, fontWeight: 700, color: '#4ade80', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83D\uDCBE Saved Builds (' + galleryItems.length + ')'),
             galleryItems.length === 0
-              ? el('div', { style: { fontSize: 10, color: '#64748b', padding: 6 } }, 'No saved builds yet. Click \uD83D\uDCBE Save!')
+              ? el('div', { style: { fontSize: 10, color: '#94a3b8', padding: 6 } }, 'No saved builds yet. Click \uD83D\uDCBE Save!')
               : el('div', { style: { display: 'flex', flexDirection: 'column', gap: 3, maxHeight: 200, overflowY: 'auto' } },
                 galleryItems.map(function (item) {
                   return el('div', { key: item.id, style: { display: 'flex', alignItems: 'center', gap: 4, padding: '5px 6px', background: 'rgba(30,41,59,.5)', borderRadius: 8, border: '1px solid #334155' } },
                     el('div', { style: { flex: 1, minWidth: 0 } },
                       el('div', { style: { fontSize: 10, fontWeight: 700, color: '#f8fafc' } }, item.name),
-                      el('div', { style: { fontSize: 8, color: '#64748b' } }, item.blockCount + ' blocks \u2022 ' + item.dims)
+                      el('div', { style: { fontSize: 8, color: '#94a3b8' } }, item.blockCount + ' blocks \u2022 ' + item.dims)
                     ),
                     el('button', { onClick: function () { loadBuild(item); }, style: { background: 'rgba(96,165,250,.15)', border: '1px solid #60a5fa', color: '#93c5fd', borderRadius: 6, padding: '3px 8px', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '\u21E9'),
                     el('button', { onClick: function () { deleteBuild(item.id); }, style: { background: 'rgba(239,68,68,.15)', border: '1px solid #ef4444', color: '#fca5a5', borderRadius: 6, padding: '3px 6px', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '\u2715')
@@ -1632,7 +1641,7 @@
                   el('span', { style: { fontSize: 16, flexShrink: 0 } }, tpl.icon),
                   el('div', { style: { flex: 1 } },
                     el('div', { style: { fontWeight: 700, color: '#f8fafc', fontSize: 11 } }, tpl.name),
-                    el('div', { style: { fontSize: 8, color: '#64748b' } }, tpl.desc)
+                    el('div', { style: { fontSize: 8, color: '#94a3b8' } }, tpl.desc)
                   )
                 );
               })
@@ -1643,7 +1652,7 @@
           el('div', null,
             el('div', { style: { fontSize: 10, fontWeight: 700, color: '#f87171', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83C\uDF0B Earthquake Test'),
             el('div', { style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 4 } },
-              el('span', { style: { fontSize: 11, color: '#64748b', minWidth: 20 } }, quakeIntensity + '/10'),
+              el('span', { style: { fontSize: 11, color: '#94a3b8', minWidth: 20 } }, quakeIntensity + '/10'),
               el('input', { type: 'range', 'aria-label': 'quake intensity', min: 1, max: 10, value: quakeIntensity, onChange: function (e) { upd('quakeIntensity', parseInt(e.target.value)); }, style: { flex: 1, height: 4, accentColor: '#ef4444' } })
             ),
             el('button', { onClick: runEarthquake, disabled: !blocks.length, style: {
@@ -1750,7 +1759,7 @@
                   el('div', { style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 3 } },
                     el('span', { style: { fontSize: 14 } }, st.icon),
                     el('span', { style: { fontWeight: 700, fontSize: 11, color: '#f8fafc' } }, st.name),
-                    el('span', { style: { fontSize: 8, color: '#64748b', marginLeft: 'auto' } }, st.era)
+                    el('span', { style: { fontSize: 8, color: '#94a3b8', marginLeft: 'auto' } }, st.era)
                   ),
                   el('div', { style: { fontSize: 11, color: '#94a3b8', lineHeight: 1.4, marginBottom: 3 } }, st.features),
                   el('div', { style: { fontSize: 11, color: '#60a5fa', fontWeight: 600 } }, '\uD83D\uDCA1 ' + st.tips)
@@ -1768,12 +1777,12 @@
                 return el('div', { key: pi, style: { padding: '5px 8px', background: 'rgba(30,41,59,.5)', borderRadius: 8, border: '1px solid #334155' } },
                   el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 } },
                     el('span', { style: { fontWeight: 700, fontSize: 10, color: '#f8fafc' } }, (pi + 1) + '. ' + ph.name),
-                    el('span', { style: { fontSize: 11, color: '#64748b' } }, 'Y=' + ph.y + ' \u2022 ' + ph.count + ' blocks')
+                    el('span', { style: { fontSize: 11, color: '#94a3b8' } }, 'Y=' + ph.y + ' \u2022 ' + ph.count + ' blocks')
                   ),
                   el('div', { style: { height: 4, background: '#0f172a', borderRadius: 2, overflow: 'hidden', marginBottom: 2 } },
                     el('div', { style: { height: '100%', width: phPct + '%', background: 'linear-gradient(90deg,#2dd4bf,#14b8a6)', borderRadius: 2 } })
                   ),
-                  el('div', { style: { fontSize: 8, color: '#64748b' } }, Object.keys(ph.mats).map(function (m) { return m + ':\u00D7' + ph.mats[m]; }).join(' \u2022 '))
+                  el('div', { style: { fontSize: 8, color: '#94a3b8' } }, Object.keys(ph.mats).map(function (m) { return m + ':\u00D7' + ph.mats[m]; }).join(' \u2022 '))
                 );
               })
             )
@@ -1793,7 +1802,7 @@
                 color: '#94a3b8', fontSize: 8, fontFamily: 'monospace', resize: 'none'
               }, className: 'outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' })
             ),
-            el('div', { style: { fontSize: 11, color: '#64748b', marginBottom: 4 } }, 'Paste a code below to import:'),
+            el('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 4 } }, 'Paste a code below to import:'),
             el('div', { style: { display: 'flex', gap: 3 } },
               el('input', { type: 'text', placeholder: 'Paste share code...', value: d.importCode || '',
                 onChange: function (e) { upd('importCode', e.target.value); },
@@ -1828,7 +1837,7 @@
                   el('span', { style: { fontSize: 14 } }, preset.icon),
                   el('div', null,
                     el('div', { style: { fontSize: 10, fontWeight: 700, color: '#e2e8f0' } }, preset.name),
-                    el('div', { style: { fontSize: 8, color: '#64748b' } }, preset.desc)
+                    el('div', { style: { fontSize: 8, color: '#94a3b8' } }, preset.desc)
                   )
                 );
               })
@@ -1862,12 +1871,12 @@
             el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 2, marginBottom: 4 } },
               el('button', { onClick: function () { upd('sliceZ', -1); }, style: {
                 padding: '3px 8px', borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer',
-                background: sliceZ === -1 ? 'rgba(34,211,238,.2)' : 'transparent', border: sliceZ === -1 ? '1px solid #22d3ee' : '1px solid #334155', color: sliceZ === -1 ? '#67e8f9' : '#64748b'
+                background: sliceZ === -1 ? 'rgba(34,211,238,.2)' : 'transparent', border: sliceZ === -1 ? '1px solid #22d3ee' : '1px solid #334155', color: sliceZ === -1 ? '#67e8f9' : '#94a3b8'
               } }, 'All'),
               sliceZLevels.map(function (z) {
                 return el('button', { key: z, onClick: function () { upd('sliceZ', z); }, style: {
                   padding: '3px 6px', borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer',
-                  background: sliceZ === z ? 'rgba(34,211,238,.2)' : 'transparent', border: sliceZ === z ? '1px solid #22d3ee' : '1px solid #334155', color: sliceZ === z ? '#67e8f9' : '#64748b'
+                  background: sliceZ === z ? 'rgba(34,211,238,.2)' : 'transparent', border: sliceZ === z ? '1px solid #22d3ee' : '1px solid #334155', color: sliceZ === z ? '#67e8f9' : '#94a3b8'
                 } }, 'Z=' + z);
               })
             ),
@@ -1892,9 +1901,9 @@
             ),
             el('div', { style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 4 } },
               el('div', { style: { flex: 1, height: 8, borderRadius: 4, background: 'linear-gradient(90deg, #22c55e, #eab308, #ef4444)' } }),
-              el('div', { style: { display: 'flex', justifyContent: 'space-between', width: '100%', position: 'absolute', fontSize: 7, color: '#64748b', pointerEvents: 'none' } })
+              el('div', { style: { display: 'flex', justifyContent: 'space-between', width: '100%', position: 'absolute', fontSize: 7, color: '#94a3b8', pointerEvents: 'none' } })
             ),
-            el('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 8, color: '#64748b' } },
+            el('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 8, color: '#94a3b8' } },
               el('span', null, 'Low'),
               el('span', null, 'Max: ' + maxLoad.toFixed(1))
             ),
@@ -1904,7 +1913,7 @@
                 var pct = maxLoad > 0 ? Math.round((load / maxLoad) * 100) : 0;
                 var heatColor = pct > 66 ? '#ef4444' : pct > 33 ? '#eab308' : '#22c55e';
                 return el('div', { key: key, style: { display: 'flex', alignItems: 'center', gap: 4, fontSize: 8 } },
-                  el('span', { style: { color: '#64748b', minWidth: 50, fontFamily: 'monospace' } }, key),
+                  el('span', { style: { color: '#94a3b8', minWidth: 50, fontFamily: 'monospace' } }, key),
                   el('div', { style: { flex: 1, height: 4, background: '#0f172a', borderRadius: 2, overflow: 'hidden' } },
                     el('div', { style: { height: '100%', width: pct + '%', background: heatColor, borderRadius: 2 } })
                   ),
@@ -1918,7 +1927,7 @@
           showReplay && el('div', null,
             el('div', { style: { fontSize: 10, fontWeight: 700, color: '#fde68a', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\u23EA Construction Replay'),
             replayFrames === 0
-              ? el('div', { style: { fontSize: 11, color: '#64748b' } }, 'No undo history yet. Build something first!')
+              ? el('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'No undo history yet. Build something first!')
               : el('div', null,
                   el('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 4, textAlign: 'center', fontWeight: 600 } }, replayLabel),
                   el('div', { style: { display: 'flex', gap: 4, justifyContent: 'center' } },
@@ -1930,7 +1939,7 @@
                   el('div', { style: { marginTop: 4 } },
                     el('input', { type: 'range', 'aria-label': 'replay step', min: 0, max: replayFrames, value: replayStep >= 0 ? replayStep : replayFrames, onChange: function (e) { upd('replayStep', parseInt(e.target.value)); }, style: { width: '100%', accentColor: '#fbbf24' } })
                   ),
-                  el('div', { style: { fontSize: 11, color: '#64748b', textAlign: 'center', marginTop: 2 } },
+                  el('div', { style: { fontSize: 11, color: '#94a3b8', textAlign: 'center', marginTop: 2 } },
                     (replayStep >= 0 && replayStep < replayFrames ? replayBlocks.length : totalBlocks) + ' blocks at this step'
                   ),
                   el('button', { onClick: exitReplay, style: { width: '100%', marginTop: 4, padding: '5px 10px', borderRadius: 6, border: 'none', background: 'rgba(71,85,105,.3)', color: '#94a3b8', fontWeight: 600, fontSize: 11, cursor: 'pointer' } }, '\u2716 Exit Replay')
@@ -1941,24 +1950,24 @@
           showFilter && el('div', null,
             el('div', { style: { fontSize: 10, fontWeight: 700, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83D\uDD0D Block Filter'),
             el('div', { style: { marginBottom: 4 } },
-              el('div', { style: { fontSize: 11, color: '#64748b', marginBottom: 2 } }, 'Material:'),
+              el('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 2 } }, 'Material:'),
               el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 2 } },
-                el('button', { onClick: function () { upd('filterMaterial', ''); }, style: { padding: '2px 6px', borderRadius: 4, fontSize: 8, border: !filterMaterial ? '1px solid #60a5fa' : '1px solid #334155', background: !filterMaterial ? 'rgba(96,165,250,.15)' : 'transparent', color: !filterMaterial ? '#93c5fd' : '#64748b', cursor: 'pointer' } }, 'All'),
+                el('button', { onClick: function () { upd('filterMaterial', ''); }, style: { padding: '2px 6px', borderRadius: 4, fontSize: 8, border: !filterMaterial ? '1px solid #60a5fa' : '1px solid #334155', background: !filterMaterial ? 'rgba(96,165,250,.15)' : 'transparent', color: !filterMaterial ? '#93c5fd' : '#94a3b8', cursor: 'pointer' } }, 'All'),
                 materials.map(function (m) {
-                  return el('button', { key: m.id, onClick: function () { upd('filterMaterial', m.id); }, style: { padding: '2px 6px', borderRadius: 4, fontSize: 8, border: filterMaterial === m.id ? '1px solid #60a5fa' : '1px solid #334155', background: filterMaterial === m.id ? 'rgba(96,165,250,.15)' : 'transparent', color: filterMaterial === m.id ? '#93c5fd' : '#64748b', cursor: 'pointer' } }, m.icon + ' ' + m.label);
+                  return el('button', { key: m.id, onClick: function () { upd('filterMaterial', m.id); }, style: { padding: '2px 6px', borderRadius: 4, fontSize: 8, border: filterMaterial === m.id ? '1px solid #60a5fa' : '1px solid #334155', background: filterMaterial === m.id ? 'rgba(96,165,250,.15)' : 'transparent', color: filterMaterial === m.id ? '#93c5fd' : '#94a3b8', cursor: 'pointer' } }, m.icon + ' ' + m.label);
                 })
               )
             ),
             el('div', { style: { marginBottom: 4 } },
-              el('div', { style: { fontSize: 11, color: '#64748b', marginBottom: 2 } }, 'Shape:'),
+              el('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 2 } }, 'Shape:'),
               el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 2 } },
-                el('button', { onClick: function () { upd('filterShape', ''); }, style: { padding: '2px 6px', borderRadius: 4, fontSize: 8, border: !filterShape ? '1px solid #60a5fa' : '1px solid #334155', background: !filterShape ? 'rgba(96,165,250,.15)' : 'transparent', color: !filterShape ? '#93c5fd' : '#64748b', cursor: 'pointer' } }, 'All'),
+                el('button', { onClick: function () { upd('filterShape', ''); }, style: { padding: '2px 6px', borderRadius: 4, fontSize: 8, border: !filterShape ? '1px solid #60a5fa' : '1px solid #334155', background: !filterShape ? 'rgba(96,165,250,.15)' : 'transparent', color: !filterShape ? '#93c5fd' : '#94a3b8', cursor: 'pointer' } }, 'All'),
                 shapes.map(function (s) {
-                  return el('button', { key: s.id, onClick: function () { upd('filterShape', s.id); }, style: { padding: '2px 6px', borderRadius: 4, fontSize: 8, border: filterShape === s.id ? '1px solid #60a5fa' : '1px solid #334155', background: filterShape === s.id ? 'rgba(96,165,250,.15)' : 'transparent', color: filterShape === s.id ? '#93c5fd' : '#64748b', cursor: 'pointer' } }, s.icon);
+                  return el('button', { key: s.id, onClick: function () { upd('filterShape', s.id); }, style: { padding: '2px 6px', borderRadius: 4, fontSize: 8, border: filterShape === s.id ? '1px solid #60a5fa' : '1px solid #334155', background: filterShape === s.id ? 'rgba(96,165,250,.15)' : 'transparent', color: filterShape === s.id ? '#93c5fd' : '#94a3b8', cursor: 'pointer' } }, s.icon);
                 })
               )
             ),
-            el('div', { style: { padding: '4px 8px', background: filterActive ? 'rgba(96,165,250,.1)' : 'rgba(30,41,59,.4)', borderRadius: 6, fontSize: 11, color: filterActive ? '#93c5fd' : '#64748b', fontWeight: 600 } },
+            el('div', { style: { padding: '4px 8px', background: filterActive ? 'rgba(96,165,250,.1)' : 'rgba(30,41,59,.4)', borderRadius: 6, fontSize: 11, color: filterActive ? '#93c5fd' : '#94a3b8', fontWeight: 600 } },
               '\uD83D\uDD0D ' + filterCount + ' block' + (filterCount !== 1 ? 's' : '') + ' match' + (filterCount === 1 ? 'es' : '')
             ),
             filterActive && el('button', { onClick: deleteFiltered, style: {
@@ -1976,7 +1985,7 @@
                 return el('div', { key: badge.id, style: { display: 'flex', alignItems: 'center', gap: 6, padding: '5px 8px', background: earned ? 'rgba(251,146,60,.08)' : 'rgba(30,41,59,.4)', borderRadius: 8, border: earned ? '1px solid rgba(251,146,60,.3)' : '1px solid #1e293b', opacity: earned ? 1 : 0.6 } },
                   el('span', { style: { fontSize: 16, filter: earned ? 'none' : 'grayscale(1)' } }, badge.icon),
                   el('div', { style: { flex: 1 } },
-                    el('div', { style: { fontSize: 10, fontWeight: 700, color: earned ? '#f8fafc' : '#64748b' } }, badge.name),
+                    el('div', { style: { fontSize: 10, fontWeight: 700, color: earned ? '#f8fafc' : '#94a3b8' } }, badge.name),
                     el('div', { style: { fontSize: 8, color: earned ? '#94a3b8' : '#475569' } }, badge.desc)
                   ),
                   earned && el('span', { style: { fontSize: 10, color: '#fb923c' } }, '\u2713')
@@ -1993,7 +2002,7 @@
               el('div', null, '\uD83D\uDCD0 Frontal area: ' + windAnalysis.frontalArea + ' u\u00B2'),
               el('div', null, '\uD83D\uDCD0 Side area: ' + windAnalysis.sideArea + ' u\u00B2'),
               el('div', null, '\uD83C\uDF2C\uFE0F Drag coeff: ' + windAnalysis.dragCoeff),
-              el('div', { style: { marginTop: 2, fontSize: 8, color: '#64748b' } },
+              el('div', { style: { marginTop: 2, fontSize: 8, color: '#94a3b8' } },
                 parseFloat(windAnalysis.dragCoeff) > 0.8 ? '\uD83D\uDCA1 Use domes, pyramids, or cylinders to reduce drag!' :
                 parseFloat(windAnalysis.dragCoeff) > 0.5 ? '\uD83D\uDCA1 Good mix of aerodynamic shapes!' :
                 '\u2705 Very aerodynamic design!')
@@ -2022,7 +2031,7 @@
                 return el('div', { key: floor.y, style: { padding: '5px 8px', background: 'rgba(30,41,59,.5)', borderRadius: 8, border: '1px solid #334155' } },
                   el('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 3 } },
                     el('span', { style: { fontSize: 10, fontWeight: 700, color: '#f8fafc' } }, 'Y=' + floor.y),
-                    el('span', { style: { fontSize: 8, color: '#64748b' } }, floor.count + ' blocks')
+                    el('span', { style: { fontSize: 8, color: '#94a3b8' } }, floor.count + ' blocks')
                   ),
                   el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(' + fW + ', ' + cellPx + 'px)', gap: 1, justifyContent: 'center' } }, cells)
                 );
@@ -2037,7 +2046,7 @@
         el('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' } },
           // Three.js canvas
           !threeReady
-            ? el('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b', fontSize: 14 } },
+            ? el('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', fontSize: 14 } },
               el('div', { style: { textAlign: 'center' } },
                 el('div', { style: { fontSize: 32, marginBottom: 8, animation: 'spin 2s linear infinite' } }, '\u2699\uFE0F'),
                 'Loading 3D engine...'
@@ -2046,7 +2055,7 @@
             : el('canvas', { id: 'arch-studio-canvas', 'aria-label': 'Interactive architecture studio 3D visualization', tabIndex: 0, style: { flex: 1, width: '100%', display: 'block', cursor: mode === 'place' ? 'crosshair' : mode === 'erase' ? 'not-allowed' : 'pointer' } }),
 
           // Controls overlay (top-right)
-          el('div', { style: { position: 'absolute', top: 8, right: 8, background: 'rgba(15,23,42,.85)', borderRadius: 10, padding: '6px 10px', fontSize: 11, color: '#64748b', lineHeight: 1.6, backdropFilter: 'blur(8px)', border: '1px solid #1e293b' } },
+          el('div', { style: { position: 'absolute', top: 8, right: 8, background: 'rgba(15,23,42,.85)', borderRadius: 10, padding: '6px 10px', fontSize: 11, color: '#94a3b8', lineHeight: 1.6, backdropFilter: 'blur(8px)', border: '1px solid #1e293b' } },
             el('div', null, '\uD83D\uDD04 Drag \u2014 Orbit'),
             el('div', null, '\uD83D\uDD0D Scroll \u2014 Zoom'),
             el('div', null, '\u2747\uFE0F Right-drag \u2014 Pan'),
@@ -2078,7 +2087,7 @@
                 { label: 'Floating', value: analysis.unsupported, icon: analysis.unsupported > 0 ? '\u26A0\uFE0F' : '\u2705' }
               ].map(function (r) {
                 return el('div', { key: r.label, style: { background: 'rgba(30,41,59,.5)', borderRadius: 8, padding: '4px 6px', textAlign: 'center' } },
-                  el('div', { style: { fontSize: 8, color: '#64748b', fontWeight: 600 } }, r.icon + ' ' + r.label),
+                  el('div', { style: { fontSize: 8, color: '#94a3b8', fontWeight: 600 } }, r.icon + ' ' + r.label),
                   el('div', { style: { fontSize: 11, fontWeight: 700, color: r.label === 'Floating' && analysis.unsupported > 0 ? '#f87171' : '#f8fafc' } }, r.value)
                 );
               })
@@ -2095,13 +2104,13 @@
               el('button', { onClick: askAIArchitect, disabled: aiLoading, style: { marginLeft: 'auto', background: aiLoading ? 'rgba(71,85,105,.5)' : 'linear-gradient(135deg,#f472b6,#ec4899)', border: 'none', color: '#fff', borderRadius: 6, padding: '3px 10px', fontSize: 11, fontWeight: 700, cursor: aiLoading ? 'wait' : 'pointer' } }, aiLoading ? '\u23F3 Thinking...' : '\u2728 Ask Again')
             ),
             aiLoading && !aiAdvice
-              ? el('div', { style: { textAlign: 'center', padding: 12, color: '#64748b', fontSize: 11 } },
+              ? el('div', { style: { textAlign: 'center', padding: 12, color: '#94a3b8', fontSize: 11 } },
                 el('div', { style: { fontSize: 20, animation: 'spin 2s linear infinite', marginBottom: 4 } }, '\uD83E\uDD16'),
                 'Analyzing your structure...'
               )
               : aiAdvice
                 ? el('div', { style: { fontSize: 11, color: '#e2e8f0', lineHeight: 1.5, whiteSpace: 'pre-line' } }, aiAdvice)
-                : el('div', { style: { fontSize: 11, color: '#64748b', lineHeight: 1.5 } }, 'Click "Ask Again" for personalized architecture tips!')
+                : el('div', { style: { fontSize: 11, color: '#94a3b8', lineHeight: 1.5 } }, 'Click "Ask Again" for personalized architecture tips!')
           ),
 
           // Bottom stats bar
@@ -2117,7 +2126,7 @@
               { label: 'Challenges', value: completedCount + '/10', icon: '\uD83C\uDFC6' }
             ].filter(Boolean).map(function (stat) {
               return el('div', { key: stat.label, style: { textAlign: 'center' } },
-                el('div', { style: { fontSize: 10, color: '#64748b', fontWeight: 600 } }, stat.icon + ' ' + stat.label),
+                el('div', { style: { fontSize: 10, color: '#94a3b8', fontWeight: 600 } }, stat.icon + ' ' + stat.label),
                 el('div', { style: { fontSize: 14, fontWeight: 700, color: '#f8fafc' } }, stat.value)
               );
             })

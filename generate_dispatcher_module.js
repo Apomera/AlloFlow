@@ -95,11 +95,11 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
     const dialectInstruction = effectiveLanguage !== 'English' ? "STRICT DIALECT ADHERENCE: If a specific dialect is named (e.g. 'Brazilian Portuguese' vs 'European Portuguese'), explicitly use that region's vocabulary, spelling, and grammar conventions." : "";
     if (effectiveLanguage === 'All Selected Languages' && !langOverride) {
         if (type === 'glossary') {
-            await handleGenerate(type, 'English', keepLoading, textToProcess, deps);
+            await handleGenerate(type, 'English', keepLoading, textToProcess, configOverride, switchView, deps);
             return;
         }
         if (['analysis', 'brainstorm', 'udl-advice', 'alignment-report'].includes(type)) {
-             await handleGenerate(type, 'English', keepLoading, textToProcess, deps);
+             await handleGenerate(type, 'English', keepLoading, textToProcess, configOverride, switchView, deps);
              return;
         }
         setIsProcessing(true);
@@ -111,7 +111,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                 const isLastLang = i === uniqueLangs.length - 1;
                 const batchKeepLoading = !isLastLang || keepLoading;
                 setGenerationStep(`${t('status.generating')} ${type} (${lang})...`);
-                await handleGenerate(type, lang, batchKeepLoading, textToProcess, deps);
+                await handleGenerate(type, lang, batchKeepLoading, textToProcess, configOverride, switchView, deps);
                 await new Promise(r => setTimeout(r, 500));
             }
             addToast(`All ${type} resources generated!`, "success");
@@ -131,6 +131,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
               }
             }
         } catch (err) {
+            console.error('[GenDispatcher] Batch generation error:', err);
             warnLog("Unhandled error:", err);
             setError(t('errors.batch_generation_failed'));
             if (alloBotRef.current) alloBotRef.current.speak(t('bot_events.feedback_error_apology'), 'confused');
@@ -782,6 +783,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         }
         metaInfo = `${gradeLevel} - ${effectiveLanguage} - ${effectiveOutlineType}`;
       } else if (type === 'image') {
+        console.log('[VisualDebug] dispatcher routing to image branch; effectiveVisualStyle=', effectiveVisualStyle, 'visualLayoutMode=', typeof visualLayoutMode !== 'undefined' ? visualLayoutMode : '(undefined)');
         setGenerationStep(t('status_steps.analyzing_visuals'));
         const promptGenPrompt = `
             Analyze the following text to create a visual plan for an educational diagram: "${textToProcess}".
@@ -833,12 +835,16 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                     if (visualPlan) visualPlan.layout = visualLayoutMode;
                 }
             } catch (planErr) {
+                console.error('[VisualDebug] generateVisualPlan threw:', planErr);
                 warnLog('[ArtDirector] Plan generation failed, falling back to single image', planErr);
             }
         }
         if (visualPlan && visualPlan.layout !== 'single' && visualPlan.panels.length > 1) {
             setGenerationStep(t('visual_director.generating_panels') || 'Generating multi-panel illustration...');
             const executedPlan = await executeVisualPlan(visualPlan, targetWidth, targetQual, effectiveVisualStyle);
+            if (!executedPlan?.panels?.some(p => p?.imageUrl)) {
+                console.error('[VisualDebug] executeVisualPlan returned all-null panels:', executedPlan);
+            }
             content = {
                 prompt: finalPrompt,
                 style: styleDescription,
@@ -849,7 +855,20 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             metaInfo = t('visual_director.multi_panel', { count: executedPlan.panels.length }) || `Multi-Panel (${executedPlan.panels.length} panels)`;
         } else {
         setGenerationStep(t('status_steps.rendering_diagram'));
-        let imageBase64; try { imageBase64 = await callImagen(finalPrompt, targetWidth, targetQual); } catch(e) { warnLog('Image generation failed:', e); }
+        let imageBase64;
+        try {
+            imageBase64 = await callImagen(finalPrompt, targetWidth, targetQual);
+        } catch(e) {
+            console.error('[VisualDebug] callImagen threw:', e);
+            warnLog('Image generation failed:', e);
+            if (typeof setError === 'function') setError(`Image generation failed: ${e?.message || e}`);
+            return;
+        }
+        if (!imageBase64) {
+            console.error('[VisualDebug] callImagen returned falsy imageBase64; bailing');
+            if (typeof setError === 'function') setError('Image generation produced no output');
+            return;
+        }
         if (fillInTheBlank || noText || creativeMode) {
              try {
                  setGenerationStep(t('status.refining_image'));

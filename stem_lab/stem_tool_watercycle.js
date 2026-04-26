@@ -1,3 +1,13 @@
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+(function() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById('allo-stem-motion-reduce-css')) return;
+  var st = document.createElement('style');
+  st.id = 'allo-stem-motion-reduce-css';
+  st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+  if (document.head) document.head.appendChild(st);
+})();
+
 // stem_tool_watercycle.js - Water Cycle Interactive Simulator
 // Extracted and enhanced with Journey Mode
 (function(){
@@ -116,7 +126,7 @@ const d = labToolData.waterCycle;
                          '3-5': 'If all the water vapor in the atmosphere rained at once, it would cover Earth with only 2.5 cm of water!',
                          '6-8': 'The atmosphere holds about 12,900 km\u00B3 of water vapor at any time — but that is only 0.001% of all water on Earth.',
                          '9-12': 'Global mean evaporation is ~1,200 mm/yr over oceans. The Bowen ratio (sensible/latent heat) determines partitioning of surface energy into evaporation vs heating.' } },
-            { id: 'condensation', label: t('stem.water_cycle.condensation'), emoji: '\u2601', color: '#64748b',
+            { id: 'condensation', label: t('stem.water_cycle.condensation'), emoji: '\u2601', color: '#94a3b8',
               desc: { 'K-2': 'When the warm, wet air goes high up where it is cold, the water vapor turns back into tiny water drops. These tiny drops stick together and make clouds!',
                       '3-5': 'Water vapor cools as it rises, forming tiny droplets around particles of dust, pollen, or pollution, creating clouds. Each cloud droplet is about 10 micrometers wide.',
                       '6-8': 'As air rises, it cools at ~6.5\u00B0C/km (environmental lapse rate). When temperature reaches the dew point, vapor condenses onto cloud condensation nuclei (CCN) — aerosol particles 0.1\u20131 \u00B5m wide. Cloud droplets are typically 5\u201315 \u00B5m.',

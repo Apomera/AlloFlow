@@ -1,3 +1,13 @@
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+(function() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById('allo-stem-motion-reduce-css')) return;
+  var st = document.createElement('style');
+  st.id = 'allo-stem-motion-reduce-css';
+  st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+  if (document.head) document.head.appendChild(st);
+})();
+
 // ═══════════════════════════════════════════
 // stem_tool_atctower.js — ATC Tower: Air Traffic Control Simulator
 // Teaches: spatial reasoning, rate problems, vectors, sequencing,
@@ -16,6 +26,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
 
 (function() {
   'use strict';
+  // ── Accessibility live region (WCAG 4.1.3) ──
+  (function() {
+    if (document.getElementById('allo-live-atcTower')) return;
+    var lr = document.createElement('div');
+    lr.id = 'allo-live-atcTower';
+    lr.setAttribute('aria-live', 'polite');
+    lr.setAttribute('aria-atomic', 'true');
+    lr.setAttribute('role', 'status');
+    lr.className = 'sr-only';
+    lr.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(lr);
+  })();
+
 
   // ── ATC MATH HELPERS ──
   var toRad = function(d) { return d * Math.PI / 180; };
@@ -531,7 +554,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
             gfx.fillText('⏸ PAUSED', W / 2, H * 0.4);
             gfx.fillStyle = '#94a3b8'; gfx.font = '14px system-ui';
             gfx.fillText('Press Space to resume | I for status | ESC to exit', W / 2, H * 0.5);
-            gfx.fillStyle = '#64748b'; gfx.font = '12px system-ui';
+            gfx.fillStyle = '#94a3b8'; gfx.font = '12px system-ui';
             gfx.fillText('Score: ' + game.score + '  |  Landed: ' + game.landed + '  |  Streak: ' + game.streak, W / 2, H * 0.58);
             animRef.current = requestAnimationFrame(loop);
             return;
@@ -1032,7 +1055,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
             gfx.fillText(ac.type.id + ' ' + Math.round(distToApt) + 'nm', stripX + 22, sy + 17);
             // State badge
             var stateColors = { inbound: '#60a5fa', approach: '#4ade80', goAround: '#f97316' };
-            gfx.fillStyle = stateColors[ac.state] || '#64748b'; gfx.font = 'bold 6px system-ui'; gfx.textAlign = 'right';
+            gfx.fillStyle = stateColors[ac.state] || '#94a3b8'; gfx.font = 'bold 6px system-ui'; gfx.textAlign = 'right';
             gfx.fillText(ac.state === 'approach' ? 'ILS' : ac.state === 'goAround' ? 'GA' : 'INB', stripX + stripW + 4, sy + 8);
             // Assigned runway
             if (ac.assignedRunway) {
@@ -1092,7 +1115,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
             var approachCount = game.aircraft.filter(function(a) { return a.state === 'approach' && a.assignedRunway === rwy; }).length;
             var inboundCount = game.aircraft.filter(function(a) { return a.assignedRunway === rwy && a.state === 'inbound'; }).length;
             // Status light
-            var statusColor = approachCount > 0 ? '#4ade80' : inboundCount > 0 ? '#fbbf24' : '#64748b';
+            var statusColor = approachCount > 0 ? '#4ade80' : inboundCount > 0 ? '#fbbf24' : '#94a3b8';
             gfx.fillStyle = statusColor;
             gfx.beginPath(); gfx.arc(rx + 25 * scale, ry, 3, 0, Math.PI * 2); gfx.fill();
             gfx.fillStyle = 'rgba(255,255,255,0.3)'; gfx.font = '7px monospace'; gfx.textAlign = 'left';
@@ -1152,7 +1175,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
                         'Runway ' + mc.rwyHdg + '°, wind ' + mc.windDir + '°/' + mc.windSpd + 'kt. Crosswind?';
             gfx.fillText(qText, mcX + 10, mcY + 35);
             // Answer input hint
-            gfx.fillStyle = '#64748b'; gfx.font = '10px system-ui';
+            gfx.fillStyle = '#94a3b8'; gfx.font = '10px system-ui';
             if (mc.type === 'arrival_order') {
               gfx.fillText('Press A or B', mcX + 10, mcY + 55);
             } else {
@@ -1310,7 +1333,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
               });
             });
 
-            gfx.fillStyle = '#64748b'; gfx.font = '11px system-ui'; gfx.textAlign = 'center';
+            gfx.fillStyle = '#94a3b8'; gfx.font = '11px system-ui'; gfx.textAlign = 'center';
             gfx.fillText('Press ? or ESC to close help', W / 2, H - 10);
           }
 
@@ -1536,14 +1559,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
               [['🏆 ' + totalScore, 'Career Score'], ['✈️ ' + totalLanded, 'Total Landed'], ['🔥 ' + bestStreak, 'Best Streak']].map(function(s) {
                 return h('div', { key: s[1], style: { background: '#0a1a0a', padding: '6px 12px', borderRadius: '6px', textAlign: 'center', border: '1px solid #1a3a2a' } },
                   h('div', { style: { fontSize: '13px', fontWeight: 700, color: '#4ade80' } }, s[0]),
-                  h('div', { style: { fontSize: '8px', color: '#64748b' } }, s[1])
+                  h('div', { style: { fontSize: '8px', color: '#94a3b8' } }, s[1])
                 );
               })
             )
           ) : null,
           // Airport selection
           h('div', { style: { padding: '0 24px 16px' } },
-            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, '🏢 Select Airport'),
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, '🏢 Select Airport'),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
               AIRPORTS.map(function(apt) {
                 return h('button', { key: apt.id, onClick: function() { startGame(apt.id); },
@@ -1556,7 +1579,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
                       h('span', { style: { fontSize: '9px', padding: '2px 8px', borderRadius: '10px', fontWeight: 700, background: apt.difficulty === 'Beginner' ? '#0a2e1a' : apt.difficulty === 'Intermediate' ? '#1a2a0a' : apt.difficulty === 'Advanced' ? '#2a1a0a' : '#2a0a0a', color: apt.difficulty === 'Beginner' ? '#4ade80' : apt.difficulty === 'Intermediate' ? '#fbbf24' : apt.difficulty === 'Advanced' ? '#f97316' : '#ef4444' } }, apt.difficulty)
                     ),
                     h('div', { style: { fontSize: '10px', color: '#94a3b8', marginTop: '2px' } }, apt.desc),
-                    h('div', { style: { fontSize: '9px', color: '#64748b', marginTop: '2px' } }, apt.runways.length + ' runway(s) · Max ' + apt.maxTraffic + ' aircraft')
+                    h('div', { style: { fontSize: '9px', color: '#94a3b8', marginTop: '2px' } }, apt.runways.length + ' runway(s) · Max ' + apt.maxTraffic + ' aircraft')
                   )
                 );
               })
@@ -1564,7 +1587,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
           ),
           // Lessons
           h('div', { style: { padding: '0 24px 16px' } },
-            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, '🏆 Badges (' + Object.keys(earnedATCBadges).length + '/' + ATC_BADGES.length + ')'),
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, '🏆 Badges (' + Object.keys(earnedATCBadges).length + '/' + ATC_BADGES.length + ')'),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '3px', marginBottom: '12px' } },
               ATC_BADGES.map(function(badge) {
                 var earned = !!earnedATCBadges[badge.id];
@@ -1573,7 +1596,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
                 }, badge.icon + ' ' + (earned ? badge.name : '???'));
               })
             ),
-            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, '📚 ATC Lessons'),
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, '📚 ATC Lessons'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '4px' } },
               Object.keys(ATC_LESSONS).map(function(key) {
                 var les = ATC_LESSONS[key];
@@ -1591,7 +1614,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
             [['Click/Tab', 'Select'], ['H', 'Heading'], ['S', 'Speed'], ['R', 'Runway'], ['C', 'Clear ILS'], ['G', 'Go Around'], ['P', 'Hold'], ['D/U', 'Alt'], ['T', 'Tutorial'], ['ESC', 'Exit']].map(function(item) {
               return h('div', { key: item[0], style: { textAlign: 'center' } },
                 h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#4ade80', background: '#0a2e1a', padding: '2px 8px', borderRadius: '4px', fontFamily: 'monospace' } }, item[0]),
-                h('div', { style: { fontSize: '8px', color: '#64748b', marginTop: '2px' } }, item[1])
+                h('div', { style: { fontSize: '8px', color: '#94a3b8', marginTop: '2px' } }, item[1])
               );
             })
           )
@@ -1635,7 +1658,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
             h('h2', { style: { fontSize: '20px', fontWeight: 900, textAlign: 'center', marginBottom: '16px' } }, les.title),
             h('p', { style: { fontSize: '14px', lineHeight: '1.7', color: '#cbd5e1', marginBottom: '16px' } }, les.content),
             h('div', { style: { background: '#0a1a0a', borderRadius: '12px', padding: '16px', border: '1px solid #1a3a2a' } },
-              h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', marginBottom: '6px' } }, 'Key Formula'),
+              h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', marginBottom: '6px' } }, 'Key Formula'),
               h('div', { style: { fontSize: '14px', fontWeight: 800, color: '#4ade80', fontFamily: 'monospace', marginBottom: '8px' } }, les.formula)
             ),
 
@@ -1664,7 +1687,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
               ),
               aiError && h('p', { style: { fontSize: '11px', color: '#fca5a5', margin: 0 }, role: 'alert' }, aiError),
               aiText && h('p', { style: { fontSize: '12px', color: '#cbd5e1', lineHeight: '1.6', background: '#000', padding: '10px', borderRadius: '8px', margin: '6px 0 0 0', border: '1px solid #3730a3' } }, aiText),
-              !aiText && !aiLoading && !aiError && h('p', { style: { fontSize: '11px', fontStyle: 'italic', color: '#64748b', margin: 0 } }, 'Click "Explain" for a plain-language breakdown of this ATC concept.')
+              !aiText && !aiLoading && !aiError && h('p', { style: { fontSize: '11px', fontStyle: 'italic', color: '#94a3b8', margin: 0 } }, 'Click "Explain" for a plain-language breakdown of this ATC concept.')
             ),
 
             h('button', { onClick: function() { startGame('simple'); },
@@ -1689,7 +1712,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
         );
       }
 
-      return h('div', { style: { padding: '24px', textAlign: 'center', color: '#64748b' } }, 'Loading ATC Tower...');
+      return h('div', { style: { padding: '24px', textAlign: 'center', color: '#94a3b8' } }, 'Loading ATC Tower...');
     }
   });
 

@@ -31,6 +31,15 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  (function() {
+    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-stem-motion-reduce-css';
+    st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    document.head.appendChild(st);
+  })();
+
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-aquarium')) return;
@@ -2324,7 +2333,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             clownfish: '#f97316',  // orange
 
-            dolphin: '#64748b',   // grey
+            dolphin: '#94a3b8',   // grey
 
             jellyfish: '#c084fc', // translucent purple
 
@@ -5746,7 +5755,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       var isHighlighted = anatomyHighlight === i;
 
-                      return React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+                      return React.createElement("div", { 
 
                         key: i,
 
@@ -6173,7 +6182,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       var isActive = chemTooltip === p.key;
 
-                      return React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+                      return React.createElement("div", { 
 
                         key: p.key,
 
@@ -6335,11 +6344,17 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                         var hpTextColor = hp > 70 ? 'text-green-600' : hp > 40 ? 'text-yellow-600' : 'text-red-600';
 
+                        var hpStatus = hp > 70 ? 'Healthy' : hp > 40 ? 'Stressed' : 'Dying';
+
                         return React.createElement("div", {
 
                           key: pid + '-' + idx,
 
-                          className: "flex items-center gap-2 bg-white/80 rounded-lg p-2 border border-emerald-100 hover:border-emerald-300 transition-all"
+                          className: "flex items-center gap-2 bg-white/80 rounded-lg p-2 border border-emerald-100 hover:border-emerald-300 transition-all",
+
+                          role: 'group',
+
+                          'aria-label': (pSpec.name || 'Plant') + ' — ' + hpStatus + ' (' + hp.toFixed(0) + ' percent health)'
 
                         },
 
@@ -6351,7 +6366,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                             React.createElement("div", { className: "flex items-center gap-2 mt-0.5" },
 
-                              React.createElement("div", { className: "flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden" },
+                              React.createElement("div", { className: "flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden", "aria-hidden": "true" },
 
                                 React.createElement("div", { style: { width: Math.max(0, Math.min(100, hp)) + '%', transition: 'width 0.5s' }, className: "h-full rounded-full " + hpColor })
 
@@ -6599,23 +6614,30 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 // Bioload Meter
 
-                React.createElement("div", { className: "bg-white rounded-xl p-3 border border-slate-200" },
+                (function() {
+                  var bioStatus = loadPct > 80 ? 'Critical' : loadPct > 60 ? 'Caution' : 'Safe';
+                  return React.createElement("div", {
+                    className: "bg-white rounded-xl p-3 border border-slate-200",
+                    role: "group",
+                    "aria-label": "Bioload " + bioStatus + " \u2014 " + currentLoad + " of " + maxLoad + " (" + loadPct + " percent)"
+                  },
 
-                  React.createElement("div", { className: "flex items-center justify-between mb-1" },
+                    React.createElement("div", { className: "flex items-center justify-between mb-1" },
 
-                    React.createElement("span", { className: "text-xs font-bold text-slate-600" }, "\uD83D\uDC1F Bioload"),
+                      React.createElement("span", { className: "text-xs font-bold text-slate-600" }, React.createElement("span", { "aria-hidden": "true" }, "\uD83D\uDC1F "), "Bioload"),
 
-                    React.createElement("span", { className: "text-xs font-mono " + (loadPct > 80 ? 'text-red-600' : loadPct > 60 ? 'text-amber-600' : 'text-green-600') }, currentLoad + " / " + maxLoad + " (" + loadPct + "%)")
+                      React.createElement("span", { className: "text-xs font-mono " + (loadPct > 80 ? 'text-red-600' : loadPct > 60 ? 'text-amber-600' : 'text-green-600') }, bioStatus + " \u2014 " + currentLoad + " / " + maxLoad + " (" + loadPct + "%)")
 
-                  ),
+                    ),
 
-                  React.createElement("div", { className: "h-3 bg-slate-100 rounded-full overflow-hidden" },
+                    React.createElement("div", { className: "h-3 bg-slate-100 rounded-full overflow-hidden", "aria-hidden": "true" },
 
-                    React.createElement("div", { style: { width: loadPct + '%', transition: 'width 0.3s' }, className: "h-full rounded-full " + (loadPct > 80 ? 'bg-red-500' : loadPct > 60 ? 'bg-amber-400' : 'bg-green-500') })
+                      React.createElement("div", { style: { width: loadPct + '%', transition: 'width 0.3s' }, className: "h-full rounded-full " + (loadPct > 80 ? 'bg-red-500' : loadPct > 60 ? 'bg-amber-400' : 'bg-green-500') })
 
-                  )
+                    )
 
-                ),
+                  );
+                })(),
 
 
 
@@ -7239,7 +7261,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       var sp = species.find(function (s) { return s.id === fId; });
 
-                      return React.createElement("span", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+                      return React.createElement("span", { 
 
                         key: idx,
 
@@ -8079,7 +8101,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   var zoneSpecies = MARINE_SPECIES.filter(function (s) { return s.zone === zone.id; });
 
-                  return React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+                  return React.createElement("div", { 
 
                     key: zone.id,
 

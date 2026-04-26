@@ -15,6 +15,15 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  (function() {
+    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-stem-motion-reduce-css';
+    st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    document.head.appendChild(st);
+  })();
+
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-manipulatives')) return;
@@ -476,19 +485,19 @@ window.StemLab = window.StemLab || {
 
       // ── Place Value Column ──
       var placeCol = function(label, symbol, place, color, lightColor, bw, bh, gridC, gridR) {
-        return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+        return h('div', { 
           className: 'bg-white rounded-xl p-3 border-2 text-center shadow-sm',
           style: Object.assign({ borderColor: lightColor }, regroupFlash === place ? { animation: 'b10regroup 0.7s ease' } : {})
         },
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold uppercase mb-1', style: { color: color } }, symbol + ' ' + label),
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex justify-center gap-1 mb-2 min-h-[58px] flex-wrap items-center' }, renderBlock3D(color, lightColor, bw, bh, b10[place], gridC, gridR)),
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-center gap-2' },
+          h('div', { className: 'text-xs font-bold uppercase mb-1', style: { color: color } }, symbol + ' ' + label),
+          h('div', { className: 'flex justify-center gap-1 mb-2 min-h-[58px] flex-wrap items-center' }, renderBlock3D(color, lightColor, bw, bh, b10[place], gridC, gridR)),
+          h('div', { className: 'flex items-center justify-center gap-2' },
             h('button', { 'aria-label': 'Manipulatives action',
               onClick: function() { var n = Object.assign({}, b10); n[place] = Math.max(0, n[place] - 1); upd({ b10: n }); if (soundEnabled) sfxClick(); },
               className: 'w-8 h-8 rounded-full font-bold text-lg hover:opacity-80 transition-all flex items-center justify-center',
               style: { background: lightColor + '33', color: color }
             }, '\u2212'),
-            h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-2xl font-bold w-8 text-center', style: { color: color } }, b10[place]),
+            h('span', { className: 'text-2xl font-bold w-8 text-center', style: { color: color } }, b10[place]),
             h('button', { 'aria-label': 'Add',
               onClick: function() {
                 var n = Object.assign({}, b10); n[place] = Math.min(20, n[place] + 1); upd({ b10: n }); if (soundEnabled) sfxClick();
@@ -498,7 +507,7 @@ window.StemLab = window.StemLab || {
               style: { background: lightColor + '33', color: color }
             }, '+')
           ),
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs mt-1', style: { color: color } }, '\u00D7' + { thousands: 1000, hundreds: 100, tens: 10, ones: 1 }[place] + ' = ' + b10[place] * { thousands: 1000, hundreds: 100, tens: 10, ones: 1 }[place])
+          h('div', { className: 'text-xs mt-1', style: { color: color } }, '\u00D7' + { thousands: 1000, hundreds: 100, tens: 10, ones: 1 }[place] + ' = ' + b10[place] * { thousands: 1000, hundreds: 100, tens: 10, ones: 1 }[place])
         );
       };
 
@@ -539,14 +548,14 @@ window.StemLab = window.StemLab || {
       // ══════════════════════════════════════════════════════════════
       // ── HEADER ──
       // ══════════════════════════════════════════════════════════════
-      var headerEl = h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-3 mb-4' },
-        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-3 flex-wrap' },
+      var headerEl = h('div', { className: 'space-y-3 mb-4' },
+        h('div', { className: 'flex items-center gap-3 flex-wrap' },
           h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': 'Back' },
             h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
           h('h3', { className: 'text-lg font-bold text-orange-800' }, '\uD83E\uDDEE Math Manipulatives'),
-          streak >= 3 && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-orange-500' }, '\uD83D\uDD25 ' + streak),
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'ml-auto flex gap-1.5' },
-            h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-emerald-600 self-center' }, score.correct + '/' + score.total),
+          streak >= 3 && h('span', { className: 'text-xs font-bold text-orange-500' }, '\uD83D\uDD25 ' + streak),
+          h('div', { className: 'ml-auto flex gap-1.5' },
+            h('span', { className: 'text-xs font-bold text-emerald-600 self-center' }, score.correct + '/' + score.total),
             h('button', { 'aria-label': 'Badges', onClick: function() { upd({ showBadgesPanel: !showBadgesPanel }); }, className: 'text-[11px] font-bold px-2 py-0.5 rounded-full border transition-all ' + (showBadgesPanel ? 'bg-amber-100 border-amber-300 text-amber-700' : 'bg-slate-100 border-slate-200 text-slate-600') }, '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + badgeDefs.length),
             h('button', { onClick: function() { upd({ soundEnabled: !soundEnabled }); }, 'aria-label': soundEnabled ? 'Mute sound' : 'Enable sound', className: 'text-sm px-1' }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
             callGemini && h('button', { 'aria-label': 'Badges', onClick: askAI, disabled: aiLoading, className: 'text-[11px] font-bold px-2 py-0.5 rounded-full border transition-all ' + (aiLoading ? 'bg-pink-100 border-pink-200 text-pink-400' : 'bg-pink-50 border-pink-200 text-pink-600 hover:bg-pink-100') }, aiLoading ? '\u23F3' : '\uD83E\uDD16 Tutor')
@@ -571,13 +580,13 @@ window.StemLab = window.StemLab || {
         ),
 
         // AI insight
-        aiInsight && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-pink-50 rounded-lg p-3 border border-pink-200 text-xs text-slate-700 whitespace-pre-line' },
-          h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'font-bold text-pink-600' }, '\uD83E\uDD16 AI Tutor: '),
+        aiInsight && h('div', { className: 'bg-pink-50 rounded-lg p-3 border border-pink-200 text-xs text-slate-700 whitespace-pre-line' },
+          h('span', { className: 'font-bold text-pink-600' }, '\uD83E\uDD16 AI Tutor: '),
           aiInsight
         ),
 
         // Mode tabs (4 modes now)
-        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-1 bg-slate-100 rounded-xl p-1' },
+        h('div', { className: 'flex gap-1 bg-slate-100 rounded-xl p-1' },
           [{ id: 'blocks', icon: '\uD83E\uDDF1', label: 'Base-10 Blocks' },
            { id: 'abacus', icon: '\uD83E\uDDEE', label: 'Abacus' },
            { id: 'slideRule', icon: '\uD83D\uDCCF', label: 'Slide Rule' },
@@ -637,7 +646,7 @@ window.StemLab = window.StemLab || {
                 h('span', { className: 'w-px h-6 bg-violet-200 mx-1 self-center' }),
                 regroupBtn('10 \u2503 \u2192 1 \u25AC', 'tens', 'hundreds', b10.tens >= 10 && b10.hundreds < 9, '#059669', '#2563eb'),
                 regroupBtn('1 \u25AC \u2192 10 \u2503', 'hundreds', 'tens', b10.hundreds >= 1, '#2563eb', '#059669'),
-                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'w-px h-6 bg-violet-200 mx-1 self-center' }),
+                h('span', { className: 'w-px h-6 bg-violet-200 mx-1 self-center' }),
                 regroupBtn('10 \u25AC \u2192 1 \u25A0', 'hundreds', 'thousands', b10.hundreds >= 10 && b10.thousands < 9, '#2563eb', '#db2777'),
                 regroupBtn('1 \u25A0 \u2192 10 \u25AC', 'thousands', 'hundreds', b10.thousands >= 1, '#db2777', '#2563eb')
               ),
@@ -646,9 +655,9 @@ window.StemLab = window.StemLab || {
           ),
 
           // Difficulty selector
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-1.5 items-center flex-wrap' },
-            h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold text-slate-600' }, 'Difficulty:'),
-            [{ id: 'ones', label: '1\u20139', color: '#ea580c' }, { id: 'tens', label: '10\u201399', color: '#059669' }, { id: 'hundreds', label: '100\u2013999', color: '#2563eb' }, { id: 'thousands', label: '1K\u20139K', color: '#db2777' }, { id: 'any', label: 'Any', color: '#64748b' }].map(function(dl) {
+          h('div', { className: 'flex gap-1.5 items-center flex-wrap' },
+            h('span', { className: 'text-[11px] font-bold text-slate-600' }, 'Difficulty:'),
+            [{ id: 'ones', label: '1\u20139', color: '#ea580c' }, { id: 'tens', label: '10\u201399', color: '#059669' }, { id: 'hundreds', label: '100\u2013999', color: '#2563eb' }, { id: 'thousands', label: '1K\u20139K', color: '#db2777' }, { id: 'any', label: 'Any', color: '#94a3b8' }].map(function(dl) {
               return h('button', { 'aria-label': 'Expanded Form', key: dl.id, onClick: function() { upd({ diffLevel: dl.id }); },
                 className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ' + (diffLevel === dl.id ? 'text-white shadow' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'),
                 style: diffLevel === dl.id ? { backgroundColor: dl.color } : {}
@@ -659,7 +668,7 @@ window.StemLab = window.StemLab || {
           ),
 
           // Action buttons
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 flex-wrap' },
+          h('div', { className: 'flex gap-2 flex-wrap' },
             h('button', { 'aria-label': 'Build Number', onClick: genBlockChallenge, className: 'flex-1 py-2 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold rounded-lg text-sm hover:from-orange-600 hover:to-amber-600 transition-all shadow-md' }, '\uD83C\uDFB2 Build Number'),
             h('button', { 'aria-label': 'Addition', onClick: genAdditionProblem, className: 'flex-1 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold rounded-lg text-sm hover:from-emerald-600 hover:to-teal-600 transition-all shadow-md' }, '\u2795 Addition'),
             h('button', { 'aria-label': 'Reset', onClick: function() { upd({ b10: { ones: 0, tens: 0, hundreds: 0, thousands: 0 }, b10Challenge: null, b10Feedback: null, b10AddMode: false, b10Addends: null }); }, className: 'px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all' }, '\u21BA Reset')
@@ -671,29 +680,29 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'text-sm font-bold text-emerald-800 mb-2' }, '\u2795 Addition with Regrouping'),
               h('div', { className: 'flex items-center justify-center gap-3 text-2xl font-bold font-mono' },
                 h('span', { className: 'text-emerald-700' }, b10Addends.a.toLocaleString()),
-                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-emerald-500' }, '+'),
-                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-emerald-700' }, b10Addends.b.toLocaleString()),
-                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-emerald-500' }, '='),
-                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-emerald-400' }, '?')
+                h('span', { className: 'text-emerald-500' }, '+'),
+                h('span', { className: 'text-emerald-700' }, b10Addends.b.toLocaleString()),
+                h('span', { className: 'text-emerald-500' }, '='),
+                h('span', { className: 'text-emerald-400' }, '?')
               ),
               h('p', { className: 'text-xs text-emerald-600 mt-2' }, 'Use the blocks above to show the sum. Add blocks for each number, then regroup if needed!')
             )
           ),
 
           // Challenge display
-          b10Challenge && !b10AddMode && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-orange-50 rounded-lg p-3 border border-orange-200' },
+          b10Challenge && !b10AddMode && h('div', { className: 'bg-orange-50 rounded-lg p-3 border border-orange-200' },
             h('p', { className: 'text-sm font-bold text-orange-800 mb-2' }, '\uD83C\uDFAF Show ' + b10Challenge.target.toLocaleString() + ' using base-10 blocks'),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 items-center' },
-              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs text-orange-600' }, 'Your value: ', h('span', { className: 'font-bold text-orange-900' }, totalValue.toLocaleString())),
+            h('div', { className: 'flex gap-2 items-center' },
+              h('span', { className: 'text-xs text-orange-600' }, 'Your value: ', h('span', { className: 'font-bold text-orange-900' }, totalValue.toLocaleString())),
               h('button', { 'aria-label': 'Check', onClick: checkBase10, className: 'ml-auto px-4 py-1.5 bg-orange-700 text-white font-bold rounded-lg text-sm hover:bg-orange-600 transition-all' }, '\u2714 Check')
             ),
             b10Feedback && h('p', { className: 'text-sm font-bold mt-2 ' + (b10Feedback.correct ? 'text-green-600' : 'text-red-600') }, b10Feedback.msg)
           ),
 
           // Addition challenge check
-          b10AddMode && b10Challenge && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-orange-50 rounded-lg p-3 border border-orange-200' },
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 items-center' },
-              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs text-orange-600' }, 'Your value: ', h('span', { className: 'font-bold text-orange-900' }, totalValue.toLocaleString()), ' (need ' + b10Challenge.target.toLocaleString() + ')'),
+          b10AddMode && b10Challenge && h('div', { className: 'bg-orange-50 rounded-lg p-3 border border-orange-200' },
+            h('div', { className: 'flex gap-2 items-center' },
+              h('span', { className: 'text-xs text-orange-600' }, 'Your value: ', h('span', { className: 'font-bold text-orange-900' }, totalValue.toLocaleString()), ' (need ' + b10Challenge.target.toLocaleString() + ')'),
               h('button', { 'aria-label': 'Check Sum', onClick: checkBase10, className: 'ml-auto px-4 py-1.5 bg-emerald-700 text-white font-bold rounded-lg text-sm hover:bg-emerald-600 transition-all' }, '\u2714 Check Sum')
             ),
             b10Feedback && h('p', { className: 'text-sm font-bold mt-2 ' + (b10Feedback.correct ? 'text-green-600' : 'text-red-600') }, b10Feedback.msg)
@@ -720,16 +729,16 @@ window.StemLab = window.StemLab || {
             className: 'rounded-xl border-2 border-amber-300 p-4 shadow-inner relative overflow-hidden',
             style: { background: 'linear-gradient(180deg, #fef3c7 0%, #fde68a 30%, #fef3c7 100%)' }
           },
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { position: 'absolute', left: 0, right: 0, top: '36%', height: '4px', background: 'linear-gradient(90deg, #92400e, #b45309, #92400e)', zIndex: 5, boxShadow: '0 1px 3px rgba(0,0,0,0.3)' } }),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex justify-center gap-6' },
+            h('div', { style: { position: 'absolute', left: 0, right: 0, top: '36%', height: '4px', background: 'linear-gradient(90deg, #92400e, #b45309, #92400e)', zIndex: 5, boxShadow: '0 1px 3px rgba(0,0,0,0.3)' } }),
+            h('div', { className: 'flex justify-center gap-6' },
               rods.slice().reverse().map(function(val, ri) {
                 var rodIdx = rods.length - 1 - ri;
                 var heavenlyVal = Math.floor(val / 5);
                 var earthlyVal = val % 5;
                 var rodColor = ROD_COLORS[rodIdx];
-                return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: rodIdx, className: 'flex flex-col items-center', style: { width: '48px' } },
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-col items-center gap-1 mb-1', style: { minHeight: '60px', justifyContent: 'flex-end' } },
-                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { position: 'absolute', width: '3px', height: '100%', background: 'linear-gradient(180deg, #92400e 0%, #b45309 100%)', borderRadius: '2px', zIndex: 0 } }),
+                return h('div', { key: rodIdx, className: 'flex flex-col items-center', style: { width: '48px' } },
+                  h('div', { className: 'flex flex-col items-center gap-1 mb-1', style: { minHeight: '60px', justifyContent: 'flex-end' } },
+                    h('div', { style: { position: 'absolute', width: '3px', height: '100%', background: 'linear-gradient(180deg, #92400e 0%, #b45309 100%)', borderRadius: '2px', zIndex: 0 } }),
                     h('button', { 'aria-label': 'Set Rod',
                       onClick: function() { setRod(rodIdx, heavenlyVal ? val - 5 : val + 5); },
                       className: 'relative z-10 transition-all duration-200',
@@ -742,7 +751,7 @@ window.StemLab = window.StemLab || {
                       }
                     })
                   ),
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-col items-center gap-0.5 mt-2', style: { minHeight: '130px' } },
+                  h('div', { className: 'flex flex-col items-center gap-0.5 mt-2', style: { minHeight: '130px' } },
                     Array.from({ length: 5 }).map(function(_, bi) {
                       var isActive = bi < earthlyVal;
                       return h('button', { 'aria-label': 'Manipulatives action',
@@ -763,15 +772,15 @@ window.StemLab = window.StemLab || {
                       });
                     })
                   ),
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold mt-1', style: { color: rodColor } }, placeNames[rodIdx]),
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-mono font-bold text-amber-900' }, val)
+                  h('div', { className: 'text-[11px] font-bold mt-1', style: { color: rodColor } }, placeNames[rodIdx]),
+                  h('div', { className: 'text-xs font-mono font-bold text-amber-900' }, val)
                 );
               })
             )
           ),
 
           // Controls
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 flex-wrap' },
+          h('div', { className: 'flex gap-2 flex-wrap' },
             h('button', { 'aria-label': 'Challenge', onClick: function() {
               var target = 1 + Math.floor(Math.random() * 99999);
               upd({ abacusChallenge: { target: target }, abacusFeedback: null, abacus: { rods: [0, 0, 0, 0, 0] }, speedChallenge: null });
@@ -784,18 +793,18 @@ window.StemLab = window.StemLab || {
           ),
 
           // Challenge / Speed display
-          abacusChallenge && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-amber-50 rounded-lg p-3 border border-amber-200' },
+          abacusChallenge && h('div', { className: 'bg-amber-50 rounded-lg p-3 border border-amber-200' },
             h('p', { className: 'text-sm font-bold text-amber-800 mb-2' }, '\uD83C\uDFAF Show ' + abacusChallenge.target.toLocaleString() + ' on the abacus'),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 items-center' },
-              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs text-amber-600' }, 'Your value: ', h('span', { className: 'font-bold text-amber-900' }, abacusTotal.toLocaleString())),
+            h('div', { className: 'flex gap-2 items-center' },
+              h('span', { className: 'text-xs text-amber-600' }, 'Your value: ', h('span', { className: 'font-bold text-amber-900' }, abacusTotal.toLocaleString())),
               h('button', { 'aria-label': 'Check', onClick: checkAbacus, className: 'ml-auto px-4 py-1.5 bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-600 transition-all' }, '\u2714 Check')
             ),
             abacusFeedback && h('p', { className: 'text-sm font-bold mt-2 ' + (abacusFeedback.correct ? 'text-green-600' : 'text-red-600') }, abacusFeedback.msg)
           ),
-          speedChallenge && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-rose-50 rounded-lg p-3 border border-rose-200' },
+          speedChallenge && h('div', { className: 'bg-rose-50 rounded-lg p-3 border border-rose-200' },
             h('p', { className: 'text-sm font-bold text-rose-800 mb-2' }, '\u23F1\uFE0F Speed: Show ' + speedChallenge.target.toLocaleString() + ' as fast as you can!'),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 items-center' },
-              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs text-rose-600' }, 'Your value: ', h('span', { className: 'font-bold text-rose-900' }, abacusTotal.toLocaleString())),
+            h('div', { className: 'flex gap-2 items-center' },
+              h('span', { className: 'text-xs text-rose-600' }, 'Your value: ', h('span', { className: 'font-bold text-rose-900' }, abacusTotal.toLocaleString())),
               h('button', { 'aria-label': 'Done!', onClick: checkSpeed, className: 'ml-auto px-4 py-1.5 bg-rose-700 text-white font-bold rounded-lg text-sm hover:bg-rose-600 transition-all' }, '\u2714 Done!')
             )
           ),
@@ -845,9 +854,9 @@ window.StemLab = window.StemLab || {
 
         var cursorX = PAD + (sr.cursorPos || 0.301) * RULER_W;
 
-        return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4 max-w-3xl mx-auto animate-in fade-in duration-200' },
+        return h('div', { className: 'space-y-4 max-w-3xl mx-auto animate-in fade-in duration-200' },
           headerEl,
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'relative' },
+          h('div', { className: 'relative' },
             h('svg', {
               viewBox: '0 0 ' + SW + ' ' + SH, className: 'w-full rounded-xl border-2 border-amber-300 cursor-crosshair shadow-md',
               style: { maxWidth: '600px', background: '#fffbeb' },
@@ -875,20 +884,20 @@ window.StemLab = window.StemLab || {
             )
           ),
           // Readout
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl border border-amber-200 p-4' },
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'grid grid-cols-3 gap-4 text-center' },
-              h('div', null, h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-green-700 uppercase mb-1' }, 'C Scale'), h('div', { className: 'text-2xl font-bold font-mono text-green-800' }, cVal.toFixed(2))),
-              h('div', null, h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-slate-600 uppercase mb-1' }, '\u00D7'), h('div', { className: 'text-2xl font-bold text-slate-600' }, '\u00D7')),
-              h('div', null, h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-amber-700 uppercase mb-1' }, 'D Scale'), h('div', { className: 'text-2xl font-bold font-mono text-amber-800' }, dVal.toFixed(2)))
+          h('div', { className: 'bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl border border-amber-200 p-4' },
+            h('div', { className: 'grid grid-cols-3 gap-4 text-center' },
+              h('div', null, h('div', { className: 'text-xs font-bold text-green-700 uppercase mb-1' }, 'C Scale'), h('div', { className: 'text-2xl font-bold font-mono text-green-800' }, cVal.toFixed(2))),
+              h('div', null, h('div', { className: 'text-xs font-bold text-slate-600 uppercase mb-1' }, '\u00D7'), h('div', { className: 'text-2xl font-bold text-slate-600' }, '\u00D7')),
+              h('div', null, h('div', { className: 'text-xs font-bold text-amber-700 uppercase mb-1' }, 'D Scale'), h('div', { className: 'text-2xl font-bold font-mono text-amber-800' }, dVal.toFixed(2)))
             ),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-center mt-3 pt-3 border-t border-amber-200' },
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-slate-600 uppercase mb-1' }, 'Result'),
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-3xl font-bold font-mono text-orange-800' }, '\u2248 ' + product.toFixed(2))
+            h('div', { className: 'text-center mt-3 pt-3 border-t border-amber-200' },
+              h('div', { className: 'text-xs font-bold text-slate-600 uppercase mb-1' }, 'Result'),
+              h('div', { className: 'text-3xl font-bold font-mono text-orange-800' }, '\u2248 ' + product.toFixed(2))
             )
           ),
 
           // Controls + practice problems
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 flex-wrap' },
+          h('div', { className: 'flex gap-2 flex-wrap' },
             h('button', { 'aria-label': 'Practice Problem', onClick: function() {
               var p = srProblems[Math.floor(Math.random() * srProblems.length)];
               upd({ srProblem: p, srFeedback: null, slideRule: { cOffset: 0, cursorPos: 0.301 } });
@@ -897,11 +906,11 @@ window.StemLab = window.StemLab || {
           ),
 
           // Practice problem display
-          srProblem && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-amber-50 rounded-lg p-3 border border-amber-200' },
+          srProblem && h('div', { className: 'bg-amber-50 rounded-lg p-3 border border-amber-200' },
             h('p', { className: 'text-sm font-bold text-amber-800 mb-2' }, '\uD83C\uDFAF Use the slide rule to multiply: ' + srProblem.a + ' \u00D7 ' + srProblem.b + ' = ?'),
             h('p', { className: 'text-xs text-amber-600 mb-2' }, '\uD83D\uDCA1 Set C-scale "1" to line up with ' + srProblem.a + ' on D, then find ' + srProblem.b + ' on C. Read D under it!'),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 items-center' },
-              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs text-amber-600' }, 'Your result: ', h('span', { className: 'font-bold text-amber-900' }, '\u2248 ' + product.toFixed(1))),
+            h('div', { className: 'flex gap-2 items-center' },
+              h('span', { className: 'text-xs text-amber-600' }, 'Your result: ', h('span', { className: 'font-bold text-amber-900' }, '\u2248 ' + product.toFixed(1))),
               h('button', { 'aria-label': 'Check', onClick: checkSR, className: 'ml-auto px-4 py-1.5 bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-600 transition-all' }, '\u2714 Check')
             ),
             srFeedback && h('p', { className: 'text-sm font-bold mt-2 ' + (srFeedback.correct ? 'text-green-600' : 'text-red-600') }, srFeedback.msg)
@@ -925,9 +934,9 @@ window.StemLab = window.StemLab || {
       // ── QUIZ MODE ──
       // ═══════════════════════════════════════════════════════════════
       if (manipMode === 'quiz') {
-        return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4 max-w-3xl mx-auto animate-in fade-in duration-200' },
+        return h('div', { className: 'space-y-4 max-w-3xl mx-auto animate-in fade-in duration-200' },
           headerEl,
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-center' },
+          h('div', { className: 'text-center' },
             h('h4', { className: 'text-lg font-bold text-orange-800' }, '\uD83E\uDDE0 Place Value Quiz'),
             h('p', { className: 'text-xs text-slate-600' }, 'Test your understanding of place value, expanded form, and number comparison')
           ),
@@ -952,14 +961,14 @@ window.StemLab = window.StemLab || {
               )
             ),
             h('p', { className: 'text-lg font-bold text-slate-800 mb-4' }, pvQuiz.q),
-            !pvFeedback && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'grid grid-cols-2 gap-3' },
+            !pvFeedback && h('div', { className: 'grid grid-cols-2 gap-3' },
               pvQuiz.opts.map(function(opt) {
                 return h('button', { 'aria-label': 'Next', key: opt, onClick: function() { answerPVQuiz(opt); },
                   className: 'px-4 py-3 rounded-xl text-sm font-bold border-2 bg-white text-slate-700 border-slate-200 hover:border-orange-400 hover:bg-orange-50 transition-all cursor-pointer'
                 }, opt);
               })
             ),
-            pvFeedback && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'p-3 rounded-xl text-sm font-bold ' + (pvFeedback.correct ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200') },
+            pvFeedback && h('div', { className: 'p-3 rounded-xl text-sm font-bold ' + (pvFeedback.correct ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200') },
               pvFeedback.msg,
               h('button', { 'aria-label': 'Next', onClick: function() { upd({ pvQuiz: generatePVQuiz(), pvFeedback: null }); }, className: 'ml-3 text-xs font-bold underline' }, '\u27A1 Next')
             )

@@ -32,6 +32,15 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  (function() {
+    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-stem-motion-reduce-css';
+    st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    document.head.appendChild(st);
+  })();
+
 
   // ── Audio (auto-injected) ──
   var _artAC = null;
@@ -7482,7 +7491,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
           var _accent = isDark || isContrast ? '#22d3ee' : '#0891b2';
 
-          var _muted = isDark || isContrast ? '#94a3b8' : '#64748b';
+          var _muted = isDark || isContrast ? '#94a3b8' : '#94a3b8';
 
           var _btnBg = isDark || isContrast ? '#0891b2' : '#06b6d4';
 

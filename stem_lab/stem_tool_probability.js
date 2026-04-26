@@ -1,3 +1,13 @@
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+(function() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById('allo-stem-motion-reduce-css')) return;
+  var st = document.createElement('style');
+  st.id = 'allo-stem-motion-reduce-css';
+  st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+  if (document.head) document.head.appendChild(st);
+})();
+
 // ═══════════════════════════════════════════
 // stem_tool_probability.js — Probability Lab
 // Extracted from stem_tool_math.js
@@ -147,7 +157,7 @@ var d = (labToolData.probability) || {};
 
             { id: 'tennis', label: '\uD83C\uDFBE First Serves', icon: '\uD83C\uDFBE', desc: 'Pro tennis first serve success rate is ~62%', outcomes: ['In', 'Fault'], probs: [0.62, 0.38], colors: ['#06b6d4', '#f97316'], emoji: ['\uD83C\uDFBE', '\u2716'] },
 
-            { id: 'hockey', label: '\uD83C\uDFD2 Shots on Goal', icon: '\uD83C\uDFD2', desc: 'NHL average shooting percentage is ~10%', outcomes: ['Goal', 'Save'], probs: [0.10, 0.90], colors: ['#ef4444', '#64748b'], emoji: ['\uD83D\uDEA8', '\uD83E\uDDE4'] }
+            { id: 'hockey', label: '\uD83C\uDFD2 Shots on Goal', icon: '\uD83C\uDFD2', desc: 'NHL average shooting percentage is ~10%', outcomes: ['Goal', 'Save'], probs: [0.10, 0.90], colors: ['#ef4444', '#94a3b8'], emoji: ['\uD83D\uDEA8', '\uD83E\uDDE4'] }
 
           ];
 
@@ -651,7 +661,7 @@ var d = (labToolData.probability) || {};
 
             return React.createElement("svg", { viewBox: "0 0 80 80", width: 80, height: 80 },
 
-              React.createElement("circle", { cx: 40, cy: 40, r: 36, fill: isH ? '#fbbf24' : '#94a3b8', stroke: isH ? '#92400e' : '#64748b', strokeWidth: 3 }),
+              React.createElement("circle", { cx: 40, cy: 40, r: 36, fill: isH ? '#fbbf24' : '#94a3b8', stroke: isH ? '#92400e' : '#94a3b8', strokeWidth: 3 }),
 
               React.createElement("text", { x: 40, y: 46, textAnchor: "middle", style: { fontSize: '22px', fontWeight: 'bold' }, fill: isH ? '#92400e' : '#f8fafc' }, isH ? 'H' : 'T'),
 
@@ -697,7 +707,7 @@ var d = (labToolData.probability) || {};
 
           var _accent = isDark || isContrast ? '#c4b5fd' : '#7c3aed';
 
-          var _muted = isDark || isContrast ? '#94a3b8' : '#64748b';
+          var _muted = isDark || isContrast ? '#94a3b8' : '#94a3b8';
 
           var _btnBg = isDark || isContrast ? '#7c3aed' : '#8b5cf6';
 
@@ -755,7 +765,7 @@ var d = (labToolData.probability) || {};
 
                   React.createElement("span", { className: "text-[11px] font-bold", style: { color: isDark || isContrast ? '#a5b4fc' : '#6d28d9' } }, d.mbWithoutReplacement ? '\uD83D\uDD04 Without Replacement' : '\u267B\uFE0F With Replacement'),
 
-                  React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+                  React.createElement("div", { 
 
                     onClick: function () { upd('mbWithoutReplacement', !d.mbWithoutReplacement); upd('results', []); upd('trials', 0); upd('convergenceHistory', []); upd('lastResult', null); upd('_mbRemaining', null); },
 
@@ -1290,7 +1300,7 @@ var d = (labToolData.probability) || {};
                       );
                     })
                   ),
-                  React.createElement("p", { className: "text-[11px] mt-2 italic", style: { color: isDark||isContrast?'#94a3b8':'#64748b' } },
+                  React.createElement("p", { className: "text-[11px] mt-2 italic", style: { color: isDark||isContrast?'#94a3b8':'#94a3b8' } },
                     '\uD83D\uDCA1 Multiply the two probabilities to get the joint probability. These events are independent, so P(A\u2229B) = P(A) \u00D7 P(B).'
                   )
                 )

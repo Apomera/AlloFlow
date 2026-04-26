@@ -32,6 +32,15 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  (function() {
+    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-stem-motion-reduce-css';
+    st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    document.head.appendChild(st);
+  })();
+
 
   // ── Audio (auto-injected) ──
   var _geoAC = null;
@@ -1622,7 +1631,7 @@ var d = labToolData || {};
 
                     onKeyDown: function(e) { if (e.key === 'Enter' && !geoFeedback) { checkCapitalAnswer(d.geoCapitalInput || ''); upd('geoCapitalInput', ''); } },
 
-                    className: 'flex-1 px-3 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 disabled:bg-slate-50 disabled:text-slate-500'
+                    className: 'flex-1 px-3 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 disabled:bg-slate-50 disabled:text-slate-300'
 
                   }),
 
@@ -1694,7 +1703,7 @@ var d = labToolData || {};
               geoTarget && React.createElement('div', { className: 'max-w-lg mx-auto' },
 
                 React.createElement('div', { className: 'text-center mb-3' },
-                  React.createElement('p', { className: 'text-xs text-slate-500 uppercase tracking-wide' }, 'Which continent is'),
+                  React.createElement('p', { className: 'text-xs text-slate-300 uppercase tracking-wide' }, 'Which continent is'),
                   React.createElement('p', { className: 'text-2xl font-bold text-slate-800' }, geoTarget.name + '?')
                 ),
 
@@ -1925,7 +1934,7 @@ var d = labToolData || {};
                     // Country label: always visible in browse; hidden in quiz until answered
                     (!isQuiz || revealed) && React.createElement('p', { className: 'text-xs text-amber-600 mt-2 font-bold' }, '\uD83D\uDCCD ' + lm.country + ' \u2014 ' + lm.lat.toFixed(1) + '\u00b0, ' + lm.lng.toFixed(1) + '\u00b0'),
 
-                    isQuiz && !revealed && React.createElement('p', { className: 'text-xs text-slate-500 italic mt-2' }, 'Which country is this in?')
+                    isQuiz && !revealed && React.createElement('p', { className: 'text-xs text-slate-300 italic mt-2' }, 'Which country is this in?')
 
                   ),
 
@@ -1994,7 +2003,7 @@ var d = labToolData || {};
                         : isPicked
                           ? 'bg-red-100 border-red-500 text-red-800'
                           : revealed
-                            ? 'bg-slate-50 border-slate-200 text-slate-500'
+                            ? 'bg-slate-50 border-slate-200 text-slate-300'
                             : 'bg-white border-slate-300 text-slate-700 hover:bg-teal-50 hover:border-teal-400';
                       return React.createElement('button', {
                         key: name,
@@ -2074,7 +2083,7 @@ var d = labToolData || {};
                         answered && React.createElement('div', {
                           style: {
                             position: 'absolute', left: 0, bottom: 0, height: '6px', width: fillPct + '%',
-                            background: isBigger ? '#22c55e' : '#64748b',
+                            background: isBigger ? '#22c55e' : '#94a3b8',
                             transition: 'width 0.8s ease-out'
                           },
                           'aria-hidden': 'true'
@@ -2088,7 +2097,7 @@ var d = labToolData || {};
 
                         // Area reveal — only after answering, color-coded
                         answered
-                          ? React.createElement('p', { className: 'text-sm font-bold mt-2 ' + (isBigger ? 'text-green-700' : 'text-slate-500') },
+                          ? React.createElement('p', { className: 'text-sm font-bold mt-2 ' + (isBigger ? 'text-green-700' : 'text-slate-300') },
                               c.area.toLocaleString() + ' km\u00b2')
                           : React.createElement('p', { className: 'text-[11px] text-slate-600 mt-1' }, 'Click if bigger')
 
@@ -2164,7 +2173,7 @@ var d = labToolData || {};
                     'aria-label': 'Close country info',
                     className: 'text-slate-400 hover:text-white text-sm leading-none'
                   }, '\u2715')
-                ) : React.createElement('p', { className: 'text-xs text-slate-500 text-center italic' }, 'Click any country on the globe to see its info here.')
+                ) : React.createElement('p', { className: 'text-xs text-slate-300 text-center italic' }, 'Click any country on the globe to see its info here.')
               )
 
             ),
@@ -2394,7 +2403,7 @@ var d = labToolData || {};
                       disabled: answered,
                       onChange: function(e) { upd('geoQuizAnswer', e.target.value); },
                       onKeyDown: function(e) { if (e.key === 'Enter') submitAnswer(d.geoQuizAnswer || ''); },
-                      className: 'flex-1 px-3 py-2 rounded-lg border border-teal-200 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 disabled:bg-slate-50 disabled:text-slate-500'
+                      className: 'flex-1 px-3 py-2 rounded-lg border border-teal-200 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 disabled:bg-slate-50 disabled:text-slate-300'
                     }),
 
                     React.createElement('button', {
@@ -2564,7 +2573,7 @@ var d = labToolData || {};
                 ),
 
                 geoStatsOpen && React.createElement('div', { className: 'mt-2 space-y-1.5' },
-                  !hasStats && React.createElement('p', { className: 'text-[11px] text-slate-500 italic text-center py-2' }, 'Answer some questions to see your progress per continent.'),
+                  !hasStats && React.createElement('p', { className: 'text-[11px] text-slate-300 italic text-center py-2' }, 'Answer some questions to see your progress per continent.'),
                   hasStats && ['Africa', 'Asia', 'Europe', 'North America', 'South America', 'Oceania'].map(function(cont) {
                     var s = geoSessionStats[cont];
                     var hasData = !!s;
@@ -2919,7 +2928,7 @@ var d = labToolData || {};
             React.createElement('p',{className:'text-sm font-bold text-violet-800 mb-1'},'🧩 Drag each theorem to its description:'),
             // Theorem chips (left)
             React.createElement('div',{className:'flex flex-wrap gap-2 mb-3'},
-              MATCH_PAIRS.filter(p=>!matchedIds.has(p.id)).map(p=>React.createElement('div',{ role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+              MATCH_PAIRS.filter(p=>!matchedIds.has(p.id)).map(p=>React.createElement('div',{ 
                 key:p.id, draggable:true,
                 onDragStart:e=>{ _gpDrag.matchId=p.id; e.dataTransfer.effectAllowed='move'; try{e.dataTransfer.setData('text/plain',p.theorem);}catch(ex){} },
                 onDragEnd:()=>{ _gpDrag.matchId=null; },
@@ -3182,7 +3191,7 @@ var d = labToolData || {};
             React.createElement('div',{className:'mb-3'},
               React.createElement('p',{className:'text-[11px] font-bold text-emerald-700 uppercase mb-1.5'},'🧩 Drag a reason to the correct row (or click to select, then click the row):'),
               React.createElement('div',{className:'flex flex-wrap gap-1.5'},
-                availableReasons.map(reason => React.createElement('div',{ role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+                availableReasons.map(reason => React.createElement('div',{ 
                   key:reason,
                   draggable:true,
                   onDragStart:e=>{ _gpDrag.reason=reason; e.dataTransfer.effectAllowed='move'; try{e.dataTransfer.setData('text/plain',reason);}catch(ex){} },

@@ -30,6 +30,28 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  (function() {
+    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-stem-motion-reduce-css';
+    st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    document.head.appendChild(st);
+  })();
+
+  // ── Accessibility live region (WCAG 4.1.3) ──
+  (function() {
+    if (document.getElementById('allo-live-molecule')) return;
+    var lr = document.createElement('div');
+    lr.id = 'allo-live-molecule';
+    lr.setAttribute('aria-live', 'polite');
+    lr.setAttribute('aria-atomic', 'true');
+    lr.setAttribute('role', 'status');
+    lr.className = 'sr-only';
+    lr.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(lr);
+  })();
+
 
   // ── Audio (auto-injected) ──
   var _molAC = null;
@@ -822,7 +844,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                 (d.atoms || []).map((a, i) => React.createElement("g", { key: i },
 
-                  React.createElement("circle", { cx: a.x, cy: a.y, r: 24, fill: a.color || '#64748b', stroke: '#fff', strokeWidth: 3, style: { filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))', cursor: 'grab' }, onMouseDown: e => { e.preventDefault(); upd('dragging', i); } }),
+                  React.createElement("circle", { cx: a.x, cy: a.y, r: 24, fill: a.color || '#94a3b8', stroke: '#fff', strokeWidth: 3, style: { filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))', cursor: 'grab' }, onMouseDown: e => { e.preventDefault(); upd('dragging', i); } }),
 
                   React.createElement("text", { x: a.x, y: a.y + 5, textAnchor: "middle", fill: "white", style: { fontSize: '14px', fontWeight: 'bold' } }, a.el)
 
@@ -883,7 +905,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                     return React.createElement("div", { key: sym, className: "flex items-center gap-1 bg-slate-50 rounded-lg px-2 py-1 border" },
 
-                      React.createElement("span", { className: "w-8 h-8 rounded-md flex items-center justify-center text-white font-bold text-sm", style: { backgroundColor: el?.c || '#64748b' } }, sym),
+                      React.createElement("span", { className: "w-8 h-8 rounded-md flex items-center justify-center text-white font-bold text-sm", style: { backgroundColor: el?.c || '#94a3b8' } }, sym),
 
                       React.createElement("span", { className: "text-lg font-black text-slate-700" }, "\u00D7" + count),
 
@@ -1133,7 +1155,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                     React.createElement("circle", {
 
-                      cx: a.x, cy: a.y, r: 22, fill: a.color || '#64748b', stroke: isSelected ? '#3b82f6' : '#fff', strokeWidth: isSelected ? 3 : 2.5,
+                      cx: a.x, cy: a.y, r: 22, fill: a.color || '#94a3b8', stroke: isSelected ? '#3b82f6' : '#fff', strokeWidth: isSelected ? 3 : 2.5,
 
                       style: { filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))', cursor: 'grab' },
 
@@ -2190,7 +2212,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
               )
             ),
 // ═══ Tutorial Overlay ═══
-            !tutorialDismissed && React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+            !tutorialDismissed && React.createElement("div", { 
               className: "fixed inset-0 z-50 flex items-center justify-center bg-black/40",
               onClick: (e) => { if (e.target === e.currentTarget) dismissTutorial(); }
             },

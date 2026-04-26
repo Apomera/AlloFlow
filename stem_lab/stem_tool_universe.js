@@ -32,6 +32,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
 (function() {
   'use strict';
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  (function() {
+    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-stem-motion-reduce-css';
+    st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    document.head.appendChild(st);
+  })();
+
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-universe')) return;
@@ -287,7 +296,7 @@ var d = labToolData.universe || {};
             { name: 'Super-Earth', icon: '\uD83C\uDF0D', size: '1.2-2x Earth', orbit: 'Varies', temp: 'Varies', desc: 'Rocky planets larger than Earth but smaller than Neptune. No equivalent in our Solar System. Some may be habitable with thick atmospheres.', example: 'LHS 1140 b, 55 Cancri e', habitable: 'Possible', color: '#22c55e' },
             { name: 'Mini-Neptune', icon: '\uD83D\uDD35', size: '2-4x Earth', orbit: 'Varies', temp: '200-600 K', desc: 'Small gas/ice planets with thick hydrogen-helium atmospheres. The most common type of exoplanet discovered! No equivalent in our Solar System.', example: 'Kepler-11f, GJ 1214 b', habitable: false, color: '#3b82f6' },
             { name: 'Earth Analog', icon: '\u2B50', size: '0.8-1.5x Earth', orbit: 'Habitable zone', temp: '200-320 K', desc: 'Rocky planets in the habitable zone where liquid water could exist. The holy grail of exoplanet research. Very hard to detect.', example: 'Kepler-442b, TRAPPIST-1e', habitable: 'Best candidate', color: '#fbbf24' },
-            { name: 'Rogue Planet', icon: '\uD83C\uDF11', size: 'Varies', orbit: 'None (free-floating)', temp: 'Near absolute zero', desc: 'Planets ejected from their star system, wandering through interstellar space. Estimated billions in the Milky Way alone. Could have subsurface oceans heated by radioactive decay.', example: 'CFBDSIR 2149-0403', habitable: 'Unlikely but possible', color: '#64748b' },
+            { name: 'Rogue Planet', icon: '\uD83C\uDF11', size: 'Varies', orbit: 'None (free-floating)', temp: 'Near absolute zero', desc: 'Planets ejected from their star system, wandering through interstellar space. Estimated billions in the Milky Way alone. Could have subsurface oceans heated by radioactive decay.', example: 'CFBDSIR 2149-0403', habitable: 'Unlikely but possible', color: '#94a3b8' },
             { name: 'Lava World', icon: '\uD83C\uDF0B', size: '0.5-2x Earth', orbit: 'Ultra-short', temp: '2,000+ K', desc: 'Rocky worlds so close to their star that the surface is molten rock. May have magma oceans and silicate vapor atmospheres. Rock literally rains from the sky.', example: 'CoRoT-7b, Kepler-78b', habitable: false, color: '#f97316' }
           ];
 
@@ -367,7 +376,7 @@ var d = labToolData.universe || {};
             { name: 'Carina Nebula', dist: '8,500 ly', size: '300+ ly across', desc: 'One of the largest nebulae in the sky. Contains Eta Carinae, a massive unstable star 100x the Sun\'s mass that could explode as a supernova any time.', features: 'Eta Carinae, Keyhole Nebula, Mystic Mountain, young massive stars', icon: '\uD83C\uDF1F', color: '#f472b6' },
             { name: 'Tarantula Nebula (30 Doradus)', dist: '160,000 ly (LMC)', size: '600 ly across', desc: 'The most active star-forming region in the Local Group. If it were as close as the Orion Nebula, it would cast shadows on Earth. Contains the most massive known stars.', features: 'R136 cluster with stars 200+ solar masses, extreme UV radiation', icon: '\uD83D\uDD25', color: '#fb923c' },
             { name: 'Rosette Nebula', dist: '5,000 ly', size: '130 ly across', desc: 'A beautiful flower-shaped emission nebula. Stellar winds from the central star cluster have carved a cavity in the gas, creating the rose pattern.', features: 'Central cavity, elephant trunk structures, NGC 2244 cluster', icon: '\uD83C\uDF39', color: '#f87171' },
-            { name: 'Horsehead Nebula (Barnard 33)', dist: '1,500 ly', size: '3.5 ly tall', desc: 'An iconic dark nebula shaped like a horse\'s head. A dense cloud of dust blocking light from the red emission nebula behind it. Active low-mass star formation inside.', features: 'Dark molecular cloud, infrared-bright protostars, IC 434 background', icon: '\uD83D\uDC0E', color: '#64748b' }
+            { name: 'Horsehead Nebula (Barnard 33)', dist: '1,500 ly', size: '3.5 ly tall', desc: 'An iconic dark nebula shaped like a horse\'s head. A dense cloud of dust blocking light from the red emission nebula behind it. Active low-mass star formation inside.', features: 'Dark molecular cloud, infrared-bright protostars, IC 434 background', icon: '\uD83D\uDC0E', color: '#94a3b8' }
           ];
 
           // Planetary nebulae gallery
@@ -586,7 +595,7 @@ var d = labToolData.universe || {};
           var ELEMENT_ORIGINS = [
             { name: 'Hydrogen (H)', origin: 'Big Bang', pct: '73%', note: 'Created in the first 3 minutes. Most abundant element.', color: '#fbbf24' },
             { name: 'Helium (He)', origin: 'Big Bang + Stars', pct: '25%', note: 'Mostly from Big Bang nucleosynthesis. Also made in stellar fusion.', color: '#fde68a' },
-            { name: 'Carbon (C)', origin: 'Stellar fusion', pct: 'Trace', note: 'Made in red giant cores via triple-alpha process. Basis of all life.', color: '#64748b' },
+            { name: 'Carbon (C)', origin: 'Stellar fusion', pct: 'Trace', note: 'Made in red giant cores via triple-alpha process. Basis of all life.', color: '#94a3b8' },
             { name: 'Oxygen (O)', origin: 'Massive star fusion', pct: 'Trace', note: 'Made in massive star cores. Third most abundant element in universe.', color: '#3b82f6' },
             { name: 'Iron (Fe)', origin: 'Stellar core collapse', pct: 'Trace', note: 'The heaviest element made by normal fusion. Making heavier elements costs energy.', color: '#94a3b8' },
             { name: 'Gold (Au)', origin: 'Neutron star mergers', pct: 'Ultra-trace', note: 'Created when two neutron stars collide! That\'s why gold is so rare.', color: '#f59e0b' },
@@ -1819,7 +1828,7 @@ var d = labToolData.universe || {};
                 ),
                 STAR_STAGES.map(function(stage, si) {
                   var isActive = d.starStage === si;
-                  return React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+                  return React.createElement("div", { 
                     key: si,
                     onClick: function() { upd('starStage', isActive ? null : si); playBeep(); },
                     className: "cursor-pointer rounded-lg p-2.5 border transition-all " + (isActive
@@ -2023,7 +2032,7 @@ var d = labToolData.universe || {};
                       pctx.fillStyle = isDark ? '#e2e8f0' : '#334155';
                       pctx.fillText(sl.label, PW * 0.62 + 15, ly + 9);
                     });
-                    pctx.fillStyle = isDark ? '#94a3b8' : '#64748b';
+                    pctx.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
                     pctx.font = '8px system-ui';
                     pctx.textAlign = 'center';
                     pctx.fillText('Composition of the Universe', PW * 0.5, PH - 5);
@@ -2746,7 +2755,7 @@ var d = labToolData.universe || {};
                       lctx.fillText('Foreground Galaxy (Lens)', lcx, lcy + 26);
                       lctx.fillStyle = '#818cf8';
                       lctx.fillText('Einstein Ring', lcx, lcy - 38);
-                      lctx.fillStyle = '#64748b'; lctx.font = '8px system-ui';
+                      lctx.fillStyle = '#94a3b8'; lctx.font = '8px system-ui';
                       lctx.fillText('Light from a background galaxy is bent around a massive foreground object', LW / 2, LH - 8);
                       requestAnimationFrame(drawLens);
                     }
@@ -2963,7 +2972,7 @@ var d = labToolData.universe || {};
                         rctx.fillStyle = specColors[sci];
                         rctx.fillRect(20 + sci * barW, specY, barW, 6);
                       }
-                      rctx.fillStyle = '#64748b'; rctx.font = '6px system-ui';
+                      rctx.fillStyle = '#94a3b8'; rctx.font = '6px system-ui';
                       rctx.textAlign = 'left'; rctx.fillText('Blue (short \u03BB)', 20, specY - 2);
                       rctx.textAlign = 'right'; rctx.fillText('Red (long \u03BB)', RW - 20, specY - 2);
 
@@ -3133,7 +3142,7 @@ var d = labToolData.universe || {};
                 React.createElement("div", { className: "space-y-1.5" },
                   EM_SPECTRUM.map(function(em, emi) {
                     var isActive = d.spectrumIdx === emi;
-                    return React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+                    return React.createElement("div", { 
                       key: emi,
                       onClick: function() { upd('spectrumIdx', isActive ? null : emi); playBeep(); },
                       className: "cursor-pointer rounded-lg p-2 border transition-all " + (isActive ? 'bg-slate-700 border-indigo-500' : 'bg-slate-800 border-slate-700 hover:border-slate-500')
@@ -3465,7 +3474,7 @@ var d = labToolData.universe || {};
             ),
 
             // === TUTORIAL OVERLAY ===
-            !d.tutorialDismissed && React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+            !d.tutorialDismissed && React.createElement("div", { 
               className: "fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50",
               onClick: function(e) { if (e.target === e.currentTarget) upd('tutorialDismissed', true); }
             },

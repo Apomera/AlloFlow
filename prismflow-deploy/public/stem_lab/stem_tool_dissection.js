@@ -1,3 +1,13 @@
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+(function() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById('allo-stem-motion-reduce-css')) return;
+  var st = document.createElement('style');
+  st.id = 'allo-stem-motion-reduce-css';
+  st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+  if (document.head) document.head.appendChild(st);
+})();
+
 // stem_tool_dissection.js — Virtual Dissection Lab
 // Extracted from stem_tool_science.js as a standalone module
 // Uses window.StemLab.registerTool() plugin architecture
@@ -179,7 +189,7 @@ var d = labToolData.dissection || {};
 
                 { id: 'organs', name: 'Organs', icon: '\uD83E\uDEC1', color: '#fbbf24', accent: '#d97706', desc: 'Digestive, respiratory, circulatory, and urogenital organs.' },
 
-                { id: 'skeleton', name: 'Skeleton', icon: '\uD83E\uDDB4', color: '#e2e8f0', accent: '#64748b', desc: 'Endoskeleton adapted for jumping.' },
+                { id: 'skeleton', name: 'Skeleton', icon: '\uD83E\uDDB4', color: '#e2e8f0', accent: '#94a3b8', desc: 'Endoskeleton adapted for jumping.' },
 
                 { id: 'nervous', name: 'Nervous', icon: '\u26A1', color: '#c084fc', accent: '#7c3aed', desc: 'CNS and peripheral nerves.' }
 
@@ -400,7 +410,7 @@ var d = labToolData.dissection || {};
 
                 { id: 'organs', name: 'Visceral Organs', icon: '\uD83E\uDEC1', color: '#fbbf24', accent: '#d97706', desc: 'Complete mammalian organs \u2014 closest lab animal to human.' },
 
-                { id: 'skeleton', name: 'Skeleton', icon: '\uD83E\uDDB4', color: '#e2e8f0', accent: '#64748b', desc: 'Largely cartilaginous fetal skeleton.' },
+                { id: 'skeleton', name: 'Skeleton', icon: '\uD83E\uDDB4', color: '#e2e8f0', accent: '#94a3b8', desc: 'Largely cartilaginous fetal skeleton.' },
 
                 { id: 'nervous', name: 'Nervous', icon: '\u26A1', color: '#c084fc', accent: '#7c3aed', desc: 'Complex mammalian CNS with cerebral cortex.' }
 
@@ -512,7 +522,7 @@ var d = labToolData.dissection || {};
 
                 { id: 'organs', name: 'Internal Organs', icon: '\uD83E\uDEC1', color: '#fbbf24', accent: '#d97706', desc: 'Swim bladder, gills, 2-chambered heart, pyloric ceca.' },
 
-                { id: 'skeleton', name: 'Skeleton', icon: '\uD83E\uDDB4', color: '#e2e8f0', accent: '#64748b', desc: 'Ossified skeleton with fin rays and operculum.' }
+                { id: 'skeleton', name: 'Skeleton', icon: '\uD83E\uDDB4', color: '#e2e8f0', accent: '#94a3b8', desc: 'Ossified skeleton with fin rays and operculum.' }
 
               ],
 
@@ -1143,7 +1153,7 @@ var d = labToolData.dissection || {};
 
               var layerColor = curLayer.color || '#94a3b8';
 
-              var layerStroke = curLayer.accent || '#64748b';
+              var layerStroke = curLayer.accent || '#94a3b8';
 
               // cx, cy declared at top of drawDissectionFrame
 
@@ -6089,7 +6099,7 @@ var d = labToolData.dissection || {};
 
                 React.createElement("div", { className: "text-center" },
 
-                  React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+                  React.createElement("div", { 
 
                     onClick: function () { upd('flashcardFlipped', !d.flashcardFlipped); },
 
@@ -6900,7 +6910,7 @@ var d = labToolData.dissection || {};
 
                 React.createElement("div", { className: "bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl border border-emerald-200 p-3 mb-2" },
 
-                  React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+                  React.createElement("div", { 
 
                     className: "text-[11px] font-bold text-emerald-700 mb-1 cursor-pointer",
 
@@ -6930,7 +6940,7 @@ var d = labToolData.dissection || {};
 
                       var isComplete = (d.completedObjectives || {})[oi];
 
-                      return React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+                      return React.createElement("div", { 
 
                         key: oi,
 
@@ -6964,7 +6974,7 @@ var d = labToolData.dissection || {};
 
                 React.createElement("div", { className: "bg-gradient-to-br from-violet-50 to-purple-50 rounded-xl border border-violet-200 p-3" },
 
-                  React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+                  React.createElement("div", { 
 
                     className: "text-[11px] font-bold text-violet-700 mb-1 cursor-pointer",
 

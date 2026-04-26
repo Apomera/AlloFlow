@@ -1,3 +1,13 @@
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+(function() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById('allo-stem-motion-reduce-css')) return;
+  var st = document.createElement('style');
+  st.id = 'allo-stem-motion-reduce-css';
+  st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+  if (document.head) document.head.appendChild(st);
+})();
+
 // ═══════════════════════════════════════════════════════
 // stem_tool_semiconductor.js — Semiconductor Lab Plugin v3.0
 // Interactive semiconductor physics: band gaps, doping,
@@ -387,8 +397,8 @@ window.StemLab = window.StemLab || {
       // ═══ AI RESPONSE BOX (shared) ═══
       function aiBox() {
         if (!d.aiExplain && !d.aiLoading) return null;
-        return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-2 p-2 rounded-lg bg-indigo-900/40 border border-indigo-700 text-xs text-indigo-200' },
-          d.aiLoading ? h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'animate-pulse' }, '\u2728 Thinking\u2026') : [
+        return h('div', { className: 'mt-2 p-2 rounded-lg bg-indigo-900/40 border border-indigo-700 text-xs text-indigo-200' },
+          d.aiLoading ? h('span', { className: 'animate-pulse' }, '\u2728 Thinking\u2026') : [
             d.aiExplain,
             callTTS ? h('button', {
               onClick: function() { speakText(d.aiExplain); },
@@ -1405,7 +1415,7 @@ window.StemLab = window.StemLab || {
             role: 'img', 'aria-label': gateType + ' gate: A=' + (inA ? 1 : 0) + (gate.inputs === 2 ? ' B=' + (inB ? 1 : 0) : '') + ' Q=' + (output ? 1 : 0)
           }),
           // Input toggles
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-3 mt-3' },
+          h('div', { className: 'flex items-center gap-3 mt-3' },
             h('button', Object.assign({
               onClick: function() { upd('inputA', !inA); if (stemBeep) stemBeep(); },
               className: 'flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm transition-all ' + (inA ? 'bg-emerald-700 text-white shadow-lg shadow-emerald-500/20' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
@@ -1679,18 +1689,18 @@ window.StemLab = window.StemLab || {
               ? h('div', { className: 'text-center text-slate-600 py-8' }, 'Click components above to add them')
               : h('div', { className: 'flex flex-wrap gap-2' },
                   // Supply
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-col items-center px-2 py-1 rounded bg-red-900/30 border border-red-700' },
-                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-lg' }, '\u26A1'),
-                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-red-400' }, supplyV + 'V')
+                  h('div', { className: 'flex flex-col items-center px-2 py-1 rounded bg-red-900/30 border border-red-700' },
+                    h('span', { className: 'text-lg' }, '\u26A1'),
+                    h('span', { className: 'text-[11px] text-red-400' }, supplyV + 'V')
                   ),
                   // Wire
-                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'self-center text-slate-600' }, '\u2014'),
+                  h('span', { className: 'self-center text-slate-600' }, '\u2014'),
                   // Components
                   components.map(function(comp, ci) {
                     var compInfo = COMP_PALETTE.find(function(p) { return p.type === comp.type; }) || {};
-                    return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: comp.id, className: 'flex flex-col items-center px-2 py-1 rounded bg-slate-800 border border-slate-600 relative group' },
-                      h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-lg' }, compInfo.icon || '?'),
-                      h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-slate-600' }, comp.value),
+                    return h('div', { key: comp.id, className: 'flex flex-col items-center px-2 py-1 rounded bg-slate-800 border border-slate-600 relative group' },
+                      h('span', { className: 'text-lg' }, compInfo.icon || '?'),
+                      h('span', { className: 'text-[11px] text-slate-600' }, comp.value),
                       h('button', {
                         onClick: function() { removeComponent(comp.id); },
                         className: 'absolute -top-1 -right-1 w-4 h-4 bg-red-600 text-white text-[11px] rounded-full opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity flex items-center justify-center',
@@ -1895,11 +1905,11 @@ window.StemLab = window.StemLab || {
             role: 'img', 'aria-label': 'Wafer fabrication stage ' + (stage + 1) + ': ' + currentStage.name
           }),
           // Stage navigation
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2 mt-3' },
+          h('div', { className: 'flex items-center gap-2 mt-3' },
             btn('\u2190 Prev', function() { if (stage > 0) upd('fabStage', stage - 1); }, 'bg-slate-700 text-slate-300 hover:bg-slate-600' + (stage === 0 ? ' opacity-40' : '')),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex-1 flex gap-1 justify-center' },
+            h('div', { className: 'flex-1 flex gap-1 justify-center' },
               FAB_STAGES.map(function(fs, i) {
-                return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+                return h('div', { 
                   key: i,
                   onClick: function() { upd('fabStage', i); },
                   className: 'w-6 h-6 rounded-full flex items-center justify-center text-[11px] cursor-pointer transition-all ' +
@@ -2061,11 +2071,11 @@ window.StemLab = window.StemLab || {
         }, [d.ledMaterial, d.ledCurrent, d.ledMixMode, d.ledMixR, d.ledMixG, d.ledMixB]);
 
         return h('div', null,
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2 mb-3' },
+          h('div', { className: 'flex items-center gap-2 mb-3' },
             pill('\uD83D\uDCA1 Single LED', !mixMode, function() { upd('ledMixMode', false); }),
             pill('\uD83C\uDFA8 RGB Mixer', mixMode, function() { upd('ledMixMode', true); tryAwardXP('led-mix', 10, 'Explored RGB color mixing'); })
           ),
-          !mixMode && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-1.5 mb-3' },
+          !mixMode && h('div', { className: 'flex flex-wrap gap-1.5 mb-3' },
             Object.keys(LED_MATERIALS).map(function(key) {
               var m = LED_MATERIALS[key];
               return h('button', Object.assign({
@@ -3234,7 +3244,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'p-4 rounded-xl bg-slate-800 border border-slate-700 mb-3' },
             current.topic && h('span', { className: 'text-[11px] uppercase tracking-wider text-cyan-500 mb-1 block' }, current.topic),
             h('p', { className: 'text-sm font-semibold text-white mb-3', role: 'status' }, current.q),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-col gap-2' },
+            h('div', { className: 'flex flex-col gap-2' },
               current.opts.map(function(opt) {
                 var isSelected = d.challengeAnswer === opt;
                 var isCorrect = opt === current.a;
@@ -3381,9 +3391,9 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'text-xs text-slate-200 mb-1' }, 'Round ' + (round + 1) + '/' + BATTLE_ROUNDS.length),
           // Enemy card
           h('div', { className: 'p-4 rounded-xl bg-red-900/20 border border-red-800 mb-3' },
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-lg mb-1' }, currentRound.enemy),
+            h('div', { className: 'text-lg mb-1' }, currentRound.enemy),
             h('p', { className: 'text-sm text-white mb-3' }, currentRound.desc),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-col gap-2' },
+            h('div', { className: 'flex flex-col gap-2' },
               currentRound.opts.map(function(opt) {
                 var showResult = feedback !== null;
                 var isSelected = d.battleFeedback === opt || (showResult && feedback === 'wrong-' + opt);
