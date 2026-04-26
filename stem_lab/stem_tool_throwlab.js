@@ -1351,6 +1351,23 @@ window.StemLab = window.StemLab || {
         tlAnnounce('Selected club: ' + gt.label + '. Carry ' + gt.carryYd + ' yards, ' + gt.aimDegV + ' degree launch.');
       }
 
+      function applyVolleyPreset(vid) {
+        var vt = VOLLEYBALL_TYPES.find(function(v) { return v.id === vid; });
+        if (!vt) return;
+        setLabToolData(function(prev) {
+          var next = Object.assign({}, prev.throwlab, {
+            serveType: vid,
+            speedMph: vt.speedMph,
+            spinRpm: vt.spinRpm,
+            spinAxisDeg: vt.spinAxisDeg,
+            aimDegV: vt.aimDegV,
+            releaseHeight: vt.releaseHeight
+          });
+          return Object.assign({}, prev, { throwlab: next });
+        });
+        tlAnnounce('Selected serve: ' + vt.label + '. Speed ' + vt.speedMph + ' mph, ' + vt.spinRpm + ' rpm.');
+      }
+
       // ── Compare Mode helpers ──
       // Pin the most recent trajectory as a "reference ghost" — drawn behind
       // the next throw in a faded color so students can change one parameter
@@ -1369,9 +1386,10 @@ window.StemLab = window.StemLab || {
                       : isFieldGoal ? (currentGoal && currentGoal.label) || 'kick'
                       : isBowling ? (currentBowl && currentBowl.label) || 'delivery'
                       : isGolf ? (currentGolfClub && currentGolfClub.label) || 'club'
+                      : isVolleyball ? (currentVolley && currentVolley.label) || 'serve'
                       : 'throw';
         var label = d.speedMph + ' mph · ' + modeLabel
-                  + (isPitching || isFreeKick || isBowling ? ' · ' + d.spinRpm + ' rpm @ ' + d.spinAxisDeg + '°' : '')
+                  + (isPitching || isFreeKick || isBowling || isVolleyball ? ' · ' + d.spinRpm + ' rpm @ ' + d.spinAxisDeg + '°' : '')
                   + (isFreeThrow || isFieldGoal || isGolf ? ' · ' + d.aimDegV.toFixed(1) + '°' : '');
         setLabToolData(function(prev) {
           var next = Object.assign({}, prev.throwlab, {
@@ -2349,6 +2367,46 @@ window.StemLab = window.StemLab || {
           gfx.fillText('Ball', ballSpot[0], ballSpot[1] + 16);
           gfx.fillText('Wall (10 yd)', (wallLeftEdge[0] + wallRightEdge[0]) / 2, marginT + fieldH + 18);
           gfx.fillText('Goal — 7.32 m wide', (postL[0] + postR[0]) / 2, marginT + fieldH + 18);
+        } else if (d.mode === 'volleyball') {
+          // Volleyball court (side view): server's line at z=0, net at z=9m,
+          // far end-line at z=18m. Receiving court (z=9 to z=18) shaded
+          // light blue. Ace zone (deep ~15% of court) shaded brighter.
+          var serverPts = worldToCanvas(0, 0);
+          var netBase = worldToCanvas(modeMeta.netZ, 0);
+          var netTop = worldToCanvas(modeMeta.netZ, modeMeta.netHeight);
+          var farLine = worldToCanvas(modeMeta.targetZ, 0);
+          var aceStart = worldToCanvas(modeMeta.targetZ - (modeMeta.targetZ - modeMeta.netZ) * 0.15, 0);
+          // Receiving court band — light blue
+          gfx.fillStyle = 'rgba(96,165,250,0.20)';
+          gfx.fillRect(netBase[0], netBase[1] - 3, farLine[0] - netBase[0], 6);
+          // Ace zone (deep section, brighter)
+          gfx.fillStyle = 'rgba(34,197,94,0.30)';
+          gfx.fillRect(aceStart[0], aceStart[1] - 4, farLine[0] - aceStart[0], 8);
+          // Net (vertical line) + tape at the top
+          gfx.strokeStyle = '#1a1a1a';
+          gfx.lineWidth = 2;
+          gfx.beginPath();
+          gfx.moveTo(netBase[0], netBase[1]); gfx.lineTo(netTop[0], netTop[1]);
+          gfx.stroke();
+          gfx.fillStyle = '#fafafa';
+          gfx.fillRect(netTop[0] - 3, netTop[1] - 2, 6, 4);
+          // Server's end-line + far end-line (white floor markings)
+          gfx.strokeStyle = '#fafafa';
+          gfx.lineWidth = 2;
+          gfx.beginPath();
+          gfx.moveTo(serverPts[0] - 14, serverPts[1]); gfx.lineTo(serverPts[0] + 14, serverPts[1]);
+          gfx.moveTo(farLine[0] - 14, farLine[1]); gfx.lineTo(farLine[0] + 14, farLine[1]);
+          gfx.stroke();
+          // Labels
+          gfx.fillStyle = '#cbd5e1';
+          gfx.font = '11px system-ui';
+          gfx.textAlign = 'center';
+          gfx.fillText('Server', serverPts[0], marginT + fieldH + 22);
+          gfx.fillText('Net (2.43 m)', netBase[0], marginT + fieldH + 22);
+          gfx.fillText('End line', farLine[0], marginT + fieldH + 22);
+          gfx.fillStyle = 'rgba(34,197,94,0.85)';
+          gfx.font = '10px system-ui';
+          gfx.fillText('Ace zone', (aceStart[0] + farLine[0]) / 2, aceStart[1] - 8);
         } else if (d.mode === 'golf') {
           // Golf side view: tee on left at z=0, fairway zone (light green
           // band) from ~75% target distance to the green, flagstick at the
@@ -2743,17 +2801,21 @@ window.StemLab = window.StemLab || {
       var isFieldGoal = d.mode === 'fieldgoal';
       var isBowling = d.mode === 'bowling';
       var isGolf = d.mode === 'golf';
+      var isVolleyball = d.mode === 'volleyball';
       // Active preset for the bottom-of-canvas teach blurb
       var currentShot = SHOT_TYPES.find(function(s) { return s.id === d.shotType; }) || SHOT_TYPES[0];
       var currentKick = KICK_TYPES.find(function(k) { return k.id === d.kickType; }) || KICK_TYPES[0];
       var currentGoal = GOAL_TYPES.find(function(g) { return g.id === d.goalType; }) || GOAL_TYPES[0];
       var currentBowl = CRICKET_DELIVERIES.find(function(b) { return b.id === d.bowlType; }) || CRICKET_DELIVERIES[0];
       var currentGolfClub = GOLF_TYPES.find(function(g) { return g.id === d.golfClub; }) || GOLF_TYPES[0];
+      var currentVolley = VOLLEYBALL_TYPES.find(function(v) { return v.id === d.serveType; }) || VOLLEYBALL_TYPES[0];
       var activePreset = isPitching ? currentPitch
                        : isFreeThrow ? currentShot
                        : isFreeKick ? currentKick
                        : isFieldGoal ? currentGoal
                        : isBowling ? currentBowl
+                       : isGolf ? currentGolfClub
+                       : isVolleyball ? currentVolley
                        : currentGolfClub;
 
       // Outcome label + color (mode-specific)
@@ -2796,6 +2858,14 @@ window.StemLab = window.StemLab || {
                : loc === 'short' ? '😬 Short of the green'
                : loc === 'long' ? '↔️ Over the green'
                : '😬 Topped';
+        }
+        if (isVolleyball) {
+          return loc === 'ace' ? '🏐 ACE'
+               : loc === 'in' ? '✅ In'
+               : loc === 'net' ? '🪤 Net (service error)'
+               : loc === 'long' ? '↔️ Long (past back line)'
+               : loc === 'out' ? '↔️ Out wide'
+               : '😬 Short';
         }
         // Pass outcomes (kind: 'pass' shot types) reuse this same function.
         return loc === 'swish' ? '🌊 SWISH (clean center)'
@@ -2869,6 +2939,15 @@ window.StemLab = window.StemLab || {
           if (loc === 'wideclose') return 'Just wide of the upright. Lateral aim is the lever here — check your horizontal aim slider.';
           if (loc === 'wide') return 'No good — well wide of the goalposts. Reset horizontal aim toward 0°.';
           return 'Short of the goal line — kick didn\'t carry the distance. Add power, or accept a shorter distance preset.';
+        }
+        // Volleyball
+        if (isVolleyball) {
+          if (loc === 'ace') return 'ACE! Deep corner — receiver had no chance. ' + (d.spinRpm > 800 ? 'Topspin (' + d.spinRpm + ' rpm) made the ball dive past the net.' : 'No-spin float wobble forced a misread.');
+          if (loc === 'in') return 'Serve in. Receivable, but landed in court. To level up, aim for the deep corner (back 15% × outer 30% of the court) for an ace.';
+          if (loc === 'net') return 'Hit the net. Net is 2.43 m at center; you cleared it ' + (d.aimDegV < 4 ? 'too flat — add 2-4° vertical aim' : 'narrowly') + '. Try ' + (d.aimDegV + 3).toFixed(0) + '° launch.';
+          if (loc === 'out') return 'Wide of the sideline. Court is 9 m wide (±4.5 m). Reset horizontal aim toward 0°.';
+          if (loc === 'long') return 'Past the back line. Reduce speed by 5-8 mph or ease back launch angle by 2-3°. Topspin would also pull the ball down faster.';
+          return 'Short — landed on your side of the net. Add power (try ' + (d.speedMph + 8) + ' mph) or a steeper launch.';
         }
         // Golf
         if (isGolf) {
@@ -3335,7 +3414,7 @@ window.StemLab = window.StemLab || {
             // Preset picker (pitches OR shots, mode-driven)
             h('div', { style: { background: '#0f172a', border: '1px solid #1e293b', borderRadius: 10, padding: 12, marginBottom: 12 } },
               h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 } },
-                isPitching ? 'Pitch type' : isFreeKick ? 'Kick style' : isFieldGoal ? 'Distance' : isBowling ? 'Delivery' : isGolf ? 'Club' : 'Shot type'),
+                isPitching ? 'Pitch type' : isFreeKick ? 'Kick style' : isFieldGoal ? 'Distance' : isBowling ? 'Delivery' : isGolf ? 'Club' : isVolleyball ? 'Serve type' : 'Shot type'),
               h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 } },
                 modeMeta.presets.map(function(pt) {
                   var sel = isPitching ? d.pitchType === pt.id
@@ -3343,6 +3422,7 @@ window.StemLab = window.StemLab || {
                           : isFieldGoal ? d.goalType === pt.id
                           : isBowling ? d.bowlType === pt.id
                           : isGolf ? d.golfClub === pt.id
+                          : isVolleyball ? d.serveType === pt.id
                           : d.shotType === pt.id;
                   return h('button', {
                     key: pt.id,
@@ -3352,6 +3432,7 @@ window.StemLab = window.StemLab || {
                       else if (isFieldGoal) applyGoalPreset(pt.id);
                       else if (isBowling) applyBowlPreset(pt.id);
                       else if (isGolf) applyGolfPreset(pt.id);
+                      else if (isVolleyball) applyVolleyPreset(pt.id);
                       else applyShotPreset(pt.id);
                     },
                     'aria-pressed': sel,
@@ -3369,6 +3450,7 @@ window.StemLab = window.StemLab || {
                                               : isFieldGoal ? ' · ' + pt.aimDegV + '° launch'
                                               : isBowling ? ' · spin ' + pt.spinAxisDeg + '°'
                                               : isGolf ? ' · ' + pt.carryYd + ' yd carry'
+                                              : isVolleyball ? ' · ' + pt.spinRpm + ' rpm'
                                               : ' · ' + pt.aimDegV + '° arc')));
                 })
               ),
@@ -3384,8 +3466,8 @@ window.StemLab = window.StemLab || {
               // student can focus on the speed-distance relationship alone.
               (d.scaffoldTier || 3) >= 2 ? slider('Release height', d.releaseHeight.toFixed(2), modeMeta.releaseHeightRange[0], modeMeta.releaseHeightRange[1], 0.05, function(v) { upd('releaseHeight', v); }, ' m') : null,
               (d.scaffoldTier || 3) >= 2 ? slider('Vertical aim', d.aimDegV.toFixed(1),
-                isPitching ? -8 : isFreeKick ? -2 : isFieldGoal ? 20 : isBowling ? -8 : isGolf ? 5 : 30,
-                isPitching ? 4 : isFreeKick ? 45 : isFieldGoal ? 60 : isBowling ? 12 : isGolf ? 60 : 70,
+                isPitching ? -8 : isFreeKick ? -2 : isFieldGoal ? 20 : isBowling ? -8 : isGolf ? 5 : isVolleyball ? -2 : 30,
+                isPitching ? 4 : isFreeKick ? 45 : isFieldGoal ? 60 : isBowling ? 12 : isGolf ? 60 : isVolleyball ? 35 : 70,
                 0.5, function(v) { upd('aimDegV', v); }, '°') : null,
               (d.scaffoldTier || 3) >= 2 ? slider('Horizontal aim', d.aimDegH.toFixed(1), -5, 5, 0.1, function(v) { upd('aimDegH', v); }, '°') : null,
               // Tier 3: spin (the full physics surface).
@@ -3429,7 +3511,7 @@ window.StemLab = window.StemLab || {
                 border: '1px solid #fbbf24', background: 'linear-gradient(135deg, #fbbf24, #f59e0b)',
                 color: '#1a1a2e', fontSize: 16, fontWeight: 800
               }
-            }, isPitching ? '⚾ THROW PITCH' : isFreeKick ? '⚽ STRIKE' : isFieldGoal ? '🏈 KICK' : isBowling ? '🏏 BOWL' : isGolf ? '⛳ TEE OFF' : '🏀 SHOOT'),
+            }, isPitching ? '⚾ THROW PITCH' : isFreeKick ? '⚽ STRIKE' : isFieldGoal ? '🏈 KICK' : isBowling ? '🏏 BOWL' : isGolf ? '⛳ TEE OFF' : isVolleyball ? '🏐 SERVE' : '🏀 SHOOT'),
             // ── Compare Mode controls ──
             // Save the latest trajectory as a reference ghost for the next throw,
             // OR clear the existing reference. Sits between the throw button and
