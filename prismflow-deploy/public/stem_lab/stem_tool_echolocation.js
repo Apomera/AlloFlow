@@ -2518,7 +2518,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 h('label', { className: 'text-[11px] font-bold ' + (isDark ? 'text-indigo-300' : 'text-slate-600') }, 'Frequency: ' + waveFreq.toLocaleString() + ' Hz' +
                   (isBatRange ? ' \uD83E\uDD87 Bat range!' : isAudible ? ' \uD83D\uDC42 Audible' : waveFreq < 20 ? ' \uD83D\uDC33 Infrasonic' : ' Beyond ultrasonic')),
                 h('input', {
-                  type: 'range', 'aria-label': 'wave freq', min: 20, max: 200000, value: waveFreq, step: 10,
+                  type: 'range', min: 20, max: 200000, value: waveFreq, step: 10,
                   'aria-label': 'Frequency slider, ' + waveFreq + ' hertz',
                   onChange: function(e) { upd('waveFreq', parseInt(e.target.value)); },
                   className: 'w-full accent-indigo-500'
@@ -2533,7 +2533,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               h('div', null,
                 h('label', { className: 'text-[11px] font-bold ' + (isDark ? 'text-indigo-300' : 'text-slate-600') }, 'Amplitude: ' + (waveAmp * 100).toFixed(0) + '%'),
                 h('input', {
-                  type: 'range', 'aria-label': 'math', min: 0, max: 100, value: Math.round(waveAmp * 100), step: 1,
+                  type: 'range', min: 0, max: 100, value: Math.round(waveAmp * 100), step: 1,
                   'aria-label': 'Amplitude slider, ' + Math.round(waveAmp * 100) + ' percent',
                   onChange: function(e) { upd('waveAmp', parseInt(e.target.value) / 100); },
                   className: 'w-full accent-indigo-500'
@@ -2576,7 +2576,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               h('div', null,
                 h('label', { className: 'text-[11px] font-bold ' + (isDark ? 'text-indigo-300' : 'text-slate-600') }, 'Distance to object: ' + distCalcDist + ' m'),
                 h('input', {
-                  type: 'range', 'aria-label': 'dist calc dist', min: 1, max: 200, value: distCalcDist, step: 1,
+                  type: 'range', min: 1, max: 200, value: distCalcDist, step: 1,
                   'aria-label': 'Distance to object, ' + distCalcDist + ' meters',
                   onChange: function(e) { upd('distCalcDist', parseInt(e.target.value)); },
                   className: 'w-full accent-indigo-500'
@@ -2679,7 +2679,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               role: 'img',
               'aria-label': 'Inverse square law visualization showing sound intensity decreasing with distance. Intensity equals 1 over distance squared.',
               tabIndex: 0,
-              onKeyDown: function() {},
               style: { width: '100%', height: 'auto', borderRadius: '8px', display: 'block', background: isDark ? '#0f172a' : '#f8fafc' }
             }),
             h('div', { className: 'mt-2 p-3 rounded-lg ' + (isDark ? 'bg-indigo-900/30 border border-indigo-800/40' : 'bg-indigo-50 border border-indigo-200') },
@@ -3072,7 +3071,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 h('label', { className: 'text-[11px] font-bold ' + (isDark ? 'text-indigo-300' : 'text-slate-600') },
                   'Moth speed: ' + mothSpeed + (mothSpeed < 0 ? ' (toward bat)' : mothSpeed > 0 ? ' (away from bat)' : ' (stationary)')),
                 h('input', {
-                  type: 'range', 'aria-label': 'moth speed', min: -10, max: 10, value: mothSpeed, step: 1,
+                  type: 'range', min: -10, max: 10, value: mothSpeed, step: 1,
                   'aria-label': 'Moth speed slider',
                   onChange: function(e) { upd('mothSpeed', parseInt(e.target.value)); },
                   className: 'w-full accent-indigo-500'
@@ -3081,7 +3080,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 h('label', { className: 'text-[11px] font-bold ' + (isDark ? 'text-indigo-300' : 'text-slate-600') },
                   'Emitted frequency: ' + (dopplerFreq / 1000).toFixed(0) + ' kHz'),
                 h('input', {
-                  type: 'range', 'aria-label': 'doppler freq', min: 20000, max: 100000, value: dopplerFreq, step: 1000,
+                  type: 'range', min: 20000, max: 100000, value: dopplerFreq, step: 1000,
                   'aria-label': 'Emitted frequency slider',
                   onChange: function(e) { upd('dopplerFreq', parseInt(e.target.value)); },
                   className: 'w-full accent-indigo-500'
@@ -3973,7 +3972,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 'aria-label': 'Soundscape visualization showing frequency bands used by different animals. Active animals: ' +
                   SOUNDSCAPE_ANIMALS.filter(function(a) { return activeSounds[a.id]; }).map(function(a) { return a.name; }).join(', '),
                 tabIndex: 0,
-                onKeyDown: function() {},
                 style: { width: '100%', height: 'auto', borderRadius: '8px', display: 'block', background: '#050d14' }
               }),
               // Animal toggles
@@ -4005,7 +4003,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 h('label', { className: 'text-[11px] font-bold ' + (isDark ? 'text-red-400' : 'text-red-600') },
                   '\uD83D\uDE97 Human Noise Level: ' + noiseLevel + '%' + (noiseLevel > 50 ? ' \u2014 Animals going silent!' : '')),
                 h('input', {
-                  type: 'range', 'aria-label': 'noise level', min: 0, max: 100, value: noiseLevel, step: 1,
+                  type: 'range', min: 0, max: 100, value: noiseLevel, step: 1,
                   'aria-label': 'Human noise level, ' + noiseLevel + ' percent',
                   onChange: function(e) { upd('noiseLevel', parseInt(e.target.value)); },
                   className: 'w-full accent-red-500'
@@ -4126,7 +4124,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 h('label', { className: 'text-[11px] font-bold ' + (isDark ? 'text-emerald-300' : 'text-slate-600') },
                   'Chirps in 14 seconds: ' + (d.cricketChirps || 30)),
                 h('input', {
-                  type: 'range', 'aria-label': 'd', min: 5, max: 80, value: d.cricketChirps || 30, step: 1,
+                  type: 'range', min: 5, max: 80, value: d.cricketChirps || 30, step: 1,
                   'aria-label': 'Cricket chirps per 14 seconds: ' + (d.cricketChirps || 30),
                   onChange: function(e) { upd('cricketChirps', parseInt(e.target.value)); },
                   className: 'w-full accent-emerald-500'

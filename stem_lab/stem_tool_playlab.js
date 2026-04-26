@@ -1189,8 +1189,96 @@ window.StemLab = window.StemLab || {
         var marginL = 30, marginR = 30, marginT = 18, marginB = 32;
         var fieldPxW = W - marginL - marginR;
         var fieldPxH = H - marginT - marginB;
-        function fx(yardX) { return marginL + (yardX / FIELD_LENGTH) * fieldPxW; }
-        function fy(yardY) { return marginT + (yardY / FIELD_WIDTH) * fieldPxH; }
+        // Sport-aware coordinate mappers — football (yards, 120×53.33) or
+        // soccer (meters, 105×68). Both use the same canvas margins.
+        var fLen = isSoccer ? PITCH_LENGTH : FIELD_LENGTH;
+        var fWid = isSoccer ? PITCH_WIDTH : FIELD_WIDTH;
+        function fx(worldX) { return marginL + (worldX / fLen) * fieldPxW; }
+        function fy(worldY) { return marginT + (worldY / fWid) * fieldPxH; }
+
+        if (isSoccer) {
+          // ── Soccer pitch render (FIFA spec) ──
+          // Bright pitch green + crisp white markings, centered halfway line,
+          // center circle, two penalty boxes, two goal areas, penalty spots,
+          // penalty arcs, corner arcs, goal markers.
+          gfx.fillStyle = '#1e5d2e';   // pitch green
+          gfx.fillRect(0, 0, W, H);
+          gfx.fillStyle = '#2a7a3a';
+          gfx.fillRect(fx(0), fy(0), fx(PITCH_LENGTH) - fx(0), fy(PITCH_WIDTH) - fy(0));
+          // Mowing stripes (low contrast bands every 7m)
+          gfx.fillStyle = 'rgba(0,0,0,0.07)';
+          for (var ms = 0; ms < PITCH_LENGTH; ms += 14) {
+            gfx.fillRect(fx(ms), fy(0), fx(ms + 7) - fx(ms), fy(PITCH_WIDTH) - fy(0));
+          }
+          gfx.strokeStyle = '#fafafa';
+          gfx.lineWidth = 2;
+          // Pitch outline + halfway line
+          gfx.strokeRect(fx(0), fy(0), fx(PITCH_LENGTH) - fx(0), fy(PITCH_WIDTH) - fy(0));
+          gfx.beginPath();
+          gfx.moveTo(fx(PITCH_LENGTH / 2), fy(0));
+          gfx.lineTo(fx(PITCH_LENGTH / 2), fy(PITCH_WIDTH));
+          gfx.stroke();
+          // Center circle + center spot
+          var ccCx = fx(PITCH_LENGTH / 2), ccCy = fy(PITCH_WIDTH / 2);
+          var ccPxR = (CENTER_CIRCLE_R / fLen) * fieldPxW;
+          gfx.beginPath();
+          gfx.arc(ccCx, ccCy, ccPxR, 0, Math.PI * 2);
+          gfx.stroke();
+          gfx.fillStyle = '#fafafa';
+          gfx.beginPath(); gfx.arc(ccCx, ccCy, 2, 0, Math.PI * 2); gfx.fill();
+          // Penalty + goal areas (each end)
+          [0, PITCH_LENGTH].forEach(function(goalLineX) {
+            var dirSign = goalLineX === 0 ? 1 : -1;
+            // Penalty area
+            var paLeft = goalLineX;
+            var paRight = goalLineX + dirSign * PENALTY_AREA_DEPTH;
+            var paTop = (PITCH_WIDTH - PENALTY_AREA_WIDTH) / 2;
+            var paBot = paTop + PENALTY_AREA_WIDTH;
+            gfx.strokeRect(
+              Math.min(fx(paLeft), fx(paRight)),
+              fy(paTop),
+              Math.abs(fx(paRight) - fx(paLeft)),
+              fy(paBot) - fy(paTop)
+            );
+            // Goal area
+            var gaRight = goalLineX + dirSign * GOAL_AREA_DEPTH;
+            var gaTop = (PITCH_WIDTH - GOAL_AREA_WIDTH) / 2;
+            var gaBot = gaTop + GOAL_AREA_WIDTH;
+            gfx.strokeRect(
+              Math.min(fx(goalLineX), fx(gaRight)),
+              fy(gaTop),
+              Math.abs(fx(gaRight) - fx(goalLineX)),
+              fy(gaBot) - fy(gaTop)
+            );
+            // Penalty spot
+            var psX = goalLineX + dirSign * PENALTY_SPOT_X;
+            gfx.fillStyle = '#fafafa';
+            gfx.beginPath(); gfx.arc(fx(psX), fy(PITCH_WIDTH / 2), 2, 0, Math.PI * 2); gfx.fill();
+            // Penalty arc — only the portion outside the penalty area
+            var arcRpx = (PENALTY_ARC_R / fLen) * fieldPxW;
+            gfx.beginPath();
+            // Sweep facing AWAY from the goal line
+            var startAng = goalLineX === 0 ? -Math.PI / 3 : Math.PI - Math.PI / 3;
+            var endAng = goalLineX === 0 ? Math.PI / 3 : Math.PI + Math.PI / 3;
+            gfx.arc(fx(psX), fy(PITCH_WIDTH / 2), arcRpx, startAng, endAng);
+            gfx.stroke();
+            // Goal markers (the 7.32 m wide goal mouth — small black bars
+            // outside the goal line so the goal direction reads clearly)
+            var gmTop = (PITCH_WIDTH - SOCCER_GOAL_WIDTH) / 2;
+            var gmBot = gmTop + SOCCER_GOAL_WIDTH;
+            gfx.fillStyle = '#fafafa';
+            gfx.fillRect(fx(goalLineX) - dirSign * 4, fy(gmTop), 4, fy(gmBot) - fy(gmTop));
+          });
+          // Corner arcs
+          [[0, 0], [PITCH_LENGTH, 0], [0, PITCH_WIDTH], [PITCH_LENGTH, PITCH_WIDTH]].forEach(function(c) {
+            var sx = c[0] === 0 ? 0 : Math.PI;
+            var ex = sx + Math.PI / 2 * (c[1] === 0 ? 1 : -1);
+            gfx.beginPath();
+            gfx.arc(fx(c[0]), fy(c[1]), 6, sx, ex);
+            gfx.stroke();
+          });
+          // Skip the football-specific scene entirely
+        } else {
         // Field background
         gfx.fillStyle = '#1e3a26';
         gfx.fillRect(0, 0, W, H);
@@ -1283,6 +1371,35 @@ window.StemLab = window.StemLab || {
               gfx.closePath();
               gfx.fill();
             }
+          });
+        }
+        } // end !isSoccer (football scene)
+
+        // ── Soccer passing-network arrows (concept overlay) ──
+        // Draw arrows between player IDs from the active concept's `passes`.
+        // Skipped for football modes since the route lines already serve
+        // as movement cues there.
+        if (isSoccer && concept && concept.passes && d.showRoutes !== false) {
+          gfx.strokeStyle = '#fbbf24';
+          gfx.lineWidth = 2;
+          gfx.fillStyle = '#fbbf24';
+          concept.passes.forEach(function(pair) {
+            var from = formation.find(function(p) { return p.id === pair[0]; });
+            var to = formation.find(function(p) { return p.id === pair[1]; });
+            if (!from || !to) return;
+            var ax = fx(from.x), ay = fy(from.y);
+            var bx = fx(to.x), by = fy(to.y);
+            gfx.beginPath();
+            gfx.moveTo(ax, ay); gfx.lineTo(bx, by);
+            gfx.stroke();
+            // Arrowhead
+            var ang = Math.atan2(by - ay, bx - ax);
+            gfx.beginPath();
+            gfx.moveTo(bx, by);
+            gfx.lineTo(bx - 7 * Math.cos(ang - 0.4), by - 7 * Math.sin(ang - 0.4));
+            gfx.lineTo(bx - 7 * Math.cos(ang + 0.4), by - 7 * Math.sin(ang + 0.4));
+            gfx.closePath();
+            gfx.fill();
           });
         }
 
@@ -1424,8 +1541,39 @@ window.StemLab = window.StemLab || {
             'data-pl-focusable': 'true', 'aria-label': 'Back to STEM Lab',
             style: { background: '#1e293b', border: '1px solid #334155', color: '#f1f5f9', padding: '6px 10px', borderRadius: 6, cursor: 'pointer' }
           }, '← Back'),
-          h('h2', { style: { margin: 0, fontSize: 20 } }, '🏈 PlayLab — Football Play & Coverage'),
+          h('h2', { style: { margin: 0, fontSize: 20 } },
+            (isSoccer ? '⚽ PlayLab — Soccer Tactics' : '🏈 PlayLab — Football Play & Coverage')),
           h('span', { style: { fontSize: 12, color: '#cbd5e1' } }, 'Every play is a coordinated math problem on a fixed grid.')
+        ),
+
+        // Sport picker — football vs soccer. role=tablist so AT treats it
+        // as a single-select group. Switching sports preserves separate
+        // state for each (football presets stay set even when you flip
+        // to soccer and back).
+        h('div', { role: 'tablist', 'aria-label': 'Sport',
+          style: { display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' } },
+          [
+            { id: 'football', label: '🏈 American Football' },
+            { id: 'soccer', label: '⚽ Soccer' }
+          ].map(function(sp) {
+            var sel = (d.sport || 'football') === sp.id;
+            return h('button', {
+              key: 'sport-' + sp.id,
+              role: 'tab',
+              onClick: function() {
+                upd('sport', sp.id);
+                plAnnounce('Switched to ' + sp.label.replace(/^\S+\s/, '') + ' mode.');
+              },
+              'aria-selected': sel,
+              'data-pl-focusable': 'true',
+              style: {
+                padding: '8px 14px', borderRadius: 999, cursor: 'pointer',
+                border: '1px solid ' + (sel ? '#fbbf24' : '#334155'),
+                background: sel ? 'rgba(251,191,36,0.18)' : '#1e293b',
+                color: '#f1f5f9', fontSize: 13, fontWeight: 600
+              }
+            }, sp.label);
+          })
         ),
 
         // Play picker

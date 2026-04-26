@@ -1370,9 +1370,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
             ),
             h('p', { className: 'text-xs text-slate-600 mb-2' }, 'Describe your action with vivid detail. The better you write, the more powerful the outcome. Use sensory language, precise vocabulary, and creativity!'),
             h('div', { className: 'flex flex-wrap gap-2 mb-2' },
-              h('button', { 'aria-label': 'Act', onClick: function() { upd('actionMode', 'action'); }, className: 'px-3 py-1 rounded-lg text-[11px] font-bold transition-all ' + ((d.actionMode || 'action') === 'action' ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, '⚔️ Act'),
-              h('button', { 'aria-label': 'Explore', onClick: function() { upd('actionMode', 'explore'); }, className: 'px-3 py-1 rounded-lg text-[11px] font-bold transition-all ' + (d.actionMode === 'explore' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, '🔍 Explore'),
-              h('button', { 'aria-label': 'Battle', onClick: function() { upd('actionMode', 'craft'); }, className: 'px-3 py-1 rounded-lg text-[11px] font-bold transition-all ' + (d.actionMode === 'craft' ? 'bg-amber-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') + (craftedThisTurn && structureCooldown > 0 ? ' opacity-40' : '') }, '🔨 Craft' + (structureCooldown > 0 ? ' (' + structureCooldown + ' turns)' : craftedThisTurn ? ' (done)' : '')),
+              h('button', { onClick: function() { upd('actionMode', 'action'); }, className: 'px-3 py-1 rounded-lg text-[11px] font-bold transition-all ' + ((d.actionMode || 'action') === 'action' ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, '⚔️ Act'),
+              h('button', { onClick: function() { upd('actionMode', 'explore'); }, className: 'px-3 py-1 rounded-lg text-[11px] font-bold transition-all ' + (d.actionMode === 'explore' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, '🔍 Explore'),
+              h('button', { onClick: function() { upd('actionMode', 'craft'); }, className: 'px-3 py-1 rounded-lg text-[11px] font-bold transition-all ' + (d.actionMode === 'craft' ? 'bg-amber-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') + (craftedThisTurn && structureCooldown > 0 ? ' opacity-40' : '') }, '🔨 Craft' + (structureCooldown > 0 ? ' (' + structureCooldown + ' turns)' : craftedThisTurn ? ' (done)' : '')),
               !activeBattle && !activeNPC && h('button', { 'aria-label': 'Battle', onClick: startBattle, className: 'px-3 py-1 rounded-lg text-[11px] font-bold transition-all bg-red-100 text-red-700 hover:bg-red-200' }, '⚔️ Battle'),
               activeNPC && h('button', { 'aria-label': 'Leave', onClick: function() { updMulti({ activeNPC: null, actionMode: 'action' }); }, className: 'px-3 py-1 rounded-lg text-[11px] font-bold transition-all bg-slate-100 text-slate-600 hover:bg-slate-200' }, '👋 Leave')
             ),
@@ -1566,7 +1566,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
 
             // TTS narrate both player and enemy
             callTTS && h('div', { className: 'flex gap-2' },
-              h('button', { 'aria-label': 'Hear your action', onClick: function() { callTTS(actionResult.narrative || ''); }, className: 'text-[11px] text-violet-500 hover:text-violet-700 font-bold' }, '🔊 Hear your action'),
+              h('button', { onClick: function() { callTTS(actionResult.narrative || ''); }, className: 'text-[11px] text-violet-500 hover:text-violet-700 font-bold' }, '🔊 Hear your action'),
               actionResult.enemyWriting && h('button', { 'aria-label': 'Refresh', onClick: function() { callTTS(actionResult.enemyWriting); }, className: 'text-[11px] text-red-500 hover:text-red-700 font-bold' }, '🔊 Hear enemy\'s response')
             )
           ),
@@ -1648,7 +1648,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                 h('div', { className: 'text-[11px] font-bold text-amber-600 uppercase tracking-widest mb-1.5' }, '📋 Quick Scenarios (creates multiple characters)'),
                 h('div', { className: 'flex flex-wrap gap-1.5' },
                   SCENARIO_TEMPLATES.map(function(tmpl) {
-                    return h('button', { 'aria-label': 'Action', key: tmpl.type,
+                    return h('button', { key: tmpl.type,
                       onClick: function() {
                         upd('actionLoading', true);
                         var prompt = 'Create a multi-character scene for a ' + gradeLevel + ' literary RPG in the world "' + (world ? world.name : 'Fantasy') + '".\n\n' +

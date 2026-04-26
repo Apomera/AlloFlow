@@ -1366,7 +1366,7 @@ const d = labToolData.artStudio || {};
 
               React.createElement("span", { className: "px-2 py-0.5 bg-pink-100 text-pink-700 text-[11px] font-bold rounded-full" }, "CREATIVE"),
 
-              React.createElement("button", { "aria-label": "3D Builder", onClick: function () { setStemLabTool('archStudio'); }, className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 border border-amber-300 hover:from-amber-200 hover:to-orange-200 transition-all shadow-sm", title: "Launch 3D Architecture Studio" }, "\uD83C\uDFD7\uFE0F 3D Builder \u2192"),
+              React.createElement("button", { onClick: function () { setStemLabTool('archStudio'); }, className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 border border-amber-300 hover:from-amber-200 hover:to-orange-200 transition-all shadow-sm", title: "Launch 3D Architecture Studio" }, "\uD83C\uDFD7\uFE0F 3D Builder \u2192"),
 
               React.createElement("button", { onClick: function () { upd('showTour', !d.showTour); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.showTour ? "bg-pink-600 text-white" : "bg-pink-50 text-pink-600 border border-pink-200 hover:bg-pink-100") + " transition-all shadow-sm", "aria-label": "Toggle studio tour" }, d.showTour ? "\u2716 Close Tour" : "\uD83C\uDFA8 Tour")
 
@@ -1546,9 +1546,9 @@ const d = labToolData.artStudio || {};
 
                   }),
 
-                  React.createElement("button", { "aria-label": "Clear", onClick: function () { upd('pixelData', {}); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear"),
+                  React.createElement("button", { onClick: function () { upd('pixelData', {}); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear"),
 
-                  React.createElement("button", { "aria-label": "Export PNG", onClick: function () { var c = document.querySelector('canvas[style*="pixelated"]'); if (!c) return; var link = document.createElement('a'); link.download = 'pixel-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all" }, "\uD83D\uDCE5 Export PNG"),
+                  React.createElement("button", { onClick: function () { var c = document.querySelector('canvas[style*="pixelated"]'); if (!c) return; var link = document.createElement('a'); link.download = 'pixel-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all" }, "\uD83D\uDCE5 Export PNG"),
 
                   React.createElement("select", { 'aria-label': 'Grid size', value: typeof d.pixelGrid === 'number' ? d.pixelGrid : 16, onChange: function (e) { upd('pixelGrid', parseInt(e.target.value)); upd('pixelData', {}); }, className: "px-2 py-1 text-xs border border-slate-200 rounded-lg" },
 
@@ -1624,15 +1624,15 @@ const d = labToolData.artStudio || {};
 
                 React.createElement("span", { className: "text-xs font-bold text-slate-600 ml-2" }, "Mode:"),
 
-                React.createElement("button", { "aria-label": "Solid", onClick: function () { upd('symBrushMode', 'solid'); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.symBrushMode || 'rainbow') === 'solid' ? 'bg-pink-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, "\uD83D\uDD8C Solid"),
+                React.createElement("button", { onClick: function () { upd('symBrushMode', 'solid'); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.symBrushMode || 'rainbow') === 'solid' ? 'bg-pink-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, "\uD83D\uDD8C Solid"),
 
-                React.createElement("button", { "aria-label": "Rainbow", onClick: function () { upd('symBrushMode', 'rainbow'); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.symBrushMode || 'rainbow') === 'rainbow' ? 'bg-gradient-to-r from-red-500 via-yellow-500 to-blue-500 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, "\uD83C\uDF08 Rainbow"),
+                React.createElement("button", { onClick: function () { upd('symBrushMode', 'rainbow'); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.symBrushMode || 'rainbow') === 'rainbow' ? 'bg-gradient-to-r from-red-500 via-yellow-500 to-blue-500 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, "\uD83C\uDF08 Rainbow"),
 
-                React.createElement("button", { "aria-label": "Clear", onClick: function () { upd('symMirrorOnly', !(d.symMirrorOnly)); upd('symmetryClear', Date.now()); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + (d.symMirrorOnly ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-violet-50') }, d.symMirrorOnly ? '\uD83E\uDE9E Mirror \u2714' : '\uD83E\uDE9E Mirror'),
+                React.createElement("button", { onClick: function () { upd('symMirrorOnly', !(d.symMirrorOnly)); upd('symmetryClear', Date.now()); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + (d.symMirrorOnly ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-violet-50') }, d.symMirrorOnly ? '\uD83E\uDE9E Mirror \u2714' : '\uD83E\uDE9E Mirror'),
 
-                React.createElement("button", { "aria-label": "Clear", onClick: function () { upd('symmetryClear', Date.now()); }, className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear"),
+                React.createElement("button", { onClick: function () { upd('symmetryClear', Date.now()); }, className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear"),
 
-                React.createElement("button", { "aria-label": "Export PNG", onClick: function () { var c = document.getElementById('symmetryCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'symmetry-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all" }, "\uD83D\uDCE5 Export PNG"),
+                React.createElement("button", { onClick: function () { var c = document.getElementById('symmetryCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'symmetry-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all" }, "\uD83D\uDCE5 Export PNG"),
 
                 React.createElement("button", { "aria-label": "Fullscreen", onClick: function () { toggleFullscreen('symmetryCanvasContainer'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-white hover:bg-slate-700 transition-all" }, "\uD83D\uDD0D Fullscreen")
 
@@ -1812,9 +1812,9 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex gap-2 mt-3" },
 
-                      React.createElement("button", { "aria-label": "Clear", onClick: function () { upd('spiroReset', Date.now()); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear"),
+                      React.createElement("button", { onClick: function () { upd('spiroReset', Date.now()); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear"),
 
-                      React.createElement("button", { "aria-label": "Export PNG", onClick: function () { var c = document.getElementById('spiroCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'spirograph-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, "\uD83D\uDCE5 Export PNG"),
+                      React.createElement("button", { onClick: function () { var c = document.getElementById('spiroCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'spirograph-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, "\uD83D\uDCE5 Export PNG"),
 
                       React.createElement("button", { "aria-label": "Presets:", onClick: function () { upd('spiroRainbow', !(d.spiroRainbow)); upd('spiroReset', Date.now()); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.spiroRainbow ? 'bg-gradient-to-r from-red-500 via-yellow-500 to-blue-500 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, d.spiroRainbow ? '\uD83C\uDF08 Rainbow \u2714' : '\uD83C\uDF08 Rainbow')
 
@@ -1948,9 +1948,9 @@ const d = labToolData.artStudio || {};
 
                 }),
 
-                React.createElement("button", { "aria-label": "Clear", onClick: function () { upd('genPaused', !d.genPaused); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.genPaused ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, d.genPaused ? '\u25B6 Resume' : '\u23F8 Pause'),
+                React.createElement("button", { onClick: function () { upd('genPaused', !d.genPaused); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.genPaused ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, d.genPaused ? '\u25B6 Resume' : '\u23F8 Pause'),
 
-                React.createElement("button", { "aria-label": "Clear", onClick: function () { upd('genReset', Date.now()); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear"),
+                React.createElement("button", { onClick: function () { upd('genReset', Date.now()); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear"),
 
                 React.createElement("button", { "aria-label": "Export PNG", onClick: function () { var c = document.getElementById('genCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'generative-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, "\uD83D\uDCE5 Export PNG")
 
@@ -2218,11 +2218,11 @@ const d = labToolData.artStudio || {};
 
                 React.createElement("input", { type: "range", min: 2, max: 20, value: d.spinBrush || 6, 'aria-label': 'Spin brush size', onChange: function (e) { upd('spinBrush', parseInt(e.target.value)); }, className: "w-20 accent-orange-600" }),
 
-                React.createElement("button", { "aria-label": "Clear", onClick: function () { upd('spinSplatter', !d.spinSplatter); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + (d.spinSplatter ? 'bg-orange-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-orange-50') }, d.spinSplatter ? '\uD83D\uDCA6 Splatter \u2714' : '\uD83D\uDCA6 Splatter'),
+                React.createElement("button", { onClick: function () { upd('spinSplatter', !d.spinSplatter); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + (d.spinSplatter ? 'bg-orange-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-orange-50') }, d.spinSplatter ? '\uD83D\uDCA6 Splatter \u2714' : '\uD83D\uDCA6 Splatter'),
 
-                React.createElement("button", { "aria-label": "Clear", onClick: function () { upd('spinDark', !d.spinDark); upd('spinReset', Date.now()); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + (d.spinDark ? 'bg-slate-800 text-white' : 'bg-white text-slate-600 border border-slate-200') }, d.spinDark ? '\uD83C\uDF11 Dark' : '\u2B1C Light'),
+                React.createElement("button", { onClick: function () { upd('spinDark', !d.spinDark); upd('spinReset', Date.now()); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + (d.spinDark ? 'bg-slate-800 text-white' : 'bg-white text-slate-600 border border-slate-200') }, d.spinDark ? '\uD83C\uDF11 Dark' : '\u2B1C Light'),
 
-                React.createElement("button", { "aria-label": "Clear", onClick: function () { upd('spinReset', Date.now()); }, className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear"),
+                React.createElement("button", { onClick: function () { upd('spinReset', Date.now()); }, className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear"),
 
                 React.createElement("button", { "aria-label": "Export PNG", onClick: function () { var c = document.getElementById('spinCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'spin-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, "\uD83D\uDCE5 Export PNG")
 
@@ -2495,9 +2495,9 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex gap-2 mt-3" },
 
-                      React.createElement("button", { "aria-label": "Clear", onClick: function () { upd('strReset', Date.now()); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear"),
+                      React.createElement("button", { onClick: function () { upd('strReset', Date.now()); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear"),
 
-                      React.createElement("button", { "aria-label": "Export PNG", onClick: function () { var c = document.getElementById('stringCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'string-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, "\uD83D\uDCE5 Export PNG"),
+                      React.createElement("button", { onClick: function () { var c = document.getElementById('stringCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'string-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, "\uD83D\uDCE5 Export PNG"),
 
                       React.createElement("button", { "aria-label": "Presets:", onClick: function () { upd('strRainbow', !(d.strRainbow)); upd('strReset', Date.now()); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.strRainbow ? 'bg-gradient-to-r from-red-500 via-yellow-500 to-blue-500 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, d.strRainbow ? '\uD83C\uDF08 Rainbow \u2714' : '\uD83C\uDF08 Rainbow')
 
@@ -2741,7 +2741,7 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex gap-2 mt-3" },
 
-                      React.createElement("button", { "aria-label": "Export PNG", onClick: function () { upd('opPaused', !(d.opPaused)); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.opPaused ? 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100' : 'bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100') }, d.opPaused ? '\u25B6 Resume' : '\u23F8 Pause'),
+                      React.createElement("button", { onClick: function () { upd('opPaused', !(d.opPaused)); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.opPaused ? 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100' : 'bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100') }, d.opPaused ? '\u25B6 Resume' : '\u23F8 Pause'),
 
                       React.createElement("button", { "aria-label": "Export PNG", onClick: function () { var c = document.getElementById('opArtCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'op-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, "\uD83D\uDCE5 Export PNG")
 
@@ -3105,7 +3105,7 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex gap-2 mt-3" },
 
-                      React.createElement("button", { "aria-label": "Clear Colors", onClick: function () { upd('tessClickData', {}); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear Colors"),
+                      React.createElement("button", { onClick: function () { upd('tessClickData', {}); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear Colors"),
 
                       React.createElement("button", { "aria-label": "Export PNG", onClick: function () { var c = document.getElementById('tessCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'tessellation-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, "\uD83D\uDCE5 Export PNG")
 
@@ -3563,7 +3563,7 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex gap-2 mt-3" },
 
-                      React.createElement("button", { "aria-label": "Reset View", onClick: function () { upd('fractalZoom', 1); upd('fractalPanX', 0); upd('fractalPanY', 0); upd('fractalReset', Date.now()); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\u21BA Reset View"),
+                      React.createElement("button", { onClick: function () { upd('fractalZoom', 1); upd('fractalPanX', 0); upd('fractalPanY', 0); upd('fractalReset', Date.now()); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\u21BA Reset View"),
 
                       React.createElement("button", { "aria-label": "Export PNG", onClick: function () { var c = document.getElementById('fractalCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'fractal-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, "\uD83D\uDCE5 Export PNG")
 
@@ -4413,7 +4413,7 @@ const d = labToolData.artStudio || {};
 
               React.createElement("div", { className: "flex gap-1 p-1 bg-slate-100 rounded-xl border border-slate-200 mb-2" },
 
-                React.createElement("button", { "aria-label": "Static", onClick: function() { _stopStereoAnim(); upd('stereoAnimMode', 'static'); }, className: "flex-1 px-3 py-2 rounded-lg text-xs font-bold transition-all " + ((d.stereoAnimMode || 'static') === 'static' ? 'bg-white shadow-md text-cyan-700' : 'text-slate-600 hover:text-slate-700') }, "\uD83D\uDCF8 Static"),
+                React.createElement("button", { onClick: function() { _stopStereoAnim(); upd('stereoAnimMode', 'static'); }, className: "flex-1 px-3 py-2 rounded-lg text-xs font-bold transition-all " + ((d.stereoAnimMode || 'static') === 'static' ? 'bg-white shadow-md text-cyan-700' : 'text-slate-600 hover:text-slate-700') }, "\uD83D\uDCF8 Static"),
 
                 React.createElement("button", { "aria-label": "Animate", onClick: function() { upd('stereoAnimMode', 'animate'); }, className: "flex-1 px-3 py-2 rounded-lg text-xs font-bold transition-all " + ((d.stereoAnimMode || 'static') === 'animate' ? 'bg-white shadow-md text-purple-700' : 'text-slate-600 hover:text-slate-700') }, "\uD83C\uDFAC Animate")
 
@@ -4625,7 +4625,7 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex gap-2 mt-4" },
 
-                      React.createElement("button", { "aria-label": "Render Stereogram", onClick: function () { upd('stereoGen', Date.now()); }, className: "flex-1 px-3 py-2 rounded-lg text-xs font-black bg-gradient-to-r from-cyan-500 to-teal-500 text-white hover:from-cyan-600 hover:to-teal-600 shadow-md transition-all" }, "\uD83D\uDC53 Render Stereogram"),
+                      React.createElement("button", { onClick: function () { upd('stereoGen', Date.now()); }, className: "flex-1 px-3 py-2 rounded-lg text-xs font-black bg-gradient-to-r from-cyan-500 to-teal-500 text-white hover:from-cyan-600 hover:to-teal-600 shadow-md transition-all" }, "\uD83D\uDC53 Render Stereogram"),
 
                       React.createElement("button", { "aria-label": "Clear", onClick: function () { upd('stereoClear', Date.now()); upd('stereoPreset', null); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear")
 
@@ -5169,9 +5169,9 @@ const d = labToolData.artStudio || {};
 
                       }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200" }, "\uD83D\uDDD1 Clear Canvas"),
 
-                      React.createElement("button", { "aria-label": "Clear All Frames", onClick: function() { upd('stereoAnimKeyframes', []); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\u274C Clear All Frames"),
+                      React.createElement("button", { onClick: function() { upd('stereoAnimKeyframes', []); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\u274C Clear All Frames"),
 
-                      React.createElement("button", { "aria-label": "Save Drawing PNG", onClick: function() { var c = document.getElementById('stereoAnimDrawCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'depth-drawing-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 Drawing saved as PNG!', 'success'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-700 border border-indigo-200 hover:from-indigo-100 hover:to-purple-100 transition-all" }, "\u2B07\uFE0F Save Drawing PNG"),
+                      React.createElement("button", { onClick: function() { var c = document.getElementById('stereoAnimDrawCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'depth-drawing-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 Drawing saved as PNG!', 'success'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-700 border border-indigo-200 hover:from-indigo-100 hover:to-purple-100 transition-all" }, "\u2B07\uFE0F Save Drawing PNG"),
 
                       (d.stereoAnimKeyframes && d.stereoAnimKeyframes.length >= 2) && React.createElement("button", { "aria-label": "Export Depth Map GIF", onClick: function() {
 
@@ -5925,9 +5925,9 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex gap-1 mb-3" },
 
-                      React.createElement("button", { "aria-label": "Step", onClick: function () { upd('lifeRunning', !(d.lifeRunning)); }, className: "flex-1 px-3 py-2 rounded-lg text-xs font-black transition-all " + (d.lifeRunning ? 'bg-amber-700 text-white hover:bg-amber-600' : 'bg-gradient-to-r from-emerald-500 to-green-500 text-white hover:from-emerald-600 hover:to-green-600 shadow-md') }, d.lifeRunning ? '\u23F8 Pause' : '\u25B6 Run'),
+                      React.createElement("button", { onClick: function () { upd('lifeRunning', !(d.lifeRunning)); }, className: "flex-1 px-3 py-2 rounded-lg text-xs font-black transition-all " + (d.lifeRunning ? 'bg-amber-700 text-white hover:bg-amber-600' : 'bg-gradient-to-r from-emerald-500 to-green-500 text-white hover:from-emerald-600 hover:to-green-600 shadow-md') }, d.lifeRunning ? '\u23F8 Pause' : '\u25B6 Run'),
 
-                      React.createElement("button", { "aria-label": "Step", onClick: function () { upd('lifeStep', (d.lifeStep || 0) + 1); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-100 text-emerald-700 hover:bg-emerald-200", disabled: d.lifeRunning }, '\u23ED Step'),
+                      React.createElement("button", { onClick: function () { upd('lifeStep', (d.lifeStep || 0) + 1); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-100 text-emerald-700 hover:bg-emerald-200", disabled: d.lifeRunning }, '\u23ED Step'),
 
                       React.createElement("button", { "aria-label": "Clear", onClick: function () { upd('lifeClear', Date.now()); upd('lifeRunning', false); upd('lifeGen', 0); upd('lifePop', 0); upd('lifeChallengeStatus', null); upd('lifeChallengeMsg', null); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, '\uD83D\uDDD1 Clear')
 
@@ -5995,7 +5995,7 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex items-center gap-2 mb-3" },
 
-                      React.createElement("button", { "aria-label": "Change life wrap", onClick: function () { upd('lifeWrap', d.lifeWrap === false ? true : d.lifeWrap === true ? false : true); }, className: "px-3 py-1 rounded-lg text-[11px] font-bold transition-all " + (d.lifeWrap !== false ? 'bg-emerald-700 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-emerald-50') }, (d.lifeWrap !== false ? '\u2705' : '\u2B1C') + ' Wrap Edges'),
+                      React.createElement("button", { onClick: function () { upd('lifeWrap', d.lifeWrap === false ? true : d.lifeWrap === true ? false : true); }, className: "px-3 py-1 rounded-lg text-[11px] font-bold transition-all " + (d.lifeWrap !== false ? 'bg-emerald-700 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-emerald-50') }, (d.lifeWrap !== false ? '\u2705' : '\u2B1C') + ' Wrap Edges'),
 
                       React.createElement("button", { "aria-label": "Random", onClick: function () {
 
@@ -7523,9 +7523,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               React.createElement("div", { className: "flex gap-2" },
 
-                React.createElement("button", { "aria-label": "Upd D S",
-
-                  onClick: function () { updDS('showStats', !showStats); },
+                React.createElement("button", { onClick: function () { updDS('showStats', !showStats); },
 
                   className: "px-3 py-1.5 rounded-lg text-xs font-bold",
 
@@ -8003,9 +8001,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 var labels = { none: '— None', asc: '↑ Asc', desc: '↓ Desc' };
 
-                return React.createElement("button", { "aria-label": "Upd D S",
-
-                  key: s,
+                return React.createElement("button", { key: s,
 
                   onClick: function () { updDS('sortOrder', s); },
 
@@ -8065,9 +8061,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               // Trendline toggle (for line/scatter)
 
-              (chartType === 'line' || chartType === 'scatter') && React.createElement("button", { "aria-label": "Upd D S",
-
-                onClick: function () { updDS('showTrendline', !showTrendline); },
+              (chartType === 'line' || chartType === 'scatter') && React.createElement("button", { onClick: function () { updDS('showTrendline', !showTrendline); },
 
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-bold ml-auto transition-all",
 
@@ -8087,9 +8081,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               PRESETS.map(function (p, i) {
 
-                return React.createElement("button", { "aria-label": "Upd D S",
-
-                  key: i,
+                return React.createElement("button", { key: i,
 
                   onClick: function () { updDS('dataRows', p.data); updDS('chartTitle', p.title); if (typeof awardStemXP === 'function') awardStemXP('dataStudio', 3, 'Preset: ' + p.title); },
 
@@ -8263,9 +8255,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                     React.createElement("span", { className: "font-mono", style: { color: _muted } }, row.value),
 
-                    React.createElement("button", { "aria-label": "Upd D S",
-
-                      onClick: function () { updDS('dataRows', dataRows.filter(function (_, j) { return j !== i; })); },
+                    React.createElement("button", { onClick: function () { updDS('dataRows', dataRows.filter(function (_, j) { return j !== i; })); },
 
                       className: "text-red-400 hover:text-red-600 font-bold text-xs"
 

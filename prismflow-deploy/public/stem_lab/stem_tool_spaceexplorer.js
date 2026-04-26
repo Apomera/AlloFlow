@@ -1076,7 +1076,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
           h('div', { className: 'bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl overflow-hidden border border-slate-600' },
             // Planet canvas
             h('div', { className: 'relative', style: { height: '200px' } },
-              h('canvas', { 'aria-label': 'Space explorer 3D view',
+              h('canvas', { 
                 style: { width: '100%', height: '100%', display: 'block' },
                 'aria-label': 'View of ' + destination.name + ' from approach trajectory',
                 ref: function(cvEl) {
@@ -1319,7 +1319,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
           // Ship status canvas — shows destination planet + crew. Always
           // visible so the layout doesn't jump when an event is generating.
           h('div', { className: 'bg-slate-900 rounded-xl overflow-hidden border border-slate-700' },
-            h('canvas', { 'aria-label': 'Space explorer star map',
+            h('canvas', { 
               style: { width: '100%', height: '120px', display: 'block' },
               'aria-roledescription': 'illustration',
               'aria-label': 'Approaching ' + destination.name + '. Turn ' + turn + ' of ' + maxTurns + '. ' +

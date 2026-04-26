@@ -791,7 +791,7 @@ window.StemLab = window.StemLab || {
         showAI && h('div', { className: 'bg-gradient-to-br from-cyan-900/40 to-blue-900/30 backdrop-blur-md rounded-xl p-4 border border-cyan-500/30' },
           h('div', { className: 'flex items-center justify-between mb-2' },
             h('div', { className: 'text-sm font-bold text-cyan-200 flex items-center gap-2' }, '\uD83E\uDD16 AI Geometry Tutor'),
-            h('button', { 'aria-label': 'Upd Ext', onClick: function() { updExt({ showAI: false }); }, className: 'text-xs text-slate-200 hover:text-slate-200' }, '\u2716')
+            h('button', { onClick: function() { updExt({ showAI: false }); }, className: 'text-xs text-slate-200 hover:text-slate-200' }, '\u2716')
           ),
           aiLoading
             ? h('div', { className: 'text-sm text-cyan-300 animate-pulse' }, 'Analyzing this ' + m.name + '...')
@@ -881,7 +881,7 @@ window.StemLab = window.StemLab || {
                   h('span', { className: 'text-sky-400 font-mono' }, Math.round(opacity * 100) + '%')
                 ),
                 h('input', {
-                  type: 'range', 'aria-label': 'Geosandbox slider', min: 0.1, max: 1, step: 0.05,
+                  type: 'range', min: 0.1, max: 1, step: 0.05,
                   value: opacity,
                   onChange: function(e) { upd('opacity', parseFloat(e.target.value)); },
                   'aria-label': 'Shape opacity',
@@ -942,7 +942,7 @@ window.StemLab = window.StemLab || {
 
           // === THREE.JS VIEWPORT ===
           h('div', { className: 'flex-1 bg-slate-900/60 backdrop-blur-md rounded-xl border border-slate-700/50 overflow-hidden relative', style: { minHeight: '400px' } },
-            h('canvas', { 'aria-label': 'Geosandbox visualization',
+            h('canvas', { 
               id: 'geo-sandbox-canvas',
               'aria-label': 'Interactive geology sandbox 3D visualization', tabIndex: 0,
               className: 'w-full h-full',

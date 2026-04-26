@@ -406,8 +406,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           h('div', { className: 'flex flex-wrap gap-1.5 mb-3' },
             Object.entries(CATEGORIES).map(function(e) {
               var k = e[0], v = e[1];
-              return h('button', { 'aria-label': 'Change tab',
-                key: k,
+              return h('button', { key: k,
                 onClick: function() {
                   var units = Object.keys(v.units);
                   setLabToolData(function(prev) {
@@ -424,8 +423,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           // Tool tabs
           h('div', { className: 'flex gap-0 mb-3 border-b border-slate-200', role: 'tablist', 'aria-label': 'Unit Converter sections' },
             [['convert', '\uD83D\uDD04 Convert'], ['table', '\uD83D\uDCCA All Units'], ['quiz', '\uD83E\uDDE0 Quiz'], ['wordproblem', '\uD83D\uDCDD Word Problem']].map(function(item, idx) {
-              return h('button', { 'aria-label': 'Change tab',
-                key: item[0],
+              return h('button', { key: item[0],
                 onClick: function() { upd('tab', item[0]); },
                 role: 'tab', 'aria-selected': tab === item[0],
                 className: 'px-3 py-1.5 text-xs font-bold transition-all ' + (tab === item[0] ? 'border-b-2 border-cyan-600 text-cyan-700 -mb-px' : 'text-slate-600 hover:text-slate-700'),

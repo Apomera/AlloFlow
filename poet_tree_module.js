@@ -766,6 +766,120 @@
                 )
               ),
               e('p', { style: { fontSize: '10px', color: '#475569', fontStyle: 'italic', margin: '6px 0 0' } }, '/ = stressed syllable, u = unstressed. Read the line aloud to verify.')
+            ),
+
+            // ── Writing helpers (collapsible panel: Daily Prompt, Rhymes, Stronger Verbs) ──
+            onCallGemini && e('div', { style: { background: '#f8fafc', borderRadius: '10px', border: '1px solid #e2e8f0', overflow: 'hidden' } },
+              e('button', {
+                onClick: function () { setHelpersOpen(!helpersOpen); },
+                'aria-expanded': helpersOpen ? 'true' : 'false',
+                'aria-controls': 'pt-helpers-panel',
+                'aria-label': helpersOpen ? 'Collapse writing helpers' : 'Expand writing helpers',
+                style: { width: '100%', padding: '10px 14px', background: 'transparent', border: 'none', textAlign: 'left', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', fontSize: '13px', fontWeight: 800, color: TEAL_DARK }
+              },
+                e('span', null, '✨ Writing helpers'),
+                e('span', { 'aria-hidden': 'true', style: { fontSize: '11px', color: '#475569' } }, helpersOpen ? '▼' : '▶')
+              ),
+              helpersOpen && e('div', { id: 'pt-helpers-panel', style: { padding: '0 14px 14px', display: 'flex', flexDirection: 'column', gap: '14px', borderTop: '1px solid #e2e8f0' } },
+                // ── Daily Prompt ──
+                e('div', null,
+                  e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '6px', marginTop: '10px' } },
+                    e('h4', { style: { fontSize: '12px', fontWeight: 800, color: TEAL_DARK, margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' } }, '💡 Daily Prompt'),
+                    e('button', { onClick: generateDailyPrompt, disabled: dailyPromptLoading,
+                      'aria-busy': dailyPromptLoading ? 'true' : 'false',
+                      'aria-label': dailyPromptLoading ? 'Fetching prompt, please wait' : (dailyPrompt ? 'Get another prompt' : 'Get a prompt'),
+                      style: { padding: '4px 12px', borderRadius: '6px', border: 'none', background: dailyPromptLoading ? '#cbd5e1' : TEAL, color: '#fff', fontSize: '11px', fontWeight: 700, cursor: dailyPromptLoading ? 'wait' : 'pointer' }
+                    }, dailyPromptLoading ? '⏳…' : (dailyPrompt ? '🔄 New prompt' : '💡 Inspire me'))
+                  ),
+                  dailyPrompt && e('div', { role: 'region', 'aria-live': 'polite', 'aria-label': 'Daily prompt', style: { background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '8px', padding: '10px 12px', fontSize: '13px', color: '#78350f', fontFamily: 'Georgia, serif', fontStyle: 'italic', lineHeight: 1.5 } },
+                    '"' + dailyPrompt + '"',
+                    e('button', { onClick: function () { try { navigator.clipboard.writeText(dailyPrompt); addToast && addToast('Prompt copied.', 'success'); } catch (er) {} },
+                      'aria-label': 'Copy prompt to clipboard',
+                      style: { marginLeft: '8px', padding: '2px 8px', background: 'transparent', border: '1px solid #fcd34d', color: '#78350f', borderRadius: '4px', fontSize: '10px', fontWeight: 700, cursor: 'pointer', verticalAlign: 'middle' }
+                    }, '📋 copy')
+                  ),
+                  !dailyPrompt && e('p', { style: { fontSize: '11px', color: '#475569', margin: 0, fontStyle: 'italic' } }, 'Stuck? Get a fresh idea to start from.')
+                ),
+
+                // ── Rhymes ──
+                e('div', null,
+                  e('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' } },
+                    e('label', { htmlFor: 'pt-rhyme-input', style: { fontSize: '12px', fontWeight: 800, color: TEAL_DARK, margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' } }, '🔁 Rhymes for…')
+                  ),
+                  e('div', { style: { display: 'flex', gap: '6px' } },
+                    e('input', { id: 'pt-rhyme-input', type: 'text', value: rhymeQuery,
+                      onChange: function (ev) { setRhymeQuery(ev.target.value); },
+                      onKeyDown: function (ev) { if (ev.key === 'Enter') { ev.preventDefault(); fetchRhymes(); } },
+                      placeholder: 'word to rhyme (e.g. orange, light, hope)',
+                      style: { flex: 1, padding: '6px 10px', borderRadius: '6px', border: '1px solid #d1d5db', fontSize: '12px' }
+                    }),
+                    e('button', { onClick: fetchRhymes, disabled: !rhymeQuery.trim() || rhymeLoading,
+                      'aria-busy': rhymeLoading ? 'true' : 'false',
+                      'aria-label': rhymeLoading ? 'Fetching rhymes' : 'Find rhymes',
+                      style: { padding: '6px 12px', borderRadius: '6px', border: 'none', background: rhymeQuery.trim() && !rhymeLoading ? TEAL : '#cbd5e1', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: rhymeQuery.trim() && !rhymeLoading ? 'pointer' : 'not-allowed' }
+                    }, rhymeLoading ? '⏳' : '🔍')
+                  ),
+                  rhymeResults && rhymeResults.error && e('p', { style: { fontSize: '11px', color: '#b91c1c', fontStyle: 'italic', margin: '6px 0 0' } }, rhymeResults.error),
+                  rhymeResults && !rhymeResults.error && e('div', { role: 'region', 'aria-label': 'Rhyme results', 'aria-live': 'polite', style: { marginTop: '8px' } },
+                    rhymeResults.perfect && rhymeResults.perfect.length > 0 && e('div', { style: { marginBottom: '6px' } },
+                      e('div', { style: { fontSize: '10px', fontWeight: 700, color: '#475569', marginBottom: '4px' } }, 'Perfect rhymes for "' + rhymeResults.word + '"'),
+                      e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '4px' } },
+                        rhymeResults.perfect.map(function (w, wi) {
+                          return e('button', { key: 'p' + wi, onClick: function () { copyRhyme(w); },
+                            'aria-label': 'Rhyme ' + w + ' — copy to clipboard',
+                            style: { padding: '3px 10px', background: TEAL_LIGHT, border: '1px solid #99f6e4', borderRadius: '12px', fontSize: '12px', cursor: 'pointer', color: TEAL_DARK, fontFamily: 'Georgia, serif' }
+                          }, w);
+                        })
+                      )
+                    ),
+                    rhymeResults.slant && rhymeResults.slant.length > 0 && e('div', null,
+                      e('div', { style: { fontSize: '10px', fontWeight: 700, color: '#475569', marginBottom: '4px' } }, 'Slant rhymes (close, not exact)'),
+                      e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '4px' } },
+                        rhymeResults.slant.map(function (w, wi) {
+                          return e('button', { key: 's' + wi, onClick: function () { copyRhyme(w); },
+                            'aria-label': 'Slant rhyme ' + w + ' — copy to clipboard',
+                            style: { padding: '3px 10px', background: '#fff', border: '1px dashed #99f6e4', borderRadius: '12px', fontSize: '12px', cursor: 'pointer', color: TEAL_DARK, fontFamily: 'Georgia, serif' }
+                          }, w);
+                        })
+                      )
+                    ),
+                    (!rhymeResults.perfect || rhymeResults.perfect.length === 0) && (!rhymeResults.slant || rhymeResults.slant.length === 0) && e('p', { style: { fontSize: '11px', color: '#475569', fontStyle: 'italic', margin: 0 } }, 'No rhymes found — try a more common word.')
+                  )
+                ),
+
+                // ── Stronger Verbs ──
+                e('div', null,
+                  e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '6px' } },
+                    e('h4', { style: { fontSize: '12px', fontWeight: 800, color: TEAL_DARK, margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' } }, '💪 Stronger Verbs'),
+                    e('button', { onClick: findStrongerVerbs, disabled: !poemText.trim() || verbLoading,
+                      'aria-busy': verbLoading ? 'true' : 'false',
+                      'aria-label': verbLoading ? 'Analyzing verbs' : 'Find stronger verbs',
+                      style: { padding: '4px 12px', borderRadius: '6px', border: 'none', background: poemText.trim() && !verbLoading ? TEAL : '#cbd5e1', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: poemText.trim() && !verbLoading ? 'pointer' : 'not-allowed' }
+                    }, verbLoading ? '⏳…' : '🔍 Scan')
+                  ),
+                  verbSuggestions && verbSuggestions.error && e('p', { style: { fontSize: '11px', color: '#b91c1c', fontStyle: 'italic', margin: 0 } }, verbSuggestions.error),
+                  verbSuggestions && Array.isArray(verbSuggestions) && verbSuggestions.length === 0 && e('p', { style: { fontSize: '12px', color: '#166534', fontStyle: 'italic', margin: 0, background: '#f0fdf4', border: '1px solid #86efac', borderRadius: '6px', padding: '8px 10px' } }, '✓ No weak verbs detected — your verbs are working hard.'),
+                  verbSuggestions && Array.isArray(verbSuggestions) && verbSuggestions.length > 0 && e('div', { role: 'region', 'aria-label': 'Verb suggestions', 'aria-live': 'polite', style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
+                    verbSuggestions.map(function (s, si) {
+                      return e('div', { key: si, style: { background: '#fff', border: '1px solid #fde68a', borderRadius: '8px', padding: '8px 10px' } },
+                        e('p', { style: { fontFamily: 'Georgia, serif', fontSize: '12px', color: '#1e293b', margin: '0 0 4px', fontStyle: 'italic' } }, '"' + s.line + '"'),
+                        e('div', { style: { fontSize: '10px', color: '#475569' } },
+                          e('span', null, 'Weak verb: '),
+                          e('span', { style: { fontWeight: 700, color: '#b45309' } }, s.weakVerb),
+                          e('span', null, ' → try: '),
+                          (s.alternatives || []).map(function (alt, ai) {
+                            return e('button', { key: ai, onClick: function () { copyRhyme(alt); },
+                              'aria-label': 'Stronger verb ' + alt + ' — copy to clipboard',
+                              style: { display: 'inline-block', margin: '0 3px 2px 0', padding: '2px 8px', background: TEAL_LIGHT, border: '1px solid #99f6e4', borderRadius: '10px', fontSize: '11px', cursor: 'pointer', color: TEAL_DARK }
+                            }, alt);
+                          })
+                        )
+                      );
+                    })
+                  ),
+                  !verbSuggestions && e('p', { style: { fontSize: '11px', color: '#475569', margin: 0, fontStyle: 'italic' } }, 'Find weak verbs (is, was, have…) and get stronger alternatives.')
+                )
+              )
             )
           ),
 

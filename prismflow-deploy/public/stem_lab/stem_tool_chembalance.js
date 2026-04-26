@@ -678,8 +678,8 @@
           d._showAI && h('div', { className: 'mb-3 bg-sky-50 rounded-xl p-3 border border-sky-200' },
             h('p', { className: 'text-[11px] font-bold text-sky-600 uppercase tracking-wider mb-2' }, '\uD83E\uDD16 AI Chemistry Tutor'),
             h('div', { className: 'flex gap-2 mb-2' },
-              h('input', { type: 'text', value: d._chemAIQ || '', onChange: function(e) { upd('_chemAIQ', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') askAI(d._chemAIQ); }, placeholder: 'Ask a chemistry question...', 'aria-label': 'Ask the chemistry tutor', className: 'flex-1 px-3 py-1.5 text-sm border border-sky-200 rounded-lg focus:focus:border-sky-400' }),
-              h('button', { onClick: function() { askAI(d._chemAIQ); }, disabled: d._chemAILoading, className: 'px-3 py-1.5 text-xs font-bold text-white bg-sky-500 rounded-lg hover:bg-sky-600 disabled:opacity-50' }, d._chemAILoading ? '\u23F3...' : 'Ask')
+              h('input', { type: 'text', value: d._chemAIQ || '', onChange: function(e) { upd('_chemAIQ', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') askAI(d._chemAIQ); }, placeholder: 'Ask a chemistry question...', 'aria-label': 'Ask the chemistry tutor', className: 'flex-1 px-3 py-1.5 text-sm border border-sky-200 rounded-lg focus:border-sky-400' }),
+              h('button', { onClick: function() { askAI(d._chemAIQ); }, disabled: d._chemAILoading, 'aria-busy': d._chemAILoading, 'aria-label': d._chemAILoading ? 'Asking AI tutor' : 'Ask AI tutor', className: 'px-3 py-1.5 text-xs font-bold text-white bg-sky-500 rounded-lg hover:bg-sky-600 disabled:opacity-50' }, d._chemAILoading ? '\u23F3...' : 'Ask')
             ),
             d._chemAIResp && h('div', { className: 'bg-white rounded-lg p-3 text-sm text-slate-700 whitespace-pre-wrap border border-sky-100' }, d._chemAIResp)
           ),
@@ -757,7 +757,7 @@
               ),
               // Action buttons
               h('div', { className: 'flex justify-center gap-2 mb-3 flex-wrap' },
-                h('button', { 'aria-label': 'Check', onClick: checkBalance, className: 'px-5 py-2 bg-lime-600 text-white font-bold rounded-lg hover:bg-lime-700 transition-colors shadow-sm text-sm' }, '\u2696\uFE0F Check'),
+                h('button', { onClick: checkBalance, className: 'px-5 py-2 bg-lime-600 text-white font-bold rounded-lg hover:bg-lime-700 transition-colors shadow-sm text-sm' }, '\u2696\uFE0F Check'),
                 h('button', { 'aria-label': 'Hints', onClick: function() { upd('showHints', !showHints); }, className: 'px-3 py-2 rounded-lg font-bold text-xs transition-colors ' + (showHints ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600 hover:bg-blue-50') }, '\uD83D\uDCA1 Hints'),
                 h('button', { 'aria-label': 'Reset', onClick: function() { var arr = []; for (var ri = 0; ri < numSlots; ri++) arr.push(1); updMulti({ coefficients: arr, feedback: null }); }, className: 'px-3 py-2 bg-slate-100 text-slate-600 rounded-lg font-bold text-xs hover:bg-slate-200' }, '\uD83D\uDD04 Reset'),
                 h('button', { 'aria-label': 'Random', onClick: function() { var pick = filtered[Math.floor(Math.random() * filtered.length)]; switchPreset(pick.name); addToast('\uD83C\uDFB2 ' + pick.name, 'info'); }, className: 'px-3 py-2 bg-purple-100 text-purple-700 rounded-lg font-bold text-xs hover:bg-purple-200 border border-purple-200' }, '\uD83C\uDFB2 Random')
@@ -867,7 +867,7 @@
             // Formula input
             h('div', { className: 'bg-gradient-to-r from-teal-50 to-cyan-50 rounded-xl p-3 border border-teal-200 mb-3' },
               h('label', { className: 'text-[11px] font-bold text-teal-600 uppercase tracking-wider block mb-1' }, '\uD83E\uDDEE Enter Chemical Formula'),
-              h('input', { type: 'text', value: stoichFormula, onChange: function(e) { upd('_stoichFormula', e.target.value); }, placeholder: 'e.g. H2O, NaCl, Ca(OH)2', 'aria-label': 'Chemical formula input', className: 'w-full px-3 py-2 text-sm font-mono font-bold border border-teal-200 rounded-lg focus:focus:border-teal-400 tracking-widest mb-2' }),
+              h('input', { type: 'text', value: stoichFormula, onChange: function(e) { upd('_stoichFormula', e.target.value); }, placeholder: 'e.g. H2O, NaCl, Ca(OH)2', 'aria-label': 'Chemical formula input', className: 'w-full px-3 py-2 text-sm font-mono font-bold border border-teal-200 rounded-lg focus:border-teal-400 tracking-widest mb-2' }),
               // Presets
               h('div', { className: 'flex flex-wrap gap-1' },
                 MOLAR_PRESETS.map(function(mp) {
@@ -1217,9 +1217,9 @@
                       h('p', { className: 'text-[11px] font-bold text-lime-600 uppercase tracking-wider mb-1' }, band.toUpperCase() + ' Level'),
                       h('p', { className: 'text-xs text-slate-700 leading-relaxed' }, content)
                     ),
-                    idx === 0 && h('button', { 'aria-label': 'Explore Reaction Types', onClick: function() { upd('subtool', 'reactions'); }, className: 'mt-2 px-3 py-1 text-[11px] font-bold text-lime-600 bg-lime-50 border border-lime-200 rounded-lg hover:bg-lime-100' }, '\u2192 Explore Reaction Types'),
-                    idx === 2 && h('button', { 'aria-label': 'View Molecular Models', onClick: function() { upd('subtool', 'molecular'); }, className: 'mt-2 px-3 py-1 text-[11px] font-bold text-indigo-600 bg-indigo-50 border border-indigo-200 rounded-lg hover:bg-indigo-100' }, '\u2192 View Molecular Models'),
-                    idx === 3 && h('button', { 'aria-label': 'Try Stoichiometry Calculator', onClick: function() { upd('subtool', 'stoich'); }, className: 'mt-2 px-3 py-1 text-[11px] font-bold text-teal-800 bg-teal-50 border border-teal-200 rounded-lg hover:bg-teal-100' }, '\u2192 Try Stoichiometry Calculator'),
+                    idx === 0 && h('button', { onClick: function() { upd('subtool', 'reactions'); }, className: 'mt-2 px-3 py-1 text-[11px] font-bold text-lime-600 bg-lime-50 border border-lime-200 rounded-lg hover:bg-lime-100' }, '\u2192 Explore Reaction Types'),
+                    idx === 2 && h('button', { onClick: function() { upd('subtool', 'molecular'); }, className: 'mt-2 px-3 py-1 text-[11px] font-bold text-indigo-600 bg-indigo-50 border border-indigo-200 rounded-lg hover:bg-indigo-100' }, '\u2192 View Molecular Models'),
+                    idx === 3 && h('button', { onClick: function() { upd('subtool', 'stoich'); }, className: 'mt-2 px-3 py-1 text-[11px] font-bold text-teal-800 bg-teal-50 border border-teal-200 rounded-lg hover:bg-teal-100' }, '\u2192 Try Stoichiometry Calculator'),
                     callTTS && h('button', { 'aria-label': 'Read Aloud', onClick: function() { callTTS(content); }, className: 'mt-2 ml-2 px-3 py-1 text-[11px] font-bold text-slate-600 bg-slate-50 border border-slate-200 rounded-lg hover:bg-slate-100' }, '\uD83D\uDD0A Read Aloud')
                   )
                 );
@@ -1229,7 +1229,7 @@
 
           // ── Footer ──
           h('div', { className: 'flex gap-2 mt-4 pt-3 border-t border-slate-200' },
-            h('button', { 'aria-label': 'Titration Lab', onClick: function() { setStemLabTool('titrationLab'); announceToSR('Opening Titration Lab'); }, className: 'px-3 py-1.5 text-xs font-bold text-lime-600 bg-lime-50 border border-lime-200 rounded-full hover:bg-lime-100' }, '\u2697\uFE0F Titration Lab \u2192'),
+            h('button', { onClick: function() { setStemLabTool('titrationLab'); announceToSR('Opening Titration Lab'); }, className: 'px-3 py-1.5 text-xs font-bold text-lime-600 bg-lime-50 border border-lime-200 rounded-full hover:bg-lime-100' }, '\u2697\uFE0F Titration Lab \u2192'),
             h('button', { 'aria-label': 'Snapshot', onClick: takeSnapshot, className: 'ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all' }, '\uD83D\uDCF8 Snapshot')
           )
         );

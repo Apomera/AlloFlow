@@ -834,7 +834,7 @@ window.StemLab = window.StemLab || {
         ),
 
         // Sub-tool tabs
-        h('div', { className: 'flex flex-wrap gap-1.5', role: 'tablist', 'aria-label': 'Life Skills sections' },
+        h('div', { className: 'flex flex-wrap gap-1.5', role: 'tablist', },
           SUBTOOLS.map(function(st) {
             var active = tab === st.id;
             return h('button', { 'aria-label': 'Change pay rate', key: st.id, onClick: function() { updMulti({ tab: st.id }); announceToSR('Switched to ' + st.label); },
@@ -1549,9 +1549,9 @@ window.StemLab = window.StemLab || {
             chalQ && h('p', { className: 'text-sm font-medium text-slate-700' }, chalQ.q),
             h('input', { type: 'text', value: chalAnswer, onChange: function(e) { upd('chalAnswer', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') chalCheck(); }, placeholder: 'Type your answer...', className: 'w-full px-4 py-2 border border-slate-200 rounded-xl text-sm focus:border-teal-400', 'aria-label': 'Answer' }),
             h('div', { className: 'flex gap-2' },
-              h('button', { 'aria-label': 'Check', onClick: chalCheck, className: 'px-4 py-2 text-sm font-bold bg-teal-700 text-white rounded-xl' }, 'Check'),
-              h('button', { 'aria-label': 'Hint', onClick: function() { upd('chalFeedback', '\uD83D\uDCA1 ' + (chalQ.h || 'No hint')); }, className: 'px-3 py-2 text-sm font-bold bg-amber-50 text-amber-600 rounded-xl' }, '\uD83D\uDCA1 Hint'),
-              h('button', { 'aria-label': 'Skip', onClick: function() { updMulti({ chalIdx: chalIdx + 1, chalFeedback: '', chalAnswer: '' }); }, className: 'px-3 py-2 text-sm font-bold bg-slate-100 text-slate-600 rounded-xl' }, 'Skip \u27A1'),
+              h('button', { onClick: chalCheck, className: 'px-4 py-2 text-sm font-bold bg-teal-700 text-white rounded-xl' }, 'Check'),
+              h('button', { onClick: function() { upd('chalFeedback', '\uD83D\uDCA1 ' + (chalQ.h || 'No hint')); }, className: 'px-3 py-2 text-sm font-bold bg-amber-50 text-amber-600 rounded-xl' }, '\uD83D\uDCA1 Hint'),
+              h('button', { onClick: function() { updMulti({ chalIdx: chalIdx + 1, chalFeedback: '', chalAnswer: '' }); }, className: 'px-3 py-2 text-sm font-bold bg-slate-100 text-slate-600 rounded-xl' }, 'Skip \u27A1'),
               callGemini && h('button', { 'aria-label': 'Change chal a i loading', onClick: function() {
                 upd('chalAILoading', true);
                 var tierLabel = chalTier === 1 ? 'easy' : chalTier === 2 ? 'medium' : 'hard';
@@ -1574,7 +1574,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'text-5xl mb-2' }, '\uD83E\uDDED'),
             h('p', { className: 'text-sm font-bold text-slate-700' }, 'The Adulting Boss challenges you!'),
             h('div', { className: 'flex gap-2 justify-center' },
-              h('button', { 'aria-label': 'Start Battle', onClick: function() { startBattle(false); }, className: 'px-4 py-2 text-sm font-bold bg-teal-700 text-white rounded-xl' }, '\u2694\uFE0F Start Battle'),
+              h('button', { onClick: function() { startBattle(false); }, className: 'px-4 py-2 text-sm font-bold bg-teal-700 text-white rounded-xl' }, '\u2694\uFE0F Start Battle'),
               callGemini && h('button', { 'aria-label': 'AI Battle', onClick: function() { startBattle(true); }, className: 'px-4 py-2 text-sm font-bold bg-purple-600 text-white rounded-xl' }, '\uD83E\uDDE0 AI Battle')
             )
           ) : h('div', { className: glassCard },
@@ -1587,7 +1587,7 @@ window.StemLab = window.StemLab || {
               h('p', { className: 'text-lg font-bold ' + (battleWon ? 'text-emerald-700' : 'text-red-700') }, battleWon ? 'You adulted successfully!' : 'The boss wins this round!'),
               battleFeedback && h('p', { className: 'text-xs ' + (battleFeedback[0] === '\u2705' ? 'text-emerald-600' : 'text-red-600') }, battleFeedback),
               h('div', { className: 'flex gap-2 justify-center mt-2' },
-                h('button', { 'aria-label': 'Again', onClick: function() { startBattle(false); }, className: 'px-4 py-2 text-sm font-bold bg-teal-700 text-white rounded-xl' }, '\u21BA Again'),
+                h('button', { onClick: function() { startBattle(false); }, className: 'px-4 py-2 text-sm font-bold bg-teal-700 text-white rounded-xl' }, '\u21BA Again'),
                 callGemini && h('button', { 'aria-label': 'AI Rematch', onClick: function() { startBattle(true); }, className: 'px-4 py-2 text-sm font-bold bg-purple-600 text-white rounded-xl' }, '\u2728 AI Rematch')
               )
             ) : h('div', { className: 'space-y-3' },
@@ -1600,7 +1600,7 @@ window.StemLab = window.StemLab || {
                   h('p', { className: 'text-sm font-medium text-slate-700' }, q.q),
                   h('input', { type: 'text', value: battleAnswer, onChange: function(e) { upd('battleAnswer', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') battleAttack(); }, placeholder: 'Answer...', className: 'w-full px-4 py-2 border border-slate-200 rounded-xl text-sm font-mono focus:border-red-400' }),
                   h('div', { className: 'flex gap-2' },
-                    h('button', { 'aria-label': 'Attack!', onClick: battleAttack, className: 'px-4 py-2 text-sm font-bold bg-red-600 text-white rounded-xl' }, '\u2694\uFE0F Attack!'),
+                    h('button', { onClick: battleAttack, className: 'px-4 py-2 text-sm font-bold bg-red-600 text-white rounded-xl' }, '\u2694\uFE0F Attack!'),
                     h('button', { 'aria-label': 'Hint', onClick: function() { upd('battleFeedback', '\uD83D\uDCA1 ' + (q.h || 'No hint')); }, className: 'px-3 py-2 text-sm font-bold bg-amber-50 text-amber-600 rounded-xl' }, '\uD83D\uDCA1 Hint')
                   ),
                   battleFeedback && h('p', { className: 'text-sm font-bold p-2 rounded-lg ' + (battleFeedback[0] === '\u2705' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700') }, battleFeedback)

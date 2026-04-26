@@ -1663,7 +1663,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
             ),
 
             // ── AI Tutor Panel ──
-            h('div', { style: { marginTop: '12px', padding: '12px', borderRadius: '12px', background: '#0a1a0a', border: '1px solid #6b21a8' }, role: 'region', 'aria-label': 'AI ATC tutor' },
+            h('div', { style: { marginTop: '12px', padding: '12px', borderRadius: '12px', background: '#0a1a0a', border: '1px solid #6b21a8' }, role: 'region', },
               h('div', { style: { display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px', marginBottom: '6px' } },
                 h('span', { style: { fontSize: '12px', fontWeight: 800, color: '#c084fc' } }, '✨ Explain at my level'),
                 h('div', { style: { marginLeft: 'auto', display: 'flex', gap: '4px' }, role: 'group', 'aria-label': 'Reading level' },

@@ -423,7 +423,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
         ),
 
         // Tabs
-        h('div', { role: 'tablist', 'aria-label': 'Accessibility Lab sections', className: 'flex gap-1 bg-teal-50 rounded-xl p-1 border border-teal-200 flex-wrap' },
+        h('div', { role: 'tablist', className: 'flex gap-1 bg-teal-50 rounded-xl p-1 border border-teal-200 flex-wrap' },
           [{ id: 'audit', label: '\uD83D\uDD0D Audit' }, { id: 'learn', label: '\uD83D\uDCD6 Learn' }, { id: 'knowbility', label: '\u267F Knowbility' }, { id: 'action', label: '\u2696\uFE0F Take Action' }, { id: 'history', label: '\uD83D\uDCCA History' }, { id: 'badges', label: '\uD83C\uDFC5 Badges' }].map(function(t) {
             return h('button', { 'aria-label': 'Switch to ' + t.label + ' tab',
               key: t.id, role: 'tab', 'aria-selected': tab === t.id,
@@ -879,7 +879,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
                 h('pre', { className: 'text-xs text-slate-700 whitespace-pre-wrap font-sans leading-relaxed' }, complaintResult)
               ),
               h('div', { className: 'flex gap-2' },
-                h('button', { 'aria-label': 'Copy letter', onClick: function() { navigator.clipboard.writeText(complaintResult); if (addToast) addToast('Copied to clipboard!', 'success'); }, className: 'flex-1 px-3 py-2 bg-indigo-100 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-200' }, '\uD83D\uDCCB Copy to Clipboard'),
+                h('button', { onClick: function() { navigator.clipboard.writeText(complaintResult); if (addToast) addToast('Copied to clipboard!', 'success'); }, className: 'flex-1 px-3 py-2 bg-indigo-100 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-200' }, '\uD83D\uDCCB Copy to Clipboard'),
                 h('button', { 'aria-label': 'Reset complaint', onClick: function() { upd('complaintResult', null); }, className: 'px-3 py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-200' }, '\uD83D\uDD04 New Letter')
               )
             )

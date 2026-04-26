@@ -1868,8 +1868,7 @@
 
               // AI Assistant buttons
               callGemini && React.createElement("div", { className: "flex rounded-lg overflow-hidden border border-white/20" },
-                React.createElement("button", { "aria-label": "Handle Explain Code",
-                  onClick: handleExplainCode,
+                React.createElement("button", { onClick: handleExplainCode,
                   disabled: aiLoading || blocks.length === 0,
                   title: "AI explains what your code does",
                   className: "px-2.5 py-1.5 text-[11px] font-bold transition-all " +
@@ -2102,8 +2101,7 @@
                         },
                         className: "px-2 py-1 rounded text-[11px] font-bold text-slate-200 hover:text-white bg-slate-700/50 hover:bg-slate-600 transition-all"
                       }, "\u21BA Reset"),
-                      React.createElement("button", { "aria-label": "Handle Robot Run",
-                        onClick: handleRobotRun,
+                      React.createElement("button", { onClick: handleRobotRun,
                         disabled: robotBlocks.length === 0 || robotRunning || robotChallengeIdx < 0,
                         className: "px-3 py-1 rounded text-[11px] font-bold transition-all " +
                           (robotBlocks.length > 0 && !robotRunning && robotChallengeIdx >= 0 ? "bg-emerald-700 text-white hover:bg-emerald-600" : "bg-slate-700 text-slate-600 cursor-not-allowed")
@@ -2365,8 +2363,8 @@
                           placeholder: "x > 250"
                         }),
                         // Move / Remove buttons
-                        React.createElement("button", { "aria-label": "Move block up", onClick: function () { moveBlock(idx, -1); }, className: "text-white/60 hover:text-white text-[11px]", disabled: idx === 0 }, "▲"),
-                        React.createElement("button", { "aria-label": "Move block down", onClick: function () { moveBlock(idx, 1); }, className: "text-white/60 hover:text-white text-[11px]", disabled: idx === blocks.length - 1 }, "▼"),
+                        React.createElement("button", { onClick: function () { moveBlock(idx, -1); }, className: "text-white/60 hover:text-white text-[11px]", disabled: idx === 0 }, "▲"),
+                        React.createElement("button", { onClick: function () { moveBlock(idx, 1); }, className: "text-white/60 hover:text-white text-[11px]", disabled: idx === blocks.length - 1 }, "▼"),
                         React.createElement("button", { "aria-label": "Remove block", onClick: function () { removeBlock(idx); }, className: "text-white/60 hover:text-red-300 text-sm ml-1" }, "×")
                       ),
                       // ── Repeat children ──

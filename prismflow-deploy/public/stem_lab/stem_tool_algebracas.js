@@ -450,8 +450,7 @@
 
         var tabBar = h('div', { style: { display: 'flex', gap: '4px', marginBottom: '12px', flexWrap: 'wrap' }, role: 'tablist', 'aria-label': 'Algebra CAS sections' },
           TABS.map(function(t) {
-            return h('button', { 'aria-label': 'Change tab',
-              key: t.id, onClick: function() { upd('tab', t.id); },
+            return h('button', { key: t.id, onClick: function() { upd('tab', t.id); },
               role: 'tab', 'aria-selected': tab === t.id,
               style: btnStyle(tab === t.id)
             }, t.label);
@@ -520,7 +519,7 @@
               h('div', { style: { fontSize: '10px', fontWeight: '700', color: MUTED, textTransform: 'uppercase', marginBottom: '4px' } }, 'Problem Type'),
               h('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
                 PROBLEM_TYPES.map(function(pt) {
-                  return h('button', { 'aria-label': 'Handle Practice Gen', key: pt.id, onClick: function() { updMulti({ practiceType: pt.id, practiceQ: null, practiceFeedback: null }); }, style: btnStyle(practiceType === pt.id) }, pt.label);
+                  return h('button', { key: pt.id, onClick: function() { updMulti({ practiceType: pt.id, practiceQ: null, practiceFeedback: null }); }, style: btnStyle(practiceType === pt.id) }, pt.label);
                 })
               )
             ),
@@ -543,7 +542,7 @@
                   'aria-label': 'Practice answer input',
                   style: { flex: '1', padding: '8px 12px', borderRadius: '10px', background: CARD, border: '1px solid ' + BORDER, color: TEXT, outline: 'none', fontFamily: 'monospace', fontSize: '13px' },
                   onFocus: function(e) { e.target.style.boxShadow = '0 0 0 2px #7c3aed'; }, onBlur: function(e) { e.target.style.boxShadow = 'none'; } }),
-                h('button', { 'aria-label': 'Handle Practice Check', onClick: handlePracticeCheck, disabled: isLoading || !practiceAnswer.trim(),
+                h('button', { onClick: handlePracticeCheck, disabled: isLoading || !practiceAnswer.trim(),
                   style: { padding: '8px 16px', borderRadius: '10px', background: BTN_FLAT, color: BTN_TEXT, fontWeight: '700', cursor: 'pointer', opacity: (isLoading || !practiceAnswer.trim()) ? 0.5 : 1, border: 'none' }
                 }, isLoading ? '\u23F3' : '\u2705 Check')
               ) : null,
@@ -588,7 +587,7 @@
             ),
             builderTiles.length > 0 ? h('div', { style: { display: 'flex', gap: '6px', marginBottom: '8px' } },
               h('div', { style: { flex: '1', padding: '8px', borderRadius: '10px', background: 'rgba(99,102,241,0.05)', border: '1px solid ' + BORDER, fontFamily: 'monospace', fontSize: '14px', fontWeight: '700', textAlign: 'center' } }, builderToString()),
-              h('button', { 'aria-label': 'Solve It', onClick: sendBuilderToSolver,
+              h('button', { onClick: sendBuilderToSolver,
                 style: { padding: '8px 16px', borderRadius: '10px', background: BTN_FLAT, color: BTN_TEXT, fontWeight: '700', fontSize: '12px', cursor: 'pointer', border: 'none' } }, '\uD83D\uDD0D Solve It'),
               h('button', { 'aria-label': 'Clear', onClick: function() { upd('builderTiles', []); },
                 style: { padding: '8px 12px', borderRadius: '10px', background: CARD, color: TEXT, fontWeight: '700', fontSize: '12px', cursor: 'pointer', border: '1px solid ' + BORDER } }, '\uD83D\uDDD1 Clear')

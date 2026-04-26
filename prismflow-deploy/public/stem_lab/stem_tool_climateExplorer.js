@@ -1020,7 +1020,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         return el('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
           el('span', { style: { fontSize: 16, width: 24, textAlign: 'center' } }, emoji),
           el('span', { style: { fontSize: 11, fontWeight: 700, color: '#94a3b8', width: 60 } }, label),
-          el('input', { type: 'range', 'aria-label': 'value', min: 0, max: 100, value: value, onChange: onChange,
+          el('input', { type: 'range', min: 0, max: 100, value: value, onChange: onChange,
             'aria-label': label + ' slider',
             style: { flex: 1, accentColor: color, height: 6 } }),
           el('span', { style: { fontSize: 13, fontWeight: 900, color: color, width: 40, textAlign: 'right', fontFamily: 'monospace' } }, value + '%')
@@ -1061,7 +1061,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
 
         // ── Header ──
         el('div', { style: { padding: '20px 24px 16px', borderBottom: '1px solid rgba(34,197,94,0.2)', display: 'flex', alignItems: 'center', gap: 12 } },
-          el('button', { onClick: function() { setStemLabTool(null); }, style: { background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: '#94a3b8', fontSize: 16 } }, '\u2190'),
+          el('button', { onClick: function() { setStemLabTool(null); }, 'aria-label': 'Back to STEM Lab', style: { background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: '#94a3b8', fontSize: 16 } }, '\u2190'),
           el('div', { style: { fontSize: 28 } }, '\uD83C\uDF0D'),
           el('div', null,
             el('h2', { style: { margin: 0, fontSize: 20, fontWeight: 900, background: 'linear-gradient(90deg, #22c55e, #3b82f6, #a855f7)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' } }, 'Climate Explorer'),
@@ -1983,7 +1983,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
               REGIONS.map(function(r) {
                 var isOpen = cjRegion === r.id;
                 var regionsViewed = d.regionsViewed || {};
-                return el('div', { key: r.id, onClick: function() {
+                return el('div', { key: r.id, role: 'button', tabIndex: 0, 'aria-expanded': isOpen, 'aria-label': r.name + (isOpen ? ' (expanded)' : ' (collapsed)'), onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }, onClick: function() {
                     upd('cjRegion', isOpen ? null : r.id);
                     playSound('region');
                     if (!regionsViewed[r.id]) {
@@ -2196,7 +2196,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
             el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 } },
               SOLUTIONS.filter(function(s) { return ssCategory === 'all' || s.cat === ssCategory || s.cat === 'all'; }).map(function(s) {
                 var isExp = ssExpanded === s.id;
-                return el('div', { key: s.id, onClick: function() { upd('ssExpanded', isExp ? null : s.id); awardXP(5); playSound('action'); var nsv = Object.assign({}, solutionsViewed); nsv[s.id] = true; upd('solutionsViewed', nsv); if (Object.keys(nsv).length >= 8 && !badges.solutionScholar) earnBadge('solutionScholar'); },
+                return el('div', { key: s.id, role: 'button', tabIndex: 0, 'aria-expanded': isExp, 'aria-label': s.title + (isExp ? ' (expanded)' : ' (collapsed)'), onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }, onClick: function() { upd('ssExpanded', isExp ? null : s.id); awardXP(5); playSound('action'); var nsv = Object.assign({}, solutionsViewed); nsv[s.id] = true; upd('solutionsViewed', nsv); if (Object.keys(nsv).length >= 8 && !badges.solutionScholar) earnBadge('solutionScholar'); },
                   style: { padding: 16, borderRadius: 12, background: s.highlight ? 'linear-gradient(135deg, rgba(34,197,94,0.1), rgba(245,158,11,0.08))' : 'rgba(255,255,255,0.04)', border: '1px solid ' + (s.highlight ? 'rgba(34,197,94,0.25)' : isExp ? 'rgba(34,197,94,0.2)' : 'rgba(255,255,255,0.08)'), cursor: 'pointer', transition: 'all 0.2s' } },
                   el('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: isExp ? 10 : 0 } },
                     el('span', { style: { fontSize: 28 } }, s.emoji),

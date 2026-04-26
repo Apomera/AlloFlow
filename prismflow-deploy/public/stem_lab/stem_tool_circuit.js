@@ -765,7 +765,7 @@ window.StemLab = window.StemLab || {
                           )
 
                         : comp.type === 'switch'
-                        ? h('g', { onClick: function() { toggleSwitch(comp.id); }, style: { cursor: 'pointer' } },
+                        ? h('g', { onClick: function() { toggleSwitch(comp.id); }, role: 'button', tabIndex: 0, 'aria-label': 'Switch ' + comp.id + ' (currently ' + (comp.closed ? 'closed/ON' : 'open/OFF') + '). Press Enter to toggle.', 'aria-pressed': !!comp.closed, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSwitch(comp.id); } }, style: { cursor: 'pointer' } },
                             h('rect', { x: cx - 14, y: 55, width: 28, height: 40, fill: comp.closed ? '#d1fae5' : '#fee2e2', stroke: comp.closed ? '#059669' : '#dc2626', strokeWidth: 1.5, rx: 4 }),
                             h('circle', { cx: cx - 6, cy: 75, r: 3, fill: '#1e293b' }),
                             h('circle', { cx: cx + 6, cy: 75, r: 3, fill: '#1e293b' }),
@@ -776,7 +776,7 @@ window.StemLab = window.StemLab || {
                           )
 
                         : comp.type === 'led'
-                        ? h('g', { onClick: function() { cycleLedColor(comp.id); }, style: { cursor: 'pointer' } },
+                        ? h('g', { onClick: function() { cycleLedColor(comp.id); }, role: 'button', tabIndex: 0, 'aria-label': 'LED ' + comp.id + ' (color ' + (comp.ledColor || '#ef4444') + '). Press Enter to cycle color.', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); cycleLedColor(comp.id); } }, style: { cursor: 'pointer' } },
                             ledGlow > 0.1 && h('circle', { cx: cx, cy: 75, r: 18 + ledGlow * 8, fill: getLedGlowColor(comp.ledColor || '#ef4444', (ledGlow * 0.3).toFixed(2)) }),
                             h('polygon', { points: (cx - 10) + ',65 ' + (cx + 10) + ',65 ' + cx + ',88', fill: ledGlow > 0.2 ? (comp.ledColor || '#ef4444') : '#fecaca', stroke: comp.ledColor || '#ef4444', strokeWidth: 1.5 }),
                             h('line', { x1: cx - 10, y1: 88, x2: cx + 10, y2: 88, stroke: comp.ledColor || '#ef4444', strokeWidth: 2 }),
@@ -867,13 +867,13 @@ window.StemLab = window.StemLab || {
                         ? h('rect', { x: 200, y: cy - 8, width: 40, height: 16, fill: '#fef9c3', stroke: '#ca8a04', strokeWidth: 1.5, rx: 2 })
 
                         : comp.type === 'switch'
-                        ? h('g', { onClick: function() { toggleSwitch(comp.id); }, style: { cursor: 'pointer' } },
+                        ? h('g', { onClick: function() { toggleSwitch(comp.id); }, role: 'button', tabIndex: 0, 'aria-label': 'Switch ' + comp.id + ' (currently ' + (comp.closed ? 'closed/ON' : 'open/OFF') + '). Press Enter to toggle.', 'aria-pressed': !!comp.closed, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSwitch(comp.id); } }, style: { cursor: 'pointer' } },
                             h('rect', { x: 200, y: cy - 8, width: 40, height: 16, fill: comp.closed ? '#d1fae5' : '#fee2e2', stroke: comp.closed ? '#059669' : '#dc2626', strokeWidth: 1.5, rx: 3 }),
                             h('text', { x: 220, y: cy + 4, textAnchor: 'middle', style: { fontSize: '8px', fontWeight: 'bold' }, fill: comp.closed ? '#059669' : '#dc2626' }, comp.closed ? 'ON' : 'OFF')
                           )
 
                         : comp.type === 'led'
-                        ? h('g', { onClick: function() { cycleLedColor(comp.id); }, style: { cursor: 'pointer' } },
+                        ? h('g', { onClick: function() { cycleLedColor(comp.id); }, role: 'button', tabIndex: 0, 'aria-label': 'LED ' + comp.id + ' (color ' + (comp.ledColor || '#ef4444') + '). Press Enter to cycle color.', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); cycleLedColor(comp.id); } }, style: { cursor: 'pointer' } },
                             ledGlow2 > 0.1 && h('circle', { cx: 220, cy: cy, r: 14 + ledGlow2 * 5, fill: getLedGlowColor(comp.ledColor || '#ef4444', (ledGlow2 * 0.25).toFixed(2)) }),
                             h('polygon', { points: '210,' + (cy - 6) + ' 230,' + (cy - 6) + ' 220,' + (cy + 8), fill: ledGlow2 > 0.2 ? (comp.ledColor || '#ef4444') : '#fecaca', stroke: comp.ledColor || '#ef4444', strokeWidth: 1 }),
                             h('line', { x1: 210, y1: cy + 8, x2: 230, y2: cy + 8, stroke: comp.ledColor || '#ef4444', strokeWidth: 1.5 })

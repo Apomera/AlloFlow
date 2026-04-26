@@ -1710,7 +1710,7 @@ window.StemLab = window.StemLab || {
                 band === 'g912' && h('div', { className: 'mb-2' },
                   h('label', { className: 'text-[11px] font-bold text-slate-600 block mb-1' }, 'Mutation Rate (\u03BC = ' + popMutation.toFixed(4) + ')'),
                   h('input', {
-                    type: 'range', 'aria-label': 'Enter', min: '0', max: '0.01', step: '0.0005', value: popMutation,
+                    type: 'range',  min: '0', max: '0.01', step: '0.0005', value: popMutation,
                     onChange: function(e) { upd('popMutation', parseFloat(e.target.value)); },
                     className: 'w-full h-2 bg-red-200 rounded-lg appearance-none cursor-pointer'
                   })
@@ -2155,8 +2155,7 @@ window.StemLab = window.StemLab || {
                 h('p', { className: 'text-sm font-bold text-slate-700 mb-3' }, chalQuestions[chalIdx].q),
                 h('div', { className: 'grid grid-cols-2 gap-2' },
                   chalQuestions[chalIdx].a.map(function(opt, i) {
-                    return h('button', { 'aria-label': 'Action',
-                      key: i,
+                    return h('button', { key: i,
                       onClick: function() {
                         if (chalFeedback) return;
                         var isCorrect = i === chalQuestions[chalIdx].correct;
@@ -2252,8 +2251,7 @@ window.StemLab = window.StemLab || {
                   h('p', { className: 'text-sm font-bold text-slate-700 mb-3' }, BATTLE_QS[battleRound].q),
                   h('div', { className: 'grid grid-cols-2 gap-2' },
                     BATTLE_QS[battleRound].a.map(function(opt, i) {
-                      return h('button', { 'aria-label': 'Action',
-                        key: i,
+                      return h('button', { key: i,
                         onClick: function() {
                           if (battleFeedback) return;
                           var bq = BATTLE_QS[battleRound];
@@ -2396,7 +2394,7 @@ window.StemLab = window.StemLab || {
               h('button', {
                 onClick: function() { setStemLabTool('dnaLab'); announceToSR('Opening DNA Lab'); },
                 className: 'px-3 py-1.5 text-xs font-bold text-fuchsia-600 bg-fuchsia-50 border border-fuchsia-200 rounded-full hover:bg-fuchsia-100 transition-all',
-                'aria-label': 'Open DNA Lab'
+                
               }, '\uD83E\uDDEC DNA Lab \u2192'),
               h('button', { 'aria-label': 'Snapshot',
                 onClick: takeSnapshot,

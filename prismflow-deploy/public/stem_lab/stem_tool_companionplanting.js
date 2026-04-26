@@ -4374,11 +4374,11 @@ var d = (labToolData.companionPlanting) || {};
                 h('button', { onClick: function() { cgUpd({ grid: cgGrid.map(function() { return { plantId: null, growthDay: 0, health: 100, watered: false, pests: 0 }; }), day: 0, score: 0, totalHarvested: 0, phase: 'plan', activeChallenge: null }); }, className: 'px-3 py-2 bg-slate-100 text-slate-600 rounded-lg text-sm font-bold hover:bg-slate-200' }, '🗑️ Clear All')),
 
               cgPhase === 'grow' && h('div', { className: 'flex gap-2 flex-wrap items-center' },
-                h('button', { onClick: cgAdvanceDay, 'aria-label': 'Advance one day', className: 'px-4 py-2 bg-sky-600 text-white rounded-lg font-bold text-sm hover:bg-sky-700' }, '⏩ Next Day'),
+                h('button', { onClick: cgAdvanceDay, className: 'px-4 py-2 bg-sky-600 text-white rounded-lg font-bold text-sm hover:bg-sky-700' }, '⏩ Next Day'),
                 h('button', { onClick: function() { for(var i=0;i<5;i++) cgAdvanceDay(); }, className: 'px-3 py-2 bg-sky-100 text-sky-700 rounded-lg text-sm font-bold hover:bg-sky-200' }, '⏭️ +5 Days'),
-                h('button', { onClick: cgWater, 'aria-label': 'Water the garden', className: 'px-3 py-2 bg-blue-100 text-blue-700 rounded-lg text-sm font-bold hover:bg-blue-200' }, '💧 Water'),
-                h('button', { onClick: cgWeed, 'aria-label': 'Weed the garden', className: 'px-3 py-2 bg-green-100 text-green-700 rounded-lg text-sm font-bold hover:bg-green-200' }, '🧹 Weed'),
-                h('button', { onClick: cgCompost, 'aria-label': 'Add compost', className: 'px-3 py-2 bg-amber-100 text-amber-700 rounded-lg text-sm font-bold hover:bg-amber-200' }, '🧱 Compost'),
+                h('button', { onClick: cgWater, className: 'px-3 py-2 bg-blue-100 text-blue-700 rounded-lg text-sm font-bold hover:bg-blue-200' }, '💧 Water'),
+                h('button', { onClick: cgWeed, className: 'px-3 py-2 bg-green-100 text-green-700 rounded-lg text-sm font-bold hover:bg-green-200' }, '🧹 Weed'),
+                h('button', { onClick: cgCompost, className: 'px-3 py-2 bg-amber-100 text-amber-700 rounded-lg text-sm font-bold hover:bg-amber-200' }, '🧱 Compost'),
                 h('button', { onClick: cgHarvest, 'aria-label': 'Harvest ready crops', className: 'px-3 py-2 bg-yellow-100 text-yellow-700 rounded-lg text-sm font-bold hover:bg-yellow-200' }, '🌾 Harvest Ready'),
                 h('button', { onClick: function() { cgUpd({ phase: 'plan' }); }, className: 'px-3 py-2 bg-slate-100 text-slate-600 rounded-lg text-sm font-bold hover:bg-slate-200' }, '\u270F\uFE0F Edit Garden')),
 
