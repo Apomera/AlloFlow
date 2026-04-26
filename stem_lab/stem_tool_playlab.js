@@ -154,6 +154,7 @@ window.StemLab = window.StemLab || {
       label: 'Slant (West Coast)',
       icon: '↗️',
       teach: 'Quick 3-step drop, slot receiver runs a 5-yd slant (route 2). Beats man coverage and Cover 3 underneath. Total throw distance ~7 yards. Why it works: the receiver crosses the corner\'s leverage at full speed.',
+      beats: ['cover1', 'cover0'], struggles: ['cover4'],
       routes: {
         SLOT: [{ dx: 5, dy: -3 }],          // 5 yd up, cut inside 3 yd
         WR1:  [{ dx: 12, dy: 0 }],          // hitch / clear-out
@@ -167,6 +168,7 @@ window.StemLab = window.StemLab || {
       label: '4 Verticals (Air Coryell)',
       icon: '🎯',
       teach: 'Take-a-shot deep play. All 4 receivers run vertical (route 9). Slot bends to a post seam vs single-high safety, OR splits two safeties vs Cover 2. The math: 4 routes × 4 zones = at least one mismatch.',
+      beats: ['cover1', 'cover3'], struggles: ['cover4'],
       routes: {
         WR1:  [{ dx: 22, dy: 0 }],
         WR2:  [{ dx: 22, dy: 0 }],
@@ -180,6 +182,7 @@ window.StemLab = window.StemLab || {
       label: 'Mesh (Air Raid)',
       icon: '✕',
       teach: 'Two receivers run shallow crossing routes (route 6) — natural rub when defenders try to follow in man coverage. Hill Mumme staple, used by every NFL team now. Why it works: man coverage gets picked.',
+      beats: ['cover1', 'cover0', 'robber'], struggles: ['tampa2'],
       routes: {
         SLOT: [{ dx: 5, dy: 18 }],          // shallow cross from slot
         TE:   [{ dx: 5, dy: -18 }],         // crossing the other way
@@ -193,6 +196,7 @@ window.StemLab = window.StemLab || {
       label: 'RPO Glance',
       icon: '🔁',
       teach: 'Run-Pass Option. Slot runs a glance (mini-post, ~6 yards). QB reads the LB: if he steps up to stop the run → throw the glance behind him. The math: defender can\'t cover two responsibilities.',
+      beats: ['cover1', 'cover3'], struggles: ['cover4'],
       routes: {
         SLOT: [{ dx: 6, dy: -3 }],          // glance route
         WR1:  [{ dx: 8, dy: 1 }],           // bubble
@@ -206,6 +210,7 @@ window.StemLab = window.StemLab || {
       label: 'Smash (Hi-Lo Corner)',
       icon: '🌽',
       teach: 'Two-receiver same-side combo: outside WR runs a hitch at 5 yd (route 0); slot or TE runs a corner (route 7) over the top. Crushes Cover 2 — the corner attacks the deep half safety while the hitch sits under the corner. The math: any single defender can only chase ONE depth at a time.',
+      beats: ['cover2', 'tampa2'], struggles: ['cover4'],
       routes: {
         WR1:  [{ dx: 5, dy: 0 }],           // hitch underneath
         SLOT: [{ dx: 12, dy: -8 }],         // corner route over the top — to the same sideline
@@ -219,6 +224,7 @@ window.StemLab = window.StemLab || {
       label: 'Stick (3rd-and-3)',
       icon: '📏',
       teach: 'Short-yardage 3rd down staple. TE runs a 5-yd stick (route 5 / curl). RB swings to the flat as the safety valve. WR runs a clear-out vertical to pull the corner away. The math: ~80% conversion rate vs zone, ~70% vs man — best percentage 3rd-and-short play in the NFL.',
+      beats: ['cover3', 'cover4'], struggles: ['cover0'],
       routes: {
         TE:   [{ dx: 5, dy: -1 }],          // 5-yd stick
         RB:   [{ dx: 0, dy: -3 }, { dx: 6, dy: -3 }], // arrow / flat
@@ -232,6 +238,7 @@ window.StemLab = window.StemLab || {
       label: 'Wildcat (Direct Snap)',
       icon: '🐯',
       teach: 'No QB pass — direct shotgun snap to the RB. WRs and TE run downfield blocking patterns to seal edges. Adds a numbers advantage in the box: defense expects QB read, gets a runner with a head start. Made famous by 2008 Miami Dolphins (Ronnie Brown).',
+      beats: ['cover0', 'cover1'], struggles: ['cover4'],
       routes: {
         RB:   [{ dx: 4, dy: 0 }, { dx: 8, dy: -4 }],  // power off-tackle
         WR1:  [{ dx: 4, dy: 0 }],           // crack block
@@ -245,6 +252,7 @@ window.StemLab = window.StemLab || {
       label: 'Hail Mary',
       icon: '🙏',
       teach: 'Last-second desperation play. All eligible receivers sprint to the end zone goal post, QB heaves it 50+ yards, hope a tip ball lands in friendly hands. Probability of completion is ~10% but tied games at 0:00 happen — so you take the shot. The math: no other play has positive expected value at this state.',
+      beats: ['cover0'], struggles: ['cover4', 'cover6', 'cover3'],
       routes: {
         WR1:  [{ dx: 45, dy: 5 }],          // streak to corner of end zone
         WR2:  [{ dx: 45, dy: -5 }],
@@ -263,6 +271,7 @@ window.StemLab = window.StemLab || {
       label: 'Counter Trey (Power Run)',
       icon: '🔁',
       teach: 'RB jabs one way, cuts back the other behind two pulling guards. The math is misdirection: every defensive step toward the jab is two yards of recovery to get to the actual run lane. Joe Gibbs ran this for three Super Bowls. ~5.0 yd/carry vs Cover 1, ~3.5 vs Cover 4 (8 in the box).',
+      beats: ['cover0', 'cover1'], struggles: ['cover4'],
       routes: {
         RB:   [{ dx: -2, dy: 1 }, { dx: 8, dy: -3 }],   // jab right, cut left for the hole
         WR1:  [{ dx: 4, dy: 0 }],                        // crack block to playside
@@ -280,6 +289,7 @@ window.StemLab = window.StemLab || {
       label: 'Bootleg (PA)',
       icon: '🎭',
       teach: 'QB fakes a handoff one way, rolls out the OTHER way. Defenders bite on the run, opening up the boot-side. Geometry: the QB cuts the field in HALF — only one side of the field is in the throwing window, but it\'s a side defenders just abandoned. Conversion rate ~70% on play-action vs single-high.',
+      beats: ['cover1', 'cover3'], struggles: ['cover0'],
       routes: {
         TE:   [{ dx: 4, dy: 6 }],                        // drag across to boot side
         RB:   [{ dx: 0, dy: 5 }, { dx: 4, dy: 5 }],     // flat to boot side
@@ -298,6 +308,7 @@ window.StemLab = window.StemLab || {
       label: 'Wheel Route',
       icon: '🎡',
       teach: 'RB runs out then up the sideline. LBs chase the flat route, then have no chance to turn and run with a 4.5-second 40-yd RB. Geometric trap: defender commits to one direction, then has to reverse at full speed. Big-play hit rate ~25% — when it works, it\'s 30+ yards.',
+      beats: ['cover1', 'cover3'], struggles: ['cover2'],
       routes: {
         RB:   [{ dx: 4, dy: 6 }, { dx: 25, dy: 6 }],    // out then up the sideline
         WR1:  [{ dx: 6, dy: 4 }],                        // shallow dig — clears the corner
@@ -316,6 +327,7 @@ window.StemLab = window.StemLab || {
       label: 'Y-Cross (3rd-and-Long)',
       icon: '✗',
       teach: 'Y receiver runs 6 vertical, then crosses at ~15 yd depth — right at the first-down marker on 3rd-and-12. Beats Cover 3 because the deep middle defender has to choose between the crosser and the vertical clear-out. ~62% completion rate league-wide on 3rd-and-7+.',
+      beats: ['cover3', 'cover6', 'robber'], struggles: ['cover0'],
       routes: {
         TE:   [{ dx: 6, dy: 0 }, { dx: 16, dy: -10 }],  // 6 vertical, 10-yard cross
         SLOT: [{ dx: 14, dy: 4 }, { dx: 14, dy: 1 }],   // bender → dig
@@ -335,6 +347,7 @@ window.StemLab = window.StemLab || {
       label: 'Outside Zone (Sweep)',
       icon: '🏃',
       teach: 'RB sprints toward the sideline reading the playside DE. Whole O-line zone-blocks one direction; the RB CHOOSES which gap to hit based on flow. Math: defenders must commit before the RB does. Average ~4.8 yd/carry, but ~25% of carries break for 10+ on flow misreads.',
+      beats: ['cover0', 'cover1'], struggles: ['cover4'],
       routes: {
         RB:   [{ dx: 1, dy: -3 }, { dx: 6, dy: -8 }],    // jab inside, then bounce wide
         WR1:  [{ dx: 6, dy: -2 }],                        // crackback block (nearside)
@@ -352,6 +365,7 @@ window.StemLab = window.StemLab || {
       label: 'Bubble Screen',
       icon: '🫧',
       teach: 'Slot receiver takes 1 step back + sideways, catches a quick lateral toss. Two teammates lead-block. Math: if the nearest defender is 7+ yards away, the bubble gains 4-6 yards on average — and 25% of attempts go for 10+ when the defense is in a stacked-box look.',
+      beats: ['cover4', 'cover3'], struggles: ['cover2'],
       routes: {
         SLOT: [{ dx: 0, dy: -3 }, { dx: 2, dy: -5 }],    // step back, catch, sprint sideways
         WR1:  [{ dx: 3, dy: -2 }],                        // lead block #1
@@ -369,6 +383,7 @@ window.StemLab = window.StemLab || {
       label: 'Drive (Shallow + Dig)',
       icon: '🏎️',
       teach: 'Shallow crosser at 2 yd + dig at 12 yd in the SAME area of the field. The MIKE linebacker has to pick one — whichever he doesn\'t cover is the throw. Beats man (rub on the cross) AND zone (high-low on the LB). Tom Brady\'s favorite concept for 20 years.',
+      beats: ['cover1', 'cover2', 'cover3'], struggles: ['cover0'],
       routes: {
         SLOT: [{ dx: 3, dy: 14 }],                        // shallow crosser left → right
         WR2:  [{ dx: 12, dy: -3 }],                       // dig route at 12 yd, opposite side
@@ -387,6 +402,7 @@ window.StemLab = window.StemLab || {
       label: 'Trips Bunch (Spot)',
       icon: '⫷',
       teach: 'Three receivers form a triangle: corner (deep) + flat (low) + hitch (middle). Whichever way the cornerback picks, the QB throws to the OPPOSITE level. ~80% conversion rate inside the 5-yard line. Geometric trap: one defender, three depths.',
+      beats: ['cover2', 'cover6', 'robber'], struggles: ['cover0'],
       routes: {
         WR1:  [{ dx: 6, dy: -1 }],                        // hitch at 6 (middle of triangle)
         SLOT: [{ dx: 3, dy: -5 }],                        // flat (low corner)
@@ -1186,6 +1202,40 @@ window.StemLab = window.StemLab || {
   // ═══════════════════════════════════════════
   // Apply a play's routes to a formation, returning a new players array
   // with `route: [{x, y}, ...]` populated for each receiver.
+  // ═══════════════════════════════════════════
+  // MATCHUP INTELLIGENCE — play vs coverage compatibility
+  // ═══════════════════════════════════════════
+  // Each PLAY entry carries `beats` (coverages it exploits) and
+  // `struggles` (coverages it has trouble with). We derive a 3-tier
+  // grade for the active play vs the active coverage, plus a one-line
+  // reason that ties the grade to the underlying geometry. Used by
+  // the matchup badge in the football UI so students see whether
+  // their call is favorable BEFORE they run the play.
+  function getMatchup(play, coverage) {
+    if (!play || !coverage) return null;
+    var beats = play.beats || [];
+    var struggles = play.struggles || [];
+    if (beats.indexOf(coverage.id) !== -1) {
+      return {
+        grade: 'great', emoji: '✅', color: '#16a34a', bg: 'rgba(22,163,74,0.12)',
+        label: 'Great match',
+        reason: play.label + ' is built to attack ' + coverage.label + '. Geometry favors you.'
+      };
+    }
+    if (struggles.indexOf(coverage.id) !== -1) {
+      return {
+        grade: 'tough', emoji: '⚠️', color: '#dc2626', bg: 'rgba(220,38,38,0.12)',
+        label: 'Tough match',
+        reason: coverage.label + ' is specifically designed to stop concepts like ' + play.label + '. Pick a different play, or move players to create new windows.'
+      };
+    }
+    return {
+      grade: 'okay', emoji: '👍', color: '#f59e0b', bg: 'rgba(245,158,11,0.12)',
+      label: 'Workable',
+      reason: 'Neither great nor terrible. Execution + adjustments will decide it. Try the Coach Mode for specifics.'
+    };
+  }
+
   function applyPlayToFormation(formation, play) {
     if (!play || !play.routes) return formation;
     return formation.map(function(p) {
@@ -2551,6 +2601,35 @@ window.StemLab = window.StemLab || {
             });
           })
         ),
+
+        // ── Matchup badge (football only) ──
+        // Reads the play's `beats` / `struggles` arrays vs the active
+        // coverage and shows an instant grade so students see whether
+        // their call is geometrically favorable BEFORE running the play.
+        // Three tiers: ✅ great / 👍 workable / ⚠️ tough — each with a
+        // one-line geometric reason. Hidden in soccer mode (set-pieces
+        // and concepts vs defensive shapes don't have the same clean
+        // matchup math football play-calling does).
+        (!isSoccer && play && coverage) ? (function() {
+          var matchup = getMatchup(play, coverage);
+          if (!matchup) return null;
+          return h('div', {
+            role: 'status',
+            'aria-live': 'polite',
+            style: {
+              padding: '8px 14px', borderRadius: 8, marginBottom: 12,
+              border: '1px solid ' + matchup.color, background: matchup.bg,
+              fontSize: 13, lineHeight: 1.4, color: '#f1f5f9',
+              display: 'flex', alignItems: 'center', gap: 10
+            }
+          },
+            h('span', { style: { fontSize: 18 }, 'aria-hidden': 'true' }, matchup.emoji),
+            h('div', null,
+              h('span', { style: { color: matchup.color, fontWeight: 700, marginRight: 6 } }, matchup.label + ':'),
+              h('span', null, matchup.reason)
+            )
+          );
+        })() : null,
 
         // ── Drills panel ──
         // Toggle + active goal display, mirrors ThrowLab. Tasks advance only
