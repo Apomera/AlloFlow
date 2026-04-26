@@ -184,6 +184,58 @@ window.StemLab = window.StemLab || {
         TE:   null,                          // blocking
         RB:   [{ dx: 5, dy: 0 }]            // run mesh
       }
+    },
+    {
+      id: 'smash',
+      label: 'Smash (Hi-Lo Corner)',
+      icon: '🌽',
+      teach: 'Two-receiver same-side combo: outside WR runs a hitch at 5 yd (route 0); slot or TE runs a corner (route 7) over the top. Crushes Cover 2 — the corner attacks the deep half safety while the hitch sits under the corner. The math: any single defender can only chase ONE depth at a time.',
+      routes: {
+        WR1:  [{ dx: 5, dy: 0 }],           // hitch underneath
+        SLOT: [{ dx: 12, dy: -8 }],         // corner route over the top — to the same sideline
+        WR2:  [{ dx: 5, dy: 0 }],           // backside hitch (mirror)
+        TE:   [{ dx: 4, dy: 1 }],
+        RB:   [{ dx: 0, dy: 4 }, { dx: 6, dy: 4 }]
+      }
+    },
+    {
+      id: 'stick',
+      label: 'Stick (3rd-and-3)',
+      icon: '📏',
+      teach: 'Short-yardage 3rd down staple. TE runs a 5-yd stick (route 5 / curl). RB swings to the flat as the safety valve. WR runs a clear-out vertical to pull the corner away. The math: ~80% conversion rate vs zone, ~70% vs man — best percentage 3rd-and-short play in the NFL.',
+      routes: {
+        TE:   [{ dx: 5, dy: -1 }],          // 5-yd stick
+        RB:   [{ dx: 0, dy: -3 }, { dx: 6, dy: -3 }], // arrow / flat
+        WR1:  [{ dx: 18, dy: 0 }],          // clear-out vertical
+        WR2:  [{ dx: 18, dy: 0 }],
+        SLOT: [{ dx: 6, dy: 5 }]            // option underneath
+      }
+    },
+    {
+      id: 'wildcat',
+      label: 'Wildcat (Direct Snap)',
+      icon: '🐯',
+      teach: 'No QB pass — direct shotgun snap to the RB. WRs and TE run downfield blocking patterns to seal edges. Adds a numbers advantage in the box: defense expects QB read, gets a runner with a head start. Made famous by 2008 Miami Dolphins (Ronnie Brown).',
+      routes: {
+        RB:   [{ dx: 4, dy: 0 }, { dx: 8, dy: -4 }],  // power off-tackle
+        WR1:  [{ dx: 4, dy: 0 }],           // crack block
+        WR2:  [{ dx: 4, dy: 0 }],
+        SLOT: [{ dx: 3, dy: 4 }],           // motion across
+        TE:   null                           // pull and lead
+      }
+    },
+    {
+      id: 'hailmary',
+      label: 'Hail Mary',
+      icon: '🙏',
+      teach: 'Last-second desperation play. All eligible receivers sprint to the end zone goal post, QB heaves it 50+ yards, hope a tip ball lands in friendly hands. Probability of completion is ~10% but tied games at 0:00 happen — so you take the shot. The math: no other play has positive expected value at this state.',
+      routes: {
+        WR1:  [{ dx: 45, dy: 5 }],          // streak to corner of end zone
+        WR2:  [{ dx: 45, dy: -5 }],
+        SLOT: [{ dx: 45, dy: 0 }],          // streak to middle of end zone
+        TE:   [{ dx: 40, dy: 2 }],
+        RB:   [{ dx: 8, dy: 4 }]            // outlet
+      }
     }
   ];
 
