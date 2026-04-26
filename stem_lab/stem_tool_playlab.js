@@ -1208,6 +1208,55 @@ window.StemLab = window.StemLab || {
   // Apply a play's routes to a formation, returning a new players array
   // with `route: [{x, y}, ...]` populated for each receiver.
   // ═══════════════════════════════════════════
+  // SCENARIOS — one-click teaching demos
+  // ═══════════════════════════════════════════
+  // Each scenario sets sport + play/concept + coverage/shape + (optional)
+  // line of scrimmage for football, in a single batched state update.
+  // Scenarios are how a teacher demos a tactical idea in front of a
+  // class without manually dialing 4-5 settings.
+  var PLAYLAB_SCENARIOS = [
+    // ── Football ──
+    { id: 'patriots-2828', label: 'Patriots 28-3 Comeback', icon: '🏆',
+      sport: 'football', playId: 'stick', coverageId: 'cover3', losX: 25,
+      teach: 'Stick concept on 3rd-and-medium from own 25 vs Cover 3. The TE\'s 5-yd curl in the soft underbelly of zone — the route Brady ran 100+ times during the 2017 Super Bowl comeback. ~80% conversion vs zone.' },
+    { id: 'greatest-show', label: '"Greatest Show on Turf"', icon: '🚀',
+      sport: 'football', playId: 'fourverts', coverageId: 'cover1', losX: 50,
+      teach: 'Mike Martz\'s Rams: 4 Verticals from midfield vs Cover 1. The single-high safety can\'t cover 4 deep routes — somebody is mathematically open. The vertical-passing-game blueprint from 1999-2001.' },
+    { id: 'bradys-drive', label: "Brady's 3rd-Down Drive", icon: '🎯',
+      sport: 'football', playId: 'drive', coverageId: 'cover2', losX: 30,
+      teach: 'Drive concept (shallow + dig) vs Cover 2 from own 30. The MIKE has to pick — whichever route he doesn\'t carry is the throw. The clutch 3rd-and-medium concept Tom Brady ran for 20 years.' },
+    { id: 'wildcat-special', label: 'Wildcat Goal-Line', icon: '🐯',
+      sport: 'football', playId: 'wildcat', coverageId: 'cover1', losX: 95,
+      teach: '2008 Miami Dolphins, 5 yards from the goal line. Direct snap to the RB with WRs blocking the edges. Adds a numbers-in-the-box advantage at the moment when the defense is stacked tightest.' },
+    { id: 'hail-mary', label: 'Hail Mary at 0:00', icon: '🙏',
+      sport: 'football', playId: 'hailmary', coverageId: 'cover4', losX: 40,
+      teach: 'Last second, down 3, no timeouts. Hail Mary vs Cover 4 (every deep route covered). 10% chance of a miracle, but it\'s the only play with positive expected value at this state. Hand-to-God geometry.' },
+    { id: 'beat-c0-blitz', label: 'Slant vs All-Out Blitz', icon: '⚡',
+      sport: 'football', playId: 'slant', coverageId: 'cover0', losX: 35,
+      teach: 'Cover 0 = 7 rushers, no deep safety, all man underneath. The QB has ~2 seconds. The Slant is the ONLY answer that gets the ball out fast enough — a 5-yd in-cut at full speed beats man coverage and beats the rush clock.' },
+    { id: 'trips-bunch-rz', label: 'Trips Bunch in the Red Zone', icon: '⫷',
+      sport: 'football', playId: 'trips', coverageId: 'cover2', losX: 92,
+      teach: 'Three receivers form a triangle (corner / flat / hitch) at the goal line vs Cover 2. The single corner has to pick a depth — the OPPOSITE level is the throw. ~80% conversion inside the 5.' },
+
+    // ── Soccer ──
+    { id: 'pep-tikitaka', label: "Pep's Tiki-Taka vs Burnley", icon: '🔁',
+      sport: 'soccer', formationId: '433', conceptId: 'tikitaka', shapeId: 'lowblock',
+      teach: 'Manchester City\'s 4-3-3 + Tiki-Taka vs a parked-bus Burnley low block. The triangles probe the compressed defense for the smallest window — possession often crosses 80% in these matchups, but the scoreboard hinges on whether City finds the through-ball.' },
+    { id: 'klopp-counter', label: 'Klopp Counter-Attack', icon: '⚡',
+      sport: 'soccer', formationId: '433', conceptId: 'counter', shapeId: 'highpress',
+      teach: 'Liverpool 2019: opposition is high-pressing, Liverpool wins the ball at midfield, Salah / Mané / Firmino sprint into space. The MORE aggressive the press, the MORE space behind for the counter. Geometry favors the side that wins the ball.' },
+    { id: 'conte-352', label: 'Conte 3-5-2 Defense', icon: '🛡️',
+      sport: 'soccer', formationId: '352', conceptId: 'gegenpress', shapeId: 'midblock',
+      teach: 'Antonio Conte\'s Inter / Tottenham 3-5-2: 3 CBs + 2 wing-backs deny wide overloads, the 3-man midfield outnumbers a 4-3-3 opponent in central areas. Combined with gegenpress on the turnover, opponents can\'t get out.' },
+    { id: 'pirlo-fk', label: 'Pirlo Free Kick', icon: '🎯',
+      sport: 'soccer', formationId: '4231', conceptId: 'freekick-direct', shapeId: 'midblock',
+      teach: 'Andrea Pirlo\'s knuckle-direct from 22 m. The geometry: keeper covers ~75% of the goal mouth from 22 m straight on, but the corners are scoring zones. Pirlo\'s knuckle-strike (no spin → wobble) made the keeper\'s job impossible.' },
+    { id: 'corner-out-equalizer', label: 'Late Out-Swinger Equalizer', icon: '↩️',
+      sport: 'soccer', formationId: '4231', conceptId: 'corner-out', shapeId: 'lowblock',
+      teach: '88th minute, down 1, defending team has parked the bus. Out-swinging corner toward the penalty spot — your CAM and pushed-up CB attack the ball at full speed. ~3.5% conversion per corner, but cumulative odds across multiple corners + low-block fatigue make this the highest-EV equalizer concept.' }
+  ];
+
+  // ═══════════════════════════════════════════
   // MATCHUP INTELLIGENCE — play vs coverage compatibility
   // ═══════════════════════════════════════════
   // Each PLAY entry carries `beats` (coverages it exploits) and
@@ -1524,6 +1573,32 @@ window.StemLab = window.StemLab || {
                                : buildDefenders(d.coverageId, d.losX, formation);
       var analysis = isSoccer ? [] : openReceiverAnalysis(formation, defenders);
       var openReceiverId = analysis.length ? analysis[0].id : null;
+
+      function applyPlayLabScenario(scenarioId) {
+        var s = PLAYLAB_SCENARIOS.find(function(sc) { return sc.id === scenarioId; });
+        if (!s) return;
+        setLabToolData(function(prev) {
+          var nextPlaylab = Object.assign({}, prev.playlab, {
+            sport: s.sport,
+            customPositions: {},
+            runActive: false,
+            runT: 0,
+            runOutcome: null,
+            coachReply: '', coachError: ''
+          });
+          if (s.sport === 'soccer') {
+            nextPlaylab.formationId = s.formationId;
+            nextPlaylab.conceptId = s.conceptId;
+            nextPlaylab.shapeId = s.shapeId;
+          } else {
+            nextPlaylab.playId = s.playId;
+            nextPlaylab.coverageId = s.coverageId;
+            if (s.losX != null) nextPlaylab.losX = s.losX;
+          }
+          return Object.assign({}, prev, { playlab: nextPlaylab });
+        });
+        plAnnounce('Scenario loaded: ' + s.label + '. ' + s.teach);
+      }
 
       function loadPlay(pid) {
         var seen = Object.assign({}, d.playsViewed || {}); seen[pid] = true;
@@ -2612,6 +2687,42 @@ window.StemLab = window.StemLab || {
               }
             }, sp.label);
           })
+        ),
+
+        // ── Scenarios ──
+        // One-click teaching demos. Each pill snaps sport + play/concept +
+        // coverage/shape (and optionally LOS for football) into a
+        // configured tactical setup. Useful as a warm-up for class
+        // discussion. Filtered to the active sport so students don't see
+        // 5 football scenarios when they're in soccer mode.
+        h('details', {
+          style: { marginBottom: 10, background: '#0f172a', border: '1px solid #1e293b', borderRadius: 10, padding: '8px 12px' }
+        },
+          h('summary', {
+            style: { cursor: 'pointer', fontSize: 12, color: '#cbd5e1', fontWeight: 600 }
+          }, '🎬 Scenarios — one-click teaching demos (' + PLAYLAB_SCENARIOS.filter(function(sc) { return sc.sport === (d.sport || 'football'); }).length + ' for ' + (isSoccer ? 'soccer' : 'football') + ')'),
+          h('div', {
+            role: 'group', 'aria-label': 'Tactical scenarios',
+            style: { display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }
+          },
+            PLAYLAB_SCENARIOS.filter(function(sc) {
+              return sc.sport === (d.sport || 'football');
+            }).map(function(sc) {
+              return h('button', {
+                key: 'plsc-' + sc.id,
+                onClick: function() { applyPlayLabScenario(sc.id); },
+                'aria-label': sc.label + ' scenario: ' + sc.teach,
+                'data-pl-focusable': 'true',
+                title: sc.teach,
+                style: {
+                  padding: '6px 11px', borderRadius: 6, cursor: 'pointer',
+                  border: '1px solid #334155',
+                  background: '#1e293b',
+                  color: '#f1f5f9', fontSize: 11, fontWeight: 600
+                }
+              }, sc.icon + ' ' + sc.label);
+            })
+          )
         ),
 
         // Play / Formation picker
