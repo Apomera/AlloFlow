@@ -597,9 +597,11 @@ const StoryForge = React.memo(({
     if (dictation.isDictating) {
       dictation.stopDictation();
       setDictatingParagraphIdx(-1);
+      sfAnnounce('Dictation stopped');
     } else {
       setDictatingParagraphIdx(idx);
       dictation.startDictation();
+      sfAnnounce(`Dictation started for paragraph ${idx + 1}`);
     }
   };
 
@@ -811,6 +813,7 @@ const StoryForge = React.memo(({
     if (d.language) setLanguage(d.language);
     setShowRestorePrompt(false);
     if (addToast) addToast('Draft restored!', 'success');
+    sfAnnounce('Draft restored');
   };
 
   const discardDraft = () => {
@@ -952,13 +955,17 @@ const StoryForge = React.memo(({
 
   const addVocabTerm = () => {
     if (!newTerm.trim()) return;
-    setVocabTerms(prev => [...prev, { term: newTerm.trim(), definition: newDef.trim() }]);
+    const t = newTerm.trim();
+    setVocabTerms(prev => [...prev, { term: t, definition: newDef.trim() }]);
     setNewTerm('');
     setNewDef('');
+    sfAnnounce(`Term added: ${t}`);
   };
 
   const removeVocabTerm = (idx) => {
+    const removed = vocabTerms[idx];
     setVocabTerms(prev => prev.filter((_, i) => i !== idx));
+    if (removed) sfAnnounce(`Term removed: ${removed.term}`);
   };
 
   // ═══════════════════════════════════════════════════════════
@@ -1907,14 +1914,14 @@ show();
 
       {/* ── Restore Draft Prompt ── */}
       {showRestorePrompt && (
-        <div className="fixed inset-0 z-[210] bg-black/60 flex items-center justify-center animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[210] bg-black/60 flex items-center justify-center animate-in fade-in duration-200" role="dialog" aria-modal="true" aria-labelledby="sf-restore-title">
           <div className="bg-white rounded-2xl p-6 max-w-sm mx-4 shadow-2xl text-center">
-            <div className="text-3xl mb-3">📖</div>
-            <h3 className="text-lg font-black text-slate-800 mb-2">Continue Where You Left Off?</h3>
+            <div className="text-3xl mb-3" aria-hidden="true">📖</div>
+            <h3 id="sf-restore-title" className="text-lg font-black text-slate-800 mb-2">Continue Where You Left Off?</h3>
             <p className="text-sm text-slate-600 mb-4">A saved draft was found. Would you like to restore it?</p>
             <div className="flex gap-3 justify-center">
-              <button onClick={discardDraft} className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-300 transition-colors">Start Fresh</button>
-              <button onClick={restoreDraft} className="px-4 py-2 bg-rose-600 text-white rounded-lg text-sm font-bold hover:bg-rose-700 transition-colors">Restore Draft</button>
+              <button data-sf-focusable onClick={discardDraft} className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-300 transition-colors">Start Fresh</button>
+              <button data-sf-focusable onClick={restoreDraft} className="px-4 py-2 bg-rose-600 text-white rounded-lg text-sm font-bold hover:bg-rose-700 transition-colors">Restore Draft</button>
             </div>
           </div>
         </div>
@@ -1922,15 +1929,15 @@ show();
 
       {/* ── Unsaved changes confirmation ── */}
       {showCloseConfirm && (
-        <div className="fixed inset-0 z-[210] bg-black/60 flex items-center justify-center animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[210] bg-black/60 flex items-center justify-center animate-in fade-in duration-200" role="dialog" aria-modal="true" aria-labelledby="sf-close-confirm-title">
           <div className="bg-white rounded-2xl p-6 max-w-sm mx-4 shadow-2xl text-center">
             <div className="text-3xl mb-3">{'\u270F\uFE0F'}</div>
-            <h3 className="text-lg font-black text-slate-800 mb-2">You Have Unsaved Changes</h3>
+            <h3 id="sf-close-confirm-title" className="text-lg font-black text-slate-800 mb-2">You Have Unsaved Changes</h3>
             <p className="text-sm text-slate-600 mb-4">Your story progress hasn't been exported or saved. Are you sure you want to close?</p>
             <div className="flex gap-3 justify-center">
-              <button onClick={() => setShowCloseConfirm(false)} className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-300 transition-colors">Keep Writing</button>
-              <button onClick={() => { setShowCloseConfirm(false); try { const draft = { storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, phase, language }; localStorage.setItem(SAVE_KEY, JSON.stringify(draft)); } catch(e) {} onClose(); }} className="px-4 py-2 bg-amber-500 text-white rounded-lg text-sm font-bold hover:bg-amber-600 transition-colors">Save Draft & Close</button>
-              <button onClick={() => { setShowCloseConfirm(false); onClose(); }} className="px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-bold hover:bg-red-600 transition-colors">Close Anyway</button>
+              <button data-sf-focusable onClick={() => setShowCloseConfirm(false)} className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-300 transition-colors">Keep Writing</button>
+              <button data-sf-focusable onClick={() => { setShowCloseConfirm(false); try { const draft = { storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, phase, language }; localStorage.setItem(SAVE_KEY, JSON.stringify(draft)); } catch(e) {} onClose(); }} className="px-4 py-2 bg-amber-500 text-white rounded-lg text-sm font-bold hover:bg-amber-600 transition-colors">Save Draft & Close</button>
+              <button data-sf-focusable onClick={() => { setShowCloseConfirm(false); onClose(); }} className="px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-bold hover:bg-red-600 transition-colors">Close Anyway</button>
             </div>
           </div>
         </div>
@@ -1966,6 +1973,7 @@ show();
             </div>
           )}
           <button
+            data-sf-focusable
             onClick={() => { if (typeof window.AlloToggleTheme === 'function') window.AlloToggleTheme(); }}
             className="hover:bg-white/20 p-2 rounded-full transition-colors flex items-center gap-1"
             aria-label="Toggle theme"
@@ -1973,7 +1981,7 @@ show();
           >
             <span className="text-sm">{(() => { try { return document.querySelector('.theme-contrast') ? '\uD83D\uDC41' : document.querySelector('.theme-dark') ? '\uD83C\uDF19' : '\u2600\uFE0F'; } catch(e) { return '\u2600\uFE0F'; } })()}</span>
           </button>
-          <button onClick={safeClose} className="hover:bg-white/20 p-2 rounded-full transition-colors" aria-label="Close StoryForge">
+          <button data-sf-focusable onClick={safeClose} className="hover:bg-white/20 p-2 rounded-full transition-colors" aria-label="Close StoryForge">
             <X size={24} />
           </button>
         </div>
@@ -1989,11 +1997,12 @@ show();
             <React.Fragment key={p}>
               {i > 0 && <div className={`w-8 h-0.5 ${isDone ? 'bg-rose-400' : 'bg-slate-200'}`} aria-hidden="true" />}
               <button
+                data-sf-focusable
                 onClick={() => { if (isDone || isCurrent) changePhase(p); }}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
                   isCurrent ? 'bg-rose-600 text-white shadow-lg shadow-rose-200' :
                   isDone ? 'bg-rose-100 text-rose-700 hover:bg-rose-200' :
-                  'bg-slate-100 text-slate-400'
+                  'bg-slate-100 text-slate-600'
                 }`}
                 disabled={!isDone && !isCurrent}
                 aria-current={isCurrent ? 'step' : undefined}

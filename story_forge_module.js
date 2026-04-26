@@ -576,9 +576,11 @@ IMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLa
     if (dictation.isDictating) {
       dictation.stopDictation();
       setDictatingParagraphIdx(-1);
+      sfAnnounce("Dictation stopped");
     } else {
       setDictatingParagraphIdx(idx);
       dictation.startDictation();
+      sfAnnounce(`Dictation started for paragraph ${idx + 1}`);
     }
   };
   const [gradingResult, setGradingResult] = useState(null);
@@ -766,6 +768,7 @@ IMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLa
     if (d.language) setLanguage(d.language);
     setShowRestorePrompt(false);
     if (addToast) addToast("Draft restored!", "success");
+    sfAnnounce("Draft restored");
   };
   const discardDraft = () => {
     localStorage.removeItem(SAVE_KEY);
@@ -899,12 +902,16 @@ IMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLa
   const [newDef, setNewDef] = useState("");
   const addVocabTerm = () => {
     if (!newTerm.trim()) return;
-    setVocabTerms((prev) => [...prev, { term: newTerm.trim(), definition: newDef.trim() }]);
+    const t = newTerm.trim();
+    setVocabTerms((prev) => [...prev, { term: t, definition: newDef.trim() }]);
     setNewTerm("");
     setNewDef("");
+    sfAnnounce(`Term added: ${t}`);
   };
   const removeVocabTerm = (idx) => {
+    const removed = vocabTerms[idx];
     setVocabTerms((prev) => prev.filter((_, i) => i !== idx));
+    if (removed) sfAnnounce(`Term removed: ${removed.term}`);
   };
   const updateParagraph = (idx, text) => {
     setParagraphs((prev) => prev.map((p, i) => i === idx ? { ...p, text } : p));
@@ -1776,7 +1783,7 @@ show();
   const earnedCount = useMemo(() => achievements.filter((a) => a.earned).length, [achievements]);
   if (!isOpen) return null;
   const phaseIcons = [Sparkles, Type, ImageIcon, Volume2, Star, Download];
-  return /* @__PURE__ */ React.createElement("div", { className: `sf-modal-root fixed inset-0 z-[200] bg-slate-900/95 backdrop-blur-sm flex flex-col ${animClass}`, role: "dialog", "aria-modal": "true", "aria-label": "StoryForge Creative Writing Studio" }, /* @__PURE__ */ React.createElement("audio", { ref: audioRef, onEnded: handleAudioEnded, className: "hidden" }), /* @__PURE__ */ React.createElement("div", { "aria-live": "polite", "aria-atomic": "true", className: "sr-only" }, playbackIdx >= 0 && paragraphs[playbackIdx] ? `Now reading paragraph ${playbackIdx + 1}${audioSegments[paragraphs[playbackIdx].id]?.sentences?.[sentenceIdx] ? ": " + audioSegments[paragraphs[playbackIdx].id].sentences[sentenceIdx] : ""}` : ""), /* @__PURE__ */ React.createElement("div", { id: "allo-live-storyforge", "aria-live": "polite", "aria-atomic": "true", className: "sr-only" }), /* @__PURE__ */ React.createElement("style", null, "@media (prefers-reduced-motion: reduce){ .sf-modal-root .animate-pulse,.sf-modal-root .animate-spin,.sf-modal-root .animate-bounce{animation:none!important} }"), showRestorePrompt && /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[210] bg-black/60 flex items-center justify-center animate-in fade-in duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl p-6 max-w-sm mx-4 shadow-2xl text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-3xl mb-3" }, "\u{1F4D6}"), /* @__PURE__ */ React.createElement("h3", { className: "text-lg font-black text-slate-800 mb-2" }, "Continue Where You Left Off?"), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 mb-4" }, "A saved draft was found. Would you like to restore it?"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-3 justify-center" }, /* @__PURE__ */ React.createElement("button", { onClick: discardDraft, className: "px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-300 transition-colors" }, "Start Fresh"), /* @__PURE__ */ React.createElement("button", { onClick: restoreDraft, className: "px-4 py-2 bg-rose-600 text-white rounded-lg text-sm font-bold hover:bg-rose-700 transition-colors" }, "Restore Draft")))), showCloseConfirm && /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[210] bg-black/60 flex items-center justify-center animate-in fade-in duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl p-6 max-w-sm mx-4 shadow-2xl text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-3xl mb-3" }, "\u270F\uFE0F"), /* @__PURE__ */ React.createElement("h3", { className: "text-lg font-black text-slate-800 mb-2" }, "You Have Unsaved Changes"), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 mb-4" }, "Your story progress hasn't been exported or saved. Are you sure you want to close?"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-3 justify-center" }, /* @__PURE__ */ React.createElement("button", { onClick: () => setShowCloseConfirm(false), className: "px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-300 transition-colors" }, "Keep Writing"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
+  return /* @__PURE__ */ React.createElement("div", { className: `sf-modal-root fixed inset-0 z-[200] bg-slate-900/95 backdrop-blur-sm flex flex-col ${animClass}`, role: "dialog", "aria-modal": "true", "aria-label": "StoryForge Creative Writing Studio" }, /* @__PURE__ */ React.createElement("audio", { ref: audioRef, onEnded: handleAudioEnded, className: "hidden" }), /* @__PURE__ */ React.createElement("div", { "aria-live": "polite", "aria-atomic": "true", className: "sr-only" }, playbackIdx >= 0 && paragraphs[playbackIdx] ? `Now reading paragraph ${playbackIdx + 1}${audioSegments[paragraphs[playbackIdx].id]?.sentences?.[sentenceIdx] ? ": " + audioSegments[paragraphs[playbackIdx].id].sentences[sentenceIdx] : ""}` : ""), /* @__PURE__ */ React.createElement("div", { id: "allo-live-storyforge", "aria-live": "polite", "aria-atomic": "true", className: "sr-only" }), /* @__PURE__ */ React.createElement("style", null, "@media (prefers-reduced-motion: reduce){ .sf-modal-root .animate-pulse,.sf-modal-root .animate-spin,.sf-modal-root .animate-bounce{animation:none!important} }"), showRestorePrompt && /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[210] bg-black/60 flex items-center justify-center animate-in fade-in duration-200", role: "dialog", "aria-modal": "true", "aria-labelledby": "sf-restore-title" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl p-6 max-w-sm mx-4 shadow-2xl text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-3xl mb-3", "aria-hidden": "true" }, "\u{1F4D6}"), /* @__PURE__ */ React.createElement("h3", { id: "sf-restore-title", className: "text-lg font-black text-slate-800 mb-2" }, "Continue Where You Left Off?"), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 mb-4" }, "A saved draft was found. Would you like to restore it?"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-3 justify-center" }, /* @__PURE__ */ React.createElement("button", { "data-sf-focusable": true, onClick: discardDraft, className: "px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-300 transition-colors" }, "Start Fresh"), /* @__PURE__ */ React.createElement("button", { "data-sf-focusable": true, onClick: restoreDraft, className: "px-4 py-2 bg-rose-600 text-white rounded-lg text-sm font-bold hover:bg-rose-700 transition-colors" }, "Restore Draft")))), showCloseConfirm && /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[210] bg-black/60 flex items-center justify-center animate-in fade-in duration-200", role: "dialog", "aria-modal": "true", "aria-labelledby": "sf-close-confirm-title" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl p-6 max-w-sm mx-4 shadow-2xl text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-3xl mb-3" }, "\u270F\uFE0F"), /* @__PURE__ */ React.createElement("h3", { id: "sf-close-confirm-title", className: "text-lg font-black text-slate-800 mb-2" }, "You Have Unsaved Changes"), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 mb-4" }, "Your story progress hasn't been exported or saved. Are you sure you want to close?"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-3 justify-center" }, /* @__PURE__ */ React.createElement("button", { "data-sf-focusable": true, onClick: () => setShowCloseConfirm(false), className: "px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-300 transition-colors" }, "Keep Writing"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
     setShowCloseConfirm(false);
     try {
       const draft = { storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, phase, language };
@@ -1784,12 +1791,13 @@ show();
     } catch (e) {
     }
     onClose();
-  }, className: "px-4 py-2 bg-amber-500 text-white rounded-lg text-sm font-bold hover:bg-amber-600 transition-colors" }, "Save Draft & Close"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
+  }, "data-sf-focusable": true, className: "px-4 py-2 bg-amber-500 text-white rounded-lg text-sm font-bold hover:bg-amber-600 transition-colors" }, "Save Draft & Close"), /* @__PURE__ */ React.createElement("button", { "data-sf-focusable": true, onClick: () => {
     setShowCloseConfirm(false);
     onClose();
   }, className: "px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-bold hover:bg-red-600 transition-colors" }, "Close Anyway")))), /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-rose-600 to-pink-600 p-4 text-white flex justify-between items-center shadow-lg shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement(BookOpen, { size: 24 }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { className: "text-xl font-black" }, "StoryForge"), /* @__PURE__ */ React.createElement("p", { className: "text-rose-200 text-xs font-medium" }, "Creative Writing Studio"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white/20 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-2", title: `${xpData.totalXP} XP \xB7 ${currentLevel.name}${xpData.streak > 1 ? ` \xB7 ${xpData.streak}-day streak` : ""}` }, /* @__PURE__ */ React.createElement("span", null, currentLevel.emoji, " ", currentLevel.name), /* @__PURE__ */ React.createElement("span", { className: "text-rose-200" }, xpData.totalXP, " XP"), xpData.streak > 1 && /* @__PURE__ */ React.createElement("span", { className: "text-amber-300" }, "\u{1F525}", xpData.streak), nextLevel && /* @__PURE__ */ React.createElement("div", { className: "w-12 h-1.5 bg-white/20 rounded-full overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "h-full bg-amber-300 rounded-full transition-all", style: { width: `${Math.min(100, (xpData.totalXP - currentLevel.min) / (nextLevel.min - currentLevel.min) * 100)}%` } }))), totalWords > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-white/20 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", null, totalWords, " words"), /* @__PURE__ */ React.createElement("span", null, "\xB7"), /* @__PURE__ */ React.createElement("span", null, vocabUsedCount, "/", vocabTerms.length, " terms"), readingLevel && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", null, "\xB7"), /* @__PURE__ */ React.createElement("span", null, "Grade ", readingLevel.grade))), /* @__PURE__ */ React.createElement(
     "button",
     {
+      "data-sf-focusable": true,
       onClick: () => {
         if (typeof window.AlloToggleTheme === "function") window.AlloToggleTheme();
       },
@@ -1810,13 +1818,14 @@ show();
         return "\u2600\uFE0F";
       }
     })())
-  ), /* @__PURE__ */ React.createElement("button", { onClick: safeClose, className: "hover:bg-white/20 p-2 rounded-full transition-colors", "aria-label": "Close StoryForge" }, /* @__PURE__ */ React.createElement(X, { size: 24 })))), /* @__PURE__ */ React.createElement("nav", { className: "bg-white border-b border-slate-200 px-6 py-3 flex items-center justify-center gap-1 shrink-0 overflow-x-auto", role: "navigation", "aria-label": "Story creation phases" }, PHASES.map((p, i) => {
+  ), /* @__PURE__ */ React.createElement("button", { "data-sf-focusable": true, onClick: safeClose, className: "hover:bg-white/20 p-2 rounded-full transition-colors", "aria-label": "Close StoryForge" }, /* @__PURE__ */ React.createElement(X, { size: 24 })))), /* @__PURE__ */ React.createElement("nav", { className: "bg-white border-b border-slate-200 px-6 py-3 flex items-center justify-center gap-1 shrink-0 overflow-x-auto", role: "navigation", "aria-label": "Story creation phases" }, PHASES.map((p, i) => {
     const Icon = phaseIcons[i];
     const isCurrent = i === phaseIdx;
     const isDone = i < phaseIdx;
     return /* @__PURE__ */ React.createElement(React.Fragment, { key: p }, i > 0 && /* @__PURE__ */ React.createElement("div", { className: `w-8 h-0.5 ${isDone ? "bg-rose-400" : "bg-slate-200"}`, "aria-hidden": "true" }), /* @__PURE__ */ React.createElement(
       "button",
       {
+        "data-sf-focusable": true,
         onClick: () => {
           if (isDone || isCurrent) changePhase(p);
         },
