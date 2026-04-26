@@ -233,7 +233,9 @@
           });
         }, 30000);
         return function () { clearInterval(interval); };
-      }, [selHubTool, activeStationId]);
+        // activeStation is in deps so a teacher-edit to the quest list refreshes
+        // the captured timeQuests instead of relying on a stale closure.
+      }, [selHubTool, activeStationId, activeStation]);
 
       // Auto-evaluate xpThreshold + timeSpent quests on relevant changes.
       React.useEffect(function () {
@@ -282,32 +284,41 @@
         }
       }
 
+      // Re-entrancy guard: a fast double-click on Save would otherwise create
+      // two stations with different Date.now() ids but identical content.
+      var _savingStation = React.useRef(false);
       function _saveBuilderAsStation() {
+        if (_savingStation.current) return;
         var selectedToolIds = Object.keys(builderTools).filter(function (k) { return builderTools[k]; });
         if (selectedToolIds.length === 0) {
           if (typeof addToast === 'function') addToast('Pick at least one tool first', 'info');
           return;
         }
-        var station = {
-          id: 'sel_station_' + Date.now(),
-          name: (builderName.trim() || 'Custom SEL Station'),
-          tools: selectedToolIds,
-          teacherNote: builderNote,
-          quests: builderQuests.map(function (q, i) {
-            return Object.assign({}, q, { qid: q.qid || ('q_' + i + '_' + Date.now()) });
-          }),
-          createdAt: new Date().toISOString(),
-          source: 'sel-hub-builder'
-        };
-        setSavedStations(savedStations.concat([station]));
-        setActiveStationId(station.id);
-        // Reset builder
-        setBuilderName(''); setBuilderNote(''); setBuilderTools({}); setBuilderQuests([]);
-        setBuilderOpen(false);
-        if (typeof addToast === 'function') addToast('SEL Station saved!', 'success');
-        announceToSR('Custom SEL Station saved and activated.');
-        // Surface to parent so the resource sidebar can show it.
-        if (typeof props.onSaveStation === 'function') props.onSaveStation(station);
+        _savingStation.current = true;
+        try {
+          var station = {
+            id: 'sel_station_' + Date.now(),
+            name: (builderName.trim() || 'Custom SEL Station'),
+            tools: selectedToolIds,
+            teacherNote: builderNote,
+            quests: builderQuests.map(function (q, i) {
+              return Object.assign({}, q, { qid: q.qid || ('q_' + i + '_' + Date.now()) });
+            }),
+            createdAt: new Date().toISOString(),
+            source: 'sel-hub-builder'
+          };
+          setSavedStations(savedStations.concat([station]));
+          setActiveStationId(station.id);
+          // Reset builder
+          setBuilderName(''); setBuilderNote(''); setBuilderTools({}); setBuilderQuests([]);
+          setBuilderOpen(false);
+          if (typeof addToast === 'function') addToast('SEL Station saved!', 'success');
+          announceToSR('Custom SEL Station saved and activated.');
+          // Surface to parent so the resource sidebar can show it.
+          if (typeof props.onSaveStation === 'function') props.onSaveStation(station);
+        } finally {
+          _savingStation.current = false;
+        }
       }
 
       // ── Accessibility Helpers ──

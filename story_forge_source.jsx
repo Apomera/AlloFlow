@@ -1806,8 +1806,9 @@ Return ONLY JSON:
 
       const result = await onCallGemini(prompt, true);
       const data = JSON.parse(cleanJson(result));
+      data.characters = (data.characters || []).slice(0, 3);
       setArcReport(data);
-      const count = (data.characters || []).length;
+      const count = data.characters.length;
       if (addToast) addToast('Character arcs analyzed!', 'success');
       sfAnnounce(count === 0 ? 'No named characters found in the story.' : `Character arc tracker: ${count} character${count === 1 ? '' : 's'} analyzed.`);
       awardXP(8, 'Tracked character arcs');
@@ -1826,7 +1827,7 @@ Return ONLY JSON:
   const analyzeDialogue = async () => {
     if (!onCallGemini) return;
     const fullText = paragraphs.map((p, i) => `[Paragraph ${i + 1}] ${p.text.trim()}`).filter(Boolean).join('\n\n');
-    if (!fullText.includes('"') && !fullText.includes('"') && !fullText.includes('"')) {
+    if (!fullText.includes('"') && !fullText.includes('“') && !fullText.includes('”')) {
       if (addToast) addToast('No dialogue detected — try adding a quoted line', 'info');
       setDialogueReport({ tagCounts: {}, overusedTag: null, issues: [], summary: 'No dialogue found yet.' });
       return;

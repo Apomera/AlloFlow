@@ -1693,8 +1693,9 @@ Return ONLY JSON:
 }`;
       const result = await onCallGemini(prompt, true);
       const data = JSON.parse(cleanJson(result));
+      data.characters = (data.characters || []).slice(0, 3);
       setArcReport(data);
-      const count = (data.characters || []).length;
+      const count = data.characters.length;
       if (addToast) addToast("Character arcs analyzed!", "success");
       sfAnnounce(count === 0 ? "No named characters found in the story." : `Character arc tracker: ${count} character${count === 1 ? "" : "s"} analyzed.`);
       awardXP(8, "Tracked character arcs");
@@ -1707,7 +1708,7 @@ Return ONLY JSON:
   const analyzeDialogue = async () => {
     if (!onCallGemini) return;
     const fullText = paragraphs.map((p, i) => `[Paragraph ${i + 1}] ${p.text.trim()}`).filter(Boolean).join("\n\n");
-    if (!fullText.includes('"') && !fullText.includes('"') && !fullText.includes('"')) {
+    if (!fullText.includes('"') && !fullText.includes("\u201C") && !fullText.includes("\u201D")) {
       if (addToast) addToast("No dialogue detected \u2014 try adding a quoted line", "info");
       setDialogueReport({ tagCounts: {}, overusedTag: null, issues: [], summary: "No dialogue found yet." });
       return;
@@ -2319,8 +2320,6 @@ show();
     {
       key,
       onClick: () => setGenre(key),
-      'aria-label': g.label + (g.desc ? ' — ' + g.desc : '') + (genre === key ? ' (selected)' : ''),
-      'aria-pressed': genre === key,
       className: `p-3 rounded-xl border-2 text-center text-xs font-bold transition-all ${genre === key ? "border-indigo-500 bg-indigo-50 text-indigo-700 shadow-md" : "border-slate-200 text-slate-600 hover:border-indigo-300"}`
     },
     g.emoji,
@@ -2362,8 +2361,6 @@ show();
     {
       key: style,
       onClick: () => setArtStyle(style),
-      'aria-label': style + ' art style' + (artStyle === style ? ' (selected)' : ''),
-      'aria-pressed': artStyle === style,
       className: `p-3 rounded-xl border-2 text-center text-xs font-bold capitalize transition-all ${artStyle === style ? "border-purple-500 bg-purple-50 text-purple-700 shadow-md" : "border-slate-200 text-slate-600 hover:border-purple-300"}`
     },
     style === "storybook" ? "\u{1F4DA}" : style === "pixel" ? "\u{1F47E}" : style === "cinematic" ? "\u{1F3AC}" : style === "anime" ? "\u2728" : "\u{1F58D}\uFE0F",
@@ -2560,7 +2557,7 @@ show();
       id: `sf-beat-${p.id}`,
       value: p.plotBeat || "",
       onChange: (e) => updateParagraphBeat(idx, e.target.value),
-      className: "text-xs px-2 py-1 rounded-md border border-indigo-200 bg-white text-indigo-800 font-medium focus:border-indigo-500",
+      className: "text-xs px-2 py-1 rounded-md border border-indigo-200 bg-white text-indigo-800 font-medium outline-none focus:border-indigo-500",
       "aria-label": `Plot beat for paragraph ${idx + 1} (optional)`
     },
     PLOT_BEATS.map((b) => /* @__PURE__ */ React.createElement("option", { key: b.value || "none", value: b.value }, b.label))
@@ -2574,7 +2571,7 @@ show();
       {
         value: p.text,
         onChange: (e) => updateParagraph(idx, e.target.value),
-        className: "w-full p-2.5 text-xs resize-none border-2 border-amber-200 rounded-lg bg-amber-50 focus:border-amber-400 transition-colors italic",
+        className: "w-full p-2.5 text-xs resize-none outline-none border-2 border-amber-200 rounded-lg bg-amber-50 focus:border-amber-400 transition-colors italic",
         style: { minHeight: "50px" },
         placeholder: "What's happening in this panel? (narrator voice)",
         "aria-label": `Panel ${idx + 1} narration`
@@ -2585,7 +2582,7 @@ show();
         type: "text",
         value: (panelDialogue[p.id] || {}).speaker || "",
         onChange: (e) => updatePanelDialogue(p.id, "speaker", e.target.value),
-        className: "w-20 p-1.5 text-[11px] border border-blue-200 rounded-lg focus:border-blue-400 font-bold text-blue-700",
+        className: "w-20 p-1.5 text-[11px] border border-blue-200 rounded-lg outline-none focus:border-blue-400 font-bold text-blue-700",
         placeholder: "Who?",
         "aria-label": `Panel ${idx + 1} speaker name`
       }
@@ -2594,7 +2591,7 @@ show();
       {
         value: (panelDialogue[p.id] || {}).speech || "",
         onChange: (e) => updatePanelDialogue(p.id, "speech", e.target.value),
-        className: "flex-1 p-2 text-xs resize-none border-2 border-blue-200 rounded-xl bg-white focus:border-blue-400 transition-colors",
+        className: "flex-1 p-2 text-xs resize-none outline-none border-2 border-blue-200 rounded-xl bg-white focus:border-blue-400 transition-colors",
         style: { minHeight: "36px", borderRadius: "16px" },
         placeholder: '"What the character says out loud..."',
         "aria-label": `Panel ${idx + 1} speech`
@@ -2604,7 +2601,7 @@ show();
       {
         value: (panelDialogue[p.id] || {}).thought || "",
         onChange: (e) => updatePanelDialogue(p.id, "thought", e.target.value),
-        className: "w-full p-2 text-xs resize-none border-2 border-purple-200 rounded-xl bg-purple-50/30 focus:border-purple-400 transition-colors italic",
+        className: "w-full p-2 text-xs resize-none outline-none border-2 border-purple-200 rounded-xl bg-purple-50/30 focus:border-purple-400 transition-colors italic",
         style: { minHeight: "30px", borderRadius: "20px", borderStyle: "dashed" },
         placeholder: "What the character is thinking...",
         "aria-label": `Panel ${idx + 1} thought`
@@ -2615,7 +2612,7 @@ show();
         type: "text",
         value: (panelDialogue[p.id] || {}).sfx || "",
         onChange: (e) => updatePanelDialogue(p.id, "sfx", e.target.value),
-        className: "flex-1 p-1.5 text-xs border border-red-200 rounded-lg focus:border-red-400 font-black text-red-600 uppercase",
+        className: "flex-1 p-1.5 text-xs border border-red-200 rounded-lg outline-none focus:border-red-400 font-black text-red-600 uppercase",
         placeholder: "BOOM! CRASH! WHOOSH!",
         "aria-label": `Panel ${idx + 1} sound effect`
       }
@@ -2627,7 +2624,7 @@ show();
       {
         value: p.text,
         onChange: (e) => updateParagraph(idx, e.target.value),
-        className: `w-full p-4 text-sm resize-none transition-colors ${layoutMode === "dark" ? "bg-slate-800 text-slate-100 placeholder:text-slate-600 focus:bg-slate-750 caret-cyan-400" : layoutMode === "journal" ? "bg-amber-50 text-amber-900 placeholder:text-amber-400 focus:bg-amber-100/50" : "focus:bg-rose-50/30"}`,
+        className: `w-full p-4 text-sm resize-none outline-none transition-colors ${layoutMode === "dark" ? "bg-slate-800 text-slate-100 placeholder:text-slate-600 focus:bg-slate-750 caret-cyan-400" : layoutMode === "journal" ? "bg-amber-50 text-amber-900 placeholder:text-amber-400 focus:bg-amber-100/50" : "focus:bg-rose-50/30"}`,
         style: {
           minHeight: "120px",
           fontFamily: layoutMode === "journal" ? "'Georgia', 'Times New Roman', serif" : "inherit",
