@@ -492,6 +492,55 @@ window.StemLab = window.StemLab || {
           poly: [[losX, W - 12], [losX, W], [midStart + 5, W], [midStart + 5, W - 12]] }
       ];
     }
+    if (coverageId === 'cover0') {
+      // Cover 0 — ALL-OUT BLITZ. No deep safety, no help over the top. 7+
+      // rushers, everyone else in man. Pure pressure look. We paint a thin
+      // "blitz alley" to communicate the rush vs leaving the field open
+      // (no zone shading because there are NO zones — pure man).
+      return [
+        { label: 'Blitz alley — A-gap (no help over the top)', color: 'rgba(220,38,38,0.18)',
+          poly: [[losX - 4, W / 2 - 4], [losX - 4, W / 2 + 4], [midStart, W / 2 + 4], [midStart, W / 2 - 4]] }
+      ];
+    }
+    if (coverageId === 'cover6') {
+      // Cover 6 / "Quarter-Quarter-Half" — split-field. One side (we paint
+      // the RIGHT side) plays Cover 4 quarters, the other side plays Cover
+      // 2 halves. The check-down on the field side. Pittsburgh / Saban
+      // staple to balance a 3x1 trips set: quarters into trips, halves to
+      // the single-receiver side.
+      var quarter6 = W / 4;
+      return [
+        // Cover 4 side (right): two deep quarters
+        { label: 'Deep quarter — far right', color: 'rgba(96,165,250,0.18)',
+          poly: [[deepStart, 0], [deepStart, quarter6], [deepEnd, quarter6], [deepEnd, 0]] },
+        { label: 'Deep quarter — right inside', color: 'rgba(96,165,250,0.18)',
+          poly: [[deepStart, quarter6], [deepStart, 2 * quarter6], [deepEnd, 2 * quarter6], [deepEnd, quarter6]] },
+        // Cover 2 side (left): one deep half
+        { label: 'Deep half — left', color: 'rgba(168,85,247,0.20)',
+          poly: [[deepStart, 2 * quarter6], [deepStart, W], [deepEnd, W], [deepEnd, 2 * quarter6]] },
+        // Hooks underneath
+        { label: 'Hook — right (quarters side)', color: 'rgba(34,197,94,0.16)',
+          poly: [[losX, 0], [losX, 18], [deepStart, 18], [deepStart, 0]] },
+        { label: 'Hook — middle', color: 'rgba(34,197,94,0.16)',
+          poly: [[midStart, 18], [midStart, W - 18], [deepStart, W - 18], [deepStart, 18]] },
+        { label: 'Flat — left (halves side)', color: 'rgba(251,191,36,0.18)',
+          poly: [[losX, W - 12], [losX, W], [midStart + 5, W], [midStart + 5, W - 12]] }
+      ];
+    }
+    if (coverageId === 'robber') {
+      // Robber coverage — Cover 1 (man-free with single high safety) PLUS
+      // a "robber" defender lurking in the middle hole at ~10-12 yd. The
+      // robber's job is to bait the QB into throwing a dig / over route,
+      // then break on it for a pick. Patrick Peterson + Tyrann Mathieu
+      // were elite robbers. Beat with: anything that pulls the robber out
+      // of position (mesh, crossing routes that occupy the middle).
+      return [
+        { label: 'Free safety (deep middle, over the top)', color: 'rgba(96,165,250,0.18)',
+          poly: [[deepStart + 5, 0], [deepStart + 5, W], [deepEnd, W], [deepEnd, 0]] },
+        { label: 'Robber (middle hole — baiting digs)', color: 'rgba(220,38,38,0.20)',
+          poly: [[midStart + 6, W / 2 - 9], [midStart + 6, W / 2 + 9], [deepStart + 4, W / 2 + 9], [deepStart + 4, W / 2 - 9]] }
+      ];
+    }
     return [];
   }
 
@@ -919,6 +968,43 @@ window.StemLab = window.StemLab || {
         { id: 'WLB', role: 'LB', x: losX + 5, y: W / 2 + 4 }                                  // weakside
       ]);
     }
+    if (coverageId === 'cover0') {
+      // Pure man, no FS. Same WR/slot/TE shadowing as Cover 1, but the
+      // single high safety becomes an EXTRA RUSHER at the LOS — the
+      // signature blitz look. 5-man front + 5 in man + 1 alley filler.
+      var wr1c0 = (offense || []).find(function(p) { return p.id === 'WR1'; });
+      var wr2c0 = (offense || []).find(function(p) { return p.id === 'WR2'; });
+      var slotc0 = (offense || []).find(function(p) { return p.id === 'SLOT'; });
+      var tec0 = (offense || []).find(function(p) { return p.id === 'TE'; });
+      var rb = (offense || []).find(function(p) { return p.id === 'RB'; });
+      return dl.concat([
+        { id: 'BZR', role: 'LB', x: losX + 1, y: W / 2 },                                     // 5th rusher (free safety blitzing)
+        { id: 'CB1', role: 'CB', x: (wr1c0 ? wr1c0.x : losX) + 4, y: (wr1c0 ? wr1c0.y : 4) },
+        { id: 'CB2', role: 'CB', x: (wr2c0 ? wr2c0.x : losX) + 4, y: (wr2c0 ? wr2c0.y : W - 4) },
+        { id: 'NB',  role: 'CB', x: (slotc0 ? slotc0.x : losX) + 4, y: (slotc0 ? slotc0.y : W - 9) },
+        { id: 'SLB', role: 'LB', x: losX + 4, y: (tec0 ? tec0.y : W / 2 - 4) },                // shadows TE
+        { id: 'MLB', role: 'LB', x: losX + 4, y: (rb ? rb.y : W / 2) - 2 },                    // shadows RB
+        { id: 'WLB', role: 'LB', x: losX + 5, y: W / 2 + 6 }                                   // backside fold
+      ]);
+    }
+    if (coverageId === 'robber') {
+      // Cover 1 + a robber lurker. Same man shadows as cover1 but the
+      // strong-side LB becomes the ROBBER, sitting in the middle hole at
+      // ~10-12 yards.
+      var wr1r = (offense || []).find(function(p) { return p.id === 'WR1'; });
+      var wr2r = (offense || []).find(function(p) { return p.id === 'WR2'; });
+      var slotr = (offense || []).find(function(p) { return p.id === 'SLOT'; });
+      var ter = (offense || []).find(function(p) { return p.id === 'TE'; });
+      return dl.concat([
+        { id: 'FS',  role: 'S',  x: losX + 28, y: W / 2 },                                    // deep middle (deeper than C1)
+        { id: 'ROB', role: 'S',  x: losX + 11, y: W / 2 },                                    // robber in the middle hole
+        { id: 'CB1', role: 'CB', x: (wr1r ? wr1r.x : losX) + 5, y: (wr1r ? wr1r.y : 4) + 1 },
+        { id: 'CB2', role: 'CB', x: (wr2r ? wr2r.x : losX) + 5, y: (wr2r ? wr2r.y : W - 4) - 1 },
+        { id: 'NB',  role: 'CB', x: (slotr ? slotr.x : losX) + 5, y: (slotr ? slotr.y : W - 9) },
+        { id: 'SLB', role: 'LB', x: losX + 5, y: (ter ? ter.y : W / 2 - 4) + 1 },
+        { id: 'WLB', role: 'LB', x: losX + 5, y: W / 2 + 4 }
+      ]);
+    }
     // Zone coverages — place each back-7 defender at the centroid of
     // their assigned zone (matches the open-receiver analysis math).
     var zones = buildZones(coverageId, losX);
@@ -952,7 +1038,13 @@ window.StemLab = window.StemLab || {
     { id: 'tampa2', label: 'Tampa 2', short: 'T2',
       teach: 'Cover 2 with the MLB dropping into the deep middle to close the seam. Beat with: deep over routes, intermediate digs, or attacking the curl-flat between defenders.' },
     { id: 'cover4', label: 'Cover 4 (Quarters)', short: 'C4',
-      teach: 'Four deep zones — every deep route is covered. Modern college + Saban Alabama staple. Beat with: short-and-quick (Stick, Slant) — the underneath is LIGHT (only 3 defenders). Hard to beat deep, easy to nickel-and-dime.' }
+      teach: 'Four deep zones — every deep route is covered. Modern college + Saban Alabama staple. Beat with: short-and-quick (Stick, Slant) — the underneath is LIGHT (only 3 defenders). Hard to beat deep, easy to nickel-and-dime.' },
+    { id: 'cover0', label: 'Cover 0 (All-Out Blitz)', short: 'C0',
+      teach: 'NO deep safety. 7+ rushers, everyone else in man. The QB has ~2 seconds before contact — accuracy + quick decisions decide it. Beat with: hot routes (slant, quick out), max protect (RB + TE stay in to block), or a back-shoulder fade if your WR is taller than the corner.' },
+    { id: 'cover6', label: 'Cover 6 (Quarter-Quarter-Half)', short: 'C6',
+      teach: 'Split-field coverage. Right side plays Cover 4 (two deep quarters), left side plays Cover 2 (one deep half). Used to handle 3x1 trips formations — quarters into trips, halves to the lone receiver. Beat with: attack the seam BETWEEN the coverages where the safeties\' rules conflict.' },
+    { id: 'robber', label: 'Robber (C1 + Lurker)', short: 'RB',
+      teach: 'Cover 1 with a "robber" defender lurking in the middle hole at ~10-12 yd. He BAITS the QB into throwing a dig or over route, then breaks for a pick. Tyrann Mathieu / Patrick Peterson built careers here. Beat with: clear out the middle (mesh, double-cross), then attack the soft spot the robber vacated.' }
   ];
 
   // ═══════════════════════════════════════════
