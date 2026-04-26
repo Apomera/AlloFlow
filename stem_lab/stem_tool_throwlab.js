@@ -143,39 +143,84 @@ window.StemLab = window.StemLab || {
     { id: 'beckham', label: "Beckham's Curl", icon: '⚽',
       mode: 'freekick', presetId: 'curling', gravityId: 'earth',
       windMph: 0, windDirDeg: 0,
-      teach: '22 m free kick with 600 rpm of sidespin. Watch the ball bend ~1.5 m around the wall — that\'s Magnus force in action. The signature soccer free kick.' },
+      teach: '22 m free kick with 600 rpm of sidespin. Watch the ball bend ~1.5 m around the wall — that\'s Magnus force in action. The signature soccer free kick.',
+      questions: [
+        'Magnus force scales with v² × ω (speed squared × spin rate). Why does Beckham strike the ball so hard if curl matters more than power?',
+        'The wall is 9.15 m away, the goal is 22 m. How does the BALL position itself laterally over each segment of the flight?',
+        'A right-footed kicker curls the ball one direction. What changes if the kicker is left-footed and standing on the same spot?'
+      ] },
     { id: 'moon-fg', label: 'Field Goal on the Moon', icon: '🌙',
       mode: 'fieldgoal', presetId: 'long', gravityId: 'moon',
       windMph: 0, windDirDeg: 0,
-      teach: '50-yard field goal at 1/6 Earth gravity. The ball stays airborne ~6× as long, traveling far past the goalposts. Same speed + angle, drastically different trajectory — the lesson is that range scales with 1/g.' },
+      teach: '50-yard field goal at 1/6 Earth gravity. The ball stays airborne ~6× as long, traveling far past the goalposts. Same speed + angle, drastically different trajectory — the lesson is that range scales with 1/g.',
+      questions: [
+        'Why does horizontal range scale with 1/g (inversely with gravity)? Derive it from the kinematic equations.',
+        'The Moon has no atmosphere. How would adding Moon-gravity AND Earth-atmosphere change the trajectory differently?',
+        'If you could pick ANY gravity for an Olympic javelin event, what would maximize distance — minimum gravity or some other value?'
+      ] },
     { id: 'mariano', label: "Mariano's Cutter", icon: '⚾',
       mode: 'pitching', presetId: 'slider', gravityId: 'earth',
       windMph: 0, windDirDeg: 0,
-      teach: 'Mariano Rivera\'s legendary cut fastball: 92 mph with bullet-spin sidespin. Watch the ball slide ~6 inches laterally just before the plate. The pitch that built a Hall of Fame career.' },
+      teach: 'Mariano Rivera\'s legendary cut fastball: 92 mph with bullet-spin sidespin. Watch the ball slide ~6 inches laterally just before the plate. The pitch that built a Hall of Fame career.',
+      questions: [
+        'A 92 mph slider reaches the plate in ~0.42 s. The hitter has ~0.15 s of decision time after recognizing spin. How does that timing math favor the pitcher?',
+        'Magnus force creates lateral break in the LAST third of the flight (the curve is non-linear). Why does the break feel more "sudden" than a constant curve?',
+        'Why is Rivera\'s cutter called a "cutter" rather than a "slider" — what subtle difference in spin axis or velocity defines each?'
+      ] },
     { id: 'parker-floater', label: "Tony Parker Floater", icon: '☔',
       mode: 'freethrow', presetId: 'floater', gravityId: 'earth',
       windMph: 0, windDirDeg: 0,
-      teach: 'Slow, ultra-high (~62°) arc over a contesting big man. The hangtime is ~1.5 s; the defender\'s hand is on the way DOWN by the time the ball drops through. Geometry beats reach.' },
+      teach: 'Slow, ultra-high (~62°) arc over a contesting big man. The hangtime is ~1.5 s; the defender\'s hand is on the way DOWN by the time the ball drops through. Geometry beats reach.',
+      questions: [
+        'A 62° arc has more hangtime than a 45° arc but covers less horizontal distance per second. What\'s the physics trade-off?',
+        'A 7-foot defender can reach ~2.8 m with arms up. The floater apex is ~3.5 m. Why does that 0.7 m gap matter so much when the defender is right there?',
+        'Why don\'t guards just shoot floaters all the time? What\'s the accuracy cost of releasing at high arc?'
+      ] },
     { id: 'headwind-hailmary', label: 'Hail Mary into Headwind', icon: '💨',
       mode: 'fieldgoal', presetId: 'hailmary', gravityId: 'earth',
       windMph: 15, windDirDeg: 0,
-      teach: '60-yard kick into a 15 mph headwind. The headwind both slows the ball AND increases drag-induced lift loss — total range drops ~8-12 yards. A demonstration of why kickers check the flags.' },
+      teach: '60-yard kick into a 15 mph headwind. The headwind both slows the ball AND increases drag-induced lift loss — total range drops ~8-12 yards. A demonstration of why kickers check the flags.',
+      questions: [
+        'Drag scales with v² (relative to air, not ground). Headwind ADDS to relative airspeed — why does this make drag MORE than just additive?',
+        'A 15 mph headwind eats ~8-12 yards. Would a 15 mph crosswind affect range as much, or differently?',
+        'What\'s the optimal launch angle WITH wind? Does it shift higher or lower than 42° (the calm-air optimum)?'
+      ] },
     { id: 'warne-googly', label: "Warne's Googly", icon: '🌪️',
       mode: 'bowling', presetId: 'legspin', gravityId: 'earth',
       windMph: 0, windDirDeg: 0,
-      teach: 'Shane Warne territory: 50 mph leg-spin delivery with the spin axis pulling the ball into the off-stump line. After bouncing, the ball turns ~40-60 cm — wider than any other delivery in cricket. The "Ball of the Century" rolled into one preset.' },
+      teach: 'Shane Warne territory: 50 mph leg-spin delivery with the spin axis pulling the ball into the off-stump line. After bouncing, the ball turns ~40-60 cm — wider than any other delivery in cricket. The "Ball of the Century" rolled into one preset.',
+      questions: [
+        'In cricket the ball BOUNCES before reaching the batter. Why does spin in the AIR matter less than spin off the SURFACE?',
+        '50 mph leg-spin is much slower than a 90 mph fast ball. How does the bowler use the speed difference to deceive the batter?',
+        'A "googly" is a leg-spinner\'s wrong\'un — same arm action, opposite spin direction. Why does that work psychologically and geometrically?'
+      ] },
     { id: 'driver-tail', label: 'Driver in a Tailwind', icon: '🏌️',
       mode: 'golf', presetId: 'driver', gravityId: 'earth',
       windMph: 8, windDirDeg: 180,
-      teach: '250 yd driver with an 8 mph tailwind. The wind pushes the ball forward AND reduces drag (relative wind speed drops), adding ~20-30 yards of carry. PGA pros chase tailwind days for personal-best drives.' },
+      teach: '250 yd driver with an 8 mph tailwind. The wind pushes the ball forward AND reduces drag (relative wind speed drops), adding ~20-30 yards of carry. PGA pros chase tailwind days for personal-best drives.',
+      questions: [
+        'A tailwind at 8 mph pushes the ball forward by 8 mph during its airtime. Why does the actual carry increase by MORE than just (8 mph × airtime)?',
+        'Tailwinds reduce ball-to-air relative speed, which reduces drag AND backspin lift. Which effect dominates for a driver, and why?',
+        'If you played the same hole into an 8 mph headwind, would the carry decrease by the same amount? Why or why not?'
+      ] },
     { id: 'olympic-jump', label: 'Olympic Jump Serve', icon: '🏐',
       mode: 'volleyball', presetId: 'jump', gravityId: 'earth',
       windMph: 0, windDirDeg: 0,
-      teach: '70 mph jump serve from a 3.0 m release height with topspin. The Magnus force pulls the ball DOWN past the net at speed — the receiver has ~0.5 s to react. Wilfredo Leon territory.' },
+      teach: '70 mph jump serve from a 3.0 m release height with topspin. The Magnus force pulls the ball DOWN past the net at speed — the receiver has ~0.5 s to react. Wilfredo Leon territory.',
+      questions: [
+        'A 70 mph jump serve crosses 18 m in ~0.6 s. The receiver\'s reaction time is ~0.25 s. What does that leave for the pass?',
+        'Topspin Magnus force pulls the ball DOWN. Why is that helpful (rather than hurtful) for a high-speed serve over a 2.43 m net?',
+        'The release height is 3.0 m, much higher than overhand serves. Why does a higher release point + topspin combine multiplicatively to make this serve so dangerous?'
+      ] },
     { id: 'jupiter-pitcher', label: 'Pitching on Jupiter', icon: '⚫',
       mode: 'pitching', presetId: '4seam', gravityId: 'jupiter',
       windMph: 0, windDirDeg: 0,
-      teach: 'A 92 mph 4-seam fastball at 2.5× Earth gravity. The ball drops dramatically — strike zone almost impossible. Lesson: gravity rules trajectory; without backspin lift, the ball falls a meter from release to plate.' }
+      teach: 'A 92 mph 4-seam fastball at 2.5× Earth gravity. The ball drops dramatically — strike zone almost impossible. Lesson: gravity rules trajectory; without backspin lift, the ball falls a meter from release to plate.',
+      questions: [
+        'A 4-seam fastball has backspin (Magnus lift up). On Jupiter, does the same backspin compensate for stronger gravity, or is it overwhelmed?',
+        'How would a pitcher have to ADJUST their release angle on Jupiter to throw a strike?',
+        'On Jupiter, would a curveball (topspin → drop) reach the plate at all? Compute the trajectory mentally.'
+      ] }
   ];
 
   // Wind presets — quick-pick alternatives to manually setting speed +
@@ -1445,7 +1490,8 @@ window.StemLab = window.StemLab || {
             windDirDeg: s.windDirDeg || 0,
             gravityId: s.gravityId || 'earth',
             lastResult: null, replayActive: false, replayT: 0,
-            coachReply: '', coachError: ''
+            coachReply: '', coachError: '',
+            activeScenarioId: scenarioId
           });
           nextThrowlab[presetIdField] = s.presetId;
           if (s.mode === 'fieldgoal' && preset.distanceYd) nextThrowlab.fgDistanceYd = preset.distanceYd;
@@ -3301,6 +3347,58 @@ window.StemLab = window.StemLab || {
             })
           )
         ),
+
+        // ── Active Scenario Briefing ──
+        // When a scenario was just loaded, surface its teach blurb +
+        // discussion questions in a dedicated panel above the main
+        // controls. Persists until the user dismisses it OR loads a
+        // different scenario. Useful for teachers in front of a class —
+        // gives them ready-made physics-discussion prompts.
+        (function() {
+          var active = d.activeScenarioId
+            ? SCENARIOS.find(function(sc) { return sc.id === d.activeScenarioId; })
+            : null;
+          if (!active) return null;
+          return h('section', {
+            'aria-label': 'Scenario briefing',
+            style: {
+              padding: 12, borderRadius: 10, marginBottom: 14,
+              background: 'rgba(167,139,250,0.10)',
+              border: '1px solid rgba(167,139,250,0.45)',
+              color: '#f1f5f9', fontSize: 13, lineHeight: 1.5
+            }
+          },
+            h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 6 } },
+              h('span', { style: { fontSize: 18 }, 'aria-hidden': 'true' }, active.icon),
+              h('div', { style: { flex: 1 } },
+                h('div', { style: { fontWeight: 700, color: '#a78bfa', fontSize: 13, marginBottom: 2 } },
+                  '🎬 Scenario: ' + active.label),
+                h('div', null, active.teach)
+              ),
+              h('button', {
+                onClick: function() { upd('activeScenarioId', null); },
+                'aria-label': 'Dismiss scenario briefing',
+                'data-tl-focusable': 'true',
+                style: {
+                  padding: '2px 8px', borderRadius: 6, cursor: 'pointer',
+                  border: '1px solid #475569', background: 'transparent',
+                  color: '#cbd5e1', fontSize: 11
+                }
+              }, '✕ Dismiss')
+            ),
+            (active.questions && active.questions.length) ? h('div', {
+              style: { marginTop: 8, paddingTop: 8, borderTop: '1px dashed rgba(167,139,250,0.30)' }
+            },
+              h('div', { style: { fontSize: 11, color: '#a78bfa', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } },
+                '💭 Discussion'),
+              h('ol', { style: { margin: '4px 0 0 18px', padding: 0, color: '#cbd5e1', fontSize: 12, lineHeight: 1.5 } },
+                active.questions.map(function(q, i) {
+                  return h('li', { key: 'q-' + i, style: { marginBottom: 4 } }, q);
+                })
+              )
+            ) : null
+          );
+        })(),
 
         // Difficulty / scaffold tier selector — IEP / UDL onramp.
         // Tier 1 = speed only (early elementary, "more push = farther").

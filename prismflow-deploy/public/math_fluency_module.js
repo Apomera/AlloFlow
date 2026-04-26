@@ -928,6 +928,16 @@
     return grid;
   }
 
+  // Aria-live announcer — pipes maze state to the global polite live
+  // region (allo-live-math-fluency, created at module init) so screen-
+  // reader users hear "Gate opens", "Wrong combination", "Key collected",
+  // "Maze complete" without having to watch the canvas.
+  function _mfAnnounce(msg) {
+    try {
+      var lr = document.getElementById('allo-live-math-fluency');
+      if (lr) { lr.textContent = ''; setTimeout(function() { lr.textContent = msg; }, 30); }
+    } catch (e) { /* live region is optional polish */ }
+  }
   function FluencyMazePanel(props) {
     var React = props.React || window.React;
     var h = React.createElement;
@@ -1203,6 +1213,7 @@
         setScore(function(p) { return p + 10 + streakBonus; });
         setMoveCount(function(p) { return p + 1; });
         setFeedback('correct');
+        _mfAnnounce('Gate opens. ' + currentProblem.problem.text + ' equals ' + currentProblem.problem.answer + '.');
         // Clear any active hint — reward for solving without it
         setHintDir(null);
         playTone(880, 0.05, 'sine', 0.06);
@@ -1249,6 +1260,7 @@
         var kp = keyPosRef.current;
         if (!keyCollected && kp && newPos.r === kp.r && newPos.c === kp.c) {
           setKeyCollected(true);
+          _mfAnnounce('Golden key collected. The exit is now unlocked.');
           if (addToast) addToast('\uD83D\uDDDD\uFE0F Key collected! Portal unlocked', 'success');
           playTone(1175, 0.08, 'sine', 0.06);
           setTimeout(function() { playTone(1568, 0.1, 'sine', 0.05); }, 80);
@@ -1309,6 +1321,7 @@
             var medalEmoji = { gold: '\uD83E\uDD47', silver: '\uD83E\uDD48', bronze: '\uD83E\uDD49' }[medalKind];
             addToast(medalEmoji + ' ' + medalKind.toUpperCase() + ' TIME! +' + medalBonus + ' bonus', 'success');
           }
+          _mfAnnounce('Maze complete! ' + (correct + 1) + ' gates unlocked in ' + elapsed + ' seconds.');
           if (addToast) addToast('\uD83C\uDFC6 Maze complete! ' + (correct + 1) + ' correct in ' + elapsed + 's', 'success');
           if (handleScoreUpdate) handleScoreUpdate(Math.round((correct + 1) / Math.max(1, elapsed) * 60) + medalBonus, 'Fluency Maze Complete', 'fluency-maze');
           // Save high score
@@ -1387,6 +1400,7 @@
         setScore(function(p) { return Math.max(0, p - 3); });
         setStreak(0);
         setFeedback('wrong');
+        _mfAnnounce('Wrong combination. The gate stays locked. Try again.');
         playTone(220, 0.1, 'triangle', 0.04);
         // Lower harmonic clang so the wrong-answer audio reads as a locked
         // gate rejecting the wrong combination.
@@ -2174,10 +2188,25 @@
       // wrapper from AlloFlowContent and reads like an unrolled scroll on
       // a torchlit table. Replaces the previous slate/violet palette which
       // clashed with the warm dungeon visuals on the canvas.
+      // Read prior personal-best so students see what they're chasing.
+      // Stored as a single global record (not per op/size) at line ~1318.
+      var bestRecord = null;
+      try { bestRecord = JSON.parse(localStorage.getItem('fluency_maze_best') || 'null'); } catch (e) { bestRecord = null; }
       return h('div', { style: { maxWidth: 460, margin: '0 auto', padding: '20px 24px', textAlign: 'center', background: 'linear-gradient(180deg, #fef3c7 0%, #fed7aa 100%)', borderRadius: '14px', border: '2px solid #d97706', boxShadow: '0 8px 24px rgba(146,64,14,0.15), inset 0 0 32px rgba(217,119,6,0.08)' } },
         h('div', { style: { fontSize: '36px', marginBottom: '8px' } }, '\uD83C\uDFAF'),
         h('h2', { style: { fontSize: '22px', fontWeight: 900, color: '#78350f', marginBottom: '2px', letterSpacing: '0.04em' } }, 'Fluency Maze'),
-        h('p', { style: { fontSize: '12px', color: '#92400e', marginBottom: '16px', fontStyle: 'italic' } }, 'Each gate is locked by a math fact. Solve it to pass. Find the golden key to unlock the exit.'),
+        h('p', { style: { fontSize: '12px', color: '#92400e', marginBottom: '12px', fontStyle: 'italic' } }, 'Each gate is locked by a math fact. Solve it to pass. Find the golden key to unlock the exit.'),
+        bestRecord && bestRecord.score && h('div', {
+          style: {
+            display: 'inline-flex', alignItems: 'center', gap: '6px',
+            background: 'linear-gradient(135deg, #fbbf24, #f59e0b)',
+            color: '#7c2d12', fontSize: '11px', fontWeight: 800,
+            padding: '4px 10px', borderRadius: '999px',
+            marginBottom: '14px', border: '1px solid #b45309',
+            boxShadow: '0 2px 6px rgba(180,83,9,0.25)'
+          },
+          'aria-label': 'Personal best: ' + bestRecord.score + ' points in ' + bestRecord.time + ' seconds'
+        }, '\uD83C\uDFC6 Best: ' + bestRecord.score + ' pts ' + (bestRecord.time ? '(' + bestRecord.time + 's)' : '')),
         // Operation selector
         h('div', { style: { display: 'flex', gap: '6px', justifyContent: 'center', marginBottom: '12px', flexWrap: 'wrap' } },
           ['add', 'sub', 'mul', 'div', 'mixed'].map(function(op) {
@@ -2239,10 +2268,10 @@
         silver: { emoji: '\uD83E\uDD48', label: 'Silver Time', color: '#64748b', bg: 'linear-gradient(135deg,#f8fafc,#e2e8f0)', border: '#94a3b8' },
         bronze: { emoji: '\uD83E\uDD49', label: 'Bronze Time', color: '#92400e', bg: 'linear-gradient(135deg,#fed7aa,#fdba74)', border: '#c2410c' }
       }[medal] : null;
-      return h('div', { style: { maxWidth: 420, margin: '0 auto', padding: '20px', textAlign: 'center' } },
-        h('div', { style: { fontSize: '48px', marginBottom: '8px' } }, won ? '\uD83C\uDFC6' : '\uD83D\uDC7E'),
-        h('h2', { style: { fontSize: '20px', fontWeight: 800, color: won ? '#22c55e' : '#ef4444', marginBottom: '12px' } },
-          won ? 'Maze Complete!' : (gameOver ? 'Caught by the monster!' : 'Game Over')),
+      return h('div', { style: { maxWidth: 460, margin: '0 auto', padding: '24px 24px 20px', textAlign: 'center', background: won ? 'linear-gradient(180deg, #fef3c7 0%, #fed7aa 100%)' : 'linear-gradient(180deg, #fee2e2 0%, #fecaca 100%)', borderRadius: '14px', border: '2px solid ' + (won ? '#d97706' : '#b91c1c'), boxShadow: '0 8px 24px rgba(146,64,14,0.18), inset 0 0 32px rgba(217,119,6,0.08)' } },
+        h('div', { style: { fontSize: '54px', marginBottom: '4px', filter: 'drop-shadow(0 3px 6px rgba(146,64,14,0.4))' } }, won ? '\uD83C\uDFC6' : '\uD83D\uDC7E'),
+        h('h2', { style: { fontSize: '24px', fontWeight: 900, color: won ? '#78350f' : '#7f1d1d', marginBottom: '12px', letterSpacing: '0.04em' } },
+          won ? 'You Escaped the Maze!' : (gameOver ? 'A Shadow Caught You' : 'Game Over')),
         // Medal banner — only on wins that beat one of the three time thresholds.
         won && medalInfo && h('div', {
           style: {
@@ -2266,18 +2295,18 @@
           )
         ),
         h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '16px' } },
-          h('div', { style: { background: '#f0fdf4', borderRadius: '10px', padding: '10px' } },
-            h('div', { style: { fontSize: '24px', fontWeight: 800, color: '#22c55e' } }, String(correct)),
-            h('div', { style: { fontSize: '10px', color: '#64748b' } }, 'Correct')),
-          h('div', { style: { background: '#fef2f2', borderRadius: '10px', padding: '10px' } },
-            h('div', { style: { fontSize: '24px', fontWeight: 800, color: '#ef4444' } }, String(wrong)),
-            h('div', { style: { fontSize: '10px', color: '#64748b' } }, 'Wrong')),
-          h('div', { style: { background: '#f5f3ff', borderRadius: '10px', padding: '10px' } },
-            h('div', { style: { fontSize: '24px', fontWeight: 800, color: '#7c3aed' } }, String(dcpm)),
-            h('div', { style: { fontSize: '10px', color: '#64748b' } }, 'Facts/Min')),
-          h('div', { style: { background: '#fffbeb', borderRadius: '10px', padding: '10px' } },
-            h('div', { style: { fontSize: '24px', fontWeight: 800, color: '#f59e0b' } }, elapsed + 's'),
-            h('div', { style: { fontSize: '10px', color: '#64748b' } }, 'Time'))
+          h('div', { style: { background: 'rgba(254,243,199,0.7)', borderRadius: '10px', padding: '10px', border: '1px solid #fcd34d' } },
+            h('div', { style: { fontSize: '26px', fontWeight: 900, color: '#15803d' } }, String(correct)),
+            h('div', { style: { fontSize: '10px', color: '#92400e', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' } }, 'Gates Unlocked')),
+          h('div', { style: { background: 'rgba(254,243,199,0.7)', borderRadius: '10px', padding: '10px', border: '1px solid #fcd34d' } },
+            h('div', { style: { fontSize: '26px', fontWeight: 900, color: '#b91c1c' } }, String(wrong)),
+            h('div', { style: { fontSize: '10px', color: '#92400e', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' } }, 'Wrong Tries')),
+          h('div', { style: { background: 'rgba(254,243,199,0.7)', borderRadius: '10px', padding: '10px', border: '1px solid #fcd34d' } },
+            h('div', { style: { fontSize: '26px', fontWeight: 900, color: '#7c2d12' } }, String(dcpm)),
+            h('div', { style: { fontSize: '10px', color: '#92400e', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' } }, 'Facts/Min')),
+          h('div', { style: { background: 'rgba(254,243,199,0.7)', borderRadius: '10px', padding: '10px', border: '1px solid #fcd34d' } },
+            h('div', { style: { fontSize: '26px', fontWeight: 900, color: '#a16207' } }, elapsed + 's'),
+            h('div', { style: { fontSize: '10px', color: '#92400e', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' } }, 'Time'))
         ),
         h('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center' } },
           h('button', { onClick: startMaze, style: { padding: '10px 24px', background: 'linear-gradient(135deg, #b45309, #7c2d12)', color: '#fef3c7', border: '2px solid #78350f', borderRadius: '10px', fontSize: '13px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(120,53,15,0.35)' } }, '\uD83D\uDD04 Play Again'),

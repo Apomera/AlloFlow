@@ -1,133 +1,24 @@
 {
   "meta": {
     "url": "https://prismflow-911fe.web.app",
-    "timestamp": "2026-04-18T03:48:02.218Z",
+    "timestamp": "2026-04-26T22:50:57.364Z",
     "axeVersion": "4.10.3"
   },
   "results": [
     {
       "scenario": "landing",
       "counts": {
-        "violationRules": 6,
-        "violationNodes": 8,
+        "violationRules": 2,
+        "violationNodes": 2,
         "incomplete": 2,
         "byImpact": {
-          "critical": 1,
-          "serious": 2,
-          "moderate": 3,
+          "critical": 0,
+          "serious": 1,
+          "moderate": 1,
           "minor": 0
         }
       },
       "violations": [
-        {
-          "id": "aria-valid-attr-value",
-          "impact": "critical",
-          "help": "ARIA attributes must conform to valid values",
-          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/aria-valid-attr-value?application=axeAPI",
-          "tags": [
-            "cat.aria",
-            "wcag2a",
-            "wcag412",
-            "EN-301-549",
-            "EN-9.4.1.2"
-          ],
-          "nodeCount": 1,
-          "nodes": [
-            {
-              "target": [
-                "#tab-create"
-              ],
-              "html": "<button role=\"tab\" aria-selected=\"true\" aria-controls=\"panel-create\" id=\"tab-create\" aria-label=\"Create new content\" class=\"flex-1 py-2 text-sm font-bold rounded-md transition-all flex items-center justify-center gap-2 bg-white text-indigo-600 shadow-sm\" data-help-key=\"sidebar_tab_create\">",
-              "failureSummary": "Fix all of the following:\n  Invalid ARIA attribute value: aria-controls=\"panel-create\""
-            }
-          ]
-        },
-        {
-          "id": "color-contrast",
-          "impact": "serious",
-          "help": "Elements must meet minimum color contrast ratio thresholds",
-          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/color-contrast?application=axeAPI",
-          "tags": [
-            "cat.color",
-            "wcag2aa",
-            "wcag143",
-            "TTv5",
-            "TT13.c",
-            "EN-301-549",
-            "EN-9.1.4.3",
-            "ACT"
-          ],
-          "nodeCount": 1,
-          "nodes": [
-            {
-              "target": [
-                "#tab-history"
-              ],
-              "html": "<button role=\"tab\" aria-selected=\"false\" aria-controls=\"panel-history\" id=\"tab-history\" aria-label=\"History\" class=\"flex-1 py-2 text-sm font-bold rounded-md transition-all flex items-center justify-center gap-2 text-slate-600 hover:text-slate-700 \" data-help-key=\"sidebar_tab_history\">",
-              "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.86 (foreground color: #64748b, background color: #e2e8f0, font size: 10.5pt (14px), font weight: bold). Expected contrast ratio of 4.5:1"
-            }
-          ]
-        },
-        {
-          "id": "landmark-main-is-top-level",
-          "impact": "moderate",
-          "help": "Main landmark should not be contained in another landmark",
-          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/landmark-main-is-top-level?application=axeAPI",
-          "tags": [
-            "cat.semantics",
-            "best-practice"
-          ],
-          "nodeCount": 1,
-          "nodes": [
-            {
-              "target": [
-                ".md\\:flex-row"
-              ],
-              "html": "<main aria-label=\"Main content\" id=\"main-content\" class=\"flex-grow w-full flex flex-col md:flex-row gap-0 relative no-print overflow-hidden transition-all duration-300 theme-light  h-[calc(100vh-80px)] p-4 md:p-6\">",
-              "failureSummary": "Fix any of the following:\n  The main landmark is contained in another landmark."
-            }
-          ]
-        },
-        {
-          "id": "landmark-no-duplicate-main",
-          "impact": "moderate",
-          "help": "Document should not have more than one main landmark",
-          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/landmark-no-duplicate-main?application=axeAPI",
-          "tags": [
-            "cat.semantics",
-            "best-practice"
-          ],
-          "nodeCount": 1,
-          "nodes": [
-            {
-              "target": [
-                ".min-h-screen"
-              ],
-              "html": "<main aria-label=\"Main content\" class=\"min-h-screen bg-slate-50 font-sans text-slate-800 flex flex-col \">",
-              "failureSummary": "Fix any of the following:\n  Document has more than one main landmark"
-            }
-          ]
-        },
-        {
-          "id": "landmark-unique",
-          "impact": "moderate",
-          "help": "Landmarks should have a unique role or role/label/title (i.e. accessible name) combination",
-          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/landmark-unique?application=axeAPI",
-          "tags": [
-            "cat.semantics",
-            "best-practice"
-          ],
-          "nodeCount": 1,
-          "nodes": [
-            {
-              "target": [
-                ".min-h-screen"
-              ],
-              "html": "<main aria-label=\"Main content\" class=\"min-h-screen bg-slate-50 font-sans text-slate-800 flex flex-col \">",
-              "failureSummary": "Fix any of the following:\n  The landmark must have a unique aria-label, aria-labelledby, or title to make landmarks distinguishable"
-            }
-          ]
-        },
         {
           "id": "nested-interactive",
           "impact": "serious",
@@ -142,28 +33,34 @@
             "EN-301-549",
             "EN-9.4.1.2"
           ],
-          "nodeCount": 3,
+          "nodeCount": 1,
           "nodes": [
             {
               "target": [
-                ".gap-2.items-center[role=\"button\"]"
+                "div[role=\"button\"]"
               ],
               "html": "<div role=\"button\" tabindex=\"0\" class=\"flex items-center gap-2\">",
               "failureSummary": "Fix any of the following:\n  Element has focusable descendants"
-            },
+            }
+          ]
+        },
+        {
+          "id": "region",
+          "impact": "moderate",
+          "help": "All page content should be contained by landmarks",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/region?application=axeAPI",
+          "tags": [
+            "cat.keyboard",
+            "best-practice"
+          ],
+          "nodeCount": 1,
+          "nodes": [
             {
               "target": [
-                ".hover\\:bg-rose-50.border-b[data-help-key=\"tool_scaffolds\"]"
+                "#root"
               ],
-              "html": "<button data-help-key=\"tool_scaffolds\" class=\"w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-rose-50 transition-colors\">",
-              "failureSummary": "Fix any of the following:\n  Element has focusable descendants"
-            },
-            {
-              "target": [
-                ".hover\\:bg-blue-50"
-              ],
-              "html": "<button data-help-key=\"tool_math\" aria-expanded=\"false\" class=\"w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-blue-50 transition-colors\">",
-              "failureSummary": "Fix any of the following:\n  Element has focusable descendants"
+              "html": "<div id=\"root\">",
+              "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
             }
           ]
         }
@@ -172,7 +69,7 @@
         {
           "id": "aria-prohibited-attr",
           "help": "Elements must only use permitted ARIA attributes",
-          "nodeCount": 2
+          "nodeCount": 1
         },
         {
           "id": "color-contrast",
@@ -184,40 +81,17 @@
     {
       "scenario": "landing_with_text",
       "counts": {
-        "violationRules": 6,
-        "violationNodes": 8,
+        "violationRules": 3,
+        "violationNodes": 3,
         "incomplete": 2,
         "byImpact": {
-          "critical": 1,
+          "critical": 0,
           "serious": 2,
-          "moderate": 3,
+          "moderate": 1,
           "minor": 0
         }
       },
       "violations": [
-        {
-          "id": "aria-valid-attr-value",
-          "impact": "critical",
-          "help": "ARIA attributes must conform to valid values",
-          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/aria-valid-attr-value?application=axeAPI",
-          "tags": [
-            "cat.aria",
-            "wcag2a",
-            "wcag412",
-            "EN-301-549",
-            "EN-9.4.1.2"
-          ],
-          "nodeCount": 1,
-          "nodes": [
-            {
-              "target": [
-                "#tab-create"
-              ],
-              "html": "<button role=\"tab\" aria-selected=\"true\" aria-controls=\"panel-create\" id=\"tab-create\" aria-label=\"Create new content\" class=\"flex-1 py-2 text-sm font-bold rounded-md transition-all flex items-center justify-center gap-2 bg-white text-indigo-600 shadow-sm\" data-help-key=\"sidebar_tab_create\">",
-              "failureSummary": "Fix all of the following:\n  Invalid ARIA attribute value: aria-controls=\"panel-create\""
-            }
-          ]
-        },
         {
           "id": "color-contrast",
           "impact": "serious",
@@ -240,67 +114,7 @@
                 "button[title=\"launch_pad.ai_backend_settings\"] > span"
               ],
               "html": "<span>launch_pad.ai_backend_settings</span>",
-              "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 1.53 (foreground color: #c0cafd, background color: #f9fafc, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
-            }
-          ]
-        },
-        {
-          "id": "landmark-main-is-top-level",
-          "impact": "moderate",
-          "help": "Main landmark should not be contained in another landmark",
-          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/landmark-main-is-top-level?application=axeAPI",
-          "tags": [
-            "cat.semantics",
-            "best-practice"
-          ],
-          "nodeCount": 1,
-          "nodes": [
-            {
-              "target": [
-                ".md\\:flex-row"
-              ],
-              "html": "<main aria-label=\"Main content\" id=\"main-content\" class=\"flex-grow w-full flex flex-col md:flex-row gap-0 relative no-print overflow-hidden transition-all duration-300 theme-light  h-[calc(100vh-80px)] p-4 md:p-6\">",
-              "failureSummary": "Fix any of the following:\n  The main landmark is contained in another landmark."
-            }
-          ]
-        },
-        {
-          "id": "landmark-no-duplicate-main",
-          "impact": "moderate",
-          "help": "Document should not have more than one main landmark",
-          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/landmark-no-duplicate-main?application=axeAPI",
-          "tags": [
-            "cat.semantics",
-            "best-practice"
-          ],
-          "nodeCount": 1,
-          "nodes": [
-            {
-              "target": [
-                ".min-h-screen"
-              ],
-              "html": "<main aria-label=\"Main content\" class=\"min-h-screen bg-slate-50 font-sans text-slate-800 flex flex-col \">",
-              "failureSummary": "Fix any of the following:\n  Document has more than one main landmark"
-            }
-          ]
-        },
-        {
-          "id": "landmark-unique",
-          "impact": "moderate",
-          "help": "Landmarks should have a unique role or role/label/title (i.e. accessible name) combination",
-          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/landmark-unique?application=axeAPI",
-          "tags": [
-            "cat.semantics",
-            "best-practice"
-          ],
-          "nodeCount": 1,
-          "nodes": [
-            {
-              "target": [
-                ".min-h-screen"
-              ],
-              "html": "<main aria-label=\"Main content\" class=\"min-h-screen bg-slate-50 font-sans text-slate-800 flex flex-col \">",
-              "failureSummary": "Fix any of the following:\n  The landmark must have a unique aria-label, aria-labelledby, or title to make landmarks distinguishable"
+              "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 1.59 (foreground color: #c0cbfd, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
             }
           ]
         },
@@ -318,7 +132,7 @@
             "EN-301-549",
             "EN-9.4.1.2"
           ],
-          "nodeCount": 3,
+          "nodeCount": 1,
           "nodes": [
             {
               "target": [
@@ -326,20 +140,26 @@
               ],
               "html": "<div role=\"button\" tabindex=\"0\" class=\"flex items-center gap-2\">",
               "failureSummary": "Fix any of the following:\n  Element has focusable descendants"
-            },
+            }
+          ]
+        },
+        {
+          "id": "region",
+          "impact": "moderate",
+          "help": "All page content should be contained by landmarks",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/region?application=axeAPI",
+          "tags": [
+            "cat.keyboard",
+            "best-practice"
+          ],
+          "nodeCount": 1,
+          "nodes": [
             {
               "target": [
-                ".hover\\:bg-rose-50.border-b[data-help-key=\"tool_scaffolds\"]"
+                "#root"
               ],
-              "html": "<button data-help-key=\"tool_scaffolds\" class=\"w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-rose-50 transition-colors\">",
-              "failureSummary": "Fix any of the following:\n  Element has focusable descendants"
-            },
-            {
-              "target": [
-                ".hover\\:bg-blue-50"
-              ],
-              "html": "<button data-help-key=\"tool_math\" aria-expanded=\"false\" class=\"w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-blue-50 transition-colors\">",
-              "failureSummary": "Fix any of the following:\n  Element has focusable descendants"
+              "html": "<div id=\"root\">",
+              "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
             }
           ]
         }
@@ -348,751 +168,29 @@
         {
           "id": "aria-prohibited-attr",
           "help": "Elements must only use permitted ARIA attributes",
-          "nodeCount": 2
+          "nodeCount": 1
         },
         {
           "id": "color-contrast",
           "help": "Elements must meet minimum color contrast ratio thresholds",
-          "nodeCount": 45
+          "nodeCount": 41
         }
       ]
     },
     {
       "scenario": "theme_dark",
       "counts": {
-        "violationRules": 6,
-        "violationNodes": 11,
+        "violationRules": 3,
+        "violationNodes": 4,
         "incomplete": 2,
         "byImpact": {
-          "critical": 1,
+          "critical": 0,
           "serious": 2,
-          "moderate": 3,
+          "moderate": 1,
           "minor": 0
         }
       },
       "violations": [
-        {
-          "id": "aria-valid-attr-value",
-          "impact": "critical",
-          "help": "ARIA attributes must conform to valid values",
-          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/aria-valid-attr-value?application=axeAPI",
-          "tags": [
-            "cat.aria",
-            "wcag2a",
-            "wcag412",
-            "EN-301-549",
-            "EN-9.4.1.2"
-          ],
-          "nodeCount": 1,
-          "nodes": [
-            {
-              "target": [
-                "#tab-create"
-              ],
-              "html": "<button role=\"tab\" aria-selected=\"true\" aria-controls=\"panel-create\" id=\"tab-create\" aria-label=\"Create new content\" class=\"flex-1 py-2 text-sm font-bold rounded-md transition-all flex items-center justify-center gap-2 bg-white text-indigo-600 shadow-sm\" data-help-key=\"sidebar_tab_create\">",
-              "failureSummary": "Fix all of the following:\n  Invalid ARIA attribute value: aria-controls=\"panel-create\""
-            }
-          ]
-        },
-        {
-          "id": "color-contrast",
-          "impact": "serious",
-          "help": "Elements must meet minimum color contrast ratio thresholds",
-          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/color-contrast?application=axeAPI",
-          "tags": [
-            "cat.color",
-            "wcag2aa",
-            "wcag143",
-            "TTv5",
-            "TT13.c",
-            "EN-301-549",
-            "EN-9.1.4.3",
-            "ACT"
-          ],
-          "nodeCount": 4,
-          "nodes": [
-            {
-              "target": [
-                ".text-green-600\\/70"
-              ],
-              "html": "<span class=\"flex items-center gap-1 text-green-600/70\">",
-              "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.1 (foreground color: #167c43, background color: #162032, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1"
-            },
-            {
-              "target": [
-                ".hover\\:text-indigo-800"
-              ],
-              "html": "<button class=\"text-[11px] font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-2 py-1 rounded-full transition-colors flex items-center gap-1\" title=\"Expand all cards\" aria-label=\"Expand all cards\">",
-              "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.44 (foreground color: #6366f1, background color: #1d204d, font size: 8.3pt (11px), font weight: bold). Expected contrast ratio of 4.5:1"
-            },
-            {
-              "target": [
-                ".text-rose-700 > .group-hover\\:tracking-wide"
-              ],
-              "html": "<span class=\"group-hover:tracking-wide transition-all\">StoryForge</span>",
-              "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 1.38 (foreground color: #f38c9c, background color: #cfc5ca, font size: 8.3pt (11px), font weight: bold). Expected contrast ratio of 4.5:1"
-            },
-            {
-              "target": [
-                "h3"
-              ],
-              "html": "<h3 class=\"text-lg font-bold text-slate-700 flex items-center gap-2 truncate \">",
-              "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.19 (foreground color: #f8fafc, background color: #878d97, font size: 13.5pt (18px), font weight: bold). Expected contrast ratio of 4.5:1"
-            }
-          ]
-        },
-        {
-          "id": "landmark-main-is-top-level",
-          "impact": "moderate",
-          "help": "Main landmark should not be contained in another landmark",
-          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/landmark-main-is-top-level?application=axeAPI",
-          "tags": [
-            "cat.semantics",
-            "best-practice"
-          ],
-          "nodeCount": 1,
-          "nodes": [
-            {
-              "target": [
-                ".md\\:flex-row"
-              ],
-              "html": "<main aria-label=\"Main content\" id=\"main-content\" class=\"flex-grow w-full flex flex-col md:flex-row gap-0 relative no-print overflow-hidden transition-all duration-300 theme-light  h-[calc(100vh-80px)] p-4 md:p-6\">",
-              "failureSummary": "Fix any of the following:\n  The main landmark is contained in another landmark."
-            }
-          ]
-        },
-        {
-          "id": "landmark-no-duplicate-main",
-          "impact": "moderate",
-          "help": "Document should not have more than one main landmark",
-          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/landmark-no-duplicate-main?application=axeAPI",
-          "tags": [
-            "cat.semantics",
-            "best-practice"
-          ],
-          "nodeCount": 1,
-          "nodes": [
-            {
-              "target": [
-                ".min-h-screen"
-              ],
-              "html": "<main aria-label=\"Main content\" class=\"min-h-screen bg-slate-50 font-sans text-slate-800 flex flex-col \">",
-              "failureSummary": "Fix any of the following:\n  Document has more than one main landmark"
-            }
-          ]
-        },
-        {
-          "id": "landmark-unique",
-          "impact": "moderate",
-          "help": "Landmarks should have a unique role or role/label/title (i.e. accessible name) combination",
-          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/landmark-unique?application=axeAPI",
-          "tags": [
-            "cat.semantics",
-            "best-practice"
-          ],
-          "nodeCount": 1,
-          "nodes": [
-            {
-              "target": [
-                ".min-h-screen"
-              ],
-              "html": "<main aria-label=\"Main content\" class=\"min-h-screen bg-slate-50 font-sans text-slate-800 flex flex-col \">",
-              "failureSummary": "Fix any of the following:\n  The landmark must have a unique aria-label, aria-labelledby, or title to make landmarks distinguishable"
-            }
-          ]
-        },
-        {
-          "id": "nested-interactive",
-          "impact": "serious",
-          "help": "Interactive controls must not be nested",
-          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/nested-interactive?application=axeAPI",
-          "tags": [
-            "cat.keyboard",
-            "wcag2a",
-            "wcag412",
-            "TTv5",
-            "TT6.a",
-            "EN-301-549",
-            "EN-9.4.1.2"
-          ],
-          "nodeCount": 3,
-          "nodes": [
-            {
-              "target": [
-                ".gap-2.items-center[role=\"button\"]"
-              ],
-              "html": "<div role=\"button\" tabindex=\"0\" class=\"flex items-center gap-2\">",
-              "failureSummary": "Fix any of the following:\n  Element has focusable descendants"
-            },
-            {
-              "target": [
-                ".hover\\:bg-rose-50.border-b[data-help-key=\"tool_scaffolds\"]"
-              ],
-              "html": "<button data-help-key=\"tool_scaffolds\" class=\"w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-rose-50 transition-colors\">",
-              "failureSummary": "Fix any of the following:\n  Element has focusable descendants"
-            },
-            {
-              "target": [
-                ".hover\\:bg-blue-50"
-              ],
-              "html": "<button data-help-key=\"tool_math\" aria-expanded=\"false\" class=\"w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-blue-50 transition-colors\">",
-              "failureSummary": "Fix any of the following:\n  Element has focusable descendants"
-            }
-          ]
-        }
-      ],
-      "incomplete": [
-        {
-          "id": "aria-prohibited-attr",
-          "help": "Elements must only use permitted ARIA attributes",
-          "nodeCount": 2
-        },
-        {
-          "id": "color-contrast",
-          "help": "Elements must meet minimum color contrast ratio thresholds",
-          "nodeCount": 46
-        }
-      ]
-    },
-    {
-      "scenario": "theme_contrast",
-      "counts": {
-        "violationRules": 5,
-        "violationNodes": 7,
-        "incomplete": 2,
-        "byImpact": {
-          "critical": 1,
-          "serious": 1,
-          "moderate": 3,
-          "minor": 0
-        }
-      },
-      "violations": [
-        {
-          "id": "aria-valid-attr-value",
-          "impact": "critical",
-          "help": "ARIA attributes must conform to valid values",
-          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/aria-valid-attr-value?application=axeAPI",
-          "tags": [
-            "cat.aria",
-            "wcag2a",
-            "wcag412",
-            "EN-301-549",
-            "EN-9.4.1.2"
-          ],
-          "nodeCount": 1,
-          "nodes": [
-            {
-              "target": [
-                "#tab-create"
-              ],
-              "html": "<button role=\"tab\" aria-selected=\"true\" aria-controls=\"panel-create\" id=\"tab-create\" aria-label=\"Create new content\" class=\"flex-1 py-2 text-sm font-bold rounded-md transition-all flex items-center justify-center gap-2 bg-white text-indigo-600 shadow-sm\" data-help-key=\"sidebar_tab_create\">",
-              "failureSummary": "Fix all of the following:\n  Invalid ARIA attribute value: aria-controls=\"panel-create\""
-            }
-          ]
-        },
-        {
-          "id": "landmark-main-is-top-level",
-          "impact": "moderate",
-          "help": "Main landmark should not be contained in another landmark",
-          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/landmark-main-is-top-level?application=axeAPI",
-          "tags": [
-            "cat.semantics",
-            "best-practice"
-          ],
-          "nodeCount": 1,
-          "nodes": [
-            {
-              "target": [
-                ".md\\:flex-row"
-              ],
-              "html": "<main aria-label=\"Main content\" id=\"main-content\" class=\"flex-grow w-full flex flex-col md:flex-row gap-0 relative no-print overflow-hidden transition-all duration-300 theme-light  h-[calc(100vh-80px)] p-4 md:p-6\">",
-              "failureSummary": "Fix any of the following:\n  The main landmark is contained in another landmark."
-            }
-          ]
-        },
-        {
-          "id": "landmark-no-duplicate-main",
-          "impact": "moderate",
-          "help": "Document should not have more than one main landmark",
-          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/landmark-no-duplicate-main?application=axeAPI",
-          "tags": [
-            "cat.semantics",
-            "best-practice"
-          ],
-          "nodeCount": 1,
-          "nodes": [
-            {
-              "target": [
-                ".min-h-screen"
-              ],
-              "html": "<main aria-label=\"Main content\" class=\"min-h-screen bg-slate-50 font-sans text-slate-800 flex flex-col \">",
-              "failureSummary": "Fix any of the following:\n  Document has more than one main landmark"
-            }
-          ]
-        },
-        {
-          "id": "landmark-unique",
-          "impact": "moderate",
-          "help": "Landmarks should have a unique role or role/label/title (i.e. accessible name) combination",
-          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/landmark-unique?application=axeAPI",
-          "tags": [
-            "cat.semantics",
-            "best-practice"
-          ],
-          "nodeCount": 1,
-          "nodes": [
-            {
-              "target": [
-                ".min-h-screen"
-              ],
-              "html": "<main aria-label=\"Main content\" class=\"min-h-screen bg-slate-50 font-sans text-slate-800 flex flex-col \">",
-              "failureSummary": "Fix any of the following:\n  The landmark must have a unique aria-label, aria-labelledby, or title to make landmarks distinguishable"
-            }
-          ]
-        },
-        {
-          "id": "nested-interactive",
-          "impact": "serious",
-          "help": "Interactive controls must not be nested",
-          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/nested-interactive?application=axeAPI",
-          "tags": [
-            "cat.keyboard",
-            "wcag2a",
-            "wcag412",
-            "TTv5",
-            "TT6.a",
-            "EN-301-549",
-            "EN-9.4.1.2"
-          ],
-          "nodeCount": 3,
-          "nodes": [
-            {
-              "target": [
-                ".gap-2.items-center[role=\"button\"]"
-              ],
-              "html": "<div role=\"button\" tabindex=\"0\" class=\"flex items-center gap-2\">",
-              "failureSummary": "Fix any of the following:\n  Element has focusable descendants"
-            },
-            {
-              "target": [
-                ".hover\\:bg-rose-50.border-b[data-help-key=\"tool_scaffolds\"]"
-              ],
-              "html": "<button data-help-key=\"tool_scaffolds\" class=\"w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-rose-50 transition-colors\">",
-              "failureSummary": "Fix any of the following:\n  Element has focusable descendants"
-            },
-            {
-              "target": [
-                ".hover\\:bg-blue-50"
-              ],
-              "html": "<button data-help-key=\"tool_math\" aria-expanded=\"false\" class=\"w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-blue-50 transition-colors\">",
-              "failureSummary": "Fix any of the following:\n  Element has focusable descendants"
-            }
-          ]
-        }
-      ],
-      "incomplete": [
-        {
-          "id": "aria-prohibited-attr",
-          "help": "Elements must only use permitted ARIA attributes",
-          "nodeCount": 2
-        },
-        {
-          "id": "color-contrast",
-          "help": "Elements must meet minimum color contrast ratio thresholds",
-          "nodeCount": 30
-        }
-      ]
-    },
-    {
-      "scenario": "reading_theme_sepia",
-      "counts": {
-        "violationRules": 6,
-        "violationNodes": 8,
-        "incomplete": 2,
-        "byImpact": {
-          "critical": 1,
-          "serious": 2,
-          "moderate": 3,
-          "minor": 0
-        }
-      },
-      "violations": [
-        {
-          "id": "aria-valid-attr-value",
-          "impact": "critical",
-          "help": "ARIA attributes must conform to valid values",
-          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/aria-valid-attr-value?application=axeAPI",
-          "tags": [
-            "cat.aria",
-            "wcag2a",
-            "wcag412",
-            "EN-301-549",
-            "EN-9.4.1.2"
-          ],
-          "nodeCount": 1,
-          "nodes": [
-            {
-              "target": [
-                "#tab-create"
-              ],
-              "html": "<button role=\"tab\" aria-selected=\"true\" aria-controls=\"panel-create\" id=\"tab-create\" aria-label=\"Create new content\" class=\"flex-1 py-2 text-sm font-bold rounded-md transition-all flex items-center justify-center gap-2 bg-white text-indigo-600 shadow-sm\" data-help-key=\"sidebar_tab_create\">",
-              "failureSummary": "Fix all of the following:\n  Invalid ARIA attribute value: aria-controls=\"panel-create\""
-            }
-          ]
-        },
-        {
-          "id": "color-contrast",
-          "impact": "serious",
-          "help": "Elements must meet minimum color contrast ratio thresholds",
-          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/color-contrast?application=axeAPI",
-          "tags": [
-            "cat.color",
-            "wcag2aa",
-            "wcag143",
-            "TTv5",
-            "TT13.c",
-            "EN-301-549",
-            "EN-9.1.4.3",
-            "ACT"
-          ],
-          "nodeCount": 1,
-          "nodes": [
-            {
-              "target": [
-                "button[title=\"launch_pad.ai_backend_settings\"] > span"
-              ],
-              "html": "<span>launch_pad.ai_backend_settings</span>",
-              "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 1.53 (foreground color: #c0cafd, background color: #f9fafc, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
-            }
-          ]
-        },
-        {
-          "id": "landmark-main-is-top-level",
-          "impact": "moderate",
-          "help": "Main landmark should not be contained in another landmark",
-          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/landmark-main-is-top-level?application=axeAPI",
-          "tags": [
-            "cat.semantics",
-            "best-practice"
-          ],
-          "nodeCount": 1,
-          "nodes": [
-            {
-              "target": [
-                ".md\\:flex-row"
-              ],
-              "html": "<main aria-label=\"Main content\" id=\"main-content\" class=\"flex-grow w-full flex flex-col md:flex-row gap-0 relative no-print overflow-hidden transition-all duration-300 theme-light  h-[calc(100vh-80px)] p-4 md:p-6\">",
-              "failureSummary": "Fix any of the following:\n  The main landmark is contained in another landmark."
-            }
-          ]
-        },
-        {
-          "id": "landmark-no-duplicate-main",
-          "impact": "moderate",
-          "help": "Document should not have more than one main landmark",
-          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/landmark-no-duplicate-main?application=axeAPI",
-          "tags": [
-            "cat.semantics",
-            "best-practice"
-          ],
-          "nodeCount": 1,
-          "nodes": [
-            {
-              "target": [
-                ".min-h-screen"
-              ],
-              "html": "<main aria-label=\"Main content\" class=\"min-h-screen bg-slate-50 font-sans text-slate-800 flex flex-col \">",
-              "failureSummary": "Fix any of the following:\n  Document has more than one main landmark"
-            }
-          ]
-        },
-        {
-          "id": "landmark-unique",
-          "impact": "moderate",
-          "help": "Landmarks should have a unique role or role/label/title (i.e. accessible name) combination",
-          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/landmark-unique?application=axeAPI",
-          "tags": [
-            "cat.semantics",
-            "best-practice"
-          ],
-          "nodeCount": 1,
-          "nodes": [
-            {
-              "target": [
-                ".min-h-screen"
-              ],
-              "html": "<main aria-label=\"Main content\" class=\"min-h-screen bg-slate-50 font-sans text-slate-800 flex flex-col \">",
-              "failureSummary": "Fix any of the following:\n  The landmark must have a unique aria-label, aria-labelledby, or title to make landmarks distinguishable"
-            }
-          ]
-        },
-        {
-          "id": "nested-interactive",
-          "impact": "serious",
-          "help": "Interactive controls must not be nested",
-          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/nested-interactive?application=axeAPI",
-          "tags": [
-            "cat.keyboard",
-            "wcag2a",
-            "wcag412",
-            "TTv5",
-            "TT6.a",
-            "EN-301-549",
-            "EN-9.4.1.2"
-          ],
-          "nodeCount": 3,
-          "nodes": [
-            {
-              "target": [
-                ".gap-2.items-center[role=\"button\"]"
-              ],
-              "html": "<div role=\"button\" tabindex=\"0\" class=\"flex items-center gap-2\">",
-              "failureSummary": "Fix any of the following:\n  Element has focusable descendants"
-            },
-            {
-              "target": [
-                ".hover\\:bg-rose-50.border-b[data-help-key=\"tool_scaffolds\"]"
-              ],
-              "html": "<button data-help-key=\"tool_scaffolds\" class=\"w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-rose-50 transition-colors\">",
-              "failureSummary": "Fix any of the following:\n  Element has focusable descendants"
-            },
-            {
-              "target": [
-                ".hover\\:bg-blue-50"
-              ],
-              "html": "<button data-help-key=\"tool_math\" aria-expanded=\"false\" class=\"w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-blue-50 transition-colors\">",
-              "failureSummary": "Fix any of the following:\n  Element has focusable descendants"
-            }
-          ]
-        }
-      ],
-      "incomplete": [
-        {
-          "id": "aria-prohibited-attr",
-          "help": "Elements must only use permitted ARIA attributes",
-          "nodeCount": 2
-        },
-        {
-          "id": "color-contrast",
-          "help": "Elements must meet minimum color contrast ratio thresholds",
-          "nodeCount": 45
-        }
-      ]
-    },
-    {
-      "scenario": "reading_theme_dyslexia",
-      "counts": {
-        "violationRules": 6,
-        "violationNodes": 8,
-        "incomplete": 2,
-        "byImpact": {
-          "critical": 1,
-          "serious": 2,
-          "moderate": 3,
-          "minor": 0
-        }
-      },
-      "violations": [
-        {
-          "id": "aria-valid-attr-value",
-          "impact": "critical",
-          "help": "ARIA attributes must conform to valid values",
-          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/aria-valid-attr-value?application=axeAPI",
-          "tags": [
-            "cat.aria",
-            "wcag2a",
-            "wcag412",
-            "EN-301-549",
-            "EN-9.4.1.2"
-          ],
-          "nodeCount": 1,
-          "nodes": [
-            {
-              "target": [
-                "#tab-create"
-              ],
-              "html": "<button role=\"tab\" aria-selected=\"true\" aria-controls=\"panel-create\" id=\"tab-create\" aria-label=\"Create new content\" class=\"flex-1 py-2 text-sm font-bold rounded-md transition-all flex items-center justify-center gap-2 bg-white text-indigo-600 shadow-sm\" data-help-key=\"sidebar_tab_create\">",
-              "failureSummary": "Fix all of the following:\n  Invalid ARIA attribute value: aria-controls=\"panel-create\""
-            }
-          ]
-        },
-        {
-          "id": "color-contrast",
-          "impact": "serious",
-          "help": "Elements must meet minimum color contrast ratio thresholds",
-          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/color-contrast?application=axeAPI",
-          "tags": [
-            "cat.color",
-            "wcag2aa",
-            "wcag143",
-            "TTv5",
-            "TT13.c",
-            "EN-301-549",
-            "EN-9.1.4.3",
-            "ACT"
-          ],
-          "nodeCount": 1,
-          "nodes": [
-            {
-              "target": [
-                "button[title=\"launch_pad.ai_backend_settings\"] > span"
-              ],
-              "html": "<span>launch_pad.ai_backend_settings</span>",
-              "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 1.53 (foreground color: #c0cafd, background color: #f9fafc, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
-            }
-          ]
-        },
-        {
-          "id": "landmark-main-is-top-level",
-          "impact": "moderate",
-          "help": "Main landmark should not be contained in another landmark",
-          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/landmark-main-is-top-level?application=axeAPI",
-          "tags": [
-            "cat.semantics",
-            "best-practice"
-          ],
-          "nodeCount": 1,
-          "nodes": [
-            {
-              "target": [
-                ".md\\:flex-row"
-              ],
-              "html": "<main aria-label=\"Main content\" id=\"main-content\" class=\"flex-grow w-full flex flex-col md:flex-row gap-0 relative no-print overflow-hidden transition-all duration-300 theme-light  h-[calc(100vh-80px)] p-4 md:p-6\">",
-              "failureSummary": "Fix any of the following:\n  The main landmark is contained in another landmark."
-            }
-          ]
-        },
-        {
-          "id": "landmark-no-duplicate-main",
-          "impact": "moderate",
-          "help": "Document should not have more than one main landmark",
-          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/landmark-no-duplicate-main?application=axeAPI",
-          "tags": [
-            "cat.semantics",
-            "best-practice"
-          ],
-          "nodeCount": 1,
-          "nodes": [
-            {
-              "target": [
-                ".min-h-screen"
-              ],
-              "html": "<main aria-label=\"Main content\" class=\"min-h-screen bg-slate-50 font-sans text-slate-800 flex flex-col \">",
-              "failureSummary": "Fix any of the following:\n  Document has more than one main landmark"
-            }
-          ]
-        },
-        {
-          "id": "landmark-unique",
-          "impact": "moderate",
-          "help": "Landmarks should have a unique role or role/label/title (i.e. accessible name) combination",
-          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/landmark-unique?application=axeAPI",
-          "tags": [
-            "cat.semantics",
-            "best-practice"
-          ],
-          "nodeCount": 1,
-          "nodes": [
-            {
-              "target": [
-                ".min-h-screen"
-              ],
-              "html": "<main aria-label=\"Main content\" class=\"min-h-screen bg-slate-50 font-sans text-slate-800 flex flex-col \">",
-              "failureSummary": "Fix any of the following:\n  The landmark must have a unique aria-label, aria-labelledby, or title to make landmarks distinguishable"
-            }
-          ]
-        },
-        {
-          "id": "nested-interactive",
-          "impact": "serious",
-          "help": "Interactive controls must not be nested",
-          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/nested-interactive?application=axeAPI",
-          "tags": [
-            "cat.keyboard",
-            "wcag2a",
-            "wcag412",
-            "TTv5",
-            "TT6.a",
-            "EN-301-549",
-            "EN-9.4.1.2"
-          ],
-          "nodeCount": 3,
-          "nodes": [
-            {
-              "target": [
-                ".gap-2.items-center[role=\"button\"]"
-              ],
-              "html": "<div role=\"button\" tabindex=\"0\" class=\"flex items-center gap-2\">",
-              "failureSummary": "Fix any of the following:\n  Element has focusable descendants"
-            },
-            {
-              "target": [
-                ".hover\\:bg-rose-50.border-b[data-help-key=\"tool_scaffolds\"]"
-              ],
-              "html": "<button data-help-key=\"tool_scaffolds\" class=\"w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-rose-50 transition-colors\">",
-              "failureSummary": "Fix any of the following:\n  Element has focusable descendants"
-            },
-            {
-              "target": [
-                ".hover\\:bg-blue-50"
-              ],
-              "html": "<button data-help-key=\"tool_math\" aria-expanded=\"false\" class=\"w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-blue-50 transition-colors\">",
-              "failureSummary": "Fix any of the following:\n  Element has focusable descendants"
-            }
-          ]
-        }
-      ],
-      "incomplete": [
-        {
-          "id": "aria-prohibited-attr",
-          "help": "Elements must only use permitted ARIA attributes",
-          "nodeCount": 2
-        },
-        {
-          "id": "color-contrast",
-          "help": "Elements must meet minimum color contrast ratio thresholds",
-          "nodeCount": 45
-        }
-      ]
-    },
-    {
-      "scenario": "color_overlay_blue",
-      "counts": {
-        "violationRules": 6,
-        "violationNodes": 9,
-        "incomplete": 2,
-        "byImpact": {
-          "critical": 1,
-          "serious": 2,
-          "moderate": 3,
-          "minor": 0
-        }
-      },
-      "violations": [
-        {
-          "id": "aria-valid-attr-value",
-          "impact": "critical",
-          "help": "ARIA attributes must conform to valid values",
-          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/aria-valid-attr-value?application=axeAPI",
-          "tags": [
-            "cat.aria",
-            "wcag2a",
-            "wcag412",
-            "EN-301-549",
-            "EN-9.4.1.2"
-          ],
-          "nodeCount": 1,
-          "nodes": [
-            {
-              "target": [
-                "#tab-create"
-              ],
-              "html": "<button role=\"tab\" aria-selected=\"true\" aria-controls=\"panel-create\" id=\"tab-create\" aria-label=\"Create new content\" class=\"flex-1 py-2 text-sm font-bold rounded-md transition-all flex items-center justify-center gap-2 bg-white text-indigo-600 shadow-sm\" data-help-key=\"sidebar_tab_create\">",
-              "failureSummary": "Fix all of the following:\n  Invalid ARIA attribute value: aria-controls=\"panel-create\""
-            }
-          ]
-        },
         {
           "id": "color-contrast",
           "impact": "serious",
@@ -1112,77 +210,17 @@
           "nodes": [
             {
               "target": [
-                ".text-green-600\\/70"
+                "h3"
               ],
-              "html": "<span class=\"flex items-center gap-1 text-green-600/70\">",
-              "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 2.27 (foreground color: #5cbf80, background color: #ffffff, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1"
+              "html": "<h3 class=\"text-lg font-bold text-slate-700 flex items-center gap-2 truncate \">",
+              "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.19 (foreground color: #f8fafc, background color: #878d97, font size: 13.5pt (18px), font weight: bold). Expected contrast ratio of 4.5:1"
             },
             {
               "target": [
                 "button[title=\"launch_pad.ai_backend_settings\"] > span"
               ],
               "html": "<span>launch_pad.ai_backend_settings</span>",
-              "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 1.53 (foreground color: #c0cafd, background color: #f9fafc, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
-            }
-          ]
-        },
-        {
-          "id": "landmark-main-is-top-level",
-          "impact": "moderate",
-          "help": "Main landmark should not be contained in another landmark",
-          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/landmark-main-is-top-level?application=axeAPI",
-          "tags": [
-            "cat.semantics",
-            "best-practice"
-          ],
-          "nodeCount": 1,
-          "nodes": [
-            {
-              "target": [
-                ".md\\:flex-row"
-              ],
-              "html": "<main aria-label=\"Main content\" id=\"main-content\" class=\"flex-grow w-full flex flex-col md:flex-row gap-0 relative no-print overflow-hidden transition-all duration-300 theme-light  h-[calc(100vh-80px)] p-4 md:p-6\">",
-              "failureSummary": "Fix any of the following:\n  The main landmark is contained in another landmark."
-            }
-          ]
-        },
-        {
-          "id": "landmark-no-duplicate-main",
-          "impact": "moderate",
-          "help": "Document should not have more than one main landmark",
-          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/landmark-no-duplicate-main?application=axeAPI",
-          "tags": [
-            "cat.semantics",
-            "best-practice"
-          ],
-          "nodeCount": 1,
-          "nodes": [
-            {
-              "target": [
-                ".min-h-screen"
-              ],
-              "html": "<main aria-label=\"Main content\" class=\"min-h-screen bg-slate-50 font-sans text-slate-800 flex flex-col \">",
-              "failureSummary": "Fix any of the following:\n  Document has more than one main landmark"
-            }
-          ]
-        },
-        {
-          "id": "landmark-unique",
-          "impact": "moderate",
-          "help": "Landmarks should have a unique role or role/label/title (i.e. accessible name) combination",
-          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/landmark-unique?application=axeAPI",
-          "tags": [
-            "cat.semantics",
-            "best-practice"
-          ],
-          "nodeCount": 1,
-          "nodes": [
-            {
-              "target": [
-                ".min-h-screen"
-              ],
-              "html": "<main aria-label=\"Main content\" class=\"min-h-screen bg-slate-50 font-sans text-slate-800 flex flex-col \">",
-              "failureSummary": "Fix any of the following:\n  The landmark must have a unique aria-label, aria-labelledby, or title to make landmarks distinguishable"
+              "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 4 (foreground color: #808dc4, background color: #293242, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
             }
           ]
         },
@@ -1200,7 +238,7 @@
             "EN-301-549",
             "EN-9.4.1.2"
           ],
-          "nodeCount": 3,
+          "nodeCount": 1,
           "nodes": [
             {
               "target": [
@@ -1208,20 +246,26 @@
               ],
               "html": "<div role=\"button\" tabindex=\"0\" class=\"flex items-center gap-2\">",
               "failureSummary": "Fix any of the following:\n  Element has focusable descendants"
-            },
+            }
+          ]
+        },
+        {
+          "id": "region",
+          "impact": "moderate",
+          "help": "All page content should be contained by landmarks",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/region?application=axeAPI",
+          "tags": [
+            "cat.keyboard",
+            "best-practice"
+          ],
+          "nodeCount": 1,
+          "nodes": [
             {
               "target": [
-                ".hover\\:bg-rose-50.border-b[data-help-key=\"tool_scaffolds\"]"
+                "#root"
               ],
-              "html": "<button data-help-key=\"tool_scaffolds\" class=\"w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-rose-50 transition-colors\">",
-              "failureSummary": "Fix any of the following:\n  Element has focusable descendants"
-            },
-            {
-              "target": [
-                ".hover\\:bg-blue-50"
-              ],
-              "html": "<button data-help-key=\"tool_math\" aria-expanded=\"false\" class=\"w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-blue-50 transition-colors\">",
-              "failureSummary": "Fix any of the following:\n  Element has focusable descendants"
+              "html": "<div id=\"root\">",
+              "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
             }
           ]
         }
@@ -1230,12 +274,382 @@
         {
           "id": "aria-prohibited-attr",
           "help": "Elements must only use permitted ARIA attributes",
-          "nodeCount": 2
+          "nodeCount": 1
         },
         {
           "id": "color-contrast",
           "help": "Elements must meet minimum color contrast ratio thresholds",
-          "nodeCount": 45
+          "nodeCount": 40
+        }
+      ]
+    },
+    {
+      "scenario": "theme_contrast",
+      "counts": {
+        "violationRules": 2,
+        "violationNodes": 2,
+        "incomplete": 2,
+        "byImpact": {
+          "critical": 0,
+          "serious": 1,
+          "moderate": 1,
+          "minor": 0
+        }
+      },
+      "violations": [
+        {
+          "id": "nested-interactive",
+          "impact": "serious",
+          "help": "Interactive controls must not be nested",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/nested-interactive?application=axeAPI",
+          "tags": [
+            "cat.keyboard",
+            "wcag2a",
+            "wcag412",
+            "TTv5",
+            "TT6.a",
+            "EN-301-549",
+            "EN-9.4.1.2"
+          ],
+          "nodeCount": 1,
+          "nodes": [
+            {
+              "target": [
+                ".gap-2.items-center[role=\"button\"]"
+              ],
+              "html": "<div role=\"button\" tabindex=\"0\" class=\"flex items-center gap-2\">",
+              "failureSummary": "Fix any of the following:\n  Element has focusable descendants"
+            }
+          ]
+        },
+        {
+          "id": "region",
+          "impact": "moderate",
+          "help": "All page content should be contained by landmarks",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/region?application=axeAPI",
+          "tags": [
+            "cat.keyboard",
+            "best-practice"
+          ],
+          "nodeCount": 1,
+          "nodes": [
+            {
+              "target": [
+                "#root"
+              ],
+              "html": "<div id=\"root\">",
+              "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+            }
+          ]
+        }
+      ],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "nodeCount": 1
+        },
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "nodeCount": 25
+        }
+      ]
+    },
+    {
+      "scenario": "reading_theme_sepia",
+      "counts": {
+        "violationRules": 3,
+        "violationNodes": 3,
+        "incomplete": 2,
+        "byImpact": {
+          "critical": 0,
+          "serious": 2,
+          "moderate": 1,
+          "minor": 0
+        }
+      },
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/color-contrast?application=axeAPI",
+          "tags": [
+            "cat.color",
+            "wcag2aa",
+            "wcag143",
+            "TTv5",
+            "TT13.c",
+            "EN-301-549",
+            "EN-9.1.4.3",
+            "ACT"
+          ],
+          "nodeCount": 1,
+          "nodes": [
+            {
+              "target": [
+                "button[title=\"launch_pad.ai_backend_settings\"] > span"
+              ],
+              "html": "<span>launch_pad.ai_backend_settings</span>",
+              "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 1.55 (foreground color: #bec9fc, background color: #f9fafc, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+            }
+          ]
+        },
+        {
+          "id": "nested-interactive",
+          "impact": "serious",
+          "help": "Interactive controls must not be nested",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/nested-interactive?application=axeAPI",
+          "tags": [
+            "cat.keyboard",
+            "wcag2a",
+            "wcag412",
+            "TTv5",
+            "TT6.a",
+            "EN-301-549",
+            "EN-9.4.1.2"
+          ],
+          "nodeCount": 1,
+          "nodes": [
+            {
+              "target": [
+                ".gap-2.items-center[role=\"button\"]"
+              ],
+              "html": "<div role=\"button\" tabindex=\"0\" class=\"flex items-center gap-2\">",
+              "failureSummary": "Fix any of the following:\n  Element has focusable descendants"
+            }
+          ]
+        },
+        {
+          "id": "region",
+          "impact": "moderate",
+          "help": "All page content should be contained by landmarks",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/region?application=axeAPI",
+          "tags": [
+            "cat.keyboard",
+            "best-practice"
+          ],
+          "nodeCount": 1,
+          "nodes": [
+            {
+              "target": [
+                "#root"
+              ],
+              "html": "<div id=\"root\">",
+              "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+            }
+          ]
+        }
+      ],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "nodeCount": 1
+        },
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "nodeCount": 41
+        }
+      ]
+    },
+    {
+      "scenario": "reading_theme_dyslexia",
+      "counts": {
+        "violationRules": 3,
+        "violationNodes": 3,
+        "incomplete": 2,
+        "byImpact": {
+          "critical": 0,
+          "serious": 2,
+          "moderate": 1,
+          "minor": 0
+        }
+      },
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/color-contrast?application=axeAPI",
+          "tags": [
+            "cat.color",
+            "wcag2aa",
+            "wcag143",
+            "TTv5",
+            "TT13.c",
+            "EN-301-549",
+            "EN-9.1.4.3",
+            "ACT"
+          ],
+          "nodeCount": 1,
+          "nodes": [
+            {
+              "target": [
+                "button[title=\"launch_pad.ai_backend_settings\"] > span"
+              ],
+              "html": "<span>launch_pad.ai_backend_settings</span>",
+              "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 1.55 (foreground color: #bec9fc, background color: #f9fafc, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+            }
+          ]
+        },
+        {
+          "id": "nested-interactive",
+          "impact": "serious",
+          "help": "Interactive controls must not be nested",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/nested-interactive?application=axeAPI",
+          "tags": [
+            "cat.keyboard",
+            "wcag2a",
+            "wcag412",
+            "TTv5",
+            "TT6.a",
+            "EN-301-549",
+            "EN-9.4.1.2"
+          ],
+          "nodeCount": 1,
+          "nodes": [
+            {
+              "target": [
+                ".gap-2.items-center[role=\"button\"]"
+              ],
+              "html": "<div role=\"button\" tabindex=\"0\" class=\"flex items-center gap-2\">",
+              "failureSummary": "Fix any of the following:\n  Element has focusable descendants"
+            }
+          ]
+        },
+        {
+          "id": "region",
+          "impact": "moderate",
+          "help": "All page content should be contained by landmarks",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/region?application=axeAPI",
+          "tags": [
+            "cat.keyboard",
+            "best-practice"
+          ],
+          "nodeCount": 1,
+          "nodes": [
+            {
+              "target": [
+                "#root"
+              ],
+              "html": "<div id=\"root\">",
+              "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+            }
+          ]
+        }
+      ],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "nodeCount": 1
+        },
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "nodeCount": 41
+        }
+      ]
+    },
+    {
+      "scenario": "color_overlay_blue",
+      "counts": {
+        "violationRules": 3,
+        "violationNodes": 3,
+        "incomplete": 2,
+        "byImpact": {
+          "critical": 0,
+          "serious": 2,
+          "moderate": 1,
+          "minor": 0
+        }
+      },
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/color-contrast?application=axeAPI",
+          "tags": [
+            "cat.color",
+            "wcag2aa",
+            "wcag143",
+            "TTv5",
+            "TT13.c",
+            "EN-301-549",
+            "EN-9.1.4.3",
+            "ACT"
+          ],
+          "nodeCount": 1,
+          "nodes": [
+            {
+              "target": [
+                "button[title=\"launch_pad.ai_backend_settings\"] > span"
+              ],
+              "html": "<span>launch_pad.ai_backend_settings</span>",
+              "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 1.59 (foreground color: #c0cbfd, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+            }
+          ]
+        },
+        {
+          "id": "nested-interactive",
+          "impact": "serious",
+          "help": "Interactive controls must not be nested",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/nested-interactive?application=axeAPI",
+          "tags": [
+            "cat.keyboard",
+            "wcag2a",
+            "wcag412",
+            "TTv5",
+            "TT6.a",
+            "EN-301-549",
+            "EN-9.4.1.2"
+          ],
+          "nodeCount": 1,
+          "nodes": [
+            {
+              "target": [
+                ".gap-2.items-center[role=\"button\"]"
+              ],
+              "html": "<div role=\"button\" tabindex=\"0\" class=\"flex items-center gap-2\">",
+              "failureSummary": "Fix any of the following:\n  Element has focusable descendants"
+            }
+          ]
+        },
+        {
+          "id": "region",
+          "impact": "moderate",
+          "help": "All page content should be contained by landmarks",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/region?application=axeAPI",
+          "tags": [
+            "cat.keyboard",
+            "best-practice"
+          ],
+          "nodeCount": 1,
+          "nodes": [
+            {
+              "target": [
+                "#root"
+              ],
+              "html": "<div id=\"root\">",
+              "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+            }
+          ]
+        }
+      ],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "help": "Elements must only use permitted ARIA attributes",
+          "nodeCount": 1
+        },
+        {
+          "id": "color-contrast",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "nodeCount": 41
         }
       ]
     }
