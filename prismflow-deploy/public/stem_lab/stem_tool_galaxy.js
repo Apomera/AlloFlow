@@ -1429,9 +1429,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                   var gt = GALAXY_TYPES[key];
 
-                  return React.createElement("button", { "aria-label": "Change galaxy type",
-
-                    key: key,
+                  return React.createElement("button", { key: key,
 
                     onClick: function () {
 

@@ -698,8 +698,7 @@ window.StemLab = window.StemLab || {
               // Mode buttons
               h('div', { className: 'flex gap-1 ml-auto' },
                 ['series', 'parallel'].map(function(m) {
-                  return h('button', { 'aria-label': 'Change mode',
-                    key: m,
+                  return h('button', { key: m,
                     onClick: function() { upd('mode', m); },
                     className: 'px-3 py-1.5 rounded-lg text-xs font-bold capitalize transition-all ' + (mode === m ? 'bg-yellow-600 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-yellow-50')
                   }, m);
@@ -1344,8 +1343,7 @@ window.StemLab = window.StemLab || {
             // Kirchhoff's Laws educational panel (g68/g912)
             // ══════════════════════════════════════
             (band === 'g68' || band === 'g912') && h('div', { className: 'mt-3 bg-violet-50 rounded-xl border border-violet-200 p-3' },
-              h('button', { 'aria-label': 'Change show kirchhoff',
-                onClick: function() { upd('showKirchhoff', !showKirchhoff); },
+              h('button', { onClick: function() { upd('showKirchhoff', !showKirchhoff); },
                 className: 'flex items-center gap-2 w-full text-left'
               },
                 h('p', { className: 'text-[11px] font-bold text-violet-700 uppercase tracking-wider' }, '\u2696 Kirchhoff\'s Laws'),

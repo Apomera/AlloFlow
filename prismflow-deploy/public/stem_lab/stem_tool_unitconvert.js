@@ -366,7 +366,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           showBadges && h('div', { className: 'bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl p-3 border-2 border-amber-200 mb-3' },
             h('div', { className: 'flex items-center justify-between mb-2' },
               h('p', { className: 'text-sm font-bold text-amber-800' }, '\uD83C\uDFC5 Badges (' + earnedCount + '/' + BADGES.length + ')'),
-              h('button', { 'aria-label': 'Change show badges', onClick: function() { upd('showBadges', false); }, className: 'text-xs text-slate-600 hover:text-slate-600' }, '\u2715')
+              h('button', { onClick: function() { upd('showBadges', false); }, className: 'text-xs text-slate-600 hover:text-slate-600' }, '\u2715')
             ),
             h('div', { className: 'grid grid-cols-3 sm:grid-cols-5 gap-2' },
               BADGES.map(function(badge) {
@@ -595,8 +595,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 h('p', { className: 'text-[11px] font-bold text-violet-600 uppercase tracking-wider mb-1' }, '\uD83D\uDCA1 Fun Fact'),
                 h('p', { key: factIdx, className: 'text-sm text-violet-800', style: { animation: 'ucFactSlide 0.4s ease-out' } }, currentFact)
               ),
-              h('button', { 'aria-label': 'Change fact idx',
-                onClick: function() { upd('factIdx', ((d.factIdx || 0) + 1) % facts.length); },
+              h('button', { onClick: function() { upd('factIdx', ((d.factIdx || 0) + 1) % facts.length); },
                 className: 'text-violet-400 hover:text-violet-600 text-xs font-bold shrink-0 pt-0.5'
               }, '\u27A1\uFE0F')
             ),

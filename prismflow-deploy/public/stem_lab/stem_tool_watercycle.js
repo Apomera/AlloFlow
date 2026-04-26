@@ -1646,8 +1646,7 @@ const d = labToolData.waterCycle;
             React.createElement("div", { className: "flex items-center gap-1.5 mb-3 flex-wrap" },
               React.createElement("span", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mr-1" }, "\uD83C\uDF93 Grade:"),
               GRADE_BANDS.map(function(gb) {
-                return React.createElement("button", { "aria-label": "Change wc grade override",
-                  key: gb,
+                return React.createElement("button", { key: gb,
                   onClick: function() {
                     upd('wcGradeOverride', gb);
                     addToast('\uD83C\uDF93 Grade set to ' + gb + ' — content complexity updated!', 'success');

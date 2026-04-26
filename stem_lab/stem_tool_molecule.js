@@ -2176,6 +2176,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
                     React.createElement("input", {
                       type: "text",
                       value: aiQuestion,
+                      "aria-label": "Ask the chemistry tutor about elements, compounds, or reactions",
                       onChange: (e) => upd('aiQuestion', e.target.value),
                       onKeyDown: (e) => { if (e.key === 'Enter') askChemTutor(aiQuestion); },
                       placeholder: "Ask about any element, compound, or reaction...",

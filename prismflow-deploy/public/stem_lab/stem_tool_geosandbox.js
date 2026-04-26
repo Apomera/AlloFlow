@@ -791,7 +791,7 @@ window.StemLab = window.StemLab || {
         showAI && h('div', { className: 'bg-gradient-to-br from-cyan-900/40 to-blue-900/30 backdrop-blur-md rounded-xl p-4 border border-cyan-500/30' },
           h('div', { className: 'flex items-center justify-between mb-2' },
             h('div', { className: 'text-sm font-bold text-cyan-200 flex items-center gap-2' }, '\uD83E\uDD16 AI Geometry Tutor'),
-            h('button', { onClick: function() { updExt({ showAI: false }); }, className: 'text-xs text-slate-200 hover:text-slate-200' }, '\u2716')
+            h('button', { onClick: function() { updExt({ showAI: false }); }, 'aria-label': 'Close AI Geometry Tutor', className: 'text-xs text-slate-200 hover:text-slate-200' }, '\u2716')
           ),
           aiLoading
             ? h('div', { className: 'text-sm text-cyan-300 animate-pulse' }, 'Analyzing this ' + m.name + '...')
@@ -851,8 +851,7 @@ window.StemLab = window.StemLab || {
                 h('div', { className: 'text-[11px] text-slate-300 mb-1' }, 'Color'),
                 h('div', { className: 'flex gap-1.5 flex-wrap' },
                   colorPalette.map(function(c) {
-                    return h('button', { 'aria-label': 'Change color',
-                      key: c,
+                    return h('button', { key: c,
                       onClick: function() { upd('color', c); },
                       style: { backgroundColor: c },
                       className: 'w-5 h-5 rounded-full transition-all border-2 ' +

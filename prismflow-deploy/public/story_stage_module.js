@@ -645,61 +645,109 @@
     var exportStorybook = useCallback(function () {
       if (!script) return;
       var chars = script.characters.filter(function (c) { return c.id !== 'stage'; });
-      var html = '<html><head><title>' + storyTitle + ' — Storybook</title>'
+      // HTML escape helper for user content (titles, names, line text). Prevents broken markup AND XSS.
+      var esc = function (s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); };
+      var safeTitle = esc(storyTitle || 'Untitled Story');
+      var safeAuthor = esc(performerName || '');
+      // Document head — lang attribute + charset + structured metadata so the browser's
+      // Print → Save as PDF produces a tagged PDF with proper document language and title.
+      var html = '<!doctype html><html lang="en"><head><meta charset="utf-8">'
+        + '<meta name="viewport" content="width=device-width,initial-scale=1">'
+        + '<title>' + safeTitle + ' — LitLab Storybook</title>'
+        + (safeAuthor ? '<meta name="author" content="' + safeAuthor + '">' : '')
+        + '<meta name="description" content="A storybook' + (safeAuthor ? ' performed by ' + safeAuthor : '') + '. Generated with LitLab.">'
         + '<style>'
-        + 'body{font-family:Georgia,serif;margin:0;padding:0;color:#1e293b;background:#fff}'
+        + '.skip-link{position:absolute;left:-9999px;top:0;padding:8px 14px;background:#0f172a;color:#fff;text-decoration:none;font-weight:700}'
+        + '.skip-link:focus{left:0;top:0;z-index:1000}'
+        + 'html,body{margin:0;padding:0}'
+        + 'body{font-family:Georgia,serif;color:#1e293b;background:#fff}'
+        + 'main{display:block}'
+        + 'figure{margin:0}'
         + '.page{page-break-after:always;min-height:100vh;padding:40px 50px;box-sizing:border-box;display:flex;flex-direction:column}'
         + '.page:last-child{page-break-after:auto}'
         + '.page-img{width:100%;max-height:300px;object-fit:cover;border-radius:12px;margin-bottom:20px;box-shadow:0 4px 16px rgba(0,0,0,0.1)}'
         + '.narration{font-style:italic;color:#475569;margin:8px 0;line-height:1.8;font-size:16px}'
         + '.dialogue{margin:8px 0;padding-left:24px;line-height:1.8;font-size:16px}'
-        + '.char-name{font-weight:bold;font-variant:small-caps;margin-right:8px}'
-        + '.stage{font-style:italic;color:#9ca3af;font-size:14px;margin:6px 0 6px 20px}'
-        + '.page-num{text-align:center;color:#9ca3af;font-size:12px;margin-top:auto;padding-top:16px}'
-        + '.cover{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:linear-gradient(135deg,#7c3aed,#a855f7);color:white;min-height:100vh}'
-        + '.cover h1{font-size:48px;font-weight:900;margin:0 0 12px}'
-        + '.cover .subtitle{font-size:18px;opacity:0.8}'
+        + '.dialogue .char-name{font-weight:bold;font-variant:small-caps;margin-right:8px}'
+        // Stage directions: bumped #9ca3af (2.85:1, fails AA) → #475569 (7.42:1, AAA pass).
+        + '.stage{font-style:italic;color:#475569;font-size:14px;margin:6px 0 6px 20px}'
+        // Page numbers: same contrast bump.
+        + '.page-num{text-align:center;color:#475569;font-size:12px;margin-top:auto;padding-top:16px}'
+        + '.cover{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;min-height:100vh}'
+        + '.cover h1{font-size:48px;font-weight:900;margin:0 0 12px;line-height:1.1}'
+        + '.cover .subtitle{font-size:18px;opacity:0.92}'
         + '.cast-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin:20px 0}'
         + '.cast-card{text-align:center;padding:12px;border-radius:12px;border:2px solid #e5e7eb}'
-        + '@media print{.page{page-break-after:always}.cover{page-break-after:always}}'
-        + '</style></head><body>';
-      // Cover page
-      html += '<div class="page cover">';
-      if (sceneImage) html += '<img src="' + sceneImage + '" style="width:300px;height:300px;border-radius:50%;object-fit:cover;border:6px solid rgba(255,255,255,0.3);margin-bottom:20px" />';
-      html += '<h1>' + storyTitle + '</h1>';
-      if (performerName) html += '<div class="subtitle">Performed by ' + performerName + '</div>';
-      html += '<div class="subtitle" style="margin-top:12px;opacity:0.6">A LitLab Storybook</div>';
-      html += '</div>';
-      // Cast page
-      html += '<div class="page"><h2 style="text-align:center;margin-bottom:20px">Cast of Characters</h2><div class="cast-grid">';
+        + '.cast-card .name{font-weight:bold;font-size:16px}'
+        // Cast description: bumped #6b7280 (4.83:1, marginal) → #475569 (7.42:1).
+        + '.cast-card .desc{font-size:12px;color:#475569;margin-top:4px}'
+        + '.theme-quote{color:#475569;font-style:italic;font-size:18px}'
+        + '.colophon{font-size:12px;color:#475569;margin-top:24px}'
+        + '@media print{.skip-link{display:none}.page{page-break-after:always}.cover{page-break-after:always}html,body{background:#fff !important}}'
+        + '@media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important}}'
+        + '</style></head><body>'
+        + '<a class="skip-link" href="#story-content">Skip to story</a>'
+        // Single <main> wraps the entire storybook for PDF tag-tree clarity.
+        + '<main id="story-content" role="main" aria-labelledby="story-title">'
+        + '<article aria-labelledby="story-title">';
+      // ── Cover page (header landmark) ──
+      html += '<header class="page cover">';
+      if (sceneImage) {
+        html += '<figure><img src="' + esc(sceneImage) + '" alt="' + esc('Cover illustration for ' + safeTitle) + '" style="width:300px;height:300px;border-radius:50%;object-fit:cover;border:6px solid rgba(255,255,255,0.3);margin-bottom:20px" /></figure>';
+      }
+      html += '<h1 id="story-title">' + safeTitle + '</h1>';
+      if (safeAuthor) html += '<p class="subtitle">Performed by ' + safeAuthor + '</p>';
+      html += '<p class="subtitle" style="margin-top:12px;opacity:0.7">A LitLab Storybook</p>';
+      html += '</header>';
+      // ── Cast page ──
+      html += '<section class="page" aria-labelledby="cast-heading">';
+      html += '<h2 id="cast-heading" style="text-align:center;margin-bottom:20px">Cast of Characters</h2>';
+      html += '<ul class="cast-grid" style="list-style:none;padding:0">';
       chars.forEach(function (c) {
-        html += '<div class="cast-card" style="border-color:' + c.color + '">'
-          + (c.portrait ? '<img src="' + c.portrait + '" style="width:80px;height:80px;border-radius:50%;object-fit:cover;margin-bottom:8px" />' : '')
-          + '<div style="font-weight:bold;color:' + c.color + ';font-size:16px">' + c.name + '</div>'
-          + '<div style="font-size:12px;color:#6b7280">' + (c.description || '') + '</div></div>';
+        html += '<li class="cast-card" style="border-color:' + esc(c.color) + '">'
+          + (c.portrait ? '<img src="' + esc(c.portrait) + '" alt="' + esc('Portrait of ' + c.name) + '" style="width:80px;height:80px;border-radius:50%;object-fit:cover;margin-bottom:8px" />' : '')
+          + '<p class="name" style="color:' + esc(c.color) + '">' + esc(c.name) + '</p>'
+          + (c.description ? '<p class="desc">' + esc(c.description) + '</p>' : '')
+          + '</li>';
       });
-      html += '</div></div>';
-      // Story pages
+      html += '</ul></section>';
+      // ── Story pages (one section per page; numbered headings for navigation) ──
       pages.forEach(function (pageLines, pi) {
-        html += '<div class="page">';
-        if (pageImages[pi]) html += '<img class="page-img" src="' + pageImages[pi] + '" alt="Illustration for page ' + (pi + 1) + '" />';
+        html += '<section class="page" aria-labelledby="page-' + (pi + 1) + '-heading">';
+        html += '<h2 id="page-' + (pi + 1) + '-heading" class="visually-hidden" style="position:absolute;left:-9999px">Page ' + (pi + 1) + '</h2>';
+        if (pageImages[pi]) {
+          // Build descriptive alt from the first non-empty line on the page.
+          var firstLine = '';
+          for (var fi = 0; fi < pageLines.length; fi++) { if (pageLines[fi].text && pageLines[fi].text.trim()) { firstLine = pageLines[fi].text.trim().slice(0, 80); break; } }
+          var altText = 'Illustration for page ' + (pi + 1) + (firstLine ? ': ' + firstLine : '');
+          html += '<figure><img class="page-img" src="' + esc(pageImages[pi]) + '" alt="' + esc(altText) + '" /></figure>';
+        }
         pageLines.forEach(function (line) {
           var ch = script.characters.find(function (c) { return c.id === line.speaker; });
           if (line.type === 'stage-direction') {
-            html += '<div class="stage">[' + line.text + ']</div>';
+            // role=note marks asides; SR users get spoken context cue.
+            html += '<p class="stage" role="note">[' + esc(line.text) + ']</p>';
           } else if (line.type === 'narration') {
-            html += '<div class="narration">' + line.text + '</div>';
+            html += '<p class="narration">' + esc(line.text) + '</p>';
           } else {
-            html += '<div class="dialogue"><span class="char-name" style="color:' + (ch ? ch.color : '#374151') + '">' + (ch ? ch.name : '') + ':</span>' + line.text + '</div>';
+            html += '<p class="dialogue"><span class="char-name" style="color:' + esc(ch ? ch.color : '#374151') + '">' + esc(ch ? ch.name : '') + ':</span>' + esc(line.text) + '</p>';
           }
         });
-        html += '<div class="page-num">— ' + (pi + 1) + ' —</div></div>';
+        // Decorative page number — aria-hidden so SR users aren't told "page X" twice.
+        html += '<p class="page-num" aria-hidden="true">— ' + (pi + 1) + ' —</p>';
+        html += '</section>';
       });
-      // Back cover
-      if (script.theme) html += '<div class="page" style="display:flex;align-items:center;justify-content:center;text-align:center"><div><h2>The End</h2><p style="color:#6b7280;font-style:italic">"' + script.theme + '"</p><p style="font-size:12px;color:#9ca3af;margin-top:24px">Created with AlloFlow LitLab</p></div></div>';
-      html += '</body></html>';
+      // ── Back cover (footer landmark) ──
+      if (script.theme) {
+        html += '<footer class="page" role="contentinfo" style="display:flex;align-items:center;justify-content:center;text-align:center"><div>'
+          + '<h2>The End</h2>'
+          + '<p class="theme-quote">"' + esc(script.theme) + '"</p>'
+          + '<p class="colophon">Created with AlloFlow LitLab</p>'
+          + '</div></footer>';
+      }
+      html += '</article></main></body></html>';
       var w = window.open('', '_blank');
-      if (w) { w.document.write(html); w.document.close(); }
+      if (w) { w.document.open(); w.document.write(html); w.document.close(); }
     }, [script, storyTitle, performerName, sceneImage, pages, pageImages]);
 
     // ── Recording ──

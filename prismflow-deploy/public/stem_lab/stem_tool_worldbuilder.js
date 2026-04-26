@@ -1688,8 +1688,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                 'aria-label': 'Describe a character for the world',
                 className: 'w-full text-sm p-3 border border-amber-200 rounded-lg outline-none focus:ring-2 focus:ring-amber-400 resize-none h-20'
               }),
-              h('button', { 'aria-label': 'Change gm character prompt',
-                onClick: function() { if ((d.gmCharacterPrompt || '').trim()) { createGMCharacter(d.gmCharacterPrompt); upd('gmCharacterPrompt', ''); } },
+              h('button', { onClick: function() { if ((d.gmCharacterPrompt || '').trim()) { createGMCharacter(d.gmCharacterPrompt); upd('gmCharacterPrompt', ''); } },
                 disabled: !(d.gmCharacterPrompt || '').trim() || actionLoading,
                 className: 'px-4 py-2 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-700 disabled:opacity-40 transition-colors'
               }, actionLoading ? 'Creating...' : '✨ Create Character'),

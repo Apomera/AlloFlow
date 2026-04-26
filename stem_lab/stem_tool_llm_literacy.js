@@ -61,7 +61,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
       '.llm-lit-span-pick { transition: background-color .15s ease, border-color .15s ease; }',
       '.llm-lit-span-pick:not([aria-disabled=true]):hover { background-color: #f1f5f9; }',
       '.llm-lit-term { border-bottom: 1px dotted currentColor; cursor: help; }',
-      '.llm-lit-term:hover, .llm-lit-term:focus { background-color: rgba(124, 58, 237, .08); outline: none; }',
+      '.llm-lit-term:hover { background-color: rgba(124, 58, 237, .08); }',
+      '.llm-lit-term:focus { background-color: rgba(124, 58, 237, .12); outline: 2px solid #7c3aed; outline-offset: 2px; }',
       // Skip-link: visually hidden until focused, then jumps to main content.
       '.llm-lit-skip { position: absolute; top: -40px; left: 8px; background: #7c3aed; color: #fff; padding: 8px 14px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 13px; z-index: 10000; transition: top .2s ease; }',
       '.llm-lit-skip:focus { top: 8px; outline: 2px solid #fff; outline-offset: 2px; }',

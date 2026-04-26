@@ -1702,7 +1702,7 @@
                       h('p', { className: 'text-xs font-bold text-red-700' }, 'Not quite! ' + wrongObj.name + ' contains:'),
                       h('p', { className: 'text-sm font-mono font-bold text-red-800 mt-0.5' }, wrongMat.formula + ' \u2014 ' + wrongMat.name)
                     ),
-                    h('button', { 'aria-label': 'Change hunt wrong guess', onClick: function() { upd('huntWrongGuess', null); }, className: 'p-1.5 hover:bg-red-100 rounded-lg transition-colors' }, h(X, { size: 14, className: 'text-red-400' }))
+                    h('button', { onClick: function() { upd('huntWrongGuess', null); }, className: 'p-1.5 hover:bg-red-100 rounded-lg transition-colors' }, h(X, { size: 14, className: 'text-red-400' }))
                   ),
                   targetMat ? h('p', { className: 'text-[11px] text-red-500 mt-2 font-medium pl-[52px]' }, '\uD83D\uDCA1 Keep looking for ' + targetMat.formula + ' (' + targetMat.name + ')') : null
                 ) : null,
@@ -2060,7 +2060,7 @@
                       h('h4', { className: 'font-bold text-slate-800' }, selObj.name),
                       h('span', { className: 'px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[11px] font-bold rounded-full' }, '\u2705 Identified')
                     ),
-                    h('button', { 'aria-label': 'Change selected scene obj', onClick: function() { upd('selectedSceneObj', null); }, className: 'p-1 hover:bg-slate-100 rounded' }, h(X, { size: 14, className: 'text-slate-600' }))
+                    h('button', { onClick: function() { upd('selectedSceneObj', null); }, className: 'p-1 hover:bg-slate-100 rounded' }, h(X, { size: 14, className: 'text-slate-600' }))
                   ),
                   h('div', { className: 'bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg p-3 border border-amber-200' },
                     h('div', { className: 'flex items-center gap-2 mb-2' },

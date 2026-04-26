@@ -518,7 +518,7 @@ window.StemLab = window.StemLab || {
         showBadges && h('div', { className: 'bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl p-3 border-2 border-amber-200 mb-3' },
           h('div', { className: 'flex items-center justify-between mb-2' },
             h('p', { className: 'text-sm font-bold text-amber-800' }, '\uD83C\uDFC5 Badges (' + earnedCount + '/' + BADGES.length + ')'),
-            h('button', { 'aria-label': 'Change show badges', onClick: function() { upd('showBadges', false); }, className: 'text-xs text-slate-600 hover:text-slate-600' }, '\u2715')
+            h('button', { onClick: function() { upd('showBadges', false); }, className: 'text-xs text-slate-600 hover:text-slate-600' }, '\u2715')
           ),
           h('div', { className: 'grid grid-cols-3 sm:grid-cols-5 gap-2' },
             BADGES.map(function(badge) {
@@ -563,8 +563,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'flex gap-1 mb-3', role: 'tablist', },
           ['1d', '2d'].map(function(m) {
             var labels = { '1d': '\uD83D\uDCCF Number Line', '2d': '\uD83D\uDCC8 2D Graph' };
-            return h('button', { 'aria-label': 'Change graph mode',
-              key: m, role: 'tab', 'aria-selected': graphMode === m,
+            return h('button', { key: m, role: 'tab', 'aria-selected': graphMode === m,
               onClick: function() { upd('graphMode', m); trackMode(m); },
               className: 'px-3 py-1.5 text-xs font-bold rounded-lg transition-all ' +
                 (graphMode === m ? 'bg-fuchsia-600 text-white shadow' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'),
@@ -586,8 +585,7 @@ window.StemLab = window.StemLab || {
         ),
         h('div', { className: 'flex flex-wrap gap-1.5 mb-3' },
           PRESETS.map(function(ex) {
-            return h('button', { 'aria-label': 'Change expr',
-              key: ex.label,
+            return h('button', { key: ex.label,
               onClick: function() { upd('expr', ex.expr); },
               className: 'px-2 py-1 text-[11px] font-bold bg-fuchsia-50 text-fuchsia-600 rounded border border-fuchsia-200 hover:bg-fuchsia-100 transition-all'
             }, ex.label);
@@ -767,8 +765,7 @@ window.StemLab = window.StemLab || {
             ['easy', 'medium', 'hard', 'all'].map(function(tier) {
               var labels = { easy: '\uD83D\uDFE2 Easy', medium: '\uD83D\uDFE1 Medium', hard: '\uD83D\uDD34 Hard', all: '\uD83C\uDF1F All' };
               var isActive = quizTier === tier;
-              return h('button', { 'aria-label': 'Change quiz tier',
-                key: tier,
+              return h('button', { key: tier,
                 onClick: function() {
                   upd('quizTier', tier);
                   var nt = Object.assign({}, tiersUsed);
@@ -911,8 +908,7 @@ window.StemLab = window.StemLab || {
           ),
           h('div', { className: 'flex flex-wrap gap-1.5' },
             exprHistory.map(function(ex, i) {
-              return h('button', { 'aria-label': 'Change expr',
-                key: i,
+              return h('button', { key: i,
                 onClick: function() { upd('expr', ex); },
                 className: 'px-2 py-1 text-[11px] font-mono font-bold bg-white text-slate-600 rounded border border-slate-200 hover:bg-fuchsia-50 hover:border-fuchsia-300 transition-all'
               }, ex);

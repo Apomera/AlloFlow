@@ -1011,8 +1011,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex flex-wrap gap-1 mb-4' },
               SUBTOOLS.map(function(st) {
                 var isActive = subtool === st.id;
-                return h('button', { 'aria-label': 'Change subtool',
-                  key: st.id,
+                return h('button', { key: st.id,
                   onClick: function() { upd('subtool', st.id); announceToSR('Switched to ' + st.label); },
                   className: 'px-2 py-1 rounded-lg text-[11px] font-bold transition-all border ' +
                     (isActive ? 'bg-violet-600 text-white border-violet-600 shadow-md' : 'bg-white text-slate-600 border-slate-200 hover:border-violet-300 hover:bg-violet-50'),
@@ -1727,8 +1726,7 @@ window.StemLab = window.StemLab || {
 
                 // Run / Reset buttons
                 h('div', { className: 'flex gap-2' },
-                  h('button', { 'aria-label': 'Change pop running',
-                    onClick: function() {
+                  h('button', { onClick: function() {
                       if (popRunning) {
                         upd('popRunning', false);
                       } else {

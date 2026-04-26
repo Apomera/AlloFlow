@@ -649,8 +649,7 @@
           h('div', { className: 'flex flex-wrap gap-1 mb-3' },
             SUBTOOLS.map(function(st) {
               var isActive = subtool === st.id;
-              return h('button', { 'aria-label': 'Change subtool',
-                key: st.id,
+              return h('button', { key: st.id,
                 onClick: function() { upd('subtool', st.id); announceToSR('Switched to ' + st.label); },
                 className: 'px-2 py-1 rounded-lg text-[11px] font-bold transition-all border ' +
                   (isActive ? 'bg-lime-600 text-white border-lime-600 shadow-md' : 'bg-white text-slate-600 border-slate-200 hover:border-lime-300 hover:bg-lime-50'),
@@ -691,7 +690,7 @@
             // Tier filter
             h('div', { className: 'flex gap-2 mb-3' },
               ['all', 'beginner', 'intermediate', 'advanced'].map(function(tier) {
-                return h('button', { 'aria-label': 'Change tier filter', key: tier, onClick: function() { upd('tierFilter', tier); var first = tier === 'all' ? ALL_PRESETS[0] : null; if (!first) { for (var ti = 0; ti < ALL_PRESETS.length; ti++) { if (ALL_PRESETS[ti].tier === tier) { first = ALL_PRESETS[ti]; break; } } } if (first) switchPreset(first.name); }, className: 'px-3 py-1 rounded-full text-xs font-bold transition-all ' + (tierFilter === tier ? 'bg-lime-600 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, tier === 'all' ? '\uD83D\uDCCA All' : tierLabels[tier] || tier);
+                return h('button', { key: tier, onClick: function() { upd('tierFilter', tier); var first = tier === 'all' ? ALL_PRESETS[0] : null; if (!first) { for (var ti = 0; ti < ALL_PRESETS.length; ti++) { if (ALL_PRESETS[ti].tier === tier) { first = ALL_PRESETS[ti]; break; } } } if (first) switchPreset(first.name); }, className: 'px-3 py-1 rounded-full text-xs font-bold transition-all ' + (tierFilter === tier ? 'bg-lime-600 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, tier === 'all' ? '\uD83D\uDCCA All' : tierLabels[tier] || tier);
               })
             ),
             // Equation chips

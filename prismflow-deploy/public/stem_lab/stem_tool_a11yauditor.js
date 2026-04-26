@@ -450,8 +450,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
                 { id: 'social', icon: '\uD83D\uDCF1', label: 'Social Media' },
                 { id: 'gov', icon: '\uD83C\uDFDB\uFE0F', label: 'Gov/School' }
               ].map(function(mode) {
-                return h('button', { 'aria-label': 'Change audit input mode',
-                  key: mode.id,
+                return h('button', { key: mode.id,
                   onClick: function() { upd('auditInputMode', mode.id); },
                   className: 'flex-1 px-2 py-1.5 rounded-md text-[11px] font-bold transition-all ' + (auditInputMode === mode.id ? 'bg-white text-teal-700 shadow-sm' : 'text-slate-600 hover:text-slate-700')
                 }, mode.icon + ' ' + mode.label);
@@ -481,8 +480,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
               h('div', { className: 'flex flex-wrap gap-2 pt-2' },
                 h('span', { className: 'text-[11px] text-slate-600 font-bold' }, 'Try:'),
                 ['https://www.wikipedia.org', 'https://www.google.com', 'https://www.nytimes.com', 'https://www.amazon.com'].map(function(url) {
-                  return h('button', { 'aria-label': 'Change audit url',
-                    key: url,
+                  return h('button', { key: url,
                     onClick: function() { upd('auditUrl', url); },
                     className: 'text-[11px] text-teal-600 hover:text-teal-800 font-medium hover:underline'
                   }, url.replace('https://www.', ''));

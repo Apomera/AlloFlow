@@ -873,7 +873,7 @@ window.StemLab = window.StemLab || {
                   ),
                   React.createElement("div", { className: "flex gap-2 flex-wrap items-center" },
                     // Challenge Mode toggle
-                    React.createElement("button", { "aria-label": "Change challenge mode", onClick: function () { upd('challengeMode', !d.challengeMode); upd('coinGuess', null); upd('coinGuessFb', null); upd('cartGuessSubtotal', null); upd('cartGuessTax', null); upd('cartGuessTotal', null); upd('cartCheckoutFb', null); },
+                    React.createElement("button", { onClick: function () { upd('challengeMode', !d.challengeMode); upd('coinGuess', null); upd('coinGuessFb', null); upd('cartGuessSubtotal', null); upd('cartGuessTax', null); upd('cartGuessTotal', null); upd('cartCheckoutFb', null); },
                       className: "px-3 py-1.5 rounded-lg text-xs font-black transition-all " + (d.challengeMode ? 'bg-amber-400 text-amber-900 ring-2 ring-amber-200 shadow-lg' : 'bg-white/20 text-white border border-white/30 hover:bg-white/30')
                     }, d.challengeMode ? '\uD83C\uDFAF Challenge ON' : '\uD83C\uDFAF Challenge Mode'),
                     // Grade selector
@@ -911,7 +911,7 @@ window.StemLab = window.StemLab || {
                   React.createElement("p", { className: "text-[11px] text-amber-600 mb-3" }, "Click coins to add them to your counting board."),
                   React.createElement("div", { className: "flex flex-wrap gap-3 justify-center" },
                     cur.coins.map(function (coin, ci) {
-                      return React.createElement("button", { "aria-label": "Change placed", key: ci, onClick: function () {
+                      return React.createElement("button", { key: ci, onClick: function () {
                           upd('placed', [].concat(placed, [{ name: coin.name, value: coin.value, id: Date.now() + '-' + ci }]));
                         },
                         className: "flex flex-col items-center gap-1 group transition-transform hover:scale-110",
@@ -933,7 +933,7 @@ window.StemLab = window.StemLab || {
                   React.createElement("h3", { className: "text-sm font-bold text-green-800 mt-4 mb-3" }, "\uD83D\uDCB5 " + cur.name + " Bills"),
                   React.createElement("div", { className: "flex flex-wrap gap-2 justify-center" },
                     cur.bills.map(function (bill, bi) {
-                      return React.createElement("button", { "aria-label": "Change placed", key: bi, onClick: function () {
+                      return React.createElement("button", { key: bi, onClick: function () {
                           upd('placed', [].concat(placed, [{ name: bill.name, value: bill.value, id: Date.now() + '-b' + bi }]));
                         },
                         className: "group transition-transform hover:scale-105"
@@ -970,7 +970,7 @@ window.StemLab = window.StemLab || {
                     : React.createElement("div", { className: "flex flex-wrap gap-1.5 min-h-[100px]" },
                         placed.map(function (p, pi) {
                           var isBill = p.value >= (isJPY ? 1000 : 1) && !p.name.toLowerCase().includes('coin') && !p.name.toLowerCase().includes('penny') && !p.name.toLowerCase().includes('cent') && !p.name.toLowerCase().includes('dime') && !p.name.toLowerCase().includes('nickel') && !p.name.toLowerCase().includes('quarter') && !p.name.toLowerCase().includes('loonie') && !p.name.toLowerCase().includes('toonie');
-                          return React.createElement("button", { "aria-label": "Remove ", key: p.id || pi, onClick: function () {
+                          return React.createElement("button", { "aria-label": "Remove " + p.name, key: p.id || pi, onClick: function () {
                               upd('placed', placed.filter(function (_, idx) { return idx !== pi; }));
                               upd('coinGuess', null); upd('coinGuessFb', null);
                             }, title: 'Remove ' + p.name,
@@ -986,7 +986,7 @@ window.StemLab = window.StemLab || {
                   challengeMode && placed.length > 0 && React.createElement("div", { className: "mt-3 pt-3 border-t border-amber-200 bg-amber-50 rounded-lg p-3" },
                     React.createElement("p", { className: "text-xs font-bold text-amber-700 mb-2" }, '\uD83C\uDFAF What\'s the total? Add up all the coins and bills!'),
                     React.createElement("div", { className: "flex items-center gap-2" },
-                      React.createElement("input", { type: "number", step: isJPY ? '1' : '0.01', placeholder: cur.symbol + '...', value: d.coinGuess != null ? d.coinGuess : '', onChange: function (e) { upd('coinGuess', e.target.value === '' ? null : parseFloat(e.target.value)); }, className: "px-3 py-2 border border-amber-300 rounded-lg text-sm font-bold w-32 focus:ring-2 focus:ring-amber-400 outline-none" }),
+                      React.createElement("input", { type: "number", step: isJPY ? '1' : '0.01', placeholder: cur.symbol + '...', "aria-label": "Your guess of the total in " + cur.code, value: d.coinGuess != null ? d.coinGuess : '', onChange: function (e) { upd('coinGuess', e.target.value === '' ? null : parseFloat(e.target.value)); }, className: "px-3 py-2 border border-amber-300 rounded-lg text-sm font-bold w-32 focus:ring-2 focus:ring-amber-400 outline-none" }),
                       React.createElement("button", { "aria-label": "Check", onClick: function () {
                         var guess = d.coinGuess; var actual = boardTotal;
                         var isRight = typeof guess === 'number' && Math.abs(guess - actual) < (isJPY ? 0.5 : 0.005);
@@ -1036,7 +1036,6 @@ window.StemLab = window.StemLab || {
                       React.createElement("div", { className: "flex items-center gap-3" },
                         React.createElement("label", { className: "text-sm font-bold text-slate-600" }, "Your answer:"),
                         React.createElement("input", { type: "number", step: isJPY ? "1" : "0.01", placeholder: cur.symbol + "...",
-                          'aria-label': 'Change due answer',
                           value: changeAnswer !== null ? changeAnswer : '',
                           onChange: function (e) { upd('changeAnswer', e.target.value === '' ? null : parseFloat(e.target.value)); },
                           className: "px-4 py-2 border border-slate-200 rounded-xl text-sm font-bold w-32 focus:ring-2 focus:ring-blue-400 outline-none"
@@ -1235,7 +1234,7 @@ window.StemLab = window.StemLab || {
                   // Recipe selector
                   React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 gap-2 mb-3" },
                     RECIPES.map(function (r, ri) {
-                      return React.createElement("button", { "aria-label": "Change active recipe", key: ri, onClick: function () { upd('activeRecipe', activeRecipe === ri ? null : ri); upd('recipeFb', null); },
+                      return React.createElement("button", { key: ri, onClick: function () { upd('activeRecipe', activeRecipe === ri ? null : ri); upd('recipeFb', null); },
                         className: "p-2 rounded-xl text-center transition-all border-2 " + (activeRecipe === ri ? 'border-purple-500 bg-purple-100 shadow-md' : 'border-slate-200 bg-white hover:border-purple-300')
                       },
                         React.createElement("span", { className: "text-2xl" }, r.icon),
@@ -1285,7 +1284,7 @@ window.StemLab = window.StemLab || {
                 React.createElement("div", { className: "flex flex-wrap gap-1" },
                   storeCats.map(function (cat) {
                     var catIcons = { All: '\uD83C\uDFEA', Produce: '\uD83E\uDD6C', Meat: '\uD83E\uDD69', Dairy: '\uD83E\uDDC0', Bakery: '\uD83C\uDF5E', Pantry: '\uD83E\uDD6B', Frozen: '\uD83E\uDDCA', Drinks: '\uD83E\uDD64', Snacks: '\uD83C\uDF6B' };
-                    return React.createElement("button", { "aria-label": "Change store cat", key: cat, onClick: function () { upd('storeCat', cat); },
+                    return React.createElement("button", { key: cat, onClick: function () { upd('storeCat', cat); },
                       className: "px-2 py-1 rounded-full text-[11px] font-bold transition-all " + (storeCat === cat ? 'bg-orange-700 text-white shadow-sm' : 'bg-white text-slate-600 border border-slate-200 hover:bg-orange-50')
                     }, (catIcons[cat] || '\uD83C\uDFEA') + ' ' + cat);
                   })
@@ -1460,7 +1459,7 @@ window.StemLab = window.StemLab || {
                           d.wpProblem.category && React.createElement("span", { className: "inline-block px-2 py-0.5 rounded-full text-[11px] font-bold bg-violet-100 text-violet-600 mb-2" }, d.wpProblem.category.toUpperCase()),
                           React.createElement("p", { className: "text-sm text-slate-700 leading-relaxed" }, d.wpProblem.problem)
                         ),
-                        d.wpProblem.hint && React.createElement("button", { "aria-label": "Change wp show hint", onClick: function () { upd('wpShowHint', !d.wpShowHint); },
+                        d.wpProblem.hint && React.createElement("button", { onClick: function () { upd('wpShowHint', !d.wpShowHint); },
                           className: "text-xs font-bold text-amber-500 hover:text-amber-700"
                         }, d.wpShowHint ? '\uD83D\uDCA1 Hide Hint' : '\uD83D\uDCA1 Show Hint'),
                         d.wpShowHint && React.createElement("p", { className: "text-xs text-amber-800 bg-amber-50 p-3 rounded-lg border border-amber-200" }, d.wpProblem.hint),
@@ -1725,7 +1724,7 @@ window.StemLab = window.StemLab || {
                     // Quick denomination buttons
                     React.createElement("div", { className: "flex flex-wrap gap-1 justify-center" },
                       cur.bills.slice().reverse().concat(cur.coins.slice().reverse()).map(function (item, idx) {
-                        return React.createElement("button", { "aria-label": "Change fc placed", key: idx, onClick: function () {
+                        return React.createElement("button", { key: idx, onClick: function () {
                           upd('fcPlaced', [].concat(d.fcPlaced || [], [item.value]));
                         }, className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-white border border-amber-200 hover:bg-amber-50 transition-all" }, (item.name || fmt(item.value)));
                       })
@@ -1738,7 +1737,7 @@ window.StemLab = window.StemLab || {
                       ),
                       React.createElement("div", { className: "flex flex-wrap gap-1 mb-2" },
                         (d.fcPlaced || []).map(function (v, pi) {
-                          return React.createElement("button", { "aria-label": "Change fc placed", key: pi, onClick: function () {
+                          return React.createElement("button", { key: pi, onClick: function () {
                             upd('fcPlaced', (d.fcPlaced || []).filter(function (_, idx) { return idx !== pi; }));
                           }, className: "px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full text-[11px] font-bold hover:bg-red-100 hover:text-red-600 transition-all" }, fmt(v) + ' \u2715');
                         })
@@ -2377,7 +2376,7 @@ window.StemLab = window.StemLab || {
                           var btnClass = revealed
                             ? (isCorrect ? 'border-green-500 bg-green-50 text-green-700' : (selected ? 'border-red-400 bg-red-50 text-red-600' : 'border-slate-200 bg-white text-slate-600'))
                             : (selected ? 'border-amber-500 bg-amber-50 text-amber-700 shadow-md' : 'border-slate-200 bg-white text-slate-600 hover:border-amber-300 hover:bg-amber-50');
-                          return React.createElement("button", { "aria-label": "Change fq answer", key: ci, disabled: revealed, onClick: function () { upd('fqAnswer', ci); upd('fqFb', null); },
+                          return React.createElement("button", { key: ci, disabled: revealed, onClick: function () { upd('fqAnswer', ci); upd('fqFb', null); },
                             className: "p-3 rounded-xl border-2 text-sm font-bold text-left transition-all " + btnClass
                           }, String.fromCharCode(65 + ci) + '. ' + ch);
                         })

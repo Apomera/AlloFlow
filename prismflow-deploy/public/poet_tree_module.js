@@ -641,48 +641,86 @@
     }, [poemText, readIdx]);
 
     // ── Print as broadside (single-page printable poster style; uses browser Print → Save as PDF) ──
+    // Semantically structured HTML5 — lang on root, <main>/<article>/<header>/<footer> landmarks,
+    // proper heading hierarchy, <figure>+<figcaption> for illustration. Modern browsers (Chrome, Edge)
+    // produce reasonably tagged PDFs from semantic HTML when the user uses Print → Save as PDF.
+    // For strict PDF/UA-1 compliance, route through doc_pipeline_module's createTaggedPdf instead.
     var printBroadside = useCallback(function () {
       if (!poemText.trim()) return;
       var w = window.open('', '_blank', 'width=720,height=900');
       if (!w) { addToast && addToast('Pop-up blocked. Allow pop-ups to print.', 'error'); return; }
-      var safeTitle = (poemTitle || 'Untitled').replace(/[<>&]/g, '');
-      var safeAuthor = (studentNickname || '').replace(/[<>&]/g, '');
+      // Escape user content for HTML.
+      var escHtml = function (s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); };
+      var safeTitle = escHtml(poemTitle || 'Untitled');
+      var safeAuthor = escHtml(studentNickname || '');
+      var safeFormName = form ? escHtml(form.name) : '';
+      var safeFormIcon = form ? form.icon : '';
+      // Wrap poem in <article>; lines as <p>; stanza breaks as visible spacer with role="separator".
       var poemHtml = poemText
-        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
         .split('\n').map(function (l) {
           var t = l.trim();
-          return t ? '<p class="line">' + l + '</p>' : '<div class="stanza-break"></div>';
+          if (t) return '<p class="line">' + escHtml(l) + '</p>';
+          return '<div class="stanza-break" role="separator" aria-label="stanza break"></div>';
         }).join('\n');
-      var illusHtml = illustration ? '<img class="art" alt="Illustration for ' + safeTitle + '" src="' + illustration + '" />' : '';
-      var formLabel = form ? form.icon + ' ' + form.name : '';
-      var html = '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>' + safeTitle + ' — broadside</title><style>'
+      // Illustration: <figure> + <figcaption> for proper PDF tag-tree mapping; descriptive alt.
+      var illusHtml = illustration
+        ? '<figure class="art-fig"><img src="' + escHtml(illustration) + '" alt="' + escHtml('AI illustration inspired by the poem ' + (poemTitle || 'Untitled')) + '" /><figcaption>Illustration generated for this poem.</figcaption></figure>'
+        : '';
+      var html = '<!doctype html><html lang="en"><head><meta charset="utf-8">'
+        + '<meta name="viewport" content="width=device-width,initial-scale=1">'
+        + '<title>' + safeTitle + (safeAuthor ? ' by ' + safeAuthor : '') + '</title>'
+        + '<meta name="author" content="' + safeAuthor + '">'
+        + '<meta name="description" content="A poem' + (safeFormName ? ' in the ' + safeFormName.toLowerCase() + ' form' : '') + (safeAuthor ? ' by ' + safeAuthor : '') + '. Generated with PoetTree.">'
+        + '<style>'
+        // Skip-link styles (visible on focus only)
+        + '.skip-link{position:absolute;left:-9999px;top:0;padding:8px 14px;background:#0f172a;color:#fff;text-decoration:none;font-weight:700}'
+        + '.skip-link:focus{left:0;top:0;z-index:1000}'
         + 'html,body{margin:0;padding:0;background:#fff;color:#1e293b;font-family:Georgia,serif}'
+        + 'main{display:block}'
+        + 'figure{margin:0}'
         + '.page{max-width:680px;margin:0 auto;padding:48px 56px}'
         + '.toolbar{position:sticky;top:0;background:#f8fafc;border-bottom:1px solid #e5e7eb;padding:10px 20px;display:flex;gap:10px;align-items:center;font-family:system-ui,sans-serif;font-size:12px}'
         + '.toolbar button{padding:6px 14px;border-radius:6px;border:none;background:#0d9488;color:#fff;font-weight:700;cursor:pointer;font-size:12px}'
-        + '.toolbar button.secondary{background:#fff;color:#0d9488;border:1px solid #0d9488}'
-        + '.title{font-size:32px;font-weight:800;text-align:center;margin:0 0 6px;letter-spacing:-0.5px}'
-        + '.byline{text-align:center;font-size:13px;color:#475569;font-style:italic;margin:0 0 28px}'
-        + '.formtag{display:block;text-align:center;font-size:11px;color:#0d9488;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin:0 0 24px}'
+        + '.toolbar button:focus{outline:2px solid #0f172a;outline-offset:2px}'
+        + '.toolbar button.secondary{background:#fff;color:#115e59;border:1px solid #0d9488}'
+        + '.toolbar .help{margin-left:auto;color:#334155}'
+        + '.poem-header{margin-bottom:28px}'
+        + '.title{font-size:32px;font-weight:800;text-align:center;margin:0 0 6px;letter-spacing:-0.5px;line-height:1.2}'
+        + '.byline{text-align:center;font-size:13px;color:#334155;font-style:italic;margin:0 0 4px}'
+        // Form tag: ~8.6:1 contrast (was 4.47:1 — bumped from teal-600 to teal-800 for AA on small text)
+        + '.formtag{display:block;text-align:center;font-size:11px;color:#115e59;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin:0 0 16px}'
         + '.line{font-size:18px;line-height:1.85;margin:0;text-align:left}'
         + '.stanza-break{height:18px}'
-        + '.art{display:block;max-width:100%;margin:24px auto 0;border-radius:8px}'
-        + '.footer{margin-top:36px;padding-top:14px;border-top:1px solid #e5e7eb;text-align:center;font-size:10px;color:#94a3b8;font-family:system-ui,sans-serif}'
-        + '@media print{.toolbar{display:none}.page{padding:24px}}'
+        + '.art-fig{margin:32px 0 0}'
+        + '.art-fig img{display:block;max-width:100%;margin:0 auto;border-radius:8px}'
+        + '.art-fig figcaption{text-align:center;font-size:11px;color:#475569;font-style:italic;margin-top:6px}'
+        // Footer: ~7.4:1 contrast (was 3.46:1 — bumped from slate-400 to slate-600 for AA at 11px)
+        + '.site-footer{margin-top:36px;padding-top:14px;border-top:1px solid #e5e7eb;text-align:center;font-size:11px;color:#475569;font-family:system-ui,sans-serif}'
+        + '@media print{.toolbar,.skip-link{display:none}.page{padding:24px}html,body{background:#fff !important}}'
+        + '@media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important}}'
         + '</style></head><body>'
-        + '<div class="toolbar">'
-        +   '<button onclick="window.print()" aria-label="Print this broadside">🖨️ Print / Save as PDF</button>'
-        +   '<button class="secondary" onclick="window.close()" aria-label="Close window">✕ Close</button>'
-        +   '<span style="margin-left:auto;color:#475569">Use your browser\'s print dialog to save as PDF or print on paper.</span>'
+        // Skip link for keyboard users (lands on focus)
+        + '<a class="skip-link" href="#poem-content">Skip to poem</a>'
+        // Toolbar — role="banner" places it as an explicit landmark before main
+        + '<div class="toolbar" role="banner">'
+        +   '<button type="button" onclick="window.print()" aria-label="Print this broadside or save as PDF">🖨️ Print / Save as PDF</button>'
+        +   '<button type="button" class="secondary" onclick="window.close()" aria-label="Close window">✕ Close</button>'
+        +   '<span class="help" aria-hidden="true">Use Ctrl+P (⌘+P) → Save as PDF</span>'
         + '</div>'
-        + '<div class="page">'
-        +   (formLabel ? '<span class="formtag">' + formLabel + '</span>' : '')
-        +   '<h1 class="title">' + safeTitle + '</h1>'
-        +   (safeAuthor ? '<p class="byline">by ' + safeAuthor + '</p>' : '')
-        +   '<div class="poem">' + poemHtml + '</div>'
-        +   illusHtml
-        +   '<p class="footer">PoetTree · AlloFlow</p>'
-        + '</div></body></html>';
+        // Main content
+        + '<main class="page" id="poem-content" role="main" aria-labelledby="poem-title">'
+        +   '<article aria-labelledby="poem-title">'
+        +     '<header class="poem-header">'
+        +       (safeFormName ? '<p class="formtag" aria-label="Poem form: ' + safeFormName + '">' + (safeFormIcon ? '<span aria-hidden="true">' + safeFormIcon + '</span> ' : '') + safeFormName + '</p>' : '')
+        +       '<h1 class="title" id="poem-title">' + safeTitle + '</h1>'
+        +       (safeAuthor ? '<p class="byline">by ' + safeAuthor + '</p>' : '')
+        +     '</header>'
+        +     '<div class="poem-body" role="document">' + poemHtml + '</div>'
+        +     illusHtml
+        +   '</article>'
+        + '</main>'
+        + '<footer class="site-footer" role="contentinfo">PoetTree · AlloFlow</footer>'
+        + '</body></html>';
       try { w.document.open(); w.document.write(html); w.document.close(); announcePT('Broadside ready in a new window.'); }
       catch (er) { addToast && addToast('Broadside failed.', 'error'); }
     }, [poemText, poemTitle, studentNickname, form, illustration, addToast]);

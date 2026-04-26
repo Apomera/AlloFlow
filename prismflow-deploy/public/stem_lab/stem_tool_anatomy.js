@@ -4332,8 +4332,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             !activePathwayId ? h('div', { className: 'grid grid-cols-2 gap-2' },
               PATHWAYS.map(function(pw) {
                 var isDone = pathwaysCompleted[pw.id];
-                return h('button', { 'aria-label': 'Change selected structure',
-                  key: pw.id,
+                return h('button', { key: pw.id,
                   onClick: function() { updMulti({ _activePathway: pw.id, _pathwayStep: 0 }); upd('selectedStructure', pw.steps[0].structure); playSound('pathwayStep'); },
                   className: 'text-left rounded-xl p-3 border-2 transition-all ' + (isDone ? 'border-rose-300 bg-rose-50' : 'border-slate-200 hover:border-rose-200 hover:bg-rose-50/50')
                 },
@@ -4499,8 +4498,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             h('div', { className: 'flex flex-wrap gap-1.5 mb-3' },
               Object.keys(SYSTEMS).map(function(key) {
                 var s = SYSTEMS[key];
-                return h('button', { 'aria-label': 'Change system',
-                  key: key,
+                return h('button', { key: key,
                   onClick: function() {
                     upd('system', key); upd('selectedStructure', null); upd('quizMode', false); upd('search', '');
                     playSound('systemSelect');
@@ -4615,14 +4613,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 },
                 className: 'flex-1 min-w-[140px] px-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:ring-2 focus:ring-rose-300 outline-none'
               }),
-              h('button', { 'aria-label': 'Change quiz mode',
-                onClick: function() { upd('quizMode', !d.quizMode); upd('quizIdx', 0); upd('quizScore', 0); upd('quizFeedback', null); },
+              h('button', { onClick: function() { upd('quizMode', !d.quizMode); upd('quizIdx', 0); upd('quizScore', 0); upd('quizFeedback', null); },
                 className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (d.quizMode ? 'bg-green-700 text-white' : 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100')
               }, d.quizMode ? '\u2705 Quiz On' : '\uD83E\uDDEA Quiz'),
               h('div', { className: 'flex rounded-lg border border-slate-200 overflow-hidden' },
                 [{ v: 1, label: 'K\u20135', tip: 'Elementary' }, { v: 2, label: '6\u20138', tip: 'Middle' }, { v: 3, label: '9\u201312+', tip: 'Advanced' }].map(function(lv) {
-                  return h('button', { 'aria-label': 'Change complexity',
-                    key: lv.v, title: lv.tip + ' level',
+                  return h('button', { key: lv.v, title: lv.tip + ' level',
                     onClick: function() { upd('complexity', lv.v); upd('selectedStructure', null); },
                     className: 'px-2 py-1 text-[11px] font-bold transition-all ' + (complexity === lv.v ? 'bg-indigo-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-50')
                   }, lv.label);
@@ -4877,8 +4873,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                     h('div', { className: 'space-y-1 max-h-[460px] overflow-y-auto pr-1' },
                       filtered.length === 0 && h('p', { className: 'text-xs text-slate-600 italic py-4 text-center' }, 'No structures match your search.'),
                       filtered.map(function(st) {
-                        return h('button', { 'aria-label': 'Change selected structure',
-                          key: st.id,
+                        return h('button', { key: st.id,
                           onClick: function() { upd('selectedStructure', st.id); playSound('structureClick'); },
                           className: 'w-full text-left px-3 py-2 rounded-lg text-xs transition-all hover:shadow-sm ' +
                             (d.selectedStructure === st.id ? 'font-bold border-2' : 'bg-slate-50 hover:bg-white border border-slate-200'),
