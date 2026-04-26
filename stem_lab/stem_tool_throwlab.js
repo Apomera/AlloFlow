@@ -455,20 +455,46 @@ window.StemLab = window.StemLab || {
     var t = 0;
     var maxT = opts.maxT !== undefined ? opts.maxT : 2.0;
     var plateZ = opts.targetZ !== undefined ? opts.targetZ : 18.44; // baseball plate default
+    // Wind vector in m/s (world frame). Headwind in -Z direction (0°),
+    // tailwind +Z (180°), crosswinds ±X. Drag uses RELATIVE air-frame
+    // velocity (ball minus wind), so a tailwind shrinks |v_rel| and reduces
+    // drag (extends range); a crosswind pushes the ball laterally even
+    // without spin.
+    var windMph = opts.windMph || 0;
+    var windDirDeg = opts.windDirDeg || 0;
+    var windMps = windMph / MPH_PER_MPS;
+    var windRad = windDirDeg * Math.PI / 180;
+    var wVx = -Math.sin(windRad) * windMps; // 90° → -X is wrong, 90° = +X cross. Convention: 0°=headwind (-Z), 90°=crossX +X, 180°=tail +Z, 270°=crossX -X.
+    var wVy = 0;
+    var wVz = -Math.cos(windRad) * windMps;
+    // Quick fix: standard convention 0°=headwind means wind blows toward the
+    // pitcher (in -Z), so wind vector should be (0, 0, -|w|). Re-derive:
+    // 0°=head: wind in -Z; 180°=tail: wind in +Z. So:
+    wVx = Math.sin(windRad) * windMps;  // 90° → +X
+    wVy = 0;
+    wVz = -Math.cos(windRad) * windMps; // 0° → -Z (headwind), 180° → +Z (tailwind)
     var outcome = null;
     while (t < maxT) {
-      var spd = Math.sqrt(vx * vx + vy * vy + vz * vz);
-      // Drag: F = -½ρv²·Cd·A · v̂
+      // Relative-to-air velocity (used by drag + Magnus). Without wind this
+      // collapses to ball velocity. With wind, |v_rel| > |v| if headwind,
+      // |v_rel| < |v| if tailwind, and crosswind pushes the drag vector
+      // sideways without spin.
+      var rvx = vx - wVx;
+      var rvy = vy - wVy;
+      var rvz = vz - wVz;
+      var spd = Math.sqrt(rvx * rvx + rvy * rvy + rvz * rvz);
+      // Drag: F = -½ρ|v_rel|²·Cd·A · v_rel̂
       var dragMag = 0.5 * RHO * spd * spd * ball.cd * area;
-      var dragFx = spd > 0 ? -dragMag * (vx / spd) : 0;
-      var dragFy = spd > 0 ? -dragMag * (vy / spd) : 0;
-      var dragFz = spd > 0 ? -dragMag * (vz / spd) : 0;
-      // Magnus: F = ½ρv²·Cm·A · (ω̂ × v̂)
+      var dragFx = spd > 0 ? -dragMag * (rvx / spd) : 0;
+      var dragFy = spd > 0 ? -dragMag * (rvy / spd) : 0;
+      var dragFz = spd > 0 ? -dragMag * (rvz / spd) : 0;
+      // Magnus: F = ½ρ|v_rel|²·Cm·A · (ω̂ × v_rel̂)
       // The ω × v̂ direction gives the lift sense; Cm scales magnitude.
-      // Cross product (ω × v̂):
-      var vhx = spd > 0 ? vx / spd : 0;
-      var vhy = spd > 0 ? vy / spd : 0;
-      var vhz = spd > 0 ? vz / spd : 0;
+      // Use relative-to-air velocity so wind shifts the Magnus direction
+      // realistically (e.g., a tailwind reduces effective Magnus).
+      var vhx = spd > 0 ? rvx / spd : 0;
+      var vhy = spd > 0 ? rvy / spd : 0;
+      var vhz = spd > 0 ? rvz / spd : 0;
       var crossX = omega.y * vhz - omega.z * vhy;
       var crossY = omega.z * vhx - omega.x * vhz;
       var crossZ = omega.x * vhy - omega.y * vhx;
@@ -604,7 +630,13 @@ window.StemLab = window.StemLab || {
             // current one so students can change ONE variable and see the
             // effect against a held-constant baseline.
             referenceResult: null,
-            referenceLabel: ''         // "92 mph 4-Seam" etc.
+            referenceLabel: '',        // "92 mph 4-Seam" etc.
+            // Wind — defaults to calm. Outdoor modes (freekick, fieldgoal)
+            // show the controls in the UI; indoor modes hide them. 0° =
+            // headwind (against the throw), 90° = crosswind right, 180° =
+            // tailwind, 270° = crosswind left.
+            windMph: 0,
+            windDirDeg: 0
           }});
         });
         return h('div', { className: 'p-8 text-center text-slate-600' }, 'Loading ThrowLab…');
@@ -777,7 +809,9 @@ window.StemLab = window.StemLab || {
           throwerHand: d.throwerHand,
           targetZ: effectiveTargetZ,
           releaseStride: modeMeta.releaseStrideDefault,
-          truncateAtTarget: d.mode === 'pitching' // free throw / free kick / field goal need the full arc to land
+          truncateAtTarget: d.mode === 'pitching', // free throw / free kick / field goal need the full arc to land
+          windMph: d.windMph || 0,
+          windDirDeg: d.windDirDeg || 0
         };
         // Free kick + field goal let the arc continue past the goal line so we
         // can detect missed-over / wide / post cases.
@@ -796,7 +830,9 @@ window.StemLab = window.StemLab || {
             : 'wild';
         }
         result.location = loc;
-        // Compute break stats relative to a no-spin baseline
+        // Compute break stats relative to a no-spin baseline. Pass through
+        // the same wind so the baseline is "what would happen WITHOUT spin
+        // but WITH the same conditions" — break attribution stays clean.
         var noSpin = simulatePitch({
           ball: modeMeta.ball,
           speedMph: d.speedMph,
@@ -805,7 +841,9 @@ window.StemLab = window.StemLab || {
           aimDegH: d.aimDegH,
           spinRpm: 0,
           spinAxisDeg: 0,
-          throwerHand: d.throwerHand
+          throwerHand: d.throwerHand,
+          windMph: d.windMph || 0,
+          windDirDeg: d.windDirDeg || 0
         });
         if (result.outcome.reachedPlate && noSpin.outcome.reachedPlate) {
           result.vBreakIn = (noSpin.outcome.plateY - result.outcome.plateY) * FT_PER_M * 12;
@@ -1226,6 +1264,56 @@ window.StemLab = window.StemLab || {
           gfx.fillText('Goal — 7.32 m wide', (postL[0] + postR[0]) / 2, marginT + fieldH + 18);
         }
 
+        // ── Wind indicator (outdoor modes only, when wind is on) ──
+        // Small compass-style arrow + speed label in the upper-right of the
+        // canvas. Only renders when wind is non-zero so calm scenes stay
+        // clean. Direction matches the simulator's convention (0° = headwind
+        // pointing toward the thrower / down on the canvas in side-view).
+        if ((d.mode === 'freekick' || d.mode === 'fieldgoal') && (d.windMph || 0) > 0) {
+          var wIndW = 60, wIndH = 60;
+          var wcx = W - 20 - wIndW / 2;
+          var wcy = 20 + wIndH / 2;
+          // Background card
+          gfx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+          gfx.strokeStyle = '#475569';
+          gfx.lineWidth = 1;
+          gfx.beginPath(); gfx.roundRect ? gfx.roundRect(wcx - wIndW / 2, wcy - wIndH / 2, wIndW, wIndH, 6) : gfx.rect(wcx - wIndW / 2, wcy - wIndH / 2, wIndW, wIndH);
+          gfx.fill(); gfx.stroke();
+          // Arrow direction: pointing in the direction the wind BLOWS toward.
+          // Convention used by sim: 0° = headwind = wind blows in -Z
+          // direction (= toward the thrower). On the side-view canvas, +Z
+          // is to the right, so a 0° headwind arrow should point LEFT.
+          // Top-down (free kick) view: +Z is to the right too. So same
+          // direction convention works.
+          var wDeg = d.windDirDeg || 0;
+          // Math.cos(0)=1, sin(0)=0. We want 0° → arrow points left (-X) so:
+          var arx = -Math.cos(wDeg * Math.PI / 180);
+          var ary = -Math.sin(wDeg * Math.PI / 180);
+          var arLen = 18;
+          gfx.strokeStyle = '#60a5fa';
+          gfx.fillStyle = '#60a5fa';
+          gfx.lineWidth = 2.5;
+          gfx.beginPath();
+          gfx.moveTo(wcx - arx * arLen / 2, wcy - ary * arLen / 2);
+          gfx.lineTo(wcx + arx * arLen / 2, wcy + ary * arLen / 2);
+          gfx.stroke();
+          // Arrowhead
+          var ahead = arLen / 2;
+          var perpX = -ary, perpY = arx;
+          gfx.beginPath();
+          gfx.moveTo(wcx + arx * ahead, wcy + ary * ahead);
+          gfx.lineTo(wcx + arx * (ahead - 5) + perpX * 4, wcy + ary * (ahead - 5) + perpY * 4);
+          gfx.lineTo(wcx + arx * (ahead - 5) - perpX * 4, wcy + ary * (ahead - 5) - perpY * 4);
+          gfx.closePath();
+          gfx.fill();
+          // Speed label
+          gfx.fillStyle = '#cbd5e1';
+          gfx.font = 'bold 10px system-ui';
+          gfx.textAlign = 'center';
+          gfx.fillText('Wind', wcx, wcy - 22);
+          gfx.fillText(d.windMph + ' mph', wcx, wcy + 25);
+        }
+
         // ── Saved REFERENCE trajectory (Compare Mode) ──
         // Drawn FIRST so it sits behind the current trajectory + no-spin guide.
         // Faded magenta dashed line with a small "REF" tag at its end.
@@ -1266,6 +1354,7 @@ window.StemLab = window.StemLab || {
             throwerHand: d.throwerHand,
             targetZ: modeMeta.targetZ,
             releaseStride: modeMeta.releaseStrideDefault,
+            windMph: d.windMph || 0, windDirDeg: d.windDirDeg || 0,
             truncateAtTarget: d.mode === 'pitching'
           });
           gfx.strokeStyle = 'rgba(148, 163, 184, 0.6)';
@@ -1335,7 +1424,8 @@ window.StemLab = window.StemLab || {
         d.lastResult, d.replayActive, d.replayT,
         d.speedMph, d.releaseHeight, d.aimDegV, d.aimDegH,
         d.spinRpm, d.spinAxisDeg, d.throwerHand, d.showPhysics,
-        d.referenceResult, d.mode, d.fgDistanceYd
+        d.referenceResult, d.mode, d.fgDistanceYd,
+        d.windMph, d.windDirDeg
       ]);
 
       // ── Space-key hotkey for throw/shoot/kick ──
@@ -1723,6 +1813,32 @@ window.StemLab = window.StemLab || {
               d.scaffoldTier >= 3 ? slider('Spin rate', d.spinRpm, 0, 3500, 50, function(v) { upd('spinRpm', v); }, ' rpm') : null,
               d.scaffoldTier >= 3 ? slider('Spin axis', d.spinAxisDeg, 0, 360, 5, function(v) { upd('spinAxisDeg', v); }, '°') : null
             ),
+            // ── Wind (outdoor modes only) ──
+            // Free kick + field goal happen outdoors so wind is part of the
+            // physics. Indoor modes (pitching is mostly indoor-ish at MLB
+            // level for our purposes; basketball is indoor) keep the panel
+            // hidden so the UI doesn't clutter with irrelevant sliders.
+            (isFreeKick || isFieldGoal) ? h('div', {
+              style: { background: '#0f172a', border: '1px solid #1e293b', borderRadius: 10, padding: 12, marginBottom: 12 }
+            },
+              h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 } },
+                'Wind (relative to throw)'),
+              slider('Wind speed', d.windMph || 0, 0, 25, 1, function(v) { upd('windMph', v); }, ' mph'),
+              // Wind direction: 0° head, 90° R, 180° tail, 270° L
+              slider('Wind direction', d.windDirDeg || 0, 0, 359, 5, function(v) { upd('windDirDeg', v); }, '°'),
+              h('div', { style: { fontSize: 10, color: '#cbd5e1', marginTop: 4 } },
+                (function() {
+                  var deg = d.windDirDeg || 0;
+                  if (deg < 22 || deg >= 338) return '↓ Headwind (slows the ball)';
+                  if (deg < 68) return '↘ Quartering head/right';
+                  if (deg < 112) return '→ Crosswind from left';
+                  if (deg < 158) return '↗ Quartering tail/right';
+                  if (deg < 202) return '↑ Tailwind (extends range)';
+                  if (deg < 248) return '↖ Quartering tail/left';
+                  if (deg < 292) return '← Crosswind from right';
+                  return '↙ Quartering head/left';
+                })())
+            ) : null,
             // Throw / Shoot button — mode-aware label
             h('button', {
               onClick: throwPitch,
