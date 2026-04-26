@@ -96,6 +96,12 @@ window.StemLab = window.StemLab || {
       cd: 0.35, cm: 0.95,
       color: '#fafafa', seamColor: '#dc2626',
       icon: '⚾'
+    },
+    basketball: {
+      label: 'Basketball', mass: 0.624, radius: 0.119,
+      cd: 0.50, cm: 0.40,
+      color: '#f97316', seamColor: '#1a1a1a',
+      icon: '🏀'
     }
   };
 
@@ -130,6 +136,79 @@ window.StemLab = window.StemLab || {
       grip: 'Circle change — ball deeper in the palm',
       teach: 'Looks like a fastball at release but ~12 mph slower. Hitter\'s timing is wrecked.' }
   ];
+
+  // Basketball shot presets — speed mph, release angle, release height, spin (almost always
+  // backspin for basketball; spin axis stays at 0°). The teaching surface here is RELEASE
+  // ANGLE + RELEASE HEIGHT, not pitch type — that's the whole free-throw lesson.
+  var SHOT_TYPES = [
+    { id: 'freethrow', label: 'Free Throw', icon: '🆓',
+      speedMph: 16, spinRpm: 180, spinAxisDeg: 0, aimDegV: 52, releaseHeight: 2.2,
+      grip: 'Square stance, ball balanced on shooting hand fingertips',
+      teach: 'Standard free-throw form: high arc (~52°), backspin to "soften" the ball if it hits the rim. The taller you are, the flatter you can shoot — Shaq vs Steph.' },
+    { id: 'jumper', label: 'Jump Shot', icon: '🦘',
+      speedMph: 18, spinRpm: 200, spinAxisDeg: 0, aimDegV: 48, releaseHeight: 2.6,
+      grip: 'Released at the top of the jump for higher release point',
+      teach: 'Jumping raises your release point ~0.4m. Same arc but harder to defend — defender\'s arms can\'t reach the higher release.' },
+    { id: 'hook', label: 'Hook Shot', icon: '🪝',
+      speedMph: 17, spinRpm: 150, spinAxisDeg: 30, aimDegV: 55, releaseHeight: 2.8,
+      grip: 'One-handed sweep across the body, very high release',
+      teach: 'Shaq, Kareem, Jokic. The release point is so high (~2.8m) that defenders can\'t block it; tradeoff is some lateral spin so accuracy is harder.' },
+    { id: 'bank', label: 'Bank Shot', icon: '🪞',
+      speedMph: 19, spinRpm: 220, spinAxisDeg: 0, aimDegV: 45, releaseHeight: 2.3,
+      grip: 'Aim for the upper square painted on the backboard',
+      teach: 'Off the backboard. Lower arc + harder shot, but the backboard absorbs error — geometry forgives a wider release angle than a swish would.' },
+    { id: 'three', label: '3-Pointer', icon: '🎯',
+      speedMph: 21, spinRpm: 220, spinAxisDeg: 0, aimDegV: 49, releaseHeight: 2.5,
+      grip: 'Same form as a free throw but with more leg drive',
+      teach: '3-point line is 6.75m (NBA). Speed scales linearly with distance; arc stays similar (~49°) so the ball still drops "in" rather than skips off the back of the rim.' }
+  ];
+
+  // Mode metadata — controls which target / preset list / distances apply.
+  var MODES = {
+    pitching: {
+      label: "Pitcher's Mound", icon: '⚾', ball: 'baseball', presets: PITCH_TYPES,
+      targetZ: 18.44, // 60 ft 6 in
+      releaseStrideDefault: 1.5,
+      releaseHeightRange: [1.4, 2.4],
+      speedRange: [50, 105]
+    },
+    freethrow: {
+      label: 'Free Throw', icon: '🏀', ball: 'basketball', presets: SHOT_TYPES,
+      targetZ: 4.57, // 15 ft = NBA free throw line to backboard, rim ~ 4.34m
+      rimY: 3.05, rimZ: 4.34, rimRadius: 0.23,
+      releaseStrideDefault: 0.0,
+      releaseHeightRange: [1.8, 3.0],
+      speedRange: [10, 28]
+    }
+  };
+
+  // Score classifier for free throw mode: "swish" / "rim" / "backboard" / "miss".
+  // We classify by walking the trajectory and looking for the first downward
+  // crossing of rim height that lands within rim radius. Rim is centered at
+  // (x=0, z=rimZ); ball must descend through it (vy < 0).
+  function classifyShotResult(samples, rimY, rimZ, rimRadius) {
+    if (!samples || samples.length < 2) return 'miss';
+    for (var i = 1; i < samples.length; i++) {
+      var prev = samples[i - 1], cur = samples[i];
+      // Look for downward crossing of rim plane
+      if (prev.y > rimY && cur.y <= rimY && cur.vy < 0) {
+        // Lerp to exact crossing
+        var f = (prev.y - rimY) / (prev.y - cur.y);
+        var cx = prev.x + (cur.x - prev.x) * f;
+        var cz = prev.z + (cur.z - prev.z) * f;
+        var dx = cx - 0;
+        var dz = cz - rimZ;
+        var dist = Math.sqrt(dx * dx + dz * dz);
+        if (dist <= rimRadius * 0.85) return 'swish';     // clean center
+        if (dist <= rimRadius) return 'made';              // in but kissed rim
+        if (dist <= rimRadius + 0.18) return 'rim';        // off the rim, may bounce in
+        // Backboard plane is at z = rimZ + 0.10 (backboard sits behind rim)
+        if (cz > rimZ + 0.10 && Math.abs(cx) < 0.9) return 'backboard';
+        return 'miss';
+      }
+    }
+    return 'air';
+  }
 
   // Convert pitch axis (degrees) into a 3D angular velocity unit vector.
   // World coords: +X = toward right-handed batter (3rd-base side from mound),
@@ -177,8 +256,8 @@ window.StemLab = window.StemLab || {
     var samples = [{ t: 0, x: pos.x, y: pos.y, z: pos.z, vx: vx, vy: vy, vz: vz }];
     var dt = 1 / 240; // small step for Magnus stability
     var t = 0;
-    var maxT = 2.0; // 2 seconds is plenty even for 60 mph pitches
-    var plateZ = 18.44; // 60 ft 6 in in meters
+    var maxT = opts.maxT !== undefined ? opts.maxT : 2.0;
+    var plateZ = opts.targetZ !== undefined ? opts.targetZ : 18.44; // baseball plate default
     var outcome = null;
     while (t < maxT) {
       var spd = Math.sqrt(vx * vx + vy * vy + vz * vz);
@@ -213,8 +292,11 @@ window.StemLab = window.StemLab || {
         samples.push({ t: t, x: pos.x, y: pos.y, z: pos.z, vx: vx, vy: vy, vz: vz });
       }
       // Reached plate?
-      if (pos.z >= plateZ) {
-        // Linearly back-interpolate to the exact plate crossing
+      // Record plate-plane crossing the FIRST time z reaches plateZ — but DON'T
+      // truncate the simulation. Free Throw mode wants the trajectory to keep
+      // arcing past the rim plane until it lands; pitching mode just uses the
+      // recorded crossing for strike/ball classification.
+      if (!outcome && pos.z >= plateZ) {
         var prev = samples[samples.length - 2] || samples[0];
         var dz = pos.z - prev.z;
         var f = dz > 0 ? (plateZ - prev.z) / dz : 0;
@@ -222,12 +304,16 @@ window.StemLab = window.StemLab || {
         var py = prev.y + (pos.y - prev.y) * f;
         var pt = prev.t + (t - prev.t) * f;
         outcome = { reachedPlate: true, plateX: px, plateY: py, plateT: pt };
+        // Insert the exact crossing sample so the trail draws to the right spot.
         samples.push({ t: pt, x: px, y: py, z: plateZ, vx: vx, vy: vy, vz: vz });
-        break;
+        // For pitching mode (truncateAtTarget), stop here. Free Throw passes
+        // truncateAtTarget=false so the arc continues to the ground.
+        if (opts.truncateAtTarget !== false) break;
       }
-      // Bounced before the plate?
+      // Bounced (hit the ground)?
       if (pos.y <= 0) {
-        outcome = { bounced: true, bounceX: pos.x, bounceZ: pos.z, bounceT: t };
+        if (!outcome) outcome = { bounced: true, bounceX: pos.x, bounceZ: pos.z, bounceT: t };
+        else { outcome.bounced = true; outcome.bounceX = pos.x; outcome.bounceZ = pos.z; outcome.bounceT = t; }
         break;
       }
     }
@@ -307,7 +393,11 @@ window.StemLab = window.StemLab || {
             replayT: 0,
             throwCount: 0,
             strikeCount: 0,
-            pitchTypesUsed: {}
+            pitchTypesUsed: {},
+            // Mode + free-throw extras
+            mode: 'pitching',          // 'pitching' | 'freethrow'
+            shotType: 'freethrow',
+            shotMakeCount: 0           // free-throw scoring
           }});
         });
         return h('div', { className: 'p-8 text-center text-slate-600' }, 'Loading ThrowLab…');
@@ -336,24 +426,66 @@ window.StemLab = window.StemLab || {
         tlAnnounce('Selected pitch: ' + pt.label + '. Speed ' + pt.speedMph + ' mph, ' + pt.spinRpm + ' rpm.');
       }
 
+      function applyShotPreset(sid) {
+        var st = SHOT_TYPES.find(function(s) { return s.id === sid; });
+        if (!st) return;
+        setLabToolData(function(prev) {
+          var next = Object.assign({}, prev.throwlab, {
+            shotType: sid,
+            speedMph: st.speedMph,
+            spinRpm: st.spinRpm,
+            spinAxisDeg: st.spinAxisDeg,
+            aimDegV: st.aimDegV,
+            releaseHeight: st.releaseHeight
+          });
+          return Object.assign({}, prev, { throwlab: next });
+        });
+        tlAnnounce('Selected shot: ' + st.label + '. Release angle ' + st.aimDegV + ' degrees, height ' + st.releaseHeight + ' meters.');
+      }
+
+      function switchMode(newMode) {
+        var modeMeta = MODES[newMode];
+        if (!modeMeta) return;
+        setLabToolData(function(prev) {
+          var defaults = newMode === 'pitching'
+            ? { speedMph: 92, releaseHeight: 1.85, aimDegV: -1.5, aimDegH: 0, spinRpm: 2300, spinAxisDeg: 0 }
+            : { speedMph: 16, releaseHeight: 2.2, aimDegV: 52, aimDegH: 0, spinRpm: 180, spinAxisDeg: 0 };
+          var next = Object.assign({}, prev.throwlab, defaults, {
+            mode: newMode, lastResult: null, replayActive: false, replayT: 0
+          });
+          return Object.assign({}, prev, { throwlab: next });
+        });
+        tlAnnounce('Switched to ' + modeMeta.label + ' mode.');
+      }
+
       function throwPitch() {
-        var result = simulatePitch({
-          ball: 'baseball',
+        var modeMeta = MODES[d.mode] || MODES.pitching;
+        var simOpts = {
+          ball: modeMeta.ball,
           speedMph: d.speedMph,
           releaseHeight: d.releaseHeight,
           aimDegV: d.aimDegV,
           aimDegH: d.aimDegH,
           spinRpm: d.spinRpm,
           spinAxisDeg: d.spinAxisDeg,
-          throwerHand: d.throwerHand
-        });
-        var loc = result.outcome.reachedPlate
-          ? classifyPlateLocation(result.outcome.plateX, result.outcome.plateY)
-          : 'wild';
+          throwerHand: d.throwerHand,
+          targetZ: modeMeta.targetZ,
+          releaseStride: modeMeta.releaseStrideDefault,
+          truncateAtTarget: d.mode === 'pitching' // free throw needs the full arc to land
+        };
+        var result = simulatePitch(simOpts);
+        var loc;
+        if (d.mode === 'freethrow') {
+          loc = classifyShotResult(result.samples, modeMeta.rimY, modeMeta.rimZ, modeMeta.rimRadius);
+        } else {
+          loc = result.outcome.reachedPlate
+            ? classifyPlateLocation(result.outcome.plateX, result.outcome.plateY)
+            : 'wild';
+        }
         result.location = loc;
         // Compute break stats relative to a no-spin baseline
         var noSpin = simulatePitch({
-          ball: 'baseball',
+          ball: modeMeta.ball,
           speedMph: d.speedMph,
           releaseHeight: d.releaseHeight,
           aimDegV: d.aimDegV,
@@ -370,9 +502,11 @@ window.StemLab = window.StemLab || {
         }
         sfxThrow();
         var newThrowCount = (d.throwCount || 0) + 1;
-        var newStrikeCount = loc === 'strike' ? (d.strikeCount || 0) + 1 : (d.strikeCount || 0);
+        var isMakeOutcome = loc === 'strike' || loc === 'swish' || loc === 'made';
+        var newStrikeCount = (d.mode === 'pitching' && loc === 'strike') ? (d.strikeCount || 0) + 1 : (d.strikeCount || 0);
+        var newMakeCount = (d.mode === 'freethrow' && (loc === 'swish' || loc === 'made')) ? (d.shotMakeCount || 0) + 1 : (d.shotMakeCount || 0);
         var newTypesUsed = Object.assign({}, d.pitchTypesUsed || {});
-        newTypesUsed[d.pitchType] = true;
+        if (d.mode === 'pitching') newTypesUsed[d.pitchType] = true;
         setLabToolData(function(prev) {
           var next = Object.assign({}, prev.throwlab, {
             lastResult: result,
@@ -380,31 +514,63 @@ window.StemLab = window.StemLab || {
             replayT: 0,
             throwCount: newThrowCount,
             strikeCount: newStrikeCount,
+            shotMakeCount: newMakeCount,
             pitchTypesUsed: newTypesUsed
           });
           return Object.assign({}, prev, { throwlab: next });
         });
         // Outcome SFX + announcement after a tiny delay so it doesn't talk over the throw
         setTimeout(function() {
-          if (loc === 'strike') {
-            sfxStrike();
-            tlAnnounce('Strike! Pitch crossed the plate ' + Math.round((result.outcome.plateY || 0) * 39.37) + ' inches up.');
-            if (addToast) addToast('🎯 STRIKE!');
-            if (awardXP) awardXP('throwlab', 5, 'Strike thrown');
-          } else if (loc === 'borderline') {
-            sfxCatch();
-            tlAnnounce('Borderline pitch. Just outside the strike zone.');
-            if (addToast) addToast('⚪ Borderline pitch');
-          } else if (loc === 'ball') {
-            sfxBall();
-            tlAnnounce('Ball. Pitch missed the strike zone.');
-            if (addToast) addToast('Ball — outside the zone');
-          } else {
-            sfxBall();
-            tlAnnounce('Wild pitch. Bounced or sailed past the catcher.');
-            if (addToast) addToast('Wild pitch!');
+          if (d.mode === 'pitching') {
+            if (loc === 'strike') {
+              sfxStrike();
+              tlAnnounce('Strike! Pitch crossed the plate ' + Math.round((result.outcome.plateY || 0) * 39.37) + ' inches up.');
+              if (addToast) addToast('🎯 STRIKE!');
+              if (awardXP) awardXP('throwlab', 5, 'Strike thrown');
+            } else if (loc === 'borderline') {
+              sfxCatch();
+              tlAnnounce('Borderline pitch. Just outside the strike zone.');
+              if (addToast) addToast('⚪ Borderline pitch');
+            } else if (loc === 'ball') {
+              sfxBall();
+              tlAnnounce('Ball. Pitch missed the strike zone.');
+              if (addToast) addToast('Ball — outside the zone');
+            } else {
+              sfxBall();
+              tlAnnounce('Wild pitch. Bounced or sailed past the catcher.');
+              if (addToast) addToast('Wild pitch!');
+            }
+            if (newStrikeCount === 3 && (d.strikeCount || 0) < 3 && celebrate) celebrate();
+          } else { // freethrow
+            if (loc === 'swish') {
+              sfxStrike(); sfxStrike();
+              tlAnnounce('Swish! Clean shot through the center of the rim.');
+              if (addToast) addToast('🏀 SWISH!');
+              if (awardXP) awardXP('throwlab', 8, 'Swish');
+              if (celebrate) celebrate();
+            } else if (loc === 'made') {
+              sfxStrike();
+              tlAnnounce('Made it! Ball kissed the rim and dropped through.');
+              if (addToast) addToast('🏀 SCORE!');
+              if (awardXP) awardXP('throwlab', 5, 'Shot made');
+            } else if (loc === 'rim') {
+              sfxBall();
+              tlAnnounce('Off the rim. Close — adjust your arc.');
+              if (addToast) addToast('Rim out');
+            } else if (loc === 'backboard') {
+              sfxCatch();
+              tlAnnounce('Off the backboard. Try a softer shot or shorter arc.');
+              if (addToast) addToast('Off the backboard');
+            } else if (loc === 'air') {
+              sfxBall();
+              tlAnnounce('Airball — short of the rim entirely.');
+              if (addToast) addToast('Airball');
+            } else {
+              sfxBall();
+              tlAnnounce('Missed the rim.');
+              if (addToast) addToast('Miss');
+            }
           }
-          if (newStrikeCount === 3 && (d.strikeCount || 0) < 3 && celebrate) celebrate();
         }, 350);
       }
 
@@ -416,69 +582,147 @@ window.StemLab = window.StemLab || {
         var W = canvas.width, H = canvas.height;
         gfx.clearRect(0, 0, W, H);
 
-        // Layout: mound on left, plate on right, ground at bottom
+        var modeMeta = MODES[d.mode] || MODES.pitching;
+        // Layout
         var marginL = 40, marginR = 80, marginT = 30, marginB = 60;
         var fieldW = W - marginL - marginR;
         var fieldH = H - marginT - marginB;
-        var plateZ = 18.44;
-        var maxY = 3.0; // m above ground we render
+        // Render-window Z extent — pitching shows the full 60.5 ft, free throw
+        // zooms in on the much shorter 15-ft court so the arc reads clearly.
+        var renderMaxZ = d.mode === 'pitching' ? modeMeta.targetZ : 6.5;
+        var maxY = d.mode === 'pitching' ? 3.0 : 4.5;
         // World (z, y) → canvas (px, py)
         function worldToCanvas(z, y) {
-          var px = marginL + (z / plateZ) * fieldW;
+          var px = marginL + (z / renderMaxZ) * fieldW;
           var py = (marginT + fieldH) - (y / maxY) * fieldH;
           return [px, py];
         }
-        // Sky gradient
+        // Sky gradient (court air for free throw is indoor — gym roof)
+        var skyTop = d.mode === 'pitching' ? '#1e3a5f' : '#3a2e2a';
+        var skyBot = d.mode === 'pitching' ? '#5a7ba8' : '#6e5a48';
         var skyGrad = gfx.createLinearGradient(0, 0, 0, marginT + fieldH);
-        skyGrad.addColorStop(0, '#1e3a5f');
-        skyGrad.addColorStop(1, '#5a7ba8');
+        skyGrad.addColorStop(0, skyTop);
+        skyGrad.addColorStop(1, skyBot);
         gfx.fillStyle = skyGrad;
         gfx.fillRect(0, 0, W, marginT + fieldH);
-        // Grass
-        gfx.fillStyle = '#3a7a26';
+        // Floor — grass for pitching, hardwood for free throw
+        gfx.fillStyle = d.mode === 'pitching' ? '#3a7a26' : '#c8965a';
         gfx.fillRect(0, marginT + fieldH, W, H - (marginT + fieldH));
-        // Pitcher's mound (small bump on left)
-        gfx.fillStyle = '#a16207';
-        var moundPts = worldToCanvas(0, 0);
-        gfx.beginPath();
-        gfx.moveTo(moundPts[0] - 22, moundPts[1]);
-        gfx.lineTo(moundPts[0] + 22, moundPts[1]);
-        gfx.lineTo(moundPts[0] + 30, moundPts[1] + 10);
-        gfx.lineTo(moundPts[0] - 30, moundPts[1] + 10);
-        gfx.closePath();
-        gfx.fill();
-        // Home plate (white pentagon on right)
-        gfx.fillStyle = '#ffffff';
-        var plPts = worldToCanvas(plateZ, 0);
-        gfx.fillRect(plPts[0] - 10, plPts[1] - 4, 20, 8);
+        if (d.mode === 'freethrow') {
+          // Hardwood plank lines for the gym floor
+          gfx.strokeStyle = 'rgba(0,0,0,0.18)';
+          gfx.lineWidth = 1;
+          for (var hp = 0; hp < W; hp += 22) {
+            gfx.beginPath();
+            gfx.moveTo(hp, marginT + fieldH);
+            gfx.lineTo(hp, H);
+            gfx.stroke();
+          }
+        }
 
-        // Strike zone (semi-transparent box ABOVE the plate)
-        var szTop = worldToCanvas(plateZ, STRIKE_ZONE.yMax);
-        var szBot = worldToCanvas(plateZ, STRIKE_ZONE.yMin);
-        gfx.strokeStyle = '#fbbf24';
-        gfx.lineWidth = 2;
-        gfx.setLineDash([6, 4]);
-        gfx.strokeRect(plPts[0] - 14, szTop[1], 28, szBot[1] - szTop[1]);
-        gfx.setLineDash([]);
-
-        // Distance label (60 ft 6 in)
-        gfx.fillStyle = '#cbd5e1';
-        gfx.font = '11px system-ui';
-        gfx.textAlign = 'center';
-        gfx.fillText('60 ft 6 in →', (moundPts[0] + plPts[0]) / 2, marginT + fieldH + 22);
-        // Mound + plate labels
-        gfx.fillText('Mound', moundPts[0], marginT + fieldH + 22);
-        gfx.fillText('Plate', plPts[0], marginT + fieldH + 36);
+        if (d.mode === 'pitching') {
+          var plateZ = modeMeta.targetZ;
+          // Pitcher's mound (small bump on left)
+          gfx.fillStyle = '#a16207';
+          var moundPts = worldToCanvas(0, 0);
+          gfx.beginPath();
+          gfx.moveTo(moundPts[0] - 22, moundPts[1]);
+          gfx.lineTo(moundPts[0] + 22, moundPts[1]);
+          gfx.lineTo(moundPts[0] + 30, moundPts[1] + 10);
+          gfx.lineTo(moundPts[0] - 30, moundPts[1] + 10);
+          gfx.closePath();
+          gfx.fill();
+          // Home plate (white)
+          gfx.fillStyle = '#ffffff';
+          var plPts = worldToCanvas(plateZ, 0);
+          gfx.fillRect(plPts[0] - 10, plPts[1] - 4, 20, 8);
+          // Strike zone (dashed box ABOVE the plate)
+          var szTop = worldToCanvas(plateZ, STRIKE_ZONE.yMax);
+          var szBot = worldToCanvas(plateZ, STRIKE_ZONE.yMin);
+          gfx.strokeStyle = '#fbbf24';
+          gfx.lineWidth = 2;
+          gfx.setLineDash([6, 4]);
+          gfx.strokeRect(plPts[0] - 14, szTop[1], 28, szBot[1] - szTop[1]);
+          gfx.setLineDash([]);
+          // Labels
+          gfx.fillStyle = '#cbd5e1';
+          gfx.font = '11px system-ui';
+          gfx.textAlign = 'center';
+          gfx.fillText('60 ft 6 in →', (moundPts[0] + plPts[0]) / 2, marginT + fieldH + 22);
+          gfx.fillText('Mound', moundPts[0], marginT + fieldH + 22);
+          gfx.fillText('Plate', plPts[0], marginT + fieldH + 36);
+        } else {
+          // Free Throw rendering: shooter on left, hoop + backboard on right
+          var ftLineZ = modeMeta.targetZ;
+          var rimZ = modeMeta.rimZ;
+          var rimY = modeMeta.rimY;
+          var rimRadius = modeMeta.rimRadius;
+          // Free throw line marker on the floor
+          var ftLinePts = worldToCanvas(0, 0);
+          var ftPlPts = worldToCanvas(ftLineZ, 0);
+          gfx.strokeStyle = '#fafafa';
+          gfx.lineWidth = 2;
+          gfx.beginPath();
+          gfx.moveTo(ftLinePts[0] - 18, ftLinePts[1]);
+          gfx.lineTo(ftLinePts[0] + 18, ftLinePts[1]);
+          gfx.stroke();
+          // Backboard (white rectangle behind rim)
+          var bbBot = worldToCanvas(rimZ + 0.10, rimY - 0.30);
+          var bbTop = worldToCanvas(rimZ + 0.10, rimY + 1.05);
+          gfx.fillStyle = '#fafafa';
+          gfx.fillRect(bbBot[0] - 1, bbTop[1], 6, bbBot[1] - bbTop[1]);
+          // Backboard square (small painted target on glass)
+          gfx.strokeStyle = '#dc2626';
+          gfx.lineWidth = 2;
+          var sqL = worldToCanvas(rimZ + 0.09, rimY + 0.45);
+          var sqR = worldToCanvas(rimZ + 0.09, rimY + 0.05);
+          gfx.strokeRect(sqL[0] - 12, sqL[1], 24, sqR[1] - sqL[1]);
+          // Rim (orange horizontal bar at rim height) + net hash
+          var rimLeft = worldToCanvas(rimZ - rimRadius, rimY);
+          var rimRight = worldToCanvas(rimZ + rimRadius, rimY);
+          gfx.strokeStyle = '#f97316';
+          gfx.lineWidth = 4;
+          gfx.beginPath();
+          gfx.moveTo(rimLeft[0], rimLeft[1]);
+          gfx.lineTo(rimRight[0], rimRight[1]);
+          gfx.stroke();
+          // Net (dashed lines hanging down from rim)
+          gfx.strokeStyle = 'rgba(255,255,255,0.7)';
+          gfx.lineWidth = 1;
+          gfx.setLineDash([3, 3]);
+          var netBot = worldToCanvas(rimZ, rimY - 0.35);
+          gfx.beginPath();
+          gfx.moveTo(rimLeft[0], rimLeft[1]); gfx.lineTo(netBot[0] - 4, netBot[1]);
+          gfx.moveTo(rimRight[0], rimRight[1]); gfx.lineTo(netBot[0] + 4, netBot[1]);
+          gfx.moveTo((rimLeft[0] + rimRight[0]) / 2, rimLeft[1]); gfx.lineTo(netBot[0], netBot[1]);
+          gfx.stroke();
+          gfx.setLineDash([]);
+          // Pole (gray vertical from floor to backboard top)
+          gfx.fillStyle = '#475569';
+          var poleX = bbTop[0] + 6;
+          var poleBot = worldToCanvas(rimZ + 0.10, 0);
+          gfx.fillRect(poleX, bbTop[1], 4, poleBot[1] - bbTop[1]);
+          // Labels
+          gfx.fillStyle = '#cbd5e1';
+          gfx.font = '11px system-ui';
+          gfx.textAlign = 'center';
+          gfx.fillText('FT line', ftLinePts[0], marginT + fieldH + 22);
+          gfx.fillText('15 ft to backboard →', (ftLinePts[0] + ftPlPts[0]) / 2, marginT + fieldH + 22);
+          gfx.fillText('Hoop', ftPlPts[0], marginT + fieldH + 36);
+        }
 
         // No-spin reference trajectory (gray, dashed) — only when there's a result
         var lr = d.lastResult;
         if (lr && d.showPhysics) {
           var noSpin = simulatePitch({
-            ball: 'baseball',
+            ball: modeMeta.ball,
             speedMph: d.speedMph, releaseHeight: d.releaseHeight,
             aimDegV: d.aimDegV, aimDegH: d.aimDegH,
             spinRpm: 0, spinAxisDeg: 0,
-            throwerHand: d.throwerHand
+            throwerHand: d.throwerHand,
+            targetZ: modeMeta.targetZ,
+            releaseStride: modeMeta.releaseStrideDefault,
+            truncateAtTarget: d.mode === 'pitching'
           });
           gfx.strokeStyle = 'rgba(148, 163, 184, 0.6)';
           gfx.lineWidth = 1.5;
@@ -486,7 +730,7 @@ window.StemLab = window.StemLab || {
           gfx.beginPath();
           for (var i = 0; i < noSpin.samples.length; i++) {
             var s = noSpin.samples[i];
-            if (s.z > plateZ) break;
+            if (s.z > renderMaxZ) break;
             var p = worldToCanvas(s.z, s.y);
             if (i === 0) gfx.moveTo(p[0], p[1]); else gfx.lineTo(p[0], p[1]);
           }
@@ -494,19 +738,29 @@ window.StemLab = window.StemLab || {
           gfx.setLineDash([]);
         }
 
-        // Actual pitch trajectory (color by location)
+        // Actual trajectory (color by outcome — pitching strike-zone palette OR
+        // free-throw make/miss palette).
         if (lr) {
-          var trajColor = lr.location === 'strike' ? '#10b981'
-                        : lr.location === 'borderline' ? '#fbbf24'
-                        : lr.location === 'ball' ? '#94a3b8'
-                        : '#ef4444';
+          var trajColor;
+          if (d.mode === 'freethrow') {
+            trajColor = lr.location === 'swish' ? '#10b981'
+                      : lr.location === 'made' ? '#3b82f6'
+                      : lr.location === 'rim' ? '#fbbf24'
+                      : lr.location === 'backboard' ? '#94a3b8'
+                      : '#ef4444';
+          } else {
+            trajColor = lr.location === 'strike' ? '#10b981'
+                      : lr.location === 'borderline' ? '#fbbf24'
+                      : lr.location === 'ball' ? '#94a3b8'
+                      : '#ef4444';
+          }
           gfx.strokeStyle = trajColor;
           gfx.lineWidth = 2.5;
           gfx.beginPath();
           var renderUpTo = d.replayActive ? Math.floor(lr.samples.length * Math.min(1, d.replayT)) : lr.samples.length;
           for (var j = 0; j < renderUpTo; j++) {
             var sj = lr.samples[j];
-            if (sj.z > plateZ + 0.5) break;
+            if (sj.z > renderMaxZ + 0.5) break;
             var pj = worldToCanvas(sj.z, sj.y);
             if (j === 0) gfx.moveTo(pj[0], pj[1]); else gfx.lineTo(pj[0], pj[1]);
           }
@@ -567,47 +821,104 @@ window.StemLab = window.StemLab || {
       }
 
       var lr = d.lastResult;
+      var modeMeta = MODES[d.mode] || MODES.pitching;
+      var isPitching = d.mode === 'pitching';
+      var isFreeThrow = d.mode === 'freethrow';
+      // Active preset for the bottom-of-canvas teach blurb
+      var currentShot = SHOT_TYPES.find(function(s) { return s.id === d.shotType; }) || SHOT_TYPES[0];
+      var activePreset = isPitching ? currentPitch : currentShot;
+
+      // Outcome label + color (mode-specific)
+      function outcomeLabel(loc) {
+        if (isPitching) {
+          return loc === 'strike' ? '🎯 STRIKE'
+               : loc === 'borderline' ? '⚪ Borderline'
+               : loc === 'ball' ? '⚾ Ball (outside zone)'
+               : '😬 Wild pitch';
+        }
+        return loc === 'swish' ? '🌊 SWISH (clean center)'
+             : loc === 'made' ? '🏀 MADE IT'
+             : loc === 'rim' ? '〰️ Off the rim'
+             : loc === 'backboard' ? '🪞 Off the backboard'
+             : loc === 'air' ? '💨 Airball (short)'
+             : '😬 Miss';
+      }
+      function outcomeColor(loc) {
+        if (isPitching) {
+          return loc === 'strike' ? '#10b981' : loc === 'borderline' ? '#fbbf24' : loc === 'ball' ? '#94a3b8' : '#ef4444';
+        }
+        return loc === 'swish' ? '#10b981' : loc === 'made' ? '#3b82f6' : loc === 'rim' ? '#fbbf24' : loc === 'backboard' ? '#94a3b8' : '#ef4444';
+      }
 
       return h('div', { style: { padding: 16, color: '#f1f5f9', maxWidth: 1100, margin: '0 auto' } },
-        // Header
-        h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 } },
+        // Header — mode-aware title
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
           ArrowLeft && h('button', {
             onClick: function() { setStemLabTool && setStemLabTool(null); },
             style: { background: '#1e293b', border: '1px solid #334155', color: '#f1f5f9', padding: '6px 10px', borderRadius: 6, cursor: 'pointer' }
           }, '← Back'),
-          h('h2', { style: { margin: 0, fontSize: 20 } }, '⚾ ThrowLab — Pitcher\'s Mound'),
+          h('h2', { style: { margin: 0, fontSize: 20 } }, modeMeta.icon + ' ThrowLab — ' + modeMeta.label),
           h('span', { style: { fontSize: 12, color: '#94a3b8' } }, 'Same arm, different ball, different game.')
         ),
 
-        // Two-column layout: side-view canvas + controls
+        // Mode picker — pill row, prominent under header
+        h('div', { style: { display: 'flex', gap: 6, marginBottom: 14, flexWrap: 'wrap' } },
+          Object.keys(MODES).map(function(mid) {
+            var mm = MODES[mid];
+            var sel = d.mode === mid;
+            return h('button', {
+              key: mid,
+              onClick: function() { switchMode(mid); },
+              'aria-pressed': sel,
+              style: {
+                padding: '8px 14px', borderRadius: 999, cursor: 'pointer',
+                border: '1px solid ' + (sel ? '#fbbf24' : '#334155'),
+                background: sel ? 'rgba(251,191,36,0.18)' : '#1e293b',
+                color: '#f1f5f9', fontSize: 13, fontWeight: 600
+              }
+            }, mm.icon + ' ' + mm.label);
+          })
+        ),
+
+        // Two-column layout
         h('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 320px', gap: 16 } },
 
           // LEFT: side-view canvas + result panel
           h('div', null,
             h('canvas', {
               ref: canvasRef, width: 720, height: 360,
-              'aria-label': 'Side view of pitcher\'s mound and home plate. The strike zone is the dashed yellow box above the plate.',
+              'aria-label': isPitching
+                ? 'Side view of pitcher\'s mound and home plate. The strike zone is the dashed yellow box above the plate.'
+                : 'Side view of free-throw line and basketball hoop. The orange bar is the rim at 10 feet.',
               style: { width: '100%', maxWidth: 720, height: 'auto', borderRadius: 10, border: '1px solid #334155', background: '#0f172a' }
             }),
             // Result panel
             h('div', { style: { marginTop: 10, padding: 12, background: '#0f172a', border: '1px solid #1e293b', borderRadius: 10 } },
               lr ? (
                 h('div', null,
-                  h('div', { style: { fontSize: 14, fontWeight: 700, color: lr.location === 'strike' ? '#10b981' : lr.location === 'borderline' ? '#fbbf24' : lr.location === 'ball' ? '#94a3b8' : '#ef4444', marginBottom: 6 } },
-                    lr.location === 'strike' ? '🎯 STRIKE'
-                      : lr.location === 'borderline' ? '⚪ Borderline'
-                      : lr.location === 'ball' ? '⚾ Ball (outside zone)'
-                      : '😬 Wild pitch'),
+                  h('div', { style: { fontSize: 14, fontWeight: 700, color: outcomeColor(lr.location), marginBottom: 6 } }, outcomeLabel(lr.location)),
                   h('div', { style: { fontSize: 12, color: '#cbd5e1', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 } },
                     h('div', null, h('div', { style: { color: '#94a3b8', fontSize: 11 } }, 'Speed'), h('div', { style: { fontWeight: 700 } }, d.speedMph + ' mph')),
-                    h('div', null, h('div', { style: { color: '#94a3b8', fontSize: 11 } }, 'Time to plate'), h('div', { style: { fontWeight: 700 } }, lr.outcome.plateT ? lr.outcome.plateT.toFixed(2) + ' s' : '—')),
-                    h('div', null, h('div', { style: { color: '#94a3b8', fontSize: 11 } }, 'Vert. break'), h('div', { style: { fontWeight: 700 } }, lr.vBreakIn !== null ? lr.vBreakIn.toFixed(1) + ' in' : '—')),
-                    h('div', null, h('div', { style: { color: '#94a3b8', fontSize: 11 } }, 'Horiz. break'), h('div', { style: { fontWeight: 700 } }, lr.hBreakIn !== null ? lr.hBreakIn.toFixed(1) + ' in' : '—'))
+                    h('div', null,
+                      h('div', { style: { color: '#94a3b8', fontSize: 11 } }, isPitching ? 'Time to plate' : 'Hang time'),
+                      h('div', { style: { fontWeight: 700 } }, isPitching
+                        ? (lr.outcome.plateT ? lr.outcome.plateT.toFixed(2) + ' s' : '—')
+                        : (lr.samples && lr.samples.length ? lr.samples[lr.samples.length - 1].t.toFixed(2) + ' s' : '—'))),
+                    h('div', null, h('div', { style: { color: '#94a3b8', fontSize: 11 } }, isPitching ? 'Vert. break' : 'Apex'),
+                      h('div', { style: { fontWeight: 700 } }, isPitching
+                        ? (lr.vBreakIn !== null ? lr.vBreakIn.toFixed(1) + ' in' : '—')
+                        : (lr.samples ? Math.max.apply(null, lr.samples.map(function(s) { return s.y; })).toFixed(2) + ' m' : '—'))),
+                    h('div', null, h('div', { style: { color: '#94a3b8', fontSize: 11 } }, isPitching ? 'Horiz. break' : 'Release ∠'),
+                      h('div', { style: { fontWeight: 700 } }, isPitching
+                        ? (lr.hBreakIn !== null ? lr.hBreakIn.toFixed(1) + ' in' : '—')
+                        : (d.aimDegV.toFixed(1) + '°')))
                   ),
-                  h('div', { style: { marginTop: 8, fontSize: 12, color: '#cbd5e1', fontStyle: 'italic' } }, currentPitch.teach)
+                  h('div', { style: { marginTop: 8, fontSize: 12, color: '#cbd5e1', fontStyle: 'italic' } }, activePreset.teach)
                 )
               ) : h('div', { style: { color: '#94a3b8', fontSize: 13, textAlign: 'center', padding: 16 } },
-                'Pick a pitch type, set your release, and click THROW to see the path.')
+                isPitching
+                  ? 'Pick a pitch type, set your release, and click THROW to see the path.'
+                  : 'Pick a shot, set your release angle, and click SHOOT to see the arc.')
             ),
             // "Show physics" toggle
             h('div', { style: { marginTop: 10, fontSize: 12, color: '#94a3b8' } },
@@ -617,17 +928,18 @@ window.StemLab = window.StemLab || {
             )
           ),
 
-          // RIGHT: pitch picker + sliders + throw button
+          // RIGHT: preset picker + sliders + throw button
           h('div', null,
-            // Pitch picker
+            // Preset picker (pitches OR shots, mode-driven)
             h('div', { style: { background: '#0f172a', border: '1px solid #1e293b', borderRadius: 10, padding: 12, marginBottom: 12 } },
-              h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Pitch type'),
+              h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 } },
+                isPitching ? 'Pitch type' : 'Shot type'),
               h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 } },
-                PITCH_TYPES.map(function(pt) {
-                  var sel = d.pitchType === pt.id;
+                modeMeta.presets.map(function(pt) {
+                  var sel = isPitching ? d.pitchType === pt.id : d.shotType === pt.id;
                   return h('button', {
                     key: pt.id,
-                    onClick: function() { applyPitchPreset(pt.id); },
+                    onClick: function() { isPitching ? applyPitchPreset(pt.id) : applyShotPreset(pt.id); },
                     'aria-pressed': sel,
                     style: {
                       padding: '8px 10px', borderRadius: 6, cursor: 'pointer',
@@ -636,24 +948,24 @@ window.StemLab = window.StemLab || {
                       color: '#f1f5f9', fontSize: 12, textAlign: 'left'
                     }
                   }, h('div', { style: { fontSize: 14 } }, pt.icon + ' ' + pt.label),
-                     h('div', { style: { fontSize: 10, color: '#94a3b8' } }, pt.speedMph + ' mph · ' + pt.spinRpm + ' rpm'));
+                     h('div', { style: { fontSize: 10, color: '#94a3b8' } }, pt.speedMph + ' mph' + (isPitching ? ' · ' + pt.spinRpm + ' rpm' : ' · ' + pt.aimDegV + '° arc')));
                 })
               ),
               h('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 8, padding: 8, background: '#1e293b', borderRadius: 6 } },
                 h('div', { style: { fontWeight: 700, marginBottom: 2 } }, 'Grip:'),
-                currentPitch.grip)
+                activePreset.grip)
             ),
-            // Sliders
+            // Sliders — ranges scale with mode
             h('div', { style: { background: '#0f172a', border: '1px solid #1e293b', borderRadius: 10, padding: 12, marginBottom: 12 } },
               h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Release controls'),
-              slider('Speed', d.speedMph, 50, 105, 1, function(v) { upd('speedMph', v); }, ' mph'),
-              slider('Release height', d.releaseHeight.toFixed(2), 1.4, 2.4, 0.05, function(v) { upd('releaseHeight', v); }, ' m'),
-              slider('Vertical aim', d.aimDegV.toFixed(1), -8, 4, 0.1, function(v) { upd('aimDegV', v); }, '°'),
+              slider('Speed', d.speedMph, modeMeta.speedRange[0], modeMeta.speedRange[1], 1, function(v) { upd('speedMph', v); }, ' mph'),
+              slider('Release height', d.releaseHeight.toFixed(2), modeMeta.releaseHeightRange[0], modeMeta.releaseHeightRange[1], 0.05, function(v) { upd('releaseHeight', v); }, ' m'),
+              slider('Vertical aim', d.aimDegV.toFixed(1), isPitching ? -8 : 30, isPitching ? 4 : 70, 0.5, function(v) { upd('aimDegV', v); }, '°'),
               slider('Horizontal aim', d.aimDegH.toFixed(1), -5, 5, 0.1, function(v) { upd('aimDegH', v); }, '°'),
               d.scaffoldTier >= 3 ? slider('Spin rate', d.spinRpm, 0, 3500, 50, function(v) { upd('spinRpm', v); }, ' rpm') : null,
               d.scaffoldTier >= 3 ? slider('Spin axis', d.spinAxisDeg, 0, 360, 5, function(v) { upd('spinAxisDeg', v); }, '°') : null
             ),
-            // Throw button
+            // Throw / Shoot button — mode-aware label
             h('button', {
               onClick: throwPitch,
               style: {
@@ -661,12 +973,14 @@ window.StemLab = window.StemLab || {
                 border: '1px solid #fbbf24', background: 'linear-gradient(135deg, #fbbf24, #f59e0b)',
                 color: '#1a1a2e', fontSize: 16, fontWeight: 800
               }
-            }, '⚾ THROW PITCH'),
-            // Stats line
+            }, isPitching ? '⚾ THROW PITCH' : '🏀 SHOOT'),
+            // Stats line — mode-aware
             h('div', { style: { marginTop: 12, fontSize: 11, color: '#94a3b8', display: 'flex', justifyContent: 'space-between' } },
-              h('span', null, 'Pitches: ' + (d.throwCount || 0)),
-              h('span', null, 'Strikes: ' + (d.strikeCount || 0)),
-              h('span', null, 'Types: ' + Object.keys(d.pitchTypesUsed || {}).length + '/' + PITCH_TYPES.length)
+              h('span', null, (isPitching ? 'Pitches: ' : 'Shots: ') + (d.throwCount || 0)),
+              h('span', null, isPitching ? 'Strikes: ' + (d.strikeCount || 0) : 'Made: ' + (d.shotMakeCount || 0)),
+              h('span', null, isPitching
+                ? 'Types: ' + Object.keys(d.pitchTypesUsed || {}).length + '/' + PITCH_TYPES.length
+                : 'Shot: ' + currentShot.label)
             )
           )
         )
