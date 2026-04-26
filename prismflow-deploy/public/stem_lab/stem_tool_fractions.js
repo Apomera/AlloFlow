@@ -591,8 +591,7 @@ window.StemLab = window.StemLab || {
         // Toggle mode
         h('div', { className: 'flex justify-center gap-2' },
           ['pie', 'bar'].map(function(m) {
-            return h('button', { 'aria-label': 'Sfx Click',
-              key: m,
+            return h('button', { key: m,
               onClick: function() { sfxClick(); upd({ mode: m }); },
               className: 'px-3 py-1.5 rounded-lg text-xs font-bold capitalize ' + (mode === m ? 'bg-rose-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-rose-50')
             }, m === 'bar' ? '\u2588 Bar' : '\u25CF Pie');
@@ -604,8 +603,7 @@ window.StemLab = window.StemLab || {
            { n: 3, d: 4, l: '\u00BE' }, { n: 3, d: 8, l: '\u215C' }, { n: 5, d: 6, l: '\u215A' }, { n: 7, d: 12, l: '7/12' },
            { n: 11, d: 16, l: '11/16' }, { n: 13, d: 20, l: '13/20' }
           ].map(function(p) {
-            return h('button', { 'aria-label': 'Sfx Click',
-              key: p.l,
+            return h('button', { key: p.l,
               onClick: function() { sfxClick(); upd({ pieces: { numerator: p.n, denominator: p.d } }); },
               className: 'px-3 py-1.5 text-sm font-bold bg-rose-50 text-rose-700 border border-rose-200 rounded-lg hover:bg-rose-100 transition-all'
             }, p.l);
@@ -622,8 +620,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'flex flex-wrap gap-1.5' },
           h('span', { className: 'text-[11px] font-bold text-slate-600 self-center' }, 'Presets:'),
           [[1,2,1,3],[2,5,3,8],[3,4,5,6],[1,4,2,8],[7,10,3,5],[5,12,1,3]].map(function(pr) {
-            return h('button', { 'aria-label': 'Sfx Click',
-              key: pr.join('-'),
+            return h('button', { key: pr.join('-'),
               onClick: function() { sfxClick(); upd({ num1: pr[0], den1: pr[1], num2: pr[2], den2: pr[3] }); },
               className: 'px-2 py-1 rounded-lg text-[11px] font-bold bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100 transition-all'
             }, pr[0] + '/' + pr[1] + ' vs ' + pr[2] + '/' + pr[3]);
@@ -808,8 +805,7 @@ window.StemLab = window.StemLab || {
         // Operation buttons
         h('div', { className: 'flex gap-2 justify-center' },
           [['add', '+'], ['sub', '\u2212'], ['mul', '\u00D7'], ['div', '\u00F7']].map(function(op) {
-            return h('button', { 'aria-label': 'Sfx Click',
-              key: op[0],
+            return h('button', { key: op[0],
               onClick: function() { sfxClick(); upd({ opMode: op[0] }); },
               className: 'w-12 h-12 rounded-lg text-xl font-black transition-all ' +
                 (opMode === op[0] ? 'bg-orange-700 text-white shadow-md scale-110' : 'bg-slate-100 text-slate-600 hover:bg-orange-50')
@@ -1188,8 +1184,7 @@ window.StemLab = window.StemLab || {
               { n: 2, d: 3, l: '2/3' }, { n: 3, d: 4, l: '3/4' }, { n: 1, d: 5, l: '1/5' },
               { n: 1, d: 6, l: '1/6' }, { n: 5, d: 6, l: '5/6' }
             ].map(function(f) {
-              return h('button', { 'aria-label': 'Sfx Click',
-                key: f.l,
+              return h('button', { key: f.l,
                 onClick: function() { sfxClick(); upd({ wallHighlight: { n: f.n, d: f.d }, wallCompareA: null, wallCompareB: null }); },
                 className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition-all'
               }, f.l);
@@ -1296,8 +1291,7 @@ window.StemLab = window.StemLab || {
       // Tab bar
       h('div', { className: 'flex gap-1 bg-rose-50 rounded-xl p-1 border border-rose-200', role: 'tablist', 'aria-label': 'Fraction Lab sections' },
         tabs.map(function(t2) {
-          return h('button', { 'aria-label': 'Sfx Click',
-            key: t2.id,
+          return h('button', { key: t2.id,
             onClick: function() { sfxClick(); upd({ tab: t2.id }); trackTab(t2.id); },
             role: 'tab', 'aria-selected': tab === t2.id,
             className: 'flex-1 py-2 px-1 rounded-lg text-[11px] sm:text-xs font-bold transition-all ' +
@@ -1321,8 +1315,7 @@ window.StemLab = window.StemLab || {
             h('h4', { className: 'text-sm font-bold text-rose-800' }, '\uD83C\uDFAF Fraction Challenge'),
             h('div', { className: 'flex gap-0.5 ml-2' },
               ['easy', 'medium', 'hard'].map(function(d) {
-                return h('button', { 'aria-label': 'Sfx Click',
-                  key: d,
+                return h('button', { key: d,
                   onClick: function() { sfxClick(); upd({ difficulty: d }); },
                   className: 'text-[11px] font-bold px-1.5 py-0.5 rounded-full transition-all ' +
                     (difficulty === d

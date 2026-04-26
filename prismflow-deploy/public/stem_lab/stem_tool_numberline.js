@@ -477,8 +477,7 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'flex flex-wrap gap-1.5' },
                 h('span', { className: 'text-[11px] font-bold text-slate-600 self-center' }, 'Presets:'),
                 [[0, 10], [0, 20], [0, 100], [-10, 10], [-20, 20], [0, 1000]].map(function(pr) {
-                  return h('button', { 'aria-label': 'Sfx Click',
-                    key: pr.join('-'),
+                  return h('button', { key: pr.join('-'),
                     onClick: function() { sfxClick(); upd({ range: { min: pr[0], max: pr[1] } }); },
                     className: 'px-2 py-1 rounded-lg text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition-all'
                   }, pr[0] + ' to ' + pr[1]);
@@ -539,8 +538,7 @@ window.StemLab = window.StemLab || {
                     h('h4', { className: 'text-sm font-bold text-blue-800' }, '\uD83C\uDFAF Number Line Challenge'),
                     h('div', { className: 'flex gap-0.5 ml-2' },
                       ['easy', 'medium', 'hard'].map(function(d) {
-                        return h('button', { 'aria-label': 'Sfx Click',
-                          key: d, onClick: function() { sfxClick(); upd({ difficulty: d }); },
+                        return h('button', { key: d, onClick: function() { sfxClick(); upd({ difficulty: d }); },
                           className: 'text-[11px] font-bold px-1.5 py-0.5 rounded-full transition-all ' +
                             (difficulty === d ? (d === 'easy' ? 'bg-green-700 text-white' : d === 'hard' ? 'bg-red-700 text-white' : 'bg-blue-700 text-white') : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
                         }, d);
@@ -629,8 +627,7 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'flex flex-wrap gap-1.5' },
                 h('span', { className: 'text-[11px] font-bold text-slate-600 self-center' }, 'Count by:'),
                 [2, 3, 5, 10, 25, 100].map(function(s) {
-                  return h('button', { 'aria-label': 'Sfx Click',
-                    key: s,
+                  return h('button', { key: s,
                     onClick: function() { sfxClick(); upd({ skipBy: s, skipFrom: 0, skipCount: 8 }); },
                     className: 'px-3 py-1 rounded-lg text-xs font-bold ' +
                       (skipBy === s ? 'bg-violet-600 text-white' : 'bg-violet-50 text-violet-700 border border-violet-200 hover:bg-violet-100') + ' transition-all'
@@ -660,8 +657,7 @@ window.StemLab = window.StemLab || {
                   '\uD83D\uDCA1 Pattern: ' + skipFrom + ', ' + (skipFrom + skipBy) + ', ' + (skipFrom + 2 * skipBy) + ', ... (adding ' + skipBy + ' each time)')
               ),
               // Toggle
-              h('button', { 'aria-label': 'Sfx Click',
-                onClick: function() { sfxClick(); upd({ showSkipMarkers: !showSkipMarkers }); },
+              h('button', { onClick: function() { sfxClick(); upd({ showSkipMarkers: !showSkipMarkers }); },
                 className: 'text-xs font-bold ' + (showSkipMarkers ? 'text-violet-600' : 'text-slate-600') + ' hover:text-violet-800 transition-colors'
               }, showSkipMarkers ? '\uD83D\uDC41 Hide markers on line' : '\uD83D\uDC41 Show markers on line')
             );
@@ -751,8 +747,7 @@ window.StemLab = window.StemLab || {
             // Tab bar
             h('div', { className: 'flex gap-1 bg-blue-50 rounded-xl p-1 border border-blue-200', role: 'tablist', 'aria-label': 'Number Line sections' },
               tabs.map(function(t2) {
-                return h('button', { 'aria-label': 'Sfx Click',
-                  key: t2.id,
+                return h('button', { key: t2.id,
                   onClick: function() { sfxClick(); upd({ tab: t2.id }); },
                   role: 'tab', 'aria-selected': tab === t2.id,
                   className: 'flex-1 py-2 px-2 rounded-lg text-xs font-bold transition-all ' +

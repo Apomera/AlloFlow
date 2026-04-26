@@ -1667,6 +1667,41 @@ window.StemLab = window.StemLab || {
           })
         ),
 
+        // Difficulty / scaffold tier selector — IEP / UDL onramp.
+        // Tier 1 = speed only (early elementary, "more push = farther").
+        // Tier 2 = + release height + angle (when angle starts mattering).
+        // Tier 3 = + spin (full physics, MS / HS / AP).
+        // Wind controls follow tier 2+ so the wind panel doesn't confuse a
+        // Tier 1 student. Stored on d.scaffoldTier; defaults to 3.
+        h('div', { role: 'group', 'aria-label': 'Difficulty / scaffold tier',
+          style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14, flexWrap: 'wrap', fontSize: 12 }
+        },
+          h('span', { style: { color: '#cbd5e1' } }, 'Difficulty:'),
+          [
+            { tier: 1, label: 'Tier 1 · Speed only', short: '1' },
+            { tier: 2, label: 'Tier 2 · + Angle', short: '2' },
+            { tier: 3, label: 'Tier 3 · + Spin', short: '3' }
+          ].map(function(opt) {
+            var sel = (d.scaffoldTier || 3) === opt.tier;
+            return h('button', {
+              key: 'tier' + opt.tier,
+              onClick: function() {
+                upd('scaffoldTier', opt.tier);
+                tlAnnounce('Scaffold tier set to ' + opt.label);
+              },
+              'aria-pressed': sel,
+              'aria-label': opt.label,
+              'data-tl-focusable': 'true',
+              style: {
+                padding: '6px 10px', borderRadius: 6, cursor: 'pointer',
+                border: '1px solid ' + (sel ? '#fbbf24' : '#334155'),
+                background: sel ? 'rgba(251,191,36,0.18)' : '#1e293b',
+                color: '#f1f5f9', fontSize: 12
+              }
+            }, opt.label);
+          })
+        ),
+
         // Two-column layout
         h('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 320px', gap: 16 } },
 
@@ -1804,21 +1839,25 @@ window.StemLab = window.StemLab || {
             h('div', { style: { background: '#0f172a', border: '1px solid #1e293b', borderRadius: 10, padding: 12, marginBottom: 12 } },
               h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Release controls'),
               slider('Speed', d.speedMph, modeMeta.speedRange[0], modeMeta.speedRange[1], 1, function(v) { upd('speedMph', v); }, ' mph'),
-              slider('Release height', d.releaseHeight.toFixed(2), modeMeta.releaseHeightRange[0], modeMeta.releaseHeightRange[1], 0.05, function(v) { upd('releaseHeight', v); }, ' m'),
-              slider('Vertical aim', d.aimDegV.toFixed(1),
+              // Tier 2+: release height + angles. Tier 1 hides them so the
+              // student can focus on the speed-distance relationship alone.
+              (d.scaffoldTier || 3) >= 2 ? slider('Release height', d.releaseHeight.toFixed(2), modeMeta.releaseHeightRange[0], modeMeta.releaseHeightRange[1], 0.05, function(v) { upd('releaseHeight', v); }, ' m') : null,
+              (d.scaffoldTier || 3) >= 2 ? slider('Vertical aim', d.aimDegV.toFixed(1),
                 isPitching ? -8 : isFreeKick ? -2 : isFieldGoal ? 20 : 30,
                 isPitching ? 4 : isFreeKick ? 45 : isFieldGoal ? 60 : 70,
-                0.5, function(v) { upd('aimDegV', v); }, '°'),
-              slider('Horizontal aim', d.aimDegH.toFixed(1), -5, 5, 0.1, function(v) { upd('aimDegH', v); }, '°'),
-              d.scaffoldTier >= 3 ? slider('Spin rate', d.spinRpm, 0, 3500, 50, function(v) { upd('spinRpm', v); }, ' rpm') : null,
-              d.scaffoldTier >= 3 ? slider('Spin axis', d.spinAxisDeg, 0, 360, 5, function(v) { upd('spinAxisDeg', v); }, '°') : null
+                0.5, function(v) { upd('aimDegV', v); }, '°') : null,
+              (d.scaffoldTier || 3) >= 2 ? slider('Horizontal aim', d.aimDegH.toFixed(1), -5, 5, 0.1, function(v) { upd('aimDegH', v); }, '°') : null,
+              // Tier 3: spin (the full physics surface).
+              (d.scaffoldTier || 3) >= 3 ? slider('Spin rate', d.spinRpm, 0, 3500, 50, function(v) { upd('spinRpm', v); }, ' rpm') : null,
+              (d.scaffoldTier || 3) >= 3 ? slider('Spin axis', d.spinAxisDeg, 0, 360, 5, function(v) { upd('spinAxisDeg', v); }, '°') : null
             ),
-            // ── Wind (outdoor modes only) ──
+            // ── Wind (outdoor modes only, Tier 2+) ──
             // Free kick + field goal happen outdoors so wind is part of the
-            // physics. Indoor modes (pitching is mostly indoor-ish at MLB
-            // level for our purposes; basketball is indoor) keep the panel
+            // physics. Indoor modes (basketball is indoor) keep the panel
             // hidden so the UI doesn't clutter with irrelevant sliders.
-            (isFreeKick || isFieldGoal) ? h('div', {
+            // Tier 1 students stick to "more speed = more distance"; wind
+            // joins at Tier 2 once they've grasped the basic relationship.
+            ((isFreeKick || isFieldGoal) && (d.scaffoldTier || 3) >= 2) ? h('div', {
               style: { background: '#0f172a', border: '1px solid #1e293b', borderRadius: 10, padding: 12, marginBottom: 12 }
             },
               h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 } },
