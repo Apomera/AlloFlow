@@ -23773,6 +23773,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 h('span', { style: { color: '#fff', fontWeight: 900 } }, dlSpeed + ' mph')
               ),
               h('input', { type: 'range', min: 15, max: 85, step: 5, value: dlSpeed,
+                'aria-label': 'Your speed in miles per hour',
+                'aria-valuetext': dlSpeed + ' miles per hour',
+                'data-rr-focusable': 'true',
                 onChange: function(e) { upd('distractedSpeed', parseInt(e.target.value)); },
                 style: { width: '100%' }
               }),
@@ -23789,6 +23792,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 h('span', { style: { color: '#fff', fontWeight: 900 } }, dlGlance + ' seconds')
               ),
               h('input', { type: 'range', min: 1, max: 8, step: 0.5, value: dlGlance,
+                'aria-label': 'Glance away duration in seconds',
+                'aria-valuetext': dlGlance + ' seconds',
+                'data-rr-focusable': 'true',
                 onChange: function(e) { upd('distractedGlance', parseFloat(e.target.value)); },
                 style: { width: '100%' }
               }),
@@ -24446,6 +24452,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('span', { style: { fontSize: '14px', fontWeight: 800, color: '#fff', fontFamily: 'monospace' } }, labSpeed + ' mph')
             ),
             h('input', { type: 'range', min: 15, max: 90, step: 5, value: labSpeed,
+              'aria-label': 'Speed in miles per hour',
+              'aria-valuetext': labSpeed + ' miles per hour',
+              'data-rr-focusable': 'true',
               onChange: function(e) { upd('labSpeed', parseInt(e.target.value, 10)); },
               style: { width: '100%', accentColor: '#22d3ee' }
             })
@@ -24457,6 +24466,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('span', { style: { fontSize: '14px', fontWeight: 800, color: '#fff', fontFamily: 'monospace' } }, labReaction.toFixed(1) + ' s')
             ),
             h('input', { type: 'range', min: 0.5, max: 3, step: 0.1, value: labReaction,
+              'aria-label': 'Reaction time in seconds',
+              'aria-valuetext': labReaction.toFixed(1) + ' seconds',
+              'data-rr-focusable': 'true',
               onChange: function(e) { upd('labReaction', parseFloat(e.target.value)); },
               style: { width: '100%', accentColor: '#22d3ee' }
             }),
@@ -24598,17 +24610,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '14px' } },
             h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '12px', border: '1px solid #334155' } },
               h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#f97316', marginBottom: '4px' } }, 'ANNUAL MILES'),
-              h('input', { type: 'range', min: 3000, max: 30000, step: 1000, value: fcMiles, onChange: function(e) { upd('fcMiles', parseInt(e.target.value)); }, style: { width: '100%', accentColor: '#f97316' } }),
+              h('input', { type: 'range', min: 3000, max: 30000, step: 1000, value: fcMiles,
+                'aria-label': 'Annual miles driven', 'aria-valuetext': fcMiles + ' miles per year',
+                'data-rr-focusable': 'true',
+                onChange: function(e) { upd('fcMiles', parseInt(e.target.value)); }, style: { width: '100%', accentColor: '#f97316' } }),
               h('div', { style: { fontSize: '14px', fontWeight: 800, color: '#fff', textAlign: 'center', fontFamily: 'monospace' } }, fcMiles.toLocaleString())
             ),
             h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '12px', border: '1px solid #334155' } },
               h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#f97316', marginBottom: '4px' } }, 'GAS $/GAL'),
-              h('input', { type: 'range', min: 2, max: 6, step: 0.10, value: fcGasPrice, onChange: function(e) { upd('fcGasPrice', parseFloat(e.target.value)); }, style: { width: '100%', accentColor: '#f97316' } }),
+              h('input', { type: 'range', min: 2, max: 6, step: 0.10, value: fcGasPrice,
+                'aria-label': 'Gas price per gallon in dollars', 'aria-valuetext': '$' + fcGasPrice.toFixed(2) + ' per gallon',
+                'data-rr-focusable': 'true',
+                onChange: function(e) { upd('fcGasPrice', parseFloat(e.target.value)); }, style: { width: '100%', accentColor: '#f97316' } }),
               h('div', { style: { fontSize: '14px', fontWeight: 800, color: '#fff', textAlign: 'center', fontFamily: 'monospace' } }, '$' + fcGasPrice.toFixed(2))
             ),
             h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '12px', border: '1px solid #334155' } },
               h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#f97316', marginBottom: '4px' } }, 'ELECTRICITY $/kWh'),
-              h('input', { type: 'range', min: 0.08, max: 0.35, step: 0.01, value: fcElecPrice, onChange: function(e) { upd('fcElecPrice', parseFloat(e.target.value)); }, style: { width: '100%', accentColor: '#f97316' } }),
+              h('input', { type: 'range', min: 0.08, max: 0.35, step: 0.01, value: fcElecPrice,
+                'aria-label': 'Electricity price per kilowatt-hour in dollars', 'aria-valuetext': '$' + fcElecPrice.toFixed(2) + ' per kilowatt-hour',
+                'data-rr-focusable': 'true',
+                onChange: function(e) { upd('fcElecPrice', parseFloat(e.target.value)); }, style: { width: '100%', accentColor: '#f97316' } }),
               h('div', { style: { fontSize: '14px', fontWeight: 800, color: '#fff', textAlign: 'center', fontFamily: 'monospace' } }, '$' + fcElecPrice.toFixed(2))
             )
           ),
@@ -25074,7 +25095,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' } },
             h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '12px', border: '1px solid #334155' } },
               h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#06b6d4', marginBottom: '4px' } }, 'AGE'),
-              h('input', { type: 'range', min: 16, max: 75, value: insAge, onChange: function(e) { upd('insAge', parseInt(e.target.value)); }, style: { width: '100%', accentColor: '#06b6d4' } }),
+              h('input', { type: 'range', min: 16, max: 75, value: insAge,
+                'aria-label': 'Driver age in years', 'aria-valuetext': insAge + ' years old',
+                'data-rr-focusable': 'true',
+                onChange: function(e) { upd('insAge', parseInt(e.target.value)); }, style: { width: '100%', accentColor: '#06b6d4' } }),
               h('div', { style: { fontSize: '14px', fontWeight: 800, color: '#fff', textAlign: 'center' } }, insAge + ' years old'),
               h('div', { style: { fontSize: '9px', color: '#94a3b8', textAlign: 'center' } }, insAge < 25 ? 'Under 25 = higher rates' : insAge > 64 ? 'Senior rate applies' : 'Standard adult rate')
             ),
@@ -25146,7 +25170,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Mileage slider
           h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '12px', border: '1px solid #334155', marginBottom: '12px' } },
             h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#a3a3a3', marginBottom: '4px' } }, 'YOUR CURRENT MILEAGE'),
-            h('input', { type: 'range', min: 0, max: 150000, step: 5000, value: mileage, onChange: function(e) { upd('mileage', parseInt(e.target.value)); }, style: { width: '100%', accentColor: '#a3a3a3' } }),
+            h('input', { type: 'range', min: 0, max: 150000, step: 5000, value: mileage,
+              'aria-label': 'Vehicle odometer mileage', 'aria-valuetext': mileage.toLocaleString() + ' miles',
+              'data-rr-focusable': 'true',
+              onChange: function(e) { upd('mileage', parseInt(e.target.value)); }, style: { width: '100%', accentColor: '#a3a3a3' } }),
             h('div', { style: { fontSize: '16px', fontWeight: 800, color: '#fff', textAlign: 'center', fontFamily: 'monospace' } }, mileage.toLocaleString() + ' miles')
           ),
           // Items with due/overdue status
@@ -25266,22 +25293,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' } },
             h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '12px', border: '1px solid #334155' } },
               h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#34d399', marginBottom: '4px' } }, 'DISTANCE (miles)'),
-              h('input', { type: 'range', min: 50, max: 3000, step: 50, value: tripDist, onChange: function(e) { upd('tripDist', parseInt(e.target.value)); }, style: { width: '100%', accentColor: '#34d399' } }),
+              h('input', { type: 'range', min: 50, max: 3000, step: 50, value: tripDist,
+                'aria-label': 'Trip distance in miles', 'aria-valuetext': tripDist + ' miles',
+                'data-rr-focusable': 'true',
+                onChange: function(e) { upd('tripDist', parseInt(e.target.value)); }, style: { width: '100%', accentColor: '#34d399' } }),
               h('div', { style: { fontSize: '16px', fontWeight: 800, color: '#fff', textAlign: 'center' } }, tripDist.toLocaleString() + ' mi')
             ),
             h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '12px', border: '1px solid #334155' } },
               h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#34d399', marginBottom: '4px' } }, 'YOUR MPG'),
-              h('input', { type: 'range', min: 15, max: 55, step: 1, value: tripMPG, onChange: function(e) { upd('tripMPG', parseInt(e.target.value)); }, style: { width: '100%', accentColor: '#34d399' } }),
+              h('input', { type: 'range', min: 15, max: 55, step: 1, value: tripMPG,
+                'aria-label': 'Vehicle fuel efficiency in miles per gallon', 'aria-valuetext': tripMPG + ' miles per gallon',
+                'data-rr-focusable': 'true',
+                onChange: function(e) { upd('tripMPG', parseInt(e.target.value)); }, style: { width: '100%', accentColor: '#34d399' } }),
               h('div', { style: { fontSize: '16px', fontWeight: 800, color: '#fff', textAlign: 'center' } }, tripMPG + ' MPG')
             ),
             h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '12px', border: '1px solid #334155' } },
               h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#34d399', marginBottom: '4px' } }, 'GAS PRICE'),
-              h('input', { type: 'range', min: 2, max: 6, step: 0.10, value: tripGasPrice, onChange: function(e) { upd('tripGasPrice', parseFloat(e.target.value)); }, style: { width: '100%', accentColor: '#34d399' } }),
+              h('input', { type: 'range', min: 2, max: 6, step: 0.10, value: tripGasPrice,
+                'aria-label': 'Gas price per gallon', 'aria-valuetext': '$' + tripGasPrice.toFixed(2) + ' per gallon',
+                'data-rr-focusable': 'true',
+                onChange: function(e) { upd('tripGasPrice', parseFloat(e.target.value)); }, style: { width: '100%', accentColor: '#34d399' } }),
               h('div', { style: { fontSize: '16px', fontWeight: 800, color: '#fff', textAlign: 'center' } }, '$' + tripGasPrice.toFixed(2) + '/gal')
             ),
             h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '12px', border: '1px solid #334155' } },
               h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#34d399', marginBottom: '4px' } }, 'AVG SPEED'),
-              h('input', { type: 'range', min: 45, max: 80, step: 5, value: tripSpeed, onChange: function(e) { upd('tripSpeed', parseInt(e.target.value)); }, style: { width: '100%', accentColor: '#34d399' } }),
+              h('input', { type: 'range', min: 45, max: 80, step: 5, value: tripSpeed,
+                'aria-label': 'Cruising speed in miles per hour', 'aria-valuetext': tripSpeed + ' miles per hour',
+                'data-rr-focusable': 'true',
+                onChange: function(e) { upd('tripSpeed', parseInt(e.target.value)); }, style: { width: '100%', accentColor: '#34d399' } }),
               h('div', { style: { fontSize: '16px', fontWeight: 800, color: '#fff', textAlign: 'center' } }, tripSpeed + ' mph')
             )
           ),
@@ -25338,12 +25377,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '14px' } },
             h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '10px', border: '1px solid #334155' } },
               h('div', { style: { fontSize: '9px', fontWeight: 700, color: '#818cf8' } }, 'SPEED'),
-              h('input', { type: 'range', min: 0, max: 85, step: 5, value: fdSpeed, onChange: function(e) { upd('fdSpeed', parseInt(e.target.value)); }, style: { width: '100%', accentColor: '#818cf8' } }),
+              h('input', { type: 'range', min: 0, max: 85, step: 5, value: fdSpeed,
+                'aria-label': 'Vehicle speed in miles per hour', 'aria-valuetext': fdSpeed + ' miles per hour',
+                'data-rr-focusable': 'true',
+                onChange: function(e) { upd('fdSpeed', parseInt(e.target.value)); }, style: { width: '100%', accentColor: '#818cf8' } }),
               h('div', { style: { fontSize: '14px', fontWeight: 800, color: '#fff', textAlign: 'center' } }, fdSpeed + ' mph')
             ),
             h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '10px', border: '1px solid #334155' } },
               h('div', { style: { fontSize: '9px', fontWeight: 700, color: '#818cf8' } }, 'THROTTLE'),
-              h('input', { type: 'range', min: 0, max: 1, step: 0.05, value: fdThrottle, onChange: function(e) { upd('fdThrottle', parseFloat(e.target.value)); }, style: { width: '100%', accentColor: '#818cf8' } }),
+              h('input', { type: 'range', min: 0, max: 1, step: 0.05, value: fdThrottle,
+                'aria-label': 'Throttle position from 0 to 1', 'aria-valuetext': Math.round(fdThrottle * 100) + ' percent throttle',
+                'data-rr-focusable': 'true',
+                onChange: function(e) { upd('fdThrottle', parseFloat(e.target.value)); }, style: { width: '100%', accentColor: '#818cf8' } }),
               h('div', { style: { fontSize: '14px', fontWeight: 800, color: '#fff', textAlign: 'center' } }, Math.round(fdThrottle * 100) + '%')
             ),
             h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '10px', border: '1px solid #334155' } },
@@ -25454,12 +25499,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '14px' } },
             h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '10px', border: '1px solid #4ade80' } },
               h('div', { style: { fontSize: '9px', fontWeight: 700, color: '#4ade80' } }, 'SPEED A'),
-              h('input', { type: 'range', min: 15, max: 80, step: 5, value: sc1, onChange: function(e) { upd('scSpeed1', parseInt(e.target.value)); }, style: { width: '100%', accentColor: '#4ade80' } }),
+              h('input', { type: 'range', min: 15, max: 80, step: 5, value: sc1,
+                'aria-label': 'First comparison speed in miles per hour', 'aria-valuetext': sc1 + ' miles per hour',
+                'data-rr-focusable': 'true',
+                onChange: function(e) { upd('scSpeed1', parseInt(e.target.value)); }, style: { width: '100%', accentColor: '#4ade80' } }),
               h('div', { style: { fontSize: '18px', fontWeight: 900, color: '#4ade80', textAlign: 'center' } }, sc1 + ' mph')
             ),
             h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '10px', border: '1px solid #ef4444' } },
               h('div', { style: { fontSize: '9px', fontWeight: 700, color: '#ef4444' } }, 'SPEED B'),
-              h('input', { type: 'range', min: 15, max: 80, step: 5, value: sc2, onChange: function(e) { upd('scSpeed2', parseInt(e.target.value)); }, style: { width: '100%', accentColor: '#ef4444' } }),
+              h('input', { type: 'range', min: 15, max: 80, step: 5, value: sc2,
+                'aria-label': 'Second comparison speed in miles per hour', 'aria-valuetext': sc2 + ' miles per hour',
+                'data-rr-focusable': 'true',
+                onChange: function(e) { upd('scSpeed2', parseInt(e.target.value)); }, style: { width: '100%', accentColor: '#ef4444' } }),
               h('div', { style: { fontSize: '18px', fontWeight: 900, color: '#ef4444', textAlign: 'center' } }, sc2 + ' mph')
             ),
             h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '10px', border: '1px solid #334155' } },
@@ -25623,7 +25674,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           ),
           h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '12px', border: '1px solid #334155', marginBottom: '12px', textAlign: 'center' } },
             h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#38bdf8', marginBottom: '4px' } }, 'SPEED'),
-            h('input', { type: 'range', min: 25, max: 75, step: 5, value: wcSpeed, onChange: function(e) { upd('wcSpeed', parseInt(e.target.value)); }, style: { width: '60%', accentColor: '#38bdf8' } }),
+            h('input', { type: 'range', min: 25, max: 75, step: 5, value: wcSpeed,
+              'aria-label': 'Wind chill test speed in miles per hour', 'aria-valuetext': wcSpeed + ' miles per hour',
+              'data-rr-focusable': 'true',
+              onChange: function(e) { upd('wcSpeed', parseInt(e.target.value)); }, style: { width: '60%', accentColor: '#38bdf8' } }),
             h('div', { style: { fontSize: '18px', fontWeight: 900 } }, wcSpeed + ' mph')
           ),
           // Comparison table
@@ -25925,7 +25979,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' } },
             h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '12px', border: '1px solid #334155' } },
               h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#a78bfa', marginBottom: '4px' } }, 'SPEED'),
-              h('input', { type: 'range', min: 25, max: 80, step: 5, value: nvSpeed, onChange: function(e) { upd('nvSpeed', parseInt(e.target.value)); }, style: { width: '100%', accentColor: '#a78bfa' } }),
+              h('input', { type: 'range', min: 25, max: 80, step: 5, value: nvSpeed,
+                'aria-label': 'Night driving speed in miles per hour', 'aria-valuetext': nvSpeed + ' miles per hour',
+                'data-rr-focusable': 'true',
+                onChange: function(e) { upd('nvSpeed', parseInt(e.target.value)); }, style: { width: '100%', accentColor: '#a78bfa' } }),
               h('div', { style: { fontSize: '18px', fontWeight: 900, color: '#fff', textAlign: 'center' } }, nvSpeed + ' mph')
             ),
             h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '12px', border: '1px solid #334155' } },
