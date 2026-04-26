@@ -207,6 +207,34 @@ window.StemLab = window.StemLab || {
         material: 'Pebbled cowhide leather (Wilson "Duke" — same maker since 1941), four-panel design with hand-stitched lacing',
         physics: 'A tight spiral spins ALONG the axis of motion, so ω×v ≈ 0 — Magnus barely contributes (Cm ≈ 0.10). That\'s why footballs travel mostly gravity + drag dominant. "Deflategate" allegedly used 11.5 PSI; a softer ball is easier to grip but bounces less predictably.'
       }
+    },
+    cricket: {
+      label: 'Cricket Ball', mass: 0.160, radius: 0.0364,
+      cd: 0.42, cm: 0.55, cor: 0.45,
+      color: '#7f1d1d', seamColor: '#fafafa',
+      icon: '🏏',
+      regs: {
+        league: 'ICC Law 4 (test cricket)',
+        massSpec: '0.156–0.163 kg (5.5–5.75 oz)',
+        diameterSpec: '0.071–0.073 m (8.81–9.0 in circumference)',
+        pressureSpec: 'N/A (solid)',
+        material: 'Cork core, twine winding, leather cover with a single raised seam (~6 stitches per inch). The seam is THE pitch-deviation engine — not the cover.',
+        physics: 'Heavier than a baseball + a single proud seam = bigger swing. Tilt the seam 30° toward fine leg and you get ~30 cm of out-swing over 18 m. The leather hardens with age, COR drops, and reverse swing kicks in (~50 overs old).'
+      }
+    },
+    golf: {
+      label: 'Golf Ball', mass: 0.0459, radius: 0.0214,
+      cd: 0.24, cm: 0.30, cor: 0.78,
+      color: '#fafafa', seamColor: '#cbd5e1',
+      icon: '⛳',
+      regs: {
+        league: 'USGA / R&A Rule 5',
+        massSpec: '≤ 0.0459 kg (1.62 oz max)',
+        diameterSpec: '≥ 0.04267 m (1.68 in min)',
+        pressureSpec: 'N/A (solid multi-layer core)',
+        material: '3- or 4-piece construction: rubber inner core, mantle layer, ionomer or urethane cover. ~336–392 dimples in symmetrical pattern.',
+        physics: 'Dimples are the genius. They TRIP airflow into a turbulent boundary layer that hugs the ball longer before separating — a smooth ball would only fly half as far. Backspin (~2500–9500 rpm) generates Magnus lift that DOUBLES the airtime relative to no-spin, the entire reason golf clubs are built with loft.'
+      }
     }
   };
 
@@ -385,6 +413,79 @@ window.StemLab = window.StemLab || {
     return 'short';
   }
 
+  // ── Golf tee-shot presets ──
+  // Golf is the LONGEST-distance sport in ThrowLab — driver shots travel
+  // ~228 m (250 yd) of carry, 50% farther than the next-longest event
+  // (Hail Mary FG at ~55 m). The headline golf lesson is the LOFT-DISTANCE
+  // tradeoff: low-loft clubs (driver, 12°) carry the farthest but offer no
+  // help when the lie is bad; high-loft clubs (sand wedge, 56°) only carry
+  // ~75 m but rise sharply, drop steeply, and stop near the landing point.
+  //
+  // Spin matters too: backspin on a wedge (~9000 rpm) is what makes a ball
+  // "check up" on the green — the Magnus lift slows the descent so the ball
+  // lands soft. Drivers spin much less (~2500 rpm) so they roll out for ~30
+  // yards extra distance.
+  //
+  // Modeling note: ThrowLab's simulator does not model post-landing roll.
+  // We classify total carry only — students see WHERE the ball lands,
+  // teach blurbs explain that real golf adds 10-30 yards of roll on a
+  // driver vs ~0 yards on a wedge. Targets are fairway / green zones at
+  // varying distances per club.
+  var GOLF_TYPES = [
+    { id: 'driver', label: 'Driver (1W)', icon: '🚀',
+      speedMph: 165, spinRpm: 2500, spinAxisDeg: 0, aimDegV: 12, releaseHeight: 0.04,
+      carryYd: 250,
+      grip: 'Tee height ~3 cm; ball off the inside of front foot; full shoulder turn',
+      teach: 'Longest club, lowest loft (~10°). Ball speed ~165 mph at impact (smash factor 1.49 × clubhead 110 mph). Carries ~250 yd, rolls another 20-30 on a hard fairway. The lesson: low loft + low spin = max distance; tradeoff is no margin if the lie is bad.' },
+    { id: 'fairway', label: '5-Wood', icon: '🌲',
+      speedMph: 145, spinRpm: 3500, spinAxisDeg: 0, aimDegV: 16, releaseHeight: 0.0,
+      carryYd: 210,
+      grip: 'Ball middle-of-stance; sweep through, no divot',
+      teach: 'Lower distance than driver but easier to hit off the fairway. ~210 yd carry. Higher loft (~17°) means a steeper descent — the ball "stops" sooner with less rollout. Use when you need accuracy over distance.' },
+    { id: 'iron', label: '7-Iron', icon: '⛳',
+      speedMph: 120, spinRpm: 6500, spinAxisDeg: 0, aimDegV: 25, releaseHeight: 0.0,
+      carryYd: 150,
+      grip: 'Ball center-of-stance; descending strike, take a divot AFTER the ball',
+      teach: 'Mid-iron, the workhorse. ~150 yd carry. Loft ~33°. Higher spin (~6500 rpm) pulls the ball UP in flight (Magnus lift), making the apex ~25 m. Lands soft on the green — perfect approach club from 150 yards.' },
+    { id: 'wedge', label: 'Sand Wedge (60°)', icon: '🏖️',
+      speedMph: 95, spinRpm: 9500, spinAxisDeg: 0, aimDegV: 50, releaseHeight: 0.0,
+      carryYd: 85,
+      grip: 'Open the clubface; ball forward; cut across the ball for extra spin',
+      teach: 'Highest-loft full-swing club (~56-60°). ~85 yd carry but the ball stops within 1-2 yards of landing — that\'s the 9500 rpm of backspin "checking" the ball. Used for greenside shots and short approaches. Great for trouble.' }
+  ];
+
+  // Score classifier for golf. Each preset has a target distance (carryYd).
+  // The "fairway" zone is ±15 yd of target distance. The "green" zone is
+  // ±5 yd of target. Way long → in the woods (or trouble); way short →
+  // chunked / topped. Lateral spread matters too — a slice/hook misses
+  // the fairway sideways.
+  function classifyGolfResult(samples, targetYd, lateralTol) {
+    if (!samples || samples.length < 2) return 'topped';
+    // Find landing point (first sample where y <= 0 with z > 5)
+    for (var i = 1; i < samples.length; i++) {
+      var prev = samples[i - 1], cur = samples[i];
+      if (cur.y <= 0 && cur.z > 5) {
+        // Interpolate exact landing
+        var f = (cur.y === prev.y) ? 0 : prev.y / (prev.y - cur.y);
+        var lz = prev.z + (cur.z - prev.z) * f;
+        var lx = prev.x + (cur.x - prev.x) * f;
+        var landYd = lz / 0.9144;
+        var lateralYd = Math.abs(lx) / 0.9144;
+        var distOff = Math.abs(landYd - targetYd);
+        // Way off line → in the woods regardless of distance
+        if (lateralYd > lateralTol * 2.5) return 'woods';
+        if (lateralYd > lateralTol * 1.5) return 'rough';
+        // On-line: classify by distance
+        if (distOff <= 5) return 'green';      // pin-high or close
+        if (distOff <= 15) return 'fairway';   // good shot, just past pin
+        if (landYd < targetYd - 25) return 'short';
+        if (landYd > targetYd + 25) return 'long';
+        return 'rough';
+      }
+    }
+    return 'topped';  // never reached the ground = ball never hit / driver swing whiff
+  }
+
   // Football field goal presets — distance + power tradeoff. The headline lesson
   // is the angle ↔ distance tradeoff: too flat and the ball crashes into the
   // crossbar; too steep and you lose distance to vertical wastage. Each preset
@@ -495,6 +596,23 @@ window.StemLab = window.StemLab || {
           tip: 'Drag eats ~10% of horizontal range at this distance — bump speed.' }
       ]
     },
+    golf: {
+      label: 'Golf Drills',
+      tasks: [
+        { id: 'gf1', goal: 'Hit the green with a 7-Iron',
+          test: function(s) { return s.golfClubsOnGreen && s.golfClubsOnGreen.iron; },
+          progress: function(s) { return (s.golfClubsOnGreen && s.golfClubsOnGreen.iron) ? 'Done!' : 'Pick 7-Iron preset; aim ~25° launch'; },
+          tip: 'Backspin pulls the ball up. Leave launch + spin near defaults; tweak speed for distance.' },
+        { id: 'gf2', goal: 'Hit the green with a Sand Wedge',
+          test: function(s) { return s.golfClubsOnGreen && s.golfClubsOnGreen.wedge; },
+          progress: function(s) { return (s.golfClubsOnGreen && s.golfClubsOnGreen.wedge) ? 'Done!' : 'Sand Wedge; 50° launch, very high spin'; },
+          tip: 'Wedge stops fast — 9500 rpm of backspin is the "check" effect.' },
+        { id: 'gf3', goal: 'Stripe a Driver to the fairway 3 times',
+          test: function(s) { return (s.golfFairwaysHit || 0) >= 3; },
+          progress: function(s) { return (s.golfFairwaysHit || 0) + ' / 3 fairways'; },
+          tip: 'Driver loves a positive attack angle. Keep launch ~12-15°, low spin (~2500 rpm).' }
+      ]
+    },
     bowling: {
       label: 'Cricket Drills',
       tasks: [
@@ -569,6 +687,19 @@ window.StemLab = window.StemLab || {
       releaseStrideDefault: 1.2,
       releaseHeightRange: [1.8, 2.6],
       speedRange: [40, 100]
+    },
+    golf: {
+      label: 'Golf Tee Shot', icon: '⛳', ball: 'golf', presets: GOLF_TYPES,
+      // Target distance is preset-driven (driver carries 250 yd, sand wedge 85 yd).
+      // Actual targetZ comes from the active preset's carryYd × 0.9144 m/yd.
+      // Default to 7-iron 150 yd carry until preset applied.
+      targetZ: 150 * 0.9144,
+      // Lateral tolerance for a fairway hit (±15 yd from centerline = ±13.7 m).
+      // Used by classifyGolfResult — anything outside is rough/woods.
+      fairwayHalfYd: 15,
+      releaseStrideDefault: 0.0,
+      releaseHeightRange: [0.0, 0.05], // ball on ground, driver allows tiny tee
+      speedRange: [50, 180]
     }
   };
 
@@ -1062,6 +1193,23 @@ window.StemLab = window.StemLab || {
         tlAnnounce('Selected delivery: ' + bt.label + '. Speed ' + bt.speedMph + ' mph, spin axis ' + bt.spinAxisDeg + ' degrees.');
       }
 
+      function applyGolfPreset(gid) {
+        var gt = GOLF_TYPES.find(function(g) { return g.id === gid; });
+        if (!gt) return;
+        setLabToolData(function(prev) {
+          var next = Object.assign({}, prev.throwlab, {
+            golfClub: gid,
+            speedMph: gt.speedMph,
+            spinRpm: gt.spinRpm,
+            spinAxisDeg: gt.spinAxisDeg,
+            aimDegV: gt.aimDegV,
+            releaseHeight: gt.releaseHeight
+          });
+          return Object.assign({}, prev, { throwlab: next });
+        });
+        tlAnnounce('Selected club: ' + gt.label + '. Carry ' + gt.carryYd + ' yards, ' + gt.aimDegV + ' degree launch.');
+      }
+
       // ── Compare Mode helpers ──
       // Pin the most recent trajectory as a "reference ghost" — drawn behind
       // the next throw in a faded color so students can change one parameter
@@ -1079,10 +1227,11 @@ window.StemLab = window.StemLab || {
                       : isFreeKick ? (currentKick && currentKick.label) || 'kick'
                       : isFieldGoal ? (currentGoal && currentGoal.label) || 'kick'
                       : isBowling ? (currentBowl && currentBowl.label) || 'delivery'
+                      : isGolf ? (currentGolfClub && currentGolfClub.label) || 'club'
                       : 'throw';
         var label = d.speedMph + ' mph · ' + modeLabel
                   + (isPitching || isFreeKick || isBowling ? ' · ' + d.spinRpm + ' rpm @ ' + d.spinAxisDeg + '°' : '')
-                  + (isFreeThrow || isFieldGoal ? ' · ' + d.aimDegV.toFixed(1) + '°' : '');
+                  + (isFreeThrow || isFieldGoal || isGolf ? ' · ' + d.aimDegV.toFixed(1) + '°' : '');
         setLabToolData(function(prev) {
           var next = Object.assign({}, prev.throwlab, {
             referenceResult: prev.throwlab.lastResult,
@@ -1193,8 +1342,10 @@ window.StemLab = window.StemLab || {
             defaults = { speedMph: 60, releaseHeight: 0.11, aimDegV: 12, aimDegH: 0, spinRpm: 600, spinAxisDeg: 105 };
           } else if (newMode === 'fieldgoal') {
             defaults = { speedMph: 60, releaseHeight: 0.0, aimDegV: 38, aimDegH: 0, spinRpm: 0, spinAxisDeg: 0, fgDistanceYd: 35 };
-          } else { // bowling
+          } else if (newMode === 'bowling') {
             defaults = { speedMph: 90, releaseHeight: 2.3, aimDegV: -2, aimDegH: 0, spinRpm: 1200, spinAxisDeg: 0, bowlType: 'fast' };
+          } else { // golf
+            defaults = { speedMph: 120, releaseHeight: 0.0, aimDegV: 25, aimDegH: 0, spinRpm: 6500, spinAxisDeg: 0, golfClub: 'iron' };
           }
           var next = Object.assign({}, prev.throwlab, defaults, {
             mode: newMode, lastResult: null, replayActive: false, replayT: 0
@@ -1234,12 +1385,12 @@ window.StemLab = window.StemLab || {
           throwerHand: d.throwerHand,
           targetZ: effectiveTargetZ,
           releaseStride: modeMeta.releaseStrideDefault,
-          truncateAtTarget: d.mode === 'pitching' || d.mode === 'bowling', // free throw / free kick / field goal need the full arc to land
+          truncateAtTarget: d.mode === 'pitching' || d.mode === 'bowling', // free throw / free kick / field goal / golf need the full arc to land
           // Bounces — basketball needs them for rim-out → bounce on the
-          // floor → continued motion. Soccer / football let the ball roll
-          // after a missed kick. Pitching/bowling: a "bounced" ball is
-          // either a wild pitch or normal cricket — we already classify at
-          // the target plane, so bouncing animations past that don't matter.
+          // floor → continued motion. Soccer / football / golf let the
+          // ball roll after a kick / shot. Pitching / bowling: a "bounced"
+          // ball is either a wild pitch or normal cricket — we already
+          // classify at the target plane, so bouncing past that doesn't matter.
           allowBounces: d.mode !== 'pitching' && d.mode !== 'bowling',
           windMph: d.windMph || 0,
           windDirDeg: d.windDirDeg || 0,
@@ -1267,6 +1418,9 @@ window.StemLab = window.StemLab || {
           loc = classifyFieldGoalResult(result.samples, effectiveTargetZ, modeMeta.crossbarHeight, modeMeta.goalHalfWidth);
         } else if (d.mode === 'bowling') {
           loc = classifyBowlResult(result.samples, modeMeta);
+        } else if (d.mode === 'golf') {
+          var golfPreset = GOLF_TYPES.find(function(g) { return g.id === d.golfClub; }) || GOLF_TYPES[0];
+          loc = classifyGolfResult(result.samples, golfPreset.carryYd, modeMeta.fairwayHalfYd);
         } else {
           loc = result.outcome.reachedPlate
             ? classifyPlateLocation(result.outcome.plateX, result.outcome.plateY)
@@ -1303,6 +1457,7 @@ window.StemLab = window.StemLab || {
         var newGoalCount = (d.mode === 'freekick' && loc === 'goal') ? (d.goalCount || 0) + 1 : (d.goalCount || 0);
         var newFgMakeCount = (d.mode === 'fieldgoal' && loc === 'good') ? (d.fgMakeCount || 0) + 1 : (d.fgMakeCount || 0);
         var newWicketCount = (d.mode === 'bowling' && (loc === 'wicket' || loc === 'shaved')) ? (d.wicketCount || 0) + 1 : (d.wicketCount || 0);
+        var newGolfGreenCount = (d.mode === 'golf' && loc === 'green') ? (d.golfGreenCount || 0) + 1 : (d.golfGreenCount || 0);
         var newTypesUsed = Object.assign({}, d.pitchTypesUsed || {});
         if (d.mode === 'pitching') newTypesUsed[d.pitchType] = true;
         // Roll a compact history entry for Coach Mode — last 5 throws.
@@ -1316,6 +1471,7 @@ window.StemLab = window.StemLab || {
                   : d.mode === 'freekick' ? d.kickType
                   : d.mode === 'fieldgoal' ? d.goalType
                   : d.mode === 'bowling' ? d.bowlType
+                  : d.mode === 'golf' ? d.golfClub
                   : d.shotType,
           speedMph: d.speedMph, angleV: d.aimDegV, angleH: d.aimDegH,
           spinRpm: d.spinRpm, spinAxisDeg: d.spinAxisDeg,
@@ -1331,7 +1487,8 @@ window.StemLab = window.StemLab || {
           makeCount: 0, swishHeights: 0, swishHeightSet: {}, completedBouncePass: false,
           goalKickTypes: {}, totalGoals: 0,
           fgMadeByDist: {},
-          bowlTypes: {}, totalWickets: 0
+          bowlTypes: {}, totalWickets: 0,
+          golfClubsOnGreen: {}, golfFairwaysHit: 0
         }, d.drillStats || {});
         // Pitching streak + type-coverage
         if (d.mode === 'pitching') {
@@ -1375,6 +1532,16 @@ window.StemLab = window.StemLab || {
           stats.bowlTypes[d.bowlType] = true;
           stats.totalWickets = (stats.totalWickets || 0) + 1;
         }
+        // Golf: track green hits per club + total fairway hits
+        if (d.mode === 'golf') {
+          if (loc === 'green') {
+            stats.golfClubsOnGreen = Object.assign({}, stats.golfClubsOnGreen);
+            stats.golfClubsOnGreen[d.golfClub] = true;
+          }
+          if (loc === 'fairway' || loc === 'green') {
+            stats.golfFairwaysHit = (stats.golfFairwaysHit || 0) + 1;
+          }
+        }
         // ── Drill task progression ──
         var newDrillTaskIdx = d.drillTaskIdx || 0;
         var taskJustCompleted = null;
@@ -1399,6 +1566,7 @@ window.StemLab = window.StemLab || {
             goalCount: newGoalCount,
             fgMakeCount: newFgMakeCount,
             wicketCount: newWicketCount,
+            golfGreenCount: newGolfGreenCount,
             pitchTypesUsed: newTypesUsed,
             recentThrows: newRecent,
             drillStats: stats,
@@ -1588,6 +1756,39 @@ window.StemLab = window.StemLab || {
               tlAnnounce('Short of a length — ball bounced too far in front of the batter.');
               if (addToast) addToast('Short of length');
             }
+          } else if (d.mode === 'golf') {
+            if (loc === 'green') {
+              sfxStrike(); sfxStrike();
+              tlAnnounce('On the green! Pin-high approach.' + describeShape(result));
+              if (addToast) addToast('⛳ ON THE GREEN!');
+              if (awardXP) awardXP('throwlab', 10, 'Green in regulation');
+              if (celebrate) celebrate();
+            } else if (loc === 'fairway') {
+              sfxStrike();
+              tlAnnounce('Fairway! Solid strike, in the short grass.');
+              if (addToast) addToast('⛳ Fairway');
+              if (awardXP) awardXP('throwlab', 6, 'Fairway hit');
+            } else if (loc === 'rough') {
+              sfxBall();
+              tlAnnounce('In the rough. Playable, but the next shot is harder out of long grass.');
+              if (addToast) addToast('Rough');
+            } else if (loc === 'woods') {
+              sfxBall();
+              tlAnnounce('In the trees! Way off-line — check your horizontal aim or spin axis.');
+              if (addToast) addToast('Woods');
+            } else if (loc === 'short') {
+              sfxBall();
+              tlAnnounce('Short of the green. Need more clubhead speed or a longer club.');
+              if (addToast) addToast('Short');
+            } else if (loc === 'long') {
+              sfxBall();
+              tlAnnounce('Long — flew the green. Same club, ease back on speed by 5-10 mph.');
+              if (addToast) addToast('Over the green');
+            } else {
+              sfxBall();
+              tlAnnounce('Topped or shanked — barely got airborne.');
+              if (addToast) addToast('Topped');
+            }
           }
         }, 350);
       }
@@ -1615,19 +1816,28 @@ window.StemLab = window.StemLab || {
         // zooms in on the much shorter 15-ft court so the arc reads clearly,
         // free kick shows ~25m so the goal mouth fits with margin, field goal
         // adds ~5m beyond the goalposts so a missed-over kick is still visible.
+        // Golf needs the longest renderMaxZ — driver carry is 250 yd ≈ 228 m,
+        // plus a margin so the landing zone is visible past the carry point.
+        var golfTargetZ = d.mode === 'golf' ? (function() {
+          var p = GOLF_TYPES.find(function(g) { return g.id === d.golfClub; }) || GOLF_TYPES[0];
+          return p.carryYd * 0.9144;
+        })() : 0;
         var renderMaxZ = d.mode === 'pitching' ? modeMeta.targetZ
                        : d.mode === 'freekick' ? 25
                        : d.mode === 'fieldgoal' ? (fgGoalZ + 5)
                        : d.mode === 'bowling' ? modeMeta.targetZ
+                       : d.mode === 'golf' ? (golfTargetZ + 30)
                        : 6.5;
         // For top-down: maxB = lateral half-width × 2 ≈ 12m so a curling shot
         // with 1.5m of curl + the 7.32m goal both fit. Field goal apex can hit
         // 15m+ on a 60-yd kick so we need extra vertical room. Bowling stays
-        // tight (~3m vertical) so the stumps are tall enough to read.
+        // tight (~3m vertical) so the stumps are tall enough to read. Golf
+        // apex can reach ~50 m on a wedge — needs the most vertical room.
         var maxB = isTopDown ? 6.0
                  : d.mode === 'pitching' ? 3.0
                  : d.mode === 'fieldgoal' ? 18
                  : d.mode === 'bowling' ? 3.2
+                 : d.mode === 'golf' ? 60
                  : 4.5;
         // For top-down, B is symmetrical around 0 (lateral X); we map [-maxB, +maxB] to canvas height.
         // For side-view, B is from 0 (ground) up to +maxB.
@@ -1655,14 +1865,14 @@ window.StemLab = window.StemLab || {
           for (var ms = 0; ms < W; ms += 60) gfx.fillRect(ms, 0, 30, H);
         } else {
           // Side view: sky gradient + ground band
-          var skyTop = d.mode === 'pitching' || d.mode === 'bowling' ? '#1e3a5f' : '#3a2e2a';
-          var skyBot = d.mode === 'pitching' || d.mode === 'bowling' ? '#5a7ba8' : '#6e5a48';
+          var skyTop = d.mode === 'pitching' || d.mode === 'bowling' ? '#1e3a5f' : d.mode === 'golf' ? '#1e4d6f' : '#3a2e2a';
+          var skyBot = d.mode === 'pitching' || d.mode === 'bowling' ? '#5a7ba8' : d.mode === 'golf' ? '#7fb5c8' : '#6e5a48';
           var skyGrad = gfx.createLinearGradient(0, 0, 0, marginT + fieldH);
           skyGrad.addColorStop(0, skyTop);
           skyGrad.addColorStop(1, skyBot);
           gfx.fillStyle = skyGrad;
           gfx.fillRect(0, 0, W, marginT + fieldH);
-          gfx.fillStyle = d.mode === 'pitching' ? '#3a7a26' : d.mode === 'bowling' ? '#a47b4f' : '#c8965a';
+          gfx.fillStyle = d.mode === 'pitching' ? '#3a7a26' : d.mode === 'bowling' ? '#a47b4f' : d.mode === 'golf' ? '#5fa83a' : '#c8965a';
           gfx.fillRect(0, marginT + fieldH, W, H - (marginT + fieldH));
           if (d.mode === 'freethrow') {
             // Hardwood plank lines for the gym floor
@@ -1937,6 +2147,79 @@ window.StemLab = window.StemLab || {
           gfx.fillText('Ball', ballSpot[0], ballSpot[1] + 16);
           gfx.fillText('Wall (10 yd)', (wallLeftEdge[0] + wallRightEdge[0]) / 2, marginT + fieldH + 18);
           gfx.fillText('Goal — 7.32 m wide', (postL[0] + postR[0]) / 2, marginT + fieldH + 18);
+        } else if (d.mode === 'golf') {
+          // Golf side view: tee on left at z=0, fairway zone (light green
+          // band) from ~75% target distance to the green, flagstick at the
+          // exact target carry distance. Layered rings shade out into the
+          // rough at the edges of the fairway. We draw the green as a
+          // small disc and put a flag on top of it.
+          var teePts = worldToCanvas(0, 0);
+          // Tee marker (small triangle peg + ball on top)
+          gfx.fillStyle = '#fef3c7';
+          gfx.beginPath();
+          gfx.moveTo(teePts[0] - 4, teePts[1] + 2);
+          gfx.lineTo(teePts[0] + 4, teePts[1] + 2);
+          gfx.lineTo(teePts[0], teePts[1] - 4);
+          gfx.closePath();
+          gfx.fill();
+          gfx.fillStyle = '#fafafa';
+          gfx.beginPath();
+          gfx.arc(teePts[0], teePts[1] - 6, 3, 0, Math.PI * 2);
+          gfx.fill();
+          // Fairway zone: from ~10% to 100% of target distance, shaded brighter green
+          var fwStart = worldToCanvas(golfTargetZ * 0.10, 0);
+          var fwEnd = worldToCanvas(golfTargetZ + 13.7, 0); // +15 yd past target = top of fairway
+          gfx.fillStyle = 'rgba(95, 168, 58, 0.55)';
+          gfx.fillRect(fwStart[0], fwStart[1] - 4, fwEnd[0] - fwStart[0], 8);
+          // Green disc at target distance — circular blob in plan, drawn as
+          // a flat ellipse here (since side view) of radius ~4.5 m
+          var greenCenter = worldToCanvas(golfTargetZ, 0);
+          gfx.fillStyle = '#86efac';
+          gfx.beginPath();
+          gfx.ellipse(greenCenter[0], greenCenter[1], 14, 5, 0, 0, Math.PI * 2);
+          gfx.fill();
+          // Flagstick (vertical pole with red triangular flag)
+          var flagBase = worldToCanvas(golfTargetZ, 0);
+          var flagTop = worldToCanvas(golfTargetZ, 2.1);
+          gfx.strokeStyle = '#fafafa';
+          gfx.lineWidth = 1.5;
+          gfx.beginPath();
+          gfx.moveTo(flagBase[0], flagBase[1]); gfx.lineTo(flagTop[0], flagTop[1]);
+          gfx.stroke();
+          gfx.fillStyle = '#dc2626';
+          gfx.beginPath();
+          gfx.moveTo(flagTop[0], flagTop[1]);
+          gfx.lineTo(flagTop[0] + 14, flagTop[1] + 4);
+          gfx.lineTo(flagTop[0], flagTop[1] + 8);
+          gfx.closePath();
+          gfx.fill();
+          // Distance markers — every 50 yards from tee, faint dashed verticals
+          gfx.strokeStyle = 'rgba(255,255,255,0.20)';
+          gfx.setLineDash([2, 4]);
+          gfx.lineWidth = 1;
+          var distMarks = [50, 100, 150, 200, 250];
+          for (var dm = 0; dm < distMarks.length; dm++) {
+            var dz = distMarks[dm] * 0.9144;
+            if (dz > golfTargetZ + 25) break;
+            var dpTop = worldToCanvas(dz, maxB * 0.5);
+            var dpBot = worldToCanvas(dz, 0);
+            gfx.beginPath();
+            gfx.moveTo(dpTop[0], dpTop[1]); gfx.lineTo(dpBot[0], dpBot[1]);
+            gfx.stroke();
+            gfx.fillStyle = 'rgba(203, 213, 225, 0.6)';
+            gfx.font = '9px system-ui';
+            gfx.textAlign = 'center';
+            gfx.fillText(distMarks[dm] + 'y', dpTop[0], dpTop[1] - 4);
+          }
+          gfx.setLineDash([]);
+          // Labels
+          gfx.fillStyle = '#cbd5e1';
+          gfx.font = '11px system-ui';
+          gfx.textAlign = 'center';
+          gfx.fillText('Tee', teePts[0], marginT + fieldH + 22);
+          gfx.fillText((d.golfClub === 'wedge' ? 85 : d.golfClub === 'iron' ? 150 : d.golfClub === 'fairway' ? 210 : 250) + ' yd target →', (teePts[0] + greenCenter[0]) / 2, marginT + fieldH + 22);
+          gfx.fillStyle = '#86efac';
+          gfx.fillText('Green', greenCenter[0], marginT + fieldH + 36);
         } else if (d.mode === 'bowling') {
           // Cricket pitch (side view): bowler's crease at z=0, batter's stumps
           // at z=20.12. Brown rectangle for the pitch strip ("the wicket").
@@ -2257,16 +2540,19 @@ window.StemLab = window.StemLab || {
       var isFreeKick = d.mode === 'freekick';
       var isFieldGoal = d.mode === 'fieldgoal';
       var isBowling = d.mode === 'bowling';
+      var isGolf = d.mode === 'golf';
       // Active preset for the bottom-of-canvas teach blurb
       var currentShot = SHOT_TYPES.find(function(s) { return s.id === d.shotType; }) || SHOT_TYPES[0];
       var currentKick = KICK_TYPES.find(function(k) { return k.id === d.kickType; }) || KICK_TYPES[0];
       var currentGoal = GOAL_TYPES.find(function(g) { return g.id === d.goalType; }) || GOAL_TYPES[0];
       var currentBowl = CRICKET_DELIVERIES.find(function(b) { return b.id === d.bowlType; }) || CRICKET_DELIVERIES[0];
+      var currentGolfClub = GOLF_TYPES.find(function(g) { return g.id === d.golfClub; }) || GOLF_TYPES[0];
       var activePreset = isPitching ? currentPitch
                        : isFreeThrow ? currentShot
                        : isFreeKick ? currentKick
                        : isFieldGoal ? currentGoal
-                       : currentBowl;
+                       : isBowling ? currentBowl
+                       : currentGolfClub;
 
       // Outcome label + color (mode-specific)
       function outcomeLabel(loc) {
@@ -2299,6 +2585,15 @@ window.StemLab = window.StemLab || {
                : loc === 'wide' ? '↔️ Wide call'
                : loc === 'dot' ? '⚪ Dot ball — defended'
                : '😬 Short of length';
+        }
+        if (isGolf) {
+          return loc === 'green' ? '⛳ ON THE GREEN'
+               : loc === 'fairway' ? '🌱 Fairway'
+               : loc === 'rough' ? '🌾 In the rough'
+               : loc === 'woods' ? '🌳 In the trees'
+               : loc === 'short' ? '😬 Short of the green'
+               : loc === 'long' ? '↔️ Over the green'
+               : '😬 Topped';
         }
         // Pass outcomes (kind: 'pass' shot types) reuse this same function.
         return loc === 'swish' ? '🌊 SWISH (clean center)'
@@ -2372,6 +2667,21 @@ window.StemLab = window.StemLab || {
           if (loc === 'wideclose') return 'Just wide of the upright. Lateral aim is the lever here — check your horizontal aim slider.';
           if (loc === 'wide') return 'No good — well wide of the goalposts. Reset horizontal aim toward 0°.';
           return 'Short of the goal line — kick didn\'t carry the distance. Add power, or accept a shorter distance preset.';
+        }
+        // Golf
+        if (isGolf) {
+          var apexG = Math.max.apply(null, lr.samples.map(function(s) { return s.y; }));
+          var landZ = lr.outcome && lr.outcome.landZ ? lr.outcome.landZ : null;
+          var carryYd = currentGolfClub.carryYd;
+          if (loc === 'green') {
+            return 'On the green from ' + d.speedMph + ' mph ball speed. Apex ' + apexG.toFixed(1) + ' m. Backspin (' + d.spinRpm + ' rpm) created Magnus lift to keep the ball airborne and dropped it pin-high.';
+          }
+          if (loc === 'fairway') return 'In the fairway, just past pin distance. Tweak speed by 2-3 mph and you\'ll be on the green next time.';
+          if (loc === 'rough') return 'In the rough — your line drifted off-center. Spin axis (' + d.spinAxisDeg + '°) is curving the ball; reset toward 0° for a straight shot.';
+          if (loc === 'woods') return 'Way off-line. The spin axis or horizontal aim is the lever — drop them both toward 0° and rebuild your shot from straight.';
+          if (loc === 'short') return 'Short of the ' + carryYd + '-yard target. Add 5-10 mph clubhead speed, or pick a longer club (one less number = ~10 more yards).';
+          if (loc === 'long') return 'Flew the green. Either ease back on speed by 5 mph, or pick a shorter club (one more number = ~10 fewer yards).';
+          return 'Topped or thinned — ball never got airborne. Increase launch angle by 5-8°.';
         }
         // Bowling
         if (isBowling) {
@@ -2823,13 +3133,14 @@ window.StemLab = window.StemLab || {
             // Preset picker (pitches OR shots, mode-driven)
             h('div', { style: { background: '#0f172a', border: '1px solid #1e293b', borderRadius: 10, padding: 12, marginBottom: 12 } },
               h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 } },
-                isPitching ? 'Pitch type' : isFreeKick ? 'Kick style' : isFieldGoal ? 'Distance' : isBowling ? 'Delivery' : 'Shot type'),
+                isPitching ? 'Pitch type' : isFreeKick ? 'Kick style' : isFieldGoal ? 'Distance' : isBowling ? 'Delivery' : isGolf ? 'Club' : 'Shot type'),
               h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 } },
                 modeMeta.presets.map(function(pt) {
                   var sel = isPitching ? d.pitchType === pt.id
                           : isFreeKick ? d.kickType === pt.id
                           : isFieldGoal ? d.goalType === pt.id
                           : isBowling ? d.bowlType === pt.id
+                          : isGolf ? d.golfClub === pt.id
                           : d.shotType === pt.id;
                   return h('button', {
                     key: pt.id,
@@ -2838,6 +3149,7 @@ window.StemLab = window.StemLab || {
                       else if (isFreeKick) applyKickPreset(pt.id);
                       else if (isFieldGoal) applyGoalPreset(pt.id);
                       else if (isBowling) applyBowlPreset(pt.id);
+                      else if (isGolf) applyGolfPreset(pt.id);
                       else applyShotPreset(pt.id);
                     },
                     'aria-pressed': sel,
@@ -2854,6 +3166,7 @@ window.StemLab = window.StemLab || {
                                               : isFreeKick ? ' · spin ' + pt.spinAxisDeg + '°'
                                               : isFieldGoal ? ' · ' + pt.aimDegV + '° launch'
                                               : isBowling ? ' · spin ' + pt.spinAxisDeg + '°'
+                                              : isGolf ? ' · ' + pt.carryYd + ' yd carry'
                                               : ' · ' + pt.aimDegV + '° arc')));
                 })
               ),
@@ -2869,8 +3182,8 @@ window.StemLab = window.StemLab || {
               // student can focus on the speed-distance relationship alone.
               (d.scaffoldTier || 3) >= 2 ? slider('Release height', d.releaseHeight.toFixed(2), modeMeta.releaseHeightRange[0], modeMeta.releaseHeightRange[1], 0.05, function(v) { upd('releaseHeight', v); }, ' m') : null,
               (d.scaffoldTier || 3) >= 2 ? slider('Vertical aim', d.aimDegV.toFixed(1),
-                isPitching ? -8 : isFreeKick ? -2 : isFieldGoal ? 20 : isBowling ? -8 : 30,
-                isPitching ? 4 : isFreeKick ? 45 : isFieldGoal ? 60 : isBowling ? 12 : 70,
+                isPitching ? -8 : isFreeKick ? -2 : isFieldGoal ? 20 : isBowling ? -8 : isGolf ? 5 : 30,
+                isPitching ? 4 : isFreeKick ? 45 : isFieldGoal ? 60 : isBowling ? 12 : isGolf ? 60 : 70,
                 0.5, function(v) { upd('aimDegV', v); }, '°') : null,
               (d.scaffoldTier || 3) >= 2 ? slider('Horizontal aim', d.aimDegH.toFixed(1), -5, 5, 0.1, function(v) { upd('aimDegH', v); }, '°') : null,
               // Tier 3: spin (the full physics surface).
@@ -2914,7 +3227,7 @@ window.StemLab = window.StemLab || {
                 border: '1px solid #fbbf24', background: 'linear-gradient(135deg, #fbbf24, #f59e0b)',
                 color: '#1a1a2e', fontSize: 16, fontWeight: 800
               }
-            }, isPitching ? '⚾ THROW PITCH' : isFreeKick ? '⚽ STRIKE' : isFieldGoal ? '🏈 KICK' : isBowling ? '🏏 BOWL' : '🏀 SHOOT'),
+            }, isPitching ? '⚾ THROW PITCH' : isFreeKick ? '⚽ STRIKE' : isFieldGoal ? '🏈 KICK' : isBowling ? '🏏 BOWL' : isGolf ? '⛳ TEE OFF' : '🏀 SHOOT'),
             // ── Compare Mode controls ──
             // Save the latest trajectory as a reference ghost for the next throw,
             // OR clear the existing reference. Sits between the throw button and
