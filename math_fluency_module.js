@@ -929,6 +929,21 @@
     return grid;
   }
 
+  // Lifetime stats — accumulates across all sessions, persisted via
+  // localStorage. Used to render the "since you started playing" stats
+  // strip on the setup screen so students see their long-term progress.
+  function _mfBumpLifetime(patch) {
+    try {
+      var cur = JSON.parse(localStorage.getItem('fluency_maze_lifetime') || '{}');
+      var next = {
+        gatesUnlocked: (cur.gatesUnlocked || 0) + (patch.gatesUnlocked || 0),
+        mazesCompleted: (cur.mazesCompleted || 0) + (patch.mazesCompleted || 0),
+        longestStreak: Math.max(cur.longestStreak || 0, patch.longestStreak || 0),
+        totalSeconds: (cur.totalSeconds || 0) + (patch.totalSeconds || 0),
+      };
+      localStorage.setItem('fluency_maze_lifetime', JSON.stringify(next));
+    } catch (e) {}
+  }
   // Aria-live announcer — pipes maze state to the global polite live
   // region (allo-live-math-fluency, created at module init) so screen-
   // reader users hear "Gate opens", "Wrong combination", "Key collected",
@@ -953,16 +968,37 @@
     var _s = useState;
     var mode = _s('setup')[0], setMode = _s[1]; // actually use individual calls
     // Re-declare properly
+    // Settings persistence — restore last-used prefs so returning
+    // students don't have to re-pick. Falls back to current defaults
+    // if no record (or storage blocked).
+    function _loadPrefs() {
+      try {
+        var raw = localStorage.getItem('fluency_maze_prefs');
+        if (raw) return JSON.parse(raw);
+      } catch (e) {}
+      return null;
+    }
+    function _savePrefs(patch) {
+      try {
+        var cur = _loadPrefs() || {};
+        localStorage.setItem('fluency_maze_prefs', JSON.stringify(Object.assign({}, cur, patch)));
+      } catch (e) {}
+    }
+    var _prefs = _loadPrefs() || {};
     var modeState = useState('setup');
     var mode = modeState[0], setMode = modeState[1];
-    var opState = useState('mul');
-    var operation = opState[0], setOperation = opState[1];
-    var diffState = useState('single');
-    var difficulty = diffState[0], setDifficulty = diffState[1];
-    var chaseState = useState(false);
-    var chaseMode = chaseState[0], setChaseMode = chaseState[1];
-    var mazeSizeState = useState('medium');
-    var mazeSize = mazeSizeState[0], setMazeSize = mazeSizeState[1];
+    var opState = useState(_prefs.operation || 'mul');
+    var operation = opState[0];
+    var setOperation = function(v) { opState[1](v); _savePrefs({ operation: v }); };
+    var diffState = useState(_prefs.difficulty || 'single');
+    var difficulty = diffState[0];
+    var setDifficulty = function(v) { diffState[1](v); _savePrefs({ difficulty: v }); };
+    var chaseState = useState(!!_prefs.chaseMode);
+    var chaseMode = chaseState[0];
+    var setChaseMode = function(v) { chaseState[1](v); _savePrefs({ chaseMode: v }); };
+    var mazeSizeState = useState(_prefs.mazeSize || 'medium');
+    var mazeSize = mazeSizeState[0];
+    var setMazeSize = function(v) { mazeSizeState[1](v); _savePrefs({ mazeSize: v }); };
     var mazeState = useState(null);
     var maze = mazeState[0], setMaze = mazeState[1];
     var posState = useState({ r: 0, c: 0 });
@@ -1062,6 +1098,16 @@
     // dismissal on correct.
     var streakBannerState = useState('');
     var streakBanner = streakBannerState[0], setStreakBanner = streakBannerState[1];
+    // Paused state — toggled by P key or pause button. While paused,
+    // the elapsed timer is held, tryMove/submitAnswer no-op, and a
+    // dim overlay covers the maze. Useful for interruptions.
+    var pausedState = useState(false);
+    var paused = pausedState[0], setPaused = pausedState[1];
+    // Mirror paused into a ref so the timer interval (closed over the
+    // initial state value) reads the current pause status without
+    // needing to be torn down + recreated on every toggle.
+    var pausedRef = useRef(false);
+    useEffect(function() { pausedRef.current = paused; }, [paused]);
 
     function makeProblem() {
       var a, b, op = operation === 'mixed' ? ['add','sub','mul','div'][Math.floor(Math.random() * 4)] : operation;
@@ -1170,7 +1216,7 @@
       setMode('playing');
       // Timer
       if (timerRef.current) clearInterval(timerRef.current);
-      timerRef.current = setInterval(function() { setElapsed(function(p) { return p + 1; }); }, 1000);
+      timerRef.current = setInterval(function() { if (!pausedRef.current) setElapsed(function(p) { return p + 1; }); }, 1000);
       // Monster chase timer (moves every 4 seconds)
       if (monsterTimerRef.current) clearInterval(monsterTimerRef.current);
       if (chaseMode) {
@@ -1191,7 +1237,7 @@
     }
 
     function tryMove(dir) {
-      if (gameOver || won) return;
+      if (gameOver || won || paused) return;
       var cell = maze[playerPos.r][playerPos.c];
       var canMove = false;
       var newR = playerPos.r, newC = playerPos.c;
@@ -1240,6 +1286,7 @@
         setCorrect(function(p) { return p + 1; });
         setScore(function(p) { return p + 10 + streakBonus; });
         setMoveCount(function(p) { return p + 1; });
+        _mfBumpLifetime({ gatesUnlocked: 1, longestStreak: nextStreak });
         setFeedback('correct');
         _mfAnnounce('Gate opens. ' + currentProblem.problem.text + ' equals ' + currentProblem.problem.answer + '.');
         // Clear any active hint — reward for solving without it
@@ -1352,6 +1399,7 @@
           _mfAnnounce('Maze complete! ' + (correct + 1) + ' gates unlocked in ' + elapsed + ' seconds.');
           if (addToast) addToast('\uD83C\uDFC6 Maze complete! ' + (correct + 1) + ' correct in ' + elapsed + 's', 'success');
           if (handleScoreUpdate) handleScoreUpdate(Math.round((correct + 1) / Math.max(1, elapsed) * 60) + medalBonus, 'Fluency Maze Complete', 'fluency-maze');
+          _mfBumpLifetime({ mazesCompleted: 1, totalSeconds: elapsed });
           // Save high score — keyed per (operation, size, difficulty) so
           // distinct practice modes don't overwrite each other's bests.
           // Legacy 'fluency_maze_best' (single global) is preserved as a
@@ -1480,6 +1528,8 @@
           if (e.key === 'Enter') { e.preventDefault(); submitAnswer(); }
           return;
         }
+        if (e.key === 'p' || e.key === 'P') { setPaused(function(v) { return !v; }); return; }
+        if (paused) return;
         if (e.key === 'ArrowUp' || e.key === 'w') tryMove('up');
         if (e.key === 'ArrowDown' || e.key === 's') tryMove('down');
         if (e.key === 'ArrowLeft' || e.key === 'a') tryMove('left');
@@ -2253,6 +2303,29 @@
           },
           'aria-label': 'Personal best: ' + bestRecord.score + ' points in ' + bestRecord.time + ' seconds'
         }, '\uD83C\uDFC6 Best (this mode): ' + bestRecord.score + ' pts ' + (bestRecord.time ? '(' + bestRecord.time + 's)' : '')),
+        (function() {
+          var lt = null;
+          try { lt = JSON.parse(localStorage.getItem('fluency_maze_lifetime') || 'null'); } catch (e) {}
+          if (!lt || !lt.gatesUnlocked) return null;
+          var mins = Math.floor((lt.totalSeconds || 0) / 60);
+          return h('div', {
+            style: {
+              display: 'flex', justifyContent: 'center', gap: '14px',
+              fontSize: '10px', fontWeight: 700, color: '#92400e',
+              marginBottom: '14px', letterSpacing: '0.04em',
+              background: 'rgba(254,243,199,0.6)',
+              border: '1px solid #fcd34d',
+              borderRadius: '8px',
+              padding: '6px 10px'
+            },
+            'aria-label': 'Lifetime stats: ' + (lt.gatesUnlocked || 0) + ' gates, ' + (lt.mazesCompleted || 0) + ' mazes, longest streak ' + (lt.longestStreak || 0) + ', ' + mins + ' minutes total'
+          },
+            h('span', null, '\uD83D\uDDDD ' + (lt.gatesUnlocked || 0) + ' gates'),
+            h('span', null, '\uD83C\uDFC1 ' + (lt.mazesCompleted || 0) + ' mazes'),
+            h('span', null, '\uD83D\uDD25 x' + (lt.longestStreak || 0)),
+            h('span', null, '\u23F1 ' + mins + 'm')
+          );
+        })(),
         // Operation selector
         h('div', { style: { display: 'flex', gap: '6px', justifyContent: 'center', marginBottom: '12px', flexWrap: 'wrap' } },
           ['add', 'sub', 'mul', 'div', 'mixed'].map(function(op) {
@@ -2387,6 +2460,21 @@
         }, '\uD83D\uDD25 x' + streak),
         h('span', { style: { color: '#fde68a' } }, '\u23F1 ' + elapsed + 's'),
         chaseMode && h('span', { style: { color: '#f59e0b', fontWeight: 700 } }, '\uD83D\uDC7E CHASE!'),
+        // Pause button — quick toggle, no score cost. Mirrors the P
+        // keyboard shortcut so touch-only users can pause too.
+        h('button', {
+          onClick: function() { setPaused(function(v) { return !v; }); },
+          'aria-label': paused ? 'Resume game' : 'Pause game',
+          'aria-pressed': paused,
+          title: 'Pause / resume (P key)',
+          style: {
+            marginLeft: 'auto', padding: '4px 10px', fontSize: '11px', fontWeight: 700,
+            background: paused ? '#fbbf24' : 'rgba(254,243,199,0.18)',
+            color: paused ? '#7c2d12' : '#fef3c7',
+            border: '1px solid ' + (paused ? '#fbbf24' : 'rgba(254,243,199,0.35)'),
+            borderRadius: '999px', cursor: 'pointer'
+          }
+        }, paused ? '\u25B6 Resume' : '\u23F8 Pause'),
         // Hint button — costs 5 points, resets streak. Uses BFS to find the
         // direction of the next step along the shortest path to the exit.
         h('button', {
@@ -2394,7 +2482,7 @@
           disabled: !!hintDir,
           title: 'Show direction toward exit (H key) — costs 5 points, resets streak',
           style: {
-            marginLeft: 'auto', padding: '4px 10px', fontSize: '11px', fontWeight: 700,
+            padding: '4px 10px', fontSize: '11px', fontWeight: 700,
             background: hintDir ? '#fbbf24' : 'linear-gradient(135deg, #b45309, #7c2d12)', color: '#fff',
             border: 'none', borderRadius: '999px', cursor: hintDir ? 'default' : 'pointer',
             opacity: hintDir ? 0.8 : 1
@@ -2420,6 +2508,34 @@
           animation: 'alloStreakPulse 1500ms ease-out forwards'
         }
       }, streakBanner),
+      // Pause overlay — shown while paused, covers the maze with a
+      // dim parchment card. Clicking or pressing P/Escape resumes.
+      paused && h('div', {
+        onClick: function() { setPaused(false); },
+        role: 'button', tabIndex: 0,
+        onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ' || e.key === 'p' || e.key === 'P' || e.key === 'Escape') { e.preventDefault(); setPaused(false); } },
+        'aria-label': 'Game paused. Press Enter or click to resume.',
+        style: {
+          position: 'absolute', inset: 0, zIndex: 13,
+          background: 'rgba(58,46,38,0.78)', backdropFilter: 'blur(2px)',
+          borderRadius: '10px',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          cursor: 'pointer'
+        }
+      },
+        h('div', {
+          style: {
+            background: 'linear-gradient(180deg, #fef3c7 0%, #fed7aa 100%)',
+            border: '2px solid #d97706', borderRadius: '12px',
+            padding: '20px 28px', textAlign: 'center',
+            boxShadow: '0 12px 40px rgba(58,46,38,0.5)'
+          }
+        },
+          h('div', { style: { fontSize: '40px', marginBottom: '6px' } }, '\u23F8\uFE0F'),
+          h('div', { style: { fontSize: '16px', fontWeight: 900, color: '#78350f', marginBottom: '4px', letterSpacing: '0.04em' } }, 'Paused'),
+          h('div', { style: { fontSize: '11px', color: '#92400e', fontStyle: 'italic' } }, 'Tap, press P, or Escape to resume')
+        )
+      ),
       // First-time tutorial overlay — shown on the very first run only.
       // Dismissed by click anywhere on the overlay or auto-dismissed when
       // the student successfully solves their first gate.
