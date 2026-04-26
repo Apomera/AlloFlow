@@ -571,7 +571,19 @@ window.StemLab = window.StemLab || {
         { id: 'f3', goal: 'Complete a successful Bounce Pass',
           test: function(s) { return s.completedBouncePass; },
           progress: function(s) { return s.completedBouncePass ? 'Done!' : 'Pick Bounce Pass and aim for the yellow zone'; },
-          tip: 'Aim ⅔ of the way to the teammate; the bounce eats ~22% of vertical speed.' }
+          tip: 'Aim ⅔ of the way to the teammate; the bounce eats ~22% of vertical speed.' },
+        { id: 'f4', goal: 'Make a Floater (high-arc finish over a defender)',
+          test: function(s) { return s.shotsMadeByType && s.shotsMadeByType.floater; },
+          progress: function(s) { return (s.shotsMadeByType && s.shotsMadeByType.floater) ? 'Done!' : 'Pick the Floater preset and let the high arc do the work'; },
+          tip: '~62° release angle = ~1.5s hangtime. The defender\'s hand is already coming down by the time the ball drops.' },
+        { id: 'f5', goal: 'Make a Step-Back Jumper',
+          test: function(s) { return s.shotsMadeByType && s.shotsMadeByType.stepback; },
+          progress: function(s) { return (s.shotsMadeByType && s.shotsMadeByType.stepback) ? 'Done!' : 'Pick Step-Back Jumper — slightly more speed than a regular jumper to cover the extra distance'; },
+          tip: 'Stepping back ~1m means +1-2 mph clubhead speed equivalent. Same ~50° arc.' },
+        { id: 'f6', goal: 'Hit a Half-Court Heave (no rim contact required, just on-target)',
+          test: function(s) { return s.shotsMadeByType && (s.shotsMadeByType.halfcourt || s.attemptedHalfCourt); },
+          progress: function(s) { return (s.shotsMadeByType && (s.shotsMadeByType.halfcourt || s.attemptedHalfCourt)) ? 'Done!' : 'Pick Half-Court Heave; success = the ball reaches the backboard area'; },
+          tip: 'NBA conversion is ~3% so this drill counts ANY shot that reaches the rim/backboard zone — the math is the lesson, not the make.' }
       ]
     },
     freekick: {
@@ -1497,6 +1509,7 @@ window.StemLab = window.StemLab || {
         var stats = Object.assign({
           streakStrikes: 0, strikeTypes: {}, strikeWithLowSpin: false,
           makeCount: 0, swishHeights: 0, swishHeightSet: {}, completedBouncePass: false,
+          shotsMadeByType: {}, attemptedHalfCourt: false,
           goalKickTypes: {}, totalGoals: 0,
           fgMadeByDist: {},
           bowlTypes: {}, totalWickets: 0,
@@ -1517,6 +1530,16 @@ window.StemLab = window.StemLab || {
           if (loc === 'caught' && d.shotType === 'bouncepass') stats.completedBouncePass = true;
           if (loc === 'swish' || loc === 'made' || loc === 'caught') {
             stats.makeCount = (stats.makeCount || 0) + 1;
+            // Track makes per shot-type so the floater / step-back drills can complete
+            stats.shotsMadeByType = Object.assign({}, stats.shotsMadeByType);
+            stats.shotsMadeByType[d.shotType] = true;
+          }
+          // Half-court heave drill — counts ANY attempt that reaches the rim
+          // (rim / made / swish / backboard / bouncepass-style 'caught').
+          // Per the drill tip: NBA conversion is ~3% so we don't gate on a
+          // make. Just need the ball to get there.
+          if (d.shotType === 'halfcourt' && (loc !== 'air' && loc !== 'short')) {
+            stats.attemptedHalfCourt = true;
           }
           if (loc === 'swish') {
             var hKey = d.releaseHeight.toFixed(1);
