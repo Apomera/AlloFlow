@@ -117,8 +117,18 @@ window.StemLab = window.StemLab || {
 
   // Air density at sea level, room temperature (kg/m³)
   var RHO = 1.225;
-  // Gravity (m/s² Earth)
+  // Gravity (m/s² Earth). simulatePitch accepts opts.gravity to override.
   var G = 9.81;
+  // Planetary gravity presets — same numbers stem_tool_physics.js exposes,
+  // so the two tools agree on "what gravity feels like on Mars". Pluto is
+  // not included (its surface gravity is so weak the trajectory would walk
+  // off the canvas).
+  var GRAVITY_PRESETS = [
+    { id: 'earth',   label: 'Earth',   g: 9.81,  icon: '🌍' },
+    { id: 'moon',    label: 'Moon',    g: 1.62,  icon: '🌙' },
+    { id: 'mars',    label: 'Mars',    g: 3.71,  icon: '🔴' },
+    { id: 'jupiter', label: 'Jupiter', g: 24.79, icon: '🪐' }
+  ];
   // Conversion helpers
   var MPH_PER_MPS = 2.23694;
   var FT_PER_M = 3.28084;
@@ -455,6 +465,9 @@ window.StemLab = window.StemLab || {
     var t = 0;
     var maxT = opts.maxT !== undefined ? opts.maxT : 2.0;
     var plateZ = opts.targetZ !== undefined ? opts.targetZ : 18.44; // baseball plate default
+    // Gravity (m/s²) — defaults to Earth. Overridable so the same pitch can
+    // be replayed on Moon/Mars/Jupiter for the "what if" lesson.
+    var gNow = opts.gravity !== undefined ? opts.gravity : G;
     // Wind vector in m/s (world frame). Headwind in -Z direction (0°),
     // tailwind +Z (180°), crosswinds ±X. Drag uses RELATIVE air-frame
     // velocity (ball minus wind), so a tailwind shrinks |v_rel| and reduces
@@ -504,7 +517,7 @@ window.StemLab = window.StemLab || {
       var magFz = magnusMag * crossZ;
       // Total acceleration
       var ax = (dragFx + magFx) * massInv;
-      var ay = (dragFy + magFy) * massInv - G;
+      var ay = (dragFy + magFy) * massInv - gNow;
       var az = (dragFz + magFz) * massInv;
       // Euler integrate
       vx += ax * dt; vy += ay * dt; vz += az * dt;
@@ -636,7 +649,10 @@ window.StemLab = window.StemLab || {
             // headwind (against the throw), 90° = crosswind right, 180° =
             // tailwind, 270° = crosswind left.
             windMph: 0,
-            windDirDeg: 0
+            windDirDeg: 0,
+            // Gravity preset — defaults to Earth. Mars / Moon / Jupiter for
+            // the "what if I pitched on another planet?" lesson.
+            gravityId: 'earth'
           }});
         });
         return h('div', { className: 'p-8 text-center text-slate-600' }, 'Loading ThrowLab…');
@@ -811,7 +827,11 @@ window.StemLab = window.StemLab || {
           releaseStride: modeMeta.releaseStrideDefault,
           truncateAtTarget: d.mode === 'pitching', // free throw / free kick / field goal need the full arc to land
           windMph: d.windMph || 0,
-          windDirDeg: d.windDirDeg || 0
+          windDirDeg: d.windDirDeg || 0,
+          gravity: (function() {
+            var p = GRAVITY_PRESETS.find(function(g) { return g.id === (d.gravityId || 'earth'); });
+            return p ? p.g : G;
+          })()
         };
         // Free kick + field goal let the arc continue past the goal line so we
         // can detect missed-over / wide / post cases.
@@ -843,7 +863,8 @@ window.StemLab = window.StemLab || {
           spinAxisDeg: 0,
           throwerHand: d.throwerHand,
           windMph: d.windMph || 0,
-          windDirDeg: d.windDirDeg || 0
+          windDirDeg: d.windDirDeg || 0,
+          gravity: simOpts.gravity
         });
         if (result.outcome.reachedPlate && noSpin.outcome.reachedPlate) {
           result.vBreakIn = (noSpin.outcome.plateY - result.outcome.plateY) * FT_PER_M * 12;
@@ -1355,7 +1376,11 @@ window.StemLab = window.StemLab || {
             targetZ: modeMeta.targetZ,
             releaseStride: modeMeta.releaseStrideDefault,
             windMph: d.windMph || 0, windDirDeg: d.windDirDeg || 0,
-            truncateAtTarget: d.mode === 'pitching'
+            truncateAtTarget: d.mode === 'pitching',
+            gravity: (function() {
+              var p = GRAVITY_PRESETS.find(function(g) { return g.id === (d.gravityId || 'earth'); });
+              return p ? p.g : G;
+            })()
           });
           gfx.strokeStyle = 'rgba(148, 163, 184, 0.6)';
           gfx.lineWidth = 1.5;
@@ -1425,7 +1450,7 @@ window.StemLab = window.StemLab || {
         d.speedMph, d.releaseHeight, d.aimDegV, d.aimDegH,
         d.spinRpm, d.spinAxisDeg, d.throwerHand, d.showPhysics,
         d.referenceResult, d.mode, d.fgDistanceYd,
-        d.windMph, d.windDirDeg
+        d.windMph, d.windDirDeg, d.gravityId
       ]);
 
       // ── Space-key hotkey for throw/shoot/kick ──
@@ -1699,6 +1724,35 @@ window.StemLab = window.StemLab || {
                 color: '#f1f5f9', fontSize: 12
               }
             }, opt.label);
+          })
+        ),
+
+        // Gravity preset selector — "what would this look like on Mars?"
+        // Available at any tier since it's the most concrete scientific
+        // teaching moment in the tool: g changes, every trajectory changes
+        // proportionally, and students can reason about WHY.
+        h('div', { role: 'group', 'aria-label': 'Gravity preset',
+          style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14, flexWrap: 'wrap', fontSize: 12 }
+        },
+          h('span', { style: { color: '#cbd5e1' } }, 'Gravity:'),
+          GRAVITY_PRESETS.map(function(gp) {
+            var sel = (d.gravityId || 'earth') === gp.id;
+            return h('button', {
+              key: 'g-' + gp.id,
+              onClick: function() {
+                upd('gravityId', gp.id);
+                tlAnnounce('Gravity set to ' + gp.label + ', ' + gp.g.toFixed(2) + ' meters per second squared.');
+              },
+              'aria-pressed': sel,
+              'aria-label': gp.label + ' gravity, ' + gp.g.toFixed(2) + ' m/s squared',
+              'data-tl-focusable': 'true',
+              style: {
+                padding: '6px 10px', borderRadius: 6, cursor: 'pointer',
+                border: '1px solid ' + (sel ? '#fbbf24' : '#334155'),
+                background: sel ? 'rgba(251,191,36,0.18)' : '#1e293b',
+                color: '#f1f5f9', fontSize: 12
+              }
+            }, gp.icon + ' ' + gp.label + ' (' + gp.g.toFixed(1) + ')');
           })
         ),
 
