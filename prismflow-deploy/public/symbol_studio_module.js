@@ -28,8 +28,8 @@
     + ' .ss-garden-tapped{animation:ss-garden-tap 0.4s ease-out}'
     + ' @keyframes ss-garden-levelup{0%{transform:scale(0.95);opacity:0}20%{transform:scale(1.03)}100%{transform:scale(1);opacity:1}}'
     + ' .ss-garden-levelup{animation:ss-garden-levelup 0.6s ease-out}'
-    + ' @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}.ss-garden-seed,.ss-garden-mastered,.ss-garden-tapped,.ss-garden-levelup{animation:none!important}}'
-    + ' .text-slate-600{color:#64748b!important}';
+    + ' @media(prefers-reduced-motion:reduce){.fixed.inset-0 *,.fixed.inset-0 *::before,.fixed.inset-0 *::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}.ss-garden-seed,.ss-garden-mastered,.ss-garden-tapped,.ss-garden-levelup{animation:none!important}}';
+    // Removed: .text-slate-600{color:#64748b!important} — was an unscoped global override that downgraded slate-600 from AAA (#475569, 7.42:1) to AA-borderline (#64748b, 4.59:1) across the entire app whenever Symbol Studio loaded. Tailwind's default slate-600 is AAA-pass.
     document.head.appendChild(style);
   })();
 
