@@ -486,6 +486,8 @@
     var largeText = _largeText[0]; var setLargeText = _largeText[1];
 
     var ttsCancelRef = useRef(false);
+    // Captures the element that was focused when read-aloud opens, so focus can return there on close (WCAG 2.4.3)
+    var readAloudReturnFocusRef = useRef(null);
 
     // Writing helpers (Daily Prompt / Rhymes / Stronger Verbs)
     var _helpersOpen = useState(false); var helpersOpen = _helpersOpen[0]; var setHelpersOpen = _helpersOpen[1];
@@ -860,6 +862,8 @@
     // ── Read-aloud mode (silent recital — student performs live, no TTS) ──
     var startReadAloud = useCallback(function () {
       if (!poemText.trim()) return;
+      // Capture the trigger element so we can restore focus when the dialog closes (WCAG 2.4.3)
+      try { readAloudReturnFocusRef.current = document.activeElement; } catch (e) {}
       setReadIdx(0);
       setReadCountdown(3);
       announcePT('Read-aloud starting in 3…');
@@ -878,6 +882,17 @@
       };
       setTimeout(tick, 900);
     }, [poemText]);
+
+    // Restore focus to the trigger element when the read-aloud overlay unmounts.
+    // Covers all close paths: explicit Stop, Escape key, "Done" button, natural completion via advanceReadAloud.
+    useEffect(function () {
+      if (!readAloudActive && readCountdown === 0 && readAloudReturnFocusRef.current) {
+        var el = readAloudReturnFocusRef.current;
+        readAloudReturnFocusRef.current = null;
+        // Defer focus restore by one tick so React can finish unmounting the overlay first.
+        setTimeout(function () { try { if (el && typeof el.focus === 'function') el.focus(); } catch (e) {} }, 50);
+      }
+    }, [readAloudActive, readCountdown]);
 
     var stopReadAloud = useCallback(function () {
       setReadAloudActive(false);
@@ -1425,13 +1440,13 @@
               // Per-line table
               lines.length > 0 && e('div', { style: { fontFamily: 'monospace', fontSize: '11px', color: '#374151', maxHeight: '200px', overflowY: 'auto' } },
                 lines.map(function (line, li) {
-                  if (!line.trim()) return e('div', { key: li, style: { color: '#94a3b8', padding: '2px 0' } }, '— stanza break —');
+                  if (!line.trim()) return e('div', { key: li, style: { color: '#475569', padding: '2px 0' } }, '— stanza break —');
                   var sylCount = countLineSyllables(line);
                   var expected = form && form.syllablesPerLine && form.syllablesPerLine[li];
                   var sylStatus = expected ? (sylCount === expected ? '✓' : '✗ ' + sylCount + '/' + expected) : sylCount + ' syl';
                   var rg = rhymeGroups[li];
                   return e('div', { key: li, style: { padding: '3px 0', display: 'flex', gap: '8px', alignItems: 'center' } },
-                    e('span', { style: { color: '#94a3b8', minWidth: '20px' } }, (li + 1) + '.'),
+                    e('span', { style: { color: '#475569', minWidth: '20px' } }, (li + 1) + '.'),
                     e('span', { style: { flex: 1, color: '#1e293b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, line),
                     rg && e('span', { style: { color: TEAL, fontWeight: 700, minWidth: '14px' }, 'aria-label': 'rhymes as group ' + rg }, rg),
                     e('span', { style: { color: expected && sylCount !== expected ? AMBER : '#475569', fontWeight: 700, minWidth: '60px', textAlign: 'right' } }, sylStatus)
@@ -1897,7 +1912,7 @@
                     style: { padding: '8px 14px', background: 'transparent', color: '#cbd5e1', border: '1px solid #475569', borderRadius: '8px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }
                   }, '✕ Done')
                 ),
-                e('p', { style: { color: '#64748b', fontSize: '11px', fontFamily: 'system-ui, sans-serif', margin: 0, textAlign: 'center' } }, 'Tap or press Space to advance · ← / → to step · Esc to exit')
+                e('p', { style: { color: '#cbd5e1', fontSize: '11px', fontFamily: 'system-ui, sans-serif', margin: 0, textAlign: 'center' } }, 'Tap or press Space to advance · ← / → to step · Esc to exit')
               )
             );
           })(),
