@@ -117,6 +117,16 @@ window.StemLab = window.StemLab || {
       cd: 0.22, cm: 1.20,
       color: '#fafafa', seamColor: '#1a1a1a',
       icon: '⚽'
+    },
+    // Football is a prolate spheroid; we approximate as a sphere for trajectory.
+    // Cm is intentionally low — a tight spiral spins ALONG the axis of motion, so
+    // the ω×v cross product is near zero (no Magnus lift). Wobbles get drag bumps
+    // we don't model yet but could in a v2 wobble pass.
+    football: {
+      label: 'Football', mass: 0.410, radius: 0.110,
+      cd: 0.20, cm: 0.10,
+      color: '#7c2d12', seamColor: '#fafafa',
+      icon: '🏈'
     }
   };
 
@@ -203,6 +213,35 @@ window.StemLab = window.StemLab || {
       teach: 'High arc (~35°) over the wall. Backspin keeps the ball in the air longer, makes it drop late. Used when the keeper is off the line.' }
   ];
 
+  // Football field goal presets — distance + power tradeoff. The headline lesson
+  // is the angle ↔ distance tradeoff: too flat and the ball crashes into the
+  // crossbar; too steep and you lose distance to vertical wastage. Each preset
+  // sets a target distance the player should TRY to clear by adjusting speed
+  // and angle. Spin axis = 0 (no Magnus); spinRpm scales kick power slightly.
+  // distanceYd is metadata used for UI label + scenario distance setup.
+  var GOAL_TYPES = [
+    { id: 'chipshot', label: 'Chip Shot (20 yd)', icon: '🥧',
+      speedMph: 50, spinRpm: 0, spinAxisDeg: 0, aimDegV: 35, releaseHeight: 0.0,
+      distanceYd: 20,
+      grip: 'Hold the laces away, plant foot beside the ball',
+      teach: 'Easy money. From 20 yards (~30 ft from crossbar) any pro kicker is automatic. The lesson: you don\'t need raw power — you need a clean strike + correct angle.' },
+    { id: 'midrange', label: 'Mid-Range (35 yd)', icon: '🎯',
+      speedMph: 60, spinRpm: 0, spinAxisDeg: 0, aimDegV: 38, releaseHeight: 0.0,
+      distanceYd: 35,
+      grip: 'Standard placement, full leg drive',
+      teach: 'The sweet spot for most NFL kickers. ~38° launch angle is the optimal balance of distance and clearance — too flat hits the line; too steep wastes distance to vertical motion.' },
+    { id: 'long', label: 'Long Field Goal (50 yd)', icon: '💪',
+      speedMph: 70, spinRpm: 0, spinAxisDeg: 0, aimDegV: 40, releaseHeight: 0.0,
+      distanceYd: 50,
+      grip: 'Full backswing, dig the toe under the ball',
+      teach: '50-yard FG is the modern NFL average. Speed scales linearly with distance, but ANGLE has a sweet spot near 40° — drag is enough that you can\'t just tilt up and add power.' },
+    { id: 'hailmary', label: 'Hail Mary (60+ yd)', icon: '🌠',
+      speedMph: 80, spinRpm: 0, spinAxisDeg: 0, aimDegV: 42, releaseHeight: 0.0,
+      distanceYd: 60,
+      grip: 'Maximum power; risk of pulling the kick',
+      teach: 'Justin Tucker territory (longest NFL FG: 66 yards). At this distance every variable matters — wind, snap timing, the kicker\'s leg fatigue. Drag eats ~12% of horizontal range.' }
+  ];
+
   // Mode metadata — controls which target / preset list / distances apply.
   var MODES = {
     pitching: {
@@ -230,8 +269,54 @@ window.StemLab = window.StemLab || {
       releaseStrideDefault: 0.0,
       releaseHeightRange: [0.11, 0.11], // ball sits on ground; not user-adjustable
       speedRange: [25, 90]
+    },
+    fieldgoal: {
+      label: 'Field Goal', icon: '🏈', ball: 'football', presets: GOAL_TYPES,
+      // Default mid-range. Actual goal-line distance comes from the active
+      // preset's distanceYd (the side-view canvas + classifier read it from
+      // d.fgDistanceYd, set by applyGoalPreset).
+      targetZ: 35 * 0.9144, // 35 yd in m — overridden per preset
+      goalHalfWidth: 5.64 / 2, // 18.5 ft (NFL pro hash) → 5.64m → ±2.82
+      crossbarHeight: 3.05,    // 10 ft
+      releaseStrideDefault: 0.0,
+      releaseHeightRange: [0.0, 0.0],
+      speedRange: [30, 95]
     }
   };
+
+  // Score classifier for field goal mode. Walks samples for the first crossing
+  // of z = goalLineZ, then checks: ball must be UNDER the crossbar (y > 0) for
+  // a missed/short FG, ABOVE the crossbar (y > crossbarHeight) AND between
+  // posts (|x| ≤ goalHalfWidth) for a make. "Doink" if it kisses the post or
+  // crossbar within a small tolerance.
+  function classifyFieldGoalResult(samples, goalLineZ, crossbarHeight, goalHalfWidth) {
+    if (!samples || samples.length < 2) return 'short';
+    for (var i = 1; i < samples.length; i++) {
+      var prev = samples[i - 1], cur = samples[i];
+      // Short bounce before reaching goal line
+      if (cur.y <= 0 && cur.z < goalLineZ) return 'short';
+      // Goal-line crossing
+      if (prev.z < goalLineZ && cur.z >= goalLineZ) {
+        var f = (goalLineZ - prev.z) / (cur.z - prev.z);
+        var gx = prev.x + (cur.x - prev.x) * f;
+        var gy = prev.y + (cur.y - prev.y) * f;
+        // Must clear the crossbar
+        if (gy < crossbarHeight) {
+          // Hit the bar?
+          if (Math.abs(gy - crossbarHeight) < 0.30 && Math.abs(gx) < goalHalfWidth) return 'doink';
+          return 'shortbar';
+        }
+        // Must be between the uprights
+        if (Math.abs(gx) > goalHalfWidth) {
+          // Just outside the post?
+          if (Math.abs(gx) - goalHalfWidth < 0.30) return 'doink';
+          return Math.abs(gx) > goalHalfWidth + 2 ? 'wide' : 'wideclose';
+        }
+        return 'good';
+      }
+    }
+    return 'short';
+  }
 
   // Score classifier for free kick mode. Walks samples for the first crossing
   // of z = goal-line plane (targetZ). If at that crossing the ball is inside
@@ -483,7 +568,10 @@ window.StemLab = window.StemLab || {
             shotType: 'freethrow',
             shotMakeCount: 0,          // free-throw scoring
             kickType: 'curling',
-            goalCount: 0               // free-kick scoring
+            goalCount: 0,              // free-kick scoring
+            goalType: 'midrange',
+            fgDistanceYd: 35,          // active field-goal distance
+            fgMakeCount: 0             // field-goal scoring
           }});
         });
         return h('div', { className: 'p-8 text-center text-slate-600' }, 'Loading ThrowLab…');
@@ -546,6 +634,25 @@ window.StemLab = window.StemLab || {
         tlAnnounce('Selected kick: ' + kt.label + '. Speed ' + kt.speedMph + ' mph, spin axis ' + kt.spinAxisDeg + ' degrees.');
       }
 
+      function applyGoalPreset(gid) {
+        var gt = GOAL_TYPES.find(function(g) { return g.id === gid; });
+        if (!gt) return;
+        setLabToolData(function(prev) {
+          var next = Object.assign({}, prev.throwlab, {
+            goalType: gid,
+            fgDistanceYd: gt.distanceYd,
+            speedMph: gt.speedMph,
+            spinRpm: gt.spinRpm,
+            spinAxisDeg: gt.spinAxisDeg,
+            aimDegV: gt.aimDegV,
+            releaseHeight: gt.releaseHeight,
+            lastResult: null            // distance change → invalidate previous result
+          });
+          return Object.assign({}, prev, { throwlab: next });
+        });
+        tlAnnounce('Selected field goal: ' + gt.label + '. Distance ' + gt.distanceYd + ' yards, launch angle ' + gt.aimDegV + ' degrees.');
+      }
+
       function switchMode(newMode) {
         var modeMeta = MODES[newMode];
         if (!modeMeta) return;
@@ -555,8 +662,10 @@ window.StemLab = window.StemLab || {
             defaults = { speedMph: 92, releaseHeight: 1.85, aimDegV: -1.5, aimDegH: 0, spinRpm: 2300, spinAxisDeg: 0 };
           } else if (newMode === 'freethrow') {
             defaults = { speedMph: 16, releaseHeight: 2.2, aimDegV: 52, aimDegH: 0, spinRpm: 180, spinAxisDeg: 0 };
-          } else { // freekick
+          } else if (newMode === 'freekick') {
             defaults = { speedMph: 60, releaseHeight: 0.11, aimDegV: 12, aimDegH: 0, spinRpm: 600, spinAxisDeg: 105 };
+          } else { // fieldgoal
+            defaults = { speedMph: 60, releaseHeight: 0.0, aimDegV: 38, aimDegH: 0, spinRpm: 0, spinAxisDeg: 0, fgDistanceYd: 35 };
           }
           var next = Object.assign({}, prev.throwlab, defaults, {
             mode: newMode, lastResult: null, replayActive: false, replayT: 0
@@ -568,6 +677,10 @@ window.StemLab = window.StemLab || {
 
       function throwPitch() {
         var modeMeta = MODES[d.mode] || MODES.pitching;
+        // Field goal distance is preset-driven so the goal line moves per kick type.
+        var effectiveTargetZ = d.mode === 'fieldgoal'
+          ? (d.fgDistanceYd || 35) * 0.9144  // yd → m
+          : modeMeta.targetZ;
         var simOpts = {
           ball: modeMeta.ball,
           speedMph: d.speedMph,
@@ -577,20 +690,21 @@ window.StemLab = window.StemLab || {
           spinRpm: d.spinRpm,
           spinAxisDeg: d.spinAxisDeg,
           throwerHand: d.throwerHand,
-          targetZ: modeMeta.targetZ,
+          targetZ: effectiveTargetZ,
           releaseStride: modeMeta.releaseStrideDefault,
-          truncateAtTarget: d.mode === 'pitching' // free throw needs the full arc to land
+          truncateAtTarget: d.mode === 'pitching' // free throw / free kick / field goal need the full arc to land
         };
-        // Free kick lets the arc continue past the goal line so we can detect
-        // missed-over and post-rebound cases — same truncate=false treatment
-        // as free throw.
-        if (d.mode === 'freekick') simOpts.truncateAtTarget = false;
+        // Free kick + field goal let the arc continue past the goal line so we
+        // can detect missed-over / wide / post cases.
+        if (d.mode === 'freekick' || d.mode === 'fieldgoal') simOpts.truncateAtTarget = false;
         var result = simulatePitch(simOpts);
         var loc;
         if (d.mode === 'freethrow') {
           loc = classifyShotResult(result.samples, modeMeta.rimY, modeMeta.rimZ, modeMeta.rimRadius);
         } else if (d.mode === 'freekick') {
           loc = classifyKickResult(result.samples, modeMeta);
+        } else if (d.mode === 'fieldgoal') {
+          loc = classifyFieldGoalResult(result.samples, effectiveTargetZ, modeMeta.crossbarHeight, modeMeta.goalHalfWidth);
         } else {
           loc = result.outcome.reachedPlate
             ? classifyPlateLocation(result.outcome.plateX, result.outcome.plateY)
@@ -620,6 +734,7 @@ window.StemLab = window.StemLab || {
         var newStrikeCount = (d.mode === 'pitching' && loc === 'strike') ? (d.strikeCount || 0) + 1 : (d.strikeCount || 0);
         var newMakeCount = (d.mode === 'freethrow' && (loc === 'swish' || loc === 'made')) ? (d.shotMakeCount || 0) + 1 : (d.shotMakeCount || 0);
         var newGoalCount = (d.mode === 'freekick' && loc === 'goal') ? (d.goalCount || 0) + 1 : (d.goalCount || 0);
+        var newFgMakeCount = (d.mode === 'fieldgoal' && loc === 'good') ? (d.fgMakeCount || 0) + 1 : (d.fgMakeCount || 0);
         var newTypesUsed = Object.assign({}, d.pitchTypesUsed || {});
         if (d.mode === 'pitching') newTypesUsed[d.pitchType] = true;
         setLabToolData(function(prev) {
@@ -631,6 +746,7 @@ window.StemLab = window.StemLab || {
             strikeCount: newStrikeCount,
             shotMakeCount: newMakeCount,
             goalCount: newGoalCount,
+            fgMakeCount: newFgMakeCount,
             pitchTypesUsed: newTypesUsed
           });
           return Object.assign({}, prev, { throwlab: next });
@@ -686,6 +802,34 @@ window.StemLab = window.StemLab || {
               tlAnnounce('Missed the rim.');
               if (addToast) addToast('Miss');
             }
+          } else if (d.mode === 'fieldgoal') {
+            if (loc === 'good') {
+              sfxStrike(); sfxStrike();
+              tlAnnounce('GOOD! Field goal from ' + d.fgDistanceYd + ' yards is up and through.');
+              if (addToast) addToast('🏈 GOOD!');
+              if (awardXP) awardXP('throwlab', 10, 'Field goal made');
+              if (celebrate) celebrate();
+            } else if (loc === 'doink') {
+              sfxStrike();
+              tlAnnounce('Doink! Off the post or crossbar — inches from a make.');
+              if (addToast) addToast('🥁 DOINK');
+            } else if (loc === 'shortbar') {
+              sfxBall();
+              tlAnnounce('Short. Kick failed to clear the crossbar — needs more power or steeper angle.');
+              if (addToast) addToast('Short — under the bar');
+            } else if (loc === 'wideclose') {
+              sfxBall();
+              tlAnnounce('No good — wide of the upright by inches.');
+              if (addToast) addToast('Wide — barely');
+            } else if (loc === 'wide') {
+              sfxBall();
+              tlAnnounce('No good — wide of the goalposts.');
+              if (addToast) addToast('Wide');
+            } else {
+              sfxBall();
+              tlAnnounce('Short — kick didn\'t reach the goal line.');
+              if (addToast) addToast('Short of the line');
+            }
           } else if (d.mode === 'freekick') {
             if (loc === 'goal') {
               sfxStrike(); sfxStrike();
@@ -728,22 +872,30 @@ window.StemLab = window.StemLab || {
 
         var modeMeta = MODES[d.mode] || MODES.pitching;
         // FREE KICK uses a TOP-DOWN view (z forward / x lateral) so the curl
-        // around the wall is visible. Pitching + Free Throw stay side-view
-        // (z forward / y vertical) so the arc reads.
+        // around the wall is visible. Pitching + Free Throw + Field Goal stay
+        // side-view (z forward / y vertical) so the arc reads.
         var isTopDown = d.mode === 'freekick';
+        // For field goal mode the goal line is preset-driven (20-60 yd).
+        var fgGoalZ = d.mode === 'fieldgoal' ? (d.fgDistanceYd || 35) * 0.9144 : 0;
         // Layout
         var marginL = 40, marginR = 80, marginT = 30, marginB = 60;
         var fieldW = W - marginL - marginR;
         var fieldH = H - marginT - marginB;
         // Render-window Z extent — pitching shows the full 60.5 ft, free throw
         // zooms in on the much shorter 15-ft court so the arc reads clearly,
-        // free kick shows ~25m so the goal mouth fits with margin.
+        // free kick shows ~25m so the goal mouth fits with margin, field goal
+        // adds ~5m beyond the goalposts so a missed-over kick is still visible.
         var renderMaxZ = d.mode === 'pitching' ? modeMeta.targetZ
                        : d.mode === 'freekick' ? 25
+                       : d.mode === 'fieldgoal' ? (fgGoalZ + 5)
                        : 6.5;
         // For top-down: maxB = lateral half-width × 2 ≈ 12m so a curling shot
-        // with 1.5m of curl + the 7.32m goal both fit.
-        var maxB = isTopDown ? 6.0 : (d.mode === 'pitching' ? 3.0 : 4.5);
+        // with 1.5m of curl + the 7.32m goal both fit. Field goal apex can hit
+        // 15m+ on a 60-yd kick so we need extra vertical room.
+        var maxB = isTopDown ? 6.0
+                 : d.mode === 'pitching' ? 3.0
+                 : d.mode === 'fieldgoal' ? 18
+                 : 4.5;
         // For top-down, B is symmetrical around 0 (lateral X); we map [-maxB, +maxB] to canvas height.
         // For side-view, B is from 0 (ground) up to +maxB.
         // World (z, b) → canvas (px, py). b = y for side-view, b = x for top-down.
@@ -881,6 +1033,53 @@ window.StemLab = window.StemLab || {
           gfx.fillText('FT line', ftLinePts[0], marginT + fieldH + 22);
           gfx.fillText('15 ft to backboard →', (ftLinePts[0] + ftPlPts[0]) / 2, marginT + fieldH + 22);
           gfx.fillText('Hoop', ftPlPts[0], marginT + fieldH + 36);
+        } else if (d.mode === 'fieldgoal') {
+          // Side-view field goal scene: kicker on left (z=0), goalposts at fgGoalZ.
+          // Hash-marked field every 10 yards so distance reads at a glance.
+          var hashCb = modeMeta.crossbarHeight;
+          // Hash marks on the field (every 10 yd, in m: 10yd ≈ 9.14m)
+          gfx.fillStyle = 'rgba(255,255,255,0.4)';
+          gfx.font = '9px system-ui';
+          gfx.textAlign = 'center';
+          for (var hyd = 10; hyd < d.fgDistanceYd + 6; hyd += 10) {
+            var hzm = hyd * 0.9144;
+            if (hzm > renderMaxZ) break;
+            var hpos = worldToCanvas(hzm, 0);
+            gfx.fillRect(hpos[0] - 0.5, hpos[1] - 4, 1, 8);
+            gfx.fillText(hyd + ' yd', hpos[0], marginT + fieldH + 14);
+          }
+          // Tee + ball spot at z=0
+          var teePts = worldToCanvas(0, 0);
+          gfx.fillStyle = '#fef3c7';
+          gfx.beginPath(); gfx.ellipse(teePts[0], teePts[1], 6, 3, 0, 0, Math.PI * 2); gfx.fill();
+          // Goalposts: vertical uprights at fgGoalZ rising to (canvas) above crossbar.
+          // Side view: only one upright is visible from the side, but we draw a small
+          // depth offset so both posts read as a "Y" frame.
+          var postBase = worldToCanvas(fgGoalZ, 0);
+          var crossbar = worldToCanvas(fgGoalZ, hashCb);
+          var postTop = worldToCanvas(fgGoalZ, hashCb + 4);
+          gfx.strokeStyle = '#fde047';
+          gfx.lineWidth = 4;
+          gfx.beginPath();
+          // Single base post (gooseneck base)
+          gfx.moveTo(postBase[0], postBase[1]); gfx.lineTo(crossbar[0], crossbar[1]);
+          // Crossbar (a short horizontal stub since this is side view; the whole
+          // crossbar + uprights extend toward + away from the camera)
+          gfx.moveTo(crossbar[0] - 14, crossbar[1]); gfx.lineTo(crossbar[0] + 14, crossbar[1]);
+          // Two uprights rising from the crossbar (front + back)
+          gfx.moveTo(crossbar[0] - 14, crossbar[1]); gfx.lineTo(crossbar[0] - 14, postTop[1]);
+          gfx.moveTo(crossbar[0] + 14, crossbar[1]); gfx.lineTo(crossbar[0] + 14, postTop[1]);
+          gfx.stroke();
+          // Crossbar height label (10 ft)
+          gfx.fillStyle = '#fde047';
+          gfx.font = '10px system-ui';
+          gfx.textAlign = 'right';
+          gfx.fillText('10 ft →', crossbar[0] - 18, crossbar[1] + 3);
+          // Distance label (centered between tee + posts)
+          gfx.fillStyle = '#cbd5e1';
+          gfx.font = '12px system-ui';
+          gfx.textAlign = 'center';
+          gfx.fillText(d.fgDistanceYd + ' yd', (teePts[0] + postBase[0]) / 2, marginT + fieldH + 28);
         } else if (d.mode === 'freekick') {
           // Top-down free-kick scene: ball at left (z=0), wall at z=9.15m,
           // goal at z=22m. Centerline = canvas vertical center.
@@ -983,6 +1182,11 @@ window.StemLab = window.StemLab || {
                       : lr.location === 'post' ? '#fbbf24'
                       : lr.location === 'blocked' ? '#94a3b8'
                       : '#ef4444';
+          } else if (d.mode === 'fieldgoal') {
+            trajColor = lr.location === 'good' ? '#10b981'
+                      : lr.location === 'doink' ? '#fbbf24'
+                      : lr.location === 'wideclose' ? '#f97316'
+                      : '#ef4444';
           } else {
             trajColor = lr.location === 'strike' ? '#10b981'
                       : lr.location === 'borderline' ? '#fbbf24'
@@ -1060,10 +1264,15 @@ window.StemLab = window.StemLab || {
       var isPitching = d.mode === 'pitching';
       var isFreeThrow = d.mode === 'freethrow';
       var isFreeKick = d.mode === 'freekick';
+      var isFieldGoal = d.mode === 'fieldgoal';
       // Active preset for the bottom-of-canvas teach blurb
       var currentShot = SHOT_TYPES.find(function(s) { return s.id === d.shotType; }) || SHOT_TYPES[0];
       var currentKick = KICK_TYPES.find(function(k) { return k.id === d.kickType; }) || KICK_TYPES[0];
-      var activePreset = isPitching ? currentPitch : isFreeThrow ? currentShot : currentKick;
+      var currentGoal = GOAL_TYPES.find(function(g) { return g.id === d.goalType; }) || GOAL_TYPES[0];
+      var activePreset = isPitching ? currentPitch
+                       : isFreeThrow ? currentShot
+                       : isFreeKick ? currentKick
+                       : currentGoal;
 
       // Outcome label + color (mode-specific)
       function outcomeLabel(loc) {
@@ -1081,6 +1290,14 @@ window.StemLab = window.StemLab || {
                : loc === 'blocked' ? '🧱 Blocked by the wall'
                : '😬 Short';
         }
+        if (isFieldGoal) {
+          return loc === 'good' ? '🏈 IT IS GOOD'
+               : loc === 'doink' ? '🥁 DOINK'
+               : loc === 'shortbar' ? '⬇️ Short — under the bar'
+               : loc === 'wideclose' ? '↔️ No good — wide by inches'
+               : loc === 'wide' ? '↔️ No good — wide'
+               : '😬 Short of the line';
+        }
         return loc === 'swish' ? '🌊 SWISH (clean center)'
              : loc === 'made' ? '🏀 MADE IT'
              : loc === 'rim' ? '〰️ Off the rim'
@@ -1094,6 +1311,9 @@ window.StemLab = window.StemLab || {
         }
         if (isFreeKick) {
           return loc === 'goal' ? '#10b981' : loc === 'post' ? '#fbbf24' : loc === 'blocked' ? '#94a3b8' : '#ef4444';
+        }
+        if (isFieldGoal) {
+          return loc === 'good' ? '#10b981' : loc === 'doink' ? '#fbbf24' : loc === 'wideclose' ? '#f97316' : '#ef4444';
         }
         return loc === 'swish' ? '#10b981' : loc === 'made' ? '#3b82f6' : loc === 'rim' ? '#fbbf24' : loc === 'backboard' ? '#94a3b8' : '#ef4444';
       }
@@ -1139,7 +1359,9 @@ window.StemLab = window.StemLab || {
                 ? 'Side view of pitcher\'s mound and home plate. The strike zone is the dashed yellow box above the plate.'
                 : isFreeKick
                   ? 'Top-down view of a soccer pitch with the ball at the bottom, a four-defender wall in the middle, and the goal at the top. Spin curls the ball laterally.'
-                  : 'Side view of free-throw line and basketball hoop. The orange bar is the rim at 10 feet.',
+                  : isFieldGoal
+                    ? 'Side view of a football field with hash-mark distance labels, a yellow tee, and yellow goalposts at ' + d.fgDistanceYd + ' yards.'
+                    : 'Side view of free-throw line and basketball hoop. The orange bar is the rim at 10 feet.',
               style: { width: '100%', maxWidth: 720, height: 'auto', borderRadius: 10, border: '1px solid #334155', background: '#0f172a' }
             }),
             // Result panel
@@ -1150,17 +1372,23 @@ window.StemLab = window.StemLab || {
                   h('div', { style: { fontSize: 12, color: '#cbd5e1', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 } },
                     h('div', null, h('div', { style: { color: '#94a3b8', fontSize: 11 } }, 'Speed'), h('div', { style: { fontWeight: 700 } }, d.speedMph + ' mph')),
                     h('div', null,
-                      h('div', { style: { color: '#94a3b8', fontSize: 11 } }, isPitching ? 'Time to plate' : isFreeKick ? 'Time to goal' : 'Hang time'),
+                      h('div', { style: { color: '#94a3b8', fontSize: 11 } },
+                        isPitching ? 'Time to plate'
+                        : isFreeKick ? 'Time to goal'
+                        : isFieldGoal ? 'Hang time'
+                        : 'Hang time'),
                       h('div', { style: { fontWeight: 700 } }, isPitching
                         ? (lr.outcome.plateT ? lr.outcome.plateT.toFixed(2) + ' s' : '—')
                         : (lr.samples && lr.samples.length ? lr.samples[lr.samples.length - 1].t.toFixed(2) + ' s' : '—'))),
-                    h('div', null, h('div', { style: { color: '#94a3b8', fontSize: 11 } }, isPitching ? 'Vert. break' : isFreeKick ? 'Curl' : 'Apex'),
+                    h('div', null, h('div', { style: { color: '#94a3b8', fontSize: 11 } },
+                        isPitching ? 'Vert. break' : isFreeKick ? 'Curl' : isFieldGoal ? 'Peak height' : 'Apex'),
                       h('div', { style: { fontWeight: 700 } }, isPitching
                         ? (lr.vBreakIn !== null ? lr.vBreakIn.toFixed(1) + ' in' : '—')
                         : isFreeKick
                           ? (lr.samples ? (Math.max.apply(null, lr.samples.map(function(s) { return s.x; })) - Math.min.apply(null, lr.samples.map(function(s) { return s.x; }))).toFixed(2) + ' m' : '—')
                           : (lr.samples ? Math.max.apply(null, lr.samples.map(function(s) { return s.y; })).toFixed(2) + ' m' : '—'))),
-                    h('div', null, h('div', { style: { color: '#94a3b8', fontSize: 11 } }, isPitching ? 'Horiz. break' : isFreeKick ? 'Spin axis' : 'Release ∠'),
+                    h('div', null, h('div', { style: { color: '#94a3b8', fontSize: 11 } },
+                        isPitching ? 'Horiz. break' : isFreeKick ? 'Spin axis' : isFieldGoal ? 'Launch ∠' : 'Release ∠'),
                       h('div', { style: { fontWeight: 700 } }, isPitching
                         ? (lr.hBreakIn !== null ? lr.hBreakIn.toFixed(1) + ' in' : '—')
                         : isFreeKick
@@ -1174,7 +1402,9 @@ window.StemLab = window.StemLab || {
                   ? 'Pick a pitch type, set your release, and click THROW to see the path.'
                   : isFreeKick
                     ? 'Pick a kick style and click STRIKE — watch the ball curl around the wall.'
-                    : 'Pick a shot, set your release angle, and click SHOOT to see the arc.')
+                    : isFieldGoal
+                      ? 'Pick a distance, set your launch angle and power, and click KICK — clear the bar and split the uprights.'
+                      : 'Pick a shot, set your release angle, and click SHOOT to see the arc.')
             ),
             // "Show physics" toggle
             h('div', { style: { marginTop: 10, fontSize: 12, color: '#94a3b8' } },
@@ -1189,17 +1419,19 @@ window.StemLab = window.StemLab || {
             // Preset picker (pitches OR shots, mode-driven)
             h('div', { style: { background: '#0f172a', border: '1px solid #1e293b', borderRadius: 10, padding: 12, marginBottom: 12 } },
               h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 } },
-                isPitching ? 'Pitch type' : isFreeKick ? 'Kick style' : 'Shot type'),
+                isPitching ? 'Pitch type' : isFreeKick ? 'Kick style' : isFieldGoal ? 'Distance' : 'Shot type'),
               h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 } },
                 modeMeta.presets.map(function(pt) {
                   var sel = isPitching ? d.pitchType === pt.id
                           : isFreeKick ? d.kickType === pt.id
+                          : isFieldGoal ? d.goalType === pt.id
                           : d.shotType === pt.id;
                   return h('button', {
                     key: pt.id,
                     onClick: function() {
                       if (isPitching) applyPitchPreset(pt.id);
                       else if (isFreeKick) applyKickPreset(pt.id);
+                      else if (isFieldGoal) applyGoalPreset(pt.id);
                       else applyShotPreset(pt.id);
                     },
                     'aria-pressed': sel,
@@ -1211,7 +1443,10 @@ window.StemLab = window.StemLab || {
                     }
                   }, h('div', { style: { fontSize: 14 } }, pt.icon + ' ' + pt.label),
                      h('div', { style: { fontSize: 10, color: '#94a3b8' } },
-                       pt.speedMph + ' mph' + (isPitching ? ' · ' + pt.spinRpm + ' rpm' : isFreeKick ? ' · spin ' + pt.spinAxisDeg + '°' : ' · ' + pt.aimDegV + '° arc')));
+                       pt.speedMph + ' mph' + (isPitching ? ' · ' + pt.spinRpm + ' rpm'
+                                              : isFreeKick ? ' · spin ' + pt.spinAxisDeg + '°'
+                                              : isFieldGoal ? ' · ' + pt.aimDegV + '° launch'
+                                              : ' · ' + pt.aimDegV + '° arc')));
                 })
               ),
               h('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 8, padding: 8, background: '#1e293b', borderRadius: 6 } },
@@ -1223,7 +1458,10 @@ window.StemLab = window.StemLab || {
               h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Release controls'),
               slider('Speed', d.speedMph, modeMeta.speedRange[0], modeMeta.speedRange[1], 1, function(v) { upd('speedMph', v); }, ' mph'),
               slider('Release height', d.releaseHeight.toFixed(2), modeMeta.releaseHeightRange[0], modeMeta.releaseHeightRange[1], 0.05, function(v) { upd('releaseHeight', v); }, ' m'),
-              slider('Vertical aim', d.aimDegV.toFixed(1), isPitching ? -8 : isFreeKick ? -2 : 30, isPitching ? 4 : isFreeKick ? 45 : 70, 0.5, function(v) { upd('aimDegV', v); }, '°'),
+              slider('Vertical aim', d.aimDegV.toFixed(1),
+                isPitching ? -8 : isFreeKick ? -2 : isFieldGoal ? 20 : 30,
+                isPitching ? 4 : isFreeKick ? 45 : isFieldGoal ? 60 : 70,
+                0.5, function(v) { upd('aimDegV', v); }, '°'),
               slider('Horizontal aim', d.aimDegH.toFixed(1), -5, 5, 0.1, function(v) { upd('aimDegH', v); }, '°'),
               d.scaffoldTier >= 3 ? slider('Spin rate', d.spinRpm, 0, 3500, 50, function(v) { upd('spinRpm', v); }, ' rpm') : null,
               d.scaffoldTier >= 3 ? slider('Spin axis', d.spinAxisDeg, 0, 360, 5, function(v) { upd('spinAxisDeg', v); }, '°') : null
@@ -1236,16 +1474,18 @@ window.StemLab = window.StemLab || {
                 border: '1px solid #fbbf24', background: 'linear-gradient(135deg, #fbbf24, #f59e0b)',
                 color: '#1a1a2e', fontSize: 16, fontWeight: 800
               }
-            }, isPitching ? '⚾ THROW PITCH' : isFreeKick ? '⚽ STRIKE' : '🏀 SHOOT'),
+            }, isPitching ? '⚾ THROW PITCH' : isFreeKick ? '⚽ STRIKE' : isFieldGoal ? '🏈 KICK' : '🏀 SHOOT'),
             // Stats line — mode-aware
             h('div', { style: { marginTop: 12, fontSize: 11, color: '#94a3b8', display: 'flex', justifyContent: 'space-between' } },
-              h('span', null, (isPitching ? 'Pitches: ' : isFreeKick ? 'Kicks: ' : 'Shots: ') + (d.throwCount || 0)),
+              h('span', null, (isPitching ? 'Pitches: ' : isFreeKick ? 'Kicks: ' : isFieldGoal ? 'FGs: ' : 'Shots: ') + (d.throwCount || 0)),
               h('span', null, isPitching ? 'Strikes: ' + (d.strikeCount || 0)
                             : isFreeKick ? 'Goals: ' + (d.goalCount || 0)
+                            : isFieldGoal ? 'Made: ' + (d.fgMakeCount || 0)
                             : 'Made: ' + (d.shotMakeCount || 0)),
               h('span', null, isPitching
                 ? 'Types: ' + Object.keys(d.pitchTypesUsed || {}).length + '/' + PITCH_TYPES.length
                 : isFreeKick ? 'Kick: ' + currentKick.label
+                : isFieldGoal ? d.fgDistanceYd + ' yd'
                 : 'Shot: ' + currentShot.label)
             )
           )
