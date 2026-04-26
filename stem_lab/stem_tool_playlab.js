@@ -1657,6 +1657,21 @@ window.StemLab = window.StemLab || {
         // Compact representation of the formation so the prompt is small.
         // Round to whole units (yd or m) to keep numbers human-readable.
         var prompt;
+        // Pull the live matchup grade + suggestions so the AI's coaching
+        // is anchored in the same diagnosis the student already sees on
+        // the matchup badge — coach acknowledges the grade, then explains
+        // WHY in geometric terms instead of contradicting the badge.
+        var liveMatchup = isSoccer
+          ? getSoccerMatchup(concept, soccerShape)
+          : (play && coverage ? getMatchup(play, coverage) : null);
+        var liveSuggestions = (liveMatchup && liveMatchup.grade === 'tough')
+          ? (isSoccer ? suggestConceptsForShape(soccerShape) : suggestPlaysForCoverage(coverage))
+          : [];
+        var matchupDigest = liveMatchup
+          ? 'Matchup grade for this call: ' + liveMatchup.label + ' — ' + liveMatchup.reason
+            + (liveSuggestions.length ? ' Suggested alternatives: ' + liveSuggestions.map(function(s) { return s.label; }).join(', ') + '.' : '')
+            + ' '
+          : '';
         if (isSoccer) {
           // Soccer-flavored prompt: formation + concept + defensive shape +
           // optional xG context. No route end-points (soccer plays don't
@@ -1678,11 +1693,12 @@ window.StemLab = window.StemLab || {
             + 'Formation: "' + formationDef.label + '". ' + formationDef.teach + ' '
             + 'Concept: "' + concept.label + '". ' + concept.teach + ' '
             + 'Defending team is in: ' + soccerShape.label + '. ' + soccerShape.teach + ' '
+            + matchupDigest
             + 'Pitch is 105×68 m, attacking right. '
             + 'Attacker positions: ' + posDigest + '. '
             + 'Concept passing pattern: ' + (passDigest || '(none)') + '. '
             + 'Most advanced attacker (' + (lead ? lead.id : 'none') + ') has xG ≈ ' + leadXG + ' from current position. '
-            + 'Give 3-4 sentences of warm, specific coaching: (1) acknowledge what the formation+concept does well against THIS defensive shape, (2) name the player or zone with the best opportunity and WHY in geometric terms (not just "open"), (3) suggest ONE concrete adjustment (move a player N meters, swap a passing lane, change defensive shape), (4) tie the suggestion to the math the student can see (xG, passing-triangle geometry, line of confrontation). '
+            + 'Give 3-4 sentences of warm, specific coaching: (1) ACKNOWLEDGE the matchup grade (don\'t contradict it — if it\'s tough, agree it\'s tough and explain WHY geometrically), (2) name the player or zone with the best opportunity and WHY in geometric terms, (3) suggest ONE concrete adjustment (move a player N meters, swap a passing lane, OR pick one of the suggested alternative concepts above), (4) tie the suggestion to the math the student can see (xG, passing-triangle geometry, line of confrontation). '
             + 'Plain prose, no markdown, no bullets, no headings.';
         } else {
           // Football-flavored prompt (original)
@@ -1701,11 +1717,12 @@ window.StemLab = window.StemLab || {
           prompt = 'You are a football coach analyzing a student\'s play call. '
             + 'Active play: "' + play.label + '". Concept: ' + play.teach + ' '
             + 'Active defense: ' + coverage.label + '. Note: ' + coverage.teach + ' '
+            + matchupDigest
             + 'Field is 100×53.33 yards. LOS at x=' + d.losX + '. '
             + 'Eligible receivers + their routes: ' + formationDigest + '. '
             + 'Open-receiver analysis (top 3): ' + topOpen + '. '
             + (Object.keys(d.customPositions || {}).length ? 'Student has made ' + Object.keys(d.customPositions).length + ' custom position edits to the preset. ' : '')
-            + 'Give 3-4 sentences of warm, specific coaching: (1) acknowledge what the play attacks against THIS coverage, (2) name the most-open receiver and explain WHY they\'re open in geometric terms (not just "no defender nearby"), (3) suggest ONE concrete adjustment (move a player N yards, change a route depth, swap a coverage), (4) tie the suggestion to the math the student can see on the field. '
+            + 'Give 3-4 sentences of warm, specific coaching: (1) ACKNOWLEDGE the matchup grade (don\'t contradict it — if it\'s tough, agree it\'s tough and explain WHY geometrically), (2) name the most-open receiver and explain WHY they\'re open in geometric terms (not just "no defender nearby"), (3) suggest ONE concrete adjustment (move a player N yards, change a route depth, OR pick one of the suggested alternative plays above), (4) tie the suggestion to the math the student can see on the field. '
             + 'Plain prose, no markdown, no bullets, no headings.';
         }
         callGemini(prompt, false, false, 0.7).then(function(resp) {
