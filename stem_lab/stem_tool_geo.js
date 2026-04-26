@@ -3112,6 +3112,68 @@ var d = labToolData || {};
         };
         const handleCanvasMouseUp = () => { if (gpDragging!=null) gpUpd('dragging',null); };
 
+        // Keyboard accessibility (WCAG 2.1.1): focus the SVG and use Enter to place,
+        // arrow keys to nudge the most recent point, Delete to remove it, N to cycle selection.
+        const gpSelected = (typeof gpHoverIdx === 'number' && gpHoverIdx >= 0 && gpHoverIdx < gpPoints.length) ? gpHoverIdx : (gpPoints.length - 1);
+        const handleCanvasKeyDown = e => {
+          const k = e.key;
+          // Enter or Space: add a point at canvas center (or next to selected, with offset)
+          if (k === 'Enter' || k === ' ') {
+            let nx, ny;
+            if (gpSelected >= 0 && gpPoints[gpSelected]) {
+              nx = Math.min(W - 10, gpPoints[gpSelected].x + gridStep);
+              ny = gpPoints[gpSelected].y;
+            } else {
+              nx = Math.round((W / 2) / gridStep) * gridStep;
+              ny = Math.round((H / 2) / gridStep) * gridStep;
+            }
+            const newPts = [...gpPoints, { x: nx, y: ny }];
+            gpUpd('points', newPts);
+            gpUpd('hoverIdx', newPts.length - 1);
+            if (gpConnecting != null) { gpUpd('segments', [...gpSegments, { from: gpConnecting, to: newPts.length - 1 }]); gpUpd('connecting', null); }
+            e.preventDefault();
+            return;
+          }
+          // Arrow keys: nudge selected point
+          const step = e.shiftKey ? gridStep * 2 : gridStep;
+          if (gpSelected >= 0 && gpPoints[gpSelected]) {
+            let dx = 0, dy = 0;
+            if (k === 'ArrowLeft') dx = -step;
+            else if (k === 'ArrowRight') dx = step;
+            else if (k === 'ArrowUp') dy = -step;
+            else if (k === 'ArrowDown') dy = step;
+            if (dx !== 0 || dy !== 0) {
+              gpUpd('points', gpPoints.map((p, i) => i === gpSelected ? { x: Math.max(10, Math.min(W - 10, p.x + dx)), y: Math.max(10, Math.min(H - 10, p.y + dy)) } : p));
+              e.preventDefault();
+              return;
+            }
+          }
+          // N or Tab-equivalent (we don't hijack Tab): cycle selection forward
+          if (k === 'n' || k === 'N') {
+            if (gpPoints.length > 0) gpUpd('hoverIdx', (gpSelected + 1) % gpPoints.length);
+            e.preventDefault();
+            return;
+          }
+          if (k === 'p' || k === 'P') {
+            if (gpPoints.length > 0) gpUpd('hoverIdx', (gpSelected - 1 + gpPoints.length) % gpPoints.length);
+            e.preventDefault();
+            return;
+          }
+          // Delete or Backspace: remove selected point (and any segments connected to it)
+          if (k === 'Delete' || k === 'Backspace') {
+            if (gpSelected >= 0 && gpPoints[gpSelected]) {
+              const newPts = gpPoints.filter((_, i) => i !== gpSelected);
+              const newSegs = gpSegments
+                .filter(s => s.from !== gpSelected && s.to !== gpSelected)
+                .map(s => ({ from: s.from > gpSelected ? s.from - 1 : s.from, to: s.to > gpSelected ? s.to - 1 : s.to }));
+              gpUpd('points', newPts);
+              gpUpd('segments', newSegs);
+              gpUpd('hoverIdx', Math.min(gpSelected, newPts.length - 1));
+              e.preventDefault();
+            }
+          }
+        };
+
         const helperText = gpPoints.length===0 ? '👆 Click canvas to place your first point'
           : gpConnecting!=null ? `↗️ Click a point or canvas to draw segment from ${labelFor(gpConnecting)}`
           : gpDragging!=null ? `✋ Dragging ${labelFor(gpDragging)} — release to drop`
@@ -3121,7 +3183,7 @@ var d = labToolData || {};
           : 'Drag points • Add segments to discover theorems';
 
         // SVG Canvas
-        const renderCanvas = () => React.createElement('svg', { width:W, height:H, viewBox:`0 0 ${W} ${H}`, className:'cursor-crosshair select-none', style:{background:'#faf5ff'}, role:'img', 'aria-label':'Geometry canvas', onMouseDown:handleCanvasMouseDown, onMouseMove:handleCanvasMouseMove, onMouseUp:handleCanvasMouseUp, onMouseLeave:()=>{ handleCanvasMouseUp(); gpUpd('hoverIdx',-1); } },
+        const renderCanvas = () => React.createElement('svg', { width:W, height:H, viewBox:`0 0 ${W} ${H}`, className:'cursor-crosshair select-none', style:{background:'#faf5ff', outline:'none'}, role:'application', tabIndex:0, 'aria-label': `Geometry prover canvas. ${gpPoints.length} point${gpPoints.length===1?'':'s'} placed${gpSelected>=0?', point '+(gpSelected+1)+' selected':''}. Keyboard: Enter or Space to place a point near the selection, arrow keys to nudge the selected point, N or P to cycle selection, Delete to remove selected point.`, onKeyDown:handleCanvasKeyDown, onMouseDown:handleCanvasMouseDown, onMouseMove:handleCanvasMouseMove, onMouseUp:handleCanvasMouseUp, onMouseLeave:()=>{ handleCanvasMouseUp(); gpUpd('hoverIdx',-1); } },
           React.createElement('title',null,'Geometry Prover Canvas'),
           Array.from({length:Math.floor(W/gridStep)+1}).map((_,i)=>React.createElement('line',{key:'gv'+i,x1:i*gridStep,y1:0,x2:i*gridStep,y2:H,stroke:'#ede9fe',strokeWidth:0.5})),
           Array.from({length:Math.floor(H/gridStep)+1}).map((_,i)=>React.createElement('line',{key:'gh'+i,x1:0,y1:i*gridStep,x2:W,y2:i*gridStep,stroke:'#ede9fe',strokeWidth:0.5})),

@@ -112,7 +112,14 @@ A systematic 9-criterion audit was completed against **all 80 STEM Lab files + a
 - 35 unpaired `outline-none` / `outline: 'none'` removed (focus indicator restored to browser default).
 - ~50 specific per-tool fixes including: aria-busy on AI buttons, aria-pressed on toggle buttons, role=button + onKeyDown on `<div onClick>` elements, aria-modal on dialogs, aria-valuenow on progressbars, descriptive labels on icon-only buttons (back, close, screenshot, sound, send), 4 SVG `<g onClick>` elements (circuit switch + LED) got role=button + tabIndex + onKeyDown.
 
-**Result**: 76 of 80 STEM Lab files have full ✓-grades on all 9 per-tool criteria. The remaining 4: roadready (24K-line tool with substantial gaps deferred to dedicated session) + 3 with documented redesign-tier canvas-keyboard gaps (solarsystem 3D, spacecolony map, geo SVG drawing). All 80 STEM Lab files pass `node --check`.
+**Result**: **80 of 80 STEM Lab files have full ✓-grades on all 9 per-tool criteria.** 🏁
+
+Three follow-up sessions closed the remaining gaps after the initial 8-batch audit ended at 76/80:
+1. **Canvas-keyboard pass** — solarsystem CanvasPanel now supports arrow-pan + ±-zoom + Home-reset + Enter/Space-click via onKeyDown (benefits all solarsystem canvas instances); spacecolony map canvas got the missing tabIndex/role/aria-label that exposes its already-existing WASD window handler; geo SVG drawing canvas got Enter/Space-place + arrow-nudge + N/P-cycle + Delete-remove with auto-segment cleanup.
+2. **Roadready dedicated session** — the 24K-line driver-ed tool got 7 driving-control buttons labeled (accelerate/brake/steer/shift/signals with aria-pressed for active signal), 3 form inputs labeled (search, driver name, license plate), 2 decorative emoji aria-hidden. Earlier broad-audit "dozens of unlabeled buttons" finding turned out to be over-cautious — those are native `<button>` elements with visible text content, which IS the WCAG-correct accessible name source.
+3. **Spacecolony color-only state** addressed in the spacecolony entry above.
+
+All 80 STEM Lab files pass `node --check`. All canvases keyboard-accessible. All form inputs labeled.
 
 **Pending runtime verification (3 criteria — substantially fewer than April 3 due to per-tool audit):**
 

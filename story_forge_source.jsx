@@ -3,6 +3,30 @@
 // Narration, Grading, and Storybook Export
 // ═══════════════════════════════════════════════════════════════
 
+// ── WCAG 2.4.7 Focus Visible — inject scoped focus-ring CSS once per page ──
+(function() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById('allo-sf-focus-css')) return;
+  var st = document.createElement('style');
+  st.id = 'allo-sf-focus-css';
+  st.textContent = '[data-sf-focusable]:focus-visible{outline:3px solid #fbbf24!important;outline-offset:2px!important;border-radius:6px}';
+  if (document.head) document.head.appendChild(st);
+})();
+
+// ── WCAG 4.1.3 Status Messages — debounced polite-announcer for ephemeral status text ──
+let _sfAnnounceTimer = null;
+function sfAnnounce(text) {
+  if (typeof document === 'undefined') return;
+  const lr = document.getElementById('allo-live-storyforge');
+  if (!lr) return;
+  if (_sfAnnounceTimer) clearTimeout(_sfAnnounceTimer);
+  lr.textContent = '';
+  _sfAnnounceTimer = setTimeout(() => {
+    lr.textContent = String(text || '');
+    _sfAnnounceTimer = null;
+  }, 25);
+}
+
 // ── Utilities ──
 const cleanJson = (str) => {
   if (!str) return '{}';
@@ -1657,7 +1681,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0f172a;color:white;
 .cover-img{max-width:300px;border-radius:16px;box-shadow:0 8px 30px rgba(0,0,0,0.4)}
 .slide-img{max-height:50vh;max-width:80%;border-radius:16px;box-shadow:0 8px 30px rgba(0,0,0,0.3);margin-bottom:24px}
 .slide-text{font-size:1.4em;line-height:1.8;max-width:700px;text-indent:2em;text-align:left}
-.slide-num{position:absolute;bottom:20px;right:30px;color:#475569;font-size:0.8em}
+.slide-num{position:absolute;bottom:20px;right:30px;color:#cbd5e1;font-size:0.8em}
 .vocab-slide h2,.feedback-slide h2{font-size:2em;margin-bottom:24px;color:#fbbf24}
 .vocab-flex{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
 .v-chip{padding:8px 20px;border-radius:30px;font-weight:bold;background:#334155;border:2px solid #475569}
@@ -1670,7 +1694,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0f172a;color:white;
 .nav button{padding:10px 24px;border:none;border-radius:8px;font-weight:bold;cursor:pointer;font-size:1em}
 .nav .prev{background:#334155;color:white}
 .nav .next{background:#e11d48;color:white}
-.nav button:hover{opacity:0.85}
+.nav button:hover{outline:2px solid #fbbf24;outline-offset:2px}
+.nav button:focus-visible{outline:3px solid #fbbf24;outline-offset:2px}
 </style></head><body>
 ${slidesHtml}
 <div class="nav">
@@ -1866,7 +1891,7 @@ show();
   const phaseIcons = [Sparkles, Type, ImageIcon, Volume2, Star, Download];
 
   return (
-    <div className={`fixed inset-0 z-[200] bg-slate-900/95 backdrop-blur-sm flex flex-col ${animClass}`} role="dialog" aria-modal="true" aria-label="StoryForge Creative Writing Studio">
+    <div className={`sf-modal-root fixed inset-0 z-[200] bg-slate-900/95 backdrop-blur-sm flex flex-col ${animClass}`} role="dialog" aria-modal="true" aria-label="StoryForge Creative Writing Studio">
       {/* Hidden audio element for playback */}
       <audio ref={audioRef} onEnded={handleAudioEnded} className="hidden" />
       {/* Screen reader playback announcements */}
@@ -1875,6 +1900,10 @@ show();
           `Now reading paragraph ${playbackIdx + 1}${audioSegments[paragraphs[playbackIdx].id]?.sentences?.[sentenceIdx] ? ': ' + audioSegments[paragraphs[playbackIdx].id].sentences[sentenceIdx] : ''}`
         ) : ''}
       </div>
+      {/* WCAG 4.1.3 — top-level announcer for ephemeral status messages (sfAnnounce target) */}
+      <div id="allo-live-storyforge" aria-live="polite" aria-atomic="true" className="sr-only" />
+      {/* WCAG 2.3.3 — reduced-motion safety net: kills persistent animations within StoryForge under prefers-reduced-motion */}
+      <style>{`@media (prefers-reduced-motion: reduce){ .sf-modal-root .animate-pulse,.sf-modal-root .animate-spin,.sf-modal-root .animate-bounce{animation:none!important} }`}</style>
 
       {/* ── Restore Draft Prompt ── */}
       {showRestorePrompt && (
@@ -2073,7 +2102,7 @@ show();
                   {vocabTerms.map((v, i) => (
                     <div key={i} className="bg-rose-50 border border-rose-200 rounded-full px-3 py-1 text-sm font-bold text-rose-800 flex items-center gap-2 group">
                       <span>{v.term}</span>
-                      <button onClick={() => removeVocabTerm(i)} className="text-rose-400 hover:text-rose-600 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity" aria-label={`Remove ${v.term}`}>
+                      <button onClick={() => removeVocabTerm(i)} className="text-rose-400 hover:text-rose-600 opacity-60 group-hover:opacity-100 focus:opacity-100 transition-opacity" aria-label={`Remove ${v.term}`}>
                         <X size={12} />
                       </button>
                     </div>

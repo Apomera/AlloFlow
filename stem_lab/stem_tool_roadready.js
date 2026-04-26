@@ -18568,7 +18568,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             style: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.75)', zIndex: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'rr-fade-in 0.3s ease-out', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)' }
           },
             h('div', { style: { background: 'linear-gradient(135deg, rgba(15,23,42,0.95), rgba(2,6,23,0.95))', borderRadius: '18px', padding: '36px 44px', border: '2px solid #22d3ee', boxShadow: '0 20px 60px rgba(34,211,238,0.3)', textAlign: 'center', maxWidth: '420px' } },
-              h('div', { style: { fontSize: '64px', marginBottom: '12px', animation: 'rr-pulse-soft 2s ease-in-out infinite' } }, '⏸'),
+              h('div', { style: { fontSize: '64px', marginBottom: '12px', animation: 'rr-pulse-soft 2s ease-in-out infinite' }, 'aria-hidden': 'true' }, '⏸'),
               h('h2', { style: { fontSize: '28px', fontWeight: 900, color: '#22d3ee', margin: '0 0 8px 0', letterSpacing: '0.12em' } }, 'PAUSED'),
               h('div', { style: { fontSize: '12px', color: '#94a3b8', marginBottom: '22px' } }, 'Take a breath. Check your mirrors. Plan your next move.'),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '13px', color: '#cbd5e1', alignItems: 'center' } },
@@ -18617,6 +18617,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               onTouchEnd: function(e) { e.preventDefault(); keysRef.current['w'] = false; },
               onMouseDown: function() { keysRef.current['w'] = true; },
               onMouseUp: function() { keysRef.current['w'] = false; },
+              'aria-label': 'Accelerate (touch and hold)',
               style: { width: '60px', height: '60px', borderRadius: '50%', border: '2px solid #4ade80', background: 'rgba(34,197,94,0.3)', color: '#fff', fontSize: '20px', cursor: 'pointer', touchAction: 'none', userSelect: 'none' }
             }, '▲'),
             h('div', { style: { display: 'flex', gap: '6px', justifyContent: 'center' } },
@@ -18626,6 +18627,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 onTouchEnd: function(e) { e.preventDefault(); keysRef.current['a'] = false; },
                 onMouseDown: function() { keysRef.current['a'] = true; },
                 onMouseUp: function() { keysRef.current['a'] = false; },
+                'aria-label': 'Steer left (touch and hold)',
                 style: { width: '48px', height: '48px', borderRadius: '50%', border: '2px solid #60a5fa', background: 'rgba(96,165,250,0.3)', color: '#fff', fontSize: '18px', cursor: 'pointer', touchAction: 'none', userSelect: 'none' }
               }, '◄'),
               // Steer right
@@ -18634,6 +18636,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 onTouchEnd: function(e) { e.preventDefault(); keysRef.current['d'] = false; },
                 onMouseDown: function() { keysRef.current['d'] = true; },
                 onMouseUp: function() { keysRef.current['d'] = false; },
+                'aria-label': 'Steer right (touch and hold)',
                 style: { width: '48px', height: '48px', borderRadius: '50%', border: '2px solid #60a5fa', background: 'rgba(96,165,250,0.3)', color: '#fff', fontSize: '18px', cursor: 'pointer', touchAction: 'none', userSelect: 'none' }
               }, '►')
             ),
@@ -18643,6 +18646,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               onTouchEnd: function(e) { e.preventDefault(); keysRef.current['s'] = false; },
               onMouseDown: function() { keysRef.current['s'] = true; },
               onMouseUp: function() { keysRef.current['s'] = false; },
+              'aria-label': 'Brake (touch and hold)',
               style: { width: '60px', height: '60px', borderRadius: '50%', border: '2px solid #ef4444', background: 'rgba(239,68,68,0.3)', color: '#fff', fontSize: '20px', cursor: 'pointer', touchAction: 'none', userSelect: 'none' }
             }, '▼')
           ),
@@ -18650,12 +18654,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           h('div', { style: { position: 'absolute', bottom: '110px', left: '10px', display: 'flex', flexDirection: 'column', gap: '4px', zIndex: 20 },
             className: 'touch-controls' },
             h('button', { onClick: function() { if (Math.abs(carRef.current.speed) < 2) gearRef.current = gearRef.current === 'D' ? 'R' : 'D'; },
+              'aria-label': 'Shift between Drive and Reverse (only when stopped)',
               style: { padding: '8px 14px', borderRadius: '8px', border: '1px solid #fbbf24', background: 'rgba(251,191,36,0.2)', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
             }, '⚙ Shift Gear'),
             h('button', { onClick: function() { blinkerRef.current = blinkerRef.current === -1 ? 0 : -1; },
+              'aria-label': 'Toggle left turn signal',
+              'aria-pressed': blinkerRef.current === -1,
               style: { padding: '6px 10px', borderRadius: '6px', border: '1px solid #22c55e', background: blinkerRef.current === -1 ? 'rgba(34,197,94,0.4)' : 'rgba(0,0,0,0.4)', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
             }, '◄ Signal'),
             h('button', { onClick: function() { blinkerRef.current = blinkerRef.current === 1 ? 0 : 1; },
+              'aria-label': 'Toggle right turn signal',
+              'aria-pressed': blinkerRef.current === 1,
               style: { padding: '6px 10px', borderRadius: '6px', border: '1px solid #22c55e', background: blinkerRef.current === 1 ? 'rgba(34,197,94,0.4)' : 'rgba(0,0,0,0.4)', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
             }, 'Signal ►')
           ),
@@ -23165,12 +23174,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         return h('div', { style: { padding: '20px', maxWidth: '900px', margin: '0 auto', color: '#e2e8f0' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
           h('div', { style: { background: 'linear-gradient(135deg, #164e63, #0f172a)', borderRadius: '14px', padding: '20px', textAlign: 'center', marginBottom: '14px', border: '1px solid #06b6d4' } },
-            h('div', { style: { fontSize: '42px' } }, '🧭'),
+            h('div', { style: { fontSize: '42px' }, 'aria-hidden': 'true' }, '🧭'),
             h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, 'Help & Directory'),
             h('div', { style: { fontSize: '12px', color: '#a5f3fc' } }, features.length + ' features. Search or filter by your goal.')
           ),
           // Search
-          h('input', { type: 'text', placeholder: '🔎 Search features...', value: d.helpQuery || '',
+          h('input', { type: 'text', 'aria-label': 'Search RoadReady help directory by feature', placeholder: '🔎 Search features...', value: d.helpQuery || '',
             onChange: function(e) { upd('helpQuery', e.target.value); },
             style: { width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1px solid #334155', background: '#0f172a', color: '#fff', fontSize: '13px', marginBottom: '12px', boxSizing: 'border-box' }
           }),
@@ -23967,7 +23976,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Driver name
           h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '16px', border: '1px solid #334155', marginBottom: '12px' } },
             h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#ec4899', textTransform: 'uppercase', marginBottom: '10px' } }, 'Driver Name (optional)'),
-            h('input', { type: 'text', value: curDriverName, placeholder: 'Your first name',
+            h('input', { type: 'text', 'aria-label': 'Driver first name (optional, stays on device only)', value: curDriverName, placeholder: 'Your first name',
               maxLength: 20,
               onChange: function(e) { upd('driverName', e.target.value); },
               style: { width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #334155', background: '#020617', color: '#fff', fontSize: '13px' }
@@ -23977,7 +23986,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // License plate
           h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '16px', border: '1px solid #334155', marginBottom: '12px' } },
             h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#ec4899', textTransform: 'uppercase', marginBottom: '10px' } }, 'License Plate'),
-            h('input', { type: 'text', value: curPlate, placeholder: 'e.g. MAINE07',
+            h('input', { type: 'text', 'aria-label': 'Custom license plate (up to 7 letters or numbers)', value: curPlate, placeholder: 'e.g. MAINE07',
               maxLength: 7,
               onChange: function(e) { upd('licensePlate', e.target.value.toUpperCase().replace(/[^A-Z0-9 ]/g, '')); },
               style: { width: '140px', padding: '10px 12px', borderRadius: '6px', border: '2px solid #000', background: '#fff', color: '#000', fontSize: '16px', fontWeight: 900, fontFamily: 'monospace', textAlign: 'center', letterSpacing: '0.1em' }

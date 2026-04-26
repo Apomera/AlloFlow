@@ -1239,6 +1239,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
               ),
               React.createElement('canvas', {
                 ref: canvasRef,
+                tabIndex: 0,
+                role: 'application',
+                'aria-label': 'Colony map. Keyboard: W A S D or arrow keys to pan, plus and minus to zoom, H to home (return to colony), Escape to clear selection. Mouse: click to select tile, drag to pan, scroll to zoom.',
                 onClick: handleMapClick,
                 onMouseDown: handleMapMouseDown,
                 onMouseMove: handleMapMouseMove,
