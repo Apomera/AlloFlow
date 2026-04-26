@@ -511,6 +511,9 @@
     var _rewriteTargetId = useState(''); var rewriteTargetId = _rewriteTargetId[0]; var setRewriteTargetId = _rewriteTargetId[1];
     // Chapbook filter (which form to include; blank = all)
     var _chapbookFilter = useState(''); var chapbookFilter = _chapbookFilter[0]; var setChapbookFilter = _chapbookFilter[1];
+    // Theme tracker — patterns across the student's saved poems
+    var _themeReport = useState(null); var themeReport = _themeReport[0]; var setThemeReport = _themeReport[1];
+    var _themeLoading = useState(false); var themeLoading = _themeLoading[0]; var setThemeLoading = _themeLoading[1];
 
     // ── Persistence helpers ──
     var savePrefs = useCallback(function (next) {
@@ -1102,6 +1105,35 @@
       catch (er) { addToast && addToast('Chapbook failed.', 'error'); }
     }, [saved, studentNickname, addToast]);
 
+    // ── Theme Tracker: analyze recurring patterns across the student's saved poems ──
+    // Pedagogical aim is craft observation, not psychological interpretation. The prompt
+    // explicitly forbids diagnosis or pathologizing language.
+    var runThemeTracker = useCallback(async function () {
+      if (!onCallGemini || saved.length < 3) return;
+      setThemeLoading(true);
+      setThemeReport(null);
+      try {
+        var poemsBlock = saved.slice().reverse().map(function (p, pi) {
+          var f = FORMS.find(function (ff) { return ff.id === p.formId; });
+          return '[' + (pi + 1) + ']  Title: ' + (p.title || 'Untitled') + '   Form: ' + (f ? f.name : 'Free verse') + '\n' + p.text;
+        }).join('\n\n---\n\n');
+        var prompt = 'You are a poetry mentor reflecting on a ' + gradeLevel + ' student\'s body of work. Analyze these ' + saved.length + ' poems for CRAFT patterns. Critical guardrails: do NOT diagnose, pathologize, or interpret psychological states. Do NOT speculate about the writer\'s home life, mental health, or feelings beyond the page. Focus on what they\'re DOING as a writer.\n\n'
+          + 'Poems (most recent first):\n\n' + poemsBlock + '\n\n'
+          + 'Return JSON: {"recurringImages":["specific concrete images or objects appearing in 2+ poems"],"recurringSounds":["sound or word-music patterns: alliteration tendency, line lengths, rhyme habits"],"favoredForms":"which forms they\'re drawn to, in one sentence","voiceStrength":"one sentence on what\'s distinctive about their voice","growthEdge":"ONE specific craft move to try next, framed as an invitation not an assignment","celebration":"ONE specific thing they\'re already doing well, with a quoted phrase from one of the poems if possible"}\n\n'
+          + 'Be warm, observant, and concrete. Match vocabulary to a ' + gradeLevel + ' student.';
+        var result = await onCallGemini(prompt, true);
+        var clean = String(result).trim().replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```$/, '').trim();
+        var parsed = JSON.parse(clean);
+        setThemeReport(parsed);
+        announcePT('Pattern report ready. Distinctive voice: ' + (parsed.voiceStrength || ''));
+      } catch (err) {
+        warnLog('Theme tracker failed:', err && err.message);
+        setThemeReport({ error: 'Couldn\'t analyze patterns right now. Try again in a moment.' });
+      } finally {
+        setThemeLoading(false);
+      }
+    }, [onCallGemini, saved, gradeLevel]);
+
     // ── Found poetry helper: pick word ──
     var addFoundWord = useCallback(function (word) {
       var clean = String(word || '').replace(/[^\w'-]/g, '');
@@ -1262,6 +1294,30 @@
             // Found-poetry source (only when form is found)
             form && form.id === 'found' && e('div', null,
               e('label', { htmlFor: 'pt-found-source', style: { fontSize: '11px', fontWeight: 700, color: '#374151' } }, 'Source text (paste any text here, then click words to add)'),
+              // Starter sources — public-domain seeds students can mine when they don't have their own text yet
+              e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginBottom: '6px' } },
+                e('span', { style: { fontSize: '10px', color: '#475569', fontStyle: 'italic' } }, '📰 Or pick a starter source:'),
+                [
+                  {
+                    label: '🌤️ Weather forecast',
+                    text: 'A coastal storm will bring widespread rain, gusty winds, and the threat of minor flooding to the region tonight into Tuesday morning. Expect rainfall amounts of one to two inches, with locally higher amounts possible in heavier downpours. Wind gusts may exceed forty miles per hour, especially near the coast. Power outages are possible. By Tuesday afternoon, the storm will move offshore and conditions will gradually improve. Sunshine returns Wednesday with cooler temperatures and a brisk northwesterly breeze.'
+                  },
+                  {
+                    label: '🎤 Gettysburg Address',
+                    text: 'Four score and seven years ago our fathers brought forth on this continent, a new nation, conceived in Liberty, and dedicated to the proposition that all men are created equal. Now we are engaged in a great civil war, testing whether that nation, or any nation so conceived and so dedicated, can long endure. We are met on a great battle-field of that war. We have come to dedicate a portion of that field, as a final resting place for those who here gave their lives that that nation might live. It is altogether fitting and proper that we should do this.\n\n— Abraham Lincoln, 1863'
+                  },
+                  {
+                    label: '🥣 Recipe',
+                    text: 'Combine flour, sugar, baking powder, and salt in a large bowl. Whisk together milk, melted butter, and eggs in a separate bowl. Pour the wet ingredients into the dry and stir gently until just combined. Do not overmix. The batter should be slightly lumpy. Heat a griddle or non-stick pan over medium heat. Pour a quarter cup of batter for each pancake. Cook until bubbles form on the surface and the edges look set, about two to three minutes. Flip and cook the other side until golden brown.'
+                  }
+                ].map(function (src, si) {
+                  return e('button', { key: si,
+                    onClick: function () { setFoundSource(src.text); announcePT('Loaded ' + src.label + ' as source.'); },
+                    'aria-label': 'Use ' + src.label + ' as source text',
+                    style: { padding: '3px 10px', borderRadius: '12px', border: '1px solid #fde68a', background: '#fffbeb', color: '#78350f', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
+                  }, src.label);
+                })
+              ),
               e('textarea', { id: 'pt-found-source', value: foundSource, onChange: function (ev) { setFoundSource(ev.target.value); },
                 rows: 6, placeholder: 'Paste a news article, a textbook page, a letter…',
                 style: { width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: largeText ? '14px' : '12px', fontFamily: 'Georgia, serif', resize: 'vertical', boxSizing: 'border-box' }
@@ -1751,6 +1807,56 @@
                           disabled: filterCount === 0,
                           style: { padding: '8px 14px', background: filterCount > 0 ? TEAL : '#cbd5e1', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: filterCount > 0 ? 'pointer' : 'not-allowed' }
                         }, '🖨️ Print ' + filterCount + ' poem' + (filterCount === 1 ? '' : 's'))
+                      )
+                    ),
+                    // Theme Tracker panel — patterns across saved poems (3+ required for meaningful analysis)
+                    onCallGemini && e('div', { style: { background: '#faf5ff', border: '1px solid #ddd6fe', borderRadius: '10px', padding: '12px' } },
+                      e('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' } },
+                        e('div', { style: { flex: 1, minWidth: '180px' } },
+                          e('h4', { style: { fontSize: '13px', fontWeight: 800, color: '#581c87', margin: 0 } }, '🌿 Patterns across my poems'),
+                          e('p', { style: { fontSize: '11px', color: '#475569', margin: '2px 0 0' } }, saved.length < 3
+                            ? ('Save at least 3 poems first (' + saved.length + ' so far). Then come back to see what patterns are emerging.')
+                            : 'A craft-only reflection: what images, sounds, and forms keep showing up.')
+                        ),
+                        e('button', { onClick: runThemeTracker,
+                          disabled: saved.length < 3 || themeLoading,
+                          'aria-busy': themeLoading ? 'true' : 'false',
+                          'aria-label': themeLoading ? 'Analyzing patterns, please wait' : (saved.length < 3 ? 'Need at least 3 saved poems' : (themeReport ? 'Re-run pattern analysis' : 'Find patterns across all saved poems')),
+                          style: { padding: '8px 14px', background: saved.length >= 3 && !themeLoading ? '#7c3aed' : '#cbd5e1', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: saved.length >= 3 && !themeLoading ? 'pointer' : 'not-allowed' }
+                        }, themeLoading ? '⏳ Reading…' : (themeReport ? '🔄 Re-analyze' : '🌿 Find patterns'))
+                      ),
+                      themeReport && themeReport.error && e('p', { style: { fontSize: '11px', color: '#b91c1c', fontStyle: 'italic', margin: '8px 0 0' } }, themeReport.error),
+                      themeReport && !themeReport.error && e('div', { role: 'region', 'aria-label': 'Pattern analysis results', 'aria-live': 'polite', style: { marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '8px' } },
+                        themeReport.celebration && e('div', { style: { background: '#f0fdf4', border: '1px solid #86efac', borderRadius: '8px', padding: '10px 12px' } },
+                          e('div', { style: { fontSize: '10px', fontWeight: 800, color: '#166534', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '3px' } }, '✨ Already strong'),
+                          e('p', { style: { fontSize: '13px', color: '#166534', margin: 0, lineHeight: 1.6 } }, themeReport.celebration)
+                        ),
+                        themeReport.voiceStrength && e('div', { style: { background: '#fff', border: '1px solid #ddd6fe', borderRadius: '8px', padding: '10px 12px' } },
+                          e('div', { style: { fontSize: '10px', fontWeight: 800, color: '#581c87', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '3px' } }, '🎙️ Your voice'),
+                          e('p', { style: { fontSize: '13px', color: '#1e293b', margin: 0, lineHeight: 1.6 } }, themeReport.voiceStrength)
+                        ),
+                        themeReport.recurringImages && themeReport.recurringImages.length > 0 && e('div', { style: { background: '#fff', border: '1px solid #ddd6fe', borderRadius: '8px', padding: '10px 12px' } },
+                          e('div', { style: { fontSize: '10px', fontWeight: 800, color: '#581c87', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' } }, '🖼️ Images that come back'),
+                          e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '4px' } },
+                            themeReport.recurringImages.map(function (img, ii) {
+                              return e('span', { key: ii, style: { padding: '2px 8px', background: '#faf5ff', border: '1px solid #ddd6fe', borderRadius: '12px', fontSize: '12px', color: '#6b21a8', fontFamily: 'Georgia, serif', fontStyle: 'italic' } }, img);
+                            })
+                          )
+                        ),
+                        themeReport.recurringSounds && themeReport.recurringSounds.length > 0 && e('div', { style: { background: '#fff', border: '1px solid #ddd6fe', borderRadius: '8px', padding: '10px 12px' } },
+                          e('div', { style: { fontSize: '10px', fontWeight: 800, color: '#581c87', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' } }, '🔊 Sound habits'),
+                          e('ul', { style: { margin: 0, paddingLeft: '18px', fontSize: '12px', color: '#374151', lineHeight: 1.6 } },
+                            themeReport.recurringSounds.map(function (s, si) { return e('li', { key: si }, s); })
+                          )
+                        ),
+                        themeReport.favoredForms && e('div', { style: { background: '#fff', border: '1px solid #ddd6fe', borderRadius: '8px', padding: '10px 12px' } },
+                          e('div', { style: { fontSize: '10px', fontWeight: 800, color: '#581c87', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '3px' } }, '📐 Forms you choose'),
+                          e('p', { style: { fontSize: '13px', color: '#1e293b', margin: 0, lineHeight: 1.6 } }, themeReport.favoredForms)
+                        ),
+                        themeReport.growthEdge && e('div', { style: { background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '8px', padding: '10px 12px' } },
+                          e('div', { style: { fontSize: '10px', fontWeight: 800, color: '#78350f', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '3px' } }, '🌱 Try next'),
+                          e('p', { style: { fontSize: '13px', color: '#1e293b', margin: 0, lineHeight: 1.6 } }, themeReport.growthEdge)
+                        )
                       )
                     ),
                     // Saved poem list
