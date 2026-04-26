@@ -1241,6 +1241,24 @@ window.StemLab = window.StemLab || {
     };
   }
 
+  // Suggest alternative plays that BEAT the active coverage. Returns up
+  // to 3 play references (sorted by stable original PLAYS order). Used
+  // by the matchup badge to give the student a concrete next step when
+  // their current call is a tough match.
+  function suggestPlaysForCoverage(coverage) {
+    if (!coverage) return [];
+    return PLAYS.filter(function(p) {
+      return (p.beats || []).indexOf(coverage.id) !== -1;
+    }).slice(0, 3);
+  }
+
+  function suggestConceptsForShape(shape) {
+    if (!shape) return [];
+    return SOCCER_CONCEPTS.filter(function(c) {
+      return (c.beats || []).indexOf(shape.id) !== -1;
+    }).slice(0, 3);
+  }
+
   // Soccer matchup — concept vs defensive shape. Set-pieces (corner /
   // free kick / throw-in / penalty) are mostly shape-neutral because
   // dead-ball restarts override normal team shape; we tag those with
@@ -2660,26 +2678,58 @@ window.StemLab = window.StemLab || {
         // active defensive shape (or a set-piece-flavored neutral grade
         // for corners / FKs / throw-ins / penalties where shape doesn\'t
         // apply). Three tiers in both: ✅ great / 👍 workable / ⚠️ tough.
+        // When the grade is "tough", surfaces up to 3 suggested
+        // alternative plays/concepts as click-to-swap pills.
         (function() {
           var matchup = isSoccer
             ? getSoccerMatchup(concept, soccerShape)
             : (play && coverage ? getMatchup(play, coverage) : null);
           if (!matchup) return null;
+          var suggestions = (matchup.grade === 'tough')
+            ? (isSoccer ? suggestConceptsForShape(soccerShape) : suggestPlaysForCoverage(coverage))
+            : [];
           return h('div', {
             role: 'status',
             'aria-live': 'polite',
             style: {
               padding: '8px 14px', borderRadius: 8, marginBottom: 12,
               border: '1px solid ' + matchup.color, background: matchup.bg,
-              fontSize: 13, lineHeight: 1.4, color: '#f1f5f9',
-              display: 'flex', alignItems: 'center', gap: 10
+              fontSize: 13, lineHeight: 1.4, color: '#f1f5f9'
             }
           },
-            h('span', { style: { fontSize: 18 }, 'aria-hidden': 'true' }, matchup.emoji),
-            h('div', null,
-              h('span', { style: { color: matchup.color, fontWeight: 700, marginRight: 6 } }, matchup.label + ':'),
-              h('span', null, matchup.reason)
-            )
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 10 } },
+              h('span', { style: { fontSize: 18 }, 'aria-hidden': 'true' }, matchup.emoji),
+              h('div', null,
+                h('span', { style: { color: matchup.color, fontWeight: 700, marginRight: 6 } }, matchup.label + ':'),
+                h('span', null, matchup.reason)
+              )
+            ),
+            // Suggested-counter pills (only when matchup is tough)
+            suggestions.length > 0 ? h('div', {
+              style: { marginTop: 8, paddingTop: 8, borderTop: '1px dashed rgba(241,245,249,0.18)',
+                       display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }
+            },
+              h('span', { style: { fontSize: 12, color: '#cbd5e1', marginRight: 4 } }, '💡 Try instead:'),
+              suggestions.map(function(s) {
+                return h('button', {
+                  key: 'sug-' + s.id,
+                  onClick: function() {
+                    if (isSoccer) {
+                      upd('conceptId', s.id);
+                      plAnnounce('Concept switched to ' + s.label + '. ' + s.teach);
+                    } else {
+                      loadPlay(s.id);
+                    }
+                  },
+                  'aria-label': 'Try ' + s.label + ' instead',
+                  style: {
+                    padding: '4px 10px', borderRadius: 999, cursor: 'pointer',
+                    border: '1px solid ' + matchup.color, background: 'rgba(15,23,42,0.55)',
+                    color: '#f1f5f9', fontSize: 12, fontWeight: 600
+                  }
+                }, (s.icon || '') + ' ' + s.label);
+              })
+            ) : null
           );
         })(),
 
