@@ -132,6 +132,19 @@ window.StemLab = window.StemLab || {
     { id: 'jupiter', label: 'Jupiter', g: 24.79, icon: '⚫' },
     { id: 'sun',     label: 'Sun',     g: 274.0,  icon: '☀️' }   // 28× Earth — extreme dropper
   ];
+  // Wind presets — quick-pick alternatives to manually setting speed +
+  // direction. Direction convention: 0° = head (against the throw), 90° =
+  // R-to-L cross, 180° = tail (with the throw), 270° = L-to-R cross.
+  // Calm zeroes both fields; Tornado is intentionally exaggerated for
+  // a dramatic teaching demo (real tornado speeds at the funnel are
+  // 65-300+ mph, but ball physics break down past about 40 mph).
+  var WIND_PRESETS = [
+    { id: 'calm',     label: 'Calm',            mph: 0,  dirDeg: 0,   icon: '🌤️' },
+    { id: 'tail',     label: 'Tailwind',        mph: 8,  dirDeg: 180, icon: '⬆️' },
+    { id: 'head',     label: 'Strong Headwind', mph: 15, dirDeg: 0,   icon: '⬇️' },
+    { id: 'cross',    label: 'Crosswind',       mph: 12, dirDeg: 90,  icon: '➡️' },
+    { id: 'tornado',  label: 'Tornado',         mph: 40, dirDeg: 270, icon: '🌪️' }
+  ];
   // Conversion helpers
   var MPH_PER_MPS = 2.23694;
   var FT_PER_M = 3.28084;
@@ -2568,7 +2581,7 @@ window.StemLab = window.StemLab || {
         // canvas. Only renders when wind is non-zero so calm scenes stay
         // clean. Direction matches the simulator's convention (0° = headwind
         // pointing toward the thrower / down on the canvas in side-view).
-        if ((d.mode === 'freekick' || d.mode === 'fieldgoal') && (d.windMph || 0) > 0) {
+        if ((d.mode === 'freekick' || d.mode === 'fieldgoal' || d.mode === 'bowling' || d.mode === 'golf') && (d.windMph || 0) > 0) {
           var wIndW = 60, wIndH = 60;
           var wcx = W - 20 - wIndW / 2;
           var wcy = 20 + wIndH / 2;
@@ -3499,17 +3512,44 @@ window.StemLab = window.StemLab || {
               (d.scaffoldTier || 3) >= 3 ? slider('Spin axis', d.spinAxisDeg, 0, 360, 5, function(v) { upd('spinAxisDeg', v); }, '°') : null
             ),
             // ── Wind (outdoor modes only, Tier 2+) ──
-            // Free kick + field goal happen outdoors so wind is part of the
-            // physics. Indoor modes (basketball is indoor) keep the panel
-            // hidden so the UI doesn't clutter with irrelevant sliders.
+            // Free kick + field goal + bowling + golf happen outdoors so
+            // wind is part of the physics. Indoor modes (basketball is
+            // indoor; volleyball typically indoor) keep the panel hidden
+            // so the UI doesn't clutter with irrelevant sliders.
             // Tier 1 students stick to "more speed = more distance"; wind
             // joins at Tier 2 once they've grasped the basic relationship.
-            ((isFreeKick || isFieldGoal) && (d.scaffoldTier || 3) >= 2) ? h('div', {
+            ((isFreeKick || isFieldGoal || isBowling || isGolf) && (d.scaffoldTier || 3) >= 2) ? h('div', {
               style: { background: '#0f172a', border: '1px solid #1e293b', borderRadius: 10, padding: 12, marginBottom: 12 }
             },
               h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 } },
                 'Wind (relative to throw)'),
-              slider('Wind speed', d.windMph || 0, 0, 25, 1, function(v) { upd('windMph', v); }, ' mph'),
+              // Quick-pick wind presets — calm / tailwind / headwind / cross / tornado
+              h('div', { role: 'group', 'aria-label': 'Wind presets',
+                style: { display: 'flex', gap: 4, marginBottom: 8, flexWrap: 'wrap' } },
+                WIND_PRESETS.map(function(wp) {
+                  var sel = (d.windMph || 0) === wp.mph && (d.windDirDeg || 0) === wp.dirDeg;
+                  return h('button', {
+                    key: 'wp-' + wp.id,
+                    onClick: function() {
+                      setLabToolData(function(prev) {
+                        return Object.assign({}, prev, { throwlab: Object.assign({}, prev.throwlab, {
+                          windMph: wp.mph, windDirDeg: wp.dirDeg
+                        })});
+                      });
+                      tlAnnounce('Wind preset: ' + wp.label + (wp.mph ? ' (' + wp.mph + ' mph)' : ''));
+                    },
+                    'aria-pressed': sel,
+                    'data-tl-focusable': 'true',
+                    style: {
+                      padding: '4px 9px', borderRadius: 999, cursor: 'pointer',
+                      border: '1px solid ' + (sel ? '#fbbf24' : '#334155'),
+                      background: sel ? 'rgba(251,191,36,0.18)' : '#1e293b',
+                      color: '#f1f5f9', fontSize: 11, fontWeight: 600
+                    }
+                  }, wp.icon + ' ' + wp.label);
+                })
+              ),
+              slider('Wind speed', d.windMph || 0, 0, 40, 1, function(v) { upd('windMph', v); }, ' mph'),
               // Wind direction: 0° head, 90° R, 180° tail, 270° L
               slider('Wind direction', d.windDirDeg || 0, 0, 359, 5, function(v) { upd('windDirDeg', v); }, '°'),
               h('div', { style: { fontSize: 10, color: '#cbd5e1', marginTop: 4 } },
