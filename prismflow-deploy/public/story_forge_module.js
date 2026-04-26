@@ -1505,6 +1505,8 @@ Return ONLY JSON:
       </div>`;
     }
     const html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title>
+<meta name="author" content="${author}">
+<meta name="description" content="A storybook by ${author}, made with StoryForge.">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:Georgia,'Times New Roman',serif;line-height:1.8;color:#1e293b;max-width:800px;margin:0 auto;padding:40px 20px;background:#fefce8}
@@ -1516,37 +1518,55 @@ body{font-family:Georgia,'Times New Roman',serif;line-height:1.8;color:#1e293b;m
 .story-text{font-size:1.1em;text-indent:2em}
 .separator{text-align:center;color:#d4af37;font-size:1.5em;margin:20px 0}
 .vocab-section{margin-top:40px;padding:20px;background:#f0fdf4;border-radius:12px;border:2px solid #bbf7d0}
-.vocab-section h3{color:#166534;margin-bottom:12px}
+.vocab-section h2{color:#166534;margin-bottom:12px;font-size:1.5em}
 .vocab-grid{display:flex;flex-wrap:wrap;gap:8px}
 .vocab-chip{padding:4px 12px;border-radius:20px;font-size:0.85em;font-weight:bold}
 .vocab-chip.used{background:#dcfce7;color:#166534;border:1px solid #86efac}
 .vocab-chip.unused{background:#fef2f2;color:#991b1b;border:1px solid #fca5a5}
 .feedback-section{margin-top:30px;padding:20px;background:#eff6ff;border-radius:12px;border:2px solid #bfdbfe}
-.feedback-section h3{color:#1e40af;margin-bottom:12px}
+.feedback-section h2{color:#1e40af;margin-bottom:12px;font-size:1.5em}
 .score-badge{display:inline-block;background:#4f46e5;color:white;padding:4px 16px;border-radius:20px;font-weight:bold;margin-bottom:12px}
 .glow-grow{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .glow{background:#f0fdf4;padding:12px;border-radius:8px;border:1px solid #bbf7d0;font-size:0.9em}
 .grow{background:#fffbeb;padding:12px;border-radius:8px;border:1px solid #fde68a;font-size:0.9em}
-.footer{text-align:center;margin-top:40px;color:#94a3b8;font-size:0.8em}
+.colophon{text-align:center;margin-top:40px;color:#475569;font-size:0.8em;padding-top:20px;border-top:1px solid #e5e7eb}
 .print-btn{position:fixed;top:16px;right:16px;padding:8px 20px;background:#4f46e5;color:white;border:none;border-radius:8px;font-weight:bold;cursor:pointer;font-size:0.9em;box-shadow:0 2px 8px rgba(79,70,229,0.3);z-index:100}
 .print-btn:hover{background:#4338ca}
+.print-btn:focus{outline:3px solid #fbbf24;outline-offset:2px}
+.skip-link{position:absolute;left:-9999px;top:0;padding:8px 14px;background:#0f172a;color:#fff;text-decoration:none;font-weight:700}
+.skip-link:focus{left:0;top:0;z-index:1000}
+main{display:block}
 .comic-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:20px;background:#1e293b;border-radius:8px}
-.panel{background:white;border:3px solid #0f172a;border-radius:8px;overflow:hidden}
-.panel-img{width:100%;aspect-ratio:1;object-fit:cover}
-.speech-bubble{padding:12px;font-size:0.95em;line-height:1.5;border-top:2px solid #e2e8f0;position:relative}
-@media print{.print-btn{display:none}.chapter,.panel{break-inside:avoid}}
+.panel{background:white;border:3px solid #0f172a;border-radius:8px;overflow:hidden;display:flex;flex-direction:column;position:relative}
+.panel-img-wrap{position:relative}
+.panel-img{width:100%;aspect-ratio:1;object-fit:cover;display:block}
+.sfx-tag{position:absolute;top:8px;right:8px;background:#fbbf24;color:#7c2d12;font-weight:900;font-style:italic;padding:4px 12px;border-radius:8px;border:2px solid #7c2d12;font-family:'Comic Sans MS','Marker Felt',sans-serif;font-size:0.95em;transform:rotate(-6deg);box-shadow:2px 2px 0 #7c2d12;text-transform:uppercase;letter-spacing:0.05em}
+.panel-sticker{position:absolute;bottom:8px;left:8px;font-size:2em;filter:drop-shadow(0 2px 3px rgba(0,0,0,0.3))}
+.dialogue-bubble{margin:8px;padding:10px 14px;background:#fff;border:2px solid #1e293b;border-radius:14px;font-size:0.92em;line-height:1.4;position:relative}
+.dialogue-speaker{font-weight:bold;color:#1d4ed8;font-size:0.78em;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px}
+.dialogue-speech{color:#1e293b}
+.thought-bubble{margin:8px;padding:8px 12px;background:#f0f9ff;border:2px dashed #7c3aed;border-radius:14px;color:#5b21b6;font-style:italic;font-size:0.88em;line-height:1.4}
+.panel-caption{font-size:0.85em;color:#475569;font-style:italic}
+.speech-bubble{padding:12px;font-size:0.95em;line-height:1.5;border-top:2px solid #e2e8f0;position:relative;background:#fff}
+@media print{.skip-link,.print-btn{display:none}.chapter,.panel{break-inside:avoid}body{background:#fff !important}.cover{background:#fffbeb !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}.comic-grid{background:#1e293b !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+@media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important}}
 </style></head><body>
-<button class="print-btn" onclick="window.print()">\u{1F5A8}\uFE0F Print</button>
-<div class="cover">
-  ${coverArt ? `<img src="${coverArt}" style="max-width:300px;border-radius:12px;margin:0 auto 16px;display:block;box-shadow:0 4px 16px rgba(0,0,0,0.15)" alt="Book cover" />` : ""}
-  <h1>${title}</h1>
+<a class="skip-link" href="#story-content">Skip to story</a>
+<button class="print-btn" onclick="window.print()" aria-label="Print this storybook or save as PDF">\u{1F5A8}\uFE0F Print</button>
+<header class="cover" role="banner">
+  ${coverArt ? `<img src="${coverArt}" style="max-width:300px;border-radius:12px;margin:0 auto 16px;display:block;box-shadow:0 4px 16px rgba(0,0,0,0.15)" alt="Cover illustration for ${title}" />` : ""}
+  <h1 id="story-title">${title}</h1>
   <p class="meta">Written by ${author}</p>
   <p class="meta">${escapeHtml(date)} \xB7 ${escapeHtml(GENRE_TEMPLATES[genre]?.label || "Creative Writing")} \xB7 Art style: ${escapeHtml(artStyle)}</p>
-</div>
+</header>
+<main id="story-content" role="main" aria-labelledby="story-title">
 ${chaptersHtml}
+</main>
+<aside class="vocab-aside" aria-labelledby="vocab-heading">
 ${vocabHtml}
-${feedbackHtml}
-<div class="footer">Created with StoryForge \xB7 AlloFlow</div>
+</aside>
+${feedbackHtml ? `<aside class="feedback-aside" aria-label="Teacher feedback">${feedbackHtml}</aside>` : ""}
+<footer class="colophon" role="contentinfo">Created with StoryForge \xB7 AlloFlow</footer>
 </body></html>`;
     try {
       const w = window.open("", "_blank");
