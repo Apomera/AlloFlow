@@ -6,6 +6,67 @@
  */
 (function() {
   'use strict';
+
+  // ── Duplicate-load guard ──
+  if (window.__quickstartModuleLoaded) {
+    console.warn('[QuickStartWizard] Already loaded — skipping');
+    return;
+  }
+  window.__quickstartModuleLoaded = true;
+
+  // ── React dependencies ──
+  var React = window.React;
+  if (!React) { console.error('[QuickStartWizard] React not found on window'); return; }
+  var useState = React.useState;
+  var useEffect = React.useEffect;
+  var useRef = React.useRef;
+  var useCallback = React.useCallback;
+  var useMemo = React.useMemo;
+  var useContext = React.useContext;
+
+  // ── App dependencies from window ──
+  var LanguageContext = window.AlloLanguageContext;
+  var _shared = window.__alloShared || {};
+  var safeGetItem = _shared.safeGetItem || function(k) { try { return localStorage.getItem(k); } catch(e) { return null; } };
+  var safeSetItem = _shared.safeSetItem || function(k,v) { try { localStorage.setItem(k,v); } catch(e) {} };
+  var warnLog = _shared.warnLog || function() { console.warn.apply(console, arguments); };
+
+  // ── Shared hooks & utilities from host app ──
+  var _hooks = window.__alloHooks || {};
+  var useFocusTrap = _hooks.useFocusTrap || function() {};
+  var fetchAndCleanUrl = (window.__alloUtils || {}).fetchAndCleanUrl || function() { return Promise.resolve(''); };
+  var isGoogleRedirect = (window.__alloUtils || {}).isGoogleRedirect || function() { return false; };
+
+  // ── Lucide icons from host app ──
+  var _icons = window.AlloIcons || {};
+  var AlignJustify = _icons.AlignJustify || function() { return null; };
+  var ArrowDown = _icons.ArrowDown || function() { return null; };
+  var ArrowRight = _icons.ArrowRight || function() { return null; };
+  var Brain = _icons.Brain || function() { return null; };
+  var CheckCircle = _icons.CheckCircle || function() { return null; };
+  var CheckCircle2 = _icons.CheckCircle2 || function() { return null; };
+  var Download = _icons.Download || function() { return null; };
+  var ExternalLink = _icons.ExternalLink || function() { return null; };
+  var Globe = _icons.Globe || function() { return null; };
+  var GraduationCap = _icons.GraduationCap || function() { return null; };
+  var HelpCircle = _icons.HelpCircle || function() { return null; };
+  var Languages = _icons.Languages || function() { return null; };
+  var Link = _icons.Link || function() { return null; };
+  var MessageSquare = _icons.MessageSquare || function() { return null; };
+  var Plus = _icons.Plus || function() { return null; };
+  var RefreshCw = _icons.RefreshCw || function() { return null; };
+  var Search = _icons.Search || function() { return null; };
+  var ShieldCheck = _icons.ShieldCheck || function() { return null; };
+  var Sparkles = _icons.Sparkles || function() { return null; };
+  var Type = _icons.Type || function() { return null; };
+  var Upload = _icons.Upload || function() { return null; };
+  var Wrench = _icons.Wrench || function() { return null; };
+  var X = _icons.X || function() { return null; };
+
+  // ═══════════════════════════════════════════════════════════════
+  // QUICKSTARTWIZARD COMPONENT (JSX pre-transformed by esbuild)
+  // ═══════════════════════════════════════════════════════════════
+
 const QuickStartWizard = React.memo(({
   isOpen,
   onClose,
@@ -1289,5 +1350,4 @@ const QuickStartWizard = React.memo(({
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.QuickStartWizard = QuickStartWizard;
 console.log('[QuickStartWizard] Module registered successfully');
-
 })();
