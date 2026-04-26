@@ -2170,52 +2170,65 @@
 
     // ── Render ──
     if (mode === 'setup') {
-      return h('div', { style: { maxWidth: 420, margin: '0 auto', padding: '20px', textAlign: 'center' } },
+      // Parchment-card aesthetic — sits inside the outer amber gradient
+      // wrapper from AlloFlowContent and reads like an unrolled scroll on
+      // a torchlit table. Replaces the previous slate/violet palette which
+      // clashed with the warm dungeon visuals on the canvas.
+      return h('div', { style: { maxWidth: 460, margin: '0 auto', padding: '20px 24px', textAlign: 'center', background: 'linear-gradient(180deg, #fef3c7 0%, #fed7aa 100%)', borderRadius: '14px', border: '2px solid #d97706', boxShadow: '0 8px 24px rgba(146,64,14,0.15), inset 0 0 32px rgba(217,119,6,0.08)' } },
         h('div', { style: { fontSize: '36px', marginBottom: '8px' } }, '\uD83C\uDFAF'),
-        h('h2', { style: { fontSize: '20px', fontWeight: 800, color: '#1e293b', marginBottom: '4px' } }, 'Fluency Maze'),
-        h('p', { style: { fontSize: '12px', color: '#64748b', marginBottom: '16px' } }, 'Solve math problems to navigate through the maze. Reach the exit!'),
+        h('h2', { style: { fontSize: '22px', fontWeight: 900, color: '#78350f', marginBottom: '2px', letterSpacing: '0.04em' } }, 'Fluency Maze'),
+        h('p', { style: { fontSize: '12px', color: '#92400e', marginBottom: '16px', fontStyle: 'italic' } }, 'Each gate is locked by a math fact. Solve it to pass. Find the golden key to unlock the exit.'),
         // Operation selector
         h('div', { style: { display: 'flex', gap: '6px', justifyContent: 'center', marginBottom: '12px', flexWrap: 'wrap' } },
           ['add', 'sub', 'mul', 'div', 'mixed'].map(function(op) {
             var labels = { add: '➕ Add', sub: '➖ Sub', mul: '✖️ Mul', div: '➗ Div', mixed: '🔀 Mixed' };
+            var opSel = operation === op;
             return h('button', { key: op, onClick: function() { setOperation(op); },
+              'aria-pressed': opSel,
               style: { padding: '6px 12px', borderRadius: '8px', fontSize: '11px', fontWeight: 700, cursor: 'pointer',
-                background: operation === op ? '#7c3aed' : '#f1f5f9', color: operation === op ? '#fff' : '#475569',
-                border: operation === op ? '2px solid #7c3aed' : '2px solid #e2e8f0' }
+                background: opSel ? 'linear-gradient(135deg, #d97706, #b45309)' : '#fef3c7',
+                color: opSel ? '#fff' : '#78350f',
+                border: opSel ? '2px solid #92400e' : '2px solid #fcd34d' }
             }, labels[op]);
           })
         ),
         // Difficulty
         h('div', { style: { display: 'flex', gap: '6px', justifyContent: 'center', marginBottom: '12px' } },
           ['single', 'double'].map(function(d) {
+            var diffSel = difficulty === d;
             return h('button', { key: d, onClick: function() { setDifficulty(d); },
+              'aria-pressed': diffSel,
               style: { padding: '6px 14px', borderRadius: '8px', fontSize: '11px', fontWeight: 600, cursor: 'pointer',
-                background: difficulty === d ? '#f59e0b' : '#f1f5f9', color: difficulty === d ? '#fff' : '#475569',
-                border: difficulty === d ? '2px solid #f59e0b' : '2px solid #e2e8f0' }
+                background: diffSel ? 'linear-gradient(135deg, #ea580c, #c2410c)' : '#fef3c7',
+                color: diffSel ? '#fff' : '#78350f',
+                border: diffSel ? '2px solid #9a3412' : '2px solid #fcd34d' }
             }, d === 'single' ? 'Single Digit (0-12)' : 'Double Digit (0-20)');
           })
         ),
         // Maze size selector
         h('div', { style: { display: 'flex', gap: '6px', justifyContent: 'center', marginBottom: '12px' } },
           ['small', 'medium', 'large'].map(function(sz) {
+            var szSel = mazeSize === sz;
             return h('button', { key: sz, onClick: function() { setMazeSize(sz); },
+              'aria-pressed': szSel,
               style: { padding: '6px 14px', borderRadius: '8px', fontSize: '11px', fontWeight: 600, cursor: 'pointer',
-                background: mazeSize === sz ? '#6366f1' : '#f1f5f9', color: mazeSize === sz ? '#fff' : '#475569',
-                border: mazeSize === sz ? '2px solid #6366f1' : '2px solid #e2e8f0' }
+                background: szSel ? 'linear-gradient(135deg, #b45309, #92400e)' : '#fef3c7',
+                color: szSel ? '#fff' : '#78350f',
+                border: szSel ? '2px solid #78350f' : '2px solid #fcd34d' }
             }, MAZE_SIZES[sz].label);
           })
         ),
         // Chase mode toggle
-        h('label', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '16px', fontSize: '12px', color: '#475569', cursor: 'pointer' } },
-          h('input', { type: 'checkbox', checked: chaseMode, onChange: function() { setChaseMode(!chaseMode); } }),
+        h('label', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '16px', fontSize: '12px', color: '#78350f', fontWeight: 600, cursor: 'pointer' } },
+          h('input', { type: 'checkbox', checked: chaseMode, onChange: function() { setChaseMode(!chaseMode); }, style: { accentColor: '#b45309' } }),
           '\uD83D\uDC7E Chase Mode', h('span', { style: { fontSize: '10px', color: '#94a3b8' } }, '(monster pursues you!)')
         ),
         // Start button
         h('button', { onClick: startMaze,
-          style: { padding: '12px 32px', background: 'linear-gradient(135deg, #7c3aed, #6366f1)', color: '#fff',
-            border: 'none', borderRadius: '12px', fontSize: '16px', fontWeight: 800, cursor: 'pointer',
-            boxShadow: '0 4px 15px rgba(124,58,237,0.3)' }
-        }, '\u25B6\uFE0F Start Maze')
+          style: { padding: '12px 32px', background: 'linear-gradient(135deg, #b45309, #7c2d12)', color: '#fef3c7',
+            border: '2px solid #78350f', borderRadius: '12px', fontSize: '16px', fontWeight: 800, cursor: 'pointer',
+            boxShadow: '0 4px 15px rgba(120,53,15,0.4), inset 0 1px 0 rgba(255,235,170,0.3)', letterSpacing: '0.04em' }
+        }, '\uD83D\uDD25 Light the Torches')
       );
     }
 
@@ -2267,8 +2280,8 @@
             h('div', { style: { fontSize: '10px', color: '#64748b' } }, 'Time'))
         ),
         h('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center' } },
-          h('button', { onClick: startMaze, style: { padding: '10px 24px', background: '#7c3aed', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' } }, '\uD83D\uDD04 Play Again'),
-          h('button', { onClick: function() { setMode('setup'); }, style: { padding: '10px 20px', background: '#f1f5f9', color: '#475569', border: '2px solid #e2e8f0', borderRadius: '10px', fontSize: '12px', cursor: 'pointer' } }, 'Settings')
+          h('button', { onClick: startMaze, style: { padding: '10px 24px', background: 'linear-gradient(135deg, #b45309, #7c2d12)', color: '#fef3c7', border: '2px solid #78350f', borderRadius: '10px', fontSize: '13px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(120,53,15,0.35)' } }, '\uD83D\uDD04 Play Again'),
+          h('button', { onClick: function() { setMode('setup'); }, style: { padding: '10px 20px', background: '#fef3c7', color: '#78350f', border: '2px solid #fcd34d', borderRadius: '10px', fontSize: '12px', fontWeight: 700, cursor: 'pointer' } }, '\u2699 Settings')
         )
       );
     }
@@ -2276,12 +2289,14 @@
     var has3D = !!window.THREE;
 
     // Playing mode
-    return h('div', { style: { maxWidth: 500, margin: '0 auto', position: 'relative' } },
-      // HUD — scores + streak combo meter + hint button
-      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 8px', background: '#f1f5f9', borderRadius: '10px', marginBottom: '6px', fontSize: '11px', flexWrap: 'wrap', gap: '6px' } },
-        h('span', { style: { color: '#22c55e', fontWeight: 700 } }, '\u2705 ' + correct),
-        h('span', { style: { color: '#ef4444', fontWeight: 700 } }, '\u274C ' + wrong),
-        h('span', { style: { color: '#7c3aed', fontWeight: 700 } }, '\uD83C\uDFAF ' + score),
+    return h('div', { style: { maxWidth: 560, margin: '0 auto', position: 'relative' } },
+      // HUD — scores + streak combo meter + hint button. Warm leather/stone
+      // band so the HUD reads as part of the dungeon, not a separate cool-
+      // slate strip floating above it.
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '7px 10px', background: 'linear-gradient(180deg, #5b4d3f 0%, #3a2e26 100%)', borderRadius: '10px', marginBottom: '6px', fontSize: '11px', flexWrap: 'wrap', gap: '8px', border: '1px solid #78350f', boxShadow: 'inset 0 1px 0 rgba(255,235,170,0.15), 0 2px 6px rgba(58,46,38,0.3)' } },
+        h('span', { style: { color: '#86efac', fontWeight: 700 } }, '\u2705 ' + correct),
+        h('span', { style: { color: '#fca5a5', fontWeight: 700 } }, '\u274C ' + wrong),
+        h('span', { style: { color: '#fde68a', fontWeight: 700 } }, '\uD83C\uDFAF ' + score),
         // Streak pill — grows / glows at milestones so fluency runs feel earned.
         streak > 0 && h('span', {
           style: {
@@ -2295,7 +2310,7 @@
             transition: 'all 0.2s'
           }
         }, '\uD83D\uDD25 x' + streak),
-        h('span', { style: { color: '#64748b' } }, '\u23F1 ' + elapsed + 's'),
+        h('span', { style: { color: '#fde68a' } }, '\u23F1 ' + elapsed + 's'),
         chaseMode && h('span', { style: { color: '#f59e0b', fontWeight: 700 } }, '\uD83D\uDC7E CHASE!'),
         // Hint button — costs 5 points, resets streak. Uses BFS to find the
         // direction of the next step along the shortest path to the exit.
@@ -2305,7 +2320,7 @@
           title: 'Show direction toward exit (H key) — costs 5 points, resets streak',
           style: {
             marginLeft: 'auto', padding: '4px 10px', fontSize: '11px', fontWeight: 700,
-            background: hintDir ? '#fbbf24' : '#6366f1', color: '#fff',
+            background: hintDir ? '#fbbf24' : 'linear-gradient(135deg, #b45309, #7c2d12)', color: '#fff',
             border: 'none', borderRadius: '999px', cursor: hintDir ? 'default' : 'pointer',
             opacity: hintDir ? 0.8 : 1
           }
@@ -2313,7 +2328,7 @@
       ),
       // 3D View (or 2D fallback)
       has3D ? h('div', { ref: maze3dRef, style: { width: '100%', height: '320px', borderRadius: '10px', overflow: 'hidden', border: '2px solid #7c3aed', position: 'relative', background: '#0a0a1a' } }) :
-      h('canvas', { ref: canvasRef, style: { width: '100%', height: 'auto', borderRadius: '10px', border: '2px solid #e2e8f0', display: 'block' } }),
+      h('canvas', { ref: canvasRef, style: { width: '100%', height: 'auto', borderRadius: '10px', border: '3px solid #78350f', display: 'block', boxShadow: '0 4px 16px rgba(58,46,38,0.4)' } }),
       // 2D minimap overlay (top-right of 3D view)
       has3D && maze && h('canvas', { ref: canvasRef, style: { position: 'absolute', top: '44px', right: '4px', width: '100px', height: '100px', borderRadius: '8px', border: '1px solid rgba(100,116,139,0.3)', opacity: 0.8 } }),
       // Gate overlay (when at junction). Styled as a stone-gate with a
@@ -2423,13 +2438,13 @@
       // Arrow buttons (mobile friendly)
       h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '4px', maxWidth: '160px', margin: '8px auto 0' } },
         h('div'),
-        h('button', { onClick: function() { tryMove('up'); }, style: { padding: '10px', borderRadius: '8px', background: '#e2e8f0', border: 'none', fontSize: '18px', cursor: 'pointer' } }, '\u25B2'),
+        h('button', { onClick: function() { tryMove('up'); }, style: { padding: '12px', borderRadius: '8px', background: 'linear-gradient(180deg, #a8957d 0%, #78350f 100%)', color: '#fef3c7', border: '2px solid #78350f', fontSize: '20px', fontWeight: 700, cursor: 'pointer', boxShadow: 'inset 0 -2px 0 rgba(0,0,0,0.25)', minHeight: '44px' } }, '\u25B2'),
         h('div'),
-        h('button', { onClick: function() { tryMove('left'); }, style: { padding: '10px', borderRadius: '8px', background: '#e2e8f0', border: 'none', fontSize: '18px', cursor: 'pointer' } }, '\u25C0'),
-        h('button', { onClick: function() { tryMove('down'); }, style: { padding: '10px', borderRadius: '8px', background: '#e2e8f0', border: 'none', fontSize: '18px', cursor: 'pointer' } }, '\u25BC'),
-        h('button', { onClick: function() { tryMove('right'); }, style: { padding: '10px', borderRadius: '8px', background: '#e2e8f0', border: 'none', fontSize: '18px', cursor: 'pointer' } }, '\u25B6')
+        h('button', { onClick: function() { tryMove('left'); }, style: { padding: '12px', borderRadius: '8px', background: 'linear-gradient(180deg, #a8957d 0%, #78350f 100%)', color: '#fef3c7', border: '2px solid #78350f', fontSize: '20px', fontWeight: 700, cursor: 'pointer', boxShadow: 'inset 0 -2px 0 rgba(0,0,0,0.25)', minHeight: '44px' } }, '\u25C0'),
+        h('button', { onClick: function() { tryMove('down'); }, style: { padding: '12px', borderRadius: '8px', background: 'linear-gradient(180deg, #a8957d 0%, #78350f 100%)', color: '#fef3c7', border: '2px solid #78350f', fontSize: '20px', fontWeight: 700, cursor: 'pointer', boxShadow: 'inset 0 -2px 0 rgba(0,0,0,0.25)', minHeight: '44px' } }, '\u25BC'),
+        h('button', { onClick: function() { tryMove('right'); }, style: { padding: '12px', borderRadius: '8px', background: 'linear-gradient(180deg, #a8957d 0%, #78350f 100%)', color: '#fef3c7', border: '2px solid #78350f', fontSize: '20px', fontWeight: 700, cursor: 'pointer', boxShadow: 'inset 0 -2px 0 rgba(0,0,0,0.25)', minHeight: '44px' } }, '\u25B6')
       ),
-      h('p', { style: { fontSize: '10px', color: '#94a3b8', textAlign: 'center', marginTop: '6px' } }, 'Arrow keys or WASD to move \u2022 H for hint \u2022 Solve each problem to advance \u2022 3-in-a-row for bonus')
+      h('p', { style: { fontSize: '10px', color: '#92400e', textAlign: 'center', marginTop: '8px', fontStyle: 'italic' } }, 'Arrow keys or WASD to move \u2022 H for hint \u2022 Each gate needs the correct math answer \u2022 3-in-a-row for bonus')
     );
   }
 
