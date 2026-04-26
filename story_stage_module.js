@@ -75,6 +75,10 @@
     var kokoroVoices = props.kokoroVoices || [];
     var studentNickname = props.studentNickname || '';
     var handleScoreUpdate = props.handleScoreUpdate;
+    // Resource-history integration (teacher-scaffold path; mirrors StoryForge / PoetTree)
+    var initialConfig = props.initialConfig || null;
+    var onSaveConfig = props.onSaveConfig || null;        // non-null => teacher mode
+    var onSaveSubmission = props.onSaveSubmission || null; // non-null => save to portfolio enabled
 
     var e = React.createElement;
     var useState = React.useState;
@@ -147,6 +151,28 @@
     // Saved scripts
     var _savedScripts = useState(function () { return load(STORAGE_SCRIPTS, []); });
     var savedScripts = _savedScripts[0]; var setSavedScripts = _savedScripts[1];
+
+    // Teacher-scaffold field (saved into the resource-history config payload).
+    // teacherPrompt: a focus-note / performance instructions the teacher writes for the assignment.
+    var _teacherPrompt = useState(''); var teacherPrompt = _teacherPrompt[0]; var setTeacherPrompt = _teacherPrompt[1];
+
+    // Hydrate from a saved teacher assignment (initialConfig) the first time it shows up.
+    var _hydratedFromConfig = useRef(false);
+    React.useEffect(function () {
+      if (_hydratedFromConfig.current) return;
+      if (!initialConfig) return;
+      _hydratedFromConfig.current = true;
+      try {
+        if (initialConfig.sourceText) setSourceText(initialConfig.sourceText);
+        if (initialConfig.storyTitle) setStoryTitle(initialConfig.storyTitle);
+        if (initialConfig.teacherPrompt) setTeacherPrompt(initialConfig.teacherPrompt);
+        if (initialConfig.genGenre) setGenGenre(initialConfig.genGenre);
+        if (initialConfig.genLength) setGenLength(initialConfig.genLength);
+        if (initialConfig.genGradeLevel) setGenGradeLevel(initialConfig.genGradeLevel);
+        if (initialConfig.inputMode) setInputMode(initialConfig.inputMode);
+        if (addToast) addToast('Assignment loaded!', 'success');
+      } catch (err) { console.warn('[LitLab] initialConfig hydration failed:', err && err.message); }
+    }, [initialConfig]);
 
     // Scene illustration
     var _sceneImage = useState(null); var sceneImage = _sceneImage[0]; var setSceneImage = _sceneImage[1];
@@ -489,6 +515,47 @@
       setSourceText(entry.sourceText || '');
       setPhase('assign');
     }, []);
+
+    // ── Resource-history hooks (mirror StoryForge / PoetTree) ──
+    // saveAsAssignment: teacher captures source text + title + focus prompt into a
+    // 'litlab-config' resource so students can load it pre-populated.
+    var saveAsAssignment = useCallback(function () {
+      if (!onSaveConfig) return;
+      var config = {
+        storyTitle: storyTitle,
+        sourceText: sourceText,
+        teacherPrompt: teacherPrompt,
+        gradeLevel: gradeLevel,
+        inputMode: inputMode,
+        genGenre: genGenre,
+        genLength: genLength,
+        genGradeLevel: genGradeLevel,
+        savedAt: new Date().toISOString()
+      };
+      onSaveConfig(config);
+      addToast && addToast('LitLab assignment saved!', 'success');
+    }, [onSaveConfig, storyTitle, sourceText, teacherPrompt, gradeLevel, inputMode, genGenre, genLength, genGradeLevel, addToast]);
+
+    // saveSubmissionToPortfolio: student saves their performed/analyzed work as a
+    // 'litlab-submission' resource for portfolio review.
+    var saveSubmissionToPortfolio = useCallback(function () {
+      if (!onSaveSubmission) return;
+      if (!script) { addToast && addToast('Generate or load a script first!', 'info'); return; }
+      var submission = {
+        storyTitle: storyTitle || (script && script.title) || 'My Performance',
+        scriptTitle: script.title || '',
+        characterCount: (script.characters || []).length,
+        lineCount: (script.lines || []).length,
+        characters: (script.characters || []).map(function (c) { return { name: c.name, voice: c.voice, color: c.color }; }),
+        analysisFeedback: analysisFeedback || null,
+        myRole: myRole,
+        author: studentNickname || 'Student',
+        gradeLevel: gradeLevel,
+        savedAt: new Date().toISOString()
+      };
+      onSaveSubmission(submission);
+      addToast && addToast('Performance saved to portfolio!', 'success');
+    }, [onSaveSubmission, script, storyTitle, analysisFeedback, myRole, studentNickname, gradeLevel, addToast]);
 
     // ── Generate Character Portraits ──
     var generatePortrait = useCallback(async function (charId) {
@@ -1117,11 +1184,11 @@
             // Controls bar
             e('div', { style: { display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', padding: '12px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e5e7eb' } },
               !isPlaying
-                ? e('button', { onClick: function () { playFromLine(currentLine); }, autoFocus: true, 'aria-label': 'Play performance', style: S.btn('#22c55e', '#fff', false) }, '▶ Play')
+                ? e('button', { onClick: function () { playFromLine(currentLine); }, autoFocus: true, style: S.btn('#22c55e', '#fff', false) }, '▶ Play')
                 : null,
               isPlaying && (isPaused
-                ? e('button', { onClick: resumePlayback, 'aria-label': 'Resume playback', style: S.btn('#22c55e', '#fff', false) }, '▶ Resume')
-                : e('button', { onClick: pausePlayback, 'aria-label': 'Pause playback after current line', style: S.btn('#f59e0b', '#fff', false) }, '⏸ Pause')),
+                ? e('button', { onClick: resumePlayback, style: S.btn('#22c55e', '#fff', false) }, '▶ Resume')
+                : e('button', { onClick: pausePlayback, style: S.btn('#f59e0b', '#fff', false) }, '⏸ Pause')),
               isPlaying && e('button', { onClick: stopPlayback, 'aria-label': 'Stop playback', style: S.btn('#ef4444', '#fff', false) }, '⏹ Stop'),
               e('div', { style: { display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: '#475569' } },
                 e('span', null, 'Speed:'),

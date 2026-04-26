@@ -527,7 +527,7 @@
         // Header
         h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' } },
           h('h3', { style: { fontSize: '18px', fontWeight: 900, color: '#92400e', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 } },
-            '\ud83d\udcca Fluency Probe Results'),
+            h('span', { 'aria-hidden': 'true' }, '\ud83d\udcca '), 'Fluency Probe Results'),
           h('button', { onClick: function () { setResults(null); },
             style: { color: '#64748b', cursor: 'pointer', background: 'none', border: 'none', padding: '4px' }
           }, h(X, { size: 18 }))
@@ -2223,6 +2223,7 @@
       currentProblem && h('div', { style: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', background: 'rgba(15,23,42,0.95)', backdropFilter: 'blur(8px)', borderRadius: '16px', padding: '20px 28px', textAlign: 'center', border: '2px solid #7c3aed', boxShadow: '0 8px 32px rgba(0,0,0,0.3)', zIndex: 10 } },
         h('div', { style: { fontSize: '28px', fontWeight: 800, color: '#e2e8f0', marginBottom: '12px', fontFamily: 'monospace' } }, currentProblem.problem.text + ' = ?'),
         h('input', { ref: inputRef, type: 'number', value: userInput, onChange: function(e) { setUserInput(e.target.value); },
+          'aria-label': 'Type your answer to ' + currentProblem.problem.text,
           onKeyDown: function(e) { if (e.key === 'Enter') submitAnswer(); },
           style: { width: '120px', padding: '8px 12px', fontSize: '24px', fontWeight: 800, textAlign: 'center', borderRadius: '10px', border: '2px solid #7c3aed', background: '#1e293b', color: '#fff', fontFamily: 'monospace', outline: 'none' },
           inputMode: 'numeric', autoFocus: true

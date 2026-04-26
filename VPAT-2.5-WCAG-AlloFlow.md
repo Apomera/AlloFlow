@@ -134,6 +134,10 @@ All 80 STEM Lab files pass `node --check`. All canvases keyboard-accessible. All
 
 **4 top-level modules audited so far. ~20+ smaller modules remain (story_forge, report_writer, math_fluency, escape_room, poet_tree, allobot, story_stage, etc.).**
 
+**8-module batch audit (April 26)**: games, teacher, story_forge, report_writer, math_fluency, escape_room, poet_tree, allobot. Cross-cutting sweeps: 186 mechanical fixes total. Major finding: report_writer had **132 stray `role: 'button'` on layout divs** — largest single-file haul of this anti-pattern in the entire audit. 10 per-tool surgical fixes (descriptive aria-labels on icon-only verify buttons, aria-busy on Launch, dialog aria-modal, dynamic input labels, heading emoji aria-hidden). Exemplar passes (zero fixes needed): **teacher_module.js** and **allobot_module.js**. **12 of ~25 top-level modules audited.**
+
+**Second 8-module batch audit (April 26)**: story_stage, visual_panel, personas, immersive_reader, adventure_handlers, udl_chat, misc_components, quickstart. Cross-cutting sweeps: only **3 fixes** (3 dup aria-labels in story_stage; 0 hits everywhere else). Per-tool agent verification: all 8 pass cleanly with zero remaining surgical fixes — these are exemplar small modules with consistent accessibility hygiene (live regions, aria-label on icon controls, aria-pressed on toggles, comprehensive keyboard handlers, useFocusTrap for modals, pure-logic handler files with no UI surface). **20 of ~25 top-level modules audited.**
+
 **Pending runtime verification (3 criteria — substantially fewer than April 3 due to per-tool audit):**
 
 | Area | Code Status | What Needs Testing |
