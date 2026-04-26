@@ -138,6 +138,8 @@ All 80 STEM Lab files pass `node --check`. All canvases keyboard-accessible. All
 
 **Second 8-module batch audit (April 26)**: story_stage, visual_panel, personas, immersive_reader, adventure_handlers, udl_chat, misc_components, quickstart. Cross-cutting sweeps: only **3 fixes** (3 dup aria-labels in story_stage; 0 hits everywhere else). Per-tool agent verification: all 8 pass cleanly with zero remaining surgical fixes — these are exemplar small modules with consistent accessibility hygiene (live regions, aria-label on icon controls, aria-pressed on toggles, comprehensive keyboard handlers, useFocusTrap for modals, pure-logic handler files with no UI surface). **20 of ~25 top-level modules audited.**
 
+**Final 8-module batch + monolith audit (April 26)**: 3 with UI (adventure, phase_k_helpers, word_sounds_setup) all came back zero hits on every cross-cutting pattern; 5 backend-only modules marked N/A (allo_data, content_engine, ai_backend, generate_dispatcher, export). Then **AlloFlowANTI.txt** — the 50,411-line JSX monolith source for App.jsx — was audited with JSX-extended cross-cutting sweeps (21 bogus + 3 dup aria-labels) and per-tool surgical fixes: **4 launch-pad mode-selection cards converted from `<div onClick>` to keyboard-accessible** (highest user-impact fix in the entire audit — these are app entry points), 4 decorative emoji aria-hidden, 2 hardcoded "Close" labels migrated to i18n, **38 aria-busy injections** on JSX `disabled={isProcessing}` patterns. **All 25 top-level modules + monolith now audited (~720 mechanical fixes total across the entire codebase).**
+
 **Pending runtime verification (3 criteria — substantially fewer than April 3 due to per-tool audit):**
 
 | Area | Code Status | What Needs Testing |

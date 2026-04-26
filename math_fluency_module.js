@@ -27,6 +27,14 @@
       '.fixed.inset-0 button:focus-visible, .fixed.inset-0 input:focus-visible, .fixed.inset-0 [tabindex]:focus-visible { outline: 2px solid #6366f1 !important; outline-offset: 2px !important; border-radius: 4px; }',
       '.fixed.inset-0 :focus:not(:focus-visible) { outline: none !important; }',
       '.fixed.inset-0 .text-slate-400 { color: #64748b !important; }',
+      // Gate feedback animations — wrong-answer shake + correct-answer
+      // open-flash. The transform combines the centered translate (so the
+      // gate stays anchored to the maze midpoint) with the keyframe shake.
+      '@keyframes alloGateShake { 0%,100% { transform: translate(-50%,-50%); } 15% { transform: translate(calc(-50% - 8px), -50%); } 30% { transform: translate(calc(-50% + 8px), -50%); } 45% { transform: translate(calc(-50% - 6px), -50%); } 60% { transform: translate(calc(-50% + 6px), -50%); } 75% { transform: translate(calc(-50% - 3px), -50%); } 90% { transform: translate(calc(-50% + 3px), -50%); } }',
+      '.allo-gate-shake { animation: alloGateShake 480ms cubic-bezier(.36,.07,.19,.97) both; }',
+      '@keyframes alloGateOpen { 0% { transform: translate(-50%,-50%) scale(1); filter: brightness(1); } 35% { transform: translate(-50%,-50%) scale(1.06); filter: brightness(1.4); } 100% { transform: translate(-50%,-50%) scale(1.04); filter: brightness(1.2); } }',
+      '.allo-gate-open { animation: alloGateOpen 220ms ease-out forwards; }',
+      '@media (prefers-reduced-motion: reduce) { .allo-gate-shake, .allo-gate-open { animation: none !important; } }',
     ].join('\n');
     document.head.appendChild(mfA11yStyle);
   }
@@ -1371,20 +1379,32 @@
           }
         }
       } else {
-        // Wrong — don't move, penalty, streak broken
+        // Wrong — don't move, penalty, streak broken. KEEP the gate open
+        // so the student can retry the same fact (was: dismiss + force
+        // re-navigation). Just clear the input, shake the gate visually,
+        // and re-focus the hidden input for keyboard users.
         setWrong(function(p) { return p + 1; });
         setScore(function(p) { return Math.max(0, p - 3); });
         setStreak(0);
         setFeedback('wrong');
         playTone(220, 0.1, 'triangle', 0.04);
-        // Screen shake + red ambient flash. shakeRef decays inside the animate
-        // loop so the effect is short and non-nauseating.
+        // Lower harmonic clang so the wrong-answer audio reads as a locked
+        // gate rejecting the wrong combination.
+        setTimeout(function() { playTone(165, 0.18, 'triangle', 0.05); }, 80);
         shakeRef.current = 1;
         var eng3dW = maze3dEngRef.current;
         if (eng3dW) { eng3dW._feedbackFlash = 1; eng3dW.scene.children.forEach(function(c) { if (c.isAmbientLight) c.color.setHex(0xaa2222); c.intensity = 0.8; }); }
+        setUserInput('');
+        setTimeout(function() { if (inputRef.current) inputRef.current.focus(); }, 50);
+        setTimeout(function() { setFeedback(''); }, 600);
+        return;  // skip the dismiss-gate path below
       }
-      setCurrentProblem(null);
-      setTimeout(function() { setFeedback(''); }, 400);
+      // Correct path: dismiss the gate after a brief beat so the green
+      // flash + key-turn audio register before the overlay disappears.
+      setTimeout(function() {
+        setCurrentProblem(null);
+        setFeedback('');
+      }, 220);
     }
 
     // Check monster catch
@@ -1430,6 +1450,18 @@
       cv.width = W; cv.height = H;
       var visited = visitedCellsRef.current || { '0,0': true };
       var pulse = Math.sin(minimapTickRef.current * 0.12) * 0.5 + 0.5; // 0..1
+      // Wrong-answer screen shake — shakeRef is set to 1 in submitAnswer's
+      // wrong path and decayed here each frame. Applies a small random
+      // offset to the entire canvas so the maze visibly jolts when the
+      // gate rejects a bad answer. Decay rate keeps it under ~600ms.
+      var shake = shakeRef.current || 0;
+      if (shake > 0.02) {
+        ctx.save();
+        ctx.translate((Math.random() - 0.5) * shake * 12, (Math.random() - 0.5) * shake * 12);
+        shakeRef.current = shake * 0.86;
+      } else {
+        shakeRef.current = 0;
+      }
 
       // A cell is "seen" if visited OR any 4-neighbor is visited — gives the
       // player a little peek-ahead so corridors aren't completely opaque.
@@ -1563,9 +1595,24 @@
         ctx.fillText('\uD83D\uDC7E', (monsterPos.c + 0.5) * CELL_SIZE, (monsterPos.r + 0.5) * CELL_SIZE + 6);
       }
 
-      // Player — animated "you are here" ring first, then the cat on top.
+      // Player-carried lantern light — soft amber radial glow centered on
+      // the player's cell. Sits over fog/breadcrumbs but under the player
+      // marker so the player feels like they're carrying their own light
+      // source through the dungeon. Pulse-coupled with the existing player
+      // ring so the lantern subtly breathes with each draw.
       var pcx = (playerPos.c + 0.5) * CELL_SIZE;
       var pcy = (playerPos.r + 0.5) * CELL_SIZE;
+      ctx.save();
+      var lanternRadius = CELL_SIZE * (1.7 + pulse * 0.25);
+      var lanternGrad = ctx.createRadialGradient(pcx, pcy, 4, pcx, pcy, lanternRadius);
+      lanternGrad.addColorStop(0, 'rgba(255,235,170,0.55)');
+      lanternGrad.addColorStop(0.45, 'rgba(255,180,80,0.25)');
+      lanternGrad.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.globalCompositeOperation = 'lighter'; // additive blend → reads as light
+      ctx.fillStyle = lanternGrad;
+      ctx.fillRect(pcx - lanternRadius, pcy - lanternRadius, lanternRadius * 2, lanternRadius * 2);
+      ctx.restore();
+      // Player — animated "you are here" ring first, then the cat on top.
       ctx.strokeStyle = 'rgba(99,102,241,' + (0.35 + pulse * 0.45) + ')';
       ctx.lineWidth = 2 + pulse * 2;
       ctx.beginPath(); ctx.arc(pcx, pcy, CELL_SIZE * 0.32 + pulse * 4, 0, Math.PI * 2); ctx.stroke();
@@ -2268,26 +2315,38 @@
       has3D && maze && h('canvas', { ref: canvasRef, style: { position: 'absolute', top: '44px', right: '4px', width: '100px', height: '100px', borderRadius: '8px', border: '1px solid rgba(100,116,139,0.3)', opacity: 0.8 } }),
       // Gate overlay (when at junction). Styled as a stone-gate with a
       // lock and a 3x4 number pad \u2014 the math problem is the gate's
-      // combination, the pad is how you enter it.
+      // combination, the pad is how you enter it. Border + glow shift
+      // by feedback state: red shake on wrong, green flash on correct.
       currentProblem && h('div', {
+        key: 'gate-' + (currentProblem.problem.text), // remount when problem changes so animations replay
+        className: feedback === 'wrong' ? 'allo-gate-shake' : (feedback === 'correct' ? 'allo-gate-open' : ''),
         style: {
           position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
-          background: 'linear-gradient(180deg, #3a2e26 0%, #2a221c 100%)',
+          background: feedback === 'correct'
+            ? 'linear-gradient(180deg, #14532d 0%, #052e16 100%)'
+            : 'linear-gradient(180deg, #3a2e26 0%, #2a221c 100%)',
           backdropFilter: 'blur(8px)',
           borderRadius: '14px',
           padding: '18px 22px 14px',
           textAlign: 'center',
-          border: '3px solid #a8957d',
-          boxShadow: '0 0 0 2px rgba(58,46,38,0.6), 0 12px 40px rgba(0,0,0,0.6), inset 0 0 24px rgba(255,180,80,0.10)',
+          border: feedback === 'wrong'
+            ? '3px solid #ef4444'
+            : (feedback === 'correct' ? '3px solid #22c55e' : '3px solid #a8957d'),
+          boxShadow: feedback === 'correct'
+            ? '0 0 32px rgba(34,197,94,0.7), inset 0 0 32px rgba(34,197,94,0.25)'
+            : feedback === 'wrong'
+              ? '0 0 24px rgba(239,68,68,0.55), inset 0 0 16px rgba(239,68,68,0.2)'
+              : '0 0 0 2px rgba(58,46,38,0.6), 0 12px 40px rgba(0,0,0,0.6), inset 0 0 24px rgba(255,180,80,0.10)',
           zIndex: 10,
-          minWidth: '260px'
+          minWidth: '260px',
+          transition: 'background 200ms, border-color 200ms, box-shadow 200ms'
         }
       },
-        // Header row: "GATE" label + lock glyph
-        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '10px', color: '#fbbf24', fontSize: '11px', fontWeight: 800, letterSpacing: '0.16em', textTransform: 'uppercase' } },
-          h('span', { style: { fontSize: '18px' } }, '\ud83d\udd12'),
-          h('span', null, 'Locked Gate'),
-          h('span', { style: { fontSize: '18px' } }, '\ud83d\udd12')
+        // Header row: "GATE" label + lock glyph (changes to unlocked on correct)
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '10px', color: feedback === 'correct' ? '#bbf7d0' : '#fbbf24', fontSize: '11px', fontWeight: 800, letterSpacing: '0.16em', textTransform: 'uppercase' } },
+          h('span', { style: { fontSize: '18px' } }, feedback === 'correct' ? '\ud83d\udd13' : '\ud83d\udd12'),
+          h('span', null, feedback === 'correct' ? 'Gate Opens!' : (feedback === 'wrong' ? 'Wrong Combination \u2014 Try Again' : 'Locked Gate')),
+          h('span', { style: { fontSize: '18px' } }, feedback === 'correct' ? '\ud83d\udd13' : '\ud83d\udd12')
         ),
         // The "combination" \u2014 math problem
         h('div', { style: { fontSize: '30px', fontWeight: 800, color: '#fef3c7', marginBottom: '10px', fontFamily: 'monospace', textShadow: '0 0 12px rgba(251,191,36,0.45)' } }, currentProblem.problem.text + ' = ?'),
