@@ -131,6 +131,30 @@ window.SelHub = window.SelHub || {
     ]
   };
 
+  // Digital friendship dilemmas (middle-school first; bands degrade gracefully)
+  var DIGITAL_DILEMMAS = {
+    elementary: [
+      { id: 'tone', icon: '🗺️', title: 'Tone got lost', situation: 'You sent a joke text. Your friend thought you were being mean. They are upset.', badMove: 'Say "it was just a joke, you are being too sensitive."', skill: 'Even if you did not mean it, the way it felt to them is real. Try: "I am sorry it sounded mean. That is not how I meant it. What can I do?"', note: 'Texts do not have faces or voices. Big jokes need big context, or a phone call.' },
+      { id: 'left_out', icon: '🌟', title: 'You see a post without you', situation: 'You scroll past a photo of two friends having fun without you. It stings.', badMove: 'Comment something passive-aggressive, or quietly stay mad.', skill: 'Two things: (1) people post the highlight, not the boring parts. (2) Friends having other friends does not subtract from you. If it still stings, talk to someone offline.', note: 'Phones make small feelings feel huge. Putting it down helps.' },
+      { id: 'group_drama', icon: '👥', title: 'Drama in the group chat', situation: 'Two of your friends start arguing in the group chat. Other kids pile on.', badMove: 'Pick a side in the chat to make one friend happy.', skill: 'DM each friend separately: "I love you both. I am not picking a side in the chat." Group chats are bad places for two-person fights.', note: 'Most chat blowups die fast if no one fans them.' },
+      { id: 'mean_screenshot', icon: '📸', title: 'Someone shows you a screenshot', situation: 'A friend shows you a screenshot of someone else’s message and laughs at them. They want you to laugh too.', badMove: 'Laugh along, or send it to someone else.', skill: 'You can be quiet and still be honest. "I am not really comfortable with this. Can we drop it?" Never forward it.', note: 'Screenshots last longer than friendships. Be careful what you laugh at.' },
+    ],
+    middle: [
+      { id: 'left_on_read', icon: '💬', title: 'Left on read', situation: 'You sent a long, vulnerable message to a friend two days ago. They have seen it (read receipt is on) but have not replied. You are starting to spiral.', badMove: 'Send "??" or "wow ok" or unfollow them.', skill: 'Read receipts are not real-time conversation. Your friend may be overwhelmed, busy, or unsure how to reply to something heavy. Wait one more day. Then try a low-stakes follow-up: "Hey, no pressure on the long message. Just wanted to say hi."', note: 'About 70% of "I think they hate me" stories are actually "they have not figured out what to say."' },
+      { id: 'group_chat_drama', icon: '👥', title: 'Drama in the group chat', situation: 'In your group chat with five friends, two of them start arguing. Others are taking sides. You are close with both.', badMove: 'Stay silent and screenshot it for someone else, or pick a side publicly to keep one friend happy.', skill: 'Group chats are a terrible place for two-person conflict. DM each friend separately: "I saw what is happening. I love you both. I am not picking a side in the chat." Then encourage them to handle it 1-on-1.', note: 'Most group-chat blowups die fast if no one fans them. Your job is to not be the wind.' },
+      { id: 'screenshot', icon: '📸', title: 'Someone screenshotted', situation: 'A friend sends you a screenshot of a private DM from another friend, with commentary mocking them. They want you to laugh along.', badMove: 'Laugh along to keep the peace, forward it to someone else, or confront them publicly.', skill: 'You do not have to be loud to be honest. "Hey, I am not really comfortable with this. Can we drop it?" If they push back, that tells you something about the friendship. You also do not share it onward, ever.', note: 'Screenshots outlive friendships. The thing you laugh at today can hurt someone for years.' },
+      { id: 'ghosted', icon: '👻', title: 'You got ghosted', situation: 'A friend who used to text you every day has stopped responding. No fight, no explanation. You are hurt and confused.', badMove: 'Spam them, post about it publicly, or pretend you do not care.', skill: 'Send one clear message: "Hey, I noticed we have not talked in a while. If something happened, I would rather know. If life got busy, that is okay too. Just want to be honest." Then let it go. Their response, or silence, is information.', note: 'Ghosting usually says more about the ghoster than the ghosted. Some people do not have the skills for hard conversations yet.' },
+      { id: 'highlight_reel', icon: '🌟', title: 'Compared to a feed', situation: 'You scroll past a friend’s post: them with a group of people you did not know they were close with, having an obviously great time. You feel a sting.', badMove: 'Subtweet, leave a passive-aggressive comment, or quietly resent them.', skill: 'Two things: (1) they posted the highlight, not the boring 23 hours. (2) Other people having other friendships does not subtract from yours. If the sting stays, the question is not about them; it is about a part of YOUR life that needs attention.', note: 'Comparison spirals are almost always solved offline. Get off the app. Call someone you actually love.' },
+      { id: 'misunderstood', icon: '🗺️', title: 'Tone got lost', situation: 'You sent a joke. Your friend took it as an insult. They are mad. You explain it was a joke. They are still mad.', badMove: 'Insist "it was just a joke, you are being too sensitive."', skill: 'Even if you did not mean it that way, the IMPACT is real. "I am sorry it landed that way. That was not what I meant, but I can see how it sounded. What can I do?" Intent and impact are both real, and impact is the one your friend is living.', note: 'Text strips out most of communication: face, tone, body. Big jokes need big context. Or a video call.' },
+    ],
+    high: [
+      { id: 'parasocial', icon: '📱', title: 'The parasocial drift', situation: 'You realize you know more about a stranger’s daily life from their feed than you do about a real friend you used to be close with.', badMove: 'Keep doom-scrolling and call it staying connected.', skill: 'Audit your feed once a month. Whose posts make you feel close to them? Whose posts give you the illusion of closeness without any actual reciprocity? Reach out to one real friend the time you would have spent on the second list.', note: 'Parasocial relationships are not bad in themselves, but they do not feed you the way real friendship does. Notice the difference.' },
+      { id: 'cancellation', icon: '⚡', title: 'A friend gets piled on', situation: 'A friend posts something that gets dragged. The pile-on is intense. They are clearly suffering. You agree their post was a misstep, but the response feels disproportionate.', badMove: 'Stay quiet to protect yourself. Or join the pile-on to seem on the right side.', skill: 'Mistakes deserve correction, not annihilation. DM your friend privately first to check on them as a human. If you have a critique of the post, share it with them, not the mob. In public, you can hold both: "I disagree with what they posted AND I do not think this response is helping anyone."', note: 'The internet rewards the loudest take. Real friendship rewards the most accurate one.' },
+      { id: 'long_distance', icon: '🌎', title: 'Friend drifting after they moved', situation: 'A close friend moved away. The texts have slowed. Neither of you has done anything wrong. It is just hard.', badMove: 'Wait passively, then quietly write the friendship off when nothing happens.', skill: 'Long-distance friendships die from neglect more often than from conflict. Schedule it: a 30-minute call once a month, on the calendar, treated like a meeting. Friendship at distance requires structure that friendship in proximity does not.', note: 'Most adult close friendships are 80% maintenance and 20% spontaneity. The math just shifts when distance is added.' },
+      { id: 'digital_breakup', icon: '✂️', title: 'Ending a friendship cleanly', situation: 'You have realized a friendship is hurting you more than helping you. You want out, but feel guilty just disappearing.', badMove: 'Slow-fade through unread messages until they get the hint.', skill: 'A clean ending is a kindness to both of you. "I have been thinking about us a lot. I do not think this friendship is working for me right now, and I want to be honest with you instead of disappearing. I am sorry." Then mute, mute, mute. Closure is a gift you can give yourself.', note: 'Slow-fades feel polite but leave the other person with a question they cannot answer. Honest endings are kinder.' },
+    ]
+  };
+
   // ══════════════════════════════════════════════════════════════
   // ── Tool Registration ──
   // ══════════════════════════════════════════════════════════════
@@ -170,6 +194,11 @@ window.SelHub = window.SelHub || {
       // Friendship journal
       var friendNotes   = d.friendNotes || [];
       var newNote       = d.newNote || '';
+      // Digital friendship
+      var digitalIdx    = d.digitalIdx || 0;
+      var digitalShown  = d.digitalShown || false;
+      var digitalDraft  = d.digitalDraft || '';
+      var digitalDone   = d.digitalDone || {};
 
       var AMBER = '#d97706'; var AMBER_LIGHT = '#fffbeb'; var AMBER_DARK = '#78350f';
 
@@ -177,6 +206,7 @@ window.SelHub = window.SelHub || {
         { id: 'compass',  icon: '\uD83E\uDDED', label: 'My Style' },
         { id: 'start',    icon: '\uD83D\uDCAC', label: 'Starting' },
         { id: 'keep',     icon: '\uD83D\uDC9B', label: 'Keeping' },
+        { id: 'digital',  icon: '📱', label: 'Digital' },
         { id: 'repair',   icon: '\uD83E\uDE79', label: 'Repair' },
         { id: 'endings',  icon: '\uD83C\uDF43', label: 'Endings' },
         { id: 'coach',    icon: '\uD83E\uDD16', label: 'Practice' },
@@ -492,7 +522,73 @@ window.SelHub = window.SelHub || {
         }
       }
 
-      var content = compassContent || startContent || keepContent || repairContent || endingsContent || coachContent;
+      // ── Digital Friendship ──
+      var digitalContent = null;
+      if (activeTab === 'digital') {
+        var dilemmas = DIGITAL_DILEMMAS[band] || DIGITAL_DILEMMAS.middle;
+        var curD = dilemmas[digitalIdx % dilemmas.length];
+        var doneCount = Object.keys(digitalDone).length;
+        digitalContent = h('div', { style: { padding: '20px', maxWidth: '600px', margin: '0 auto' } },
+          h('div', { className: 'sel-hero', style: { textAlign: 'center', marginBottom: '20px' } },
+            h('div', { className: 'sel-hero-icon', style: { fontSize: '52px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(217,119,6,0.3))' } }, '📱'),
+            h('h3', { style: { fontSize: '18px', fontWeight: 800, color: AMBER_DARK, margin: '0 0 4px' } }, 'Digital Friendship'),
+            h('p', { style: { fontSize: '13px', color: '#94a3b8', margin: 0 } }, 'Texting, group chats, posts, screenshots. The friendship rules still apply, but the medium changes the math.')
+          ),
+          // Progress chip
+          h('div', { style: { textAlign: 'center', marginBottom: '12px' } },
+            h('span', { style: { background: AMBER_LIGHT, padding: '4px 14px', borderRadius: '20px', fontSize: '12px', fontWeight: 700, color: AMBER, border: '1px solid #fde68a' } }, '📱 ' + doneCount + ' / ' + dilemmas.length + ' explored')
+          ),
+          // Situation card
+          h('div', { style: { background: '#fff', border: '2px solid #fde68a', borderRadius: '16px', padding: '20px', marginBottom: '12px' } },
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' } },
+              h('span', { style: { fontSize: '32px' } }, curD.icon),
+              h('h4', { style: { fontSize: '16px', fontWeight: 800, color: AMBER_DARK, margin: 0 } }, curD.title)
+            ),
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: AMBER, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px' } }, 'The situation'),
+            h('p', { style: { fontSize: '14px', color: '#374151', margin: 0, lineHeight: 1.7 } }, curD.situation)
+          ),
+          // Common reaction (always shown, dimmed)
+          h('div', { style: { background: '#fef2f2', borderRadius: '12px', padding: '12px 14px', borderLeft: '4px solid #fca5a5', marginBottom: '10px' } },
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#dc2626', marginBottom: '2px' } }, 'Common reaction:'),
+            h('p', { style: { fontSize: '13px', color: '#7f1d1d', margin: 0, fontStyle: 'italic' } }, curD.badMove)
+          ),
+          // Student input (before reveal)
+          !digitalShown && h('div', { style: { background: AMBER_LIGHT, borderRadius: '12px', padding: '14px', border: '1px solid #fde68a', marginBottom: '10px' } },
+            h('label', { style: { fontSize: '12px', fontWeight: 700, color: AMBER_DARK, display: 'block', marginBottom: '6px' } }, '📝 What would YOU do or say?'),
+            h('textarea', {
+              value: digitalDraft,
+              onChange: function(ev) { upd('digitalDraft', ev.target.value); },
+              'aria-label': 'Your response to this digital dilemma',
+              placeholder: 'Type the message you would actually send...',
+              style: { width: '100%', border: '1px solid #fde68a', borderRadius: '8px', padding: '10px', fontSize: '13px', fontFamily: 'inherit', minHeight: '70px', boxSizing: 'border-box', resize: 'vertical' }
+            }),
+            h('button', {
+              onClick: function() { upd({ digitalShown: true, digitalDone: Object.assign({}, digitalDone, (function() { var o = {}; o[curD.id] = true; return o; })()) }); if (soundEnabled) sfxClick(); if (digitalDraft.trim() && awardXP) awardXP(8, 'Worked through a digital dilemma'); },
+              'aria-label': 'Show the skillful response',
+              style: { marginTop: '8px', padding: '8px 18px', background: AMBER, color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }
+            }, 'See a skillful response →')
+          ),
+          // Skill response (revealed)
+          digitalShown && h('div', null,
+            digitalDraft.trim() && h('div', { style: { background: '#eff6ff', border: '1px solid #93c5fd', borderRadius: '10px', padding: '12px', marginBottom: '10px' } },
+              h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#2563eb', marginBottom: '4px' } }, '💭 Your draft:'),
+              h('p', { style: { fontSize: '13px', color: '#1e3a8a', margin: 0, fontStyle: 'italic', whiteSpace: 'pre-wrap' } }, digitalDraft)
+            ),
+            h('div', { style: { background: '#f0fdf4', borderRadius: '12px', padding: '14px', border: '2px solid #4ade80', marginBottom: '10px' } },
+              h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#16a34a', marginBottom: '2px' } }, 'A skillful response:'),
+              h('p', { style: { fontSize: '14px', color: '#166534', margin: 0, lineHeight: 1.6 } }, curD.skill)
+            ),
+            h('p', { style: { fontSize: '11px', color: '#94a3b8', fontStyle: 'italic', margin: '0 0 12px', paddingLeft: '8px', borderLeft: '2px solid #e5e7eb' } }, curD.note),
+            h('button', {
+              onClick: function() { upd({ digitalIdx: (digitalIdx + 1) % dilemmas.length, digitalShown: false, digitalDraft: '' }); if (soundEnabled) sfxClick(); },
+              'aria-label': 'Next dilemma',
+              style: { padding: '10px 22px', background: AMBER, color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, fontSize: '13px', cursor: 'pointer', display: 'block', margin: '0 auto' }
+            }, 'Next dilemma →')
+          )
+        );
+      }
+
+      var content = compassContent || startContent || keepContent || digitalContent || repairContent || endingsContent || coachContent;
       return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%' } },
         tabBar,
         h('div', { style: { flex: 1, overflow: 'auto' } }, content)

@@ -108,6 +108,39 @@ window.SelHub = window.SelHub || {
     ]
   };
 
+  // Guided practice protocols (interactive, evidence-based)
+  var PRACTICES = [
+    {
+      id: 'break',
+      icon: '\uD83E\uDDD8',
+      title: 'Self-Compassion Break',
+      duration: '~3 minutes',
+      source: 'Neff (2011)',
+      intro: 'Three steps you can return to anytime. Bring to mind something difficult you are facing right now, or recently. Hold it in your mind as you move through the steps.',
+      steps: [
+        { id: 's1', label: 'Mindfulness', phrase: 'This is a moment of suffering.', body: 'Acknowledge the difficulty without trying to fix it or push it away. Place a hand over your heart if it helps. Notice that something hurts. Stay with it for two slow breaths.', voiceover: 'This is a moment of suffering. Notice that something hurts. Two slow breaths.' },
+        { id: 's2', label: 'Common Humanity', phrase: 'Suffering is part of being human.', body: 'Everyone struggles. Everyone has moments like this. You are not alone in feeling what you feel. Somewhere right now, another person is feeling exactly this. Two slow breaths.', voiceover: 'Suffering is part of being human. Other people are feeling this too. Two slow breaths.' },
+        { id: 's3', label: 'Self-Kindness', phrase: 'May I be kind to myself.', body: 'Offer yourself the same words you would offer a friend in this situation. You can use these phrases, or your own: May I give myself the kindness I need. May I accept myself as I am. May I be patient.', voiceover: 'May I be kind to myself. May I give myself the kindness I need.' }
+      ],
+      closing: 'Notice the shift, however small. The break does not make the hard thing go away. It changes how you carry it.'
+    },
+    {
+      id: 'rain',
+      icon: '\uD83C\uDF27\uFE0F',
+      title: 'R.A.I.N.',
+      duration: '~5 minutes',
+      source: 'Brach (2013)',
+      intro: 'A four-step practice for working with strong emotions. Bring to mind a feeling that is present right now, or one that has been showing up for you lately.',
+      steps: [
+        { id: 'r1', label: 'Recognize', phrase: 'What is here?', body: 'Name what you are feeling. "I notice anxiety." "I notice sadness." Naming creates space. The more specific, the better.', voiceover: 'Recognize. What is here? Name what you are feeling.' },
+        { id: 'r2', label: 'Allow', phrase: 'Let it be.', body: 'Let the feeling be present. Do not try to fix it, change it, or distract from it. Allowing does not mean approving. It means stopping the fight against your own experience.', voiceover: 'Allow. Let the feeling be there. Stop fighting it.' },
+        { id: 'r3', label: 'Investigate', phrase: 'Where do I feel this?', body: 'Investigate with kindness, not analysis. Where in your body does this feeling live? What does it want you to know? What is underneath it?', voiceover: 'Investigate. Where in your body do you feel this? What does it want you to know?' },
+        { id: 'r4', label: 'Nurture', phrase: 'What do I need?', body: 'Offer the part of you that is hurting what it actually needs. A word. A breath. A hand on your chest. The reminder that you are loved.', voiceover: 'Nurture. What does this part of you need? Offer it now.' }
+      ],
+      closing: 'After RAIN, rest. Notice what is here now. The practice is not about the steps; it is about the relationship you are building with yourself.'
+    }
+  ];
+
   // Self-compassion letter prompts
   var LETTER_PROMPTS = {
     elementary: 'Write to yourself like you\u2019re writing to your best friend who is having a hard day. What would you tell them? Be as kind as you can.',
@@ -153,12 +186,17 @@ window.SelHub = window.SelHub || {
       var coachInput   = d.coachInput || '';
       var coachHistory = d.coachHistory || [];
       var coachLoading = d.coachLoading || false;
+      var practiceId        = d.practiceId || null;
+      var practiceStep      = d.practiceStep || 0;
+      var practiceReflection= d.practiceReflection || '';
+      var practiceCompleted = d.practiceCompleted || {};
 
       var PURPLE = '#7c3aed'; var PL = '#f5f3ff'; var PD = '#4c1d95';
 
       var TABS = [
         { id: 'pillars', icon: '\uD83D\uDC9C', label: 'Three Pillars' },
         { id: 'critic',  icon: '\uD83D\uDDE3\uFE0F', label: 'Inner Friend' },
+        { id: 'practice',icon: '\uD83E\uDDD8', label: 'Practice' },
         { id: 'letter',  icon: '\u2709\uFE0F', label: 'Kind Letter' },
         { id: 'coach',   icon: '\uD83E\uDD16', label: 'Compassion Coach' },
       ];
@@ -421,7 +459,133 @@ window.SelHub = window.SelHub || {
         }
       }
 
-      var content = pillarsContent || criticContent || letterContent || coachContent;
+      // ── Practice (Self-Compassion Break + R.A.I.N.) ──
+      var practiceContent = null;
+      if (activeTab === 'practice') {
+        var activePractice = null;
+        for (var pi = 0; pi < PRACTICES.length; pi++) {
+          if (PRACTICES[pi].id === practiceId) { activePractice = PRACTICES[pi]; break; }
+        }
+        var speakLine = function(text) {
+          try {
+            if (window.speechSynthesis) {
+              window.speechSynthesis.cancel();
+              var u = new SpeechSynthesisUtterance(text);
+              u.rate = 0.85; u.pitch = 1.05;
+              window.speechSynthesis.speak(u);
+            }
+          } catch(e) {}
+        };
+        if (!activePractice) {
+          // Picker view
+          practiceContent = h('div', { style: { padding: '20px', maxWidth: '600px', margin: '0 auto' } },
+            h('div', { className: 'sel-hero', style: { textAlign: 'center', marginBottom: '20px' } },
+              h('div', { className: 'sel-hero-icon', style: { fontSize: '52px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(124,58,237,0.3))' } }, '\uD83E\uDDD8'),
+              h('h3', { style: { fontSize: '18px', fontWeight: 800, color: PD, margin: '0 0 4px' } }, 'Guided Practice'),
+              h('p', { style: { fontSize: '13px', color: '#94a3b8', margin: 0 } }, 'Two evidence-based protocols. Each can be done seated, eyes open or closed. Pick one and move through it at your own pace.')
+            ),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: '12px' } },
+              PRACTICES.map(function(p) {
+                var done = !!practiceCompleted[p.id];
+                return h('button', {
+                  key: p.id,
+                  'aria-label': 'Begin ' + p.title,
+                  onClick: function() { upd({ practiceId: p.id, practiceStep: 0, practiceReflection: '' }); if (soundOn) sfxClick(); },
+                  style: { textAlign: 'left', padding: '18px', background: '#fff', border: '2px solid ' + (done ? '#a78bfa' : '#ddd6fe'), borderRadius: '14px', cursor: 'pointer', display: 'flex', gap: '14px', alignItems: 'center' }
+                },
+                  h('span', { style: { fontSize: '40px', flexShrink: 0 } }, p.icon),
+                  h('div', { style: { flex: 1 } },
+                    h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
+                      h('h4', { style: { fontSize: '15px', fontWeight: 800, color: PD, margin: 0 } }, p.title),
+                      done && h('span', { style: { fontSize: '10px', fontWeight: 700, color: PURPLE, background: PL, padding: '2px 8px', borderRadius: '10px' } }, '\u2713 done')
+                    ),
+                    h('p', { style: { fontSize: '12px', color: '#6b7280', margin: '4px 0 0' } }, p.steps.length + ' steps \u00b7 ' + p.duration + ' \u00b7 ' + p.source)
+                  )
+                );
+              })
+            )
+          );
+        } else {
+          // Stepper view
+          var totalSteps = activePractice.steps.length;
+          var atIntro = practiceStep === 0 && false; // Not used; intro shown above first step
+          var atClosing = practiceStep >= totalSteps;
+          var curStep = atClosing ? null : activePractice.steps[practiceStep];
+          practiceContent = h('div', { style: { padding: '20px', maxWidth: '600px', margin: '0 auto' } },
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' } },
+              h('button', {
+                onClick: function() { upd({ practiceId: null, practiceStep: 0, practiceReflection: '' }); },
+                'aria-label': 'Back to practice list',
+                style: { padding: '6px 10px', background: 'transparent', border: '1px solid #ddd6fe', borderRadius: '8px', color: PURPLE, fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
+              }, '\u2190 All practices'),
+              h('span', { style: { fontSize: '14px', fontWeight: 800, color: PD } }, activePractice.icon + ' ' + activePractice.title),
+              h('span', { style: { marginLeft: 'auto', fontSize: '11px', color: '#94a3b8', fontWeight: 600 } },
+                atClosing ? 'Complete' : ('Step ' + (practiceStep + 1) + ' of ' + totalSteps))
+            ),
+            // Progress bar
+            h('div', { style: { height: '4px', background: '#e2e8f0', borderRadius: '2px', overflow: 'hidden', marginBottom: '16px' } },
+              h('div', { style: { height: '100%', width: Math.round((Math.min(practiceStep, totalSteps) / totalSteps) * 100) + '%', background: 'linear-gradient(90deg, ' + PURPLE + ', #a78bfa)', transition: 'width 0.4s ease' } })
+            ),
+            // Intro (only on first step)
+            practiceStep === 0 && h('div', { style: { background: PL, borderRadius: '12px', padding: '14px', marginBottom: '14px', borderLeft: '4px solid ' + PURPLE } },
+              h('p', { style: { fontSize: '13px', color: PD, margin: 0, lineHeight: 1.6, fontStyle: 'italic' } }, activePractice.intro)
+            ),
+            // Step card
+            curStep && h('div', { style: { background: '#fff', border: '2px solid #ddd6fe', borderRadius: '16px', padding: '24px', marginBottom: '14px' } },
+              h('div', { style: { fontSize: '11px', fontWeight: 700, color: PURPLE, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' } }, curStep.label),
+              h('p', { style: { fontSize: '20px', fontWeight: 800, color: PD, margin: '0 0 14px', lineHeight: 1.4 } }, '\u201C' + curStep.phrase + '\u201D'),
+              h('p', { style: { fontSize: '14px', color: '#374151', margin: 0, lineHeight: 1.7 } }, curStep.body),
+              window.speechSynthesis && h('button', {
+                onClick: function() { speakLine(curStep.voiceover); if (soundOn) sfxWarm(); },
+                'aria-label': 'Hear this step read aloud',
+                style: { marginTop: '14px', padding: '6px 12px', background: 'transparent', border: '1px solid ' + PURPLE, color: PURPLE, borderRadius: '8px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
+              }, '\uD83D\uDD0A Read aloud')
+            ),
+            // Closing card
+            atClosing && h('div', null,
+              h('div', { style: { background: '#f0fdf4', border: '2px solid #4ade80', borderRadius: '16px', padding: '20px', marginBottom: '14px' } },
+                h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#16a34a', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' } }, 'Closing'),
+                h('p', { style: { fontSize: '14px', color: '#166534', margin: 0, lineHeight: 1.7 } }, activePractice.closing)
+              ),
+              h('div', { style: { background: '#faf5ff', borderRadius: '12px', padding: '14px', border: '2px solid #ddd6fe', marginBottom: '14px' } },
+                h('label', { style: { fontSize: '12px', fontWeight: 700, color: PURPLE, display: 'block', marginBottom: '6px' } }, '\uD83D\uDCDD One sentence: what shifted?'),
+                h('textarea', {
+                  value: practiceReflection,
+                  onChange: function(ev) { upd('practiceReflection', ev.target.value); },
+                  'aria-label': 'Reflection on the practice',
+                  placeholder: 'Even if nothing big shifted, what is one small thing you noticed?',
+                  style: { width: '100%', border: '1px solid #ddd6fe', borderRadius: '8px', padding: '10px', fontSize: '13px', fontFamily: 'inherit', minHeight: '60px', boxSizing: 'border-box', resize: 'vertical' }
+                })
+              )
+            ),
+            // Nav
+            h('div', { style: { display: 'flex', gap: '8px', justifyContent: 'space-between' } },
+              practiceStep > 0 ? h('button', {
+                onClick: function() { upd('practiceStep', practiceStep - 1); if (soundOn) sfxClick(); },
+                'aria-label': 'Previous step',
+                style: { padding: '10px 18px', background: 'transparent', border: '1.5px solid #ddd6fe', color: PURPLE, borderRadius: '10px', fontWeight: 700, fontSize: '13px', cursor: 'pointer' }
+              }, '\u2190 Back') : h('div'),
+              !atClosing ? h('button', {
+                onClick: function() { upd('practiceStep', practiceStep + 1); if (soundOn) sfxWarm(); },
+                'aria-label': practiceStep === totalSteps - 1 ? 'Finish practice' : 'Next step',
+                style: { padding: '10px 22px', background: PURPLE, color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, fontSize: '13px', cursor: 'pointer' }
+              }, practiceStep === totalSteps - 1 ? 'Finish \u2192' : 'Next \u2192') : h('button', {
+                onClick: function() {
+                  var done = Object.assign({}, practiceCompleted); done[activePractice.id] = true;
+                  upd({ practiceCompleted: done, practiceId: null, practiceStep: 0 });
+                  if (soundOn) sfxHeart();
+                  if (awardXP) awardXP(15, 'Completed ' + activePractice.title + '!');
+                  if (addToast) addToast('You finished ' + activePractice.title + '. Well done.', 'success');
+                },
+                'aria-label': 'Mark practice complete',
+                style: { padding: '10px 22px', background: '#16a34a', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, fontSize: '13px', cursor: 'pointer' }
+              }, '\uD83D\uDC9C Mark complete')
+            )
+          );
+        }
+      }
+
+      var content = pillarsContent || criticContent || practiceContent || letterContent || coachContent;
       return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%' } },
         tabBar,
         h('div', { style: { flex: 1, overflow: 'auto' } }, content)

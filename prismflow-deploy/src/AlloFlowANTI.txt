@@ -5051,6 +5051,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         'sel_hub/sel_tool_sociallab.js',
         'sel_hub/sel_tool_peersupport.js',
         'sel_hub/sel_tool_selfadvocacy.js',
+        'sel_hub/sel_tool_execfunction.js',
       ];
       var waitForRegistry = function(cb) {
         if (window.StemLab && window.StemLab.registerTool) { cb(); return; }
