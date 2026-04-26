@@ -1443,13 +1443,34 @@ window.StemLab = window.StemLab || {
         var modeLabel = (MODES[d.mode] || {}).label || d.mode;
         var lastSummary = JSON.stringify((d.recentThrows || []).slice(-5));
         var lastLoc = d.lastResult.location;
+        // Per-sport physics anchor — reminds the coach about what's
+        // distinctive about THIS sport so feedback uses the right
+        // vocabulary and references the right geometry.
+        var sportAnchor = d.mode === 'pitching'
+          ? 'Strike zone is ~17 in wide × ~25 in tall at home plate (60 ft 6 in). Spin axis controls break: 0° = backspin lift (4-seam), 180° = topspin drop (curveball), 90° = sidespin (slider). Outcomes: strike / borderline / ball / wild.'
+          : d.mode === 'freethrow'
+          ? 'Rim is 4.34 m from shooter at 3.05 m height (NBA). Backspin softens rim contact; higher arc is more forgiving but needs more speed. Pass variants (bounce/chest) target a teammate at 6 m. Outcomes: swish / made / rim / backboard / air / caught / wrongbounce.'
+          : d.mode === 'freekick'
+          ? 'Goal is 7.32 m wide × 2.44 m tall at 22 m. Defender wall at 9.15 m, ~1.7 m tall. Sidespin (axis ~90°) curls the ball laterally — Beckham gets ~1.5 m of curl from 600 rpm. Outcomes: goal / post / over / wide / blocked / short.'
+          : d.mode === 'fieldgoal'
+          ? 'Crossbar at 3.05 m; uprights ±2.82 m. Goal-line distance is preset-driven (20-60 yd). Optimal launch is ~38-42° depending on distance — drag eats ~10-12% of horizontal range at long FGs. Outcomes: good / doink / shortbar / wideclose / wide / short.'
+          : d.mode === 'bowling'
+          ? 'Stumps are 0.71 m tall × 0.23 m wide at 20.12 m. Ball BOUNCES on the pitch before reaching the batter (good length is 5-8 m in front of stumps). Seam tilt creates in-swing or out-swing in the air; off-spin / leg-spin turn off the surface after the bounce. Outcomes: wicket / shaved / overhead / wide / dot / short.'
+          : d.mode === 'golf'
+          ? 'Target distance is preset-driven (~85-250 yd carry). Backspin generates Magnus lift = airtime; dimples trip airflow into a turbulent boundary layer that doubles range vs a smooth ball. Loft + clubhead speed determine carry. Outcomes: green / fairway / rough / woods / short / long / topped.'
+          : d.mode === 'volleyball'
+          ? 'Net at 9 m midcourt, height 2.43 m (men). Receiving court is 9 m wide × 9 m deep beyond the net. Topspin drops the ball past the net (jump serve); no-spin "float" wobbles unpredictably from drag asymmetry. Outcomes: ace (deep corner) / in / net / out / long / short.'
+          : '';
+        var presetTeach = (activePreset && activePreset.teach) ? activePreset.teach : '';
         var prompt = 'You are coaching a student in a sports physics simulator (ThrowLab). '
           + 'The student is in ' + modeLabel + ' mode. They are ' + tierHint + '. '
+          + (sportAnchor ? 'Sport context: ' + sportAnchor + ' ' : '')
+          + (presetTeach ? 'Active preset (' + (activePreset.label || '') + '): ' + presetTeach + ' ' : '')
           + 'Their last throw outcome: ' + lastLoc + '. Last 5 throws history (JSON): ' + lastSummary + '. '
           + 'Current parameters: speed ' + d.speedMph + ' mph, vertical aim ' + (d.aimDegV || 0).toFixed(1) + '°, '
           + 'horizontal aim ' + (d.aimDegH || 0).toFixed(1) + '°, spin ' + d.spinRpm + ' rpm at axis ' + d.spinAxisDeg + '°, '
           + 'gravity ' + d.gravityId + ', wind ' + (d.windMph || 0) + ' mph @ ' + (d.windDirDeg || 0) + '°. '
-          + 'Give 2-3 sentences of warm, specific coaching: (1) acknowledge what just happened, (2) suggest ONE concrete change, '
+          + 'Give 2-3 sentences of warm, specific coaching: (1) acknowledge what just happened using the sport\'s actual vocabulary (wicket / ace / doink / etc.), (2) suggest ONE concrete change tied to the sport\'s SPECIFIC geometry above, '
           + '(3) tie it to the underlying physics in a way the student can use next throw. '
           + 'Plain prose, no markdown, no bullets, no headings.';
         callGemini(prompt, false, false, 0.7).then(function(resp) {
