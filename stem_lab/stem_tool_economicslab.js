@@ -1946,7 +1946,7 @@ var d = labToolData || {};
                   ),
                   React.createElement('div', null,
                     React.createElement('label', { className: 'text-[11px] font-bold text-red-600 block mb-0.5' }, 'Inflation Rate (%)'),
-                    React.createElement('input', { type: 'range', 'aria-label': 'd', min: 0.5, max: 15, step: 0.5, value: d.inflationRate || 3,
+                    React.createElement('input', { type: 'range', 'aria-label': 'Inflation rate, percent', min: 0.5, max: 15, step: 0.5, value: d.inflationRate || 3,
                       onChange: function(e) { upd('inflationRate', parseFloat(e.target.value)); },
                       className: 'w-full accent-red-500'
                     }),
@@ -2048,21 +2048,21 @@ var d = labToolData || {};
                 React.createElement('div', { className: 'grid grid-cols-3 gap-3 mb-3' },
                   React.createElement('div', null,
                     React.createElement('label', { className: 'text-[11px] font-bold text-emerald-600 block mb-0.5' }, 'Starting Amount: $' + (d.pfPrincipal || 1000).toLocaleString()),
-                    React.createElement('input', { type: 'range', 'aria-label': 'd', min: 100, max: 50000, step: 100, value: d.pfPrincipal || 1000,
+                    React.createElement('input', { type: 'range', 'aria-label': 'Starting amount in dollars', min: 100, max: 50000, step: 100, value: d.pfPrincipal || 1000,
                       onChange: function(e) { upd('pfPrincipal', parseInt(e.target.value)); },
                       className: 'w-full accent-emerald-500'
                     })
                   ),
                   React.createElement('div', null,
                     React.createElement('label', { className: 'text-[11px] font-bold text-emerald-600 block mb-0.5' }, 'Annual Return: ' + (d.pfRate || 7) + '%'),
-                    React.createElement('input', { type: 'range', 'aria-label': 'd', min: 1, max: 15, step: 0.5, value: d.pfRate || 7,
+                    React.createElement('input', { type: 'range', 'aria-label': 'Annual return, percent', min: 1, max: 15, step: 0.5, value: d.pfRate || 7,
                       onChange: function(e) { upd('pfRate', parseFloat(e.target.value)); },
                       className: 'w-full accent-emerald-500'
                     })
                   ),
                   React.createElement('div', null,
                     React.createElement('label', { className: 'text-[11px] font-bold text-emerald-600 block mb-0.5' }, 'Years: ' + (d.pfYears || 30)),
-                    React.createElement('input', { type: 'range', 'aria-label': 'd', min: 1, max: 50, value: d.pfYears || 30,
+                    React.createElement('input', { type: 'range', 'aria-label': 'Years', min: 1, max: 50, value: d.pfYears || 30,
                       onChange: function(e) { upd('pfYears', parseInt(e.target.value)); },
                       className: 'w-full accent-emerald-500'
                     })
@@ -3049,7 +3049,7 @@ var d = labToolData || {};
 
                   React.createElement('input', {
 
-                    type: 'range', 'aria-label': 'd', min: 0, max: 50, value: d.pfInvestPct || 0,
+                    type: 'range', 'aria-label': 'Investment percent of salary', min: 0, max: 50, value: d.pfInvestPct || 0,
 
                     onChange: function (e) { upd('pfInvestPct', parseInt(e.target.value)); },
 

@@ -560,7 +560,7 @@ window.StemLab = window.StemLab || {
             : 'Type an inequality like x > 3 or a compound like -2 < x \u2264 5 to visualize it on a number line.'),
 
         // ── Mode tabs: 1D / 2D ──
-        h('div', { className: 'flex gap-1 mb-3', role: 'tablist', 'aria-label': 'Graph mode' },
+        h('div', { className: 'flex gap-1 mb-3', role: 'tablist', },
           ['1d', '2d'].map(function(m) {
             var labels = { '1d': '\uD83D\uDCCF Number Line', '2d': '\uD83D\uDCC8 2D Graph' };
             return h('button', { 'aria-label': 'Change graph mode',
@@ -702,10 +702,10 @@ window.StemLab = window.StemLab || {
 
         // ── Range controls ──
         h('div', { className: 'flex items-center justify-center gap-2 mt-2' },
-          h('button', { 'aria-label': '-5', onClick: function() { shiftRange(-5); }, className: 'px-2 py-0.5 text-[11px] font-bold bg-slate-100 text-slate-600 rounded hover:bg-slate-200 transition-all', title: 'Shift range left' }, '\u25C0 -5'),
-          h('button', { 'aria-label': 'Zoom', onClick: function() { zoomRange(1.5); }, className: 'px-2 py-0.5 text-[11px] font-bold bg-slate-100 text-slate-600 rounded hover:bg-slate-200 transition-all', title: 'Zoom out' }, '\u2212 Zoom'),
+          h('button', { onClick: function() { shiftRange(-5); }, className: 'px-2 py-0.5 text-[11px] font-bold bg-slate-100 text-slate-600 rounded hover:bg-slate-200 transition-all', title: 'Shift range left' }, '\u25C0 -5'),
+          h('button', { onClick: function() { zoomRange(1.5); }, className: 'px-2 py-0.5 text-[11px] font-bold bg-slate-100 text-slate-600 rounded hover:bg-slate-200 transition-all', title: 'Zoom out' }, '\u2212 Zoom'),
           h('span', { className: 'text-[11px] text-slate-600 font-mono' }, '[' + range.min + ', ' + range.max + ']'),
-          h('button', { 'aria-label': '+ Zoom', onClick: function() { zoomRange(0.67); }, className: 'px-2 py-0.5 text-[11px] font-bold bg-slate-100 text-slate-600 rounded hover:bg-slate-200 transition-all', title: 'Zoom in' }, '+ Zoom'),
+          h('button', { onClick: function() { zoomRange(0.67); }, className: 'px-2 py-0.5 text-[11px] font-bold bg-slate-100 text-slate-600 rounded hover:bg-slate-200 transition-all', title: 'Zoom in' }, '+ Zoom'),
           h('button', { 'aria-label': '+5', onClick: function() { shiftRange(5); }, className: 'px-2 py-0.5 text-[11px] font-bold bg-slate-100 text-slate-600 rounded hover:bg-slate-200 transition-all', title: 'Shift range right' }, '+5 \u25B6'),
           h('button', { 'aria-label': 'Reset range', onClick: function() { upd('range', { min: -10, max: 10 }); }, className: 'px-2 py-0.5 text-[11px] font-bold bg-fuchsia-50 text-fuchsia-500 rounded hover:bg-fuchsia-100 transition-all', title: 'Reset range' }, '\u21BA')
         ),
@@ -795,8 +795,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'grid grid-cols-2 gap-2' },
               (d.quiz.opts || []).map(function(opt) {
                 var dispOpt = opt.replace(/</g, '\u003c').replace(/>=/g, '\u2265').replace(/<=/g, '\u2264');
-                return h('button', { 'aria-label': 'Action',
-                  key: opt,
+                return h('button', { key: opt,
                   onClick: function() {
                     var norm = function(s) { return s.replace(/\s+/g, '').replace(/\u2264/g, '<=').replace(/\u2265/g, '>='); };
                     var correct = norm(opt) === norm(d.quiz.a);

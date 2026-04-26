@@ -7860,6 +7860,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               AIRCRAFT.map(function(ac) {
                 var isSelected = selectedAircraft === ac.id;
                 return h('button', { key: ac.id, onClick: function() { upd('aircraft', ac.id); },
+                  'aria-pressed': isSelected,
+                  'aria-label': ac.name + ' (' + ac.category + ')' + (isSelected ? ', selected' : ''),
                   style: { padding: '8px 4px', borderRadius: '8px', border: '2px solid ' + (isSelected ? '#3b82f6' : '#1e293b'), background: isSelected ? '#1e3a5f' : '#0f172a', color: '#fff', cursor: 'pointer', textAlign: 'center', transition: 'all 0.2s' }
                 },
                   h('div', { style: { fontSize: '20px' } }, ac.icon),

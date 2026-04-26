@@ -649,10 +649,10 @@ window.StemLab = window.StemLab || {
           ),
           h('div', { className: 'flex items-center gap-1 ml-auto' },
             // Badge count
-            h('button', { 'aria-label': 'Sound effects', onClick: function() { upd('showBadges', !showBadges); }, className: 'text-[11px] font-bold px-2 py-0.5 rounded-full border transition-all ' + (showBadges ? 'bg-amber-100 border-amber-300 text-amber-700' : 'bg-slate-100 border-slate-200 text-slate-600 hover:bg-slate-200') },
+            h('button', { onClick: function() { upd('showBadges', !showBadges); }, className: 'text-[11px] font-bold px-2 py-0.5 rounded-full border transition-all ' + (showBadges ? 'bg-amber-100 border-amber-300 text-amber-700' : 'bg-slate-100 border-slate-200 text-slate-600 hover:bg-slate-200') },
               '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + badgeDefs.length),
             // Sound toggle
-            h('button', { 'aria-label': 'Sound effects', onClick: function() { upd('soundEnabled', !soundEnabled); }, className: 'text-sm px-1.5 py-0.5 rounded transition-colors hover:bg-slate-100', title: 'Sound effects' },
+            h('button', { onClick: function() { upd('soundEnabled', !soundEnabled); }, className: 'text-sm px-1.5 py-0.5 rounded transition-colors hover:bg-slate-100', title: 'Sound effects' },
               soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
             // Snapshot
             h('button', { 'aria-label': 'Export S V G',
@@ -797,7 +797,7 @@ window.StemLab = window.StemLab || {
           // Quick angle buttons + Pin
           h('div', { className: 'flex gap-1.5 flex-wrap' },
             [0, 30, 45, 60, 90, 120, 135, 150, 180, 270, 360].map(function(a) {
-              return h('button', { 'aria-label': 'Pin', key: a, onClick: function() { setAngleValue(a); setAngleFeedback(null); if (soundEnabled) sfxClick(); logAngle(a, 'quick'); },
+              return h('button', { 'aria-label': 'Set angle to ' + a + ' degrees', 'aria-pressed': angleValue === a, key: a, onClick: function() { setAngleValue(a); setAngleFeedback(null); if (soundEnabled) sfxClick(); logAngle(a, 'quick'); },
                 className: 'px-2 py-1 rounded-lg text-[11px] font-bold transition-all ' + (angleValue === a ? 'bg-purple-700 text-white shadow' : 'bg-purple-50 text-purple-600 hover:bg-purple-100 border border-purple-100')
               }, a + '\u00B0');
             }),

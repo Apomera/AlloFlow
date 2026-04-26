@@ -4122,7 +4122,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           h('div', { className: 'mb-3 px-3 py-2 rounded-lg bg-blue-50 border border-blue-200 text-xs text-blue-800' }, gradeIntro),
 
           // Tab bar (7 tabs)
-          h('div', { className: 'flex gap-1 mb-3', role: 'tablist', 'aria-label': 'Anatomy tool sections' },
+          h('div', { className: 'flex gap-1 mb-3', role: 'tablist', },
             h('button', { 'aria-label': 'Explore',
               role: 'tab', 'aria-selected': activeTab === 'explore', tabIndex: activeTab === 'explore' ? 0 : -1,
               onClick: function() { upd('_activeTab', 'explore'); },

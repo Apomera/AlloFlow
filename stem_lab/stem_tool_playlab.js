@@ -68,9 +68,9 @@ window.StemLab = window.StemLab || {
   }
 
   // ═══════════════════════════════════════════
-  // FIELD MODEL
+  // FIELD MODEL — football (yards) + soccer (meters)
   // ═══════════════════════════════════════════
-  // World coordinates (yards):
+  // FOOTBALL world coordinates (yards):
   //   x: 0 (offense end zone back) → 120 (defense end zone back)
   //      Field is 100 yards between goal lines + 10-yard end zones each side.
   //   y: 0 (right sideline) → 53.33 (left sideline)
@@ -82,6 +82,22 @@ window.StemLab = window.StemLab || {
   var LOS_DEFAULT = 35;       // x at line of scrimmage
   var HASH_LEFT = 23.58;      // y of left hash
   var HASH_RIGHT = 29.75;     // y of right hash
+
+  // SOCCER world coordinates (meters), per FIFA Laws of the Game:
+  //   x: 0 (defending goal line) → 105 (attacking goal line). Attack
+  //      moves to the right.
+  //   y: 0 (top sideline) → 68 (bottom sideline)
+  // Halfway line at x = 52.5. Penalty mark at x = 11 (from each goal line).
+  var PITCH_LENGTH = 105;            // m
+  var PITCH_WIDTH = 68;              // m
+  var SOCCER_GOAL_WIDTH = 7.32;      // m (used to align rendering)
+  var PENALTY_AREA_DEPTH = 16.5;     // m, "18-yard box"
+  var PENALTY_AREA_WIDTH = 40.32;    // m
+  var GOAL_AREA_DEPTH = 5.5;         // m, "6-yard box"
+  var GOAL_AREA_WIDTH = 18.32;       // m
+  var CENTER_CIRCLE_R = 9.15;        // m (= 10 yd legacy)
+  var PENALTY_SPOT_X = 11;           // m from goal line
+  var PENALTY_ARC_R = 9.15;          // m
 
   // Offense roles. We use abbreviations in the data and full labels for SR.
   var OFFENSE_ROLES = {
@@ -337,6 +353,201 @@ window.StemLab = window.StemLab || {
     return [];
   }
 
+  // ═══════════════════════════════════════════
+  // SOCCER MODEL — formations, plays, defensive shapes
+  // ═══════════════════════════════════════════
+  // Soccer plays don't break down into discrete "plays" the way football
+  // does — the closest analog is a CONCEPT (tiki-taka, counter-attack)
+  // played out of a FORMATION (4-3-3, 4-4-2, etc.). For the MVP we ship
+  // 3 formations × 3 concepts × 3 defensive shapes = a teachable matrix.
+  //
+  // Roles use FIFA-standard codes: GK / RB / CB / LB / CDM / CM / CAM /
+  // RW / LW / ST / SS. Player IDs include the role + jersey-style number
+  // so SR users hear "RB2 right back" cleanly.
+  function soccerFormation433() {
+    var L = PITCH_LENGTH, W = PITCH_WIDTH;
+    return [
+      { id: 'GK',   role: 'GK',  x: 5,        y: W / 2 },
+      { id: 'RB',   role: 'DEF', x: 18,       y: W * 0.20 },
+      { id: 'RCB',  role: 'DEF', x: 16,       y: W * 0.40 },
+      { id: 'LCB',  role: 'DEF', x: 16,       y: W * 0.60 },
+      { id: 'LB',   role: 'DEF', x: 18,       y: W * 0.80 },
+      { id: 'CDM',  role: 'MID', x: 35,       y: W / 2 },
+      { id: 'RCM',  role: 'MID', x: 45,       y: W * 0.35 },
+      { id: 'LCM',  role: 'MID', x: 45,       y: W * 0.65 },
+      { id: 'RW',   role: 'FWD', x: 78,       y: W * 0.18 },
+      { id: 'ST',   role: 'FWD', x: 85,       y: W / 2 },
+      { id: 'LW',   role: 'FWD', x: 78,       y: W * 0.82 }
+    ];
+  }
+  function soccerFormation442() {
+    var L = PITCH_LENGTH, W = PITCH_WIDTH;
+    return [
+      { id: 'GK',   role: 'GK',  x: 5,        y: W / 2 },
+      { id: 'RB',   role: 'DEF', x: 18,       y: W * 0.18 },
+      { id: 'RCB',  role: 'DEF', x: 16,       y: W * 0.40 },
+      { id: 'LCB',  role: 'DEF', x: 16,       y: W * 0.60 },
+      { id: 'LB',   role: 'DEF', x: 18,       y: W * 0.82 },
+      { id: 'RM',   role: 'MID', x: 50,       y: W * 0.15 },
+      { id: 'RCM',  role: 'MID', x: 45,       y: W * 0.40 },
+      { id: 'LCM',  role: 'MID', x: 45,       y: W * 0.60 },
+      { id: 'LM',   role: 'MID', x: 50,       y: W * 0.85 },
+      { id: 'RST',  role: 'FWD', x: 80,       y: W * 0.40 },
+      { id: 'LST',  role: 'FWD', x: 80,       y: W * 0.60 }
+    ];
+  }
+  function soccerFormation4231() {
+    var L = PITCH_LENGTH, W = PITCH_WIDTH;
+    return [
+      { id: 'GK',   role: 'GK',  x: 5,        y: W / 2 },
+      { id: 'RB',   role: 'DEF', x: 18,       y: W * 0.20 },
+      { id: 'RCB',  role: 'DEF', x: 16,       y: W * 0.40 },
+      { id: 'LCB',  role: 'DEF', x: 16,       y: W * 0.60 },
+      { id: 'LB',   role: 'DEF', x: 18,       y: W * 0.80 },
+      { id: 'RDM',  role: 'MID', x: 32,       y: W * 0.42 },
+      { id: 'LDM',  role: 'MID', x: 32,       y: W * 0.58 },
+      { id: 'RW',   role: 'MID', x: 60,       y: W * 0.18 },
+      { id: 'CAM',  role: 'MID', x: 60,       y: W / 2 },
+      { id: 'LW',   role: 'MID', x: 60,       y: W * 0.82 },
+      { id: 'ST',   role: 'FWD', x: 85,       y: W / 2 }
+    ];
+  }
+
+  var SOCCER_FORMATIONS = [
+    { id: '433',  label: '4-3-3 (Barcelona)',   icon: '🔺', build: soccerFormation433,
+      teach: 'Pep Guardiola Barcelona base. Wide front three stretches the field; the lone CDM (defensive mid) provides cover so the fullbacks can push high. The three midfielders form triangles in possession — see the passing-network arrows.' },
+    { id: '442',  label: '4-4-2 (Classic)',     icon: '🔄', build: soccerFormation442,
+      teach: 'Classic English formation — flat back four, flat midfield four, two strikers. Easy to teach, hard to break down centrally. Vulnerable in midfield against 4-3-3 because of the 3-vs-2 numbers.' },
+    { id: '4231', label: '4-2-3-1 (Modern)',    icon: '👑', build: soccerFormation4231,
+      teach: 'Most-used formation in modern football. Two defensive mids screen the back four; a CAM (central attacking mid, the "10") connects midfield to the lone striker. Wingers cut inside.' }
+  ];
+
+  // Soccer "concepts" — passing-network patterns that overlay the formation.
+  // Each concept's `passes` is an array of [fromId, toId] pairs that get
+  // drawn as arrows on the field, illustrating the team's preferred ball
+  // movement out of the formation.
+  var SOCCER_CONCEPTS = [
+    { id: 'tikitaka',
+      label: 'Tiki-Taka',
+      icon: '🔁',
+      teach: 'Short, sharp passes in tight triangles. Goal: keep possession until the defense commits, then exploit the gap. Math: ~85% of passes < 15 m. The triangle is geometrically optimal — every player has 2 passing options at all times.',
+      passes: [
+        ['CDM', 'RCM'], ['RCM', 'RW'], ['RW', 'ST'],
+        ['CDM', 'LCM'], ['LCM', 'LW'], ['LW', 'ST'],
+        ['RCM', 'LCM'], ['CDM', 'CAM'], ['RCM', 'CAM'], ['LCM', 'CAM']
+      ] },
+    { id: 'counter',
+      label: 'Counter-Attack',
+      icon: '⚡',
+      teach: 'Win the ball, hit a long ball over the top to a sprinting forward. Klopp / Mourinho staple. Math: averaged ~3 passes per goal (vs 8+ for possession teams). Wins by EXPLOITING space the opponent leaves while attacking.',
+      passes: [
+        ['GK', 'CDM'], ['CDM', 'RW'], ['RW', 'ST'],
+        ['CDM', 'LW'], ['LW', 'ST']
+      ] },
+    { id: 'corner',
+      label: 'Corner Kick',
+      icon: '🚩',
+      teach: 'Set piece from the corner arc (1 m radius). Inswinging crosses target the near post; outswingers target the far post. Math: ~3% of corners produce a goal — but corners count for ~10% of league goals because teams take ~60+ per season.',
+      passes: [
+        ['LW', 'ST'],   // cross from left corner to striker
+        ['LW', 'CAM'],
+        ['LW', 'RCM']
+      ] },
+    { id: 'gegenpress',
+      label: 'Gegenpress (Counter-Press)',
+      icon: '🔥',
+      teach: 'Klopp\'s "5-second rule" — when you LOSE the ball, all 11 players sprint to win it back within 5 seconds. Why? Because the opponent is at their LEAST organized in those first seconds. Math: a turnover during transition is geometrically a worse position for the defense than a static set play.',
+      passes: [
+        // Recovery + immediate attack — passes drawn from the press point
+        ['CDM', 'CAM'], ['CAM', 'ST'], ['CAM', 'RW'], ['CAM', 'LW']
+      ] }
+  ];
+
+  var SOCCER_SHAPES = [
+    { id: 'highpress',
+      label: 'High Press (Klopp)',
+      teach: 'Defenders push up to the halfway line; forwards press the opposition\'s back four. High risk: a long ball over the top can spring a counter. High reward: forces turnovers in the opponent\'s third.' },
+    { id: 'midblock',
+      label: 'Mid-Block',
+      teach: 'Defensive line at ~30m from own goal. Most common modern shape. Compromises between catching opponents in their half (high press) and protecting the box (low block).' },
+    { id: 'lowblock',
+      label: 'Low Block (Park the Bus)',
+      teach: 'All 11 defenders inside the defensive third. Used when leading or facing a stronger team. Math: shrinks the spaces the attack can exploit, but concedes possession + territory.' },
+    { id: 'offsidetrap',
+      label: 'Offside Trap',
+      teach: 'Defensive line steps up in unison just as the ball is played, catching the attacker offside (Law 11: any part of head/body/feet ahead of the second-last defender at the moment of the pass). Geometric line — perfect coordination required.' }
+  ];
+
+  // Soccer defenders — 11 markers placed by defensive shape. Returns the
+  // same { id, role, x, y } shape as football's buildDefenders so the
+  // renderer + analysis don't need to special-case sport.
+  function buildSoccerDefenders(shapeId) {
+    var W = PITCH_WIDTH;
+    // Defending team starts on the LEFT half of the pitch. We mirror the
+    // attacker layout so the visual is symmetric: 4 DEF + 4 MID + 2 FWD + GK.
+    if (shapeId === 'highpress') {
+      return [
+        { id: 'dGK',   role: 'GK',  x: 100,      y: W / 2 },
+        { id: 'dRB',   role: 'DEF', x: 75,       y: W * 0.20 },
+        { id: 'dRCB',  role: 'DEF', x: 70,       y: W * 0.40 },
+        { id: 'dLCB',  role: 'DEF', x: 70,       y: W * 0.60 },
+        { id: 'dLB',   role: 'DEF', x: 75,       y: W * 0.80 },
+        { id: 'dCDM',  role: 'MID', x: 55,       y: W / 2 },
+        { id: 'dRCM',  role: 'MID', x: 50,       y: W * 0.35 },
+        { id: 'dLCM',  role: 'MID', x: 50,       y: W * 0.65 },
+        { id: 'dRW',   role: 'FWD', x: 30,       y: W * 0.20 },
+        { id: 'dST',   role: 'FWD', x: 25,       y: W / 2 },
+        { id: 'dLW',   role: 'FWD', x: 30,       y: W * 0.80 }
+      ];
+    }
+    if (shapeId === 'lowblock') {
+      // Whole team inside their own third (from x=70 to x=105)
+      return [
+        { id: 'dGK',   role: 'GK',  x: 100,      y: W / 2 },
+        { id: 'dRB',   role: 'DEF', x: 90,       y: W * 0.20 },
+        { id: 'dRCB',  role: 'DEF', x: 88,       y: W * 0.40 },
+        { id: 'dLCB',  role: 'DEF', x: 88,       y: W * 0.60 },
+        { id: 'dLB',   role: 'DEF', x: 90,       y: W * 0.80 },
+        { id: 'dRM',   role: 'MID', x: 80,       y: W * 0.20 },
+        { id: 'dRCM',  role: 'MID', x: 78,       y: W * 0.42 },
+        { id: 'dLCM',  role: 'MID', x: 78,       y: W * 0.58 },
+        { id: 'dLM',   role: 'MID', x: 80,       y: W * 0.80 },
+        { id: 'dRST',  role: 'FWD', x: 70,       y: W * 0.42 },
+        { id: 'dLST',  role: 'FWD', x: 70,       y: W * 0.58 }
+      ];
+    }
+    if (shapeId === 'offsidetrap') {
+      // Mid-block but with the back 4 stepped up sharply on a single line
+      return [
+        { id: 'dGK',   role: 'GK',  x: 100,      y: W / 2 },
+        { id: 'dRB',   role: 'DEF', x: 60,       y: W * 0.20 },
+        { id: 'dRCB',  role: 'DEF', x: 60,       y: W * 0.40 },
+        { id: 'dLCB',  role: 'DEF', x: 60,       y: W * 0.60 },
+        { id: 'dLB',   role: 'DEF', x: 60,       y: W * 0.80 },
+        { id: 'dCDM',  role: 'MID', x: 70,       y: W / 2 },
+        { id: 'dRCM',  role: 'MID', x: 75,       y: W * 0.35 },
+        { id: 'dLCM',  role: 'MID', x: 75,       y: W * 0.65 },
+        { id: 'dRW',   role: 'FWD', x: 85,       y: W * 0.20 },
+        { id: 'dST',   role: 'FWD', x: 85,       y: W / 2 },
+        { id: 'dLW',   role: 'FWD', x: 85,       y: W * 0.80 }
+      ];
+    }
+    // Default: midblock
+    return [
+      { id: 'dGK',   role: 'GK',  x: 100,      y: W / 2 },
+      { id: 'dRB',   role: 'DEF', x: 80,       y: W * 0.20 },
+      { id: 'dRCB',  role: 'DEF', x: 78,       y: W * 0.40 },
+      { id: 'dLCB',  role: 'DEF', x: 78,       y: W * 0.60 },
+      { id: 'dLB',   role: 'DEF', x: 80,       y: W * 0.80 },
+      { id: 'dCDM',  role: 'MID', x: 65,       y: W / 2 },
+      { id: 'dRCM',  role: 'MID', x: 62,       y: W * 0.35 },
+      { id: 'dLCM',  role: 'MID', x: 62,       y: W * 0.65 },
+      { id: 'dRW',   role: 'FWD', x: 50,       y: W * 0.20 },
+      { id: 'dST',   role: 'FWD', x: 45,       y: W / 2 },
+      { id: 'dLW',   role: 'FWD', x: 50,       y: W * 0.80 }
+    ];
+  }
+
   // ── Defender layout per coverage ──
   // Returns 11 defender positions for the active coverage. The four down
   // linemen (DL) sit just past LOS regardless of coverage. The back 7
@@ -556,6 +767,17 @@ window.StemLab = window.StemLab || {
       if (!labToolData || !labToolData.playlab) {
         setLabToolData(function(prev) {
           return Object.assign({}, prev, { playlab: {
+            // Sport mode — toggle between American football + soccer.
+            // Each sport has its own field, formations/plays, defensive
+            // shapes, and visual scale (yards vs meters). State for both
+            // sports lives in the same object since switching modes is
+            // expected to be common (a coach explores both).
+            sport: 'football',
+            // Soccer state
+            formationId: '433',
+            conceptId: 'tikitaka',
+            shapeId: 'midblock',
+            // Football state
             playId: 'slant',
             coverageId: 'cover2',
             losX: LOS_DEFAULT,
@@ -604,6 +826,13 @@ window.StemLab = window.StemLab || {
         });
       };
 
+      var isSoccer = d.sport === 'soccer';
+      // Soccer-derived vars (only meaningful when isSoccer === true). They
+      // shadow into the same `formation` / `defenders` slots so downstream
+      // code (canvas, etc.) reads from one source of truth.
+      var formationDef = SOCCER_FORMATIONS.find(function(f) { return f.id === d.formationId; }) || SOCCER_FORMATIONS[0];
+      var concept = SOCCER_CONCEPTS.find(function(c) { return c.id === d.conceptId; }) || SOCCER_CONCEPTS[0];
+      var soccerShape = SOCCER_SHAPES.find(function(s) { return s.id === d.shapeId; }) || SOCCER_SHAPES[0];
       var play = PLAYS.find(function(p) { return p.id === d.playId; }) || PLAYS[0];
       var coverage = COVERAGES.find(function(c) { return c.id === d.coverageId; }) || COVERAGES[0];
       // Build the base formation, apply any custom drag overrides FIRST,
@@ -615,10 +844,11 @@ window.StemLab = window.StemLab || {
         if (override) return Object.assign({}, p, { x: override.x, y: override.y });
         return p;
       });
-      var formation = applyPlayToFormation(rawFormation, play);
-      var zones = buildZones(d.coverageId, d.losX);
-      var defenders = buildDefenders(d.coverageId, d.losX, formation);
-      var analysis = openReceiverAnalysis(formation, defenders);
+      var formation = isSoccer ? formationDef.build() : applyPlayToFormation(rawFormation, play);
+      var zones = isSoccer ? [] : buildZones(d.coverageId, d.losX);
+      var defenders = isSoccer ? buildSoccerDefenders(d.shapeId)
+                               : buildDefenders(d.coverageId, d.losX, formation);
+      var analysis = isSoccer ? [] : openReceiverAnalysis(formation, defenders);
       var openReceiverId = analysis.length ? analysis[0].id : null;
 
       function loadPlay(pid) {

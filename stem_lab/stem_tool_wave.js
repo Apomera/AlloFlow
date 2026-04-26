@@ -1469,9 +1469,7 @@ const d = labToolData.wave;
 
               ['sine', 'square', 'triangle', 'sawtooth'].map(wt =>
 
-                React.createElement("button", { "aria-label": "Upd",
-
-                  key: wt, onClick: () => upd('waveType', wt),
+                React.createElement("button", { key: wt, onClick: () => upd('waveType', wt),
 
                   className: "px-2.5 py-1 rounded-lg text-xs font-bold transition-all " + ((d.waveType || 'sine') === wt ? 'bg-cyan-700 text-white shadow-md' : 'bg-cyan-50 text-cyan-700 border border-cyan-200 hover:bg-cyan-100')
 
@@ -1919,7 +1917,7 @@ const d = labToolData.wave;
               function setAiLevel(id) {
                 setLabToolData(function (prev) { return Object.assign({}, prev, { wave: Object.assign({}, prev.wave, { aiLevel: id }) }); });
               }
-              return React.createElement("div", { className: "mt-3 p-3 rounded-xl border-2 border-purple-200 bg-purple-50", role: "region", "aria-label": "AI wave tutor" },
+              return React.createElement("div", { className: "mt-3 p-3 rounded-xl border-2 border-purple-200 bg-purple-50", role: "region", },
                 React.createElement("div", { className: "flex items-center flex-wrap gap-2 mb-1.5" },
                   React.createElement("span", { className: "text-sm font-bold text-purple-700" }, "\u2728 Explain at my level"),
                   React.createElement("div", { className: "ml-auto flex gap-1", role: "group", "aria-label": "Reading level" },

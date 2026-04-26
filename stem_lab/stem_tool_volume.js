@@ -575,9 +575,9 @@ window.StemLab = window.StemLab || {
           }, paintSurfaceArea ? '\uD83E\uDDFC Wash Paint' : '\uD83C\uDFA8 Paint Surface'),
           // Zoom
           h('div', { className: 'flex items-center gap-1' },
-            h('button', { 'aria-label': 'Add', onClick: function() { upd({ scale: Math.max(0.4, scale - 0.15) }); }, className: 'w-7 h-7 rounded-full bg-white border border-emerald-300 text-emerald-700 font-bold text-sm hover:bg-emerald-100 flex items-center justify-center' }, '\u2212'),
+            h('button', { 'aria-label': 'Zoom out', onClick: function() { upd({ scale: Math.max(0.4, scale - 0.15) }); }, className: 'w-7 h-7 rounded-full bg-white border border-emerald-300 text-emerald-700 font-bold text-sm hover:bg-emerald-100 flex items-center justify-center' }, '\u2212'),
             h('span', { className: 'text-[11px] text-emerald-600 font-mono w-10 text-center' }, Math.round(scale*100)+'%'),
-            h('button', { 'aria-label': 'Add', onClick: function() { upd({ scale: Math.min(2.5, scale + 0.15) }); }, className: 'w-7 h-7 rounded-full bg-white border border-emerald-300 text-emerald-700 font-bold text-sm hover:bg-emerald-100 flex items-center justify-center' }, '+'),
+            h('button', { 'aria-label': 'Zoom in', onClick: function() { upd({ scale: Math.min(2.5, scale + 0.15) }); }, className: 'w-7 h-7 rounded-full bg-white border border-emerald-300 text-emerald-700 font-bold text-sm hover:bg-emerald-100 flex items-center justify-center' }, '+'),
             h('button', { 'aria-label': 'Reset 3D view rotation and zoom', onClick: function() { upd({ rotation: { x: -25, y: -35 }, scale: 1.0 }); }, className: 'ml-1 px-2 py-1 rounded-md bg-white border border-emerald-300 text-emerald-700 font-bold text-[11px] hover:bg-emerald-100' }, '\u21BA'))
         ),
 

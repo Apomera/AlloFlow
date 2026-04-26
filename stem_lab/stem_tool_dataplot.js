@@ -848,7 +848,7 @@ window.StemLab = window.StemLab || {
         // ── Step-through banner ──
         stepMode && h('div', { className: 'bg-violet-50 rounded-xl p-3 border border-violet-200 flex items-center gap-3' },
           h('span', { className: 'text-xs font-bold text-violet-700' }, '\uD83D\uDC63 Step-Through Mode: ' + stepIdx + '/' + points.length),
-          h('button', { 'aria-label': 'Stop', onClick: stepNext, className: 'px-3 py-1 bg-violet-600 text-white font-bold rounded-lg text-xs hover:bg-violet-700' }, stepIdx >= points.length ? '\u2705 Done' : '\u27A1 Next Point'),
+          h('button', { onClick: stepNext, className: 'px-3 py-1 bg-violet-600 text-white font-bold rounded-lg text-xs hover:bg-violet-700' }, stepIdx >= points.length ? '\u2705 Done' : '\u27A1 Next Point'),
           h('button', { 'aria-label': 'Stop', onClick: stopStep, className: 'px-3 py-1 bg-white text-violet-600 font-bold rounded-lg text-xs border border-violet-200' }, '\u2716 Stop'),
           n >= 2 && h('span', { className: 'text-[11px] text-violet-500 ml-auto' }, 'R\u00B2=' + regR2.toFixed(3) + ' | Mean=' + meanY.toFixed(1)),
           h('span', { className: 'text-[11px] text-violet-400' }, '(or press \u2192)')
@@ -1108,7 +1108,7 @@ window.StemLab = window.StemLab || {
 
           // ── Controls row ──
           h('div', { className: 'flex gap-2 flex-wrap items-center' },
-            h('button', { 'aria-label': 'Undo', onClick: doUndo, disabled: !undoStack.length, className: 'px-3 py-1.5 bg-slate-100 text-slate-600 font-bold rounded-lg text-sm disabled:opacity-40' }, '\u21A9 Undo'),
+            h('button', { onClick: doUndo, disabled: !undoStack.length, className: 'px-3 py-1.5 bg-slate-100 text-slate-600 font-bold rounded-lg text-sm disabled:opacity-40' }, '\u21A9 Undo'),
             h('button', { 'aria-label': 'Clear', onClick: clearAll, disabled: !points.length, className: 'px-3 py-1.5 bg-red-50 text-red-600 font-bold rounded-lg text-sm disabled:opacity-40' }, '\uD83D\uDDD1\uFE0F Clear'),
             h('label', { className: 'flex items-center gap-1 text-[11px] font-bold text-violet-600 cursor-pointer' },
               h('input', { type: 'checkbox', checked: showResiduals, onChange: function() { upd('showResiduals', !showResiduals); }, className: 'accent-violet-600' }), 'Residuals'),
@@ -1127,8 +1127,8 @@ window.StemLab = window.StemLab || {
             h('label', { className: 'flex items-center gap-1 text-[11px] font-bold text-slate-600 cursor-pointer' },
               h('input', { type: 'checkbox', checked: tableMode, onChange: function() { upd('tableMode', !tableMode); }, className: 'accent-teal-600' }), 'Table'),
             h('div', { className: 'ml-auto flex gap-1.5' },
-              h('button', { 'aria-label': 'CSV', onClick: exportCSV, disabled: !n, className: 'px-2 py-1 text-[11px] font-bold bg-teal-50 text-teal-700 border border-teal-200 rounded-lg disabled:opacity-40' }, '\uD83D\uDCE5 CSV'),
-              h('button', { 'aria-label': 'SVG', onClick: exportSVG, disabled: !n, className: 'px-2 py-1 text-[11px] font-bold bg-teal-50 text-teal-700 border border-teal-200 rounded-lg disabled:opacity-40' }, '\uD83D\uDCD0 SVG'),
+              h('button', { onClick: exportCSV, disabled: !n, className: 'px-2 py-1 text-[11px] font-bold bg-teal-50 text-teal-700 border border-teal-200 rounded-lg disabled:opacity-40' }, '\uD83D\uDCE5 CSV'),
+              h('button', { onClick: exportSVG, disabled: !n, className: 'px-2 py-1 text-[11px] font-bold bg-teal-50 text-teal-700 border border-teal-200 rounded-lg disabled:opacity-40' }, '\uD83D\uDCD0 SVG'),
               h('button', { 'aria-label': 'Save', onClick: saveChart, disabled: !n, className: 'px-2 py-1 text-[11px] font-bold bg-teal-50 text-teal-700 border border-teal-200 rounded-lg disabled:opacity-40' }, '\uD83D\uDCBE Save')
             )
           ),
@@ -1182,7 +1182,7 @@ window.StemLab = window.StemLab || {
                     h('span', { className: 'text-xs font-bold text-slate-700' }, item.n + ' pts'),
                     h('span', { className: 'text-[11px] text-slate-600' }, 'R\u00B2=' + (item.r2||0).toFixed(3)),
                     h('span', { className: 'text-[11px] text-slate-600 ml-auto' }, new Date(item.timestamp).toLocaleDateString()),
-                    h('button', { 'aria-label': 'Load', onClick: function() { loadChart(item); }, className: 'px-2 py-0.5 text-[11px] font-bold bg-teal-50 text-teal-600 rounded hover:bg-teal-100' }, 'Load'),
+                    h('button', { onClick: function() { loadChart(item); }, className: 'px-2 py-0.5 text-[11px] font-bold bg-teal-50 text-teal-600 rounded hover:bg-teal-100' }, 'Load'),
                     h('button', { 'aria-label': 'Remove item', onClick: function() { deleteChart(item.id); }, className: 'px-2 py-0.5 text-[11px] font-bold text-red-400 hover:text-red-600' }, '\u2715')
                   );
                 }))
@@ -1486,10 +1486,10 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'text-xs font-bold text-violet-700 uppercase mb-2' }, '\uD83D\uDC63 Step-Through Mode'),
             h('div', { className: 'text-[11px] text-violet-500 mb-2' }, 'Watch how statistics change as each point is revealed one-by-one.'),
             !stepMode
-              ? h('button', { 'aria-label': 'Stop', onClick: startStepThrough, disabled: points.length < 2, className: 'px-4 py-2 bg-violet-600 text-white font-bold rounded-lg text-sm hover:bg-violet-700 disabled:opacity-40' }, '\u25B6 Start Step-Through (' + points.length + ' points)')
+              ? h('button', { onClick: startStepThrough, disabled: points.length < 2, className: 'px-4 py-2 bg-violet-600 text-white font-bold rounded-lg text-sm hover:bg-violet-700 disabled:opacity-40' }, '\u25B6 Start Step-Through (' + points.length + ' points)')
               : h('div', { className: 'flex items-center gap-3' },
                 h('span', { className: 'text-sm font-bold text-violet-700' }, stepIdx + ' / ' + points.length + ' revealed'),
-                h('button', { 'aria-label': 'Stop', onClick: stepNext, className: 'px-3 py-1 bg-violet-600 text-white font-bold rounded-lg text-xs' }, stepIdx >= points.length ? '\u2705 Done' : '\u27A1 Next'),
+                h('button', { onClick: stepNext, className: 'px-3 py-1 bg-violet-600 text-white font-bold rounded-lg text-xs' }, stepIdx >= points.length ? '\u2705 Done' : '\u27A1 Next'),
                 h('button', { 'aria-label': 'Stop', onClick: stopStep, className: 'px-3 py-1 bg-white text-violet-600 font-bold rounded-lg text-xs border border-violet-200' }, 'Stop')
               )
           ),

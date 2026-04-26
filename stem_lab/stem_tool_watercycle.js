@@ -1811,7 +1811,7 @@ const d = labToolData.waterCycle;
                     (d.journeyState === 'complete') ? "\u2705 You completed the water cycle! +25 XP" :
                     "\uD83D\uDCA7 Current: " + (d.journeyState || 'ocean').replace(/_/g, ' ')
                   ),
-                  d.journeyState === 'ground_choice' && React.createElement("div", { className: "grid grid-cols-3 gap-2 mt-2", role: "group", "aria-label": "Ground path choices" },
+                  d.journeyState === 'ground_choice' && React.createElement("div", { className: "grid grid-cols-3 gap-2 mt-2", role: "group", },
                     React.createElement("button", { "aria-label": "Choose River Runoff path (shortcut: R)",
                       onClick: function() {
                         upd('journeyState', 'river_runoff');

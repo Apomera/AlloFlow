@@ -2526,7 +2526,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                       h('button', {
                         className: btnSecondary,
                         onClick: function() { setWarmupActive(null); },
-                        'aria-label': 'Cancel warm-up'
+                        
                       }, 'Cancel')))
                 : h('div', { className: 'flex flex-wrap gap-2', role: 'list', 'aria-label': 'Available warm-up exercises' },
                     WARMUPS.map(function(wu) {

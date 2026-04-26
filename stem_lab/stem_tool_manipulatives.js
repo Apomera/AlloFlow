@@ -667,7 +667,7 @@ window.StemLab = window.StemLab || {
 
           // Action buttons
           h('div', { className: 'flex gap-2 flex-wrap' },
-            h('button', { 'aria-label': 'Build Number', onClick: genBlockChallenge, className: 'flex-1 py-2 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold rounded-lg text-sm hover:from-orange-600 hover:to-amber-600 transition-all shadow-md' }, '\uD83C\uDFB2 Build Number'),
+            h('button', { onClick: genBlockChallenge, className: 'flex-1 py-2 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold rounded-lg text-sm hover:from-orange-600 hover:to-amber-600 transition-all shadow-md' }, '\uD83C\uDFB2 Build Number'),
             h('button', { 'aria-label': 'Addition', onClick: genAdditionProblem, className: 'flex-1 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold rounded-lg text-sm hover:from-emerald-600 hover:to-teal-600 transition-all shadow-md' }, '\u2795 Addition'),
             h('button', { 'aria-label': 'Reset', onClick: function() { upd({ b10: { ones: 0, tens: 0, hundreds: 0, thousands: 0 }, b10Challenge: null, b10Feedback: null, b10AddMode: false, b10Addends: null }); }, className: 'px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all' }, '\u21BA Reset')
           ),

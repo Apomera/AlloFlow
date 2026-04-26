@@ -150,6 +150,54 @@
         'You can change line breaks freely. You cannot add words that aren\'t in the source.',
         'Found poetry can change the meaning of a text just by what you choose to keep.'
       ]
+    },
+    {
+      id: 'acrostic',
+      name: 'Acrostic',
+      icon: '🔤',
+      tagline: 'The first letters of each line spell a word or phrase.',
+      structure: 'Pick a word (a name, a season, a feeling). Each line of the poem starts with the next letter of that word. The lines themselves describe or relate to the chosen word.',
+      lineCount: null,
+      syllablesPerLine: null,
+      rhymeScheme: null,
+      example: 'Quiet at sunrise, before the day begins,\nUnder a sky still pale with stars,\nIt waits, the world, just for a moment,\nEvery breath held —\nThen morning happens.',
+      tips: [
+        'Pick a subject first (often a single word). Write that word vertically before you start.',
+        'You don\'t need to rhyme — focus on filling each letter with an image.',
+        'For a longer poem, use a phrase instead of a single word.'
+      ]
+    },
+    {
+      id: 'cinquain',
+      name: 'Cinquain',
+      icon: '🪆',
+      tagline: '5 lines: 2–4–6–8–2 syllables. A small structure with a sting.',
+      structure: '5 lines. Line 1 has 2 syllables, line 2 has 4, line 3 has 6, line 4 has 8, line 5 has 2. (Adelaide Crapsey form.) The final 2-syllable line often gives the poem its shape — a turn, a surprise, or a quiet conclusion.',
+      lineCount: 5,
+      syllablesPerLine: [2, 4, 6, 8, 2],
+      rhymeScheme: null,
+      example: 'Listen…\nWith faint dry sound,\nLike steps of passing ghosts,\nThe leaves, frost-crisp\'d, break from the trees\nAnd fall.\n\n— Adelaide Crapsey, "November Night"',
+      tips: [
+        'The two-syllable opening and closing lines work best when they hint at something larger.',
+        'A cinquain doesn\'t have to rhyme. The shape does the work.',
+        'Read it aloud — if a line feels rushed or stretched, count syllables again.'
+      ]
+    },
+    {
+      id: 'diamante',
+      name: 'Diamante',
+      icon: '💎',
+      tagline: '7 lines, diamond-shaped. Often pairs opposites.',
+      structure: '7 lines forming a diamond. Line 1: one noun (your starting topic). Line 2: two adjectives describing line 1. Line 3: three -ing verbs about line 1. Line 4: four nouns — the first two relate to line 1, the last two transition toward line 7. Line 5: three -ing verbs about line 7. Line 6: two adjectives describing line 7. Line 7: one contrasting (or related) noun.',
+      lineCount: 7,
+      syllablesPerLine: null,
+      rhymeScheme: null,
+      example: 'Day\nBright, busy\nRunning, laughing, working\nSunlight, voices — silence, shadows\nSettling, slowing, dreaming\nQuiet, cool\nNight',
+      tips: [
+        'Diamantes are great for opposites: hot/cold, summer/winter, love/hate, child/adult.',
+        'The middle line (line 4) is the pivot — first two words belong to line 1, last two belong to line 7.',
+        'Verbs end in -ing on lines 3 and 5. That repetition is the form\'s rhythm.'
+      ]
     }
   ];
 
@@ -259,6 +307,16 @@
 
     var ttsCancelRef = useRef(false);
 
+    // Writing helpers (Daily Prompt / Rhymes / Stronger Verbs)
+    var _helpersOpen = useState(false); var helpersOpen = _helpersOpen[0]; var setHelpersOpen = _helpersOpen[1];
+    var _dailyPrompt = useState(''); var dailyPrompt = _dailyPrompt[0]; var setDailyPrompt = _dailyPrompt[1];
+    var _dailyPromptLoading = useState(false); var dailyPromptLoading = _dailyPromptLoading[0]; var setDailyPromptLoading = _dailyPromptLoading[1];
+    var _rhymeQuery = useState(''); var rhymeQuery = _rhymeQuery[0]; var setRhymeQuery = _rhymeQuery[1];
+    var _rhymeResults = useState(null); var rhymeResults = _rhymeResults[0]; var setRhymeResults = _rhymeResults[1];
+    var _rhymeLoading = useState(false); var rhymeLoading = _rhymeLoading[0]; var setRhymeLoading = _rhymeLoading[1];
+    var _verbSuggestions = useState(null); var verbSuggestions = _verbSuggestions[0]; var setVerbSuggestions = _verbSuggestions[1];
+    var _verbLoading = useState(false); var verbLoading = _verbLoading[0]; var setVerbLoading = _verbLoading[1];
+
     // ── Persistence helpers ──
     var savePrefs = useCallback(function (next) {
       try { localStorage.setItem(STORAGE_PREFS, JSON.stringify(next)); } catch (e) {}
@@ -334,6 +392,79 @@
     }, [onCallGemini, poemText, poemTitle, form, gradeLevel, handleScoreUpdate, addToast]);
 
     function entry_safe(s) { return String(s || 'untitled').toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 30); }
+
+    // ── Writing helpers ──
+
+    var generateDailyPrompt = useCallback(async function () {
+      if (!onCallGemini) return;
+      setDailyPromptLoading(true);
+      try {
+        var formHint = form ? ' They are writing in the form: ' + form.name + '.' : '';
+        var prompt = 'You are a creative-writing teacher for a ' + gradeLevel + ' student.' + formHint + ' Generate ONE inspiring poem prompt — concrete, image-rich, emotionally accessible, age-appropriate. Avoid abstractions. Avoid trauma topics unless gently. 1-2 sentences. Return only the prompt itself, no quotes, no preamble.';
+        var result = await onCallGemini(prompt, false);
+        var clean = String(result || '').trim().replace(/^["“]|["”]$/g, '').replace(/^prompt:\s*/i, '');
+        setDailyPrompt(clean);
+        announcePT('New writing prompt: ' + clean);
+      } catch (err) {
+        warnLog('Daily prompt failed:', err && err.message);
+        addToast && addToast('Couldn\'t fetch a prompt right now.', 'error');
+      } finally {
+        setDailyPromptLoading(false);
+      }
+    }, [onCallGemini, form, gradeLevel, addToast]);
+
+    var fetchRhymes = useCallback(async function () {
+      if (!onCallGemini || !rhymeQuery.trim()) return;
+      setRhymeLoading(true);
+      setRhymeResults(null);
+      try {
+        var word = rhymeQuery.trim().toLowerCase().replace(/[^a-z'-]/g, '');
+        var prompt = 'Return JSON: {"perfect":["..."],"slant":["..."]} — 6-8 perfect rhymes (same vowel and ending consonants) and 4-6 slant rhymes (similar but not exact) for the word "' + word + '". Skip vulgarity, slurs, and offensive words. Order each list from most useful to less useful for poetry. If no rhymes are possible (rare words), return both arrays empty.';
+        var result = await onCallGemini(prompt, true);
+        var clean = String(result).trim().replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```$/, '').trim();
+        var parsed = JSON.parse(clean);
+        setRhymeResults({ word: word, perfect: parsed.perfect || [], slant: parsed.slant || [] });
+        announcePT((parsed.perfect || []).length + ' perfect rhymes and ' + (parsed.slant || []).length + ' slant rhymes for ' + word + '.');
+      } catch (err) {
+        warnLog('Rhymes failed:', err && err.message);
+        setRhymeResults({ error: 'Couldn\'t fetch rhymes. Try a more common word.' });
+      } finally {
+        setRhymeLoading(false);
+      }
+    }, [onCallGemini, rhymeQuery]);
+
+    var copyRhyme = useCallback(function (word) {
+      try {
+        navigator.clipboard.writeText(word);
+        addToast && addToast('"' + word + '" copied to clipboard.', 'success');
+        announcePT('Copied ' + word + ' to clipboard.');
+      } catch (e) {
+        addToast && addToast('Copy failed — long-press the word instead.', 'info');
+      }
+    }, [addToast]);
+
+    var findStrongerVerbs = useCallback(async function () {
+      if (!onCallGemini || !poemText.trim()) return;
+      setVerbLoading(true);
+      setVerbSuggestions(null);
+      try {
+        var prompt = 'Read this poem. Identify up to 5 lines that rely on weak verbs (forms of "to be" — is, was, were, am, are; or "have", "has", "do", "get", "got", "make"). For each, return the original line, the weak verb, and 2-3 stronger more specific alternatives that would fit the poem\'s tone and image.\n\n'
+          + 'Poem:\n"""\n' + poemText + '\n"""\n\n'
+          + 'Return JSON: {"suggestions":[{"line":"<exact original line from the poem>","weakVerb":"<verb>","alternatives":["<verb1>","<verb2>","<verb3>"]}]}\n\n'
+          + 'Only suggest where the line genuinely benefits — sometimes "is" is the right word. If no weak verbs are found, return {"suggestions":[]}.';
+        var result = await onCallGemini(prompt, true);
+        var clean = String(result).trim().replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```$/, '').trim();
+        var parsed = JSON.parse(clean);
+        setVerbSuggestions(parsed.suggestions || []);
+        var n = (parsed.suggestions || []).length;
+        announcePT(n === 0 ? 'No weak verbs detected — your verbs are working hard.' : n + ' verb suggestion' + (n === 1 ? '' : 's') + '.');
+      } catch (err) {
+        warnLog('Verb booster failed:', err && err.message);
+        setVerbSuggestions({ error: 'Couldn\'t analyze verbs right now.' });
+      } finally {
+        setVerbLoading(false);
+      }
+    }, [onCallGemini, poemText]);
 
     // ── Meter analysis (Gemini-on-demand) ──
     var analyzeMeter = useCallback(async function () {

@@ -517,7 +517,7 @@ window.StemLab = window.StemLab || {
         return h('div', { className: 'bg-gradient-to-br from-sky-50 to-blue-50 rounded-xl border-2 border-sky-200 p-4 space-y-3' },
           h('div', { className: 'flex items-center justify-between' },
             h('h4', { className: 'text-sm font-bold text-sky-800' }, '\uD83E\uDD16 AI Coordinate Tutor'),
-            h('button', { 'aria-label': 'Upd C G', onClick: function() { updCG({ showAITutor: false }); }, className: 'text-sky-400 hover:text-sky-600 text-lg font-bold' }, '\u00D7')
+            h('button', { onClick: function() { updCG({ showAITutor: false }); }, className: 'text-sky-400 hover:text-sky-600 text-lg font-bold' }, '\u00D7')
           ),
           h('div', { className: 'flex gap-2' },
             h('input', {
@@ -555,8 +555,7 @@ window.StemLab = window.StemLab || {
             streak > 0 && h('span', { className: 'text-xs font-bold text-orange-600' }, '\uD83D\uDD25 ' + streak),
             bestStreak > 0 && h('span', { className: 'text-[11px] text-slate-600' }, 'Best: ' + bestStreak),
             h('span', { className: 'text-xs font-bold text-emerald-600' }, exploreScore.correct + '/' + exploreScore.total),
-            h('button', { 'aria-label': 'Handle Grid Click',
-              onClick: function() {
+            h('button', { onClick: function() {
                 var snap = { id: 'snap-' + Date.now(), tool: 'coordinate', label: 'Grid: ' + gridPoints.length + ' points', data: { points: gridPoints.slice() }, timestamp: Date.now() };
                 setToolSnapshots(function(prev) { return prev.concat([snap]); });
                 sfxClick();

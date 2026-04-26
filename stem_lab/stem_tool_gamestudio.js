@@ -800,8 +800,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'flex gap-1 mb-4 p-1 bg-rose-50 rounded-xl border border-rose-200 overflow-x-auto' },
             TABS.map(function(tab) {
               var isActive = gsTab === tab.id;
-              return h('button', { 'aria-label': 'Select game creator option',
-                key: tab.id,
+              return h('button', { key: tab.id,
                 onClick: function() { upd({ tab: tab.id, playMessage: null }); },
                 className: 'flex-1 py-2 px-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ' +
                   (isActive ? 'bg-white text-rose-800 shadow-md border border-rose-200' : 'text-rose-500 hover:text-rose-700 hover:bg-rose-100')
@@ -846,8 +845,7 @@ window.StemLab = window.StemLab || {
                 '\u26A0\uFE0F Danger Map'
               ),
               // AI Map Gen
-              callGemini && h('button', { 'aria-label': 'Select game creator option',
-                onClick: function() {
+              callGemini && h('button', { onClick: function() {
                   upd({ aiLoading: true });
                   var prompt = 'Generate a ' + gridW + 'x' + gridH + ' tile map for a ' + gameType + ' game as JSON. ' +
                     'Use ONLY these tile IDs: empty, grass, water, wall, lava, ice, sand, path, door, key, coin, gem, flag, spikes, heart, portal, platform, player, enemy, npc, treasure. ' +
@@ -864,6 +862,8 @@ window.StemLab = window.StemLab || {
                   }).catch(function() { upd({ aiLoading: false, aiResult: '\u274C AI error' }); });
                 },
                 disabled: aiLoading,
+                'aria-busy': aiLoading,
+                'aria-label': aiLoading ? 'Generating game asset' : 'AI generate game asset',
                 className: 'px-3 py-1.5 text-xs font-bold text-white rounded-lg transition-all ' +
                   (aiLoading ? 'bg-gray-400' : 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 shadow-md')
               }, aiLoading ? '\u23F3 Generating...' : '\u2728 AI Generate')
@@ -886,8 +886,7 @@ window.StemLab = window.StemLab || {
                 h('span', { className: 'text-xs font-bold text-rose-700' }, 'Tiles'),
                 h('div', { className: 'flex gap-1 ml-auto' },
                   [{ id: 'brush', icon: '\u270F\uFE0F' }, { id: 'fill', icon: '\uD83E\uDEA3' }, { id: 'eraser', icon: '\uD83E\uDDF9' }, { id: 'eyedropper', icon: '\uD83D\uDCA7' }].map(function(bt) {
-                    return h('button', { 'aria-label': 'Select game creator option',
-                      key: bt.id,
+                    return h('button', { key: bt.id,
                       onClick: function() { upd({ brushTool: bt.id }); },
                       className: 'px-2 py-1 rounded text-sm transition-all ' + (brushTool === bt.id ? 'bg-rose-200 shadow-inner' : 'hover:bg-rose-50'),
                       title: bt.id
@@ -897,8 +896,7 @@ window.StemLab = window.StemLab || {
               ),
               h('div', { className: 'flex flex-wrap gap-1' },
                 TILE_PALETTE.map(function(t) {
-                  return h('button', { 'aria-label': 'Select game creator option',
-                    key: t.id,
+                  return h('button', { key: t.id,
                     onClick: function() { upd({ selectedTile: t.id, brushTool: 'brush' }); },
                     className: 'w-8 h-8 rounded border-2 flex items-center justify-center text-sm transition-all ' +
                       (selectedTile === t.id ? 'border-rose-500 shadow-md scale-110' : 'border-gray-200 hover:border-rose-300'),
@@ -983,8 +981,7 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'text-xs font-bold text-rose-700 mb-2' }, 'Sprite Presets'),
               h('div', { className: 'flex flex-wrap gap-2' },
                 SPRITE_PRESETS.map(function(sp) {
-                  return h('button', { 'aria-label': 'Select game creator option',
-                    key: sp.id,
+                  return h('button', { key: sp.id,
                     onClick: function() { upd({ activeSprite: sp.id, spritePixels: Object.assign({}, sp.pixels), spriteColor: sp.color }); },
                     className: 'px-3 py-2 rounded-lg border-2 text-xs font-bold transition-all ' +
                       (activeSprite === sp.id ? 'border-rose-400 bg-rose-50 shadow-md' : 'border-gray-200 hover:border-rose-300')
@@ -1074,8 +1071,7 @@ window.StemLab = window.StemLab || {
                 callImagen && h('div', { className: 'p-3 rounded-xl border border-purple-200 bg-purple-50 space-y-2' },
                   h('div', { className: 'text-xs font-bold text-purple-700' }, '\uD83E\uDD16 AI Sprite Tools'),
                   h('input', { type: 'text', value: aiPrompt, onChange: function(e) { upd({ aiPrompt: e.target.value }); }, placeholder: 'a fire-breathing dragon...', 'aria-label': 'AI sprite generation prompt', className: 'w-full text-xs border border-purple-200 rounded-lg px-2 py-1.5' }),
-                  h('button', { 'aria-label': 'Action',
-                    onClick: function() {
+                  h('button', { onClick: function() {
                       if (!aiPrompt.trim()) return;
                       upd({ aiLoading: true });
                       callImagen('Pixel art game sprite 16x16: ' + aiPrompt + '. Simple, clear, colorful, white background.', 256)
@@ -1314,11 +1310,11 @@ window.StemLab = window.StemLab || {
             isPlaying && !playWon && !playDead && h('div', { className: 'flex justify-center' },
               h('div', { className: 'grid grid-cols-3 gap-1', style: { width: '140px' } },
                 h('div', null),
-                h('button', { 'aria-label': 'Process Move', onClick: function() { processMove('up'); }, className: 'p-3 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-lg font-bold text-center active:scale-95 transition-all' }, '\u25B2'),
+                h('button', { onClick: function() { processMove('up'); }, className: 'p-3 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-lg font-bold text-center active:scale-95 transition-all' }, '\u25B2'),
                 h('div', null),
-                h('button', { 'aria-label': 'Process Move', onClick: function() { processMove('left'); }, className: 'p-3 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-lg font-bold text-center active:scale-95 transition-all' }, '\u25C0'),
+                h('button', { onClick: function() { processMove('left'); }, className: 'p-3 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-lg font-bold text-center active:scale-95 transition-all' }, '\u25C0'),
                 h('div', { className: 'p-3 rounded-lg bg-slate-800 text-center text-xs text-slate-300 font-bold' }, '\u2022'),
-                h('button', { 'aria-label': 'Play', onClick: function() { processMove('right'); }, className: 'p-3 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-lg font-bold text-center active:scale-95 transition-all' }, '\u25B6'),
+                h('button', { onClick: function() { processMove('right'); }, className: 'p-3 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-lg font-bold text-center active:scale-95 transition-all' }, '\u25B6'),
                 h('div', null),
                 h('button', { 'aria-label': 'Process Move', onClick: function() { processMove('down'); }, className: 'p-3 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-lg font-bold text-center active:scale-95 transition-all' }, '\u25BC'),
                 h('div', null)
@@ -1327,8 +1323,7 @@ window.StemLab = window.StemLab || {
 
             // Controls
             h('div', { className: 'flex gap-2 justify-center flex-wrap' },
-              h('button', { 'aria-label': 'Select game creator option',
-                onClick: function() {
+              h('button', { onClick: function() {
                   if (isPlaying) {
                     upd({ isPlaying: false });
                   } else {
@@ -1375,8 +1370,7 @@ window.StemLab = window.StemLab || {
 
             // AI Playtest Advisor
             callGemini && h('div', { className: 'p-3 rounded-xl border border-purple-200 bg-purple-50' },
-              h('button', { 'aria-label': 'Select game creator option',
-                onClick: function() {
+              h('button', { onClick: function() {
                   upd({ aiLoading: true, aiResult: null });
                   var st = JSON.stringify({ gridW: gridW, gridH: gridH, gameType: gameType, tiles: tiles, events: events });
                   callGemini('You are a game design advisor for students. Analyze this game and give 3-5 short, constructive suggestions. Consider: win conditions, balance, variety, enemy placement, fun factor. Game: ' + st)
@@ -1518,8 +1512,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
               LESSONS.map(function(lesson, li) {
                 var isComplete = learnCompleted[lesson.id];
-                return h('button', { 'aria-label': 'Select game creator option',
-                  key: lesson.id,
+                return h('button', { key: lesson.id,
                   onClick: function() { upd({ activeLesson: lesson.id, learnAnswer: null, learnShowResult: false }); },
                   className: 'p-4 rounded-xl border-2 text-left transition-all hover:shadow-md ' +
                     (isComplete ? 'border-green-300 bg-green-50' : 'border-indigo-200 bg-white hover:border-indigo-400')
@@ -1666,8 +1659,7 @@ window.StemLab = window.StemLab || {
                 h('div', { className: 'text-2xl mb-1' }, '\uD83D\uDCE4'),
                 h('div', { className: 'text-xs font-bold text-rose-700' }, 'Export')
               ),
-              h('button', { 'aria-label': 'Action',
-                onClick: function() {
+              h('button', { onClick: function() {
                   var inp = document.createElement('input');
                   inp.type = 'file'; inp.accept = '.allogame,.json';
                   inp.onchange = function(e) {
@@ -1746,8 +1738,7 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'text-xs font-bold text-rose-700 mb-2' }, '\uD83C\uDFAE Starter Projects'),
               h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2' },
                 STARTERS.map(function(starter) {
-                  return h('button', { 'aria-label': 'Select game creator option',
-                    key: starter.name,
+                  return h('button', { key: starter.name,
                     onClick: function() {
                       upd({ projectName: starter.name, gameType: starter.type, gridW: 16, gridH: 12, tiles: starter.tiles, tab: 'map' });
                       if (addToast) addToast('\uD83C\uDFAE Loaded "' + starter.name + '"!', 'success');

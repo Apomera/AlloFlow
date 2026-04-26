@@ -1039,7 +1039,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
           h('div', { className: 'bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl overflow-hidden border border-slate-700' },
             // Launch canvas
             h('div', { className: 'relative', style: { height: '400px' } },
-              h('canvas', { 'aria-label': 'Moonmission visualization',
+              h('canvas', { 
                 'data-launch-canvas': 'true',
                 role: 'img',
                 'aria-label': 'Animated Saturn V rocket launch sequence. 5-second countdown followed by ascent through atmosphere to orbit. Shows altitude, velocity, G-force, and stage separations.',
@@ -1539,7 +1539,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         phase === 3 && h('div', { className: 'space-y-3', style: { animation: 'mmFadeSlideIn 0.4s ease-out' } },
           h('div', { className: 'bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl overflow-hidden border border-slate-700' },
             h('div', { className: 'relative', style: { height: '280px' } },
-              h('canvas', { 'aria-label': 'Moonmission visualization',
+              h('canvas', { 
                 role: 'img',
                 'aria-label': 'Animated trans-lunar coast. Earth shrinks on the left, Moon grows on the right as the spacecraft travels 384,400 kilometers over 3 days. Shows distance counter and mission communications.',
                 style: { width: '100%', height: '100%', display: 'block' },
@@ -1662,7 +1662,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         phase === 4 && h('div', { className: 'space-y-3', style: { animation: 'mmFadeSlideIn 0.4s ease-out' } },
           h('div', { className: 'bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl overflow-hidden border border-slate-700' },
             h('div', { className: 'relative', style: { height: '240px' } },
-              h('canvas', { 'aria-label': 'Moonmission visualization',
+              h('canvas', { 
                 role: 'img',
                 'aria-label': 'Animated view of spacecraft orbiting the Moon at 110 kilometer altitude. Shows the Moon surface with craters, Sea of Tranquility landing site marked in green, and the spacecraft dot orbiting.',
                 style: { width: '100%', height: '100%', display: 'block' },
@@ -1799,7 +1799,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
           // Game canvas (after onboarding)
           d.descentStarted && h('div', { className: 'bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl overflow-hidden border border-slate-700' },
             h('div', { className: 'relative', style: { height: '420px' } },
-              h('canvas', { 'aria-label': 'Moonmission visualization',
+              h('canvas', { 
                 'data-descent-canvas': 'true',
                 role: 'application',
                 'aria-label': 'Interactive lunar descent piloting game. Use W or Up Arrow for thrust, A and D or Left and Right arrows for lateral movement. Land with vertical speed under 3 meters per second and horizontal speed under 5 meters per second.',
@@ -2100,7 +2100,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         phase === 6 && h('div', { className: 'space-y-3', style: { animation: 'mmFadeSlideIn 0.4s ease-out' } },
           h('div', { className: 'bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl overflow-hidden border border-slate-700' },
             h('div', { className: 'relative', style: { height: '70vh', minHeight: '400px', maxHeight: '700px' } },
-              h('canvas', { 'aria-label': 'Moonmission visualization',
+              h('canvas', { 
                 'data-eva-canvas': 'true',
                 role: 'application',
                 'aria-label': 'Interactive 3D lunar surface EVA. Use WASD to walk, Space to jump in one-sixth gravity, F to collect rock samples, mouse to look around. Collect geological samples and explore the Moon surface near the Lunar Module.',
@@ -3082,7 +3082,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         phase === 9 && h('div', { className: 'space-y-3', style: { animation: 'mmFadeSlideIn 0.4s ease-out' } },
           h('div', { className: 'bg-gradient-to-b from-orange-950 to-slate-900 rounded-xl overflow-hidden border border-orange-900/50' },
             h('div', { className: 'relative', style: { height: '320px' } },
-              h('canvas', { 'aria-label': 'Moonmission visualization',
+              h('canvas', { 
                 role: 'img',
                 'aria-label': 'Animated re-entry sequence. Command Module enters atmosphere at 39,900 km/h with plasma heating to 2,760 degrees. Shows radio blackout, drogue chutes, main parachutes, and ocean splashdown.',
                 style: { width: '100%', height: '100%', display: 'block' },

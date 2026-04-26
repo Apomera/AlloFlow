@@ -393,9 +393,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               React.createElement("div", { className: "flex gap-2" },
 
-                React.createElement("button", { "aria-label": "Upd D S",
-
-                  onClick: function () { updDS('showStats', !showStats); },
+                React.createElement("button", { onClick: function () { updDS('showStats', !showStats); },
 
                   className: "px-3 py-1.5 rounded-lg text-xs font-bold",
 
@@ -872,9 +870,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 var labels = { none: '— None', asc: '↑ Asc', desc: '↓ Desc' };
 
-                return React.createElement("button", { "aria-label": "Upd D S",
-
-                  key: s,
+                return React.createElement("button", { key: s,
 
                   onClick: function () { updDS('sortOrder', s); },
 
@@ -932,9 +928,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               // Trendline toggle (for line/scatter)
 
-              (chartType === 'line' || chartType === 'scatter') && React.createElement("button", { "aria-label": "Upd D S",
-
-                onClick: function () { updDS('showTrendline', !showTrendline); },
+              (chartType === 'line' || chartType === 'scatter') && React.createElement("button", { onClick: function () { updDS('showTrendline', !showTrendline); },
 
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-bold ml-auto transition-all",
 
@@ -954,9 +948,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               PRESETS.map(function (p, i) {
 
-                return React.createElement("button", { "aria-label": "Upd D S",
-
-                  key: i,
+                return React.createElement("button", { key: i,
 
                   onClick: function () { updDS('dataRows', p.data); updDS('chartTitle', p.title); if (typeof awardStemXP === 'function') awardStemXP('dataStudio', 3, 'Preset: ' + p.title); },
 
@@ -1128,9 +1120,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                     React.createElement("span", { className: "font-mono", style: { color: _muted } }, row.value),
 
-                    React.createElement("button", { "aria-label": "Upd D S",
-
-                      onClick: function () { updDS('dataRows', dataRows.filter(function (_, j) { return j !== i; })); },
+                    React.createElement("button", { onClick: function () { updDS('dataRows', dataRows.filter(function (_, j) { return j !== i; })); },
 
                       className: "text-red-400 hover:text-red-600 font-bold text-xs"
 

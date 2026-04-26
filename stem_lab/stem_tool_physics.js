@@ -2122,7 +2122,7 @@ const d = labToolData.physics;
                   upd('aiLoading', false); upd('aiError', 'Could not reach AI tutor. Try again in a moment.');
                 });
               }
-              return React.createElement("div", { className: "mt-3 p-3 rounded-xl border-2 border-purple-200 bg-purple-50", role: "region", "aria-label": "AI physics tutor" },
+              return React.createElement("div", { className: "mt-3 p-3 rounded-xl border-2 border-purple-200 bg-purple-50", role: "region", },
                 React.createElement("div", { className: "flex items-center flex-wrap gap-2 mb-1.5" },
                   React.createElement("span", { className: "text-sm font-bold text-purple-700" }, "\u2728 Explain at my level"),
                   React.createElement("div", { className: "ml-auto flex gap-1", role: "group", "aria-label": "Reading level" },

@@ -897,7 +897,7 @@ window.StemLab = window.StemLab || {
               // ── TAB BAR ──
               React.createElement("div", { className: "flex gap-1 bg-slate-100 rounded-xl p-1", role: 'tablist', 'aria-label': 'Money Tool sections' },
                 tabs.map(function (t) {
-                  return React.createElement("button", { "aria-label": "Change tab", key: t.id, onClick: function () { upd('tab', t.id); }, role: 'tab', 'aria-selected': tab === t.id,
+                  return React.createElement("button", { key: t.id, onClick: function () { upd('tab', t.id); }, role: 'tab', 'aria-selected': tab === t.id,
                     className: "flex-1 px-2 py-2 rounded-lg text-xs font-bold transition-all " + (tab === t.id ? 'bg-white text-emerald-700 shadow-sm' : 'text-slate-600 hover:text-slate-700 hover:bg-white/50')
                   }, t.label);
                 })
@@ -986,7 +986,7 @@ window.StemLab = window.StemLab || {
                   challengeMode && placed.length > 0 && React.createElement("div", { className: "mt-3 pt-3 border-t border-amber-200 bg-amber-50 rounded-lg p-3" },
                     React.createElement("p", { className: "text-xs font-bold text-amber-700 mb-2" }, '\uD83C\uDFAF What\'s the total? Add up all the coins and bills!'),
                     React.createElement("div", { className: "flex items-center gap-2" },
-                      React.createElement("input", { type: "number", step: isJPY ? '1' : '0.01', placeholder: cur.symbol + '...', value: d.coinGuess != null ? d.coinGuess : '', onChange: function (e) { upd('coinGuess', e.target.value === '' ? null : parseFloat(e.target.value)); }, 'aria-label': 'Guess the coin total', className: "px-3 py-2 border border-amber-300 rounded-lg text-sm font-bold w-32 focus:ring-2 focus:ring-amber-400 outline-none" }),
+                      React.createElement("input", { type: "number", step: isJPY ? '1' : '0.01', placeholder: cur.symbol + '...', value: d.coinGuess != null ? d.coinGuess : '', onChange: function (e) { upd('coinGuess', e.target.value === '' ? null : parseFloat(e.target.value)); }, className: "px-3 py-2 border border-amber-300 rounded-lg text-sm font-bold w-32 focus:ring-2 focus:ring-amber-400 outline-none" }),
                       React.createElement("button", { "aria-label": "Check", onClick: function () {
                         var guess = d.coinGuess; var actual = boardTotal;
                         var isRight = typeof guess === 'number' && Math.abs(guess - actual) < (isJPY ? 0.5 : 0.005);
@@ -1216,7 +1216,7 @@ window.StemLab = window.StemLab || {
                       crBest > 0 && crScore >= crBest && crScore > 0 ? React.createElement("p", { className: "text-xs text-emerald-400 font-bold mt-2 animate-pulse" }, "\uD83C\uDFC6 NEW HIGH SCORE!") : null
                     ),
                     React.createElement("div", { className: "flex flex-col items-center space-y-3 w-full" }, 
-                      React.createElement("button", { "aria-label": "Play Again", onClick: startCashierRush, className: "px-8 py-3 bg-amber-500 text-zinc-900 font-black text-lg rounded-xl hover:bg-amber-400 transition-all shadow-[0_0_15px_rgba(251,191,36,0.5)] w-full max-w-[280px]" }, "Play Again \u21BB"),
+                      React.createElement("button", { onClick: startCashierRush, className: "px-8 py-3 bg-amber-500 text-zinc-900 font-black text-lg rounded-xl hover:bg-amber-400 transition-all shadow-[0_0_15px_rgba(251,191,36,0.5)] w-full max-w-[280px]" }, "Play Again \u21BB"),
                       React.createElement("button", { "aria-label": "Exit Emergency", onClick: function() { upd('crActive', false); }, className: "px-8 py-3 bg-transparent text-zinc-400 font-black text-sm rounded-xl hover:text-white hover:bg-zinc-800 transition-all w-full max-w-[280px] border border-zinc-700" }, "Exit Emergency")
                     )
                   ) : null
@@ -1392,7 +1392,7 @@ window.StemLab = window.StemLab || {
                         ),
                         React.createElement("div", { className: "flex items-center gap-2" },
                           React.createElement("label", { className: "text-xs font-bold text-slate-700 w-20" }, "Grand Total:"),
-                          React.createElement("input", { type: "number", step: isJPY ? '1' : '0.01', placeholder: cur.symbol + '...', 'aria-label': 'Guess total with tax', value: d.cartGuessTotal != null ? d.cartGuessTotal : '', onChange: function (e) { upd('cartGuessTotal', e.target.value === '' ? null : parseFloat(e.target.value)); upd('cartCheckoutFb', null); }, className: "px-2 py-1.5 border border-amber-300 rounded-lg text-xs font-bold w-28 focus:ring-2 focus:ring-amber-400 outline-none" })
+                          React.createElement("input", { type: "number", step: isJPY ? '1' : '0.01', placeholder: cur.symbol + '...', value: d.cartGuessTotal != null ? d.cartGuessTotal : '', onChange: function (e) { upd('cartGuessTotal', e.target.value === '' ? null : parseFloat(e.target.value)); upd('cartCheckoutFb', null); }, className: "px-2 py-1.5 border border-amber-300 rounded-lg text-xs font-bold w-28 focus:ring-2 focus:ring-amber-400 outline-none" })
                         )
                       ),
                       React.createElement("button", { "aria-label": "Check My Math", onClick: function () {
@@ -1564,7 +1564,7 @@ window.StemLab = window.StemLab || {
                 React.createElement("div", { className: "bg-gradient-to-br from-pink-50 to-rose-50 rounded-xl p-5 border border-pink-200" },
                   React.createElement("h3", { className: "text-base font-bold text-pink-800 mb-3" }, "\uD83D\uDCB3 Tips & Discounts"),
                   React.createElement("div", { className: "flex gap-2 mb-4" },
-                    React.createElement("button", { "aria-label": "Tip Calculator", onClick: genTipProblem, className: "flex-1 px-4 py-2 rounded-xl text-xs font-bold transition-all " + ((d.tipMode || 'tip') === 'tip' ? 'bg-pink-600 text-white shadow-md' : 'bg-white text-pink-600 border border-pink-200 hover:bg-pink-50') }, "\uD83C\uDF7D Tip Calculator"),
+                    React.createElement("button", { onClick: genTipProblem, className: "flex-1 px-4 py-2 rounded-xl text-xs font-bold transition-all " + ((d.tipMode || 'tip') === 'tip' ? 'bg-pink-600 text-white shadow-md' : 'bg-white text-pink-600 border border-pink-200 hover:bg-pink-50') }, "\uD83C\uDF7D Tip Calculator"),
                     React.createElement("button", { "aria-label": "Discount Shopping", onClick: genDiscountProblem, className: "flex-1 px-4 py-2 rounded-xl text-xs font-bold transition-all " + (d.tipMode === 'discount' ? 'bg-pink-600 text-white shadow-md' : 'bg-white text-pink-600 border border-pink-200 hover:bg-pink-50') }, "\uD83C\uDFF7\uFE0F Discount Shopping")
                   ),
                   // Tip mode
@@ -1825,7 +1825,7 @@ window.StemLab = window.StemLab || {
                       )
                     ),
                     React.createElement("div", { className: "flex items-center gap-2" },
-                      React.createElement("input", { type: "number", step: isJPY ? '1' : '0.01', placeholder: cur.symbol + '...', 'aria-label': 'Estimation answer', value: d.estAnswer != null ? d.estAnswer : '', onChange: function (e) { upd('estAnswer', e.target.value === '' ? null : parseFloat(e.target.value)); upd('estFb', null); }, className: "flex-1 px-3 py-2 border border-indigo-300 rounded-lg text-sm font-bold focus:ring-2 focus:ring-indigo-400 outline-none" }),
+                      React.createElement("input", { type: "number", step: isJPY ? '1' : '0.01', placeholder: cur.symbol + '...', value: d.estAnswer != null ? d.estAnswer : '', onChange: function (e) { upd('estAnswer', e.target.value === '' ? null : parseFloat(e.target.value)); upd('estFb', null); }, className: "flex-1 px-3 py-2 border border-indigo-300 rounded-lg text-sm font-bold focus:ring-2 focus:ring-indigo-400 outline-none" }),
                       React.createElement("button", { "aria-label": "Gen Change Check", onClick: function () {
                         if (d.estAnswer == null) return;
                         var tol = isJPY ? 0.5 : 0.015;
@@ -1859,8 +1859,8 @@ window.StemLab = window.StemLab || {
                       React.createElement("p", { className: "text-xs font-bold text-rose-600 mt-2" }, "Is this the right change? \uD83E\uDD14")
                     ),
                     React.createElement("div", { className: "grid grid-cols-2 gap-2" },
-                      React.createElement("button", { "aria-label": "Correct!", onClick: function () { upd('ccAnswer', true); upd('ccFb', null); }, className: "py-2 rounded-xl font-bold text-sm transition-all " + (d.ccAnswer === true ? 'bg-green-700 text-white shadow-md' : 'bg-white border border-green-300 text-green-600 hover:bg-green-50') }, "\u2705 Correct!"),
-                      React.createElement("button", { "aria-label": "Wrong!", onClick: function () { upd('ccAnswer', false); upd('ccFb', null); }, className: "py-2 rounded-xl font-bold text-sm transition-all " + (d.ccAnswer === false ? 'bg-red-700 text-white shadow-md' : 'bg-white border border-red-300 text-red-600 hover:bg-red-50') }, "\u274C Wrong!")
+                      React.createElement("button", { onClick: function () { upd('ccAnswer', true); upd('ccFb', null); }, className: "py-2 rounded-xl font-bold text-sm transition-all " + (d.ccAnswer === true ? 'bg-green-700 text-white shadow-md' : 'bg-white border border-green-300 text-green-600 hover:bg-green-50') }, "\u2705 Correct!"),
+                      React.createElement("button", { onClick: function () { upd('ccAnswer', false); upd('ccFb', null); }, className: "py-2 rounded-xl font-bold text-sm transition-all " + (d.ccAnswer === false ? 'bg-red-700 text-white shadow-md' : 'bg-white border border-red-300 text-red-600 hover:bg-red-50') }, "\u274C Wrong!")
                     ),
                     d.ccAnswer != null && React.createElement("button", { "aria-label": "Submit", onClick: function () {
                       var userSaysCorrect = d.ccAnswer;
@@ -1899,7 +1899,7 @@ window.StemLab = window.StemLab || {
                     ),
                     React.createElement("div", { className: "flex items-center gap-2" },
                       React.createElement("label", { className: "text-xs font-bold text-slate-600" }, "Final price:"),
-                      React.createElement("input", { type: "number", step: isJPY ? '1' : '0.01', placeholder: cur.symbol + '...', 'aria-label': 'Compare shopping answer', value: d.csAnswer != null ? d.csAnswer : '', onChange: function (e) { upd('csAnswer', e.target.value === '' ? null : parseFloat(e.target.value)); upd('csFb', null); }, className: "flex-1 px-3 py-2 border border-fuchsia-300 rounded-lg text-sm font-bold focus:ring-2 focus:ring-fuchsia-400 outline-none" }),
+                      React.createElement("input", { type: "number", step: isJPY ? '1' : '0.01', placeholder: cur.symbol + '...', value: d.csAnswer != null ? d.csAnswer : '', onChange: function (e) { upd('csAnswer', e.target.value === '' ? null : parseFloat(e.target.value)); upd('csFb', null); }, className: "flex-1 px-3 py-2 border border-fuchsia-300 rounded-lg text-sm font-bold focus:ring-2 focus:ring-fuchsia-400 outline-none" }),
                       React.createElement("button", { "aria-label": "Gen Structured Problem", onClick: function () {
                         if (d.csAnswer == null) return;
                         var tol = isJPY ? 0.5 : 0.02;

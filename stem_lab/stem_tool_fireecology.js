@@ -1410,8 +1410,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
           return h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 16 }, role: 'tablist', 'aria-label': 'Fire Ecology sections' },
             TABS.map(function(tt) {
               var active = tab === tt.id;
-              return h('button', { 'aria-label': 'Change tab',
-                key: tt.id,
+              return h('button', { key: tt.id,
                 onClick: function() { upd('tab', tt.id); },
                 role: 'tab', 'aria-selected': active,
                 style: {
@@ -1818,8 +1817,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             comparisonMode ? h('div', { style: { background: '#0f172a', borderRadius: 12, padding: 16, marginBottom: 16, border: '2px solid #7c3aed' } },
               h('div', { style: { fontWeight: 700, color: '#7c3aed', marginBottom: 12, fontSize: 15 } }, '\u2194\uFE0F Side-by-Side: Cultural Burn vs. Suppression'),
               h('p', { style: { margin: '0 0 12px 0', fontSize: 13, color: '#94a3b8' } }, 'Click to advance both forests 10 years \u2014 one managed with cultural burning, one with total fire suppression.'),
-              h('button', { 'aria-label': 'Action',
-                onClick: function() {
+              h('button', { onClick: function() {
                   // Advance Forest A (cultural burn)
                   var newA = Object.assign({}, sim);
                   newA.fuelLoad = clamp(sim.fuelLoad - 8, 3, 100);
@@ -1969,7 +1967,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 h('span', { style: { color: color, fontWeight: 700 } }, value + unit)
               ),
               h('input', {
-                type: 'range', 'aria-label': 'value', min: min, max: max, step: step, value: value,
+                type: 'range', min: min, max: max, step: step, value: value,
                 onChange: function(e) { upd(key, parseFloat(e.target.value)); upd('burnResult', null); },
                 style: { width: '100%', accentColor: color }
               })
@@ -2462,7 +2460,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 h('span', { style: { color: '#f97316', fontWeight: 700 } }, carbonAcres.toLocaleString() + ' acres')
               ),
               h('input', {
-                type: 'range', 'aria-label': 'Enter', min: 10, max: 10000, step: 10, value: carbonAcres,
+                type: 'range',  min: 10, max: 10000, step: 10, value: carbonAcres,
                 onChange: function(e) { updMulti({ carbonAcres: parseInt(e.target.value), carbonCalculated: false }); },
                 style: { width: '100%', accentColor: '#f97316' }
               }),

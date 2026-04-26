@@ -2197,7 +2197,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               h('p',{className:'text-sm font-bold text-emerald-800 mb-1'},cq.question),
               h('p',{className:'text-[11px] text-emerald-600 mb-3 italic'},'\u222B x\u207F dx = x\u207F\u207A\u00B9/(n+1) + C'),
               h('div',{className:'flex gap-2'},
-                h('input',{type:'number',step:'any',autoFocus:true,value:d._calcExactInput||'',onChange:function(e){upd('_calcExactInput',e.target.value);},onKeyDown:function(e){if(e.key==='Enter'&&d._calcExactInput)checkCalcAnswer(d._calcExactInput);},'aria-label': 'Exact calculus answer',placeholder:'Type exact value\u2026',className:'flex-1 px-3 py-2 rounded-lg border-2 border-emerald-300 text-sm font-bold bg-white focus:border-emerald-500'}),
+                h('input',{type:'number',step:'any',autoFocus:true,value:d._calcExactInput||'',onChange:function(e){upd('_calcExactInput',e.target.value);},onKeyDown:function(e){if(e.key==='Enter'&&d._calcExactInput)checkCalcAnswer(d._calcExactInput);},placeholder:'Type exact value\u2026',className:'flex-1 px-3 py-2 rounded-lg border-2 border-emerald-300 text-sm font-bold bg-white focus:border-emerald-500'}),
                 h('button',{"aria-label":"Check",onClick:function(){if(d._calcExactInput)checkCalcAnswer(d._calcExactInput);},className:'px-4 py-2 bg-emerald-700 text-white rounded-lg text-xs font-bold hover:bg-emerald-700'},'Check \u2192')
               )
             ),
@@ -2262,7 +2262,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   h('p',{className:'text-xs text-slate-700 mb-2 font-bold'},'Now go to the Integral tab and find the error value for n=4. Come back and enter it below:'),
                   h('div',{ className:'flex gap-2 items-center'},
                     h('span',{ className:'text-xs font-bold text-slate-600'},'Error at n=4:'),
-                    h('input',{type:'number',step:'any',placeholder:'0.????',value:data.err4||'','aria-label':'Error for n equals 4',onChange:function(e){saveData('err4',e.target.value);},className:'w-24 px-2 py-1 border-2 border-red-200 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
+                    h('input',{type:'number',step:'any',placeholder:'0.????',value:data.err4||'',onChange:function(e){saveData('err4',e.target.value);},className:'w-24 px-2 py-1 border-2 border-red-200 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
                     h('button',{"aria-label":"Got it",disabled:!data.err4,onClick:function(){nextStep();stemBeep&&stemBeep('click');},className:'px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs font-bold disabled:opacity-40 hover:bg-red-700'},'Got it \u2192')
                   )
                 ),
@@ -2286,7 +2286,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   h('p',{className:'text-xs text-slate-600 mb-3'},'Go to the Integral tab, set n=8 (using the slider), and record the error:'),
                   h('div',{ className:'flex gap-2 items-center mb-3'},
                     h('span',{ className:'text-xs font-bold text-slate-600'},'Error at n=8:'),
-                    h('input',{type:'number',step:'any',placeholder:'0.????',value:data.err8||'','aria-label':'Error for n equals 8',onChange:function(e){saveData('err8',e.target.value);},className:'w-24 px-2 py-1 border-2 border-red-200 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
+                    h('input',{type:'number',step:'any',placeholder:'0.????',value:data.err8||'',onChange:function(e){saveData('err8',e.target.value);},className:'w-24 px-2 py-1 border-2 border-red-200 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
                     h('button',{"aria-label":"Got it",disabled:!data.err8,onClick:function(){nextStep();stemBeep&&stemBeep('click');},className:'px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs font-bold disabled:opacity-40 hover:bg-red-700'},'Got it \u2192')
                   )
                 ),
@@ -2307,7 +2307,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                       h('p',{className:'text-xs font-bold text-slate-700 mb-2'},'Now predict: what will the error be at n=16? (Hint: apply the same ratio again)'),
                       h('div',{ className:'flex gap-2 items-center'},
                         h('span',{ className:'text-xs font-bold text-slate-600'},'Predicted error at n=16:'),
-                        h('input',{type:'number',step:'any',placeholder:'0.????',value:data.predictN16||'','aria-label':'Predicted error for n equals 16',onChange:function(e){saveData('predictN16',e.target.value);},className:'w-24 px-2 py-1 border-2 border-violet-200 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
+                        h('input',{type:'number',step:'any',placeholder:'0.????',value:data.predictN16||'',onChange:function(e){saveData('predictN16',e.target.value);},className:'w-24 px-2 py-1 border-2 border-violet-200 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
                         h('button',{"aria-label":"Predict locked",disabled:!data.predictN16,onClick:function(){nextStep();stemBeep&&stemBeep('click');},className:'px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs font-bold disabled:opacity-40 hover:bg-red-700'},'Predict locked \u2192')
                       )
                     );
@@ -2688,7 +2688,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 save('aiLoading', false); save('aiError', 'Could not reach AI tutor. Try again in a moment.');
               });
             }
-            return h('div', { className: 'mt-3 p-3 rounded-xl border-2 border-purple-200 bg-purple-50', role: 'region', 'aria-label': 'AI calculus tutor' },
+            return h('div', { className: 'mt-3 p-3 rounded-xl border-2 border-purple-200 bg-purple-50', role: 'region', },
               h('div', { className: 'flex items-center flex-wrap gap-2 mb-1.5' },
                 h('span', { className: 'text-sm font-bold text-purple-700' }, '\u2728 Explain at my level'),
                 h('div', { className: 'ml-auto flex gap-1', role: 'group', 'aria-label': 'Reading level' },

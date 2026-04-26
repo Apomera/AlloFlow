@@ -1178,8 +1178,7 @@
           h('div', { className: 'flex gap-1 mb-4 bg-slate-100 rounded-xl p-1', role: 'tablist', 'aria-label': 'Decomposer Lab sections' },
             TABS.map(function(t) {
               var active = tab === t.id;
-              return h('button', { 'aria-label': 'Change tab',
-                key: t.id,
+              return h('button', { key: t.id,
                 onClick: function() { upd('tab', t.id); },
                 role: 'tab', 'aria-selected': active,
                 className: 'flex-1 py-2 rounded-lg text-xs font-bold transition-all '
@@ -1955,8 +1954,7 @@
                     var isTarget = huntTarget === obj.id;
                     var isWrong = huntWrongGuess === obj.id;
                     var isSelected = selectedSceneObj === obj.id;
-                    return h('button', { 'aria-label': 'Action',
-                      key: obj.id,
+                    return h('button', { key: obj.id,
                       onClick: function() {
                         if (isFound) {
                           SOUNDS.elementClick();
@@ -2707,8 +2705,7 @@
                 placeholder: 'Ask about ' + sel.name + '...',
                 className: 'flex-1 px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-200'
               }),
-              h('button', { 'aria-label': 'Handle Ai Question',
-                onClick: function() {
+              h('button', { onClick: function() {
                   if (aiInput.trim()) handleAiQuestion(aiInput.trim());
                 },
                 disabled: !aiInput.trim() || aiLoading,

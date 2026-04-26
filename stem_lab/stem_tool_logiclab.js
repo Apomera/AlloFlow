@@ -1932,7 +1932,7 @@ window.StemLab = window.StemLab || {
 
                     React.createElement("div", { className: "flex gap-2 mt-3" },
 
-                      React.createElement("button", { "aria-label": "Next", onClick: function() { upd({ challengeIdx: challengeIdx + 1, challengeAnswer: null, aiDetective: null }); }, className: "px-4 py-2 bg-violet-600 text-white text-xs font-bold rounded-lg hover:bg-violet-700 transition-all" }, "Next \u2192"),
+                      React.createElement("button", { onClick: function() { upd({ challengeIdx: challengeIdx + 1, challengeAnswer: null, aiDetective: null }); }, className: "px-4 py-2 bg-violet-600 text-white text-xs font-bold rounded-lg hover:bg-violet-700 transition-all" }, "Next \u2192"),
 
                       React.createElement("button", { "aria-label": "AI Mystery",
 

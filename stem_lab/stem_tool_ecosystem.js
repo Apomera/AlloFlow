@@ -2247,8 +2247,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             else if (t2 === 'sandbox') tabLabel = '\uD83E\uDDEA Sandbox';
             else if (t2 === 'quiz') tabLabel = '\u2753 Quiz';
             else tabLabel = '\uD83C\uDFC5 Badges (' + badgeCount + '/' + BADGES.length + ')';
-            return h('button', { 'aria-label': 'Change tab',
-              key: t2,
+            return h('button', { key: t2,
               role: 'tab', 'aria-selected': tab === t2,
               className: 'flex-1 px-2 py-1.5 text-xs font-semibold rounded-md transition-all ' +
                 (tab === t2 ? 'bg-emerald-700 text-white shadow' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'),
@@ -2273,7 +2272,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
 
           // Canvas container
           h('div', { className: 'relative rounded-xl overflow-hidden border-2 border-emerald-400', style: { height: 320 } },
-            h('canvas', { 'aria-label': 'Ecosystem simulation',
+            h('canvas', { 
               ref: canvasRef,
               role: 'img',
               'aria-label': 'Ecosystem simulation. ' + biome + ' biome. Prey: ' + (preyCount || '?') + ', Predators: ' + (predCount || '?') + '. ' + (simPaused ? 'Paused.' : 'Running.'),
@@ -2313,7 +2312,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             h('div', { className: 'flex items-center gap-2 flex-1' },
               h('span', { className: 'text-[11px] font-semibold text-slate-200 dark:text-slate-200' }, 'Speed:'),
               h('input', {
-                type: 'range', 'aria-label': 'sim speed', min: 1, max: 6, step: 1, value: simSpeed,
+                type: 'range', min: 1, max: 6, step: 1, value: simSpeed,
                 'aria-label': 'Simulation speed',
                 className: 'flex-1 h-1.5 accent-emerald-500',
                 onChange: function(e) {
@@ -2401,7 +2400,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               h('span', { className: 'text-amber-600 font-bold' }, carryingCapacity)
             ),
             h('input', {
-              type: 'range', 'aria-label': 'carrying capacity', min: 30, max: 200, step: 5, value: carryingCapacity,
+              type: 'range', min: 30, max: 200, step: 5, value: carryingCapacity,
               'aria-label': 'Carrying capacity',
               className: 'w-full h-1.5 accent-amber-500',
               onChange: function(e) {
@@ -2607,7 +2606,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 h('span', { className: 'text-emerald-600 font-bold' }, prey0)
               ),
               h('input', {
-                type: 'range', 'aria-label': 'prey0', min: 5, max: 150, step: 5, value: prey0,
+                type: 'range', min: 5, max: 150, step: 5, value: prey0,
                 'aria-label': 'Prey start population',
                 className: 'w-full h-1.5 accent-emerald-500',
                 onChange: function(e) { upd('prey0', parseInt(e.target.value, 10)); }
@@ -2620,7 +2619,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 h('span', { className: 'text-red-600 font-bold' }, pred0)
               ),
               h('input', {
-                type: 'range', 'aria-label': 'pred0', min: 2, max: 80, step: 2, value: pred0,
+                type: 'range', min: 2, max: 80, step: 2, value: pred0,
                 'aria-label': 'Predator start population',
                 className: 'w-full h-1.5 accent-red-500',
                 onChange: function(e) { upd('pred0', parseInt(e.target.value, 10)); }
@@ -2669,7 +2668,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 h('span', { className: 'text-blue-600 font-bold' }, predBirth.toFixed(3))
               ),
               h('input', {
-                type: 'range', 'aria-label': 'Enter', min: 0.001, max: 0.05, step: 0.001, value: predBirth,
+                type: 'range',  min: 0.001, max: 0.05, step: 0.001, value: predBirth,
                 className: 'w-full h-1.5 accent-blue-500',
                 onChange: function(e) { upd('predBirth', parseFloat(e.target.value)); }
               })
@@ -2770,8 +2769,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             showAI && h('div', { className: 'space-y-2' },
               h('div', { className: 'flex gap-1 flex-wrap' },
                 ['What is Lotka-Volterra?', 'Why do populations oscillate?', 'What is carrying capacity?', 'Explain food webs'].map(function(question) {
-                  return h('button', { 'aria-label': 'Thinking...',
-                    key: question,
+                  return h('button', { key: question,
                     className: 'px-2 py-1 text-[11px] rounded-full border border-indigo-300 dark:border-indigo-600 text-indigo-600 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-800',
                     onClick: function() { askAI(question); }
                   }, question);
@@ -2794,7 +2792,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
 
           // Canvas container (same canvas, with sandbox interactivity)
           h('div', { className: 'relative rounded-xl overflow-hidden border-2 border-teal-400', style: { height: 320 } },
-            h('canvas', { 'aria-label': 'Ecosystem food web visualization',
+            h('canvas', { 
               ref: canvasRef,
               role: 'img',
               'aria-label': 'Ecosystem sandbox. Click to place prey (left) or predators (right). ' + (simPaused ? 'Paused.' : 'Running.'),
@@ -2862,7 +2860,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             h('div', { className: 'flex items-center gap-2 flex-1' },
               h('span', { className: 'text-[11px] font-semibold text-slate-200 dark:text-slate-200' }, 'Speed:'),
               h('input', {
-                type: 'range', 'aria-label': 'sim speed', min: 1, max: 6, step: 1, value: simSpeed,
+                type: 'range', min: 1, max: 6, step: 1, value: simSpeed,
                 'aria-label': 'Sandbox simulation speed',
                 className: 'flex-1 h-1.5 accent-teal-500',
                 onChange: function(e) {

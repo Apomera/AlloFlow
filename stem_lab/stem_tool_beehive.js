@@ -1052,7 +1052,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('div', null,
                   h('div', { className: 'font-bold text-sm' }, 'Hive Inspector'),
                   h('div', { className: 'text-[11px] text-amber-300' }, 'Inside the superorganism'))),
-              h('button', { onClick: function() { upd('showInspect', false); }, 'aria-label': 'Return to colony view', className: 'px-3 py-1.5 bg-amber-800 hover:bg-amber-700 rounded-lg text-xs font-bold' }, '← Colony View')),
+              h('button', { onClick: function() { upd('showInspect', false); }, className: 'px-3 py-1.5 bg-amber-800 hover:bg-amber-700 rounded-lg text-xs font-bold' }, '← Colony View')),
             // Layer tabs — proper ARIA tablist with keyboard navigation
             h('div', { className: 'flex gap-1 flex-wrap', role: 'tablist', 'aria-label': 'Hive inspection layers' },
               (function() {
@@ -8853,7 +8853,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   h('div', { className: 'flex-1 min-w-0' },
                     h('div', { className: 'text-xs font-bold ' + (dk ? 'text-amber-300' : 'text-amber-800') }, '🧬 Bee Stock: ' + activeSubspecies.name),
                     h('p', { className: 'text-[11px] truncate ' + (dk ? 'text-slate-300' : 'text-slate-600') }, activeSubspecies.note)),
-                  h('button', { onClick: function () { upd('stockPickerOpen', true); }, 'aria-label': 'Change bee stock', className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold ' + (dk ? 'bg-amber-700 text-white hover:bg-amber-600' : 'bg-amber-500 text-white hover:bg-amber-600') }, 'Change ▾'));
+                  h('button', { onClick: function () { upd('stockPickerOpen', true); }, className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold ' + (dk ? 'bg-amber-700 text-white hover:bg-amber-600' : 'bg-amber-500 text-white hover:bg-amber-600') }, 'Change ▾'));
               }
               return h('div', { className: 'rounded-2xl border-2 p-4 space-y-3 ' + (dk ? 'bg-gradient-to-br from-amber-900/40 to-yellow-900/30 border-amber-500/60' : 'bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-400'), role: 'region', 'aria-label': 'Choose honeybee subspecies' },
                 h('div', { className: 'flex items-start justify-between gap-2' },
@@ -9010,7 +9010,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('button', { onClick: function() { upd('soundOn', !soundOn); }, 'aria-label': soundOn ? 'Mute sound effects' : 'Enable sound effects', title: soundOn ? 'Sound on' : 'Sound off',
                 className: 'p-1.5 rounded-lg text-sm transition-all ' + (dk ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-300') }, soundOn ? '🔊' : '🔇'),
               // Quiz button
-              h('button', { onClick: startQuiz, 'aria-label': 'Take the Bee Knowledge Quiz', title: 'Bee Quiz' + (d.bestQuizScore ? ' (Best: ' + d.bestQuizScore + ')' : ''),
+              h('button', { onClick: startQuiz, title: 'Bee Quiz' + (d.bestQuizScore ? ' (Best: ' + d.bestQuizScore + ')' : ''),
                 className: 'p-1.5 rounded-lg text-sm transition-all ' + (dk ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-300') }, '🎓'),
               // Badges button
               h('button', { onClick: function() { upd('showBadges', !showBadges); }, 'aria-label': 'View badges (' + badgeCount + '/' + BADGE_DEFS.length + ' earned)', title: 'Badges: ' + badgeCount + '/' + BADGE_DEFS.length,
@@ -9018,7 +9018,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 '🏅',
                 badgeCount > 0 && h('span', { className: 'absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full text-[9px] font-bold flex items-center justify-center text-white bg-amber-500' }, badgeCount)),
               // Export colony report
-              h('button', { onClick: exportColonyReport, 'aria-label': 'Export colony report as markdown', title: 'Export colony report to clipboard',
+              h('button', { onClick: exportColonyReport, title: 'Export colony report to clipboard',
                 className: 'p-1.5 rounded-lg text-sm transition-all ' + (dk ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-300') }, '📄'),
               // Keyboard help
               h('button', { onClick: function() { upd('showKeys', !d.showKeys); }, 'aria-label': 'Keyboard shortcuts', title: 'Keyboard shortcuts',
@@ -9203,7 +9203,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('div', { className: 'flex-1 min-w-0' },
                   h('div', { className: 'text-xs font-bold ' + (dk ? 'text-amber-300' : 'text-amber-800') }, '🧬 Bee Stock: ' + activeSubspecies.name),
                   h('p', { className: 'text-[11px] truncate ' + (dk ? 'text-slate-300' : 'text-slate-600') }, activeSubspecies.note)),
-                h('button', { onClick: function () { upd('stockPickerOpen', true); }, 'aria-label': 'Change bee stock', className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold ' + (dk ? 'bg-amber-700 text-white hover:bg-amber-600' : 'bg-amber-500 text-white hover:bg-amber-600') }, 'Change ▾'));
+                h('button', { onClick: function () { upd('stockPickerOpen', true); }, className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold ' + (dk ? 'bg-amber-700 text-white hover:bg-amber-600' : 'bg-amber-500 text-white hover:bg-amber-600') }, 'Change ▾'));
             }
             return h('div', { className: 'rounded-2xl border-2 p-4 space-y-3 ' + (dk ? 'bg-gradient-to-br from-amber-900/40 to-yellow-900/30 border-amber-500/60' : 'bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-400'), role: 'region', 'aria-label': 'Choose honeybee subspecies' },
               h('div', { className: 'flex items-start justify-between gap-2' },
@@ -9510,7 +9510,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('div', { className: 'text-xs ' + (dk ? 'text-slate-300' : 'text-slate-600') }, activeEvent.desc))),
             h('div', { className: 'rounded-lg p-3 text-xs border ' + (dk ? 'bg-slate-800 text-slate-300 border-slate-700' : 'bg-white text-slate-700 border-slate-200') },
               h('strong', null, '🔬 Science: '), activeEvent.lesson),
-            h('button', { onClick: dismissEvent, 'aria-label': 'Acknowledge event', className: 'px-4 py-2 bg-amber-600 text-white rounded-lg text-sm font-bold hover:bg-amber-700 transition-all' }, '✓ Acknowledge')),
+            h('button', { onClick: dismissEvent, className: 'px-4 py-2 bg-amber-600 text-white rounded-lg text-sm font-bold hover:bg-amber-700 transition-all' }, '✓ Acknowledge')),
 
           // Status bar (beekeeper mode only)
           viewMode === 'beekeeper' && h('div', { className: 'flex flex-wrap gap-3 items-center text-xs font-bold', role: 'status', 'aria-live': 'polite', 'aria-label': 'Colony status: ' + seasonNames[season] + ', Day ' + ((day % 30) + 1) + ', ' + honey + ' lbs honey, ' + fmtPop(workers) + ' workers' },
@@ -9827,8 +9827,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           viewMode === 'beekeeper' && colonySurvived && h('div', { className: 'space-y-2' },
             // Primary actions row
             h('div', { className: 'flex gap-2 items-center' },
-              h('button', { onClick: advanceDay, 'aria-label': 'Advance one day', className: 'flex-1 py-2.5 rounded-xl font-bold text-sm text-white shadow-sm transition-all hover:shadow-md hover:scale-[1.01] ' + (dk ? 'bg-gradient-to-r from-amber-700 to-amber-600 hover:from-amber-600 hover:to-amber-500' : 'bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-700 hover:to-amber-600'), style: { boxShadow: '0 2px 8px rgba(217,119,6,0.25)' } }, '\u23E9 Next Day'),
-              h('button', { onClick: function() { advanceDays(5); }, 'aria-label': 'Advance 5 days', className: 'px-3 py-2.5 rounded-xl text-sm font-bold transition-all ' + (dk ? 'bg-amber-900/40 text-amber-300 hover:bg-amber-800/50' : 'bg-amber-100 text-amber-700 hover:bg-amber-200') }, '\u23ED +5'),
+              h('button', { onClick: advanceDay, className: 'flex-1 py-2.5 rounded-xl font-bold text-sm text-white shadow-sm transition-all hover:shadow-md hover:scale-[1.01] ' + (dk ? 'bg-gradient-to-r from-amber-700 to-amber-600 hover:from-amber-600 hover:to-amber-500' : 'bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-700 hover:to-amber-600'), style: { boxShadow: '0 2px 8px rgba(217,119,6,0.25)' } }, '\u23E9 Next Day'),
+              h('button', { onClick: function() { advanceDays(5); }, className: 'px-3 py-2.5 rounded-xl text-sm font-bold transition-all ' + (dk ? 'bg-amber-900/40 text-amber-300 hover:bg-amber-800/50' : 'bg-amber-100 text-amber-700 hover:bg-amber-200') }, '\u23ED +5'),
               h('button', { onClick: function() { advanceDays(30); }, 'aria-label': 'Advance 30 days (1 month)', className: 'px-3 py-2.5 rounded-xl text-sm font-bold transition-all ' + (dk ? 'bg-amber-900/30 text-amber-400 hover:bg-amber-800/40' : 'bg-amber-50 text-amber-600 hover:bg-amber-100') }, '\u23ED +30')
             ),
             // Management actions

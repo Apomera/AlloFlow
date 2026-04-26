@@ -6544,6 +6544,8 @@ var d = labToolData.dissection || {};
 
                     placeholder: 'Search organs...',
 
+                    "aria-label": "Search organs in this layer",
+
                     value: d.organSearch || '',
 
                     onChange: function (e) { upd('organSearch', e.target.value); },
@@ -6796,7 +6798,7 @@ var d = labToolData.dissection || {};
 
                   React.createElement("div", { className: "w-full h-2 bg-blue-100 rounded-full overflow-hidden" },
 
-                    React.createElement("div", { role: "progressbar", "aria-valuemin": "0", "aria-valuemax": "100", className: "h-full rounded-full transition-all duration-500 " + (progressPct >= 100 ? 'bg-green-500' : 'bg-blue-500'), style: { width: progressPct + '%' } })
+                    React.createElement("div", { role: "progressbar", "aria-valuemin": 0, "aria-valuemax": 100, "aria-valuenow": progressPct, "aria-label": "Structures examined: " + exploredCount + " of " + totalOrgansInSpecimen, className: "h-full rounded-full transition-all duration-500 " + (progressPct >= 100 ? 'bg-green-500' : 'bg-blue-500'), style: { width: progressPct + '%' } })
 
                   ),
 

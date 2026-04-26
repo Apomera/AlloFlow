@@ -1045,7 +1045,7 @@ window.StemLab = window.StemLab || {
                 })
               )
             ),
-            h("div", { className: "flex flex-wrap gap-1", role: "group", 'aria-label': 'DNA bases' },
+            h("div", { className: "flex flex-wrap gap-1", role: "group", },
               dnaSeq.split('').map(function(base, idx) {
                 return h("button", { key: idx, onClick: function() { var order = 'ATGC'; var next = order[(order.indexOf(base) + 1) % 4]; updMulti({ dnaSequence: dnaSeq.substring(0, idx) + next + dnaSeq.substring(idx + 1), mRNA: '', protein: [], animStep: 0 }); },
                   className: "w-8 h-8 rounded-lg font-mono font-bold text-white text-sm hover:scale-110 transition-all", style: { background: BASE_COLORS[base] }, 'aria-label': 'Base ' + (idx + 1) + ': ' + base

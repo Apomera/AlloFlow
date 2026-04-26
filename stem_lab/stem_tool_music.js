@@ -2891,11 +2891,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                 ),
                 // Undo / Redo
                 React.createElement("div", { className: "flex gap-1" },
-                  React.createElement("button", { "aria-label": "Undo last beat change", onClick: bpUndo, disabled: !(window._bpUndoStack || []).length, className: "px-2 py-1 rounded text-[11px] font-bold transition-all " + ((window._bpUndoStack || []).length ? 'bg-slate-100 text-slate-600 hover:bg-slate-200' : 'bg-slate-50 text-slate-600 cursor-not-allowed') }, "\u21A9 " + (window._bpUndoStack || []).length),
-                  React.createElement("button", { "aria-label": "Redo beat change", onClick: bpRedo, disabled: !(window._bpRedoStack || []).length, className: "px-2 py-1 rounded text-[11px] font-bold transition-all " + ((window._bpRedoStack || []).length ? 'bg-slate-100 text-slate-600 hover:bg-slate-200' : 'bg-slate-50 text-slate-600 cursor-not-allowed') }, "\u21AA " + (window._bpRedoStack || []).length)
+                  React.createElement("button", { onClick: bpUndo, disabled: !(window._bpUndoStack || []).length, className: "px-2 py-1 rounded text-[11px] font-bold transition-all " + ((window._bpUndoStack || []).length ? 'bg-slate-100 text-slate-600 hover:bg-slate-200' : 'bg-slate-50 text-slate-600 cursor-not-allowed') }, "\u21A9 " + (window._bpUndoStack || []).length),
+                  React.createElement("button", { onClick: bpRedo, disabled: !(window._bpRedoStack || []).length, className: "px-2 py-1 rounded text-[11px] font-bold transition-all " + ((window._bpRedoStack || []).length ? 'bg-slate-100 text-slate-600 hover:bg-slate-200' : 'bg-slate-50 text-slate-600 cursor-not-allowed') }, "\u21AA " + (window._bpRedoStack || []).length)
                 ),
                 // Step Rec toggle
-                React.createElement("button", { "aria-label": "Toggle step recording", onClick: function () { upd('bpStepRec', !d.bpStepRec); upd('bpStepRecPos', 0); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + (d.bpStepRec ? 'bg-red-700 text-white shadow-inner animate-pulse' : 'bg-red-50 text-red-500 hover:bg-red-100 border border-red-200') }, d.bpStepRec ? '\u23FA REC' : '\u26AB REC'),
+                React.createElement("button", { onClick: function () { upd('bpStepRec', !d.bpStepRec); upd('bpStepRecPos', 0); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + (d.bpStepRec ? 'bg-red-700 text-white shadow-inner animate-pulse' : 'bg-red-50 text-red-500 hover:bg-red-100 border border-red-200') }, d.bpStepRec ? '\u23FA REC' : '\u26AB REC'),
                 // Clear
                 React.createElement("button", { "aria-label": "Clear all beats", onClick: function () { pushBpUndo(); upd('seqGrid', {}); upd('beatMelody', null); }, className: "ml-auto px-2 py-1 rounded text-[11px] font-bold bg-slate-100 text-slate-600 hover:bg-red-50 hover:text-red-500 transition-all" }, "\uD83D\uDDD1 Clear")
               ),
@@ -2960,7 +2960,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                         className: "flex-1 h-1.5 accent-purple-500", style: { maxWidth: '120px' }
                       }),
                       React.createElement("span", { className: "text-[11px] text-slate-600 w-7 text-right" }, Math.round(vol * 100) + '%'),
-                      React.createElement("button", { "aria-label": "M", onClick: function () { var m = Object.assign({}, d.chMutes || {}); m[row] = !m[row]; upd('chMutes', m); },
+                      React.createElement("button", { onClick: function () { var m = Object.assign({}, d.chMutes || {}); m[row] = !m[row]; upd('chMutes', m); },
                         className: "w-5 h-5 rounded text-[11px] font-black " + (muted ? 'bg-red-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
                       }, "M"),
                       React.createElement("button", { "aria-label": "S", onClick: function () { upd('chSolo', soloed ? -1 : row); },
@@ -2975,7 +2975,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
               React.createElement("div", { className: "bg-gradient-to-r from-violet-50 to-fuchsia-50 rounded-xl border border-violet-200/60 p-3 mb-3" },
                 React.createElement("div", { className: "flex items-center gap-2 mb-2" },
                   React.createElement("span", { className: "text-xs font-bold text-violet-700" }, "\u2728 Effects"),
-                  React.createElement("button", { "aria-label": "Toggle audio effects", onClick: function () { upd('bpFxOn', !d.bpFxOn); if (!d.bpFxOn) _initBpFx(); },
+                  React.createElement("button", { onClick: function () { upd('bpFxOn', !d.bpFxOn); if (!d.bpFxOn) _initBpFx(); },
                     className: "px-2 py-0.5 rounded-full text-[11px] font-bold transition-all " + (d.bpFxOn ? 'bg-violet-600 text-white' : 'bg-violet-100 text-violet-600')
                   }, d.bpFxOn ? 'FX ON' : 'FX OFF'),
                   d.bpFxOn && React.createElement("button", { "aria-label": "Reset audio effects", onClick: function () { upd('bpReverb', 0); upd('bpDelay', 0); upd('bpFilterCut', 20000); }, className: "text-[11px] text-violet-400 hover:text-violet-600" }, "Reset")
@@ -3322,7 +3322,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
               React.createElement("div", { className: "bg-gradient-to-r from-rose-50 to-pink-50 rounded-xl border border-rose-200/60 p-3 mb-3" },
                 React.createElement("div", { className: "flex items-center gap-2 mb-2" },
                   React.createElement("span", { className: "text-xs font-bold text-rose-700" }, "\uD83E\uDD4A Rhythm Challenge"),
-                  React.createElement("button", { "aria-label": "Challenge me!", onClick: function () { upd('bpRhythm', RHYTHM_CHALLENGES[Math.floor(Math.random() * RHYTHM_CHALLENGES.length)]); upd('bpRhythmScore', null); },
+                  React.createElement("button", { onClick: function () { upd('bpRhythm', RHYTHM_CHALLENGES[Math.floor(Math.random() * RHYTHM_CHALLENGES.length)]); upd('bpRhythmScore', null); },
                     className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-rose-600 text-white hover:bg-rose-700 transition-all shadow-sm"
                   }, "\uD83C\uDFB2 Challenge me!"),
                   React.createElement("button", { "aria-label": "Random", onClick: function () { upd('bpRhythm', genRandomRhythm()); upd('bpRhythmScore', null); },
@@ -3503,8 +3503,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                     },
                     className: "px-3 py-1.5 rounded-lg text-[11px] font-bold bg-emerald-700 text-white hover:bg-emerald-700 transition-all shadow-sm"
                   }, "\uD83D\uDCBE Save"),
-                  React.createElement("button", { "aria-label": "Share URL", onClick: sharePattern, className: "px-3 py-1.5 rounded-lg text-[11px] font-bold bg-blue-700 text-white hover:bg-blue-600 transition-all shadow-sm" }, "\uD83D\uDD17 Share URL"),
-                  React.createElement("button", { "aria-label": "Snapshot", onClick: exportBeat, disabled: d.bpExporting,
+                  React.createElement("button", { onClick: sharePattern, className: "px-3 py-1.5 rounded-lg text-[11px] font-bold bg-blue-700 text-white hover:bg-blue-600 transition-all shadow-sm" }, "\uD83D\uDD17 Share URL"),
+                  React.createElement("button", { onClick: exportBeat, disabled: d.bpExporting,
                     className: "px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all shadow-sm " + (d.bpExporting ? 'bg-gray-300 text-gray-500' : 'bg-orange-700 text-white hover:bg-orange-600')
                   }, d.bpExporting ? '\u23F3 Recording...' : '\uD83D\uDCE5 Export'),
                   React.createElement("button", { "aria-label": "Snapshot",
@@ -4420,7 +4420,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                   upd('aiLoading', false); upd('aiError', 'Could not reach AI tutor. Try again in a moment.');
                 });
               }
-              return React.createElement("div", { className: "mt-3 p-3 rounded-xl border-2 border-purple-300 bg-purple-50", role: "region", "aria-label": "AI music tutor" },
+              return React.createElement("div", { className: "mt-3 p-3 rounded-xl border-2 border-purple-300 bg-purple-50", role: "region", },
                 React.createElement("div", { className: "flex items-center flex-wrap gap-2 mb-1.5" },
                   React.createElement("span", { className: "text-sm font-bold text-purple-700" }, "\u2728 Explain at my level"),
                   React.createElement("div", { className: "ml-auto flex gap-1", role: "group", "aria-label": "Reading level" },

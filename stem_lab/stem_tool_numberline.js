@@ -500,7 +500,7 @@ window.StemLab = window.StemLab || {
                   'aria-label': 'Marker label',
                   className: 'flex-1 px-3 py-1.5 text-sm border border-blue-200 rounded-lg'
                 }),
-                h('input', { type: 'color', id: 'nlMarkerColor', defaultValue: '#ef4444', 'aria-label': 'Marker color', className: 'w-8 h-8 rounded cursor-pointer' }),
+                h('input', { type: 'color', id: 'nlMarkerColor', defaultValue: '#ef4444', className: 'w-8 h-8 rounded cursor-pointer' }),
                 h('button', { 'aria-label': '+ Add',
                   onClick: function() {
                     var valEl = document.getElementById('nlMarkerVal');

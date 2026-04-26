@@ -3886,11 +3886,12 @@ var d = labToolData.cell;
               React.createElement("div", { className: "flex gap-2" },
                 React.createElement("input", {
                   type: "text", placeholder: "Ask about cells, organisms...", value: d._cellAIQ || '',
+                  'aria-label': 'Ask the cell biology AI tutor',
                   onChange: function (e) { upd('_cellAIQ', e.target.value); },
                   onKeyDown: function (e) { if (e.key === 'Enter') askAI(d._cellAIQ); },
-                  className: "flex-1 px-3 py-1.5 text-xs rounded-lg border border-blue-200 focus:focus:border-blue-400"
+                  className: "flex-1 px-3 py-1.5 text-xs rounded-lg border border-blue-200 focus:border-blue-400"
                 }),
-                React.createElement("button", { onClick: function () { askAI(d._cellAIQ); }, className: "px-3 py-1.5 text-xs font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700", disabled: d._cellAILoading }, d._cellAILoading ? '...' : 'Ask')
+                React.createElement("button", { onClick: function () { askAI(d._cellAIQ); }, 'aria-busy': d._cellAILoading, 'aria-label': d._cellAILoading ? 'Asking AI tutor' : 'Ask AI tutor', className: "px-3 py-1.5 text-xs font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700", disabled: d._cellAILoading }, d._cellAILoading ? '...' : 'Ask')
               ),
               d._cellAIResp && React.createElement("div", { className: "mt-2 p-2 bg-white rounded-lg text-xs text-slate-700 leading-relaxed border border-blue-100" }, d._cellAIResp)
             ),
@@ -3901,7 +3902,7 @@ var d = labToolData.cell;
 
             React.createElement("div", { className: "flex gap-3 mt-3 items-center" },
 
-              React.createElement("button", { "aria-label": "AI Tutor", onClick: function () { upd('_cellShowBadges', !d._cellShowBadges); }, className: "px-3 py-2 text-xs font-bold rounded-full " + (d._cellShowBadges ? "bg-amber-700 text-white" : "bg-amber-100 text-amber-700 hover:bg-amber-200") }, "\uD83C\uDFC5 Badges " + ext.badges.length + "/" + Object.keys(cellBadges).length),
+              React.createElement("button", { onClick: function () { upd('_cellShowBadges', !d._cellShowBadges); }, className: "px-3 py-2 text-xs font-bold rounded-full " + (d._cellShowBadges ? "bg-amber-700 text-white" : "bg-amber-100 text-amber-700 hover:bg-amber-200") }, "\uD83C\uDFC5 Badges " + ext.badges.length + "/" + Object.keys(cellBadges).length),
               React.createElement("button", { "aria-label": "AI Tutor", onClick: function () { upd('_cellShowAI', !d._cellShowAI); }, className: "px-3 py-2 text-xs font-bold rounded-full " + (d._cellShowAI ? "bg-blue-700 text-white" : "bg-blue-100 text-blue-700 hover:bg-blue-200") }, "\uD83E\uDD16 AI Tutor"),
 
               React.createElement("button", { "aria-label": "Snapshot", onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'ce-' + Date.now(), tool: 'cell', label: 'Cell Simulator' + (d.selectedOrganism ? ': ' + d.selectedOrganism : ''), data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
