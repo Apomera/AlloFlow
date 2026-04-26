@@ -323,6 +323,77 @@ window.StemLab = window.StemLab || {
         WR2:  [{ dx: 14, dy: 1 }],                       // backside dig (cleanup read)
         RB:   [{ dx: 0, dy: 4 }, { dx: 5, dy: 4 }]      // checkdown
       }
+    },
+    {
+      // ── Outside Zone (Sweep / Toss): perimeter run. Whole O-line steps
+      // playside on the snap; RB sprints to the sideline, reading the
+      // defensive flow. If the edge holds → cut back inside. If the edge
+      // breaks → bounce wide. Mike Shanahan, Sean McVay, Kyle Shanahan
+      // entire offenses are built on this single play with different
+      // window dressing.
+      id: 'sweep',
+      label: 'Outside Zone (Sweep)',
+      icon: '🏃',
+      teach: 'RB sprints toward the sideline reading the playside DE. Whole O-line zone-blocks one direction; the RB CHOOSES which gap to hit based on flow. Math: defenders must commit before the RB does. Average ~4.8 yd/carry, but ~25% of carries break for 10+ on flow misreads.',
+      routes: {
+        RB:   [{ dx: 1, dy: -3 }, { dx: 6, dy: -8 }],    // jab inside, then bounce wide
+        WR1:  [{ dx: 6, dy: -2 }],                        // crackback block (nearside)
+        SLOT: [{ dx: 4, dy: -1 }],                        // edge seal
+        TE:   [{ dx: 3, dy: -2 }],                        // reach block on playside DE
+        WR2:  [{ dx: 4, dy: 0 }]                          // backside cutoff
+      }
+    },
+    {
+      // ── Bubble Screen: quick perimeter pass to slot WR with two
+      // teammates blocking. Defeats off-coverage and stacked boxes — if
+      // the corner is 8 yards off, that's a free 5-yard gain. Combines
+      // with run action so it functions as a quasi-RPO.
+      id: 'bubble',
+      label: 'Bubble Screen',
+      icon: '🫧',
+      teach: 'Slot receiver takes 1 step back + sideways, catches a quick lateral toss. Two teammates lead-block. Math: if the nearest defender is 7+ yards away, the bubble gains 4-6 yards on average — and 25% of attempts go for 10+ when the defense is in a stacked-box look.',
+      routes: {
+        SLOT: [{ dx: 0, dy: -3 }, { dx: 2, dy: -5 }],    // step back, catch, sprint sideways
+        WR1:  [{ dx: 3, dy: -2 }],                        // lead block #1
+        WR2:  [{ dx: 18, dy: 0 }],                        // backside vertical (clear-out / decoy)
+        TE:   [{ dx: 2, dy: -2 }],                        // chip then lead block #2
+        RB:   [{ dx: 4, dy: 0 }]                          // run-action fake
+      }
+    },
+    {
+      // ── Drive Concept: shallow cross + dig combo. Classic Erhardt-Perkins
+      // 3rd-and-medium answer. Shallow crosser (under) and dig (over) attack
+      // the SAME zone defender — he can only carry one. Everyone uses this
+      // because it works against both man AND zone.
+      id: 'drive',
+      label: 'Drive (Shallow + Dig)',
+      icon: '🏎️',
+      teach: 'Shallow crosser at 2 yd + dig at 12 yd in the SAME area of the field. The MIKE linebacker has to pick one — whichever he doesn\'t cover is the throw. Beats man (rub on the cross) AND zone (high-low on the LB). Tom Brady\'s favorite concept for 20 years.',
+      routes: {
+        SLOT: [{ dx: 3, dy: 14 }],                        // shallow crosser left → right
+        WR2:  [{ dx: 12, dy: -3 }],                       // dig route at 12 yd, opposite side
+        WR1:  [{ dx: 18, dy: 0 }],                        // vertical clear
+        TE:   [{ dx: 4, dy: 1 }],                         // chip-release flat
+        RB:   [{ dx: 0, dy: -4 }, { dx: 4, dy: -4 }]     // arrow / checkdown
+      }
+    },
+    {
+      // ── Trips Bunch (Spot Concept): 3 receivers stacked tightly on one
+      // side. Inside man runs corner, middle man runs flat, outside man
+      // runs hitch — together it's a triangle that flooods one zone. Best
+      // 4th-and-short / red-zone play in football. Cover 2 has no answer:
+      // the corner can\'t cover three depths at once.
+      id: 'trips',
+      label: 'Trips Bunch (Spot)',
+      icon: '⫷',
+      teach: 'Three receivers form a triangle: corner (deep) + flat (low) + hitch (middle). Whichever way the cornerback picks, the QB throws to the OPPOSITE level. ~80% conversion rate inside the 5-yard line. Geometric trap: one defender, three depths.',
+      routes: {
+        WR1:  [{ dx: 6, dy: -1 }],                        // hitch at 6 (middle of triangle)
+        SLOT: [{ dx: 3, dy: -5 }],                        // flat (low corner)
+        TE:   [{ dx: 12, dy: -7 }],                       // corner route (high corner)
+        WR2:  [{ dx: 14, dy: 2 }],                        // backside dig (cleanup)
+        RB:   [{ dx: 0, dy: 3 }, { dx: 4, dy: 3 }]       // arrow opposite the trips side
+      }
     }
   ];
 
