@@ -1438,8 +1438,15 @@
         return !!(visited[(r - 1) + ',' + c] || visited[(r + 1) + ',' + c] || visited[r + ',' + (c - 1)] || visited[r + ',' + (c + 1)]);
       }
 
-      // Background
-      ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
+      // Background — warm parchment-stone tone instead of slate-900, so
+      // the dungeon reads like a torchlit corridor rather than a void.
+      ctx.fillStyle = '#3a2e26'; ctx.fillRect(0, 0, W, H);
+
+      // Soft amber base wash to evoke torchlight
+      var grad = ctx.createRadialGradient(W * 0.5, H * 0.5, 10, W * 0.5, H * 0.5, Math.max(W, H) * 0.7);
+      grad.addColorStop(0, 'rgba(251,191,36,0.05)');
+      grad.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);
 
       // Draw cells
       for (var r = 0; r < MAZE_ROWS; r++) {
@@ -1448,22 +1455,29 @@
           var x = c * CELL_SIZE, y = r * CELL_SIZE;
           var isVisited = !!visited[r + ',' + c];
           var isSeen = seen(r, c);
-          // Fog-of-war: unseen cells get a heavy dark overlay even though
-          // the wall skeleton underneath keeps the map legible as a shape.
+          // Floor tint — warm tan for visible corridor floor (was near-black).
+          if (isSeen) {
+            ctx.fillStyle = 'rgba(217,180,140,0.18)';
+            ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE);
+          }
+          // Fog-of-war: lighter warm-brown overlay (was rgba(2,6,20,0.85),
+          // a near-opaque black). Keeps the unexplored region distinct
+          // without making it feel oppressive.
           if (!isSeen) {
-            ctx.fillStyle = 'rgba(2,6,20,0.85)';
+            ctx.fillStyle = 'rgba(58,46,38,0.55)';
             ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE);
           }
           // Cell floor
-          if (r === 0 && c === 0) { ctx.fillStyle = 'rgba(34,197,94,0.15)'; ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE); } // start
-          else if (r === MAZE_ROWS - 1 && c === MAZE_COLS - 1) { ctx.fillStyle = 'rgba(251,191,36,0.2)'; ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE); } // exit
-          // Breadcrumb tint for visited non-special cells
+          if (r === 0 && c === 0) { ctx.fillStyle = 'rgba(34,197,94,0.28)'; ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE); } // start
+          else if (r === MAZE_ROWS - 1 && c === MAZE_COLS - 1) { ctx.fillStyle = 'rgba(251,191,36,0.32)'; ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE); } // exit
+          // Breadcrumb tint for visited non-special cells — warm amber so it
+          // reads like dwindling torchlight rather than a cold blue trail.
           else if (isVisited) {
-            ctx.fillStyle = 'rgba(99,102,241,0.12)';
+            ctx.fillStyle = 'rgba(251,191,36,0.10)';
             ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE);
           }
-          // Walls — dim for unseen cells so the map still reads as a whole.
-          ctx.strokeStyle = isSeen ? '#475569' : '#1e293b';
+          // Walls — warmer stone tone, brighter for seen cells.
+          ctx.strokeStyle = isSeen ? '#a8957d' : '#5b4d3f';
           ctx.lineWidth = 2;
           if (cell.walls.top) { ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + CELL_SIZE, y); ctx.stroke(); }
           if (cell.walls.right) { ctx.beginPath(); ctx.moveTo(x + CELL_SIZE, y); ctx.lineTo(x + CELL_SIZE, y + CELL_SIZE); ctx.stroke(); }
@@ -1471,6 +1485,39 @@
           if (cell.walls.left) { ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y + CELL_SIZE); ctx.stroke(); }
         }
       }
+
+      // ── Torches ────────────────────────────────────────────────────────
+      // Place a flickering torch every ~4 cells along the corridor walls so
+      // the dungeon reads as lit, not abandoned. Position is deterministic
+      // by cell coords so torches don't dance around between renders, but
+      // each torch's intensity flickers using minimapTickRef + a phase
+      // offset derived from the cell so neighboring torches aren't in sync.
+      ctx.save();
+      for (var tr = 0; tr < MAZE_ROWS; tr++) {
+        for (var tc = 0; tc < MAZE_COLS; tc++) {
+          // Sparse placement — every 4th cell along a stable hash, only
+          // where the cell is seen (don't reveal unexplored corridors).
+          if ((tr * 5 + tc * 3) % 4 !== 0) continue;
+          if (!seen(tr, tc)) continue;
+          var tcx = (tc + 0.5) * CELL_SIZE;
+          var tcy = (tr + 0.5) * CELL_SIZE;
+          var phase = (tr * 17 + tc * 31) * 0.05;
+          var flicker = 0.7 + 0.3 * Math.sin(minimapTickRef.current * 0.18 + phase);
+          // Halo
+          var torchGrad = ctx.createRadialGradient(tcx, tcy, 1, tcx, tcy, CELL_SIZE * 1.1);
+          torchGrad.addColorStop(0, 'rgba(255,200,80,' + (0.40 * flicker) + ')');
+          torchGrad.addColorStop(0.5, 'rgba(255,140,40,' + (0.18 * flicker) + ')');
+          torchGrad.addColorStop(1, 'rgba(0,0,0,0)');
+          ctx.fillStyle = torchGrad;
+          ctx.fillRect(tcx - CELL_SIZE * 1.1, tcy - CELL_SIZE * 1.1, CELL_SIZE * 2.2, CELL_SIZE * 2.2);
+          // Flame core
+          ctx.fillStyle = 'rgba(255,220,120,' + (0.85 * flicker) + ')';
+          ctx.beginPath();
+          ctx.arc(tcx, tcy, 3 + flicker * 1.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+      ctx.restore();
 
       // Breadcrumb dots on each visited cell (excluding current position, which
       // gets its own cat emoji below) — reinforces the trail even when many
@@ -2219,18 +2266,97 @@
       h('canvas', { ref: canvasRef, style: { width: '100%', height: 'auto', borderRadius: '10px', border: '2px solid #e2e8f0', display: 'block' } }),
       // 2D minimap overlay (top-right of 3D view)
       has3D && maze && h('canvas', { ref: canvasRef, style: { position: 'absolute', top: '44px', right: '4px', width: '100px', height: '100px', borderRadius: '8px', border: '1px solid rgba(100,116,139,0.3)', opacity: 0.8 } }),
-      // Problem overlay (when at junction)
-      currentProblem && h('div', { style: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', background: 'rgba(15,23,42,0.95)', backdropFilter: 'blur(8px)', borderRadius: '16px', padding: '20px 28px', textAlign: 'center', border: '2px solid #7c3aed', boxShadow: '0 8px 32px rgba(0,0,0,0.3)', zIndex: 10 } },
-        h('div', { style: { fontSize: '28px', fontWeight: 800, color: '#e2e8f0', marginBottom: '12px', fontFamily: 'monospace' } }, currentProblem.problem.text + ' = ?'),
+      // Gate overlay (when at junction). Styled as a stone-gate with a
+      // lock and a 3x4 number pad \u2014 the math problem is the gate's
+      // combination, the pad is how you enter it.
+      currentProblem && h('div', {
+        style: {
+          position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
+          background: 'linear-gradient(180deg, #3a2e26 0%, #2a221c 100%)',
+          backdropFilter: 'blur(8px)',
+          borderRadius: '14px',
+          padding: '18px 22px 14px',
+          textAlign: 'center',
+          border: '3px solid #a8957d',
+          boxShadow: '0 0 0 2px rgba(58,46,38,0.6), 0 12px 40px rgba(0,0,0,0.6), inset 0 0 24px rgba(255,180,80,0.10)',
+          zIndex: 10,
+          minWidth: '260px'
+        }
+      },
+        // Header row: "GATE" label + lock glyph
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '10px', color: '#fbbf24', fontSize: '11px', fontWeight: 800, letterSpacing: '0.16em', textTransform: 'uppercase' } },
+          h('span', { style: { fontSize: '18px' } }, '\ud83d\udd12'),
+          h('span', null, 'Locked Gate'),
+          h('span', { style: { fontSize: '18px' } }, '\ud83d\udd12')
+        ),
+        // The "combination" \u2014 math problem
+        h('div', { style: { fontSize: '30px', fontWeight: 800, color: '#fef3c7', marginBottom: '10px', fontFamily: 'monospace', textShadow: '0 0 12px rgba(251,191,36,0.45)' } }, currentProblem.problem.text + ' = ?'),
+        // Answer display (read-only echo of userInput so taps on numpad show)
+        h('div', {
+          style: {
+            display: 'inline-block', minWidth: '120px', padding: '8px 12px', marginBottom: '10px',
+            fontSize: '26px', fontWeight: 800, fontFamily: 'monospace', textAlign: 'center',
+            color: '#fff', background: '#2a221c', border: '2px solid #a8957d', borderRadius: '8px',
+            letterSpacing: '0.08em'
+          }
+        }, userInput || '\u2014'),
+        // Hidden input still present for keyboard users + autofocus + Enter handling
         h('input', { ref: inputRef, type: 'number', value: userInput, onChange: function(e) { setUserInput(e.target.value); },
           'aria-label': 'Type your answer to ' + currentProblem.problem.text,
           onKeyDown: function(e) { if (e.key === 'Enter') submitAnswer(); },
-          style: { width: '120px', padding: '8px 12px', fontSize: '24px', fontWeight: 800, textAlign: 'center', borderRadius: '10px', border: '2px solid #7c3aed', background: '#1e293b', color: '#fff', fontFamily: 'monospace', outline: 'none' },
+          style: { position: 'absolute', opacity: 0, pointerEvents: 'none', width: '1px', height: '1px' },
           inputMode: 'numeric', autoFocus: true
         }),
-        h('div', { style: { marginTop: '8px' } },
-          h('button', { onClick: submitAnswer, style: { padding: '8px 20px', background: '#22c55e', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' } }, '\u2705 Submit')
-        )
+        // \u2500\u2500 Number pad (3 cols x 4 rows) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px', maxWidth: '220px', margin: '0 auto' } },
+          ['1','2','3','4','5','6','7','8','9'].map(function(d) {
+            return h('button', {
+              key: 'pad-' + d,
+              onClick: function() { setUserInput(function(prev) { return (prev || '') + d; }); if (inputRef.current) inputRef.current.focus(); },
+              'aria-label': 'Enter digit ' + d,
+              style: {
+                padding: '12px 0', fontSize: '20px', fontWeight: 700, fontFamily: 'monospace',
+                background: '#5b4d3f', color: '#fef3c7', border: '2px solid #a8957d',
+                borderRadius: '8px', cursor: 'pointer', minHeight: '44px',
+                boxShadow: 'inset 0 -2px 0 rgba(0,0,0,0.3)'
+              }
+            }, d);
+          }),
+          // Bottom row: Clear, 0, Submit
+          h('button', {
+            key: 'pad-clear',
+            onClick: function() { setUserInput(''); if (inputRef.current) inputRef.current.focus(); },
+            'aria-label': 'Clear answer',
+            style: {
+              padding: '12px 0', fontSize: '13px', fontWeight: 700,
+              background: '#7c2d12', color: '#fef3c7', border: '2px solid #a8957d',
+              borderRadius: '8px', cursor: 'pointer', minHeight: '44px'
+            }
+          }, '\u2716 Clear'),
+          h('button', {
+            key: 'pad-0',
+            onClick: function() { setUserInput(function(prev) { return (prev || '') + '0'; }); if (inputRef.current) inputRef.current.focus(); },
+            'aria-label': 'Enter digit 0',
+            style: {
+              padding: '12px 0', fontSize: '20px', fontWeight: 700, fontFamily: 'monospace',
+              background: '#5b4d3f', color: '#fef3c7', border: '2px solid #a8957d',
+              borderRadius: '8px', cursor: 'pointer', minHeight: '44px',
+              boxShadow: 'inset 0 -2px 0 rgba(0,0,0,0.3)'
+            }
+          }, '0'),
+          h('button', {
+            key: 'pad-submit',
+            onClick: submitAnswer,
+            'aria-label': 'Submit answer to unlock the gate',
+            style: {
+              padding: '12px 0', fontSize: '13px', fontWeight: 800,
+              background: '#15803d', color: '#fff', border: '2px solid #22c55e',
+              borderRadius: '8px', cursor: 'pointer', minHeight: '44px',
+              boxShadow: '0 0 8px rgba(34,197,94,0.4)'
+            }
+          }, '\ud83d\udd11 Unlock')
+        ),
+        h('p', { style: { fontSize: '10px', color: '#a8957d', marginTop: '10px', marginBottom: 0 } }, 'Tap pad or use keyboard \u2022 Enter to submit')
       ),
       // Arrow buttons (mobile friendly)
       h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '4px', maxWidth: '160px', margin: '8px auto 0' } },

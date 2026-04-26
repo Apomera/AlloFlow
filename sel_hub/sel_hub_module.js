@@ -155,6 +155,161 @@
 
       function getSelXP() { return selXp; }
 
+      // ── SEL Stations (custom teacher-authored bundles, parallel to STEM Lab Stations) ──
+      // Pulls from props.activeStation when parent passes one (e.g. clicked from sidebar).
+      // Otherwise reads/writes localStorage 'alloflow_sel_stations'.
+      var SEL_QUEST_TYPES = [
+        { id: 'xpThreshold',    label: 'Earn SEL XP',     icon: '⭐', paramLabel: 'XP Target', defaultVal: 30, unit: 'XP' },
+        { id: 'timeSpent',      label: 'Spend Time',      icon: '⏱', paramLabel: 'Minutes',   defaultVal: 5,  unit: 'min' },
+        { id: 'freeResponse',   label: 'Reflection',      icon: '✍️', paramLabel: 'Min Characters', defaultVal: 30, unit: 'chars' },
+        { id: 'manualComplete', label: 'Mark Complete',   icon: '✅', paramLabel: '',          defaultVal: '', unit: '' }
+      ];
+
+      var _savedStations = React.useState(function () {
+        try { return JSON.parse(localStorage.getItem('alloflow_sel_stations') || '[]'); } catch (e) { return []; }
+      });
+      var savedStations = _savedStations[0]; var setSavedStations = _savedStations[1];
+
+      var _activeStationId = React.useState(null);
+      var activeStationId = _activeStationId[0]; var setActiveStationId = _activeStationId[1];
+      var activeStation = (function () {
+        if (!activeStationId) return null;
+        return savedStations.find(function (s) { return s.id === activeStationId; }) || null;
+      })();
+
+      var _questProgress = React.useState(function () {
+        try { return JSON.parse(localStorage.getItem('alloflow_sel_station_progress') || '{}'); } catch (e) { return {}; }
+      });
+      var questProgress = _questProgress[0]; var setQuestProgress = _questProgress[1];
+
+      // Builder state — only used in teacher mode
+      var _builderOpen = React.useState(false);
+      var builderOpen = _builderOpen[0]; var setBuilderOpen = _builderOpen[1];
+      var _builderName = React.useState('');
+      var builderName = _builderName[0]; var setBuilderName = _builderName[1];
+      var _builderNote = React.useState('');
+      var builderNote = _builderNote[0]; var setBuilderNote = _builderNote[1];
+      var _builderTools = React.useState({});
+      var builderTools = _builderTools[0]; var setBuilderTools = _builderTools[1];
+      var _builderQuests = React.useState([]);
+      var builderQuests = _builderQuests[0]; var setBuilderQuests = _builderQuests[1];
+
+      // Persist saved stations to localStorage whenever they change.
+      React.useEffect(function () {
+        try { localStorage.setItem('alloflow_sel_stations', JSON.stringify(savedStations)); } catch (e) {}
+      }, [savedStations]);
+
+      // Persist quest progress to localStorage whenever it changes.
+      React.useEffect(function () {
+        try { localStorage.setItem('alloflow_sel_station_progress', JSON.stringify(questProgress)); } catch (e) {}
+      }, [questProgress]);
+
+      // Sync activeStation prop from parent (e.g. resource-history click).
+      React.useEffect(function () {
+        if (props.activeStation && props.activeStation.id) {
+          setActiveStationId(props.activeStation.id);
+          // If parent passed a station we don't have in localStorage, persist it.
+          var existing = savedStations.find(function (s) { return s.id === props.activeStation.id; });
+          if (!existing) setSavedStations(savedStations.concat([props.activeStation]));
+        }
+      }, [props.activeStation && props.activeStation.id]);
+
+      // Tick a "time spent" timer every 30s while a tool is active (for timeSpent quests).
+      React.useEffect(function () {
+        if (!activeStation || !selHubTool) return;
+        var timeQuests = (activeStation.quests || []).filter(function (q) { return q.type === 'timeSpent' && q.toolId === selHubTool; });
+        if (timeQuests.length === 0) return;
+        var interval = setInterval(function () {
+          setQuestProgress(function (prev) {
+            var next = Object.assign({}, prev);
+            var sp = Object.assign({}, next[activeStation.id] || {});
+            timeQuests.forEach(function (q) {
+              var qp = Object.assign({}, sp[q.qid] || {});
+              qp.timeAccumMs = (qp.timeAccumMs || 0) + 30000;
+              sp[q.qid] = qp;
+            });
+            next[activeStation.id] = sp;
+            return next;
+          });
+        }, 30000);
+        return function () { clearInterval(interval); };
+      }, [selHubTool, activeStationId]);
+
+      // Auto-evaluate xpThreshold + timeSpent quests on relevant changes.
+      React.useEffect(function () {
+        if (!activeStation || !activeStation.quests) return;
+        setQuestProgress(function (prev) {
+          var sp = Object.assign({}, prev[activeStation.id] || {});
+          var changed = false;
+          activeStation.quests.forEach(function (q) {
+            var qp = Object.assign({}, sp[q.qid] || {});
+            if (qp.complete) return;
+            var done = false;
+            if (q.type === 'xpThreshold') {
+              done = selXp >= (q.params && q.params.threshold || 30);
+            } else if (q.type === 'timeSpent') {
+              done = (qp.timeAccumMs || 0) >= (q.params && q.params.minutes || 5) * 60000;
+            } else if (q.type === 'freeResponse') {
+              done = (qp.response || '').length >= (q.params && q.params.minLength || 30);
+            } else if (q.type === 'manualComplete') {
+              done = !!qp.markedComplete;
+            }
+            if (done && !qp.complete) {
+              qp.complete = true;
+              qp.completedAt = new Date().toISOString();
+              sp[q.qid] = qp;
+              changed = true;
+            }
+          });
+          if (!changed) return prev;
+          var next = Object.assign({}, prev);
+          next[activeStation.id] = sp;
+          return next;
+        });
+      }, [selXp, activeStationId, questProgress]);
+
+      function _selQuestAutoLabel(type, toolId, params) {
+        var toolName = 'this hub';
+        if (toolId && window.SelHub && window.SelHub._registry && window.SelHub._registry[toolId]) {
+          toolName = window.SelHub._registry[toolId].name || toolId;
+        }
+        switch (type) {
+          case 'xpThreshold':    return 'Earn ' + ((params && params.threshold) || 30) + ' SEL XP overall';
+          case 'timeSpent':      return 'Spend ' + ((params && params.minutes) || 5) + ' minutes in ' + toolName;
+          case 'freeResponse':   return (params && params.prompt) || 'Write a reflection';
+          case 'manualComplete': return 'Complete the activity in ' + toolName;
+          default: return 'Complete a quest';
+        }
+      }
+
+      function _saveBuilderAsStation() {
+        var selectedToolIds = Object.keys(builderTools).filter(function (k) { return builderTools[k]; });
+        if (selectedToolIds.length === 0) {
+          if (typeof addToast === 'function') addToast('Pick at least one tool first', 'info');
+          return;
+        }
+        var station = {
+          id: 'sel_station_' + Date.now(),
+          name: (builderName.trim() || 'Custom SEL Station'),
+          tools: selectedToolIds,
+          teacherNote: builderNote,
+          quests: builderQuests.map(function (q, i) {
+            return Object.assign({}, q, { qid: q.qid || ('q_' + i + '_' + Date.now()) });
+          }),
+          createdAt: new Date().toISOString(),
+          source: 'sel-hub-builder'
+        };
+        setSavedStations(savedStations.concat([station]));
+        setActiveStationId(station.id);
+        // Reset builder
+        setBuilderName(''); setBuilderNote(''); setBuilderTools({}); setBuilderQuests([]);
+        setBuilderOpen(false);
+        if (typeof addToast === 'function') addToast('SEL Station saved!', 'success');
+        announceToSR('Custom SEL Station saved and activated.');
+        // Surface to parent so the resource sidebar can show it.
+        if (typeof props.onSaveStation === 'function') props.onSaveStation(station);
+      }
+
       // ── Accessibility Helpers ──
       function announceToSR(msg) {
         var el = document.getElementById('sel-sr-announce');
@@ -425,6 +580,23 @@
           });
         }
 
+        // If a custom Station is active, filter to its tools only (parallel to pathway filtering)
+        if (activeStation && activeStation.tools && activeStation.tools.length > 0) {
+          var _stTools = activeStation.tools;
+          _filteredTools = _filteredTools.filter(function (t2) {
+            if (t2.category) return true;
+            return _stTools.indexOf(t2.id) >= 0;
+          });
+          _filteredTools = _filteredTools.filter(function (t2, i, arr) {
+            if (!t2.category) return true;
+            for (var j = i + 1; j < arr.length; j++) {
+              if (arr[j].category) return false;
+              return true;
+            }
+            return false;
+          });
+        }
+
         toolGrid = h('div', { role: 'main', 'aria-label': 'SEL Hub tool selection', style: { padding: 20 } },
           // Active pathway banner
           activePathway && h('div', {
@@ -440,6 +612,77 @@
               style: { background: 'none', border: '1px solid #7c3aed44', borderRadius: 8, padding: '4px 10px', color: '#7c3aed', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
             }, '\u2715 Exit Pathway')
           ),
+          // Active station banner (mutually exclusive with active pathway in practice)
+          activeStation && (function () {
+            var stationProg = questProgress[activeStation.id] || {};
+            var totalQ = (activeStation.quests || []).length;
+            var doneQ = (activeStation.quests || []).filter(function (q) { return (stationProg[q.qid] || {}).complete; }).length;
+            return h('div', {
+              role: 'region', 'aria-label': 'Active SEL Station: ' + activeStation.name,
+              style: { marginBottom: 16, padding: '12px 16px', borderRadius: 12, background: 'linear-gradient(135deg, #ec489915, #f43f5e15)', border: '1px solid #ec489933' }
+            },
+              h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' } },
+                h('div', { style: { minWidth: 0, flex: 1 } },
+                  h('div', { style: { fontSize: 13, fontWeight: 800, color: '#be185d' } }, '\ud83d\udccc ' + activeStation.name),
+                  h('div', { style: { fontSize: 11, color: _t.textMuted, marginTop: 2 } },
+                    (activeStation.tools || []).length + ' tools' + (totalQ > 0 ? ' \u2022 ' + doneQ + '/' + totalQ + ' quests done' : '')
+                  ),
+                  activeStation.teacherNote && h('div', { style: { fontSize: 11, color: _t.textMuted, marginTop: 6, fontStyle: 'italic', padding: '6px 8px', background: _t.bgCard, borderRadius: 6, borderLeft: '3px solid #ec4899' } }, '\ud83d\udcac ' + activeStation.teacherNote)
+                ),
+                h('button', {
+                  onClick: function () { setActiveStationId(null); announceToSR('Station cleared'); },
+                  'aria-label': 'Exit station mode',
+                  style: { background: 'none', border: '1px solid #ec489944', borderRadius: 8, padding: '4px 10px', color: '#be185d', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+                }, '\u2715 Exit Station')
+              ),
+              totalQ > 0 && h('div', { style: { marginTop: 10, display: 'flex', flexDirection: 'column', gap: 6 } },
+                (activeStation.quests || []).map(function (q) {
+                  var qp = stationProg[q.qid] || {};
+                  var done = !!qp.complete;
+                  var qIcon = (SEL_QUEST_TYPES.find(function (qt) { return qt.id === q.type; }) || {}).icon || '\ud83c\udfaf';
+                  return h('div', { key: q.qid, style: { background: done ? '#dcfce7' : _t.bgCard, border: '1px solid ' + (done ? '#86efac' : _t.border), borderRadius: 8, padding: '6px 10px' } },
+                    h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' } },
+                      h('span', { 'aria-hidden': 'true', style: { fontSize: 14 } }, done ? '\u2705' : qIcon),
+                      h('span', { style: { fontSize: 12, fontWeight: 600, color: done ? '#166534' : _t.text, flex: 1, textDecoration: done ? 'line-through' : 'none' } }, q.label),
+                      !done && q.type === 'xpThreshold' && h('span', { style: { fontSize: 10, color: _t.textMuted } }, selXp + ' / ' + ((q.params && q.params.threshold) || 30)),
+                      !done && q.type === 'timeSpent' && h('span', { style: { fontSize: 10, color: _t.textMuted } }, Math.floor(((qp.timeAccumMs || 0) / 60000)) + ' / ' + ((q.params && q.params.minutes) || 5) + ' min'),
+                      !done && q.type === 'manualComplete' && h('button', {
+                        onClick: function () {
+                          setQuestProgress(function (prev) {
+                            var next = Object.assign({}, prev);
+                            var sp = Object.assign({}, next[activeStation.id] || {});
+                            sp[q.qid] = Object.assign({}, sp[q.qid] || {}, { markedComplete: true });
+                            next[activeStation.id] = sp;
+                            return next;
+                          });
+                          announceToSR('Quest marked complete: ' + q.label);
+                        },
+                        'aria-label': 'Mark "' + q.label + '" as complete',
+                        style: { fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 6, border: '1px solid #ec489966', background: '#fff', color: '#be185d', cursor: 'pointer' }
+                      }, 'Mark complete')
+                    ),
+                    !done && q.type === 'freeResponse' && h('textarea', {
+                      value: qp.response || '',
+                      onChange: function (ev) {
+                        var v = ev.target.value;
+                        setQuestProgress(function (prev) {
+                          var next = Object.assign({}, prev);
+                          var sp = Object.assign({}, next[activeStation.id] || {});
+                          sp[q.qid] = Object.assign({}, sp[q.qid] || {}, { response: v });
+                          next[activeStation.id] = sp;
+                          return next;
+                        });
+                      },
+                      placeholder: (q.params && q.params.prompt) || 'Write a reflection...',
+                      'aria-label': 'Reflection for ' + q.label,
+                      rows: 2,
+                      style: { width: '100%', marginTop: 6, padding: '6px 8px', borderRadius: 6, border: '1px solid ' + _t.border, background: _t.bgInput, color: _t.text, fontSize: 11, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box' }
+                    })
+                  );
+                })
+              )
+            );
+          })(),
           // Search bar
           h('div', { style: { marginBottom: 12 } },
             h('input', {
@@ -501,6 +744,185 @@
                   h('div', { style: { fontSize: 9, color: '#7c3aed', fontWeight: 600, marginTop: 4 } }, pw.tools.length + ' activities')
                 );
               })
+            )
+          ),
+          // Custom SEL Stations — teacher-authored bundles (parallel to STEM Lab Stations)
+          !activeStation && !activePathway && h('details', {
+            open: builderOpen || savedStations.length > 0,
+            style: { marginBottom: 16, borderRadius: 12, border: '1px solid ' + _t.border, overflow: 'hidden' }
+          },
+            h('summary', {
+              style: { padding: '10px 14px', cursor: 'pointer', fontSize: 12, fontWeight: 700, color: _t.textMuted, background: _t.bgCard, display: 'flex', alignItems: 'center', gap: 6 }
+            }, '📌 Custom SEL Stations — teacher-authored bundles'),
+            h('div', { style: { padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 10 } },
+              // Saved stations list
+              savedStations.length > 0 && h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 } },
+                savedStations.map(function (st) {
+                  return h('div', { key: st.id, style: { padding: '10px 12px', borderRadius: 10, border: '1px solid ' + _t.border, background: _t.bgCard, display: 'flex', flexDirection: 'column', gap: 4 } },
+                    h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 } },
+                      h('div', { style: { fontSize: 12, fontWeight: 700, color: _t.text, minWidth: 0, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, '📌 ' + st.name),
+                      h('button', {
+                        onClick: function () {
+                          var keep = savedStations.filter(function (s) { return s.id !== st.id; });
+                          setSavedStations(keep);
+                          if (activeStationId === st.id) setActiveStationId(null);
+                          if (typeof addToast === 'function') addToast('Station removed', 'info');
+                        },
+                        'aria-label': 'Delete station ' + st.name,
+                        style: { background: 'none', border: 'none', color: '#ef4444', fontSize: 11, fontWeight: 700, cursor: 'pointer', padding: '2px 6px' }
+                      }, '✕')
+                    ),
+                    h('div', { style: { fontSize: 10, color: _t.textMuted } }, (st.tools || []).length + ' tools' + ((st.quests || []).length > 0 ? ' • ' + st.quests.length + ' quests' : '')),
+                    h('button', {
+                      onClick: function () {
+                        setActiveStationId(st.id);
+                        setActivePathway(null); setPathwayProgress({});
+                        setSelToolSearch(''); setSelCategoryFilter(null);
+                        announceToSR('Activated SEL Station: ' + st.name);
+                        if (typeof addToast === 'function') addToast('📌 ' + st.name + ' started!', 'success');
+                      },
+                      'aria-label': 'Activate station ' + st.name,
+                      style: { marginTop: 4, padding: '4px 10px', borderRadius: 8, border: 'none', background: '#ec4899', color: '#fff', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+                    }, 'Activate')
+                  );
+                })
+              ),
+              // Open builder button
+              !builderOpen && h('button', {
+                onClick: function () { setBuilderOpen(true); announceToSR('Station builder opened'); },
+                'aria-label': 'Build a new custom SEL Station',
+                style: { padding: '8px 14px', borderRadius: 10, border: '1px dashed #ec4899', background: 'rgba(236, 72, 153, 0.05)', color: '#be185d', fontSize: 12, fontWeight: 700, cursor: 'pointer', alignSelf: 'flex-start' }
+              }, '+ Build a Custom Station'),
+              // Inline builder
+              builderOpen && (function () {
+                var registry = (window.SelHub && window.SelHub.getRegisteredTools) ? window.SelHub.getRegisteredTools() : [];
+                var QUEST_PRESETS = [
+                  { name: 'Daily Check-In', icon: '🌅', desc: 'Quick reflection + XP', build: function () {
+                    var picked = Object.keys(builderTools).filter(function (k) { return builderTools[k]; });
+                    return [
+                      { type: 'xpThreshold', toolId: null, label: 'Earn 20 SEL XP today', params: { threshold: 20 } },
+                      { type: 'freeResponse', toolId: null, label: 'How are you feeling right now?', params: { prompt: 'How are you feeling right now? What is one thing on your mind?', minLength: 30 } },
+                      { type: 'manualComplete', toolId: picked[0] || null, label: 'Complete one SEL activity', params: {} }
+                    ];
+                  } },
+                  { name: 'Reflection Deep Dive', icon: '🔍', desc: 'Time + reflection + XP', build: function () {
+                    var picked = Object.keys(builderTools).filter(function (k) { return builderTools[k]; });
+                    return [
+                      { type: 'xpThreshold', toolId: null, label: 'Earn 60 SEL XP', params: { threshold: 60 } },
+                      { type: 'timeSpent', toolId: picked[0] || null, label: 'Spend 8 minutes here', params: { minutes: 8 } },
+                      { type: 'freeResponse', toolId: null, label: 'What did you learn about yourself?', params: { prompt: 'What did you learn about yourself today? What is one thing you might do differently next time?', minLength: 60 } }
+                    ];
+                  } },
+                  { name: 'Repair Pack', icon: '🤝', desc: 'After-conflict repair', build: function () {
+                    var picked = Object.keys(builderTools).filter(function (k) { return builderTools[k]; });
+                    return [
+                      { type: 'manualComplete', toolId: picked[0] || null, label: 'Use the first tool to plan a repair', params: {} },
+                      { type: 'freeResponse', toolId: null, label: 'Write a repair statement', params: { prompt: 'Write what you would say to repair the relationship. Use "I" statements and name a specific action you can take.', minLength: 80 } },
+                      { type: 'manualComplete', toolId: null, label: 'Talk it through with a trusted adult', params: {} }
+                    ];
+                  } }
+                ];
+                return h('div', { role: 'region', 'aria-label': 'Station Builder', style: { padding: '12px 14px', borderRadius: 10, border: '1px solid #ec489955', background: 'rgba(236, 72, 153, 0.04)', display: 'flex', flexDirection: 'column', gap: 10 } },
+                  h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 } },
+                    h('div', { style: { fontSize: 12, fontWeight: 800, color: '#be185d' } }, '🧑‍🏫 Station Builder'),
+                    h('button', {
+                      onClick: function () { setBuilderOpen(false); setBuilderName(''); setBuilderNote(''); setBuilderTools({}); setBuilderQuests([]); },
+                      'aria-label': 'Cancel station builder',
+                      style: { fontSize: 11, fontWeight: 700, color: _t.textMuted, background: 'none', border: 'none', cursor: 'pointer' }
+                    }, '✕ Cancel')
+                  ),
+                  // Name
+                  h('input', {
+                    type: 'text', value: builderName,
+                    onChange: function (ev) { setBuilderName(ev.target.value); },
+                    placeholder: 'Station name (e.g. "Friday SEL Routine")',
+                    'aria-label': 'Station name',
+                    style: { padding: '7px 10px', borderRadius: 8, border: '1px solid ' + _t.border, background: _t.bgInput, color: _t.text, fontSize: 12, outline: 'none', boxSizing: 'border-box' }
+                  }),
+                  // Teacher note
+                  h('textarea', {
+                    value: builderNote,
+                    onChange: function (ev) { setBuilderNote(ev.target.value); },
+                    placeholder: 'Optional teacher note (instructions students see when they activate this station)',
+                    'aria-label': 'Teacher note',
+                    rows: 2,
+                    style: { padding: '7px 10px', borderRadius: 8, border: '1px solid ' + _t.border, background: _t.bgInput, color: _t.text, fontSize: 11, fontFamily: 'inherit', resize: 'vertical', outline: 'none', boxSizing: 'border-box' }
+                  }),
+                  // Tool picker
+                  h('div', null,
+                    h('div', { style: { fontSize: 11, fontWeight: 700, color: _t.text, marginBottom: 4 } }, 'Pick tools to include:'),
+                    registry.length === 0
+                      ? h('div', { style: { fontSize: 11, color: _t.textMuted, fontStyle: 'italic' } }, 'No SEL tools registered yet. Open the hub once so plugins load, then return here.')
+                      : h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 4, maxHeight: 180, overflowY: 'auto', padding: 4, border: '1px solid ' + _t.border, borderRadius: 8, background: _t.bgCard } },
+                          registry.map(function (tool) {
+                            var checked = !!builderTools[tool.id];
+                            return h('label', { key: tool.id, style: { display: 'flex', alignItems: 'center', gap: 6, padding: '4px 6px', borderRadius: 6, cursor: 'pointer', background: checked ? '#fce7f3' : 'transparent', fontSize: 11, color: _t.text } },
+                              h('input', {
+                                type: 'checkbox', checked: checked,
+                                onChange: function () {
+                                  setBuilderTools(function (prev) { var n = Object.assign({}, prev); n[tool.id] = !checked; return n; });
+                                },
+                                'aria-label': 'Include ' + (tool.name || tool.id) + ' in this station'
+                              }),
+                              h('span', { 'aria-hidden': 'true' }, tool.icon || '🔧'),
+                              h('span', { style: { minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, tool.name || tool.id)
+                            );
+                          })
+                        )
+                  ),
+                  // Quest presets + manual quest add
+                  h('div', null,
+                    h('div', { style: { fontSize: 11, fontWeight: 700, color: _t.text, marginBottom: 4 } }, 'Quests (optional):'),
+                    builderQuests.length === 0 && h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 6 } },
+                      QUEST_PRESETS.map(function (preset) {
+                        return h('button', {
+                          key: preset.name,
+                          onClick: function () {
+                            var picked = Object.keys(builderTools).filter(function (k) { return builderTools[k]; });
+                            if (picked.length === 0) {
+                              if (typeof addToast === 'function') addToast('Pick tools first, then add quests', 'info');
+                              return;
+                            }
+                            setBuilderQuests(preset.build());
+                            if (typeof addToast === 'function') addToast('Applied "' + preset.name + '" quest preset!', 'success');
+                          },
+                          'aria-label': 'Apply preset: ' + preset.name + '. ' + preset.desc,
+                          style: { background: _t.bgCard, border: '1px solid ' + _t.border, borderRadius: 8, padding: '6px 4px', cursor: 'pointer', fontSize: 10, fontWeight: 600, color: _t.text, textAlign: 'center' }
+                        },
+                          h('div', { style: { fontSize: 16 } }, preset.icon),
+                          h('div', { style: { fontWeight: 700 } }, preset.name),
+                          h('div', { style: { fontSize: 9, color: _t.textMuted, marginTop: 2 } }, preset.desc)
+                        );
+                      })
+                    ),
+                    builderQuests.length > 0 && h('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
+                      builderQuests.map(function (q, qi) {
+                        var qIcon = (SEL_QUEST_TYPES.find(function (qt) { return qt.id === q.type; }) || {}).icon || '🎯';
+                        return h('div', { key: qi, style: { display: 'flex', alignItems: 'center', gap: 6, padding: '5px 8px', borderRadius: 6, background: _t.bgCard, border: '1px solid ' + _t.border, fontSize: 11, color: _t.text } },
+                          h('span', { 'aria-hidden': 'true', style: { fontSize: 13 } }, qIcon),
+                          h('span', { style: { flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, q.label),
+                          h('button', {
+                            onClick: function () { setBuilderQuests(function (prev) { return prev.filter(function (_, i) { return i !== qi; }); }); },
+                            'aria-label': 'Remove quest "' + q.label + '"',
+                            style: { background: 'none', border: 'none', color: '#ef4444', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+                          }, '✕')
+                        );
+                      }),
+                      h('button', {
+                        onClick: function () { setBuilderQuests([]); },
+                        'aria-label': 'Clear all quests',
+                        style: { fontSize: 10, color: _t.textMuted, background: 'none', border: 'none', cursor: 'pointer', alignSelf: 'flex-start', textDecoration: 'underline' }
+                      }, 'Clear all quests')
+                    )
+                  ),
+                  // Save button
+                  h('button', {
+                    onClick: _saveBuilderAsStation,
+                    'aria-label': 'Save this station',
+                    style: { padding: '8px 14px', borderRadius: 8, border: 'none', background: '#ec4899', color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer', alignSelf: 'flex-start' }
+                  }, '💾 Save Station')
+                );
+              })()
             )
           ),
           // Grid

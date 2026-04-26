@@ -2253,6 +2253,7 @@ const getIconForType = (type) => {
         case 'timeline': return <ListOrdered size={16} />;
         case 'concept-sort': return <Filter size={16} />;
         case 'math': return <Calculator size={16} />;
+        case 'math-fluency-maze': return <MapIcon size={16} />;
         case 'lesson-plan': return <ClipboardList size={16} />;
         case 'gemini-bridge': return <Terminal size={16} />;
         case 'persona': return <History size={16} />;
@@ -4914,55 +4915,55 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       document.head.appendChild(s);
     })();
-    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b93bb9/allo_data_module.js');
-    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b93bb9/large_file_module.js');
-    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b93bb9/key_concept_map_module.js');
-    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b93bb9/utils_pure_module.js');
-    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b93bb9/gemini_api_module.js');
-    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b93bb9/tts_module.js');
-    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b93bb9/personas_module.js');
-    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b93bb9/export_module.js');
-    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b93bb9/misc_components_module.js');
-    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b93bb9/remediation_audio_module.js');
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b93bb9/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b93bb9/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b93bb9/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b93bb9/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b93bb9/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b93bb9/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b93bb9/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b93bb9/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b93bb9/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b93bb9/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b93bb9/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b93bb9/story_stage_module.js');
+    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@198d583/allo_data_module.js');
+    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@198d583/large_file_module.js');
+    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@198d583/key_concept_map_module.js');
+    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@198d583/utils_pure_module.js');
+    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@198d583/gemini_api_module.js');
+    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@198d583/tts_module.js');
+    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@198d583/personas_module.js');
+    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@198d583/export_module.js');
+    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@198d583/misc_components_module.js');
+    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@198d583/remediation_audio_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@198d583/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@198d583/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@198d583/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@198d583/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@198d583/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@198d583/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@198d583/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@198d583/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@198d583/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@198d583/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@198d583/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@198d583/story_stage_module.js');
     loadModule('PoetTree', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2a924cb/poet_tree_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b93bb9/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b93bb9/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b93bb9/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b93bb9/student_interaction_module.js');
-    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b93bb9/math_fluency_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b93bb9/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b93bb9/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b93bb9/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b93bb9/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b93bb9/content_engine_module.js');
-    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b93bb9/timeline_revision_module.js');
-    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b93bb9/prompts_library_module.js');
-    loadModule('TextPipelineHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b93bb9/text_pipeline_helpers_module.js');
-    loadModule('AdaptiveControllerModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b93bb9/adaptive_controller_module.js');
-    loadModule('UdlChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b93bb9/udl_chat_module.js');
-    loadModule('AdventureHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b93bb9/adventure_handlers_module.js');
-    loadModule('GlossaryHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b93bb9/glossary_helpers_module.js');
-    loadModule('ViewRenderersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b93bb9/view_renderers_module.js');
-    loadModule('AudioHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b93bb9/audio_helpers_module.js');
-    loadModule('GenerationHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b93bb9/generation_helpers_module.js');
-    loadModule('MiscHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b93bb9/misc_handlers_module.js');
-    loadModule('PureHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b93bb9/pure_helpers_module.js');
-    loadModule('MathHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b93bb9/math_helpers_module.js');
-    loadModule('CmapHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b93bb9/concept_map_handlers_module.js');
-    loadModule('GenDispatcherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b93bb9/generate_dispatcher_module.js');
-    loadModule('PhaseKHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b93bb9/phase_k_helpers_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@198d583/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@198d583/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@198d583/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@198d583/student_interaction_module.js');
+    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@198d583/math_fluency_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@198d583/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@198d583/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@198d583/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@198d583/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@198d583/content_engine_module.js');
+    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@198d583/timeline_revision_module.js');
+    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@198d583/prompts_library_module.js');
+    loadModule('TextPipelineHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@198d583/text_pipeline_helpers_module.js');
+    loadModule('AdaptiveControllerModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@198d583/adaptive_controller_module.js');
+    loadModule('UdlChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@198d583/udl_chat_module.js');
+    loadModule('AdventureHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@198d583/adventure_handlers_module.js');
+    loadModule('GlossaryHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@198d583/glossary_helpers_module.js');
+    loadModule('ViewRenderersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@198d583/view_renderers_module.js');
+    loadModule('AudioHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@198d583/audio_helpers_module.js');
+    loadModule('GenerationHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@198d583/generation_helpers_module.js');
+    loadModule('MiscHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@198d583/misc_handlers_module.js');
+    loadModule('PureHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@198d583/pure_helpers_module.js');
+    loadModule('MathHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@198d583/math_helpers_module.js');
+    loadModule('CmapHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@198d583/concept_map_handlers_module.js');
+    loadModule('GenDispatcherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@198d583/generate_dispatcher_module.js');
+    loadModule('PhaseKHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@198d583/phase_k_helpers_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     (function() {
       var s = document.createElement('script');
@@ -4973,7 +4974,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       document.head.appendChild(s);
     })();
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6b93bb9/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@198d583/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -16118,6 +16119,7 @@ ${t('export.readme_json_desc')}`;
           case 'timeline': return t('timeline.title');
           case 'concept-sort': return t('concept_sort.title');
           case 'math': return t('math.title');
+          case 'math-fluency-maze': return '🏰 Fluency Maze';
           case 'lesson-plan': return t('lesson_plan.title');
           case 'gemini-bridge': return t('sidebar.tool_bridge');
           case 'persona': return t('persona.title');
@@ -22641,7 +22643,7 @@ ${t('export.readme_json_desc')}`;
                             </button>
                             {showTextSettings && (
                                 <>
-                                    <div role="button" aria-label="Close dialog" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[10000]" onClick={handleSetShowTextSettingsToFalse}></div>
+                                    <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[10000]" onClick={handleSetShowTextSettingsToFalse}></div>
                                     <div className={`fixed top-28 right-20 w-72 p-5 rounded-xl shadow-2xl border z-[10001] animate-in fade-in zoom-in-95 duration-200 ${theme === 'light' ? 'bg-white border-slate-200 text-slate-800' : 'bg-slate-800 border-slate-600 text-white'}`}>
                                         <div className="space-y-5">
                                             <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-2">
@@ -22779,7 +22781,7 @@ ${t('export.readme_json_desc')}`;
                             </button>
                             {showVoiceSettings && (
                                 <>
-                                    <div role="button" aria-label="Close dialog" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[10000]" onClick={handleSetShowVoiceSettingsToFalse}></div>
+                                    <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[10000]" onClick={handleSetShowVoiceSettingsToFalse}></div>
                                     <div className={`fixed top-28 right-4 w-64 p-5 rounded-xl shadow-2xl border z-[10001] animate-in fade-in zoom-in-95 duration-200 ${theme === 'light' ? 'bg-white border-slate-200 text-slate-800' : 'bg-slate-800 border-slate-600 text-white'}`}>
                                         <div className="space-y-3">
                                             <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-2">
@@ -23253,7 +23255,7 @@ ${t('export.readme_json_desc')}`;
                                                 </div>
                                             )}
                                             {isJoinPopoverOpen && (
-                                                <div role="button" aria-label="Close dialog" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[90]" onClick={handleSetIsJoinPopoverOpenToFalse}></div>
+                                                <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[90]" onClick={handleSetIsJoinPopoverOpenToFalse}></div>
                                             )}
                                         </>
                                     )}
@@ -23346,7 +23348,7 @@ ${t('export.readme_json_desc')}`;
                                     )}
                                 </div>
                             )}
-                            {showExportMenu && <div role="button" aria-label="Close dialog" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[90]" onClick={handleSetShowExportMenuToFalse}></div>}
+                            {showExportMenu && <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[90]" onClick={handleSetShowExportMenuToFalse}></div>}
                         </div>
                         )}
                             <button
@@ -23375,7 +23377,7 @@ ${t('export.readme_json_desc')}`;
       </header>
       )}
       {showInfoModal && (
-        <div role="button" aria-label="Close dialog" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[300] flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={handleSetShowInfoModalToFalse}>
+        <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[300] flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={handleSetShowInfoModalToFalse}>
             <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full overflow-hidden flex flex-col max-h-[90vh]" role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}>
                 <div className="bg-indigo-700 p-4 text-white flex justify-between items-center shrink-0">
                     <h3 className="font-bold text-lg flex items-center gap-2"><Layers size={20}/> {t('about.title')}</h3>
@@ -27112,19 +27114,42 @@ ${t('export.readme_json_desc')}`;
                             />;
                         })()}
 {mathMode === 'Fluency Maze' && (() => {
-                            const FluencyMazeComponent = window.AlloModules && window.AlloModules.FluencyMaze;
-                            if (!FluencyMazeComponent) return (
-                                <div className="p-4 bg-purple-50 rounded-xl border border-purple-200 text-center text-purple-700 text-sm">
-                                    Loading Fluency Maze module...
+                            // Launch button: creates a first-class history entry and
+                            // switches activeView to the dedicated standalone maze view
+                            // (max-w-6xl). Keeps the maze out of the cramped tools panel
+                            // and lets students re-enter from history later.
+                            const launchMaze = () => {
+                                const newItem = {
+                                    id: 'fluency-maze-' + Date.now(),
+                                    type: 'math-fluency-maze',
+                                    title: `🏰 Fluency Maze · ${gradeLevel}`,
+                                    timestamp: new Date(),
+                                    data: { gradeLevel, launchedAt: Date.now() },
+                                    config: { grade: gradeLevel }
+                                };
+                                setHistory(prev => [...prev, newItem]);
+                                setGeneratedContent({ type: 'math-fluency-maze', data: newItem.data, id: newItem.id, config: newItem.config });
+                                setActiveView('math-fluency-maze');
+                                if (typeof addToast === 'function') addToast('🏰 Fluency Maze opened in main view', 'success');
+                            };
+                            return (
+                                <div className="p-4 bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl border-2 border-amber-200 text-center">
+                                    <div className="text-3xl mb-2">🏰</div>
+                                    <h4 className="text-sm font-black text-amber-900 mb-1">Fluency Maze</h4>
+                                    <p className="text-xs text-amber-800 mb-3 leading-relaxed">
+                                        Navigate a torchlit dungeon. Each gate is locked by a math fact —
+                                        solve it to pass. Find the golden key to unlock the exit.
+                                    </p>
+                                    <button
+                                        onClick={launchMaze}
+                                        className="w-full px-4 py-2.5 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white text-sm font-bold rounded-lg transition-all shadow-md flex items-center justify-center gap-2"
+                                        aria-label="Open Fluency Maze in main view"
+                                    >
+                                        🚪 Open Maze (full view)
+                                    </button>
+                                    <p className="text-[10px] text-amber-700 mt-2 italic">Saved to history so you can re-enter later.</p>
                                 </div>
                             );
-                            return <FluencyMazeComponent
-                                React={React}
-                                gradeLevel={gradeLevel}
-                                t={t}
-                                addToast={addToast}
-                                handleScoreUpdate={handleScoreUpdate}
-                            />;
                         })()}
 {mathMode === 'Volume Builder' && (() => {
                             const volume = cubeDims.l * cubeDims.w * cubeDims.h;
@@ -28780,7 +28805,7 @@ ${t('export.readme_json_desc')}`;
                                             </div>
                                         )}
                                         {movingItemId === item.id && (
-                                            <div role="button" aria-label="Close dialog" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[90]" onClick={handleSetMovingItemIdToNull}></div>
+                                            <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[90]" onClick={handleSetMovingItemIdToNull}></div>
                                         )}
                                     </div>
                                 </div>
@@ -31763,7 +31788,7 @@ Return only the corrected version of this exact text:`;
                               <div className="absolute -top-2 left-6 w-4 h-4 bg-white border-t border-l border-indigo-200 transform rotate-45"></div>
                           </div>
                       )}
-                      {definitionData && <div role="button" aria-label="Close dialog" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[90]" onClick={closeDefinition}></div>}
+                      {definitionData && <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[90]" onClick={closeDefinition}></div>}
                       {phonicsData && (
                           <div
                             role="dialog"
@@ -31830,7 +31855,7 @@ Return only the corrected version of this exact text:`;
                               <div className="allo-popover-solid absolute -top-2 left-6 w-4 h-4 bg-white border-t-2 border-l-2 border-emerald-200 transform rotate-45"></div>
                           </div>
                       )}
-                      {phonicsData && <div role="button" aria-label="Close dialog" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[90]" onClick={closePhonics}></div>}
+                      {phonicsData && <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[90]" onClick={closePhonics}></div>}
                       {selectionMenu && (
                           <div
                             className="fixed z-[100] flex flex-col gap-1 items-center animate-in fade-in slide-in-from-bottom-2 duration-200"
@@ -31974,7 +31999,7 @@ Return only the corrected version of this exact text:`;
                               )}
                           </div>
                       )}
-                      {revisionData && <div role="button" aria-label="Close dialog" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[90] bg-black/5" onClick={closeRevision}></div>}
+                      {revisionData && <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[90] bg-black/5" onClick={closeRevision}></div>}
                       {isTeacherMode && !isCompareMode && !isZenMode && generatedContent && ['simplified', 'quiz', 'sentence-frames', 'glossary'].includes(generatedContent.type) && (
                       <div className="bg-white p-4 rounded-lg border border-indigo-100 shadow-sm mb-6 mx-1" data-help-key="simplified_complexity_slider">
                           <label className="block text-xs font-bold text-indigo-600 uppercase tracking-wider mb-2 text-center">
@@ -34425,7 +34450,7 @@ Return only the corrected version of this exact text:`;
                       </ErrorBoundary>
                       )}
                       {showLedger && (
-                        <div role="button" aria-label="Close dialog" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200" onClick={handleSetShowLedgerToFalse}>
+                        <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200" onClick={handleSetShowLedgerToFalse}>
                             <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative border-4 border-indigo-200 transition-all animate-in zoom-in-95" role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}>
                                 <button onClick={handleSetShowLedgerToFalse} className="absolute top-3 right-3 text-slate-600 hover:text-slate-600 bg-slate-100 rounded-full p-1 transition-colors" aria-label={t('common.close')}><X size={16}/></button>
                                 <div className="flex flex-col items-center text-center mb-4">
@@ -35665,7 +35690,7 @@ Return only the corrected version of this exact text:`;
                         )}
                     </div>
                     {selectedInventoryItem && (
-                        <div role="button" aria-label="Close dialog" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200" onClick={handleSetSelectedInventoryItemToNull}>
+                        <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200" onClick={handleSetSelectedInventoryItemToNull}>
                             <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full relative border-4 border-indigo-200 transition-all animate-in zoom-in-95" role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}>
                                 <button onClick={handleSetSelectedInventoryItemToNull} className="absolute top-3 right-3 text-slate-600 hover:text-slate-600 bg-slate-100 rounded-full p-1 transition-colors" aria-label={t('common.close')}><X size={16}/></button>
                                 <div className="flex flex-col items-center text-center">
@@ -36586,6 +36611,40 @@ Return only the corrected version of this exact text:`;
                 )}
                 {/* Math Fluency probe overlay — handled by math_fluency_module.js */}
                 {/* Math Fluency results — handled by math_fluency_module.js */}
+                {/* Standalone Fluency Maze view — first-class resource. Renders the
+                    same FluencyMaze component used inside the math panel, but in
+                    the full main-view area (max-w-6xl) so the maze gets real
+                    breathing room. Restored from history via handleRestoreView
+                    when activeView === 'math-fluency-maze'. */}
+                {activeView === 'math-fluency-maze' && (() => {
+                    const FluencyMazeComponent = window.AlloModules && window.AlloModules.FluencyMaze;
+                    return (
+                        <div className="space-y-4 max-w-6xl mx-auto h-full overflow-y-auto pr-2 pb-10" data-help-key="math_fluency_maze_panel">
+                            <div className="bg-gradient-to-br from-amber-50 to-orange-50 p-5 rounded-2xl border-2 border-amber-200 shadow-sm">
+                                <div className="flex items-center justify-between mb-2">
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-2xl">🏰</span>
+                                        <h2 className="text-lg font-black text-amber-900">Fluency Maze</h2>
+                                    </div>
+                                    <span className="text-[11px] font-bold text-amber-700 uppercase tracking-wider">Math facts unlock the gates</span>
+                                </div>
+                                {!FluencyMazeComponent ? (
+                                    <div className="p-4 bg-purple-50 rounded-xl border border-purple-200 text-center text-purple-700 text-sm">
+                                        Loading Fluency Maze module...
+                                    </div>
+                                ) : (
+                                    <FluencyMazeComponent
+                                        React={React}
+                                        gradeLevel={gradeLevel}
+                                        t={t}
+                                        addToast={addToast}
+                                        handleScoreUpdate={handleScoreUpdate}
+                                    />
+                                )}
+                            </div>
+                        </div>
+                    );
+                })()}
                 {activeView === 'math' && generatedContent && generatedContent?.data && (
                     <div className="space-y-6 max-w-4xl mx-auto h-full overflow-y-auto pr-2 pb-10" data-help-key="math_panel">
                         <div className="bg-indigo-50 p-6 rounded-xl border border-indigo-100 shadow-sm">
@@ -39495,7 +39554,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
         </div>
       )}
       {showGlobalLevelUp && (
-        <div role="button" aria-label="Close dialog" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-500" onClick={handleSetShowGlobalLevelUpToFalse}>
+        <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-500" onClick={handleSetShowGlobalLevelUpToFalse}>
             <ConfettiExplosion />
             <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); }}} className="bg-white rounded-3xl p-8 md:p-12 text-center shadow-2xl border-4 border-yellow-400 relative overflow-hidden max-w-sm w-full mx-4 transform transition-all animate-in zoom-in-50 duration-500" onClick={e => e.stopPropagation()}>
                 <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle,rgba(250,204,21,1)0%,rgba(255,255,255,0)70%)] animate-pulse"></div>
@@ -41525,7 +41584,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
           currentNickname={studentNickname || studentProjectSettings.nickname}
       />
       {showSaveModal && (
-        <div role="button" aria-label="Close dialog" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={handleSetShowSaveModalToFalse}>
+        <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={handleSetShowSaveModalToFalse}>
             <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative border-4 border-indigo-100 transition-all animate-in zoom-in-95 duration-200" role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}>
                 <button
                     aria-label={t('common.close_save_dialog')}
@@ -41571,7 +41630,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
         </div>
       )}
       {isTranslateModalOpen && (
-        <div role="button" aria-label="Close dialog" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={handleSetIsTranslateModalOpenToFalse}>
+        <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={handleSetIsTranslateModalOpenToFalse}>
             <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full relative border-4 border-indigo-100 transition-all animate-in zoom-in-95 duration-200" role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}>
                 <button onClick={handleSetIsTranslateModalOpenToFalse} className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 transition-colors" aria-label={t('common.close')}><X size={20}/></button>
                 <h3 className="text-lg font-black text-slate-800 mb-4 flex items-center gap-2">
@@ -41611,7 +41670,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
         </div>
       )}
       {showCloudWarning && (
-        <div role="button" aria-label="Close dialog" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={handleSetShowCloudWarningToFalse}>
+        <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={handleSetShowCloudWarningToFalse}>
             <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full border-4 border-amber-300 overflow-hidden transition-all animate-in zoom-in-95" role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}>
                 <div className="p-6 text-center">
                     <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4 text-amber-600 shadow-sm">
@@ -46561,7 +46620,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   <input type="text" id="pdf-wordart-text-input" placeholder="Your word art text..." defaultValue="" className="w-full text-xs border border-amber-300 rounded px-2 py-1.5 bg-white focus:border-amber-500 outline-none" aria-label="Word art text" />
                   <div>
                     <div className="text-[10px] font-bold text-slate-600 uppercase mb-1">Style</div>
-                    <div className="grid grid-cols-3 gap-1" role="radiogroup" aria-label="Word art style">
+                    <div className="grid grid-cols-3 gap-1" role="radiogroup">
                       {[['goldFoil','✨','Gold'],['neonGlow','💡','Neon'],['retroArcade','🕹️','Retro'],['chalkboard','🖍️','Chalk'],['embossed','🏛️','3D'],['rainbow','🌈','Rainbow']].map(([key, emoji, label], i) => (
                         <button key={key} data-preset={key} aria-checked={i === 0 ? 'true' : 'false'} role="radio" aria-label={label + ' style'}
                           style={i === 0 ? { background: '#fde68a', color: '#78350f', borderColor: '#f59e0b' } : { background: 'white', borderColor: '#fcd34d' }}
@@ -46580,7 +46639,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   <div className="grid grid-cols-2 gap-2">
                     <div>
                       <div className="text-[10px] font-bold text-slate-600 uppercase mb-1">Size</div>
-                      <div className="flex gap-0.5" role="radiogroup" aria-label="Word art size">
+                      <div className="flex gap-0.5" role="radiogroup">
                         {[['S','S'],['M','M'],['L','L'],['XL','XL']].map(([key, label], i) => (
                           <button key={key} data-size={key} aria-checked={i === 2 ? 'true' : 'false'} role="radio" aria-label={label + ' size'}
                             style={i === 2 ? { background: '#6366f1', color: 'white', borderColor: '#4f46e5' } : { background: 'white', color: '#475569', borderColor: '#e2e8f0' }}
@@ -46598,7 +46657,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     </div>
                     <div>
                       <div className="text-[10px] font-bold text-slate-600 uppercase mb-1">Align</div>
-                      <div className="flex gap-0.5" role="radiogroup" aria-label="Word art alignment">
+                      <div className="flex gap-0.5" role="radiogroup">
                         {[['left','⇤','Left'],['center','⇔','Center'],['right','⇥','Right']].map(([key, icon, label], i) => (
                           <button key={key} data-align={key} aria-checked={i === 1 ? 'true' : 'false'} role="radio" aria-label={label + ' alignment'}
                             style={i === 1 ? { background: '#6366f1', color: 'white', borderColor: '#4f46e5' } : { background: 'white', color: '#475569', borderColor: '#e2e8f0' }}
@@ -47773,7 +47832,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
       />
       </ErrorBoundary>
       {isProjectSettingsOpen && (
-        <div role="button" aria-label="Close dialog" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={handleSetIsProjectSettingsOpenToFalse}>
+        <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={handleSetIsProjectSettingsOpenToFalse}>
           <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full relative border-4 border-indigo-100" role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}>
             <button onClick={handleSetIsProjectSettingsOpenToFalse} className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" aria-label={t('common.close')}><X size={20}/></button>
             <div className="flex items-center gap-2 mb-6 text-indigo-900">
@@ -47968,7 +48027,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
       )}
       {/* --- AI Backend: Canvas-Only Minimal Config --- */}
       {showAIBackendModal && _isCanvasEnv && (
-        <div role="button" aria-label="Close dialog" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setShowAIBackendModal(false)}>
+        <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setShowAIBackendModal(false)}>
           <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative border-4 border-violet-100 animate-in zoom-in-95 duration-200" role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}>
             <button onClick={() => setShowAIBackendModal(false)} className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors z-10" aria-label="Close"><X size={20}/></button>
             <div className="flex items-center gap-2 mb-5 text-violet-900">
@@ -48021,7 +48080,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
       )}
       {/* --- AI Backend: Config Modal (non-Canvas) --- */}
       {showAIBackendModal && !_isCanvasEnv && (
-        <div role="button" aria-label="Close dialog" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setShowAIBackendModal(false)}>
+        <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setShowAIBackendModal(false)}>
           <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full relative border-4 border-violet-100 animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto" role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}>
             <button onClick={() => setShowAIBackendModal(false)} className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors z-10" aria-label="Close"><X size={20}/></button>
             <div className="flex items-center gap-2 mb-6 text-violet-900">
@@ -48562,7 +48621,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
       </ErrorBoundary>
       )}
       {showAdventureConfirmation && (
-        <div role="button" aria-label="Close dialog" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[300] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={handleSetShowAdventureConfirmationToFalse}>
+        <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[300] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={handleSetShowAdventureConfirmationToFalse}>
             <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full border-4 border-indigo-100 text-center" role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}>
                 <div className="w-16 h-16 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-yellow-200">
                     <AlertCircle size={32} />
@@ -49677,7 +49736,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
             );
         })()}
         {showEducatorHub && (
-        <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center p-4" onClick={() => setShowEducatorHub(false)} role="button" aria-label="Close dialog" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') setShowEducatorHub(false); }}>
+        <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center p-4" onClick={() => setShowEducatorHub(false)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') setShowEducatorHub(false); }}>
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-8" role="dialog" aria-modal="true" aria-label="Educator Tools" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-6">
               <div>
@@ -49778,7 +49837,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
         </div>
         )}
         {showLearningHub && (
-        <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center p-4" onClick={() => setShowLearningHub(false)} role="button" aria-label="Close dialog" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') setShowLearningHub(false); }}>
+        <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center p-4" onClick={() => setShowLearningHub(false)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') setShowLearningHub(false); }}>
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-8" role="dialog" aria-modal="true" aria-label="Learning Tools" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-6">
               <div>

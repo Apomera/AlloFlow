@@ -235,6 +235,20 @@ window.StemLab = window.StemLab || {
         material: '3- or 4-piece construction: rubber inner core, mantle layer, ionomer or urethane cover. ~336–392 dimples in symmetrical pattern.',
         physics: 'Dimples are the genius. They TRIP airflow into a turbulent boundary layer that hugs the ball longer before separating — a smooth ball would only fly half as far. Backspin (~2500–9500 rpm) generates Magnus lift that DOUBLES the airtime relative to no-spin, the entire reason golf clubs are built with loft.'
       }
+    },
+    volleyball: {
+      label: 'Volleyball', mass: 0.270, radius: 0.105,
+      cd: 0.30, cm: 0.50, cor: 0.65,
+      color: '#fafafa', seamColor: '#1e3a8a',
+      icon: '🏐',
+      regs: {
+        league: 'FIVB Rule 3',
+        massSpec: '0.260–0.280 kg (9.2–9.9 oz)',
+        diameterSpec: '0.205–0.210 m (65–67 cm circumference)',
+        pressureSpec: '0.30–0.325 atm (4.3–4.6 PSI)',
+        material: 'Synthetic leather (formerly cowhide), 18 panels glued to a butyl bladder. Modern Mikasa V200W uses an 8-panel "wave" design adopted in 2008.',
+        physics: 'Light + low drag = strong spin-axis effect. A no-spin "float serve" wobbles like a knuckleball; a top-spin jump serve dives sharply past the net. The seam pattern matters more than any other ball in the lab — the wave-design panels reduce drag asymmetry, killing the float effect for advanced servers.'
+      }
     }
   };
 
@@ -498,6 +512,79 @@ window.StemLab = window.StemLab || {
     return 'topped';  // never reached the ground = ball never hit / driver swing whiff
   }
 
+  // ── Volleyball serve presets ──
+  // Volleyball is the SHORTEST-distance major sport in ThrowLab — server's
+  // line is 9 m from the net, target court is the back 9 m beyond. The
+  // headline lesson is SPIN AXIS: a no-spin float serve wobbles like a
+  // soccer knuckleball, while top-spin jump serves dive sharply past the
+  // net. Server stands at z=0, net stretches across z=9 m at 2.43 m height
+  // (men's), target court is z=9 m to z=18 m, court width ±4.5 m.
+  //
+  // Spin axis convention here:
+  //   0° = topspin (drops the ball — what you want past the net)
+  // 180° = backspin (lifts; rarely used in serves)
+  //  ~0 rpm + 0° = "float" (no-spin wobble — most common at all levels)
+  //
+  // Modeling note: simulatePitch handles 3D drag + Magnus correctly for
+  // these speeds. We don't model the receiving team's pass — the outcome
+  // classifies at the LANDING POINT (where the ball first hits y=0
+  // beyond the net).
+  var VOLLEYBALL_TYPES = [
+    { id: 'float', label: 'Float Serve', icon: '🦋',
+      speedMph: 50, spinRpm: 30, spinAxisDeg: 0, aimDegV: 8, releaseHeight: 2.0,
+      grip: 'Stiff wrist, contact dead-center of the ball, NO follow-through',
+      teach: 'No spin = unpredictable wobble from seam-induced drag asymmetry. The same physics as a soccer knuckleball or baseball knuckler. Lower speed than a jump serve but harder to pass — passers can\'t predict where the ball will be. Most common serve at every level (rec → Olympic).' },
+    { id: 'jump', label: 'Jump Serve', icon: '🚀',
+      speedMph: 70, spinRpm: 1500, spinAxisDeg: 0, aimDegV: 4, releaseHeight: 3.0,
+      grip: 'Toss high in front, attack-jump approach, snap-wrist top-spin contact',
+      teach: 'Highest-skill serve. Toss the ball ~3 m high in front of you, run a 3-step approach, jump to ~3.0 m release height, contact with topspin. The Magnus lift pushes the ball DOWN, so it can clear the net at speed and still land in. Top servers (Wilfredo Leon ~80+ mph) make this almost unplayable.' },
+    { id: 'topspin', label: 'Top-Spin Serve', icon: '🌀',
+      speedMph: 55, spinRpm: 1000, spinAxisDeg: 0, aimDegV: 12, releaseHeight: 2.4,
+      grip: 'Toss above hitting shoulder, brush UP and OVER the ball at contact',
+      teach: 'Topspin without the jump — middle-school + JV staple. ~1000 rpm of topspin makes the ball drop ~1 m faster than a no-spin equivalent over 18 m. Clears the net with margin, still lands deep. Easier to control than a jump serve, harder to ace.' },
+    { id: 'underhand', label: 'Underhand Serve', icon: '🤲',
+      speedMph: 35, spinRpm: 80, spinAxisDeg: 180, aimDegV: 25, releaseHeight: 1.0,
+      grip: 'Stable platform with non-dominant hand, swing dominant hand from below the waist',
+      teach: 'Beginner serve. High arc (~25° launch), slow speed, gentle backspin. Easy to land in (high arc clears the net), but easy to pass — a passer has 1+ second of reaction time. Great for skill-building before progressing to overhand.' }
+  ];
+
+  // Score classifier for volleyball serves. Walks samples; first checks
+  // for a NET hit (z crossing the net plane below net height), then for
+  // a LANDING (y crossing 0 beyond the net). Returns:
+  //   'net' — hit the net, didn't clear
+  //   'short' — landed on server's side of the net (over-net unders)
+  //   'long' — landed past the back line
+  //   'out' — landed wide of the sideline
+  //   'ace' — landed in the deep-corner zone (back 15% × outer 30%)
+  //   'in' — clean serve, landed in the receiving court
+  function classifyVolleyResult(samples, mm) {
+    if (!samples || samples.length < 2) return 'short';
+    for (var i = 1; i < samples.length; i++) {
+      var prev = samples[i - 1], cur = samples[i];
+      // Net intersection? (z crosses netZ plane below net height)
+      if (prev.z < mm.netZ && cur.z >= mm.netZ) {
+        var fn = (mm.netZ - prev.z) / (cur.z - prev.z);
+        var nx = prev.x + (cur.x - prev.x) * fn;
+        var ny = prev.y + (cur.y - prev.y) * fn;
+        if (Math.abs(nx) <= mm.courtHalfWidth && ny > 0 && ny <= mm.netHeight) return 'net';
+      }
+      // Ball lands? (y crosses 0)
+      if (prev.y > 0 && cur.y <= 0) {
+        var fy = prev.y / (prev.y - cur.y);
+        var lz = prev.z + (cur.z - prev.z) * fy;
+        var lx = prev.x + (cur.x - prev.x) * fy;
+        if (lz < mm.netZ) return 'short';
+        if (lz > mm.targetZ) return 'long';
+        if (Math.abs(lx) > mm.courtHalfWidth) return 'out';
+        // Ace zone: back 15% of court × outer 30% of width
+        if (lz > mm.targetZ - (mm.targetZ - mm.netZ) * 0.15
+            && Math.abs(lx) > mm.courtHalfWidth * 0.70) return 'ace';
+        return 'in';
+      }
+    }
+    return 'short';
+  }
+
   // Football field goal presets — distance + power tradeoff. The headline lesson
   // is the angle ↔ distance tradeoff: too flat and the ball crashes into the
   // crossbar; too steep and you lose distance to vertical wastage. Each preset
@@ -653,6 +740,23 @@ window.StemLab = window.StemLab || {
           progress: function(s) { return (s.totalWickets || 0) + ' / 3 wickets'; },
           tip: 'Mix pace and spin — keep the batter guessing about line and length.' }
       ]
+    },
+    volleyball: {
+      label: 'Volleyball Drills',
+      tasks: [
+        { id: 'v1', goal: 'Land 3 serves IN (any preset)',
+          test: function(s) { return (s.volleyInCount || 0) >= 3; },
+          progress: function(s) { return (s.volleyInCount || 0) + ' / 3 serves in'; },
+          tip: 'Underhand is most forgiving for first attempts — high arc, low speed.' },
+        { id: 'v2', goal: 'Land a Float Serve in the receiving court',
+          test: function(s) { return s.volleyServesIn && s.volleyServesIn.float; },
+          progress: function(s) { return (s.volleyServesIn && s.volleyServesIn.float) ? 'Done!' : 'Pick Float Serve and aim deep'; },
+          tip: 'Float serves wobble unpredictably — accept that landing IN is partially luck.' },
+        { id: 'v3', goal: 'Score an Ace (deep corner)',
+          test: function(s) { return s.volleyAceCount >= 1; },
+          progress: function(s) { return (s.volleyAceCount || 0) > 0 ? 'Done!' : 'Aim for the deep corner — back 15% × outer 30% of court'; },
+          tip: 'Aces are deep + wide. Jump serves with topspin clear the net then dive into back corners.' }
+      ]
     }
   };
 
@@ -724,6 +828,19 @@ window.StemLab = window.StemLab || {
       releaseStrideDefault: 0.0,
       releaseHeightRange: [0.0, 0.05], // ball on ground, driver allows tiny tee
       speedRange: [50, 180]
+    },
+    volleyball: {
+      label: "Server's Line", icon: '🏐', ball: 'volleyball', presets: VOLLEYBALL_TYPES,
+      // FIVB Rule 1: court is 18m × 9m total (each side 9m × 9m).
+      // Server stands behind end-line at z=0, net stretches across z=9m at
+      // height 2.43m (men) / 2.24m (women) — we use men's height.
+      targetZ: 18.0,            // far end-line (ball must land in [9, 18])
+      netZ: 9.0,                // midcourt net plane
+      netHeight: 2.43,          // men's net top (women's: 2.24)
+      courtHalfWidth: 4.5,      // ±4.5 m from centerline = 9m wide
+      releaseStrideDefault: 0.0,
+      releaseHeightRange: [0.5, 3.2], // underhand low, jump-serve high
+      speedRange: [25, 80]
     }
   };
 
@@ -1368,8 +1485,10 @@ window.StemLab = window.StemLab || {
             defaults = { speedMph: 60, releaseHeight: 0.0, aimDegV: 38, aimDegH: 0, spinRpm: 0, spinAxisDeg: 0, fgDistanceYd: 35 };
           } else if (newMode === 'bowling') {
             defaults = { speedMph: 90, releaseHeight: 2.3, aimDegV: -2, aimDegH: 0, spinRpm: 1200, spinAxisDeg: 0, bowlType: 'fast' };
-          } else { // golf
+          } else if (newMode === 'golf') {
             defaults = { speedMph: 120, releaseHeight: 0.0, aimDegV: 25, aimDegH: 0, spinRpm: 6500, spinAxisDeg: 0, golfClub: 'iron' };
+          } else { // volleyball
+            defaults = { speedMph: 50, releaseHeight: 2.0, aimDegV: 8, aimDegH: 0, spinRpm: 30, spinAxisDeg: 0, serveType: 'float' };
           }
           var next = Object.assign({}, prev.throwlab, defaults, {
             mode: newMode, lastResult: null, replayActive: false, replayT: 0
@@ -1445,6 +1564,8 @@ window.StemLab = window.StemLab || {
         } else if (d.mode === 'golf') {
           var golfPreset = GOLF_TYPES.find(function(g) { return g.id === d.golfClub; }) || GOLF_TYPES[0];
           loc = classifyGolfResult(result.samples, golfPreset.carryYd, modeMeta.fairwayHalfYd);
+        } else if (d.mode === 'volleyball') {
+          loc = classifyVolleyResult(result.samples, modeMeta);
         } else {
           loc = result.outcome.reachedPlate
             ? classifyPlateLocation(result.outcome.plateX, result.outcome.plateY)
@@ -1482,6 +1603,7 @@ window.StemLab = window.StemLab || {
         var newFgMakeCount = (d.mode === 'fieldgoal' && loc === 'good') ? (d.fgMakeCount || 0) + 1 : (d.fgMakeCount || 0);
         var newWicketCount = (d.mode === 'bowling' && (loc === 'wicket' || loc === 'shaved')) ? (d.wicketCount || 0) + 1 : (d.wicketCount || 0);
         var newGolfGreenCount = (d.mode === 'golf' && loc === 'green') ? (d.golfGreenCount || 0) + 1 : (d.golfGreenCount || 0);
+        var newVolleyAceCount = (d.mode === 'volleyball' && loc === 'ace') ? (d.volleyAceCount || 0) + 1 : (d.volleyAceCount || 0);
         var newTypesUsed = Object.assign({}, d.pitchTypesUsed || {});
         if (d.mode === 'pitching') newTypesUsed[d.pitchType] = true;
         // Roll a compact history entry for Coach Mode — last 5 throws.
@@ -1496,6 +1618,7 @@ window.StemLab = window.StemLab || {
                   : d.mode === 'fieldgoal' ? d.goalType
                   : d.mode === 'bowling' ? d.bowlType
                   : d.mode === 'golf' ? d.golfClub
+                  : d.mode === 'volleyball' ? d.serveType
                   : d.shotType,
           speedMph: d.speedMph, angleV: d.aimDegV, angleH: d.aimDegH,
           spinRpm: d.spinRpm, spinAxisDeg: d.spinAxisDeg,
@@ -1513,7 +1636,8 @@ window.StemLab = window.StemLab || {
           goalKickTypes: {}, totalGoals: 0,
           fgMadeByDist: {},
           bowlTypes: {}, totalWickets: 0,
-          golfClubsOnGreen: {}, golfFairwaysHit: 0
+          golfClubsOnGreen: {}, golfFairwaysHit: 0,
+          volleyServesIn: {}, volleyInCount: 0, volleyAceCount: 0
         }, d.drillStats || {});
         // Pitching streak + type-coverage
         if (d.mode === 'pitching') {
@@ -1577,6 +1701,17 @@ window.StemLab = window.StemLab || {
             stats.golfFairwaysHit = (stats.golfFairwaysHit || 0) + 1;
           }
         }
+        // Volleyball: track in-court serves per type + ace + total-in counter
+        if (d.mode === 'volleyball') {
+          if (loc === 'in' || loc === 'ace') {
+            stats.volleyServesIn = Object.assign({}, stats.volleyServesIn);
+            stats.volleyServesIn[d.serveType] = true;
+            stats.volleyInCount = (stats.volleyInCount || 0) + 1;
+          }
+          if (loc === 'ace') {
+            stats.volleyAceCount = (stats.volleyAceCount || 0) + 1;
+          }
+        }
         // ── Drill task progression ──
         var newDrillTaskIdx = d.drillTaskIdx || 0;
         var taskJustCompleted = null;
@@ -1602,6 +1737,7 @@ window.StemLab = window.StemLab || {
             fgMakeCount: newFgMakeCount,
             wicketCount: newWicketCount,
             golfGreenCount: newGolfGreenCount,
+            volleyAceCount: newVolleyAceCount,
             pitchTypesUsed: newTypesUsed,
             recentThrows: newRecent,
             drillStats: stats,
