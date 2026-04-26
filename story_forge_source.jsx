@@ -631,6 +631,9 @@ const StoryForge = React.memo(({
   // Show-Don't-Tell coach — flags sentences that name emotion/state outright
   const [showTellResult, setShowTellResult] = useState(null);
   const [showTellLoading, setShowTellLoading] = useState(false);
+  // Character Arc Tracker — per-character introduction/want/change/resolution audit
+  const [arcReport, setArcReport] = useState(null);
+  const [arcLoading, setArcLoading] = useState(false);
   const [draftCount, setDraftCount] = useState(1);
 
   // ── Init vocab from glossary ──
@@ -1549,6 +1552,7 @@ Return ONLY JSON:
     setSensesResult(null);
     setMentorMatch(null);
     setShowTellResult(null);
+    setArcReport(null);
     changePhase('write');
   };
 
@@ -1741,6 +1745,69 @@ Return ONLY JSON:
       if (addToast) addToast('Show vs Tell failed — try again', 'error');
     }
     setShowTellLoading(false);
+  };
+
+  // ── Character Arc Tracker ──
+  // Builds on detectCharacters: evaluates each named character on the four-beat
+  // arc (introduction → want/conflict → change → resolution) and surfaces one
+  // specific revision suggestion per character. Skips arc analysis for stories
+  // with no named characters (returns an encouraging note instead).
+  const analyzeCharacterArcs = async () => {
+    if (!onCallGemini) return;
+    const fullText = paragraphs.map((p, i) => `[Paragraph ${i + 1}] ${p.text.trim()}`).filter(Boolean).join('\n\n');
+    const wordCount = fullText.split(/\s+/).filter(Boolean).length;
+    if (wordCount < 80) {
+      if (addToast) addToast('Write a bit more before tracking arcs', 'info');
+      return;
+    }
+    setArcLoading(true);
+    try {
+      const targetGrade = gradeLevel || '5th grade';
+      const prompt = `You are a writing coach analyzing character arcs for a ${targetGrade} student.
+
+A complete narrative character arc has four beats:
+1. INTRODUCTION — the character is established (name, role, defining trait).
+2. WANT — what the character wants, fears, or has at stake (the engine of the story for them).
+3. CHANGE — how the character is tested, learns, or shifts because of the story's events.
+4. RESOLUTION — how their arc lands (succeed, fail, transform, hold steady on purpose).
+
+Story:
+"""
+${fullText}
+"""
+
+Identify up to 3 named characters who are *important enough* to deserve an arc (skip walk-on names). For each, score the four beats as "strong" / "partial" / "missing", quote one paragraph reference for each beat that exists, and propose ONE specific revision suggestion that would strengthen the weakest beat at this student's grade level. If the story has no named characters at all, return an empty array and an encouraging note.
+
+Return ONLY JSON:
+{
+  "characters": [
+    {
+      "name": "<character name>",
+      "role": "<protagonist | supporting | antagonist | other>",
+      "beats": {
+        "introduction": { "status": "strong|partial|missing", "evidence": "<paragraph N quote or empty>" },
+        "want":         { "status": "strong|partial|missing", "evidence": "<paragraph N quote or empty>" },
+        "change":       { "status": "strong|partial|missing", "evidence": "<paragraph N quote or empty>" },
+        "resolution":   { "status": "strong|partial|missing", "evidence": "<paragraph N quote or empty>" }
+      },
+      "suggestion": "<one specific, kind, concrete revision idea>"
+    }
+  ],
+  "summary": "<one short overall sentence>"
+}`;
+
+      const result = await onCallGemini(prompt, true);
+      const data = JSON.parse(cleanJson(result));
+      setArcReport(data);
+      const count = (data.characters || []).length;
+      if (addToast) addToast('Character arcs analyzed!', 'success');
+      sfAnnounce(count === 0 ? 'No named characters found in the story.' : `Character arc tracker: ${count} character${count === 1 ? '' : 's'} analyzed.`);
+      awardXP(8, 'Tracked character arcs');
+    } catch (err) {
+      console.warn('Character arc analysis failed:', err);
+      if (addToast) addToast('Arc tracker failed — try again', 'error');
+    }
+    setArcLoading(false);
   };
 
   // Pull criteria names out of the rubric markdown table; fall back to defaults.
@@ -3453,6 +3520,11 @@ show();
                     </button>
                   )}
                   {!gradingResult && (
+                    <button onClick={analyzeCharacterArcs} disabled={arcLoading || isProcessing} className="px-4 py-2.5 bg-sky-100 text-sky-700 rounded-full text-sm font-bold hover:bg-sky-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-sky-200" title="Audit each character's arc: introduction, want, change, resolution">
+                      🎬 {arcLoading ? 'Analyzing...' : 'Character Arcs'}
+                    </button>
+                  )}
+                  {!gradingResult && (
                     <button onClick={gradeStory} disabled={isProcessing || (!selfAssessmentSubmitted)} className="px-5 py-2.5 bg-indigo-600 text-white rounded-full text-sm font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center gap-2" title={!selfAssessmentSubmitted ? 'Complete or skip self-assessment first' : 'Get AI feedback'}>
                       <Sparkles size={16} /> {isProcessing ? 'Grading...' : 'Get Feedback'}
                     </button>
@@ -3646,6 +3718,69 @@ show();
                           )}
                         </div>
                       ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ═══ Character Arc Tracker Result ═══ */}
+              {arcReport && (
+                <div className="bg-white border-2 border-sky-200 rounded-2xl p-5 shadow-sm">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-sm font-bold text-sky-700 uppercase tracking-wider flex items-center gap-2">🎬 Character Arcs</h4>
+                    <button onClick={() => setArcReport(null)} className="text-[11px] text-slate-400 hover:text-slate-700 font-bold" aria-label="Dismiss character arcs result">Dismiss</button>
+                  </div>
+                  {arcReport.summary && (
+                    <p className="text-xs text-sky-800 italic mb-3 leading-relaxed">{arcReport.summary}</p>
+                  )}
+                  {(arcReport.characters || []).length === 0 ? (
+                    <div className="bg-sky-50 border border-sky-200 rounded-xl p-3 text-xs text-sky-900 leading-relaxed">
+                      No named characters yet. If you'd like to track arcs, give your main character a name and try again.
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {arcReport.characters.map((c, i) => {
+                        const beatOrder = [
+                          { key: 'introduction', label: 'Intro' },
+                          { key: 'want', label: 'Want' },
+                          { key: 'change', label: 'Change' },
+                          { key: 'resolution', label: 'Resolution' },
+                        ];
+                        const beatColor = (status) =>
+                          status === 'strong' ? 'bg-green-100 border-green-300 text-green-800'
+                          : status === 'partial' ? 'bg-amber-100 border-amber-300 text-amber-800'
+                          : 'bg-slate-100 border-slate-300 text-slate-500';
+                        return (
+                          <article key={i} className="bg-sky-50/40 border border-sky-100 rounded-xl p-4">
+                            <div className="flex items-center justify-between mb-2 gap-2">
+                              <h5 className="text-base font-black text-sky-900 truncate">{c.name}</h5>
+                              {c.role && (
+                                <span className="text-[10px] font-bold text-sky-700 bg-sky-100 px-2 py-0.5 rounded-full uppercase tracking-widest shrink-0">{c.role}</span>
+                              )}
+                            </div>
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
+                              {beatOrder.map(({ key, label }) => {
+                                const beat = c.beats?.[key] || {};
+                                const status = beat.status || 'missing';
+                                return (
+                                  <div key={key} className={`rounded-lg border-2 p-2 ${beatColor(status)}`} title={beat.evidence || `No ${label.toLowerCase()} evidence found`}>
+                                    <div className="text-[10px] font-bold uppercase tracking-widest">{label}</div>
+                                    <div className="text-[11px] font-black mt-0.5">{status}</div>
+                                    {beat.evidence && (
+                                      <div className="text-[10px] mt-1 italic line-clamp-2 opacity-80">"{beat.evidence}"</div>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                            {c.suggestion && (
+                              <div className="bg-amber-50 border border-amber-200 rounded-lg p-2 text-xs text-amber-900 leading-relaxed">
+                                <strong className="text-amber-700">Try this:</strong> {c.suggestion}
+                              </div>
+                            )}
+                          </article>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
