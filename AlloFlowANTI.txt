@@ -16334,8 +16334,15 @@ ${t('export.readme_json_desc')}`;
   };
   const handleActivateNextLesson = (option) => {
       if (!option) return;
+      const latestAnalysis = history.slice().reverse().find(h => h && h.type === 'analysis');
+      const priorText = (latestAnalysis?.data?.originalText || inputText || '').trim();
+      const priorSummary = priorText ? priorText.substring(0, 800) : '';
+      const priorTopic = sourceTopic || '';
+      const priorBlock = (priorTopic || priorSummary)
+          ? `\n\nPRIOR LESSON CONTEXT (the lesson this one builds on):\nPrior topic: "${priorTopic || 'Unspecified'}".\nPrior content summary: "${priorSummary || 'Not available'}".\nThis new lesson should build on that foundation as the ${option.type} successor — reference the prior concepts where appropriate, do not re-teach them as if students haven't seen them, and assume mastery of the prior topic at the level it was taught.`
+          : '';
       setSourceTopic(option.nextTopic);
-      setSourceCustomInstructions(`Focus: ${option.focus}. Context: This is a ${option.type} follow-up lesson to the previous topic. Rationale: ${option.rationale}`);
+      setSourceCustomInstructions(`Focus: ${option.focus}. Context: This is a ${option.type} follow-up lesson to the previous topic. Rationale: ${option.rationale}${priorBlock}`);
       setShowSourceGen(true);
       setExpandedTools(prev => prev.includes('source-input') ? prev : ['source-input', ...prev]);
       setGeneratedContent(null);
@@ -23716,7 +23723,7 @@ ${t('export.readme_json_desc')}`;
                     setShowStorybookExportModal(false);
                     handleExportStorybook(true);
                   }}
-                  disabled={isProcessing}
+                  disabled={isProcessing} aria-busy={isProcessing}
                   className="w-full px-6 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all flex items-center justify-center gap-3 shadow-lg hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
                   data-help-key="export_storybook_images"
                 >
@@ -23728,7 +23735,7 @@ ${t('export.readme_json_desc')}`;
                     setShowStorybookExportModal(false);
                     handleExportStorybook(false);
                   }}
-                  disabled={isProcessing}
+                  disabled={isProcessing} aria-busy={isProcessing}
                   className="w-full px-6 py-3 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition-colors flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
                   data-help-key="export_storybook_text"
                 >
@@ -25099,7 +25106,7 @@ ${t('export.readme_json_desc')}`;
                      <button
                          aria-label={t('common.refresh')}
                         onClick={() => fileInputRef.current.click()}
-                        disabled={isExtracting || isGeneratingSource}
+                        disabled={isExtracting || isGeneratingSource} aria-busy={isGeneratingSource}
                         className="text-xs flex items-center gap-1 bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 px-3 py-1.5 rounded-full font-medium transition-colors shadow-sm"
                         title={t('input.upload_tooltip')}
                      >
@@ -25142,7 +25149,7 @@ ${t('export.readme_json_desc')}`;
                             }
                             setShowUrlInput(!showUrlInput);
                         }}
-                        disabled={isExtracting || isGeneratingSource}
+                        disabled={isExtracting || isGeneratingSource} aria-busy={isGeneratingSource}
                         className="text-xs flex items-center gap-1 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 px-3 py-1.5 rounded-full font-medium transition-colors"
                      >
                         <Link size={12} />
@@ -25156,7 +25163,7 @@ ${t('export.readme_json_desc')}`;
                             }
                             setShowSourceGen(!showSourceGen);
                         }}
-                        disabled={isGeneratingSource || isExtracting}
+                        disabled={isGeneratingSource || isExtracting} aria-busy={isGeneratingSource}
                         className="text-xs flex items-center gap-1 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 px-3 py-1.5 rounded-full font-medium transition-colors"
                      >
                         <Sparkles size={12} />
@@ -25507,7 +25514,7 @@ ${t('export.readme_json_desc')}`;
                       <button aria-label={t('common.generate_source_text')}
                         data-help-key="source_generate_button"
                         onClick={handleGenerateSource}
-                        disabled={(!sourceTopic.trim() && targetStandards.length === 0) || isGeneratingSource}
+                        disabled={(!sourceTopic.trim() && targetStandards.length === 0) || isGeneratingSource} aria-busy={isGeneratingSource}
                         className="w-full bg-indigo-600 text-white text-sm font-medium py-2 rounded-md hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                       >
                         {isGeneratingSource ? <RefreshCw className="animate-spin" size={14} /> : <Pencil size={14} />}
@@ -25553,7 +25560,7 @@ ${t('export.readme_json_desc')}`;
                         }
                     }}
                     placeholder={isGeneratingSource ? t('common.writing_content') : isExtracting ? t('common.scanning_document') : t('input.placeholder')}
-                    disabled={isGeneratingSource || isExtracting}
+                    disabled={isGeneratingSource || isExtracting} aria-busy={isGeneratingSource}
                     className={`w-full h-48 p-3 text-sm border border-slate-300 rounded-lg focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none resize-none transition-all duration-300 ${(isGeneratingSource || isExtracting) ? 'bg-slate-50 text-slate-600' : ''}`}
                     aria-label={t('common.source_material_aria')}
                     data-help-key="input_area"
@@ -25624,7 +25631,7 @@ ${t('export.readme_json_desc')}`;
                         aria-label={t('common.generate')}
                         data-help-key="analysis_generate_button"
                         onClick={() => handleGenerate('analysis')}
-                        disabled={!hasSourceOrAnalysis || isProcessing}
+                        disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                         className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         <span className="text-sm text-slate-600 group-hover:text-violet-700 transition-colors flex items-center gap-2">{t('analysis.run')} <Sparkles size={14} className="text-yellow-600"/></span>
@@ -25789,7 +25796,7 @@ ${t('export.readme_json_desc')}`;
                 <button
                     aria-label={t('common.generate')}
                     onClick={() => handleGenerate('glossary')}
-                    disabled={!hasSourceOrAnalysis || isProcessing}
+                    disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                     className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     <span className="text-sm text-slate-600 group-hover:text-sky-700 transition-colors flex items-center gap-2">{t('glossary.generate')} <Sparkles size={14} className="text-yellow-600"/></span>
@@ -26118,7 +26125,7 @@ ${t('export.readme_json_desc')}`;
                 <button
                     aria-label={t('common.generate')}
                     onClick={() => handleGenerate('simplified')}
-                    disabled={!hasSourceOrAnalysis || isProcessing}
+                    disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                     className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     <span className="text-sm text-slate-600 group-hover:text-indigo-700 transition-colors flex items-center gap-2">{t('simplified.rewrite')} <Sparkles size={14} className="text-yellow-600"/></span>
@@ -26205,7 +26212,7 @@ ${t('export.readme_json_desc')}`;
                     aria-label={t('common.generate')}
                     data-help-key="outline_generate_button"
                     onClick={() => handleGenerate('outline')}
-                    disabled={!hasSourceOrAnalysis || isProcessing}
+                    disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                     className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     <span className="text-sm text-slate-600 group-hover:text-cyan-700 transition-colors flex items-center gap-2">{t('outline.generate')} <Sparkles size={14} className="text-yellow-600"/></span>
@@ -26295,7 +26302,7 @@ ${t('export.readme_json_desc')}`;
                     <button
                         aria-label={t('common.generate')}
                     onClick={() => handleGenerate('image')}
-                    disabled={!hasSourceOrAnalysis || isProcessing}
+                    disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                     className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                     <span className="text-sm text-slate-600 group-hover:text-cyan-700 transition-colors flex items-center gap-2">{t('visuals.generate')} <Sparkles size={14} className="text-yellow-600"/></span>
@@ -26347,7 +26354,7 @@ ${t('export.readme_json_desc')}`;
                     <button
                         aria-label={t('common.generate')}
                     onClick={() => handleGenerate('faq')}
-                    disabled={!hasSourceOrAnalysis || isProcessing}
+                    disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                     className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                     <span className="text-sm text-slate-600 group-hover:text-indigo-700 transition-colors flex items-center gap-2">{t('faq.generate')} <Sparkles size={14} className="text-yellow-600"/></span>
@@ -26411,7 +26418,7 @@ ${t('export.readme_json_desc')}`;
                     <button
                         aria-label={t('common.generate')}
                     onClick={() => handleGenerate('sentence-frames')}
-                    disabled={!hasSourceOrAnalysis || isProcessing}
+                    disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                     className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                     <span className="text-sm text-slate-600 group-hover:text-cyan-700 transition-colors flex items-center gap-2">{t('scaffolds.generate')} <Sparkles size={14} className="text-yellow-600"/></span>
@@ -26449,7 +26456,7 @@ ${t('export.readme_json_desc')}`;
                     <button
                         aria-label={t('common.generate')}
                     onClick={() => handleGenerate('brainstorm')}
-                    disabled={!hasSourceOrAnalysis || isProcessing}
+                    disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                     className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                     <span className="text-sm text-slate-700 group-hover:text-violet-700 transition-colors flex items-center gap-2 font-semibold">{t('brainstorm.generate')} <Sparkles size={14} className="text-yellow-600"/></span>
@@ -26510,7 +26517,7 @@ ${t('export.readme_json_desc')}`;
                             aria-label={t('common.refresh')}
                             data-help-key="brainstorm_generate_button"
                             onClick={() => handleGenerate('gemini-bridge')}
-                            disabled={!hasSourceOrAnalysis || isProcessing}
+                            disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                             className="w-full bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold py-2 rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
                         >
                             {isProcessing ? <RefreshCw size={14} className="animate-spin"/> : <Terminal size={14}/>}
@@ -26584,7 +26591,7 @@ ${t('export.readme_json_desc')}`;
                             handleGeneratePersonas();
                             setActiveView('persona');
                         }}
-                        disabled={!hasSourceOrAnalysis || isGeneratingPersona || isProcessing}
+                        disabled={!hasSourceOrAnalysis || isGeneratingPersona || isProcessing} aria-busy={isProcessing}
                         className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         <span className="text-sm text-slate-600 group-hover:text-purple-700 transition-colors flex items-center gap-2">
@@ -26701,7 +26708,7 @@ ${t('export.readme_json_desc')}`;
                     <button
                         aria-label={t('common.generate')}
                         onClick={() => handleGenerate('timeline')}
-                        disabled={!hasSourceOrAnalysis || isProcessing}
+                        disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                         className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
                         data-help-key="timeline_generate_button"
                     >
@@ -26812,7 +26819,7 @@ ${t('export.readme_json_desc')}`;
                         aria-label={t('common.generate')}
                         data-help-key="concept_sort_generate_button"
                         onClick={() => handleGenerate('concept-sort')}
-                        disabled={!hasSourceOrAnalysis || isProcessing}
+                        disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                         className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         <span className="text-sm text-slate-600 group-hover:text-indigo-700 transition-colors flex items-center gap-2">{t('concept_sort.generate')} <Sparkles size={14} className="text-yellow-600"/></span>
@@ -26863,6 +26870,7 @@ ${t('export.readme_json_desc')}`;
                                     {window._dbqMode === 'search' ? 'Search Topic (optional — refines source hunting)' : window._dbqMode === 'links' ? 'Topic Context (helps AI understand the links)' : 'Perspectives to Compare (optional)'}
                                 </label>
                                 <input type="text" placeholder={window._dbqMode === 'search' ? 'e.g. "Japanese internment primary sources"' : window._dbqMode === 'links' ? 'e.g. "Civil Rights Movement"' : 'e.g. "Federalists vs Anti-Federalists"'}
+                                    aria-label={window._dbqMode === 'search' ? 'Search topic for primary source hunting' : window._dbqMode === 'links' ? 'Topic context for AI link analysis' : 'Perspectives to compare for DBQ'}
                                     className="w-full text-xs border border-rose-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-rose-300 outline-none"
                                     aria-label="DBQ focus topic"
                                     id="dbq-focus-topic" />
@@ -27015,7 +27023,7 @@ ${t('export.readme_json_desc')}`;
                         aria-label="Generate DBQ"
                         data-help-key="dbq_generate_button"
                         onClick={() => handleGenerate('dbq')}
-                        disabled={!hasSourceOrAnalysis || isProcessing}
+                        disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                         className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         <span className="text-sm text-slate-600 group-hover:text-rose-700 transition-colors flex items-center gap-2">{t('dbq.generate') || 'Generate DBQ Packet'} <Sparkles size={14} className="text-yellow-600"/></span>
@@ -27954,7 +27962,7 @@ ${t('export.readme_json_desc')}`;
                             </div>
                             <button aria-label={t('common.next')}
                                 data-help-key="adventure_start_btn" onClick={handleStartAdventure}
-                                disabled={!hasSourceOrAnalysis || isProcessing}
+                                disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                                 className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 <span className="text-sm text-slate-600 group-hover:text-purple-700 transition-colors flex items-center gap-2">{t('adventure.start')} <Sparkles size={14} className="text-yellow-600"/></span>
@@ -28047,7 +28055,7 @@ ${t('export.readme_json_desc')}`;
                          aria-label={t('common.generate')}
                      onClick={() => handleGenerate('quiz')}
                      data-help-key="quiz_generate_button"
-                     disabled={!hasSourceOrAnalysis || isProcessing}
+                     disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                      className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
                      >
                      <span className="text-sm text-slate-600 group-hover:text-indigo-700 transition-colors flex items-center gap-2">{t('quiz.generate')} <Sparkles size={14} className="text-yellow-600"/></span>
@@ -28090,7 +28098,7 @@ ${t('export.readme_json_desc')}`;
                     <button
                         aria-label={t('common.generate_lesson_plan')}
                         onClick={handleGenerateLessonPlan}
-                        disabled={!hasSourceOrAnalysis || isProcessing}
+                        disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                         className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         <span className="text-sm text-slate-600 group-hover:text-cyan-700 transition-colors flex items-center gap-2">
@@ -28152,7 +28160,7 @@ ${t('export.readme_json_desc')}`;
                     aria-label={t('common.generate_full_pack')}
                     data-help-key="fullpack_generate"
                     onClick={handleGenerateFullPack}
-                    disabled={!hasSourceOrAnalysis || isProcessing}
+                    disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                     className="w-full p-3 bg-white rounded-2xl text-left flex justify-between items-center disabled:opacity-80 disabled:cursor-not-allowed"
                 >
                     <div>
@@ -29324,7 +29332,7 @@ ${t('export.readme_json_desc')}`;
                                                      {isTeacherMode && (
                                                          <button aria-label={t('common.auto_correct_selected_errors')}
                                                              onClick={handleAutoCorrectSource}
-                                                             disabled={isProcessing || selectedDiscrepancies.size === 0}
+                                                             disabled={isProcessing || selectedDiscrepancies.size === 0} aria-busy={isProcessing}
                                                              className="w-full flex items-center justify-center gap-2 bg-white border border-red-200 text-red-600 hover:bg-red-100 px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                                                          >
                                                              {isProcessing ? <RefreshCw size={12} className="animate-spin"/> : <Wrench size={12}/>}
@@ -29464,7 +29472,7 @@ Return only the corrected version of this exact text:`;
                                               {isTeacherMode && realGrammarErrors.some(g => !g.startsWith('✓ FIXED:')) && (
                                                   <button aria-label={t('common.fix_grammar_errors')}
                                                       onClick={handleFixGrammarErrors}
-                                                      disabled={isProcessing || selectedGrammarErrors.size === 0}
+                                                      disabled={isProcessing || selectedGrammarErrors.size === 0} aria-busy={isProcessing}
                                                       className="w-full flex items-center justify-center gap-2 bg-white border border-amber-200 text-amber-600 hover:bg-amber-100 px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                                                   >
                                                       {isProcessing ? <RefreshCw size={12} className="animate-spin"/> : <Wand2 size={12}/>}
@@ -29527,12 +29535,12 @@ Return only the corrected version of this exact text:`;
                                             onKeyDown={(e) => e.key === 'Enter' && handleAiRefineSource()}
                                             placeholder={t('analysis.refine_placeholder')}
                                             className="w-full pl-9 pr-3 py-2 text-xs border border-indigo-200 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 outline-none transition-all shadow-sm bg-white"
-                                            disabled={isProcessing}
+                                            disabled={isProcessing} aria-busy={isProcessing}
                                         />
                                     </div>
                                     <button aria-label={t('common.ai_refine_source')}
                                         onClick={handleAiRefineSource}
-                                        disabled={!sourceRefineInstruction.trim() || isProcessing}
+                                        disabled={!sourceRefineInstruction.trim() || isProcessing} aria-busy={isProcessing}
                                         className="bg-indigo-100 text-indigo-700 hover:bg-indigo-200 px-4 py-2 rounded-lg text-xs font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                         {isProcessing ? <RefreshCw size={14} className="animate-spin"/> : <Send size={14}/>}
@@ -32077,7 +32085,7 @@ Return only the corrected version of this exact text:`;
                                       onChange={(e) => setComplexityLevel(parseInt(e.target.value))}
                                       onMouseUp={handleComplexityAdjustment}
                                       onTouchEnd={handleComplexityAdjustment}
-                                      disabled={isProcessing}
+                                      disabled={isProcessing} aria-busy={isProcessing}
                                       className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600 z-10 relative"
                                   />
                               </div>
@@ -32206,7 +32214,7 @@ Return only the corrected version of this exact text:`;
                                          <p className="text-sm text-slate-600 italic mb-2">"{generatedContent.alignmentCheck.improvement}"</p>
                                          <button aria-label={t('common.regenerate_with_rigor')}
                                              onClick={handleRegenerateWithRigor}
-                                             disabled={isProcessing}
+                                             disabled={isProcessing} aria-busy={isProcessing}
                                              className="text-xs font-bold bg-emerald-700 text-white px-3 py-1.5 rounded-full hover:bg-emerald-700 transition-colors flex items-center gap-1 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                                          >
                                              <RefreshCw size={12} className={isProcessing ? "animate-spin" : ""}/> {t('simplified.apply_regenerate')}
@@ -33052,7 +33060,7 @@ Return only the corrected version of this exact text:`;
                             <button
                                 aria-label={t('common.refresh')}
                                 onClick={() => handleGenerate('outline')}
-                                disabled={isProcessing}
+                                disabled={isProcessing} aria-busy={isProcessing}
                                 className={`flex items-center gap-2 bg-orange-100 text-orange-700 px-3 py-1.5 rounded-md text-xs font-bold hover:bg-orange-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${!isTeacherMode ? 'hidden' : ''}`}
                             >
                                 <RefreshCw size={14} className={isProcessing ? "animate-spin" : ""} /> {t('common.regenerate')}
@@ -33102,7 +33110,7 @@ Return only the corrected version of this exact text:`;
                                 <p className="text-slate-600 max-w-md mx-auto mb-6">Review and curate the concepts before generating the interactive diagram.</p>
                                 <button aria-label={t('common.initialize_map')}
                                     onClick={handleInitializeMap}
-                                    disabled={isProcessing}
+                                    disabled={isProcessing} aria-busy={isProcessing}
                                     className="w-full p-4 text-xl font-bold bg-indigo-600 text-white rounded-xl shadow-lg hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {isProcessing ? <RefreshCw size={24} className="animate-spin"/> : <Sparkles size={24} className="text-yellow-400 fill-current"/>}
@@ -34519,7 +34527,7 @@ Return only the corrected version of this exact text:`;
                                             setShowLedger(false);
                                             setShowStorybookExportModal(true);
                                         }}
-                                        disabled={isProcessing || adventureState.history.length === 0}
+                                        disabled={isProcessing || adventureState.history.length === 0} aria-busy={isProcessing}
                                         className="w-full px-6 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                         {isProcessing ? <RefreshCw size={18} className="animate-spin"/> : <Download size={18} />}
@@ -35166,7 +35174,7 @@ Return only the corrected version of this exact text:`;
                                     {adventureState.xp >= studentProjectSettings.adventureMinXP ? (
                                         <button
                                             onClick={handleSetShowStorybookExportModalToTrue}
-                                            disabled={isProcessing}
+                                            disabled={isProcessing} aria-busy={isProcessing}
                                             className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:scale-105 transition-all animate-in slide-in-from-bottom-4"
                                             title={t('adventure.storybook')}
                                             aria-label={t('adventure.storybook')}
@@ -35873,7 +35881,7 @@ Return only the corrected version of this exact text:`;
                                     </div>
                                     <button aria-label={t('common.restore_image')}
                                         onClick={handleRestoreImage}
-                                        disabled={isProcessing}
+                                        disabled={isProcessing} aria-busy={isProcessing}
                                         data-help-key="visuals_regenerate"
                                         className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-full font-bold hover:bg-indigo-700 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
@@ -35904,7 +35912,7 @@ Return only the corrected version of this exact text:`;
                                 />
                                 <button
                                     onClick={handleRefineImage}
-                                    disabled={!imageRefinementInput.trim() || isProcessing}
+                                    disabled={!imageRefinementInput.trim() || isProcessing} aria-busy={isProcessing}
                                     className="bg-yellow-400 hover:bg-yellow-500 text-yellow-900 font-bold p-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                                     title={t('common.apply_nano_edit')}
                                     aria-label={t('common.apply_nano_edit')}
@@ -37211,7 +37219,7 @@ Return only the corrected version of this exact text:`;
                             <div className="mt-8 flex justify-center pb-4">
                                 <button aria-label={t('common.generate_content')}
                                     onClick={handleGenerateSimilar}
-                                    disabled={isProcessing}
+                                    disabled={isProcessing} aria-busy={isProcessing}
                                     className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-full font-bold shadow-lg hover:bg-indigo-700 hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100"
                                     data-help-key="math_generate_similar"
                                 >
@@ -38711,7 +38719,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                             <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30">
                                 <button aria-label={t('common.start_panel_chat')}
                                     onClick={handleStartPanelChat}
-                                    disabled={personaState.selectedCharacters.length !== 2 || isProcessing}
+                                    disabled={personaState.selectedCharacters.length !== 2 || isProcessing} aria-busy={isProcessing}
                                     className="bg-purple-600 text-white px-8 py-4 rounded-full font-black text-lg shadow-xl hover:bg-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-3 active:scale-95"
                                 >
                                     {isProcessing ? <RefreshCw className="animate-spin"/> : <Users size={24}/>}
@@ -41513,7 +41521,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                             border: `1px solid ${_sel ? r.border : 'transparent'}`,
                             transition:'all 0.2s'
                           }}>
-                            <div style={{fontSize:'32px',marginBottom:'4px',transform:_sel?'scale(1.2)':'scale(1)',transition:'transform 0.2s'}}>{r.emoji}</div>
+                            <div style={{fontSize:'32px',marginBottom:'4px',transform:_sel?'scale(1.2)':'scale(1)',transition:'transform 0.2s'}} aria-hidden="true">{r.emoji}</div>
                             <div style={{fontSize:'11px',color:r.text,fontWeight:600}}>{r.label}</div>
                           </button>
                         );

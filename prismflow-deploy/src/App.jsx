@@ -16334,8 +16334,15 @@ ${t('export.readme_json_desc')}`;
   };
   const handleActivateNextLesson = (option) => {
       if (!option) return;
+      const latestAnalysis = history.slice().reverse().find(h => h && h.type === 'analysis');
+      const priorText = (latestAnalysis?.data?.originalText || inputText || '').trim();
+      const priorSummary = priorText ? priorText.substring(0, 800) : '';
+      const priorTopic = sourceTopic || '';
+      const priorBlock = (priorTopic || priorSummary)
+          ? `\n\nPRIOR LESSON CONTEXT (the lesson this one builds on):\nPrior topic: "${priorTopic || 'Unspecified'}".\nPrior content summary: "${priorSummary || 'Not available'}".\nThis new lesson should build on that foundation as the ${option.type} successor — reference the prior concepts where appropriate, do not re-teach them as if students haven't seen them, and assume mastery of the prior topic at the level it was taught.`
+          : '';
       setSourceTopic(option.nextTopic);
-      setSourceCustomInstructions(`Focus: ${option.focus}. Context: This is a ${option.type} follow-up lesson to the previous topic. Rationale: ${option.rationale}`);
+      setSourceCustomInstructions(`Focus: ${option.focus}. Context: This is a ${option.type} follow-up lesson to the previous topic. Rationale: ${option.rationale}${priorBlock}`);
       setShowSourceGen(true);
       setExpandedTools(prev => prev.includes('source-input') ? prev : ['source-input', ...prev]);
       setGeneratedContent(null);
