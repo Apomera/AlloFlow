@@ -365,6 +365,8 @@
     var _rewriteResult = useState(null); var rewriteResult = _rewriteResult[0]; var setRewriteResult = _rewriteResult[1];
     var _rewriteLoading = useState(false); var rewriteLoading = _rewriteLoading[0]; var setRewriteLoading = _rewriteLoading[1];
     var _rewriteTargetId = useState(''); var rewriteTargetId = _rewriteTargetId[0]; var setRewriteTargetId = _rewriteTargetId[1];
+    // Chapbook filter (which form to include; blank = all)
+    var _chapbookFilter = useState(''); var chapbookFilter = _chapbookFilter[0]; var setChapbookFilter = _chapbookFilter[1];
 
     // ── Persistence helpers ──
     var savePrefs = useCallback(function (next) {
@@ -840,6 +842,121 @@
       try { w.document.open(); w.document.write(html); w.document.close(); announcePT('Broadside ready in a new window.'); }
       catch (er) { addToast && addToast('Broadside failed.', 'error'); }
     }, [poemText, poemTitle, studentNickname, form, illustration, addToast]);
+
+    // ── Print Chapbook (all saved poems as one document) ──
+    // Same accessible-HTML5 pattern as the broadside but multi-page with cover + table of contents.
+    var printChapbook = useCallback(function (filterFormId) {
+      var pool = filterFormId ? saved.filter(function (p) { return p.formId === filterFormId; }) : saved;
+      if (!pool.length) { addToast && addToast('No poems to print yet.', 'info'); return; }
+      var w = window.open('', '_blank', 'width=720,height=900');
+      if (!w) { addToast && addToast('Pop-up blocked. Allow pop-ups to print.', 'error'); return; }
+      var esc = function (s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); };
+      var safeAuthor = esc(studentNickname || 'A poet');
+      var dateStr = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+      var filterLabel = filterFormId ? (FORMS.find(function (f) { return f.id === filterFormId; }) || { name: filterFormId }).name : '';
+      var coverTitle = filterFormId ? esc(filterLabel + ' Collection') : 'Selected Poems';
+
+      // Cover (header landmark) — large title, author, date, count.
+      var coverHtml = '<header class="page cover" role="banner">'
+        + '<div class="cover-inner">'
+        + '<p class="kicker">A PoetTree Chapbook</p>'
+        + '<h1 class="cover-title" id="chapbook-title">' + coverTitle + '</h1>'
+        + '<p class="cover-author">by ' + safeAuthor + '</p>'
+        + '<p class="cover-meta">' + pool.length + ' poem' + (pool.length === 1 ? '' : 's') + ' · ' + esc(dateStr) + '</p>'
+        + '</div></header>';
+
+      // Table of contents (nav landmark) — listed by title with form label.
+      var tocHtml = '<nav class="page toc" role="navigation" aria-labelledby="toc-heading">'
+        + '<h2 id="toc-heading">Contents</h2>'
+        + '<ol class="toc-list">'
+        + pool.map(function (p, pi) {
+            var f = FORMS.find(function (ff) { return ff.id === p.formId; });
+            return '<li><a href="#poem-' + (pi + 1) + '"><span class="toc-num">' + (pi + 1) + '</span><span class="toc-name">' + esc(p.title || 'Untitled') + '</span><span class="toc-form">' + (f ? f.icon + ' ' + esc(f.name) : 'Free verse') + '</span></a></li>';
+          }).join('')
+        + '</ol></nav>';
+
+      // Each poem on its own page (article landmarks, h2 per poem, role=document for body).
+      var poemsHtml = pool.map(function (p, pi) {
+        var f = FORMS.find(function (ff) { return ff.id === p.formId; });
+        var safeTitle = esc(p.title || 'Untitled');
+        var lines = String(p.text || '').split('\n').map(function (l) {
+          var t = l.trim();
+          return t ? '<p class="line">' + esc(l) + '</p>' : '<div class="stanza-break" role="separator" aria-label="stanza break"></div>';
+        }).join('');
+        return '<article class="page poem-page" id="poem-' + (pi + 1) + '" aria-labelledby="poem-' + (pi + 1) + '-title">'
+          + '<header class="poem-header">'
+          +   (f ? '<p class="formtag" aria-label="Poem form: ' + esc(f.name) + '"><span aria-hidden="true">' + f.icon + '</span> ' + esc(f.name) + '</p>' : '')
+          +   '<h2 class="poem-title" id="poem-' + (pi + 1) + '-title">' + safeTitle + '</h2>'
+          + '</header>'
+          + '<div class="poem-body" role="document">' + lines + '</div>'
+          + '<p class="page-num" aria-hidden="true">— ' + (pi + 1) + ' —</p>'
+          + '</article>';
+      }).join('');
+
+      var html = '<!doctype html><html lang="en"><head><meta charset="utf-8">'
+        + '<meta name="viewport" content="width=device-width,initial-scale=1">'
+        + '<title>' + coverTitle + ' — by ' + safeAuthor + '</title>'
+        + '<meta name="author" content="' + safeAuthor + '">'
+        + '<meta name="description" content="A chapbook of ' + pool.length + ' poem' + (pool.length === 1 ? '' : 's') + ' by ' + safeAuthor + ', generated with PoetTree.">'
+        + '<style>'
+        + '.skip-link{position:absolute;left:-9999px;top:0;padding:8px 14px;background:#0f172a;color:#fff;text-decoration:none;font-weight:700}'
+        + '.skip-link:focus{left:0;top:0;z-index:1000}'
+        + 'html,body{margin:0;padding:0;background:#fff;color:#1e293b;font-family:Georgia,serif}'
+        + 'main{display:block} figure{margin:0}'
+        + '.toolbar{position:sticky;top:0;background:#f8fafc;border-bottom:1px solid #e5e7eb;padding:10px 20px;display:flex;gap:10px;align-items:center;font-family:system-ui,sans-serif;font-size:12px;z-index:10}'
+        + '.toolbar button{padding:6px 14px;border-radius:6px;border:none;background:#0d9488;color:#fff;font-weight:700;cursor:pointer;font-size:12px}'
+        + '.toolbar button:focus{outline:2px solid #0f172a;outline-offset:2px}'
+        + '.toolbar button.secondary{background:#fff;color:#115e59;border:1px solid #0d9488}'
+        + '.toolbar .help{margin-left:auto;color:#334155}'
+        + '.page{page-break-after:always;min-height:100vh;padding:64px 64px;box-sizing:border-box;display:flex;flex-direction:column;max-width:780px;margin:0 auto}'
+        + '.page:last-child{page-break-after:auto}'
+        // Cover styling — gradient and large display.
+        + '.cover{background:linear-gradient(135deg,#0d9488,#0891b2);color:#fff;align-items:center;justify-content:center;text-align:center}'
+        + '.cover-inner{max-width:520px}'
+        + '.cover .kicker{font-size:11px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;opacity:0.85;margin:0 0 12px}'
+        + '.cover-title{font-size:48px;font-weight:900;margin:0 0 16px;line-height:1.1;letter-spacing:-0.5px}'
+        + '.cover-author{font-size:20px;font-style:italic;margin:0 0 24px;opacity:0.95}'
+        + '.cover-meta{font-size:13px;opacity:0.8;margin:0;font-family:system-ui,sans-serif;letter-spacing:0.05em}'
+        // TOC styling.
+        + '.toc h2{font-size:28px;font-weight:800;margin:0 0 28px;text-align:center}'
+        + '.toc-list{list-style:none;padding:0;margin:0}'
+        + '.toc-list li{margin:0 0 8px;padding:0}'
+        + '.toc-list a{display:flex;gap:14px;align-items:baseline;text-decoration:none;color:#1e293b;padding:10px 12px;border-radius:8px;font-size:15px}'
+        + '.toc-list a:hover{background:#f1f5f9}'
+        + '.toc-num{font-family:system-ui,sans-serif;color:#475569;font-weight:700;min-width:28px}'
+        + '.toc-name{flex:1;font-style:italic}'
+        + '.toc-form{font-size:11px;color:#475569;font-family:system-ui,sans-serif}'
+        // Poem-page styling.
+        + '.poem-page{justify-content:flex-start}'
+        + '.poem-header{margin-bottom:24px}'
+        + '.formtag{font-size:11px;color:#115e59;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin:0 0 8px}'
+        + '.poem-title{font-size:28px;font-weight:800;margin:0;line-height:1.2;letter-spacing:-0.3px}'
+        + '.line{font-size:17px;line-height:1.85;margin:0;text-align:left}'
+        + '.stanza-break{height:18px}'
+        + '.page-num{margin-top:auto;text-align:center;font-size:11px;color:#475569;font-family:system-ui,sans-serif;padding-top:24px}'
+        // Print
+        + '@media print{.toolbar,.skip-link{display:none}.page{padding:32px;page-break-after:always}.cover{background:#0d9488 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}html,body{background:#fff !important}}'
+        + '@media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important}}'
+        + '</style></head><body>'
+        + '<a class="skip-link" href="#chapbook-title">Skip to chapbook</a>'
+        + '<div class="toolbar" role="banner">'
+        +   '<button type="button" onclick="window.print()" aria-label="Print this chapbook or save as PDF">🖨️ Print / Save as PDF</button>'
+        +   '<button type="button" class="secondary" onclick="window.close()" aria-label="Close window">✕ Close</button>'
+        +   '<span class="help" aria-hidden="true">Use Ctrl+P (⌘+P) → Save as PDF</span>'
+        + '</div>'
+        + '<main role="main" aria-labelledby="chapbook-title">'
+        +   coverHtml
+        +   tocHtml
+        +   poemsHtml
+        + '</main>'
+        + '<footer class="page" role="contentinfo" style="justify-content:center;align-items:center;text-align:center"><div>'
+        +   '<p style="font-size:13px;color:#475569;font-style:italic;margin:0 0 8px">Thank you for reading.</p>'
+        +   '<p style="font-size:11px;color:#475569;font-family:system-ui,sans-serif;margin:0">Made with PoetTree · AlloFlow</p>'
+        + '</div></footer>'
+        + '</body></html>';
+      try { w.document.open(); w.document.write(html); w.document.close(); announcePT('Chapbook ready: ' + pool.length + ' poems, in a new window.'); }
+      catch (er) { addToast && addToast('Chapbook failed.', 'error'); }
+    }, [saved, studentNickname, addToast]);
 
     // ── Found poetry helper: pick word ──
     var addFoundWord = useCallback(function (word) {
@@ -1440,8 +1557,41 @@
             e('h3', { style: { fontSize: '16px', fontWeight: 800, color: TEAL_DARK, margin: 0 } }, '📚 Library'),
             saved.length === 0
               ? e('p', { style: { color: '#475569', fontSize: '13px', fontStyle: 'italic' } }, 'No poems saved yet. Save one from the Write tab to see it here.')
-              : e('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
-                  saved.map(function (p) {
+              : (function () {
+                  // Compute which forms are represented in saved poems for the filter dropdown
+                  var formsInLibrary = {};
+                  saved.forEach(function (p) { formsInLibrary[p.formId || 'free'] = (formsInLibrary[p.formId || 'free'] || 0) + 1; });
+                  var formIdsRepresented = Object.keys(formsInLibrary);
+                  var filterCount = chapbookFilter ? (formsInLibrary[chapbookFilter] || 0) : saved.length;
+                  return e('div', { style: { display: 'flex', flexDirection: 'column', gap: '12px' } },
+                    // Print Chapbook panel
+                    e('div', { style: { background: TEAL_LIGHT, border: '1px solid #99f6e4', borderRadius: '10px', padding: '12px' } },
+                      e('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' } },
+                        e('div', { style: { flex: 1, minWidth: '180px' } },
+                          e('h4', { style: { fontSize: '13px', fontWeight: 800, color: TEAL_DARK, margin: 0 } }, '📖 Print as a chapbook'),
+                          e('p', { style: { fontSize: '11px', color: '#475569', margin: '2px 0 0' } }, 'Cover, table of contents, and one page per poem. Print to paper or save as PDF.')
+                        ),
+                        formIdsRepresented.length > 1 && e('select', { value: chapbookFilter,
+                          onChange: function (ev) { setChapbookFilter(ev.target.value); },
+                          'aria-label': 'Filter chapbook by form',
+                          style: { padding: '5px 8px', borderRadius: '6px', border: '1px solid #99f6e4', fontSize: '12px', background: '#fff' }
+                        },
+                          e('option', { value: '' }, 'All poems (' + saved.length + ')'),
+                          formIdsRepresented.map(function (fid) {
+                            var f = FORMS.find(function (ff) { return ff.id === fid; });
+                            return e('option', { key: fid, value: fid }, (f ? f.icon + ' ' + f.name : 'Free verse') + ' (' + formsInLibrary[fid] + ')');
+                          })
+                        ),
+                        e('button', { onClick: function () { printChapbook(chapbookFilter); },
+                          'aria-label': 'Print chapbook of ' + filterCount + ' poems',
+                          disabled: filterCount === 0,
+                          style: { padding: '8px 14px', background: filterCount > 0 ? TEAL : '#cbd5e1', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: filterCount > 0 ? 'pointer' : 'not-allowed' }
+                        }, '🖨️ Print ' + filterCount + ' poem' + (filterCount === 1 ? '' : 's'))
+                      )
+                    ),
+                    // Saved poem list
+                    e('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
+                      saved.map(function (p) {
                     var f = FORMS.find(function (ff) { return ff.id === p.formId; });
                     return e('div', { key: p.id, style: { background: '#fff', border: '1px solid #e5e7eb', borderRadius: '10px', padding: '12px' } },
                       e('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px', marginBottom: '6px' } },
@@ -1458,7 +1608,9 @@
                       e('pre', { style: { whiteSpace: 'pre-wrap', fontFamily: 'Georgia, serif', fontSize: '12px', color: '#374151', margin: 0, maxHeight: '120px', overflowY: 'auto', lineHeight: 1.5 } }, p.text.length > 320 ? p.text.slice(0, 320) + '…' : p.text)
                     );
                   })
-                )
+                    )
+                  );
+                })()
           )
         )
       )
