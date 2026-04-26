@@ -581,8 +581,7 @@ window.StemLab = window.StemLab || {
 
         // Core Tools
         h('div', { className: 'flex gap-2 flex-wrap' },
-          h('button', { 'aria-label': 'Sfx Click',
-            onClick: function() {
+          h('button', { onClick: function() {
               sfxClick();
               if (connectMode) { setGridFeedback(null); } else { setGridFeedback({ connectMode: true, lines: gridLines, connectFirst: null }); }
               setGridChallenge(null);
