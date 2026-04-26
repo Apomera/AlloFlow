@@ -841,6 +841,14 @@ window.StemLab = window.StemLab || {
             conceptId: 'tikitaka',
             shapeId: 'midblock',
             showXG: false,             // expected-goals heatmap overlay (soccer only)
+            // Saved plays — student-designed plays (drag-edited or
+            // formation/concept tweaks) named and stored. Each entry
+            // captures sport + base preset + custom positions so loading
+            // restores the exact view. Lives in d so the harness's
+            // localStorage persists it across sessions automatically.
+            savedPlays: [],
+            savePromptOpen: false,
+            savePromptName: '',
             // Football state
             playId: 'slant',
             coverageId: 'cover2',
@@ -941,6 +949,93 @@ window.StemLab = window.StemLab || {
           })});
         });
         plAnnounce('Player positions reset to preset.');
+      }
+
+      // ── Saved plays ──
+      // Capture the current sport + preset + custom positions as a named
+      // entry. Loading restores the entire view; deleting removes from
+      // the list. Capped at 24 entries (FIFO eviction) so the toolData
+      // blob doesn't grow unbounded across sessions.
+      function openSavePrompt() {
+        // Suggest a default name from the active preset + custom-edit count
+        var basePresetLabel = isSoccer
+          ? formationDef.label + ' · ' + concept.label
+          : play.label;
+        var customCount = Object.keys(d.customPositions || {}).length;
+        var defaultName = basePresetLabel + (customCount ? ' (' + customCount + ' edit' + (customCount === 1 ? '' : 's') + ')' : '');
+        setLabToolData(function(prev) {
+          return Object.assign({}, prev, { playlab: Object.assign({}, prev.playlab, {
+            savePromptOpen: true, savePromptName: defaultName
+          })});
+        });
+      }
+      function cancelSavePrompt() {
+        setLabToolData(function(prev) {
+          return Object.assign({}, prev, { playlab: Object.assign({}, prev.playlab, {
+            savePromptOpen: false, savePromptName: ''
+          })});
+        });
+      }
+      function commitSavePlay() {
+        var name = (d.savePromptName || '').trim();
+        if (!name) {
+          plAnnounce('Please give the play a name.');
+          return;
+        }
+        var entry = {
+          id: 'custom_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+          name: name,
+          sport: d.sport,
+          createdAt: Date.now(),
+          customPositions: Object.assign({}, d.customPositions || {})
+        };
+        if (isSoccer) {
+          entry.formationId = d.formationId;
+          entry.conceptId = d.conceptId;
+          entry.shapeId = d.shapeId;
+        } else {
+          entry.playId = d.playId;
+          entry.coverageId = d.coverageId;
+        }
+        var saved = (d.savedPlays || []).concat([entry]);
+        // FIFO eviction at 24 entries
+        if (saved.length > 24) saved = saved.slice(saved.length - 24);
+        setLabToolData(function(prev) {
+          return Object.assign({}, prev, { playlab: Object.assign({}, prev.playlab, {
+            savedPlays: saved, savePromptOpen: false, savePromptName: ''
+          })});
+        });
+        plAnnounce('Saved play: ' + name + '.');
+        if (addToast) addToast('💾 Saved: ' + name);
+        if (awardXP) awardXP('playlab', 4, 'Saved play');
+      }
+      function loadSavedPlay(entry) {
+        if (!entry) return;
+        setLabToolData(function(prev) {
+          var next = Object.assign({}, prev.playlab, {
+            sport: entry.sport,
+            customPositions: Object.assign({}, entry.customPositions || {}),
+            // Clear in-flight animation + ephemeral state on load
+            runActive: false, runT: 0, runOutcome: null, coachReply: '', coachError: ''
+          });
+          if (entry.sport === 'soccer') {
+            if (entry.formationId) next.formationId = entry.formationId;
+            if (entry.conceptId) next.conceptId = entry.conceptId;
+            if (entry.shapeId) next.shapeId = entry.shapeId;
+          } else {
+            if (entry.playId) next.playId = entry.playId;
+            if (entry.coverageId) next.coverageId = entry.coverageId;
+          }
+          return Object.assign({}, prev, { playlab: next });
+        });
+        plAnnounce('Loaded saved play: ' + entry.name + '.');
+      }
+      function deleteSavedPlay(id) {
+        setLabToolData(function(prev) {
+          var saved = (prev.playlab.savedPlays || []).filter(function(e) { return e.id !== id; });
+          return Object.assign({}, prev, { playlab: Object.assign({}, prev.playlab, { savedPlays: saved })});
+        });
+        plAnnounce('Deleted saved play.');
       }
 
       // ── Coach Mode (Gemini) ──
@@ -2072,8 +2167,45 @@ window.StemLab = window.StemLab || {
                   padding: '4px 10px', minHeight: 24, borderRadius: 4, cursor: 'pointer',
                   border: '1px solid #475569', background: '#1e293b', color: '#cbd5e1', fontSize: 11
                 }
-              }, 'Reset positions') : null
+              }, 'Reset positions') : null,
+              // Save play — only renders when there's something custom to save
+              Object.keys(d.customPositions || {}).length > 0 ? h('button', {
+                onClick: openSavePrompt,
+                'data-pl-focusable': 'true',
+                'aria-label': 'Save the current custom play with a name',
+                style: {
+                  padding: '4px 10px', minHeight: 24, borderRadius: 4, cursor: 'pointer',
+                  border: '1px solid #d946ef', background: 'rgba(217,70,239,0.18)',
+                  color: '#f1f5f9', fontSize: 11, fontWeight: 600
+                }
+              }, '💾 Save play') : null
             ),
+            // Save prompt — inline form below the toggle row
+            d.savePromptOpen ? h('div', {
+              role: 'dialog', 'aria-label': 'Save play',
+              style: { marginTop: 8, padding: 12, background: '#0f172a', border: '1px solid #d946ef', borderRadius: 8, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }
+            },
+              h('label', { htmlFor: 'pl-save-name', style: { fontSize: 12, color: '#cbd5e1' } }, 'Play name:'),
+              h('input', {
+                id: 'pl-save-name', type: 'text',
+                value: d.savePromptName || '',
+                onChange: function(e) { upd('savePromptName', e.target.value); },
+                onKeyDown: function(e) {
+                  if (e.key === 'Enter') commitSavePlay();
+                  else if (e.key === 'Escape') cancelSavePrompt();
+                },
+                'data-pl-focusable': 'true', autoFocus: true,
+                style: { flex: 1, minWidth: 200, padding: '6px 8px', borderRadius: 4, border: '1px solid #475569', background: '#1e293b', color: '#f1f5f9', fontSize: 12 }
+              }),
+              h('button', {
+                onClick: commitSavePlay, 'data-pl-focusable': 'true',
+                style: { padding: '6px 12px', minHeight: 30, borderRadius: 4, cursor: 'pointer', border: '1px solid #d946ef', background: 'rgba(217,70,239,0.18)', color: '#f1f5f9', fontSize: 11, fontWeight: 600 }
+              }, 'Save'),
+              h('button', {
+                onClick: cancelSavePrompt, 'data-pl-focusable': 'true',
+                style: { padding: '6px 12px', minHeight: 30, borderRadius: 4, cursor: 'pointer', border: '1px solid #475569', background: '#1e293b', color: '#cbd5e1', fontSize: 11 }
+              }, 'Cancel')
+            ) : null,
             // Drag hint — only on first load (no custom edits yet) so it
             // doesn't nag returning students
             !Object.keys(d.customPositions || {}).length ? h('div', {
@@ -2177,6 +2309,43 @@ window.StemLab = window.StemLab || {
                 color: '#f1f5f9', fontSize: 12, fontWeight: 600
               }
             }, d.coachLoading ? '🤖 Coach is analyzing…' : '🤖 Ask the coach') : null,
+            // ── Saved plays list ──
+            // Only renders when at least one play has been saved. Each row
+            // shows the name + sport icon + load + delete. Clicking the
+            // row label loads the play; clicking the X deletes it.
+            (d.savedPlays && d.savedPlays.length) ? h('section', {
+              'aria-labelledby': 'pl-saved-heading',
+              style: { background: '#0f172a', border: '1px solid #1e293b', borderRadius: 10, padding: 12, marginBottom: 10 }
+            },
+              h('h3', { id: 'pl-saved-heading',
+                style: { fontSize: 12, margin: 0, marginBottom: 6, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 600 }
+              }, '💾 My Plays (' + d.savedPlays.length + ')'),
+              h('ul', { style: { listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 4 } },
+                d.savedPlays.slice().reverse().map(function(entry) {
+                  return h('li', {
+                    key: entry.id,
+                    style: { display: 'flex', gap: 6, alignItems: 'center', padding: '4px 6px', borderRadius: 4, background: '#1e293b', border: '1px solid #334155' }
+                  },
+                    h('span', { style: { fontSize: 14 } }, entry.sport === 'soccer' ? '⚽' : '🏈'),
+                    h('button', {
+                      onClick: function() { loadSavedPlay(entry); },
+                      'aria-label': 'Load saved play ' + entry.name,
+                      'data-pl-focusable': 'true',
+                      style: { flex: 1, padding: '4px 6px', borderRadius: 4, cursor: 'pointer',
+                        border: '1px solid transparent', background: 'transparent',
+                        color: '#f1f5f9', fontSize: 12, textAlign: 'left' }
+                    }, entry.name),
+                    h('button', {
+                      onClick: function() { if (confirm('Delete saved play "' + entry.name + '"?')) deleteSavedPlay(entry.id); },
+                      'aria-label': 'Delete saved play ' + entry.name,
+                      'data-pl-focusable': 'true',
+                      style: { padding: '4px 8px', minHeight: 24, minWidth: 24, borderRadius: 4, cursor: 'pointer',
+                        border: '1px solid #475569', background: '#1e293b', color: '#cbd5e1', fontSize: 12 }
+                    }, '✕')
+                  );
+                })
+              )
+            ) : null,
             h('div', { style: { fontSize: 11, color: '#94a3b8', display: 'flex', justifyContent: 'space-between' } },
               h('span', null, 'Plays seen: ' + Object.keys(d.playsViewed || {}).length + ' / ' + PLAYS.length),
               h('span', null, 'Coverages seen: ' + Object.keys(d.coveragesViewed || {}).length + ' / ' + COVERAGES.length)

@@ -352,6 +352,12 @@
     var _rhymeLoading = useState(false); var rhymeLoading = _rhymeLoading[0]; var setRhymeLoading = _rhymeLoading[1];
     var _verbSuggestions = useState(null); var verbSuggestions = _verbSuggestions[0]; var setVerbSuggestions = _verbSuggestions[1];
     var _verbLoading = useState(false); var verbLoading = _verbLoading[0]; var setVerbLoading = _verbLoading[1];
+    // Senses Check: per-sense counts + one targeted "missing sense" suggestion
+    var _sensesResult = useState(null); var sensesResult = _sensesResult[0]; var setSensesResult = _sensesResult[1];
+    var _sensesLoading = useState(false); var sensesLoading = _sensesLoading[0]; var setSensesLoading = _sensesLoading[1];
+    // Spark Words: 5 random concrete nouns/images to break a creative block
+    var _sparkWords = useState(null); var sparkWords = _sparkWords[0]; var setSparkWords = _sparkWords[1];
+    var _sparkLoading = useState(false); var sparkLoading = _sparkLoading[0]; var setSparkLoading = _sparkLoading[1];
 
     // ── Persistence helpers ──
     var savePrefs = useCallback(function (next) {
@@ -501,6 +507,47 @@
         setVerbLoading(false);
       }
     }, [onCallGemini, poemText]);
+
+    var checkSenses = useCallback(async function () {
+      if (!onCallGemini || !poemText.trim()) return;
+      setSensesLoading(true);
+      setSensesResult(null);
+      try {
+        var prompt = 'Audit this poem for sensory imagery. Count how many distinct moments engage each sense.\n\n'
+          + 'Poem:\n"""\n' + poemText + '\n"""\n\n'
+          + 'Return JSON: {"counts":{"sight":N,"sound":N,"smell":N,"taste":N,"touch":N,"motion":N,"emotion":N},"strongest":"<which sense is most vivid in this poem, one word>","missing":"<which one missing or weak sense would most strengthen the poem>","suggestion":"<one specific concrete suggestion to add a missing sense — name a body part, a texture, a smell, etc., that fits the poem\'s subject>"}\n\n'
+          + 'Be honest — abstractions don\'t count. "Sad" is emotion, not sight. "Cold hands" is touch. "The smell of rain" is smell. Don\'t invent senses the poem doesn\'t actually use.';
+        var result = await onCallGemini(prompt, true);
+        var clean = String(result).trim().replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```$/, '').trim();
+        var parsed = JSON.parse(clean);
+        setSensesResult(parsed);
+        announcePT('Senses check complete. ' + (parsed.suggestion || ''));
+      } catch (err) {
+        warnLog('Senses check failed:', err && err.message);
+        setSensesResult({ error: 'Couldn\'t analyze senses right now.' });
+      } finally {
+        setSensesLoading(false);
+      }
+    }, [onCallGemini, poemText]);
+
+    var generateSparks = useCallback(async function () {
+      if (!onCallGemini) return;
+      setSparkLoading(true);
+      try {
+        var prompt = 'Generate 5 vivid, concrete nouns or short noun-phrases (1-3 words each) for a ' + gradeLevel + ' student to use as poetic seeds. Mix the senses (sound / smell / texture / sight / motion). Avoid abstractions like "love" or "joy." Examples of good ones: "copper bowl", "pine smoke", "static crackle", "lemon rind", "crow shadow."\n\n'
+          + 'Return JSON: {"words":["...","...","...","...","..."]}';
+        var result = await onCallGemini(prompt, true);
+        var clean = String(result).trim().replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```$/, '').trim();
+        var parsed = JSON.parse(clean);
+        setSparkWords(parsed.words || []);
+        announcePT('5 spark words ready: ' + (parsed.words || []).join(', '));
+      } catch (err) {
+        warnLog('Spark words failed:', err && err.message);
+        addToast && addToast('Couldn\'t fetch spark words.', 'error');
+      } finally {
+        setSparkLoading(false);
+      }
+    }, [onCallGemini, gradeLevel, addToast]);
 
     // ── Meter analysis (Gemini-on-demand) ──
     var analyzeMeter = useCallback(async function () {
@@ -1050,6 +1097,66 @@
                     })
                   ),
                   !verbSuggestions && e('p', { style: { fontSize: '11px', color: '#475569', margin: 0, fontStyle: 'italic' } }, 'Find weak verbs (is, was, have…) and get stronger alternatives.')
+                ),
+
+                // ── Senses Check ──
+                e('div', null,
+                  e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '6px' } },
+                    e('h4', { style: { fontSize: '12px', fontWeight: 800, color: TEAL_DARK, margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' } }, '🌈 Senses Check'),
+                    e('button', { onClick: checkSenses, disabled: !poemText.trim() || sensesLoading,
+                      'aria-busy': sensesLoading ? 'true' : 'false',
+                      'aria-label': sensesLoading ? 'Auditing sensory imagery' : 'Audit which senses your poem uses',
+                      style: { padding: '4px 12px', borderRadius: '6px', border: 'none', background: poemText.trim() && !sensesLoading ? TEAL : '#cbd5e1', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: poemText.trim() && !sensesLoading ? 'pointer' : 'not-allowed' }
+                    }, sensesLoading ? '⏳…' : '🌈 Audit')
+                  ),
+                  sensesResult && sensesResult.error && e('p', { style: { fontSize: '11px', color: '#b91c1c', fontStyle: 'italic', margin: 0 } }, sensesResult.error),
+                  sensesResult && !sensesResult.error && e('div', { role: 'region', 'aria-label': 'Senses audit results', 'aria-live': 'polite', style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
+                    // Per-sense bars
+                    e('div', { style: { display: 'flex', flexDirection: 'column', gap: '3px', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '10px' } },
+                      ['sight','sound','smell','taste','touch','motion','emotion'].map(function (sense) {
+                        var count = (sensesResult.counts && sensesResult.counts[sense]) || 0;
+                        var max = 8;
+                        var pct = Math.min(100, (count / max) * 100);
+                        var isStrong = sensesResult.strongest && sensesResult.strongest.toLowerCase() === sense;
+                        var isMissing = sensesResult.missing && sensesResult.missing.toLowerCase() === sense;
+                        var iconMap = { sight: '👁️', sound: '🔊', smell: '👃', taste: '👅', touch: '✋', motion: '💨', emotion: '💗' };
+                        return e('div', { key: sense, style: { display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px' }, 'aria-label': sense + ': ' + count + (isStrong ? ' (strongest)' : isMissing ? ' (missing — try adding)' : '') },
+                          e('span', { style: { width: '70px', color: isMissing ? '#b45309' : isStrong ? TEAL_DARK : '#475569', fontWeight: isStrong || isMissing ? 800 : 500 } }, (iconMap[sense] || '') + ' ' + sense),
+                          e('div', { style: { flex: 1, height: '8px', background: '#f1f5f9', borderRadius: '4px', overflow: 'hidden' }, 'aria-hidden': 'true' },
+                            e('div', { style: { height: '100%', width: pct + '%', background: isMissing && count === 0 ? '#fde68a' : isStrong ? TEAL : '#cbd5e1' } })
+                          ),
+                          e('span', { style: { width: '20px', textAlign: 'right', color: count === 0 ? '#94a3b8' : '#1e293b', fontWeight: 700 } }, count)
+                        );
+                      })
+                    ),
+                    // Targeted suggestion
+                    sensesResult.suggestion && e('div', { style: { background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '8px', padding: '8px 10px' } },
+                      e('p', { style: { fontSize: '10px', color: '#78350f', margin: '0 0 2px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' } }, '💡 Try adding'),
+                      e('p', { style: { fontSize: '12px', color: '#1e293b', margin: 0, lineHeight: 1.5 } }, sensesResult.suggestion)
+                    )
+                  ),
+                  !sensesResult && e('p', { style: { fontSize: '11px', color: '#475569', margin: 0, fontStyle: 'italic' } }, 'See which senses your poem already uses, and which one would add the most.')
+                ),
+
+                // ── Spark Words ──
+                e('div', null,
+                  e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '6px' } },
+                    e('h4', { style: { fontSize: '12px', fontWeight: 800, color: TEAL_DARK, margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' } }, '🎲 Spark Words'),
+                    e('button', { onClick: generateSparks, disabled: sparkLoading,
+                      'aria-busy': sparkLoading ? 'true' : 'false',
+                      'aria-label': sparkLoading ? 'Generating spark words' : (sparkWords ? 'Generate 5 fresh spark words' : 'Generate 5 spark words'),
+                      style: { padding: '4px 12px', borderRadius: '6px', border: 'none', background: sparkLoading ? '#cbd5e1' : TEAL, color: '#fff', fontSize: '11px', fontWeight: 700, cursor: sparkLoading ? 'wait' : 'pointer' }
+                    }, sparkLoading ? '⏳…' : (sparkWords ? '🔄 Re-roll' : '🎲 Roll'))
+                  ),
+                  sparkWords && Array.isArray(sparkWords) && sparkWords.length > 0 && e('div', { role: 'region', 'aria-label': 'Spark words', 'aria-live': 'polite', style: { display: 'flex', flexWrap: 'wrap', gap: '6px' } },
+                    sparkWords.map(function (w, wi) {
+                      return e('button', { key: wi, onClick: function () { copyRhyme(w); },
+                        'aria-label': 'Spark word ' + w + ' — copy to clipboard',
+                        style: { padding: '4px 12px', background: TEAL_LIGHT, border: '1px solid #99f6e4', borderRadius: '14px', fontSize: '13px', cursor: 'pointer', color: TEAL_DARK, fontFamily: 'Georgia, serif' }
+                      }, w);
+                    })
+                  ),
+                  !sparkWords && e('p', { style: { fontSize: '11px', color: '#475569', margin: 0, fontStyle: 'italic' } }, 'Stuck? Get 5 vivid concrete words to seed an image.')
                 )
               )
             )
