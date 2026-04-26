@@ -1544,7 +1544,102 @@ Return ONLY JSON:
     setSelfAssessment({});
     setSelfAssessmentSubmitted(false);
     setSensesResult(null);
+    setMentorMatch(null);
     changePhase('write');
+  };
+
+  // ── Mentor Match: pair the student's story with a public-domain master excerpt ──
+  // Same proven pattern as PoetTree (commit 574767a):
+  //   1. Gemini extracts 3-5 keywords from the student's draft
+  //   2. WebSearchProvider (Serper → SearXNG → DDG) fetches real PD candidates
+  //   3. Gemini picks the best mentor, anchored to a real sourceUrl
+  // Anti-fabrication: hard-restricts to authors-died-pre-1929 + traditional/anonymous;
+  // uncertain flag asks Gemini to skip text rather than invent.
+  const findMentorStory = async () => {
+    if (!onCallGemini) return;
+    const fullText = paragraphs.map(p => p.text.trim()).filter(Boolean).join('\n\n');
+    if (fullText.length < 80) {
+      if (addToast) addToast('Write a bit more before finding a mentor', 'info');
+      return;
+    }
+    setMentorLoading(true);
+    setMentorMatch(null);
+    try {
+      // Stage 1 — extract keywords
+      let keywords = '';
+      try {
+        const queryPrompt = `Extract 3-5 keywords from this story draft that would help find a similar PUBLIC-DOMAIN master short story online. Focus on concrete images, themes, setting, character archetype, and emotional tone, not function words. Return JSON: {"keywords":["...","..."]}\n\nStory:\n"""\n${fullText.slice(0, 2400)}\n"""`;
+        const queryResult = await onCallGemini(queryPrompt, true);
+        const queryParsed = JSON.parse(cleanJson(queryResult));
+        keywords = (queryParsed.keywords || []).slice(0, 5).join(' ');
+      } catch (e) { console.warn('Mentor keyword extract failed:', e && e.message); }
+
+      // Stage 2 — Serper-grounded web search for real PD short fiction
+      let searchContext = '';
+      let searchResults = [];
+      if (window.WebSearchProvider && keywords) {
+        try {
+          const genreLabel = GENRE_TEMPLATES[genre]?.label || '';
+          const searchQuery = `${keywords} ${genreLabel ? genreLabel + ' ' : ''}famous public domain short story excerpt gutenberg`;
+          sfAnnounce('Searching for similar master stories…');
+          const searchResult = await window.WebSearchProvider.search(searchQuery, 8);
+          if (searchResult && searchResult.results && searchResult.results.length > 0) {
+            searchResults = searchResult.results.slice(0, 8);
+            searchContext = '\n\nWeb search results for similar public-domain short fiction. Treat these as your candidate set — strongly prefer suggesting a story from this list because the URL anchors the recommendation in something the student can actually read. Reject results that are clearly behind a paywall, modern (post-1929), or not actually fiction (e.g. study guides, summaries).\n\n'
+              + searchResults.map((r, i) =>
+                `${i + 1}. ${r.title || 'Untitled'}\n   URL: ${r.url || r.link || ''}\n   ${String(r.snippet || '').slice(0, 220)}`
+              ).join('\n\n');
+          }
+        } catch (e) {
+          console.warn('Mentor web search failed, falling back to Gemini-only:', e && e.message);
+        }
+      }
+
+      // Stage 3 — Gemini picks the best mentor, ideally from the real results
+      const genreLabel = GENRE_TEMPLATES[genre]?.label || 'creative';
+      const targetGrade = gradeLevel || '5th grade';
+      const prompt = `You are a writing mentor for a ${targetGrade} student. Pair their story with ONE public-domain master short-story excerpt that they could study alongside their own work.
+
+Student story (${genreLabel}):
+"""
+${fullText}
+"""${searchContext}
+
+CRITICAL anti-fabrication rules:
+- ONLY suggest authors who died before 1929 (US PD-safe), anonymous traditional folk tales, or canonical translations of pre-modern works (Aesop, Grimm Brothers, Hans Christian Andersen, Andrew Lang fairy tale collections, etc.).
+- Safe bets by genre: Adventure → Twain, Stevenson, Conan Doyle (early), Kipling (early). Mystery → Poe, Conan Doyle (early). Fairy tale → Grimms, Andersen, Lang. Sci-fi → H.G. Wells, Jules Verne. Historical → Hawthorne, Dickens. Persuasive → Aesop's fables.
+${searchContext ? '- Strongly prefer one of the search results above. Include its URL in "sourceUrl".\n' : ''}- Choose ONE short, vivid excerpt (40-150 words), not a summary. If you cannot supply an exact attributed excerpt, set "uncertain":true and LEAVE THE TEXT FIELD BLANK — describe the story in prose. Never fabricate.
+
+Return JSON:
+{
+  "mentor": {
+    "title": "<title>",
+    "author": "<author>",
+    "year": <number or null>,
+    "text": "<exact excerpt with line breaks as \\\\n; BLANK if uncertain>",
+    "sourceUrl": "<URL from search results, or null>",
+    "uncertain": false
+  },
+  "sharedTheme": "<one sentence on what your two stories share — image, conflict, character type, mood>",
+  "craftToBorrow": "<one specific craft move from the master worth trying — sentence rhythm, dialogue tag, sensory detail, etc.>",
+  "studentEcho": "<where the student is already doing something similar, with a quoted phrase from their own story>"
+}
+
+Match register and reading level to a ${targetGrade} student. Be specific, be honest, never invent.`;
+
+      const result = await onCallGemini(prompt, true);
+      const parsed = JSON.parse(cleanJson(result));
+      parsed._grounding = { searchUsed: searchResults.length > 0, resultCount: searchResults.length, keywords: keywords };
+      setMentorMatch(parsed);
+      if (addToast) addToast('Mentor story found!', 'success');
+      sfAnnounce('Mentor story found: ' + (parsed.mentor && parsed.mentor.title) + ' by ' + (parsed.mentor && parsed.mentor.author) + (searchResults.length > 0 ? ' — verified via web search.' : '.'));
+      awardXP(8, 'Studied a mentor text');
+    } catch (err) {
+      console.warn('Mentor match failed:', err && err.message);
+      setMentorMatch({ error: "Couldn't find a mentor story right now. Try again in a moment." });
+      if (addToast) addToast('Mentor search failed — try again', 'error');
+    }
+    setMentorLoading(false);
   };
 
   // ── Senses & Imagery Checker (ported from PoetTree, retargeted for prose) ──
