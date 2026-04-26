@@ -74,6 +74,7 @@
       ),
       h('button', {
         onClick: onConsent,
+        autoFocus: true,
         'aria-label': 'I understand the safety guidelines',
         style: { padding: '12px 32px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, fontSize: '14px', cursor: 'pointer', boxShadow: '0 2px 8px rgba(37,99,235,0.3)' }
       }, isYoung ? 'I Understand \u2014 Let\u2019s Talk' : 'I Understand the Guidelines'),
