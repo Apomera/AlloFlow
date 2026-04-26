@@ -1651,6 +1651,10 @@ Return ONLY JSON in this shape:
       } else {
         chaptersHtml += `<article class="chapter" aria-label="Paragraph ${idx + 1}">`;
         if (img) chaptersHtml += `<img src="${img}" class="scene-img" loading="lazy" alt="Illustration for paragraph ${idx + 1}" />`;
+        const beatLabel = (PLOT_BEATS.find(b => b.value === p.plotBeat) || {}).label;
+        if (beatLabel && p.plotBeat) {
+          chaptersHtml += `<div class="beat-label" aria-label="Narrative beat: ${escapeHtml(beatLabel)}">${escapeHtml(beatLabel)}</div>`;
+        }
         chaptersHtml += `<p class="story-text">${safeText.replace(/\n/g, '<br/>')}</p>`;
         if (audio?.studentAudioBase64) {
           chaptersHtml += `<audio controls src="data:audio/webm;base64,${audio.studentAudioBase64}" style="width:100%;margin-top:8px;" aria-label="Audio narration for paragraph ${idx + 1}"></audio>`;
@@ -1695,6 +1699,7 @@ main{display:block}
 .chapter{margin:30px 0;padding:20px;background:white;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.06);border-left:4px solid #d4af37}
 .scene-img{width:100%;max-width:600px;display:block;margin:0 auto 16px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.1)}
 .story-text{font-size:1.1em;text-indent:2em}
+.beat-label{display:inline-block;font-size:0.7em;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#4338ca;background:#eef2ff;border:1px solid #c7d2fe;padding:3px 10px;border-radius:999px;margin-bottom:10px}
 .separator{text-align:center;color:#d4af37;font-size:1.5em;margin:20px 0}
 .vocab-section{margin-top:40px;padding:20px;background:#f0fdf4;border-radius:12px;border:2px solid #bbf7d0}
 .vocab-section h3{color:#166534;margin-bottom:12px}
@@ -1775,8 +1780,13 @@ ${feedbackHtml ? `<aside class="feedback-aside" aria-label="Teacher feedback">${
     // Content slides
     paragraphs.forEach((p, idx) => {
       const img = illustrations[p.id]?.imageUrl;
+      const beatLabel = (PLOT_BEATS.find(b => b.value === p.plotBeat) || {}).label;
+      const beatHtml = (beatLabel && p.plotBeat)
+        ? `<div class="beat-label" aria-label="Narrative beat: ${escapeHtml(beatLabel)}">${escapeHtml(beatLabel)}</div>`
+        : '';
       slidesHtml += `<div class="slide">
         ${img ? `<img src="${img}" class="slide-img" alt="Scene ${idx + 1}" />` : ''}
+        ${beatHtml}
         <div class="slide-text">${escapeHtml(p.text).replace(/\n/g, '<br/>')}</div>
         <div class="slide-num">${idx + 1} / ${paragraphs.length}</div>
       </div>`;
@@ -1813,6 +1823,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0f172a;color:white;
 .cover-img{max-width:300px;border-radius:16px;box-shadow:0 8px 30px rgba(0,0,0,0.4)}
 .slide-img{max-height:50vh;max-width:80%;border-radius:16px;box-shadow:0 8px 30px rgba(0,0,0,0.3);margin-bottom:24px}
 .slide-text{font-size:1.4em;line-height:1.8;max-width:700px;text-indent:2em;text-align:left}
+.beat-label{display:inline-block;font-size:0.75em;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#fde68a;background:rgba(67,56,202,0.5);border:1px solid #a78bfa;padding:4px 14px;border-radius:999px;margin-bottom:12px}
 .slide-num{position:absolute;bottom:20px;right:30px;color:#cbd5e1;font-size:0.8em}
 .vocab-slide h2,.feedback-slide h2{font-size:2em;margin-bottom:24px;color:#fbbf24}
 .vocab-flex{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
