@@ -1435,7 +1435,7 @@ inputText.substring(0, 6000) + '\n' +
               value: escapeRoomState.textInput || '',
               onChange: function(e) { setEscapeRoomState(function(prev) { return Object.assign({}, prev, { textInput: e.target.value }); }); },
               placeholder: t('escape_room.enter_answer'),
-              className: 'w-full p-4 bg-slate-700 rounded-xl text-white font-medium border-2 border-slate-600 focus:border-purple-400 outline-none'
+              className: 'w-full p-4 bg-slate-700 rounded-xl text-white font-medium border-2 border-slate-600 focus:border-purple-400'
             })
           );
         }
@@ -1873,7 +1873,6 @@ inputText.substring(0, 6000) + '\n' +
         escapeRoomState.selectedObject
           ? h('div', {
               role: 'button',
-              'aria-label': 'Close dialog',
               tabIndex: 0,
               onKeyDown: function(e) { if (e.key === 'Escape') e.currentTarget.click(); },
               className: 'fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4',
@@ -1914,7 +1913,6 @@ inputText.substring(0, 6000) + '\n' +
       var hasSaved = typeof handlers.hasSavedEscapeRoom === 'function' ? handlers.hasSavedEscapeRoom() : false;
       settingsDialog = h('div', {
         role: 'button',
-        'aria-label': 'Close dialog',
         tabIndex: 0,
         onKeyDown: function(e) { if (e.key === 'Escape') e.currentTarget.click(); },
         className: 'fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-300',
@@ -2161,7 +2159,7 @@ inputText.substring(0, 6000) + '\n' +
                   type: 'text',
                   value: escapeRoomState.finalDoorPuzzle.sentence || '',
                   onChange: function(e) { handlers.updateEscapeRoomFinalDoor('sentence', e.target.value); },
-                  className: 'w-full p-2 text-sm border border-red-200 rounded-lg focus:border-red-400 outline-none mb-2'
+                  className: 'w-full p-2 text-sm border border-red-200 rounded-lg focus:border-red-400 mb-2'
                 }),
                 h('p', { className: 'text-xs text-red-600' },
                   '\u2705 Answer: ', h('strong', null, escapeRoomState.finalDoorPuzzle.answer)
