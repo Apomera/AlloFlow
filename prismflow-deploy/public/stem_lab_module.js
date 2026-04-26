@@ -2146,7 +2146,7 @@
           id: 'explore',
           label: '\uD83D\uDD27 Explore',
           desc: t('stem.solver.manipulatives')
-        }].map(tab => /*#__PURE__*/React.createElement("button", { "aria-label": "STEM Lab tab",
+        }].map(tab => /*#__PURE__*/React.createElement("button", { "aria-label": tab.desc ? (tab.label + " tab: " + tab.desc) : (tab.label + " tab"),
           key: tab.id, role: "tab", "aria-selected": stemLabTab === tab.id,
           onClick: () => {
             setStemLabTab(tab.id);
@@ -2445,7 +2445,7 @@
           id: 'fractionViz',
           icon: '🍕',
           label: t('stem.assessment.fraction_lab')
-        }].map(tool => /*#__PURE__*/React.createElement("button", { "aria-label": "STEM Lab tab",
+        }].map(tool => /*#__PURE__*/React.createElement("button", { "aria-label": "Open " + tool.label,
           key: tool.id,
           onClick: () => {
             setStemLabTab('explore');

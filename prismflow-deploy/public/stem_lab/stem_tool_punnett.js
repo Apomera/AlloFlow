@@ -1065,8 +1065,7 @@ window.StemLab = window.StemLab || {
                   ['complete', 'incomplete', 'codominant', 'sexLinked'].map(function(mode) {
                     var info = MODE_INFO[mode];
                     var isActive = inheritMode === mode;
-                    return h('button', { 'aria-label': 'Punnett Sound',
-                      key: mode,
+                    return h('button', { key: mode,
                       onClick: function() {
                         punnettSound('mode');
                         upd('inheritMode', mode);
@@ -1214,8 +1213,7 @@ window.StemLab = window.StemLab || {
                 h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2' }, '\uD83E\uDDEC Quick Crosses'),
                 h('div', { className: 'flex flex-wrap gap-1.5' },
                   (PRESETS_BY_MODE[inheritMode] || []).map(function(preset) {
-                    return h('button', { 'aria-label': 'Punnett Sound',
-                      key: preset.label,
+                    return h('button', { key: preset.label,
                       onClick: function() {
                         punnettSound('preset');
                         updMulti({ parent1: preset.p1, parent2: preset.p2, _activePreset: preset });
@@ -1278,8 +1276,7 @@ window.StemLab = window.StemLab || {
               // ═══════════════════════════════════════
               h('div', { className: 'mt-4 border-t border-slate-200 pt-3' },
                 h('div', { className: 'flex items-center gap-2 mb-3' },
-                  h('button', { 'aria-label': 'Punnett Sound',
-                    onClick: function() {
+                  h('button', { onClick: function() {
                       punnettSound('mode');
                       upd('_isDihybrid', !isDihybrid);
                       if (!isDihybrid) {
@@ -1446,8 +1443,7 @@ window.StemLab = window.StemLab || {
                     h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2' }, '\uD83E\uDDEC Dihybrid Quick Crosses'),
                     h('div', { className: 'flex flex-wrap gap-1.5' },
                       DIHYBRID_PRESETS.map(function(dp) {
-                        return h('button', { 'aria-label': 'Punnett Sound',
-                          key: dp.label,
+                        return h('button', { key: dp.label,
                           onClick: function() {
                             punnettSound('preset');
                             updMulti({
@@ -1669,7 +1665,7 @@ window.StemLab = window.StemLab || {
                 h('div', { className: 'mb-2' },
                   h('label', { className: 'text-[11px] font-bold text-slate-600 block mb-1' }, 'Allele Frequency (p = ' + popFreqA.toFixed(2) + ', q = ' + (1 - popFreqA).toFixed(2) + ')'),
                   h('input', {
-                    type: 'range', 'aria-label': 'pop freq a', min: '0.01', max: '0.99', step: '0.01', value: popFreqA,
+                    type: 'range', min: '0.01', max: '0.99', step: '0.01', value: popFreqA,
                     onChange: function(e) { upd('popFreqA', parseFloat(e.target.value)); },
                     className: 'w-full h-2 bg-emerald-200 rounded-lg appearance-none cursor-pointer'
                   })
@@ -1679,7 +1675,7 @@ window.StemLab = window.StemLab || {
                 h('div', { className: 'mb-2' },
                   h('label', { className: 'text-[11px] font-bold text-slate-600 block mb-1' }, 'Population Size: ' + popSize),
                   h('input', {
-                    type: 'range', 'aria-label': 'pop size', min: '10', max: '1000', step: '10', value: popSize,
+                    type: 'range', min: '10', max: '1000', step: '10', value: popSize,
                     onChange: function(e) { upd('popSize', parseInt(e.target.value, 10)); },
                     className: 'w-full h-2 bg-emerald-200 rounded-lg appearance-none cursor-pointer'
                   })
@@ -1689,7 +1685,7 @@ window.StemLab = window.StemLab || {
                 h('div', { className: 'mb-2' },
                   h('label', { className: 'text-[11px] font-bold text-slate-600 block mb-1' }, 'Generations: ' + popGens),
                   h('input', {
-                    type: 'range', 'aria-label': 'pop gens', min: '10', max: '100', step: '5', value: popGens,
+                    type: 'range', min: '10', max: '100', step: '5', value: popGens,
                     onChange: function(e) { upd('popGens', parseInt(e.target.value, 10)); },
                     className: 'w-full h-2 bg-emerald-200 rounded-lg appearance-none cursor-pointer'
                   })
@@ -1699,7 +1695,7 @@ window.StemLab = window.StemLab || {
                 (band === 'g68' || band === 'g912') && h('div', { className: 'mb-2' },
                   h('label', { className: 'text-[11px] font-bold text-slate-600 block mb-1' }, 'Selection Against Recessive (s = ' + popSelection.toFixed(2) + ')'),
                   h('input', {
-                    type: 'range', 'aria-label': 'pop selection', min: '0', max: '1', step: '0.05', value: popSelection,
+                    type: 'range', min: '0', max: '1', step: '0.05', value: popSelection,
                     onChange: function(e) { upd('popSelection', parseFloat(e.target.value)); },
                     className: 'w-full h-2 bg-amber-200 rounded-lg appearance-none cursor-pointer'
                   })

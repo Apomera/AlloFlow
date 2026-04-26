@@ -2943,7 +2943,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                 ),
                 h('button', {
                   className: btnSecondary,
-                  'aria-label': 'Cancel vocal range test',
+                  'aria-label': 'Cancel vocal range test (low range)',
                   onClick: function() { setRangeStep(0); }
                 }, 'Cancel')
               ),
@@ -2965,7 +2965,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                 ),
                 h('button', {
                   className: btnSecondary,
-                  'aria-label': 'Cancel vocal range test',
+                  'aria-label': 'Cancel vocal range test (high range)',
                   onClick: function() { setRangeStep(0); }
                 }, 'Cancel')
               ),

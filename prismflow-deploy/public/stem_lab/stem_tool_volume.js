@@ -292,6 +292,10 @@ window.StemLab = window.StemLab || {
               (function(fx, fy) {
                 cubes.push(h('div', { 
                   key: 'g-'+fx+'-'+fy,
+                  role: 'button',
+                  tabIndex: 0,
+                  'aria-label': 'Place cube at column ' + fx + ', row ' + fy + ', layer 0',
+                  onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } },
                   onClick: function(e) {
                     e.stopPropagation();
                     playSound('place');
@@ -319,6 +323,10 @@ window.StemLab = window.StemLab || {
             (function(ax, ay, az) {
               cubes.push(h('div', { 
                 key: 'stack-'+above,
+                role: 'button',
+                tabIndex: 0,
+                'aria-label': 'Stack cube on top at column ' + ax + ', row ' + ay + ', layer ' + az,
+                onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } },
                 onClick: function(e) {
                   e.stopPropagation();
                   playSound('place');

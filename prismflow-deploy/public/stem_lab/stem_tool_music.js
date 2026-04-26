@@ -2956,7 +2956,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                       React.createElement("button", { onClick: function () { var m = Object.assign({}, d.chMutes || {}); m[row] = !m[row]; upd('chMutes', m); },
                         className: "w-5 h-5 rounded text-[11px] font-black " + (muted ? 'bg-red-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
                       }, "M"),
-                      React.createElement("button", { "aria-label": "S", onClick: function () { upd('chSolo', soloed ? -1 : row); },
+                      React.createElement("button", { onClick: function () { upd('chSolo', soloed ? -1 : row); },
                         className: "w-5 h-5 rounded text-[11px] font-black " + (soloed ? 'bg-amber-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
                       }, "S")
                     );

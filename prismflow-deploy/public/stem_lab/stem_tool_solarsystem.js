@@ -2105,6 +2105,28 @@ const d = labToolData.solarSystem;
         });
       }
 
+      // Keyboard accessibility (WCAG 2.1.1): arrow-key pan, +/- zoom, Home reset, Enter/Space click at center.
+      function onKey(ev) {
+        var key = ev.key;
+        var step = ev.shiftKey ? 60 : 20;
+        if (props.panZoom) {
+          if (key === 'ArrowLeft')  { st.cx += step; ev.preventDefault(); return; }
+          if (key === 'ArrowRight') { st.cx -= step; ev.preventDefault(); return; }
+          if (key === 'ArrowUp')    { st.cy += step; ev.preventDefault(); return; }
+          if (key === 'ArrowDown')  { st.cy -= step; ev.preventDefault(); return; }
+          if (key === '+' || key === '=') { st.scale = clamp(st.scale * 1.15, (props.minScale || 0.1), (props.maxScale || 200)); ev.preventDefault(); return; }
+          if (key === '-' || key === '_') { st.scale = clamp(st.scale * 0.87, (props.minScale || 0.1), (props.maxScale || 200)); ev.preventDefault(); return; }
+          if (key === 'Home' || key === '0') { st.cx = props.width / 2; st.cy = props.height / 2; st.scale = (props.initScale || 1); ev.preventDefault(); return; }
+        }
+        if ((key === 'Enter' || key === ' ') && clickRef.current) {
+          var cxLocal = props.width / 2;
+          var cyLocal = props.height / 2;
+          clickRef.current(cxLocal, cyLocal, st);
+          ev.preventDefault();
+        }
+      }
+      cv.addEventListener('keydown', onKey);
+
       return function() {
         running = false;
         if (raf.current) cancelAnimationFrame(raf.current);
@@ -2115,6 +2137,7 @@ const d = labToolData.solarSystem;
           window.removeEventListener("pointerup", onUp);
           cv.removeEventListener("pointerleave", onLeave);
         }
+        cv.removeEventListener('keydown', onKey);
       };
     }, [props.redrawKey || 0]);
 
@@ -2122,6 +2145,11 @@ const d = labToolData.solarSystem;
       ref: ref,
       width: props.width,
       height: props.height,
+      tabIndex: 0,
+      role: props.panZoom ? 'application' : 'img',
+      'aria-label': props.ariaLabel || (props.panZoom
+        ? 'Solar system visualization. Keyboard: arrow keys to pan, plus and minus to zoom, Home to reset, Enter or Space to interact at center.'
+        : 'Solar system visualization.'),
       style: Object.assign({
         border: isDark ? "1px solid rgba(74,144,217,0.2)" : "1px solid " + border,
         borderRadius: "12px",
