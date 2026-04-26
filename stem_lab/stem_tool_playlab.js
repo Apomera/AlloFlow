@@ -1517,7 +1517,8 @@ window.StemLab = window.StemLab || {
           }
         }
       }, [d.playId, d.coverageId, d.losX, d.showZones, d.showRoutes, d.showOpen,
-          d.customPositions, d.runActive, d.runT, d.runOutcome]);
+          d.customPositions, d.runActive, d.runT, d.runOutcome,
+          d.sport, d.formationId, d.conceptId, d.shapeId]);
 
       // ── UI ──
       function pillBtn(label, sel, onClick, opts) {
@@ -1576,21 +1577,49 @@ window.StemLab = window.StemLab || {
           })
         ),
 
-        // Play picker
-        h('div', { role: 'group', 'aria-label': 'Play library',
+        // Play / Formation picker
+        h('div', { role: 'group', 'aria-label': isSoccer ? 'Formation library' : 'Play library',
           style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10, flexWrap: 'wrap', fontSize: 12 } },
-          h('span', { style: { color: '#cbd5e1' } }, 'Play:'),
-          PLAYS.map(function(p) {
-            return pillBtn(p.icon + ' ' + p.label, d.playId === p.id, function() { loadPlay(p.id); });
+          h('span', { style: { color: '#cbd5e1' } }, isSoccer ? 'Formation:' : 'Play:'),
+          (isSoccer ? SOCCER_FORMATIONS : PLAYS).map(function(p) {
+            var sel = isSoccer ? d.formationId === p.id : d.playId === p.id;
+            return pillBtn(p.icon + ' ' + p.label, sel, function() {
+              if (isSoccer) {
+                upd('formationId', p.id);
+                plAnnounce('Loaded formation: ' + p.label + '. ' + p.teach);
+              } else {
+                loadPlay(p.id);
+              }
+            });
           })
         ),
 
-        // Coverage picker
-        h('div', { role: 'group', 'aria-label': 'Defensive coverage',
+        // Concept picker — soccer only
+        isSoccer ? h('div', { role: 'group', 'aria-label': 'Tactical concept',
+          style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10, flexWrap: 'wrap', fontSize: 12 } },
+          h('span', { style: { color: '#cbd5e1' } }, 'Concept:'),
+          SOCCER_CONCEPTS.map(function(c) {
+            return pillBtn(c.icon + ' ' + c.label, d.conceptId === c.id, function() {
+              upd('conceptId', c.id);
+              plAnnounce('Concept: ' + c.label + '. ' + c.teach);
+            });
+          })
+        ) : null,
+
+        // Coverage / Defensive shape picker
+        h('div', { role: 'group', 'aria-label': isSoccer ? 'Defensive shape' : 'Defensive coverage',
           style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12, flexWrap: 'wrap', fontSize: 12 } },
           h('span', { style: { color: '#cbd5e1' } }, 'Defense:'),
-          COVERAGES.map(function(c) {
-            return pillBtn(c.label, d.coverageId === c.id, function() { loadCoverage(c.id); });
+          (isSoccer ? SOCCER_SHAPES : COVERAGES).map(function(c) {
+            var sel = isSoccer ? d.shapeId === c.id : d.coverageId === c.id;
+            return pillBtn(c.label, sel, function() {
+              if (isSoccer) {
+                upd('shapeId', c.id);
+                plAnnounce('Defensive shape: ' + c.label + '. ' + c.teach);
+              } else {
+                loadCoverage(c.id);
+              }
+            });
           })
         ),
 
@@ -1804,16 +1833,27 @@ window.StemLab = window.StemLab || {
               style: { background: '#0f172a', border: '1px solid #1e293b', borderRadius: 10, padding: 12, marginBottom: 10 }
             },
               h('h3', { id: 'pl-play-heading', style: { fontSize: 12, margin: 0, marginBottom: 6, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 600 } },
-                play.icon + ' ' + play.label),
-              h('div', { style: { fontSize: 13, color: '#cbd5e1', lineHeight: 1.5 } }, play.teach)
+                isSoccer ? (formationDef.icon + ' ' + formationDef.label) : (play.icon + ' ' + play.label)),
+              h('div', { style: { fontSize: 13, color: '#cbd5e1', lineHeight: 1.5 } },
+                isSoccer ? formationDef.teach : play.teach)
             ),
+            // Soccer-only: concept teach blurb (the passing-network pattern)
+            isSoccer ? h('section', {
+              'aria-labelledby': 'pl-concept-heading',
+              style: { background: '#0f172a', border: '1px solid #1e293b', borderRadius: 10, padding: 12, marginBottom: 10 }
+            },
+              h('h3', { id: 'pl-concept-heading', style: { fontSize: 12, margin: 0, marginBottom: 6, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 600 } },
+                concept.icon + ' ' + concept.label),
+              h('div', { style: { fontSize: 13, color: '#cbd5e1', lineHeight: 1.5 } }, concept.teach)
+            ) : null,
             h('section', {
               'aria-labelledby': 'pl-cov-heading',
               style: { background: '#0f172a', border: '1px solid #1e293b', borderRadius: 10, padding: 12, marginBottom: 10 }
             },
               h('h3', { id: 'pl-cov-heading', style: { fontSize: 12, margin: 0, marginBottom: 6, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 600 } },
-                '🛡️ ' + coverage.label),
-              h('div', { style: { fontSize: 13, color: '#cbd5e1', lineHeight: 1.5 } }, coverage.teach)
+                '🛡️ ' + (isSoccer ? soccerShape.label : coverage.label)),
+              h('div', { style: { fontSize: 13, color: '#cbd5e1', lineHeight: 1.5 } },
+                isSoccer ? soccerShape.teach : coverage.teach)
             ),
             // Coach button — only renders if Gemini is available. The
             // analysis itself appears in the bubble under the field canvas
