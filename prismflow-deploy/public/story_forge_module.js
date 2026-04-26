@@ -595,6 +595,8 @@ IMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLa
   const [sensesLoading, setSensesLoading] = useState(false);
   const [selfAssessment, setSelfAssessment] = useState({});
   const [selfAssessmentSubmitted, setSelfAssessmentSubmitted] = useState(false);
+  const [mentorMatch, setMentorMatch] = useState(null);
+  const [mentorLoading, setMentorLoading] = useState(false);
   const [draftCount, setDraftCount] = useState(1);
   useEffect(() => {
     if (glossaryTerms && glossaryTerms.length > 0 && vocabTerms.length === 0) {
@@ -1454,7 +1456,96 @@ Return ONLY JSON:
     setSelfAssessment({});
     setSelfAssessmentSubmitted(false);
     setSensesResult(null);
+    setMentorMatch(null);
     changePhase("write");
+  };
+  const findMentorStory = async () => {
+    if (!onCallGemini) return;
+    const fullText = paragraphs.map((p) => p.text.trim()).filter(Boolean).join("\n\n");
+    if (fullText.length < 80) {
+      if (addToast) addToast("Write a bit more before finding a mentor", "info");
+      return;
+    }
+    setMentorLoading(true);
+    setMentorMatch(null);
+    try {
+      let keywords = "";
+      try {
+        const queryPrompt = `Extract 3-5 keywords from this story draft that would help find a similar PUBLIC-DOMAIN master short story online. Focus on concrete images, themes, setting, character archetype, and emotional tone, not function words. Return JSON: {"keywords":["...","..."]}
+
+Story:
+"""
+${fullText.slice(0, 2400)}
+"""`;
+        const queryResult = await onCallGemini(queryPrompt, true);
+        const queryParsed = JSON.parse(cleanJson(queryResult));
+        keywords = (queryParsed.keywords || []).slice(0, 5).join(" ");
+      } catch (e) {
+        console.warn("Mentor keyword extract failed:", e && e.message);
+      }
+      let searchContext = "";
+      let searchResults = [];
+      if (window.WebSearchProvider && keywords) {
+        try {
+          const genreLabel2 = GENRE_TEMPLATES[genre]?.label || "";
+          const searchQuery = `${keywords} ${genreLabel2 ? genreLabel2 + " " : ""}famous public domain short story excerpt gutenberg`;
+          sfAnnounce("Searching for similar master stories\u2026");
+          const searchResult = await window.WebSearchProvider.search(searchQuery, 8);
+          if (searchResult && searchResult.results && searchResult.results.length > 0) {
+            searchResults = searchResult.results.slice(0, 8);
+            searchContext = "\n\nWeb search results for similar public-domain short fiction. Treat these as your candidate set \u2014 strongly prefer suggesting a story from this list because the URL anchors the recommendation in something the student can actually read. Reject results that are clearly behind a paywall, modern (post-1929), or not actually fiction (e.g. study guides, summaries).\n\n" + searchResults.map(
+              (r, i) => `${i + 1}. ${r.title || "Untitled"}
+   URL: ${r.url || r.link || ""}
+   ${String(r.snippet || "").slice(0, 220)}`
+            ).join("\n\n");
+          }
+        } catch (e) {
+          console.warn("Mentor web search failed, falling back to Gemini-only:", e && e.message);
+        }
+      }
+      const genreLabel = GENRE_TEMPLATES[genre]?.label || "creative";
+      const targetGrade = gradeLevel || "5th grade";
+      const prompt = `You are a writing mentor for a ${targetGrade} student. Pair their story with ONE public-domain master short-story excerpt that they could study alongside their own work.
+
+Student story (${genreLabel}):
+"""
+${fullText}
+"""${searchContext}
+
+CRITICAL anti-fabrication rules:
+- ONLY suggest authors who died before 1929 (US PD-safe), anonymous traditional folk tales, or canonical translations of pre-modern works (Aesop, Grimm Brothers, Hans Christian Andersen, Andrew Lang fairy tale collections, etc.).
+- Safe bets by genre: Adventure \u2192 Twain, Stevenson, Conan Doyle (early), Kipling (early). Mystery \u2192 Poe, Conan Doyle (early). Fairy tale \u2192 Grimms, Andersen, Lang. Sci-fi \u2192 H.G. Wells, Jules Verne. Historical \u2192 Hawthorne, Dickens. Persuasive \u2192 Aesop's fables.
+${searchContext ? '- Strongly prefer one of the search results above. Include its URL in "sourceUrl".\n' : ""}- Choose ONE short, vivid excerpt (40-150 words), not a summary. If you cannot supply an exact attributed excerpt, set "uncertain":true and LEAVE THE TEXT FIELD BLANK \u2014 describe the story in prose. Never fabricate.
+
+Return JSON:
+{
+  "mentor": {
+    "title": "<title>",
+    "author": "<author>",
+    "year": <number or null>,
+    "text": "<exact excerpt with line breaks as \\\\n; BLANK if uncertain>",
+    "sourceUrl": "<URL from search results, or null>",
+    "uncertain": false
+  },
+  "sharedTheme": "<one sentence on what your two stories share \u2014 image, conflict, character type, mood>",
+  "craftToBorrow": "<one specific craft move from the master worth trying \u2014 sentence rhythm, dialogue tag, sensory detail, etc.>",
+  "studentEcho": "<where the student is already doing something similar, with a quoted phrase from their own story>"
+}
+
+Match register and reading level to a ${targetGrade} student. Be specific, be honest, never invent.`;
+      const result = await onCallGemini(prompt, true);
+      const parsed = JSON.parse(cleanJson(result));
+      parsed._grounding = { searchUsed: searchResults.length > 0, resultCount: searchResults.length, keywords };
+      setMentorMatch(parsed);
+      if (addToast) addToast("Mentor story found!", "success");
+      sfAnnounce("Mentor story found: " + (parsed.mentor && parsed.mentor.title) + " by " + (parsed.mentor && parsed.mentor.author) + (searchResults.length > 0 ? " \u2014 verified via web search." : "."));
+      awardXP(8, "Studied a mentor text");
+    } catch (err) {
+      console.warn("Mentor match failed:", err && err.message);
+      setMentorMatch({ error: "Couldn't find a mentor story right now. Try again in a moment." });
+      if (addToast) addToast("Mentor search failed \u2014 try again", "error");
+    }
+    setMentorLoading(false);
   };
   const checkSenses = async () => {
     if (!onCallGemini) return;
@@ -2542,7 +2633,7 @@ show();
       },
       w.word
     ))), fluencyResult.confidence?.note && /* @__PURE__ */ React.createElement("div", { className: "mt-2 text-[11px] text-slate-600 italic" }, fluencyResult.confidence.note), fluencyResult.confidence?.accentDetected && /* @__PURE__ */ React.createElement("div", { className: "mt-1 text-[11px] text-teal-600 font-medium" }, "\u{1F30D} Accent patterns detected \u2014 scores adjusted conservatively to respect linguistic diversity."), fluencyResult.feedback && /* @__PURE__ */ React.createElement("div", { className: "mt-2 text-xs text-teal-800 bg-white rounded-lg p-2 border border-teal-200" }, fluencyResult.feedback), /* @__PURE__ */ React.createElement("button", { onClick: () => setFluencyResult(null), className: "mt-2 text-[11px] text-slate-400 hover:text-slate-600 font-bold" }, "Dismiss")));
-  })), phase === "review" && /* @__PURE__ */ React.createElement("div", { className: `space-y-6 ${animClass}` }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "text-2xl font-black text-slate-800" }, "Review & Feedback"), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 text-sm mt-1" }, "Draft #", draftCount, " \u2014 Get AI feedback on your story")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 flex-wrap" }, !gradingResult && /* @__PURE__ */ React.createElement("button", { onClick: checkSenses, disabled: sensesLoading || isProcessing, className: "px-4 py-2.5 bg-rose-100 text-rose-700 rounded-full text-sm font-bold hover:bg-rose-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-rose-200", title: "Check sensory imagery (sight, sound, smell, etc.)" }, "\u{1F308} ", sensesLoading ? "Checking..." : "Senses Check"), !gradingResult && /* @__PURE__ */ React.createElement("button", { onClick: gradeStory, disabled: isProcessing || !selfAssessmentSubmitted, className: "px-5 py-2.5 bg-indigo-600 text-white rounded-full text-sm font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center gap-2", title: !selfAssessmentSubmitted ? "Complete or skip self-assessment first" : "Get AI feedback" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 16 }), " ", isProcessing ? "Grading..." : "Get Feedback"), gradingResult && /* @__PURE__ */ React.createElement("button", { onClick: reviseStory, className: "px-5 py-2.5 bg-amber-500 text-white rounded-full text-sm font-bold hover:bg-amber-600 transition-colors flex items-center gap-2" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 16 }), " Revise Story"))), !gradingResult && !selfAssessmentSubmitted && /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-br from-violet-50 to-indigo-50 border-2 border-violet-200 rounded-2xl p-5" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3 mb-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h4", { className: "text-base font-black text-violet-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Star, { size: 18 }), " Self-Assessment First"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-violet-700 mt-1" }, "Rate your own story on each criterion (1-5) before the AI grades it. This builds reflection skills.")), /* @__PURE__ */ React.createElement(
+  })), phase === "review" && /* @__PURE__ */ React.createElement("div", { className: `space-y-6 ${animClass}` }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "text-2xl font-black text-slate-800" }, "Review & Feedback"), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 text-sm mt-1" }, "Draft #", draftCount, " \u2014 Get AI feedback on your story")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 flex-wrap" }, !gradingResult && /* @__PURE__ */ React.createElement("button", { onClick: checkSenses, disabled: sensesLoading || isProcessing, className: "px-4 py-2.5 bg-rose-100 text-rose-700 rounded-full text-sm font-bold hover:bg-rose-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-rose-200", title: "Check sensory imagery (sight, sound, smell, etc.)" }, "\u{1F308} ", sensesLoading ? "Checking..." : "Senses Check"), !gradingResult && /* @__PURE__ */ React.createElement("button", { onClick: findMentorStory, disabled: mentorLoading || isProcessing, className: "px-4 py-2.5 bg-fuchsia-100 text-fuchsia-700 rounded-full text-sm font-bold hover:bg-fuchsia-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-fuchsia-200", title: "Find a public-domain master story to study alongside yours" }, "\u{1F393} ", mentorLoading ? "Searching..." : mentorMatch && !mentorMatch.error ? "Find another" : "Mentor Match"), !gradingResult && /* @__PURE__ */ React.createElement("button", { onClick: gradeStory, disabled: isProcessing || !selfAssessmentSubmitted, className: "px-5 py-2.5 bg-indigo-600 text-white rounded-full text-sm font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center gap-2", title: !selfAssessmentSubmitted ? "Complete or skip self-assessment first" : "Get AI feedback" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 16 }), " ", isProcessing ? "Grading..." : "Get Feedback"), gradingResult && /* @__PURE__ */ React.createElement("button", { onClick: reviseStory, className: "px-5 py-2.5 bg-amber-500 text-white rounded-full text-sm font-bold hover:bg-amber-600 transition-colors flex items-center gap-2" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 16 }), " Revise Story"))), !gradingResult && !selfAssessmentSubmitted && /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-br from-violet-50 to-indigo-50 border-2 border-violet-200 rounded-2xl p-5" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3 mb-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h4", { className: "text-base font-black text-violet-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Star, { size: 18 }), " Self-Assessment First"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-violet-700 mt-1" }, "Rate your own story on each criterion (1-5) before the AI grades it. This builds reflection skills.")), /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: () => {
@@ -2593,7 +2684,7 @@ show();
       const isMissing = sensesResult.missing === k;
       return /* @__PURE__ */ React.createElement("div", { key: k, className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-slate-700 w-24 shrink-0" }, label), /* @__PURE__ */ React.createElement("div", { className: "flex-1 h-4 bg-slate-100 rounded-full overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: `h-full rounded-full transition-all ${isStrongest ? "bg-teal-500" : isMissing ? "bg-amber-400" : "bg-rose-300"}`, style: { width: `${pct}%` } })), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-700 font-bold w-8 text-right" }, n), isStrongest && /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold text-teal-700 bg-teal-100 px-1.5 py-0.5 rounded-full" }, "strongest"), isMissing && /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded-full" }, "missing"));
     }));
-  })(), sensesResult.suggestion && /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-yellow-50 border border-yellow-200 rounded-xl p-3 text-xs text-yellow-900 leading-relaxed" }, /* @__PURE__ */ React.createElement("strong", null, "Try this:"), " ", sensesResult.suggestion)), characterIssues.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-orange-50 border-2 border-orange-200 rounded-2xl p-4" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-orange-700 uppercase tracking-wider mb-2" }, "Character Name Check"), /* @__PURE__ */ React.createElement("div", { className: "space-y-1" }, characterIssues.map((issue, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "text-xs text-orange-800" }, "Did you mean ", /* @__PURE__ */ React.createElement("strong", null, '"', issue.expected, '"'), " instead of ", /* @__PURE__ */ React.createElement("span", { className: "line-through text-orange-500" }, '"', issue.found, '"'), "?"))), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-orange-500 mt-2" }, "Tip: Check your character names are spelled consistently throughout the story")), revisionSnapshot && draftCount >= 2 && /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-4" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-indigo-500 uppercase tracking-widest mb-2" }, "Revision Progress (vs. Draft #", draftCount - 1, ")"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-3" }, (() => {
+  })(), sensesResult.suggestion && /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-yellow-50 border border-yellow-200 rounded-xl p-3 text-xs text-yellow-900 leading-relaxed" }, /* @__PURE__ */ React.createElement("strong", null, "Try this:"), " ", sensesResult.suggestion)), mentorMatch && /* @__PURE__ */ React.createElement("div", { role: "region", "aria-label": "Mentor story and analysis", className: "bg-white border-2 border-fuchsia-200 rounded-2xl p-5 shadow-sm" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-3" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-fuchsia-700 uppercase tracking-wider flex items-center gap-2" }, "\u{1F393} Mentor Match"), /* @__PURE__ */ React.createElement("button", { onClick: () => setMentorMatch(null), className: "text-[11px] text-slate-400 hover:text-slate-700 font-bold", "aria-label": "Dismiss mentor match" }, "Dismiss")), mentorMatch.error && /* @__PURE__ */ React.createElement("p", { className: "text-xs text-red-600 italic" }, mentorMatch.error), !mentorMatch.error && /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, mentorMatch.mentor && /* @__PURE__ */ React.createElement("article", { className: "bg-fuchsia-50/40 border border-fuchsia-100 rounded-xl p-4" }, /* @__PURE__ */ React.createElement("div", { className: "mb-2" }, /* @__PURE__ */ React.createElement("h5", { className: "text-base font-black text-fuchsia-900" }, mentorMatch.mentor.title || "Untitled"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 italic mt-0.5" }, "\u2014 ", mentorMatch.mentor.author || "Unknown", mentorMatch.mentor.year ? `, ${mentorMatch.mentor.year}` : "", " (public domain)")), mentorMatch.mentor.uncertain ? /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-700 italic leading-relaxed" }, mentorMatch.mentor.text || "Excerpt withheld \u2014 open the source link to read in context.") : /* @__PURE__ */ React.createElement("pre", { className: "whitespace-pre-wrap font-serif text-sm text-slate-800 leading-relaxed bg-white border border-fuchsia-100 rounded-lg p-3" }, mentorMatch.mentor.text || ""), mentorMatch.mentor.sourceUrl && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] mt-2" }, /* @__PURE__ */ React.createElement("a", { href: mentorMatch.mentor.sourceUrl, target: "_blank", rel: "noopener noreferrer", className: "text-fuchsia-700 hover:text-fuchsia-900 font-bold underline", "aria-label": `Open source for ${mentorMatch.mentor.title || "mentor story"} in a new tab` }, "Read the full story \u2197")), mentorMatch._grounding && /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 italic mt-2" }, mentorMatch._grounding.searchUsed ? `\u2713 Verified via web search (${mentorMatch._grounding.resultCount} candidates considered, keywords: "${mentorMatch._grounding.keywords}")` : "\u26A0 No web search available \u2014 recommendation comes from the model's memory, please double-check.")), mentorMatch.sharedTheme && /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-fuchsia-100 rounded-xl p-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-fuchsia-600 uppercase tracking-widest mb-1" }, "Shared theme"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-800 leading-relaxed" }, mentorMatch.sharedTheme)), mentorMatch.craftToBorrow && /* @__PURE__ */ React.createElement("div", { className: "bg-amber-50 border border-amber-200 rounded-xl p-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-amber-700 uppercase tracking-widest mb-1" }, "Craft to borrow"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-amber-900 leading-relaxed" }, mentorMatch.craftToBorrow)), mentorMatch.studentEcho && /* @__PURE__ */ React.createElement("div", { className: "bg-green-50 border border-green-200 rounded-xl p-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-green-700 uppercase tracking-widest mb-1" }, "You're already doing this"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-green-900 leading-relaxed" }, mentorMatch.studentEcho)))), characterIssues.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-orange-50 border-2 border-orange-200 rounded-2xl p-4" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-orange-700 uppercase tracking-wider mb-2" }, "Character Name Check"), /* @__PURE__ */ React.createElement("div", { className: "space-y-1" }, characterIssues.map((issue, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "text-xs text-orange-800" }, "Did you mean ", /* @__PURE__ */ React.createElement("strong", null, '"', issue.expected, '"'), " instead of ", /* @__PURE__ */ React.createElement("span", { className: "line-through text-orange-500" }, '"', issue.found, '"'), "?"))), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-orange-500 mt-2" }, "Tip: Check your character names are spelled consistently throughout the story")), revisionSnapshot && draftCount >= 2 && /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-4" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-indigo-500 uppercase tracking-widest mb-2" }, "Revision Progress (vs. Draft #", draftCount - 1, ")"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-3" }, (() => {
     const wordDelta = totalWords - (revisionSnapshot.words || 0);
     const vocabDelta = vocabUsedCount - (revisionSnapshot.vocabUsed || 0);
     return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { className: `text-xs font-bold ${wordDelta > 0 ? "text-green-600" : wordDelta < 0 ? "text-red-500" : "text-slate-400"}` }, wordDelta > 0 ? "+" : "", wordDelta, " words"), /* @__PURE__ */ React.createElement("span", { className: `text-xs font-bold ${vocabDelta > 0 ? "text-green-600" : vocabDelta < 0 ? "text-red-500" : "text-slate-400"}` }, vocabDelta > 0 ? "+" : "", vocabDelta, " vocab terms"), readingLevel && revisionSnapshot.grade && /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-indigo-600" }, "Grade level: ", revisionSnapshot.grade, " \u2192 ", readingLevel.grade));
