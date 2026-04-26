@@ -652,7 +652,12 @@ window.StemLab = window.StemLab || {
             windDirDeg: 0,
             // Gravity preset — defaults to Earth. Mars / Moon / Jupiter for
             // the "what if I pitched on another planet?" lesson.
-            gravityId: 'earth'
+            gravityId: 'earth',
+            // Math view — opt-in toggle that appends a "Math behind the
+            // throw" panel with the actual physics formulas + current
+            // values. Default off so younger students don't see equations
+            // they haven't been taught yet.
+            showFormulas: false
           }});
         });
         return h('div', { className: 'p-8 text-center text-slate-600' }, 'Loading ThrowLab…');
@@ -1644,6 +1649,76 @@ window.StemLab = window.StemLab || {
         return null;
       }
 
+      // ── Math view: physics formulas + values for the last throw ──
+      // Renders a small panel of the actual equations the simulator runs
+      // with the current ball / wind / gravity numbers slotted in. WCAG
+      // 1.1.1: each formula is text (not an image), so screen readers can
+      // announce them. Only renders when d.showFormulas is true.
+      function formulasPanel(lr) {
+        if (!d.showFormulas) return null;
+        var ball = BALLS[modeMeta.ball] || BALLS.baseball;
+        var area = Math.PI * ball.radius * ball.radius;
+        var gp = GRAVITY_PRESETS.find(function(g) { return g.id === (d.gravityId || 'earth'); });
+        var gV = gp ? gp.g : G;
+        var v0 = d.speedMph / MPH_PER_MPS;
+        var dragF = 0.5 * 1.225 * v0 * v0 * ball.cd * area;
+        var magnusF = 0.5 * 1.225 * v0 * v0 * ball.cm * area;
+        // Ideal no-drag range: R = v²·sin(2θ)/g (assumes y0 = 0, only valid
+        // when launch + landing are at the same height — close enough for a
+        // teaching estimate).
+        var thetaRad = d.aimDegV * Math.PI / 180;
+        var idealRange = (v0 * v0) * Math.sin(2 * Math.abs(thetaRad)) / gV;
+        var actualRange = lr && lr.samples && lr.samples.length
+          ? lr.samples[lr.samples.length - 1].z
+          : null;
+        var rowStyle = { fontSize: 11, color: '#cbd5e1', marginBottom: 4, fontFamily: 'system-ui' };
+        var eqStyle = { fontSize: 11, color: '#fafafa', fontFamily: 'monospace' };
+        var headStyle = { fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 8, marginBottom: 4, fontWeight: 600 };
+        return h('section', {
+          'aria-labelledby': 'tl-formulas-heading',
+          style: { marginTop: 10, padding: 12, background: '#0f172a', border: '1px solid #1e293b', borderRadius: 10 }
+        },
+          h('h3', {
+            id: 'tl-formulas-heading',
+            style: { fontSize: 12, margin: 0, marginBottom: 6, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 600 }
+          }, 'Math behind the throw'),
+          // Gravity + ball params
+          h('div', { style: rowStyle },
+            'g = ',
+            h('span', { style: { color: '#fbbf24', fontWeight: 700 } }, gV.toFixed(2)),
+            ' m/s² (', gp ? gp.label : 'Earth', ')'),
+          h('div', { style: rowStyle },
+            'Ball: m = ', h('span', { style: { color: '#fbbf24' } }, ball.mass), ' kg, ',
+            'r = ', h('span', { style: { color: '#fbbf24' } }, ball.radius), ' m, ',
+            'Cd = ', h('span', { style: { color: '#fbbf24' } }, ball.cd.toFixed(2)), ', ',
+            'Cm = ', h('span', { style: { color: '#fbbf24' } }, ball.cm.toFixed(2))),
+          h('div', { style: rowStyle },
+            'A = πr² = ', h('span', { style: { color: '#fbbf24' } }, area.toExponential(2)), ' m²'),
+          // Drag
+          h('div', { style: headStyle }, 'Drag force'),
+          h('div', { style: eqStyle }, 'F_drag = ½·ρ·|v_rel|²·Cd·A'),
+          h('div', { style: rowStyle, 'aria-label': 'At release, drag force is ' + dragF.toFixed(2) + ' newtons' },
+            '  ≈ ', h('span', { style: { color: '#fbbf24' } }, dragF.toFixed(2)), ' N at release'),
+          // Magnus
+          h('div', { style: headStyle }, 'Magnus (lift) force'),
+          h('div', { style: eqStyle }, 'F_mag = ½·ρ·|v_rel|²·Cm·A · (ω̂ × v̂)'),
+          h('div', { style: rowStyle, 'aria-label': 'At release, Magnus force magnitude is ' + magnusF.toFixed(2) + ' newtons' },
+            '  ≈ ', h('span', { style: { color: '#fbbf24' } }, magnusF.toFixed(2)), ' N (max possible at this speed)'),
+          // Ideal vs actual range
+          h('div', { style: headStyle }, 'Ideal (no-drag) range'),
+          h('div', { style: eqStyle }, 'R = v²·sin(2θ)/g'),
+          h('div', { style: rowStyle },
+            '  ≈ ', h('span', { style: { color: '#fbbf24' } }, idealRange.toFixed(1)), ' m at θ = ', d.aimDegV.toFixed(1), '°',
+            actualRange !== null ? h('span', null, ' · actual: ',
+              h('span', { style: { color: '#fbbf24' } }, actualRange.toFixed(1)), ' m') : null,
+            actualRange !== null && idealRange > 0
+              ? h('span', { style: { color: '#94a3b8', fontStyle: 'italic' } },
+                  ' (' + (((actualRange - idealRange) / idealRange) * 100).toFixed(0) + '% drag/Magnus delta)')
+              : null
+          )
+        );
+      }
+
       function outcomeColor(loc) {
         if (isPitching) {
           return loc === 'strike' ? '#10b981' : loc === 'borderline' ? '#fbbf24' : loc === 'ball' ? '#94a3b8' : '#ef4444';
@@ -1831,22 +1906,34 @@ window.StemLab = window.StemLab || {
                       ? 'Pick a distance, set your launch angle and power, and click KICK — clear the bar and split the uprights.'
                       : 'Pick a shot, set your release angle, and click SHOOT to see the arc.')
             ),
-            // "Show physics" toggle + keyboard shortcuts hint.
+            // "Show physics" + "Show formulas" toggles + keyboard shortcuts hint.
             // Bumped to slate-300 (#cbd5e1) for AA contrast on dark panel.
             h('div', { style: { marginTop: 10, fontSize: 12, color: '#cbd5e1', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 } },
-              h('label', { style: { cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 } },
-                h('input', {
-                  type: 'checkbox',
-                  'data-tl-focusable': 'true',
-                  checked: !!d.showPhysics,
-                  onChange: function(e) { upd('showPhysics', e.target.checked); }
-                }),
-                'Show physics overlays (no-spin reference trajectory)'),
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
+                h('label', { style: { cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 } },
+                  h('input', {
+                    type: 'checkbox',
+                    'data-tl-focusable': 'true',
+                    checked: !!d.showPhysics,
+                    onChange: function(e) { upd('showPhysics', e.target.checked); }
+                  }),
+                  'Show physics overlays (no-spin reference trajectory)'),
+                h('label', { style: { cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 } },
+                  h('input', {
+                    type: 'checkbox',
+                    'data-tl-focusable': 'true',
+                    checked: !!d.showFormulas,
+                    onChange: function(e) { upd('showFormulas', e.target.checked); }
+                  }),
+                  'Show formulas (math behind the throw)')
+              ),
               h('span', { style: { fontSize: 11, color: '#94a3b8' } },
                 'Hotkey: ',
                 h('kbd', { style: { padding: '1px 5px', borderRadius: 3, border: '1px solid #475569', background: '#0f172a', color: '#cbd5e1', fontFamily: 'monospace' } }, 'Space'),
                 ' to throw')
-            )
+            ),
+            // Math view appears below the toggles when enabled
+            formulasPanel(lr)
           ),
 
           // RIGHT: preset picker + sliders + throw button
