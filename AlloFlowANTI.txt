@@ -10025,6 +10025,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [faqCustomInstructions, setFaqCustomInstructions] = useState('');
   const [brainstormCustomInstructions, setBrainstormCustomInstructions] = useState('');
   const [isGeneratingGuide, setIsGeneratingGuide] = useState({});
+  const [isGeneratingWorksheet, setIsGeneratingWorksheet] = useState({});
   const [bridgeSimType, setBridgeSimType] = useState('react');
   const [bridgeStepCount, setBridgeStepCount] = useState(5);
   const [timelineTopic, setTimelineTopic] = useState('');
@@ -18134,6 +18135,40 @@ ${t('export.readme_json_desc')}`;
         warnLog("Unhandled error:", e);
     } finally {
         setIsGeneratingGuide(prev => ({...prev, [index]: false}));
+    }
+  };
+  const handleGenerateWorksheet = async (index) => {
+    const activity = generatedContent?.data[index];
+    if (activity.worksheet) return;
+    setIsGeneratingWorksheet(prev => ({...prev, [index]: true}));
+    try {
+        const prompt = `Create a printable student worksheet for this activity: "${activity.title}".
+        Context: ${activity.description}
+        Target Audience: ${gradeLevel}
+        Format the worksheet as Markdown with these sections in order:
+        ## Materials I Need
+        (a bulleted list of items the student needs)
+        ## What We're Doing
+        (1 sentence student-friendly objective)
+        ## Before You Start
+        (2-3 prediction prompts with blank lines for the student to write on, formatted as "_________________")
+        ## Observations
+        (3-5 prompts with blank lines and/or simple drawing boxes described as "[Draw your observation here]")
+        ## Questions to Think About
+        (3-4 reflection questions tied to the activity's concept, each followed by 2 blank lines for answers)
+        ## New Words
+        (3-5 vocabulary terms from this activity, each on its own line followed by a blank line for the student to write a definition)
+        Use student-friendly language at the ${gradeLevel} reading level. Keep total length printable on one page.`;
+        const worksheet = await callGemini(prompt);
+        const newData = [...generatedContent?.data];
+        newData[index] = { ...activity, worksheet: worksheet };
+        const updatedContent = { ...generatedContent, data: newData };
+        setGeneratedContent(updatedContent);
+        setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+    } catch (e) {
+        warnLog("Unhandled error:", e);
+    } finally {
+        setIsGeneratingWorksheet(prev => ({...prev, [index]: false}));
     }
   };
   const handleQuizChange = (qIndex, field, value, optIndex = null, isEn = false) => {
@@ -34177,6 +34212,44 @@ Return only the corrected version of this exact text:`;
                                              {isGeneratingGuide[idx] ? <RefreshCw size={12} className="animate-spin"/> : <ListChecks size={14}/>}
                                              {isGeneratingGuide[idx] ? t('brainstorm.creating_guide') : t('brainstorm.generate_guide')}
                                          </button>
+                                     )}
+                                     {idea.guide && (
+                                         idea.worksheet ? (
+                                             <details className="mt-3 group">
+                                                 <summary className="inline-flex items-center gap-2 text-xs font-bold text-emerald-700 hover:bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-200 cursor-pointer list-none transition-colors">
+                                                     <FileText size={14} />
+                                                     {t('brainstorm.student_worksheet') || 'Student Worksheet'}
+                                                     <span className="text-emerald-700/70 ml-0.5 group-open:rotate-180 transition-transform">▾</span>
+                                                 </summary>
+                                                 <div className="mt-2 bg-emerald-50/40 rounded-lg p-4 text-sm text-slate-700 border border-emerald-200" data-help-key="brainstorm_worksheet">
+                                                     {isEditingBrainstorm ? (
+                                                         <textarea
+                                                             aria-label={t('brainstorm.edit_worksheet') || 'Edit student worksheet'}
+                                                             value={idea.worksheet}
+                                                             onChange={(e) => handleBrainstormChange(idx, 'worksheet', e.target.value)}
+                                                             className="w-full bg-white border border-slate-300 hover:border-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 rounded px-3 py-2 outline-none resize-y transition-all font-mono text-xs leading-relaxed"
+                                                             rows={Math.max(10, getRows(idea.worksheet))}
+                                                             placeholder={t('brainstorm.placeholder_worksheet') || 'Student worksheet (markdown)…'}
+                                                             readOnly={!isTeacherMode}
+                                                         />
+                                                     ) : (
+                                                         <div className="prose prose-sm max-w-none">
+                                                             {renderFormattedText(idea.worksheet)}
+                                                         </div>
+                                                     )}
+                                                 </div>
+                                             </details>
+                                         ) : (
+                                             <button
+                                                 aria-label={t('brainstorm.generate_worksheet') || 'Generate student worksheet'}
+                                                 onClick={() => handleGenerateWorksheet(idx)}
+                                                 disabled={isGeneratingWorksheet[idx]}
+                                                 className="mt-3 flex items-center gap-2 text-xs font-bold text-emerald-700 hover:bg-emerald-50 px-3 py-1.5 rounded-full transition-colors border border-emerald-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                             >
+                                                 {isGeneratingWorksheet[idx] ? <RefreshCw size={12} className="animate-spin"/> : <FileText size={14}/>}
+                                                 {isGeneratingWorksheet[idx] ? (t('brainstorm.creating_worksheet') || 'Creating worksheet…') : (t('brainstorm.generate_worksheet') || 'Generate Student Worksheet')}
+                                             </button>
+                                         )
                                      )}
                                  </div>
                              </div>
