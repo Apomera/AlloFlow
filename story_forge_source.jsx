@@ -634,6 +634,9 @@ const StoryForge = React.memo(({
   // Character Arc Tracker — per-character introduction/want/change/resolution audit
   const [arcReport, setArcReport] = useState(null);
   const [arcLoading, setArcLoading] = useState(false);
+  // Revision Plan — synthesizes whichever helpers ran into one prioritized to-do list
+  const [revisionPlan, setRevisionPlan] = useState(null);
+  const [revisionPlanLoading, setRevisionPlanLoading] = useState(false);
   const [draftCount, setDraftCount] = useState(1);
 
   // ── Init vocab from glossary ──
@@ -1553,6 +1556,7 @@ Return ONLY JSON:
     setMentorMatch(null);
     setShowTellResult(null);
     setArcReport(null);
+    setRevisionPlan(null);
     changePhase('write');
   };
 
@@ -1808,6 +1812,92 @@ Return ONLY JSON:
       if (addToast) addToast('Arc tracker failed — try again', 'error');
     }
     setArcLoading(false);
+  };
+
+  // ── Revision Plan synthesizer ──
+  // Pulls together whichever helpers have run (Senses, Show-vs-Tell, Character
+  // Arcs, Mentor Match, Self-Assessment) into a single prioritized 3-item
+  // revision plan. Pedagogical aim: teach synthesis as its own meta-skill.
+  // Only available when ≥2 helpers have produced output (not before).
+  const synthesizeRevisionPlan = async () => {
+    if (!onCallGemini) return;
+    setRevisionPlanLoading(true);
+    try {
+      const fullText = paragraphs.map((p, i) => `[Paragraph ${i + 1}] ${p.text.trim()}`).filter(Boolean).join('\n\n');
+      // Compact the helper outputs to keep the prompt small.
+      const helperContext = [];
+      if (sensesResult && !sensesResult.error) {
+        helperContext.push(`SENSES CHECK:\n  strongest: ${sensesResult.strongest || 'unknown'}\n  missing: ${sensesResult.missing || 'unknown'}\n  suggestion: ${sensesResult.suggestion || ''}`);
+      }
+      if (showTellResult && (showTellResult.tellings || []).length > 0) {
+        const top = showTellResult.tellings.slice(0, 3).map(t => `  - "${t.telling}" → "${t.showing}"`).join('\n');
+        helperContext.push(`SHOW vs TELL:\n${top}`);
+      }
+      if (arcReport && (arcReport.characters || []).length > 0) {
+        const top = arcReport.characters.slice(0, 3).map(c => {
+          const weak = Object.entries(c.beats || {}).filter(([, v]) => v.status !== 'strong').map(([k]) => k).join(', ');
+          return `  - ${c.name}: weakest beats: ${weak || 'none'} | suggestion: ${c.suggestion || ''}`;
+        }).join('\n');
+        helperContext.push(`CHARACTER ARCS:\n${top}`);
+      }
+      if (mentorMatch && !mentorMatch.error && mentorMatch.craftToBorrow) {
+        helperContext.push(`MENTOR MATCH:\n  reading: ${mentorMatch.mentor?.title || 'unknown'} by ${mentorMatch.mentor?.author || 'unknown'}\n  craft to borrow: ${mentorMatch.craftToBorrow}`);
+      }
+      if (selfAssessmentSubmitted && Object.keys(selfAssessment).length > 0) {
+        const lowest = Object.entries(selfAssessment).sort((a, b) => a[1] - b[1]).slice(0, 2);
+        helperContext.push(`STUDENT SELF-ASSESSMENT (lowest ratings):\n${lowest.map(([k, v]) => `  - ${k}: ${v}/5`).join('\n')}`);
+      }
+      const helpersBlock = helperContext.length > 0
+        ? `\n\nHelpers the student has already run:\n${helperContext.join('\n\n')}`
+        : '';
+
+      const targetGrade = gradeLevel || '5th grade';
+      const prompt = `You are a kind, specific writing coach helping a ${targetGrade} student plan their next revision pass.
+
+Story:
+"""
+${fullText}
+"""${helpersBlock}
+
+Build a prioritized revision plan with EXACTLY 3 tasks. Each task should:
+- Be small enough to do in a single revision session.
+- Be specific (name a paragraph, character, or sentence when possible).
+- Pull from the helper outputs above when relevant — don't repeat what the helpers said, *synthesize* across them.
+- Be ranked by impact (most-impactful first).
+- Include a one-sentence "why" so the student understands the craft reason.
+
+Tone: warm, concrete, never scolding. Treat the student as a capable writer who's iterating, not a beginner being corrected.
+
+Return ONLY JSON:
+{
+  "tasks": [
+    { "title": "<short imperative title, e.g. 'Add a smell to paragraph 3'>", "detail": "<one or two specific sentences on what to do>", "why": "<one short sentence on the craft reason>", "source": "<which helper this builds on, or 'overall'>" }
+  ],
+  "encouragement": "<one short, specific compliment on something the draft is already doing well>"
+}`;
+
+      const result = await onCallGemini(prompt, true);
+      const data = JSON.parse(cleanJson(result));
+      setRevisionPlan(data);
+      if (addToast) addToast('Revision plan ready!', 'success');
+      sfAnnounce(`Revision plan ready with ${(data.tasks || []).length} prioritized tasks.`);
+      awardXP(10, 'Built a revision plan');
+    } catch (err) {
+      console.warn('Revision plan synthesis failed:', err);
+      if (addToast) addToast('Revision plan failed — try again', 'error');
+    }
+    setRevisionPlanLoading(false);
+  };
+
+  // True when the student has at least 2 helper outputs available to synthesize.
+  const helpersAvailableForPlan = () => {
+    let n = 0;
+    if (sensesResult && !sensesResult.error) n++;
+    if (showTellResult && Array.isArray(showTellResult.tellings)) n++;
+    if (arcReport && Array.isArray(arcReport.characters)) n++;
+    if (mentorMatch && !mentorMatch.error) n++;
+    if (selfAssessmentSubmitted && Object.keys(selfAssessment).length > 0) n++;
+    return n >= 2;
   };
 
   // Pull criteria names out of the rubric markdown table; fall back to defaults.
@@ -3524,6 +3614,11 @@ show();
                       🎬 {arcLoading ? 'Analyzing...' : 'Character Arcs'}
                     </button>
                   )}
+                  {!gradingResult && helpersAvailableForPlan() && (
+                    <button onClick={synthesizeRevisionPlan} disabled={revisionPlanLoading || isProcessing} className="px-4 py-2.5 bg-purple-100 text-purple-700 rounded-full text-sm font-bold hover:bg-purple-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-purple-200" title="Synthesize the helpers above into a prioritized 3-task revision plan">
+                      🗺️ {revisionPlanLoading ? 'Synthesizing...' : 'Revision Plan'}
+                    </button>
+                  )}
                   {!gradingResult && (
                     <button onClick={gradeStory} disabled={isProcessing || (!selfAssessmentSubmitted)} className="px-5 py-2.5 bg-indigo-600 text-white rounded-full text-sm font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center gap-2" title={!selfAssessmentSubmitted ? 'Complete or skip self-assessment first' : 'Get AI feedback'}>
                       <Sparkles size={16} /> {isProcessing ? 'Grading...' : 'Get Feedback'}
@@ -3783,6 +3878,42 @@ show();
                       })}
                     </div>
                   )}
+                </div>
+              )}
+
+              {/* ═══ Revision Plan Result (synthesis capstone) ═══ */}
+              {revisionPlan && (
+                <div className="bg-gradient-to-br from-purple-50 to-violet-50 border-2 border-purple-300 rounded-2xl p-5 shadow-md">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-base font-black text-purple-800 flex items-center gap-2">🗺️ Your Revision Plan</h4>
+                    <button onClick={() => setRevisionPlan(null)} className="text-[11px] text-slate-400 hover:text-slate-700 font-bold" aria-label="Dismiss revision plan">Dismiss</button>
+                  </div>
+                  {revisionPlan.encouragement && (
+                    <div className="bg-white border border-green-200 rounded-xl p-3 mb-4 text-xs text-green-900 leading-relaxed">
+                      ✨ {revisionPlan.encouragement}
+                    </div>
+                  )}
+                  <ol className="space-y-3" aria-label="Prioritized revision tasks">
+                    {(revisionPlan.tasks || []).map((t, i) => (
+                      <li key={i} className="bg-white border-2 border-purple-200 rounded-xl p-4">
+                        <div className="flex items-start gap-3">
+                          <div className="bg-purple-600 text-white rounded-full w-7 h-7 shrink-0 flex items-center justify-center font-black text-sm" aria-hidden="true">{i + 1}</div>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center justify-between gap-2 mb-1">
+                              <h5 className="text-sm font-black text-purple-900">{t.title}</h5>
+                              {t.source && (
+                                <span className="text-[10px] font-bold text-purple-600 bg-purple-100 px-2 py-0.5 rounded-full uppercase tracking-widest shrink-0">{t.source}</span>
+                              )}
+                            </div>
+                            <p className="text-xs text-slate-800 leading-relaxed mb-1">{t.detail}</p>
+                            {t.why && (
+                              <p className="text-[11px] text-slate-600 italic">{t.why}</p>
+                            )}
+                          </div>
+                        </div>
+                      </li>
+                    ))}
+                  </ol>
                 </div>
               )}
 

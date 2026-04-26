@@ -601,6 +601,8 @@ IMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLa
   const [showTellLoading, setShowTellLoading] = useState(false);
   const [arcReport, setArcReport] = useState(null);
   const [arcLoading, setArcLoading] = useState(false);
+  const [revisionPlan, setRevisionPlan] = useState(null);
+  const [revisionPlanLoading, setRevisionPlanLoading] = useState(false);
   const [draftCount, setDraftCount] = useState(1);
   useEffect(() => {
     if (glossaryTerms && glossaryTerms.length > 0 && vocabTerms.length === 0) {
@@ -1463,6 +1465,7 @@ Return ONLY JSON:
     setMentorMatch(null);
     setShowTellResult(null);
     setArcReport(null);
+    setRevisionPlan(null);
     changePhase("write");
   };
   const findMentorStory = async () => {
@@ -1697,6 +1700,90 @@ Return ONLY JSON:
       if (addToast) addToast("Arc tracker failed \u2014 try again", "error");
     }
     setArcLoading(false);
+  };
+  const synthesizeRevisionPlan = async () => {
+    if (!onCallGemini) return;
+    setRevisionPlanLoading(true);
+    try {
+      const fullText = paragraphs.map((p, i) => `[Paragraph ${i + 1}] ${p.text.trim()}`).filter(Boolean).join("\n\n");
+      const helperContext = [];
+      if (sensesResult && !sensesResult.error) {
+        helperContext.push(`SENSES CHECK:
+  strongest: ${sensesResult.strongest || "unknown"}
+  missing: ${sensesResult.missing || "unknown"}
+  suggestion: ${sensesResult.suggestion || ""}`);
+      }
+      if (showTellResult && (showTellResult.tellings || []).length > 0) {
+        const top = showTellResult.tellings.slice(0, 3).map((t2) => `  - "${t2.telling}" \u2192 "${t2.showing}"`).join("\n");
+        helperContext.push(`SHOW vs TELL:
+${top}`);
+      }
+      if (arcReport && (arcReport.characters || []).length > 0) {
+        const top = arcReport.characters.slice(0, 3).map((c) => {
+          const weak = Object.entries(c.beats || {}).filter(([, v]) => v.status !== "strong").map(([k]) => k).join(", ");
+          return `  - ${c.name}: weakest beats: ${weak || "none"} | suggestion: ${c.suggestion || ""}`;
+        }).join("\n");
+        helperContext.push(`CHARACTER ARCS:
+${top}`);
+      }
+      if (mentorMatch && !mentorMatch.error && mentorMatch.craftToBorrow) {
+        helperContext.push(`MENTOR MATCH:
+  reading: ${mentorMatch.mentor?.title || "unknown"} by ${mentorMatch.mentor?.author || "unknown"}
+  craft to borrow: ${mentorMatch.craftToBorrow}`);
+      }
+      if (selfAssessmentSubmitted && Object.keys(selfAssessment).length > 0) {
+        const lowest = Object.entries(selfAssessment).sort((a, b) => a[1] - b[1]).slice(0, 2);
+        helperContext.push(`STUDENT SELF-ASSESSMENT (lowest ratings):
+${lowest.map(([k, v]) => `  - ${k}: ${v}/5`).join("\n")}`);
+      }
+      const helpersBlock = helperContext.length > 0 ? `
+
+Helpers the student has already run:
+${helperContext.join("\n\n")}` : "";
+      const targetGrade = gradeLevel || "5th grade";
+      const prompt = `You are a kind, specific writing coach helping a ${targetGrade} student plan their next revision pass.
+
+Story:
+"""
+${fullText}
+"""${helpersBlock}
+
+Build a prioritized revision plan with EXACTLY 3 tasks. Each task should:
+- Be small enough to do in a single revision session.
+- Be specific (name a paragraph, character, or sentence when possible).
+- Pull from the helper outputs above when relevant \u2014 don't repeat what the helpers said, *synthesize* across them.
+- Be ranked by impact (most-impactful first).
+- Include a one-sentence "why" so the student understands the craft reason.
+
+Tone: warm, concrete, never scolding. Treat the student as a capable writer who's iterating, not a beginner being corrected.
+
+Return ONLY JSON:
+{
+  "tasks": [
+    { "title": "<short imperative title, e.g. 'Add a smell to paragraph 3'>", "detail": "<one or two specific sentences on what to do>", "why": "<one short sentence on the craft reason>", "source": "<which helper this builds on, or 'overall'>" }
+  ],
+  "encouragement": "<one short, specific compliment on something the draft is already doing well>"
+}`;
+      const result = await onCallGemini(prompt, true);
+      const data = JSON.parse(cleanJson(result));
+      setRevisionPlan(data);
+      if (addToast) addToast("Revision plan ready!", "success");
+      sfAnnounce(`Revision plan ready with ${(data.tasks || []).length} prioritized tasks.`);
+      awardXP(10, "Built a revision plan");
+    } catch (err) {
+      console.warn("Revision plan synthesis failed:", err);
+      if (addToast) addToast("Revision plan failed \u2014 try again", "error");
+    }
+    setRevisionPlanLoading(false);
+  };
+  const helpersAvailableForPlan = () => {
+    let n = 0;
+    if (sensesResult && !sensesResult.error) n++;
+    if (showTellResult && Array.isArray(showTellResult.tellings)) n++;
+    if (arcReport && Array.isArray(arcReport.characters)) n++;
+    if (mentorMatch && !mentorMatch.error) n++;
+    if (selfAssessmentSubmitted && Object.keys(selfAssessment).length > 0) n++;
+    return n >= 2;
   };
   const getRubricCriteria = () => {
     const fallback = ["Vocabulary Usage", "Story Structure", "Creativity & Detail", "Grammar & Mechanics"];
@@ -2737,7 +2824,7 @@ show();
       },
       w.word
     ))), fluencyResult.confidence?.note && /* @__PURE__ */ React.createElement("div", { className: "mt-2 text-[11px] text-slate-600 italic" }, fluencyResult.confidence.note), fluencyResult.confidence?.accentDetected && /* @__PURE__ */ React.createElement("div", { className: "mt-1 text-[11px] text-teal-600 font-medium" }, "\u{1F30D} Accent patterns detected \u2014 scores adjusted conservatively to respect linguistic diversity."), fluencyResult.feedback && /* @__PURE__ */ React.createElement("div", { className: "mt-2 text-xs text-teal-800 bg-white rounded-lg p-2 border border-teal-200" }, fluencyResult.feedback), /* @__PURE__ */ React.createElement("button", { onClick: () => setFluencyResult(null), className: "mt-2 text-[11px] text-slate-400 hover:text-slate-600 font-bold" }, "Dismiss")));
-  })), phase === "review" && /* @__PURE__ */ React.createElement("div", { className: `space-y-6 ${animClass}` }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "text-2xl font-black text-slate-800" }, "Review & Feedback"), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 text-sm mt-1" }, "Draft #", draftCount, " \u2014 Get AI feedback on your story")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 flex-wrap" }, !gradingResult && /* @__PURE__ */ React.createElement("button", { onClick: checkSenses, disabled: sensesLoading || isProcessing, className: "px-4 py-2.5 bg-rose-100 text-rose-700 rounded-full text-sm font-bold hover:bg-rose-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-rose-200", title: "Check sensory imagery (sight, sound, smell, etc.)" }, "\u{1F308} ", sensesLoading ? "Checking..." : "Senses Check"), !gradingResult && /* @__PURE__ */ React.createElement("button", { onClick: findMentorStory, disabled: mentorLoading || isProcessing, className: "px-4 py-2.5 bg-fuchsia-100 text-fuchsia-700 rounded-full text-sm font-bold hover:bg-fuchsia-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-fuchsia-200", title: "Find a public-domain master story to study alongside yours" }, "\u{1F393} ", mentorLoading ? "Searching..." : mentorMatch && !mentorMatch.error ? "Find another" : "Mentor Match"), !gradingResult && /* @__PURE__ */ React.createElement("button", { onClick: analyzeShowTell, disabled: showTellLoading || isProcessing, className: "px-4 py-2.5 bg-emerald-100 text-emerald-700 rounded-full text-sm font-bold hover:bg-emerald-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-emerald-200", title: "Find sentences that tell instead of show" }, "\u{1F3AD} ", showTellLoading ? "Analyzing..." : "Show vs Tell"), !gradingResult && /* @__PURE__ */ React.createElement("button", { onClick: analyzeCharacterArcs, disabled: arcLoading || isProcessing, className: "px-4 py-2.5 bg-sky-100 text-sky-700 rounded-full text-sm font-bold hover:bg-sky-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-sky-200", title: "Audit each character's arc: introduction, want, change, resolution" }, "\u{1F3AC} ", arcLoading ? "Analyzing..." : "Character Arcs"), !gradingResult && /* @__PURE__ */ React.createElement("button", { onClick: gradeStory, disabled: isProcessing || !selfAssessmentSubmitted, className: "px-5 py-2.5 bg-indigo-600 text-white rounded-full text-sm font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center gap-2", title: !selfAssessmentSubmitted ? "Complete or skip self-assessment first" : "Get AI feedback" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 16 }), " ", isProcessing ? "Grading..." : "Get Feedback"), gradingResult && /* @__PURE__ */ React.createElement("button", { onClick: reviseStory, className: "px-5 py-2.5 bg-amber-500 text-white rounded-full text-sm font-bold hover:bg-amber-600 transition-colors flex items-center gap-2" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 16 }), " Revise Story"))), !gradingResult && !selfAssessmentSubmitted && /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-br from-violet-50 to-indigo-50 border-2 border-violet-200 rounded-2xl p-5" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3 mb-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h4", { className: "text-base font-black text-violet-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Star, { size: 18 }), " Self-Assessment First"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-violet-700 mt-1" }, "Rate your own story on each criterion (1-5) before the AI grades it. This builds reflection skills.")), /* @__PURE__ */ React.createElement(
+  })), phase === "review" && /* @__PURE__ */ React.createElement("div", { className: `space-y-6 ${animClass}` }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "text-2xl font-black text-slate-800" }, "Review & Feedback"), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 text-sm mt-1" }, "Draft #", draftCount, " \u2014 Get AI feedback on your story")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 flex-wrap" }, !gradingResult && /* @__PURE__ */ React.createElement("button", { onClick: checkSenses, disabled: sensesLoading || isProcessing, className: "px-4 py-2.5 bg-rose-100 text-rose-700 rounded-full text-sm font-bold hover:bg-rose-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-rose-200", title: "Check sensory imagery (sight, sound, smell, etc.)" }, "\u{1F308} ", sensesLoading ? "Checking..." : "Senses Check"), !gradingResult && /* @__PURE__ */ React.createElement("button", { onClick: findMentorStory, disabled: mentorLoading || isProcessing, className: "px-4 py-2.5 bg-fuchsia-100 text-fuchsia-700 rounded-full text-sm font-bold hover:bg-fuchsia-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-fuchsia-200", title: "Find a public-domain master story to study alongside yours" }, "\u{1F393} ", mentorLoading ? "Searching..." : mentorMatch && !mentorMatch.error ? "Find another" : "Mentor Match"), !gradingResult && /* @__PURE__ */ React.createElement("button", { onClick: analyzeShowTell, disabled: showTellLoading || isProcessing, className: "px-4 py-2.5 bg-emerald-100 text-emerald-700 rounded-full text-sm font-bold hover:bg-emerald-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-emerald-200", title: "Find sentences that tell instead of show" }, "\u{1F3AD} ", showTellLoading ? "Analyzing..." : "Show vs Tell"), !gradingResult && /* @__PURE__ */ React.createElement("button", { onClick: analyzeCharacterArcs, disabled: arcLoading || isProcessing, className: "px-4 py-2.5 bg-sky-100 text-sky-700 rounded-full text-sm font-bold hover:bg-sky-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-sky-200", title: "Audit each character's arc: introduction, want, change, resolution" }, "\u{1F3AC} ", arcLoading ? "Analyzing..." : "Character Arcs"), !gradingResult && helpersAvailableForPlan() && /* @__PURE__ */ React.createElement("button", { onClick: synthesizeRevisionPlan, disabled: revisionPlanLoading || isProcessing, className: "px-4 py-2.5 bg-purple-100 text-purple-700 rounded-full text-sm font-bold hover:bg-purple-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-purple-200", title: "Synthesize the helpers above into a prioritized 3-task revision plan" }, "\u{1F5FA}\uFE0F ", revisionPlanLoading ? "Synthesizing..." : "Revision Plan"), !gradingResult && /* @__PURE__ */ React.createElement("button", { onClick: gradeStory, disabled: isProcessing || !selfAssessmentSubmitted, className: "px-5 py-2.5 bg-indigo-600 text-white rounded-full text-sm font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center gap-2", title: !selfAssessmentSubmitted ? "Complete or skip self-assessment first" : "Get AI feedback" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 16 }), " ", isProcessing ? "Grading..." : "Get Feedback"), gradingResult && /* @__PURE__ */ React.createElement("button", { onClick: reviseStory, className: "px-5 py-2.5 bg-amber-500 text-white rounded-full text-sm font-bold hover:bg-amber-600 transition-colors flex items-center gap-2" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 16 }), " Revise Story"))), !gradingResult && !selfAssessmentSubmitted && /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-br from-violet-50 to-indigo-50 border-2 border-violet-200 rounded-2xl p-5" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3 mb-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h4", { className: "text-base font-black text-violet-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Star, { size: 18 }), " Self-Assessment First"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-violet-700 mt-1" }, "Rate your own story on each criterion (1-5) before the AI grades it. This builds reflection skills.")), /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: () => {
@@ -2801,7 +2888,7 @@ show();
       const status = beat.status || "missing";
       return /* @__PURE__ */ React.createElement("div", { key, className: `rounded-lg border-2 p-2 ${beatColor(status)}`, title: beat.evidence || `No ${label.toLowerCase()} evidence found` }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-widest" }, label), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black mt-0.5" }, status), beat.evidence && /* @__PURE__ */ React.createElement("div", { className: "text-[10px] mt-1 italic line-clamp-2 opacity-80" }, '"', beat.evidence, '"'));
     })), c.suggestion && /* @__PURE__ */ React.createElement("div", { className: "bg-amber-50 border border-amber-200 rounded-lg p-2 text-xs text-amber-900 leading-relaxed" }, /* @__PURE__ */ React.createElement("strong", { className: "text-amber-700" }, "Try this:"), " ", c.suggestion));
-  }))), characterIssues.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-orange-50 border-2 border-orange-200 rounded-2xl p-4" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-orange-700 uppercase tracking-wider mb-2" }, "Character Name Check"), /* @__PURE__ */ React.createElement("div", { className: "space-y-1" }, characterIssues.map((issue, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "text-xs text-orange-800" }, "Did you mean ", /* @__PURE__ */ React.createElement("strong", null, '"', issue.expected, '"'), " instead of ", /* @__PURE__ */ React.createElement("span", { className: "line-through text-orange-500" }, '"', issue.found, '"'), "?"))), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-orange-500 mt-2" }, "Tip: Check your character names are spelled consistently throughout the story")), revisionSnapshot && draftCount >= 2 && /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-4" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-indigo-500 uppercase tracking-widest mb-2" }, "Revision Progress (vs. Draft #", draftCount - 1, ")"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-3" }, (() => {
+  }))), revisionPlan && /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-br from-purple-50 to-violet-50 border-2 border-purple-300 rounded-2xl p-5 shadow-md" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-3" }, /* @__PURE__ */ React.createElement("h4", { className: "text-base font-black text-purple-800 flex items-center gap-2" }, "\u{1F5FA}\uFE0F Your Revision Plan"), /* @__PURE__ */ React.createElement("button", { onClick: () => setRevisionPlan(null), className: "text-[11px] text-slate-400 hover:text-slate-700 font-bold", "aria-label": "Dismiss revision plan" }, "Dismiss")), revisionPlan.encouragement && /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-green-200 rounded-xl p-3 mb-4 text-xs text-green-900 leading-relaxed" }, "\u2728 ", revisionPlan.encouragement), /* @__PURE__ */ React.createElement("ol", { className: "space-y-3", "aria-label": "Prioritized revision tasks" }, (revisionPlan.tasks || []).map((t2, i) => /* @__PURE__ */ React.createElement("li", { key: i, className: "bg-white border-2 border-purple-200 rounded-xl p-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-purple-600 text-white rounded-full w-7 h-7 shrink-0 flex items-center justify-center font-black text-sm", "aria-hidden": "true" }, i + 1), /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-1" }, /* @__PURE__ */ React.createElement("h5", { className: "text-sm font-black text-purple-900" }, t2.title), t2.source && /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold text-purple-600 bg-purple-100 px-2 py-0.5 rounded-full uppercase tracking-widest shrink-0" }, t2.source)), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-800 leading-relaxed mb-1" }, t2.detail), t2.why && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 italic" }, t2.why))))))), characterIssues.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-orange-50 border-2 border-orange-200 rounded-2xl p-4" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-orange-700 uppercase tracking-wider mb-2" }, "Character Name Check"), /* @__PURE__ */ React.createElement("div", { className: "space-y-1" }, characterIssues.map((issue, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "text-xs text-orange-800" }, "Did you mean ", /* @__PURE__ */ React.createElement("strong", null, '"', issue.expected, '"'), " instead of ", /* @__PURE__ */ React.createElement("span", { className: "line-through text-orange-500" }, '"', issue.found, '"'), "?"))), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-orange-500 mt-2" }, "Tip: Check your character names are spelled consistently throughout the story")), revisionSnapshot && draftCount >= 2 && /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-4" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-indigo-500 uppercase tracking-widest mb-2" }, "Revision Progress (vs. Draft #", draftCount - 1, ")"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-3" }, (() => {
     const wordDelta = totalWords - (revisionSnapshot.words || 0);
     const vocabDelta = vocabUsedCount - (revisionSnapshot.vocabUsed || 0);
     return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { className: `text-xs font-bold ${wordDelta > 0 ? "text-green-600" : wordDelta < 0 ? "text-red-500" : "text-slate-400"}` }, wordDelta > 0 ? "+" : "", wordDelta, " words"), /* @__PURE__ */ React.createElement("span", { className: `text-xs font-bold ${vocabDelta > 0 ? "text-green-600" : vocabDelta < 0 ? "text-red-500" : "text-slate-400"}` }, vocabDelta > 0 ? "+" : "", vocabDelta, " vocab terms"), readingLevel && revisionSnapshot.grade && /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-indigo-600" }, "Grade level: ", revisionSnapshot.grade, " \u2192 ", readingLevel.grade));
