@@ -10028,6 +10028,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [brainstormCustomInstructions, setBrainstormCustomInstructions] = useState('');
   const [isGeneratingGuide, setIsGeneratingGuide] = useState({});
   const [isGeneratingWorksheet, setIsGeneratingWorksheet] = useState({});
+  const [isGeneratingWorksheetCover, setIsGeneratingWorksheetCover] = useState({});
   const [bridgeSimType, setBridgeSimType] = useState('react');
   const [bridgeStepCount, setBridgeStepCount] = useState(5);
   const [timelineTopic, setTimelineTopic] = useState('');
@@ -18176,6 +18177,38 @@ ${t('export.readme_json_desc')}`;
         warnLog("Unhandled error:", e);
     } finally {
         setIsGeneratingWorksheet(prev => ({...prev, [index]: false}));
+    }
+  };
+  const handleGenerateWorksheetCover = async (index) => {
+    const activity = generatedContent?.data[index];
+    if (!activity || !activity.worksheet) return;
+    setIsGeneratingWorksheetCover(prev => ({...prev, [index]: true}));
+    try {
+        const prompt = `Friendly, cheerful illustration for a student worksheet titled "${activity.title}". Context: ${activity.description}. Style: simple flat vector art with soft colors, clean lines, white background, child-friendly, suitable for ${gradeLevel}. Centered single subject or scene. STRICTLY NO TEXT, NO LABELS, NO LETTERS, NO WORDS. Visual only.`;
+        let imageUrl = await callImagen(prompt);
+        if (autoRemoveWords && imageUrl) {
+            try {
+                const rawBase64 = imageUrl.split(',')[1];
+                const editPrompt = "Remove all text, labels, letters, and words from the image. Keep the illustration clean.";
+                imageUrl = await callGeminiImageEdit(editPrompt, rawBase64);
+            } catch (editErr) {
+                warnLog("Worksheet cover auto-remove text failed:", editErr);
+            }
+        }
+        if (!imageUrl) {
+            addToast(t('brainstorm.cover_failed') || 'Cover image failed — try again.', 'error');
+            return;
+        }
+        const newData = [...generatedContent?.data];
+        newData[index] = { ...activity, coverImage: imageUrl };
+        const updatedContent = { ...generatedContent, data: newData };
+        setGeneratedContent(updatedContent);
+        setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+    } catch (e) {
+        warnLog("Worksheet cover generation failed:", e);
+        addToast(t('brainstorm.cover_failed') || 'Cover image failed — try again.', 'error');
+    } finally {
+        setIsGeneratingWorksheetCover(prev => ({...prev, [index]: false}));
     }
   };
   const handleQuizChange = (qIndex, field, value, optIndex = null, isEn = false) => {
@@ -34229,6 +34262,30 @@ Return only the corrected version of this exact text:`;
                                                      <span className="text-emerald-700/70 ml-0.5 group-open:rotate-180 transition-transform">▾</span>
                                                  </summary>
                                                  <div className="mt-2 bg-emerald-50/40 rounded-lg p-4 text-sm text-slate-700 border border-emerald-200" data-help-key="brainstorm_worksheet">
+                                                     {idea.coverImage && (
+                                                         <div className="mb-3 flex justify-center">
+                                                             <img
+                                                                 src={idea.coverImage}
+                                                                 alt={(t('brainstorm.cover_alt', { title: idea.title })) || `Illustration for ${idea.title}`}
+                                                                 className="max-h-40 rounded-lg border border-emerald-200 bg-white shadow-sm"
+                                                             />
+                                                         </div>
+                                                     )}
+                                                     <div className="mb-3 flex justify-end">
+                                                         <button
+                                                             onClick={() => handleGenerateWorksheetCover(idx)}
+                                                             disabled={isGeneratingWorksheetCover[idx]}
+                                                             className="text-[11px] font-bold text-emerald-700 hover:bg-emerald-100 px-2 py-1 rounded-full transition-colors border border-emerald-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                                                             title={idea.coverImage ? (t('brainstorm.regenerate_cover') || 'Regenerate cover image') : (t('brainstorm.generate_cover_tip') || 'Optional: add a cover illustration to this worksheet')}
+                                                         >
+                                                             {isGeneratingWorksheetCover[idx] ? <RefreshCw size={11} className="animate-spin"/> : <ImageIcon size={11}/>}
+                                                             {isGeneratingWorksheetCover[idx]
+                                                                 ? (t('brainstorm.creating_cover') || 'Creating cover…')
+                                                                 : idea.coverImage
+                                                                     ? (t('brainstorm.regenerate_cover') || 'Regenerate cover')
+                                                                     : (t('brainstorm.generate_cover') || 'Add cover image')}
+                                                         </button>
+                                                     </div>
                                                      {isEditingBrainstorm ? (
                                                          <textarea
                                                              aria-label={t('brainstorm.edit_worksheet') || 'Edit student worksheet'}
