@@ -962,6 +962,39 @@
               e('h3', { style: { fontSize: '22px', fontWeight: 800, color: '#1e293b' } }, '🎭 Create Your Performance'),
               e('p', { style: { color: '#475569', fontSize: '14px' } }, 'Paste a story, import from URL, or let AI write one — then bring it to life with character voices.')
             ),
+
+            // ── Assignment prompt banner (visible to students when teacher set a prompt) ──
+            teacherPrompt && !onSaveConfig && e('div', { role: 'note', 'aria-label': 'Assignment prompt from teacher', style: { background: '#fffbeb', border: '2px solid #fde68a', borderRadius: '12px', padding: '12px 14px', marginBottom: '16px' } },
+              e('div', { style: { fontSize: '11px', fontWeight: 800, color: '#92400e', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px' } }, '📋 Assignment'),
+              e('p', { style: { fontSize: '13px', color: '#78350f', margin: 0, lineHeight: 1.6 } }, teacherPrompt)
+            ),
+
+            // ── Teacher Assignment Builder (visible only when onSaveConfig is provided) ──
+            onSaveConfig && e('div', { role: 'region', 'aria-label': 'Teacher Assignment Builder', style: { background: '#eff6ff', border: '2px solid #bfdbfe', borderRadius: '12px', padding: '14px', marginBottom: '16px' } },
+              e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', flexWrap: 'wrap', gap: '6px' } },
+                e('h4', { style: { fontSize: '13px', fontWeight: 800, color: '#1e40af', margin: 0 } }, '🧑‍🏫 Teacher Assignment Builder'),
+                e('span', { style: { fontSize: '10px', color: '#1e40af', background: '#dbeafe', padding: '2px 8px', borderRadius: '999px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' } }, 'Teacher mode')
+              ),
+              e('p', { style: { fontSize: '11px', color: '#1e3a8a', margin: '0 0 10px', lineHeight: 1.5 } },
+                'Paste or generate the source text below, give it a title, and add a focus prompt. Save it as an assignment so students can load it from My Resources.'
+              ),
+              e('label', { htmlFor: 'll-teacher-prompt', style: { display: 'block', fontSize: '11px', fontWeight: 700, color: '#1e40af', marginBottom: '4px' } }, 'Performance focus / instructions for students'),
+              e('textarea', {
+                id: 'll-teacher-prompt',
+                value: teacherPrompt,
+                onChange: function (ev) { setTeacherPrompt(ev.target.value); },
+                placeholder: 'e.g. "Read aloud with feeling — vary your voice for each character. Pay attention to where the narrator changes mood."',
+                rows: 3,
+                style: { width: '100%', padding: '8px 10px', borderRadius: '8px', border: '1px solid #bfdbfe', fontSize: '13px', fontFamily: 'inherit', resize: 'vertical', background: '#fff', boxSizing: 'border-box' }
+              }),
+              e('button', {
+                onClick: saveAsAssignment,
+                disabled: !sourceText.trim() && !storyTitle.trim() && !teacherPrompt.trim(),
+                'aria-label': 'Save this LitLab setup as an assignment in My Resources',
+                style: { marginTop: '10px', padding: '8px 16px', background: !sourceText.trim() && !storyTitle.trim() && !teacherPrompt.trim() ? '#cbd5e1' : '#2563eb', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: !sourceText.trim() && !storyTitle.trim() && !teacherPrompt.trim() ? 'not-allowed' : 'pointer' }
+              }, '💾 Save as Assignment')
+            ),
+
             // Mode selector
             e('div', { style: { display: 'flex', gap: '8px', marginBottom: '16px', justifyContent: 'center' } },
               [['paste', '📋 Paste Text'], ['generate', '✨ AI Generate']].map(function (pair) {
@@ -1173,8 +1206,9 @@
                 );
               })
             ),
-            e('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center' } },
+            e('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' } },
               e('button', { onClick: saveScript, style: S.btn('#f1f5f9', '#374151', false) }, '💾 Save Script'),
+              onSaveSubmission && e('button', { onClick: saveSubmissionToPortfolio, 'aria-label': 'Save this performance to your portfolio (My Resources)', style: S.btn('#7c3aed', '#fff', false) }, '📚 Save to Portfolio'),
               e('button', { onClick: function () { setPhase('perform'); setCurrentLine(0); }, style: S.btn(PURPLE, '#fff', false) }, '🎭 Start Performance →')
             )
           ),
