@@ -69,6 +69,22 @@
         'Cut anything that does not earn its place.',
         'Use line breaks to control the reader\'s breath.',
         'A specific image (the red wheelbarrow) beats a vague feeling (sadness).'
+      ],
+      moreExamples: [
+        {
+          title: 'I Hear America Singing',
+          author: 'Walt Whitman',
+          year: 1860,
+          text: 'I hear America singing, the varied carols I hear,\nThose of mechanics, each one singing his as it should be blithe and strong,\nThe carpenter singing his as he measures his plank or beam,\nThe mason singing his as he makes ready for work, or leaves off work…',
+          note: 'A long, generous line — Whitman invented this rhythm. Notice how each profession gets its own image.'
+        },
+        {
+          title: 'In the Desert',
+          author: 'Stephen Crane',
+          year: 1895,
+          text: 'In the desert\nI saw a creature, naked, bestial,\nWho, squatting upon the ground,\nHeld his heart in his hands,\nAnd ate of it.\nI said, "Is it good, friend?"\n"It is bitter — bitter," he answered;\n"But I like it\nBecause it is bitter,\nAnd because it is my heart."',
+          note: 'A complete short story in 11 lines. Free verse can be tight as well as expansive.'
+        }
       ]
     },
     {
@@ -85,6 +101,22 @@
         'No need to rhyme — haiku rarely does in Japanese.',
         'A haiku is one moment, not a story.',
         'The third line often contains a surprise or a small shift in perspective.'
+      ],
+      moreExamples: [
+        {
+          title: 'The piercing chill I feel',
+          author: 'Yosa Buson',
+          year: 1768,
+          text: 'The piercing chill I feel:\nmy dead wife\'s comb, in our bedroom,\nunder my heel.',
+          note: 'Sensation (cold, sharp object) + deep emotion. Buson lets the object do the grieving.'
+        },
+        {
+          title: 'A world of dew',
+          author: 'Kobayashi Issa',
+          year: 1819,
+          text: 'A world of dew,\nand within every dewdrop\na world of struggle.',
+          note: 'Issa wrote this after his daughter\'s death. The form holds enormous grief in 17 syllables.'
+        }
       ]
     },
     {
@@ -101,6 +133,22 @@
         'The funnier the better. Limericks reward bold choices.',
         'Line 3 and 4 should set up the punch in line 5.',
         'Read it out loud to feel the rhythm.'
+      ],
+      moreExamples: [
+        {
+          title: 'There was an Old Man with a beard',
+          author: 'Edward Lear',
+          year: 1846,
+          text: 'There was an Old Man with a beard,\nWho said, "It is just as I feared!\nTwo Owls and a Hen,\nFour Larks and a Wren,\nHave all built their nests in my beard!"',
+          note: 'Lear is the godfather of the limerick. Notice the absurd specificity — exactly four larks.'
+        },
+        {
+          title: 'A flea and a fly',
+          author: 'Anonymous',
+          year: 1900,
+          text: 'A flea and a fly in a flue\nWere imprisoned, so what could they do?\nSaid the fly, "Let us flee!"\n"Let us fly!" said the flea.\nSo they flew through a flaw in the flue.',
+          note: 'Watch how the wordplay (flee/fly/flea/flaw) becomes the joke itself.'
+        }
       ]
     },
     {
@@ -117,6 +165,22 @@
         'Iambic pentameter sounds like a heartbeat: da-DUM da-DUM da-DUM da-DUM da-DUM.',
         'Use the final couplet for a turn — the volta — that resolves or twists the poem.',
         'Don\'t force rhymes; let the meaning lead.'
+      ],
+      moreExamples: [
+        {
+          title: 'How do I love thee? (Sonnet 43)',
+          author: 'Elizabeth Barrett Browning',
+          year: 1850,
+          text: 'How do I love thee? Let me count the ways.\nI love thee to the depth and breadth and height\nMy soul can reach, when feeling out of sight\nFor the ends of being and ideal grace.\nI love thee to the level of every day\'s\nMost quiet need…\n[opening lines]',
+          note: 'Browning answers the opening question for 14 lines straight. The structure of the sonnet IS the answer.'
+        },
+        {
+          title: 'Bright Star',
+          author: 'John Keats',
+          year: 1819,
+          text: 'Bright star, would I were stedfast as thou art —\nNot in lone splendour hung aloft the night\nAnd watching, with eternal lids apart,\nLike nature\'s patient, sleepless Eremite…',
+          note: 'Keats addresses the star directly (apostrophe). The sonnet form gives him 14 lines to argue with eternity.'
+        }
       ]
     },
     {
@@ -133,6 +197,22 @@
         'A ballad is a poem that tells a story.',
         'A repeated line or phrase (refrain) gives it a song-like quality.',
         'Strong nouns and verbs do more work than adjectives.'
+      ],
+      moreExamples: [
+        {
+          title: 'The Three Ravens',
+          author: 'Anonymous (traditional)',
+          year: 1611,
+          text: 'There were three ravens sat on a tree,\nDowne a downe, hay down, hay downe,\nThere were three ravens sat on a tree,\nWith a downe.\nThere were three ravens sat on a tree,\nThey were as blacke as they might be,\nWith a downe derrie, derrie, derrie, downe, downe.',
+          note: 'A traditional folk ballad. The nonsense refrain ("Downe a downe…") was sung — ballads were songs first.'
+        },
+        {
+          title: 'Annabel Lee (excerpt)',
+          author: 'Edgar Allan Poe',
+          year: 1849,
+          text: 'It was many and many a year ago,\n   In a kingdom by the sea,\nThat a maiden there lived whom you may know\n   By the name of Annabel Lee;\nAnd this maiden she lived with no other thought\n   Than to love and be loved by me.',
+          note: 'Poe alternates long and short lines — listen to how the rhythm pulls you into the story.'
+        }
       ]
     },
     {
@@ -165,6 +245,22 @@
         'Pick a subject first (often a single word). Write that word vertically before you start.',
         'You don\'t need to rhyme — focus on filling each letter with an image.',
         'For a longer poem, use a phrase instead of a single word.'
+      ],
+      moreExamples: [
+        {
+          title: 'A Boat Beneath a Sunny Sky (excerpt)',
+          author: 'Lewis Carroll',
+          year: 1871,
+          text: 'A boat, beneath a sunny sky\nLingering onward dreamily\nIn an evening of July —\n\nChildren three that nestle near,\nEager eye and willing ear…',
+          note: 'The first letters of every line spell "ALICE PLEASANCE LIDDELL" — the real Alice in Wonderland\'s name. A hidden dedication.'
+        },
+        {
+          title: 'A Valentine (excerpt)',
+          author: 'Edgar Allan Poe',
+          year: 1849,
+          text: 'For her this rhyme is penned, whose luminous eyes,\nBrightly expressive as the twins of Loeda,\nShall find her own sweet name, that, nestling lies\nUpon the page, enwrapped from every reader.',
+          note: 'Poe\'s acrostic is hidden differently: read the 1st letter of line 1, 2nd letter of line 2, 3rd of line 3, etc.'
+        }
       ]
     },
     {
@@ -181,6 +277,22 @@
         'The two-syllable opening and closing lines work best when they hint at something larger.',
         'A cinquain doesn\'t have to rhyme. The shape does the work.',
         'Read it aloud — if a line feels rushed or stretched, count syllables again.'
+      ],
+      moreExamples: [
+        {
+          title: 'The Warning',
+          author: 'Adelaide Crapsey',
+          year: 1915,
+          text: 'Just now,\nOut of the strange\nstill dusk… as strange, as still…\nA white moth flew. Why am I grown\nso cold?',
+          note: 'The "why am I grown so cold?" lands harder because the form has been so quiet.'
+        },
+        {
+          title: 'Triad',
+          author: 'Adelaide Crapsey',
+          year: 1915,
+          text: 'These be\nThree silent things:\nThe falling snow… the hour\nBefore the dawn… the mouth of one\nJust dead.',
+          note: 'Three image-fragments grouped into one cinquain. Notice the death image waits for the very last line.'
+        }
       ]
     },
     {
@@ -213,6 +325,22 @@
         'The first 3 lines work like a haiku — image, breath, image.',
         'The last 2 lines (the "lower phrase") add emotion or a personal note.',
         'No need to rhyme — tanka relies on rhythm and image, not sound matching.'
+      ],
+      moreExamples: [
+        {
+          title: 'How invisibly',
+          author: 'Ono no Komachi',
+          year: 850,
+          text: 'How invisibly\nit changes color\nin this world,\nthe flower\nof the human heart.',
+          note: 'A 9th-century Japanese poet. Notice how the central image (color-changing flower) only resolves in the last line.'
+        },
+        {
+          title: 'Even in a person',
+          author: 'Saigyō',
+          year: 1180,
+          text: 'Even in a person\nmost times indifferent\nto things around him,\nthey waken feelings —\nthe first winds of autumn.',
+          note: 'The "lower phrase" (last 2 lines) often delivers the punch — here, the season undoes the man.'
+        }
       ]
     },
     {
@@ -229,6 +357,22 @@
         'A couplet works because two ideas balance each other — consider what the second line ADDS to the first.',
         'You can chain couplets (AA BB CC…) into longer poems. Many epics are entirely couplets.',
         'Try writing a couplet as a small "thought of the day" exercise — low pressure, big payoff.'
+      ],
+      moreExamples: [
+        {
+          title: 'An Essay on Criticism (excerpt)',
+          author: 'Alexander Pope',
+          year: 1711,
+          text: 'A little learning is a dang\'rous thing;\nDrink deep, or taste not the Pierian spring.',
+          note: 'Pope wrote thousands of couplets. Each pair is a complete thought you could put on a poster.'
+        },
+        {
+          title: 'Closing couplet',
+          author: 'Shakespeare (Sonnet 18)',
+          year: 1609,
+          text: 'So long as men can breathe or eyes can see,\nSo long lives this, and this gives life to thee.',
+          note: 'The final couplet of a Shakespearean sonnet often delivers the volta — the turn — in just two lines.'
+        }
       ]
     }
   ];
@@ -1046,6 +1190,26 @@
               e('h4', { style: { fontSize: '13px', fontWeight: 800, color: TEAL_DARK, margin: '0 0 4px' } }, '💡 Tips'),
               e('ul', { style: { margin: 0, paddingLeft: '20px', fontSize: '12px', color: '#374151', lineHeight: 1.6 } },
                 form.tips.map(function (tip, i) { return e('li', { key: i }, tip); })
+              ),
+              // Inspiration Gallery: additional public-domain examples per form
+              form.moreExamples && form.moreExamples.length > 0 && e('details', { style: { marginTop: '14px', borderTop: '1px dashed #99f6e4', paddingTop: '12px' } },
+                e('summary', { style: { cursor: 'pointer', fontSize: '13px', fontWeight: 800, color: TEAL_DARK, listStyle: 'none', display: 'flex', alignItems: 'center', gap: '6px' }, 'aria-label': 'Show more example poems in this form' },
+                  e('span', { 'aria-hidden': 'true' }, '📚'),
+                  e('span', null, 'Inspiration gallery (' + form.moreExamples.length + ' more example' + (form.moreExamples.length === 1 ? '' : 's') + ')'),
+                  e('span', { 'aria-hidden': 'true', style: { marginLeft: 'auto', color: '#475569', fontSize: '11px', fontWeight: 500 } }, 'click to expand')
+                ),
+                e('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '10px' } },
+                  form.moreExamples.map(function (ex, ei) {
+                    return e('article', { key: ei, style: { background: '#fff', border: '1px solid #cffafe', borderRadius: '10px', padding: '12px' } },
+                      e('header', { style: { marginBottom: '6px' } },
+                        e('h5', { style: { fontSize: '13px', fontWeight: 800, color: TEAL_DARK, margin: 0 } }, ex.title),
+                        e('p', { style: { fontSize: '11px', color: '#475569', margin: '2px 0 0', fontStyle: 'italic' } }, '— ' + ex.author + (ex.year ? ', ' + ex.year : '') + ' (public domain)')
+                      ),
+                      e('pre', { style: { whiteSpace: 'pre-wrap', fontFamily: 'Georgia, serif', fontSize: '13px', color: '#1e293b', margin: '0 0 8px', lineHeight: 1.6 } }, ex.text),
+                      ex.note && e('p', { style: { fontSize: '11px', color: '#475569', margin: 0, padding: '6px 8px', background: '#f0fdfa', borderRadius: '6px', borderLeft: '3px solid #99f6e4', fontStyle: 'italic' } }, '✏️ ' + ex.note)
+                    );
+                  })
+                )
               ),
               e('button', { onClick: function () { setActiveTab('write'); announcePT('Ready to write a ' + form.name + '.'); },
                 style: { marginTop: '10px', padding: '8px 18px', background: TEAL, color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '13px', cursor: 'pointer' }
