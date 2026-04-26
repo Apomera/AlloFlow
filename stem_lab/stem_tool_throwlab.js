@@ -4010,33 +4010,69 @@ window.StemLab = window.StemLab || {
             // Save the latest trajectory as a reference ghost for the next throw,
             // OR clear the existing reference. Sits between the throw button and
             // the stats so it reads as a secondary action.
-            h('div', { style: { marginTop: 8, display: 'flex', gap: 6 } },
-              h('button', {
-                onClick: saveReference,
-                'aria-label': d.referenceResult ? 'Replace saved reference with current throw' : 'Save current throw as reference',
-                'data-tl-focusable': 'true',
-                style: {
-                  // WCAG 2.5.8 Target Size (Minimum) AA: ≥24×24 CSS px.
-                  flex: 1, padding: '10px 12px', minHeight: 32, borderRadius: 6, cursor: 'pointer',
-                  border: '1px solid #d946ef',
-                  background: d.referenceResult ? 'rgba(217,70,239,0.18)' : '#1e293b',
-                  color: '#f1f5f9', fontSize: 11, fontWeight: 600
-                }
-              }, d.referenceResult ? '📌 Replace reference' : '📌 Save as reference'),
-              d.referenceResult ? h('button', {
-                onClick: clearReference,
-                'aria-label': 'Clear saved reference trajectory',
-                'data-tl-focusable': 'true',
-                style: {
-                  // WCAG 2.5.8: small lone X needs at least 32×32 to be tappable.
-                  minWidth: 32, minHeight: 32, padding: '10px 12px',
-                  borderRadius: 6, cursor: 'pointer',
-                  border: '1px solid #475569', background: '#1e293b', color: '#cbd5e1', fontSize: 14
-                }
-              }, '✕') : null
-            ),
-            d.referenceResult ? h('div', { style: { marginTop: 4, fontSize: 10, color: '#d946ef', fontStyle: 'italic' } },
-              'REF: ' + d.referenceLabel) : null,
+            (function() {
+              var refList = (d.referenceList && d.referenceList.length)
+                ? d.referenceList
+                : (d.referenceResult ? [{ result: d.referenceResult, label: d.referenceLabel, color: '#d946ef' }] : []);
+              var atCap = refList.length >= MAX_REFERENCES;
+              return h('div', { style: { marginTop: 8 } },
+                h('div', { style: { display: 'flex', gap: 6 } },
+                  h('button', {
+                    onClick: saveReference,
+                    'aria-label': atCap
+                      ? 'Save current throw as reference (oldest will be replaced; ' + MAX_REFERENCES + ' max)'
+                      : 'Save current throw as reference (' + refList.length + ' of ' + MAX_REFERENCES + ' saved)',
+                    'data-tl-focusable': 'true',
+                    style: {
+                      flex: 1, padding: '10px 12px', minHeight: 32, borderRadius: 6, cursor: 'pointer',
+                      border: '1px solid #d946ef',
+                      background: refList.length ? 'rgba(217,70,239,0.18)' : '#1e293b',
+                      color: '#f1f5f9', fontSize: 11, fontWeight: 600
+                    }
+                  }, refList.length === 0 ? '📌 Save as reference'
+                     : atCap ? '📌 Replace oldest (' + refList.length + '/' + MAX_REFERENCES + ')'
+                     : '📌 Save reference (' + refList.length + '/' + MAX_REFERENCES + ')'),
+                  refList.length ? h('button', {
+                    onClick: clearReference,
+                    'aria-label': 'Clear all saved reference trajectories',
+                    'data-tl-focusable': 'true',
+                    style: {
+                      minWidth: 32, minHeight: 32, padding: '10px 12px',
+                      borderRadius: 6, cursor: 'pointer',
+                      border: '1px solid #475569', background: '#1e293b', color: '#cbd5e1', fontSize: 12
+                    }
+                  }, 'Clear') : null
+                ),
+                // Per-reference list with color swatch + label + per-item remove
+                refList.length ? h('div', { style: { marginTop: 6, display: 'flex', flexDirection: 'column', gap: 3 } },
+                  refList.map(function(ref, idx) {
+                    return h('div', {
+                      key: 'ref-' + idx,
+                      style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 10 }
+                    },
+                      h('span', {
+                        'aria-hidden': 'true',
+                        style: {
+                          width: 12, height: 12, borderRadius: 2, flexShrink: 0,
+                          background: ref.color || '#d946ef', border: '1px solid rgba(255,255,255,0.2)'
+                        }
+                      }),
+                      h('span', { style: { color: ref.color || '#d946ef', fontWeight: 700, flexShrink: 0 } }, 'REF' + (idx + 1)),
+                      h('span', { style: { color: '#cbd5e1', fontStyle: 'italic', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, ref.label || 'reference'),
+                      h('button', {
+                        onClick: (function(i) { return function() { removeReferenceAt(i); }; })(idx),
+                        'aria-label': 'Remove reference ' + (idx + 1) + ': ' + (ref.label || ''),
+                        'data-tl-focusable': 'true',
+                        style: {
+                          minWidth: 24, minHeight: 24, padding: '2px 6px', borderRadius: 4, cursor: 'pointer',
+                          border: '1px solid #475569', background: 'transparent', color: '#cbd5e1', fontSize: 11
+                        }
+                      }, '✕')
+                    );
+                  })
+                ) : null
+              );
+            })(),
             // Coach Mode button — only renders if Gemini is available AND
             // there's been at least one throw, so we don't tease a button
             // that wouldn't do anything useful yet.
