@@ -18535,18 +18535,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Controls legend
           h('div', { style: { position: 'absolute', top: '10px', right: '10px', display: 'flex', flexDirection: 'column', gap: '4px', zIndex: 10 } },
             h('button', { onClick: exitDriving,
-              style: { padding: '6px 10px', borderRadius: '6px', background: 'rgba(239,68,68,0.8)', color: '#fff', border: 'none', fontSize: '11px', fontWeight: 700, cursor: 'pointer' } }, '✕ End Drive'),
+              'aria-label': 'End drive and return to menu', 'aria-keyshortcuts': 'Escape',
+              'data-rr-focusable': 'true',
+              style: { padding: '6px 10px', minHeight: 28, borderRadius: '6px', background: 'rgba(239,68,68,0.8)', color: '#fff', border: 'none', fontSize: '11px', fontWeight: 700, cursor: 'pointer' } }, '✕ End Drive'),
             h('button', { onClick: function() { pausedRef.current = !pausedRef.current; },
-              style: { padding: '6px 10px', borderRadius: '6px', background: 'rgba(0,0,0,0.6)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', fontSize: '11px', fontWeight: 700, cursor: 'pointer' } }, '⏸ Pause'),
+              'aria-label': pausedRef.current ? 'Resume the drive' : 'Pause the drive',
+              'aria-pressed': !!pausedRef.current, 'aria-keyshortcuts': 'Space',
+              'data-rr-focusable': 'true',
+              style: { padding: '6px 10px', minHeight: 28, borderRadius: '6px', background: 'rgba(0,0,0,0.6)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', fontSize: '11px', fontWeight: 700, cursor: 'pointer' } }, '⏸ Pause'),
             h('button', { onClick: function() {
               var modes = ['cockpit', 'chase', 'overhead', 'rearview'];
               cameraModeRef.current = modes[(modes.indexOf(cameraModeRef.current) + 1) % modes.length];
             },
-              style: { padding: '6px 10px', borderRadius: '6px', background: 'rgba(0,0,0,0.6)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', fontSize: '11px', fontWeight: 700, cursor: 'pointer' } }, '📷 Camera'),
+              'aria-label': 'Cycle camera view: cockpit, chase, overhead, rearview', 'aria-keyshortcuts': 'C',
+              'data-rr-focusable': 'true',
+              style: { padding: '6px 10px', minHeight: 28, borderRadius: '6px', background: 'rgba(0,0,0,0.6)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', fontSize: '11px', fontWeight: 700, cursor: 'pointer' } }, '📷 Camera'),
             h('button', { onClick: function() { upd('highBeams', !d.highBeams); },
-              style: { padding: '6px 10px', borderRadius: '6px', background: d.highBeams ? 'rgba(251,191,36,0.4)' : 'rgba(0,0,0,0.6)', color: '#fff', border: '1px solid ' + (d.highBeams ? '#fbbf24' : 'rgba(255,255,255,0.2)'), fontSize: '11px', fontWeight: 700, cursor: 'pointer' } }, d.highBeams ? '💡 HIGH' : '💡 LOW'),
+              'aria-label': d.highBeams ? 'Switch to low beams' : 'Switch to high beams',
+              'aria-pressed': !!d.highBeams, 'aria-keyshortcuts': 'L',
+              'data-rr-focusable': 'true',
+              style: { padding: '6px 10px', minHeight: 28, borderRadius: '6px', background: d.highBeams ? 'rgba(251,191,36,0.4)' : 'rgba(0,0,0,0.6)', color: '#fff', border: '1px solid ' + (d.highBeams ? '#fbbf24' : 'rgba(255,255,255,0.2)'), fontSize: '11px', fontWeight: 700, cursor: 'pointer' } }, d.highBeams ? '💡 HIGH' : '💡 LOW'),
             h('button', { onClick: takePhoto, title: 'Snap a screenshot (K)',
-              style: { padding: '6px 10px', borderRadius: '6px', background: 'rgba(168,139,250,0.3)', color: '#fff', border: '1px solid #a78bfa', fontSize: '11px', fontWeight: 700, cursor: 'pointer' } }, '📸 Photo')
+              'aria-label': 'Take a screenshot of the driving scene', 'aria-keyshortcuts': 'K',
+              'data-rr-focusable': 'true',
+              style: { padding: '6px 10px', minHeight: 28, borderRadius: '6px', background: 'rgba(168,139,250,0.3)', color: '#fff', border: '1px solid #a78bfa', fontSize: '11px', fontWeight: 700, cursor: 'pointer' } }, '📸 Photo')
           ),
           h('div', { style: { position: 'absolute', bottom: '100px', left: '10px', padding: '8px 12px', borderRadius: '8px', background: 'rgba(0,0,0,0.6)', color: '#cbd5e1', fontSize: '10px', zIndex: 10 } },
             'W Accel · S Brake · A/D Steer · F Drive · G Reverse · P Park · E/V Signal · C Cam · L Beams · K Photo · Q Horn · SPACE Pause'
