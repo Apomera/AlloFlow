@@ -4761,6 +4761,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [showSelHub, setShowSelHub] = useState(false);
   const [selHubTab, setSelHubTab] = useState('explore');
   const [selHubTool, setSelHubTool] = useState(null);
+  const [activeSelStation, setActiveSelStation] = useState(null);
   const [autoAttachManipulatives, setAutoAttachManipulatives] = useState(true);
   const [autoSnapshotManipulatives, setAutoSnapshotManipulatives] = useState(true);
   const [labToolData, setLabToolData] = useState({
