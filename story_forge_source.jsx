@@ -179,6 +179,18 @@ const GENRE_TEMPLATES = {
 
 const SAVE_KEY = 'alloflow_storyforge_draft';
 
+// Narrative beat options for the per-paragraph Plot Structure dropdown.
+// Empty value means "unset" — students can leave blank.
+const PLOT_BEATS = [
+  { value: '', label: '— Choose beat —' },
+  { value: 'setup', label: 'Setup' },
+  { value: 'inciting', label: 'Inciting Incident' },
+  { value: 'rising', label: 'Rising Action' },
+  { value: 'climax', label: 'Climax' },
+  { value: 'falling', label: 'Falling Action' },
+  { value: 'resolution', label: 'Resolution' },
+];
+
 const STORY_STARTERS = {
   'adventure': [
     'The map had been hidden in the library for a hundred years — until today.',
@@ -308,7 +320,7 @@ const StoryForge = React.memo(({
   const [maxParagraphs] = useState(8);
 
   // ── Write state ──
-  const [paragraphs, setParagraphs] = useState([{ id: 'p-0', text: '', scaffoldFrame: '' }]);
+  const [paragraphs, setParagraphs] = useState([{ id: 'p-0', text: '', scaffoldFrame: '', plotBeat: '' }]);
   const [scaffoldsGenerated, setScaffoldsGenerated] = useState(false);
   const [helpMeResult, setHelpMeResult] = useState(null);
   const [helpMeParagraphIdx, setHelpMeParagraphIdx] = useState(-1);
@@ -607,6 +619,12 @@ const StoryForge = React.memo(({
 
   // ── Review state ──
   const [gradingResult, setGradingResult] = useState(null);
+  // Senses Check (sensory imagery audit, ported from PoetTree)
+  const [sensesResult, setSensesResult] = useState(null);
+  const [sensesLoading, setSensesLoading] = useState(false);
+  // Pre-grade Self-Assessment — student rates self before AI grade for metacognition
+  const [selfAssessment, setSelfAssessment] = useState({});
+  const [selfAssessmentSubmitted, setSelfAssessmentSubmitted] = useState(false);
   const [draftCount, setDraftCount] = useState(1);
 
   // ── Init vocab from glossary ──
@@ -834,7 +852,7 @@ const StoryForge = React.memo(({
       if (initialConfig.rubricText) setRubricText(initialConfig.rubricText);
       if (initialConfig.language) setLanguage(initialConfig.language);
       if (initialConfig.minParagraphs) {
-        setParagraphs(Array.from({ length: initialConfig.minParagraphs }, (_, i) => ({ id: `p-${i}`, text: '', scaffoldFrame: '' })));
+        setParagraphs(Array.from({ length: initialConfig.minParagraphs }, (_, i) => ({ id: `p-${i}`, text: '', scaffoldFrame: '', plotBeat: '' })));
       }
       if (addToast) addToast('Assignment loaded from teacher!', 'success');
     }
@@ -899,7 +917,7 @@ const StoryForge = React.memo(({
     } else if (resource.type === 'sentence-frames') {
       const frames = typeof resource.data === 'string' ? resource.data.split('\n').filter(Boolean) : [];
       if (frames.length > 0) {
-        setParagraphs(frames.slice(0, 8).map((f, i) => ({ id: `p-${i}`, text: '', scaffoldFrame: f.replace(/^[\d.)\-\s]+/, '').trim() })));
+        setParagraphs(frames.slice(0, 8).map((f, i) => ({ id: `p-${i}`, text: '', scaffoldFrame: f.replace(/^[\d.)\-\s]+/, '').trim(), plotBeat: '' })));
         setScaffoldsGenerated(true);
         if (addToast) addToast(`Imported ${frames.length} scaffold frames!`, 'success');
       }
@@ -913,7 +931,7 @@ const StoryForge = React.memo(({
       const timelineText = typeof resource.data === 'string' ? resource.data : '';
       if (timelineText) {
         const events = timelineText.split('\n').filter(l => l.trim().length > 10).slice(0, 8);
-        setParagraphs(events.map((e, i) => ({ id: `p-${i}`, text: '', scaffoldFrame: e.trim() })));
+        setParagraphs(events.map((e, i) => ({ id: `p-${i}`, text: '', scaffoldFrame: e.trim(), plotBeat: '' })));
         setScaffoldsGenerated(true);
         if (addToast) addToast(`Imported ${events.length} timeline events as scaffolds!`, 'success');
       }
@@ -977,10 +995,15 @@ const StoryForge = React.memo(({
     if (!isDirty) setIsDirty(true);
   };
 
+  const updateParagraphBeat = (idx, beat) => {
+    setParagraphs(prev => prev.map((p, i) => i === idx ? { ...p, plotBeat: beat } : p));
+    if (!isDirty) setIsDirty(true);
+  };
+
   const addParagraph = () => {
     if (paragraphs.length >= maxParagraphs) return;
     const newId = `p-${Date.now()}`;
-    setParagraphs(prev => [...prev, { id: newId, text: '', scaffoldFrame: '' }]);
+    setParagraphs(prev => [...prev, { id: newId, text: '', scaffoldFrame: '', plotBeat: '' }]);
     if (!isDirty) setIsDirty(true);
     // Auto-scroll to new paragraph after render
     setTimeout(() => {
@@ -1515,7 +1538,71 @@ Return ONLY JSON:
     setRevisionSnapshot({ words: totalWords, vocabUsed: vocabUsedCount, paragraphCount: paragraphs.length, grade: readingLevel?.grade || null });
     setDraftCount(d => d + 1);
     setGradingResult(null);
+    setSelfAssessment({});
+    setSelfAssessmentSubmitted(false);
+    setSensesResult(null);
     changePhase('write');
+  };
+
+  // ── Senses & Imagery Checker (ported from PoetTree, retargeted for prose) ──
+  const checkSenses = async () => {
+    if (!onCallGemini) return;
+    const fullText = paragraphs.map(p => p.text.trim()).filter(Boolean).join('\n\n');
+    if (fullText.length < 30) {
+      if (addToast) addToast('Write a bit more before checking senses', 'info');
+      return;
+    }
+    setSensesLoading(true);
+    try {
+      const prompt = `You are a writing coach analyzing sensory imagery in a student's story.
+
+Story:
+"""
+${fullText}
+"""
+
+Count concrete sensory details across all paragraphs combined for each of these categories:
+- sight (visual descriptions: color, shape, light)
+- sound (heard things: noises, voices, music, silence)
+- smell (scents, odors)
+- taste (flavors, textures in the mouth)
+- touch (physical textures, temperature, pressure on skin)
+- motion (movement, kinesthetic action)
+- emotion (named feelings: fear, joy, embarrassment)
+
+Then identify the strongest sense (most-used) and the weakest/missing sense (under-used).
+Offer ONE specific, kind, concrete revision suggestion that names a paragraph and a sense ("In paragraph 3, what does the bedroom actually smell like?").
+
+Return ONLY JSON in this shape:
+{
+  "counts": {"sight": N, "sound": N, "smell": N, "taste": N, "touch": N, "motion": N, "emotion": N},
+  "strongest": "sight",
+  "missing": "smell",
+  "suggestion": "Specific, concrete revision tip naming a paragraph and a sense."
+}`;
+      const result = await onCallGemini(prompt, true);
+      const data = JSON.parse(cleanJson(result));
+      setSensesResult(data);
+      if (addToast) addToast('Senses check ready!', 'success');
+      sfAnnounce('Senses check complete. Strongest sense: ' + (data.strongest || 'unknown') + '. Missing: ' + (data.missing || 'unknown'));
+      awardXP(5, 'Used senses checker');
+    } catch (err) {
+      console.warn('Senses check failed:', err);
+      if (addToast) addToast('Senses check failed — try again', 'error');
+    }
+    setSensesLoading(false);
+  };
+
+  // Pull criteria names out of the rubric markdown table; fall back to defaults.
+  const getRubricCriteria = () => {
+    const fallback = ['Vocabulary Usage', 'Story Structure', 'Creativity & Detail', 'Grammar & Mechanics'];
+    const text = rubricText || '';
+    if (!text.trim()) return fallback;
+    const rows = text.split('\n').filter(l => l.includes('|') && !/^\s*\|?\s*-{3,}/.test(l));
+    const names = rows
+      .map(r => r.split('|').map(s => s.trim()).filter(Boolean)[0])
+      .filter(n => n && n.toLowerCase() !== 'criteria' && !/^[-:]+$/.test(n));
+    return names.length >= 2 ? names.slice(0, 6) : fallback;
   };
 
   // ═══════════════════════════════════════════════════════════
@@ -2533,6 +2620,28 @@ show();
                       <HelpCircle size={12} className="shrink-0" /> {p.scaffoldFrame}
                     </div>
                   )}
+                  {/* ── Plot Structure beat (optional narrative-arc tag) ── */}
+                  {genre !== 'free' && (
+                    <div className="px-4 py-2 bg-indigo-50/60 border-b border-indigo-100 flex items-center gap-2">
+                      <label htmlFor={`sf-beat-${p.id}`} className="text-[11px] font-bold text-indigo-700 uppercase tracking-widest shrink-0">
+                        📐 Plot Beat
+                      </label>
+                      <select
+                        id={`sf-beat-${p.id}`}
+                        value={p.plotBeat || ''}
+                        onChange={(e) => updateParagraphBeat(idx, e.target.value)}
+                        className="text-xs px-2 py-1 rounded-md border border-indigo-200 bg-white text-indigo-800 font-medium outline-none focus:border-indigo-500"
+                        aria-label={`Plot beat for paragraph ${idx + 1} (optional)`}
+                      >
+                        {PLOT_BEATS.map(b => (
+                          <option key={b.value || 'none'} value={b.value}>{b.label}</option>
+                        ))}
+                      </select>
+                      {p.plotBeat && (
+                        <span className="text-[11px] text-indigo-600 italic">tagged</span>
+                      )}
+                    </div>
+                  )}
                   {/* Help Me Write suggestions */}
                   {helpMeParagraphIdx === idx && helpMeResult && (
                     <div className="px-4 py-3 bg-gradient-to-r from-amber-50 to-yellow-50 border-b border-amber-100">
@@ -3166,9 +3275,14 @@ show();
                   <h3 className="text-2xl font-black text-slate-800">Review & Feedback</h3>
                   <p className="text-slate-600 text-sm mt-1">Draft #{draftCount} — Get AI feedback on your story</p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-wrap">
                   {!gradingResult && (
-                    <button onClick={gradeStory} disabled={isProcessing} className="px-5 py-2.5 bg-indigo-600 text-white rounded-full text-sm font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center gap-2">
+                    <button onClick={checkSenses} disabled={sensesLoading || isProcessing} className="px-4 py-2.5 bg-rose-100 text-rose-700 rounded-full text-sm font-bold hover:bg-rose-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-rose-200" title="Check sensory imagery (sight, sound, smell, etc.)">
+                      🌈 {sensesLoading ? 'Checking...' : 'Senses Check'}
+                    </button>
+                  )}
+                  {!gradingResult && (
+                    <button onClick={gradeStory} disabled={isProcessing || (!selfAssessmentSubmitted)} className="px-5 py-2.5 bg-indigo-600 text-white rounded-full text-sm font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center gap-2" title={!selfAssessmentSubmitted ? 'Complete or skip self-assessment first' : 'Get AI feedback'}>
                       <Sparkles size={16} /> {isProcessing ? 'Grading...' : 'Get Feedback'}
                     </button>
                   )}
@@ -3179,6 +3293,99 @@ show();
                   )}
                 </div>
               </div>
+
+              {/* ═══ Pre-grade Self-Assessment ═══ */}
+              {!gradingResult && !selfAssessmentSubmitted && (
+                <div className="bg-gradient-to-br from-violet-50 to-indigo-50 border-2 border-violet-200 rounded-2xl p-5">
+                  <div className="flex items-start justify-between gap-3 mb-3">
+                    <div>
+                      <h4 className="text-base font-black text-violet-800 flex items-center gap-2">
+                        <Star size={18} /> Self-Assessment First
+                      </h4>
+                      <p className="text-xs text-violet-700 mt-1">Rate your own story on each criterion (1-5) before the AI grades it. This builds reflection skills.</p>
+                    </div>
+                    <button
+                      onClick={() => { setSelfAssessmentSubmitted(true); sfAnnounce('Self-assessment skipped. AI grading is now available.'); }}
+                      className="text-[11px] text-violet-500 hover:text-violet-700 font-bold underline shrink-0"
+                    >
+                      Skip self-assessment
+                    </button>
+                  </div>
+                  <div className="space-y-2">
+                    {getRubricCriteria().map((c) => (
+                      <div key={c} className="flex items-center gap-3 bg-white border border-violet-100 rounded-xl px-3 py-2">
+                        <label htmlFor={`sf-self-${c}`} className="text-xs font-bold text-violet-800 flex-1 min-w-0 truncate">{c}</label>
+                        <input
+                          id={`sf-self-${c}`}
+                          type="range" min="1" max="5" step="1"
+                          value={selfAssessment[c] || 3}
+                          onChange={(e) => setSelfAssessment(prev => ({ ...prev, [c]: parseInt(e.target.value, 10) }))}
+                          className="w-32 accent-violet-600"
+                          aria-label={`Self-rating for ${c}: ${selfAssessment[c] || 3} out of 5`}
+                        />
+                        <div className="bg-violet-100 text-violet-800 text-xs font-black px-2 py-0.5 rounded-full min-w-[2.25rem] text-center">
+                          {selfAssessment[c] || 3}/5
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => {
+                      // Fill any unset criteria with 3 (the slider's visual default) so comparison works.
+                      const filled = {};
+                      getRubricCriteria().forEach(c => { filled[c] = selfAssessment[c] || 3; });
+                      setSelfAssessment(filled);
+                      setSelfAssessmentSubmitted(true);
+                      sfAnnounce('Self-assessment submitted. You can now get AI feedback.');
+                      awardXP(8, 'Completed self-assessment');
+                    }}
+                    className="mt-3 px-4 py-2 bg-violet-600 text-white rounded-full text-xs font-bold hover:bg-violet-700 transition-colors flex items-center gap-2"
+                  >
+                    <CheckCircle2 size={14} /> Submit Self-Assessment
+                  </button>
+                </div>
+              )}
+
+              {/* ═══ Senses Check Result ═══ */}
+              {sensesResult && (
+                <div className="bg-white border-2 border-rose-200 rounded-2xl p-5 shadow-sm">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-sm font-bold text-rose-700 uppercase tracking-wider flex items-center gap-2">🌈 Senses & Imagery</h4>
+                    <button onClick={() => setSensesResult(null)} className="text-[11px] text-slate-400 hover:text-slate-700 font-bold" aria-label="Dismiss senses result">Dismiss</button>
+                  </div>
+                  {(() => {
+                    const counts = sensesResult.counts || {};
+                    const max = Math.max(1, ...Object.values(counts).map(n => Number(n) || 0));
+                    const SENSE_LABELS = { sight: '👁️ Sight', sound: '👂 Sound', smell: '👃 Smell', taste: '👅 Taste', touch: '✋ Touch', motion: '🏃 Motion', emotion: '💗 Emotion' };
+                    return (
+                      <div className="space-y-1.5">
+                        {Object.entries(SENSE_LABELS).map(([k, label]) => {
+                          const n = Number(counts[k]) || 0;
+                          const pct = (n / max) * 100;
+                          const isStrongest = sensesResult.strongest === k;
+                          const isMissing = sensesResult.missing === k;
+                          return (
+                            <div key={k} className="flex items-center gap-2">
+                              <div className="text-xs font-bold text-slate-700 w-24 shrink-0">{label}</div>
+                              <div className="flex-1 h-4 bg-slate-100 rounded-full overflow-hidden">
+                                <div className={`h-full rounded-full transition-all ${isStrongest ? 'bg-teal-500' : isMissing ? 'bg-amber-400' : 'bg-rose-300'}`} style={{ width: `${pct}%` }} />
+                              </div>
+                              <div className="text-xs text-slate-700 font-bold w-8 text-right">{n}</div>
+                              {isStrongest && <span className="text-[10px] font-bold text-teal-700 bg-teal-100 px-1.5 py-0.5 rounded-full">strongest</span>}
+                              {isMissing && <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded-full">missing</span>}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
+                  {sensesResult.suggestion && (
+                    <div className="mt-3 bg-yellow-50 border border-yellow-200 rounded-xl p-3 text-xs text-yellow-900 leading-relaxed">
+                      <strong>Try this:</strong> {sensesResult.suggestion}
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Character Name Consistency */}
               {characterIssues.length > 0 && (
@@ -3343,22 +3550,50 @@ show();
                     </div>
                   </div>
 
-                  {/* Per-criteria scores */}
+                  {/* Per-criteria scores (with optional side-by-side Self vs AI) */}
                   {gradingResult.scores && (
                     <div className="bg-white rounded-2xl border-2 border-slate-200 overflow-hidden">
-                      <div className="px-4 py-3 bg-slate-50 border-b border-slate-200">
+                      <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
                         <h4 className="text-sm font-bold text-slate-700">Score Breakdown</h4>
+                        {Object.keys(selfAssessment).length > 0 && (
+                          <div className="text-[11px] text-slate-500 flex items-center gap-3">
+                            <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full bg-violet-400" /> You</span>
+                            <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full bg-indigo-500" /> AI</span>
+                          </div>
+                        )}
                       </div>
                       <div className="divide-y divide-slate-100">
-                        {gradingResult.scores.map((s, i) => (
-                          <div key={i} className="px-4 py-3 flex items-center justify-between">
-                            <div>
-                              <div className="text-sm font-bold text-slate-800">{s.criteria}</div>
-                              <div className="text-xs text-slate-600">{s.comment}</div>
+                        {gradingResult.scores.map((s, i) => {
+                          const aiScoreNum = (() => {
+                            const m = String(s.score || '').match(/(\d+(?:\.\d+)?)/);
+                            return m ? parseFloat(m[1]) : null;
+                          })();
+                          const selfScore = selfAssessment[s.criteria];
+                          const showCompare = Object.keys(selfAssessment).length > 0 && selfScore != null && aiScoreNum != null;
+                          const delta = showCompare ? (aiScoreNum - selfScore) : null;
+                          return (
+                            <div key={i} className="px-4 py-3 flex items-center justify-between gap-3">
+                              <div className="min-w-0 flex-1">
+                                <div className="text-sm font-bold text-slate-800">{s.criteria}</div>
+                                <div className="text-xs text-slate-600">{s.comment}</div>
+                              </div>
+                              {showCompare ? (
+                                <div className="flex items-center gap-2 shrink-0">
+                                  <div className="bg-violet-100 text-violet-800 px-2 py-0.5 rounded-full text-xs font-bold" title="Your self-rating">{selfScore}/5</div>
+                                  <span className="text-slate-400 text-xs">→</span>
+                                  <div className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-sm font-bold" title="AI score">{s.score}</div>
+                                  {Math.abs(delta) >= 1 && (
+                                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${delta > 0 ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`} title={delta > 0 ? 'AI rated higher than you did' : 'AI rated lower than you did'}>
+                                      {delta > 0 ? '+' : ''}{delta.toFixed(1)}
+                                    </span>
+                                  )}
+                                </div>
+                              ) : (
+                                <div className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-sm font-bold">{s.score}</div>
+                              )}
                             </div>
-                            <div className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-sm font-bold">{s.score}</div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
                   )}

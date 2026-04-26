@@ -225,6 +225,15 @@ const GENRE_TEMPLATES = {
   "persuasive": { label: "Persuasive Narrative", emoji: "\u{1F4AC}", scaffoldHint: "a persuasive narrative that argues a point through a character's experience and storytelling" }
 };
 const SAVE_KEY = "alloflow_storyforge_draft";
+const PLOT_BEATS = [
+  { value: "", label: "\u2014 Choose beat \u2014" },
+  { value: "setup", label: "Setup" },
+  { value: "inciting", label: "Inciting Incident" },
+  { value: "rising", label: "Rising Action" },
+  { value: "climax", label: "Climax" },
+  { value: "falling", label: "Falling Action" },
+  { value: "resolution", label: "Resolution" }
+];
 const STORY_STARTERS = {
   "adventure": [
     "The map had been hidden in the library for a hundred years \u2014 until today.",
@@ -345,7 +354,7 @@ const StoryForge = React.memo(({
   const [rubricText, setRubricText] = useState("");
   const [minParagraphs] = useState(3);
   const [maxParagraphs] = useState(8);
-  const [paragraphs, setParagraphs] = useState([{ id: "p-0", text: "", scaffoldFrame: "" }]);
+  const [paragraphs, setParagraphs] = useState([{ id: "p-0", text: "", scaffoldFrame: "", plotBeat: "" }]);
   const [scaffoldsGenerated, setScaffoldsGenerated] = useState(false);
   const [helpMeResult, setHelpMeResult] = useState(null);
   const [helpMeParagraphIdx, setHelpMeParagraphIdx] = useState(-1);
@@ -582,6 +591,10 @@ IMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLa
     }
   };
   const [gradingResult, setGradingResult] = useState(null);
+  const [sensesResult, setSensesResult] = useState(null);
+  const [sensesLoading, setSensesLoading] = useState(false);
+  const [selfAssessment, setSelfAssessment] = useState({});
+  const [selfAssessmentSubmitted, setSelfAssessmentSubmitted] = useState(false);
   const [draftCount, setDraftCount] = useState(1);
   useEffect(() => {
     if (glossaryTerms && glossaryTerms.length > 0 && vocabTerms.length === 0) {
@@ -784,7 +797,7 @@ IMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLa
       if (initialConfig.rubricText) setRubricText(initialConfig.rubricText);
       if (initialConfig.language) setLanguage(initialConfig.language);
       if (initialConfig.minParagraphs) {
-        setParagraphs(Array.from({ length: initialConfig.minParagraphs }, (_, i) => ({ id: `p-${i}`, text: "", scaffoldFrame: "" })));
+        setParagraphs(Array.from({ length: initialConfig.minParagraphs }, (_, i) => ({ id: `p-${i}`, text: "", scaffoldFrame: "", plotBeat: "" })));
       }
       if (addToast) addToast("Assignment loaded from teacher!", "success");
     }
@@ -853,7 +866,7 @@ IMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLa
     } else if (resource.type === "sentence-frames") {
       const frames = typeof resource.data === "string" ? resource.data.split("\n").filter(Boolean) : [];
       if (frames.length > 0) {
-        setParagraphs(frames.slice(0, 8).map((f, i) => ({ id: `p-${i}`, text: "", scaffoldFrame: f.replace(/^[\d.)\-\s]+/, "").trim() })));
+        setParagraphs(frames.slice(0, 8).map((f, i) => ({ id: `p-${i}`, text: "", scaffoldFrame: f.replace(/^[\d.)\-\s]+/, "").trim(), plotBeat: "" })));
         setScaffoldsGenerated(true);
         if (addToast) addToast(`Imported ${frames.length} scaffold frames!`, "success");
       }
@@ -867,7 +880,7 @@ IMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLa
       const timelineText = typeof resource.data === "string" ? resource.data : "";
       if (timelineText) {
         const events = timelineText.split("\n").filter((l) => l.trim().length > 10).slice(0, 8);
-        setParagraphs(events.map((e, i) => ({ id: `p-${i}`, text: "", scaffoldFrame: e.trim() })));
+        setParagraphs(events.map((e, i) => ({ id: `p-${i}`, text: "", scaffoldFrame: e.trim(), plotBeat: "" })));
         setScaffoldsGenerated(true);
         if (addToast) addToast(`Imported ${events.length} timeline events as scaffolds!`, "success");
       }
@@ -915,10 +928,14 @@ IMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLa
     setParagraphs((prev) => prev.map((p, i) => i === idx ? { ...p, text } : p));
     if (!isDirty) setIsDirty(true);
   };
+  const updateParagraphBeat = (idx, beat) => {
+    setParagraphs((prev) => prev.map((p, i) => i === idx ? { ...p, plotBeat: beat } : p));
+    if (!isDirty) setIsDirty(true);
+  };
   const addParagraph = () => {
     if (paragraphs.length >= maxParagraphs) return;
     const newId = `p-${Date.now()}`;
-    setParagraphs((prev) => [...prev, { id: newId, text: "", scaffoldFrame: "" }]);
+    setParagraphs((prev) => [...prev, { id: newId, text: "", scaffoldFrame: "", plotBeat: "" }]);
     if (!isDirty) setIsDirty(true);
     setTimeout(() => {
       const el = document.getElementById("sf-para-" + newId);
@@ -1434,7 +1451,65 @@ Return ONLY JSON:
     setRevisionSnapshot({ words: totalWords, vocabUsed: vocabUsedCount, paragraphCount: paragraphs.length, grade: readingLevel?.grade || null });
     setDraftCount((d) => d + 1);
     setGradingResult(null);
+    setSelfAssessment({});
+    setSelfAssessmentSubmitted(false);
+    setSensesResult(null);
     changePhase("write");
+  };
+  const checkSenses = async () => {
+    if (!onCallGemini) return;
+    const fullText = paragraphs.map((p) => p.text.trim()).filter(Boolean).join("\n\n");
+    if (fullText.length < 30) {
+      if (addToast) addToast("Write a bit more before checking senses", "info");
+      return;
+    }
+    setSensesLoading(true);
+    try {
+      const prompt = `You are a writing coach analyzing sensory imagery in a student's story.
+
+Story:
+"""
+${fullText}
+"""
+
+Count concrete sensory details across all paragraphs combined for each of these categories:
+- sight (visual descriptions: color, shape, light)
+- sound (heard things: noises, voices, music, silence)
+- smell (scents, odors)
+- taste (flavors, textures in the mouth)
+- touch (physical textures, temperature, pressure on skin)
+- motion (movement, kinesthetic action)
+- emotion (named feelings: fear, joy, embarrassment)
+
+Then identify the strongest sense (most-used) and the weakest/missing sense (under-used).
+Offer ONE specific, kind, concrete revision suggestion that names a paragraph and a sense ("In paragraph 3, what does the bedroom actually smell like?").
+
+Return ONLY JSON in this shape:
+{
+  "counts": {"sight": N, "sound": N, "smell": N, "taste": N, "touch": N, "motion": N, "emotion": N},
+  "strongest": "sight",
+  "missing": "smell",
+  "suggestion": "Specific, concrete revision tip naming a paragraph and a sense."
+}`;
+      const result = await onCallGemini(prompt, true);
+      const data = JSON.parse(cleanJson(result));
+      setSensesResult(data);
+      if (addToast) addToast("Senses check ready!", "success");
+      sfAnnounce("Senses check complete. Strongest sense: " + (data.strongest || "unknown") + ". Missing: " + (data.missing || "unknown"));
+      awardXP(5, "Used senses checker");
+    } catch (err) {
+      console.warn("Senses check failed:", err);
+      if (addToast) addToast("Senses check failed \u2014 try again", "error");
+    }
+    setSensesLoading(false);
+  };
+  const getRubricCriteria = () => {
+    const fallback = ["Vocabulary Usage", "Story Structure", "Creativity & Detail", "Grammar & Mechanics"];
+    const text = rubricText || "";
+    if (!text.trim()) return fallback;
+    const rows = text.split("\n").filter((l) => l.includes("|") && !/^\s*\|?\s*-{3,}/.test(l));
+    const names = rows.map((r) => r.split("|").map((s) => s.trim()).filter(Boolean)[0]).filter((n) => n && n.toLowerCase() !== "criteria" && !/^[-:]+$/.test(n));
+    return names.length >= 2 ? names.slice(0, 6) : fallback;
   };
   const exportStorybook = () => {
     const title = escapeHtml(storyTitle || storyPrompt || sourceTopic || "My Story");
@@ -2127,7 +2202,17 @@ show();
     },
     /* @__PURE__ */ React.createElement(Sparkles, { size: 10 }),
     " Help Me"
-  ), paragraphs.length > 1 && /* @__PURE__ */ React.createElement("button", { onClick: () => removeParagraph(idx), className: "text-slate-400 hover:text-red-500 focus:text-red-500 p-1 rounded transition-colors", "aria-label": `Remove paragraph ${idx + 1}` }, /* @__PURE__ */ React.createElement(Trash2, { size: 14 })))), p.scaffoldFrame && /* @__PURE__ */ React.createElement("div", { className: "px-4 py-2 bg-amber-50 border-b border-amber-100 text-xs text-amber-700 italic flex items-center gap-2" }, /* @__PURE__ */ React.createElement(HelpCircle, { size: 12, className: "shrink-0" }), " ", p.scaffoldFrame), helpMeParagraphIdx === idx && helpMeResult && /* @__PURE__ */ React.createElement("div", { className: "px-4 py-3 bg-gradient-to-r from-amber-50 to-yellow-50 border-b border-amber-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-amber-600 uppercase tracking-widest mb-2 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 10 }), " Writing Coach Suggestions"), /* @__PURE__ */ React.createElement("div", { className: "space-y-1.5" }, helpMeResult.map((s, si) => /* @__PURE__ */ React.createElement("div", { key: si, className: "text-xs text-amber-800 flex items-start gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-amber-400 mt-0.5" }, "\u{1F4A1}"), /* @__PURE__ */ React.createElement("span", null, s)))), /* @__PURE__ */ React.createElement("button", { onClick: () => {
+  ), paragraphs.length > 1 && /* @__PURE__ */ React.createElement("button", { onClick: () => removeParagraph(idx), className: "text-slate-400 hover:text-red-500 focus:text-red-500 p-1 rounded transition-colors", "aria-label": `Remove paragraph ${idx + 1}` }, /* @__PURE__ */ React.createElement(Trash2, { size: 14 })))), p.scaffoldFrame && /* @__PURE__ */ React.createElement("div", { className: "px-4 py-2 bg-amber-50 border-b border-amber-100 text-xs text-amber-700 italic flex items-center gap-2" }, /* @__PURE__ */ React.createElement(HelpCircle, { size: 12, className: "shrink-0" }), " ", p.scaffoldFrame), genre !== "free" && /* @__PURE__ */ React.createElement("div", { className: "px-4 py-2 bg-indigo-50/60 border-b border-indigo-100 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("label", { htmlFor: `sf-beat-${p.id}`, className: "text-[11px] font-bold text-indigo-700 uppercase tracking-widest shrink-0" }, "\u{1F4D0} Plot Beat"), /* @__PURE__ */ React.createElement(
+    "select",
+    {
+      id: `sf-beat-${p.id}`,
+      value: p.plotBeat || "",
+      onChange: (e) => updateParagraphBeat(idx, e.target.value),
+      className: "text-xs px-2 py-1 rounded-md border border-indigo-200 bg-white text-indigo-800 font-medium outline-none focus:border-indigo-500",
+      "aria-label": `Plot beat for paragraph ${idx + 1} (optional)`
+    },
+    PLOT_BEATS.map((b) => /* @__PURE__ */ React.createElement("option", { key: b.value || "none", value: b.value }, b.label))
+  ), p.plotBeat && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-indigo-600 italic" }, "tagged")), helpMeParagraphIdx === idx && helpMeResult && /* @__PURE__ */ React.createElement("div", { className: "px-4 py-3 bg-gradient-to-r from-amber-50 to-yellow-50 border-b border-amber-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-amber-600 uppercase tracking-widest mb-2 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 10 }), " Writing Coach Suggestions"), /* @__PURE__ */ React.createElement("div", { className: "space-y-1.5" }, helpMeResult.map((s, si) => /* @__PURE__ */ React.createElement("div", { key: si, className: "text-xs text-amber-800 flex items-start gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-amber-400 mt-0.5" }, "\u{1F4A1}"), /* @__PURE__ */ React.createElement("span", null, s)))), /* @__PURE__ */ React.createElement("button", { onClick: () => {
     setHelpMeParagraphIdx(-1);
     setHelpMeResult(null);
   }, className: "mt-2 text-[11px] text-amber-500 hover:text-amber-700 font-bold" }, "Dismiss")), layoutMode === "comic" ? (
@@ -2448,7 +2533,58 @@ show();
       },
       w.word
     ))), fluencyResult.confidence?.note && /* @__PURE__ */ React.createElement("div", { className: "mt-2 text-[11px] text-slate-600 italic" }, fluencyResult.confidence.note), fluencyResult.confidence?.accentDetected && /* @__PURE__ */ React.createElement("div", { className: "mt-1 text-[11px] text-teal-600 font-medium" }, "\u{1F30D} Accent patterns detected \u2014 scores adjusted conservatively to respect linguistic diversity."), fluencyResult.feedback && /* @__PURE__ */ React.createElement("div", { className: "mt-2 text-xs text-teal-800 bg-white rounded-lg p-2 border border-teal-200" }, fluencyResult.feedback), /* @__PURE__ */ React.createElement("button", { onClick: () => setFluencyResult(null), className: "mt-2 text-[11px] text-slate-400 hover:text-slate-600 font-bold" }, "Dismiss")));
-  })), phase === "review" && /* @__PURE__ */ React.createElement("div", { className: `space-y-6 ${animClass}` }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "text-2xl font-black text-slate-800" }, "Review & Feedback"), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 text-sm mt-1" }, "Draft #", draftCount, " \u2014 Get AI feedback on your story")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, !gradingResult && /* @__PURE__ */ React.createElement("button", { onClick: gradeStory, disabled: isProcessing, className: "px-5 py-2.5 bg-indigo-600 text-white rounded-full text-sm font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 16 }), " ", isProcessing ? "Grading..." : "Get Feedback"), gradingResult && /* @__PURE__ */ React.createElement("button", { onClick: reviseStory, className: "px-5 py-2.5 bg-amber-500 text-white rounded-full text-sm font-bold hover:bg-amber-600 transition-colors flex items-center gap-2" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 16 }), " Revise Story"))), characterIssues.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-orange-50 border-2 border-orange-200 rounded-2xl p-4" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-orange-700 uppercase tracking-wider mb-2" }, "Character Name Check"), /* @__PURE__ */ React.createElement("div", { className: "space-y-1" }, characterIssues.map((issue, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "text-xs text-orange-800" }, "Did you mean ", /* @__PURE__ */ React.createElement("strong", null, '"', issue.expected, '"'), " instead of ", /* @__PURE__ */ React.createElement("span", { className: "line-through text-orange-500" }, '"', issue.found, '"'), "?"))), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-orange-500 mt-2" }, "Tip: Check your character names are spelled consistently throughout the story")), revisionSnapshot && draftCount >= 2 && /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-4" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-indigo-500 uppercase tracking-widest mb-2" }, "Revision Progress (vs. Draft #", draftCount - 1, ")"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-3" }, (() => {
+  })), phase === "review" && /* @__PURE__ */ React.createElement("div", { className: `space-y-6 ${animClass}` }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "text-2xl font-black text-slate-800" }, "Review & Feedback"), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 text-sm mt-1" }, "Draft #", draftCount, " \u2014 Get AI feedback on your story")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 flex-wrap" }, !gradingResult && /* @__PURE__ */ React.createElement("button", { onClick: checkSenses, disabled: sensesLoading || isProcessing, className: "px-4 py-2.5 bg-rose-100 text-rose-700 rounded-full text-sm font-bold hover:bg-rose-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-rose-200", title: "Check sensory imagery (sight, sound, smell, etc.)" }, "\u{1F308} ", sensesLoading ? "Checking..." : "Senses Check"), !gradingResult && /* @__PURE__ */ React.createElement("button", { onClick: gradeStory, disabled: isProcessing || !selfAssessmentSubmitted, className: "px-5 py-2.5 bg-indigo-600 text-white rounded-full text-sm font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center gap-2", title: !selfAssessmentSubmitted ? "Complete or skip self-assessment first" : "Get AI feedback" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 16 }), " ", isProcessing ? "Grading..." : "Get Feedback"), gradingResult && /* @__PURE__ */ React.createElement("button", { onClick: reviseStory, className: "px-5 py-2.5 bg-amber-500 text-white rounded-full text-sm font-bold hover:bg-amber-600 transition-colors flex items-center gap-2" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 16 }), " Revise Story"))), !gradingResult && !selfAssessmentSubmitted && /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-br from-violet-50 to-indigo-50 border-2 border-violet-200 rounded-2xl p-5" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3 mb-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h4", { className: "text-base font-black text-violet-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Star, { size: 18 }), " Self-Assessment First"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-violet-700 mt-1" }, "Rate your own story on each criterion (1-5) before the AI grades it. This builds reflection skills.")), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: () => {
+        setSelfAssessmentSubmitted(true);
+        sfAnnounce("Self-assessment skipped. AI grading is now available.");
+      },
+      className: "text-[11px] text-violet-500 hover:text-violet-700 font-bold underline shrink-0"
+    },
+    "Skip self-assessment"
+  )), /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, getRubricCriteria().map((c) => /* @__PURE__ */ React.createElement("div", { key: c, className: "flex items-center gap-3 bg-white border border-violet-100 rounded-xl px-3 py-2" }, /* @__PURE__ */ React.createElement("label", { htmlFor: `sf-self-${c}`, className: "text-xs font-bold text-violet-800 flex-1 min-w-0 truncate" }, c), /* @__PURE__ */ React.createElement(
+    "input",
+    {
+      id: `sf-self-${c}`,
+      type: "range",
+      min: "1",
+      max: "5",
+      step: "1",
+      value: selfAssessment[c] || 3,
+      onChange: (e) => setSelfAssessment((prev) => ({ ...prev, [c]: parseInt(e.target.value, 10) })),
+      className: "w-32 accent-violet-600",
+      "aria-label": `Self-rating for ${c}: ${selfAssessment[c] || 3} out of 5`
+    }
+  ), /* @__PURE__ */ React.createElement("div", { className: "bg-violet-100 text-violet-800 text-xs font-black px-2 py-0.5 rounded-full min-w-[2.25rem] text-center" }, selfAssessment[c] || 3, "/5")))), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: () => {
+        const filled = {};
+        getRubricCriteria().forEach((c) => {
+          filled[c] = selfAssessment[c] || 3;
+        });
+        setSelfAssessment(filled);
+        setSelfAssessmentSubmitted(true);
+        sfAnnounce("Self-assessment submitted. You can now get AI feedback.");
+        awardXP(8, "Completed self-assessment");
+      },
+      className: "mt-3 px-4 py-2 bg-violet-600 text-white rounded-full text-xs font-bold hover:bg-violet-700 transition-colors flex items-center gap-2"
+    },
+    /* @__PURE__ */ React.createElement(CheckCircle2, { size: 14 }),
+    " Submit Self-Assessment"
+  )), sensesResult && /* @__PURE__ */ React.createElement("div", { className: "bg-white border-2 border-rose-200 rounded-2xl p-5 shadow-sm" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-3" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-rose-700 uppercase tracking-wider flex items-center gap-2" }, "\u{1F308} Senses & Imagery"), /* @__PURE__ */ React.createElement("button", { onClick: () => setSensesResult(null), className: "text-[11px] text-slate-400 hover:text-slate-700 font-bold", "aria-label": "Dismiss senses result" }, "Dismiss")), (() => {
+    const counts = sensesResult.counts || {};
+    const max = Math.max(1, ...Object.values(counts).map((n) => Number(n) || 0));
+    const SENSE_LABELS = { sight: "\u{1F441}\uFE0F Sight", sound: "\u{1F442} Sound", smell: "\u{1F443} Smell", taste: "\u{1F445} Taste", touch: "\u270B Touch", motion: "\u{1F3C3} Motion", emotion: "\u{1F497} Emotion" };
+    return /* @__PURE__ */ React.createElement("div", { className: "space-y-1.5" }, Object.entries(SENSE_LABELS).map(([k, label]) => {
+      const n = Number(counts[k]) || 0;
+      const pct = n / max * 100;
+      const isStrongest = sensesResult.strongest === k;
+      const isMissing = sensesResult.missing === k;
+      return /* @__PURE__ */ React.createElement("div", { key: k, className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-slate-700 w-24 shrink-0" }, label), /* @__PURE__ */ React.createElement("div", { className: "flex-1 h-4 bg-slate-100 rounded-full overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: `h-full rounded-full transition-all ${isStrongest ? "bg-teal-500" : isMissing ? "bg-amber-400" : "bg-rose-300"}`, style: { width: `${pct}%` } })), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-700 font-bold w-8 text-right" }, n), isStrongest && /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold text-teal-700 bg-teal-100 px-1.5 py-0.5 rounded-full" }, "strongest"), isMissing && /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded-full" }, "missing"));
+    }));
+  })(), sensesResult.suggestion && /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-yellow-50 border border-yellow-200 rounded-xl p-3 text-xs text-yellow-900 leading-relaxed" }, /* @__PURE__ */ React.createElement("strong", null, "Try this:"), " ", sensesResult.suggestion)), characterIssues.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-orange-50 border-2 border-orange-200 rounded-2xl p-4" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-orange-700 uppercase tracking-wider mb-2" }, "Character Name Check"), /* @__PURE__ */ React.createElement("div", { className: "space-y-1" }, characterIssues.map((issue, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "text-xs text-orange-800" }, "Did you mean ", /* @__PURE__ */ React.createElement("strong", null, '"', issue.expected, '"'), " instead of ", /* @__PURE__ */ React.createElement("span", { className: "line-through text-orange-500" }, '"', issue.found, '"'), "?"))), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-orange-500 mt-2" }, "Tip: Check your character names are spelled consistently throughout the story")), revisionSnapshot && draftCount >= 2 && /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-4" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-indigo-500 uppercase tracking-widest mb-2" }, "Revision Progress (vs. Draft #", draftCount - 1, ")"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-3" }, (() => {
     const wordDelta = totalWords - (revisionSnapshot.words || 0);
     const vocabDelta = vocabUsedCount - (revisionSnapshot.vocabUsed || 0);
     return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { className: `text-xs font-bold ${wordDelta > 0 ? "text-green-600" : wordDelta < 0 ? "text-red-500" : "text-slate-400"}` }, wordDelta > 0 ? "+" : "", wordDelta, " words"), /* @__PURE__ */ React.createElement("span", { className: `text-xs font-bold ${vocabDelta > 0 ? "text-green-600" : vocabDelta < 0 ? "text-red-500" : "text-slate-400"}` }, vocabDelta > 0 ? "+" : "", vocabDelta, " vocab terms"), readingLevel && revisionSnapshot.grade && /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-indigo-600" }, "Grade level: ", revisionSnapshot.grade, " \u2192 ", readingLevel.grade));
@@ -2460,7 +2596,16 @@ show();
     const bgColor = idx === 0 ? "bg-blue-500" : idx === paragraphs.length - 1 ? "bg-orange-500" : isMiddle ? "bg-slate-500" : "bg-slate-300";
     const barLabel = idx === 0 ? "Beginning" : idx === paragraphs.length - 1 ? "Resolution" : `Paragraph ${idx + 1}`;
     return /* @__PURE__ */ React.createElement("div", { key: p.id, className: "flex-1 flex flex-col items-center gap-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-[7px] text-slate-600 font-bold" }, wordCount), /* @__PURE__ */ React.createElement("div", { className: `w-full ${bgColor} rounded-t-md transition-all`, style: { height: `${heightPct}%` }, title: `${barLabel}: ${wordCount} words`, role: "img", "aria-label": `${barLabel}: ${wordCount} words` }), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-400" }, idx === 0 ? "Start" : idx === paragraphs.length - 1 ? "End" : `P${idx + 1}`));
-  })), /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px] text-slate-400 mt-1" }, /* @__PURE__ */ React.createElement("span", null, "Beginning"), /* @__PURE__ */ React.createElement("span", null, "Rising Action"), /* @__PURE__ */ React.createElement("span", null, "Climax"), /* @__PURE__ */ React.createElement("span", null, "Resolution")))), wordFrequency.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border-2 border-slate-200 p-5 shadow-sm" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-slate-700 uppercase tracking-wider mb-3" }, "Word Frequency"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, wordFrequency.slice(0, 12).map(([word, count]) => /* @__PURE__ */ React.createElement("div", { key: word, className: `px-3 py-1.5 rounded-full text-xs font-bold border-2 ${count >= 4 ? "bg-amber-100 border-amber-300 text-amber-800" : "bg-slate-50 border-slate-200 text-slate-600"}`, title: `"${word}" used ${count} times` }, word, " ", /* @__PURE__ */ React.createElement("span", { className: "text-[11px] opacity-60" }, "\xD7", count)))), overusedWords.length > 0 && /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-[11px] text-amber-600 font-medium" }, "Tip: Try varying your word choice \u2014 ", /* @__PURE__ */ React.createElement("strong", null, overusedWords.join(", ")), " ", overusedWords.length === 1 ? "appears" : "appear", " 4+ times. Use synonyms for variety!")), !gradingResult && !isProcessing && /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl p-12 text-center" }, /* @__PURE__ */ React.createElement(Star, { size: 48, className: "text-slate-300 mx-auto mb-4" }), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 font-bold" }, 'Click "Get Feedback" to receive AI-powered Glow & Grow feedback on your story')), isProcessing && /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-12 text-center" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 48, className: "text-indigo-400 mx-auto mb-4 animate-spin" }), /* @__PURE__ */ React.createElement("p", { className: "text-indigo-600 font-bold" }, "Reading your story and preparing feedback...")), gradingResult && /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, /* @__PURE__ */ React.createElement("div", { className: "text-center" }, /* @__PURE__ */ React.createElement("div", { className: "inline-block bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-3 rounded-2xl text-2xl font-black shadow-lg" }, gradingResult.totalScore)), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-green-50 border-2 border-green-200 rounded-2xl p-5" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-green-700 uppercase tracking-wider mb-2 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 16 }), " Glow"), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-green-800 leading-relaxed" }, gradingResult.feedback?.glow)), /* @__PURE__ */ React.createElement("div", { className: "bg-amber-50 border-2 border-amber-200 rounded-2xl p-5" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-amber-700 uppercase tracking-wider mb-2 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(HelpCircle, { size: 16 }), " Grow"), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-amber-800 leading-relaxed" }, gradingResult.feedback?.grow))), gradingResult.scores && /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border-2 border-slate-200 overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "px-4 py-3 bg-slate-50 border-b border-slate-200" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-slate-700" }, "Score Breakdown")), /* @__PURE__ */ React.createElement("div", { className: "divide-y divide-slate-100" }, gradingResult.scores.map((s, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "px-4 py-3 flex items-center justify-between" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-slate-800" }, s.criteria), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600" }, s.comment)), /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-sm font-bold" }, s.score))))), gradingResult.vocabScores && /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border-2 border-slate-200 overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "px-4 py-3 bg-slate-50 border-b border-slate-200" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-slate-700" }, "Vocabulary Usage")), /* @__PURE__ */ React.createElement("div", { className: "p-4 flex flex-wrap gap-2" }, gradingResult.vocabScores.map((vs, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: `px-3 py-1.5 rounded-full text-xs font-bold border-2 ${vs.status === "correct" ? "bg-green-100 border-green-300 text-green-800" : vs.status === "partial" ? "bg-amber-100 border-amber-300 text-amber-800" : "bg-red-100 border-red-300 text-red-800"}`, title: vs.comment }, vs.status === "correct" ? "\u2713" : vs.status === "partial" ? "~" : "\u2717", " ", vs.term)))))), phase === "export" && /* @__PURE__ */ React.createElement("div", { className: `space-y-6 ${animClass}` }, /* @__PURE__ */ React.createElement("div", { className: "text-center mb-8" }, /* @__PURE__ */ React.createElement("h3", { className: "text-2xl font-black text-slate-800" }, "Your Storybook is Ready!"), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 text-sm mt-1" }, "Preview your illustrated story and export it")), /* @__PURE__ */ React.createElement("div", { className: "flex justify-center gap-2 mb-4" }, Object.entries(LAYOUT_MODES).map(([key, m]) => /* @__PURE__ */ React.createElement(
+  })), /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px] text-slate-400 mt-1" }, /* @__PURE__ */ React.createElement("span", null, "Beginning"), /* @__PURE__ */ React.createElement("span", null, "Rising Action"), /* @__PURE__ */ React.createElement("span", null, "Climax"), /* @__PURE__ */ React.createElement("span", null, "Resolution")))), wordFrequency.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border-2 border-slate-200 p-5 shadow-sm" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-slate-700 uppercase tracking-wider mb-3" }, "Word Frequency"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, wordFrequency.slice(0, 12).map(([word, count]) => /* @__PURE__ */ React.createElement("div", { key: word, className: `px-3 py-1.5 rounded-full text-xs font-bold border-2 ${count >= 4 ? "bg-amber-100 border-amber-300 text-amber-800" : "bg-slate-50 border-slate-200 text-slate-600"}`, title: `"${word}" used ${count} times` }, word, " ", /* @__PURE__ */ React.createElement("span", { className: "text-[11px] opacity-60" }, "\xD7", count)))), overusedWords.length > 0 && /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-[11px] text-amber-600 font-medium" }, "Tip: Try varying your word choice \u2014 ", /* @__PURE__ */ React.createElement("strong", null, overusedWords.join(", ")), " ", overusedWords.length === 1 ? "appears" : "appear", " 4+ times. Use synonyms for variety!")), !gradingResult && !isProcessing && /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl p-12 text-center" }, /* @__PURE__ */ React.createElement(Star, { size: 48, className: "text-slate-300 mx-auto mb-4" }), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 font-bold" }, 'Click "Get Feedback" to receive AI-powered Glow & Grow feedback on your story')), isProcessing && /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-12 text-center" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 48, className: "text-indigo-400 mx-auto mb-4 animate-spin" }), /* @__PURE__ */ React.createElement("p", { className: "text-indigo-600 font-bold" }, "Reading your story and preparing feedback...")), gradingResult && /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, /* @__PURE__ */ React.createElement("div", { className: "text-center" }, /* @__PURE__ */ React.createElement("div", { className: "inline-block bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-3 rounded-2xl text-2xl font-black shadow-lg" }, gradingResult.totalScore)), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-green-50 border-2 border-green-200 rounded-2xl p-5" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-green-700 uppercase tracking-wider mb-2 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 16 }), " Glow"), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-green-800 leading-relaxed" }, gradingResult.feedback?.glow)), /* @__PURE__ */ React.createElement("div", { className: "bg-amber-50 border-2 border-amber-200 rounded-2xl p-5" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-amber-700 uppercase tracking-wider mb-2 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(HelpCircle, { size: 16 }), " Grow"), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-amber-800 leading-relaxed" }, gradingResult.feedback?.grow))), gradingResult.scores && /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border-2 border-slate-200 overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-slate-700" }, "Score Breakdown"), Object.keys(selfAssessment).length > 0 && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 flex items-center gap-3" }, /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "inline-block w-2 h-2 rounded-full bg-violet-400" }), " You"), /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "inline-block w-2 h-2 rounded-full bg-indigo-500" }), " AI"))), /* @__PURE__ */ React.createElement("div", { className: "divide-y divide-slate-100" }, gradingResult.scores.map((s, i) => {
+    const aiScoreNum = (() => {
+      const m = String(s.score || "").match(/(\d+(?:\.\d+)?)/);
+      return m ? parseFloat(m[1]) : null;
+    })();
+    const selfScore = selfAssessment[s.criteria];
+    const showCompare = Object.keys(selfAssessment).length > 0 && selfScore != null && aiScoreNum != null;
+    const delta = showCompare ? aiScoreNum - selfScore : null;
+    return /* @__PURE__ */ React.createElement("div", { key: i, className: "px-4 py-3 flex items-center justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-slate-800" }, s.criteria), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600" }, s.comment)), showCompare ? /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "bg-violet-100 text-violet-800 px-2 py-0.5 rounded-full text-xs font-bold", title: "Your self-rating" }, selfScore, "/5"), /* @__PURE__ */ React.createElement("span", { className: "text-slate-400 text-xs" }, "\u2192"), /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-sm font-bold", title: "AI score" }, s.score), Math.abs(delta) >= 1 && /* @__PURE__ */ React.createElement("span", { className: `text-[10px] font-bold px-1.5 py-0.5 rounded-full ${delta > 0 ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"}`, title: delta > 0 ? "AI rated higher than you did" : "AI rated lower than you did" }, delta > 0 ? "+" : "", delta.toFixed(1))) : /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-sm font-bold" }, s.score));
+  }))), gradingResult.vocabScores && /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border-2 border-slate-200 overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "px-4 py-3 bg-slate-50 border-b border-slate-200" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-slate-700" }, "Vocabulary Usage")), /* @__PURE__ */ React.createElement("div", { className: "p-4 flex flex-wrap gap-2" }, gradingResult.vocabScores.map((vs, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: `px-3 py-1.5 rounded-full text-xs font-bold border-2 ${vs.status === "correct" ? "bg-green-100 border-green-300 text-green-800" : vs.status === "partial" ? "bg-amber-100 border-amber-300 text-amber-800" : "bg-red-100 border-red-300 text-red-800"}`, title: vs.comment }, vs.status === "correct" ? "\u2713" : vs.status === "partial" ? "~" : "\u2717", " ", vs.term)))))), phase === "export" && /* @__PURE__ */ React.createElement("div", { className: `space-y-6 ${animClass}` }, /* @__PURE__ */ React.createElement("div", { className: "text-center mb-8" }, /* @__PURE__ */ React.createElement("h3", { className: "text-2xl font-black text-slate-800" }, "Your Storybook is Ready!"), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 text-sm mt-1" }, "Preview your illustrated story and export it")), /* @__PURE__ */ React.createElement("div", { className: "flex justify-center gap-2 mb-4" }, Object.entries(LAYOUT_MODES).map(([key, m]) => /* @__PURE__ */ React.createElement(
     "button",
     {
       key,
