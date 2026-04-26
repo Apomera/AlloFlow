@@ -21,7 +21,7 @@
     wsA11yStyle.id = 'ws-a11y-css';
     wsA11yStyle.textContent = [
       '@media (prefers-reduced-motion: reduce) { .fixed.inset-0 *, .fixed.inset-0 *::before, .fixed.inset-0 *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }',
-      '.fixed.inset-0 .text-slate-600 { color: #64748b !important; }',
+      // WCAG 1.4.3: Force AA-passing slate-600 (#475569 ≈ 7.42:1 on white) and gray-500 (#6b7280 ≈ 4.83:1) on Tailwind classes that otherwise fail.
       '.fixed.inset-0 .text-gray-400 { color: #6b7280 !important; }',
       '.fixed.inset-0 .text-slate-600 { color: #475569 !important; }',
       '/* Word Sounds celebration animations */',

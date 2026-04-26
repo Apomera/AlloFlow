@@ -91,9 +91,24 @@ window.StemLab = window.StemLab || {
     liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
     document.body.appendChild(liveRegion);
   })();
+  // Live-region announcer with rapid-fire protection.
+  // Setting textContent twice within ~500ms can drop the first announcement
+  // before the SR engine picks it up. We clear → wait one frame → set, so
+  // each call produces a distinct mutation the SR will read. Pending
+  // announcements stack via micro-queue: only the LAST queued message wins
+  // (we don't want to read 3 stale messages back-to-back), but it always
+  // fires in a fresh tick so it can't get clobbered by a same-tick second
+  // call.
+  var _tlAnnounceTimer = null;
   function tlAnnounce(msg) {
     var lr = document.getElementById('allo-live-throwlab');
-    if (lr) lr.textContent = msg;
+    if (!lr) return;
+    if (_tlAnnounceTimer) clearTimeout(_tlAnnounceTimer);
+    lr.textContent = '';
+    _tlAnnounceTimer = setTimeout(function() {
+      lr.textContent = msg;
+      _tlAnnounceTimer = null;
+    }, 60);
   }
 
   // ═══════════════════════════════════════════
@@ -1384,7 +1399,9 @@ window.StemLab = window.StemLab || {
         // label when the slider gets focus. WCAG 4.1.2 Name, Role, Value:
         // aria-valuetext gives the live value with units (otherwise the SR
         // would read "92" instead of "92 mph").
-        var inputId = 'tl-slider-' + label.replace(/\s+/g, '-').toLowerCase();
+        // Mode prefix on the ID protects against collisions if a future
+        // refactor renders multiple modes' sliders simultaneously.
+        var inputId = 'tl-' + d.mode + '-slider-' + label.replace(/\s+/g, '-').toLowerCase();
         return h('div', { style: { marginBottom: 10 } },
           h('label', {
             htmlFor: inputId,
@@ -1580,8 +1597,17 @@ window.StemLab = window.StemLab || {
                 + (lr ? ' Last throw outcome: ' + outcomeLabel(lr.location).replace(/^[^A-Za-z]+/, '') + '.' : ''),
               style: { width: '100%', maxWidth: 720, height: 'auto', borderRadius: 10, border: '1px solid #334155', background: '#0f172a' }
             }),
-            // Result panel
-            h('div', { style: { marginTop: 10, padding: 12, background: '#0f172a', border: '1px solid #1e293b', borderRadius: 10 } },
+            // Result panel — given an h3 so AT users tabbing into the section
+            // know what they're reading. region role makes the panel announce
+            // its label when entered.
+            h('section', {
+              'aria-labelledby': 'tl-result-heading',
+              style: { marginTop: 10, padding: 12, background: '#0f172a', border: '1px solid #1e293b', borderRadius: 10 }
+            },
+              h('h3', {
+                id: 'tl-result-heading',
+                style: { fontSize: 12, margin: 0, marginBottom: 8, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 600 }
+              }, lr ? 'Last throw' : 'Ready to throw'),
               lr ? (
                 h('div', null,
                   h('div', { style: { fontSize: 14, fontWeight: 700, color: outcomeColor(lr.location), marginBottom: 6 } }, outcomeLabel(lr.location)),
@@ -1718,7 +1744,8 @@ window.StemLab = window.StemLab || {
                 'aria-label': d.referenceResult ? 'Replace saved reference with current throw' : 'Save current throw as reference',
                 'data-tl-focusable': 'true',
                 style: {
-                  flex: 1, padding: '8px 10px', borderRadius: 6, cursor: 'pointer',
+                  // WCAG 2.5.8 Target Size (Minimum) AA: ≥24×24 CSS px.
+                  flex: 1, padding: '10px 12px', minHeight: 32, borderRadius: 6, cursor: 'pointer',
                   border: '1px solid #d946ef',
                   background: d.referenceResult ? 'rgba(217,70,239,0.18)' : '#1e293b',
                   color: '#f1f5f9', fontSize: 11, fontWeight: 600
@@ -1729,8 +1756,10 @@ window.StemLab = window.StemLab || {
                 'aria-label': 'Clear saved reference trajectory',
                 'data-tl-focusable': 'true',
                 style: {
-                  padding: '8px 10px', borderRadius: 6, cursor: 'pointer',
-                  border: '1px solid #475569', background: '#1e293b', color: '#cbd5e1', fontSize: 11
+                  // WCAG 2.5.8: small lone X needs at least 32×32 to be tappable.
+                  minWidth: 32, minHeight: 32, padding: '10px 12px',
+                  borderRadius: 6, cursor: 'pointer',
+                  border: '1px solid #475569', background: '#1e293b', color: '#cbd5e1', fontSize: 14
                 }
               }, '✕') : null
             ),
