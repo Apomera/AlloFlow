@@ -337,6 +337,63 @@ window.StemLab = window.StemLab || {
     return [];
   }
 
+  // ── Defender layout per coverage ──
+  // Returns 11 defender positions for the active coverage. The four down
+  // linemen (DL) sit just past LOS regardless of coverage. The back 7
+  // (3 LB + 4 DB) move based on the coverage. We position zone defenders
+  // at their zone centroid so the visual matches the open-receiver
+  // analysis math; man defenders (Cover 1) sit ON the receivers they're
+  // covering for a clear "X covers Y" read.
+  function buildDefenders(coverageId, losX, offense) {
+    losX = losX !== undefined ? losX : LOS_DEFAULT;
+    var W = FIELD_WIDTH;
+    // 4-man front, on the LOS just past it
+    var dl = [
+      { id: 'DE1', role: 'DL', x: losX + 1, y: W / 2 + 4 },
+      { id: 'DT1', role: 'DL', x: losX + 1, y: W / 2 + 1 },
+      { id: 'DT2', role: 'DL', x: losX + 1, y: W / 2 - 1 },
+      { id: 'DE2', role: 'DL', x: losX + 1, y: W / 2 - 4 }
+    ];
+    // The back 7 — coverage-specific
+    if (coverageId === 'cover1') {
+      // 1 deep safety + 3 LBs + 3 man corners (one slot/nickel)
+      var wr1 = (offense || []).find(function(p) { return p.id === 'WR1'; });
+      var wr2 = (offense || []).find(function(p) { return p.id === 'WR2'; });
+      var slot = (offense || []).find(function(p) { return p.id === 'SLOT'; });
+      var te = (offense || []).find(function(p) { return p.id === 'TE'; });
+      return dl.concat([
+        { id: 'FS', role: 'S', x: losX + 25, y: W / 2 },                                     // deep middle
+        { id: 'CB1', role: 'CB', x: (wr1 ? wr1.x : losX) + 5, y: (wr1 ? wr1.y : 4) + 1 },     // shadows WR1
+        { id: 'CB2', role: 'CB', x: (wr2 ? wr2.x : losX) + 5, y: (wr2 ? wr2.y : W - 4) - 1 }, // shadows WR2
+        { id: 'NB',  role: 'CB', x: (slot ? slot.x : losX) + 5, y: (slot ? slot.y : W - 9) }, // shadows slot
+        { id: 'SLB', role: 'LB', x: losX + 5, y: (te ? te.y : W / 2 - 4) + 1 },               // shadows TE
+        { id: 'MLB', role: 'LB', x: losX + 6, y: W / 2 },                                     // middle
+        { id: 'WLB', role: 'LB', x: losX + 5, y: W / 2 + 4 }                                  // weakside
+      ]);
+    }
+    // Zone coverages — place each back-7 defender at the centroid of
+    // their assigned zone (matches the open-receiver analysis math).
+    var zones = buildZones(coverageId, losX);
+    var back7 = zones.map(function(z) {
+      var c = polyCentroid(z.poly);
+      // Use the zone label to pick a role tag — matches "S" / "CB" / "LB"
+      var role = z.label.indexOf('Deep') === 0 ? (z.label.indexOf('half') !== -1 ? 'S' : (z.label.indexOf('third') !== -1 ? 'CB' : 'S'))
+               : z.label.indexOf('Hook') === 0 ? 'LB'
+               : z.label.indexOf('Flat') === 0 ? 'LB'
+               : z.label.indexOf('Curl') === 0 ? 'LB'
+               : z.label.indexOf('MLB') === 0 ? 'LB'
+               : 'DB';
+      return { id: 'D' + role + (Math.round(c.y * 10) % 100), role: role, x: c.x, y: c.y };
+    });
+    // If the coverage produced fewer than 7 zones (e.g., only the FS zone
+    // for Cover 1), pad with generic LB positions in the box. We hit this
+    // path only for malformed coverages — the case is defensive.
+    while (back7.length < 7) {
+      back7.push({ id: 'LB' + back7.length, role: 'LB', x: losX + 5, y: W / 2 });
+    }
+    return dl.concat(back7);
+  }
+
   var COVERAGES = [
     { id: 'cover1', label: 'Cover 1 (Man)', short: 'C1',
       teach: 'One deep safety. Everyone else man-to-man. Beat with: pick routes (mesh), speed mismatches, RPOs.' },
@@ -436,22 +493,27 @@ window.StemLab = window.StemLab || {
     poly.forEach(function(pt) { sx += pt[0]; sy += pt[1]; });
     return { x: sx / poly.length, y: sy / poly.length };
   }
-  function openReceiverAnalysis(players, zones) {
+  function openReceiverAnalysis(players, defenders) {
     var receivers = players.filter(function(p) {
       return (p.role === 'WR' || p.role === 'TE' || p.role === 'RB') && p.route;
     });
-    var defenderCentroids = zones.map(function(z) { return Object.assign({ label: z.label }, polyCentroid(z.poly)); });
+    // Use actual defender positions (DL excluded — they don't drop into
+    // coverage). This makes the analysis correct for Cover 1 (man) where
+    // defenders sit directly on receivers, not at zone centroids.
+    var coverageDefenders = (defenders || []).filter(function(dx) { return dx.role !== 'DL'; });
     var analysis = receivers.map(function(p) {
       var ep = receiverEndPoint(p);
       var nearestDist = Infinity;
-      var nearestZone = null;
-      defenderCentroids.forEach(function(c) {
+      var nearestId = null;
+      var nearestRole = null;
+      coverageDefenders.forEach(function(c) {
         var dx = c.x - ep.x;
         var dy = c.y - ep.y;
         var d = Math.sqrt(dx * dx + dy * dy);
-        if (d < nearestDist) { nearestDist = d; nearestZone = c.label; }
+        if (d < nearestDist) { nearestDist = d; nearestId = c.id; nearestRole = c.role; }
       });
-      return { id: p.id, role: p.role, ep: ep, opennessYd: nearestDist, nearestZone: nearestZone };
+      return { id: p.id, role: p.role, ep: ep, opennessYd: nearestDist,
+               nearestZone: nearestId ? (nearestRole + ' ' + nearestId) : 'open field' };
     });
     // Sort: most open first
     analysis.sort(function(a, b) { return b.opennessYd - a.opennessYd; });
@@ -555,7 +617,8 @@ window.StemLab = window.StemLab || {
       });
       var formation = applyPlayToFormation(rawFormation, play);
       var zones = buildZones(d.coverageId, d.losX);
-      var analysis = openReceiverAnalysis(formation, zones);
+      var defenders = buildDefenders(d.coverageId, d.losX, formation);
+      var analysis = openReceiverAnalysis(formation, defenders);
       var openReceiverId = analysis.length ? analysis[0].id : null;
 
       function loadPlay(pid) {
@@ -993,6 +1056,25 @@ window.StemLab = window.StemLab || {
           });
         }
 
+        // ── Defenders ──
+        // 11 red dots: 4 DL just past LOS, 3 LBs underneath, 4 DBs in
+        // their assigned spots (man for Cover 1, zone-centroid for the
+        // others). Drawn BEFORE offensive players so the offense reads
+        // on top. Dot color is red across the board; the role label
+        // ('DL' / 'LB' / 'CB' / 'S' / 'NB') reads inside.
+        defenders.forEach(function(D) {
+          var dpx = fx(D.x), dpy = fy(D.y);
+          gfx.fillStyle = '#ef4444';
+          gfx.beginPath(); gfx.arc(dpx, dpy, 5.5, 0, Math.PI * 2); gfx.fill();
+          gfx.strokeStyle = '#0f172a';
+          gfx.lineWidth = 1;
+          gfx.stroke();
+          gfx.fillStyle = '#fafafa';
+          gfx.font = 'bold 7px system-ui';
+          gfx.textAlign = 'center';
+          gfx.fillText(D.role, dpx, dpy + 2.5);
+        });
+
         // ── Players ──
         // During an active run, players walk along their routes; otherwise
         // they sit at snap (or end-of-route) positions. We use d.runT as
@@ -1329,7 +1411,7 @@ window.StemLab = window.StemLab || {
                           winner ? '🟢 Most open' : (idx === 1 ? 'Second' : 'Third')),
                         h('div', { style: { color: '#f1f5f9', fontSize: 13 } }, r.id),
                         h('div', { style: { color: '#cbd5e1', fontSize: 11 } },
-                          r.opennessYd === Infinity ? 'No defender' : r.opennessYd.toFixed(1) + ' yd from nearest zone'),
+                          r.opennessYd === Infinity ? 'No defender' : r.opennessYd.toFixed(1) + ' yd from nearest defender'),
                         h('div', { style: { color: '#94a3b8', fontSize: 10, marginTop: 2 } }, r.nearestZone || '—')
                       );
                     })
