@@ -1044,6 +1044,18 @@
     // when a new problem appears.
     var attemptCountState = useState(0);
     var attemptCount = attemptCountState[0], setAttemptCount = attemptCountState[1];
+    // First-run tutorial overlay — shown once per browser per device.
+    // Dismissed on first move or by clicking the overlay. Persistent
+    // localStorage flag prevents repeat exposure for returning students.
+    var tutorialSeenState = useState(function() {
+      try { return localStorage.getItem('fluency_maze_tutorial_seen') === '1'; }
+      catch (e) { return true; /* if localStorage blocked, skip tutorial */ }
+    });
+    var tutorialSeen = tutorialSeenState[0], setTutorialSeen = tutorialSeenState[1];
+    function _dismissTutorial() {
+      try { localStorage.setItem('fluency_maze_tutorial_seen', '1'); } catch (e) {}
+      setTutorialSeen(true);
+    }
     // Streak milestone banner — text shown briefly when streak hits a
     // multiple of 3 (3, 6, 9...). Cleared by setTimeout so it doesn't
     // linger. Lives in maze view, not the gate, so it survives gate
@@ -1187,7 +1199,7 @@
       if (dir === 'down' && !cell.walls.bottom) { newR++; canMove = true; }
       if (dir === 'left' && !cell.walls.left) { newC--; canMove = true; }
       if (dir === 'right' && !cell.walls.right) { newC++; canMove = true; }
-      if (!canMove) { setFeedback('wall'); setTimeout(function() { setFeedback(''); }, 300); return; }
+      if (!canMove) { setFeedback('wall'); playTone(140, 0.08, 'triangle', 0.06); setTimeout(function() { setFeedback(''); }, 300); return; }
       // Show a problem to solve before moving
       setCurrentProblem({ dir: dir, targetR: newR, targetC: newC, problem: makeProblem() });
       setUserInput('');
@@ -1207,6 +1219,7 @@
         // there's no extra re-render and no race with the playerPos update.
         visitedCellsRef.current[playerPos.r + ',' + playerPos.c] = true;
         visitedCellsRef.current[newPos.r + ',' + newPos.c] = true;
+        if (!tutorialSeen) _dismissTutorial();
         // Streak bump. Every 3 in a row = bonus score + a little fanfare,
         // reinforcing sustained fluency rather than just isolated correct
         // answers. Captured here synchronously so the milestone check fires
@@ -2407,6 +2420,50 @@
           animation: 'alloStreakPulse 1500ms ease-out forwards'
         }
       }, streakBanner),
+      // First-time tutorial overlay — shown on the very first run only.
+      // Dismissed by click anywhere on the overlay or auto-dismissed when
+      // the student successfully solves their first gate.
+      !tutorialSeen && h('div', {
+        onClick: _dismissTutorial,
+        role: 'button', tabIndex: 0,
+        onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ' || e.key === 'Escape') { e.preventDefault(); _dismissTutorial(); } },
+        'aria-label': 'Tutorial. Press Enter or click to dismiss.',
+        style: {
+          position: 'absolute', inset: 0, zIndex: 14,
+          background: 'rgba(58,46,38,0.78)', backdropFilter: 'blur(2px)',
+          borderRadius: '10px',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          cursor: 'pointer', padding: '20px'
+        }
+      },
+        h('div', {
+          style: {
+            background: 'linear-gradient(180deg, #fef3c7 0%, #fed7aa 100%)',
+            border: '2px solid #d97706', borderRadius: '12px',
+            padding: '18px 22px', maxWidth: '340px', textAlign: 'center',
+            boxShadow: '0 12px 40px rgba(58,46,38,0.5), inset 0 0 24px rgba(217,119,6,0.12)'
+          }
+        },
+          h('div', { style: { fontSize: '36px', marginBottom: '4px' } }, '\uD83D\uDDDD\uFE0F'),
+          h('h3', { style: { fontSize: '16px', fontWeight: 900, color: '#78350f', margin: '0 0 10px', letterSpacing: '0.04em' } }, 'Welcome, Adventurer'),
+          h('p', { style: { fontSize: '12px', color: '#92400e', lineHeight: '1.5', margin: '0 0 8px' } },
+            'Use ',
+            h('kbd', { style: { background: '#fef3c7', border: '1px solid #d97706', borderRadius: '4px', padding: '0 4px', fontFamily: 'monospace', fontWeight: 700 } }, '\u2190 \u2191 \u2192 \u2193'),
+            ' or ',
+            h('kbd', { style: { background: '#fef3c7', border: '1px solid #d97706', borderRadius: '4px', padding: '0 4px', fontFamily: 'monospace', fontWeight: 700 } }, 'WASD'),
+            ' to explore.'
+          ),
+          h('p', { style: { fontSize: '12px', color: '#92400e', lineHeight: '1.5', margin: '0 0 8px' } },
+            'Each gate is locked by a math fact. Solve it to pass.'
+          ),
+          h('p', { style: { fontSize: '12px', color: '#92400e', lineHeight: '1.5', margin: '0 0 12px' } },
+            'Find the \uD83D\uDDDD\uFE0F key to unlock the \u2B50 exit.'
+          ),
+          h('div', {
+            style: { fontSize: '11px', fontWeight: 800, color: '#fef3c7', background: 'linear-gradient(135deg, #b45309, #7c2d12)', border: '2px solid #78350f', borderRadius: '8px', padding: '6px 14px', display: 'inline-block', letterSpacing: '0.06em' }
+          }, 'Tap anywhere to begin')
+        )
+      ),
       // 2D minimap overlay (top-right of 3D view)
       has3D && maze && h('canvas', { ref: canvasRef, style: { position: 'absolute', top: '44px', right: '4px', width: '100px', height: '100px', borderRadius: '8px', border: '1px solid rgba(100,116,139,0.3)', opacity: 0.8 } }),
       // Gate overlay (when at junction). Styled as a stone-gate with a
@@ -2434,7 +2491,7 @@
               ? '0 0 24px rgba(239,68,68,0.55), inset 0 0 16px rgba(239,68,68,0.2)'
               : '0 0 0 2px rgba(58,46,38,0.6), 0 12px 40px rgba(0,0,0,0.6), inset 0 0 24px rgba(255,180,80,0.10)',
           zIndex: 10,
-          minWidth: '260px',
+          width: 'min(320px, calc(100vw - 24px))', maxWidth: '90vw',
           transition: 'background 200ms, border-color 200ms, box-shadow 200ms'
         }
       },
