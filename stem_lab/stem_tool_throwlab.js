@@ -2874,34 +2874,43 @@ window.StemLab = window.StemLab || {
           gfx.fillText(d.windMph + ' mph', wcx, wcy + 25);
         }
 
-        // ── Saved REFERENCE trajectory (Compare Mode) ──
-        // Drawn FIRST so it sits behind the current trajectory + no-spin guide.
-        // Faded magenta dashed line with a small "REF" tag at its end.
-        var rr = d.referenceResult;
-        if (rr && rr.samples && rr.samples.length > 1) {
-          gfx.strokeStyle = 'rgba(217, 70, 239, 0.55)'; // fuchsia-500 @ 55% — distinct from the green/yellow/red palette
+        // ── Saved REFERENCE trajectories (multi-ghost Compare Mode) ──
+        // Drawn FIRST so they sit behind the current trajectory + no-spin
+        // guide. Each ghost gets its own color from the saved entry; the
+        // tag is "REF1" / "REF2" / etc. so students can map the colored
+        // line to the entry in the saved list. Backwards compat: if no
+        // referenceList but a legacy referenceResult exists, render that.
+        var refList = (d.referenceList && d.referenceList.length)
+          ? d.referenceList
+          : (d.referenceResult ? [{ result: d.referenceResult, label: d.referenceLabel, color: '#d946ef' }] : []);
+        refList.forEach(function(ref, refIdx) {
+          var rrSamples = ref.result && ref.result.samples;
+          if (!rrSamples || rrSamples.length < 2) return;
+          gfx.strokeStyle = ref.color || '#d946ef';
+          gfx.globalAlpha = 0.55;
           gfx.lineWidth = 2;
           gfx.setLineDash([6, 5]);
           gfx.beginPath();
-          for (var ri = 0; ri < rr.samples.length; ri++) {
-            var rs = rr.samples[ri];
+          for (var ri = 0; ri < rrSamples.length; ri++) {
+            var rs = rrSamples[ri];
             if (rs.z > renderMaxZ + 0.5) break;
             var rp = worldToCanvas(rs.z, sampleB(rs));
             if (ri === 0) gfx.moveTo(rp[0], rp[1]); else gfx.lineTo(rp[0], rp[1]);
           }
           gfx.stroke();
           gfx.setLineDash([]);
-          // "REF" tag near the trajectory's end-of-render point
-          var lastRef = rr.samples[Math.min(rr.samples.length - 1, rr.samples.length - 1)];
-          for (var rj = rr.samples.length - 1; rj >= 0; rj--) {
-            if (rr.samples[rj].z <= renderMaxZ + 0.5) { lastRef = rr.samples[rj]; break; }
+          gfx.globalAlpha = 1.0;
+          // "REF1" / "REF2" tag near the trajectory's end-of-render point
+          var lastRef = rrSamples[rrSamples.length - 1];
+          for (var rj = rrSamples.length - 1; rj >= 0; rj--) {
+            if (rrSamples[rj].z <= renderMaxZ + 0.5) { lastRef = rrSamples[rj]; break; }
           }
           var refTagPos = worldToCanvas(lastRef.z, sampleB(lastRef));
-          gfx.fillStyle = 'rgba(217, 70, 239, 0.85)';
+          gfx.fillStyle = ref.color || '#d946ef';
           gfx.font = 'bold 10px system-ui';
           gfx.textAlign = 'left';
-          gfx.fillText('REF', refTagPos[0] + 6, refTagPos[1] + 3);
-        }
+          gfx.fillText('REF' + (refIdx + 1), refTagPos[0] + 6, refTagPos[1] + 3);
+        });
 
         // No-spin reference trajectory (gray, dashed) — only when there's a result
         var lr = d.lastResult;
