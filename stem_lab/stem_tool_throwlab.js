@@ -133,38 +133,80 @@ window.StemLab = window.StemLab || {
   var MPH_PER_MPS = 2.23694;
   var FT_PER_M = 3.28084;
 
-  // Ball specs — real-world (mass kg, radius m, drag coefficient, Magnus coefficient scaler)
-  // Cd values are approximate flight averages; real Cd varies with Reynolds number + spin.
-  // Cm scaler tunes Magnus lift response — calibrated so default pitches produce
-  // visually-recognizable break (curveball drops ~12 inches more than fastball over 60.5 ft).
+  // Ball specs — real-world. Each entry has flight params (mass, radius,
+  // Cd, Cm) PLUS regulation specs (pressure, mass range, diameter range,
+  // material) PLUS a coefficient of restitution (cor) for bounce physics.
+  //
+  // COR = coefficient of restitution. After a bounce, |v_after| = e·|v_before|
+  // along the surface normal, so kinetic energy after = e² × KE before. A
+  // perfectly elastic ball (no energy loss) has e = 1; a dead ball, e = 0.
+  // Values calibrated against published drop-height standards: a basketball
+  // dropped from 6 ft (1.8 m) onto hardwood must rebound 49-54 in (1.24-1.37 m)
+  // per NBA spec, giving e ≈ 0.83-0.87. Our 0.78 averages bounce off other
+  // surfaces (court vs gym floor vs concrete).
+  //
+  // Cd values are approximate flight averages; real Cd varies with Reynolds
+  // number + spin. Cm scaler tunes Magnus lift response — calibrated so
+  // default pitches produce visually-recognizable break (curveball drops
+  // ~12 inches more than fastball over 60.5 ft).
   var BALLS = {
     baseball: {
       label: 'Baseball', mass: 0.145, radius: 0.0366,
-      cd: 0.35, cm: 0.95,
+      cd: 0.35, cm: 0.95, cor: 0.55,
       color: '#fafafa', seamColor: '#dc2626',
-      icon: '⚾'
+      icon: '⚾',
+      // Regulation specs — MLB (Rule 3.01) + 2021 ball spec
+      regs: {
+        league: 'MLB Rule 3.01',
+        massSpec: '0.142–0.149 kg (5–5¼ oz)',
+        diameterSpec: '0.073–0.075 m (9–9¼ in circumference)',
+        pressureSpec: 'N/A (solid, not pressurized)',
+        material: 'Cork-and-rubber core, wool yarn windings, cowhide cover with 108 raised red stitches',
+        physics: 'Mass + tight stitching keep Cd predictable. The seams trip airflow into a turbulent boundary layer, which is what lets a 4-seam fastball generate ~9 N of upward Magnus force at 95 mph.'
+      }
     },
     basketball: {
       label: 'Basketball', mass: 0.624, radius: 0.119,
-      cd: 0.50, cm: 0.40,
+      cd: 0.50, cm: 0.40, cor: 0.78,
       color: '#f97316', seamColor: '#1a1a1a',
-      icon: '🏀'
+      icon: '🏀',
+      // NBA Rule 1, official ball spec
+      regs: {
+        league: 'NBA Rule 1',
+        massSpec: '0.567–0.624 kg (20–22 oz)',
+        diameterSpec: '0.239–0.243 m (29.5 in circumference, men\'s)',
+        pressureSpec: '7.5–8.5 PSI (51–58 kPa)',
+        material: 'Composite leather (since 2009 — earlier full-grain leather), 8 panels with channel seams. Pebbled grip surface for friction',
+        physics: 'PSI is everything: under-inflate by 1 PSI and the ball "thuds" instead of bouncing because COR drops ~10%. The pebbled surface gives the friction needed to put backspin on a free throw.'
+      }
     },
     soccer: {
       label: 'Soccer Ball', mass: 0.430, radius: 0.110,
-      cd: 0.22, cm: 1.20,
+      cd: 0.22, cm: 1.20, cor: 0.80,
       color: '#fafafa', seamColor: '#1a1a1a',
-      icon: '⚽'
+      icon: '⚽',
+      regs: {
+        league: 'FIFA Quality / Law 2',
+        massSpec: '0.410–0.450 kg (14–16 oz) at start of match',
+        diameterSpec: '0.218–0.222 m (68–70 cm circumference, size 5)',
+        pressureSpec: '0.6–1.1 atm (8.5–15.6 PSI)',
+        material: 'Synthetic-leather (TPU / PU) panels — modern balls use 6 (Adidas Telstar) or 32 hexagons/pentagons. Inner latex bladder',
+        physics: 'Smooth synthetic surface (vs old leather) makes the ball less stable in flight at high speed — that\'s why the modern "knuckleball" works: no spin → seam-induced drag asymmetry sends the ball wobbling unpredictably.'
+      }
     },
-    // Football is a prolate spheroid; we approximate as a sphere for trajectory.
-    // Cm is intentionally low — a tight spiral spins ALONG the axis of motion, so
-    // the ω×v cross product is near zero (no Magnus lift). Wobbles get drag bumps
-    // we don't model yet but could in a v2 wobble pass.
     football: {
       label: 'Football', mass: 0.410, radius: 0.110,
-      cd: 0.20, cm: 0.10,
+      cd: 0.20, cm: 0.10, cor: 0.62,
       color: '#7c2d12', seamColor: '#fafafa',
-      icon: '🏈'
+      icon: '🏈',
+      regs: {
+        league: 'NFL Rule 2',
+        massSpec: '0.397–0.425 kg (14–15 oz)',
+        diameterSpec: '~0.171 m short axis × 0.279 m long axis (prolate spheroid; we sphere-approximate for trajectory)',
+        pressureSpec: '12.5–13.5 PSI (86–93 kPa)',
+        material: 'Pebbled cowhide leather (Wilson "Duke" — same maker since 1941), four-panel design with hand-stitched lacing',
+        physics: 'A tight spiral spins ALONG the axis of motion, so ω×v ≈ 0 — Magnus barely contributes (Cm ≈ 0.10). That\'s why footballs travel mostly gravity + drag dominant. "Deflategate" allegedly used 11.5 PSI; a softer ball is easier to grip but bounces less predictably.'
+      }
     }
   };
 
@@ -548,9 +590,28 @@ window.StemLab = window.StemLab || {
       }
       // Bounced (hit the ground)?
       if (pos.y <= 0) {
-        if (!outcome) outcome = { bounced: true, bounceX: pos.x, bounceZ: pos.z, bounceT: t };
-        else { outcome.bounced = true; outcome.bounceX = pos.x; outcome.bounceZ = pos.z; outcome.bounceT = t; }
-        break;
+        // Record the FIRST bounce in outcome so existing classifiers can read
+        // it. Subsequent bounces only matter when allowBounces is on.
+        if (!outcome) outcome = { bounced: true, bounceX: pos.x, bounceZ: pos.z, bounceT: t, bounceCount: 0 };
+        else if (outcome.bounceCount === undefined) {
+          outcome.bounced = true; outcome.bounceX = pos.x; outcome.bounceZ = pos.z; outcome.bounceT = t; outcome.bounceCount = 0;
+        }
+        outcome.bounceCount = (outcome.bounceCount || 0) + 1;
+        if (!opts.allowBounces || outcome.bounceCount > 6) break;
+        // ── Coefficient-of-restitution reflection ──
+        // |v_after_y| = e · |v_before_y|. Tangential velocity (X, Z) loses
+        // energy too — combination of sliding friction + ball deformation
+        // — modeled here as a simple 0.78× scale (rough match to a ball
+        // sliding on hardwood / grass without skidding far). Ball stays at
+        // y=0 (we don't track sub-surface penetration).
+        var e = ball.cor || 0.6;
+        pos.y = 0.0001;            // tiny lift so the next iter doesn't re-trigger immediately
+        vy = -vy * e;
+        vx *= 0.78;
+        vz *= 0.78;
+        // Spin loses ~30% per bounce (frictional torque). Approximate as
+        // 0.7× scale on omega magnitude; direction unchanged.
+        omega.x *= 0.7; omega.y *= 0.7; omega.z *= 0.7;
       }
     }
     if (!outcome) outcome = { lostInFlight: true };
@@ -831,6 +892,13 @@ window.StemLab = window.StemLab || {
           targetZ: effectiveTargetZ,
           releaseStride: modeMeta.releaseStrideDefault,
           truncateAtTarget: d.mode === 'pitching', // free throw / free kick / field goal need the full arc to land
+          // Bounces — basketball needs them for rim-out → bounce on the
+          // floor → continued motion. Soccer / football let the ball roll
+          // after a missed kick. Pitching: a "bounced" ball (in the dirt)
+          // is a wild pitch and we already report it; bounces past that
+          // don't matter to the outcome. Default OFF for pitching to keep
+          // bouncing-in-the-dirt animations from running too long.
+          allowBounces: d.mode !== 'pitching',
           windMph: d.windMph || 0,
           windDirDeg: d.windDirDeg || 0,
           gravity: (function() {
@@ -1715,7 +1783,45 @@ window.StemLab = window.StemLab || {
               ? h('span', { style: { color: '#94a3b8', fontStyle: 'italic' } },
                   ' (' + (((actualRange - idealRange) / idealRange) * 100).toFixed(0) + '% drag/Magnus delta)')
               : null
-          )
+          ),
+          // Bounce — coefficient of restitution
+          h('div', { style: headStyle }, 'Bounce (coefficient of restitution)'),
+          h('div', { style: eqStyle }, '|v_after| = e · |v_before|     KE_after = e²·KE_before'),
+          h('div', { style: rowStyle },
+            'e = ', h('span', { style: { color: '#fbbf24' } }, (ball.cor || 0).toFixed(2)),
+            ' for a ', ball.label, ' on a regulation surface. ',
+            h('span', { style: { color: '#94a3b8', fontStyle: 'italic' } },
+              'A 1m drop bounces back ', ((ball.cor || 0) * (ball.cor || 0)).toFixed(2), ' m of height (energy retained).'))
+        );
+      }
+
+      // ── Ball regulations + materials panel ──
+      // Surfaced under the formulas panel when showFormulas is on. Each ball
+      // spec is real (MLB / NBA / NFL / FIFA published rules) + a one-line
+      // physics explanation tying the spec to its on-field consequence.
+      function ballSpecsPanel() {
+        if (!d.showFormulas) return null;
+        var ball = BALLS[modeMeta.ball] || BALLS.baseball;
+        var regs = ball.regs;
+        if (!regs) return null;
+        var rowStyle = { fontSize: 11, color: '#cbd5e1', marginBottom: 6 };
+        var labelStyle = { color: '#94a3b8', fontWeight: 600, marginRight: 6 };
+        return h('section', {
+          'aria-labelledby': 'tl-regs-heading',
+          style: { marginTop: 10, padding: 12, background: '#0f172a', border: '1px solid #1e293b', borderRadius: 10 }
+        },
+          h('h3', {
+            id: 'tl-regs-heading',
+            style: { fontSize: 12, margin: 0, marginBottom: 6, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 600 }
+          }, ball.icon + ' ' + ball.label + ' regulations & materials'),
+          h('div', { style: { fontSize: 10, color: '#94a3b8', marginBottom: 8, fontStyle: 'italic' } }, regs.league),
+          h('div', { style: rowStyle }, h('span', { style: labelStyle }, 'Mass:'), regs.massSpec),
+          h('div', { style: rowStyle }, h('span', { style: labelStyle }, 'Diameter:'), regs.diameterSpec),
+          h('div', { style: rowStyle }, h('span', { style: labelStyle }, 'Pressure:'), regs.pressureSpec),
+          h('div', { style: rowStyle }, h('span', { style: labelStyle }, 'Material:'), regs.material),
+          h('div', { style: { marginTop: 8, padding: 8, background: '#1e293b', borderRadius: 6, fontSize: 11, color: '#cbd5e1' } },
+            h('span', { style: { color: '#fbbf24', fontWeight: 700, marginRight: 6 } }, 'Why it matters:'),
+            regs.physics)
         );
       }
 
@@ -1932,8 +2038,9 @@ window.StemLab = window.StemLab || {
                 h('kbd', { style: { padding: '1px 5px', borderRadius: 3, border: '1px solid #475569', background: '#0f172a', color: '#cbd5e1', fontFamily: 'monospace' } }, 'Space'),
                 ' to throw')
             ),
-            // Math view appears below the toggles when enabled
-            formulasPanel(lr)
+            // Math view + ball regulations appear below the toggles when enabled
+            formulasPanel(lr),
+            ballSpecsPanel()
           ),
 
           // RIGHT: preset picker + sliders + throw button
