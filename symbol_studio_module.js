@@ -3063,6 +3063,44 @@
 
     function questPickRound(mode, pool) {
       if (pool.length < 2) return;
+
+      // ── Category mode: target's category is the asked-about category;
+      //    distractors must be of DIFFERENT categories so the target is the
+      //    only correct answer. Skip 'other' (too vague to quiz on).
+      if (mode === 'category') {
+        var categorized = pool.filter(function (g) { return g.category && g.category !== 'other'; });
+        if (categorized.length < 1) return; // no usable items
+        // Need at least one distractor of a different category
+        var catShuffled = categorized.slice().sort(function () { return Math.random() - 0.5; });
+        var catTarget = null;
+        var catDistractors = [];
+        for (var ti = 0; ti < catShuffled.length; ti++) {
+          var t = catShuffled[ti];
+          var diff = pool.filter(function (g) { return g.id !== t.id && g.category !== t.category; });
+          if (diff.length >= 1) {
+            catTarget = t;
+            // Pick up to 3 distractors of different categories
+            var diffShuffled = diff.slice().sort(function () { return Math.random() - 0.5; });
+            for (var di = 0; di < diffShuffled.length && catDistractors.length < 3; di++) {
+              catDistractors.push(diffShuffled[di]);
+            }
+            break;
+          }
+        }
+        if (!catTarget) return; // couldn't find a target with at least one different-category distractor
+        var catOpts = [catTarget].concat(catDistractors);
+        for (var ci = catOpts.length - 1; ci > 0; ci--) {
+          var cj = Math.floor(Math.random() * (ci + 1));
+          var ctmp = catOpts[ci]; catOpts[ci] = catOpts[cj]; catOpts[cj] = ctmp;
+        }
+        setQuestTarget(catTarget);
+        setQuestOptions(catOpts);
+        setQuestFeedback(null);
+        setQuestInput('');
+        setQuestRound(function (r) { return r + 1; });
+        return;
+      }
+
       // Garden-aware target selection: prefer words that need practice (sprout/growing)
       var target;
       if (pool.length >= 4) {
@@ -3136,6 +3174,7 @@
         { id: 'imgToLabel', icon: '🖼️', label: 'See Image → Pick Label', desc: 'See the symbol image and choose the correct label' },
         { id: 'labelToImg', icon: '🏷️', label: 'See Label → Pick Image', desc: 'Read the label and find the matching symbol' },
         { id: 'spelling', icon: '✏️', label: 'Spell It', desc: 'See the image and type the correct label' },
+        { id: 'category', icon: '🗂️', label: 'Category Quiz', desc: 'Hear a category, pick the matching word (no images required, screen-reader friendly)' },
         { id: 'memory', icon: '🧠', label: 'Symbol Memory', desc: 'Match symbol images with their labels' },
       ];
       // Board game path length
@@ -3259,6 +3298,40 @@
                 onMouseOut: function (ev) { ev.currentTarget.style.borderColor = '#e5e7eb'; }
               },
                 e('img', { src: opt.image, alt: 'option', style: { width: '70px', height: '70px', objectFit: 'contain', borderRadius: '8px' } })
+              );
+            })
+          )
+        );
+      }
+
+      // ── Category mode (audio/SR-friendly: no images required) ──
+      if (questMode === 'category') {
+        var CAT_LABELS = {
+          verb: 'an action word',
+          adjective: 'a feeling or describing word',
+          noun: 'a thing',
+          other: 'a word'
+        };
+        var catName = (questTarget && CAT_LABELS[questTarget.category]) || 'a word';
+        return e('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', padding: '20px', gap: '14px', alignItems: 'center' } },
+          e('div', { style: { display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' } }, backBtn, scoreBar),
+          e('h4', { style: { fontSize: '16px', fontWeight: 700, color: '#374151', margin: 0, textAlign: 'center' } }, '🗂️ Which of these is ' + catName + '?'),
+          e('p', { style: { fontSize: '11px', color: '#475569', margin: 0, fontStyle: 'italic' } }, 'Listen to each option, then choose the one that matches.'),
+          feedbackBar,
+          e('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', width: '100%', maxWidth: '400px' } },
+            questOptions.map(function (opt) {
+              return e('button', {
+                key: opt.id,
+                onClick: function () { if (!questFeedback) questCheckAnswer(opt); },
+                // Don't reveal category in aria-label — the whole point is the student picks based on meaning
+                'aria-label': 'Choose: ' + opt.label,
+                style: { padding: '14px 12px', background: '#fff', border: '2px solid #e5e7eb', borderRadius: '12px', fontSize: '15px', fontWeight: 700, color: '#374151', cursor: questFeedback ? 'default' : 'pointer', opacity: questFeedback ? 0.6 : 1, transition: 'all 0.15s', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' },
+                onMouseOver: function (ev) { if (!questFeedback) ev.currentTarget.style.borderColor = PURPLE; },
+                onMouseOut: function (ev) { ev.currentTarget.style.borderColor = '#e5e7eb'; }
+              },
+                // Optional small image for sighted students; hidden from SR via alt=''
+                opt.image && e('img', { src: opt.image, alt: '', style: { width: '40px', height: '40px', objectFit: 'contain', borderRadius: '6px' } }),
+                e('span', null, opt.label)
               );
             })
           )
