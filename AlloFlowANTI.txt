@@ -4751,6 +4751,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [isSymbolStudioOpen, setIsSymbolStudioOpen] = useState(false);
   const [showStoryForge, setShowStoryForge] = useState(false);
   const [showLitLab, setShowLitLab] = useState(false);
+  const [showPoetTree, setShowPoetTree] = useState(false);
   const [showLearningHub, setShowLearningHub] = useState(false);
   const [showSelHub, setShowSelHub] = useState(false);
   const [selHubTab, setSelHubTab] = useState('explore');
@@ -4931,6 +4932,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2a924cb/teacher_module.js');
     loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2a924cb/story_forge_module.js');
     loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2a924cb/story_stage_module.js');
+    loadModule('PoetTree', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2a924cb/poet_tree_module.js');
     loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2a924cb/visual_panel_module.js');
     loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2a924cb/word_sounds_setup_module.js');
     loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2a924cb/adventure_module.js');
@@ -49630,6 +49632,13 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   <p className="text-xs text-violet-600 mt-1">Bring stories to life with character voices & literary analysis</p>
                 </div>
               </button>
+              <button onClick={() => { setShowLearningHub(false); setShowPoetTree(true); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-teal-50 to-cyan-50 border border-teal-200 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center">
+                <span className="text-4xl">🌳</span>
+                <div>
+                  <h3 className="font-bold text-teal-800">PoetTree</h3>
+                  <p className="text-xs text-teal-600 mt-1">Write poems with form scaffolds, rhyme & meter analysis, AI feedback</p>
+                </div>
+              </button>
               <button onClick={() => { setShowLearningHub(false); setShowSelHub(true); setSelHubTab('explore'); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center">
                 <span className="text-4xl">{'\uD83D\uDC96'}</span>
                 <div>
@@ -49811,6 +49820,32 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     <p className="text-lg font-bold text-slate-700">Loading LitLab...</p>
                     <p className="text-sm text-slate-600 mt-2">Module loading from CDN. If this persists, check your connection.</p>
                     <button onClick={() => setShowLitLab(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
+                </div>
+            </div>
+            );
+        })()}
+        {showPoetTree && (() => {
+            const PT = window.AlloModules && window.AlloModules.PoetTree;
+            if (PT) {
+                return React.createElement(PT, {
+                    onClose: () => setShowPoetTree(false),
+                    onCallGemini: callGemini,
+                    onCallTTS: callTTS,
+                    onCallImagen: callImagen,
+                    selectedVoice,
+                    gradeLevel,
+                    addToast,
+                    studentNickname,
+                    handleScoreUpdate,
+                });
+            }
+            return (
+            <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setShowPoetTree(false)}>
+                <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+                    <div className="text-4xl mb-3">🌳</div>
+                    <p className="text-lg font-bold text-slate-700">Loading PoetTree...</p>
+                    <p className="text-sm text-slate-600 mt-2">Module loading from CDN. If this persists, check your connection.</p>
+                    <button onClick={() => setShowPoetTree(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
                 </div>
             </div>
             );
