@@ -31413,7 +31413,7 @@ Return only the corrected version of this exact text:`;
                       </div>
                       )}
                       <div className={`flex items-center gap-2 ${isZenMode ? 'justify-center mb-4' : 'justify-end'}`}>
-                        <div className="flex items-center gap-2">
+                        <div className={`flex flex-col gap-2 ${isZenMode ? 'items-center' : 'items-end'}`}>
                             <div className="flex flex-wrap justify-center sm:justify-start bg-white rounded-2xl sm:rounded-full p-1 border border-indigo-200 shadow-sm sm:flex-nowrap gap-y-1">
                                 <button
                                     onClick={() => { setInteractionMode('read'); stopPlayback(); setSelectionMenu(null); setRevisionData(null); setIsCompareMode(false); setIsFluencyMode(false); }}
@@ -31513,7 +31513,7 @@ Return only the corrected version of this exact text:`;
                                 )}
                             </div>
                         {!isZenMode && (
-                                <>
+                                <div className="flex flex-wrap items-center gap-2">
                                 <button
                                     aria-label={t('common.refresh')}
                                     data-help-key="simplified_immersive_reader"
@@ -31624,7 +31624,7 @@ Return only the corrected version of this exact text:`;
                                     {isEditingLeveledText ? t('common.done_editing') : t('common.edit')}
                                 </button>
                                 )}
-                                </>
+                                </div>
                             )}
                         </div>
                       </div>
