@@ -411,9 +411,10 @@ var createTimelineRevision = function(deps) {
         '  - "isFactuallyAccurate": boolean — are the factual claims (dates, names, values) correct?\n' +
         '  - "isPositionCorrect": boolean — does it belong at this position on the ' + modeLbl + ' axis?\n' +
         '  - "concern": string — if either is false, a short (≤100 chars) explanation; else empty string.\n' +
+        '  - "rationale": string — ALWAYS populated. 1–2 sentences explaining what you checked and why this item is (or is not) correct at this position. Include any specific facts, dates, or reasoning you relied on. ≤300 chars.\n' +
         'Items:\n' + JSON.stringify(itemsJson, null, 2) + '\n' +
         'Return ONLY a JSON array like:\n' +
-        '[{"index": 0, "isFactuallyAccurate": true, "isPositionCorrect": true, "concern": ""}, ...]\n';
+        '[{"index": 0, "isFactuallyAccurate": true, "isPositionCorrect": true, "concern": "", "rationale": "Verified the date 1969 against historical Apollo 11 records; this is correctly placed as the first crewed Moon landing."}, ...]\n';
       var result = await callGemini(prompt, true);
       var parsed = JSON.parse(cleanJson(result));
       if (!Array.isArray(parsed)) throw new Error('Invalid verification response');
@@ -422,7 +423,8 @@ var createTimelineRevision = function(deps) {
         if (typeof v.index === 'number') verdictByIndex[v.index] = {
           factual: v.isFactuallyAccurate !== false,
           position: v.isPositionCorrect !== false,
-          concern: String(v.concern || '').substring(0, 200)
+          concern: String(v.concern || '').substring(0, 200),
+          rationale: String(v.rationale || '').substring(0, 400)
         };
       });
       var newItems = items.map(function(it, i) {
@@ -546,4 +548,5 @@ window.AlloModules = window.AlloModules || {};
 window.AlloModules.createTimelineRevision = createTimelineRevision;
 window.AlloModules.TimelineRevisionModule = true;
 console.log('[TimelineRevisionModule] Factory registered');
+
 })();

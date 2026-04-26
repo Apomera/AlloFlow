@@ -36150,9 +36150,22 @@ Return only the corrected version of this exact text:`;
                                                     );
                                                 })()}
                                                 {item.verification && item.verification.factual !== false && item.verification.position !== false && (
-                                                    <div className="mt-2 inline-flex items-center gap-1 text-[11px] bg-emerald-50 border border-emerald-200 rounded px-2 py-0.5 text-emerald-800">
-                                                        <CheckCircle2 size={11} className="text-emerald-600" /> {t('timeline.validation.verified') || 'Verified'}
-                                                    </div>
+                                                    item.verification.rationale ? (
+                                                        <details className="mt-2 group">
+                                                            <summary className="inline-flex items-center gap-1 text-[11px] bg-emerald-50 border border-emerald-200 rounded px-2 py-0.5 text-emerald-800 cursor-pointer hover:bg-emerald-100 list-none transition-colors">
+                                                                <CheckCircle2 size={11} className="text-emerald-600" />
+                                                                {t('timeline.validation.verified') || 'Verified'}
+                                                                <span className="text-emerald-700/70 ml-0.5 group-open:rotate-180 transition-transform">▾</span>
+                                                            </summary>
+                                                            <div className="mt-1.5 text-[11px] bg-emerald-50/50 border-l-2 border-emerald-300 px-2 py-1.5 text-emerald-900/90 leading-relaxed rounded-r">
+                                                                {item.verification.rationale}
+                                                            </div>
+                                                        </details>
+                                                    ) : (
+                                                        <div className="mt-2 inline-flex items-center gap-1 text-[11px] bg-emerald-50 border border-emerald-200 rounded px-2 py-0.5 text-emerald-800">
+                                                            <CheckCircle2 size={11} className="text-emerald-600" /> {t('timeline.validation.verified') || 'Verified'}
+                                                        </div>
+                                                    )
                                                 )}
                                             </div>
                                         </div>
