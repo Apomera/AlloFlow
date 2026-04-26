@@ -628,6 +628,9 @@ const StoryForge = React.memo(({
   // Mentor Match — Serper-grounded recommendation of a public-domain short-story excerpt
   const [mentorMatch, setMentorMatch] = useState(null);
   const [mentorLoading, setMentorLoading] = useState(false);
+  // Show-Don't-Tell coach — flags sentences that name emotion/state outright
+  const [showTellResult, setShowTellResult] = useState(null);
+  const [showTellLoading, setShowTellLoading] = useState(false);
   const [draftCount, setDraftCount] = useState(1);
 
   // ── Init vocab from glossary ──
@@ -1545,6 +1548,7 @@ Return ONLY JSON:
     setSelfAssessmentSubmitted(false);
     setSensesResult(null);
     setMentorMatch(null);
+    setShowTellResult(null);
     changePhase('write');
   };
 
@@ -1689,6 +1693,54 @@ Return ONLY JSON in this shape:
       if (addToast) addToast('Senses check failed — try again', 'error');
     }
     setSensesLoading(false);
+  };
+
+  // ── Show, Don't Tell coach ──
+  // Flags sentences that name an emotion/state outright ("she was scared")
+  // and offers a concrete sensory/action revision ("she pressed her back to
+  // the wall, holding her breath"). Foundational craft move for grades 4-8.
+  const analyzeShowTell = async () => {
+    if (!onCallGemini) return;
+    const fullText = paragraphs.map(p => p.text.trim()).filter(Boolean).join('\n\n');
+    if (fullText.length < 60) {
+      if (addToast) addToast('Write a bit more before checking show vs tell', 'info');
+      return;
+    }
+    setShowTellLoading(true);
+    try {
+      const targetGrade = gradeLevel || '5th grade';
+      const prompt = `You are a writing coach for a ${targetGrade} student. Analyze their story for "telling" sentences that could be revised into "showing" sentences.
+
+A "telling" sentence names an emotion, state, or trait outright (e.g. "She was scared", "He felt happy", "It was cold").
+A "showing" sentence reveals the same idea through sensory details, action, or dialogue (e.g. "Her knuckles whitened on the doorframe", "He spun on the spot, arms wide", "Frost crackled across the window pane").
+
+Story:
+"""
+${fullText}
+"""
+
+Find up to 4 of the most fixable "telling" sentences. For each, propose ONE concrete "showing" revision that fits the story's tone and the student's grade level. If the story is already strong on showing, return an empty list and a celebratory note.
+
+Return ONLY JSON:
+{
+  "tellings": [
+    { "telling": "<exact telling sentence from the student>", "showing": "<concrete sensory/action revision>", "why": "<one short sentence on what changed>" }
+  ],
+  "summary": "<one short sentence — encouraging if list is empty, gentle if not>"
+}`;
+
+      const result = await onCallGemini(prompt, true);
+      const data = JSON.parse(cleanJson(result));
+      setShowTellResult(data);
+      if (addToast) addToast('Show vs Tell ready!', 'success');
+      const count = (data.tellings || []).length;
+      sfAnnounce(count === 0 ? 'Show vs tell check: no telling sentences found.' : `Show vs tell check: ${count} sentence${count === 1 ? '' : 's'} could become more vivid.`);
+      awardXP(5, 'Used show-don\'t-tell coach');
+    } catch (err) {
+      console.warn('Show-don\'t-tell failed:', err);
+      if (addToast) addToast('Show vs Tell failed — try again', 'error');
+    }
+    setShowTellLoading(false);
   };
 
   // Pull criteria names out of the rubric markdown table; fall back to defaults.
@@ -3396,6 +3448,11 @@ show();
                     </button>
                   )}
                   {!gradingResult && (
+                    <button onClick={analyzeShowTell} disabled={showTellLoading || isProcessing} className="px-4 py-2.5 bg-emerald-100 text-emerald-700 rounded-full text-sm font-bold hover:bg-emerald-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-emerald-200" title="Find sentences that tell instead of show">
+                      🎭 {showTellLoading ? 'Analyzing...' : 'Show vs Tell'}
+                    </button>
+                  )}
+                  {!gradingResult && (
                     <button onClick={gradeStory} disabled={isProcessing || (!selfAssessmentSubmitted)} className="px-5 py-2.5 bg-indigo-600 text-white rounded-full text-sm font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center gap-2" title={!selfAssessmentSubmitted ? 'Complete or skip self-assessment first' : 'Get AI feedback'}>
                       <Sparkles size={16} /> {isProcessing ? 'Grading...' : 'Get Feedback'}
                     </button>
@@ -3557,6 +3614,38 @@ show();
                           <p className="text-xs text-green-900 leading-relaxed">{mentorMatch.studentEcho}</p>
                         </div>
                       )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ═══ Show vs Tell Result ═══ */}
+              {showTellResult && (
+                <div className="bg-white border-2 border-emerald-200 rounded-2xl p-5 shadow-sm">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-sm font-bold text-emerald-700 uppercase tracking-wider flex items-center gap-2">🎭 Show vs Tell</h4>
+                    <button onClick={() => setShowTellResult(null)} className="text-[11px] text-slate-400 hover:text-slate-700 font-bold" aria-label="Dismiss show vs tell result">Dismiss</button>
+                  </div>
+                  {showTellResult.summary && (
+                    <p className="text-xs text-emerald-800 italic mb-3 leading-relaxed">{showTellResult.summary}</p>
+                  )}
+                  {(showTellResult.tellings || []).length === 0 ? (
+                    <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-xs text-emerald-900 leading-relaxed">
+                      ✨ Strong showing throughout — keep it up!
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {showTellResult.tellings.map((t, i) => (
+                        <div key={i} className="bg-emerald-50/40 border border-emerald-100 rounded-xl p-3">
+                          <div className="text-[10px] font-bold text-amber-700 uppercase tracking-widest mb-1">Telling</div>
+                          <p className="text-sm text-slate-800 italic leading-relaxed mb-2">"{t.telling}"</p>
+                          <div className="text-[10px] font-bold text-emerald-700 uppercase tracking-widest mb-1">Try showing</div>
+                          <p className="text-sm text-emerald-900 leading-relaxed">"{t.showing}"</p>
+                          {t.why && (
+                            <p className="text-[11px] text-slate-600 mt-2 italic">{t.why}</p>
+                          )}
+                        </div>
+                      ))}
                     </div>
                   )}
                 </div>
