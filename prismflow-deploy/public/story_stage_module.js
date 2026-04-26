@@ -571,6 +571,48 @@
     var pages = script ? getPages() : [];
     var totalPages = pages.length;
 
+    // ── Refine an existing image with a user-provided instruction (uses Gemini image-edit) ──
+    var refineImage = useCallback(async function (currentSrc, instruction, sizePx) {
+      if (!onCallGeminiImageEdit || !currentSrc || !instruction) return null;
+      try {
+        // Strip data: prefix if present (matches the pattern used across other modules).
+        var base64 = String(currentSrc).indexOf(',') !== -1 ? currentSrc.split(',')[1] : currentSrc;
+        var prompt = 'Edit this storybook illustration. Instruction: ' + instruction + '. Maintain the original style and composition. STRICTLY NO TEXT or words in the image.';
+        var refined = await onCallGeminiImageEdit(prompt, base64, sizePx || 600, 0.85);
+        return refined || null;
+      } catch (err) { warnLog('Image refine failed:', err && err.message); return null; }
+    }, [onCallGeminiImageEdit]);
+
+    var refineSceneImage = useCallback(async function () {
+      if (!sceneImage) return;
+      var instruction = window.prompt('How should we change the cover image?\n\nExamples:\n• "make it more colorful"\n• "show more detail in the trees"\n• "use a moodier palette"\n• "add a moon in the sky"');
+      if (!instruction || !instruction.trim()) return;
+      setSceneImageLoading(true);
+      announceLitLab('Refining cover image…');
+      try {
+        var refined = await refineImage(sceneImage, instruction.trim(), 600);
+        if (refined) { setSceneImage(refined); addToast && addToast('Cover refined.', 'success'); announceLitLab('Cover image refined.'); }
+        else { addToast && addToast('Refine failed.', 'error'); }
+      } finally { setSceneImageLoading(false); }
+    }, [sceneImage, refineImage, addToast]);
+
+    var refinePageImage = useCallback(async function (pageIdx) {
+      var current = pageImages[pageIdx];
+      if (!current) return;
+      var instruction = window.prompt('How should we change this page\'s illustration?\n\nExamples:\n• "make it warmer"\n• "show the character\'s face"\n• "add the sunset"\n• "remove the text"');
+      if (!instruction || !instruction.trim()) return;
+      setPageImgLoading(function (prev) { var n = Object.assign({}, prev); n[pageIdx] = true; return n; });
+      announceLitLab('Refining page ' + (pageIdx + 1) + ' illustration…');
+      try {
+        var refined = await refineImage(current, instruction.trim(), 600);
+        if (refined) {
+          setPageImages(function (prev) { var n = Object.assign({}, prev); n[pageIdx] = refined; return n; });
+          addToast && addToast('Page ' + (pageIdx + 1) + ' refined.', 'success');
+          announceLitLab('Page ' + (pageIdx + 1) + ' illustration refined.');
+        } else { addToast && addToast('Refine failed.', 'error'); }
+      } finally { setPageImgLoading(function (prev) { var n = Object.assign({}, prev); n[pageIdx] = false; return n; }); }
+    }, [pageImages, refineImage, addToast]);
+
     // ── Generate illustration for a specific page ──
     var generatePageImage = useCallback(async function (pageIdx) {
       if (!onCallImagen || !script || !pages[pageIdx]) return;
@@ -1073,6 +1115,10 @@
               recordingUrl && e('audio', { controls: true, src: recordingUrl, style: { height: '28px', maxWidth: '150px' }, 'aria-label': 'Your recording' }),
               e('button', { onClick: exportScript, style: S.btn('#f1f5f9', '#374151', false) }, '🖨️ Script'),
               e('button', { onClick: exportStorybook, style: S.btn('#f1f5f9', '#374151', false) }, '📖 Storybook'),
+              onCallImagen && !sceneImage && e('button', { onClick: generateSceneImage, disabled: sceneImageLoading,
+                'aria-busy': sceneImageLoading ? 'true' : 'false',
+                'aria-label': sceneImageLoading ? 'Generating cover, please wait' : 'Generate cover image with AI',
+                style: S.btn('#f1f5f9', '#374151', sceneImageLoading) }, sceneImageLoading ? '⏳ Cover…' : '🎨 Cover'),
               onCallImagen && e('button', { onClick: generateAllImages, style: S.btn('#f1f5f9', '#374151', false) }, '🎨 All Art'),
               e('button', { onClick: function () { setPhase('analyze'); }, style: S.btn('#f1f5f9', '#374151', false) }, '📝 Analyze →')
             ),
@@ -1084,9 +1130,25 @@
               e('button', { onClick: function () { setCurrentPage(Math.min(totalPages - 1, currentPage + 1)); }, disabled: currentPage >= totalPages - 1,
                 style: S.btn('#f1f5f9', '#374151', currentPage >= totalPages - 1), 'aria-label': 'Next page' }, '▶')
             ),
+            // Cover image (for storybook export header)
+            sceneImage && e('div', { style: { marginBottom: '10px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' } },
+              e('div', { style: { borderRadius: '50%', overflow: 'hidden', border: '3px solid #e5e7eb', width: '120px', height: '120px' } },
+                e('img', { src: sceneImage, alt: 'Story cover illustration', style: { width: '100%', height: '100%', objectFit: 'cover' } })
+              ),
+              onCallGeminiImageEdit && e('button', { onClick: refineSceneImage, disabled: sceneImageLoading,
+                'aria-busy': sceneImageLoading ? 'true' : 'false',
+                'aria-label': sceneImageLoading ? 'Refining cover, please wait' : 'Refine cover image with a custom instruction',
+                style: { fontSize: '11px', color: '#475569', background: 'none', border: '1px dashed #d1d5db', borderRadius: '8px', padding: '4px 10px', cursor: sceneImageLoading ? 'wait' : 'pointer' }
+              }, sceneImageLoading ? '⏳ Refining…' : '✨ Refine Cover')
+            ),
             // Page illustration
-            pageImages[currentPage] && e('div', { style: { marginBottom: '10px', borderRadius: '12px', overflow: 'hidden', border: '1px solid #e5e7eb' } },
-              e('img', { src: pageImages[currentPage], alt: 'Illustration for page ' + (currentPage + 1), style: { width: '100%', maxHeight: '200px', objectFit: 'cover' } })
+            pageImages[currentPage] && e('div', { style: { marginBottom: '10px', borderRadius: '12px', overflow: 'hidden', border: '1px solid #e5e7eb', position: 'relative' } },
+              e('img', { src: pageImages[currentPage], alt: 'Illustration for page ' + (currentPage + 1), style: { width: '100%', maxHeight: '200px', objectFit: 'cover', display: 'block' } }),
+              onCallGeminiImageEdit && e('button', { onClick: function () { refinePageImage(currentPage); }, disabled: pageImgLoading[currentPage],
+                'aria-busy': pageImgLoading[currentPage] ? 'true' : 'false',
+                'aria-label': pageImgLoading[currentPage] ? 'Refining illustration, please wait' : 'Refine this page illustration with a custom instruction',
+                style: { position: 'absolute', top: '6px', right: '6px', fontSize: '11px', color: '#374151', background: 'rgba(255,255,255,0.92)', border: '1px solid #d1d5db', borderRadius: '8px', padding: '4px 10px', cursor: pageImgLoading[currentPage] ? 'wait' : 'pointer', fontWeight: 700 }
+              }, pageImgLoading[currentPage] ? '⏳' : '✨ Refine')
             ),
             !pageImages[currentPage] && onCallImagen && e('button', { onClick: function () { generatePageImage(currentPage); }, disabled: pageImgLoading[currentPage],
               'aria-busy': pageImgLoading[currentPage] ? 'true' : 'false',
