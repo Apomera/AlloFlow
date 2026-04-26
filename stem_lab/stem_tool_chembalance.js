@@ -1012,7 +1012,7 @@
             safetyTab === 'symbols' && h('div', { className: 'grid grid-cols-3 gap-2' },
               GHS_SYMBOLS.map(function(sym) {
                 var isOpen = d._ghsOpen === sym.id;
-                return h('div', { key: sym.id, onClick: function() { upd('_ghsOpen', isOpen ? null : sym.id); }, className: 'cursor-pointer rounded-xl border p-2.5 transition-all ' + (isOpen ? 'col-span-3 bg-red-50 border-red-300' : 'bg-white border-slate-200 hover:border-red-200') },
+                return h('button', { key: sym.id, type: 'button', onClick: function() { upd('_ghsOpen', isOpen ? null : sym.id); }, 'aria-expanded': isOpen, 'aria-label': sym.label + (isOpen ? ' (expanded)' : ' (collapsed)'), className: 'text-left cursor-pointer rounded-xl border p-2.5 transition-all w-full ' + (isOpen ? 'col-span-3 bg-red-50 border-red-300' : 'bg-white border-slate-200 hover:border-red-200') },
                   h('div', { className: 'flex items-center gap-2' },
                     h('div', { className: 'w-10 h-10 flex items-center justify-center rounded-lg text-2xl', style: { background: sym.color + '15', border: '2px solid ' + sym.color } }, sym.icon),
                     h('div', null,

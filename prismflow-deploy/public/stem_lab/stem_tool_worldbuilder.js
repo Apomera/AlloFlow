@@ -1492,8 +1492,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
             pasteDetected && h('div', { className: 'text-[11px] text-red-600 font-bold mt-1' }, '⚠ Pasting detected — please write your own words! Your writing power depends on YOUR creativity.'),
             h('div', { className: 'flex items-center justify-between mt-2' },
               h('span', { className: 'text-[11px] text-slate-600' }, actionText.split(/\s+/).filter(Boolean).length + ' words'),
-              h('button', { 'aria-label': 'Worldbuilder action',
-                onClick: function() { activeNPC ? respondToNPC() : activeBattle ? performBattleAction() : d.actionMode === 'craft' ? (craftSubMode === 'structure' ? buildStructure(actionText) : craftItem(actionText)) : performAction(); },
+              h('button', { onClick: function() { activeNPC ? respondToNPC() : activeBattle ? performBattleAction() : d.actionMode === 'craft' ? (craftSubMode === 'structure' ? buildStructure(actionText) : craftItem(actionText)) : performAction(); },
                 disabled: actionText.trim().length < 5 || actionLoading,
                 className: 'px-5 py-2.5 bg-gradient-to-r ' + (d.actionMode === 'craft' && craftSubMode === 'structure' ? 'from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700' : d.actionMode === 'craft' ? 'from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700' : 'from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700') + ' text-white rounded-xl font-bold text-sm disabled:opacity-40 transition-all shadow-lg flex items-center gap-2'
               }, actionLoading ? h('span', { className: 'animate-spin' }, '⏳') : h(Sparkles, { size: 16 }), actionLoading ? ' The world responds...' : activeNPC ? ' Respond' : activeBattle ? ' Attack!' : d.actionMode === 'craft' && craftSubMode === 'structure' ? ' Build!' : d.actionMode === 'craft' ? ' Craft!' : d.actionMode === 'explore' ? ' Explore!' : ' Act!')

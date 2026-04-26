@@ -2287,7 +2287,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                     onChange: function (e) { upd('maintInput', e.target.value); },
                     onKeyDown: function (e) { if (e.key === 'Enter') document.getElementById('kepler-maint-btn').click(); },
                     placeholder: 'Type your answer...',
-                    className: 'flex-1 px-3 py-2 bg-amber-950 border-2 border-amber-600 rounded-xl text-xs text-white outline-none focus:border-amber-400'
+                    className: 'flex-1 px-3 py-2 bg-amber-950 border-2 border-amber-600 rounded-xl text-xs text-white focus:border-amber-400'
                   }),
                   React.createElement('button', {
                     id: 'kepler-maint-btn',
@@ -2478,7 +2478,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                   React.createElement('input', {
                     type: 'text', value: d.scienceGateInput || '', onChange: function (e) { upd('scienceGateInput', e.target.value); },
                     onKeyDown: function (e) { if (e.key === 'Enter') document.getElementById('kepler-gate-btn').click(); },
-                    placeholder: 'Type your answer...', className: 'flex-1 px-3 py-2 bg-purple-950 border-2 border-purple-600 rounded-xl text-xs text-white outline-none focus:border-purple-400'
+                    placeholder: 'Type your answer...', className: 'flex-1 px-3 py-2 bg-purple-950 border-2 border-purple-600 rounded-xl text-xs text-white focus:border-purple-400'
                   }),
                   React.createElement('button', {
                     id: 'kepler-gate-btn', onClick: function () {

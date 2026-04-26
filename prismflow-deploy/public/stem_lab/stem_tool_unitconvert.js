@@ -352,13 +352,11 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             h('span', { className: 'px-2 py-0.5 bg-cyan-100 text-cyan-700 text-[11px] font-bold rounded-full' }, 'INTERACTIVE'),
             (d.score || 0) > 0 && h('span', { className: 'px-2 py-0.5 bg-amber-100 text-amber-700 text-[11px] font-bold rounded-full' }, '\u2B50 ' + d.score + ' XP'),
             (d.streak || 0) >= 2 && h('span', { className: 'px-2 py-0.5 bg-orange-100 text-orange-600 text-[11px] font-bold rounded-full animate-pulse' }, '\uD83D\uDD25 ' + d.streak),
-            earnedCount > 0 && h('button', { 'aria-label': 'AI',
-              onClick: function() { upd('showBadges', !showBadges); },
+            earnedCount > 0 && h('button', { onClick: function() { upd('showBadges', !showBadges); },
               className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100 transition-all',
               title: 'View badges (B)'
             }, '\uD83C\uDFC5 ' + earnedCount + '/' + BADGES.length),
-            h('button', { 'aria-label': 'AI',
-              onClick: askTutor,
+            h('button', { onClick: askTutor,
               className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-purple-50 border border-purple-200 text-purple-600 hover:bg-purple-100 transition-all',
               title: 'AI Tutor (?)'
             }, '\uD83E\uDDE0 AI')
@@ -610,8 +608,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2' }, '\uD83D\uDCCC Pinned Conversions'),
               h('div', { className: 'flex flex-wrap gap-1.5' },
                 d.pinnedConversions.map(function(p, i) {
-                  return h('button', { 'aria-label': 'Unitconvert action',
-                    key: p.key,
+                  return h('button', { key: p.key,
                     onClick: function() {
                       var c2 = CATEGORIES[p.category];
                       if (!c2) return;
@@ -832,8 +829,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
             h('div', { className: 'flex items-center justify-between mb-3' },
               h('p', { className: 'text-sm text-slate-600' }, 'AI generates a real-world word problem for ' + (cat.label.replace(/[^\w\s]/g, '').trim()) + '.'),
-              h('button', { 'aria-label': 'Unitconvert action',
-                disabled: !!d.loadingWP,
+              h('button', { disabled: !!d.loadingWP,
                 onClick: function() {
                   if (d.loadingWP) return;
                   upd('loadingWP', true);

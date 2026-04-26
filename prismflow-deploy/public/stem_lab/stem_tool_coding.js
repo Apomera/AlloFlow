@@ -2410,7 +2410,7 @@
                     value: textCode,
                     onChange: function (e) { handleTextChange(e.target.value); },
                     placeholder: "forward(50)\nright(90)\nbackward(30)\n\nrepeat(4, function() {\n  forward(100)\n  right(90)\n})",
-                    style: { flex: 1, minHeight: '240px', padding: '12px', background: '#0f172a', color: '#4ade80', fontSize: '12px', fontFamily: "'Fira Code', 'Cascadia Code', 'JetBrains Mono', 'Consolas', monospace", lineHeight: '1.5', border: 'none', outline: 'none', resize: 'none', tabSize: 2, caretColor: '#fbbf24' },
+                    style: { flex: 1, minHeight: '240px', padding: '12px', background: '#0f172a', color: '#4ade80', fontSize: '12px', fontFamily: "'Fira Code', 'Cascadia Code', 'JetBrains Mono', 'Consolas', monospace", lineHeight: '1.5', border: 'none', resize: 'none', tabSize: 2, caretColor: '#fbbf24' },
                     spellCheck: false,
                     onKeyDown: function(e) {
                       // Tab inserts 2 spaces instead of changing focus

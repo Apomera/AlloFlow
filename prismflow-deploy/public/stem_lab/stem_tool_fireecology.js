@@ -2205,8 +2205,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 },
                 onFocus: function(e) { e.target.style.boxShadow = '0 0 0 2px #f97316'; }, onBlur: function(e) { e.target.style.boxShadow = 'none'; }
               }),
-              h('button', { 'aria-label': 'Ask A I',
-                onClick: askAI,
+              h('button', { onClick: askAI,
                 disabled: aiLoading,
                 style: {
                   padding: '10px 18px', borderRadius: 8, border: 'none', cursor: 'pointer',
@@ -3384,7 +3383,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 { action: 'educate', label: '\uD83C\uDFEB Educate', desc: 'Village support +', color: '#f472b6' },
                 { action: 'nothing', label: '\u23F8\uFE0F Do Nothing', desc: 'Fuel accumulates...', color: '#ef4444' }
               ].map(function(opt) {
-                return h('button', { 'aria-label': 'Select option', key: opt.action, onClick: function() { gameAdvance(opt.action); },
+                return h('button', { key: opt.action, onClick: function() { gameAdvance(opt.action); },
                   style: { background: '#0f172a', border: '2px solid ' + opt.color + '33', borderRadius: 10, padding: 10, cursor: 'pointer', textAlign: 'center', transition: 'all 0.2s' }
                 },
                   h('div', { style: { fontWeight: 700, color: opt.color, fontSize: 13, marginBottom: 2 } }, opt.label),

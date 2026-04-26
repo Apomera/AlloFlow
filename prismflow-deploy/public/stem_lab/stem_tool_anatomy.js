@@ -4119,10 +4119,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           ),
 
           // Grade-band intro
-          h('div', { role: 'button', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mb-3 px-3 py-2 rounded-lg bg-blue-50 border border-blue-200 text-xs text-blue-800' }, gradeIntro),
+          h('div', { className: 'mb-3 px-3 py-2 rounded-lg bg-blue-50 border border-blue-200 text-xs text-blue-800' }, gradeIntro),
 
           // Tab bar (7 tabs)
-          h('div', { role: 'button', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-1 mb-3', role: 'tablist', 'aria-label': 'Anatomy tool sections' },
+          h('div', { className: 'flex gap-1 mb-3', role: 'tablist', 'aria-label': 'Anatomy tool sections' },
             h('button', { 'aria-label': 'Explore',
               role: 'tab', 'aria-selected': activeTab === 'explore', tabIndex: activeTab === 'explore' ? 0 : -1,
               onClick: function() { upd('_activeTab', 'explore'); },
@@ -4192,6 +4192,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             h('div', { className: 'flex gap-2' },
               h('input', {
                 type: 'text', placeholder: 'Ask a question...',
+                'aria-label': 'Ask the anatomy AI tutor a question',
                 value: d._aiInput || '',
                 onChange: function(e) { upd('_aiInput', e.target.value); },
                 onKeyDown: function(e) { if (e.key === 'Enter') { sendAiQuestion(d._aiInput || ''); upd('_aiInput', ''); } },
@@ -4275,8 +4276,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   var isCorrect = opt.id === spotterTarget;
                   var showResult = spotterFeedback !== null;
                   var wasChosen = showResult && spotterFeedback === opt.id;
-                  return h('button', { 'aria-label': 'Anatomy action',
-                    key: opt.id,
+                  return h('button', { key: opt.id,
                     disabled: showResult,
                     onClick: function() {
                       var elapsed = (Date.now() - spotterStartTime) / 1000;
@@ -4526,8 +4526,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
 
             // Mnemonics section
             MNEMONICS[sysKey] && MNEMONICS[sysKey].length > 0 ? h('div', { className: 'mb-3' },
-              h('button', { 'aria-label': 'Change _show mnemonics',
-                onClick: function() { upd('_showMnemonics', !d._showMnemonics); },
+              h('button', { onClick: function() { upd('_showMnemonics', !d._showMnemonics); },
                 className: 'w-full flex items-center justify-between px-3 py-2 rounded-lg bg-purple-50 border border-purple-200 hover:bg-purple-100 transition-all'
               },
                 h('span', { className: 'text-[11px] font-bold text-purple-700 uppercase flex items-center gap-1' }, '\uD83E\uDDE0 Mnemonics (' + MNEMONICS[sysKey].length + ')'),
@@ -4598,15 +4597,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             h('div', { className: 'flex items-center gap-2 mb-3 flex-wrap' },
               h('div', { className: 'flex rounded-lg border border-slate-200 overflow-hidden' },
                 ['anterior', 'posterior'].map(function(v) {
-                  return h('button', { 'aria-label': 'Select option',
+                  return h('button', {
                     key: v,
                     onClick: function() { upd('view', v); upd('selectedStructure', null); playSound('viewSwitch'); },
+                    'aria-pressed': view === v,
                     className: 'px-3 py-1 text-xs font-bold transition-all ' + (view === v ? 'bg-slate-800 text-white' : 'bg-white text-slate-600 hover:bg-slate-50')
                   }, v.charAt(0).toUpperCase() + v.slice(1));
                 })
               ),
               h('input', {
                 type: 'text', placeholder: '\uD83D\uDD0D Search structures...',
+                'aria-label': 'Search anatomical structures',
                 value: d.search || '',
                 onChange: function(e) {
                   upd('search', e.target.value);
@@ -4708,8 +4709,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                         var isCorrect = opt.id === correctId;
                         var wasChosen = fb && fb.chosen === opt.id;
                         var showResult = fb !== null && fb !== undefined;
-                        return h('button', { 'aria-label': 'Anatomy action',
-                          key: opt.id,
+                        return h('button', { key: opt.id,
                           disabled: showResult,
                           onClick: function() {
                             var correct = opt.id === correctId;
@@ -4752,8 +4752,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                           (gradeBand === 'k2' || gradeBand === 'g35') && SIMPLE_DESC[sel.id] && SIMPLE_DESC[sel.id][gradeBand] ? h('p', { className: 'text-xs text-sky-700 bg-sky-50 rounded-lg px-2 py-1.5 mt-1 border border-sky-200 leading-relaxed' }, SIMPLE_DESC[sel.id][gradeBand]) : null
                         ),
                         h('div', { className: 'flex gap-1' },
-                          h('button', { 'aria-label': 'Change _compare structure',
-                            onClick: function() {
+                          h('button', { onClick: function() {
                               if (compareStructureId === sel.id) { upd('_compareStructure', null); }
                               else { upd('_compareStructure', sel.id); upd('_comparisons', comparisons + 1); playSound('compareView'); }
                             },
@@ -4899,8 +4898,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             complexity >= 3 ? h('div', { className: 'mt-4 bg-rose-50 rounded-xl border border-rose-200 p-3' },
               h('div', { className: 'flex items-center justify-between mb-2' },
                 h('p', { className: 'text-[11px] font-bold text-rose-600 uppercase tracking-wider' }, '\uD83E\uDE7A Clinical Cases (' + (d._clinicalSolved || 0) + ' solved)'),
-                h('button', { 'aria-label': 'Select option',
-                  onClick: function() { upd('_showClinical', !d._showClinical); },
+                h('button', { onClick: function() { upd('_showClinical', !d._showClinical); },
                   className: 'text-[11px] font-bold px-2 py-0.5 rounded bg-rose-100 text-rose-600 hover:bg-rose-200 transition-all'
                 }, d._showClinical ? 'Hide' : 'Show Cases')
               ),

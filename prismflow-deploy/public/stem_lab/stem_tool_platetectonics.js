@@ -1165,7 +1165,7 @@ var d = labToolData.plateTectonics || {};
           }
 
           return React.createElement("div", {
-              className: "max-w-4xl mx-auto outline-none",
+              className: "max-w-4xl mx-auto",
               role: "region",
               "aria-label": "Plate Tectonics. Keyboard shortcuts: 1 through 4 switch tabs, L toggles labels, C toggles convection currents.",
               tabIndex: 0,
@@ -1977,9 +1977,7 @@ var d = labToolData.plateTectonics || {};
 
                   qz.opts.map(function(opt, oi) {
 
-                    return React.createElement("button", { "aria-label": "Platetectonics action",
-
-                      key: oi,
+                    return React.createElement("button", { key: oi,
 
                       onClick: function() {
 

@@ -1457,7 +1457,7 @@ function onTitrKey(e) {
 
 // ── Main Lab Render (after safety check passed) ──
 return React.createElement("div", {
-  className: "space-y-4 max-w-4xl mx-auto outline-none",
+  className: "space-y-4 max-w-4xl mx-auto",
   style: { animation:'safetyFadeUp 0.4s ease' },
   role: "region",
   "aria-label": "Titration Lab. Keyboard shortcuts: 1 through 5 switch tabs.",

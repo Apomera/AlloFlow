@@ -1071,7 +1071,7 @@ window.StemLab = window.StemLab || {
                       React.createElement("p", { className: "text-[11px] text-zinc-400 font-bold" }, "Registers are down! Calculate by hand!")
                     )
                   ),
-                  React.createElement("button", { "aria-label": "Money action", onClick: function() { if (crActive) { upd('crActive', false); } else { startCashierRush(); } },
+                  React.createElement("button", { onClick: function() { if (crActive) { upd('crActive', false); } else { startCashierRush(); } },
                     className: "px-4 py-2 rounded-lg text-xs font-black transition-all shadow-sm " + (crActive ? "bg-zinc-800 hover:bg-zinc-700 text-red-400 border border-red-900" : "bg-amber-500 hover:bg-amber-400 text-zinc-900")
                   }, crActive ? "Close" : "Start Shift")
                 ),
@@ -1303,7 +1303,7 @@ window.StemLab = window.StemLab || {
                         var isWeighed = item.pricePer && item.pricePer !== 'each';
                         var isAdding = d.weightItemIdx === ii && isWeighed;
                         return React.createElement("div", { key: ii, className: "relative" },
-                          React.createElement("button", { "aria-label": "Money action", onClick: function () {
+                          React.createElement("button", { onClick: function () {
                               if (isWeighed) {
                                 upd('weightItemIdx', isAdding ? null : ii);
                                 upd('weightInput', 1);
@@ -1369,7 +1369,7 @@ window.StemLab = window.StemLab || {
                               challengeMode
                                 ? React.createElement("span", { className: "text-xs font-bold text-amber-500 ml-2 whitespace-nowrap" }, isWeighted ? fmt(item.price) + '/' + item.pricePer : fmt(item.price) + '/ea')
                                 : React.createElement("span", { className: "text-xs font-bold text-emerald-600 ml-2 whitespace-nowrap" }, fmt(lineTotal)),
-                              React.createElement("button", { "aria-label": "Money action", onClick: function () {
+                              React.createElement("button", { onClick: function () {
                                   if (!isWeighted && item.qty > 1) { upd('cart', cart.map(function (c, idx) { return idx === ci ? Object.assign({}, c, { qty: c.qty - 1 }) : c; })); }
                                   else { upd('cart', cart.filter(function (_, idx) { return idx !== ci; })); }
                                   upd('cartCheckoutFb', null); upd('recipeFb', null);

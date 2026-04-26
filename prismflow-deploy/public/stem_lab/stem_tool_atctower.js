@@ -1654,7 +1654,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
         return h('div', { style: { padding: '24px', maxWidth: '600px', margin: '0 auto' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '16px', fontSize: '13px', color: '#4ade80', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Back to Tower'),
           h('div', { style: { background: 'linear-gradient(135deg, #021a0a, #0a2e1a)', borderRadius: '16px', padding: '24px', color: '#fff' } },
-            h('div', { style: { fontSize: '40px', textAlign: 'center', marginBottom: '8px' } }, les.icon),
+            h('div', { style: { fontSize: '40px', textAlign: 'center', marginBottom: '8px' }, 'aria-hidden': true }, les.icon),
             h('h2', { style: { fontSize: '20px', fontWeight: 900, textAlign: 'center', marginBottom: '16px' } }, les.title),
             h('p', { style: { fontSize: '14px', lineHeight: '1.7', color: '#cbd5e1', marginBottom: '16px' } }, les.content),
             h('div', { style: { background: '#0a1a0a', borderRadius: '12px', padding: '16px', border: '1px solid #1a3a2a' } },
@@ -1700,13 +1700,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
       // ═══ PLAYING VIEW ═══
       if (view === 'playing') {
         return h('div', { style: { position: 'relative', width: '100%', height: '500px', borderRadius: '12px', overflow: 'hidden', background: '#0a1a0a' } },
-          h('canvas', { 'aria-label': 'Atctower visualization',
+          h('canvas', {
             ref: canvasRef,
             role: 'application',
             'aria-label': 'Air Traffic Control radar display. Use Tab to cycle aircraft, H for heading, R for runway, C to clear approach, Space to pause, I for status summary.',
             'aria-roledescription': 'Air traffic control simulator',
             tabIndex: 0,
-            style: { width: '100%', height: '100%', display: 'block', cursor: 'crosshair', outline: 'none' },
+            style: { width: '100%', height: '100%', display: 'block', cursor: 'crosshair', outline: 'none', boxShadow: 'none' },
+            onFocusCapture: function(e) { e.currentTarget.style.boxShadow = '0 0 0 3px rgba(74,222,128,0.7)'; },
+            onBlurCapture: function(e) { e.currentTarget.style.boxShadow = 'none'; },
             onFocus: function() { announce('ATC radar display focused. ' + (tutorialRef.current.active ? 'Tutorial active. ' : '') + 'Press I for status summary. Tab to select aircraft.'); }
           })
         );

@@ -517,8 +517,7 @@ window.StemLab = window.StemLab || {
               title: 'View badges (B)'
             }, '\uD83C\uDFC5 ' + earnedCount + '/' + BADGES.length),
             // AI tutor button
-            h('button', { 'aria-label': 'AI',
-              onClick: askAI,
+            h('button', { onClick: askAI,
               className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-purple-50 border border-purple-200 text-purple-600 hover:bg-purple-100 transition-all',
               title: 'AI Tutor (?)'
             }, '\uD83E\uDDE0 AI')
@@ -752,7 +751,7 @@ window.StemLab = window.StemLab || {
               value: multTableAnswer,
               onChange: function(e) { if (!inputDisabled) setMultTableAnswer(e.target.value); },
               onKeyDown: function(e) { if (e.key === 'Enter' && multTableAnswer && !inputDisabled) checkMult(); },
-              className: 'w-20 px-3 py-2 text-center text-lg font-bold border-2 rounded-lg outline-none transition-all ' +
+              className: 'w-20 px-3 py-2 text-center text-lg font-bold border-2 rounded-lg transition-all ' +
                 (inputDisabled
                   ? 'border-slate-200 bg-slate-50 text-slate-600 cursor-not-allowed'
                   : 'border-pink-300 focus:border-pink-500'),
@@ -767,8 +766,7 @@ window.StemLab = window.StemLab || {
               className: 'px-4 py-2 bg-pink-700 text-white font-bold rounded-lg hover:bg-pink-600 transition-all disabled:opacity-40'
             }, '\u2714 Check'),
             // AI hint button during challenge
-            h('button', { 'aria-label': 'Ask A I',
-              onClick: askAI,
+            h('button', { onClick: askAI,
               className: 'px-3 py-2 bg-purple-100 text-purple-600 font-bold rounded-lg hover:bg-purple-200 transition-all text-sm',
               title: 'Get a hint from AI'
             }, '\uD83E\uDDE0')

@@ -903,7 +903,7 @@ window.StemLab = window.StemLab || {
                 var isCorrect = oi === dlCurrent.correct;
                 var isSelected = dlAnswer === oi;
                 var revealed = dlRevealed;
-                return h('button', { 'aria-label': 'Select option', key: oi, onClick: function() {
+                return h('button', { key: oi, onClick: function() {
                   if (!dlRevealed) {
                     updMulti({ dlAnswer: oi, dlRevealed: true, dlScore: dlScore + (oi === dlCurrent.correct ? 1 : 0) });
                     stemBeep(oi === dlCurrent.correct);
@@ -981,7 +981,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'grid grid-cols-2 gap-2' },
               crCurrent.traps.map(function(trap) {
                 var found = crFound.indexOf(trap.id) >= 0;
-                return h('button', { 'aria-label': 'Lifeskills action', key: trap.id, onClick: function() {
+                return h('button', { key: trap.id, onClick: function() {
                   if (!found) {
                     var list = crFound.concat([trap.id]);
                     upd('crFound', list);
@@ -1007,7 +1007,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: glassCard + ' space-y-2' },
             h('div', { className: 'flex gap-2' },
               ['low', 'medium', 'high'].map(function(u) {
-                return h('button', { 'aria-label': 'Select option', key: u, onClick: function() { upd('hiUsage', u); checkBadge('insured'); }, className: 'px-3 py-1.5 rounded-xl text-xs font-bold ' + (hiUsage === u ? 'bg-teal-700 text-white' : 'bg-white border border-slate-200') }, u.charAt(0).toUpperCase() + u.slice(1) + ' Usage');
+                return h('button', { key: u, onClick: function() { upd('hiUsage', u); checkBadge('insured'); }, className: 'px-3 py-1.5 rounded-xl text-xs font-bold ' + (hiUsage === u ? 'bg-teal-700 text-white' : 'bg-white border border-slate-200') }, u.charAt(0).toUpperCase() + u.slice(1) + ' Usage');
               })
             ),
             h('p', { className: 'text-[11px] text-slate-600' }, 'Scenario: ' + hiScene.visits + ' doctor visits + ' + fmtMoney(hiScene.bills) + ' in medical bills')
@@ -1060,7 +1060,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex flex-wrap gap-1.5' },
               COMMON_DEVICES.map(function(dev) {
                 var on = asRunning.indexOf(dev.name) >= 0;
-                return h('button', { 'aria-label': 'Lifeskills action', key: dev.name, onClick: function() {
+                return h('button', { key: dev.name, onClick: function() {
                   var list = asRunning.slice();
                   var idx = list.indexOf(dev.name);
                   if (idx >= 0) list.splice(idx, 1); else list.push(dev.name);
@@ -1217,7 +1217,7 @@ window.StemLab = window.StemLab || {
                 upd('homeALoading', true);
                 callGemini('Answer this home maintenance question for a ' + gradeBand + ' student in 2-3 sentences: ' + d.homeQ).then(function(r) { updMulti({ homeA: r, homeALoading: false }); }).catch(function() { upd('homeALoading', false); });
               }}, placeholder: 'e.g. "Why does my furnace make a clicking sound?"', className: 'flex-1 px-3 py-2 border border-slate-200 rounded-xl text-xs' }),
-              h('button', { 'aria-label': 'Lifeskills action', onClick: function() {
+              h('button', { onClick: function() {
                 if (!d.homeQ) return;
                 upd('homeALoading', true);
                 callGemini('Answer this home maintenance question for a ' + gradeBand + ' student in 2-3 sentences: ' + d.homeQ).then(function(r) { updMulti({ homeA: r, homeALoading: false }); checkBadge('homeExpert'); }).catch(function() { upd('homeALoading', false); });
@@ -1547,7 +1547,7 @@ window.StemLab = window.StemLab || {
           ),
           h('div', { className: glassCard + ' space-y-3' },
             chalQ && h('p', { className: 'text-sm font-medium text-slate-700' }, chalQ.q),
-            h('input', { type: 'text', value: chalAnswer, onChange: function(e) { upd('chalAnswer', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') chalCheck(); }, placeholder: 'Type your answer...', className: 'w-full px-4 py-2 border border-slate-200 rounded-xl text-sm focus:border-teal-400 outline-none', 'aria-label': 'Answer' }),
+            h('input', { type: 'text', value: chalAnswer, onChange: function(e) { upd('chalAnswer', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') chalCheck(); }, placeholder: 'Type your answer...', className: 'w-full px-4 py-2 border border-slate-200 rounded-xl text-sm focus:border-teal-400', 'aria-label': 'Answer' }),
             h('div', { className: 'flex gap-2' },
               h('button', { 'aria-label': 'Check', onClick: chalCheck, className: 'px-4 py-2 text-sm font-bold bg-teal-700 text-white rounded-xl' }, 'Check'),
               h('button', { 'aria-label': 'Hint', onClick: function() { upd('chalFeedback', '\uD83D\uDCA1 ' + (chalQ.h || 'No hint')); }, className: 'px-3 py-2 text-sm font-bold bg-amber-50 text-amber-600 rounded-xl' }, '\uD83D\uDCA1 Hint'),
@@ -1598,7 +1598,7 @@ window.StemLab = window.StemLab || {
                 return h('div', { className: 'space-y-3' },
                   battleUseAI && h('span', { className: 'px-1.5 py-0.5 bg-purple-100 text-purple-600 text-[11px] font-bold rounded-full' }, '\uD83E\uDDE0 AI'),
                   h('p', { className: 'text-sm font-medium text-slate-700' }, q.q),
-                  h('input', { type: 'text', value: battleAnswer, onChange: function(e) { upd('battleAnswer', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') battleAttack(); }, placeholder: 'Answer...', className: 'w-full px-4 py-2 border border-slate-200 rounded-xl text-sm font-mono focus:border-red-400 outline-none' }),
+                  h('input', { type: 'text', value: battleAnswer, onChange: function(e) { upd('battleAnswer', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') battleAttack(); }, placeholder: 'Answer...', className: 'w-full px-4 py-2 border border-slate-200 rounded-xl text-sm font-mono focus:border-red-400' }),
                   h('div', { className: 'flex gap-2' },
                     h('button', { 'aria-label': 'Attack!', onClick: battleAttack, className: 'px-4 py-2 text-sm font-bold bg-red-600 text-white rounded-xl' }, '\u2694\uFE0F Attack!'),
                     h('button', { 'aria-label': 'Hint', onClick: function() { upd('battleFeedback', '\uD83D\uDCA1 ' + (q.h || 'No hint')); }, className: 'px-3 py-2 text-sm font-bold bg-amber-50 text-amber-600 rounded-xl' }, '\uD83D\uDCA1 Hint')

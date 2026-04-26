@@ -2359,6 +2359,82 @@ window.StemLab = window.StemLab || {
           })
         ),
 
+        // ── Drills panel ──
+        // Toggle + active goal display. When inactive, shows a small "Start
+        // drill" pill; when active, shows the current task goal + progress
+        // + restart. Per-mode drills come from the DRILLS const.
+        (function() {
+          var modeDrills = DRILLS[d.mode];
+          if (!modeDrills) return null;
+          var taskIdx = d.drillTaskIdx || 0;
+          var allDone = taskIdx >= modeDrills.tasks.length;
+          var task = modeDrills.tasks[Math.min(taskIdx, modeDrills.tasks.length - 1)];
+          var stats = d.drillStats || {};
+          if (!d.drillActive) {
+            return h('div', { style: { marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' } },
+              h('button', {
+                onClick: function() {
+                  // Reset drill state on start
+                  setLabToolData(function(prev) {
+                    return Object.assign({}, prev, { throwlab: Object.assign({}, prev.throwlab, {
+                      drillActive: true, drillTaskIdx: 0,
+                      drillStats: {
+                        streakStrikes: 0, strikeTypes: {}, strikeWithLowSpin: false,
+                        makeCount: 0, swishHeights: 0, swishHeightSet: {}, completedBouncePass: false,
+                        goalKickTypes: {}, totalGoals: 0,
+                        fgMadeByDist: {}
+                      }
+                    })});
+                  });
+                  tlAnnounce('Drill started: ' + modeDrills.tasks[0].goal);
+                },
+                'data-tl-focusable': 'true',
+                style: {
+                  padding: '8px 14px', borderRadius: 999, cursor: 'pointer',
+                  border: '1px solid #10b981', background: 'rgba(16,185,129,0.18)',
+                  color: '#f1f5f9', fontSize: 12, fontWeight: 600
+                }
+              }, '🎯 Start ' + modeDrills.label),
+              h('span', { style: { fontSize: 11, color: '#94a3b8' } },
+                modeDrills.tasks.length + ' tasks · sandbox stays open while a drill runs'));
+          }
+          // Active drill panel
+          return h('section', {
+            'aria-labelledby': 'tl-drill-heading',
+            style: { marginBottom: 14, padding: 12,
+              background: allDone ? 'rgba(16,185,129,0.12)' : 'rgba(16,185,129,0.06)',
+              border: '1px solid #10b981', borderRadius: 10 }
+          },
+            h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 6, flexWrap: 'wrap' } },
+              h('h3', { id: 'tl-drill-heading', style: { margin: 0, fontSize: 12, color: '#10b981', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700 } },
+                allDone ? '🏆 Drill complete · ' + modeDrills.label : '🎯 ' + modeDrills.label + ' · Task ' + (taskIdx + 1) + ' of ' + modeDrills.tasks.length),
+              h('button', {
+                onClick: function() {
+                  setLabToolData(function(prev) {
+                    return Object.assign({}, prev, { throwlab: Object.assign({}, prev.throwlab, {
+                      drillActive: false, drillTaskIdx: 0
+                    })});
+                  });
+                  tlAnnounce('Drill stopped.');
+                },
+                'aria-label': 'Stop the current drill',
+                'data-tl-focusable': 'true',
+                style: { padding: '4px 8px', minHeight: 24, borderRadius: 4, cursor: 'pointer',
+                  border: '1px solid #475569', background: '#1e293b', color: '#cbd5e1', fontSize: 11 }
+              }, allDone ? 'Close' : 'Stop')),
+            allDone
+              ? h('div', { style: { fontSize: 13, color: '#cbd5e1' } },
+                  'You finished all ' + modeDrills.tasks.length + ' tasks. Try another sport mode\'s drills, or hit Stop to return to sandbox.')
+              : h('div', null,
+                  h('div', { style: { fontSize: 14, color: '#f1f5f9', fontWeight: 600, marginBottom: 4 } }, task.goal),
+                  h('div', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 4 } },
+                    h('span', { style: { color: '#10b981', fontWeight: 700, marginRight: 6 } }, 'Progress:'),
+                    task.progress(stats)),
+                  task.tip ? h('div', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic' } },
+                    h('span', { style: { color: '#fbbf24' } }, '💡 '), task.tip) : null)
+          );
+        })(),
+
         // Two-column layout
         h('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 320px', gap: 16 } },
 

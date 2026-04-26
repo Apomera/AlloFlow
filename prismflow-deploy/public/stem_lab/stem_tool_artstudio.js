@@ -4037,7 +4037,7 @@ const d = labToolData.artStudio || {};
 
                             React.createElement("span", { className: "text-[11px] text-slate-600 w-8 text-right flex-shrink-0" }, stop.pos + '%'),
 
-                            stops.length > 2 && React.createElement("button", { "aria-label": "Artstudio action", onClick: function () {
+                            stops.length > 2 && React.createElement("button", { onClick: function () {
 
                               var newStops3 = (d.gradStops || [{ hue: 330, pos: 0 }, { hue: 45, pos: 100 }]).slice();
 
@@ -5239,7 +5239,7 @@ const d = labToolData.artStudio || {};
 
                             } }),
 
-                            React.createElement("button", { "aria-label": "Artstudio action", onClick: function() {
+                            React.createElement("button", { onClick: function() {
 
                               var kfs = d.stereoAnimKeyframes.slice(); kfs.splice(idx, 1); upd('stereoAnimKeyframes', kfs);
 
@@ -7555,9 +7555,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               CHART_TYPES.map(function (ct) {
 
-                return React.createElement("button", { "aria-label": "Artstudio action",
-
-                  key: ct.id,
+                return React.createElement("button", { key: ct.id,
 
                   onClick: function () { if (ct.id !== chartType) { updDS('chartType', ct.id); if (typeof awardStemXP === 'function') awardStemXP('dataStudio', 3, ct.label + ' explored'); } },
 

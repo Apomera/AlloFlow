@@ -1785,9 +1785,7 @@ const d = labToolData.wave;
 
             React.createElement("div", { className: "flex items-center gap-2 mb-2" },
 
-              React.createElement("button", { "aria-label": "Wave action",
-
-                onClick: function () {
+              React.createElement("button", { onClick: function () {
 
                   var q = WAVE_QUIZ[Math.floor(Math.random() * WAVE_QUIZ.length)];
 
@@ -1797,9 +1795,7 @@ const d = labToolData.wave;
 
               }, d.quiz ? "\uD83D\uDD04 Next Question" : "\uD83E\uDDE0 Quiz Mode"),
 
-              React.createElement("button", { "aria-label": "Wave action",
-
-                onClick: function () {
+              React.createElement("button", { onClick: function () {
 
                   var tAmps = [20, 30, 40, 50, 60, 70];
 

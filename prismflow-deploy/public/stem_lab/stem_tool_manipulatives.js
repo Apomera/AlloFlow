@@ -492,8 +492,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'text-xs font-bold uppercase mb-1', style: { color: color } }, symbol + ' ' + label),
           h('div', { className: 'flex justify-center gap-1 mb-2 min-h-[58px] flex-wrap items-center' }, renderBlock3D(color, lightColor, bw, bh, b10[place], gridC, gridR)),
           h('div', { className: 'flex items-center justify-center gap-2' },
-            h('button', { 'aria-label': 'Manipulatives action',
-              onClick: function() { var n = Object.assign({}, b10); n[place] = Math.max(0, n[place] - 1); upd({ b10: n }); if (soundEnabled) sfxClick(); },
+            h('button', { onClick: function() { var n = Object.assign({}, b10); n[place] = Math.max(0, n[place] - 1); upd({ b10: n }); if (soundEnabled) sfxClick(); },
               className: 'w-8 h-8 rounded-full font-bold text-lg hover:opacity-80 transition-all flex items-center justify-center',
               style: { background: lightColor + '33', color: color }
             }, '\u2212'),
@@ -513,8 +512,7 @@ window.StemLab = window.StemLab || {
 
       // ── Regroup Button ──
       var regroupBtn = function(label, from, to, enabled, colorFrom, colorTo) {
-        return h('button', { 'aria-label': 'Select option',
-          onClick: function() { if (label.indexOf('\u2192') > 0 && label.indexOf('10') === 0) doRegroup(from, to); else doUngroup(from, to); },
+        return h('button', { onClick: function() { if (label.indexOf('\u2192') > 0 && label.indexOf('10') === 0) doRegroup(from, to); else doUngroup(from, to); },
           disabled: !enabled,
           className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (enabled ? 'text-white shadow hover:shadow-md hover:scale-105' : 'bg-slate-100 text-slate-600 cursor-not-allowed'),
           style: enabled ? { background: 'linear-gradient(90deg, ' + colorFrom + ', ' + colorTo + ')' } : {}
@@ -754,8 +752,7 @@ window.StemLab = window.StemLab || {
                   h('div', { className: 'flex flex-col items-center gap-0.5 mt-2', style: { minHeight: '130px' } },
                     Array.from({ length: 5 }).map(function(_, bi) {
                       var isActive = bi < earthlyVal;
-                      return h('button', { 'aria-label': 'Manipulatives action',
-                        key: bi,
+                      return h('button', { key: bi,
                         onClick: function() {
                           var newE = isActive && bi === earthlyVal - 1 ? earthlyVal - 1 : !isActive && bi === earthlyVal ? earthlyVal + 1 : bi < earthlyVal ? bi : bi + 1;
                           setRod(rodIdx, heavenlyVal * 5 + Math.max(0, Math.min(5, newE)));

@@ -1193,8 +1193,7 @@
           /* ── Material selector chips (always visible) ── */
           h('div', { className: 'flex flex-wrap gap-1.5 mb-4' },
             MATERIALS.map(function(m) {
-              return h('button', { 'aria-label': 'Decomposer action',
-                key: m.name,
+              return h('button', { key: m.name,
                 onClick: function() {
                   SOUNDS.selectMaterial();
                   updMulti({ selected: m.name, decomposed: false });
@@ -1234,8 +1233,7 @@
               ),
 
               /* Decompose / reassemble button */
-              h('button', { 'aria-label': 'Decomposer action',
-                onClick: function() {
+              h('button', { onClick: function() {
                   var next = !decomposed;
                   if (next) {
                     SOUNDS.decompose();
@@ -1537,8 +1535,7 @@
                   scene.objects.forEach(function(obj) { if (foundObjects[obj.id]) sceneFound++; });
                   var complete = sceneFound === scene.objects.length;
                   var pct = Math.round(sceneFound / scene.objects.length * 100);
-                  return h('button', { 'aria-label': 'Decomposer action',
-                    key: scene.id,
+                  return h('button', { key: scene.id,
                     onClick: function() {
                       SOUNDS.sceneSwitch();
                       var visited = Object.assign({}, scenesVisited);
@@ -2102,8 +2099,7 @@
                   h('div', { className: 'flex flex-wrap gap-1.5' },
                     scene.objects.filter(function(obj) { return foundObjects[obj.id]; }).map(function(obj) {
                       var mat = MATERIALS.find(function(m) { return m.name === obj.material; });
-                      return h('button', { 'aria-label': 'Decomposer action',
-                        key: obj.id,
+                      return h('button', { key: obj.id,
                         onClick: function() { SOUNDS.elementClick(); upd('selectedSceneObj', selectedSceneObj === obj.id ? null : obj.id); },
                         className: 'px-2 py-1 rounded-lg text-[11px] font-bold border transition-all ' +
                           (selectedSceneObj === obj.id ? 'bg-amber-100 border-amber-400 text-amber-800' : 'bg-white border-slate-200 text-slate-600 hover:border-amber-300')
@@ -2152,8 +2148,7 @@
               MATERIALS.map(function(m) {
                 var isA = reactantA === m.name;
                 var isB = reactantB === m.name;
-                return h('button', { 'aria-label': 'Decomposer action',
-                  key: m.name,
+                return h('button', { key: m.name,
                   onClick: function() {
                     SOUNDS.selectMaterial();
                     if (!reactantA) { updMulti({ reactantA: m.name, activeReaction: null }); }
@@ -2596,8 +2591,7 @@
                         ? 'bg-red-100 text-red-800 border-red-300'
                         : 'bg-slate-50 text-slate-600 border-slate-200';
 
-                  return h('button', { 'aria-label': 'Select option',
-                    key: opt,
+                  return h('button', { key: opt,
                     disabled: quizQ.answered,
                     onClick: function() {
                       var correct = opt === quizQ.answer;

@@ -933,7 +933,7 @@ window.StemLab = window.StemLab || {
               h('input', { type: 'number', min: 0, max: 360, value: estimateGuess, placeholder: 'Your guess...',
                 onChange: function(e) { upd('estimateGuess', e.target.value); },
                 'aria-label': 'Angle estimate guess in degrees',
-                className: 'flex-1 px-3 py-2 border-2 border-amber-300 rounded-lg text-sm font-bold text-amber-800 outline-none focus:border-amber-500'
+                className: 'flex-1 px-3 py-2 border-2 border-amber-300 rounded-lg text-sm font-bold text-amber-800 focus:border-amber-500'
               }),
               h('span', { className: 'text-sm text-amber-600' }, '\u00B0'),
               h('button', { 'aria-label': 'Check', onClick: checkEstimate, className: 'px-4 py-2 bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-600 transition-all' }, '\u2714 Check')
@@ -960,8 +960,7 @@ window.StemLab = window.StemLab || {
             ),
             angleChallenge.type === 'classify' && h('div', { className: 'flex gap-2 flex-wrap' },
               ['Acute', t('stem.calculus.right') || 'Right', 'Obtuse', 'Straight', 'Reflex'].map(function(cls) {
-                return h('button', { 'aria-label': 'Angles action',
-                  key: cls,
+                return h('button', { key: cls,
                   onClick: function() {
                     var correctClass = classifyAngle(angleChallenge.target);
                     var ok = cls === correctClass;

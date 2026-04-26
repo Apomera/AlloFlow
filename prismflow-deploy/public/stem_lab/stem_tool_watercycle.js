@@ -1625,7 +1625,7 @@ const d = labToolData.waterCycle;
           }
 
           return React.createElement("div", {
-              className: "max-w-3xl mx-auto animate-in fade-in duration-200 outline-none",
+              className: "max-w-3xl mx-auto animate-in fade-in duration-200",
               role: "region",
               "aria-label": "Water Cycle. Keyboard shortcuts: 1 through 6 select a stage, J toggles Journey mode, R U P choose your journey path.",
               tabIndex: 0,

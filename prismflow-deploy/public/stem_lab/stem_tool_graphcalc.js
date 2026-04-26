@@ -798,7 +798,7 @@
                 ),
                 h('div', { style: { display: 'flex', gap: '4px' } },
                   h('input', { type: 'text', value: aiInput, onChange: function(e) { upd('aiInput', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter' && aiInput.trim()) handleAiQuestion(aiInput.trim()); }, placeholder: 'Ask about math...', 'aria-label': 'Ask the math tutor', className: 'focus:ring-2 focus:ring-indigo-500', style: { flex: 1, padding: '6px 8px', borderRadius: '6px', border: '1px solid rgba(99,102,241,0.3)', background: 'rgba(99,102,241,0.08)', color: '#e2e8f0', fontSize: '11px' } }),
-                  h('button', { 'aria-label': 'Graphcalc action', onClick: function() { if (aiInput.trim()) handleAiQuestion(aiInput.trim()); }, style: { padding: '6px 10px', borderRadius: '6px', background: '#6366f1', color: '#fff', border: 'none', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' } }, '\u2191')
+                  h('button', { onClick: function() { if (aiInput.trim()) handleAiQuestion(aiInput.trim()); }, style: { padding: '6px 10px', borderRadius: '6px', background: '#6366f1', color: '#fff', border: 'none', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' } }, '\u2191')
                 )
               ) : null,
               // Badges

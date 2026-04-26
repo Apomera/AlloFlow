@@ -620,9 +620,13 @@ window.StemLab = window.StemLab || {
             h('textarea', { value: prompt, onChange: function(ev) { setPrompt(ev.target.value); },
               placeholder: 'Describe an interactive app, simulation, or visualization...\n\nExamples:\n• "Interactive solar system with orbiting planets and info on click"\n• "Color mixing tool where you combine primary colors"\n• "Simple calculator with history"',
               rows: 4, style: { width: '100%', padding: '10px 14px', border: '2px solid #d1d5db', borderRadius: '12px', fontSize: '14px', fontFamily: 'inherit', resize: 'vertical', outline: 'none' },
+              onFocus: function(e) { e.target.style.boxShadow = '0 0 0 3px rgba(124,58,237,0.4)'; },
+              onBlur: function(e) { e.target.style.boxShadow = 'none'; },
               'aria-label': 'App description prompt' }),
             h('div', { style: { display: 'flex', gap: '8px', marginTop: '10px', flexWrap: 'wrap' } },
               h('button', { onClick: function() { generateApp(prompt); }, disabled: isGenerating || !prompt.trim(),
+                'aria-busy': isGenerating,
+                'aria-label': isGenerating ? ('Generating app: ' + genStep) : 'Generate app',
                 style: Object.assign({}, btn(PURPLE, '#fff', isGenerating || !prompt.trim()), { padding: '10px 24px', fontSize: '14px' })
               }, isGenerating ? '\u23F3 ' + genStep : '\uD83D\uDE80 Generate App'),
               h('button', { onClick: suggestIdeas, disabled: sugLoading,
@@ -752,6 +756,8 @@ window.StemLab = window.StemLab || {
             ),
             h('textarea', { value: editHtml, onChange: function(ev) { setEditHtml(ev.target.value); },
               style: { flex: 1, fontFamily: 'Consolas, Monaco, monospace', fontSize: '11px', padding: '10px', border: '1px solid #d1d5db', borderRadius: '8px', resize: 'none', background: '#1e293b', color: '#e2e8f0', outline: 'none', tabSize: 2, lineHeight: 1.5 },
+              onFocus: function(e) { e.target.style.boxShadow = '0 0 0 3px rgba(34,211,238,0.5)'; },
+              onBlur: function(e) { e.target.style.boxShadow = 'none'; },
               spellCheck: false, 'aria-label': 'HTML source code editor' })
           ),
 

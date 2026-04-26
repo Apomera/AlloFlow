@@ -367,7 +367,7 @@ window.StemLab = window.StemLab || {
             else if (k === 'l' || k === 'L') { e.preventDefault(); upd('showLearn', !d.showLearn); }
           }
           return React.createElement("div", {
-              className: "max-w-3xl mx-auto animate-in fade-in duration-200 outline-none",
+              className: "max-w-3xl mx-auto animate-in fade-in duration-200",
               role: "region",
               "aria-label": "Function Grapher. Keyboard shortcuts: 1 through 6 pick a function type, D derivative, A area, T table, L learn.",
               tabIndex: 0,
@@ -706,7 +706,7 @@ window.StemLab = window.StemLab || {
 
             // ── AI Explain Button ──
             callGemini && React.createElement("div", { className: "mt-2" },
-              React.createElement("button", { "aria-label": "Funcgrapher action", onClick: function() {
+              React.createElement("button", { onClick: function() {
                 if (d.aiExplainLoading) return;
                 upd('aiExplainLoading', true);
                 upd('aiExplain', '');

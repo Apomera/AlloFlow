@@ -2087,6 +2087,7 @@
               h('button', {
                 onClick: explain,
                 disabled: aiLoading,
+                'aria-busy': aiLoading,
                 'aria-label': 'Generate AI explanation at ' + ((LEVELS.find(function (L) { return L.id === aiLevel; }) || {}).label || 'Grade 5') + ' level',
                 className: 'px-3 py-1 rounded-lg text-[11px] font-bold bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50'
               }, aiLoading ? '\u23F3 Thinking...' : (aiText ? '\uD83D\uDD04 Re-explain' : '\uD83E\uDDE0 Explain'))
@@ -2099,7 +2100,7 @@
 
         function wrapWithA11y(child) {
           return h('div', {
-            className: 'outline-none',
+            className: 'outline-none focus:ring-4 focus:ring-amber-400 focus:ring-inset rounded-lg',
             role: 'region',
             'aria-label': 'Baking Lab. Keyboard shortcuts: 1 through ' + _BK_SUBTOOL_IDS.length + ' pick an activity, M or Escape returns to menu.',
             tabIndex: 0,

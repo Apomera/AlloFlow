@@ -6408,9 +6408,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                         var alreadyAdded = tankPlants.indexOf(ps.id) !== -1;
 
-                        return React.createElement("button", { "aria-label": "Aquarium action",
-
-                          key: ps.id,
+                        return React.createElement("button", { key: ps.id,
 
                           onClick: function () { if (!alreadyAdded) addPlant(ps.id); },
 
@@ -7745,9 +7743,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 ].map(function (sc) {
 
-                  return React.createElement("button", { "aria-label": "Aquarium action",
-
-                    key: sc.id,
+                  return React.createElement("button", { key: sc.id,
 
                     onClick: function () {
 
@@ -8129,9 +8125,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       zoneSpecies.map(function (sp) {
 
-                        return React.createElement("button", { "aria-label": "Aquarium action",
-
-                          key: sp.id,
+                        return React.createElement("button", { key: sp.id,
 
                           onClick: function (e) { e.stopPropagation(); upd('selectedSpecies', sp.id); openAnatomy(sp.id); sfxBubble(); },
 

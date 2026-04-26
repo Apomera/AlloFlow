@@ -1047,8 +1047,7 @@ window.StemLab = window.StemLab || {
                   'aria-label': 'Ask the genetics tutor',
                   className: 'flex-1 px-3 py-1.5 text-sm border border-sky-200 rounded-lg focus:outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-300'
                 }),
-                h('button', { 'aria-label': 'Ask A I',
-                  onClick: askAI,
+                h('button', { onClick: askAI,
                   disabled: aiLoading || !aiQuestion.trim(),
                   className: 'px-3 py-1.5 text-xs font-bold text-white bg-sky-500 rounded-lg hover:bg-sky-600 disabled:opacity-50'
                 }, aiLoading ? 'Thinking...' : 'Ask')
@@ -1501,8 +1500,7 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'flex flex-wrap gap-1.5 mb-3' },
                 PEDIGREE_PRESETS.map(function(ped, idx) {
                   var isActive = pedPreset === idx;
-                  return h('button', { 'aria-label': 'Change _ped show geno',
-                    key: ped.id,
+                  return h('button', { key: ped.id,
                     onClick: function() { updMulti({ _pedPreset: idx, _pedSolveAnswer: '', _pedSolveFeedback: null }); punnettSound('preset'); },
                     className: 'px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-all border ' +
                       (isActive ? 'bg-violet-600 text-white border-violet-600' : 'bg-white text-slate-600 border-slate-200 hover:border-violet-300')
@@ -1512,8 +1510,7 @@ window.StemLab = window.StemLab || {
 
               // Controls
               h('div', { className: 'flex gap-2 mb-3' },
-                h('button', { 'aria-label': 'Change _ped show geno',
-                  onClick: function() { upd('_pedShowGeno', !pedShowGeno); },
+                h('button', { onClick: function() { upd('_pedShowGeno', !pedShowGeno); },
                   className: 'px-2 py-1 text-[11px] font-bold rounded-lg border ' + (pedShowGeno ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : 'bg-slate-50 text-slate-600 border-slate-200')
                 }, pedShowGeno ? '\uD83D\uDC41 Hide Genotypes' : '\uD83D\uDC41 Show Genotypes'),
                 h('button', { 'aria-label': 'Toggle pedigree solve mode',
@@ -1623,8 +1620,7 @@ window.StemLab = window.StemLab || {
                     { val: 'y_linked', label: 'Y-Linked' }
                   ].map(function(opt) {
                     var isSelected = pedSolveAnswer === opt.val;
-                    return h('button', { 'aria-label': 'Change _ped solve answer',
-                      key: opt.val,
+                    return h('button', { key: opt.val,
                       onClick: function() {
                         upd('_pedSolveAnswer', opt.val);
                         var correct = opt.val === currentPed.answer;
@@ -1862,8 +1858,7 @@ window.StemLab = window.StemLab || {
                   { val: 'x_linked', label: 'X-Linked' },
                   { val: 'polygenic', label: 'Polygenic' }
                 ].map(function(f) {
-                  return h('button', { 'aria-label': 'Change _trait filter',
-                    key: f.val,
+                  return h('button', { key: f.val,
                     onClick: function() { upd('_traitFilter', f.val); },
                     className: 'px-2 py-1 text-[11px] font-bold rounded-lg border ' +
                       (traitFilter === f.val ? 'bg-violet-600 text-white border-violet-600' : 'bg-white text-slate-600 border-slate-200 hover:border-violet-300')
@@ -2347,8 +2342,7 @@ window.StemLab = window.StemLab || {
                   var isOpen = learnTopic === idx;
                   var content = topic[band] || topic.g35;
                   return h('div', { key: idx, className: 'bg-white rounded-xl border ' + (isOpen ? 'border-violet-300 shadow-md' : 'border-slate-200') },
-                    h('button', { 'aria-label': 'Select option',
-                      onClick: function() { upd('_learnTopic', isOpen ? -1 : idx); },
+                    h('button', { onClick: function() { upd('_learnTopic', isOpen ? -1 : idx); },
                       className: 'w-full flex items-center gap-2 p-3 text-left'
                     },
                       h('span', { className: 'text-xl' }, topic.icon),
