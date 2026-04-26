@@ -121,6 +121,14 @@ Three follow-up sessions closed the remaining gaps after the initial 8-batch aud
 
 All 80 STEM Lab files pass `node --check`. All canvases keyboard-accessible. All form inputs labeled.
 
+**Companion SEL Hub pass (same day)**: After the STEM Lab audit completed, the same 9-criterion audit was applied to all 30 SEL Hub files (28 tools + module + safety_layer). Cross-cutting bulk sweeps from STEM Lab caught 9 bogus auto-generated aria-labels + 25 duplicate aria-label attrs across SEL Hub. Per-tool surgical work was minimal since the SEL Hub had received 3 prior WCAG passes during/after build: 1 textarea focus indicator (compassion.js letter writer) + fixed a pre-existing JS bug in goals.js (3 spots had `{ obstacles: '', '', rating: 0 }` missing the `focus:` key). **30 of 30 SEL Hub files now have full ✓-grades on all 9 per-tool criteria.**
+
+**Combined status**: **110 of 110 STEM Lab + SEL Hub files** (80 STEM Lab + 30 SEL Hub) have full ✓-grades on all 9 per-tool WCAG 2.1 AA criteria as of April 26, 2026. All pass `node --check`.
+
+**Top-level modules pass (begun April 26, 2026)**: Beyond STEM Lab + SEL Hub, large standalone modules are being audited individually. First completed:
+
+- **behavior_lens_module.js** (27,688 lines, FBA / behavior-observation tool): 205 mechanical fixes including 87 bogus auto-generated aria-labels removed, 78 duplicate aria-label attrs cleaned, **40 AI/loading buttons got `aria-busy`** via regex-based bulk injection (the densest aria-busy adoption in the codebase due to many ABA-specific AI analysis steps), 6 generic 'Close' aria-labels replaced with context-specific labels, 4 form inputs got aria-label, 1 SVG data-point editor got role=button + onKeyDown for manual edit mode, 1 bare checkbox got aria-label. Full ✓-grades on all 9 per-tool criteria.
+
 **Pending runtime verification (3 criteria — substantially fewer than April 3 due to per-tool audit):**
 
 | Area | Code Status | What Needs Testing |

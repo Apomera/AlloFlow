@@ -625,6 +625,9 @@ const StoryForge = React.memo(({
   // Pre-grade Self-Assessment — student rates self before AI grade for metacognition
   const [selfAssessment, setSelfAssessment] = useState({});
   const [selfAssessmentSubmitted, setSelfAssessmentSubmitted] = useState(false);
+  // Mentor Match — Serper-grounded recommendation of a public-domain short-story excerpt
+  const [mentorMatch, setMentorMatch] = useState(null);
+  const [mentorLoading, setMentorLoading] = useState(false);
   const [draftCount, setDraftCount] = useState(1);
 
   // ── Init vocab from glossary ──
