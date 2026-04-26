@@ -463,7 +463,7 @@
           return h('div', null,
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '6px', marginBottom: '10px' } },
               MODES.map(function(m) {
-                return h('button', { 'aria-label': 'Select option', key: m.id, onClick: function() { updMulti({ mode: m.id, result: null }); }, title: m.desc, style: btnStyle(mode === m.id) }, m.label);
+                return h('button', { key: m.id, onClick: function() { updMulti({ mode: m.id, result: null }); }, title: m.desc, style: btnStyle(mode === m.id) }, m.label);
               })
             ),
             h('div', { style: { display: 'flex', gap: '6px', marginBottom: '8px' } },
@@ -492,7 +492,7 @@
               h('div', { style: { fontSize: '10px', fontWeight: '700', color: MUTED, marginBottom: '6px' } }, '\uD83D\uDCDC Recent (' + history.length + ')'),
               h('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
                 history.slice().reverse().slice(0, 5).map(function(hi, i) {
-                  return h('button', { 'aria-label': 'Change _tried advanced', key: i, onClick: function() { updMulti({ expression: hi.expr, mode: hi.mode, result: hi.result }); },
+                  return h('button', { key: i, onClick: function() { updMulti({ expression: hi.expr, mode: hi.mode, result: hi.result }); },
                     style: { padding: '3px 8px', borderRadius: '8px', fontSize: '10px', fontFamily: 'monospace', background: CARD, border: '1px solid ' + BORDER, color: TEXT, cursor: 'pointer' } },
                     hi.mode + ': ' + hi.expr.substring(0, 20));
                 })
@@ -692,7 +692,7 @@
                   style: { padding: '8px 14px', borderRadius: '10px', background: BTN_FLAT, color: BTN_TEXT, fontWeight: '700', fontSize: '12px', cursor: 'pointer', border: 'none' } }, 'Load')
               )
             ),
-            h('div', { role: 'button', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { borderRadius: '12px', border: '1px solid ' + BORDER, overflow: 'hidden', marginBottom: '8px', background: 'rgba(15,23,42,0.5)' } },
+            h('div', { style: { borderRadius: '12px', border: '1px solid ' + BORDER, overflow: 'hidden', marginBottom: '8px', background: 'rgba(15,23,42,0.5)' } },
               h('canvas', { ref: function(canvas) { if (canvas) setTimeout(function() { drawScale(canvas); }, 0); }, 'aria-label': 'Interactive algebra balance scale visualization', tabIndex: 0, style: { width: '100%', display: 'block' } })
             ),
             scaleEq && !scaleSolved ? h('div', null,

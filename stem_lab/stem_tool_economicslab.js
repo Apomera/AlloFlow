@@ -1435,7 +1435,7 @@ var d = labToolData || {};
 
                 onChange: function (e) { upd('econDifficulty', e.target.value); if (addToast) addToast('Difficulty: ' + e.target.value.toUpperCase(), 'info'); },
 
-                className: 'text-[11px] bg-slate-100 border border-slate-200 rounded-full px-2 py-0.5 text-slate-600 outline-none cursor-pointer'
+                className: 'text-[11px] bg-slate-100 border border-slate-200 rounded-full px-2 py-0.5 text-slate-600 cursor-pointer'
 
               },
 
@@ -1713,7 +1713,7 @@ var d = labToolData || {};
 
                   placeholder: 'Ask any economics question...',
 
-                  className: 'flex-1 px-3 py-2 border-2 border-sky-200 rounded-xl text-xs focus:border-sky-400 outline-none'
+                  className: 'flex-1 px-3 py-2 border-2 border-sky-200 rounded-xl text-xs focus:border-sky-400'
 
                 }),
 
@@ -1941,7 +1941,7 @@ var d = labToolData || {};
                     React.createElement('label', { className: 'text-[11px] font-bold text-red-600 block mb-0.5' }, 'Amount ($)'),
                     React.createElement('input', { type: 'number', value: d.inflationAmt || 100,
                       onChange: function(e) { upd('inflationAmt', parseFloat(e.target.value) || 100); },
-                      className: 'w-full px-2 py-1.5 border border-red-200 rounded-lg text-xs focus:border-red-400 outline-none'
+                      className: 'w-full px-2 py-1.5 border border-red-200 rounded-lg text-xs focus:border-red-400'
                     })
                   ),
                   React.createElement('div', null,

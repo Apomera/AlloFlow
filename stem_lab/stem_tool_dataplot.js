@@ -803,9 +803,9 @@ window.StemLab = window.StemLab || {
           h('span', { className: 'text-xs text-slate-600' }, n + ' pts' + (stepMode ? ' (' + stepIdx + '/' + points.length + ')' : '')),
           n >= 2 && h('span', { className: 'text-xs font-bold ' + (Math.abs(regR2) > 0.8 ? 'text-emerald-600' : Math.abs(regR2) > 0.5 ? 'text-yellow-600' : 'text-red-500') }, 'R\u00B2=' + regR2.toFixed(3)),
           h('div', { className: 'ml-auto flex gap-1.5' },
-            h('button', { 'aria-label': 'Select option', onClick: function() { upd('showBadges', !showBadges); }, className: 'text-[11px] font-bold px-2 py-0.5 rounded-full border transition-all ' + (showBadges ? 'bg-amber-100 border-amber-300 text-amber-700' : 'bg-slate-100 border-slate-200 text-slate-600') }, '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + badgeDefs.length),
-            h('button', { 'aria-label': 'Select option', onClick: function() { upd('showShortcuts', !showShortcuts); }, className: 'text-[11px] font-bold px-2 py-0.5 rounded-full border ' + (showShortcuts ? 'bg-sky-100 border-sky-300 text-sky-700' : 'bg-slate-100 border-slate-200 text-slate-600') }, '\u2328\uFE0F'),
-            h('button', { 'aria-label': 'Select option', onClick: function() { upd('soundEnabled', !soundEnabled); }, className: 'text-sm px-1' }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
+            h('button', { onClick: function() { upd('showBadges', !showBadges); }, className: 'text-[11px] font-bold px-2 py-0.5 rounded-full border transition-all ' + (showBadges ? 'bg-amber-100 border-amber-300 text-amber-700' : 'bg-slate-100 border-slate-200 text-slate-600') }, '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + badgeDefs.length),
+            h('button', { onClick: function() { upd('showShortcuts', !showShortcuts); }, className: 'text-[11px] font-bold px-2 py-0.5 rounded-full border ' + (showShortcuts ? 'bg-sky-100 border-sky-300 text-sky-700' : 'bg-slate-100 border-slate-200 text-slate-600') }, '\u2328\uFE0F'),
+            h('button', { onClick: function() { upd('soundEnabled', !soundEnabled); }, className: 'text-sm px-1' }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
             h('button', { 'aria-label': 'Set Tool Snapshots', onClick: function() { setToolSnapshots(function(prev) { return prev.concat([{ id: 'dp-' + Date.now(), tool: 'dataPlot', label: n + ' pts r\u00B2=' + regR2.toFixed(2), data: { points: points.slice() }, timestamp: Date.now() }]); }); if (addToast) addToast('\uD83D\uDCF8 Snapshot!', 'success'); }, className: 'text-[11px] font-bold bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-full px-2 py-0.5' }, '\uD83D\uDCF8')
           )
         ),
@@ -1282,7 +1282,7 @@ window.StemLab = window.StemLab || {
                   : h('div', { className: 'space-y-2' },
                     h('div', { className: 'flex gap-2 items-center' },
                       h('span', { className: 'text-xs font-bold text-cyan-600' }, 'Y value:'),
-                      h('input', { type: 'number', step: '0.1', value: zScoreInput, onChange: function(e) { upd('zScoreInput', e.target.value); checkBadges({ zScoreUsed: true }); }, placeholder: meanY.toFixed(1), 'aria-label': 'Y value for z-score calculation', className: 'w-24 px-2 py-1.5 border-2 border-cyan-200 rounded-lg text-sm font-bold text-cyan-800 text-center outline-none focus:border-cyan-400' }),
+                      h('input', { type: 'number', step: '0.1', value: zScoreInput, onChange: function(e) { upd('zScoreInput', e.target.value); checkBadges({ zScoreUsed: true }); }, placeholder: meanY.toFixed(1), 'aria-label': 'Y value for z-score calculation', className: 'w-24 px-2 py-1.5 border-2 border-cyan-200 rounded-lg text-sm font-bold text-cyan-800 text-center focus:border-cyan-400' }),
                       zScoreInput !== '' && !isNaN(parseFloat(zScoreInput)) && (function() {
                         var zVal = (parseFloat(zScoreInput) - meanY) / stdDev;
                         var pct = zToPercentile(zVal);
@@ -1374,7 +1374,7 @@ window.StemLab = window.StemLab || {
             // Options for correlation / guessR2 / matchChart
             dpQuiz.type !== 'outlier' && h('div', { className: 'flex gap-3 flex-wrap' },
               dpQuiz.opts.map(function(opt) {
-                return h('button', { 'aria-label': 'Select option', key: opt, onClick: function() { answerQuiz(opt); },
+                return h('button', { key: opt, onClick: function() { answerQuiz(opt); },
                   className: 'flex-1 min-w-[80px] px-4 py-2.5 rounded-lg text-sm font-bold border-2 bg-white text-slate-700 border-slate-200 hover:border-teal-400 hover:bg-teal-50 transition-all cursor-pointer'
                 }, opt);
               })
@@ -1416,7 +1416,7 @@ window.StemLab = window.StemLab || {
                   h('div', { className: 'text-[11px] text-slate-600 mb-2' }, 'Using ' + regressionType + ': ' + regEq),
                   h('div', { className: 'flex gap-2 items-center flex-wrap' },
                     h('span', { className: 'text-xs font-bold text-indigo-600' }, 'If X ='),
-                    h('input', { type: 'number', step: '0.1', value: predX, onChange: function(e) { upd('predX', e.target.value); checkBadges({ predicted: true }); }, 'aria-label': 'X value for prediction', className: 'w-24 px-2 py-1.5 border-2 border-indigo-200 rounded-lg text-sm font-bold text-indigo-800 text-center outline-none focus:border-indigo-400', placeholder: '?' }),
+                    h('input', { type: 'number', step: '0.1', value: predX, onChange: function(e) { upd('predX', e.target.value); checkBadges({ predicted: true }); }, 'aria-label': 'X value for prediction', className: 'w-24 px-2 py-1.5 border-2 border-indigo-200 rounded-lg text-sm font-bold text-indigo-800 text-center focus:border-indigo-400', placeholder: '?' }),
                     h('span', { className: 'text-xs font-bold text-indigo-600' }, 'then Y \u2248'),
                     h('div', { className: 'px-3 py-1.5 border rounded-lg text-sm font-bold text-center min-w-[60px] ' + (predIsExtrapolation ? 'bg-red-50 border-red-200 text-red-700' : 'bg-indigo-50 border-indigo-200 text-indigo-800') }, predResult || '?'),
                     predX !== '' && predResult && h('span', { className: 'text-[11px] font-bold px-2 py-0.5 rounded-full ' + (predIsExtrapolation ? 'bg-red-100 text-red-600' : 'bg-emerald-100 text-emerald-600') },
@@ -1429,7 +1429,7 @@ window.StemLab = window.StemLab || {
           callGemini && h('div', { className: 'bg-pink-50 rounded-xl p-4 border border-pink-200' },
             h('div', { className: 'flex items-center gap-2 mb-2' },
               h('span', { className: 'text-xs font-bold text-pink-600 uppercase' }, '\uD83E\uDD16 AI Data Analyst'),
-              h('button', { 'aria-label': 'Ask A I', onClick: askAI, disabled: aiLoading || n < 2, className: 'ml-auto px-3 py-1 text-[11px] font-bold rounded-full transition-all ' + (aiLoading ? 'bg-pink-200 text-pink-400 cursor-wait' : 'bg-pink-700 text-white hover:bg-pink-600') },
+              h('button', { onClick: askAI, disabled: aiLoading || n < 2, className: 'ml-auto px-3 py-1 text-[11px] font-bold rounded-full transition-all ' + (aiLoading ? 'bg-pink-200 text-pink-400 cursor-wait' : 'bg-pink-700 text-white hover:bg-pink-600') },
                 aiLoading ? '\u23F3 Analyzing...' : '\u2728 Analyze Data')
             ),
             aiInsight

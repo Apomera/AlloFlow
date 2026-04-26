@@ -425,9 +425,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               CHART_TYPES.map(function (ct) {
 
-                return React.createElement("button", { "aria-label": "Datastudio action",
-
-                  key: ct.id,
+                return React.createElement("button", { key: ct.id,
 
                   onClick: function () { if (ct.id !== chartType) { updDS('chartType', ct.id); if (typeof awardStemXP === 'function') awardStemXP('dataStudio', 3, ct.label + ' explored'); } },
 

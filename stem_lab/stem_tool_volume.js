@@ -542,13 +542,11 @@ window.StemLab = window.StemLab || {
             streak >= 2 && h('div', { 
               className: 'text-xs font-bold text-orange-800 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full animate-pulse'
             }, '\uD83D\uDD25 ' + streak + ' streak!'),
-            earnedCount > 0 && h('button', { 'aria-label': 'AI',
-              onClick: function() { upd({ showBadges: !showBadges }); },
+            earnedCount > 0 && h('button', { onClick: function() { upd({ showBadges: !showBadges }); },
               className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100 transition-all',
               title: 'View badges (B)'
             }, '\uD83C\uDFC5 ' + earnedCount + '/' + BADGES.length),
-            h('button', { 'aria-label': 'AI',
-              onClick: askAI,
+            h('button', { onClick: askAI,
               className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-purple-50 border border-purple-200 text-purple-600 hover:bg-purple-100 transition-all',
               title: 'AI Tutor (?)'
             }, '\uD83E\uDDE0 AI')
@@ -609,7 +607,7 @@ window.StemLab = window.StemLab || {
         showAI && h('div', { className: 'bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-3 border-2 border-purple-200' },
           h('div', { className: 'flex items-center justify-between mb-2' },
             h('p', { className: 'text-sm font-bold text-purple-800' }, '\uD83E\uDDE0 AI Volume Tutor'),
-            h('button', { 'aria-label': 'Ask A I', onClick: function() { upd({ showAI: false }); }, className: 'text-xs text-slate-600 hover:text-slate-600' }, '\u2715')
+            h('button', { onClick: function() { upd({ showAI: false }); }, className: 'text-xs text-slate-600 hover:text-slate-600' }, '\u2715')
           ),
           aiLoading
             ? h('div', { className: 'flex items-center gap-2' },
@@ -773,8 +771,7 @@ window.StemLab = window.StemLab || {
               onClick: checkChallenge, disabled: !answer,
               className: 'px-4 py-2 bg-amber-700 text-white font-bold rounded-lg text-sm disabled:opacity-40'
             }, 'Check'),
-            h('button', { 'aria-label': 'Ask A I',
-              onClick: askAI,
+            h('button', { onClick: askAI,
               className: 'px-3 py-2 bg-purple-100 text-purple-600 font-bold rounded-lg hover:bg-purple-200 transition-all text-sm',
               title: 'Get a hint from AI'
             }, '\uD83E\uDDE0')

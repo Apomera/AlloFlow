@@ -3602,9 +3602,7 @@ var d = labToolData || {};
 
               }, "\uD83D\uDD14 Use the Classical Conditioning panel below") :
 
-                React.createElement("button", { "aria-label": "Reinforce action",
-
-                  onClick: function () {
+                React.createElement("button", { onClick: function () {
 
                     if (blLevel === 3 && blExtinctionPhase) {
 
@@ -4794,7 +4792,7 @@ var d = labToolData || {};
                 React.createElement("div", { className: "grid grid-cols-2 gap-1" },
                   TOKEN_REWARDS.map(function(rew) {
                     var canAfford = blTokenBalance >= rew.cost;
-                    return React.createElement("button", { "aria-label": "Behaviorlab action", key: rew.id,
+                    return React.createElement("button", { key: rew.id,
                       onClick: function() {
                         if (!canAfford) { if (addToast) addToast('\u274C Need ' + (rew.cost - blTokenBalance) + ' more tokens!', 'info'); return; }
                         upd('blTokenBalance', blTokenBalance - rew.cost);
@@ -5015,7 +5013,7 @@ var d = labToolData || {};
                       var bgClass = !answered ? 'bg-slate-800/40 border-slate-600 hover:border-slate-400 cursor-pointer' :
                         isRight ? 'bg-emerald-900/30 border-emerald-500' :
                         isSelected && !isRight ? 'bg-red-900/30 border-red-500' : 'bg-slate-800/20 border-slate-700 opacity-40';
-                      return React.createElement("button", { "aria-label": "Behaviorlab action", key: oi,
+                      return React.createElement("button", { key: oi,
                         onClick: function() {
                           if (answered) return;
                           upd('blScenarioAnswer', oi);

@@ -2563,11 +2563,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
               h('div', { className: 'bg-white rounded-xl shadow border border-slate-200 p-3 flex flex-col' },
                 h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-300 mb-2' }, 'Brake (Space)'),
                 h('button', {
+                  'aria-label': braking ? 'Brake engaged. Release Space to stop braking.' : 'Brake. Hold Space or click to brake.',
+                  'aria-pressed': braking,
                   onMouseDown: function() { setBraking(true); },
                   onMouseUp: function() { setBraking(false); },
                   onMouseLeave: function() { setBraking(false); },
                   onTouchStart: function() { setBraking(true); },
                   onTouchEnd: function() { setBraking(false); },
+                  onKeyDown: function(e) { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); if (!braking) setBraking(true); } },
+                  onKeyUp: function(e) { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); setBraking(false); } },
+                  onBlur: function() { setBraking(false); },
                   className: 'flex-1 rounded-lg font-black text-white transition-colors shadow ' + (braking ? 'bg-rose-700' : 'bg-rose-500 hover:bg-rose-600')
                 }, braking ? '🛑 BRAKING' : '🛑 Hold to Brake'),
                 h('div', { className: 'text-[10px] text-slate-300 mt-2 text-center' }, 'Hold to slow or stop')

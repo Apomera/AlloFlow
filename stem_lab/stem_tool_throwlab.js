@@ -332,6 +332,89 @@ window.StemLab = window.StemLab || {
       teach: 'Justin Tucker territory (longest NFL FG: 66 yards). At this distance every variable matters — wind, snap timing, the kicker\'s leg fatigue. Drag eats ~12% of horizontal range.' }
   ];
 
+  // ── DRILLS — per-mode challenge sequences ──
+  // Each drill has a list of "tasks" the player completes in order. Each
+  // task carries a goal description, a success check (run after each throw),
+  // and a reset condition (run only when the throw fails the constraint).
+  // Drills give students a structured progression on top of the sandbox.
+  //
+  // Design rule: tasks check the LATEST throw against state-derived
+  // condition. Streak tasks track count via a session counter that resets
+  // on miss; "type-coverage" tasks track a Set of pitch IDs used.
+  var DRILLS = {
+    pitching: {
+      label: 'Pitcher Drills',
+      tasks: [
+        { id: 'p1', goal: 'Throw 3 strikes in a row',
+          test: function(s) { return s.streakStrikes >= 3; },
+          progress: function(s) { return s.streakStrikes + ' / 3 strike streak'; },
+          tip: 'Hint: lower release angle by ~1° if you keep going high.' },
+        { id: 'p2', goal: 'Throw a 4-seam, a curveball, and a slider — each for a strike',
+          test: function(s) { return s.strikeTypes['4seam'] && s.strikeTypes.curve && s.strikeTypes.slider; },
+          progress: function(s) {
+            var seen = ['4seam','curve','slider'].filter(function(id) { return s.strikeTypes[id]; });
+            return seen.length + ' / 3 pitch types ✓ (need 4-seam, curve, slider)';
+          },
+          tip: 'Each pitch type sets its own grip + spin — let the preset do the work.' },
+        { id: 'p3', goal: 'Strike with a knuckleball (spin under 200 rpm)',
+          test: function(s) { return s.strikeWithLowSpin; },
+          progress: function(s) { return s.strikeWithLowSpin ? 'Done!' : 'Need a strike with the knuckle preset'; },
+          tip: 'Knucklers wobble — accept that "strike" might be lucky and keep throwing.' }
+      ]
+    },
+    freethrow: {
+      label: 'Basketball Drills',
+      tasks: [
+        { id: 'f1', goal: 'Make 5 free throws',
+          test: function(s) { return s.makeCount >= 5; },
+          progress: function(s) { return s.makeCount + ' / 5 makes'; },
+          tip: 'Backspin softens rim contact — keep spin around 180-220 rpm.' },
+        { id: 'f2', goal: 'Make a swish from 3 different release heights',
+          test: function(s) { return s.swishHeights >= 3; },
+          progress: function(s) { return s.swishHeights + ' / 3 different release heights'; },
+          tip: 'Higher release = flatter arc; lower = steeper arc. Both can swish.' },
+        { id: 'f3', goal: 'Complete a successful Bounce Pass',
+          test: function(s) { return s.completedBouncePass; },
+          progress: function(s) { return s.completedBouncePass ? 'Done!' : 'Pick Bounce Pass and aim for the yellow zone'; },
+          tip: 'Aim ⅔ of the way to the teammate; the bounce eats ~22% of vertical speed.' }
+      ]
+    },
+    freekick: {
+      label: 'Soccer Drills',
+      tasks: [
+        { id: 'k1', goal: 'Score a goal with a Curling Shot',
+          test: function(s) { return s.goalKickTypes.curling; },
+          progress: function(s) { return s.goalKickTypes.curling ? 'Done!' : 'Pick Curling Shot and bend it around the wall'; },
+          tip: '~600 rpm of sidespin curls the ball ~1.5m laterally over 22m.' },
+        { id: 'k2', goal: 'Score with a Power Drive (no curl)',
+          test: function(s) { return s.goalKickTypes.power; },
+          progress: function(s) { return s.goalKickTypes.power ? 'Done!' : 'Power Drive, then thread between defenders'; },
+          tip: 'No spin = no curl, but the wall is just 9.15m away — go OVER or AROUND with a wide aim.' },
+        { id: 'k3', goal: 'Score 3 goals total (any kick style)',
+          test: function(s) { return s.totalGoals >= 3; },
+          progress: function(s) { return s.totalGoals + ' / 3 goals'; },
+          tip: 'Different styles for different defender configurations.' }
+      ]
+    },
+    fieldgoal: {
+      label: 'Kicker Drills',
+      tasks: [
+        { id: 'g1', goal: 'Make a 20-yard field goal',
+          test: function(s) { return s.fgMadeByDist['20']; },
+          progress: function(s) { return s.fgMadeByDist['20'] ? 'Done!' : 'Switch to Chip Shot preset'; },
+          tip: 'Chip is automatic — don\'t overthink power.' },
+        { id: 'g2', goal: 'Make a 35-yard field goal',
+          test: function(s) { return s.fgMadeByDist['35']; },
+          progress: function(s) { return s.fgMadeByDist['35'] ? 'Done!' : 'Mid-Range preset; 38° launch is the sweet spot'; },
+          tip: 'Optimal angle near 38° at this range.' },
+        { id: 'g3', goal: 'Make a 50-yard field goal',
+          test: function(s) { return s.fgMadeByDist['50']; },
+          progress: function(s) { return s.fgMadeByDist['50'] ? 'Done!' : 'Long preset; 40° launch'; },
+          tip: 'Drag eats ~10% of horizontal range at this distance — bump speed.' }
+      ]
+    }
+  };
+
   // Mode metadata — controls which target / preset list / distances apply.
   var MODES = {
     pitching: {
@@ -772,7 +855,19 @@ window.StemLab = window.StemLab || {
             coachLoading: false,
             coachReply: '',
             coachError: '',
-            recentThrows: []           // last ~5 throws for history-aware coaching
+            recentThrows: [],          // last ~5 throws for history-aware coaching
+            // Drills — pre-defined challenge sequences per mode. drillActive
+            // toggles the goal panel above the canvas; drillTaskIdx tracks
+            // progression through DRILLS[mode].tasks; drillStats accumulates
+            // session counters that the task test functions read from.
+            drillActive: false,
+            drillTaskIdx: 0,
+            drillStats: {
+              streakStrikes: 0, strikeTypes: {}, strikeWithLowSpin: false,
+              makeCount: 0, swishHeights: 0, swishHeightSet: {}, completedBouncePass: false,
+              goalKickTypes: {}, totalGoals: 0,
+              fgMadeByDist: {}
+            }
           }});
         });
         return h('div', { className: 'p-8 text-center text-slate-600' }, 'Loading ThrowLab…');
@@ -1089,6 +1184,65 @@ window.StemLab = window.StemLab || {
           gravityId: d.gravityId, windMph: d.windMph,
           location: loc
         });
+        // ── Drill stat updates ──
+        // We compute the new drillStats here (synchronously, off d) and
+        // include it in the same setLabToolData so the active task's
+        // test() function sees up-to-date counters.
+        var stats = Object.assign({
+          streakStrikes: 0, strikeTypes: {}, strikeWithLowSpin: false,
+          makeCount: 0, swishHeights: 0, swishHeightSet: {}, completedBouncePass: false,
+          goalKickTypes: {}, totalGoals: 0,
+          fgMadeByDist: {}
+        }, d.drillStats || {});
+        // Pitching streak + type-coverage
+        if (d.mode === 'pitching') {
+          if (loc === 'strike') {
+            stats.streakStrikes = (stats.streakStrikes || 0) + 1;
+            stats.strikeTypes = Object.assign({}, stats.strikeTypes); stats.strikeTypes[d.pitchType] = true;
+            if (d.spinRpm < 200) stats.strikeWithLowSpin = true;
+          } else {
+            stats.streakStrikes = 0;
+          }
+        }
+        // Free throw makes + multi-height swishes + bounce-pass completion
+        if (d.mode === 'freethrow') {
+          if (loc === 'caught' && d.shotType === 'bouncepass') stats.completedBouncePass = true;
+          if (loc === 'swish' || loc === 'made' || loc === 'caught') {
+            stats.makeCount = (stats.makeCount || 0) + 1;
+          }
+          if (loc === 'swish') {
+            var hKey = d.releaseHeight.toFixed(1);
+            stats.swishHeightSet = Object.assign({}, stats.swishHeightSet);
+            if (!stats.swishHeightSet[hKey]) {
+              stats.swishHeightSet[hKey] = true;
+              stats.swishHeights = Object.keys(stats.swishHeightSet).length;
+            }
+          }
+        }
+        // Free kick goals + per-kick-style coverage
+        if (d.mode === 'freekick' && loc === 'goal') {
+          stats.goalKickTypes = Object.assign({}, stats.goalKickTypes);
+          stats.goalKickTypes[d.kickType] = true;
+          stats.totalGoals = (stats.totalGoals || 0) + 1;
+        }
+        // Field goal makes by distance
+        if (d.mode === 'fieldgoal' && loc === 'good') {
+          stats.fgMadeByDist = Object.assign({}, stats.fgMadeByDist);
+          stats.fgMadeByDist[String(d.fgDistanceYd)] = true;
+        }
+        // ── Drill task progression ──
+        var newDrillTaskIdx = d.drillTaskIdx || 0;
+        var taskJustCompleted = null;
+        if (d.drillActive) {
+          var modeDrills = DRILLS[d.mode];
+          if (modeDrills && newDrillTaskIdx < modeDrills.tasks.length) {
+            var task = modeDrills.tasks[newDrillTaskIdx];
+            if (task && task.test(stats)) {
+              taskJustCompleted = task;
+              newDrillTaskIdx = newDrillTaskIdx + 1;
+            }
+          }
+        }
         setLabToolData(function(prev) {
           var next = Object.assign({}, prev.throwlab, {
             lastResult: result,
@@ -1101,11 +1255,29 @@ window.StemLab = window.StemLab || {
             fgMakeCount: newFgMakeCount,
             pitchTypesUsed: newTypesUsed,
             recentThrows: newRecent,
+            drillStats: stats,
+            drillTaskIdx: newDrillTaskIdx,
             // Throwing again invalidates the current coaching reply.
             coachReply: '', coachError: ''
           });
           return Object.assign({}, prev, { throwlab: next });
         });
+        if (taskJustCompleted) {
+          var modeDrills2 = DRILLS[d.mode];
+          var allDone = modeDrills2 && newDrillTaskIdx >= modeDrills2.tasks.length;
+          setTimeout(function() {
+            if (allDone) {
+              tlAnnounce('Drill complete! All ' + modeDrills2.tasks.length + ' tasks finished.');
+              if (addToast) addToast('🏆 Drill complete!');
+              if (awardXP) awardXP('throwlab', 25, 'Drill complete');
+              if (celebrate) celebrate();
+            } else {
+              tlAnnounce('Task done. New goal: ' + modeDrills2.tasks[newDrillTaskIdx].goal);
+              if (addToast) addToast('✅ Task ' + (newDrillTaskIdx) + ' complete');
+              if (awardXP) awardXP('throwlab', 12, 'Drill task');
+            }
+          }, 800);
+        }
         // Outcome SFX + announcement after a tiny delay so it doesn't talk over the throw
         setTimeout(function() {
           if (d.mode === 'pitching') {

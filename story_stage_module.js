@@ -14,6 +14,27 @@
     return;
   }
 
+  // ── Live region (WCAG 4.1.3) ──
+  (function() {
+    if (document.getElementById('allo-live-litlab')) return;
+    var lr = document.createElement('div');
+    lr.id = 'allo-live-litlab';
+    lr.setAttribute('aria-live', 'polite');
+    lr.setAttribute('aria-atomic', 'true');
+    lr.setAttribute('role', 'status');
+    lr.className = 'sr-only';
+    lr.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(lr);
+  })();
+
+  // Helper to announce dynamic state changes to SR users.
+  function announceLitLab(msg) {
+    try {
+      var lr = document.getElementById('allo-live-litlab');
+      if (lr) { lr.textContent = ''; setTimeout(function() { lr.textContent = msg; }, 50); }
+    } catch (e) {}
+  }
+
   var warnLog = function () { console.warn.apply(console, ['[LitLab]'].concat(Array.prototype.slice.call(arguments))); };
 
   // ── Constants ─────────────────────────────────────────────────────────
@@ -111,8 +132,12 @@
     var _isPaused = useState(false); var isPaused = _isPaused[0]; var setIsPaused = _isPaused[1];
     var _playbackSpeed = useState(1); var playbackSpeed = _playbackSpeed[0]; var setPlaybackSpeed = _playbackSpeed[1];
     var _myRole = useState(null); var myRole = _myRole[0]; var setMyRole = _myRole[1]; // character id the student "plays"
+    // Reading-friendly text mode (WCAG 1.4.4 / 1.4.12) — persists across sessions
+    var _largeText = useState(function () { try { return localStorage.getItem('alloLitLabReadingMode') === '1'; } catch (e) { return false; } });
+    var largeText = _largeText[0]; var setLargeText = _largeText[1];
     var audioRef = useRef(null);
     var playingRef = useRef(false);
+    var pausedRef = useRef(false);
     var lineContainerRef = useRef(null);
 
     // Analysis state
@@ -380,9 +405,15 @@
     var playFromLine = useCallback(async function (startIdx) {
       if (!script || !script.lines) return;
       playingRef.current = true;
+      pausedRef.current = false;
       setIsPlaying(true);
       setIsPaused(false);
       for (var i = startIdx; i < script.lines.length; i++) {
+        if (!playingRef.current) break;
+        // Pause check: when paused, hold here until resumed (or stopped). Pause takes effect AFTER current line finishes.
+        while (pausedRef.current && playingRef.current) {
+          await new Promise(function (r) { setTimeout(r, 100); });
+        }
         if (!playingRef.current) break;
         setCurrentLine(i);
         // Scroll into view
@@ -422,9 +453,24 @@
 
     var stopPlayback = useCallback(function () {
       playingRef.current = false;
+      pausedRef.current = false;
       setIsPlaying(false);
+      setIsPaused(false);
       if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
       if (window.speechSynthesis) window.speechSynthesis.cancel();
+      announceLitLab('Playback stopped.');
+    }, []);
+
+    var pausePlayback = useCallback(function () {
+      pausedRef.current = true;
+      setIsPaused(true);
+      announceLitLab('Paused. Will hold after current line finishes.');
+    }, []);
+
+    var resumePlayback = useCallback(function () {
+      pausedRef.current = false;
+      setIsPaused(false);
+      announceLitLab('Resumed.');
     }, []);
 
     // ── Save/Load Scripts ──
@@ -757,7 +803,7 @@
             ),
             e('div', { style: { textAlign: 'center', marginBottom: '24px' } },
               e('h3', { style: { fontSize: '22px', fontWeight: 800, color: '#1e293b' } }, '🎭 Create Your Performance'),
-              e('p', { style: { color: '#64748b', fontSize: '14px' } }, 'Paste a story, import from URL, or let AI write one — then bring it to life with character voices.')
+              e('p', { style: { color: '#475569', fontSize: '14px' } }, 'Paste a story, import from URL, or let AI write one — then bring it to life with character voices.')
             ),
             // Mode selector
             e('div', { style: { display: 'flex', gap: '8px', marginBottom: '16px', justifyContent: 'center' } },
@@ -797,10 +843,13 @@
                 },
                 placeholder: 'Paste a story, chapter, poem, or play excerpt here...\n\nYou can also paste an image (screenshot of a book page) — the text will be extracted automatically.',
                 rows: 10, style: Object.assign({}, S.input, { resize: 'vertical', fontFamily: 'Georgia, serif', lineHeight: 1.7 }),
+                autoFocus: phase === 'input' && inputMode === 'paste',
                 'aria-label': 'Story text input' }),
               e('div', { style: { display: 'flex', gap: '8px', marginTop: '12px', flexWrap: 'wrap' } },
                 e('button', { onClick: function () { if (sourceText.trim()) extractScript(sourceText); },
                   disabled: !sourceText.trim() || isLoading,
+                  'aria-busy': isLoading ? 'true' : 'false',
+                  'aria-label': isLoading ? 'Creating script, please wait' : 'Create Script from text',
                   style: S.btn(PURPLE, '#fff', !sourceText.trim() || isLoading) }, isLoading ? '⏳ ' + loadingMsg : '🎭 Create Script'),
                 // URL import
                 e('button', { onClick: async function () {
@@ -904,6 +953,8 @@
                 e('span', { style: { fontSize: '10px', color: '#9ca3af' } }, 'words (50–5000)')
               ),
               e('button', { onClick: generateStory, disabled: isLoading,
+                'aria-busy': isLoading ? 'true' : 'false',
+                'aria-label': isLoading ? 'Generating story, please wait' : 'Generate Story with AI',
                 style: S.btn(PURPLE, '#fff', isLoading) }, isLoading ? '⏳ ' + loadingMsg : '✨ Generate Story'),
               sourceText && e('p', { style: { fontSize: '11px', color: '#16a34a', marginTop: '8px', fontWeight: 600 } }, '✅ Story generated! Switch to "Paste Text" tab to review, then click "Create Script".')
             ),
@@ -928,7 +979,7 @@
           phase === 'assign' && script && e('div', null,
             e('div', { style: { textAlign: 'center', marginBottom: '20px' } },
               e('h3', { style: { fontSize: '20px', fontWeight: 800, color: '#1e293b' } }, '🎤 Assign Voices'),
-              e('p', { style: { color: '#64748b', fontSize: '13px' } }, 'Choose a distinct voice for each character. Click preview to hear them.')
+              e('p', { style: { color: '#475569', fontSize: '13px' } }, 'Choose a distinct voice for each character. Click preview to hear them.')
             ),
             e('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '12px', marginBottom: '20px' } },
               script.characters.map(function (ch) {
@@ -939,7 +990,7 @@
                       : e('div', { style: { width: '48px', height: '48px', borderRadius: '50%', background: ch.color || '#e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', color: '#fff', fontWeight: 800 } }, ch.name.charAt(0)),
                     e('div', { style: { flex: 1 } },
                       e('div', { style: { fontWeight: 800, fontSize: '14px', color: '#1e293b' } }, ch.name),
-                      e('div', { style: { fontSize: '11px', color: '#6b7280' } }, ch.description || '')
+                      e('div', { style: { fontSize: '11px', color: '#475569' } }, ch.description || '')
                     ),
                     onCallImagen && !ch.portrait && e('button', { onClick: function () { generatePortrait(ch.id); },
                       style: { fontSize: '10px', background: '#f1f5f9', border: '1px solid #d1d5db', borderRadius: '6px', padding: '3px 8px', cursor: 'pointer' },
@@ -976,18 +1027,36 @@
             // Controls bar
             e('div', { style: { display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', padding: '12px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e5e7eb' } },
               !isPlaying
-                ? e('button', { onClick: function () { playFromLine(currentLine); }, style: S.btn('#22c55e', '#fff', false) }, '▶ Play')
-                : e('button', { onClick: stopPlayback, style: S.btn('#ef4444', '#fff', false) }, '⏹ Stop'),
-              e('div', { style: { display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: '#6b7280' } },
+                ? e('button', { onClick: function () { playFromLine(currentLine); }, autoFocus: true, 'aria-label': 'Play performance', style: S.btn('#22c55e', '#fff', false) }, '▶ Play')
+                : null,
+              isPlaying && (isPaused
+                ? e('button', { onClick: resumePlayback, 'aria-label': 'Resume playback', style: S.btn('#22c55e', '#fff', false) }, '▶ Resume')
+                : e('button', { onClick: pausePlayback, 'aria-label': 'Pause playback after current line', style: S.btn('#f59e0b', '#fff', false) }, '⏸ Pause')),
+              isPlaying && e('button', { onClick: stopPlayback, 'aria-label': 'Stop playback', style: S.btn('#ef4444', '#fff', false) }, '⏹ Stop'),
+              e('div', { style: { display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: '#475569' } },
                 e('span', null, 'Speed:'),
                 [0.75, 1, 1.25, 1.5].map(function (spd) {
                   return e('button', { key: spd, onClick: function () { setPlaybackSpeed(spd); },
-                    style: { padding: '3px 8px', borderRadius: '6px', border: '1px solid ' + (playbackSpeed === spd ? PURPLE : '#d1d5db'), background: playbackSpeed === spd ? LIGHT_PURPLE : '#fff', color: playbackSpeed === spd ? PURPLE : '#6b7280', fontWeight: 600, fontSize: '11px', cursor: 'pointer' }
+                    'aria-pressed': playbackSpeed === spd ? 'true' : 'false',
+                    'aria-label': 'Playback speed ' + spd + ' times',
+                    style: { padding: '3px 8px', borderRadius: '6px', border: '1px solid ' + (playbackSpeed === spd ? PURPLE : '#d1d5db'), background: playbackSpeed === spd ? LIGHT_PURPLE : '#fff', color: playbackSpeed === spd ? PURPLE : '#475569', fontWeight: 600, fontSize: '11px', cursor: 'pointer' }
                   }, spd + 'x');
                 })
               ),
+              // Reading-friendly text toggle (WCAG 1.4.4 / 1.4.12)
+              e('button', {
+                onClick: function () {
+                  var next = !largeText;
+                  setLargeText(next);
+                  try { localStorage.setItem('alloLitLabReadingMode', next ? '1' : '0'); } catch (e) {}
+                  announceLitLab(next ? 'Reading-friendly text on.' : 'Reading-friendly text off.');
+                },
+                'aria-pressed': largeText ? 'true' : 'false',
+                'aria-label': largeText ? 'Turn off reading-friendly text' : 'Turn on reading-friendly text (larger, sans-serif, more spacing)',
+                style: { padding: '4px 10px', borderRadius: '6px', border: '1px solid ' + (largeText ? PURPLE : '#d1d5db'), background: largeText ? LIGHT_PURPLE : '#fff', color: largeText ? PURPLE : '#475569', fontWeight: 600, fontSize: '11px', cursor: 'pointer' }
+              }, '🔠 ' + (largeText ? 'Reading mode on' : 'Reading mode')),
               e('div', { style: { marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '6px' } },
-                e('span', { style: { fontSize: '11px', color: '#6b7280' } }, 'My Role:'),
+                e('span', { style: { fontSize: '11px', color: '#475569' } }, 'My Role:'),
                 e('select', { value: myRole || '', onChange: function (ev) { setMyRole(ev.target.value || null); },
                   style: { fontSize: '11px', padding: '4px 8px', borderRadius: '6px', border: '1px solid #d1d5db' },
                   'aria-label': 'Select your character role'
@@ -1011,7 +1080,7 @@
             totalPages > 1 && e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', justifyContent: 'center' } },
               e('button', { onClick: function () { setCurrentPage(Math.max(0, currentPage - 1)); }, disabled: currentPage === 0,
                 style: S.btn('#f1f5f9', '#374151', currentPage === 0), 'aria-label': 'Previous page' }, '◀'),
-              e('span', { style: { fontSize: '12px', fontWeight: 700, color: '#6b7280' } }, 'Page ' + (currentPage + 1) + ' of ' + totalPages),
+              e('span', { style: { fontSize: '12px', fontWeight: 700, color: '#475569' } }, 'Page ' + (currentPage + 1) + ' of ' + totalPages),
               e('button', { onClick: function () { setCurrentPage(Math.min(totalPages - 1, currentPage + 1)); }, disabled: currentPage >= totalPages - 1,
                 style: S.btn('#f1f5f9', '#374151', currentPage >= totalPages - 1), 'aria-label': 'Next page' }, '▶')
             ),
@@ -1020,14 +1089,16 @@
               e('img', { src: pageImages[currentPage], alt: 'Illustration for page ' + (currentPage + 1), style: { width: '100%', maxHeight: '200px', objectFit: 'cover' } })
             ),
             !pageImages[currentPage] && onCallImagen && e('button', { onClick: function () { generatePageImage(currentPage); }, disabled: pageImgLoading[currentPage],
-              style: { fontSize: '11px', color: '#6b7280', background: 'none', border: '1px dashed #d1d5db', borderRadius: '8px', padding: '6px 12px', cursor: pageImgLoading[currentPage] ? 'wait' : 'pointer', marginBottom: '10px', display: 'block', margin: '0 auto 10px' }
+              'aria-busy': pageImgLoading[currentPage] ? 'true' : 'false',
+              'aria-label': pageImgLoading[currentPage] ? 'Generating illustration, please wait' : 'Illustrate this page with AI',
+              style: { fontSize: '11px', color: '#475569', background: 'none', border: '1px dashed #d1d5db', borderRadius: '8px', padding: '6px 12px', cursor: pageImgLoading[currentPage] ? 'wait' : 'pointer', marginBottom: '10px', display: 'block', margin: '0 auto 10px' }
             }, pageImgLoading[currentPage] ? '⏳ Generating...' : '🎨 Illustrate This Page'),
             // Progress bar
             e('div', { style: { height: '4px', background: '#e5e7eb', borderRadius: '2px', marginBottom: '12px', overflow: 'hidden' } },
               e('div', { style: { height: '100%', width: (script.lines.length > 0 ? Math.round(((currentLine + 1) / script.lines.length) * 100) : 0) + '%', background: 'linear-gradient(90deg, ' + PURPLE + ', #a855f7)', borderRadius: '2px', transition: 'width 0.3s' } })
             ),
             // Script lines — show current page only (or all if single page)
-            e('div', { ref: lineContainerRef, style: { maxHeight: '55vh', overflowY: 'auto', padding: '8px' } },
+            e('div', { ref: lineContainerRef, style: Object.assign({ maxHeight: '55vh', overflowY: 'auto', padding: '8px' }, largeText ? { fontFamily: 'system-ui, -apple-system, "Segoe UI", sans-serif', letterSpacing: '0.02em' } : {}) },
               (totalPages > 1 ? (pages[currentPage] || []) : script.lines).map(function (line) {
                 var idx = script.lines.indexOf(line);
                 var isCurrent = idx === currentLine;
@@ -1040,15 +1111,15 @@
                   style: { padding: line.type === 'stage-direction' ? '4px 16px' : '10px 16px', borderLeft: '4px solid ' + borderColor, background: bgColor, borderRadius: '0 8px 8px 0', marginBottom: '4px', cursor: 'pointer', transition: 'all 0.2s', transform: isCurrent ? 'scale(1.01)' : 'scale(1)' }
                 },
                   line.type === 'stage-direction'
-                    ? e('p', { style: { fontSize: '11px', color: '#9ca3af', fontStyle: 'italic', margin: 0 } }, '[' + line.text + ']')
+                    ? e('p', { style: { fontSize: largeText ? '13px' : '11px', color: '#475569', fontStyle: 'italic', margin: 0, lineHeight: largeText ? 1.85 : 1.4 } }, '[' + line.text + ']')
                     : e('div', null,
                         e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' } },
                           character && character.portrait && e('img', { src: character.portrait, alt: '', style: { width: '20px', height: '20px', borderRadius: '50%', objectFit: 'cover' } }),
-                          e('span', { style: { fontSize: '11px', fontWeight: 800, color: character ? character.color : '#64748b' } },
+                          e('span', { style: { fontSize: largeText ? '13px' : '11px', fontWeight: 800, color: character ? character.color : '#64748b' } },
                             character ? character.name : 'Unknown'),
                           isMyLine && e('span', { style: { fontSize: '9px', background: '#fef3c7', color: '#92400e', padding: '1px 6px', borderRadius: '8px', fontWeight: 700 } }, '🎤 YOUR LINE')
                         ),
-                        e('p', { style: { fontSize: line.type === 'narration' ? '13px' : '14px', color: '#1e293b', margin: 0, fontStyle: line.type === 'narration' ? 'italic' : 'normal', lineHeight: 1.6 } }, line.text),
+                        e('p', { style: { fontSize: largeText ? (line.type === 'narration' ? '16px' : '17px') : (line.type === 'narration' ? '13px' : '14px'), color: '#1e293b', margin: 0, fontStyle: line.type === 'narration' ? 'italic' : 'normal', lineHeight: largeText ? 1.85 : 1.6 } }, line.text),
                         // Emotion reaction buttons (visible on current/past lines)
                         (isCurrent || idx < currentLine) && e('div', { style: { display: 'flex', gap: '2px', marginTop: '4px' } },
                           EMOTIONS.map(function (em) {
@@ -1068,7 +1139,7 @@
           phase === 'analyze' && script && e('div', { style: { maxWidth: '700px', margin: '0 auto' } },
             e('div', { style: { textAlign: 'center', marginBottom: '20px' } },
               e('h3', { style: { fontSize: '20px', fontWeight: 800, color: '#1e293b' } }, '📝 Literary Analysis'),
-              e('p', { style: { color: '#64748b', fontSize: '13px' } }, 'Reflect on the story, its characters, and the author\'s craft.')
+              e('p', { style: { color: '#475569', fontSize: '13px' } }, 'Reflect on the story, its characters, and the author\'s craft.')
             ),
             // Standards alignment
             e('div', { style: { marginBottom: '16px', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '12px', padding: '12px' } },
@@ -1139,6 +1210,8 @@
             // Submit for feedback
             e('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center', marginTop: '16px' } },
               e('button', { onClick: getAnalysisFeedback, disabled: analysisFeedback === 'loading' || !Object.values(analysisResponses).some(function (v) { return v && v.trim(); }),
+                'aria-busy': analysisFeedback === 'loading' ? 'true' : 'false',
+                'aria-label': analysisFeedback === 'loading' ? 'Analyzing your responses, please wait' : 'Get AI feedback on your analysis',
                 style: S.btn('#059669', '#fff', analysisFeedback === 'loading' || !Object.values(analysisResponses).some(function (v) { return v && v.trim(); }))
               }, analysisFeedback === 'loading' ? '⏳ Analyzing...' : '✨ Get Feedback'),
               e('button', { onClick: function () { setPhase('perform'); }, style: S.btn('#f1f5f9', '#374151', false) }, '← Back to Performance')

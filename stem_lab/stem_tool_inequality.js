@@ -504,13 +504,11 @@ window.StemLab = window.StemLab || {
           h('h3', { className: 'text-lg font-bold text-fuchsia-800' }, '\uD83C\uDFA8 Inequality Grapher'),
           h('span', { className: 'px-2 py-0.5 bg-fuchsia-100 text-fuchsia-700 text-[11px] font-bold rounded-full' }, 'INTERACTIVE'),
           d.quiz && (d.quiz.streak || 0) >= 2 && h('span', { className: 'px-2 py-0.5 bg-orange-100 text-orange-600 text-[11px] font-bold rounded-full animate-pulse' }, '\uD83D\uDD25 ' + d.quiz.streak),
-          earnedCount > 0 && h('button', { 'aria-label': 'AI',
-            onClick: function() { upd('showBadges', !showBadges); },
+          earnedCount > 0 && h('button', { onClick: function() { upd('showBadges', !showBadges); },
             className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100 transition-all',
             title: 'View badges (B)'
           }, '\uD83C\uDFC5 ' + earnedCount + '/' + BADGES.length),
-          h('button', { 'aria-label': 'AI',
-            onClick: askAI,
+          h('button', { onClick: askAI,
             className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-purple-50 border border-purple-200 text-purple-600 hover:bg-purple-100 transition-all',
             title: 'AI Tutor (?)'
           }, '\uD83E\uDDE0 AI')
@@ -542,7 +540,7 @@ window.StemLab = window.StemLab || {
         showAI && h('div', { className: 'bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-3 border-2 border-purple-200 mb-3' },
           h('div', { className: 'flex items-center justify-between mb-2' },
             h('p', { className: 'text-sm font-bold text-purple-800' }, '\uD83E\uDDE0 AI Inequality Tutor'),
-            h('button', { 'aria-label': 'Ask A I', onClick: function() { upd('showAI', false); }, className: 'text-xs text-slate-600 hover:text-slate-600' }, '\u2715')
+            h('button', { onClick: function() { upd('showAI', false); }, className: 'text-xs text-slate-600 hover:text-slate-600' }, '\u2715')
           ),
           aiLoading
             ? h('div', { className: 'flex items-center gap-2' },

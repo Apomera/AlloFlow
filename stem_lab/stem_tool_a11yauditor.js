@@ -500,8 +500,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
                 'aria-label': 'HTML code to audit',
                 className: 'w-full text-xs p-3 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-teal-300 font-mono resize-none h-32'
               }),
-              h('button', { 'aria-label': 'A11yauditor action',
-                onClick: function() { if (auditHtml.trim()) runAudit(auditHtml.trim(), 'html'); },
+              h('button', { onClick: function() { if (auditHtml.trim()) runAudit(auditHtml.trim(), 'html'); },
                 disabled: !auditHtml.trim() || auditLoading,
                 className: 'mt-2 px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 disabled:opacity-40 transition-colors'
               }, auditLoading ? 'Auditing...' : '\uD83D\uDD0D Audit HTML'),

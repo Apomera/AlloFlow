@@ -6487,9 +6487,7 @@ var d = labToolData.dissection || {};
 
                   React.createElement("div", { className: "mt-2 flex gap-1" },
 
-                    React.createElement("button", { "aria-label": "Dissection action",
-
-                      onClick: function () {
+                    React.createElement("button", { onClick: function () {
 
                         if (typeof callGemini === 'function') {
 
@@ -6512,9 +6510,7 @@ var d = labToolData.dissection || {};
 
                     }, '\uD83E\uDD16 ' + 'AI Explain'),
 
-                    React.createElement("button", { "aria-label": "Dissection action",
-
-                      onClick: function () {
+                    React.createElement("button", { onClick: function () {
 
                         var text = sel.name + '\n' + sel.fn;
 
@@ -6653,9 +6649,7 @@ var d = labToolData.dissection || {};
 
                       var isWrong = isChosen && !isCorrect;
 
-                      return React.createElement("button", { "aria-label": "Dissection action",
-
-                        key: opt.id, disabled: !!fb,
+                      return React.createElement("button", { key: opt.id, disabled: !!fb,
 
                         onClick: function () {
 

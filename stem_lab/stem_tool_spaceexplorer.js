@@ -1574,7 +1574,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                   'aria-label': (isHidden ? 'Specialist option: ' : 'Option ' + (ci + 1) + ': ') + choice.label + (showHints && choice.effects ? '. ' + Object.keys(choice.effects).map(function(k) { var v = choice.effects[k]; return RESOURCES[k] ? RESOURCES[k].label + ' ' + (v > 0 ? '+' : '') + v : ''; }).join(', ') : '') + (locked ? '. Complete spectral analysis first.' : ''),
                   onClick: function() { if (!locked) resolveEvent(activeEvent, choice); },
                   ref: ci === 0 ? function(el) { if (el && !locked) setTimeout(function() { el.focus(); }, 150); } : undefined,
-                  className: 'w-full text-left p-3 rounded-lg border transition-all focus:outline-none ' +
+                  className: 'w-full text-left p-3 rounded-lg border transition-all ' +
                     (locked
                       ? 'opacity-50 cursor-not-allowed bg-white/5 border-white/10'
                       : (isHidden

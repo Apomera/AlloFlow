@@ -43705,7 +43705,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                     even paraphrases are shown as distinct insertions+deletions.
                                     Each chunk is click-to-reject (pairs toggle together), and a
                                     drag-selection toolbar lets the user batch-accept/reject. */}
-                                {diffViewOpen && pdfFixResult && (() => {
+                                {diffViewOpen && pdfFixResult && ReactDOM.createPortal((() => {
                                   const _src = pdfFixResult.sourceText || '';
                                   const _fin = pdfFixResult.finalText || '';
                                   const _chunks = diffChunks;
@@ -44044,7 +44044,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                       </div>
                                     </div>
                                   );
-                                })()}
+                                })(), document.body)}
                                 {/* Image reinsertion failures row — surfaces silently-dropped images so the user sees them. */}
                                 {imgFailCount > 0 && (
                                   <details className="mb-2 bg-amber-50 border border-amber-200 rounded-xl p-2 text-[11px]" open>

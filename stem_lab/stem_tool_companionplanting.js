@@ -5730,7 +5730,7 @@ var d = (labToolData.companionPlanting) || {};
                       var cls = !answered ? 'border-rose-100 bg-white hover:border-rose-400 cursor-pointer' :
                         isRight ? 'border-green-400 bg-green-50' :
                         isSelected && !isRight ? 'border-red-400 bg-red-50' : 'border-slate-200 bg-white opacity-40';
-                      return React.createElement("button", { "aria-label": "Companionplanting action", key: oi,
+                      return React.createElement("button", { key: oi,
                         onClick: function() {
                           if (answered) return;
                           upd('gardenScenarioAnswer', oi);

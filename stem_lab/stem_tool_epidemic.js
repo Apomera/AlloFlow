@@ -2094,7 +2094,7 @@ window.StemLab = window.StemLab || {
                 onChange: function(e) { upd('chalAnswer', e.target.value); },
                 onKeyDown: function(e) { if (e.key === 'Enter') chalCheck(); },
                 placeholder: 'Type your answer...',
-                className: 'w-full px-4 py-2 border border-slate-200 rounded-xl text-sm focus:border-indigo-400 outline-none',
+                className: 'w-full px-4 py-2 border border-slate-200 rounded-xl text-sm focus:border-indigo-400',
                 'aria-label': 'Challenge answer'
               }),
               h('div', { className: 'flex gap-2' },
@@ -2169,7 +2169,7 @@ window.StemLab = window.StemLab || {
                 return h('div', { className: 'space-y-3' },
                   battleUseAI && h('span', { className: 'px-1.5 py-0.5 bg-purple-100 text-purple-600 text-[11px] font-bold rounded-full' }, '\uD83E\uDDE0 AI-GENERATED'),
                   h('p', { className: 'text-sm font-medium text-slate-700' }, q.q),
-                  h('input', { type: 'text', value: battleAnswer, onChange: function(e) { upd('battleAnswer', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') battleAttack(); }, placeholder: 'Type your answer...', className: 'w-full px-4 py-2 border border-slate-200 rounded-xl text-sm font-mono focus:border-red-400 outline-none', 'aria-label': 'Battle answer' }),
+                  h('input', { type: 'text', value: battleAnswer, onChange: function(e) { upd('battleAnswer', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') battleAttack(); }, placeholder: 'Type your answer...', className: 'w-full px-4 py-2 border border-slate-200 rounded-xl text-sm font-mono focus:border-red-400', 'aria-label': 'Battle answer' }),
                   h('div', { className: 'flex gap-2' },
                     h('button', { 'aria-label': 'Attack!', onClick: battleAttack, className: 'px-4 py-2 text-sm font-bold bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all' }, '\u2694\uFE0F Attack!'),
                     h('button', { 'aria-label': 'Hint', onClick: function() { updMulti({ battleFeedback: '\uD83D\uDCA1 ' + (q.h || 'No hint') }); }, className: 'px-3 py-2 text-sm font-bold bg-amber-50 text-amber-600 rounded-xl' }, '\uD83D\uDCA1 Hint')

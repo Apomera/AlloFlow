@@ -13334,7 +13334,7 @@ const d = labToolData.solarSystem;
                     type: "number", placeholder: "Your weight (kg)", value: d.gravWeight || '',
                     'aria-label': 'Your weight in kilograms',
                     onChange: function(e) { updMulti({ gravWeight: e.target.value, gravCalcUsed: true }); setTimeout(checkChallenges, 50); },
-                    className: "orr-input flex-1 px-3 py-1.5 rounded-lg text-sm outline-none border " + (isDark ? 'bg-slate-800 border-orange-700/50 text-slate-200' : 'bg-white border-orange-300')
+                    className: "orr-input flex-1 px-3 py-1.5 rounded-lg text-sm border " + (isDark ? 'bg-slate-800 border-orange-700/50 text-slate-200' : 'bg-white border-orange-300')
                   }),
                   React.createElement("span", { className: "text-sm font-bold " + (isDark ? 'text-orange-400' : 'text-orange-600'), style: { fontFamily: 'monospace' } },
                     d.gravWeight ? (Math.round(parseFloat(d.gravWeight) * (GRAVITY_MAP[sel.name] || 1) * 10) / 10) + ' kg on ' + sel.name : '...'
@@ -13386,7 +13386,7 @@ const d = labToolData.solarSystem;
                     'aria-label': 'Ask the AI space tutor a question',
                     onChange: function(e) { upd('aiQuestion', e.target.value); },
                     onKeyDown: function(e) { if (e.key === 'Enter') askSpaceTutor(d.aiQuestion); },
-                    className: "orr-input flex-1 px-3 py-1.5 rounded-lg text-sm outline-none border " + (isDark ? 'bg-slate-800 border-violet-700/50 text-slate-200' : 'bg-white border-violet-300')
+                    className: "orr-input flex-1 px-3 py-1.5 rounded-lg text-sm border " + (isDark ? 'bg-slate-800 border-violet-700/50 text-slate-200' : 'bg-white border-violet-300')
                   }),
                   React.createElement("button", { "aria-label": "Ask Space Tutor",
                     onClick: function() { askSpaceTutor(d.aiQuestion); },

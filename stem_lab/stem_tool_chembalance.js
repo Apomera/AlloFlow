@@ -637,12 +637,10 @@
             h('h3', { className: 'text-lg font-bold text-slate-800' }, '\u2697\uFE0F Chemistry Lab'),
             h('span', { className: 'px-2 py-0.5 bg-lime-100 text-lime-700 text-[11px] font-bold rounded-full' }, 'CHEM v3'),
             streak > 0 && h('span', { className: 'px-2 py-0.5 bg-orange-100 text-orange-700 text-xs font-bold rounded-full animate-in zoom-in' }, '\uD83D\uDD25 ' + streak),
-            h('button', { 'aria-label': 'AI',
-              onClick: function() { upd('_showBadges', !d._showBadges); },
+            h('button', { onClick: function() { upd('_showBadges', !d._showBadges); },
               className: 'ml-auto px-2 py-1 text-[11px] font-bold rounded-lg border ' + (d._showBadges ? 'bg-amber-100 text-amber-700 border-amber-300' : 'bg-slate-50 text-slate-600 border-slate-200')
             }, '\uD83C\uDFC5 ' + ext.badges.length + '/' + Object.keys(CHEM_BADGES).length),
-            h('button', { 'aria-label': 'AI',
-              onClick: function() { upd('_showAI', !d._showAI); },
+            h('button', { onClick: function() { upd('_showAI', !d._showAI); },
               className: 'px-2 py-1 text-[11px] font-bold rounded-lg border ' + (d._showAI ? 'bg-sky-100 text-sky-700 border-sky-300' : 'bg-slate-50 text-slate-600 border-slate-200')
             }, '\uD83E\uDD16 AI')
           ),
@@ -680,8 +678,8 @@
           d._showAI && h('div', { className: 'mb-3 bg-sky-50 rounded-xl p-3 border border-sky-200' },
             h('p', { className: 'text-[11px] font-bold text-sky-600 uppercase tracking-wider mb-2' }, '\uD83E\uDD16 AI Chemistry Tutor'),
             h('div', { className: 'flex gap-2 mb-2' },
-              h('input', { type: 'text', value: d._chemAIQ || '', onChange: function(e) { upd('_chemAIQ', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') askAI(d._chemAIQ); }, placeholder: 'Ask a chemistry question...', 'aria-label': 'Ask the chemistry tutor', className: 'flex-1 px-3 py-1.5 text-sm border border-sky-200 rounded-lg focus:outline-none focus:border-sky-400' }),
-              h('button', { 'aria-label': 'Ask A I', onClick: function() { askAI(d._chemAIQ); }, disabled: d._chemAILoading, className: 'px-3 py-1.5 text-xs font-bold text-white bg-sky-500 rounded-lg hover:bg-sky-600 disabled:opacity-50' }, d._chemAILoading ? '\u23F3...' : 'Ask')
+              h('input', { type: 'text', value: d._chemAIQ || '', onChange: function(e) { upd('_chemAIQ', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') askAI(d._chemAIQ); }, placeholder: 'Ask a chemistry question...', 'aria-label': 'Ask the chemistry tutor', className: 'flex-1 px-3 py-1.5 text-sm border border-sky-200 rounded-lg focus:focus:border-sky-400' }),
+              h('button', { onClick: function() { askAI(d._chemAIQ); }, disabled: d._chemAILoading, className: 'px-3 py-1.5 text-xs font-bold text-white bg-sky-500 rounded-lg hover:bg-sky-600 disabled:opacity-50' }, d._chemAILoading ? '\u23F3...' : 'Ask')
             ),
             d._chemAIResp && h('div', { className: 'bg-white rounded-lg p-3 text-sm text-slate-700 whitespace-pre-wrap border border-sky-100' }, d._chemAIResp)
           ),
@@ -772,7 +770,7 @@
             ),
             // Timer
             h('div', { className: 'mt-3 flex items-center gap-3' },
-              h('button', { 'aria-label': 'Change _rxn open', onClick: function() { if (d.timerActive) { updMulti({ timerActive: false, timerEnd: null }); } else { var arr = []; for (var ri = 0; ri < numSlots; ri++) arr.push(1); updMulti({ timerActive: true, timerStart: Date.now(), coefficients: arr, feedback: null }); } }, className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (d.timerActive ? 'bg-red-100 text-red-600 border border-red-200' : 'bg-amber-100 text-amber-700 border border-amber-200 hover:bg-amber-200') }, d.timerActive ? '\u23F9 Stop' : '\u23F1 Speed Challenge'),
+              h('button', { onClick: function() { if (d.timerActive) { updMulti({ timerActive: false, timerEnd: null }); } else { var arr = []; for (var ri = 0; ri < numSlots; ri++) arr.push(1); updMulti({ timerActive: true, timerStart: Date.now(), coefficients: arr, feedback: null }); } }, className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (d.timerActive ? 'bg-red-100 text-red-600 border border-red-200' : 'bg-amber-100 text-amber-700 border border-amber-200 hover:bg-amber-200') }, d.timerActive ? '\u23F9 Stop' : '\u23F1 Speed Challenge'),
               d.timerActive && d.timerStart && h('span', { className: 'text-xs font-mono font-bold text-amber-600' }, '\u23F1 ' + ((Date.now() - d.timerStart) / 1000).toFixed(0) + 's')
             )
           ),
@@ -793,7 +791,7 @@
               REACTION_TYPES.map(function(rt) {
                 var isOpen = d._rxnOpen === rt.id;
                 return h('div', { key: rt.id, className: 'bg-white rounded-xl border ' + (isOpen ? 'border-' + rt.color + '-300 shadow-md' : 'border-slate-200') },
-                  h('button', { 'aria-label': 'Change _rxn open', onClick: function() { upd('_rxnOpen', isOpen ? null : rt.id); chemSound('click'); }, className: 'w-full flex items-center gap-3 p-3 text-left' },
+                  h('button', { onClick: function() { upd('_rxnOpen', isOpen ? null : rt.id); chemSound('click'); }, className: 'w-full flex items-center gap-3 p-3 text-left' },
                     h('span', { className: 'text-2xl' }, rt.icon),
                     h('div', { className: 'flex-1' },
                       h('p', { className: 'text-sm font-bold text-slate-700' }, rt.label),
@@ -836,7 +834,7 @@
                       var fb = d._classifyFb;
                       var isCorrect = fb && classifyQ.type === rt.id;
                       var isWrong = fb && fb === rt.id && classifyQ.type !== rt.id;
-                      return h('button', { 'aria-label': 'Chembalance action', key: rt.id, onClick: function() {
+                      return h('button', { key: rt.id, onClick: function() {
                         if (d._classifyFb) return;
                         upd('_classifyFb', rt.id);
                         if (rt.id === classifyQ.type) { chemSound('correct'); addToast('\u2705 ' + rt.label + '!', 'success'); } else { chemSound('wrong'); }
@@ -869,7 +867,7 @@
             // Formula input
             h('div', { className: 'bg-gradient-to-r from-teal-50 to-cyan-50 rounded-xl p-3 border border-teal-200 mb-3' },
               h('label', { className: 'text-[11px] font-bold text-teal-600 uppercase tracking-wider block mb-1' }, '\uD83E\uDDEE Enter Chemical Formula'),
-              h('input', { type: 'text', value: stoichFormula, onChange: function(e) { upd('_stoichFormula', e.target.value); }, placeholder: 'e.g. H2O, NaCl, Ca(OH)2', 'aria-label': 'Chemical formula input', className: 'w-full px-3 py-2 text-sm font-mono font-bold border border-teal-200 rounded-lg focus:outline-none focus:border-teal-400 tracking-widest mb-2' }),
+              h('input', { type: 'text', value: stoichFormula, onChange: function(e) { upd('_stoichFormula', e.target.value); }, placeholder: 'e.g. H2O, NaCl, Ca(OH)2', 'aria-label': 'Chemical formula input', className: 'w-full px-3 py-2 text-sm font-mono font-bold border border-teal-200 rounded-lg focus:focus:border-teal-400 tracking-widest mb-2' }),
               // Presets
               h('div', { className: 'flex flex-wrap gap-1' },
                 MOLAR_PRESETS.map(function(mp) {
@@ -932,7 +930,7 @@
             // Molecule selector
             h('div', { className: 'flex flex-wrap gap-1.5 mb-3' },
               MOLECULES.map(function(mol, idx) {
-                return h('button', { 'aria-label': 'Change _mol idx', key: idx, onClick: function() { upd('_molIdx', idx); chemSound('click'); }, className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all border ' + (molIdx === idx ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-300') }, mol.formula + ' ' + mol.name);
+                return h('button', { key: idx, onClick: function() { upd('_molIdx', idx); chemSound('click'); }, className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all border ' + (molIdx === idx ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-300') }, mol.formula + ' ' + mol.name);
               })
             ),
             // SVG viewer
@@ -1007,7 +1005,7 @@
             // Safety tabs
             h('div', { className: 'flex gap-2 mb-3' },
               [{ id: 'symbols', label: '\u26A0\uFE0F GHS Symbols' }, { id: 'emergencies', label: '\uD83D\uDEA8 Emergencies' }, { id: 'rules', label: '\uD83D\uDCCB Lab Rules' }].map(function(tab) {
-                return h('button', { 'aria-label': 'Change _safety tab', key: tab.id, onClick: function() { upd('_safetyTab', tab.id); }, className: 'px-3 py-1.5 text-[11px] font-bold rounded-lg border ' + (safetyTab === tab.id ? 'bg-red-700 text-white border-red-500' : 'bg-white text-slate-600 border-slate-200 hover:border-red-300') }, tab.label);
+                return h('button', { key: tab.id, onClick: function() { upd('_safetyTab', tab.id); }, className: 'px-3 py-1.5 text-[11px] font-bold rounded-lg border ' + (safetyTab === tab.id ? 'bg-red-700 text-white border-red-500' : 'bg-white text-slate-600 border-slate-200 hover:border-red-300') }, tab.label);
               })
             ),
             // GHS Symbols
@@ -1033,7 +1031,7 @@
             safetyTab === 'emergencies' && h('div', null,
               h('div', { className: 'flex gap-1.5 mb-3' },
                 EMERGENCIES.map(function(em, idx) {
-                  return h('button', { 'aria-label': 'Change _emerg answer', key: idx, onClick: function() { updMulti({ _emergIdx: idx, _emergAnswer: null, _emergFeedback: null }); }, className: 'px-2 py-1 text-[11px] font-bold rounded-lg border ' + (emergIdx === idx ? 'bg-red-700 text-white border-red-500' : 'bg-white text-slate-600 border-slate-200') }, (idx + 1) + '. ' + em.title);
+                  return h('button', { key: idx, onClick: function() { updMulti({ _emergIdx: idx, _emergAnswer: null, _emergFeedback: null }); }, className: 'px-2 py-1 text-[11px] font-bold rounded-lg border ' + (emergIdx === idx ? 'bg-red-700 text-white border-red-500' : 'bg-white text-slate-600 border-slate-200') }, (idx + 1) + '. ' + em.title);
                 })
               ),
               (function() {
@@ -1048,7 +1046,7 @@
                     em.opts.map(function(opt, oi) {
                       var isChosen = emergAnswer === oi;
                       var showResult = emergFeedback !== null;
-                      return h('button', { 'aria-label': 'Chembalance action', key: oi, onClick: function() {
+                      return h('button', { key: oi, onClick: function() {
                         if (emergFeedback !== null) return;
                         upd('_emergAnswer', oi);
                         if (opt.correct) {
@@ -1113,7 +1111,7 @@
               h('p', { className: 'text-sm font-bold text-slate-700 mb-3' }, chalQuestions[chalIdx].q),
               h('div', { className: 'grid grid-cols-2 gap-2' },
                 chalQuestions[chalIdx].a.map(function(opt, i) {
-                  return h('button', { 'aria-label': 'Select option', key: i, onClick: function() {
+                  return h('button', { key: i, onClick: function() {
                     if (chalFeedback) return;
                     var isCorrect = i === chalQuestions[chalIdx].correct;
                     var ns = chalScore + (isCorrect ? 1 : 0);
@@ -1168,7 +1166,7 @@
                 h('p', { className: 'text-sm font-bold text-slate-700 mb-3' }, BATTLE_QS[battleRound].q),
                 h('div', { className: 'grid grid-cols-2 gap-2' },
                   BATTLE_QS[battleRound].a.map(function(opt, i) {
-                    return h('button', { 'aria-label': 'Select option', key: i, onClick: function() {
+                    return h('button', { key: i, onClick: function() {
                       if (battleFeedback) return;
                       var bq = BATTLE_QS[battleRound];
                       var ok = i === bq.correct;
@@ -1209,7 +1207,7 @@
                 var isOpen = learnTopic === idx;
                 var content = topic[band] || topic.g35;
                 return h('div', { key: idx, className: 'bg-white rounded-xl border ' + (isOpen ? 'border-lime-300 shadow-md' : 'border-slate-200') },
-                  h('button', { 'aria-label': 'Select option', onClick: function() { upd('_learnTopic', isOpen ? -1 : idx); }, className: 'w-full flex items-center gap-2 p-3 text-left' },
+                  h('button', { onClick: function() { upd('_learnTopic', isOpen ? -1 : idx); }, className: 'w-full flex items-center gap-2 p-3 text-left' },
                     h('span', { className: 'text-xl' }, topic.icon),
                     h('span', { className: 'text-sm font-bold text-slate-700 flex-1' }, topic.title),
                     h('span', { className: 'text-xs text-slate-600' }, isOpen ? '\u25B2' : '\u25BC')

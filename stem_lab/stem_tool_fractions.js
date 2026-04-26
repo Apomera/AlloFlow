@@ -721,8 +721,7 @@ window.StemLab = window.StemLab || {
             h('p', { className: 'text-sm font-bold text-orange-800 mb-2' }, 'Which fraction is larger?'),
             h('div', { className: 'flex gap-2 justify-center' },
               quiz.opts.map(function(opt) {
-                return h('button', { 'aria-label': 'Select option',
-                  key: opt,
+                return h('button', { key: opt,
                   onClick: function() {
                     var correct = opt === quiz.answer;
                     if (correct) { sfxCorrect(); } else { sfxWrong(); }

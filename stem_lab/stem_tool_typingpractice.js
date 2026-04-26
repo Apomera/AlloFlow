@@ -4941,7 +4941,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 padding: state.accommodations.largeKeys ? '28px 22px' : '22px 18px',
                 lineHeight: '1.8',
                 letterSpacing: '0.04em',
-                outline: 'none',
+                
                 cursor: 'text',
                 minHeight: '100px',
                 transition: 'border-color 120ms ease',

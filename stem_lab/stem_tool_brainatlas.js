@@ -3462,7 +3462,7 @@ var d = labToolData.brainAtlas || {};
           }
 
           return React.createElement("div", {
-              className: "max-w-4xl mx-auto animate-in fade-in duration-200 outline-none",
+              className: "max-w-4xl mx-auto animate-in fade-in duration-200",
               role: "region",
               "aria-label": "Brain Atlas. Keyboard shortcuts: 1 through " + VIEW_KEYS.length + " switch views, Q toggles quiz, / focuses search, Escape closes region detail.",
               tabIndex: 0,
@@ -3690,9 +3690,7 @@ var d = labToolData.brainAtlas || {};
 
                       var showResult = fb !== null && fb !== undefined;
 
-                      return React.createElement("button", { "aria-label": "Brainatlas action",
-
-                        key: opt.id, disabled: showResult,
+                      return React.createElement("button", { key: opt.id, disabled: showResult,
 
                         onClick: function () {
 

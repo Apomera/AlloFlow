@@ -1202,8 +1202,7 @@ window.StemLab = window.StemLab || {
                   var actual = ch.type === 'current' ? current : ch.type === 'resistance' ? totalR : power;
                   var close = Math.abs(actual - ch.target) < ch.target * 0.05;
 
-                  return h('button', { 'aria-label': 'Circuit action',
-                    key: ci,
+                  return h('button', { key: ci,
                     onClick: function() {
                       if (close) {
                         var newDoneSet = Object.assign({}, challengesDoneSet);
@@ -1235,8 +1234,7 @@ window.StemLab = window.StemLab || {
             (function() {
               return h('div', { className: 'mt-3 bg-blue-50 rounded-xl border border-blue-200 p-3' },
                 h('div', { className: 'flex items-center gap-2 mb-2' },
-                  h('button', { 'aria-label': 'Circuit action',
-                    onClick: function() { var q = makeOhmQuestion(); upd('ohmQuiz', q); },
+                  h('button', { onClick: function() { var q = makeOhmQuestion(); upd('ohmQuiz', q); },
                     className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (ohmQuiz ? 'bg-blue-100 text-blue-700 hover:bg-blue-200' : 'bg-blue-600 text-white hover:bg-blue-700')
                   }, ohmQuiz ? '\uD83D\uDD04 Next Question' : '\u26A1 Ohm\'s Law Quiz'),
                   ohmScore > 0 && h('span', { className: 'text-xs font-bold text-emerald-600' }, '\u2B50 ' + ohmScore + ' correct'),
@@ -1248,8 +1246,7 @@ window.StemLab = window.StemLab || {
                   h('p', { className: 'text-sm font-bold text-blue-800 mb-3' }, ohmQuiz.text),
                   h('div', { className: 'grid grid-cols-2 gap-2' },
                     ohmQuiz.opts.map(function(opt, oi) {
-                      return h('button', { 'aria-label': 'Circuit action',
-                        key: oi,
+                      return h('button', { key: oi,
                         onClick: function() {
                           var correct = Math.abs(opt - ohmQuiz.answer) < 0.01;
                           var newScore = ohmScore + (correct ? 1 : 0);
@@ -1573,8 +1570,7 @@ window.StemLab = window.StemLab || {
                   ['resistor', 'bulb', 'switch', 'led', 'ammeter', 'voltmeter', 'capacitor'].map(function(type) {
                     var info = COMP_PHYSICS[type];
                     var active = selectedComp === type;
-                    return h('button', { 'aria-label': 'Change _selected comp',
-                      key: type,
+                    return h('button', { key: type,
                       onClick: function() { upd('_selectedComp', active ? null : type); },
                       className: 'px-2 py-1 rounded-lg text-[11px] font-bold transition-all ' +
                         (active ? 'text-white shadow-sm' : 'bg-white text-slate-600 border border-slate-200 hover:border-amber-300'),
@@ -1618,8 +1614,7 @@ window.StemLab = window.StemLab || {
                   { emoji: '\u2764\uFE0F', name: 'Heart Monitor', circuit: 'Series', desc: 'Amplifies tiny electrical signals from heart muscle. Resistors set gain, capacitors filter noise.', comps: 'Resistor, Ammeter' }
                 ].map(function(app) {
                   var expanded = d._expandedApp === app.name;
-                  return h('button', { 'aria-label': 'Change _expanded app',
-                    key: app.name,
+                  return h('button', { key: app.name,
                     onClick: function() { upd('_expandedApp', expanded ? null : app.name); },
                     className: 'text-left rounded-lg p-2 border transition-all ' +
                       (expanded ? 'bg-white border-cyan-400 shadow-sm' : 'bg-white/60 border-cyan-100 hover:border-cyan-300')

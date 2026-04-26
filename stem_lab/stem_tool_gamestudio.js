@@ -1140,8 +1140,7 @@ window.StemLab = window.StemLab || {
               ['player','enemy','npc','treasure'].map(function(sid) {
                 var sprEvents = events[sid] || [];
                 var icons = { player: '\uD83E\uDDD1', enemy: '\uD83D\uDC7E', npc: '\uD83E\uDDD9', treasure: '\uD83D\uDC8E' };
-                return h('button', { 'aria-label': 'Select option',
-                  key: sid,
+                return h('button', { key: sid,
                   onClick: function() { upd({ activeSprite: sid }); },
                   className: 'px-3 py-1.5 rounded-lg border-2 text-xs font-bold transition-all ' +
                     (activeSprite === sid ? 'border-rose-400 bg-rose-100 shadow-md' : 'border-gray-200 hover:border-rose-300')
@@ -1466,8 +1465,7 @@ window.StemLab = window.StemLab || {
                       else if (showResult && isCorrect) btnClass += 'border-green-400 bg-green-50 text-green-700';
                       else if (isSelected) btnClass += 'border-indigo-400 bg-indigo-100 text-indigo-800';
                       else btnClass += 'border-gray-200 bg-white hover:border-indigo-300 hover:bg-indigo-50 text-slate-700';
-                      return h('button', { 'aria-label': 'Gamestudio action',
-                        key: oi,
+                      return h('button', { key: oi,
                         onClick: function() {
                           if (learnShowResult) return;
                           upd({ learnAnswer: oi });
@@ -1653,8 +1651,7 @@ window.StemLab = window.StemLab || {
 
             // Export / Import / Share
             h('div', { className: 'grid grid-cols-3 gap-3' },
-              h('button', { 'aria-label': 'Gamestudio action',
-                onClick: function() {
+              h('button', { onClick: function() {
                   var gd = { version: 2, name: projectName, gridW: gridW, gridH: gridH, gameType: gameType, tiles: tiles, sprites: sprites, events: events, spritePixels: spritePixels };
                   var blob = new Blob([JSON.stringify(gd, null, 2)], { type: 'application/json' });
                   var url = URL.createObjectURL(blob);
@@ -1698,8 +1695,7 @@ window.StemLab = window.StemLab || {
                 h('div', { className: 'text-2xl mb-1' }, '\uD83D\uDCE5'),
                 h('div', { className: 'text-xs font-bold text-rose-700' }, 'Import')
               ),
-              h('button', { 'aria-label': 'Gamestudio action',
-                onClick: function() {
+              h('button', { onClick: function() {
                   var gd = { version: 2, name: projectName, gridW: gridW, gridH: gridH, gameType: gameType, tiles: tiles, sprites: sprites, events: events };
                   var code = btoa(unescape(encodeURIComponent(JSON.stringify(gd))));
                   navigator.clipboard.writeText(code).then(function() {
