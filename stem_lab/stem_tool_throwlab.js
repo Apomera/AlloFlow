@@ -303,6 +303,88 @@ window.StemLab = window.StemLab || {
       teach: 'High arc (~35°) over the wall. Backspin keeps the ball in the air longer, makes it drop late. Used when the keeper is off the line.' }
   ];
 
+  // ── Cricket bowling presets ──
+  // Cricket bowling is the SECOND ball-bouncing sport in ThrowLab (after the
+  // basketball bounce-pass). Distance is 20.12 m (22 yards crease-to-crease;
+  // stumps live at the batter's end). The ball is heavier than a baseball
+  // (~0.16 kg) and is delivered with a STRAIGHT ARM — by rule, no elbow
+  // flexion > 15° — which limits speed to ~95 mph for the fastest bowlers.
+  //
+  // The headline cricket lesson: ball BOUNCES off the pitch ~3-5 m before
+  // the batter ("good length"), which means the trajectory you see at
+  // release is NOT the trajectory the batter sees. Spin axis controls
+  // post-bounce deviation — off-spin and leg-spin turn the ball laterally
+  // off the surface, which is the entire point of slow bowling.
+  //
+  // Modeling note: simulatePitch does not currently bounce the ball off the
+  // pitch. We accept this for MVP — students see the in-flight trajectory,
+  // and the teach blurbs describe what would happen post-bounce. The
+  // outcome classifier targets the stumps directly.
+  var CRICKET_DELIVERIES = [
+    { id: 'fast', label: 'Fast (Pace Bowling)', icon: '🚀',
+      speedMph: 90, spinRpm: 1200, spinAxisDeg: 0, aimDegV: -2, releaseHeight: 2.3,
+      grip: 'Two fingers along the seam, wrist behind the ball',
+      teach: 'Express pace: 85-95 mph (~150 km/h). Backspin keeps the ball low after bouncing — skids onto the batter rather than rising. The fastest delivery, with the least lateral deviation. Maximum-pressure ball.' },
+    { id: 'outswing', label: 'Out-Swinger', icon: '↗️',
+      speedMph: 82, spinRpm: 1400, spinAxisDeg: 60, aimDegV: -1, releaseHeight: 2.3,
+      grip: 'Seam tilted toward fine leg (away from the batter)',
+      teach: 'Curves AWAY from a right-handed batter mid-flight. The angled seam creates aerodynamic asymmetry — pressure differential pushes the ball off-side ~25-40 cm over 18 m. Edge-to-slip dismissal is the classic out-swinger wicket.' },
+    { id: 'inswing', label: 'In-Swinger', icon: '↙️',
+      speedMph: 82, spinRpm: 1400, spinAxisDeg: -60, aimDegV: -1, releaseHeight: 2.3,
+      grip: 'Seam tilted toward leg slip (into the batter)',
+      teach: 'Curves INTO a right-handed batter. The bowler aims wide of off-stump and the swing brings it back onto middle. Classic LBW or bowled dismissal — the batter plays for one line, the ball ends up on another.' },
+    { id: 'offspin', label: 'Off-Spin', icon: '🌀',
+      speedMph: 55, spinRpm: 2400, spinAxisDeg: 90, aimDegV: 4, releaseHeight: 2.4,
+      grip: 'Index finger pulls down on the seam; ball spins clockwise (RHB view)',
+      teach: 'Slow finger-spinner. Pitches in front and turns from off side toward leg side after bounce — 30 mph slower than pace, but the post-bounce break (~30-50 cm) is what beats the bat. Saqlain Mushtaq, R Ashwin specialty.' },
+    { id: 'legspin', label: 'Leg-Spin', icon: '🌪️',
+      speedMph: 50, spinRpm: 2500, spinAxisDeg: -90, aimDegV: 5, releaseHeight: 2.4,
+      grip: 'Wrist flicked outward; ball spins counter-clockwise',
+      teach: 'Shane Warne territory. Ball turns from leg side to off side after pitching — biggest break in the game (~40-60 cm). Hard to bowl accurately, devastating when controlled. The "googly" is its wrong\'un — same action, opposite spin.' },
+    { id: 'bouncer', label: 'Bouncer (Short)', icon: '⬆️',
+      speedMph: 88, spinRpm: 1100, spinAxisDeg: 0, aimDegV: 1, releaseHeight: 2.3,
+      grip: 'Pitch HALF-WAY down the wicket; ball rises to chest/head height',
+      teach: 'Intentional short delivery — pitches ~10 m from bowler instead of ~17 m, rising sharply at the batter (like a basketball bounce that springs to chest height). Used to intimidate. Limited to 2 per over in test cricket.' }
+  ];
+
+  // Score classifier for cricket bowling. Walks samples for the first crossing
+  // of z = stumpsZ (the batter's end). If the ball passes through the stumps
+  // box (|x| ≤ stumpsHalfWidth, 0 < y ≤ stumpsHeight) at that crossing → wicket.
+  // Wide line is at |x| ≈ 0.46 m (set by ICC standard). Above the head height
+  // (y > 1.8) → over the bails (likely a no-ball-bouncer). y ≤ 0 before
+  // reaching the stumps → short of the wicket / unplayable bouncer fail.
+  function classifyBowlResult(samples, mm) {
+    if (!samples || samples.length < 2) return 'short';
+    for (var i = 1; i < samples.length; i++) {
+      var prev = samples[i - 1], cur = samples[i];
+      // Short bounce that doesn't reach the batter
+      if (cur.y <= 0 && cur.z < mm.targetZ) {
+        // For the bouncer preset, a low-z bounce is the WHOLE POINT — but only
+        // if the ball still travels forward. We treat it as a wide if it falls
+        // way short, otherwise classify at the stumps crossing below.
+        if (cur.z < mm.targetZ * 0.7) return 'short';
+      }
+      // Stumps crossing
+      if (prev.z < mm.targetZ && cur.z >= mm.targetZ) {
+        var f = (mm.targetZ - prev.z) / (cur.z - prev.z);
+        var sx = prev.x + (cur.x - prev.x) * f;
+        var sy = prev.y + (cur.y - prev.y) * f;
+        // Way above the bails — head-height bouncer (ICC penalty in test)
+        if (sy > 1.8) return 'overhead';
+        // Hits the stumps
+        if (Math.abs(sx) <= mm.stumpsHalfWidth && sy > 0 && sy <= mm.stumpsHeight) return 'wicket';
+        // Just clipping the stumps line (bail-shave — count as wicket with bail-trembler footnote)
+        if (Math.abs(sx) <= mm.stumpsHalfWidth + 0.04 && sy > 0 && sy <= mm.stumpsHeight + 0.04) return 'shaved';
+        // Outside the wide line
+        if (Math.abs(sx) > mm.wideHalfWidth) return 'wide';
+        // Inside wide line but missing stumps — that's a "playable" delivery
+        // the batter would normally defend or score off. Outcome: dot ball.
+        return 'dot';
+      }
+    }
+    return 'short';
+  }
+
   // Football field goal presets — distance + power tradeoff. The headline lesson
   // is the angle ↔ distance tradeoff: too flat and the ball crashes into the
   // crossbar; too steep and you lose distance to vertical wastage. Each preset
@@ -412,6 +494,23 @@ window.StemLab = window.StemLab || {
           progress: function(s) { return s.fgMadeByDist['50'] ? 'Done!' : 'Long preset; 40° launch'; },
           tip: 'Drag eats ~10% of horizontal range at this distance — bump speed.' }
       ]
+    },
+    bowling: {
+      label: 'Cricket Drills',
+      tasks: [
+        { id: 'b1', goal: 'Hit the stumps with a Fast delivery',
+          test: function(s) { return s.bowlTypes && s.bowlTypes.fast; },
+          progress: function(s) { return (s.bowlTypes && s.bowlTypes.fast) ? 'Done!' : 'Pick Fast preset and aim middle-stump'; },
+          tip: 'Backspin keeps the ball low after pitching — aim slightly below the bails.' },
+        { id: 'b2', goal: 'Bowl a wicket with the In-Swinger',
+          test: function(s) { return s.bowlTypes && s.bowlTypes.inswing; },
+          progress: function(s) { return (s.bowlTypes && s.bowlTypes.inswing) ? 'Done!' : 'In-Swinger preset; aim wide of off-stump'; },
+          tip: 'Start the line outside off-stump and let the swing bring it back onto middle.' },
+        { id: 'b3', goal: 'Take 3 wickets total (any delivery)',
+          test: function(s) { return s.totalWickets >= 3; },
+          progress: function(s) { return (s.totalWickets || 0) + ' / 3 wickets'; },
+          tip: 'Mix pace and spin — keep the batter guessing about line and length.' }
+      ]
     }
   };
 
@@ -454,6 +553,22 @@ window.StemLab = window.StemLab || {
       releaseStrideDefault: 0.0,
       releaseHeightRange: [0.0, 0.0],
       speedRange: [30, 95]
+    },
+    bowling: {
+      label: "Bowler's Crease", icon: '🏏', ball: 'cricket', presets: CRICKET_DELIVERIES,
+      // 22 yd between creases = 20.12 m. Bowler's pop crease is "0"; batter's
+      // stumps live at the far end (z = 20.12). The actual delivery stride
+      // means the ball is RELEASED from ~17.5 m, not 20.12 — but for the
+      // canvas physics we keep the bowler at z=0 and target the stumps.
+      targetZ: 20.12,
+      // Stumps: 71.1 cm tall, 22.86 cm overall width (3 stumps spaced ~7.6cm)
+      stumpsHeight: 0.711,
+      stumpsHalfWidth: 0.1143,
+      // Wide line per ICC (test cricket): 0.92m total (0.46 each side of middle stump)
+      wideHalfWidth: 0.46,
+      releaseStrideDefault: 1.2,
+      releaseHeightRange: [1.8, 2.6],
+      speedRange: [40, 100]
     }
   };
 
@@ -930,6 +1045,23 @@ window.StemLab = window.StemLab || {
         tlAnnounce('Selected kick: ' + kt.label + '. Speed ' + kt.speedMph + ' mph, spin axis ' + kt.spinAxisDeg + ' degrees.');
       }
 
+      function applyBowlPreset(bid) {
+        var bt = CRICKET_DELIVERIES.find(function(b) { return b.id === bid; });
+        if (!bt) return;
+        setLabToolData(function(prev) {
+          var next = Object.assign({}, prev.throwlab, {
+            bowlType: bid,
+            speedMph: bt.speedMph,
+            spinRpm: bt.spinRpm,
+            spinAxisDeg: bt.spinAxisDeg,
+            aimDegV: bt.aimDegV,
+            releaseHeight: bt.releaseHeight
+          });
+          return Object.assign({}, prev, { throwlab: next });
+        });
+        tlAnnounce('Selected delivery: ' + bt.label + '. Speed ' + bt.speedMph + ' mph, spin axis ' + bt.spinAxisDeg + ' degrees.');
+      }
+
       // ── Compare Mode helpers ──
       // Pin the most recent trajectory as a "reference ghost" — drawn behind
       // the next throw in a faded color so students can change one parameter
@@ -946,9 +1078,10 @@ window.StemLab = window.StemLab || {
                       : isFreeThrow ? (currentShot && currentShot.label) || 'shot'
                       : isFreeKick ? (currentKick && currentKick.label) || 'kick'
                       : isFieldGoal ? (currentGoal && currentGoal.label) || 'kick'
+                      : isBowling ? (currentBowl && currentBowl.label) || 'delivery'
                       : 'throw';
         var label = d.speedMph + ' mph · ' + modeLabel
-                  + (isPitching || isFreeKick ? ' · ' + d.spinRpm + ' rpm @ ' + d.spinAxisDeg + '°' : '')
+                  + (isPitching || isFreeKick || isBowling ? ' · ' + d.spinRpm + ' rpm @ ' + d.spinAxisDeg + '°' : '')
                   + (isFreeThrow || isFieldGoal ? ' · ' + d.aimDegV.toFixed(1) + '°' : '');
         setLabToolData(function(prev) {
           var next = Object.assign({}, prev.throwlab, {
@@ -1058,8 +1191,10 @@ window.StemLab = window.StemLab || {
             defaults = { speedMph: 16, releaseHeight: 2.2, aimDegV: 52, aimDegH: 0, spinRpm: 180, spinAxisDeg: 0 };
           } else if (newMode === 'freekick') {
             defaults = { speedMph: 60, releaseHeight: 0.11, aimDegV: 12, aimDegH: 0, spinRpm: 600, spinAxisDeg: 105 };
-          } else { // fieldgoal
+          } else if (newMode === 'fieldgoal') {
             defaults = { speedMph: 60, releaseHeight: 0.0, aimDegV: 38, aimDegH: 0, spinRpm: 0, spinAxisDeg: 0, fgDistanceYd: 35 };
+          } else { // bowling
+            defaults = { speedMph: 90, releaseHeight: 2.3, aimDegV: -2, aimDegH: 0, spinRpm: 1200, spinAxisDeg: 0, bowlType: 'fast' };
           }
           var next = Object.assign({}, prev.throwlab, defaults, {
             mode: newMode, lastResult: null, replayActive: false, replayT: 0
@@ -1099,14 +1234,13 @@ window.StemLab = window.StemLab || {
           throwerHand: d.throwerHand,
           targetZ: effectiveTargetZ,
           releaseStride: modeMeta.releaseStrideDefault,
-          truncateAtTarget: d.mode === 'pitching', // free throw / free kick / field goal need the full arc to land
+          truncateAtTarget: d.mode === 'pitching' || d.mode === 'bowling', // free throw / free kick / field goal need the full arc to land
           // Bounces — basketball needs them for rim-out → bounce on the
           // floor → continued motion. Soccer / football let the ball roll
-          // after a missed kick. Pitching: a "bounced" ball (in the dirt)
-          // is a wild pitch and we already report it; bounces past that
-          // don't matter to the outcome. Default OFF for pitching to keep
-          // bouncing-in-the-dirt animations from running too long.
-          allowBounces: d.mode !== 'pitching',
+          // after a missed kick. Pitching/bowling: a "bounced" ball is
+          // either a wild pitch or normal cricket — we already classify at
+          // the target plane, so bouncing animations past that don't matter.
+          allowBounces: d.mode !== 'pitching' && d.mode !== 'bowling',
           windMph: d.windMph || 0,
           windDirDeg: d.windDirDeg || 0,
           gravity: (function() {
@@ -1131,6 +1265,8 @@ window.StemLab = window.StemLab || {
           loc = classifyKickResult(result.samples, modeMeta);
         } else if (d.mode === 'fieldgoal') {
           loc = classifyFieldGoalResult(result.samples, effectiveTargetZ, modeMeta.crossbarHeight, modeMeta.goalHalfWidth);
+        } else if (d.mode === 'bowling') {
+          loc = classifyBowlResult(result.samples, modeMeta);
         } else {
           loc = result.outcome.reachedPlate
             ? classifyPlateLocation(result.outcome.plateX, result.outcome.plateY)
@@ -1166,6 +1302,7 @@ window.StemLab = window.StemLab || {
         var newMakeCount = (d.mode === 'freethrow' && (loc === 'swish' || loc === 'made' || loc === 'caught')) ? (d.shotMakeCount || 0) + 1 : (d.shotMakeCount || 0);
         var newGoalCount = (d.mode === 'freekick' && loc === 'goal') ? (d.goalCount || 0) + 1 : (d.goalCount || 0);
         var newFgMakeCount = (d.mode === 'fieldgoal' && loc === 'good') ? (d.fgMakeCount || 0) + 1 : (d.fgMakeCount || 0);
+        var newWicketCount = (d.mode === 'bowling' && (loc === 'wicket' || loc === 'shaved')) ? (d.wicketCount || 0) + 1 : (d.wicketCount || 0);
         var newTypesUsed = Object.assign({}, d.pitchTypesUsed || {});
         if (d.mode === 'pitching') newTypesUsed[d.pitchType] = true;
         // Roll a compact history entry for Coach Mode — last 5 throws.
@@ -1178,6 +1315,7 @@ window.StemLab = window.StemLab || {
           shotKind: d.mode === 'pitching' ? d.pitchType
                   : d.mode === 'freekick' ? d.kickType
                   : d.mode === 'fieldgoal' ? d.goalType
+                  : d.mode === 'bowling' ? d.bowlType
                   : d.shotType,
           speedMph: d.speedMph, angleV: d.aimDegV, angleH: d.aimDegH,
           spinRpm: d.spinRpm, spinAxisDeg: d.spinAxisDeg,
@@ -1192,7 +1330,8 @@ window.StemLab = window.StemLab || {
           streakStrikes: 0, strikeTypes: {}, strikeWithLowSpin: false,
           makeCount: 0, swishHeights: 0, swishHeightSet: {}, completedBouncePass: false,
           goalKickTypes: {}, totalGoals: 0,
-          fgMadeByDist: {}
+          fgMadeByDist: {},
+          bowlTypes: {}, totalWickets: 0
         }, d.drillStats || {});
         // Pitching streak + type-coverage
         if (d.mode === 'pitching') {
@@ -1230,6 +1369,12 @@ window.StemLab = window.StemLab || {
           stats.fgMadeByDist = Object.assign({}, stats.fgMadeByDist);
           stats.fgMadeByDist[String(d.fgDistanceYd)] = true;
         }
+        // Bowling wickets + per-delivery-style coverage
+        if (d.mode === 'bowling' && (loc === 'wicket' || loc === 'shaved')) {
+          stats.bowlTypes = Object.assign({}, stats.bowlTypes);
+          stats.bowlTypes[d.bowlType] = true;
+          stats.totalWickets = (stats.totalWickets || 0) + 1;
+        }
         // ── Drill task progression ──
         var newDrillTaskIdx = d.drillTaskIdx || 0;
         var taskJustCompleted = null;
@@ -1253,6 +1398,7 @@ window.StemLab = window.StemLab || {
             shotMakeCount: newMakeCount,
             goalCount: newGoalCount,
             fgMakeCount: newFgMakeCount,
+            wicketCount: newWicketCount,
             pitchTypesUsed: newTypesUsed,
             recentThrows: newRecent,
             drillStats: stats,
@@ -1413,6 +1559,35 @@ window.StemLab = window.StemLab || {
               tlAnnounce('Short — kick didn\'t reach the goal line.');
               if (addToast) addToast('Short');
             }
+          } else if (d.mode === 'bowling') {
+            if (loc === 'wicket') {
+              sfxStrike(); sfxStrike();
+              tlAnnounce('HOWZAT! Wicket — ball clattered into the stumps.' + describeShape(result));
+              if (addToast) addToast('🏏 WICKET!');
+              if (awardXP) awardXP('throwlab', 10, 'Wicket taken');
+              if (celebrate) celebrate();
+            } else if (loc === 'shaved') {
+              sfxStrike();
+              tlAnnounce('Bail-trembler! Ball just clipped the stumps — count it.');
+              if (addToast) addToast('🏏 Bail-trembler');
+              if (awardXP) awardXP('throwlab', 7, 'Wicket (bail-shaver)');
+            } else if (loc === 'overhead') {
+              sfxBall();
+              tlAnnounce('Over the bails — head-height ball is a no-ball penalty in test cricket. Reduce launch angle.');
+              if (addToast) addToast('Overhead — no-ball');
+            } else if (loc === 'wide') {
+              sfxBall();
+              tlAnnounce('Wide. Outside the wide line — adjust your line tighter to off-stump.');
+              if (addToast) addToast('Wide call');
+            } else if (loc === 'dot') {
+              sfxBall();
+              tlAnnounce('Dot ball — passes the bat without hitting stumps. Defensible delivery.');
+              if (addToast) addToast('Dot ball');
+            } else {
+              sfxBall();
+              tlAnnounce('Short of a length — ball bounced too far in front of the batter.');
+              if (addToast) addToast('Short of length');
+            }
           }
         }, 350);
       }
@@ -1443,13 +1618,16 @@ window.StemLab = window.StemLab || {
         var renderMaxZ = d.mode === 'pitching' ? modeMeta.targetZ
                        : d.mode === 'freekick' ? 25
                        : d.mode === 'fieldgoal' ? (fgGoalZ + 5)
+                       : d.mode === 'bowling' ? modeMeta.targetZ
                        : 6.5;
         // For top-down: maxB = lateral half-width × 2 ≈ 12m so a curling shot
         // with 1.5m of curl + the 7.32m goal both fit. Field goal apex can hit
-        // 15m+ on a 60-yd kick so we need extra vertical room.
+        // 15m+ on a 60-yd kick so we need extra vertical room. Bowling stays
+        // tight (~3m vertical) so the stumps are tall enough to read.
         var maxB = isTopDown ? 6.0
                  : d.mode === 'pitching' ? 3.0
                  : d.mode === 'fieldgoal' ? 18
+                 : d.mode === 'bowling' ? 3.2
                  : 4.5;
         // For top-down, B is symmetrical around 0 (lateral X); we map [-maxB, +maxB] to canvas height.
         // For side-view, B is from 0 (ground) up to +maxB.
@@ -1477,14 +1655,14 @@ window.StemLab = window.StemLab || {
           for (var ms = 0; ms < W; ms += 60) gfx.fillRect(ms, 0, 30, H);
         } else {
           // Side view: sky gradient + ground band
-          var skyTop = d.mode === 'pitching' ? '#1e3a5f' : '#3a2e2a';
-          var skyBot = d.mode === 'pitching' ? '#5a7ba8' : '#6e5a48';
+          var skyTop = d.mode === 'pitching' || d.mode === 'bowling' ? '#1e3a5f' : '#3a2e2a';
+          var skyBot = d.mode === 'pitching' || d.mode === 'bowling' ? '#5a7ba8' : '#6e5a48';
           var skyGrad = gfx.createLinearGradient(0, 0, 0, marginT + fieldH);
           skyGrad.addColorStop(0, skyTop);
           skyGrad.addColorStop(1, skyBot);
           gfx.fillStyle = skyGrad;
           gfx.fillRect(0, 0, W, marginT + fieldH);
-          gfx.fillStyle = d.mode === 'pitching' ? '#3a7a26' : '#c8965a';
+          gfx.fillStyle = d.mode === 'pitching' ? '#3a7a26' : d.mode === 'bowling' ? '#a47b4f' : '#c8965a';
           gfx.fillRect(0, marginT + fieldH, W, H - (marginT + fieldH));
           if (d.mode === 'freethrow') {
             // Hardwood plank lines for the gym floor
@@ -1759,6 +1937,63 @@ window.StemLab = window.StemLab || {
           gfx.fillText('Ball', ballSpot[0], ballSpot[1] + 16);
           gfx.fillText('Wall (10 yd)', (wallLeftEdge[0] + wallRightEdge[0]) / 2, marginT + fieldH + 18);
           gfx.fillText('Goal — 7.32 m wide', (postL[0] + postR[0]) / 2, marginT + fieldH + 18);
+        } else if (d.mode === 'bowling') {
+          // Cricket pitch (side view): bowler's crease at z=0, batter's stumps
+          // at z=20.12. Brown rectangle for the pitch strip ("the wicket").
+          // Stumps drawn as 3 vertical sticks at the far end (71 cm tall).
+          // "Good length" zone shaded between the bowler and batter — that's
+          // where you WANT to pitch the ball for a good delivery.
+          var pitchEnd = worldToCanvas(modeMeta.targetZ, 0);
+          var bowlerCrease = worldToCanvas(0, 0);
+          // "Good length" zone: 5-8 m from the batter's stumps = 12-15 m from bowler.
+          // (Pitching the ball there = ball reaches batter at knee/thigh height.)
+          var goodLenStart = worldToCanvas(modeMeta.targetZ - 8, 0);
+          var goodLenEnd = worldToCanvas(modeMeta.targetZ - 5, 0);
+          // Pitch strip — slightly darker than the surrounding ground
+          gfx.fillStyle = '#7a5837';
+          gfx.fillRect(bowlerCrease[0], bowlerCrease[1] - 3, pitchEnd[0] - bowlerCrease[0], 6);
+          // Good-length zone shading
+          gfx.fillStyle = 'rgba(251, 191, 36, 0.22)';
+          gfx.fillRect(goodLenStart[0], goodLenStart[1] - 6, goodLenEnd[0] - goodLenStart[0], 12);
+          // Bowler's popping crease (white horizontal mark at z=0)
+          gfx.strokeStyle = '#fafafa';
+          gfx.lineWidth = 2;
+          gfx.beginPath();
+          gfx.moveTo(bowlerCrease[0] - 14, bowlerCrease[1]);
+          gfx.lineTo(bowlerCrease[0] + 14, bowlerCrease[1]);
+          gfx.stroke();
+          // Batter's popping crease at z=targetZ-1.22 (the 4-foot batter zone)
+          var batterCrease = worldToCanvas(modeMeta.targetZ - 1.22, 0);
+          gfx.beginPath();
+          gfx.moveTo(batterCrease[0] - 14, batterCrease[1]);
+          gfx.lineTo(batterCrease[0] + 14, batterCrease[1]);
+          gfx.stroke();
+          // Stumps at z=targetZ — three vertical sticks rising 71.1 cm
+          var stumpsTop = worldToCanvas(modeMeta.targetZ, modeMeta.stumpsHeight);
+          gfx.strokeStyle = '#e5e5e5';
+          gfx.lineWidth = 3;
+          gfx.beginPath();
+          gfx.moveTo(pitchEnd[0] - 6, pitchEnd[1]); gfx.lineTo(pitchEnd[0] - 6, stumpsTop[1]);
+          gfx.moveTo(pitchEnd[0],     pitchEnd[1]); gfx.lineTo(pitchEnd[0],     stumpsTop[1]);
+          gfx.moveTo(pitchEnd[0] + 6, pitchEnd[1]); gfx.lineTo(pitchEnd[0] + 6, stumpsTop[1]);
+          gfx.stroke();
+          // Bails on top — two thin horizontal lines bridging the stumps
+          gfx.strokeStyle = '#d4a574';
+          gfx.lineWidth = 1.5;
+          gfx.beginPath();
+          gfx.moveTo(pitchEnd[0] - 7, stumpsTop[1]); gfx.lineTo(pitchEnd[0] + 1, stumpsTop[1]);
+          gfx.moveTo(pitchEnd[0] - 1, stumpsTop[1]); gfx.lineTo(pitchEnd[0] + 7, stumpsTop[1]);
+          gfx.stroke();
+          // Labels
+          gfx.fillStyle = '#cbd5e1';
+          gfx.font = '11px system-ui';
+          gfx.textAlign = 'center';
+          gfx.fillText('Bowler', bowlerCrease[0], marginT + fieldH + 22);
+          gfx.fillText('22 yd pitch →', (bowlerCrease[0] + pitchEnd[0]) / 2, marginT + fieldH + 22);
+          gfx.fillText('Stumps', pitchEnd[0], marginT + fieldH + 36);
+          gfx.fillStyle = 'rgba(251, 191, 36, 0.85)';
+          gfx.font = '10px system-ui';
+          gfx.fillText('Good length', (goodLenStart[0] + goodLenEnd[0]) / 2, goodLenStart[1] - 12);
         }
 
         // ── Wind indicator (outdoor modes only, when wind is on) ──
@@ -2021,14 +2256,17 @@ window.StemLab = window.StemLab || {
       var isFreeThrow = d.mode === 'freethrow';
       var isFreeKick = d.mode === 'freekick';
       var isFieldGoal = d.mode === 'fieldgoal';
+      var isBowling = d.mode === 'bowling';
       // Active preset for the bottom-of-canvas teach blurb
       var currentShot = SHOT_TYPES.find(function(s) { return s.id === d.shotType; }) || SHOT_TYPES[0];
       var currentKick = KICK_TYPES.find(function(k) { return k.id === d.kickType; }) || KICK_TYPES[0];
       var currentGoal = GOAL_TYPES.find(function(g) { return g.id === d.goalType; }) || GOAL_TYPES[0];
+      var currentBowl = CRICKET_DELIVERIES.find(function(b) { return b.id === d.bowlType; }) || CRICKET_DELIVERIES[0];
       var activePreset = isPitching ? currentPitch
                        : isFreeThrow ? currentShot
                        : isFreeKick ? currentKick
-                       : currentGoal;
+                       : isFieldGoal ? currentGoal
+                       : currentBowl;
 
       // Outcome label + color (mode-specific)
       function outcomeLabel(loc) {
@@ -2053,6 +2291,14 @@ window.StemLab = window.StemLab || {
                : loc === 'wideclose' ? '↔️ No good — wide by inches'
                : loc === 'wide' ? '↔️ No good — wide'
                : '😬 Short of the line';
+        }
+        if (isBowling) {
+          return loc === 'wicket' ? '🏏 WICKET — howzat!'
+               : loc === 'shaved' ? '🏏 Bail-trembler (still out)'
+               : loc === 'overhead' ? '⬆️ Over the bails (no-ball)'
+               : loc === 'wide' ? '↔️ Wide call'
+               : loc === 'dot' ? '⚪ Dot ball — defended'
+               : '😬 Short of length';
         }
         // Pass outcomes (kind: 'pass' shot types) reuse this same function.
         return loc === 'swish' ? '🌊 SWISH (clean center)'
@@ -2126,6 +2372,18 @@ window.StemLab = window.StemLab || {
           if (loc === 'wideclose') return 'Just wide of the upright. Lateral aim is the lever here — check your horizontal aim slider.';
           if (loc === 'wide') return 'No good — well wide of the goalposts. Reset horizontal aim toward 0°.';
           return 'Short of the goal line — kick didn\'t carry the distance. Add power, or accept a shorter distance preset.';
+        }
+        // Bowling
+        if (isBowling) {
+          var swingM = lr.samples ? (Math.max.apply(null, lr.samples.map(function(s) { return s.x; })) - Math.min.apply(null, lr.samples.map(function(s) { return s.x; }))) : 0;
+          if (loc === 'wicket') {
+            return 'WICKET! Ball clattered into the stumps at ' + d.speedMph + ' mph after ' + swingM.toFixed(2) + ' m of lateral swing. ' + (d.spinRpm > 2000 ? 'Spin axis ' + d.spinAxisDeg + '° produced classic finger/wrist deviation.' : 'Pace + line did the work — minimal swing needed.');
+          }
+          if (loc === 'shaved') return 'Bail-trembler — just clipped the stumps. Tighten line by ~5 cm and the next one is unmistakable.';
+          if (loc === 'overhead') return 'Over the bails — that\'s a head-height ball, no-ball under test cricket rules. Lower your launch angle by 3-5°.';
+          if (loc === 'wide') return 'Outside the wide line. Cricket\'s wide is ~46 cm from middle stump — your line drifted past that. Adjust horizontal aim toward 0°.';
+          if (loc === 'dot') return 'Dot ball — the batter would defend this one. Good line and length but missed the stumps. Move ~10 cm closer to the off-stump line.';
+          return 'Short of length — ball pitched too far in front of the batter. Increase release angle or reduce vertical aim by 2-3° for a fuller delivery.';
         }
         return null;
       }
@@ -2565,12 +2823,13 @@ window.StemLab = window.StemLab || {
             // Preset picker (pitches OR shots, mode-driven)
             h('div', { style: { background: '#0f172a', border: '1px solid #1e293b', borderRadius: 10, padding: 12, marginBottom: 12 } },
               h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 } },
-                isPitching ? 'Pitch type' : isFreeKick ? 'Kick style' : isFieldGoal ? 'Distance' : 'Shot type'),
+                isPitching ? 'Pitch type' : isFreeKick ? 'Kick style' : isFieldGoal ? 'Distance' : isBowling ? 'Delivery' : 'Shot type'),
               h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 } },
                 modeMeta.presets.map(function(pt) {
                   var sel = isPitching ? d.pitchType === pt.id
                           : isFreeKick ? d.kickType === pt.id
                           : isFieldGoal ? d.goalType === pt.id
+                          : isBowling ? d.bowlType === pt.id
                           : d.shotType === pt.id;
                   return h('button', {
                     key: pt.id,
@@ -2578,6 +2837,7 @@ window.StemLab = window.StemLab || {
                       if (isPitching) applyPitchPreset(pt.id);
                       else if (isFreeKick) applyKickPreset(pt.id);
                       else if (isFieldGoal) applyGoalPreset(pt.id);
+                      else if (isBowling) applyBowlPreset(pt.id);
                       else applyShotPreset(pt.id);
                     },
                     'aria-pressed': sel,
@@ -2593,6 +2853,7 @@ window.StemLab = window.StemLab || {
                        pt.speedMph + ' mph' + (isPitching ? ' · ' + pt.spinRpm + ' rpm'
                                               : isFreeKick ? ' · spin ' + pt.spinAxisDeg + '°'
                                               : isFieldGoal ? ' · ' + pt.aimDegV + '° launch'
+                                              : isBowling ? ' · spin ' + pt.spinAxisDeg + '°'
                                               : ' · ' + pt.aimDegV + '° arc')));
                 })
               ),
@@ -2608,8 +2869,8 @@ window.StemLab = window.StemLab || {
               // student can focus on the speed-distance relationship alone.
               (d.scaffoldTier || 3) >= 2 ? slider('Release height', d.releaseHeight.toFixed(2), modeMeta.releaseHeightRange[0], modeMeta.releaseHeightRange[1], 0.05, function(v) { upd('releaseHeight', v); }, ' m') : null,
               (d.scaffoldTier || 3) >= 2 ? slider('Vertical aim', d.aimDegV.toFixed(1),
-                isPitching ? -8 : isFreeKick ? -2 : isFieldGoal ? 20 : 30,
-                isPitching ? 4 : isFreeKick ? 45 : isFieldGoal ? 60 : 70,
+                isPitching ? -8 : isFreeKick ? -2 : isFieldGoal ? 20 : isBowling ? -8 : 30,
+                isPitching ? 4 : isFreeKick ? 45 : isFieldGoal ? 60 : isBowling ? 12 : 70,
                 0.5, function(v) { upd('aimDegV', v); }, '°') : null,
               (d.scaffoldTier || 3) >= 2 ? slider('Horizontal aim', d.aimDegH.toFixed(1), -5, 5, 0.1, function(v) { upd('aimDegH', v); }, '°') : null,
               // Tier 3: spin (the full physics surface).
@@ -2653,7 +2914,7 @@ window.StemLab = window.StemLab || {
                 border: '1px solid #fbbf24', background: 'linear-gradient(135deg, #fbbf24, #f59e0b)',
                 color: '#1a1a2e', fontSize: 16, fontWeight: 800
               }
-            }, isPitching ? '⚾ THROW PITCH' : isFreeKick ? '⚽ STRIKE' : isFieldGoal ? '🏈 KICK' : '🏀 SHOOT'),
+            }, isPitching ? '⚾ THROW PITCH' : isFreeKick ? '⚽ STRIKE' : isFieldGoal ? '🏈 KICK' : isBowling ? '🏏 BOWL' : '🏀 SHOOT'),
             // ── Compare Mode controls ──
             // Save the latest trajectory as a reference ghost for the next throw,
             // OR clear the existing reference. Sits between the throw button and

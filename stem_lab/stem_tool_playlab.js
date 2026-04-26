@@ -252,6 +252,77 @@ window.StemLab = window.StemLab || {
         TE:   [{ dx: 40, dy: 2 }],
         RB:   [{ dx: 8, dy: 4 }]            // outlet
       }
+    },
+    {
+      // ── Counter Trey: classic Joe Gibbs power-running play. RB takes a
+      // jab-step right to influence the LBs, then cuts back left behind two
+      // pulling guards leading through the C-gap. Geometry: defenders flow
+      // right with the jab, then have to redirect — every step they take
+      // the wrong way is yardage gained.
+      id: 'counter',
+      label: 'Counter Trey (Power Run)',
+      icon: '🔁',
+      teach: 'RB jabs one way, cuts back the other behind two pulling guards. The math is misdirection: every defensive step toward the jab is two yards of recovery to get to the actual run lane. Joe Gibbs ran this for three Super Bowls. ~5.0 yd/carry vs Cover 1, ~3.5 vs Cover 4 (8 in the box).',
+      routes: {
+        RB:   [{ dx: -2, dy: 1 }, { dx: 8, dy: -3 }],   // jab right, cut left for the hole
+        WR1:  [{ dx: 4, dy: 0 }],                        // crack block to playside
+        WR2:  [{ dx: 4, dy: 0 }],                        // backside seal block
+        SLOT: [{ dx: 3, dy: 1 }],                        // edge / kick-out
+        TE:   null                                       // base block
+      }
+    },
+    {
+      // ── Bootleg: QB rolls AWAY from the run-action. After a hard play-fake
+      // to the RB going one way, the QB sprints out the other way. LBs and
+      // safeties bite on the run, leaving the boot side wide open. Mike +
+      // Kyle Shanahan + Sean McVay built entire offenses around this concept.
+      id: 'bootleg',
+      label: 'Bootleg (PA)',
+      icon: '🎭',
+      teach: 'QB fakes a handoff one way, rolls out the OTHER way. Defenders bite on the run, opening up the boot-side. Geometry: the QB cuts the field in HALF — only one side of the field is in the throwing window, but it\'s a side defenders just abandoned. Conversion rate ~70% on play-action vs single-high.',
+      routes: {
+        TE:   [{ dx: 4, dy: 6 }],                        // drag across to boot side
+        RB:   [{ dx: 0, dy: 5 }, { dx: 4, dy: 5 }],     // flat to boot side
+        WR1:  [{ dx: 12, dy: 0 }, { dx: 10, dy: 1 }],   // comeback at 12 (primary read)
+        WR2:  [{ dx: 18, dy: 1 }],                       // backside post (decoy clears safety)
+        SLOT: [{ dx: 8, dy: 6 }]                         // out-route at 8
+      }
+    },
+    {
+      // ── Wheel: RB releases out of the backfield like he\'s running a flat
+      // route, then turns up the sideline at full speed. Linebackers chase
+      // expecting the flat — when the RB turns up, the LB is in trail
+      // position with no leverage. Pair with a clearing route from the
+      // outside WR to vacate the corner.
+      id: 'wheel',
+      label: 'Wheel Route',
+      icon: '🎡',
+      teach: 'RB runs out then up the sideline. LBs chase the flat route, then have no chance to turn and run with a 4.5-second 40-yd RB. Geometric trap: defender commits to one direction, then has to reverse at full speed. Big-play hit rate ~25% — when it works, it\'s 30+ yards.',
+      routes: {
+        RB:   [{ dx: 4, dy: 6 }, { dx: 25, dy: 6 }],    // out then up the sideline
+        WR1:  [{ dx: 6, dy: 4 }],                        // shallow dig — clears the corner
+        SLOT: [{ dx: 8, dy: -2 }],                       // pivot underneath
+        WR2:  [{ dx: 12, dy: -2 }],                      // backside curl
+        TE:   [{ dx: 4, dy: 1 }]                         // chip-and-release
+      }
+    },
+    {
+      // ── Y-Cross: high-percentage 3rd-down concept. The Y (TE/slot)
+      // releases vertical 6 yards, then crosses the field at intermediate
+      // depth (~15 yd). Behind a vertical clear-out by the X (WR1), the
+      // crosser eats the soft underbelly of zone coverage right at the
+      // first-down marker. Andy Reid / Doug Pederson staple.
+      id: 'ycross',
+      label: 'Y-Cross (3rd-and-Long)',
+      icon: '✗',
+      teach: 'Y receiver runs 6 vertical, then crosses at ~15 yd depth — right at the first-down marker on 3rd-and-12. Beats Cover 3 because the deep middle defender has to choose between the crosser and the vertical clear-out. ~62% completion rate league-wide on 3rd-and-7+.',
+      routes: {
+        TE:   [{ dx: 6, dy: 0 }, { dx: 16, dy: -10 }],  // 6 vertical, 10-yard cross
+        SLOT: [{ dx: 14, dy: 4 }, { dx: 14, dy: 1 }],   // bender → dig
+        WR1:  [{ dx: 22, dy: 0 }],                       // vertical clear (pulls deep safety)
+        WR2:  [{ dx: 14, dy: 1 }],                       // backside dig (cleanup read)
+        RB:   [{ dx: 0, dy: 4 }, { dx: 5, dy: 4 }]      // checkdown
+      }
     }
   ];
 
@@ -444,15 +515,6 @@ window.StemLab = window.StemLab || {
         ['GK', 'CDM'], ['CDM', 'RW'], ['RW', 'ST'],
         ['CDM', 'LW'], ['LW', 'ST']
       ] },
-    { id: 'corner',
-      label: 'Corner Kick',
-      icon: '🚩',
-      teach: 'Set piece from the corner arc (1 m radius). Inswinging crosses target the near post; outswingers target the far post. Math: ~3% of corners produce a goal — but corners count for ~10% of league goals because teams take ~60+ per season.',
-      passes: [
-        ['LW', 'ST'],   // cross from left corner to striker
-        ['LW', 'CAM'],
-        ['LW', 'RCM']
-      ] },
     { id: 'gegenpress',
       label: 'Gegenpress (Counter-Press)',
       icon: '🔥',
@@ -460,6 +522,82 @@ window.StemLab = window.StemLab || {
       passes: [
         // Recovery + immediate attack — passes drawn from the press point
         ['CDM', 'CAM'], ['CAM', 'ST'], ['CAM', 'RW'], ['CAM', 'LW']
+      ] },
+    // ─────────────────────────────────────────────────────────
+    // Set-piece library — restarts of play from a dead ball.
+    // Set pieces account for ~30% of all goals in modern football
+    // (corners ~10%, free kicks ~10%, penalties ~5%, throw-ins ~5%).
+    // The math behind them is geometry: where the ball starts, the
+    // angle of approach, and the running paths into the box.
+    // ─────────────────────────────────────────────────────────
+    { id: 'corner-in',
+      label: 'Corner — In-Swinger',
+      icon: '↪️',
+      setPiece: true,
+      teach: 'Ball curves IN toward goal — bends away from the keeper toward the near post. Right-footed taker on the LEFT corner (LW), or left-footed on the right. Math: the curve creates ~30°/m of swerve in the last 6 m, putting the ball where the keeper can\'t reach without coming through traffic. Highest-conversion corner in the data — ~5%.',
+      passes: [
+        ['LW', 'ST'],     // primary: in-swung header at near post
+        ['LW', 'RCB'],    // secondary: aerial threat — CB pushed up for the set piece
+        ['LW', 'RCM']     // recycled clear → outside shot
+      ] },
+    { id: 'corner-out',
+      label: 'Corner — Out-Swinger',
+      icon: '↩️',
+      setPiece: true,
+      teach: 'Ball curves AWAY from goal — bends toward the penalty spot / far post. Right-footed taker on the RIGHT corner (RW), or left-footed on the left. The keeper has more time to come, but the receiver runs ONTO the ball at full speed — favored for late headers and volleys. ~3.5% conversion, but ~50% chance of a decent shot.',
+      passes: [
+        ['RW', 'CAM'],    // primary: penalty-spot run
+        ['RW', 'CDM'],    // edge-of-box volley setup
+        ['RW', 'LW']      // far-post header
+      ] },
+    { id: 'corner-short',
+      label: 'Corner — Short',
+      icon: '↔️',
+      setPiece: true,
+      teach: 'Skip the cross — pass to a teammate within 5 m of the corner arc, then build up. Pulls a defender out of the box (now 10v10 inside instead of 10v11), creating space. Mancity / Arteta favorite. Conversion ~2% but xG-per-shot is HIGHER because shots come from a better angle.',
+      passes: [
+        ['LW', 'LCM'],    // short to overlapping mid
+        ['LCM', 'CAM'],   // build to 18-yard line
+        ['CAM', 'ST']     // pull-back finish
+      ] },
+    { id: 'freekick-direct',
+      label: 'Free Kick — Direct Strike',
+      icon: '🎯',
+      setPiece: true,
+      teach: 'Wall is 9.15 m (10 yd) away, 4 defenders shoulder-to-shoulder. Goal is 7.32 m × 2.44 m. From 22 m straight on, the keeper covers about 75% of the goal mouth — the corners are scoring zones. Math: ball curves at ~5°/m at 25 m/s; aim ~1 m wide of the wall and let the swerve bring it back. Real-world conversion ~7% from 18-25 m.',
+      passes: [
+        ['CAM', 'ST'],    // direct strike toward goal (modeled as CAM→ST)
+        ['CAM', 'CDM']    // recycled second phase if blocked
+      ] },
+    { id: 'freekick-cross',
+      label: 'Free Kick — Cross to Box',
+      icon: '🪂',
+      setPiece: true,
+      teach: 'From wide positions (30+ m out), the FK becomes a corner-substitute — server delivers high cross to attackers in the 6-yd box. Same wall geometry but the goal is ASSIST, not direct goal. ~15% chance of a scoring chance per delivery, ~3% chance of a goal.',
+      passes: [
+        ['LW', 'ST'],     // cross to striker on near post run
+        ['LW', 'CAM'],    // cross to penalty-spot run
+        ['LW', 'RCB']     // back-post header target — CB up for FK
+      ] },
+    { id: 'throwin-long',
+      label: 'Throw-In — Long (Delap)',
+      icon: '🪂',
+      setPiece: true,
+      teach: 'Long throw-in = corner kick from the touchline. Stoke City\'s Rory Delap had 38 m hand-off-feet throws that landed in the 6-yd box. Math: a perfectly-flat throw at ~22 m/s carries 35-40 m before bouncing. Crosses the offside line because there\'s no offside on a throw-in! That\'s the loophole — it\'s a set piece masquerading as a normal restart.',
+      passes: [
+        ['RW', 'ST'],     // long throw to near post — striker flicks on
+        ['RW', 'RCB'],    // CB run to back post
+        ['RW', 'CAM']     // mid-box volley
+      ] },
+    { id: 'throwin-buildup',
+      label: 'Throw-In — Build-Up',
+      icon: '🤝',
+      setPiece: true,
+      teach: 'Short throw to retain possession + draw a defender to the line. Modern teams (City, Brighton) treat throw-ins like restart-from-the-back. Math: a 5 m throw to a teammate, who returns to the thrower (now back on the field), creates a 2v1 against the closest defender ~70% of the time.',
+      passes: [
+        ['LW', 'LCM'],    // short throw to receiving mid
+        ['LCM', 'LW'],    // give-and-go return
+        ['LW', 'CAM']     // turn and play forward
       ] }
   ];
 
