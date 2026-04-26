@@ -603,6 +603,51 @@ window.StemLab = window.StemLab || {
       { id: 'ST',   role: 'FWD', x: 85,       y: W / 2 }
     ];
   }
+  // ── 3-4-3 (back-three) ──
+  // Conte / Tuchel modern back-three system. Three CBs cover the central
+  // channels; wing-backs (RWB / LWB) cover BOTH the touchline AND the
+  // attacking side of the field — they're effectively wide midfielders
+  // when the team has the ball, full-backs when they don't. Two central
+  // mids (we use RCM/LCM IDs for concept compatibility) anchor the
+  // middle. Front three of RW / ST / LW.
+  function soccerFormation343() {
+    var L = PITCH_LENGTH, W = PITCH_WIDTH;
+    return [
+      { id: 'GK',   role: 'GK',  x: 5,        y: W / 2 },
+      { id: 'RCB',  role: 'DEF', x: 16,       y: W * 0.30 },
+      { id: 'CB',   role: 'DEF', x: 14,       y: W / 2 },
+      { id: 'LCB',  role: 'DEF', x: 16,       y: W * 0.70 },
+      { id: 'RWB',  role: 'MID', x: 35,       y: W * 0.10 },
+      { id: 'RCM',  role: 'MID', x: 40,       y: W * 0.40 },
+      { id: 'LCM',  role: 'MID', x: 40,       y: W * 0.60 },
+      { id: 'LWB',  role: 'MID', x: 35,       y: W * 0.90 },
+      { id: 'RW',   role: 'FWD', x: 78,       y: W * 0.20 },
+      { id: 'ST',   role: 'FWD', x: 85,       y: W / 2 },
+      { id: 'LW',   role: 'FWD', x: 78,       y: W * 0.80 }
+    ];
+  }
+  // ── 3-5-2 (Italian classic) ──
+  // Famous Italian 1990s formation (Sacchi, Conte). Three CBs + two
+  // wing-backs that stretch the field, three central midfielders anchored
+  // by a CDM (defensive mid) flanked by two box-to-box mids. Two strikers
+  // up top — the modern variant uses a SS (second striker) drifting
+  // slightly deeper than the main ST.
+  function soccerFormation352() {
+    var L = PITCH_LENGTH, W = PITCH_WIDTH;
+    return [
+      { id: 'GK',   role: 'GK',  x: 5,        y: W / 2 },
+      { id: 'RCB',  role: 'DEF', x: 16,       y: W * 0.30 },
+      { id: 'CB',   role: 'DEF', x: 14,       y: W / 2 },
+      { id: 'LCB',  role: 'DEF', x: 16,       y: W * 0.70 },
+      { id: 'RWB',  role: 'MID', x: 35,       y: W * 0.10 },
+      { id: 'RCM',  role: 'MID', x: 45,       y: W * 0.35 },
+      { id: 'CDM',  role: 'MID', x: 35,       y: W / 2 },
+      { id: 'LCM',  role: 'MID', x: 45,       y: W * 0.65 },
+      { id: 'LWB',  role: 'MID', x: 35,       y: W * 0.90 },
+      { id: 'SS',   role: 'FWD', x: 75,       y: W / 2 },     // second striker (deeper)
+      { id: 'ST',   role: 'FWD', x: 85,       y: W * 0.42 }   // main striker (advanced)
+    ];
+  }
 
   var SOCCER_FORMATIONS = [
     { id: '433',  label: '4-3-3 (Barcelona)',   icon: '🔺', build: soccerFormation433,
@@ -610,7 +655,11 @@ window.StemLab = window.StemLab || {
     { id: '442',  label: '4-4-2 (Classic)',     icon: '🔄', build: soccerFormation442,
       teach: 'Classic English formation — flat back four, flat midfield four, two strikers. Easy to teach, hard to break down centrally. Vulnerable in midfield against 4-3-3 because of the 3-vs-2 numbers.' },
     { id: '4231', label: '4-2-3-1 (Modern)',    icon: '👑', build: soccerFormation4231,
-      teach: 'Most-used formation in modern football. Two defensive mids screen the back four; a CAM (central attacking mid, the "10") connects midfield to the lone striker. Wingers cut inside.' }
+      teach: 'Most-used formation in modern football. Two defensive mids screen the back four; a CAM (central attacking mid, the "10") connects midfield to the lone striker. Wingers cut inside.' },
+    { id: '343',  label: '3-4-3 (Tuchel/Conte)', icon: '🔻', build: soccerFormation343,
+      teach: 'Modern back-three with attacking wing-backs. Three CBs cover the central channels; the wing-backs sprint up and down the touchline (effectively wide midfielders in possession). Two CMs anchor the middle. Front three: RW / ST / LW. Beats 4-4-2 because of the WB-vs-FB mismatch wide; vulnerable to 4-3-3 if the wing-backs get caught upfield.' },
+    { id: '352',  label: '3-5-2 (Italian)',     icon: '🛡️', build: soccerFormation352,
+      teach: 'Italian classic (Sacchi, Conte). Three CBs + two wing-backs + a midfield triangle (CDM screening, two box-to-box mids). Two strikers — main ST + a deeper second striker (SS) who drops into space between the lines. Strong defensively (5 in the back when WBs drop), unmatched in central midfield numbers (3 mids vs typical 2-3).' }
   ];
 
   // Soccer "concepts" — passing-network patterns that overlay the formation.
