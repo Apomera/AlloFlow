@@ -294,6 +294,18 @@ window.StemLab = window.StemLab || {
       speedMph: 21, spinRpm: 220, spinAxisDeg: 0, aimDegV: 49, releaseHeight: 2.5,
       grip: 'Same form as a free throw but with more leg drive',
       teach: '3-point line is 6.75m (NBA). Speed scales linearly with distance; arc stays similar (~49°) so the ball still drops "in" rather than skips off the back of the rim.' },
+    { id: 'floater', label: 'Floater / Teardrop', icon: '☔',
+      speedMph: 14, spinRpm: 280, spinAxisDeg: 0, aimDegV: 62, releaseHeight: 2.4,
+      grip: 'One-handed soft touch, fingers flick UP and forward',
+      teach: 'Tony Parker / Trae Young finishing move. Ultra-high arc (~62°) over a contesting big man. Released early in the jump (lower than a true jumper) but with extreme arc to clear the defender. Math: a 62° release at slow speed gives the ball ~1.5 s of hangtime — defender\'s hand is already coming down by the time the ball drops.' },
+    { id: 'stepback', label: 'Step-Back Jumper', icon: '⬅️',
+      speedMph: 19, spinRpm: 230, spinAxisDeg: 0, aimDegV: 50, releaseHeight: 2.5,
+      grip: 'Plant inside foot, push off + away; release slightly behind base',
+      teach: 'James Harden / Luka Dončić signature move. Step backward 0.5-1.0 m to create separation. The ball still has to reach the rim — ~1 m extra distance means slightly more speed (+1-2 mph). Ideal arc stays ~50°; release height drops slightly because of backward momentum.' },
+    { id: 'halfcourt', label: 'Half-Court Heave', icon: '🌠',
+      speedMph: 30, spinRpm: 100, spinAxisDeg: 0, aimDegV: 47, releaseHeight: 2.4,
+      grip: 'Two-handed overhead toss — chuck it like a soccer throw-in',
+      teach: 'End-of-quarter buzzer-beater from ~14 m (47 ft). Speed needs to almost double from a 3-pointer (21 → 30 mph). NBA conversion rate ~3% — Stephen Curry hits ~7%. The math: at 47°, the ball spends ~1.7 s in the air — keeper distance + reaction time = no defense, only physics decides.' },
     // PASS variants — use COR physics, target a teammate at chest height ~6 m away.
     // kind: 'pass' switches the scene + classifier (passing court vs hoop).
     { id: 'bouncepass', kind: 'pass', label: 'Bounce Pass', icon: '↘️',

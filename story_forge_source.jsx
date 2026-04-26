@@ -3949,6 +3949,71 @@ show();
                 </div>
               )}
 
+              {/* ═══ Dialogue Tune-Up Result ═══ */}
+              {dialogueReport && (
+                <div className="bg-white border-2 border-orange-200 rounded-2xl p-5 shadow-sm">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-sm font-bold text-orange-700 uppercase tracking-wider flex items-center gap-2">💬 Dialogue Tune-Up</h4>
+                    <button onClick={() => setDialogueReport(null)} className="text-[11px] text-slate-400 hover:text-slate-700 font-bold" aria-label="Dismiss dialogue tune-up">Dismiss</button>
+                  </div>
+                  {dialogueReport.summary && (
+                    <p className="text-xs text-orange-800 italic mb-3 leading-relaxed">{dialogueReport.summary}</p>
+                  )}
+                  {/* Tag count chart */}
+                  {dialogueReport.tagCounts && Object.keys(dialogueReport.tagCounts).length > 0 && (
+                    <div className="bg-orange-50/40 border border-orange-100 rounded-xl p-3 mb-3">
+                      <div className="text-[11px] font-bold text-orange-700 uppercase tracking-widest mb-2">Tag usage</div>
+                      <div className="space-y-1.5">
+                        {(() => {
+                          const entries = Object.entries(dialogueReport.tagCounts).sort((a, b) => b[1] - a[1]);
+                          const max = Math.max(1, ...entries.map(([, n]) => n));
+                          return entries.map(([tag, n]) => {
+                            const pct = (n / max) * 100;
+                            const isOverused = dialogueReport.overusedTag === tag;
+                            return (
+                              <div key={tag} className="flex items-center gap-2">
+                                <div className="text-xs font-bold text-slate-700 w-20 shrink-0 truncate">{tag}</div>
+                                <div className="flex-1 h-3.5 bg-slate-100 rounded-full overflow-hidden">
+                                  <div className={`h-full rounded-full ${isOverused ? 'bg-amber-400' : 'bg-orange-300'}`} style={{ width: `${pct}%` }} />
+                                </div>
+                                <div className="text-xs text-slate-700 font-bold w-8 text-right">{n}</div>
+                                {isOverused && <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded-full">overused</span>}
+                              </div>
+                            );
+                          });
+                        })()}
+                      </div>
+                    </div>
+                  )}
+                  {/* Issue list */}
+                  {(dialogueReport.issues || []).length > 0 ? (
+                    <div className="space-y-2">
+                      {dialogueReport.issues.map((iss, i) => (
+                        <div key={i} className="bg-orange-50/40 border border-orange-100 rounded-xl p-3">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-[10px] font-bold text-orange-700 bg-orange-100 px-2 py-0.5 rounded-full uppercase tracking-widest">
+                              {iss.type === 'tag-swap' ? 'Tag swap' : iss.type === 'missing-tag' ? 'Add tag' : iss.type}
+                            </span>
+                          </div>
+                          <p className="text-xs text-slate-700 italic leading-relaxed mb-1.5">"{iss.line}"</p>
+                          <div className="text-[10px] font-bold text-emerald-700 uppercase tracking-widest">Try</div>
+                          <p className="text-sm text-emerald-900 leading-relaxed">{iss.suggestion}</p>
+                          {iss.why && (
+                            <p className="text-[11px] text-slate-600 mt-1 italic">{iss.why}</p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    !dialogueReport.tagCounts || Object.keys(dialogueReport.tagCounts).length === 0 ? null : (
+                      <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-xs text-emerald-900 leading-relaxed">
+                        ✨ Dialogue mechanics look strong — no specific suggestions.
+                      </div>
+                    )
+                  )}
+                </div>
+              )}
+
               {/* ═══ Revision Plan Result (synthesis capstone) ═══ */}
               {revisionPlan && (
                 <div className="bg-gradient-to-br from-purple-50 to-violet-50 border-2 border-purple-300 rounded-2xl p-5 shadow-md">
