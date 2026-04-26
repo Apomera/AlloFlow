@@ -452,7 +452,13 @@ window.StemLab = window.StemLab || {
             // against the active coverage. Same shape as ThrowLab's coach.
             coachLoading: false,
             coachReply: '',
-            coachError: ''
+            coachError: '',
+            // Animated simulation — driven by an rAF loop in a separate
+            // useEffect. runT is seconds-since-snap; ROUTE_DURATION = 2.5s
+            // running phase, then THROW_DURATION = 0.8s ball flight.
+            runActive: false,
+            runT: 0,
+            runOutcome: null           // { receiverId, location: 'caught' | 'broken-up' | 'incomplete', etc. }
           }});
         });
         return h('div', { className: 'p-8 text-center text-slate-600' }, 'Loading PlayLab…');
@@ -573,6 +579,134 @@ window.StemLab = window.StemLab || {
         var cv = COVERAGES.find(function(c) { return c.id === cid; });
         plAnnounce('Defense changed to: ' + (cv ? cv.label : cid) + '. ' + (cv ? cv.teach : ''));
       }
+
+      // ── Play simulation engine ──
+      // ROUTE_DURATION: time the receivers spend running their routes.
+      //   At ~9 yd/s a 22-yd vertical takes ~2.4s, so 2.5s covers most plays.
+      // THROW_DURATION: time the ball spends in the air (deep throws are
+      //   longer in real life, but we're collapsing to a constant for the
+      //   MVP — Tier 4 can swap in ThrowLab's simulatePitch for accuracy).
+      // OUTCOME_HOLD: how long we keep the result on screen before idling.
+      var ROUTE_DURATION = 2.5;
+      var THROW_DURATION = 0.8;
+      var OUTCOME_HOLD = 1.2;
+      var TOTAL_DURATION = ROUTE_DURATION + THROW_DURATION + OUTCOME_HOLD;
+
+      // Walk a player along their route waypoints at uniform speed.
+      // Returns { x, y } at time fraction t in [0, 1] across the entire route.
+      function lerpRoute(route, t) {
+        if (!route || route.length === 0) return null;
+        if (route.length === 1) return route[0];
+        // Compute cumulative distances
+        var segs = [];
+        var total = 0;
+        for (var i = 1; i < route.length; i++) {
+          var dx = route[i].x - route[i - 1].x;
+          var dy = route[i].y - route[i - 1].y;
+          var d = Math.sqrt(dx * dx + dy * dy);
+          segs.push(d);
+          total += d;
+        }
+        if (total === 0) return route[0];
+        var target = t * total;
+        var acc = 0;
+        for (var j = 0; j < segs.length; j++) {
+          if (acc + segs[j] >= target) {
+            var f = segs[j] === 0 ? 0 : (target - acc) / segs[j];
+            return {
+              x: route[j].x + (route[j + 1].x - route[j].x) * f,
+              y: route[j].y + (route[j + 1].y - route[j].y) * f
+            };
+          }
+          acc += segs[j];
+        }
+        return route[route.length - 1];
+      }
+
+      // Position of a player at time t (seconds). Receivers walk their
+      // routes during the route phase; QB stays put for now.
+      function positionAtTime(p, t) {
+        if (!p.route || p.route.length < 2) return { x: p.x, y: p.y };
+        var f = Math.min(1, Math.max(0, t / ROUTE_DURATION));
+        return lerpRoute(p.route, f);
+      }
+
+      // Pick the throw target as the most-open receiver from the static
+      // analysis we already compute every render. This matches what the
+      // student sees in the analysis panel.
+      function pickThrowTarget() {
+        if (!analysis || analysis.length === 0) return null;
+        // Filter out non-receivers (should already be done in analysis)
+        return analysis[0].id;
+      }
+
+      function startRun() {
+        if (d.runActive) return;
+        setLabToolData(function(prev) {
+          return Object.assign({}, prev, { playlab: Object.assign({}, prev.playlab, {
+            runActive: true, runT: 0, runOutcome: null
+          })});
+        });
+        plAnnounce('Running play. ' + play.label + ' against ' + coverage.label + '.');
+      }
+
+      // rAF loop — runs only while d.runActive is true. WCAG 2.3.3:
+      // honor prefers-reduced-motion by snapping straight to the outcome
+      // instead of animating.
+      React.useEffect(function() {
+        if (!d.runActive) return;
+        var prefersReduced = false;
+        try { prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+        if (prefersReduced) {
+          var targetId = pickThrowTarget();
+          var outcome = targetId ? { receiverId: targetId, location: 'caught' } : { location: 'incomplete' };
+          setLabToolData(function(prev) {
+            return Object.assign({}, prev, { playlab: Object.assign({}, prev.playlab, {
+              runActive: false, runT: TOTAL_DURATION, runOutcome: outcome
+            })});
+          });
+          plAnnounce(targetId ? 'Pass complete to ' + targetId + '.' : 'Incomplete pass.');
+          return;
+        }
+        var start = performance.now();
+        var raf;
+        function step() {
+          var elapsed = (performance.now() - start) / 1000;
+          if (elapsed >= TOTAL_DURATION) {
+            // Resolve outcome at end of throw phase
+            var targetId = pickThrowTarget();
+            var topOpenness = analysis && analysis[0] ? analysis[0].opennessYd : 0;
+            // Simple coverage-aware completion model: > 6 yd open = caught,
+            // 3-6 = contested (50/50 random), < 3 = broken up. Real NFL
+            // catch rates against tight coverage are ~30%, and against
+            // wide-open ~85%, which lines up roughly.
+            var loc;
+            if (topOpenness >= 6) loc = 'caught';
+            else if (topOpenness >= 3) loc = (Math.random() > 0.5) ? 'caught' : 'brokenup';
+            else loc = 'brokenup';
+            var outcome = { receiverId: targetId, location: loc, opennessYd: topOpenness };
+            setLabToolData(function(prev) {
+              return Object.assign({}, prev, { playlab: Object.assign({}, prev.playlab, {
+                runActive: false, runT: TOTAL_DURATION, runOutcome: outcome
+              })});
+            });
+            plAnnounce(loc === 'caught'
+              ? 'Pass complete to ' + targetId + '!'
+              : loc === 'brokenup' ? 'Pass broken up by the defense at ' + targetId + '.'
+              : 'Incomplete pass.');
+            if (loc === 'caught' && awardXP) awardXP('playlab', 8, 'Completion');
+            return;
+          }
+          setLabToolData(function(prev) {
+            return Object.assign({}, prev, { playlab: Object.assign({}, prev.playlab, {
+              runT: elapsed
+            })});
+          });
+          raf = requestAnimationFrame(step);
+        }
+        raf = requestAnimationFrame(step);
+        return function() { if (raf) cancelAnimationFrame(raf); };
+      }, [d.runActive]);
 
       // ── Drag-to-place player editing ──
       // dragRef tracks the in-flight drag (playerId + last canvas coords).
@@ -746,16 +880,28 @@ window.StemLab = window.StemLab || {
         }
 
         // ── Players ──
+        // During an active run, players walk along their routes; otherwise
+        // they sit at snap (or end-of-route) positions. We use d.runT as
+        // the elapsed time. After the route phase ends, players hold at
+        // their end-of-route positions while the ball is in flight.
+        var runT = d.runT || 0;
+        var isAnimating = !!d.runActive || (d.runT > 0 && d.runT < TOTAL_DURATION);
         formation.forEach(function(p) {
-          var px = fx(p.x), py = fy(p.y);
-          var isOpen = d.showOpen && p.id === openReceiverId;
+          var pos;
+          if (isAnimating && p.route && p.route.length >= 2) {
+            // During route phase, lerp; after, hold at end of route.
+            pos = positionAtTime(p, Math.min(runT, ROUTE_DURATION));
+          } else {
+            pos = { x: p.x, y: p.y };
+          }
+          var px = fx(pos.x), py = fy(pos.y);
+          var isOpen = d.showOpen && p.id === openReceiverId && !isAnimating;
           var fill = p.role === 'QB' ? '#fbbf24'
                    : p.role === 'OL' ? '#94a3b8'
                    : p.role === 'WR' || p.role === 'TE' ? '#fafafa'
                    : p.role === 'RB' ? '#f97316'
                    : '#cbd5e1';
           if (isOpen) {
-            // Pulsing halo around the open receiver
             gfx.fillStyle = 'rgba(16,185,129,0.35)';
             gfx.beginPath(); gfx.arc(px, py, 12, 0, Math.PI * 2); gfx.fill();
           }
@@ -764,13 +910,71 @@ window.StemLab = window.StemLab || {
           gfx.strokeStyle = '#0f172a';
           gfx.lineWidth = 1;
           gfx.stroke();
-          // Player ID label
           gfx.fillStyle = '#0f172a';
           gfx.font = 'bold 8px system-ui';
           gfx.textAlign = 'center';
           gfx.fillText(p.id, px, py + 3);
         });
-      }, [d.playId, d.coverageId, d.losX, d.showZones, d.showRoutes, d.showOpen]);
+
+        // ── Football in flight ──
+        // After the route phase, the ball travels from the QB to the
+        // designated target receiver over THROW_DURATION. We use a simple
+        // parabolic arc — peak at midpoint, equal to ~3 yards above ground
+        // visually (rendered as a vertical Y offset on the canvas, since
+        // the field view is top-down 2D).
+        if (runT > ROUTE_DURATION && runT <= ROUTE_DURATION + THROW_DURATION) {
+          var throwT = (runT - ROUTE_DURATION) / THROW_DURATION;
+          var qb = formation.find(function(p) { return p.id === 'QB'; });
+          var targetId = pickThrowTarget();
+          var target = formation.find(function(p) { return p.id === targetId; });
+          if (qb && target) {
+            // Receiver is at end-of-route during throw phase
+            var rx = target.route ? target.route[target.route.length - 1].x : target.x;
+            var ry = target.route ? target.route[target.route.length - 1].y : target.y;
+            var ballX = qb.x + (rx - qb.x) * throwT;
+            var ballY = qb.y + (ry - qb.y) * throwT;
+            // Arc lift: small parabolic visual offset so the ball appears
+            // to rise then fall. Convert to canvas px directly.
+            var liftPx = Math.sin(throwT * Math.PI) * 14;
+            var bpx = fx(ballX);
+            var bpy = fy(ballY) - liftPx;
+            // Draw the football — small brown ellipse
+            gfx.fillStyle = '#7c2d12';
+            gfx.beginPath();
+            gfx.ellipse(bpx, bpy, 5, 3, 0, 0, Math.PI * 2);
+            gfx.fill();
+            gfx.strokeStyle = '#fafafa';
+            gfx.lineWidth = 1;
+            gfx.beginPath(); gfx.moveTo(bpx - 3, bpy); gfx.lineTo(bpx + 3, bpy); gfx.stroke();
+          }
+        }
+
+        // ── Outcome callout ──
+        // After the ball arrives, hold the result on screen for OUTCOME_HOLD
+        // seconds. Renders a banner over the field with the verdict.
+        if (d.runOutcome && runT > ROUTE_DURATION + THROW_DURATION) {
+          var ro = d.runOutcome;
+          var bannerColor = ro.location === 'caught' ? 'rgba(16,185,129,0.85)'
+                          : ro.location === 'brokenup' ? 'rgba(251,191,36,0.85)'
+                          : 'rgba(239,68,68,0.85)';
+          var bannerText = ro.location === 'caught' ? '✅ COMPLETE to ' + ro.receiverId
+                        : ro.location === 'brokenup' ? '✋ Pass broken up at ' + ro.receiverId
+                        : '❌ Incomplete';
+          gfx.fillStyle = bannerColor;
+          gfx.fillRect(W / 2 - 130, marginT + fieldPxH / 2 - 18, 260, 36);
+          gfx.fillStyle = '#0f172a';
+          gfx.font = 'bold 14px system-ui';
+          gfx.textAlign = 'center';
+          gfx.textBaseline = 'middle';
+          gfx.fillText(bannerText, W / 2, marginT + fieldPxH / 2);
+          gfx.textBaseline = 'alphabetic';
+          if (ro.opennessYd !== undefined) {
+            gfx.font = '11px system-ui';
+            gfx.fillText('(receiver was ' + ro.opennessYd.toFixed(1) + ' yd from nearest defender)', W / 2, marginT + fieldPxH / 2 + 28);
+          }
+        }
+      }, [d.playId, d.coverageId, d.losX, d.showZones, d.showRoutes, d.showOpen,
+          d.customPositions, d.runActive, d.runT, d.runOutcome]);
 
       // ── UI ──
       function pillBtn(label, sel, onClick, opts) {
@@ -833,6 +1037,36 @@ window.StemLab = window.StemLab || {
               onMouseLeave: handleMouseUp,
               style: { width: '100%', maxWidth: 720, height: 'auto', borderRadius: 10, border: '1px solid #334155', background: '#0f172a', cursor: 'pointer', touchAction: 'none' }
             }),
+            // ── Run Play button — the headline action ──
+            // A green pill below the canvas that animates the play.
+            // Disabled while a run is in flight; re-enables after the
+            // outcome banner clears. Reduced-motion users get an instant
+            // outcome (no animation) — handled in the rAF effect.
+            h('div', { style: { marginTop: 8, display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
+              h('button', {
+                onClick: startRun,
+                disabled: !!d.runActive,
+                'aria-busy': !!d.runActive,
+                'data-pl-focusable': 'true',
+                'aria-label': d.runActive ? 'Play is running' : 'Run the active play with animation',
+                style: {
+                  padding: '10px 18px', minHeight: 38, borderRadius: 8,
+                  cursor: d.runActive ? 'wait' : 'pointer',
+                  border: '1px solid #10b981',
+                  background: d.runActive ? '#1e293b' : 'linear-gradient(135deg, #10b981, #059669)',
+                  color: d.runActive ? '#94a3b8' : '#0f172a',
+                  fontSize: 14, fontWeight: 800
+                }
+              }, d.runActive ? '⏱ Running…' : '▶ Run Play'),
+              d.runOutcome ? h('span', {
+                style: { fontSize: 12, color: '#cbd5e1', fontStyle: 'italic' }
+              },
+                d.runOutcome.location === 'caught' ? 'Last result: ✅ Complete to ' + d.runOutcome.receiverId
+                  : d.runOutcome.location === 'brokenup' ? 'Last result: ✋ Broken up'
+                  : 'Last result: ❌ Incomplete'
+              ) : null
+            ),
+
             // Toggle row + reset positions
             h('div', { style: { marginTop: 8, display: 'flex', gap: 12, fontSize: 12, color: '#cbd5e1', flexWrap: 'wrap', alignItems: 'center' } },
               h('label', { style: { cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 } },
