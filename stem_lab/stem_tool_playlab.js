@@ -2821,7 +2821,7 @@ window.StemLab = window.StemLab || {
         },
           h('summary', {
             style: { cursor: 'pointer', fontSize: 12, color: '#cbd5e1', fontWeight: 600 }
-          }, '🎬 Scenarios — one-click teaching demos (' + PLAYLAB_SCENARIOS.filter(function(sc) { return sc.sport === (d.sport || 'football'); }).length + ' for ' + (isSoccer ? 'soccer' : 'football') + ')'),
+          }, '🎬 Scenarios — one-click teaching demos (' + PLAYLAB_SCENARIOS.filter(function(sc) { return sc.sport === (d.sport || 'football'); }).length + ' built-in' + ((d.savedPlays || []).filter(function(sp) { return sp.sport === (d.sport || 'football'); }).length ? ' + ' + (d.savedPlays || []).filter(function(sp) { return sp.sport === (d.sport || 'football'); }).length + ' custom' : '') + ' for ' + (isSoccer ? 'soccer' : 'football') + ')'),
           h('div', {
             role: 'group', 'aria-label': 'Tactical scenarios',
             style: { display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap', alignItems: 'center' }
@@ -2842,7 +2842,56 @@ window.StemLab = window.StemLab || {
                   color: '#f1f5f9', fontSize: 11, fontWeight: 600
                 }
               }, sc.icon + ' ' + sc.label);
-            }).concat([
+            }).concat(
+              // Custom scenarios — saved plays for the current sport
+              (d.savedPlays || [])
+                .filter(function(sp) { return sp.sport === (d.sport || 'football'); })
+                .slice().reverse()
+                .map(function(sp) {
+                  return h('span', {
+                    key: 'plcsc-' + sp.id,
+                    style: { display: 'inline-flex', alignItems: 'stretch', borderRadius: 6, overflow: 'hidden' }
+                  },
+                    h('button', {
+                      onClick: function() { loadSavedPlay(sp); },
+                      'aria-label': sp.name + ' (custom scenario)',
+                      'data-pl-focusable': 'true',
+                      title: 'Custom scenario: ' + sp.name + ' — saved ' + new Date(sp.createdAt).toLocaleDateString(),
+                      style: {
+                        padding: '6px 11px', cursor: 'pointer',
+                        border: '1px solid #a78bfa',
+                        borderRight: 'none',
+                        background: 'rgba(167,139,250,0.10)',
+                        color: '#a78bfa', fontSize: 11, fontWeight: 600
+                      }
+                    }, '⭐ ' + (sp.name.length > 22 ? sp.name.slice(0, 22) + '…' : sp.name)),
+                    h('button', {
+                      onClick: function() { deleteSavedPlay(sp.id); },
+                      'aria-label': 'Delete custom scenario: ' + sp.name,
+                      'data-pl-focusable': 'true',
+                      title: 'Delete this custom scenario',
+                      style: {
+                        padding: '6px 8px', cursor: 'pointer',
+                        border: '1px solid #a78bfa',
+                        background: 'rgba(167,139,250,0.10)',
+                        color: '#a78bfa', fontSize: 11
+                      }
+                    }, '✕')
+                  );
+                })
+            ).concat([
+              h('button', {
+                key: 'plsc-save',
+                onClick: openSavePrompt,
+                'aria-label': 'Save current setup as a custom scenario',
+                'data-pl-focusable': 'true',
+                title: 'Save the current sport + play/concept + coverage/shape + custom edits as a personalized scenario',
+                style: {
+                  padding: '6px 11px', borderRadius: 6, cursor: 'pointer',
+                  border: '1px dashed #a78bfa', background: 'transparent',
+                  color: '#a78bfa', fontSize: 11, fontWeight: 700
+                }
+              }, '⭐ Save current'),
               h('button', {
                 key: 'plsc-print',
                 onClick: printPlayLabActivitySheet,
