@@ -229,11 +229,11 @@
             h('span', { className: 'text-sm font-medium text-slate-600' },
               'Item ' + (currentIndex + 1) + ' of ' + totalItems)
           ),
-          h('div', { role: 'button', tabIndex: 0, 'aria-label': 'Close dialog', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-4' },
+          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-4' },
             // Score tally
-            h('div', { role: 'button', tabIndex: 0, 'aria-label': 'Close dialog', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-3 text-sm font-bold' },
-              h('span', { role: 'button', tabIndex: 0, 'aria-label': 'Close dialog', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-green-600' }, '\u2705 ' + correctCount),
-              h('span', { role: 'button', tabIndex: 0, 'aria-label': 'Close dialog', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-red-500' }, '\u274C ' + incorrectCount)
+            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-3 text-sm font-bold' },
+              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-green-600' }, '\u2705 ' + correctCount),
+              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-red-500' }, '\u274C ' + incorrectCount)
             ),
             // Timer
             timer !== undefined && h('div', { role: 'button', tabIndex: 0, 'aria-label': 'Close dialog', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
@@ -270,7 +270,7 @@
           children
         ),
         // Bottom scoring bar (for teacher-scored probes)
-        showScoreButtons && h('div', { role: 'button', tabIndex: 0, 'aria-label': 'Close dialog', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+        showScoreButtons && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
           className: 'flex items-center justify-center gap-6 px-6 py-5 bg-slate-50 border-t border-slate-200 shrink-0'
         },
           h('button', { "aria-label": "Correct",
