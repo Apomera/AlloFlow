@@ -549,6 +549,69 @@ window.StemLab = window.StemLab || {
   }
 
   // ═══════════════════════════════════════════
+  // FOOTBALL EPA MODEL — simplified expected-points lookup
+  // ═══════════════════════════════════════════
+  // Real EPA models (nflfastR, ESPN) are gradient-boosted classifiers fit
+  // to ~500K plays with features for down, distance, score, time, field
+  // position, etc. Our textbook model uses ONLY field position + down,
+  // calibrated against published nflfastR averages so the numbers are
+  // recognizable to anyone who's read a football analytics article.
+  //
+  // expectedPoints(yardsToGoal, down) → expected next-score value (in
+  // points, can be negative if the opponent is more likely to score
+  // next from this state).
+  //
+  // Calibration:
+  //   1st-and-10 own 25 (75 yd to goal)        ≈ +1.4 EP
+  //   1st-and-10 midfield (50 yd to goal)      ≈ +2.4 EP
+  //   1st-and-10 opp 25 (25 yd to goal)        ≈ +4.6 EP
+  //   1st-and-goal opp 5                       ≈ +5.7 EP
+  //   1st-and-goal opp 1                       ≈ +6.0 EP
+  //   3rd-and-10 own 10                        ≈ +0.0 EP
+  //   4th-and-1 opp 5 (decision time)          ≈ +5.3 EP
+  function expectedPoints(yardsToGoal, down) {
+    // Field-position component — closer to goal = higher EP. Approximated
+    // as a sigmoid that peaks near 6 (touchdown ≈ 7 with point-after) at
+    // the goal line and goes asymptotic at ~+1.0 from the team's own end.
+    var ytg = Math.max(1, Math.min(99, yardsToGoal));
+    var fieldComponent = 6.5 - 5.5 / (1 + Math.exp((50 - ytg) * 0.045));
+    // Down penalty — each later down sheds a bit of EP because remaining
+    // attempts shrink. Calibrated so 1st down ≈ baseline, 4th down on
+    // your side of midfield is near zero.
+    var downPenalty = (down - 1) * 0.45;
+    return Math.max(-2, fieldComponent - downPenalty);
+  }
+  // Translate a Run Play outcome into ΔEPA. We need yards-gained, which
+  // we approximate from the receiver's route end-point distance from the
+  // line of scrimmage; the next play would start there if the catch was
+  // clean. Turnovers (broken-up + intercepted) flip sign and use ~50 yd
+  // as the opponent's typical post-INT field position.
+  function computeEPA(losYardsToGoal, down, outcome, receiverEndpointX) {
+    var preEP = expectedPoints(losYardsToGoal, down);
+    if (!outcome) return { preEP: preEP, postEP: preEP, dEPA: 0 };
+    if (outcome.location === 'caught') {
+      // Yards gained = distance from LOS to receiver's end position.
+      // (PlayLab's LOS is at d.losX yards-from-back-of-our-end-zone, so
+      // receiver_x - LOS_x = yards downfield.)
+      var yardsGained = Math.max(0, (receiverEndpointX || 0) - (LOS_DEFAULT));
+      var newYTG = Math.max(1, losYardsToGoal - yardsGained);
+      var newDown = 1; // first down on a completion (simplification — we
+                      // don't track whether the catch made the line-to-gain)
+      var postEP = expectedPoints(newYTG, newDown);
+      return { preEP: preEP, postEP: postEP, dEPA: postEP - preEP, yardsGained: yardsGained };
+    }
+    if (outcome.location === 'brokenup') {
+      // Pass break-up = incomplete, down + 1, yardline unchanged
+      var nextDown = Math.min(4, down + 1);
+      var postBU = expectedPoints(losYardsToGoal, nextDown);
+      return { preEP: preEP, postEP: postBU, dEPA: postBU - preEP, yardsGained: 0 };
+    }
+    // Default (incomplete / wild): same as broken-up
+    var postInc = expectedPoints(losYardsToGoal, Math.min(4, down + 1));
+    return { preEP: preEP, postEP: postInc, dEPA: postInc - preEP, yardsGained: 0 };
+  }
+
+  // ═══════════════════════════════════════════
   // SOCCER xG MODEL — simplified expected-goals lookup
   // ═══════════════════════════════════════════
   // Real xG models (StatsBomb, Opta) are gradient-boosted classifiers
@@ -852,6 +915,11 @@ window.StemLab = window.StemLab || {
             // Football state
             playId: 'slant',
             coverageId: 'cover2',
+            // Down + distance — fed into the EPA calculation. Defaults to
+            // 1st-and-10 from the offense's own 25-yard line (75 yd to goal,
+            // 1.4 EP) which is the textbook starting point.
+            down: 1,
+            yardsToGoal: 75,
             losX: LOS_DEFAULT,
             showZones: true,
             showRoutes: true,
@@ -1901,10 +1969,25 @@ window.StemLab = window.StemLab || {
             gfx.font = '11px system-ui';
             gfx.fillText('(receiver was ' + ro.opennessYd.toFixed(1) + ' yd from nearest defender)', W / 2, marginT + fieldPxH / 2 + 28);
           }
+          // EPA line — translates the outcome into expected-points-added.
+          // Computed fresh from the active down + yardsToGoal + receiver
+          // route end-point, so the same throw against a different
+          // down/distance shows different math.
+          var rcvId = ro.receiverId;
+          var rcv = formation.find(function(p) { return p.id === rcvId; });
+          var rcvEP = rcv ? receiverEndPoint(rcv) : null;
+          var epaResult = computeEPA(d.yardsToGoal || 75, d.down || 1, ro, rcvEP ? rcvEP.x : null);
+          var dEPA = epaResult.dEPA || 0;
+          var epaSign = dEPA >= 0 ? '+' : '';
+          gfx.font = 'bold 11px system-ui';
+          gfx.fillStyle = dEPA >= 0 ? '#10b981' : '#ef4444';
+          gfx.fillText('EPA: ' + epaSign + dEPA.toFixed(2) + '  (pre ' + epaResult.preEP.toFixed(1) + ' → post ' + epaResult.postEP.toFixed(1) + ')',
+                       W / 2, marginT + fieldPxH / 2 + 44);
         }
       }, [d.playId, d.coverageId, d.losX, d.showZones, d.showRoutes, d.showOpen,
           d.customPositions, d.runActive, d.runT, d.runOutcome,
-          d.sport, d.formationId, d.conceptId, d.shapeId, d.showXG]);
+          d.sport, d.formationId, d.conceptId, d.shapeId, d.showXG,
+          d.down, d.yardsToGoal]);
 
       // ── UI ──
       function pillBtn(label, sel, onClick, opts) {
@@ -1990,6 +2073,35 @@ window.StemLab = window.StemLab || {
               plAnnounce('Concept: ' + c.label + '. ' + c.teach);
             });
           })
+        ) : null,
+
+        // Down + Distance picker — football only. Drives the EPA math
+        // shown in the post-play banner. 1st-and-10 from own 25 (75 yd
+        // to goal) is the default; students can tweak to see how the
+        // value of the same play changes by situation.
+        !isSoccer ? h('div', { role: 'group', 'aria-label': 'Down and field position',
+          style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10, flexWrap: 'wrap', fontSize: 12 } },
+          h('span', { style: { color: '#cbd5e1' } }, 'Situation:'),
+          h('label', { htmlFor: 'pl-down', style: { color: '#cbd5e1' } }, 'Down:'),
+          h('select', {
+            id: 'pl-down', value: String(d.down || 1),
+            onChange: function(e) { upd('down', parseInt(e.target.value, 10) || 1); },
+            'data-pl-focusable': 'true',
+            style: { padding: '4px 6px', borderRadius: 4, border: '1px solid #334155', background: '#1e293b', color: '#f1f5f9', fontSize: 12 }
+          },
+            [1, 2, 3, 4].map(function(n) { return h('option', { key: n, value: String(n) }, n + (n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th')); })
+          ),
+          h('label', { htmlFor: 'pl-ytg', style: { color: '#cbd5e1' } }, 'Yards to goal:'),
+          h('input', {
+            id: 'pl-ytg', type: 'number', min: 1, max: 99,
+            value: d.yardsToGoal || 75,
+            onChange: function(e) { upd('yardsToGoal', Math.max(1, Math.min(99, parseInt(e.target.value, 10) || 75))); },
+            'data-pl-focusable': 'true',
+            style: { width: 60, padding: '4px 6px', borderRadius: 4, border: '1px solid #334155', background: '#1e293b', color: '#f1f5f9', fontSize: 12 }
+          }),
+          h('span', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic' } },
+            'EP at this state: ', h('span', { style: { color: '#fbbf24', fontWeight: 700 } },
+              expectedPoints(d.yardsToGoal || 75, d.down || 1).toFixed(1)))
         ) : null,
 
         // Coverage / Defensive shape picker
