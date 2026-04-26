@@ -265,7 +265,17 @@ window.StemLab = window.StemLab || {
     { id: 'three', label: '3-Pointer', icon: '🎯',
       speedMph: 21, spinRpm: 220, spinAxisDeg: 0, aimDegV: 49, releaseHeight: 2.5,
       grip: 'Same form as a free throw but with more leg drive',
-      teach: '3-point line is 6.75m (NBA). Speed scales linearly with distance; arc stays similar (~49°) so the ball still drops "in" rather than skips off the back of the rim.' }
+      teach: '3-point line is 6.75m (NBA). Speed scales linearly with distance; arc stays similar (~49°) so the ball still drops "in" rather than skips off the back of the rim.' },
+    // PASS variants — use COR physics, target a teammate at chest height ~6 m away.
+    // kind: 'pass' switches the scene + classifier (passing court vs hoop).
+    { id: 'bouncepass', kind: 'pass', label: 'Bounce Pass', icon: '↘️',
+      speedMph: 14, spinRpm: 60, spinAxisDeg: 0, aimDegV: -15, releaseHeight: 1.2,
+      grip: 'Two-handed chest position, push down and forward',
+      teach: 'Aim for ~⅔ of the distance to the teammate. The ball bounces once with COR ≈ 0.78, losing ~22% of vertical speed but staying chest-height on arrival. Hard to deflect because the ball is below the defender\'s reach.' },
+    { id: 'chestpass', kind: 'pass', label: 'Chest Pass', icon: '➡️',
+      speedMph: 17, spinRpm: 50, spinAxisDeg: 0, aimDegV: 0, releaseHeight: 1.4,
+      grip: 'Two-handed chest position, snap wrists forward',
+      teach: 'Direct flat pass at chest height. Faster than a bounce pass (no time lost to bouncing) but easier to intercept — defender just needs hands up. Backspin keeps the ball from sailing.' }
   ];
 
   // Soccer free-kick presets — the headline lesson is SPIN AXIS:
@@ -428,6 +438,42 @@ window.StemLab = window.StemLab || {
         return 'wide';
       }
     }
+    return 'short';
+  }
+
+  // Score classifier for basketball PASS shot types (bounce / chest).
+  // Receiver is at z = receiverZ (~6 m), catching at chest height ~1.2 m.
+  // Categories:
+  //   'caught'        — arrived at receiver with y in chest band
+  //   'highpass'      — arrived above the chest band (sailed)
+  //   'lowpass'       — arrived below the chest band (worm-burner)
+  //   'wide'          — lateral miss
+  //   'short'         — never reached the receiver
+  //   'wrongbounce'   — bounce pass with no bounces, OR chest pass that bounced
+  function classifyPassResult(samples, kind, receiverZ) {
+    if (!samples || samples.length < 2) return 'short';
+    var bounceCount = 0;
+    for (var i = 1; i < samples.length; i++) {
+      var prev = samples[i - 1], cur = samples[i];
+      // Count ground-level transitions as bounces (matches simulator's bounce reflection)
+      if (prev.y > 0.05 && cur.y <= 0.05) bounceCount++;
+      // Arrival at receiver plane
+      if (prev.z < receiverZ && cur.z >= receiverZ) {
+        var f = (receiverZ - prev.z) / (cur.z - prev.z);
+        var rcvX = prev.x + (cur.x - prev.x) * f;
+        var rcvY = prev.y + (cur.y - prev.y) * f;
+        // Lateral first
+        if (Math.abs(rcvX) > 0.45) return 'wide';
+        // Bounce-mode requirements
+        if (kind === 'bouncepass' && bounceCount < 1) return 'wrongbounce';
+        if (kind === 'chestpass' && bounceCount > 0) return 'wrongbounce';
+        // Chest band
+        if (rcvY > 1.6) return 'highpass';
+        if (rcvY < 0.6) return 'lowpass';
+        return 'caught';
+      }
+    }
+    // Never reached receiver
     return 'short';
   }
 
@@ -911,7 +957,13 @@ window.StemLab = window.StemLab || {
         if (d.mode === 'freekick' || d.mode === 'fieldgoal') simOpts.truncateAtTarget = false;
         var result = simulatePitch(simOpts);
         var loc;
-        if (d.mode === 'freethrow') {
+        // Identify pass-kind shot types so we route to the pass classifier
+        // instead of the hoop classifier even though we're in 'freethrow' mode.
+        var activeShotPreset = SHOT_TYPES.find(function(s) { return s.id === d.shotType; });
+        var isPassKind = activeShotPreset && activeShotPreset.kind === 'pass';
+        if (d.mode === 'freethrow' && isPassKind) {
+          loc = classifyPassResult(result.samples, d.shotType, 6.0);
+        } else if (d.mode === 'freethrow') {
           loc = classifyShotResult(result.samples, modeMeta.rimY, modeMeta.rimZ, modeMeta.rimRadius);
         } else if (d.mode === 'freekick') {
           loc = classifyKickResult(result.samples, modeMeta);
@@ -947,9 +999,9 @@ window.StemLab = window.StemLab || {
         }
         sfxThrow();
         var newThrowCount = (d.throwCount || 0) + 1;
-        var isMakeOutcome = loc === 'strike' || loc === 'swish' || loc === 'made' || loc === 'goal';
+        var isMakeOutcome = loc === 'strike' || loc === 'swish' || loc === 'made' || loc === 'goal' || loc === 'caught';
         var newStrikeCount = (d.mode === 'pitching' && loc === 'strike') ? (d.strikeCount || 0) + 1 : (d.strikeCount || 0);
-        var newMakeCount = (d.mode === 'freethrow' && (loc === 'swish' || loc === 'made')) ? (d.shotMakeCount || 0) + 1 : (d.shotMakeCount || 0);
+        var newMakeCount = (d.mode === 'freethrow' && (loc === 'swish' || loc === 'made' || loc === 'caught')) ? (d.shotMakeCount || 0) + 1 : (d.shotMakeCount || 0);
         var newGoalCount = (d.mode === 'freekick' && loc === 'goal') ? (d.goalCount || 0) + 1 : (d.goalCount || 0);
         var newFgMakeCount = (d.mode === 'fieldgoal' && loc === 'good') ? (d.fgMakeCount || 0) + 1 : (d.fgMakeCount || 0);
         var newTypesUsed = Object.assign({}, d.pitchTypesUsed || {});
@@ -991,7 +1043,35 @@ window.StemLab = window.StemLab || {
             }
             if (newStrikeCount === 3 && (d.strikeCount || 0) < 3 && celebrate) celebrate();
           } else if (d.mode === 'freethrow') {
-            if (loc === 'swish') {
+            // Pass-kind outcomes (Bounce / Chest pass) come through here too,
+            // routed by classifyPassResult instead of classifyShotResult.
+            if (loc === 'caught') {
+              sfxStrike();
+              tlAnnounce('Caught! Pass arrived at chest height — clean delivery.' + describeShape(result));
+              if (addToast) addToast('🏀 CAUGHT');
+              if (awardXP) awardXP('throwlab', 6, 'Pass completed');
+              if (celebrate) celebrate();
+            } else if (loc === 'highpass') {
+              sfxBall();
+              tlAnnounce('Sailed high — your teammate had to jump for it.');
+              if (addToast) addToast('Too high');
+            } else if (loc === 'lowpass') {
+              sfxBall();
+              tlAnnounce('Worm-burner — pass arrived below the knees.');
+              if (addToast) addToast('Too low');
+            } else if (loc === 'wrongbounce') {
+              sfxBall();
+              tlAnnounce(d.shotType === 'bouncepass' ? 'No bounce — that was a chest pass, not a bounce pass.' : 'Bounced — chest passes should NOT bounce. Use less downward angle.');
+              if (addToast) addToast(d.shotType === 'bouncepass' ? 'Need more downward angle' : 'Don\'t bounce a chest pass');
+            } else if (loc === 'short') {
+              sfxBall();
+              tlAnnounce('Short — pass didn\'t reach the teammate.');
+              if (addToast) addToast('Short');
+            } else if (loc === 'wide') {
+              sfxBall();
+              tlAnnounce('Wide of the teammate — adjust horizontal aim.');
+              if (addToast) addToast('Wide');
+            } else if (loc === 'swish') {
               sfxStrike(); sfxStrike();
               tlAnnounce('Swish! Clean shot through the center of the rim.' + describeShape(result));
               if (addToast) addToast('🏀 SWISH!');
@@ -1192,6 +1272,71 @@ window.StemLab = window.StemLab || {
           gfx.fillText('60 ft 6 in →', (moundPts[0] + plPts[0]) / 2, marginT + fieldH + 22);
           gfx.fillText('Mound', moundPts[0], marginT + fieldH + 22);
           gfx.fillText('Plate', plPts[0], marginT + fieldH + 36);
+        } else if (d.mode === 'freethrow' && (function() {
+          var sp = SHOT_TYPES.find(function(s) { return s.id === d.shotType; });
+          return sp && sp.kind === 'pass';
+        })()) {
+          // Passing court — passer on left, receiver silhouette on right at z=6m.
+          // Same hardwood + plank lines from the free-throw scene; receiver is a
+          // simple stick figure with a chest-band marker so students see the
+          // target zone. The bounce-pass landing zone is shaded between
+          // passer + receiver.
+          var passReceiverZ = 6.0;
+          var passerPts = worldToCanvas(0, 0);
+          var receiverPts = worldToCanvas(passReceiverZ, 0);
+          // Shaded "ideal bounce zone" — between 60-75% of the way to receiver
+          var bzStart = worldToCanvas(passReceiverZ * 0.55, 0);
+          var bzEnd = worldToCanvas(passReceiverZ * 0.78, 0);
+          gfx.fillStyle = 'rgba(251, 191, 36, 0.18)';
+          gfx.fillRect(bzStart[0], bzStart[1] - 6, bzEnd[0] - bzStart[0], 12);
+          // Passer stick figure (you)
+          gfx.strokeStyle = '#fbbf24';
+          gfx.fillStyle = '#fbbf24';
+          gfx.lineWidth = 2;
+          var pHead = worldToCanvas(0, 1.7);
+          var pHip = worldToCanvas(0, 1.0);
+          var pFeet = worldToCanvas(0, 0);
+          gfx.beginPath(); gfx.arc(pHead[0], pHead[1], 6, 0, Math.PI * 2); gfx.fill();
+          gfx.beginPath();
+          gfx.moveTo(pHead[0], pHead[1] + 6); gfx.lineTo(pHip[0], pHip[1]);
+          gfx.moveTo(pHip[0], pHip[1]); gfx.lineTo(pFeet[0] - 6, pFeet[1]);
+          gfx.moveTo(pHip[0], pHip[1]); gfx.lineTo(pFeet[0] + 6, pFeet[1]);
+          gfx.stroke();
+          // Receiver stick figure (teammate)
+          gfx.strokeStyle = '#60a5fa';
+          gfx.fillStyle = '#60a5fa';
+          var rHead = worldToCanvas(passReceiverZ, 1.7);
+          var rHip = worldToCanvas(passReceiverZ, 1.0);
+          var rFeet = worldToCanvas(passReceiverZ, 0);
+          gfx.beginPath(); gfx.arc(rHead[0], rHead[1], 6, 0, Math.PI * 2); gfx.fill();
+          gfx.beginPath();
+          gfx.moveTo(rHead[0], rHead[1] + 6); gfx.lineTo(rHip[0], rHip[1]);
+          gfx.moveTo(rHip[0], rHip[1]); gfx.lineTo(rFeet[0] - 6, rFeet[1]);
+          gfx.moveTo(rHip[0], rHip[1]); gfx.lineTo(rFeet[0] + 6, rFeet[1]);
+          // Outstretched receiving arms (chest band marker)
+          var rChestL = worldToCanvas(passReceiverZ - 0.4, 1.2);
+          var rChestR = worldToCanvas(passReceiverZ + 0.4, 1.2);
+          gfx.moveTo(rHip[0], pHead[1] + 8); gfx.lineTo(rChestL[0], rChestL[1]);
+          gfx.moveTo(rHip[0], pHead[1] + 8); gfx.lineTo(rChestR[0], rChestR[1]);
+          gfx.stroke();
+          // Chest-band target zone (dashed box at receiver, y in [0.6, 1.6])
+          var cbTop = worldToCanvas(passReceiverZ, 1.6);
+          var cbBot = worldToCanvas(passReceiverZ, 0.6);
+          gfx.strokeStyle = '#60a5fa';
+          gfx.setLineDash([4, 3]);
+          gfx.strokeRect(cbTop[0] - 12, cbTop[1], 24, cbBot[1] - cbTop[1]);
+          gfx.setLineDash([]);
+          // Labels
+          gfx.fillStyle = '#cbd5e1';
+          gfx.font = '11px system-ui';
+          gfx.textAlign = 'center';
+          gfx.fillText('You', passerPts[0], marginT + fieldH + 22);
+          gfx.fillText('6 m to teammate →', (passerPts[0] + receiverPts[0]) / 2, marginT + fieldH + 22);
+          gfx.fillText('Teammate', receiverPts[0], marginT + fieldH + 36);
+          if (d.shotType === 'bouncepass') {
+            gfx.fillStyle = 'rgba(251, 191, 36, 0.85)';
+            gfx.fillText('Aim bounce here →', (bzStart[0] + bzEnd[0]) / 2, bzStart[1] - 12);
+          }
         } else if (d.mode === 'freethrow') {
           // Free Throw rendering: shooter on left, hoop + backboard on right
           var ftLineZ = modeMeta.targetZ;
@@ -1475,6 +1620,9 @@ window.StemLab = window.StemLab || {
           if (d.mode === 'freethrow') {
             trajColor = lr.location === 'swish' ? '#10b981'
                       : lr.location === 'made' ? '#3b82f6'
+                      : lr.location === 'caught' ? '#10b981'
+                      : (lr.location === 'highpass' || lr.location === 'lowpass') ? '#fbbf24'
+                      : lr.location === 'wrongbounce' ? '#f97316'
                       : lr.location === 'rim' ? '#fbbf24'
                       : lr.location === 'backboard' ? '#94a3b8'
                       : '#ef4444';
@@ -1648,10 +1796,17 @@ window.StemLab = window.StemLab || {
                : loc === 'wide' ? '↔️ No good — wide'
                : '😬 Short of the line';
         }
+        // Pass outcomes (kind: 'pass' shot types) reuse this same function.
         return loc === 'swish' ? '🌊 SWISH (clean center)'
              : loc === 'made' ? '🏀 MADE IT'
+             : loc === 'caught' ? '🤝 CAUGHT (chest height)'
+             : loc === 'highpass' ? '⬆️ Sailed high'
+             : loc === 'lowpass' ? '⬇️ Worm-burner'
+             : loc === 'wrongbounce' ? '〰️ Wrong bounce style'
              : loc === 'rim' ? '〰️ Off the rim'
              : loc === 'backboard' ? '🪞 Off the backboard'
+             : loc === 'short' ? '😬 Short'
+             : loc === 'wide' ? '↔️ Wide'
              : loc === 'air' ? '💨 Airball (short)'
              : '😬 Miss';
       }
@@ -1835,7 +1990,16 @@ window.StemLab = window.StemLab || {
         if (isFieldGoal) {
           return loc === 'good' ? '#10b981' : loc === 'doink' ? '#fbbf24' : loc === 'wideclose' ? '#f97316' : '#ef4444';
         }
-        return loc === 'swish' ? '#10b981' : loc === 'made' ? '#3b82f6' : loc === 'rim' ? '#fbbf24' : loc === 'backboard' ? '#94a3b8' : '#ef4444';
+        // Pass outcomes reuse this palette: caught = green, high/low = yellow,
+        // wrongbounce = orange, others = red.
+        return loc === 'swish' ? '#10b981'
+             : loc === 'made' ? '#3b82f6'
+             : loc === 'caught' ? '#10b981'
+             : loc === 'highpass' || loc === 'lowpass' ? '#fbbf24'
+             : loc === 'wrongbounce' ? '#f97316'
+             : loc === 'rim' ? '#fbbf24'
+             : loc === 'backboard' ? '#94a3b8'
+             : '#ef4444';
       }
 
       return h('div', { style: { padding: 16, color: '#f1f5f9', maxWidth: 1100, margin: '0 auto' } },
