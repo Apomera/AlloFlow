@@ -571,7 +571,12 @@ window.StemLab = window.StemLab || {
             goalCount: 0,              // free-kick scoring
             goalType: 'midrange',
             fgDistanceYd: 35,          // active field-goal distance
-            fgMakeCount: 0             // field-goal scoring
+            fgMakeCount: 0,            // field-goal scoring
+            // Compare Mode — pinned reference trajectory drawn behind the
+            // current one so students can change ONE variable and see the
+            // effect against a held-constant baseline.
+            referenceResult: null,
+            referenceLabel: ''         // "92 mph 4-Seam" etc.
           }});
         });
         return h('div', { className: 'p-8 text-center text-slate-600' }, 'Loading ThrowLab…');
@@ -632,6 +637,45 @@ window.StemLab = window.StemLab || {
           return Object.assign({}, prev, { throwlab: next });
         });
         tlAnnounce('Selected kick: ' + kt.label + '. Speed ' + kt.speedMph + ' mph, spin axis ' + kt.spinAxisDeg + ' degrees.');
+      }
+
+      // ── Compare Mode helpers ──
+      // Pin the most recent trajectory as a "reference ghost" — drawn behind
+      // the next throw in a faded color so students can change one parameter
+      // and see its isolated effect.
+      function saveReference() {
+        if (!d.lastResult) {
+          tlAnnounce('Throw a pitch first, then you can save it as a reference.');
+          if (addToast) addToast('No throw to save yet');
+          return;
+        }
+        // Build a short human-readable label from the current parameters.
+        var ballLabel = (BALLS[modeMeta.ball] || {}).label || 'ball';
+        var modeLabel = isPitching ? (currentPitch && currentPitch.label) || 'pitch'
+                      : isFreeThrow ? (currentShot && currentShot.label) || 'shot'
+                      : isFreeKick ? (currentKick && currentKick.label) || 'kick'
+                      : isFieldGoal ? (currentGoal && currentGoal.label) || 'kick'
+                      : 'throw';
+        var label = d.speedMph + ' mph · ' + modeLabel
+                  + (isPitching || isFreeKick ? ' · ' + d.spinRpm + ' rpm @ ' + d.spinAxisDeg + '°' : '')
+                  + (isFreeThrow || isFieldGoal ? ' · ' + d.aimDegV.toFixed(1) + '°' : '');
+        setLabToolData(function(prev) {
+          var next = Object.assign({}, prev.throwlab, {
+            referenceResult: prev.throwlab.lastResult,
+            referenceLabel: label
+          });
+          return Object.assign({}, prev, { throwlab: next });
+        });
+        tlAnnounce('Saved as reference: ' + label + '. Change one parameter and throw again to compare.');
+        if (addToast) addToast('📌 Reference saved');
+      }
+
+      function clearReference() {
+        setLabToolData(function(prev) {
+          var next = Object.assign({}, prev.throwlab, { referenceResult: null, referenceLabel: '' });
+          return Object.assign({}, prev, { throwlab: next });
+        });
+        tlAnnounce('Reference cleared.');
       }
 
       function applyGoalPreset(gid) {
@@ -1141,6 +1185,35 @@ window.StemLab = window.StemLab || {
           gfx.fillText('Goal — 7.32 m wide', (postL[0] + postR[0]) / 2, marginT + fieldH + 18);
         }
 
+        // ── Saved REFERENCE trajectory (Compare Mode) ──
+        // Drawn FIRST so it sits behind the current trajectory + no-spin guide.
+        // Faded magenta dashed line with a small "REF" tag at its end.
+        var rr = d.referenceResult;
+        if (rr && rr.samples && rr.samples.length > 1) {
+          gfx.strokeStyle = 'rgba(217, 70, 239, 0.55)'; // fuchsia-500 @ 55% — distinct from the green/yellow/red palette
+          gfx.lineWidth = 2;
+          gfx.setLineDash([6, 5]);
+          gfx.beginPath();
+          for (var ri = 0; ri < rr.samples.length; ri++) {
+            var rs = rr.samples[ri];
+            if (rs.z > renderMaxZ + 0.5) break;
+            var rp = worldToCanvas(rs.z, sampleB(rs));
+            if (ri === 0) gfx.moveTo(rp[0], rp[1]); else gfx.lineTo(rp[0], rp[1]);
+          }
+          gfx.stroke();
+          gfx.setLineDash([]);
+          // "REF" tag near the trajectory's end-of-render point
+          var lastRef = rr.samples[Math.min(rr.samples.length - 1, rr.samples.length - 1)];
+          for (var rj = rr.samples.length - 1; rj >= 0; rj--) {
+            if (rr.samples[rj].z <= renderMaxZ + 0.5) { lastRef = rr.samples[rj]; break; }
+          }
+          var refTagPos = worldToCanvas(lastRef.z, sampleB(lastRef));
+          gfx.fillStyle = 'rgba(217, 70, 239, 0.85)';
+          gfx.font = 'bold 10px system-ui';
+          gfx.textAlign = 'left';
+          gfx.fillText('REF', refTagPos[0] + 6, refTagPos[1] + 3);
+        }
+
         // No-spin reference trajectory (gray, dashed) — only when there's a result
         var lr = d.lastResult;
         if (lr && d.showPhysics) {
@@ -1220,7 +1293,8 @@ window.StemLab = window.StemLab || {
       }, [
         d.lastResult, d.replayActive, d.replayT,
         d.speedMph, d.releaseHeight, d.aimDegV, d.aimDegH,
-        d.spinRpm, d.spinAxisDeg, d.throwerHand, d.showPhysics
+        d.spinRpm, d.spinAxisDeg, d.throwerHand, d.showPhysics,
+        d.referenceResult, d.mode, d.fgDistanceYd
       ]);
 
       // ── Replay animator: walk replayT from 0 → 1 over ~1s ──
@@ -1555,6 +1629,32 @@ window.StemLab = window.StemLab || {
                 color: '#1a1a2e', fontSize: 16, fontWeight: 800
               }
             }, isPitching ? '⚾ THROW PITCH' : isFreeKick ? '⚽ STRIKE' : isFieldGoal ? '🏈 KICK' : '🏀 SHOOT'),
+            // ── Compare Mode controls ──
+            // Save the latest trajectory as a reference ghost for the next throw,
+            // OR clear the existing reference. Sits between the throw button and
+            // the stats so it reads as a secondary action.
+            h('div', { style: { marginTop: 8, display: 'flex', gap: 6 } },
+              h('button', {
+                onClick: saveReference,
+                'aria-label': d.referenceResult ? 'Replace saved reference with current throw' : 'Save current throw as reference',
+                style: {
+                  flex: 1, padding: '8px 10px', borderRadius: 6, cursor: 'pointer',
+                  border: '1px solid #d946ef',
+                  background: d.referenceResult ? 'rgba(217,70,239,0.18)' : '#1e293b',
+                  color: '#f1f5f9', fontSize: 11, fontWeight: 600
+                }
+              }, d.referenceResult ? '📌 Replace reference' : '📌 Save as reference'),
+              d.referenceResult ? h('button', {
+                onClick: clearReference,
+                'aria-label': 'Clear saved reference trajectory',
+                style: {
+                  padding: '8px 10px', borderRadius: 6, cursor: 'pointer',
+                  border: '1px solid #475569', background: '#1e293b', color: '#cbd5e1', fontSize: 11
+                }
+              }, '✕') : null
+            ),
+            d.referenceResult ? h('div', { style: { marginTop: 4, fontSize: 10, color: '#d946ef', fontStyle: 'italic' } },
+              'REF: ' + d.referenceLabel) : null,
             // Stats line — mode-aware
             h('div', { style: { marginTop: 12, fontSize: 11, color: '#94a3b8', display: 'flex', justifyContent: 'space-between' } },
               h('span', null, (isPitching ? 'Pitches: ' : isFreeKick ? 'Kicks: ' : isFieldGoal ? 'FGs: ' : 'Shots: ') + (d.throwCount || 0)),
