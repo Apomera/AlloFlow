@@ -1270,7 +1270,7 @@ const createExport = deps => {
             .def-text { font-size: 13px; color: #475569; line-height: 1.4; }
             .def-trans { font-size: 13px; color: #475569; line-height: 1.4; margin-top: 10px; padding-top: 10px; border-top: 1px solid #e2e8f0; width: 100%; }
             .etym-text { font-size: 11px; color: #4338ca; font-style: italic; line-height: 1.4; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #c7d2fe; width: 100%; }
-            .etym-roots { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px; width: 100%; }
+            .etym-roots { margin-top: 6px; display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; width: 100%; }
             .root-chip { font-size: 10px; background: #eef2ff; border: 1px solid #c7d2fe; color: #3730a3; padding: 2px 6px; border-radius: 999px; font-style: normal; }
             .root-chip b { font-weight: 700; }
             .root-chip i { font-size: 9px; color: #6366f1; text-transform: uppercase; font-style: normal; letter-spacing: 0.03em; margin: 0 2px; }

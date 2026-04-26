@@ -3586,6 +3586,10 @@ const StudentBingoGame = React.memo(({ data, onClose, playSound, onGameComplete 
   const [grid, setGrid] = useState([]);
   const [marks, setMarks] = useState(new Set());
   const [isWon, setIsWon] = useState(false);
+  // Images-on toggle. Default true so vocabulary pictures appear by default in
+  // Play Bingo (matches the teacher batch-generator's default). Local state so
+  // students can flip pictures off mid-game without affecting the parent.
+  const [showImages, setShowImages] = useState(true);
   useEffect(() => {
       if (grid.length > 0) return; // Lock: don't regenerate if card already exists this session
       if (!data || !Array.isArray(data) || data.length === 0) return;
@@ -3686,6 +3690,15 @@ const StudentBingoGame = React.memo(({ data, onClose, playSound, onGameComplete 
                          <p className="text-indigo-200 text-xs font-bold">{t('bingo.click_hint')}</p>
                      </div>
                  </div>
+                 <button
+                    onClick={() => setShowImages(v => !v)}
+                    className={`p-2 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${showImages ? 'bg-white/20 hover:bg-white/30' : 'hover:bg-indigo-500'}`}
+                    aria-pressed={showImages}
+                    aria-label={t('bingo.toggle_images_aria') || 'Toggle picture cards'}
+                    title={showImages ? (t('bingo.hide_images_title') || 'Hide pictures') : (t('bingo.show_images_title') || 'Show pictures')}
+                 >
+                    <ImageIcon size={20} className={showImages ? 'text-white' : 'text-indigo-200'} />
+                 </button>
                  <GameThemeToggle />
                  <button onClick={onClose} className="p-2 hover:bg-indigo-500 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" aria-label={t('bingo.close_game_aria')}>
                      <X size={24} />
@@ -3720,7 +3733,7 @@ const StudentBingoGame = React.memo(({ data, onClose, playSound, onGameComplete 
                                         }
                                     `}
                                 >
-                                    {cell.imageUrl && (
+                                    {showImages && cell.imageUrl && (
                                         <img src={cell.imageUrl} alt={cell.text} className={`w-8 h-8 sm:w-10 sm:h-10 object-contain rounded mb-0.5 ${isMarked && cell.type !== 'free' ? 'opacity-40' : ''}`} />
                                     )}
                                     <span className={`text-[11px] sm:text-xs font-bold leading-tight break-words ${isMarked && cell.type !== 'free' ? 'opacity-40' : ''}`}>
