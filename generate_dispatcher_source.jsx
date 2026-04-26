@@ -1830,7 +1830,10 @@ ${modeListForAuto}
       } else if (type === 'concept-sort') {
          setGenerationStep(t('status_steps.categorizing_concepts'));
          const isLowerGrade = ['Kindergarten', '1st Grade', '2nd Grade', '3rd Grade', '4th Grade', '5th Grade'].includes(gradeLevel);
-         const numItems = conceptItemCount || 10;
+         const isAutoCount = !conceptItemCount || conceptItemCount === '';
+         const itemCountInstruction = isAutoCount
+            ? `2. Generate items (cards) for students to sort into these categories. *** ITEM COUNT RULE *** Generate ONLY as many items as the source text can clearly support — items must be unambiguous, distinctive, and sortable into exactly ONE of the categories. Minimum 6 items. Maximum 30 items. Preferred: 12-18 items if the text supports it (richer texts can support more). Do NOT pad with weak or ambiguous items just to reach a count.`
+            : `2. Generate exactly ${conceptItemCount} items (cards) that students must sort into these categories.`;
          let categoryInstruction = "1. Identify 2 or 3 contrasting categories, concepts, or themes central to the text (e.g., \"Renewable vs Non-Renewable\", \"Federalist vs Anti-Federalist\", \"Input vs Output\").";
          if (selectedConcepts.length > 0) {
              categoryInstruction = `1. Use these specific categories: ${selectedConcepts.join(', ')}. Ensure items fit clearly into exactly one of these categories.`;
@@ -1841,7 +1844,7 @@ ${modeListForAuto}
             Language: ${effectiveLanguage}.
             Task:
             ${categoryInstruction}
-            2. Generate exactly ${numItems} items (cards) that students must sort into these categories.
+            ${itemCountInstruction}
             Differentiation Strategy for ${gradeLevel}:
             ${isLowerGrade
                 ? '- LOWER LEVEL: Focus on concrete, tangible examples. The content of the cards should be short (1-5 words) to act as captions for visual support.'
