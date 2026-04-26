@@ -1286,5 +1286,8 @@ const QuickStartWizard = React.memo(({
     size: 20
   })))));
 });
+window.AlloModules = window.AlloModules || {};
+window.AlloModules.QuickStartWizard = QuickStartWizard;
+console.log('[QuickStartWizard] Module registered successfully');
 
 })();

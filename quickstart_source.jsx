@@ -1109,3 +1109,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
     </div>
   );
 });
+
+window.AlloModules = window.AlloModules || {};
+window.AlloModules.QuickStartWizard = QuickStartWizard;
+console.log('[QuickStartWizard] Module registered successfully');
