@@ -40,6 +40,19 @@ window.StemLab = window.StemLab || {
     document.head.appendChild(st);
   })();
 
+  // ── Focus-visible outline (WCAG 2.4.7 Focus Visible) ──
+  // Inline styles on buttons/sliders below would suppress the browser's default
+  // focus ring. This scoped CSS restores a visible 3px amber outline on
+  // keyboard focus only (mouse clicks won't trigger it). Limited to elements
+  // tagged `data-tl-focusable` so we don't fight any host-app focus styles.
+  (function() {
+    if (document.getElementById('allo-throwlab-focus-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-throwlab-focus-css';
+    st.textContent = '[data-tl-focusable]:focus-visible{outline:3px solid #fbbf24!important;outline-offset:2px!important;border-radius:6px}';
+    document.head.appendChild(st);
+  })();
+
 
   // ── Audio (whoosh on throw, thwack on hit) ─────────────────
   var _tlAC = null;
@@ -719,6 +732,19 @@ window.StemLab = window.StemLab || {
         tlAnnounce('Switched to ' + modeMeta.label + ' mode.');
       }
 
+      // Plain-language trajectory shape for screen-reader narration.
+      // WCAG 1.1.1 Non-text Content: the canvas trajectory has no SR
+      // equivalent without this — describes apex height + distance + duration
+      // so a blind student gets the same shape information a sighted student
+      // sees in the line. ~1 sentence, appended to outcome-specific text.
+      function describeShape(rs) {
+        if (!rs || !rs.samples || rs.samples.length < 2) return '';
+        var apex = Math.max.apply(null, rs.samples.map(function(s) { return s.y; }));
+        var maxZ = Math.max.apply(null, rs.samples.map(function(s) { return s.z; }));
+        var hangT = rs.samples[rs.samples.length - 1].t || 0;
+        return ' Trajectory peaked at ' + apex.toFixed(1) + ' meters, traveled ' + maxZ.toFixed(1) + ' meters forward over ' + hangT.toFixed(2) + ' seconds.';
+      }
+
       function throwPitch() {
         var modeMeta = MODES[d.mode] || MODES.pitching;
         // Field goal distance is preset-driven so the goal line moves per kick type.
@@ -800,7 +826,7 @@ window.StemLab = window.StemLab || {
           if (d.mode === 'pitching') {
             if (loc === 'strike') {
               sfxStrike();
-              tlAnnounce('Strike! Pitch crossed the plate ' + Math.round((result.outcome.plateY || 0) * 39.37) + ' inches up.');
+              tlAnnounce('Strike! Pitch crossed the plate ' + Math.round((result.outcome.plateY || 0) * 39.37) + ' inches up.' + describeShape(result));
               if (addToast) addToast('🎯 STRIKE!');
               if (awardXP) awardXP('throwlab', 5, 'Strike thrown');
             } else if (loc === 'borderline') {
@@ -820,7 +846,7 @@ window.StemLab = window.StemLab || {
           } else if (d.mode === 'freethrow') {
             if (loc === 'swish') {
               sfxStrike(); sfxStrike();
-              tlAnnounce('Swish! Clean shot through the center of the rim.');
+              tlAnnounce('Swish! Clean shot through the center of the rim.' + describeShape(result));
               if (addToast) addToast('🏀 SWISH!');
               if (awardXP) awardXP('throwlab', 8, 'Swish');
               if (celebrate) celebrate();
@@ -849,7 +875,7 @@ window.StemLab = window.StemLab || {
           } else if (d.mode === 'fieldgoal') {
             if (loc === 'good') {
               sfxStrike(); sfxStrike();
-              tlAnnounce('GOOD! Field goal from ' + d.fgDistanceYd + ' yards is up and through.');
+              tlAnnounce('GOOD! Field goal from ' + d.fgDistanceYd + ' yards is up and through.' + describeShape(result));
               if (addToast) addToast('🏈 GOOD!');
               if (awardXP) awardXP('throwlab', 10, 'Field goal made');
               if (celebrate) celebrate();
@@ -877,7 +903,7 @@ window.StemLab = window.StemLab || {
           } else if (d.mode === 'freekick') {
             if (loc === 'goal') {
               sfxStrike(); sfxStrike();
-              tlAnnounce('GOAL! Free kick found the back of the net.');
+              tlAnnounce('GOAL! Free kick found the back of the net.' + describeShape(result));
               if (addToast) addToast('⚽ GOAL!');
               if (awardXP) awardXP('throwlab', 10, 'Free kick goal');
               if (celebrate) celebrate();
@@ -1297,6 +1323,25 @@ window.StemLab = window.StemLab || {
         d.referenceResult, d.mode, d.fgDistanceYd
       ]);
 
+      // ── Space-key hotkey for throw/shoot/kick ──
+      // WCAG 2.1.1 Keyboard: the throw button is already keyboard-reachable,
+      // but power users want a single-key shortcut. Listen on window so the
+      // hotkey works regardless of whether a slider has focus. Skip when the
+      // user is typing in an input that handles Space natively (none in this
+      // tool, but defensive against future text inputs).
+      React.useEffect(function() {
+        function onKey(e) {
+          if (e.key !== ' ' && e.code !== 'Space') return;
+          var tag = e.target && e.target.tagName;
+          if (tag === 'INPUT' && e.target.type !== 'range') return;
+          if (tag === 'TEXTAREA' || (e.target && e.target.isContentEditable)) return;
+          e.preventDefault();
+          throwPitch();
+        }
+        window.addEventListener('keydown', onKey);
+        return function() { window.removeEventListener('keydown', onKey); };
+      }, [d.mode, d.speedMph, d.releaseHeight, d.aimDegV, d.aimDegH, d.spinRpm, d.spinAxisDeg, d.fgDistanceYd]);
+
       // ── Replay animator: walk replayT from 0 → 1 over ~1s ──
       // WCAG 2.3.3 (Animation from Interactions): if the user prefers reduced
       // motion, skip the replay walk and snap straight to the final trajectory.
@@ -1334,13 +1379,25 @@ window.StemLab = window.StemLab || {
       var currentPitch = PITCH_TYPES.find(function(p) { return p.id === d.pitchType; }) || PITCH_TYPES[0];
 
       function slider(label, value, min, max, step, onChange, suffix) {
+        // WCAG 1.3.1 Info & Relationships: bind the visible label to the
+        // <input type=range> via htmlFor + id so screen readers announce the
+        // label when the slider gets focus. WCAG 4.1.2 Name, Role, Value:
+        // aria-valuetext gives the live value with units (otherwise the SR
+        // would read "92" instead of "92 mph").
+        var inputId = 'tl-slider-' + label.replace(/\s+/g, '-').toLowerCase();
         return h('div', { style: { marginBottom: 10 } },
-          h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#cbd5e1', marginBottom: 4 } },
+          h('label', {
+            htmlFor: inputId,
+            style: { display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#cbd5e1', marginBottom: 4, cursor: 'pointer' }
+          },
             h('span', null, label),
             h('span', { style: { color: '#fbbf24', fontWeight: 600 } }, value + (suffix || ''))
           ),
           h('input', {
+            id: inputId,
+            'data-tl-focusable': 'true',
             type: 'range', min: min, max: max, step: step, value: value,
+            'aria-valuetext': value + (suffix || ''),
             onChange: function(e) { onChange(parseFloat(e.target.value)); },
             style: { width: '100%', accentColor: '#fbbf24' }
           })
@@ -1473,21 +1530,26 @@ window.StemLab = window.StemLab || {
         h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
           ArrowLeft && h('button', {
             onClick: function() { setStemLabTool && setStemLabTool(null); },
+            'data-tl-focusable': 'true',
+            'aria-label': 'Back to STEM Lab',
             style: { background: '#1e293b', border: '1px solid #334155', color: '#f1f5f9', padding: '6px 10px', borderRadius: 6, cursor: 'pointer' }
           }, '← Back'),
           h('h2', { style: { margin: 0, fontSize: 20 } }, modeMeta.icon + ' ThrowLab — ' + modeMeta.label),
-          h('span', { style: { fontSize: 12, color: '#94a3b8' } }, 'Same arm, different ball, different game.')
+          h('span', { style: { fontSize: 12, color: '#cbd5e1' } }, 'Same arm, different ball, different game.')
         ),
 
-        // Mode picker — pill row, prominent under header
-        h('div', { style: { display: 'flex', gap: 6, marginBottom: 14, flexWrap: 'wrap' } },
+        // Mode picker — pill row, prominent under header. role=tablist makes
+        // assistive-tech treat it as a single-select control group.
+        h('div', { role: 'tablist', 'aria-label': 'Sport modes', style: { display: 'flex', gap: 6, marginBottom: 14, flexWrap: 'wrap' } },
           Object.keys(MODES).map(function(mid) {
             var mm = MODES[mid];
             var sel = d.mode === mid;
             return h('button', {
               key: mid,
+              role: 'tab',
               onClick: function() { switchMode(mid); },
-              'aria-pressed': sel,
+              'aria-selected': sel,
+              'data-tl-focusable': 'true',
               style: {
                 padding: '8px 14px', borderRadius: 999, cursor: 'pointer',
                 border: '1px solid ' + (sel ? '#fbbf24' : '#334155'),
@@ -1505,13 +1567,17 @@ window.StemLab = window.StemLab || {
           h('div', null,
             h('canvas', {
               ref: canvasRef, width: 720, height: 360,
-              'aria-label': isPitching
-                ? 'Side view of pitcher\'s mound and home plate. The strike zone is the dashed yellow box above the plate.'
+              role: 'img',
+              tabIndex: 0,
+              'data-tl-focusable': 'true',
+              'aria-label': (isPitching
+                ? 'Pitcher\'s mound side view. Mound on the left, home plate on the right, dashed yellow strike zone above the plate.'
                 : isFreeKick
-                  ? 'Top-down view of a soccer pitch with the ball at the bottom, a four-defender wall in the middle, and the goal at the top. Spin curls the ball laterally.'
+                  ? 'Soccer pitch top-down view. Ball at bottom, four-defender wall in the middle at 10 yards, goalposts 7.32 meters wide at the top. Spin curls the ball laterally.'
                   : isFieldGoal
-                    ? 'Side view of a football field with hash-mark distance labels, a yellow tee, and yellow goalposts at ' + d.fgDistanceYd + ' yards.'
-                    : 'Side view of free-throw line and basketball hoop. The orange bar is the rim at 10 feet.',
+                    ? 'Football field side view with hash-mark distance labels, yellow tee on the left, and yellow goalposts at ' + d.fgDistanceYd + ' yards.'
+                    : 'Basketball court side view. Free-throw line on the left, hoop with backboard on the right. Orange bar is the rim at 10 feet.')
+                + (lr ? ' Last throw outcome: ' + outcomeLabel(lr.location).replace(/^[^A-Za-z]+/, '') + '.' : ''),
               style: { width: '100%', maxWidth: 720, height: 'auto', borderRadius: 10, border: '1px solid #334155', background: '#0f172a' }
             }),
             // Result panel
@@ -1560,11 +1626,21 @@ window.StemLab = window.StemLab || {
                       ? 'Pick a distance, set your launch angle and power, and click KICK — clear the bar and split the uprights.'
                       : 'Pick a shot, set your release angle, and click SHOOT to see the arc.')
             ),
-            // "Show physics" toggle
-            h('div', { style: { marginTop: 10, fontSize: 12, color: '#94a3b8' } },
+            // "Show physics" toggle + keyboard shortcuts hint.
+            // Bumped to slate-300 (#cbd5e1) for AA contrast on dark panel.
+            h('div', { style: { marginTop: 10, fontSize: 12, color: '#cbd5e1', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 } },
               h('label', { style: { cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 } },
-                h('input', { type: 'checkbox', checked: !!d.showPhysics, onChange: function(e) { upd('showPhysics', e.target.checked); } }),
-                'Show physics overlays (no-spin reference trajectory)')
+                h('input', {
+                  type: 'checkbox',
+                  'data-tl-focusable': 'true',
+                  checked: !!d.showPhysics,
+                  onChange: function(e) { upd('showPhysics', e.target.checked); }
+                }),
+                'Show physics overlays (no-spin reference trajectory)'),
+              h('span', { style: { fontSize: 11, color: '#94a3b8' } },
+                'Hotkey: ',
+                h('kbd', { style: { padding: '1px 5px', borderRadius: 3, border: '1px solid #475569', background: '#0f172a', color: '#cbd5e1', fontFamily: 'monospace' } }, 'Space'),
+                ' to throw')
             )
           ),
 
@@ -1589,6 +1665,7 @@ window.StemLab = window.StemLab || {
                       else applyShotPreset(pt.id);
                     },
                     'aria-pressed': sel,
+                    'data-tl-focusable': 'true',
                     style: {
                       padding: '8px 10px', borderRadius: 6, cursor: 'pointer',
                       border: '1px solid ' + (sel ? '#fbbf24' : '#334155'),
@@ -1623,6 +1700,8 @@ window.StemLab = window.StemLab || {
             // Throw / Shoot button — mode-aware label
             h('button', {
               onClick: throwPitch,
+              'data-tl-focusable': 'true',
+              'aria-keyshortcuts': 'Space',
               style: {
                 width: '100%', padding: '12px 16px', borderRadius: 8, cursor: 'pointer',
                 border: '1px solid #fbbf24', background: 'linear-gradient(135deg, #fbbf24, #f59e0b)',
@@ -1637,6 +1716,7 @@ window.StemLab = window.StemLab || {
               h('button', {
                 onClick: saveReference,
                 'aria-label': d.referenceResult ? 'Replace saved reference with current throw' : 'Save current throw as reference',
+                'data-tl-focusable': 'true',
                 style: {
                   flex: 1, padding: '8px 10px', borderRadius: 6, cursor: 'pointer',
                   border: '1px solid #d946ef',
@@ -1647,6 +1727,7 @@ window.StemLab = window.StemLab || {
               d.referenceResult ? h('button', {
                 onClick: clearReference,
                 'aria-label': 'Clear saved reference trajectory',
+                'data-tl-focusable': 'true',
                 style: {
                   padding: '8px 10px', borderRadius: 6, cursor: 'pointer',
                   border: '1px solid #475569', background: '#1e293b', color: '#cbd5e1', fontSize: 11
@@ -1655,8 +1736,9 @@ window.StemLab = window.StemLab || {
             ),
             d.referenceResult ? h('div', { style: { marginTop: 4, fontSize: 10, color: '#d946ef', fontStyle: 'italic' } },
               'REF: ' + d.referenceLabel) : null,
-            // Stats line — mode-aware
-            h('div', { style: { marginTop: 12, fontSize: 11, color: '#94a3b8', display: 'flex', justifyContent: 'space-between' } },
+            // Stats line — mode-aware. Bumped slate-400 → slate-300 (#cbd5e1)
+            // for AA contrast on the dark panel background.
+            h('div', { style: { marginTop: 12, fontSize: 11, color: '#cbd5e1', display: 'flex', justifyContent: 'space-between' } },
               h('span', null, (isPitching ? 'Pitches: ' : isFreeKick ? 'Kicks: ' : isFieldGoal ? 'FGs: ' : 'Shots: ') + (d.throwCount || 0)),
               h('span', null, isPitching ? 'Strikes: ' + (d.strikeCount || 0)
                             : isFreeKick ? 'Goals: ' + (d.goalCount || 0)
