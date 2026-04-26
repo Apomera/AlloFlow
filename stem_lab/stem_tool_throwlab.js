@@ -1581,14 +1581,20 @@ window.StemLab = window.StemLab || {
       // Pin the most recent trajectory as a "reference ghost" — drawn behind
       // the next throw in a faded color so students can change one parameter
       // and see its isolated effect.
-      function saveReference() {
-        if (!d.lastResult) {
-          tlAnnounce('Throw a pitch first, then you can save it as a reference.');
-          if (addToast) addToast('No throw to save yet');
-          return;
-        }
-        // Build a short human-readable label from the current parameters.
-        var ballLabel = (BALLS[modeMeta.ball] || {}).label || 'ball';
+      // Multi-ghost compare — students can save up to 4 reference
+      // trajectories at distinct colors and overlay them all. The
+      // existing single-reference fields (referenceResult / referenceLabel)
+      // are kept for backwards compatibility — first-saved trajectory
+      // also writes to those so older saved sessions still render.
+      var REFERENCE_COLORS = [
+        { color: '#d946ef', name: 'Fuchsia' },  // ref #1 — original
+        { color: '#22d3ee', name: 'Cyan' },     // ref #2
+        { color: '#a3e635', name: 'Lime' },     // ref #3
+        { color: '#fb923c', name: 'Orange' }    // ref #4
+      ];
+      var MAX_REFERENCES = 4;
+
+      function buildRefLabel() {
         var modeLabel = isPitching ? (currentPitch && currentPitch.label) || 'pitch'
                       : isFreeThrow ? (currentShot && currentShot.label) || 'shot'
                       : isFreeKick ? (currentKick && currentKick.label) || 'kick'
@@ -1597,13 +1603,44 @@ window.StemLab = window.StemLab || {
                       : isGolf ? (currentGolfClub && currentGolfClub.label) || 'club'
                       : isVolleyball ? (currentVolley && currentVolley.label) || 'serve'
                       : 'throw';
-        var label = d.speedMph + ' mph · ' + modeLabel
-                  + (isPitching || isFreeKick || isBowling || isVolleyball ? ' · ' + d.spinRpm + ' rpm @ ' + d.spinAxisDeg + '°' : '')
-                  + (isFreeThrow || isFieldGoal || isGolf ? ' · ' + d.aimDegV.toFixed(1) + '°' : '');
+        return d.speedMph + ' mph · ' + modeLabel
+             + (isPitching || isFreeKick || isBowling || isVolleyball ? ' · ' + d.spinRpm + ' rpm @ ' + d.spinAxisDeg + '°' : '')
+             + (isFreeThrow || isFieldGoal || isGolf ? ' · ' + d.aimDegV.toFixed(1) + '°' : '');
+      }
+
+      function saveReference() {
+        if (!d.lastResult) {
+          tlAnnounce('Throw a pitch first, then you can save it as a reference.');
+          if (addToast) addToast('No throw to save yet');
+          return;
+        }
+        var label = buildRefLabel();
         setLabToolData(function(prev) {
+          var existingList = prev.throwlab.referenceList || [];
+          // Hydrate from legacy single-reference if list is empty + legacy is set
+          if (!existingList.length && prev.throwlab.referenceResult) {
+            existingList = [{ result: prev.throwlab.referenceResult, label: prev.throwlab.referenceLabel || 'reference', color: REFERENCE_COLORS[0].color }];
+          }
+          var nextList;
+          if (existingList.length >= MAX_REFERENCES) {
+            // Cap reached — replace the oldest (FIFO)
+            nextList = existingList.slice(1).concat([{
+              result: prev.throwlab.lastResult,
+              label: label,
+              color: REFERENCE_COLORS[(existingList.length) % REFERENCE_COLORS.length].color
+            }]);
+          } else {
+            nextList = existingList.concat([{
+              result: prev.throwlab.lastResult,
+              label: label,
+              color: REFERENCE_COLORS[existingList.length % REFERENCE_COLORS.length].color
+            }]);
+          }
           var next = Object.assign({}, prev.throwlab, {
-            referenceResult: prev.throwlab.lastResult,
-            referenceLabel: label
+            referenceList: nextList,
+            // Keep legacy fields synced to the FIRST entry for back-compat
+            referenceResult: nextList[0].result,
+            referenceLabel: nextList[0].label
           });
           return Object.assign({}, prev, { throwlab: next });
         });
@@ -1613,10 +1650,28 @@ window.StemLab = window.StemLab || {
 
       function clearReference() {
         setLabToolData(function(prev) {
-          var next = Object.assign({}, prev.throwlab, { referenceResult: null, referenceLabel: '' });
+          var next = Object.assign({}, prev.throwlab, {
+            referenceList: [],
+            referenceResult: null,
+            referenceLabel: ''
+          });
           return Object.assign({}, prev, { throwlab: next });
         });
-        tlAnnounce('Reference cleared.');
+        tlAnnounce('All references cleared.');
+      }
+
+      function removeReferenceAt(idx) {
+        setLabToolData(function(prev) {
+          var list = (prev.throwlab.referenceList || []).slice();
+          list.splice(idx, 1);
+          var next = Object.assign({}, prev.throwlab, {
+            referenceList: list,
+            referenceResult: list.length ? list[0].result : null,
+            referenceLabel: list.length ? list[0].label : ''
+          });
+          return Object.assign({}, prev, { throwlab: next });
+        });
+        tlAnnounce('Reference removed.');
       }
 
       // ── Coach Mode (Gemini) ──

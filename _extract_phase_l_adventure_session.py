@@ -245,7 +245,7 @@ def main():
         ]
         new_lines[start-1:actual_end] = shim
 
-    LOADER_LINE = "    loadModule('AdventureSessionHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@MAIN/adventure_session_handlers_module.js');\n"
+    LOADER_LINE = "    loadModule('AdventureSessionHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/adventure_session_handlers_module.js');\n"
     if not any('AdventureSessionHandlersModule' in ln and 'loadModule' in ln for ln in new_lines):
         for i, ln in enumerate(new_lines):
             if "loadModule('PhaseKHelpersModule'" in ln:
