@@ -442,6 +442,10 @@
     var addToast = props.addToast;
     var studentNickname = props.studentNickname || '';
     var handleScoreUpdate = props.handleScoreUpdate;
+    // Resource-history integration (teacher-scaffold path; mirrors StoryForge)
+    var initialConfig = props.initialConfig || null;
+    var onSaveConfig = props.onSaveConfig || null;        // non-null => teacher mode
+    var onSaveSubmission = props.onSaveSubmission || null; // non-null => save to portfolio enabled
 
     var e = React.createElement;
     var useState = React.useState;
@@ -520,6 +524,35 @@
     var _mentorMatch = useState(null); var mentorMatch = _mentorMatch[0]; var setMentorMatch = _mentorMatch[1];
     var _mentorLoading = useState(false); var mentorLoading = _mentorLoading[0]; var setMentorLoading = _mentorLoading[1];
 
+    // Teacher-scaffold fields (saved into the resource-history config payload).
+    // teacherPrompt: a writing prompt the teacher authors for the assignment.
+    // suggestedTitle: an optional title hint that pre-fills poemTitle on load.
+    var _teacherPrompt = useState(''); var teacherPrompt = _teacherPrompt[0]; var setTeacherPrompt = _teacherPrompt[1];
+    var _suggestedTitle = useState(''); var suggestedTitle = _suggestedTitle[0]; var setSuggestedTitle = _suggestedTitle[1];
+
+    // Hydrate from a saved teacher assignment (initialConfig) the first time it shows up.
+    // Pre-selects form, fills the prompt banner the student sees, and seeds the title.
+    var _hydratedFromConfig = useRef(false);
+    useEffect(function () {
+      if (_hydratedFromConfig.current) return;
+      if (!initialConfig) return;
+      _hydratedFromConfig.current = true;
+      try {
+        if (initialConfig.formId) {
+          var f = FORMS.filter(function (x) { return x.id === initialConfig.formId; })[0];
+          if (f) setForm(f);
+        }
+        if (initialConfig.teacherPrompt) setTeacherPrompt(initialConfig.teacherPrompt);
+        if (initialConfig.suggestedTitle) {
+          setSuggestedTitle(initialConfig.suggestedTitle);
+          // Seed the editable title once so the student starts with the teacher's hint.
+          if (!poemTitle) setPoemTitle(initialConfig.suggestedTitle);
+        }
+        announcePT('Assignment loaded from teacher.');
+        if (addToast) addToast('Assignment loaded!', 'success');
+      } catch (err) { warnLog('initialConfig hydration failed:', err && err.message); }
+    }, [initialConfig]);
+
     // ── Persistence helpers ──
     var savePrefs = useCallback(function (next) {
       try { localStorage.setItem(STORAGE_PREFS, JSON.stringify(next)); } catch (e) {}
@@ -549,6 +582,49 @@
       setActiveTab('write');
       announcePT('Loaded poem: ' + (entry.title || 'Untitled') + '.');
     }, []);
+
+    // ── Resource-history hooks (mirror StoryForge's saveAsConfig / saveAsSubmission) ──
+    // saveAsAssignment: teacher captures the form choice + prompt + title hint into a
+    // 'poettree-config' resource that students can later load to start their work
+    // with the scaffold pre-populated.
+    var saveAsAssignment = useCallback(function () {
+      if (!onSaveConfig) return;
+      var config = {
+        formId: form ? form.id : '',
+        formName: form ? form.name : 'Free Verse',
+        teacherPrompt: teacherPrompt,
+        suggestedTitle: suggestedTitle,
+        gradeLevel: gradeLevel,
+        savedAt: new Date().toISOString()
+      };
+      onSaveConfig(config);
+      announcePT('Assignment saved to lesson resources.');
+      addToast && addToast('PoetTree assignment saved!', 'success');
+    }, [onSaveConfig, form, teacherPrompt, suggestedTitle, gradeLevel, addToast]);
+
+    // saveSubmissionToPortfolio: student saves their finished poem as a
+    // 'poettree-submission' resource for portfolio review.
+    var saveSubmissionToPortfolio = useCallback(function () {
+      if (!onSaveSubmission) return;
+      if (!poemText.trim()) { addToast && addToast('Write something first!', 'info'); return; }
+      var lines = poemText.split('\n');
+      var submission = {
+        poemTitle: poemTitle.trim() || 'Untitled',
+        poemText: poemText,
+        formId: form ? form.id : 'free',
+        form: form ? form.name : 'Free Verse',
+        lineCount: lines.filter(function (l) { return l.trim().length > 0; }).length,
+        wordCount: poemText.split(/\s+/).filter(Boolean).length,
+        gradingResult: aiFeedback || null,
+        meterAnalysis: meterAnalysis || null,
+        author: studentNickname || 'Student',
+        gradeLevel: gradeLevel,
+        savedAt: new Date().toISOString()
+      };
+      onSaveSubmission(submission);
+      announcePT('Poem saved to portfolio.');
+      addToast && addToast('Poem saved to your portfolio!', 'success');
+    }, [onSaveSubmission, poemText, poemTitle, form, aiFeedback, meterAnalysis, studentNickname, gradeLevel, addToast]);
 
     var deletePoem = useCallback(function (id) {
       var updated = saved.filter(function (p) { return p.id !== id; });
@@ -1256,7 +1332,7 @@
     };
 
     return e('div', { className: 'fixed inset-0 pt-tool', style: modalStyle, onClick: function (ev) { if (ev.target === ev.currentTarget && onClose) onClose(); } },
-      e('div', { style: panelStyle, role: 'dialog', 'aria-label': 'PoetTree poetry workshop' },
+      e('div', { style: panelStyle, role: 'dialog', 'aria-modal': 'true', 'aria-label': 'PoetTree poetry workshop' },
         // Header
         e('div', { style: { display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 18px', borderBottom: '1px solid #e5e7eb', background: 'linear-gradient(135deg, #f0fdfa, #ecfeff)' } },
           e('span', { style: { fontSize: '32px' }, 'aria-hidden': 'true' }, '🌳'),
@@ -1286,6 +1362,49 @@
         e('div', { style: { flex: 1, overflowY: 'auto', padding: '20px' } },
           // ── FORM TAB ──
           activeTab === 'form' && e('div', { style: { maxWidth: '700px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '14px' } },
+
+            // ── Assignment prompt banner (visible to students when teacher set a prompt) ──
+            teacherPrompt && !onSaveConfig && e('div', { role: 'note', 'aria-label': 'Assignment prompt from teacher', style: { background: '#fffbeb', border: '2px solid #fde68a', borderRadius: '12px', padding: '12px 14px' } },
+              e('div', { style: { fontSize: '11px', fontWeight: 800, color: '#92400e', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px' } }, '📋 Assignment'),
+              e('p', { style: { fontSize: '13px', color: '#78350f', margin: 0, lineHeight: 1.6 } }, teacherPrompt),
+              suggestedTitle && e('p', { style: { fontSize: '11px', color: '#92400e', margin: '6px 0 0', fontStyle: 'italic' } }, 'Suggested title: ' + suggestedTitle)
+            ),
+
+            // ── Teacher Assignment Builder (visible only when onSaveConfig is provided) ──
+            onSaveConfig && e('div', { role: 'region', 'aria-label': 'Teacher Assignment Builder', style: { background: '#eff6ff', border: '2px solid #bfdbfe', borderRadius: '12px', padding: '14px' } },
+              e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', flexWrap: 'wrap', gap: '6px' } },
+                e('h4', { style: { fontSize: '13px', fontWeight: 800, color: '#1e40af', margin: 0 } }, '🧑‍🏫 Teacher Assignment Builder'),
+                e('span', { style: { fontSize: '10px', color: '#1e40af', background: '#dbeafe', padding: '2px 8px', borderRadius: '999px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' } }, 'Teacher mode')
+              ),
+              e('p', { style: { fontSize: '11px', color: '#1e3a8a', margin: '0 0 10px', lineHeight: 1.5 } },
+                'Pick a form below, then add a prompt and optional title hint. Save it as an assignment so students can load it from My Resources.'
+              ),
+              e('label', { htmlFor: 'pt-teacher-prompt', style: { display: 'block', fontSize: '11px', fontWeight: 700, color: '#1e40af', marginBottom: '4px' } }, 'Writing prompt for students'),
+              e('textarea', {
+                id: 'pt-teacher-prompt',
+                value: teacherPrompt,
+                onChange: function (ev) { setTeacherPrompt(ev.target.value); },
+                placeholder: 'e.g. "Write about a place that feels like home — use at least three concrete sensory details."',
+                rows: 3,
+                style: { width: '100%', padding: '8px 10px', borderRadius: '8px', border: '1px solid #bfdbfe', fontSize: '13px', fontFamily: 'inherit', resize: 'vertical', background: '#fff', boxSizing: 'border-box' }
+              }),
+              e('label', { htmlFor: 'pt-suggested-title', style: { display: 'block', fontSize: '11px', fontWeight: 700, color: '#1e40af', margin: '8px 0 4px' } }, 'Suggested title (optional)'),
+              e('input', {
+                id: 'pt-suggested-title',
+                type: 'text',
+                value: suggestedTitle,
+                onChange: function (ev) { setSuggestedTitle(ev.target.value); },
+                placeholder: 'e.g. "Where I\'m From"',
+                style: { width: '100%', padding: '8px 10px', borderRadius: '8px', border: '1px solid #bfdbfe', fontSize: '13px', background: '#fff', boxSizing: 'border-box' }
+              }),
+              e('button', {
+                onClick: saveAsAssignment,
+                disabled: !teacherPrompt.trim() && !form,
+                'aria-label': 'Save this PoetTree setup as an assignment in My Resources',
+                style: { marginTop: '10px', padding: '8px 16px', background: !teacherPrompt.trim() && !form ? '#cbd5e1' : '#2563eb', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: !teacherPrompt.trim() && !form ? 'not-allowed' : 'pointer' }
+              }, '💾 Save as Assignment')
+            ),
+
             e('h3', { style: { fontSize: '16px', fontWeight: 800, color: TEAL_DARK, margin: '0 0 4px' } }, 'Pick a form to start'),
             e('p', { style: { fontSize: '12px', color: '#475569', margin: 0 } }, 'Each form has its own rules. Free verse has none. Pick what fits your idea, or try one you\'ve never written before.'),
             e('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '10px', marginTop: '6px' } },
@@ -1465,6 +1584,10 @@
               e('button', { onClick: savePoem, disabled: !poemText.trim(),
                 style: { padding: '8px 14px', background: poemText.trim() ? TEAL : '#cbd5e1', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: poemText.trim() ? 'pointer' : 'not-allowed' }
               }, '💾 Save'),
+              onSaveSubmission && e('button', { onClick: saveSubmissionToPortfolio, disabled: !poemText.trim(),
+                'aria-label': 'Save this poem to your portfolio (My Resources)',
+                style: { padding: '8px 14px', background: poemText.trim() ? '#7c3aed' : '#cbd5e1', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: poemText.trim() ? 'pointer' : 'not-allowed' }
+              }, '📚 Save to Portfolio'),
               onCallGemini && e('button', { onClick: function () { setActiveTab('feedback'); getAiFeedback(); }, disabled: !poemText.trim(),
                 style: { padding: '8px 14px', background: poemText.trim() ? '#7c3aed' : '#cbd5e1', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: poemText.trim() ? 'pointer' : 'not-allowed' }
               }, '✨ Get feedback'),
@@ -1577,7 +1700,7 @@
                       style: { padding: '4px 12px', borderRadius: '6px', border: 'none', background: dailyPromptLoading ? '#cbd5e1' : TEAL, color: '#fff', fontSize: '11px', fontWeight: 700, cursor: dailyPromptLoading ? 'wait' : 'pointer' }
                     }, dailyPromptLoading ? '⏳…' : (dailyPrompt ? '🔄 New prompt' : '💡 Inspire me'))
                   ),
-                  dailyPrompt && e('div', { role: 'region', 'aria-live': 'polite', 'aria-label': 'Daily prompt', style: { background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '8px', padding: '10px 12px', fontSize: '13px', color: '#78350f', fontFamily: 'Georgia, serif', fontStyle: 'italic', lineHeight: 1.5 } },
+                  dailyPrompt && e('div', { role: 'region', 'aria-live': 'polite', style: { background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '8px', padding: '10px 12px', fontSize: '13px', color: '#78350f', fontFamily: 'Georgia, serif', fontStyle: 'italic', lineHeight: 1.5 } },
                     '"' + dailyPrompt + '"',
                     e('button', { onClick: function () { try { navigator.clipboard.writeText(dailyPrompt); addToast && addToast('Prompt copied.', 'success'); } catch (er) {} },
                       'aria-label': 'Copy prompt to clipboard',
@@ -1715,7 +1838,7 @@
                       style: { padding: '4px 12px', borderRadius: '6px', border: 'none', background: sparkLoading ? '#cbd5e1' : TEAL, color: '#fff', fontSize: '11px', fontWeight: 700, cursor: sparkLoading ? 'wait' : 'pointer' }
                     }, sparkLoading ? '⏳…' : (sparkWords ? '🔄 Re-roll' : '🎲 Roll'))
                   ),
-                  sparkWords && Array.isArray(sparkWords) && sparkWords.length > 0 && e('div', { role: 'region', 'aria-label': 'Spark words', 'aria-live': 'polite', style: { display: 'flex', flexWrap: 'wrap', gap: '6px' } },
+                  sparkWords && Array.isArray(sparkWords) && sparkWords.length > 0 && e('div', { role: 'region', 'aria-live': 'polite', style: { display: 'flex', flexWrap: 'wrap', gap: '6px' } },
                     sparkWords.map(function (w, wi) {
                       return e('button', { key: wi, onClick: function () { copyRhyme(w); },
                         'aria-label': 'Spark word ' + w + ' — copy to clipboard',
@@ -1733,7 +1856,7 @@
           activeTab === 'feedback' && e('div', { style: { maxWidth: '700px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '12px' } },
             e('h3', { style: { fontSize: '16px', fontWeight: 800, color: TEAL_DARK, margin: 0 } }, '✨ AI Feedback'),
             !poemText.trim() && e('p', { style: { color: '#475569', fontSize: '13px', margin: 0 } }, 'Write a poem in the Write tab first, then come back for feedback.'),
-            poemText.trim() && e('button', { onClick: getAiFeedback, disabled: aiLoading,
+            poemText.trim() && e('button', { onClick: getAiFeedback, disabled: aiLoading, 'aria-busy': aiLoading,
               'aria-busy': aiLoading ? 'true' : 'false',
               'aria-label': aiLoading ? 'Getting feedback, please wait' : 'Get AI feedback on this poem',
               style: { padding: '10px 18px', background: aiLoading ? '#cbd5e1' : '#7c3aed', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '13px', cursor: aiLoading ? 'wait' : 'pointer', alignSelf: 'flex-start' }
@@ -1844,7 +1967,7 @@
                 !ttsPlaying
                   ? e('button', { onClick: playPoem, disabled: !onCallTTS,
                       autoFocus: true,
-                      'aria-label': 'Play poem with text-to-speech',
+                      
                       style: { padding: '10px 20px', background: '#22c55e', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 800, fontSize: '14px', cursor: onCallTTS ? 'pointer' : 'not-allowed', opacity: onCallTTS ? 1 : 0.5 }
                     }, '▶ Play')
                   : e('button', { onClick: stopPoem, 'aria-label': 'Stop playback',
@@ -1902,10 +2025,10 @@
                 ),
                 // Hint + controls (don't propagate clicks to advance)
                 e('div', { onClick: function (ev) { ev.stopPropagation(); }, style: { display: 'flex', gap: '14px', alignItems: 'center', cursor: 'default' } },
-                  e('button', { onClick: rewindReadAloud, 'aria-label': 'Previous line',
+                  e('button', { onClick: rewindReadAloud, 
                     style: { padding: '8px 14px', background: 'transparent', color: '#cbd5e1', border: '1px solid #475569', borderRadius: '8px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }
                   }, '◀ Back'),
-                  e('button', { onClick: advanceReadAloud, autoFocus: true, 'aria-label': 'Next line',
+                  e('button', { onClick: advanceReadAloud, autoFocus: true, 
                     style: { padding: '12px 28px', background: '#0d9488', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '15px', fontWeight: 800, cursor: 'pointer' }
                   }, 'Next ▶'),
                   e('button', { onClick: stopReadAloud, 'aria-label': 'Exit read-aloud mode',

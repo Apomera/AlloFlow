@@ -2259,6 +2259,8 @@ const getIconForType = (type) => {
         case 'dbq': return <FileText size={16} />;
         case 'storyforge-config': return <BookOpen size={16} />;
         case 'storyforge-submission': return <Star size={16} />;
+        case 'poettree-config': return <BookOpen size={16} />;
+        case 'poettree-submission': return <Sparkles size={16} />;
         default: return <FileText size={16} />;
     }
 };
@@ -15097,7 +15099,7 @@ Return ONLY valid JSON:
     setShowExportPreview(true);
     setShowExportMenu(false);
   };
-  const NON_EXPORTABLE_TYPES = new Set(['adventure', 'persona', 'word-sounds', 'storyforge-config', 'storyforge-submission', 'math-fluency-probe', 'explore-challenge', 'stem-assessment']);
+  const NON_EXPORTABLE_TYPES = new Set(['adventure', 'persona', 'word-sounds', 'storyforge-config', 'storyforge-submission', 'poettree-config', 'poettree-submission', 'math-fluency-probe', 'explore-challenge', 'stem-assessment']);
   const getExportableHistory = () => history.filter(item => item && !NON_EXPORTABLE_TYPES.has(item.type));
   const getSkippedResources = () => {
     const skipped = history.filter(item => item && NON_EXPORTABLE_TYPES.has(item.type));
@@ -16012,6 +16014,9 @@ ${t('export.readme_json_desc')}`;
       if (item.type === 'storyforge-config' || item.type === 'storyforge-submission') {
           setShowStoryForge(true);
       }
+      if (item.type === 'poettree-config' || item.type === 'poettree-submission') {
+          setShowPoetTree(true);
+      }
       if (isTeacherMode && activeSessionCode) {
           if (!TEACHER_ONLY_TYPES.includes(item.type)) {
               const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
@@ -16113,6 +16118,8 @@ ${t('export.readme_json_desc')}`;
           case 'dbq': return '📜 Document Analysis (DBQ)';
           case 'storyforge-config': return '📖 StoryForge Assignment';
           case 'storyforge-submission': return '📖 Story Submission';
+          case 'poettree-config': return '🌳 PoetTree Assignment';
+          case 'poettree-submission': return '🌳 Poem Submission';
           default: return t('common.resource') || 'Resource';
       }
   };
@@ -49870,6 +49877,15 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     addToast,
                     studentNickname,
                     handleScoreUpdate,
+                    initialConfig: generatedContent?.type === 'poettree-config' ? generatedContent.data : null,
+                    onSaveConfig: isTeacherMode ? (config) => {
+                        const item = { id: Date.now().toString() + Math.random().toString(36).substr(2, 9), type: 'poettree-config', title: '🌳 ' + (config.suggestedTitle || 'PoetTree Assignment'), data: config, timestamp: new Date(), meta: `${config.formName || 'Free Verse'}` };
+                        setHistory(prev => [...prev, item]);
+                    } : null,
+                    onSaveSubmission: (submission) => {
+                        const item = { id: Date.now().toString() + Math.random().toString(36).substr(2, 9), type: 'poettree-submission', title: '🌳 ' + (submission.poemTitle || 'My Poem'), data: submission, timestamp: new Date(), meta: `${submission.lineCount || 0} lines · ${submission.form || 'Free Verse'}` };
+                        setHistory(prev => [...prev, item]);
+                    },
                 });
             }
             return (
