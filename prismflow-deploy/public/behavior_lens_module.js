@@ -8,6 +8,21 @@
         return;
     }
 
+    // ─── Live region (WCAG 4.1.3) ───────────────────────────────────────
+    // Source-level so it exists from module load, not just after the first
+    // 2-second a11y-fixer tick. Same id used by the fixer's check, so the
+    // fixer (line 200+) sees this and skips the modal-level duplicate.
+    if (!document.getElementById('bl-a11y-live')) {
+        var blLive = document.createElement('div');
+        blLive.id = 'bl-a11y-live';
+        blLive.setAttribute('aria-live', 'polite');
+        blLive.setAttribute('aria-atomic', 'true');
+        blLive.setAttribute('role', 'status');
+        blLive.className = 'bl-sr-only';
+        blLive.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+        document.body.appendChild(blLive);
+    }
+
     // ─── Mobile Responsiveness CSS ──────────────────────────────────────
     // Inject once — provides @media overrides for iPad & phone layouts
     if (!document.getElementById('bl-mobile-css')) {
