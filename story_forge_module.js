@@ -1516,13 +1516,13 @@ body{font-family:Georgia,'Times New Roman',serif;line-height:1.8;color:#1e293b;m
 .story-text{font-size:1.1em;text-indent:2em}
 .separator{text-align:center;color:#d4af37;font-size:1.5em;margin:20px 0}
 .vocab-section{margin-top:40px;padding:20px;background:#f0fdf4;border-radius:12px;border:2px solid #bbf7d0}
-.vocab-section h3{color:#166534;margin-bottom:12px}
+.vocab-section h2{color:#166534;margin-bottom:12px;font-size:1.5em}
 .vocab-grid{display:flex;flex-wrap:wrap;gap:8px}
 .vocab-chip{padding:4px 12px;border-radius:20px;font-size:0.85em;font-weight:bold}
 .vocab-chip.used{background:#dcfce7;color:#166534;border:1px solid #86efac}
 .vocab-chip.unused{background:#fef2f2;color:#991b1b;border:1px solid #fca5a5}
 .feedback-section{margin-top:30px;padding:20px;background:#eff6ff;border-radius:12px;border:2px solid #bfdbfe}
-.feedback-section h3{color:#1e40af;margin-bottom:12px}
+.feedback-section h2{color:#1e40af;margin-bottom:12px;font-size:1.5em}
 .score-badge{display:inline-block;background:#4f46e5;color:white;padding:4px 16px;border-radius:20px;font-weight:bold;margin-bottom:12px}
 .glow-grow{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .glow{background:#f0fdf4;padding:12px;border-radius:8px;border:1px solid #bbf7d0;font-size:0.9em}

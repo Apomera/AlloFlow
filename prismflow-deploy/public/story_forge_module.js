@@ -1453,23 +1453,41 @@ Return ONLY JSON:
       const audio = audioSegments[p.id];
       const safeText = escapeHtml(p.text);
       if (isComic) {
-        chaptersHtml += `<div class="panel">`;
-        if (img) chaptersHtml += `<img src="${img}" class="panel-img" loading="lazy" alt="Panel ${idx + 1}" />`;
-        chaptersHtml += `<div class="speech-bubble">${safeText.length > 200 ? safeText.substring(0, 200) + "..." : safeText.replace(/\n/g, "<br/>")}</div>`;
-        chaptersHtml += `</div>`;
+        // Pull dialogue/sticker overlay data — these were rendered in-app but previously dropped on export.
+        const panel = panelDialogue[p.id] || {};
+        const safeSpeaker = panel.speaker ? escapeHtml(panel.speaker) : "";
+        const safeSpeech = panel.speech ? escapeHtml(panel.speech) : "";
+        const safeThought = panel.thought ? escapeHtml(panel.thought) : "";
+        const safeSfx = panel.sfx ? escapeHtml(panel.sfx) : "";
+        const sticker = panelStickers[p.id] || "";
+        chaptersHtml += `<article class="panel" aria-label="Comic panel ${idx + 1}">`;
+        if (img) chaptersHtml += `<div class="panel-img-wrap">`;
+        if (img) chaptersHtml += `<img src="${img}" class="panel-img" loading="lazy" alt="Comic panel ${idx + 1} illustration" />`;
+        if (img && safeSfx) chaptersHtml += `<span class="sfx-tag" aria-label="Sound effect: ${safeSfx}">${safeSfx}</span>`;
+        if (img && sticker) chaptersHtml += `<span class="panel-sticker" aria-hidden="true">${escapeHtml(sticker)}</span>`;
+        if (img) chaptersHtml += `</div>`;
+        if (safeSpeech) {
+          chaptersHtml += `<div class="dialogue-bubble">`;
+          if (safeSpeaker) chaptersHtml += `<div class="dialogue-speaker">${safeSpeaker}:</div>`;
+          chaptersHtml += `<div class="dialogue-speech">${safeSpeech}</div>`;
+          chaptersHtml += `</div>`;
+        }
+        if (safeThought) chaptersHtml += `<div class="thought-bubble" aria-label="Inner thought">\u{1F4AD} ${safeThought}</div>`;
+        chaptersHtml += `<div class="speech-bubble panel-caption">${safeText.length > 200 ? safeText.substring(0, 200) + "..." : safeText.replace(/\n/g, "<br/>")}</div>`;
+        chaptersHtml += `</article>`;
       } else {
-        chaptersHtml += `<div class="chapter">`;
+        chaptersHtml += `<article class="chapter" aria-label="Paragraph ${idx + 1}">`;
         if (img) chaptersHtml += `<img src="${img}" class="scene-img" loading="lazy" alt="Illustration for paragraph ${idx + 1}" />`;
         chaptersHtml += `<p class="story-text">${safeText.replace(/\n/g, "<br/>")}</p>`;
         if (audio?.studentAudioBase64) {
-          chaptersHtml += `<audio controls src="data:audio/webm;base64,${audio.studentAudioBase64}" style="width:100%;margin-top:8px;"></audio>`;
+          chaptersHtml += `<audio controls src="data:audio/webm;base64,${audio.studentAudioBase64}" style="width:100%;margin-top:8px;" aria-label="Audio narration for paragraph ${idx + 1}"></audio>`;
         }
-        chaptersHtml += `</div>`;
-        if (idx < paragraphs.length - 1) chaptersHtml += `<div class="separator">&mdash;</div>`;
+        chaptersHtml += `</article>`;
+        if (idx < paragraphs.length - 1) chaptersHtml += `<div class="separator" aria-hidden="true">&mdash;</div>`;
       }
     });
     if (isComic) chaptersHtml += "</div>";
-    let vocabHtml = '<div class="vocab-section"><h3>Vocabulary Terms Used</h3><div class="vocab-grid">';
+    let vocabHtml = '<div class="vocab-section"><h2 id="vocab-heading">Vocabulary Terms Used</h2><div class="vocab-grid">';
     vocabTerms.forEach((v) => {
       const used = vocabUsage[v.term];
       vocabHtml += `<div class="vocab-chip ${used ? "used" : "unused"}">${used ? "\u2713" : "\u2717"} ${escapeHtml(v.term)}</div>`;
@@ -1478,8 +1496,8 @@ Return ONLY JSON:
     let feedbackHtml = "";
     if (gradingResult) {
       feedbackHtml = `<div class="feedback-section">
-        <h3>Teacher Feedback</h3>
-        <div class="score-badge">${escapeHtml(gradingResult.totalScore || "")}</div>
+        <h2 id="feedback-heading">Teacher Feedback</h2>
+        <div class="score-badge" aria-label="Score: ${escapeHtml(gradingResult.totalScore || "")}">${escapeHtml(gradingResult.totalScore || "")}</div>
         <div class="glow-grow">
           <div class="glow"><strong>\u2728 Glow:</strong> ${escapeHtml(gradingResult.feedback?.glow || "")}</div>
           <div class="grow"><strong>\u{1F331} Grow:</strong> ${escapeHtml(gradingResult.feedback?.grow || "")}</div>

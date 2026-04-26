@@ -279,7 +279,7 @@ window.SelHub = window.SelHub || {
             h('p', { style: { fontSize: '14px', lineHeight: 1.7, color: '#374151', margin: 0 } }, curM.desc)
           ),
           h('div', { style: { display: 'flex', justifyContent: 'center', gap: '8px' } },
-            h('button', { onClick: function() { upd('moveIdx', (moveIdx - 1 + moves.length) % moves.length); }, 'aria-label': 'Previous move', style: { padding: '8px 16px', background: '#fff', border: '2px solid #e5e7eb', borderRadius: '10px', cursor: 'pointer', fontWeight: 600, fontSize: '13px', color: '#374151' } }, '\u2190 Prev'),
+            h('button', { onClick: function() { upd('moveIdx', (moveIdx - 1 + moves.length) % moves.length); }, style: { padding: '8px 16px', background: '#fff', border: '2px solid #e5e7eb', borderRadius: '10px', cursor: 'pointer', fontWeight: 600, fontSize: '13px', color: '#374151' } }, '\u2190 Prev'),
             h('span', { style: { display: 'flex', alignItems: 'center', fontSize: '12px', color: '#94a3b8' } }, (moveIdx % moves.length + 1) + ' / ' + moves.length),
             h('button', { onClick: function() { upd('moveIdx', (moveIdx + 1) % moves.length); if (soundOn) sfxClick(); }, 'aria-label': 'Next move', style: { padding: '8px 16px', background: BLUE, border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 600, fontSize: '13px', color: '#fff' } }, 'Next \u2192')
           )

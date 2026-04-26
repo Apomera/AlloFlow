@@ -928,7 +928,7 @@ window.SelHub = window.SelHub || {
               !d.branchChoice && h('div', {  className: 'space-y-2' },
                 h('h4', { className: 'text-sm font-bold text-slate-700' }, 'What would you do?'),
                 sc.choices.map(function(ch, idx) {
-                  return h('button', { 'aria-label': 'div', key: idx, onClick: function() {
+                  return h('button', { key: idx, onClick: function() {
                     var completed = (d.dilemmasCompleted || []).slice();
                     if (completed.indexOf(sc.id) === -1) completed.push(sc.id);
                     updMulti({ branchChoice: idx, dilemmasCompleted: completed });
@@ -1421,7 +1421,7 @@ window.SelHub = window.SelHub || {
 
             // Side selection
             !d.debateSide && h('div', {  className: 'flex gap-3' },
-              h('button', { 'aria-label': 'for', onClick: function() { upd('debateSide', 'for'); ctx.awardXP(3); },
+              h('button', { onClick: function() { upd('debateSide', 'for'); ctx.awardXP(3); },
                 className: 'flex-1 p-4 rounded-xl border-2 border-emerald-300 bg-emerald-50 hover:bg-emerald-100 transition-all text-center'
               },
                 h('p', { className: 'text-lg font-bold text-emerald-700' }, '\u2713'),
@@ -1441,7 +1441,7 @@ window.SelHub = window.SelHub || {
                 h('div', {  className: 'flex items-center gap-2 mb-2' },
                   h('span', {  className: 'text-sm font-bold ' + (d.debateSide === 'for' ? 'text-emerald-700' : 'text-red-700') },
                     d.debateSide === 'for' ? '\u2713 You are arguing FOR' : '\u2717 You are arguing AGAINST'),
-                  h('button', { 'aria-label': 'for', onClick: function() { upd('debateSide', d.debateSide === 'for' ? 'against' : 'for'); },
+                  h('button', { onClick: function() { upd('debateSide', d.debateSide === 'for' ? 'against' : 'for'); },
                     className: 'ml-auto text-[10px] text-slate-600 hover:text-slate-600 font-bold'
                   }, 'Switch sides')
                 ),
@@ -1753,7 +1753,7 @@ window.SelHub = window.SelHub || {
                   );
                 })
               ),
-              selected.length === 5 && h('button', { 'aria-label': 'div', onClick: function() {
+              selected.length === 5 && h('button', { onClick: function() {
                 upd('valuesRanked', selected.slice());
               },
                 className: 'w-full px-4 py-3 bg-rose-600 text-white rounded-xl text-sm font-bold hover:bg-rose-700 transition-colors'
@@ -1947,7 +1947,7 @@ window.SelHub = window.SelHub || {
                 },
                   className: 'px-4 py-2 bg-green-700 text-white rounded-lg text-xs font-bold hover:bg-green-700 transition-colors'
                 }, 'Next \u2192'),
-                step === steps.length - 1 && d[currentStep.field] && d[currentStep.field].length > 10 && h('button', { 'aria-label': 'div', onClick: function() {
+                step === steps.length - 1 && d[currentStep.field] && d[currentStep.field].length > 10 && h('button', { onClick: function() {
                   // Generate summary
                   var summaryText = '\u2550\u2550\u2550 ETHICAL DECISION TREE SUMMARY \u2550\u2550\u2550\n\n' +
                     '\u2753 ETHICAL QUESTION:\n' + (d.dtQuestion || '') + '\n\n' +

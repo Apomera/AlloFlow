@@ -1764,7 +1764,7 @@ window.SelHub = window.SelHub || {
               'Keep exploring! Every culture has something to teach us.'
             ),
             h('div', {  className: 'flex gap-3 justify-center' },
-              h('button', { 'aria-label': 'Start quiz', onClick: startQuiz,
+              h('button', { onClick: startQuiz,
                 className: 'px-4 py-2 bg-cyan-700 text-white rounded-lg text-xs font-bold hover:bg-cyan-700 transition-colors'
               }, '\uD83D\uDD04 Try Again'),
               h('button', { 'aria-label': 'choose', onClick: function() { upd('tab', 'choose'); },
