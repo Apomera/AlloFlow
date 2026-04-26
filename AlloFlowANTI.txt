@@ -28655,6 +28655,55 @@ ${t('export.readme_json_desc')}`;
                         </div>
                     );
                 })()}
+                {/* ── Saved SEL Stations ── */}
+                {(() => {
+                    const stations = JSON.parse(localStorage.getItem('alloflow_sel_stations') || '[]');
+                    if (stations.length === 0) return null;
+                    return (
+                        <div className="mb-3">
+                            <div className="flex items-center justify-between mb-2">
+                                <h4 className="text-[11px] font-bold text-indigo-300 uppercase tracking-wider flex items-center gap-1.5">
+                                    📌 SEL Stations
+                                    <span className="bg-pink-500/30 text-pink-200 text-[11px] px-1.5 py-0.5 rounded-full">{stations.length}</span>
+                                </h4>
+                            </div>
+                            <div className="space-y-1.5">
+                                {stations.map((st) => (
+                                    <div
+                                        key={st.id}
+                                        onClick={() => {
+                                            setActiveSelStation(st);
+                                            setShowSelHub(true);
+                                            setSelHubTab && setSelHubTab('explore');
+                                        }}
+                                        className="group flex items-center gap-2 p-2 rounded-lg bg-pink-900/40 border border-pink-700/50 hover:bg-pink-800/60 cursor-pointer transition-all"
+                                    >
+                                        <div className="p-1.5 rounded-md bg-pink-800 text-pink-300 shrink-0">
+                                            💖
+                                        </div>
+                                        <div className="min-w-0 flex-grow">
+                                            <div className="text-xs font-bold text-pink-100 truncate">{st.name}</div>
+                                            <div className="text-[11px] text-pink-400">{(st.tools || []).length} tool{(st.tools || []).length !== 1 ? 's' : ''}{(st.quests || []).length > 0 ? ` · ${st.quests.length} quest${st.quests.length !== 1 ? 's' : ''}` : ''}</div>
+                                        </div>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                const updated = stations.filter(s => s.id !== st.id);
+                                                localStorage.setItem('alloflow_sel_stations', JSON.stringify(updated));
+                                                if (activeSelStation && activeSelStation.id === st.id) setActiveSelStation(null);
+                                                addToast && addToast('SEL Station removed');
+                                            }}
+                                            className="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 text-red-400 hover:text-red-300 p-1 transition-opacity"
+                                            aria-label={`Delete SEL Station ${st.name}`}
+                                        >
+                                            <X size={12} />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    );
+                })()}
 
                 <div className="space-y-2 overflow-y-auto pr-1 custom-scrollbar flex-grow pb-10">
                     {getFilteredHistory().length === 0 && (
