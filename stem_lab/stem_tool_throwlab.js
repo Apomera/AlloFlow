@@ -716,6 +716,7 @@ window.StemLab = window.StemLab || {
       var addToast = ctx.addToast;
       var awardXP = ctx.awardXP;
       var celebrate = ctx.celebrate;
+      var callGemini = ctx.callGemini;
 
       // ── State init guard ─────────────────────────────────
       if (!labToolData || !labToolData.throwlab) {
@@ -764,7 +765,14 @@ window.StemLab = window.StemLab || {
             // throw" panel with the actual physics formulas + current
             // values. Default off so younger students don't see equations
             // they haven't been taught yet.
-            showFormulas: false
+            showFormulas: false,
+            // Coach Mode — Gemini-powered conversational feedback that
+            // looks at recent history (not just the last throw) and
+            // accommodates the student's scaffold tier.
+            coachLoading: false,
+            coachReply: '',
+            coachError: '',
+            recentThrows: []           // last ~5 throws for history-aware coaching
           }});
         });
         return h('div', { className: 'p-8 text-center text-slate-600' }, 'Loading ThrowLab…');
@@ -864,6 +872,65 @@ window.StemLab = window.StemLab || {
           return Object.assign({}, prev, { throwlab: next });
         });
         tlAnnounce('Reference cleared.');
+      }
+
+      // ── Coach Mode (Gemini) ──
+      // Sends the recent-throws history + last-throw context to Gemini for
+      // conversational, history-aware feedback. Falls back gracefully if
+      // callGemini isn't available (host harness without API access).
+      function askCoach() {
+        if (!d.lastResult) {
+          tlAnnounce('Throw a pitch first, then ask the coach for feedback.');
+          if (addToast) addToast('Throw something first');
+          return;
+        }
+        if (typeof callGemini !== 'function') {
+          setLabToolData(function(prev) {
+            return Object.assign({}, prev, { throwlab: Object.assign({}, prev.throwlab, {
+              coachError: 'Coach is offline (AI not available in this build).'
+            })});
+          });
+          tlAnnounce('Coach is offline.');
+          return;
+        }
+        setLabToolData(function(prev) {
+          return Object.assign({}, prev, { throwlab: Object.assign({}, prev.throwlab, {
+            coachLoading: true, coachReply: '', coachError: ''
+          })});
+        });
+        var tier = d.scaffoldTier || 3;
+        var tierHint = tier === 1
+          ? 'a young or beginner student — only mention SPEED, not angles or spin'
+          : tier === 2
+          ? 'an upper-elementary student — speed and angle are fair game, but go easy on spin'
+          : 'a high-school physics student — full equations, spin axis, drag, Magnus all fair game';
+        var modeLabel = (MODES[d.mode] || {}).label || d.mode;
+        var lastSummary = JSON.stringify((d.recentThrows || []).slice(-5));
+        var lastLoc = d.lastResult.location;
+        var prompt = 'You are coaching a student in a sports physics simulator (ThrowLab). '
+          + 'The student is in ' + modeLabel + ' mode. They are ' + tierHint + '. '
+          + 'Their last throw outcome: ' + lastLoc + '. Last 5 throws history (JSON): ' + lastSummary + '. '
+          + 'Current parameters: speed ' + d.speedMph + ' mph, vertical aim ' + (d.aimDegV || 0).toFixed(1) + '°, '
+          + 'horizontal aim ' + (d.aimDegH || 0).toFixed(1) + '°, spin ' + d.spinRpm + ' rpm at axis ' + d.spinAxisDeg + '°, '
+          + 'gravity ' + d.gravityId + ', wind ' + (d.windMph || 0) + ' mph @ ' + (d.windDirDeg || 0) + '°. '
+          + 'Give 2-3 sentences of warm, specific coaching: (1) acknowledge what just happened, (2) suggest ONE concrete change, '
+          + '(3) tie it to the underlying physics in a way the student can use next throw. '
+          + 'Plain prose, no markdown, no bullets, no headings.';
+        callGemini(prompt, false, false, 0.7).then(function(resp) {
+          var reply = String(resp || '').trim();
+          setLabToolData(function(prev) {
+            return Object.assign({}, prev, { throwlab: Object.assign({}, prev.throwlab, {
+              coachLoading: false, coachReply: reply, coachError: ''
+            })});
+          });
+          tlAnnounce('Coach: ' + reply);
+        }).catch(function() {
+          setLabToolData(function(prev) {
+            return Object.assign({}, prev, { throwlab: Object.assign({}, prev.throwlab, {
+              coachLoading: false, coachError: 'Could not reach the coach. Try again in a moment.'
+            })});
+          });
+        });
       }
 
       function applyGoalPreset(gid) {
@@ -1006,6 +1073,22 @@ window.StemLab = window.StemLab || {
         var newFgMakeCount = (d.mode === 'fieldgoal' && loc === 'good') ? (d.fgMakeCount || 0) + 1 : (d.fgMakeCount || 0);
         var newTypesUsed = Object.assign({}, d.pitchTypesUsed || {});
         if (d.mode === 'pitching') newTypesUsed[d.pitchType] = true;
+        // Roll a compact history entry for Coach Mode — last 5 throws.
+        // We only keep the fields a coach would need (mode, parameters,
+        // outcome) so this object stays small even if the user throws
+        // hundreds of times.
+        var newRecent = (d.recentThrows || []).slice(-4);
+        newRecent.push({
+          mode: d.mode,
+          shotKind: d.mode === 'pitching' ? d.pitchType
+                  : d.mode === 'freekick' ? d.kickType
+                  : d.mode === 'fieldgoal' ? d.goalType
+                  : d.shotType,
+          speedMph: d.speedMph, angleV: d.aimDegV, angleH: d.aimDegH,
+          spinRpm: d.spinRpm, spinAxisDeg: d.spinAxisDeg,
+          gravityId: d.gravityId, windMph: d.windMph,
+          location: loc
+        });
         setLabToolData(function(prev) {
           var next = Object.assign({}, prev.throwlab, {
             lastResult: result,
@@ -1016,7 +1099,10 @@ window.StemLab = window.StemLab || {
             shotMakeCount: newMakeCount,
             goalCount: newGoalCount,
             fgMakeCount: newFgMakeCount,
-            pitchTypesUsed: newTypesUsed
+            pitchTypesUsed: newTypesUsed,
+            recentThrows: newRecent,
+            // Throwing again invalidates the current coaching reply.
+            coachReply: '', coachError: ''
           });
           return Object.assign({}, prev, { throwlab: next });
         });
@@ -2202,6 +2288,25 @@ window.StemLab = window.StemLab || {
                 h('kbd', { style: { padding: '1px 5px', borderRadius: 3, border: '1px solid #475569', background: '#0f172a', color: '#cbd5e1', fontFamily: 'monospace' } }, 'Space'),
                 ' to throw')
             ),
+            // ── Coach Mode bubble ──
+            // Sits between the toggles and the formulas panel so it always
+            // appears prominently when there's a reply or an error. The
+            // button itself is rendered inside the right panel near the
+            // throw button (further down) so it's adjacent to the action.
+            (d.coachReply || d.coachError || d.coachLoading) ? h('section', {
+              'aria-labelledby': 'tl-coach-heading',
+              'aria-busy': !!d.coachLoading,
+              style: { marginTop: 10, padding: 12, background: 'linear-gradient(135deg, rgba(217,70,239,0.10), rgba(124,58,237,0.10))', border: '1px solid #d946ef', borderRadius: 10 }
+            },
+              h('h3', { id: 'tl-coach-heading',
+                style: { fontSize: 12, margin: 0, marginBottom: 6, color: '#d946ef', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 600 }
+              }, '🤖 Coach'),
+              d.coachLoading
+                ? h('div', { style: { color: '#cbd5e1', fontSize: 12, fontStyle: 'italic' } }, 'Thinking…')
+                : d.coachError
+                ? h('div', { style: { color: '#ef4444', fontSize: 12 } }, d.coachError)
+                : h('div', { style: { color: '#f1f5f9', fontSize: 13, lineHeight: 1.5 } }, d.coachReply)
+            ) : null,
             // Math view + ball regulations appear below the toggles when enabled
             formulasPanel(lr),
             ballSpecsPanel()
@@ -2332,6 +2437,23 @@ window.StemLab = window.StemLab || {
             ),
             d.referenceResult ? h('div', { style: { marginTop: 4, fontSize: 10, color: '#d946ef', fontStyle: 'italic' } },
               'REF: ' + d.referenceLabel) : null,
+            // Coach Mode button — only renders if Gemini is available AND
+            // there's been at least one throw, so we don't tease a button
+            // that wouldn't do anything useful yet.
+            (typeof callGemini === 'function' && d.lastResult) ? h('button', {
+              onClick: askCoach,
+              disabled: !!d.coachLoading,
+              'aria-busy': !!d.coachLoading,
+              'aria-label': d.coachLoading ? 'Coach is thinking' : 'Ask the coach for feedback on your last throw',
+              'data-tl-focusable': 'true',
+              style: {
+                marginTop: 8, width: '100%', padding: '10px 14px', minHeight: 36,
+                borderRadius: 6, cursor: d.coachLoading ? 'wait' : 'pointer',
+                border: '1px solid #d946ef',
+                background: d.coachLoading ? '#1e293b' : 'rgba(217, 70, 239, 0.18)',
+                color: '#f1f5f9', fontSize: 12, fontWeight: 600
+              }
+            }, d.coachLoading ? '🤖 Coach is thinking…' : '🤖 Ask the coach') : null,
             // Stats line — mode-aware. Bumped slate-400 → slate-300 (#cbd5e1)
             // for AA contrast on the dark panel background.
             h('div', { style: { marginTop: 12, fontSize: 11, color: '#cbd5e1', display: 'flex', justifyContent: 'space-between' } },
