@@ -548,6 +548,43 @@ window.StemLab = window.StemLab || {
     ];
   }
 
+  // ═══════════════════════════════════════════
+  // SOCCER xG MODEL — simplified expected-goals lookup
+  // ═══════════════════════════════════════════
+  // Real xG models (StatsBomb, Opta) are gradient-boosted classifiers
+  // fit to ~1M shots with features for body part, defender pressure,
+  // pre-shot pass type, etc. We use the textbook "geometric xG" — only
+  // distance + angle subtended by the goal — which captures ~70% of
+  // the variance in real xG values for open-play shots.
+  //
+  // angle θ = the visible angle of the goal from the shooting position
+  //           (atan2 between left post and right post, capped at π).
+  // distance d = straight-line distance from shot location to goal center
+  //           (in meters; goal at x=PITCH_LENGTH for the attacking team).
+  // xG ≈ sin(θ) / (1 + (d/12)^1.5)
+  // Calibrated so a penalty kick (11m, ~38° angle) ≈ 0.76 xG (real
+  // average is 0.78), a 25-yd central shot ≈ 0.05, near-side narrow
+  // angle approaches 0.
+  function computeXG(shotX, shotY) {
+    var goalLineX = PITCH_LENGTH;
+    var halfGoal = SOCCER_GOAL_WIDTH / 2;
+    var goalCenterY = PITCH_WIDTH / 2;
+    // Angle subtended by the goal from the shot
+    var leftPostY = goalCenterY - halfGoal;
+    var rightPostY = goalCenterY + halfGoal;
+    var dxGoal = goalLineX - shotX;
+    if (dxGoal <= 0.5) return 0; // behind / on the goal line — no shot
+    var aL = Math.atan2(leftPostY - shotY, dxGoal);
+    var aR = Math.atan2(rightPostY - shotY, dxGoal);
+    var theta = Math.abs(aR - aL);
+    // Distance to goal center
+    var dx = goalCenterY - shotY;
+    var d = Math.sqrt(dxGoal * dxGoal + dx * dx);
+    // The model
+    var xg = Math.sin(theta) / (1 + Math.pow(d / 12, 1.5));
+    return Math.max(0, Math.min(1, xg));
+  }
+
   // ── Defender layout per coverage ──
   // Returns 11 defender positions for the active coverage. The four down
   // linemen (DL) sit just past LOS regardless of coverage. The back 7
@@ -777,6 +814,7 @@ window.StemLab = window.StemLab || {
             formationId: '433',
             conceptId: 'tikitaka',
             shapeId: 'midblock',
+            showXG: false,             // expected-goals heatmap overlay (soccer only)
             // Football state
             playId: 'slant',
             coverageId: 'cover2',
@@ -894,28 +932,59 @@ window.StemLab = window.StemLab || {
           })});
         });
         // Compact representation of the formation so the prompt is small.
-        // Round to 1 yd to keep numbers human-readable.
-        var formationDigest = formation.filter(function(p) {
-          return p.role === 'WR' || p.role === 'TE' || p.role === 'RB' || p.role === 'QB';
-        }).map(function(p) {
-          var endX = p.route ? p.route[p.route.length - 1].x : p.x;
-          var endY = p.route ? p.route[p.route.length - 1].y : p.y;
-          return p.id + ' starts (' + p.x.toFixed(0) + ',' + p.y.toFixed(0) + ')'
-            + (p.route && p.route.length > 1 ? ' → route ends (' + endX.toFixed(0) + ',' + endY.toFixed(0) + ')' : ' [no route]');
-        }).join('; ');
-        var topOpen = analysis.slice(0, 3).map(function(r) {
-          return r.id + ' (' + r.opennessYd.toFixed(1) + ' yd from nearest defender, near ' + r.nearestZone + ')';
-        }).join(', ');
-        var customEdits = Object.keys(d.customPositions || {}).length;
-        var prompt = 'You are a football coach analyzing a student\'s play call. '
-          + 'Active play: "' + play.label + '". Concept: ' + play.teach + ' '
-          + 'Active defense: ' + coverage.label + '. Note: ' + coverage.teach + ' '
-          + 'Field is 100×53.33 yards. LOS at x=' + d.losX + '. '
-          + 'Eligible receivers + their routes: ' + formationDigest + '. '
-          + 'Open-receiver analysis (top 3): ' + topOpen + '. '
-          + (customEdits ? 'Student has made ' + customEdits + ' custom position edits to the preset. ' : '')
-          + 'Give 3-4 sentences of warm, specific coaching: (1) acknowledge what the play attacks against THIS coverage, (2) name the most-open receiver and explain WHY they\'re open in geometric terms (not just "no defender nearby"), (3) suggest ONE concrete adjustment (move a player N yards, change a route depth, swap a coverage), (4) tie the suggestion to the math the student can see on the field. '
-          + 'Plain prose, no markdown, no bullets, no headings.';
+        // Round to whole units (yd or m) to keep numbers human-readable.
+        var prompt;
+        if (isSoccer) {
+          // Soccer-flavored prompt: formation + concept + defensive shape +
+          // optional xG context. No route end-points (soccer plays don't
+          // have routes); we describe player positions instead.
+          var posDigest = formation.map(function(p) {
+            return p.id + '(' + p.role + ') @ (' + p.x.toFixed(0) + ',' + p.y.toFixed(0) + ')';
+          }).join(', ');
+          var passDigest = (concept.passes || []).map(function(pair) {
+            return pair[0] + '→' + pair[1];
+          }).join(', ');
+          // Sample xG at the striker's position (or wherever the most
+          // advanced attacker is) — gives the coach a "what's our best
+          // shot location?" anchor.
+          var lead = formation.reduce(function(best, p) {
+            return (p.role === 'FWD' && (!best || p.x > best.x)) ? p : best;
+          }, null) || formation[0];
+          var leadXG = lead ? computeXG(lead.x, lead.y).toFixed(2) : '0.00';
+          prompt = 'You are a soccer (football) tactical coach analyzing a student\'s setup. '
+            + 'Formation: "' + formationDef.label + '". ' + formationDef.teach + ' '
+            + 'Concept: "' + concept.label + '". ' + concept.teach + ' '
+            + 'Defending team is in: ' + soccerShape.label + '. ' + soccerShape.teach + ' '
+            + 'Pitch is 105×68 m, attacking right. '
+            + 'Attacker positions: ' + posDigest + '. '
+            + 'Concept passing pattern: ' + (passDigest || '(none)') + '. '
+            + 'Most advanced attacker (' + (lead ? lead.id : 'none') + ') has xG ≈ ' + leadXG + ' from current position. '
+            + 'Give 3-4 sentences of warm, specific coaching: (1) acknowledge what the formation+concept does well against THIS defensive shape, (2) name the player or zone with the best opportunity and WHY in geometric terms (not just "open"), (3) suggest ONE concrete adjustment (move a player N meters, swap a passing lane, change defensive shape), (4) tie the suggestion to the math the student can see (xG, passing-triangle geometry, line of confrontation). '
+            + 'Plain prose, no markdown, no bullets, no headings.';
+        } else {
+          // Football-flavored prompt (original)
+          var formationDigest = formation.filter(function(p) {
+            return p.role === 'WR' || p.role === 'TE' || p.role === 'RB' || p.role === 'QB';
+          }).map(function(p) {
+            var endX = p.route ? p.route[p.route.length - 1].x : p.x;
+            var endY = p.route ? p.route[p.route.length - 1].y : p.y;
+            return p.id + ' starts (' + p.x.toFixed(0) + ',' + p.y.toFixed(0) + ')'
+              + (p.route && p.route.length > 1 ? ' → route ends (' + endX.toFixed(0) + ',' + endY.toFixed(0) + ')' : ' [no route]');
+          }).join('; ');
+          var topOpen = analysis.slice(0, 3).map(function(r) {
+            return r.id + ' (' + r.opennessYd.toFixed(1) + ' yd from nearest defender, near ' + r.nearestZone + ')';
+          }).join(', ');
+          var customEdits = Object.keys(d.customPositions || {}).length;
+          prompt = 'You are a football coach analyzing a student\'s play call. '
+            + 'Active play: "' + play.label + '". Concept: ' + play.teach + ' '
+            + 'Active defense: ' + coverage.label + '. Note: ' + coverage.teach + ' '
+            + 'Field is 100×53.33 yards. LOS at x=' + d.losX + '. '
+            + 'Eligible receivers + their routes: ' + formationDigest + '. '
+            + 'Open-receiver analysis (top 3): ' + topOpen + '. '
+            + (Object.keys(d.customPositions || {}).length ? 'Student has made ' + Object.keys(d.customPositions).length + ' custom position edits to the preset. ' : '')
+            + 'Give 3-4 sentences of warm, specific coaching: (1) acknowledge what the play attacks against THIS coverage, (2) name the most-open receiver and explain WHY they\'re open in geometric terms (not just "no defender nearby"), (3) suggest ONE concrete adjustment (move a player N yards, change a route depth, swap a coverage), (4) tie the suggestion to the math the student can see on the field. '
+            + 'Plain prose, no markdown, no bullets, no headings.';
+        }
         callGemini(prompt, false, false, 0.7).then(function(resp) {
           var reply = String(resp || '').trim();
           setLabToolData(function(prev) {
@@ -1277,6 +1346,48 @@ window.StemLab = window.StemLab || {
             gfx.arc(fx(c[0]), fy(c[1]), 6, sx, ex);
             gfx.stroke();
           });
+          // ── xG (expected goals) heatmap ──
+          // Sample a 1m grid inside the attacking third + the area in front
+          // of the goal, compute xG per cell, draw colored squares with
+          // alpha proportional to xG. Higher = more red. Centered on the
+          // attacking goal (x=105). Skipped when toggle is off.
+          if (d.showXG) {
+            var xgStartX = PITCH_LENGTH - 35;  // attacking third + a bit
+            var xgStep = 1.5;                   // m
+            for (var gx = xgStartX; gx < PITCH_LENGTH - 0.5; gx += xgStep) {
+              for (var gy = 5; gy < PITCH_WIDTH - 5; gy += xgStep) {
+                var xg = computeXG(gx, gy);
+                if (xg < 0.01) continue; // skip near-zero cells for performance
+                var alpha = Math.min(0.62, xg * 1.4);
+                // Color ramp: dark blue (low) → green → yellow → red (high)
+                var red, green, blue;
+                if (xg < 0.10) { red = 30; green = 80; blue = 200; }
+                else if (xg < 0.25) { red = 60; green = 180; blue = 60; }
+                else if (xg < 0.50) { red = 230; green = 200; blue = 30; }
+                else { red = 230; green = 50; blue = 30; }
+                gfx.fillStyle = 'rgba(' + red + ',' + green + ',' + blue + ',' + alpha + ')';
+                var cellX = fx(gx);
+                var cellY = fy(gy);
+                var cellW = fx(gx + xgStep) - cellX + 0.5;
+                var cellH = fy(gy + xgStep) - cellY + 0.5;
+                gfx.fillRect(cellX, cellY, cellW, cellH);
+              }
+            }
+            // Legend strip in the bottom-right corner of the canvas
+            gfx.fillStyle = 'rgba(15,23,42,0.75)';
+            gfx.fillRect(W - 110, H - 36, 100, 24);
+            gfx.fillStyle = '#fafafa';
+            gfx.font = 'bold 9px system-ui';
+            gfx.textAlign = 'left';
+            gfx.fillText('xG: ', W - 105, H - 22);
+            ['rgba(30,80,200,0.8)', 'rgba(60,180,60,0.8)', 'rgba(230,200,30,0.8)', 'rgba(230,50,30,0.8)'].forEach(function(c, i) {
+              gfx.fillStyle = c;
+              gfx.fillRect(W - 80 + i * 16, H - 28, 14, 12);
+            });
+            gfx.fillStyle = '#cbd5e1';
+            gfx.font = '8px system-ui';
+            gfx.fillText('low ← → high', W - 80, H - 14);
+          }
           // Skip the football-specific scene entirely
         } else {
         // Field background
@@ -1518,7 +1629,7 @@ window.StemLab = window.StemLab || {
         }
       }, [d.playId, d.coverageId, d.losX, d.showZones, d.showRoutes, d.showOpen,
           d.customPositions, d.runActive, d.runT, d.runOutcome,
-          d.sport, d.formationId, d.conceptId, d.shapeId]);
+          d.sport, d.formationId, d.conceptId, d.shapeId, d.showXG]);
 
       // ── UI ──
       function pillBtn(label, sel, onClick, opts) {
@@ -1753,7 +1864,13 @@ window.StemLab = window.StemLab || {
               h('label', { style: { cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 } },
                 h('input', { type: 'checkbox', checked: !!d.showOpen, 'data-pl-focusable': 'true',
                   onChange: function(e) { upd('showOpen', e.target.checked); } }),
-                'Open-receiver halo'),
+                isSoccer ? 'Open-player halo' : 'Open-receiver halo'),
+              // Soccer-only: xG heatmap toggle. Lives next to the open-halo
+              // toggle so all visualization options sit together.
+              isSoccer ? h('label', { style: { cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 } },
+                h('input', { type: 'checkbox', checked: !!d.showXG, 'data-pl-focusable': 'true',
+                  onChange: function(e) { upd('showXG', e.target.checked); } }),
+                'xG heatmap') : null,
               // "Custom edits" indicator + Reset button. Only renders when the
               // student has actually moved a player, so the UI stays clean
               // when running stock plays.

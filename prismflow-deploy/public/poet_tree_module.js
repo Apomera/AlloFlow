@@ -198,6 +198,38 @@
         'The middle line (line 4) is the pivot — first two words belong to line 1, last two belong to line 7.',
         'Verbs end in -ing on lines 3 and 5. That repetition is the form\'s rhythm.'
       ]
+    },
+    {
+      id: 'tanka',
+      name: 'Tanka',
+      icon: '🌸',
+      tagline: 'Haiku\'s longer cousin: 5–7–5–7–7 syllables.',
+      structure: '5 lines. Syllables per line: 5, 7, 5, 7, 7. Like haiku, often grounded in a sensory image — but with two extra lines that allow for emotion or reflection. The first three lines often paint the scene; the last two turn inward.',
+      lineCount: 5,
+      syllablesPerLine: [5, 7, 5, 7, 7],
+      rhymeScheme: null,
+      example: 'How shallow the snow,\nhow simple the moonlight on\nthe shoulders of stone —\nbut one breath caught in my chest\nremembers what cold can mean.',
+      tips: [
+        'The first 3 lines work like a haiku — image, breath, image.',
+        'The last 2 lines (the "lower phrase") add emotion or a personal note.',
+        'No need to rhyme — tanka relies on rhythm and image, not sound matching.'
+      ]
+    },
+    {
+      id: 'couplet',
+      name: 'Couplet',
+      icon: '🪞',
+      tagline: 'Two lines that rhyme. The smallest finished poem.',
+      structure: '2 lines (occasionally extended to multiple couplets). The two lines rhyme at the end (AA). Lines are usually similar in length and rhythm. A couplet is the simplest possible rhymed unit — and the building block of sonnets, ballads, and heroic verse.',
+      lineCount: 2,
+      syllablesPerLine: null,
+      rhymeScheme: 'AA',
+      example: 'Hope is the thing with feathers\nThat perches in the soul.\n\n(Famous opening — Emily Dickinson, slant rhyme)\n\nor:\n\nThe road was long, the morning new,\nThe world was waking, soft with dew.',
+      tips: [
+        'A couplet works because two ideas balance each other — consider what the second line ADDS to the first.',
+        'You can chain couplets (AA BB CC…) into longer poems. Many epics are entirely couplets.',
+        'Try writing a couplet as a small "thought of the day" exercise — low pressure, big payoff.'
+      ]
     }
   ];
 
@@ -293,6 +325,10 @@
 
     // Performance state
     var _ttsPlaying = useState(false); var ttsPlaying = _ttsPlaying[0]; var setTtsPlaying = _ttsPlaying[1];
+    // Read-aloud (silent recital) mode — large text, line-by-line, student paces themselves.
+    var _readAloud = useState(false); var readAloudActive = _readAloud[0]; var setReadAloudActive = _readAloud[1];
+    var _readIdx = useState(0); var readIdx = _readIdx[0]; var setReadIdx = _readIdx[1];
+    var _readCount = useState(0); var readCountdown = _readCount[0]; var setReadCountdown = _readCount[1];
     var _emotion = useState('neutral'); var emotion = _emotion[0]; var setEmotion = _emotion[1];
     var _illustration = useState(null); var illustration = _illustration[0]; var setIllustration = _illustration[1];
     var _illusLoading = useState(false); var illusLoading = _illusLoading[0]; var setIllusLoading = _illusLoading[1];
@@ -552,6 +588,104 @@
         setIllusLoading(false);
       }
     }, [onCallImagen, poemText, poemTitle, addToast]);
+
+    // ── Read-aloud mode (silent recital — student performs live, no TTS) ──
+    var startReadAloud = useCallback(function () {
+      if (!poemText.trim()) return;
+      setReadIdx(0);
+      setReadCountdown(3);
+      announcePT('Read-aloud starting in 3…');
+      var c = 3;
+      var tick = function () {
+        c -= 1;
+        if (c > 0) {
+          setReadCountdown(c);
+          announcePT(c + '…');
+          setTimeout(tick, 900);
+        } else {
+          setReadCountdown(0);
+          setReadAloudActive(true);
+          announcePT('Begin reading.');
+        }
+      };
+      setTimeout(tick, 900);
+    }, [poemText]);
+
+    var stopReadAloud = useCallback(function () {
+      setReadAloudActive(false);
+      setReadCountdown(0);
+      setReadIdx(0);
+      announcePT('Read-aloud ended.');
+    }, []);
+
+    var advanceReadAloud = useCallback(function () {
+      var allLines = poemText.split('\n');
+      // Skip blank lines automatically (treat as stanza pauses)
+      var next = readIdx + 1;
+      while (next < allLines.length && !allLines[next].trim()) next++;
+      if (next >= allLines.length) {
+        // Done
+        setReadAloudActive(false);
+        announcePT('You finished. Well read.');
+        if (handleScoreUpdate) handleScoreUpdate(15, 'PoetTree read-aloud', 'poettree-recital');
+      } else {
+        setReadIdx(next);
+      }
+    }, [poemText, readIdx, handleScoreUpdate]);
+
+    var rewindReadAloud = useCallback(function () {
+      var allLines = poemText.split('\n');
+      var prev = readIdx - 1;
+      while (prev >= 0 && !allLines[prev].trim()) prev--;
+      if (prev >= 0) setReadIdx(prev);
+    }, [poemText, readIdx]);
+
+    // ── Print as broadside (single-page printable poster style; uses browser Print → Save as PDF) ──
+    var printBroadside = useCallback(function () {
+      if (!poemText.trim()) return;
+      var w = window.open('', '_blank', 'width=720,height=900');
+      if (!w) { addToast && addToast('Pop-up blocked. Allow pop-ups to print.', 'error'); return; }
+      var safeTitle = (poemTitle || 'Untitled').replace(/[<>&]/g, '');
+      var safeAuthor = (studentNickname || '').replace(/[<>&]/g, '');
+      var poemHtml = poemText
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .split('\n').map(function (l) {
+          var t = l.trim();
+          return t ? '<p class="line">' + l + '</p>' : '<div class="stanza-break"></div>';
+        }).join('\n');
+      var illusHtml = illustration ? '<img class="art" alt="Illustration for ' + safeTitle + '" src="' + illustration + '" />' : '';
+      var formLabel = form ? form.icon + ' ' + form.name : '';
+      var html = '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>' + safeTitle + ' — broadside</title><style>'
+        + 'html,body{margin:0;padding:0;background:#fff;color:#1e293b;font-family:Georgia,serif}'
+        + '.page{max-width:680px;margin:0 auto;padding:48px 56px}'
+        + '.toolbar{position:sticky;top:0;background:#f8fafc;border-bottom:1px solid #e5e7eb;padding:10px 20px;display:flex;gap:10px;align-items:center;font-family:system-ui,sans-serif;font-size:12px}'
+        + '.toolbar button{padding:6px 14px;border-radius:6px;border:none;background:#0d9488;color:#fff;font-weight:700;cursor:pointer;font-size:12px}'
+        + '.toolbar button.secondary{background:#fff;color:#0d9488;border:1px solid #0d9488}'
+        + '.title{font-size:32px;font-weight:800;text-align:center;margin:0 0 6px;letter-spacing:-0.5px}'
+        + '.byline{text-align:center;font-size:13px;color:#475569;font-style:italic;margin:0 0 28px}'
+        + '.formtag{display:block;text-align:center;font-size:11px;color:#0d9488;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin:0 0 24px}'
+        + '.line{font-size:18px;line-height:1.85;margin:0;text-align:left}'
+        + '.stanza-break{height:18px}'
+        + '.art{display:block;max-width:100%;margin:24px auto 0;border-radius:8px}'
+        + '.footer{margin-top:36px;padding-top:14px;border-top:1px solid #e5e7eb;text-align:center;font-size:10px;color:#94a3b8;font-family:system-ui,sans-serif}'
+        + '@media print{.toolbar{display:none}.page{padding:24px}}'
+        + '</style></head><body>'
+        + '<div class="toolbar">'
+        +   '<button onclick="window.print()" aria-label="Print this broadside">🖨️ Print / Save as PDF</button>'
+        +   '<button class="secondary" onclick="window.close()" aria-label="Close window">✕ Close</button>'
+        +   '<span style="margin-left:auto;color:#475569">Use your browser\'s print dialog to save as PDF or print on paper.</span>'
+        + '</div>'
+        + '<div class="page">'
+        +   (formLabel ? '<span class="formtag">' + formLabel + '</span>' : '')
+        +   '<h1 class="title">' + safeTitle + '</h1>'
+        +   (safeAuthor ? '<p class="byline">by ' + safeAuthor + '</p>' : '')
+        +   '<div class="poem">' + poemHtml + '</div>'
+        +   illusHtml
+        +   '<p class="footer">PoetTree · AlloFlow</p>'
+        + '</div></body></html>';
+      try { w.document.open(); w.document.write(html); w.document.close(); announcePT('Broadside ready in a new window.'); }
+      catch (er) { addToast && addToast('Broadside failed.', 'error'); }
+    }, [poemText, poemTitle, studentNickname, form, illustration, addToast]);
 
     // ── Found poetry helper: pick word ──
     var addFoundWord = useCallback(function (word) {
@@ -954,13 +1088,68 @@
                   'aria-busy': illusLoading ? 'true' : 'false',
                   'aria-label': illusLoading ? 'Generating illustration, please wait' : 'Generate illustration with AI',
                   style: { padding: '10px 16px', background: illusLoading ? '#cbd5e1' : '#a78bfa', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, fontSize: '13px', cursor: illusLoading ? 'wait' : 'pointer' }
-                }, illusLoading ? '⏳ Painting…' : '🎨 Illustrate')
+                }, illusLoading ? '⏳ Painting…' : '🎨 Illustrate'),
+                e('button', { onClick: startReadAloud, disabled: !poemText.trim() || readCountdown > 0,
+                  'aria-label': 'Read aloud yourself in large-text recital mode',
+                  style: { padding: '10px 16px', background: '#0d9488', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, fontSize: '13px', cursor: poemText.trim() && !readCountdown ? 'pointer' : 'not-allowed', opacity: poemText.trim() ? 1 : 0.5 }
+                }, readCountdown > 0 ? ('… ' + readCountdown) : '🎤 Read aloud'),
+                e('button', { onClick: printBroadside, disabled: !poemText.trim(),
+                  'aria-label': 'Open a printable broadside of this poem in a new window',
+                  style: { padding: '10px 16px', background: '#fff', color: '#0d9488', border: '1px solid #0d9488', borderRadius: '10px', fontWeight: 700, fontSize: '13px', cursor: poemText.trim() ? 'pointer' : 'not-allowed', opacity: poemText.trim() ? 1 : 0.5 }
+                }, '🖨️ Broadside')
               ),
               illustration && e('div', { style: { borderRadius: '12px', overflow: 'hidden', border: '1px solid #e5e7eb' } },
                 e('img', { src: illustration, alt: 'Illustration for the poem ' + (poemTitle || 'Untitled'), style: { width: '100%', display: 'block' } })
               )
             )
           ),
+
+          // ── Read-aloud overlay (full-screen line-by-line, student paces themselves) ──
+          (readAloudActive || readCountdown > 0) && (function () {
+            var allLines = poemText.split('\n');
+            var line = readAloudActive ? (allLines[readIdx] || '') : '';
+            var totalLines = allLines.filter(function (l) { return l.trim(); }).length;
+            var currentNonBlankIdx = allLines.slice(0, readIdx + 1).filter(function (l) { return l.trim(); }).length;
+            return e('div', { role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Read-aloud recital mode',
+              onClick: function () { if (readAloudActive) advanceReadAloud(); },
+              onKeyDown: function (ev) {
+                if (!readAloudActive) return;
+                if (ev.key === 'Escape') { ev.preventDefault(); stopReadAloud(); }
+                else if (ev.key === 'ArrowRight' || ev.key === ' ' || ev.key === 'Enter') { ev.preventDefault(); advanceReadAloud(); }
+                else if (ev.key === 'ArrowLeft') { ev.preventDefault(); rewindReadAloud(); }
+              },
+              tabIndex: 0,
+              style: { position: 'fixed', inset: 0, zIndex: 70, background: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', padding: '40px', cursor: readAloudActive ? 'pointer' : 'default' }
+            },
+              // Countdown
+              readCountdown > 0 && e('div', { style: { fontSize: '120px', fontWeight: 900, color: '#0d9488', fontFamily: 'system-ui, sans-serif', textAlign: 'center' }, 'aria-live': 'assertive' }, readCountdown),
+              // Active line
+              readAloudActive && e('div', { style: { width: '100%', maxWidth: '900px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '32px' } },
+                // Top bar
+                e('div', { onClick: function (ev) { ev.stopPropagation(); }, style: { width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'default' } },
+                  e('span', { style: { color: '#94a3b8', fontSize: '13px', fontFamily: 'system-ui, sans-serif' } }, (poemTitle || 'Untitled') + (studentNickname ? ' · ' + studentNickname : '')),
+                  e('span', { style: { color: '#94a3b8', fontSize: '12px', fontFamily: 'system-ui, sans-serif' } }, currentNonBlankIdx + ' / ' + totalLines)
+                ),
+                // Line display
+                e('p', { style: { fontFamily: 'Georgia, serif', fontSize: 'clamp(28px, 5vw, 56px)', color: '#fff', margin: 0, lineHeight: 1.4, textAlign: 'center', maxWidth: '100%', wordWrap: 'break-word' }, 'aria-live': 'polite' },
+                  line.trim() ? line : '— pause —'
+                ),
+                // Hint + controls (don't propagate clicks to advance)
+                e('div', { onClick: function (ev) { ev.stopPropagation(); }, style: { display: 'flex', gap: '14px', alignItems: 'center', cursor: 'default' } },
+                  e('button', { onClick: rewindReadAloud, 'aria-label': 'Previous line',
+                    style: { padding: '8px 14px', background: 'transparent', color: '#cbd5e1', border: '1px solid #475569', borderRadius: '8px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }
+                  }, '◀ Back'),
+                  e('button', { onClick: advanceReadAloud, autoFocus: true, 'aria-label': 'Next line',
+                    style: { padding: '12px 28px', background: '#0d9488', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '15px', fontWeight: 800, cursor: 'pointer' }
+                  }, 'Next ▶'),
+                  e('button', { onClick: stopReadAloud, 'aria-label': 'Exit read-aloud mode',
+                    style: { padding: '8px 14px', background: 'transparent', color: '#cbd5e1', border: '1px solid #475569', borderRadius: '8px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }
+                  }, '✕ Done')
+                ),
+                e('p', { style: { color: '#64748b', fontSize: '11px', fontFamily: 'system-ui, sans-serif', margin: 0, textAlign: 'center' } }, 'Tap or press Space to advance · ← / → to step · Esc to exit')
+              )
+            );
+          })(),
 
           // ── LIBRARY (SHARE) TAB ──
           activeTab === 'share' && e('div', { style: { maxWidth: '700px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '10px' } },
