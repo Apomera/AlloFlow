@@ -1218,42 +1218,102 @@ window.StemLab = window.StemLab || {
     // ── Football ──
     { id: 'patriots-2828', label: 'Patriots 28-3 Comeback', icon: '🏆',
       sport: 'football', playId: 'stick', coverageId: 'cover3', losX: 25,
-      teach: 'Stick concept on 3rd-and-medium from own 25 vs Cover 3. The TE\'s 5-yd curl in the soft underbelly of zone — the route Brady ran 100+ times during the 2017 Super Bowl comeback. ~80% conversion vs zone.' },
+      teach: 'Stick concept on 3rd-and-medium from own 25 vs Cover 3. The TE\'s 5-yd curl in the soft underbelly of zone — the route Brady ran 100+ times during the 2017 Super Bowl comeback. ~80% conversion vs zone.',
+      questions: [
+        'Why is the TE\'s 5-yard curl ALWAYS open against Cover 3 zone — what is the geometry of the empty space?',
+        'If the defense flipped to Cover 1 (man), would Stick still work? What\'s the new math?',
+        'Down 25 points, 6 minutes left. Does playing for 5-yard chunks make sense? When does that math break?'
+      ] },
     { id: 'greatest-show', label: '"Greatest Show on Turf"', icon: '🚀',
       sport: 'football', playId: 'fourverts', coverageId: 'cover1', losX: 50,
-      teach: 'Mike Martz\'s Rams: 4 Verticals from midfield vs Cover 1. The single-high safety can\'t cover 4 deep routes — somebody is mathematically open. The vertical-passing-game blueprint from 1999-2001.' },
+      teach: 'Mike Martz\'s Rams: 4 Verticals from midfield vs Cover 1. The single-high safety can\'t cover 4 deep routes — somebody is mathematically open. The vertical-passing-game blueprint from 1999-2001.',
+      questions: [
+        'You have 4 deep routes vs 1 deep safety. By the pigeonhole principle, what is GUARANTEED to be true?',
+        'The QB has ~2.5 seconds to throw deep. How does that change which routes are realistic options?',
+        'Cover 1 has only 1 deep safety. Can you design a 5-vertical concept that guarantees 2 open receivers?'
+      ] },
     { id: 'bradys-drive', label: "Brady's 3rd-Down Drive", icon: '🎯',
       sport: 'football', playId: 'drive', coverageId: 'cover2', losX: 30,
-      teach: 'Drive concept (shallow + dig) vs Cover 2 from own 30. The MIKE has to pick — whichever route he doesn\'t carry is the throw. The clutch 3rd-and-medium concept Tom Brady ran for 20 years.' },
+      teach: 'Drive concept (shallow + dig) vs Cover 2 from own 30. The MIKE has to pick — whichever route he doesn\'t carry is the throw. The clutch 3rd-and-medium concept Tom Brady ran for 20 years.',
+      questions: [
+        'The MIKE linebacker can only cover ONE depth at a time (shallow or dig). Why is forcing a defender into a "pick one" decision such a recurring offensive idea?',
+        'If the MIKE picks the dig, the shallow is open — but how does the throw timing change? What\'s the trade-off in YPA (yards per attempt)?',
+        'Could you defend Drive with a "spy" defender who specifically watches both routes? What would that cost you elsewhere?'
+      ] },
     { id: 'wildcat-special', label: 'Wildcat Goal-Line', icon: '🐯',
       sport: 'football', playId: 'wildcat', coverageId: 'cover1', losX: 95,
-      teach: '2008 Miami Dolphins, 5 yards from the goal line. Direct snap to the RB with WRs blocking the edges. Adds a numbers-in-the-box advantage at the moment when the defense is stacked tightest.' },
+      teach: '2008 Miami Dolphins, 5 yards from the goal line. Direct snap to the RB with WRs blocking the edges. Adds a numbers-in-the-box advantage at the moment when the defense is stacked tightest.',
+      questions: [
+        'Removing the QB from the play means he can\'t throw — but what does it ADD to the offense\'s blocking math?',
+        'Why is the Wildcat used MORE in short-yardage / goal-line than at midfield? What changes geometrically at the 5-yard line?',
+        'The defense COULD always blitz an extra man to overwhelm the box. Why don\'t they?'
+      ] },
     { id: 'hail-mary', label: 'Hail Mary at 0:00', icon: '🙏',
       sport: 'football', playId: 'hailmary', coverageId: 'cover4', losX: 40,
-      teach: 'Last second, down 3, no timeouts. Hail Mary vs Cover 4 (every deep route covered). 10% chance of a miracle, but it\'s the only play with positive expected value at this state. Hand-to-God geometry.' },
+      teach: 'Last second, down 3, no timeouts. Hail Mary vs Cover 4 (every deep route covered). 10% chance of a miracle, but it\'s the only play with positive expected value at this state. Hand-to-God geometry.',
+      questions: [
+        'Down 3, time = 0:00. EV(field goal) requires getting 25+ yards closer in zero time. EV(Hail Mary) ≈ 10% × 6 = 0.6. Why is "Hail Mary" the right choice here mathematically?',
+        'A jump-ball in the end zone is ~1-on-3 (one WR vs a CB + 2 safeties). What spatial geometry gives the offense a fighting chance anyway?',
+        'If you were the defensive coordinator, would you play Cover 4, or Cover 0 with no rush? Defend each.'
+      ] },
     { id: 'beat-c0-blitz', label: 'Slant vs All-Out Blitz', icon: '⚡',
       sport: 'football', playId: 'slant', coverageId: 'cover0', losX: 35,
-      teach: 'Cover 0 = 7 rushers, no deep safety, all man underneath. The QB has ~2 seconds. The Slant is the ONLY answer that gets the ball out fast enough — a 5-yd in-cut at full speed beats man coverage and beats the rush clock.' },
+      teach: 'Cover 0 = 7 rushers, no deep safety, all man underneath. The QB has ~2 seconds. The Slant is the ONLY answer that gets the ball out fast enough — a 5-yd in-cut at full speed beats man coverage and beats the rush clock.',
+      questions: [
+        'Cover 0 sends 7 rushers but leaves no deep safety. What\'s the trade-off the defense is making?',
+        'A slant takes ~1.5 seconds from snap to catch. Could a 4 Verticals concept also work here? Why or why not?',
+        'If you\'re the offense and you SUSPECT Cover 0, what do you change pre-snap?'
+      ] },
     { id: 'trips-bunch-rz', label: 'Trips Bunch in the Red Zone', icon: '⫷',
       sport: 'football', playId: 'trips', coverageId: 'cover2', losX: 92,
-      teach: 'Three receivers form a triangle (corner / flat / hitch) at the goal line vs Cover 2. The single corner has to pick a depth — the OPPOSITE level is the throw. ~80% conversion inside the 5.' },
+      teach: 'Three receivers form a triangle (corner / flat / hitch) at the goal line vs Cover 2. The single corner has to pick a depth — the OPPOSITE level is the throw. ~80% conversion inside the 5.',
+      questions: [
+        'Three receivers running corner / flat / hitch attack 3 different depths. With ONE corner defender available to that side, why does the offense always have a winner?',
+        'How does this concept change when you\'re at the 50 vs the 5? Why does field position make Trips so much more dangerous in the red zone?',
+        'If the defense rolls a safety down to help, what new vulnerability does that open?'
+      ] },
 
     // ── Soccer ──
     { id: 'pep-tikitaka', label: "Pep's Tiki-Taka vs Burnley", icon: '🔁',
       sport: 'soccer', formationId: '433', conceptId: 'tikitaka', shapeId: 'lowblock',
-      teach: 'Manchester City\'s 4-3-3 + Tiki-Taka vs a parked-bus Burnley low block. The triangles probe the compressed defense for the smallest window — possession often crosses 80% in these matchups, but the scoreboard hinges on whether City finds the through-ball.' },
+      teach: 'Manchester City\'s 4-3-3 + Tiki-Taka vs a parked-bus Burnley low block. The triangles probe the compressed defense for the smallest window — possession often crosses 80% in these matchups, but the scoreboard hinges on whether City finds the through-ball.',
+      questions: [
+        'City has 80% possession but the score is 0-0. Why don\'t possession statistics directly predict goals?',
+        'The defense has 10 players inside their own third. How does that change the geometry of available passing lanes?',
+        'Pep famously says "we attack to defend." How does keeping the ball in the opposite half also serve as defense?'
+      ] },
     { id: 'klopp-counter', label: 'Klopp Counter-Attack', icon: '⚡',
       sport: 'soccer', formationId: '433', conceptId: 'counter', shapeId: 'highpress',
-      teach: 'Liverpool 2019: opposition is high-pressing, Liverpool wins the ball at midfield, Salah / Mané / Firmino sprint into space. The MORE aggressive the press, the MORE space behind for the counter. Geometry favors the side that wins the ball.' },
+      teach: 'Liverpool 2019: opposition is high-pressing, Liverpool wins the ball at midfield, Salah / Mané / Firmino sprint into space. The MORE aggressive the press, the MORE space behind for the counter. Geometry favors the side that wins the ball.',
+      questions: [
+        'A high press WINS turnovers in dangerous areas. So why does it also CREATE the space that beats it?',
+        'Counter-attacking goals average ~3 passes. Possession-based goals average ~8+. What does that say about which approach is more efficient when it works?',
+        'Should the high-pressing team drop deeper after losing the ball? When is that the right call vs continuing to press?'
+      ] },
     { id: 'conte-352', label: 'Conte 3-5-2 Defense', icon: '🛡️',
       sport: 'soccer', formationId: '352', conceptId: 'gegenpress', shapeId: 'midblock',
-      teach: 'Antonio Conte\'s Inter / Tottenham 3-5-2: 3 CBs + 2 wing-backs deny wide overloads, the 3-man midfield outnumbers a 4-3-3 opponent in central areas. Combined with gegenpress on the turnover, opponents can\'t get out.' },
+      teach: 'Antonio Conte\'s Inter / Tottenham 3-5-2: 3 CBs + 2 wing-backs deny wide overloads, the 3-man midfield outnumbers a 4-3-3 opponent in central areas. Combined with gegenpress on the turnover, opponents can\'t get out.',
+      questions: [
+        '3-5-2 has 3 central midfielders vs 4-3-3\'s 3 midfielders — same number, but is the geometry the same?',
+        'Wing-backs have to cover the WHOLE flank from box to box. Why is that fitness demand the formation\'s biggest weakness?',
+        'When the wing-backs are pushed up and the team loses the ball, the back 3 are exposed wide. How does gegenpress mitigate that?'
+      ] },
     { id: 'pirlo-fk', label: 'Pirlo Free Kick', icon: '🎯',
       sport: 'soccer', formationId: '4231', conceptId: 'freekick-direct', shapeId: 'midblock',
-      teach: 'Andrea Pirlo\'s knuckle-direct from 22 m. The geometry: keeper covers ~75% of the goal mouth from 22 m straight on, but the corners are scoring zones. Pirlo\'s knuckle-strike (no spin → wobble) made the keeper\'s job impossible.' },
+      teach: 'Andrea Pirlo\'s knuckle-direct from 22 m. The geometry: keeper covers ~75% of the goal mouth from 22 m straight on, but the corners are scoring zones. Pirlo\'s knuckle-strike (no spin → wobble) made the keeper\'s job impossible.',
+      questions: [
+        'The keeper covers 75% of the goal mouth statically. But a knuckle ball wobbles unpredictably — why does that effectively ENLARGE the unsavable area?',
+        'A curling shot bends ~1.5 m around the wall. A knuckle shot doesn\'t curl but wobbles. Which is harder for the keeper, and why?',
+        'From 22 m, ball flight is ~0.5 s. How much reaction time does the keeper actually have, and how does that interact with the wobble?'
+      ] },
     { id: 'corner-out-equalizer', label: 'Late Out-Swinger Equalizer', icon: '↩️',
       sport: 'soccer', formationId: '4231', conceptId: 'corner-out', shapeId: 'lowblock',
-      teach: '88th minute, down 1, defending team has parked the bus. Out-swinging corner toward the penalty spot — your CAM and pushed-up CB attack the ball at full speed. ~3.5% conversion per corner, but cumulative odds across multiple corners + low-block fatigue make this the highest-EV equalizer concept.' }
+      teach: '88th minute, down 1, defending team has parked the bus. Out-swinging corner toward the penalty spot — your CAM and pushed-up CB attack the ball at full speed. ~3.5% conversion per corner, but cumulative odds across multiple corners + low-block fatigue make this the highest-EV equalizer concept.',
+      questions: [
+        '~3.5% conversion sounds low, but if you take 4 corners in 5 minutes, what\'s the cumulative probability of scoring?',
+        'Why is the OUT-SWINGER better than the in-swinger when the defense is in a tight low block?',
+        'Pushing your CB up for corners is risky — what happens if the defense wins the ball and breaks at speed? How do you mitigate the geometric exposure?'
+      ] }
   ];
 
   // ═══════════════════════════════════════════
@@ -1584,7 +1644,8 @@ window.StemLab = window.StemLab || {
             runActive: false,
             runT: 0,
             runOutcome: null,
-            coachReply: '', coachError: ''
+            coachReply: '', coachError: '',
+            activeScenarioId: scenarioId
           });
           if (s.sport === 'soccer') {
             nextPlaylab.formationId = s.formationId;
@@ -2724,6 +2785,58 @@ window.StemLab = window.StemLab || {
             })
           )
         ),
+
+        // ── Active Scenario Briefing ──
+        // When a scenario was just loaded, surface its teach blurb +
+        // discussion questions in a dedicated panel above the main
+        // controls. Persists until the user dismisses it OR loads a
+        // different scenario / play. Useful for teachers in front of
+        // a class — gives them ready-made discussion prompts.
+        (function() {
+          var active = d.activeScenarioId
+            ? PLAYLAB_SCENARIOS.find(function(sc) { return sc.id === d.activeScenarioId; })
+            : null;
+          if (!active) return null;
+          return h('section', {
+            'aria-label': 'Scenario briefing',
+            style: {
+              padding: 12, borderRadius: 10, marginBottom: 12,
+              background: 'rgba(167,139,250,0.10)',
+              border: '1px solid rgba(167,139,250,0.45)',
+              color: '#f1f5f9', fontSize: 13, lineHeight: 1.5
+            }
+          },
+            h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 6 } },
+              h('span', { style: { fontSize: 18 }, 'aria-hidden': 'true' }, active.icon),
+              h('div', { style: { flex: 1 } },
+                h('div', { style: { fontWeight: 700, color: '#a78bfa', fontSize: 13, marginBottom: 2 } },
+                  '🎬 Scenario: ' + active.label),
+                h('div', null, active.teach)
+              ),
+              h('button', {
+                onClick: function() { upd('activeScenarioId', null); },
+                'aria-label': 'Dismiss scenario briefing',
+                'data-pl-focusable': 'true',
+                style: {
+                  padding: '2px 8px', borderRadius: 6, cursor: 'pointer',
+                  border: '1px solid #475569', background: 'transparent',
+                  color: '#cbd5e1', fontSize: 11
+                }
+              }, '✕ Dismiss')
+            ),
+            (active.questions && active.questions.length) ? h('div', {
+              style: { marginTop: 8, paddingTop: 8, borderTop: '1px dashed rgba(167,139,250,0.30)' }
+            },
+              h('div', { style: { fontSize: 11, color: '#a78bfa', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } },
+                '💭 Discussion'),
+              h('ol', { style: { margin: '4px 0 0 18px', padding: 0, color: '#cbd5e1', fontSize: 12, lineHeight: 1.5 } },
+                active.questions.map(function(q, i) {
+                  return h('li', { key: 'q-' + i, style: { marginBottom: 4 } }, q);
+                })
+              )
+            ) : null
+          );
+        })(),
 
         // Play / Formation picker
         h('div', { role: 'group', 'aria-label': isSoccer ? 'Formation library' : 'Play library',
