@@ -178,6 +178,52 @@ window.StemLab = window.StemLab || {
     return TRICKS[0];
   }
 
+  // ── Protective gear catalog ────────────────────────────────────
+  // Each entry: what the gear does (mechanical role), the physics
+  // (the equation insight that justifies it), why-wear-it (the
+  // case-making call to action), and a citation stat. Drawn from
+  // CDC / AAP / SafeKids data on skate injury epidemiology.
+  // Helmet: 85% reduction in head injury (CDC 2017).
+  // Wrist: FOOSH (fall on outstretched hand) is the #1 skate
+  //   injury — wrist guards splint axial load along the radius.
+  // Knee/elbow pads: convert impact into sliding friction (energy
+  //   over distance, not at one point).
+  // Skate shoes: flat sole for board feel, ollie-zone reinforcement.
+  // Mouthguard: ~30% concussion reduction by absorbing jaw impact
+  //   transmission (AAPD).
+  var GEAR = [
+    { id: 'helmet', label: 'Helmet', icon: '⛑️',
+      does: 'Spreads impact force across the skull and slows the head\'s deceleration via foam crush.',
+      physics: 'Force = Δmomentum ÷ Δt. The foam liner increases Δt — the time over which your head stops — by roughly 5×. Force scales inversely with time, so a 5× longer stop ≈ 1/5 the peak force on the brain.',
+      whyWear: 'CDC: helmets reduce skateboard head injury risk by ~85%. Single most leverage-y piece of gear you can put on. Look for CPSC or ASTM F1492 certification.',
+      stat: '~85% reduction in head injury · CDC' },
+    { id: 'wristguard', label: 'Wrist Guards', icon: '✋',
+      does: 'Splints the wrist and distributes fall force along the forearm instead of all at the hand.',
+      physics: 'Stress = Force ÷ Area. A bare wrist concentrates fall force at a small bone interface. The plastic splint multiplies the loading area, so the same force translates to less stress per square inch.',
+      whyWear: 'FOOSH (Fall On Outstretched Hand) is the #1 skate injury, especially for beginners. Wrist guards have been shown to cut wrist fracture risk by over 60% in beginner skaters.',
+      stat: '60%+ reduction in wrist fractures · AAP' },
+    { id: 'kneepad', label: 'Knee Pads', icon: '🦵',
+      does: 'Hard plastic cap turns a "stop" into a "slide" — converting impact energy into sliding friction.',
+      physics: 'KE_dissipated = Friction × distance. A bare knee dissipates impact at one point (huge force). A pad slides over concrete, dissipating the same KE over meters of distance — much smaller peak force.',
+      whyWear: 'Knee pads are why pros can fall a hundred times in a session without sitting out the next one. Prevents skin loss, patellar fractures, and the "knee-bursitis" that ends careers.',
+      stat: 'Standard issue for vert / bowl skating' },
+    { id: 'elbowpad', label: 'Elbow Pads', icon: '💪',
+      does: 'Same slide-not-stop principle as knee pads, applied to the elbow joint.',
+      physics: 'The olecranon (point of the elbow) is bony and unprotected — fall on it and you concentrate force on a tiny area. Pad spreads the contact patch and lets you slide.',
+      whyWear: 'Elbow fractures are surgical fractures more often than wrist fractures. Pads cost $15 and save the surgery.',
+      stat: 'Recommended by AAP for all skaters under 16' },
+    { id: 'shoes', label: 'Skate Shoes', icon: '👟',
+      does: 'Flat vulcanized soles for board feel; reinforced ollie zones to take grip-tape abrasion.',
+      physics: 'Friction coefficient between sole and grip tape determines how much pop you can transmit on an ollie. Skate shoes are tuned for high static friction without slipping during the kick.',
+      whyWear: 'Running shoes have curved soles (heel-to-toe rocker) that sit wrong on a board and cause ankle rolls. Skate shoes are flat for a reason. Plus they last ~5× longer against grip tape.',
+      stat: 'Reduces ankle inversion injuries' },
+    { id: 'mouthguard', label: 'Mouthguard', icon: '😬',
+      does: 'Absorbs and dampens jaw impact before it transmits to the skull base.',
+      physics: 'A blow to the chin sends shock waves up the mandible into the temporomandibular joint and on to the brainstem. The compressible mouthguard dissipates that energy in the polymer instead.',
+      whyWear: 'Cuts concussion risk by roughly 30% in contact sports (AAPD data). Bonus: protects teeth — and dental work costs more than a mouthguard.',
+      stat: '~30% concussion-risk reduction · AAPD' }
+  ];
+
   // ── Vehicle catalog ───────────────────────────────────────────────
   // Two-knob abstraction: heavier vehicles accelerate less per pump
   // (lower pumpEfficiency), have larger moment of inertia (lower
@@ -923,6 +969,21 @@ window.StemLab = window.StemLab || {
           var n = 0;
           Object.keys(u).forEach(function(k) { if ((u[k] || 0) >= 5) n++; });
           return n + '/3 mastered';
+        }
+      },
+      { id: 'sk_invented', label: 'Invent and land a custom trick', icon: '🧪',
+        check: function(d) {
+          var ct = d.customTricks || [];
+          if (ct.length === 0) return false;
+          var u = d.tricksUsed || {};
+          return ct.some(function(t) { return (u[t.id] || 0) >= 1; });
+        },
+        progress: function(d) {
+          var ct = d.customTricks || [];
+          if (ct.length === 0) return 'invent first';
+          var u = d.tricksUsed || {};
+          var landed = ct.some(function(t) { return (u[t.id] || 0) >= 1; });
+          return landed ? '✓' : 'land it';
         }
       }
     ],
@@ -2182,7 +2243,28 @@ window.StemLab = window.StemLab || {
         // projectile range formula plus the wind-adjusted variant
         // when wind ≠ calm. Updates every render so changing a
         // slider re-evaluates the math without an attempt being run.
-        h('div', { style: { display: 'flex', justifyContent: 'flex-end', gap: 6, marginBottom: 6 } },
+        h('div', { style: { display: 'flex', justifyContent: 'flex-end', gap: 6, marginBottom: 6, flexWrap: 'wrap' } },
+          // Safety chip — amber until acknowledged this session,
+          // green ✓ pill after. Click reveals the disclaimer text
+          // inline below the toggle row. Re-anchors per session
+          // (no localStorage), which is the design.
+          h('button', {
+            onClick: function() {
+              upd('safetyAck', !d.safetyAck);
+              skAnnounce(d.safetyAck ? 'Safety message shown again.' : 'Safety acknowledged. Wear gear when you skate.');
+            },
+            'aria-pressed': !!d.safetyAck,
+            'aria-label': d.safetyAck ? 'Safety acknowledged this session. Click to re-read the message.' : 'Safety message — click to read about real-world skate risks.',
+            'data-sk-focusable': 'true',
+            title: 'Real-world safety reminder',
+            style: {
+              padding: '4px 10px', fontSize: 10, fontWeight: 700,
+              background: d.safetyAck ? 'rgba(34,197,94,0.18)' : 'rgba(251,191,36,0.20)',
+              color: d.safetyAck ? '#86efac' : '#fbbf24',
+              border: '1px solid ' + (d.safetyAck ? 'rgba(34,197,94,0.55)' : 'rgba(251,191,36,0.55)'),
+              borderRadius: 999, cursor: 'pointer', minHeight: 26
+            }
+          }, d.safetyAck ? '✓ Safety ack\'d' : '⚠️ Safety'),
           // Mute toggle — gates every skTone call. Persists in
           // localStorage so a teacher who silences the classroom
           // doesn't have to re-mute every reload. Also bound to 'M'.
@@ -2214,6 +2296,41 @@ window.StemLab = window.StemLab || {
               borderRadius: 999, cursor: 'pointer', minHeight: 26
             }
           }, '📐 Formula: ' + (d.showFormula ? 'on' : 'off'))
+        ),
+        // ── Safety expansion ─────────────────────────────────────
+        // Renders ONLY while safetyAck is false (initial state each
+        // session). Tapping the chip flips ack → true and this card
+        // collapses. Tapping the green ✓ chip flips ack → false and
+        // the message comes back so students can re-read.
+        !d.safetyAck && h('div', {
+          role: 'note',
+          'aria-label': 'Real-world safety reminder',
+          style: {
+            background: 'rgba(245,158,11,0.10)',
+            border: '1px solid rgba(245,158,11,0.45)',
+            borderRadius: 10, padding: '10px 12px',
+            marginBottom: 10,
+            fontSize: 12, color: '#fde68a', lineHeight: 1.55
+          }
+        },
+          h('div', { style: { fontWeight: 800, color: '#fbbf24', marginBottom: 4 } }, '⚠️ This is a simulation. Real skating isn\'t.'),
+          h('div', null,
+            'Skateboarding is the leading cause of pediatric extremity fractures (CDC). The math here is the same in real life — the consequences aren\'t. Wear a ',
+            h('b', null, 'helmet, wrist guards, and pads'),
+            ', skate within your ability, and learn falls before tricks. Tap the ✓ chip when you\'ve read this.'
+          ),
+          h('button', {
+            onClick: function() { upd('safetyAck', true); skAnnounce('Safety acknowledged. Wear gear when you skate.'); },
+            'aria-label': 'Acknowledge safety message',
+            'data-sk-focusable': 'true',
+            style: {
+              marginTop: 8,
+              padding: '6px 14px', fontSize: 11, fontWeight: 800,
+              background: 'linear-gradient(135deg,#22c55e,#15803d)',
+              color: '#fff', border: '1px solid #15803d',
+              borderRadius: 999, cursor: 'pointer', minHeight: 28
+            }
+          }, '✓ Got it — wear gear in real life')
         ),
         d.showFormula && (function() {
           // Compute live values once for the panel — same primitives
@@ -2329,8 +2446,67 @@ window.StemLab = window.StemLab || {
                 }, tk.emoji + ' ' + tk.label);
               })
             ),
+            // ── Custom-trick second row ──────────────────────────
+            // Renders student-invented tricks as purple pills with
+            // an inline × delete button. Visually distinct from the
+            // built-in row (purple vs amber) so students see their
+            // creations and the canon side-by-side.
+            ((d.customTricks || []).length > 0) && h('div', {
+              style: { display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 6 },
+              role: 'group',
+              'aria-label': 'Your invented tricks'
+            },
+              (d.customTricks || []).map(function(tk) {
+                var sel = d.trickId === tk.id;
+                return h('span', {
+                  key: tk.id,
+                  style: {
+                    display: 'inline-flex', alignItems: 'center', gap: 2,
+                    background: sel ? 'linear-gradient(135deg,#a855f7,#7c3aed)' : 'rgba(168,85,247,0.12)',
+                    color: sel ? '#fff' : '#e9d5ff',
+                    border: '1px solid ' + (sel ? '#7c3aed' : 'rgba(168,85,247,0.40)'),
+                    borderRadius: 6, padding: '2px 4px 2px 8px',
+                    cursor: d.running ? 'not-allowed' : 'pointer',
+                    opacity: d.running ? 0.6 : 1
+                  }
+                },
+                  h('button', {
+                    onClick: function() { upd('trickId', tk.id); skAnnounce('Selected ' + tk.label); },
+                    disabled: d.running,
+                    'aria-pressed': sel,
+                    'data-sk-focusable': 'true',
+                    title: tk.label + ' (custom) — ' + tk.rotation + '° ' + tk.axis + ' axis · needs ' + tk.minAir.toFixed(2) + 's air',
+                    style: {
+                      background: 'transparent', color: 'inherit',
+                      border: 'none', padding: '2px 4px',
+                      fontSize: 11, fontWeight: 700, cursor: 'inherit'
+                    }
+                  }, tk.emoji + ' ' + tk.label),
+                  h('button', {
+                    onClick: function() {
+                      if (d.running) return;
+                      if (confirm('Delete custom trick "' + tk.label + '"?')) deleteCustomTrick(tk.id);
+                    },
+                    disabled: d.running,
+                    'aria-label': 'Delete custom trick ' + tk.label,
+                    'data-sk-focusable': 'true',
+                    title: 'Delete this custom trick',
+                    style: {
+                      background: 'rgba(0,0,0,0.30)', color: '#fef3c7',
+                      border: 'none', borderRadius: 4,
+                      padding: '0 4px', fontSize: 11, fontWeight: 800,
+                      cursor: d.running ? 'not-allowed' : 'pointer',
+                      minWidth: 18, minHeight: 18, lineHeight: '16px'
+                    }
+                  }, '×')
+                );
+              })
+            ),
             h('p', { style: { margin: '6px 0 0', fontSize: 10, color: '#94a3b8' } },
-              'Selected: ' + getTrick(d.trickId).rotation + '° rotation · needs ≥ ' + getTrick(d.trickId).minAir.toFixed(2) + 's air'),
+              (function() {
+                var t = findAnyTrick(d.trickId);
+                return 'Selected: ' + t.rotation + '° rotation · needs ≥ ' + t.minAir.toFixed(2) + 's air' + (t.isCustom ? ' (custom)' : '');
+              })()),
             // ── Mastery Tree ─────────────────────────────────────
             // Surfaces per-trick attempts/lands as a 6-card mastery
             // dashboard. Closed by default (uses native <details>) so
@@ -2452,6 +2628,174 @@ window.StemLab = window.StemLab || {
                     )
                   );
                 })
+              )
+            ),
+            // ── Trick Lab ────────────────────────────────────────
+            // Student-creativity surface. Form fields drive an
+            // auto-derived physics preview (minAir + difficulty +
+            // formula) using deriveTrickPhysics. On save, the trick
+            // joins customTricks and the picker selects it.
+            // Closed by default — students who don't care about
+            // inventing tricks aren't crowded.
+            h('details', { style: { marginTop: 8 } },
+              h('summary', {
+                style: {
+                  cursor: 'pointer', color: '#c4b5fd', fontWeight: 700,
+                  fontSize: 11, letterSpacing: '0.04em', textTransform: 'uppercase',
+                  padding: '4px 0', userSelect: 'none'
+                }
+              }, '🧪 Trick Lab — invent your own move'),
+              h('div', { style: { marginTop: 10, display: 'flex', flexDirection: 'column', gap: 10 } },
+                // Inline safety note — heavier than the chip because
+                // experimentation is where over-eager students think
+                // "what if I tried this on the real ramp."
+                h('div', {
+                  role: 'note',
+                  style: {
+                    background: 'rgba(245,158,11,0.10)',
+                    border: '1px solid rgba(245,158,11,0.45)',
+                    borderRadius: 8, padding: '8px 10px',
+                    fontSize: 11, color: '#fde68a', lineHeight: 1.5
+                  }
+                },
+                  h('b', { style: { color: '#fbbf24' } }, '⚠️ Real-world safety: '),
+                  'Inventing tricks here is creativity. Inventing them on a real ramp without gear is hospital math. The simulator has zero risk; the real world doesn\'t. Always wear a helmet, wrist guards, and pads.'
+                ),
+                // Form: name + emoji
+                h('div', { style: { display: 'grid', gridTemplateColumns: '1fr auto', gap: 8 } },
+                  h('div', null,
+                    h('label', { htmlFor: 'sk-tl-name', style: { display: 'block', fontSize: 10, fontWeight: 700, color: '#a5b4fc', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.04em' } }, 'Name'),
+                    h('input', {
+                      id: 'sk-tl-name',
+                      type: 'text',
+                      maxLength: 30,
+                      value: (d.trickLabDraft && d.trickLabDraft.name) || '',
+                      onChange: function(e) {
+                        upd('trickLabDraft', Object.assign({}, d.trickLabDraft, { name: e.target.value }));
+                      },
+                      placeholder: 'e.g. Tail Dragger',
+                      'data-sk-focusable': 'true',
+                      style: {
+                        width: '100%', padding: '6px 10px', fontSize: 12, fontWeight: 600,
+                        background: '#0f172a', color: '#fef3c7',
+                        border: '1px solid #475569', borderRadius: 6,
+                        boxSizing: 'border-box', minHeight: 32
+                      }
+                    })
+                  ),
+                  h('div', null,
+                    h('label', { htmlFor: 'sk-tl-emoji', style: { display: 'block', fontSize: 10, fontWeight: 700, color: '#a5b4fc', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.04em' } }, 'Emoji'),
+                    h('input', {
+                      id: 'sk-tl-emoji',
+                      type: 'text',
+                      maxLength: 4,
+                      value: (d.trickLabDraft && d.trickLabDraft.emoji) || '🌟',
+                      onChange: function(e) {
+                        upd('trickLabDraft', Object.assign({}, d.trickLabDraft, { emoji: e.target.value }));
+                      },
+                      placeholder: '🌟',
+                      'aria-label': 'Trick emoji',
+                      'data-sk-focusable': 'true',
+                      style: {
+                        width: 64, padding: '6px 10px', fontSize: 16, fontWeight: 600,
+                        background: '#0f172a', color: '#fef3c7',
+                        border: '1px solid #475569', borderRadius: 6,
+                        textAlign: 'center', boxSizing: 'border-box', minHeight: 32
+                      }
+                    })
+                  )
+                ),
+                // Rotation slider
+                (function() {
+                  var rot = (d.trickLabDraft && typeof d.trickLabDraft.rotation === 'number') ? d.trickLabDraft.rotation : 360;
+                  return h('div', null,
+                    h('label', { htmlFor: 'sk-tl-rot', style: { display: 'block', fontSize: 10, fontWeight: 700, color: '#a5b4fc', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.04em' } }, 'Rotation: ' + rot + '°'),
+                    h('input', {
+                      id: 'sk-tl-rot',
+                      type: 'range', min: 0, max: 1080, step: 90,
+                      value: rot,
+                      onChange: function(e) {
+                        upd('trickLabDraft', Object.assign({}, d.trickLabDraft, { rotation: parseInt(e.target.value) }));
+                      },
+                      'data-sk-focusable': 'true',
+                      style: { width: '100%' }
+                    })
+                  );
+                })(),
+                // Axis radio pills
+                h('div', null,
+                  h('div', { style: { fontSize: 10, fontWeight: 700, color: '#a5b4fc', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.04em' } }, 'Axis'),
+                  h('div', { role: 'radiogroup', 'aria-label': 'Rotation axis', style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+                    [
+                      { id: 'board', label: 'Board', icon: '🛹', desc: 'fastest spin (1500°/s) — flips' },
+                      { id: 'body',  label: 'Body',  icon: '🌀', desc: 'medium spin (1000°/s) — full-body rotations' },
+                      { id: 'combo', label: 'Combo', icon: '✨', desc: 'slowest (800°/s) — both axes at once' }
+                    ].map(function(opt) {
+                      var sel = (d.trickLabDraft && d.trickLabDraft.axis) === opt.id;
+                      return h('button', {
+                        key: 'axis-' + opt.id,
+                        onClick: function() { upd('trickLabDraft', Object.assign({}, d.trickLabDraft, { axis: opt.id })); },
+                        role: 'radio',
+                        'aria-checked': sel,
+                        'data-sk-focusable': 'true',
+                        title: opt.desc,
+                        style: {
+                          padding: '6px 12px', fontSize: 11, fontWeight: 700,
+                          background: sel ? 'linear-gradient(135deg,#a855f7,#7c3aed)' : 'rgba(168,85,247,0.10)',
+                          color: sel ? '#fff' : '#e9d5ff',
+                          border: '1px solid ' + (sel ? '#7c3aed' : 'rgba(168,85,247,0.40)'),
+                          borderRadius: 999, cursor: 'pointer', minHeight: 32
+                        }
+                      }, opt.icon + ' ' + opt.label);
+                    })
+                  )
+                ),
+                // Live preview card
+                (function() {
+                  var draft = d.trickLabDraft || { rotation: 360, axis: 'body' };
+                  var phys = deriveTrickPhysics(draft);
+                  return h('div', {
+                    role: 'region',
+                    'aria-label': 'Trick physics preview',
+                    style: {
+                      background: 'rgba(168,85,247,0.10)',
+                      border: '1px solid rgba(168,85,247,0.45)',
+                      borderRadius: 10, padding: '8px 10px',
+                      fontSize: 11, color: '#e9d5ff', lineHeight: 1.6,
+                      fontFamily: 'monospace'
+                    }
+                  },
+                    h('div', null, h('b', { style: { color: '#fbbf24' } }, '📐 Min air: '), phys.minAir.toFixed(2) + 's · ', h('b', { style: { color: '#fbbf24' } }, 'Difficulty: '), phys.difficulty + '/12'),
+                    h('div', null, h('b', { style: { color: '#7dd3fc' } }, '💡 Formula: '), phys.formula),
+                    phys.equivalent && h('div', null, h('b', { style: { color: '#86efac' } }, '🛹 Closest built-in: '), phys.equivalent.emoji + ' ' + phys.equivalent.label + ' (' + phys.equivalent.rotation + '°)')
+                  );
+                })(),
+                // Action buttons
+                h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+                  h('button', {
+                    onClick: function() { saveCustomTrick(d.trickLabDraft || {}); },
+                    'data-sk-focusable': 'true',
+                    style: {
+                      flex: '1 1 auto', padding: '8px 16px', fontSize: 12, fontWeight: 800,
+                      background: 'linear-gradient(135deg,#a855f7,#7c3aed)',
+                      color: '#fff', border: '1px solid #7c3aed',
+                      borderRadius: 8, cursor: 'pointer', minHeight: 36
+                    }
+                  }, '💾 Save & Select'),
+                  h('button', {
+                    onClick: function() {
+                      upd('trickLabDraft', { name: '', emoji: '🌟', rotation: 360, axis: 'body' });
+                      skAnnounce('Trick Lab form reset.');
+                    },
+                    'data-sk-focusable': 'true',
+                    style: {
+                      padding: '8px 14px', fontSize: 12, fontWeight: 700,
+                      background: 'transparent', color: '#94a3b8',
+                      border: '1px solid rgba(148,163,184,0.40)',
+                      borderRadius: 8, cursor: 'pointer', minHeight: 36
+                    }
+                  }, '🔄 Reset Form')
+                )
               )
             )
           )
@@ -2831,6 +3175,77 @@ window.StemLab = window.StemLab || {
             h('div', { style: { fontSize: 10, fontWeight: 800, color: '#c4b5fd', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 4 } },
               getPersona(d.coachResponse.persona).icon + ' ' + getPersona(d.coachResponse.persona).label),
             d.coachResponse.text
+          )
+        ),
+        // ── Gear Science ────────────────────────────────────────
+        // Closed by default. Opens to show 6 protective-gear cards
+        // with the same 3-color-coded structure as Trick Lore (does
+        // / physics / why-wear). Footer button prints a one-page
+        // gear checklist for students to take home.
+        h('details', {
+          style: {
+            background: 'rgba(34,197,94,0.06)',
+            border: '1px solid rgba(34,197,94,0.35)',
+            borderRadius: 10, padding: '10px 12px', marginBottom: 12
+          }
+        },
+          h('summary', {
+            style: {
+              cursor: 'pointer', color: '#86efac', fontWeight: 800,
+              fontSize: 12, letterSpacing: '0.04em', textTransform: 'uppercase',
+              padding: '2px 0', userSelect: 'none'
+            }
+          }, '🛡️ Gear Science — the physics of not getting hurt'),
+          // Intro card framing the section.
+          h('div', {
+            style: {
+              marginTop: 10, padding: '8px 10px',
+              background: 'rgba(34,197,94,0.10)',
+              border: '1px solid rgba(34,197,94,0.40)',
+              borderRadius: 8, fontSize: 12, color: '#bbf7d0', lineHeight: 1.55
+            }
+          },
+            h('b', { style: { color: '#86efac' } }, 'Most skate injuries are preventable. '),
+            'Each piece of gear works because of physics you already know — force-over-time, stress-over-area, friction-over-distance. Here\'s why each one matters.'
+          ),
+          // 6 gear cards
+          h('div', { style: { marginTop: 10, display: 'flex', flexDirection: 'column', gap: 8 } },
+            GEAR.map(function(g) {
+              return h('div', {
+                key: 'gear-' + g.id,
+                style: {
+                  background: 'rgba(15,23,42,0.50)',
+                  border: '1px solid rgba(34,197,94,0.30)',
+                  borderRadius: 8, padding: '10px 12px'
+                }
+              },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, flexWrap: 'wrap' } },
+                  h('span', { style: { fontSize: 20 } }, g.icon),
+                  h('span', { style: { fontSize: 13, fontWeight: 800, color: '#fef3c7' } }, g.label),
+                  h('span', { style: { marginLeft: 'auto', fontSize: 10, fontFamily: 'monospace', color: '#86efac', padding: '2px 8px', background: 'rgba(34,197,94,0.18)', border: '1px solid rgba(34,197,94,0.45)', borderRadius: 999 } }, g.stat)
+                ),
+                h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, display: 'flex', flexDirection: 'column', gap: 4 } },
+                  h('div', null, h('b', { style: { color: '#fbbf24' } }, '🛡️ What it does: '), g.does),
+                  h('div', null, h('b', { style: { color: '#7dd3fc' } }, '📐 The physics: '), g.physics),
+                  h('div', null, h('b', { style: { color: '#86efac' } }, '💡 Why wear it: '), g.whyWear)
+                )
+              );
+            })
+          ),
+          // Print button
+          h('div', { style: { marginTop: 10, display: 'flex', justifyContent: 'flex-end' } },
+            h('button', {
+              onClick: function() { printGearChecklist(); },
+              'aria-label': 'Open the printable gear checklist',
+              'data-sk-focusable': 'true',
+              style: {
+                padding: '8px 14px', fontSize: 12, fontWeight: 800,
+                background: 'linear-gradient(135deg,#22c55e,#15803d)',
+                color: '#fff', border: '1px solid #15803d',
+                borderRadius: 8, cursor: 'pointer', minHeight: 36,
+                boxShadow: '0 2px 6px rgba(21,128,61,0.35)'
+              }
+            }, '📋 Print Gear Checklist')
           )
         ),
         // Stats footer
