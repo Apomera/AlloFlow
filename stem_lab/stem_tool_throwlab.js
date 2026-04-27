@@ -132,6 +132,32 @@ window.StemLab = window.StemLab || {
     { id: 'jupiter', label: 'Jupiter', g: 24.79, icon: '⚫' },
     { id: 'sun',     label: 'Sun',     g: 274.0,  icon: '☀️' }   // 28× Earth — extreme dropper
   ];
+  // ── Engagement layer: Daily Challenge ──
+  // Deterministic-by-date pick from SCENARIOS + customScenarios so
+  // every student in the same class sees the same challenge today.
+  // Tracks attempt + completion in toolData (dailyAttempted /
+  // dailyCompleted, both keyed to date string). Mirrors fantasy-
+  // sports daily-lineup hooks: come back tomorrow, see a new one.
+  function todayKey() {
+    var d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+  // Tiny string-hash so the same date → same scenario index
+  function hashStr(s) {
+    var h = 0;
+    for (var i = 0; i < s.length; i++) {
+      h = ((h << 5) - h) + s.charCodeAt(i);
+      h |= 0;
+    }
+    return Math.abs(h);
+  }
+  function getDailyChallenge() {
+    var pool = SCENARIOS; // built-ins only — class-wide consistency
+    if (!pool.length) return null;
+    var idx = hashStr(todayKey()) % pool.length;
+    return pool[idx];
+  }
+
   // ── Engagement layer: Stats Card builder ──
   // Returns rows of {label, value} per sport — a fantasy-sports
   // stat-line a kid recognizes from their phone screen. Renders in

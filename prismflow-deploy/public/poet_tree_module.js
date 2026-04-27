@@ -376,6 +376,39 @@
       ]
     },
     {
+      id: 'erasure',
+      name: 'Erasure Poem',
+      icon: '⬛',
+      tagline: 'Take a page. Black out everything except the poem hiding inside it.',
+      structure: 'Start with any source text (a news article, a chapter, a song lyric, a textbook page). Click the words you want to KEEP. Everything else gets blacked out. The poem that remains is your erasure. Reading order follows the original text — left to right, top to bottom — so you are listening for the poem the source already contains, not rearranging it.',
+      lineCount: null,
+      syllablesPerLine: null,
+      rhymeScheme: null,
+      example: '(from a weather report)\n\nthe wind        will move\n           toward us\n      slowly,           a small\n           hand\n           of rain.',
+      tips: [
+        'Read the source ALL the way through first. Listen for surprising phrases.',
+        'Pick fewer words than you think. Erasure poems are mostly silence.',
+        'Stay in the source\'s reading order — that\'s what makes it erasure (not collage).',
+        'Look for accidental images — "a small hand of rain" might already be in there.'
+      ],
+      moreExamples: [
+        {
+          title: 'A Humument (excerpt context)',
+          author: 'Tom Phillips',
+          year: 1966,
+          text: 'a / human / document / hidden / inside / another / book',
+          note: 'Phillips spent decades blacking out a Victorian novel. Each page is an erasure of the prose underneath. The whole project is one of the most influential erasure poems ever made.'
+        },
+        {
+          title: 'A Little White Shadow (idea)',
+          author: 'Mary Ruefle',
+          year: 2006,
+          text: 'erasure makes / what was / white / now / yours',
+          note: 'Ruefle erases an old book until only a few words per page remain. The white space carries as much weight as the words.'
+        }
+      ]
+    },
+    {
       id: 'image-poem',
       name: 'Image Poem',
       icon: '🖼️',
@@ -498,6 +531,12 @@
     var _poemTitle = useState(''); var poemTitle = _poemTitle[0]; var setPoemTitle = _poemTitle[1];
     var _poemText = useState(''); var poemText = _poemText[0]; var setPoemText = _poemText[1];
     var _foundSource = useState(''); var foundSource = _foundSource[0]; var setFoundSource = _foundSource[1];
+    // Erasure Workshop state — source text + which token indices the student is keeping.
+    // Tokens are split by whitespace; punctuation stays attached to the word it follows.
+    // We track an object map `{ [tokenIdx]: true }` instead of a Set so React shallow
+    // comparisons work correctly through useState.
+    var _erasureSource = useState(''); var erasureSource = _erasureSource[0]; var setErasureSource = _erasureSource[1];
+    var _erasureKept = useState({});  var erasureKept = _erasureKept[0];   var setErasureKept = _erasureKept[1];
 
     // AI feedback state
     var _aiFeedback = useState(null); var aiFeedback = _aiFeedback[0]; var setAiFeedback = _aiFeedback[1];
@@ -1858,6 +1897,135 @@
                   })
                 )
               )
+            ),
+
+            // ── Erasure Workshop (only when form is 'erasure') ──
+            // Two stages: paste/seed source text → click words to keep. Kept words form
+            // the extracted poem in original reading order, preserving line breaks.
+            form && form.id === 'erasure' && e('div', { role: 'region', 'aria-label': 'Erasure Workshop', style: { background: '#fafafa', border: '2px solid #1e293b', borderRadius: '10px', padding: '12px' } },
+              e('div', { style: { fontSize: '11px', fontWeight: 800, color: '#1e293b', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '6px' } }, '⬛ Erasure Workshop'),
+              !erasureSource && e('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
+                e('p', { style: { fontSize: '12px', color: '#475569', margin: 0, lineHeight: 1.5 } }, 'Paste a source text below, then click the words you want to KEEP. Everything else gets blacked out.'),
+                e('textarea', {
+                  id: 'pt-erasure-source',
+                  value: erasureSource,
+                  onChange: function (ev) { setErasureSource(ev.target.value); setErasureKept({}); },
+                  rows: 4, placeholder: 'Paste a paragraph, an article, a song lyric — anything…',
+                  'aria-label': 'Source text for erasure',
+                  style: { width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '12px', fontFamily: 'Georgia, serif', resize: 'vertical', boxSizing: 'border-box' }
+                }),
+                e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', fontSize: '10px', color: '#475569' } },
+                  e('span', { style: { fontStyle: 'italic' } }, 'Or seed from:'),
+                  [
+                    { label: '🌤️ Weather', text: 'A coastal storm will bring widespread rain, gusty winds, and the threat of minor flooding to the region tonight into Tuesday morning. Wind gusts may exceed forty miles per hour, especially near the coast. By Tuesday afternoon, the storm will move offshore and conditions will gradually improve. Sunshine returns Wednesday with cooler temperatures and a brisk northwesterly breeze.' },
+                    { label: '📜 Old Letter', text: 'My dearest friend, the leaves are falling now, and the wind has a sound I had forgotten. Yesterday I walked the old path and found a single white feather caught in the brambles. I tell myself I am content here, though some nights I still listen for the bell.' },
+                    { label: '📰 News brief', text: 'The town council voted unanimously last night to preserve the abandoned lot at the corner of Maple and Third as a community garden. Residents had petitioned for the change for over a year. Volunteers will begin planting in the spring; until then, the lot will be cleared of debris and the soil tested for contamination.' }
+                  ].map(function (seed) {
+                    return e('button', { key: seed.label,
+                      onClick: function () { setErasureSource(seed.text); setErasureKept({}); announcePT('Seed source loaded.'); },
+                      'aria-label': 'Use ' + seed.label + ' as source text',
+                      style: { padding: '3px 8px', borderRadius: '999px', border: '1px solid #cbd5e1', background: '#fff', fontSize: '10px', fontWeight: 700, color: '#1e293b', cursor: 'pointer' }
+                    }, seed.label);
+                  })
+                )
+              ),
+              erasureSource && (function () {
+                // Tokenize on whitespace, preserving line structure as separate arrays.
+                // Each token entry is { idx, text, isKept }; lines are arrays of tokens.
+                var lineTokens = [];
+                var globalIdx = 0;
+                var rawLines = erasureSource.split('\n');
+                rawLines.forEach(function (lineStr, li) {
+                  var tokens = [];
+                  var pieces = lineStr.split(/\s+/).filter(function (p) { return p.length > 0; });
+                  pieces.forEach(function (p) {
+                    tokens.push({ idx: globalIdx, text: p });
+                    globalIdx += 1;
+                  });
+                  lineTokens.push({ rawLine: lineStr, tokens: tokens });
+                });
+                // Build the extracted poem — preserve line breaks; only kept tokens print.
+                var extractedLines = lineTokens.map(function (l) {
+                  return l.tokens.filter(function (t) { return erasureKept[t.idx]; }).map(function (t) { return t.text; }).join(' ');
+                });
+                // Collapse runs of empty lines to single empties (poetic white space)
+                var compacted = [];
+                extractedLines.forEach(function (line) {
+                  if (line || (compacted.length > 0 && compacted[compacted.length - 1])) compacted.push(line);
+                });
+                while (compacted.length > 0 && !compacted[compacted.length - 1]) compacted.pop();
+                var extractedPoem = compacted.join('\n');
+                var keptCount = Object.keys(erasureKept).filter(function (k) { return erasureKept[k]; }).length;
+                return e('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
+                  e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '6px' } },
+                    e('span', { style: { fontSize: '11px', color: '#475569' } }, 'Click words to keep · ' + keptCount + ' kept of ' + globalIdx + ' total'),
+                    e('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
+                      e('button', { onClick: function () { setErasureKept({}); announcePT('Erasure cleared. All words restored.'); },
+                        'aria-label': 'Clear all kept words',
+                        style: { padding: '3px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', background: '#fff', fontSize: '10px', fontWeight: 700, color: '#475569', cursor: 'pointer' }
+                      }, '↻ Reset'),
+                      e('button', { onClick: function () {
+                          var allKept = {};
+                          for (var i = 0; i < globalIdx; i++) allKept[i] = true;
+                          setErasureKept(allKept);
+                        },
+                        'aria-label': 'Keep all words',
+                        style: { padding: '3px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', background: '#fff', fontSize: '10px', fontWeight: 700, color: '#475569', cursor: 'pointer' }
+                      }, '◻ All'),
+                      e('button', { onClick: function () { setErasureSource(''); setErasureKept({}); },
+                        'aria-label': 'Replace source text',
+                        style: { padding: '3px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', background: '#fff', fontSize: '10px', fontWeight: 700, color: '#475569', cursor: 'pointer' }
+                      }, '✎ Replace')
+                    )
+                  ),
+                  // Source canvas — clickable word tokens with blackout effect on non-kept
+                  e('div', { role: 'group', 'aria-label': 'Source text — click words to keep them in your erasure poem', style: { background: '#fff', border: '1px solid #cbd5e1', borderRadius: '8px', padding: '12px', fontFamily: 'Georgia, serif', fontSize: largeText ? '16px' : '14px', lineHeight: 1.9 } },
+                    lineTokens.map(function (l, li) {
+                      if (l.tokens.length === 0) return e('div', { key: li, style: { height: '1em' } });
+                      return e('div', { key: li, style: { marginBottom: '4px' } },
+                        l.tokens.map(function (t) {
+                          var kept = !!erasureKept[t.idx];
+                          return e('span', { key: t.idx,
+                            onClick: function () {
+                              setErasureKept(function (prev) {
+                                var n = Object.assign({}, prev);
+                                if (n[t.idx]) delete n[t.idx]; else n[t.idx] = true;
+                                return n;
+                              });
+                            },
+                            onKeyDown: function (ev) {
+                              if (ev.key === 'Enter' || ev.key === ' ') {
+                                ev.preventDefault();
+                                setErasureKept(function (prev) {
+                                  var n = Object.assign({}, prev);
+                                  if (n[t.idx]) delete n[t.idx]; else n[t.idx] = true;
+                                  return n;
+                                });
+                              }
+                            },
+                            tabIndex: 0,
+                            role: 'button',
+                            'aria-pressed': kept ? 'true' : 'false',
+                            'aria-label': (kept ? 'Keep word: ' : 'Erase word: ') + t.text,
+                            style: kept
+                              ? { display: 'inline-block', padding: '0 4px', margin: '0 1px', background: '#fef3c7', borderRadius: '3px', cursor: 'pointer', color: '#1e293b', fontWeight: 700 }
+                              : { display: 'inline-block', padding: '0 4px', margin: '0 1px', background: '#1e293b', borderRadius: '3px', cursor: 'pointer', color: '#1e293b', userSelect: 'none' }
+                          }, t.text);
+                        })
+                      );
+                    })
+                  ),
+                  // Extracted poem preview
+                  extractedPoem.trim() && e('div', { style: { background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '8px', padding: '12px' } },
+                    e('div', { style: { fontSize: '10px', fontWeight: 800, color: '#78350f', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '6px' } }, '✨ Your erasure poem'),
+                    e('pre', { style: { whiteSpace: 'pre-wrap', fontFamily: 'Georgia, serif', fontSize: largeText ? '15px' : '13px', color: '#1e293b', margin: 0, lineHeight: 1.7 } }, extractedPoem),
+                    e('button', { onClick: function () { setPoemText(extractedPoem); announcePT('Erasure poem copied into editor.'); addToast && addToast('Copied to editor!', 'success'); },
+                      'aria-label': 'Copy this erasure into the main poem editor below',
+                      style: { marginTop: '8px', padding: '5px 12px', borderRadius: '6px', border: 'none', background: '#0d9488', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
+                    }, '↓ Use as poem')
+                  )
+                );
+              })()
             ),
 
             // Editor

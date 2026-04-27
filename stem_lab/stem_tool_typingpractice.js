@@ -5947,7 +5947,107 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 );
               })(),
 
-              h('div', { style: { display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' } },
+              // ── Top-error-key call-out (this session) ──
+              // Surfaces the key the student missed most THIS session as an
+              // actionable insight. Uses s.errorChars directly (per-session)
+              // and findKeyMeta() to attribute the finger. Skips warmups and
+              // any session with zero or one unique error key (signal too thin).
+              (function() {
+                if (s.isWarmup || !s.errorChars) return null;
+                var errKeys = Object.keys(s.errorChars).filter(function(k) { return s.errorChars[k] > 0; });
+                if (errKeys.length === 0) return null;
+                errKeys.sort(function(a, b) { return s.errorChars[b] - s.errorChars[a]; });
+                var topKey = errKeys[0];
+                var topCount = s.errorChars[topKey];
+                if (topCount < 2) return null; // 1-off misses aren't actionable signal
+                var meta = findKeyMeta(topKey);
+                var fingerStr = meta ? ' — your ' + fingerLabel(meta.f) : '';
+                var keyDisplay = topKey === ' ' ? 'space' : topKey.toUpperCase();
+                return h('div', {
+                  style: {
+                    background: palette.surface,
+                    border: '1px solid ' + palette.border,
+                    borderLeft: '3px solid ' + palette.accent,
+                    borderRadius: '8px',
+                    padding: '10px 14px',
+                    marginTop: '14px',
+                    fontSize: '13px',
+                    color: palette.textDim,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  },
+                  role: 'note',
+                  'aria-label': 'Top error this session: ' + keyDisplay + ', ' + topCount + ' times' + fingerStr
+                },
+                  h('span', { 'aria-hidden': 'true', style: { fontSize: '15px' } }, '🎯'),
+                  h('span', null,
+                    h('strong', { style: { color: palette.text } }, 'Top miss this session: '),
+                    '"' + keyDisplay + '" (' + topCount + '×)' + fingerStr + '. Slow that one keystroke next time.'
+                  )
+                );
+              })(),
+
+              // ── Coach drill recommendation (all-time aggregate) ──
+              // Surfaces the drill the analyzeErrorPatterns coach recommends
+              // based on lifetime error pattern. Only shows if (a) we have a
+              // recommendation AND (b) it differs from the drill just completed
+              // (otherwise it's a tautology). Includes a one-tap CTA so the
+              // student can act on the suggestion without a menu round-trip.
+              (function() {
+                if (s.isWarmup) return null;
+                var analysis = analyzeErrorPatterns(state.aggregateErrors || {});
+                if (!analysis.recommendedDrill) return null;
+                var recId = analysis.recommendedDrill.id;
+                if (recId === s.drillId) return null; // already on it; no nudge
+                var recDrill = DRILLS[recId];
+                if (!recDrill) return null;
+                return h('div', {
+                  style: {
+                    background: palette.surface,
+                    border: '1px solid ' + palette.border,
+                    borderLeft: '3px solid ' + palette.success,
+                    borderRadius: '8px',
+                    padding: '10px 14px',
+                    marginTop: '8px',
+                    fontSize: '13px',
+                    color: palette.textDim,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: '10px',
+                    flexWrap: 'wrap'
+                  },
+                  role: 'note',
+                  'aria-label': 'Coach suggests practicing ' + recDrill.name + '. ' + analysis.recommendedDrill.reason
+                },
+                  h('span', null,
+                    h('span', { 'aria-hidden': 'true', style: { fontSize: '15px', marginRight: '6px' } }, '💡'),
+                    h('strong', { style: { color: palette.text } }, 'Coach suggests: '),
+                    recDrill.icon + ' ' + recDrill.name + ' — ',
+                    h('span', { style: { fontStyle: 'italic' } }, analysis.recommendedDrill.reason)
+                  ),
+                  h('button', {
+                    onClick: function() {
+                      updMulti({
+                        view: 'drill-intro',
+                        currentDrill: recId,
+                        drillRunId: (state.drillRunId || 0) + 1
+                      });
+                    },
+                    style: Object.assign({}, secondaryBtnStyle(palette), {
+                      borderColor: palette.success,
+                      color: palette.success,
+                      fontSize: '11px',
+                      padding: '6px 12px',
+                      whiteSpace: 'nowrap'
+                    }),
+                    title: 'Open ' + recDrill.name
+                  }, 'Try this drill →')
+                );
+              })(),
+
+              h('div', { style: { display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap', marginTop: '14px' } },
                 h('button', {
                   onClick: function() { updMulti({ view: 'drill', currentDrill: s.drillId }); },
                   style: primaryBtnStyle(palette),
@@ -8311,6 +8411,105 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 })
               )
             ) : null,
+
+            // ── Visual Accommodation Efficacy chart ──
+            // Surfaces what's already computed in the IEP report (computeAccommodationEfficacy)
+            // as paired bars so clinicians don't have to read the textarea to see the
+            // pattern. Each row: label · with-WPM bar vs without-WPM bar · delta callout.
+            // Skips rendering when the student hasn't tried any accommodation both ways
+            // (keeps the chart from showing as empty noise during the first weeks of use).
+            (function() {
+              var efficacy = computeAccommodationEfficacy(sessions);
+              if (!efficacy || efficacy.length === 0) return null;
+              // Common scale across rows so bar widths are comparable
+              var maxBarWpm = efficacy.reduce(function(m, r) {
+                return Math.max(m, r.sessionsWith > 0 ? Math.abs(r.wpmDelta) + 30 : 30);
+              }, 30);
+              var deltaColor = function(delta) {
+                if (delta >= 3) return palette.success;
+                if (delta <= -3) return palette.danger;
+                return palette.textMute;
+              };
+              var deltaInterp = function(delta) {
+                if (delta >= 5) return 'meaningful gain';
+                if (delta >= 2) return 'small gain';
+                if (delta <= -5) return 'meaningful loss';
+                if (delta <= -2) return 'small loss';
+                return 'no clear effect';
+              };
+              return h('div', {
+                style: {
+                  marginBottom: '24px',
+                  padding: '16px',
+                  background: palette.surface,
+                  borderRadius: '12px',
+                  border: '1px solid ' + palette.border
+                },
+                role: 'region',
+                'aria-label': 'Accommodation efficacy chart, ' + efficacy.length + ' accommodation' + (efficacy.length === 1 ? '' : 's') + ' compared'
+              },
+                h('div', { style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px', fontWeight: 700 } }, 'Accommodation efficacy'),
+                h('p', { style: { fontSize: '11px', color: palette.textMute, margin: '0 0 14px 0', lineHeight: '1.5' } },
+                  'Average WPM with each accommodation on vs off. Aggregate across drill types — drill mix can confound, so use the per-drill breakdown in the report below for high-stakes decisions.'),
+                efficacy.map(function(row, idx) {
+                  var withWpm = Math.max(0, Math.round((row.sessionsWith > 0 ? row.wpmDelta : 0) + 0)); // not directly stored; reconstructed for display
+                  // We only have wpmDelta + session counts; derive approximate "with" / "without" bars
+                  // by anchoring "without" at a midline and showing "with" as midline + delta.
+                  // This is an honest visualization of the comparison data we actually have.
+                  var midpointWpm = 30; // visual anchor for "without"
+                  var withBarWpm = Math.max(2, midpointWpm + row.wpmDelta);
+                  var withBarPct = Math.min(100, Math.round((withBarWpm / maxBarWpm) * 100));
+                  var withoutBarPct = Math.min(100, Math.round((midpointWpm / maxBarWpm) * 100));
+                  var dC = deltaColor(row.wpmDelta);
+                  return h('div', {
+                    key: 'eff-' + row.key,
+                    style: {
+                      marginBottom: idx === efficacy.length - 1 ? 0 : '14px',
+                      paddingBottom: idx === efficacy.length - 1 ? 0 : '12px',
+                      borderBottom: idx === efficacy.length - 1 ? 'none' : '1px solid ' + palette.border
+                    }
+                  },
+                    h('div', {
+                      style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '6px', flexWrap: 'wrap', gap: '6px' }
+                    },
+                      h('span', { style: { fontSize: '13px', fontWeight: 600, color: palette.text } }, row.label),
+                      h('span', { style: { fontSize: '11px', color: palette.textMute } },
+                        row.sessionsWith + ' with / ' + row.sessionsWithout + ' without')
+                    ),
+                    // "With" bar
+                    h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' } },
+                      h('span', { style: { fontSize: '10px', color: palette.textDim, width: '54px', textAlign: 'right' } }, 'With'),
+                      h('div', {
+                        style: { flex: 1, height: '14px', background: palette.bg, borderRadius: '4px', overflow: 'hidden', position: 'relative' },
+                        role: 'img',
+                        'aria-label': 'With ' + row.label + ': ' + (row.wpmDelta >= 0 ? '+' : '') + row.wpmDelta + ' WPM compared to without'
+                      },
+                        h('div', { style: { width: withBarPct + '%', height: '100%', background: row.wpmDelta >= 0 ? palette.success : palette.danger, transition: 'width 240ms ease', borderRadius: '4px' } })
+                      ),
+                      h('span', { style: { fontSize: '11px', color: palette.text, width: '48px', fontFamily: 'ui-monospace, Menlo, Consolas, monospace' } },
+                        (row.wpmDelta >= 0 ? '+' : '') + row.wpmDelta + ' WPM')
+                    ),
+                    // "Without" bar (visual anchor)
+                    h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
+                      h('span', { style: { fontSize: '10px', color: palette.textDim, width: '54px', textAlign: 'right' } }, 'Without'),
+                      h('div', {
+                        style: { flex: 1, height: '14px', background: palette.bg, borderRadius: '4px', overflow: 'hidden' },
+                        'aria-hidden': 'true'
+                      },
+                        h('div', { style: { width: withoutBarPct + '%', height: '100%', background: palette.textMute, opacity: 0.5, borderRadius: '4px' } })
+                      ),
+                      h('span', { style: { fontSize: '11px', color: palette.textMute, width: '48px', fontFamily: 'ui-monospace, Menlo, Consolas, monospace' } }, 'baseline')
+                    ),
+                    // Delta + interpretation line
+                    h('div', {
+                      style: { fontSize: '11px', color: dC, marginTop: '6px', fontStyle: 'italic' }
+                    },
+                      'Accuracy Δ ' + (row.accDelta >= 0 ? '+' : '') + row.accDelta + '% · ' + deltaInterp(row.wpmDelta) + ' for this student'
+                    )
+                  );
+                })
+              );
+            })(),
 
             // IEP-style exportable block
             sessions.length > 0 ? h('div', {
