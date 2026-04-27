@@ -291,6 +291,20 @@
             localStorage.setItem("alloflow_audio_" + key, val);
           } catch (e) { console.warn("[WordSounds] silent catch:", e); }
         };
+    // Bound here so handleRegenerateWord (line ~6583) actually has a
+    // function to call. Without this, the typeof-guard there short-
+    // circuited and the localStorage entry "alloflow_audio_<word>" was
+    // never cleared on regenerate — handleAudio's loadAudioFromStorage
+    // path then returned the OLD URL, so the student heard the same
+    // TTS clip even though every other cache had been wiped.
+    const removeAudioFromStorage =
+      typeof window.removeAudioFromStorage === "function"
+        ? window.removeAudioFromStorage
+        : (key) => {
+          try {
+            localStorage.removeItem("alloflow_audio_" + key);
+          } catch (e) { console.warn("[WordSounds] silent catch:", e); }
+        };
     const loadPsychometricProbes =
       typeof window.loadPsychometricProbes === "function"
         ? window.loadPsychometricProbes
