@@ -2412,6 +2412,20 @@ window.StemLab = window.StemLab || {
             stats.volleyAceCount = (stats.volleyAceCount || 0) + 1;
           }
         }
+        // ── Daily Challenge completion check ──
+        // If the student loaded today's daily challenge AND just landed
+        // a make outcome, mark the challenge complete (idempotent — set
+        // once per date). Fires a celebratory toast + small XP reward.
+        var dailyKey = todayKey();
+        var newDailyCompleted = d.dailyCompleted || null;
+        var dailyJustCompleted = false;
+        if (d.activeScenarioId && isMakeOutcome) {
+          var daily = getDailyChallenge();
+          if (daily && d.activeScenarioId === daily.id && newDailyCompleted !== dailyKey) {
+            newDailyCompleted = dailyKey;
+            dailyJustCompleted = true;
+          }
+        }
         // ── Achievement / Badge earn-detection ──
         // Walk BADGES, awarding any whose `check` returns true that
         // the student hasn\'t earned yet. Each earn fires a toast +
@@ -2455,6 +2469,7 @@ window.StemLab = window.StemLab || {
             golfGreenCount: newGolfGreenCount,
             volleyAceCount: newVolleyAceCount,
             badgesEarned: earnedSet,
+            dailyCompleted: newDailyCompleted,
             pitchTypesUsed: newTypesUsed,
             recentThrows: newRecent,
             drillStats: stats,
@@ -2491,6 +2506,17 @@ window.StemLab = window.StemLab || {
               if (celebrate && i === 0) celebrate();
             }, 1200 + (i * 800));
           });
+        }
+        // Daily Challenge celebration — separate from drill / badge so
+        // it stacks rather than getting drowned out
+        if (dailyJustCompleted) {
+          var dailyName = (getDailyChallenge() || {}).label || 'Today\'s Challenge';
+          setTimeout(function() {
+            tlAnnounce('Daily Challenge complete: ' + dailyName + '!');
+            if (addToast) addToast('🌟 Daily Challenge done!');
+            if (awardXP) awardXP('throwlab', 15, 'Daily Challenge');
+            if (celebrate) celebrate();
+          }, 600);
         }
         // Outcome SFX + announcement after a tiny delay so it doesn't talk over the throw
         setTimeout(function() {
@@ -3988,6 +4014,44 @@ window.StemLab = window.StemLab || {
             ])
           )
         ),
+
+        // ── Daily Challenge (engagement layer) ──
+        // Deterministic-by-date scenario, prominent above the scenarios
+        // row. State has 3 visual modes: NEW (today, untried), GO
+        // (loaded but not yet made), DONE (already completed today).
+        (function() {
+          var daily = getDailyChallenge();
+          if (!daily) return null;
+          var key = todayKey();
+          var done = d.dailyCompleted === key;
+          var loaded = d.activeScenarioId === daily.id;
+          var bg = done ? 'rgba(34,197,94,0.15)' : loaded ? 'rgba(251,191,36,0.18)' : 'rgba(167,139,250,0.10)';
+          var border = done ? '#22c55e' : loaded ? '#fbbf24' : '#a78bfa';
+          var label = done ? '✅ Today\'s Challenge complete!' : loaded ? '🎯 In progress: ' + daily.label : '🌟 Today\'s Challenge: ' + daily.label;
+          return h('button', {
+            onClick: function() {
+              if (done) {
+                tlAnnounce('Daily Challenge already complete. Come back tomorrow for a new one.');
+                return;
+              }
+              applyScenario(daily.id);
+            },
+            'aria-label': label,
+            'data-tl-focusable': 'true',
+            title: daily.teach,
+            style: {
+              display: 'block', width: '100%', marginBottom: 14,
+              padding: '10px 14px', borderRadius: 8,
+              border: '1px solid ' + border, background: bg,
+              color: '#f1f5f9', fontSize: 12, fontWeight: 600,
+              textAlign: 'left', cursor: done ? 'default' : 'pointer'
+            }
+          },
+            h('div', { style: { fontSize: 11, color: border, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, label),
+            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 2, fontWeight: 400 } },
+              done ? 'Earned 15 XP. Try again tomorrow.' : daily.teach.slice(0, 110) + (daily.teach.length > 110 ? '…' : ''))
+          );
+        })(),
 
         // ── Achievements / Badges (engagement layer) ──
         // Collection mechanic for athletic students. All badges shown

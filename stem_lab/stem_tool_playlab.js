@@ -181,6 +181,26 @@ window.StemLab = window.StemLab || {
     return { emoji: '🔥🔥', label: 'ON FIRE', color: '#dc2626' };
   }
 
+  // ── Engagement layer: Daily Challenge ──
+  // Deterministic-by-date pick from PLAYLAB_SCENARIOS so every student
+  // in the same class sees the same challenge today. Picks within the
+  // active sport so a football class doesn\'t get a soccer scenario.
+  function todayKey() {
+    var dt = new Date();
+    return dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0') + '-' + String(dt.getDate()).padStart(2, '0');
+  }
+  function hashStr(s) {
+    var h = 0;
+    for (var i = 0; i < s.length; i++) { h = ((h << 5) - h) + s.charCodeAt(i); h |= 0; }
+    return Math.abs(h);
+  }
+  function getPlayLabDailyChallenge(sport) {
+    var pool = PLAYLAB_SCENARIOS.filter(function(sc) { return sc.sport === (sport || 'football'); });
+    if (!pool.length) return null;
+    var idx = hashStr(todayKey() + ':' + sport) % pool.length;
+    return pool[idx];
+  }
+
   // ── Engagement layer: Stats Card builder ──
   // Returns rows of {label, value} per sport — a fantasy-sports
   // stat-line a kid recognizes from their phone screen. Pure data
@@ -2365,11 +2385,24 @@ window.StemLab = window.StemLab || {
                   }
                 } catch (e) { /* defensive */ }
               });
+              // Daily Challenge completion check (soccer) — high-quality
+              // sequence (xG > 0.20) on today\'s daily counts.
+              var dailyKeyS = todayKey();
+              var newDailyCompletedS = d.dailyCompleted || null;
+              var dailyJustCompletedS = false;
+              if (d.activeScenarioId && finalXG > 0.20) {
+                var dailyS = getPlayLabDailyChallenge('soccer');
+                if (dailyS && d.activeScenarioId === dailyS.id && newDailyCompletedS !== dailyKeyS) {
+                  newDailyCompletedS = dailyKeyS;
+                  dailyJustCompletedS = true;
+                }
+              }
               setLabToolData(function(prev) {
                 return Object.assign({}, prev, { playlab: Object.assign({}, prev.playlab, {
                   runActive: false, runT: SOCCER_TOTAL, runOutcome: soccerOutcome,
                   drillStats: sStats, drillTaskIdx: sNewTaskIdx,
-                  badgesEarned: sNewEarned
+                  badgesEarned: sNewEarned,
+                  dailyCompleted: newDailyCompletedS
                 })});
               });
               var qualLabel = finalXG > 0.30 ? 'high-quality chance' : finalXG > 0.10 ? 'decent shot' : 'low-percentage shot';
@@ -2383,6 +2416,15 @@ window.StemLab = window.StemLab || {
                   if (celebrate && i === 0) celebrate();
                 }, 1200 + (i * 800));
               });
+              if (dailyJustCompletedS) {
+                var dailyNameS = (getPlayLabDailyChallenge('soccer') || {}).label || 'Today\'s Challenge';
+                setTimeout(function() {
+                  plAnnounce('Daily Challenge complete: ' + dailyNameS + '!');
+                  if (addToast) addToast('🌟 Daily Challenge done!');
+                  if (awardXP) awardXP('playlab', 15, 'Daily Challenge');
+                  if (celebrate) celebrate();
+                }, 600);
+              }
               if (sTaskJustCompleted) {
                 var sAllDone = sNewTaskIdx >= PLAYLAB_SOCCER_DRILLS.tasks.length;
                 setTimeout(function() {
@@ -2480,6 +2522,17 @@ window.StemLab = window.StemLab || {
                 }
               } catch (e) { /* defensive */ }
             });
+            // Daily Challenge completion check (football)
+            var dailyKeyF = todayKey();
+            var newDailyCompletedF = d.dailyCompleted || null;
+            var dailyJustCompletedF = false;
+            if (d.activeScenarioId && loc === 'caught') {
+              var dailyF = getPlayLabDailyChallenge('football');
+              if (dailyF && d.activeScenarioId === dailyF.id && newDailyCompletedF !== dailyKeyF) {
+                newDailyCompletedF = dailyKeyF;
+                dailyJustCompletedF = true;
+              }
+            }
             // Active-drill task progression
             var newDrillTaskIdx = d.drillTaskIdx || 0;
             var taskJustCompleted = null;
@@ -2494,7 +2547,8 @@ window.StemLab = window.StemLab || {
               return Object.assign({}, prev, { playlab: Object.assign({}, prev.playlab, {
                 runActive: false, runT: TOTAL_DURATION, runOutcome: outcome,
                 drillStats: newStats, drillTaskIdx: newDrillTaskIdx,
-                badgesEarned: newEarned
+                badgesEarned: newEarned,
+                dailyCompleted: newDailyCompletedF
               })});
             });
             plAnnounce(loc === 'caught'
@@ -2511,6 +2565,15 @@ window.StemLab = window.StemLab || {
                 if (celebrate && i === 0) celebrate();
               }, 1200 + (i * 800));
             });
+            if (dailyJustCompletedF) {
+              var dailyNameF = (getPlayLabDailyChallenge('football') || {}).label || 'Today\'s Challenge';
+              setTimeout(function() {
+                plAnnounce('Daily Challenge complete: ' + dailyNameF + '!');
+                if (addToast) addToast('🌟 Daily Challenge done!');
+                if (awardXP) awardXP('playlab', 15, 'Daily Challenge');
+                if (celebrate) celebrate();
+              }, 600);
+            }
             if (taskJustCompleted) {
               var allDone = newDrillTaskIdx >= PLAYLAB_DRILLS.tasks.length;
               setTimeout(function() {
@@ -3234,6 +3297,45 @@ window.StemLab = window.StemLab || {
             ])
           )
         ),
+
+        // ── Daily Challenge (engagement layer) ──
+        // Per-sport deterministic-by-date scenario. Football class sees
+        // today\'s football pick, soccer class sees today\'s soccer pick.
+        // Three states: untried (lavender) / in-progress (gold) /
+        // complete (green). Click → applies the scenario.
+        (function() {
+          var daily = getPlayLabDailyChallenge(d.sport || 'football');
+          if (!daily) return null;
+          var key = todayKey();
+          var done = d.dailyCompleted === key;
+          var loaded = d.activeScenarioId === daily.id;
+          var bg = done ? 'rgba(34,197,94,0.15)' : loaded ? 'rgba(251,191,36,0.18)' : 'rgba(167,139,250,0.10)';
+          var border = done ? '#22c55e' : loaded ? '#fbbf24' : '#a78bfa';
+          var label = done ? '✅ Today\'s Challenge complete!' : loaded ? '🎯 In progress: ' + daily.label : '🌟 Today\'s Challenge: ' + daily.label;
+          return h('button', {
+            onClick: function() {
+              if (done) {
+                plAnnounce('Daily Challenge already complete. Come back tomorrow.');
+                return;
+              }
+              applyPlayLabScenario(daily.id);
+            },
+            'aria-label': label,
+            'data-pl-focusable': 'true',
+            title: daily.teach,
+            style: {
+              display: 'block', width: '100%', marginBottom: 12,
+              padding: '10px 14px', borderRadius: 8,
+              border: '1px solid ' + border, background: bg,
+              color: '#f1f5f9', fontSize: 12, fontWeight: 600,
+              textAlign: 'left', cursor: done ? 'default' : 'pointer'
+            }
+          },
+            h('div', { style: { fontSize: 11, color: border, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, label),
+            h('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 2, fontWeight: 400 } },
+              done ? 'Earned 15 XP. Try again tomorrow.' : daily.teach.slice(0, 110) + (daily.teach.length > 110 ? '…' : ''))
+          );
+        })(),
 
         // ── Achievements / Badges (engagement layer) ──
         // Collection mechanic for athletic students. Earned badges glow
