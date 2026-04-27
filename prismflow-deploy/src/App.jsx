@@ -10507,6 +10507,15 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const isWizardOpen = false;
   const setIsWizardOpen = () => {};
   const setIsLookingUpStandards = () => {};
+  const aiBotsActive = false;
+  const narrativeLedger = null;
+  const archiveAdventureImage = () => {};
+  const setGlossaryHealthIssues = () => {};
+  const setIsCheckingGlossaryHealth = () => {};
+  const setMasteryResult = () => {};
+  const setIsGradingMastery = () => {};
+  const setLevelCheckResult = () => {};
+  const setIsGeneratingPOS = () => {};
   const setStandardsLookupGoal = () => {};
   const setStandardsLookupRegion = () => {};
   const setIsRefiningImage = () => {};
