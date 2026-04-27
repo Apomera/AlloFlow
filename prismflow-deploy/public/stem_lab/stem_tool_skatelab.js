@@ -939,8 +939,14 @@ window.StemLab = window.StemLab || {
       // Sets every relevant key in toolData.skatelab from the
       // scenario's `presets` block, surfaces the scenario id so the
       // Lesson card renders, and announces the load to screen readers.
+      // Look up a scenario by id across BOTH built-in and custom pools.
+      function findAnyScenario(id) {
+        return getScenario(id) ||
+          ((d.customScenarios || []).find(function(s) { return s.id === id; })) ||
+          null;
+      }
       function loadScenario(scenarioId) {
-        var sc = getScenario(scenarioId);
+        var sc = findAnyScenario(scenarioId);
         if (!sc) return;
         var p = sc.presets || {};
         var bumps = {
@@ -948,6 +954,8 @@ window.StemLab = window.StemLab || {
           mode: sc.mode,
           vehicle: p.vehicle || 'skate',
           gravity: p.gravity || 9.81,
+          surfaceId: p.surfaceId || 'standard',
+          windId: p.windId || 'calm',
           lastResult: null
         };
         if (sc.mode === 'halfpipe') {
@@ -965,6 +973,87 @@ window.StemLab = window.StemLab || {
         upd(bumps);
         skAnnounce('Loaded ' + sc.label + '. ' + (sc.mode === 'halfpipe' ? 'Halfpipe' : 'Gap jump') + ' mode, ' +
           (p.vehicle === 'bmx' ? 'BMX' : 'skateboard') + '.');
+      }
+
+      // ── Save current settings as a custom scenario ──────────────
+      // Captures the current configuration (mode + all relevant
+      // params) into a named preset that renders alongside the
+      // built-in famous-trick row. Persists in toolData.skatelab.
+      // Auto-generates a teach blurb so the Lesson card has
+      // something useful to show on reload.
+      function saveCurrentAsScenario(label) {
+        var clean = (label || '').trim().slice(0, 40);
+        if (!clean) {
+          if (addToast) addToast('Give the scenario a short name first.', 'info');
+          return;
+        }
+        var presets = {
+          vehicle: d.vehicle,
+          gravity: d.gravity,
+          surfaceId: d.surfaceId,
+          windId: d.windId
+        };
+        var teach;
+        if (d.mode === 'halfpipe') {
+          presets.pumps = d.pumps;
+          presets.trickId = d.trickId;
+          var tk = getTrick(d.trickId);
+          var sf = getSurface(d.surfaceId);
+          teach = 'Custom halfpipe scenario. ' + d.pumps + ' pump' + (d.pumps === 1 ? '' : 's') +
+            ', ' + tk.label + ', ' + getVehicle(d.vehicle).label.toLowerCase() + ' on ' + sf.label.toLowerCase() + ' surface' +
+            (d.gravity && Math.abs(d.gravity - 9.81) > 0.05 ? ' at ' + d.gravity.toFixed(2) + ' m/s² gravity' : '') + '.';
+        } else {
+          presets.speedMph = d.speedMph;
+          presets.angleDeg = d.angleDeg;
+          presets.gapFt = d.gapFt;
+          var w = getWind(d.windId);
+          teach = 'Custom gap-jump scenario. ' + d.speedMph + ' mph at ' + d.angleDeg + '°, ' + d.gapFt + ' ft gap' +
+            (w.id !== 'calm' ? ' with ' + w.label.toLowerCase() : '') +
+            (d.gravity && Math.abs(d.gravity - 9.81) > 0.05 ? ' at ' + d.gravity.toFixed(2) + ' m/s² gravity' : '') + '.';
+        }
+        var scenario = {
+          id: 'cust_' + Date.now().toString(36) + '_' + Math.floor(Math.random() * 1e6).toString(36),
+          label: clean, icon: '⭐', mode: d.mode,
+          presets: presets, teach: teach,
+          questions: [
+            'Predict what will happen if you change one variable. Then test it.',
+            'Which physics equation applies most directly to this setup? Write it down.',
+            'How would the result change on the Moon (g = 1.62 m/s²)?'
+          ],
+          custom: true
+        };
+        var next = (d.customScenarios || []).slice();
+        next.push(scenario);
+        upd({ customScenarios: next, saveModalDraft: null, activeScenarioId: scenario.id });
+        if (addToast) addToast('💾 Saved scenario: "' + clean + '"', 'success');
+        skAnnounce('Saved scenario: ' + clean);
+      }
+      function deleteCustomScenario(id) {
+        var next = (d.customScenarios || []).filter(function(s) { return s.id !== id; });
+        var bumps = { customScenarios: next };
+        if (d.activeScenarioId === id) bumps.activeScenarioId = null;
+        upd(bumps);
+        if (addToast) addToast('Removed custom scenario.', 'info');
+      }
+
+      // ── Reset stats — defensive, requires confirm ────────────────
+      // Clears all skatelab-tracked stats but preserves customScenarios
+      // (since those are teacher work, not student data).
+      function performResetStats() {
+        var preserved = d.customScenarios || [];
+        upd({
+          landings: 0, bails: 0, attempts: 0,
+          longestGap: 0, biggestSpin: 0,
+          tricksUsed: {}, landedTricks: {},
+          scenariosTried: {}, bmxLanded: false,
+          bestHalfpipeScore: 0, bestGapScore: 0, bestAirFt: 0,
+          coachOpens: 0, coachResponse: null,
+          lastResult: null, lastSim: null, activeScenarioId: null,
+          resetConfirmOpen: false,
+          customScenarios: preserved
+        });
+        if (addToast) addToast('SkateLab stats reset.', 'success');
+        skAnnounce('Stats cleared. Custom scenarios preserved.');
       }
 
       // ── printActivitySheet: classroom-friendly handout ──────────
@@ -1270,8 +1359,24 @@ window.StemLab = window.StemLab || {
         // Famous-trick scenario pills — clicking loads a real-world
         // moment into the simulator. Active scenario gets a bright ring;
         // others sit on a subtle base. Mirrors ThrowLab's scenario row.
+        // Custom scenarios render in a second sub-row below the
+        // built-ins, each with a small × delete button.
         h('div', { style: { marginBottom: 10 } },
-          h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fbbf24', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 6, textAlign: 'center' } }, '🎬 Famous tricks'),
+          h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 6, flexWrap: 'wrap' } },
+            h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fbbf24', letterSpacing: '0.06em', textTransform: 'uppercase' } }, '🎬 Famous tricks'),
+            h('button', {
+              onClick: function() { upd('saveModalDraft', { label: '' }); },
+              'aria-label': 'Save current settings as a custom scenario',
+              'data-sk-focusable': 'true',
+              title: 'Capture the current setup as a reusable preset',
+              style: {
+                padding: '5px 10px', fontSize: 10, fontWeight: 700,
+                background: 'rgba(167,139,250,0.18)', color: '#fef3c7',
+                border: '1px solid rgba(167,139,250,0.45)',
+                borderRadius: 999, cursor: 'pointer', minHeight: 24
+              }
+            }, '💾 Save current')
+          ),
           h('div', { style: { display: 'flex', gap: 6, justifyContent: 'center', flexWrap: 'wrap' } },
             SCENARIOS.map(function(sc) {
               var active = d.activeScenarioId === sc.id;
@@ -1291,6 +1396,58 @@ window.StemLab = window.StemLab || {
                   boxShadow: active ? '0 0 12px rgba(251,191,36,0.4)' : 'none'
                 }
               }, sc.icon + ' ' + sc.label);
+            })
+          ),
+          // Custom scenario sub-row — only renders when at least one
+          // custom scenario exists. Each has a tiny × on hover/focus.
+          (d.customScenarios && d.customScenarios.length > 0) && h('div', {
+            style: { display: 'flex', gap: 6, justifyContent: 'center', flexWrap: 'wrap', marginTop: 6 },
+            'aria-label': 'Custom scenarios'
+          },
+            d.customScenarios.map(function(sc) {
+              var active = d.activeScenarioId === sc.id;
+              return h('div', {
+                key: sc.id,
+                style: { display: 'inline-flex', alignItems: 'stretch' }
+              },
+                h('button', {
+                  onClick: function() { loadScenario(sc.id); },
+                  'aria-pressed': active,
+                  'aria-label': 'Load custom scenario: ' + sc.label,
+                  'data-sk-focusable': 'true',
+                  title: sc.teach,
+                  style: {
+                    padding: '5px 10px', fontSize: 11, fontWeight: 700,
+                    background: active ? 'linear-gradient(135deg,#7c3aed,#5b21b6)' : 'rgba(167,139,250,0.12)',
+                    color: active ? '#fff' : '#c4b5fd',
+                    border: '1px solid ' + (active ? '#a78bfa' : 'rgba(167,139,250,0.35)'),
+                    borderTopLeftRadius: 999, borderBottomLeftRadius: 999,
+                    borderTopRightRadius: 0, borderBottomRightRadius: 0,
+                    borderRight: 'none',
+                    cursor: 'pointer',
+                    boxShadow: active ? '0 0 12px rgba(167,139,250,0.4)' : 'none'
+                  }
+                }, sc.icon + ' ' + sc.label),
+                h('button', {
+                  onClick: function() {
+                    if (window.confirm('Remove "' + sc.label + '" from custom scenarios?')) {
+                      deleteCustomScenario(sc.id);
+                    }
+                  },
+                  'aria-label': 'Delete custom scenario: ' + sc.label,
+                  'data-sk-focusable': 'true',
+                  title: 'Delete this custom scenario',
+                  style: {
+                    padding: '5px 8px', fontSize: 10, fontWeight: 700,
+                    background: active ? 'rgba(0,0,0,0.25)' : 'rgba(167,139,250,0.12)',
+                    color: '#fca5a5',
+                    border: '1px solid ' + (active ? '#a78bfa' : 'rgba(167,139,250,0.35)'),
+                    borderTopRightRadius: 999, borderBottomRightRadius: 999,
+                    borderTopLeftRadius: 0, borderBottomLeftRadius: 0,
+                    cursor: 'pointer'
+                  }
+                }, '×')
+              );
             })
           )
         ),
@@ -1408,6 +1565,112 @@ window.StemLab = window.StemLab || {
             })(),
             style: { width: '100%', height: 'auto', display: 'block', borderRadius: 8 }
           })
+        ),
+        // ── Save-scenario modal ─────────────────────────────────
+        // Inline modal — when saveModalDraft is non-null, dim the
+        // tool body and show a name-input card. Confirm captures the
+        // current state. Mirrors ThrowLab's save-scenario flow.
+        d.saveModalDraft && h('div', {
+          role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'sk-save-title',
+          onClick: function(e) { if (e.target === e.currentTarget) upd('saveModalDraft', null); },
+          style: {
+            position: 'fixed', inset: 0, zIndex: 9999,
+            background: 'rgba(15,23,42,0.78)', backdropFilter: 'blur(4px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20
+          }
+        },
+          h('div', {
+            style: {
+              background: '#1e293b', border: '1px solid #78350f', borderRadius: 14,
+              padding: 20, maxWidth: 380, width: '100%',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.5)'
+            },
+            onClick: function(e) { e.stopPropagation(); }
+          },
+            h('h3', {
+              id: 'sk-save-title',
+              style: { margin: '0 0 6px', color: '#fef3c7', fontSize: 15, fontWeight: 800, letterSpacing: '0.04em' }
+            }, '💾 Save current setup as a scenario'),
+            h('p', { style: { margin: '0 0 12px', fontSize: 12, color: '#94a3b8', lineHeight: 1.5 } },
+              'Capture the current ' + d.mode + ' configuration so it shows in the scenario row alongside the famous tricks. Pick a short, memorable name.'),
+            h('input', {
+              type: 'text',
+              autoFocus: true,
+              maxLength: 40,
+              value: d.saveModalDraft.label,
+              onChange: function(e) { upd('saveModalDraft', { label: e.target.value }); },
+              onKeyDown: function(e) {
+                if (e.key === 'Enter') saveCurrentAsScenario(d.saveModalDraft.label);
+                else if (e.key === 'Escape') upd('saveModalDraft', null);
+              },
+              'aria-label': 'Custom scenario name (max 40 characters)',
+              placeholder: 'e.g., "Ramp out back" or "Wind tunnel test"',
+              'data-sk-focusable': 'true',
+              style: {
+                width: '100%', padding: '8px 12px', fontSize: 13,
+                background: '#0f172a', color: '#fef3c7',
+                border: '1px solid #475569', borderRadius: 8, outline: 'none',
+                marginBottom: 14, boxSizing: 'border-box'
+              }
+            }),
+            h('div', { style: { display: 'flex', gap: 8, justifyContent: 'flex-end' } },
+              h('button', {
+                onClick: function() { upd('saveModalDraft', null); },
+                'data-sk-focusable': 'true',
+                style: {
+                  padding: '8px 14px', fontSize: 12, fontWeight: 700,
+                  background: 'transparent', color: '#94a3b8',
+                  border: '1px solid #475569', borderRadius: 8, cursor: 'pointer', minHeight: 32
+                }
+              }, 'Cancel'),
+              h('button', {
+                onClick: function() { saveCurrentAsScenario(d.saveModalDraft.label); },
+                disabled: !d.saveModalDraft.label.trim(),
+                'data-sk-focusable': 'true',
+                style: {
+                  padding: '8px 16px', fontSize: 12, fontWeight: 800,
+                  background: !d.saveModalDraft.label.trim() ? '#475569' : 'linear-gradient(135deg,#7c3aed,#5b21b6)',
+                  color: '#fef3c7',
+                  border: '1px solid #6d28d9', borderRadius: 8,
+                  cursor: !d.saveModalDraft.label.trim() ? 'not-allowed' : 'pointer', minHeight: 32
+                }
+              }, '💾 Save')
+            )
+          )
+        ),
+        // ── Reset confirm modal ─────────────────────────────────
+        d.resetConfirmOpen && h('div', {
+          role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'sk-reset-title',
+          onClick: function(e) { if (e.target === e.currentTarget) upd('resetConfirmOpen', false); },
+          style: {
+            position: 'fixed', inset: 0, zIndex: 9999,
+            background: 'rgba(15,23,42,0.78)', backdropFilter: 'blur(4px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20
+          }
+        },
+          h('div', {
+            style: {
+              background: '#1e293b', border: '1px solid #b91c1c', borderRadius: 14,
+              padding: 20, maxWidth: 380, width: '100%'
+            },
+            onClick: function(e) { e.stopPropagation(); }
+          },
+            h('h3', { id: 'sk-reset-title', style: { margin: '0 0 8px', color: '#fca5a5', fontSize: 15, fontWeight: 800 } }, '🗑 Reset SkateLab stats?'),
+            h('p', { style: { margin: '0 0 14px', fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 } },
+              'This clears your landings, bails, personal bests, and quest progress for SkateLab only. Your custom scenarios are kept. This cannot be undone.'),
+            h('div', { style: { display: 'flex', gap: 8, justifyContent: 'flex-end' } },
+              h('button', {
+                onClick: function() { upd('resetConfirmOpen', false); },
+                'data-sk-focusable': 'true',
+                style: { padding: '8px 14px', fontSize: 12, fontWeight: 700, background: 'transparent', color: '#94a3b8', border: '1px solid #475569', borderRadius: 8, cursor: 'pointer', minHeight: 32 }
+              }, 'Cancel'),
+              h('button', {
+                onClick: performResetStats,
+                'data-sk-focusable': 'true',
+                style: { padding: '8px 16px', fontSize: 12, fontWeight: 800, background: 'linear-gradient(135deg,#b91c1c,#7f1d1d)', color: '#fef3c7', border: '1px solid #991b1b', borderRadius: 8, cursor: 'pointer', minHeight: 32 }
+              }, '🗑 Reset')
+            )
+          )
         ),
         // Mode-specific controls
         d.mode === 'halfpipe' && h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 } },
@@ -1682,6 +1945,24 @@ window.StemLab = window.StemLab || {
             );
           })
         ) : null),
+        // Reset stats button — small admin row, opens a confirm modal.
+        // Lives below the stats grid so it's findable but not noisy.
+        // Hidden until at least one attempt has been made (otherwise
+        // there's nothing to reset).
+        ((d.attempts || 0) > 0) && h('div', { style: { display: 'flex', justifyContent: 'flex-end', marginBottom: 8 } },
+          h('button', {
+            onClick: function() { upd('resetConfirmOpen', true); },
+            'aria-label': 'Reset SkateLab stats. Custom scenarios are kept.',
+            'data-sk-focusable': 'true',
+            title: 'Clear landings, bails, personal bests, and quest progress for SkateLab',
+            style: {
+              padding: '5px 11px', fontSize: 10, fontWeight: 700,
+              background: 'rgba(185,28,28,0.10)', color: '#fca5a5',
+              border: '1px solid rgba(185,28,28,0.40)',
+              borderRadius: 999, cursor: 'pointer', minHeight: 26
+            }
+          }, '🗑 Reset stats')
+        ),
         // Educational annotations panel — frames why this is real STEM,
         // not a game. Switches text by mode.
         h('details', { style: { background: 'rgba(254,243,199,0.04)', border: '1px solid rgba(254,243,199,0.18)', borderRadius: 10, padding: 10, marginBottom: 8 } },

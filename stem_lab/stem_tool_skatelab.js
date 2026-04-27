@@ -1566,6 +1566,112 @@ window.StemLab = window.StemLab || {
             style: { width: '100%', height: 'auto', display: 'block', borderRadius: 8 }
           })
         ),
+        // ── Save-scenario modal ─────────────────────────────────
+        // Inline modal — when saveModalDraft is non-null, dim the
+        // tool body and show a name-input card. Confirm captures the
+        // current state. Mirrors ThrowLab's save-scenario flow.
+        d.saveModalDraft && h('div', {
+          role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'sk-save-title',
+          onClick: function(e) { if (e.target === e.currentTarget) upd('saveModalDraft', null); },
+          style: {
+            position: 'fixed', inset: 0, zIndex: 9999,
+            background: 'rgba(15,23,42,0.78)', backdropFilter: 'blur(4px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20
+          }
+        },
+          h('div', {
+            style: {
+              background: '#1e293b', border: '1px solid #78350f', borderRadius: 14,
+              padding: 20, maxWidth: 380, width: '100%',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.5)'
+            },
+            onClick: function(e) { e.stopPropagation(); }
+          },
+            h('h3', {
+              id: 'sk-save-title',
+              style: { margin: '0 0 6px', color: '#fef3c7', fontSize: 15, fontWeight: 800, letterSpacing: '0.04em' }
+            }, '💾 Save current setup as a scenario'),
+            h('p', { style: { margin: '0 0 12px', fontSize: 12, color: '#94a3b8', lineHeight: 1.5 } },
+              'Capture the current ' + d.mode + ' configuration so it shows in the scenario row alongside the famous tricks. Pick a short, memorable name.'),
+            h('input', {
+              type: 'text',
+              autoFocus: true,
+              maxLength: 40,
+              value: d.saveModalDraft.label,
+              onChange: function(e) { upd('saveModalDraft', { label: e.target.value }); },
+              onKeyDown: function(e) {
+                if (e.key === 'Enter') saveCurrentAsScenario(d.saveModalDraft.label);
+                else if (e.key === 'Escape') upd('saveModalDraft', null);
+              },
+              'aria-label': 'Custom scenario name (max 40 characters)',
+              placeholder: 'e.g., "Ramp out back" or "Wind tunnel test"',
+              'data-sk-focusable': 'true',
+              style: {
+                width: '100%', padding: '8px 12px', fontSize: 13,
+                background: '#0f172a', color: '#fef3c7',
+                border: '1px solid #475569', borderRadius: 8, outline: 'none',
+                marginBottom: 14, boxSizing: 'border-box'
+              }
+            }),
+            h('div', { style: { display: 'flex', gap: 8, justifyContent: 'flex-end' } },
+              h('button', {
+                onClick: function() { upd('saveModalDraft', null); },
+                'data-sk-focusable': 'true',
+                style: {
+                  padding: '8px 14px', fontSize: 12, fontWeight: 700,
+                  background: 'transparent', color: '#94a3b8',
+                  border: '1px solid #475569', borderRadius: 8, cursor: 'pointer', minHeight: 32
+                }
+              }, 'Cancel'),
+              h('button', {
+                onClick: function() { saveCurrentAsScenario(d.saveModalDraft.label); },
+                disabled: !d.saveModalDraft.label.trim(),
+                'data-sk-focusable': 'true',
+                style: {
+                  padding: '8px 16px', fontSize: 12, fontWeight: 800,
+                  background: !d.saveModalDraft.label.trim() ? '#475569' : 'linear-gradient(135deg,#7c3aed,#5b21b6)',
+                  color: '#fef3c7',
+                  border: '1px solid #6d28d9', borderRadius: 8,
+                  cursor: !d.saveModalDraft.label.trim() ? 'not-allowed' : 'pointer', minHeight: 32
+                }
+              }, '💾 Save')
+            )
+          )
+        ),
+        // ── Reset confirm modal ─────────────────────────────────
+        d.resetConfirmOpen && h('div', {
+          role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'sk-reset-title',
+          onClick: function(e) { if (e.target === e.currentTarget) upd('resetConfirmOpen', false); },
+          style: {
+            position: 'fixed', inset: 0, zIndex: 9999,
+            background: 'rgba(15,23,42,0.78)', backdropFilter: 'blur(4px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20
+          }
+        },
+          h('div', {
+            style: {
+              background: '#1e293b', border: '1px solid #b91c1c', borderRadius: 14,
+              padding: 20, maxWidth: 380, width: '100%'
+            },
+            onClick: function(e) { e.stopPropagation(); }
+          },
+            h('h3', { id: 'sk-reset-title', style: { margin: '0 0 8px', color: '#fca5a5', fontSize: 15, fontWeight: 800 } }, '🗑 Reset SkateLab stats?'),
+            h('p', { style: { margin: '0 0 14px', fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 } },
+              'This clears your landings, bails, personal bests, and quest progress for SkateLab only. Your custom scenarios are kept. This cannot be undone.'),
+            h('div', { style: { display: 'flex', gap: 8, justifyContent: 'flex-end' } },
+              h('button', {
+                onClick: function() { upd('resetConfirmOpen', false); },
+                'data-sk-focusable': 'true',
+                style: { padding: '8px 14px', fontSize: 12, fontWeight: 700, background: 'transparent', color: '#94a3b8', border: '1px solid #475569', borderRadius: 8, cursor: 'pointer', minHeight: 32 }
+              }, 'Cancel'),
+              h('button', {
+                onClick: performResetStats,
+                'data-sk-focusable': 'true',
+                style: { padding: '8px 16px', fontSize: 12, fontWeight: 800, background: 'linear-gradient(135deg,#b91c1c,#7f1d1d)', color: '#fef3c7', border: '1px solid #991b1b', borderRadius: 8, cursor: 'pointer', minHeight: 32 }
+              }, '🗑 Reset')
+            )
+          )
+        ),
         // Mode-specific controls
         d.mode === 'halfpipe' && h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 } },
           h('div', { style: { background: '#1e293b', border: '1px solid #475569', borderRadius: 10, padding: 12 } },
@@ -1839,6 +1945,24 @@ window.StemLab = window.StemLab || {
             );
           })
         ) : null),
+        // Reset stats button — small admin row, opens a confirm modal.
+        // Lives below the stats grid so it's findable but not noisy.
+        // Hidden until at least one attempt has been made (otherwise
+        // there's nothing to reset).
+        ((d.attempts || 0) > 0) && h('div', { style: { display: 'flex', justifyContent: 'flex-end', marginBottom: 8 } },
+          h('button', {
+            onClick: function() { upd('resetConfirmOpen', true); },
+            'aria-label': 'Reset SkateLab stats. Custom scenarios are kept.',
+            'data-sk-focusable': 'true',
+            title: 'Clear landings, bails, personal bests, and quest progress for SkateLab',
+            style: {
+              padding: '5px 11px', fontSize: 10, fontWeight: 700,
+              background: 'rgba(185,28,28,0.10)', color: '#fca5a5',
+              border: '1px solid rgba(185,28,28,0.40)',
+              borderRadius: 999, cursor: 'pointer', minHeight: 26
+            }
+          }, '🗑 Reset stats')
+        ),
         // Educational annotations panel — frames why this is real STEM,
         // not a game. Switches text by mode.
         h('details', { style: { background: 'rgba(254,243,199,0.04)', border: '1px solid rgba(254,243,199,0.18)', borderRadius: 10, padding: 10, marginBottom: 8 } },
