@@ -2068,6 +2068,74 @@
           activeTab === 'feedback' && e('div', { style: { maxWidth: '700px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '12px' } },
             e('h3', { style: { fontSize: '16px', fontWeight: 800, color: TEAL_DARK, margin: 0 } }, '✨ AI Feedback'),
             !poemText.trim() && e('p', { style: { color: '#475569', fontSize: '13px', margin: 0 } }, 'Write a poem in the Write tab first, then come back for feedback.'),
+
+            // ── Pre-Feedback Self-Assessment ──
+            // Optional but encouraged: rate your own poem on 5 craft criteria first,
+            // so you have a metacognitive baseline before the AI weighs in.
+            poemText.trim() && !selfAssessmentSubmitted && e('div', { role: 'region', 'aria-label': 'Self-Assessment', style: { background: 'linear-gradient(135deg, #faf5ff, #eef2ff)', border: '2px solid #d8b4fe', borderRadius: '12px', padding: '14px' } },
+              e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '6px', flexWrap: 'wrap' } },
+                e('div', null,
+                  e('h4', { style: { fontSize: '13px', fontWeight: 800, color: '#7c3aed', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' } },
+                    e('span', { 'aria-hidden': 'true' }, '⭐'), 'Rate yourself first'
+                  ),
+                  e('p', { style: { fontSize: '11px', color: '#6b21a8', margin: '2px 0 0' } }, 'Score your own poem on these 5 craft moves before the AI does. Builds reflection.')
+                ),
+                e('button', {
+                  onClick: function () { setSelfAssessmentSubmitted(true); announcePT('Self-assessment skipped. AI feedback unlocked.'); },
+                  'aria-label': 'Skip self-assessment',
+                  style: { fontSize: '10px', color: '#7c3aed', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', fontWeight: 700 }
+                }, 'Skip')
+              ),
+              e('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '8px' } },
+                POETRY_RUBRIC_CRITERIA.map(function (c) {
+                  var val = selfAssessment[c.id] || 3;
+                  return e('div', { key: c.id, style: { display: 'flex', alignItems: 'center', gap: '10px', background: '#fff', border: '1px solid #e9d5ff', borderRadius: '8px', padding: '6px 10px', flexWrap: 'wrap' } },
+                    e('div', { style: { flex: 1, minWidth: 0 } },
+                      e('label', { htmlFor: 'pt-self-' + c.id, style: { display: 'block', fontSize: '11px', fontWeight: 700, color: '#581c87' } }, c.label),
+                      e('p', { style: { fontSize: '10px', color: '#6b21a8', margin: '1px 0 0', fontStyle: 'italic' } }, c.desc)
+                    ),
+                    e('input', {
+                      id: 'pt-self-' + c.id, type: 'range', min: '1', max: '5', step: '1', value: val,
+                      onChange: function (ev) {
+                        var v = parseInt(ev.target.value, 10);
+                        setSelfAssessment(function (prev) { var n = Object.assign({}, prev); n[c.id] = v; return n; });
+                      },
+                      'aria-label': 'Self-rating for ' + c.label + ': ' + val + ' out of 5',
+                      style: { width: '110px', accentColor: '#7c3aed' }
+                    }),
+                    e('div', { style: { background: '#ede9fe', color: '#6b21a8', fontSize: '11px', fontWeight: 800, padding: '2px 8px', borderRadius: '999px', minWidth: '36px', textAlign: 'center' } }, val + '/5')
+                  );
+                })
+              ),
+              e('button', {
+                onClick: function () {
+                  // Fill in any unset criteria with the default 3 so synthesis can read consistent shape.
+                  var filled = {};
+                  POETRY_RUBRIC_CRITERIA.forEach(function (c) { filled[c.id] = selfAssessment[c.id] || 3; });
+                  setSelfAssessment(filled);
+                  setSelfAssessmentSubmitted(true);
+                  announcePT('Self-assessment submitted. You can now get AI feedback.');
+                  if (typeof addToast === 'function') addToast('Self-assessment saved!', 'success');
+                },
+                'aria-label': 'Submit self-assessment',
+                style: { marginTop: '8px', padding: '7px 14px', background: '#7c3aed', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }
+              }, '✓ Submit Self-Assessment')
+            ),
+            // Self-assessment summary card after submit
+            poemText.trim() && selfAssessmentSubmitted && Object.keys(selfAssessment).length > 0 && e('div', { style: { background: '#faf5ff', border: '1px solid #e9d5ff', borderRadius: '10px', padding: '8px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' } },
+              e('div', { style: { fontSize: '11px', color: '#6b21a8' } },
+                e('strong', null, '⭐ Your self-rating: '),
+                POETRY_RUBRIC_CRITERIA.map(function (c, i) {
+                  return c.label.split(' ')[0] + ' ' + (selfAssessment[c.id] || 3) + (i < POETRY_RUBRIC_CRITERIA.length - 1 ? ' · ' : '');
+                }).join('')
+              ),
+              e('button', {
+                onClick: function () { setSelfAssessmentSubmitted(false); },
+                'aria-label': 'Edit self-assessment',
+                style: { fontSize: '10px', color: '#7c3aed', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', fontWeight: 700 }
+              }, 'Edit')
+            ),
+
             poemText.trim() && e('button', { onClick: getAiFeedback, disabled: aiLoading, 'aria-busy': aiLoading,
               'aria-busy': aiLoading ? 'true' : 'false',
               'aria-label': aiLoading ? 'Getting feedback, please wait' : 'Get AI feedback on this poem',
@@ -2147,6 +2215,52 @@
                   e('p', { style: { fontSize: '12px', color: '#1e293b', margin: 0, lineHeight: 1.6 } }, mentorMatch.studentEcho)
                 )
               )
+            ),
+
+            // ── Revision Plan Capstone (gated on ≥2 helpers) ──
+            // Only appears after the student has run at least 2 helpers — otherwise
+            // there's nothing meaningful to synthesize. Pulls from Senses, Sound
+            // Devices, Mentor Match, Stronger Verbs, Theme Tracker, AI Feedback,
+            // and Self-Assessment.
+            poemText.trim() && helpersAvailableForPlan() && e('div', { role: 'region', 'aria-label': 'Revision Plan synthesis', style: { background: 'linear-gradient(135deg, #faf5ff, #fff7ed)', border: '2px solid #c4b5fd', borderRadius: '12px', padding: '14px', marginTop: '4px' } },
+              e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap', marginBottom: '6px' } },
+                e('div', null,
+                  e('h4', { style: { fontSize: '13px', fontWeight: 800, color: '#6d28d9', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' } },
+                    e('span', { 'aria-hidden': 'true' }, '🗺️'), 'Revision Plan'
+                  ),
+                  e('p', { style: { fontSize: '11px', color: '#5b21b6', margin: '2px 0 0' } }, 'Pulls from your helpers above into ONE prioritized 3-task plan.')
+                ),
+                e('button', {
+                  onClick: synthesizeRevisionPlan, disabled: revisionPlanLoading,
+                  'aria-busy': revisionPlanLoading ? 'true' : 'false',
+                  'aria-label': revisionPlanLoading ? 'Synthesizing revision plan' : (revisionPlan && !revisionPlan.error ? 'Re-synthesize revision plan' : 'Build a revision plan'),
+                  style: { padding: '7px 14px', background: revisionPlanLoading ? '#cbd5e1' : '#7c3aed', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: revisionPlanLoading ? 'wait' : 'pointer' }
+                }, revisionPlanLoading ? '⏳ Synthesizing…' : (revisionPlan && !revisionPlan.error ? '🔄 Rebuild' : '🗺️ Build plan'))
+              ),
+              revisionPlan && revisionPlan.error && e('p', { style: { fontSize: '11px', color: '#b91c1c', fontStyle: 'italic', margin: '6px 0 0' } }, revisionPlan.error),
+              revisionPlan && !revisionPlan.error && e('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '6px' } },
+                revisionPlan.encouragement && e('div', { style: { background: '#fff', border: '1px solid #bbf7d0', borderRadius: '8px', padding: '8px 10px' } },
+                  e('p', { style: { fontSize: '11px', color: '#166534', margin: 0, lineHeight: 1.6 } }, '✨ ' + revisionPlan.encouragement)
+                ),
+                e('ol', { 'aria-label': 'Prioritized revision tasks', style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '6px' } },
+                  (revisionPlan.tasks || []).map(function (t, ti) {
+                    return e('li', { key: ti, style: { background: '#fff', border: '2px solid #d8b4fe', borderRadius: '10px', padding: '10px 12px' } },
+                      e('div', { style: { display: 'flex', gap: '8px', alignItems: 'flex-start' } },
+                        e('div', { 'aria-hidden': 'true', style: { background: '#7c3aed', color: '#fff', width: '24px', height: '24px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 800, flexShrink: 0 } }, ti + 1),
+                        e('div', { style: { minWidth: 0, flex: 1 } },
+                          e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px', marginBottom: '4px', flexWrap: 'wrap' } },
+                            e('h5', { style: { fontSize: '12px', fontWeight: 800, color: '#581c87', margin: 0 } }, t.title || 'Task ' + (ti + 1)),
+                            t.source && e('span', { style: { fontSize: '9px', fontWeight: 700, color: '#7c3aed', background: '#ede9fe', padding: '2px 6px', borderRadius: '999px', textTransform: 'uppercase', letterSpacing: '0.05em' } }, t.source)
+                          ),
+                          t.detail && e('p', { style: { fontSize: '12px', color: '#1e293b', margin: 0, lineHeight: 1.55 } }, t.detail),
+                          t.why && e('p', { style: { fontSize: '11px', color: '#6b21a8', margin: '4px 0 0', fontStyle: 'italic' } }, t.why)
+                        )
+                      )
+                    );
+                  })
+                )
+              ),
+              !revisionPlan && e('p', { style: { fontSize: '11px', color: '#5b21b6', fontStyle: 'italic', margin: '6px 0 0' } }, 'Click "Build plan" to weave your helper outputs into one prioritized next step.')
             )
           ),
 

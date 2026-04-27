@@ -526,6 +526,21 @@
     // Sound Device Coach — alliteration, assonance, consonance, internal rhyme detection
     var _soundDeviceResult = useState(null); var soundDeviceResult = _soundDeviceResult[0]; var setSoundDeviceResult = _soundDeviceResult[1];
     var _soundDeviceLoading = useState(false); var soundDeviceLoading = _soundDeviceLoading[0]; var setSoundDeviceLoading = _soundDeviceLoading[1];
+    // Pre-feedback Self-Assessment — student rates self before AI feedback, builds metacognition
+    var _selfAssessment = useState({}); var selfAssessment = _selfAssessment[0]; var setSelfAssessment = _selfAssessment[1];
+    var _selfAssessmentSubmitted = useState(false); var selfAssessmentSubmitted = _selfAssessmentSubmitted[0]; var setSelfAssessmentSubmitted = _selfAssessmentSubmitted[1];
+    // Revision Plan — synthesizes whichever helpers ran into one prioritized 3-task plan
+    var _revisionPlan = useState(null); var revisionPlan = _revisionPlan[0]; var setRevisionPlan = _revisionPlan[1];
+    var _revisionPlanLoading = useState(false); var revisionPlanLoading = _revisionPlanLoading[0]; var setRevisionPlanLoading = _revisionPlanLoading[1];
+
+    // Built-in poetry rubric for Self-Assessment (5 criteria, age-responsive language)
+    var POETRY_RUBRIC_CRITERIA = [
+      { id: 'imagery',   label: 'Imagery & Sensory Detail',  desc: 'Concrete, specific images that engage the senses' },
+      { id: 'sound',     label: 'Sound & Music',             desc: 'Rhythm, alliteration, assonance, line breaks that earn their place' },
+      { id: 'structure', label: 'Structure & Form',          desc: 'Form rules met (or broken on purpose); shape supports meaning' },
+      { id: 'voice',     label: 'Voice & Emotion',           desc: 'A real feeling lives in the poem; it sounds like you' },
+      { id: 'wordChoice',label: 'Word Choice',               desc: 'Strong verbs, specific nouns, no filler words' }
+    ];
 
     // Teacher-scaffold fields (saved into the resource-history config payload).
     // teacherPrompt: a writing prompt the teacher authors for the assignment.
@@ -812,6 +827,104 @@
         setSoundDeviceLoading(false);
       }
     }, [onCallGemini, poemText, gradeLevel]);
+
+    // ── helpersAvailableForPlan: ≥2 helper outputs unlocks the Revision Plan button ──
+    function helpersAvailableForPlan() {
+      var n = 0;
+      if (sensesResult && !sensesResult.error) n++;
+      if (soundDeviceResult && !soundDeviceResult.error) n++;
+      if (mentorMatch && !mentorMatch.error) n++;
+      if (verbSuggestions && Array.isArray(verbSuggestions)) n++;
+      if (themeReport && !themeReport.error) n++;
+      if (aiFeedback) n++;
+      if (selfAssessmentSubmitted && Object.keys(selfAssessment).length > 0) n++;
+      return n >= 2;
+    }
+
+    // ── Revision Plan synthesizer ──
+    // Pulls together whichever helpers have produced output (Senses, Sound Devices,
+    // Mentor Match, Stronger Verbs, Theme Tracker, AI Feedback, Self-Assessment)
+    // into a single prioritized 3-task plan ranked by impact. Pedagogical aim:
+    // teach synthesis as its own meta-skill — students see how to weave multiple
+    // feedback streams into a coherent next step rather than chasing each suggestion
+    // in isolation.
+    var synthesizeRevisionPlan = useCallback(async function () {
+      if (!onCallGemini || !poemText.trim()) return;
+      setRevisionPlanLoading(true);
+      try {
+        var helperContext = [];
+        if (sensesResult && !sensesResult.error) {
+          helperContext.push('SENSES CHECK:\n  strongest: ' + (sensesResult.strongest || 'unknown')
+            + '\n  missing: ' + (sensesResult.missing || 'unknown')
+            + '\n  suggestion: ' + (sensesResult.suggestion || ''));
+        }
+        if (soundDeviceResult && !soundDeviceResult.error) {
+          helperContext.push('SOUND DEVICES:\n  weakest: ' + (soundDeviceResult.weakest || 'unknown')
+            + '\n  suggestion: ' + (soundDeviceResult.suggestion || ''));
+        }
+        if (mentorMatch && !mentorMatch.error && mentorMatch.craftToBorrow) {
+          helperContext.push('MENTOR MATCH:\n  reading: ' + ((mentorMatch.mentor && mentorMatch.mentor.title) || 'unknown')
+            + ' by ' + ((mentorMatch.mentor && mentorMatch.mentor.author) || 'unknown')
+            + '\n  craft to borrow: ' + mentorMatch.craftToBorrow);
+        }
+        if (verbSuggestions && Array.isArray(verbSuggestions) && verbSuggestions.length > 0) {
+          var topVerbs = verbSuggestions.slice(0, 3).map(function (v) {
+            return '  - "' + (v.weak || '') + '" → ' + ((v.alternatives || []).slice(0, 3).join(', '));
+          }).join('\n');
+          helperContext.push('STRONGER VERBS:\n' + topVerbs);
+        }
+        if (themeReport && !themeReport.error && themeReport.voiceStrength) {
+          helperContext.push('THEME / VOICE TRACKER:\n  voiceStrength: ' + (themeReport.voiceStrength || ''));
+        }
+        if (aiFeedback) {
+          var fb = '';
+          if (aiFeedback.glow) fb += '  glow: ' + aiFeedback.glow + '\n';
+          if (aiFeedback.grow) fb += '  grow: ' + aiFeedback.grow;
+          if (fb) helperContext.push('AI FEEDBACK:\n' + fb);
+        }
+        if (selfAssessmentSubmitted && Object.keys(selfAssessment).length > 0) {
+          var lowest = Object.keys(selfAssessment).map(function (k) {
+            return [k, selfAssessment[k]];
+          }).sort(function (a, b) { return a[1] - b[1]; }).slice(0, 2);
+          helperContext.push('STUDENT SELF-ASSESSMENT (lowest ratings):\n' + lowest.map(function (pair) {
+            var crit = POETRY_RUBRIC_CRITERIA.find(function (c) { return c.id === pair[0]; });
+            return '  - ' + (crit ? crit.label : pair[0]) + ': ' + pair[1] + '/5';
+          }).join('\n'));
+        }
+        var helpersBlock = helperContext.length > 0
+          ? '\n\nHelpers the student has already run:\n' + helperContext.join('\n\n')
+          : '';
+
+        var prompt = 'You are a kind, specific poetry coach helping a ' + gradeLevel + ' student plan their next revision pass on the poem below.\n\n'
+          + 'Poem:\n"""\n' + poemText + '\n"""' + helpersBlock + '\n\n'
+          + 'Build a prioritized revision plan with EXACTLY 3 tasks. Each task should:\n'
+          + '- Be small enough to do in a single revision session.\n'
+          + '- Be specific (name a line, image, sound, or word when possible).\n'
+          + '- Pull from the helper outputs above when relevant — don\'t repeat what the helpers said, *synthesize* across them.\n'
+          + '- Be ranked by impact (most-impactful first).\n'
+          + '- Include a one-sentence "why" so the student understands the craft reason.\n\n'
+          + 'Tone: warm, concrete, never scolding. Treat the student as a capable poet who\'s iterating, not a beginner being corrected.\n\n'
+          + 'Return ONLY JSON:\n'
+          + '{\n'
+          + '  "tasks": [\n'
+          + '    { "title": "<short imperative title>", "detail": "<one or two specific sentences on what to do>", "why": "<one short sentence on the craft reason>", "source": "<which helper this builds on, or \\"overall\\">" }\n'
+          + '  ],\n'
+          + '  "encouragement": "<one short specific compliment on something the poem is already doing well>"\n'
+          + '}';
+        var result = await onCallGemini(prompt, true);
+        var clean = String(result).trim().replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```$/, '').trim();
+        var parsed = JSON.parse(clean);
+        // Defensive cap at 3 tasks even if Gemini returns more
+        if (Array.isArray(parsed.tasks)) parsed.tasks = parsed.tasks.slice(0, 3);
+        setRevisionPlan(parsed);
+        announcePT('Revision plan ready with ' + ((parsed.tasks || []).length) + ' prioritized tasks.');
+      } catch (err) {
+        warnLog('Revision plan synthesis failed:', err && err.message);
+        setRevisionPlan({ error: 'Couldn\'t build a revision plan right now. Try again in a moment.' });
+      } finally {
+        setRevisionPlanLoading(false);
+      }
+    }, [onCallGemini, poemText, gradeLevel, sensesResult, soundDeviceResult, mentorMatch, verbSuggestions, themeReport, aiFeedback, selfAssessment, selfAssessmentSubmitted]);
 
     var generateSparks = useCallback(async function () {
       if (!onCallGemini) return;
@@ -1955,6 +2068,74 @@
           activeTab === 'feedback' && e('div', { style: { maxWidth: '700px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '12px' } },
             e('h3', { style: { fontSize: '16px', fontWeight: 800, color: TEAL_DARK, margin: 0 } }, '✨ AI Feedback'),
             !poemText.trim() && e('p', { style: { color: '#475569', fontSize: '13px', margin: 0 } }, 'Write a poem in the Write tab first, then come back for feedback.'),
+
+            // ── Pre-Feedback Self-Assessment ──
+            // Optional but encouraged: rate your own poem on 5 craft criteria first,
+            // so you have a metacognitive baseline before the AI weighs in.
+            poemText.trim() && !selfAssessmentSubmitted && e('div', { role: 'region', 'aria-label': 'Self-Assessment', style: { background: 'linear-gradient(135deg, #faf5ff, #eef2ff)', border: '2px solid #d8b4fe', borderRadius: '12px', padding: '14px' } },
+              e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '6px', flexWrap: 'wrap' } },
+                e('div', null,
+                  e('h4', { style: { fontSize: '13px', fontWeight: 800, color: '#7c3aed', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' } },
+                    e('span', { 'aria-hidden': 'true' }, '⭐'), 'Rate yourself first'
+                  ),
+                  e('p', { style: { fontSize: '11px', color: '#6b21a8', margin: '2px 0 0' } }, 'Score your own poem on these 5 craft moves before the AI does. Builds reflection.')
+                ),
+                e('button', {
+                  onClick: function () { setSelfAssessmentSubmitted(true); announcePT('Self-assessment skipped. AI feedback unlocked.'); },
+                  'aria-label': 'Skip self-assessment',
+                  style: { fontSize: '10px', color: '#7c3aed', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', fontWeight: 700 }
+                }, 'Skip')
+              ),
+              e('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '8px' } },
+                POETRY_RUBRIC_CRITERIA.map(function (c) {
+                  var val = selfAssessment[c.id] || 3;
+                  return e('div', { key: c.id, style: { display: 'flex', alignItems: 'center', gap: '10px', background: '#fff', border: '1px solid #e9d5ff', borderRadius: '8px', padding: '6px 10px', flexWrap: 'wrap' } },
+                    e('div', { style: { flex: 1, minWidth: 0 } },
+                      e('label', { htmlFor: 'pt-self-' + c.id, style: { display: 'block', fontSize: '11px', fontWeight: 700, color: '#581c87' } }, c.label),
+                      e('p', { style: { fontSize: '10px', color: '#6b21a8', margin: '1px 0 0', fontStyle: 'italic' } }, c.desc)
+                    ),
+                    e('input', {
+                      id: 'pt-self-' + c.id, type: 'range', min: '1', max: '5', step: '1', value: val,
+                      onChange: function (ev) {
+                        var v = parseInt(ev.target.value, 10);
+                        setSelfAssessment(function (prev) { var n = Object.assign({}, prev); n[c.id] = v; return n; });
+                      },
+                      'aria-label': 'Self-rating for ' + c.label + ': ' + val + ' out of 5',
+                      style: { width: '110px', accentColor: '#7c3aed' }
+                    }),
+                    e('div', { style: { background: '#ede9fe', color: '#6b21a8', fontSize: '11px', fontWeight: 800, padding: '2px 8px', borderRadius: '999px', minWidth: '36px', textAlign: 'center' } }, val + '/5')
+                  );
+                })
+              ),
+              e('button', {
+                onClick: function () {
+                  // Fill in any unset criteria with the default 3 so synthesis can read consistent shape.
+                  var filled = {};
+                  POETRY_RUBRIC_CRITERIA.forEach(function (c) { filled[c.id] = selfAssessment[c.id] || 3; });
+                  setSelfAssessment(filled);
+                  setSelfAssessmentSubmitted(true);
+                  announcePT('Self-assessment submitted. You can now get AI feedback.');
+                  if (typeof addToast === 'function') addToast('Self-assessment saved!', 'success');
+                },
+                'aria-label': 'Submit self-assessment',
+                style: { marginTop: '8px', padding: '7px 14px', background: '#7c3aed', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }
+              }, '✓ Submit Self-Assessment')
+            ),
+            // Self-assessment summary card after submit
+            poemText.trim() && selfAssessmentSubmitted && Object.keys(selfAssessment).length > 0 && e('div', { style: { background: '#faf5ff', border: '1px solid #e9d5ff', borderRadius: '10px', padding: '8px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' } },
+              e('div', { style: { fontSize: '11px', color: '#6b21a8' } },
+                e('strong', null, '⭐ Your self-rating: '),
+                POETRY_RUBRIC_CRITERIA.map(function (c, i) {
+                  return c.label.split(' ')[0] + ' ' + (selfAssessment[c.id] || 3) + (i < POETRY_RUBRIC_CRITERIA.length - 1 ? ' · ' : '');
+                }).join('')
+              ),
+              e('button', {
+                onClick: function () { setSelfAssessmentSubmitted(false); },
+                'aria-label': 'Edit self-assessment',
+                style: { fontSize: '10px', color: '#7c3aed', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', fontWeight: 700 }
+              }, 'Edit')
+            ),
+
             poemText.trim() && e('button', { onClick: getAiFeedback, disabled: aiLoading, 'aria-busy': aiLoading,
               'aria-busy': aiLoading ? 'true' : 'false',
               'aria-label': aiLoading ? 'Getting feedback, please wait' : 'Get AI feedback on this poem',
@@ -2034,6 +2215,52 @@
                   e('p', { style: { fontSize: '12px', color: '#1e293b', margin: 0, lineHeight: 1.6 } }, mentorMatch.studentEcho)
                 )
               )
+            ),
+
+            // ── Revision Plan Capstone (gated on ≥2 helpers) ──
+            // Only appears after the student has run at least 2 helpers — otherwise
+            // there's nothing meaningful to synthesize. Pulls from Senses, Sound
+            // Devices, Mentor Match, Stronger Verbs, Theme Tracker, AI Feedback,
+            // and Self-Assessment.
+            poemText.trim() && helpersAvailableForPlan() && e('div', { role: 'region', 'aria-label': 'Revision Plan synthesis', style: { background: 'linear-gradient(135deg, #faf5ff, #fff7ed)', border: '2px solid #c4b5fd', borderRadius: '12px', padding: '14px', marginTop: '4px' } },
+              e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap', marginBottom: '6px' } },
+                e('div', null,
+                  e('h4', { style: { fontSize: '13px', fontWeight: 800, color: '#6d28d9', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' } },
+                    e('span', { 'aria-hidden': 'true' }, '🗺️'), 'Revision Plan'
+                  ),
+                  e('p', { style: { fontSize: '11px', color: '#5b21b6', margin: '2px 0 0' } }, 'Pulls from your helpers above into ONE prioritized 3-task plan.')
+                ),
+                e('button', {
+                  onClick: synthesizeRevisionPlan, disabled: revisionPlanLoading,
+                  'aria-busy': revisionPlanLoading ? 'true' : 'false',
+                  'aria-label': revisionPlanLoading ? 'Synthesizing revision plan' : (revisionPlan && !revisionPlan.error ? 'Re-synthesize revision plan' : 'Build a revision plan'),
+                  style: { padding: '7px 14px', background: revisionPlanLoading ? '#cbd5e1' : '#7c3aed', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: revisionPlanLoading ? 'wait' : 'pointer' }
+                }, revisionPlanLoading ? '⏳ Synthesizing…' : (revisionPlan && !revisionPlan.error ? '🔄 Rebuild' : '🗺️ Build plan'))
+              ),
+              revisionPlan && revisionPlan.error && e('p', { style: { fontSize: '11px', color: '#b91c1c', fontStyle: 'italic', margin: '6px 0 0' } }, revisionPlan.error),
+              revisionPlan && !revisionPlan.error && e('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '6px' } },
+                revisionPlan.encouragement && e('div', { style: { background: '#fff', border: '1px solid #bbf7d0', borderRadius: '8px', padding: '8px 10px' } },
+                  e('p', { style: { fontSize: '11px', color: '#166534', margin: 0, lineHeight: 1.6 } }, '✨ ' + revisionPlan.encouragement)
+                ),
+                e('ol', { 'aria-label': 'Prioritized revision tasks', style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '6px' } },
+                  (revisionPlan.tasks || []).map(function (t, ti) {
+                    return e('li', { key: ti, style: { background: '#fff', border: '2px solid #d8b4fe', borderRadius: '10px', padding: '10px 12px' } },
+                      e('div', { style: { display: 'flex', gap: '8px', alignItems: 'flex-start' } },
+                        e('div', { 'aria-hidden': 'true', style: { background: '#7c3aed', color: '#fff', width: '24px', height: '24px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 800, flexShrink: 0 } }, ti + 1),
+                        e('div', { style: { minWidth: 0, flex: 1 } },
+                          e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px', marginBottom: '4px', flexWrap: 'wrap' } },
+                            e('h5', { style: { fontSize: '12px', fontWeight: 800, color: '#581c87', margin: 0 } }, t.title || 'Task ' + (ti + 1)),
+                            t.source && e('span', { style: { fontSize: '9px', fontWeight: 700, color: '#7c3aed', background: '#ede9fe', padding: '2px 6px', borderRadius: '999px', textTransform: 'uppercase', letterSpacing: '0.05em' } }, t.source)
+                          ),
+                          t.detail && e('p', { style: { fontSize: '12px', color: '#1e293b', margin: 0, lineHeight: 1.55 } }, t.detail),
+                          t.why && e('p', { style: { fontSize: '11px', color: '#6b21a8', margin: '4px 0 0', fontStyle: 'italic' } }, t.why)
+                        )
+                      )
+                    );
+                  })
+                )
+              ),
+              !revisionPlan && e('p', { style: { fontSize: '11px', color: '#5b21b6', fontStyle: 'italic', margin: '6px 0 0' } }, 'Click "Build plan" to weave your helper outputs into one prioritized next step.')
             )
           ),
 
