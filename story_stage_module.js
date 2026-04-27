@@ -147,6 +147,11 @@
     // Analysis state
     var _analysisResponses = useState({}); var analysisResponses = _analysisResponses[0]; var setAnalysisResponses = _analysisResponses[1];
     var _analysisFeedback = useState(null); var analysisFeedback = _analysisFeedback[0]; var setAnalysisFeedback = _analysisFeedback[1];
+    // ── Pre-feedback Self-Assessment + Revision Plan synthesizer (mirrors StoryForge / PoetTree pattern) ──
+    var _selfAssessment = useState({}); var selfAssessment = _selfAssessment[0]; var setSelfAssessment = _selfAssessment[1];
+    var _selfAssessmentSubmitted = useState(false); var selfAssessmentSubmitted = _selfAssessmentSubmitted[0]; var setSelfAssessmentSubmitted = _selfAssessmentSubmitted[1];
+    var _revisionPlan = useState(null); var revisionPlan = _revisionPlan[0]; var setRevisionPlan = _revisionPlan[1];
+    var _revisionPlanLoading = useState(false); var revisionPlanLoading = _revisionPlanLoading[0]; var setRevisionPlanLoading = _revisionPlanLoading[1];
 
     // Saved scripts
     var _savedScripts = useState(function () { return load(STORAGE_SCRIPTS, []); });
@@ -612,6 +617,99 @@
         addToast && addToast('Feedback failed: ' + err.message, 'error');
       }
     }, [onCallGemini, script, storyTitle, gradeLevel, analysisResponses, handleScoreUpdate, addToast]);
+
+    // ── LitLab metacognitive rubric (5 criteria, performance + analysis hybrid) ──
+    var LITLAB_RUBRIC = [
+      { id: 'character',   label: 'Character',       desc: 'How well I described the characters and supported it with the story' },
+      { id: 'theme',       label: 'Theme',           desc: 'How clearly I named a theme and connected it to events in the story' },
+      { id: 'craft',       label: "Author's Craft",  desc: 'How specifically I noticed an author choice (figurative language, pacing, dialogue)' },
+      { id: 'performance', label: 'Performance',     desc: 'How expressively I read aloud — vocal variety, pacing, emotion' },
+      { id: 'reflection',  label: 'Connection',      desc: 'How I connected the story to myself, another book, or the world' }
+    ];
+
+    // True when the student has at least 2 helper outputs available to synthesize.
+    function _helpersAvailableForLitLabPlan() {
+      var n = 0;
+      if (analysisFeedback && typeof analysisFeedback === 'object' && !analysisFeedback.error) n++;
+      if (selfAssessmentSubmitted && Object.keys(selfAssessment).length > 0) n++;
+      if (Object.values(emotionLog || {}).filter(function (v) { return v; }).length >= 3) n++;
+      if (selectedStandard) n++;
+      return n >= 2;
+    }
+
+    // ── Revision Plan synthesizer ──
+    // Pulls together analysisFeedback + self-rating + emotion log into one
+    // prioritized 3-task plan. Pedagogical aim: synthesis as a meta-skill —
+    // the student weaves multiple feedback streams into a coherent next step
+    // for re-reading, re-performing, or revising their analysis responses.
+    var synthesizeRevisionPlan = useCallback(async function () {
+      if (!onCallGemini || !script) return;
+      setRevisionPlanLoading(true);
+      try {
+        var helperContext = [];
+        if (analysisFeedback && typeof analysisFeedback === 'object' && !analysisFeedback.error) {
+          var fb = '';
+          if (analysisFeedback.overallRating) fb += '  rating: ' + analysisFeedback.overallRating + '\n';
+          if (analysisFeedback.strengths && analysisFeedback.strengths.length) fb += '  strengths: ' + analysisFeedback.strengths.slice(0, 2).join(' | ') + '\n';
+          if (analysisFeedback.nudges && analysisFeedback.nudges.length) fb += '  nudges: ' + analysisFeedback.nudges.slice(0, 2).join(' | ') + '\n';
+          if (analysisFeedback.characterInsight) fb += '  character: ' + analysisFeedback.characterInsight + '\n';
+          if (analysisFeedback.themeInsight) fb += '  theme: ' + analysisFeedback.themeInsight + '\n';
+          if (analysisFeedback.craftInsight) fb += '  craft: ' + analysisFeedback.craftInsight;
+          if (fb) helperContext.push('AI ANALYSIS FEEDBACK:\n' + fb);
+        }
+        if (selfAssessmentSubmitted && Object.keys(selfAssessment).length > 0) {
+          var lowest = Object.keys(selfAssessment).map(function (k) { return [k, selfAssessment[k]]; })
+            .sort(function (a, b) { return a[1] - b[1]; }).slice(0, 2);
+          helperContext.push('STUDENT SELF-ASSESSMENT (lowest ratings):\n' + lowest.map(function (pair) {
+            var crit = LITLAB_RUBRIC.find(function (c) { return c.id === pair[0]; });
+            return '  - ' + (crit ? crit.label : pair[0]) + ': ' + pair[1] + '/5';
+          }).join('\n'));
+        }
+        var reactedLines = Object.keys(emotionLog || {}).filter(function (k) { return emotionLog[k]; });
+        if (reactedLines.length >= 3) {
+          var samples = reactedLines.slice(0, 5).map(function (lid) {
+            var line = (script.lines || []).find(function (l) { return l.id === lid; });
+            return '  - ' + emotionLog[lid] + ' at "' + (line ? line.text.substring(0, 40) : '?') + '..."';
+          }).join('\n');
+          helperContext.push('EMOTION LOG (' + reactedLines.length + ' reactions during performance):\n' + samples);
+        }
+        if (selectedStandard) {
+          helperContext.push('FOCUS STANDARD: ' + selectedStandard);
+        }
+        var helpersBlock = helperContext.length > 0
+          ? '\n\nWhat the student already has:\n' + helperContext.join('\n\n')
+          : '';
+
+        var prompt = 'You are a kind, specific ELA teacher helping a ' + gradeLevel + ' student plan their next pass at "' + (script.title || storyTitle || 'this text') + '".\n\n'
+          + 'Story characters: ' + (script.characters || []).filter(function (c) { return c.id !== 'narrator' && c.id !== 'stage'; }).map(function (c) { return c.name; }).join(', ') + '\n'
+          + 'Theme: ' + (script.theme || 'not specified') + '\n'
+          + 'Literary elements: ' + ((script.literaryElements || []).join(', ') || 'none flagged') + helpersBlock + '\n\n'
+          + 'Build a prioritized revision plan with EXACTLY 3 tasks. Each task should:\n'
+          + '- Be small enough to do in a single re-read or re-performance.\n'
+          + '- Be specific (name a character, line, scene, or specific analysis question to revisit).\n'
+          + '- Pull from the helper outputs above when relevant — synthesize across them, don\'t repeat verbatim.\n'
+          + '- Be ranked by impact (most-impactful first).\n'
+          + '- Mix performance tasks (re-read this scene with a different voice for X) with analysis tasks (return to the theme question and try again with text evidence).\n'
+          + '- Include a one-sentence "why" so the student understands the craft / comprehension reason.\n\n'
+          + 'Tone: warm, concrete, never scolding. Treat the student as a capable reader-performer who\'s iterating.\n\n'
+          + 'Return ONLY JSON:\n'
+          + '{\n'
+          + '  "tasks": [\n'
+          + '    { "title": "<short imperative title>", "detail": "<one or two specific sentences on what to do>", "why": "<one short sentence on the craft / comprehension reason>", "source": "<which helper this builds on, or \\"overall\\">" }\n'
+          + '  ],\n'
+          + '  "encouragement": "<one short specific compliment on something the student is already doing well>"\n'
+          + '}';
+        var result = await onCallGemini(prompt, true);
+        var parsed = JSON.parse(cleanJson(result));
+        if (Array.isArray(parsed.tasks)) parsed.tasks = parsed.tasks.slice(0, 3);
+        setRevisionPlan(parsed);
+      } catch (err) {
+        warnLog('Revision plan synthesis failed:', err && err.message);
+        setRevisionPlan({ error: "Couldn't build a revision plan right now. Try again in a moment." });
+      } finally {
+        setRevisionPlanLoading(false);
+      }
+    }, [onCallGemini, script, storyTitle, gradeLevel, analysisFeedback, selfAssessment, selfAssessmentSubmitted, emotionLog, selectedStandard]);
 
     // ── Scene Illustration ──
     var generateSceneImage = useCallback(async function () {
@@ -1418,6 +1516,71 @@
                 rows: 2, style: Object.assign({}, S.input, { resize: 'vertical' }),
                 'aria-label': 'Personal response' })
             ),
+            // ── Pre-feedback Self-Assessment ──
+            // Optional but encouraged: rate your own work on 5 craft criteria
+            // before the AI weighs in. Builds metacognition + gives the Revision
+            // Plan synthesizer something to triangulate against.
+            !selfAssessmentSubmitted && e('div', { role: 'region', 'aria-label': 'Self-Assessment', style: { background: 'linear-gradient(135deg, #faf5ff, #eef2ff)', border: '2px solid #d8b4fe', borderRadius: '12px', padding: '14px', marginTop: '16px' } },
+              e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '6px', flexWrap: 'wrap' } },
+                e('div', null,
+                  e('h4', { style: { fontSize: '13px', fontWeight: 800, color: '#7c3aed', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' } },
+                    e('span', { 'aria-hidden': 'true' }, '⭐'), 'Rate yourself first'
+                  ),
+                  e('p', { style: { fontSize: '11px', color: '#6b21a8', margin: '2px 0 0' } }, 'Score your own performance + analysis on 5 criteria before the AI does. Builds reflection.')
+                ),
+                e('button', {
+                  onClick: function () { setSelfAssessmentSubmitted(true); announceLitLab('Self-assessment skipped.'); },
+                  'aria-label': 'Skip self-assessment',
+                  style: { fontSize: '10px', color: '#7c3aed', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', fontWeight: 700 }
+                }, 'Skip')
+              ),
+              e('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '8px' } },
+                LITLAB_RUBRIC.map(function (c) {
+                  var val = selfAssessment[c.id] || 3;
+                  return e('div', { key: c.id, style: { display: 'flex', alignItems: 'center', gap: '10px', background: '#fff', border: '1px solid #e9d5ff', borderRadius: '8px', padding: '6px 10px', flexWrap: 'wrap' } },
+                    e('div', { style: { flex: 1, minWidth: 0 } },
+                      e('label', { htmlFor: 'll-self-' + c.id, style: { display: 'block', fontSize: '11px', fontWeight: 700, color: '#581c87' } }, c.label),
+                      e('p', { style: { fontSize: '10px', color: '#6b21a8', margin: '1px 0 0', fontStyle: 'italic' } }, c.desc)
+                    ),
+                    e('input', {
+                      id: 'll-self-' + c.id, type: 'range', min: '1', max: '5', step: '1', value: val,
+                      onChange: function (ev) {
+                        var v = parseInt(ev.target.value, 10);
+                        setSelfAssessment(function (prev) { var n = Object.assign({}, prev); n[c.id] = v; return n; });
+                      },
+                      'aria-label': 'Self-rating for ' + c.label + ': ' + val + ' out of 5',
+                      style: { width: '110px', accentColor: '#7c3aed' }
+                    }),
+                    e('div', { style: { background: '#ede9fe', color: '#6b21a8', fontSize: '11px', fontWeight: 800, padding: '2px 8px', borderRadius: '999px', minWidth: '36px', textAlign: 'center' } }, val + '/5')
+                  );
+                })
+              ),
+              e('button', {
+                onClick: function () {
+                  var filled = {};
+                  LITLAB_RUBRIC.forEach(function (c) { filled[c.id] = selfAssessment[c.id] || 3; });
+                  setSelfAssessment(filled);
+                  setSelfAssessmentSubmitted(true);
+                  announceLitLab('Self-assessment submitted.');
+                  if (typeof addToast === 'function') addToast('Self-assessment saved!', 'success');
+                },
+                'aria-label': 'Submit self-assessment',
+                style: { marginTop: '8px', padding: '7px 14px', background: '#7c3aed', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }
+              }, '✓ Submit Self-Assessment')
+            ),
+            selfAssessmentSubmitted && Object.keys(selfAssessment).length > 0 && e('div', { style: { background: '#faf5ff', border: '1px solid #e9d5ff', borderRadius: '10px', padding: '8px 12px', marginTop: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' } },
+              e('div', { style: { fontSize: '11px', color: '#6b21a8' } },
+                e('strong', null, '⭐ Your self-rating: '),
+                LITLAB_RUBRIC.map(function (c, i) {
+                  return c.label.split(' ')[0] + ' ' + (selfAssessment[c.id] || 3) + (i < LITLAB_RUBRIC.length - 1 ? ' · ' : '');
+                }).join('')
+              ),
+              e('button', {
+                onClick: function () { setSelfAssessmentSubmitted(false); },
+                'aria-label': 'Edit self-assessment',
+                style: { fontSize: '10px', color: '#7c3aed', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', fontWeight: 700 }
+              }, 'Edit')
+            ),
             // Submit for feedback
             e('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center', marginTop: '16px' } },
               e('button', { onClick: getAnalysisFeedback, disabled: analysisFeedback === 'loading' || !Object.values(analysisResponses).some(function (v) { return v && v.trim(); }),
@@ -1440,7 +1603,53 @@
               analysisFeedback.strengths && analysisFeedback.strengths.length > 0 && e('div', { style: { marginBottom: '8px' } }, e('div', { style: { fontSize: '11px', fontWeight: 700, color: '#16a34a', marginBottom: '4px' } }, '💪 Strengths'), e('ul', { style: { margin: 0, paddingLeft: '16px', fontSize: '12px', color: '#166534' } }, analysisFeedback.strengths.map(function (s, i) { return e('li', { key: i }, s); }))),
               analysisFeedback.nudges && analysisFeedback.nudges.length > 0 && e('div', null, e('div', { style: { fontSize: '11px', fontWeight: 700, color: '#d97706', marginBottom: '4px' } }, '🤔 Think Deeper'), e('ul', { style: { margin: 0, paddingLeft: '16px', fontSize: '12px', color: '#92400e' } }, analysisFeedback.nudges.map(function (s, i) { return e('li', { key: i }, s); })))
             ),
-            analysisFeedback && analysisFeedback.error && e('p', { style: { color: '#dc2626', fontSize: '13px', marginTop: '12px' } }, analysisFeedback.error)
+            analysisFeedback && analysisFeedback.error && e('p', { style: { color: '#dc2626', fontSize: '13px', marginTop: '12px' } }, analysisFeedback.error),
+
+            // ── Revision Plan Capstone (gated on ≥2 helper outputs) ──
+            // Pulls together AI feedback + self-assessment + emotion log + standard
+            // focus into ONE prioritized 3-task plan. Mixes performance tasks
+            // (re-read with different vocal expression) with analysis tasks
+            // (return to a question with text evidence).
+            _helpersAvailableForLitLabPlan() && e('div', { role: 'region', 'aria-label': 'Revision Plan synthesis', style: { marginTop: '16px', background: 'linear-gradient(135deg, #faf5ff, #fff7ed)', border: '2px solid #c4b5fd', borderRadius: '12px', padding: '14px' } },
+              e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap', marginBottom: '6px' } },
+                e('div', null,
+                  e('h4', { style: { fontSize: '13px', fontWeight: 800, color: '#6d28d9', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' } },
+                    e('span', { 'aria-hidden': 'true' }, '🗺️'), 'Revision Plan'
+                  ),
+                  e('p', { style: { fontSize: '11px', color: '#5b21b6', margin: '2px 0 0' } }, 'Synthesizes your AI feedback, self-rating, and performance reactions into ONE prioritized 3-task plan.')
+                ),
+                e('button', {
+                  onClick: synthesizeRevisionPlan, disabled: revisionPlanLoading,
+                  'aria-busy': revisionPlanLoading ? 'true' : 'false',
+                  'aria-label': revisionPlanLoading ? 'Synthesizing revision plan' : (revisionPlan && !revisionPlan.error ? 'Re-synthesize revision plan' : 'Build a revision plan'),
+                  style: { padding: '7px 14px', background: revisionPlanLoading ? '#cbd5e1' : '#7c3aed', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: revisionPlanLoading ? 'wait' : 'pointer' }
+                }, revisionPlanLoading ? '⏳ Synthesizing…' : (revisionPlan && !revisionPlan.error ? '🔄 Rebuild' : '🗺️ Build plan'))
+              ),
+              revisionPlan && revisionPlan.error && e('p', { style: { fontSize: '11px', color: '#b91c1c', fontStyle: 'italic', margin: '6px 0 0' } }, revisionPlan.error),
+              revisionPlan && !revisionPlan.error && e('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '6px' } },
+                revisionPlan.encouragement && e('div', { style: { background: '#fff', border: '1px solid #bbf7d0', borderRadius: '8px', padding: '8px 10px' } },
+                  e('p', { style: { fontSize: '11px', color: '#166534', margin: 0, lineHeight: 1.6 } }, '✨ ' + revisionPlan.encouragement)
+                ),
+                e('ol', { 'aria-label': 'Prioritized revision tasks', style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '6px' } },
+                  (revisionPlan.tasks || []).map(function (t, ti) {
+                    return e('li', { key: ti, style: { background: '#fff', border: '2px solid #d8b4fe', borderRadius: '10px', padding: '10px 12px' } },
+                      e('div', { style: { display: 'flex', gap: '8px', alignItems: 'flex-start' } },
+                        e('div', { 'aria-hidden': 'true', style: { background: '#7c3aed', color: '#fff', width: '24px', height: '24px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 800, flexShrink: 0 } }, ti + 1),
+                        e('div', { style: { minWidth: 0, flex: 1 } },
+                          e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px', marginBottom: '4px', flexWrap: 'wrap' } },
+                            e('h5', { style: { fontSize: '12px', fontWeight: 800, color: '#581c87', margin: 0 } }, t.title || 'Task ' + (ti + 1)),
+                            t.source && e('span', { style: { fontSize: '9px', fontWeight: 700, color: '#7c3aed', background: '#ede9fe', padding: '2px 6px', borderRadius: '999px', textTransform: 'uppercase', letterSpacing: '0.05em' } }, t.source)
+                          ),
+                          t.detail && e('p', { style: { fontSize: '12px', color: '#1e293b', margin: 0, lineHeight: 1.55 } }, t.detail),
+                          t.why && e('p', { style: { fontSize: '11px', color: '#6b21a8', margin: '4px 0 0', fontStyle: 'italic' } }, t.why)
+                        )
+                      )
+                    );
+                  })
+                )
+              ),
+              !revisionPlan && e('p', { style: { fontSize: '11px', color: '#5b21b6', fontStyle: 'italic', margin: '6px 0 0' } }, 'Click "Build plan" to weave your inputs into one prioritized next step.')
+            )
           )
         )
       )
