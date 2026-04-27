@@ -5063,57 +5063,57 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       document.head.appendChild(s);
     })();
-    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@018884f/allo_data_module.js');
-    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@018884f/large_file_module.js');
-    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@018884f/key_concept_map_module.js');
-    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@018884f/utils_pure_module.js');
-    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@018884f/gemini_api_module.js');
-    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@018884f/tts_module.js');
-    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@018884f/personas_module.js');
-    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@018884f/export_module.js');
-    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@018884f/misc_components_module.js');
-    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@018884f/remediation_audio_module.js');
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@018884f/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@018884f/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@018884f/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@018884f/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@018884f/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@018884f/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@018884f/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@018884f/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@018884f/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@018884f/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@018884f/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@018884f/story_stage_module.js');
+    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5194bf4/allo_data_module.js');
+    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5194bf4/large_file_module.js');
+    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5194bf4/key_concept_map_module.js');
+    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5194bf4/utils_pure_module.js');
+    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5194bf4/gemini_api_module.js');
+    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5194bf4/tts_module.js');
+    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5194bf4/personas_module.js');
+    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5194bf4/export_module.js');
+    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5194bf4/misc_components_module.js');
+    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5194bf4/remediation_audio_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5194bf4/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5194bf4/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5194bf4/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5194bf4/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5194bf4/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5194bf4/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5194bf4/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5194bf4/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5194bf4/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5194bf4/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5194bf4/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5194bf4/story_stage_module.js');
     loadModule('PoetTree', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5e3ae8e/poet_tree_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@018884f/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@018884f/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@018884f/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@018884f/student_interaction_module.js');
-    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@018884f/math_fluency_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@018884f/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@018884f/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@018884f/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@018884f/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@018884f/content_engine_module.js');
-    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@018884f/timeline_revision_module.js');
-    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@018884f/prompts_library_module.js');
-    loadModule('TextPipelineHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@018884f/text_pipeline_helpers_module.js');
-    loadModule('AdaptiveControllerModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@018884f/adaptive_controller_module.js');
-    loadModule('UdlChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@018884f/udl_chat_module.js');
-    loadModule('AdventureHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@018884f/adventure_handlers_module.js');
-    loadModule('GlossaryHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@018884f/glossary_helpers_module.js');
-    loadModule('ViewRenderersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@018884f/view_renderers_module.js');
-    loadModule('AudioHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@018884f/audio_helpers_module.js');
-    loadModule('GenerationHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@018884f/generation_helpers_module.js');
-    loadModule('MiscHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@018884f/misc_handlers_module.js');
-    loadModule('PureHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@018884f/pure_helpers_module.js');
-    loadModule('MathHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@018884f/math_helpers_module.js');
-    loadModule('CmapHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@018884f/concept_map_handlers_module.js');
-    loadModule('GenDispatcherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@018884f/generate_dispatcher_module.js');
-    loadModule('PhaseKHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@018884f/phase_k_helpers_module.js');
-    loadModule('AdventureSessionHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@018884f/adventure_session_handlers_module.js');
-    loadModule('TextUtilityHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@018884f/text_utility_helpers_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5194bf4/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5194bf4/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5194bf4/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5194bf4/student_interaction_module.js');
+    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5194bf4/math_fluency_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5194bf4/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5194bf4/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5194bf4/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5194bf4/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5194bf4/content_engine_module.js');
+    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5194bf4/timeline_revision_module.js');
+    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5194bf4/prompts_library_module.js');
+    loadModule('TextPipelineHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5194bf4/text_pipeline_helpers_module.js');
+    loadModule('AdaptiveControllerModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5194bf4/adaptive_controller_module.js');
+    loadModule('UdlChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5194bf4/udl_chat_module.js');
+    loadModule('AdventureHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5194bf4/adventure_handlers_module.js');
+    loadModule('GlossaryHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5194bf4/glossary_helpers_module.js');
+    loadModule('ViewRenderersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5194bf4/view_renderers_module.js');
+    loadModule('AudioHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5194bf4/audio_helpers_module.js');
+    loadModule('GenerationHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5194bf4/generation_helpers_module.js');
+    loadModule('MiscHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5194bf4/misc_handlers_module.js');
+    loadModule('PureHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5194bf4/pure_helpers_module.js');
+    loadModule('MathHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5194bf4/math_helpers_module.js');
+    loadModule('CmapHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5194bf4/concept_map_handlers_module.js');
+    loadModule('GenDispatcherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5194bf4/generate_dispatcher_module.js');
+    loadModule('PhaseKHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5194bf4/phase_k_helpers_module.js');
+    loadModule('AdventureSessionHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5194bf4/adventure_session_handlers_module.js');
+    loadModule('TextUtilityHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5194bf4/text_utility_helpers_module.js');
     loadModule('PhaseNHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/phase_n_misc_helpers_module.js');
     loadModule('PhaseOHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/phase_o_misc_handlers_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
@@ -5126,7 +5126,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       document.head.appendChild(s);
     })();
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@018884f/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5194bf4/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -5518,6 +5518,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [focusNarrationEnabled, setFocusNarrationEnabled] = useState(false);
   const rtpReadingRef = useRef(false);
   const rtpStopRef = useRef(false);
+  const rtpCurrentAudioRef = useRef(null);
   const [showAIBackendModal, setShowAIBackendModal] = React.useState(false);
 
   const [wsGeneratorMinimized, setWsGeneratorMinimized] = React.useState(false);
@@ -46853,7 +46854,19 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   const idx = e.target.closest('[data-sr-idx]')?.getAttribute('data-sr-idx');
                   if (idx !== null && idx !== undefined && callTTS && window._srAnnouncements) {
                     const a = window._srAnnouncements[parseInt(idx)];
-                    if (a) callTTS(a.text);
+                    if (a) {
+                      // callTTS resolves to a blob URL; the audio only plays if we
+                      // wrap it in <audio> and call .play(). Returning the URL alone
+                      // (the prior code) silently discards it.
+                      Promise.resolve(callTTS(a.text)).then(url => {
+                        if (!url) return;
+                        const audio = new Audio(url);
+                        const revoke = () => { try { URL.revokeObjectURL(url); } catch(_) {} };
+                        audio.addEventListener('ended', revoke);
+                        audio.addEventListener('error', revoke);
+                        audio.play().catch(() => {});
+                      }).catch(() => {});
+                    }
                   }
                 });
                 const readAllBtn = doc.getElementById('sr-read-all');
@@ -46861,6 +46874,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 if (readAllBtn && callTTS) {
                   let reading = false;
                   let stopRequested = false;
+                  let currentAudio = null;
                   readAllBtn.onclick = async () => {
                     if (reading) return;
                     reading = true; stopRequested = false;
@@ -46871,15 +46885,32 @@ Return ONLY the plain language summary in ${lang}.`, false);
                       const items = panel.querySelectorAll('[data-sr-idx]');
                       items.forEach(el => el.style.background = 'none');
                       if (items[i]) { items[i].style.background = '#7c3aed33'; items[i].scrollIntoView({ behavior: 'smooth', block: 'center' }); }
-                      try { await callTTS(announcements[i].text); } catch(e) {}
-                      await new Promise(r => setTimeout(r, 300));
+                      // callTTS returns a blob URL; wrap in <audio> + await ended.
+                      // Without this the URL is discarded and the sim runs silent.
+                      let url = null;
+                      try { url = await callTTS(announcements[i].text); } catch(e) {}
+                      if (stopRequested) { if (url) { try { URL.revokeObjectURL(url); } catch(_) {} } break; }
+                      if (url) {
+                        await new Promise(resolve => {
+                          const audio = new Audio(url);
+                          currentAudio = audio;
+                          const done = () => { try { URL.revokeObjectURL(url); } catch(_) {} currentAudio = null; resolve(); };
+                          audio.addEventListener('ended', done);
+                          audio.addEventListener('error', done);
+                          audio.play().catch(done);
+                        });
+                      }
+                      if (!stopRequested) await new Promise(r => setTimeout(r, 300));
                     }
                     reading = false;
                     readAllBtn.textContent = '▶ Read All';
                     readAllBtn.style.background = '#7c3aed';
                     panel.querySelectorAll('[data-sr-idx]').forEach(el => el.style.background = 'none');
                   };
-                  if (stopBtn) stopBtn.onclick = () => { stopRequested = true; };
+                  if (stopBtn) stopBtn.onclick = () => {
+                    stopRequested = true;
+                    if (currentAudio) { try { currentAudio.pause(); } catch(_) {} }
+                  };
                 }
                 addToast('Screen reader view opened — shows what assistive technology announces', 'info');
               }} className={`w-full px-3 py-2 rounded-lg text-xs font-bold border transition-all flex items-center gap-2 bg-white border-slate-200 text-slate-600 hover:border-violet-300 hover:text-violet-700`}>
@@ -50255,7 +50286,21 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   const itemEls = document.querySelectorAll('[data-rtp-idx]');
                   itemEls.forEach(el => el.style.background = 'none');
                   if (itemEls[i]) { itemEls[i].style.background = '#7c3aed33'; itemEls[i].scrollIntoView({ behavior: 'smooth', block: 'center' }); }
-                  try { await callTTS(items[i].text); } catch(e) {}
+                  // callTTS returns a blob URL; wrap in <audio> + await ended,
+                  // otherwise the URL is discarded and Read All runs silent.
+                  let url = null;
+                  try { url = await callTTS(items[i].text); } catch(e) {}
+                  if (rtpStopRef.current) { if (url) { try { URL.revokeObjectURL(url); } catch(_) {} } break; }
+                  if (url) {
+                      await new Promise(resolve => {
+                          const audio = new Audio(url);
+                          rtpCurrentAudioRef.current = audio;
+                          const done = () => { try { URL.revokeObjectURL(url); } catch(_) {} rtpCurrentAudioRef.current = null; resolve(); };
+                          audio.addEventListener('ended', done);
+                          audio.addEventListener('error', done);
+                          audio.play().catch(done);
+                      });
+                  }
                   if (!rtpStopRef.current) await new Promise(r => setTimeout(r, 300));
               }
               rtpReadingRef.current = false;
@@ -50265,13 +50310,24 @@ Return ONLY the plain language summary in ${lang}.`, false);
           const handleStop = () => {
               rtpStopRef.current = true;
               rtpReadingRef.current = false;
+              if (rtpCurrentAudioRef.current) { try { rtpCurrentAudioRef.current.pause(); } catch(_) {} rtpCurrentAudioRef.current = null; }
               if ('speechSynthesis' in window) window.speechSynthesis.cancel();
               const btn = document.getElementById('rtp-read-all-btn');
               if (btn) { btn.textContent = '\u25B6 Read All'; btn.style.background = '#7c3aed'; }
               document.querySelectorAll('[data-rtp-idx]').forEach(el => el.style.background = 'none');
           };
           const handleItemClick = (idx) => {
-              if (items[idx]) callTTS(items[idx].text);
+              if (items[idx]) {
+                  // callTTS returns a blob URL; wrap in <audio> + play.
+                  Promise.resolve(callTTS(items[idx].text)).then(url => {
+                      if (!url) return;
+                      const audio = new Audio(url);
+                      const revoke = () => { try { URL.revokeObjectURL(url); } catch(_) {} };
+                      audio.addEventListener('ended', revoke);
+                      audio.addEventListener('error', revoke);
+                      audio.play().catch(() => {});
+                  }).catch(() => {});
+              }
           };
           return (
               <div className="fixed top-16 right-4 z-[45] w-[360px] max-h-[calc(100vh-5rem)] flex flex-col rounded-2xl shadow-2xl border-l-4 border-purple-500 overflow-hidden animate-in slide-in-from-right-5 duration-300"

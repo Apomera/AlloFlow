@@ -1497,8 +1497,12 @@ var createDocPipeline = function(deps) {
       fn: function(html) {
         if (/<header[\s>]/i.test(html)) return html;
         // Wrap a leading <h1> + any sibling tagline div in <header>.
+        // NOTE: do NOT add role="banner" here. <header> at the body's top level
+        // already exposes the banner landmark by default per ARIA spec, and
+        // adding role="banner" inside generated content can collide with the
+        // host page's own banner landmark when the document is embedded.
         return html.replace(/(<body[^>]*>\s*)((?:<h1[^>]*>[\s\S]*?<\/h1>\s*)(?:<(?:p|div)[^>]*class="[^"]*(?:tagline|subtitle)[^"]*"[^>]*>[\s\S]*?<\/(?:p|div)>\s*)?)/i,
-          '$1<header role="banner">$2</header>');
+          '$1<header>$2</header>');
       }
     },
     fix_add_footer: {
@@ -2253,8 +2257,10 @@ var createDocPipeline = function(deps) {
       if (gapEnd >= gapStart) {
         return '\n<hr data-multi-session-boundary="pages ' + prevEnd + '\u2192' + nextStart +
           '" data-gap="pages ' + gapStart + '-' + gapEnd + ' not yet remediated" ' +
-          'aria-label="Section break — pages ' + gapStart + ' to ' + gapEnd + ' not yet remediated">\n' +
-          '<p data-multi-session-gap="' + gapStart + '-' + gapEnd + '" style="background:#fef3c7;border-left:4px solid #fbbf24;padding:0.75em 1em;margin:1em 0;font-style:italic;color:#78350f">' +
+          'aria-label="Section break">\n' +
+          '<p data-multi-session-gap="' + gapStart + '-' + gapEnd + '" role="note" ' +
+          'aria-label="Pages ' + gapStart + ' to ' + gapEnd + ' have not yet been remediated in this session. Re-upload this PDF and select that range to add them." ' +
+          'style="background:#fef3c7;border-left:4px solid #fbbf24;padding:0.75em 1em;margin:1em 0;font-style:italic;color:#78350f">' +
           'Pages ' + gapStart + '\u2013' + gapEnd + ' have not yet been remediated in this session. ' +
           'Re-upload this PDF and select that range to add them.' +
           '</p>\n';
@@ -2282,7 +2288,9 @@ var createDocPipeline = function(deps) {
       const remStart = lastRange.pages[1] + 1;
       trailingNotice = '\n<hr data-multi-session-boundary="end-of-completed" ' +
         'aria-label="End of completed pages">\n' +
-        '<p data-multi-session-gap="' + remStart + '-' + totalPages + '" style="background:#fef3c7;border-left:4px solid #fbbf24;padding:0.75em 1em;margin:1em 0;font-style:italic;color:#78350f">' +
+        '<p data-multi-session-gap="' + remStart + '-' + totalPages + '" role="note" ' +
+        'aria-label="Pages ' + remStart + ' to ' + totalPages + ' remain to be remediated. Re-upload this PDF in a future session to continue." ' +
+        'style="background:#fef3c7;border-left:4px solid #fbbf24;padding:0.75em 1em;margin:1em 0;font-style:italic;color:#78350f">' +
         'Pages ' + remStart + '\u2013' + totalPages + ' remain to be remediated. ' +
         'Re-upload this PDF in a future session to continue.' +
         '</p>\n';
@@ -8165,7 +8173,7 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
           const failed = !blocks || blocks.length === 0;
           chunkMeta.push({ index: ci, startPage: startPg, endPage: endPg, blockCount: blocks ? blocks.length : 0, status: failed ? 'failed' : 'success' });
           if (failed) {
-            allBlocks.push({ type: 'rawhtml', html: '<div data-chunk-fail="' + ci + '" style="background:#fef2f2;border:2px dashed #ef4444;border-radius:12px;padding:16px;margin:1em 0;text-align:center"><p style="color:#991b1b;font-weight:bold;font-size:0.9em">\u26a0\ufe0f Section ' + (ci + 1) + ' (pages ' + startPg + '-' + endPg + ') failed to process</p><button onclick="window.__retryPdfChunk && window.__retryPdfChunk(' + ci + ')" style="margin-top:8px;padding:6px 16px;background:#dc2626;color:white;border:none;border-radius:8px;font-weight:bold;font-size:12px;cursor:pointer">\ud83d\udd04 Retry This Section</button></div>' });
+            allBlocks.push({ type: 'rawhtml', html: '<div data-chunk-fail="' + ci + '" role="alert" aria-live="assertive" aria-atomic="true" style="background:#fef2f2;border:2px dashed #ef4444;border-radius:12px;padding:16px;margin:1em 0;text-align:center"><p style="color:#991b1b;font-weight:bold;font-size:0.9em"><span aria-hidden="true">\u26a0\ufe0f </span>Section ' + (ci + 1) + ' (pages ' + startPg + '-' + endPg + ') failed to process</p><button onclick="window.__retryPdfChunk && window.__retryPdfChunk(' + ci + ')" aria-label="Retry processing section ' + (ci + 1) + ', pages ' + startPg + ' through ' + endPg + '" style="margin-top:8px;padding:6px 16px;background:#dc2626;color:white;border:none;border-radius:8px;font-weight:bold;font-size:12px;cursor:pointer"><span aria-hidden="true">\ud83d\udd04 </span>Retry This Section</button></div>' });
           } else {
             allBlocks.push({ type: 'rawhtml', html: '<div data-chunk-start="' + ci + '" style="display:none"></div>' });
             allBlocks = allBlocks.concat(blocks);
@@ -9758,7 +9766,7 @@ tr { page-break-inside: avoid; }
           });
           html += `</tbody></table>`;
         } else {
-          html += `<div style="background:#dcfce7;border:2px solid #16a34a;border-radius:8px;padding:16px;text-align:center;margin:1rem 0"><div style="font-size:1.5rem;font-weight:900;color:#16a34a">&#10003; No AI-Detected Issues Remaining</div><div style="font-size:13px;color:#166534;margin-top:4px">All WCAG 2.1 AA checks passed in AI verification</div></div>`;
+          html += `<div role="status" aria-live="polite" aria-atomic="true" aria-label="No AI-detected issues remaining. All WCAG 2.1 AA checks passed in AI verification." style="background:#dcfce7;border:2px solid #16a34a;border-radius:8px;padding:16px;text-align:center;margin:1rem 0"><div style="font-size:1.5rem;font-weight:900;color:#16a34a"><span aria-hidden="true">&#10003; </span>No AI-Detected Issues Remaining</div><div style="font-size:13px;color:#166534;margin-top:4px">All WCAG 2.1 AA checks passed in AI verification</div></div>`;
         }
         // Show verified passes from AI audit
         const afterPasses = afterAiAudit.passes || [];
@@ -10619,11 +10627,11 @@ tr { page-break-inside: avoid; }
     // Add print instructions
     const printBanner = printWindow.document.createElement('div');
     printBanner.id = 'print-banner';
-    printBanner.innerHTML = `<div style="background:#2563eb;color:white;padding:12px 20px;font-family:system-ui;display:flex;align-items:center;justify-content:between;gap:12px;position:sticky;top:0;z-index:9999">
-      <span style="font-weight:bold">♿ Accessible Document Ready</span>
+    printBanner.innerHTML = `<div role="status" aria-live="polite" aria-atomic="true" aria-label="Accessible document ready. Use Control P or Command P, then Save as PDF, to download as a tagged PDF." style="background:#2563eb;color:white;padding:12px 20px;font-family:system-ui;display:flex;align-items:center;justify-content:between;gap:12px;position:sticky;top:0;z-index:9999">
+      <span style="font-weight:bold"><span aria-hidden="true">♿ </span>Accessible Document Ready</span>
       <span style="font-size:13px;opacity:0.9">Use <strong>Ctrl+P</strong> (or ⌘+P on Mac) → <strong>Save as PDF</strong> to download as a tagged PDF</span>
-      <button onclick="document.getElementById('print-banner').remove();window.print()" style="margin-left:auto;background:white;color:#2563eb;border:none;padding:8px 16px;border-radius:6px;font-weight:bold;cursor:pointer;font-size:13px">📥 Save as PDF</button>
-      <button onclick="document.getElementById('print-banner').remove()" style="background:transparent;color:white;border:1px solid rgba(255,255,255,0.3);padding:8px 12px;border-radius:6px;cursor:pointer;font-size:13px">✕</button>
+      <button onclick="document.getElementById('print-banner').remove();window.print()" aria-label="Save as PDF" style="margin-left:auto;background:white;color:#2563eb;border:none;padding:8px 16px;border-radius:6px;font-weight:bold;cursor:pointer;font-size:13px"><span aria-hidden="true">📥 </span>Save as PDF</button>
+      <button onclick="document.getElementById('print-banner').remove()" aria-label="Dismiss this banner" style="background:transparent;color:white;border:1px solid rgba(255,255,255,0.3);padding:8px 12px;border-radius:6px;cursor:pointer;font-size:13px"><span aria-hidden="true">✕</span></button>
     </div>`;
     printWindow.document.body.insertBefore(printBanner, printWindow.document.body.firstChild);
     // Add print CSS to hide banner
