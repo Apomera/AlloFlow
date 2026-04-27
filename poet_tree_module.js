@@ -636,6 +636,9 @@
     var onCallTTS = props.onCallTTS;
     var onCallImagen = props.onCallImagen;
     var onCallGeminiImageEdit = props.onCallGeminiImageEdit;
+    // Cross-tool: lets the student send their poem to LitLab as performance source text.
+    // Optional — if the parent doesn't wire it, the button just isn't rendered.
+    var onSendToLitLab = props.onSendToLitLab || null;
     var selectedVoice = props.selectedVoice;
     var gradeLevel = props.gradeLevel || '7th Grade';
     var addToast = props.addToast;
@@ -838,6 +841,26 @@
       announcePT('Assignment saved to lesson resources.');
       addToast && addToast('PoetTree assignment saved!', 'success');
     }, [onSaveConfig, form, teacherPrompt, suggestedTitle, gradeLevel, addToast]);
+
+    // sendToLitLab: cross-tool handoff — the parent receives the poem as a
+    // LitLab assignment payload (storyTitle, sourceText, gradeLevel) so the
+    // student can perform their poem with character voices in LitLab.
+    var sendToLitLab = useCallback(function () {
+      if (!onSendToLitLab) return;
+      if (!poemText.trim()) { addToast && addToast('Write something first!', 'info'); return; }
+      onSendToLitLab({
+        storyTitle: poemTitle.trim() || 'My Poem',
+        sourceText: poemText,
+        gradeLevel: gradeLevel,
+        teacherPrompt: 'Perform this poem aloud — pay attention to where the rhythm changes, where the voice softens, where it lifts.',
+        // Provenance metadata so LitLab can credit / link back if it ever wants to.
+        sourceModule: 'PoetTree',
+        sourceFormId: form ? form.id : 'free',
+        sourceFormName: form ? form.name : 'Free Verse'
+      });
+      announcePT('Poem sent to LitLab as a performance.');
+      addToast && addToast('Sent to LitLab!', 'success');
+    }, [onSendToLitLab, poemText, poemTitle, gradeLevel, form, addToast]);
 
     // saveSubmissionToPortfolio: student saves their finished poem as a
     // 'poettree-submission' resource for portfolio review.
@@ -2301,6 +2324,11 @@
               onCallGemini && e('button', { onClick: function () { setActiveTab('feedback'); getAiFeedback(); }, disabled: !poemText.trim(),
                 style: { padding: '8px 14px', background: poemText.trim() ? '#7c3aed' : '#cbd5e1', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: poemText.trim() ? 'pointer' : 'not-allowed' }
               }, '✨ Get feedback'),
+              // Cross-tool: open this poem in LitLab as a performance script (parent wires the prop).
+              onSendToLitLab && e('button', { onClick: sendToLitLab, disabled: !poemText.trim(),
+                'aria-label': 'Send this poem to LitLab to perform with character voices',
+                style: { padding: '8px 14px', background: poemText.trim() ? '#a855f7' : '#cbd5e1', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: poemText.trim() ? 'pointer' : 'not-allowed' }
+              }, '🎭 Perform in LitLab'),
               onCallGemini && e('button', { onClick: analyzeMeter, disabled: !poemText.trim() || meterLoading,
                 'aria-busy': meterLoading ? 'true' : 'false',
                 style: { padding: '8px 14px', background: poemText.trim() && !meterLoading ? '#0891b2' : '#cbd5e1', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: poemText.trim() && !meterLoading ? 'pointer' : 'not-allowed' }
