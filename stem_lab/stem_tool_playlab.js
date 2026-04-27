@@ -1710,6 +1710,108 @@ window.StemLab = window.StemLab || {
       var analysis = isSoccer ? [] : openReceiverAnalysis(formation, defenders);
       var openReceiverId = analysis.length ? analysis[0].id : null;
 
+      // ── Trading Card export (engagement layer) ──
+      // Generate a sports-card-style printable from the student\'s active
+      // play / concept + matchup grade + earned badges. Mirrors the
+      // ThrowLab trading-card pattern. Player name prompted on first use,
+      // cached in toolData.playerName.
+      function exportPlayLabTradingCard() {
+        var name = d.playerName;
+        if (!name) {
+          name = (typeof window !== 'undefined' && typeof window.prompt === 'function')
+            ? window.prompt('What\'s your player name? (Saved for next time)', isSoccer ? 'Lab Striker' : 'Lab QB')
+            : 'Lab Player';
+          if (!name) return;
+          name = String(name).trim().slice(0, 30);
+          if (!name) return;
+          setLabToolData(function(prev) {
+            return Object.assign({}, prev, { playlab: Object.assign({}, prev.playlab, { playerName: name })});
+          });
+        }
+        var stats = d.drillStats || {};
+        var sportLbl = isSoccer ? 'Soccer Coach' : 'Offensive Coordinator';
+        var sportIcon = isSoccer ? '⚽' : '🏈';
+        var presetLbl = isSoccer
+          ? formationDef.label + ' · ' + concept.label
+          : play.label;
+        var defLbl = isSoccer ? soccerShape.label : coverage.label;
+        // Matchup grade
+        var matchup = isSoccer
+          ? getSoccerMatchup(concept, soccerShape)
+          : getMatchup(play, coverage);
+        var matchupLine = matchup
+          ? matchup.emoji + ' ' + matchup.label + ': ' + (matchup.reason || '')
+          : 'Matchup grade unavailable';
+        // Stat line per sport
+        var statLine;
+        if (isSoccer) {
+          statLine = 'High-xG sequences: ' + (stats.highXgShot ? 1 : 0) + ' · Concepts run: ' + Object.keys(stats.conceptsRun || {}).length + ' · Set-piece types: ' + Object.keys(stats.setPieceTypesRun || {}).length;
+        } else {
+          statLine = 'Coverages beaten: ' + (stats.coveragesBeaten || 0) + ' · Plays completed: ' + Object.keys(stats.completionsByPlay || {}).length + ' · Hot streak: ' + (stats.hotStreak || 0);
+        }
+        var earnedBadges = PLAYLAB_BADGES.filter(function(b) { return d.badgesEarned && d.badgesEarned[b.id]; }).slice(0, 5);
+        var badgesHtml = earnedBadges.length
+          ? earnedBadges.map(function(b) { return '<span class="badge">' + b.emoji + ' ' + b.label + '</span>'; }).join('')
+          : '<span class="badge-empty">No badges yet — keep running plays!</span>';
+        var fieldColor = isSoccer ? '#10b981' : '#16a34a';
+        var matchupColor = matchup ? matchup.color : '#94a3b8';
+        var cardHtml = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">'
+          + '<title>PlayLab Trading Card — ' + name + '</title>'
+          + '<style>'
+          + '*{box-sizing:border-box} body{margin:30px;font-family:Georgia,serif;background:#0f172a;color:#1a1a1a;display:flex;justify-content:center}'
+          + '.card{width:380px;border:8px solid #fbbf24;border-radius:18px;background:linear-gradient(135deg,#fef3c7,#fde68a);padding:0;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,0.3)}'
+          + '.banner{background:linear-gradient(135deg,#1e293b,#334155);color:#fbbf24;padding:14px 20px;text-align:center}'
+          + '.banner .icon{font-size:32px;display:block;margin-bottom:4px}'
+          + '.banner .name{font-size:24px;font-weight:bold;margin:0;letter-spacing:1px}'
+          + '.banner .sport{font-size:11px;color:#cbd5e1;text-transform:uppercase;letter-spacing:2px;margin-top:4px}'
+          + '.body{padding:18px}'
+          + '.preset{background:#1e293b;color:#fbbf24;padding:6px 12px;border-radius:6px;display:inline-block;font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px}'
+          + '.field-frame{background:' + fieldColor + ';border-radius:8px;padding:12px;margin-bottom:10px;text-align:center;color:white;font-size:11px}'
+          + '.field-frame .vs{font-size:14px;margin:4px 0;font-weight:bold}'
+          + '.matchup{padding:8px;border-radius:6px;margin-bottom:8px;border-left:3px solid ' + matchupColor + ';background:rgba(0,0,0,0.04);font-size:11px}'
+          + '.stat-line{font-size:12px;color:#1a1a1a;font-weight:bold;margin-bottom:10px;padding:8px;background:rgba(30,41,59,0.05);border-radius:6px;border-left:3px solid #fbbf24}'
+          + '.badges{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px}'
+          + '.badge{background:#1e293b;color:#fbbf24;padding:3px 8px;border-radius:999px;font-size:10px;font-weight:bold}'
+          + '.badge-empty{color:#94a3b8;font-style:italic;font-size:10px}'
+          + '.footer{text-align:center;font-size:9px;color:#666;border-top:1px dashed #94a3b8;padding-top:6px;margin-top:8px}'
+          + '@media print{body{background:white;margin:0}.card{box-shadow:none}}'
+          + '</style></head><body>'
+          + '<div class="card">'
+          + '  <div class="banner">'
+          + '    <span class="icon">' + sportIcon + '</span>'
+          + '    <div class="name">' + name + '</div>'
+          + '    <div class="sport">' + sportLbl + '</div>'
+          + '  </div>'
+          + '  <div class="body">'
+          + '    <div class="preset">' + presetLbl + '</div>'
+          + '    <div class="field-frame">'
+          + '      <div>OFFENSE</div>'
+          + '      <div class="vs">' + presetLbl + '</div>'
+          + '      <div>vs</div>'
+          + '      <div class="vs">' + defLbl + '</div>'
+          + '      <div>DEFENSE</div>'
+          + '    </div>'
+          + '    <div class="matchup"><strong>' + matchupLine + '</strong></div>'
+          + '    <div class="stat-line">' + statLine + '</div>'
+          + '    <div class="badges">' + badgesHtml + '</div>'
+          + '    <div class="footer">PlayLab — Tactical Play Design · AlloFlow · ' + new Date().toLocaleDateString() + '</div>'
+          + '  </div>'
+          + '</div>'
+          + '</body></html>';
+        try {
+          var win = window.open('', '_blank');
+          if (win) {
+            win.document.write(cardHtml);
+            win.document.close();
+            setTimeout(function() { try { win.print(); } catch(e) {} }, 400);
+          } else if (addToast) addToast('Pop-up blocked — allow pop-ups to print', 'error');
+        } catch(e) {
+          if (addToast) addToast('Card export failed', 'error');
+        }
+        plAnnounce('Trading card exported for ' + name + '.');
+        if (addToast) addToast('📇 Trading card!');
+      }
+
       // Open a printable activity sheet with all scenarios for the
       // active sport — title + teach + numbered questions with blank
       // lines for student answers. Triggers window.print() so the
@@ -3064,7 +3166,19 @@ window.StemLab = window.StemLab || {
                   border: '1px solid #fbbf24', background: 'rgba(251,191,36,0.10)',
                   color: '#fbbf24', fontSize: 11, fontWeight: 700, marginLeft: 4
                 }
-              }, '📄 Print activity sheet')
+              }, '📄 Print activity sheet'),
+              h('button', {
+                key: 'plsc-card',
+                onClick: exportPlayLabTradingCard,
+                'aria-label': 'Export the current play / concept as a printable trading card',
+                'data-pl-focusable': 'true',
+                title: 'Make a Topps-style trading card from your active play + matchup grade + badges',
+                style: {
+                  padding: '6px 11px', borderRadius: 6, cursor: 'pointer',
+                  border: '1px solid #f59e0b', background: 'rgba(245,158,11,0.10)',
+                  color: '#fbbf24', fontSize: 11, fontWeight: 700
+                }
+              }, '📇 Trading card')
             ])
           )
         ),
