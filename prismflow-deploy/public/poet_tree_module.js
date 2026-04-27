@@ -1188,30 +1188,30 @@
       setStanzaImages(seeded);
       // Generate images sequentially (parallel would saturate the API/quota and
       // also lets earlier stanzas render while later ones are still cooking).
+      // Each iteration is wrapped in an async IIFE that captures `i` and the
+      // stanza text by value — otherwise the setStanzaImages updater closures
+      // close over the loop's `var i`, and React 18 may run the updater after
+      // i++ has advanced, writing to the wrong stanza slot.
       try {
-        for (var i = 0; i < stanzas.length; i++) {
-          (function (i, stanzaText) {
-            // Wrapped in IIFE for closure correctness if we ever switch to parallel.
-          })(i, stanzas[i]);
-          try {
-            var prompt = stanzas[i] + '\n\nRender a single illustrative image of the scene/mood described in the stanza above. STRICTLY NO TEXT, no captions, no signatures, no watermark in the image.';
-            var url = await onCallImagen(prompt, 512, 0.85);
-            // Patch this stanza's slot in state without disturbing the others.
-            // Use functional updater to avoid stale-closure issues if state changes
-            // between iterations.
-            setStanzaImages(function (prev) {
-              var n = prev.slice();
-              if (n[i]) n[i] = Object.assign({}, n[i], { url: url || null, loading: false });
-              return n;
-            });
-          } catch (e) {
-            warnLog('Stanza ' + (i + 1) + ' image failed:', e && e.message);
-            setStanzaImages(function (prev) {
-              var n = prev.slice();
-              if (n[i]) n[i] = Object.assign({}, n[i], { url: null, loading: false, error: true });
-              return n;
-            });
-          }
+        for (var idx = 0; idx < stanzas.length; idx++) {
+          await (async function (i, stanzaText) {
+            try {
+              var prompt = stanzaText + '\n\nRender a single illustrative image of the scene/mood described in the stanza above. STRICTLY NO TEXT, no captions, no signatures, no watermark in the image.';
+              var url = await onCallImagen(prompt, 512, 0.85);
+              setStanzaImages(function (prev) {
+                var n = prev.slice();
+                if (n[i]) n[i] = Object.assign({}, n[i], { url: url || null, loading: false });
+                return n;
+              });
+            } catch (e) {
+              warnLog('Stanza ' + (i + 1) + ' image failed:', e && e.message);
+              setStanzaImages(function (prev) {
+                var n = prev.slice();
+                if (n[i]) n[i] = Object.assign({}, n[i], { url: null, loading: false, error: true });
+                return n;
+              });
+            }
+          })(idx, stanzas[idx]);
         }
         announcePT('Mood board ready: ' + stanzas.length + ' stanza images.');
       } finally {
