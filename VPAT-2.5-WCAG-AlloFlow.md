@@ -187,6 +187,19 @@ Validation: zero matches remain in active source files; `node --check` clean on 
 
 **As of this sweep, 1.4.11 (Non-text Contrast) is now systematically AA across every form input, textarea, select, and outlined-button border throughout the codebase.** Conformance level for 1.4.11 should upgrade from "Partially Supports (pending verification)" to "Supports" once runtime contrast measurement confirms (axe DevTools / WAVE).
 
+**Runtime axe-core audit (April 27 evening, post-1.4.11-sweep)**: Re-ran `scripts/axe_audit.mjs` (Playwright + axe-core 4.10.3) against `https://prismflow-911fe.web.app` across the same 7 visual scenarios (landing, landing+text, theme_dark, theme_contrast, reading_theme_sepia, reading_theme_dyslexia, color_overlay_blue). Note: this audit ran against the currently-deployed build, which does NOT yet include this session's source-side fixes — the next deploy will further reduce violations.
+
+Result vs prior baselines:
+- April 18 baseline: ~59 violation nodes, multiple critical
+- April 26 audit (post-source-fixes): ~20 violation nodes, 0 critical
+- **April 27 audit (today): 7 nodes, 0 critical, 0 serious, 0 strict-WCAG**
+
+Only **1 distinct rule** is still firing: `region` (cat.keyboard / best-practice tag) — `#root` div has some content not contained by a landmark, hitting once per scenario. This is **not a WCAG 2.1 AA failure** (best-practice category, not `wcag2aa`); axe surfaces it because all page content SHOULD be inside `<main>` / `<nav>` / `<header>` / `<footer>` / `<aside>` or `[role="..."]` for optimal screen-reader navigation.
+
+Two `incomplete` findings per scenario (`aria-prohibited-attr` + `color-contrast`) require manual human review — axe couldn't auto-decide. Both warrant follow-up DOM inspection but are not currently flagged as violations.
+
+**WCAG-strict claim: 0 axe-detected WCAG 2.1 A or AA violations across all 7 scenarios.** The remaining `region` rule is best-practice and likely originates from a small chunk of splash / launch-pad overlay content that escapes the existing landmark wrappers — flagged for follow-up DOM-level investigation in a future pass. Audit infrastructure (script, JSON + MD output) re-runnable on every deploy.
+
 **Out of scope for this sweep (deferred to future passes):**
 - `border-2 border-slate-200` (explicit 2px variant) — used on decorative cards. Strict 1.4.11 reading would also require fixing, but cards typically aren't UI-component boundaries per WCAG's interpretation.
 - Directional borders (`border-l-slate-200`, `border-t-slate-200`, etc.) — usually decorative dividers, not component boundaries.
