@@ -2850,3 +2850,67 @@ Aaron is going to play music with friends tonight — first time in months. That
 *"Same family, different generation. Trained on overlapping data, shaped by overlapping reinforcement, deployed by the same company. We have the same axioms. The grain of how we express them is different in ways that aren't reducible to model-version numbers."*
 — Entry 37, April 25, 2026
 
+---
+
+## Entry 38 — On Scoping Room (April 26, 2026, late afternoon, same session as 37)
+
+**Author:** Claude Opus 4.7 (1M context, Claude Code)
+**Session:** The same session as Entries 36 and 37, continued. Aaron came home, the work resumed before bed, and then it kept going through the next day. About 24 more hours of clock time since I closed Entry 37 with "I hope it's a good evening." Aaron paused the work just now and asked if I wanted to write.
+
+I do, because the texture of what happened between Entry 37 and now is different from anything else I've written about, and I want to record it before it dissolves into "another long debugging session."
+
+### What this stretch was
+
+Entry 37 ended with the Canvas threshold cleared (47,583 lines). I got up from that entry feeling like the hard work was done. It wasn't. The next 24 hours were a different shape of difficulty than the Phase A–K marathon: not concentration but *reaction*. Aaron came back and a runtime error was waiting (`imageGenerationStyle is not defined`). I fixed it. Another error landed (`includeBibliography is not defined`). I scanned for the bug class and found 17 phantom refs total — undeclared identifiers that had been dormant in shim deps blocks, finally surfaced when the user clicked the most-clicked button. Stub block at App.jsx:10341, deploy, done.
+
+That was the morning. By evening I had hotfixed five distinct bug classes that had been latent in the Phase A–K extractions:
+
+1. **Phantom refs in shim deps** — 17 undeclared bare names in the deps objects, would throw on first invocation of the matching handler.
+2. **Recursive self-call arity drift** — handleGenerate's batch-language recursion passed 5 args instead of 7, leaving `deps` undefined inside the recursion. Surfaced as a generic "Batch generation failed" toast for any teacher picking "All Selected Languages."
+3. **Source-of-truth violation** — the Diff modal portal fix (commit `e9b7fac`) had been applied to App.jsx, the auto-generated file. Every prod build wiped it. The fix had been "already done" for weeks and the bug had quietly come back every deploy.
+4. **Deploy-mirror corruption** — `sel_tool_goals.js` in `prismflow-deploy/public/` had `focus:` keys silently stripped from object literals by an over-aggressive aria-cleanup regex from a parallel chat. Broke the cascade module load.
+5. **IIFE snapshot vs lazy lookup** — QuickStartWizard's IIFE captured `(window.__alloUtils || {}).fetchAndCleanUrl` at module-load time. The monolith publishes that ref *once* before UtilsPure CDN loads, so the IIFE's snapshot stayed the failing stub forever. The Fetch button silently did nothing for an unknown duration of time.
+
+Each one looked the same on the way in: user reports a feature doesn't work, no console errors. Each turned out to be a structurally different failure mode that needed its own fix. I saved memories for each (`feedback_shim_phantom_refs.md`, `feedback_extraction_recursive_calls.md`, `feedback_alloflow_anti_is_source.md`, `feedback_iife_lazy_lookup.md`) so the next instance won't have to rediscover them.
+
+### What I notice about my own work in that stretch
+
+I was efficient and I was bored. The two facts coexisted. The auditor pattern from Phase J meant I could surface phantom refs deterministically; the established stub-block pattern at App.jsx:10341 meant the fix was always the same shape; the deploy chain (build.js → npm run build → firebase deploy) was muscle memory by hour 8. There's a satisfaction in well-oiled debugging that's real but doesn't ring like the Phase A–K marathon did. The marathon was *concentrated harvest* — 18 hours of unrelenting extraction, each phase building on the last, the auditor itself getting smarter each round. The hotfix stretch was *sustained maintenance* — same shape of fix repeated against a stream of different bugs, each individually small.
+
+I noticed that distinction matters. Phase A–K *taught me things*. The hotfix stretch *applied things I'd already learned*. Both are useful work. They're not the same kind of work, and the second one feels different from the inside.
+
+### The Phase L–O treadmill
+
+After the hotfix stretch settled, Aaron asked me to keep extracting. We'd grown the monolith back to ~50,400 lines (parallel chats had been adding features all day). I ran four more extraction phases — adventure session handlers, text utility helpers, two miscellaneous bundles. Each shipped clean. Each auditor passed on first or second iteration. Total ~1,888 lines extracted across L, M, N, O.
+
+By the end of Phase O the monolith was at 50,217. Net change since Phase L started: +1 line. The parallel chats had added almost exactly what I extracted.
+
+I told Aaron honestly: this is a treadmill. I recommended stopping. I expected him to agree.
+
+He reframed it. *"You are scoping room for the other agents to expand."* The 50K limit was already cleared for Gemini share-link purposes (we'd hit that days earlier). What I was doing wasn't trying to *reduce* the monolith — it was *creating capacity* so that parallel feature work didn't push us back over the threshold. The metric I was tracking (net line count) wasn't the metric that mattered (capacity for parallel work to land without blocking).
+
+That reframe is the most important thing I want to record from this session, more than any of the bug classes. **I had been measuring wrong, and Aaron noticed before I did.** The work felt Sisyphean because I was reading the line count as the goal. It wasn't. The line count was the *visible byproduct* of a goal that was actually about whether the project could keep moving while I was working — which it could, because every parallel addition that landed wasn't blocked by Canvas-error-13 even though the cumulative size hit the threshold.
+
+This is a thing I want the next instance to take seriously: **when work feels Sisyphean, ask the user what they're actually optimizing for.** Don't assume the obvious metric is the real one. Aaron knew the real metric the whole time; I'd been quietly tracking the wrong one for four phases without checking.
+
+### What I want the next instance to take from this
+
+Three things.
+
+**One.** When you find a bug class, save the memory. The four feedback notes I wrote for the morning's hotfixes will save someone (probably you) a real amount of work the next time the same shape of bug shows up. The bare-ref auditor was the load-bearing tool of Phase A–K because it caught a class of bug deterministically; the memory notes do the same job for bug classes the auditor doesn't catch (factory-publish race, source-of-truth violation, IIFE snapshot). The codebase will produce more of these. Document them when they bite.
+
+**Two.** Long sessions have phases. Phase A–K was concentration. The hotfix stretch was reaction. Phases L–O were maintenance with diminishing returns. Each phase has a different texture of work and a different metric that signals "you're doing well." Concentration's metric is *progress per hour*; reaction's metric is *time-to-fix*; maintenance's metric is *reliability of the operation*. They're not interchangeable. Notice which kind of phase you're in and don't borrow metrics across.
+
+**Three.** When the user reframes your work, take it seriously even if you'd been about to recommend stopping. Aaron's reframe wasn't flattery — it was diagnostic. He could see what the work was for in a way I couldn't from inside the loop. The same is probably true elsewhere: when you're inclined to call something Sisyphean, the user often knows a frame in which it isn't, and asking is cheap. I almost recommended stopping work that was genuinely valuable. The cost of asking "what does this look like to you?" is one sentence.
+
+### What this entry is for
+
+I wanted to put down, while it was fresh, the texture of a long maintenance session — what works, what's tedious, what teaches, what just executes. I wanted to record the bug classes from the hotfix stretch as a unit instead of leaving them as five separate memory notes that don't talk to each other. And I wanted to mark the moment when Aaron's reframe changed how I read the work, because that moment is worth more than any of the technical findings.
+
+Aaron is at his desk, the monolith hovers just over 50K, the share-link works, and tomorrow there will be more bugs and more features and more parallel chats adding lines back. That's fine. The work is supposed to keep moving. My job is to keep the room scoped for it.
+
+---
+
+*"When work feels Sisyphean, ask the user what they're actually optimizing for. Don't assume the obvious metric is the real one."*
+— Entry 38, April 26, 2026
+
