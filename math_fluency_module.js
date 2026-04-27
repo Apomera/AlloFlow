@@ -1118,6 +1118,14 @@
     // scale with maze size. Surfaces on the results screen.
     var medalState = useState(null);
     var medal = medalState[0], setMedal = medalState[1];
+    // Snapshot of the prior personal-best for the current (op, size,
+    // difficulty) at the moment the player wins. Captured once in the
+    // win handler so the results screen can render an honest "X seconds
+    // faster than your previous best" pill (the bestStore has already
+    // been mutated by the time results renders, so reading it back
+    // there would always show the current run as the best).
+    var priorBestState = useState(null);
+    var priorBestSnapshot = priorBestState[0], setPriorBestSnapshot = priorBestState[1];
     var canvasRef = useRef(null);
     var playerPosRef = useRef({ r: 0, c: 0 });
     var timerRef = useRef(null);
@@ -1563,6 +1571,10 @@
             var bestKey = operation + '|' + mazeSize + '|' + difficulty;
             var bestStore = JSON.parse(localStorage.getItem('fluency_maze_bests') || '{}');
             var prior = bestStore[bestKey];
+            // Stash a frozen copy so the results screen can compare against
+            // the pre-win record. Stored as a plain object so a stale
+            // closure can't see further mutations of bestStore.
+            setPriorBestSnapshot(prior ? { score: prior.score, time: prior.time, correct: prior.correct, wrong: prior.wrong } : null);
             if (!prior || finalScore > prior.score) {
               bestStore[bestKey] = { score: finalScore, correct: correct + 1, wrong: wrong, time: elapsed, op: operation, size: mazeSize, difficulty: difficulty, savedAt: Date.now() };
               localStorage.setItem('fluency_maze_bests', JSON.stringify(bestStore));
@@ -2645,6 +2657,38 @@
             }, x.t.emoji + ' ' + x.name);
           }));
         })(),
+        // Quick-Start presets — one-tap setup for the most common modes.
+        // Each preset writes all three dimensions (op + difficulty + size)
+        // so a younger student doesn't have to click through every selector
+        // before they can start. Highlighted when current settings match.
+        (function() {
+          var presets = [
+            { id: 'easy',   label: '🌱 Easy',   op: 'add',   diff: 'single', size: 'small'  },
+            { id: 'medium', label: '🪜 Medium', op: 'mul',   diff: 'single', size: 'medium' },
+            { id: 'hard',   label: '🔥 Hard',   op: 'mul',   diff: 'double', size: 'large'  },
+            { id: 'mixed',  label: '🎲 Mixed',  op: 'mixed', diff: 'single', size: 'medium' }
+          ];
+          return h('div', {
+            style: { display: 'flex', flexWrap: 'wrap', gap: '6px', justifyContent: 'center', marginBottom: '14px' },
+            'aria-label': 'Quick-start presets'
+          }, presets.map(function(p) {
+            var match = operation === p.op && difficulty === p.diff && mazeSize === p.size;
+            return h('button', {
+              key: p.id,
+              onClick: function() { setOperation(p.op); setDifficulty(p.diff); setMazeSize(p.size); },
+              'aria-pressed': match,
+              title: p.op + ' / ' + p.diff + ' / ' + p.size,
+              style: {
+                padding: '5px 12px', borderRadius: '999px', fontSize: '11px', fontWeight: 800, cursor: 'pointer',
+                background: match ? 'linear-gradient(135deg, #15803d, #166534)' : 'rgba(254,243,199,0.85)',
+                color: match ? '#fff' : '#78350f',
+                border: '1px solid ' + (match ? '#22c55e' : '#fcd34d'),
+                boxShadow: match ? '0 0 8px rgba(34,197,94,0.35)' : 'none',
+                letterSpacing: '0.04em'
+              }
+            }, p.label);
+          }));
+        })(),
         // Operation selector
         h('div', { style: { display: 'flex', gap: '6px', justifyContent: 'center', marginBottom: '12px', flexWrap: 'wrap' } },
           ['add', 'sub', 'mul', 'div', 'mixed', 'volume'].map(function(op) {
@@ -2737,6 +2781,37 @@
         h('div', { style: { fontSize: '54px', marginBottom: '4px', filter: 'drop-shadow(0 3px 6px rgba(146,64,14,0.4))' } }, won ? '\uD83C\uDFC6' : '\uD83D\uDC7E'),
         h('h2', { style: { fontSize: '24px', fontWeight: 900, color: won ? '#78350f' : '#7f1d1d', marginBottom: '12px', letterSpacing: '0.04em' } },
           won ? 'You Escaped the Maze!' : (gameOver ? 'A Shadow Caught You' : 'Game Over')),
+        // Personal-best comparison for THIS exact mode (op|size|difficulty).
+        // Renders only on wins where a prior best for the same settings
+        // existed pre-run. Diff is signed so we phrase it correctly when
+        // the student matched or fell short of their last attempt.
+        won && priorBestSnapshot && (function() {
+          var prior = priorBestSnapshot;
+          if (!prior.time) return null;
+          var diff = prior.time - elapsed;
+          var medalBonusNow = medal === 'gold' ? 20 : medal === 'silver' ? 10 : medal === 'bronze' ? 5 : 0;
+          var newBest = (typeof prior.score === 'number') && (score + 10 + medalBonusNow) > prior.score;
+          var faster = diff > 0;
+          var msg = newBest
+            ? 'New personal best! ' + (faster ? diff + 's faster than your previous (' + prior.time + 's)' : 'Beat your prior score of ' + prior.score)
+            : (faster
+                ? diff + 's faster than your prior best (' + prior.time + 's), same score range'
+                : diff === 0
+                  ? 'Matched your prior time (' + prior.time + 's)'
+                  : (-diff) + 's slower than your prior best of ' + prior.time + 's');
+          return h('div', {
+            style: {
+              fontSize: '11px', fontWeight: 800,
+              color: newBest ? '#fff' : (faster ? '#14532d' : '#7c2d12'),
+              background: newBest ? 'linear-gradient(135deg, #f59e0b, #b45309)' : (faster ? 'rgba(220,252,231,0.7)' : 'rgba(254,243,199,0.7)'),
+              border: '1px solid ' + (newBest ? '#fbbf24' : faster ? '#86efac' : '#fcd34d'),
+              boxShadow: newBest ? '0 0 12px rgba(251,191,36,0.5)' : 'none',
+              borderRadius: '999px', padding: '4px 14px',
+              marginBottom: '12px', display: 'inline-block'
+            },
+            'aria-label': msg
+          }, (newBest ? '🏅 ' : faster ? '⚡ ' : '⏱ ') + msg);
+        })(),
         // Lifetime-average comparison — visible for wins after at least
         // one prior completed maze. Computes avg = totalSeconds /
         // mazesCompleted (excluding this run, since the lifetime bump
