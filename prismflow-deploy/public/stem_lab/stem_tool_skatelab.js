@@ -905,6 +905,11 @@ window.StemLab = window.StemLab || {
             // Confirm-reset state — false normally, true while the
             // student/teacher is being asked to confirm a reset.
             resetConfirmOpen: false,
+            // Show-formula toggle — when true, a panel beneath the
+            // canvas renders the live physics equation with current
+            // values plugged in. Default true so first-time students
+            // see the math; can be hidden for cleaner classroom demos.
+            showFormula: true,
             // Coach state
             coachPersona: 'analyst',
             coachLoading: false,
@@ -1672,6 +1677,107 @@ window.StemLab = window.StemLab || {
             )
           )
         ),
+        // ── Show-formula panel ──────────────────────────────────
+        // Renders the live physics equation with current values
+        // plugged in. Mode-aware: halfpipe shows the KE→PE chain
+        // ending in air time + rotation budget; gap shows the
+        // projectile range formula plus the wind-adjusted variant
+        // when wind ≠ calm. Updates every render so changing a
+        // slider re-evaluates the math without an attempt being run.
+        h('div', { style: { display: 'flex', justifyContent: 'flex-end', marginBottom: 6 } },
+          h('button', {
+            onClick: function() { upd('showFormula', !d.showFormula); skAnnounce(d.showFormula ? 'Formula panel hidden.' : 'Formula panel shown.'); },
+            'aria-pressed': !!d.showFormula,
+            'aria-label': d.showFormula ? 'Hide live formula panel' : 'Show live formula panel',
+            'data-sk-focusable': 'true',
+            title: 'Toggle the live equation that updates as you change settings',
+            style: {
+              padding: '4px 10px', fontSize: 10, fontWeight: 700,
+              background: d.showFormula ? 'rgba(56,189,248,0.18)' : 'rgba(254,243,199,0.06)',
+              color: d.showFormula ? '#7dd3fc' : '#94a3b8',
+              border: '1px solid ' + (d.showFormula ? 'rgba(56,189,248,0.50)' : 'rgba(254,243,199,0.20)'),
+              borderRadius: 999, cursor: 'pointer', minHeight: 26
+            }
+          }, '📐 Formula: ' + (d.showFormula ? 'on' : 'off'))
+        ),
+        d.showFormula && (function() {
+          // Compute live values once for the panel — same primitives
+          // simHalfpipe / simGapJump use, but without the animation /
+          // landed/score side effects.
+          var v0 = 4.0;
+          var vehicle = getVehicle(d.vehicle);
+          var vTakeoff = v0 + d.pumps * vehicle.pumpEfficiency;          // m/s
+          var surface = getSurface(d.surfaceId);
+          var g = d.gravity || 9.81;
+          var hAir = (surface.efficiency * vTakeoff * vTakeoff) / (2 * g);
+          var airTime = 2 * Math.sqrt(2 * hAir / g);
+          var trick = getTrick(d.trickId);
+          var spinRate = trick.rotation > 0 ? (trick.rotation / Math.max(0.36, trick.minAir * 0.95)) * vehicle.rotationScale : 0;
+          var v = d.speedMph / MPS2MPH;
+          var theta = (d.angleDeg || 30) * Math.PI / 180;
+          var rangeCalm = (v * v * Math.sin(2 * theta)) / g;
+          var wind = getWind(d.windId || 'calm');
+          var windMs = wind.mph / MPS2MPH;
+          var hangG = (2 * v * Math.sin(theta)) / g;
+          var aWind = 0.18 * windMs;
+          var rangeWind = rangeCalm + 0.5 * aWind * hangG * hangG;
+          var peakG = (v * v * Math.sin(theta) * Math.sin(theta)) / (2 * g);
+          var Eq = function(label, expr, value, unit) {
+            return h('div', {
+              style: { fontFamily: 'monospace', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 4 }
+            },
+              h('span', { style: { color: '#7dd3fc', fontWeight: 700, marginRight: 6 } }, label),
+              expr,
+              h('span', { style: { color: '#86efac', marginLeft: 4 } }, '= '),
+              h('b', { style: { color: '#fbbf24' } }, value),
+              unit ? h('span', { style: { color: '#94a3b8', marginLeft: 2 } }, ' ' + unit) : null
+            );
+          };
+          return h('div', {
+            role: 'region',
+            'aria-label': 'Live physics equations',
+            style: {
+              background: 'rgba(56,189,248,0.06)',
+              border: '1px solid rgba(56,189,248,0.40)',
+              borderRadius: 10, padding: 12, marginBottom: 12
+            }
+          },
+            h('div', { style: { fontSize: 10, fontWeight: 800, color: '#7dd3fc', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 8 } }, '📐 Live equation' + (d.mode === 'halfpipe' ? ' — Energy chain' : ' — Projectile motion')),
+            d.mode === 'halfpipe' ? [
+              Eq('1. KE at lip',
+                'v = v₀ + (pumps × pump-eff) = 4.0 + (' + d.pumps + ' × ' + vehicle.pumpEfficiency.toFixed(2) + ')',
+                vTakeoff.toFixed(2), 'm/s'),
+              Eq('2. Air height',
+                'h = η · v² / (2g) = ' + surface.efficiency.toFixed(2) + ' · ' + vTakeoff.toFixed(2) + '² / (2 · ' + g.toFixed(2) + ')',
+                hAir.toFixed(3), 'm  (' + (hAir * M2FT).toFixed(2) + ' ft)'),
+              Eq('3. Hang time',
+                't = 2·√(2h/g) = 2·√(2·' + hAir.toFixed(3) + '/' + g.toFixed(2) + ')',
+                airTime.toFixed(3), 's'),
+              Eq('4. Rotation budget',
+                't · spin-rate = ' + airTime.toFixed(3) + ' · ' + spinRate.toFixed(0) + '°/s',
+                (airTime * spinRate).toFixed(0), '° (need ' + trick.rotation + '°)')
+            ] : [
+              Eq('1. v in m/s',
+                'v = ' + d.speedMph + ' mph / 2.237',
+                v.toFixed(2), 'm/s'),
+              Eq('2. Range (calm)',
+                'R = v² · sin(2θ) / g = ' + v.toFixed(2) + '² · sin(' + (2 * d.angleDeg) + '°) / ' + g.toFixed(2),
+                rangeCalm.toFixed(2), 'm  (' + (rangeCalm * M2FT).toFixed(2) + ' ft)'),
+              wind.id !== 'calm' ? Eq(
+                '3. Range w/ wind',
+                'R + 0.5·a·t² where a = 0.18·' + windMs.toFixed(2) + ' = ' + aWind.toFixed(3),
+                rangeWind.toFixed(2), 'm  (' + (rangeWind * M2FT).toFixed(2) + ' ft)'
+              ) : Eq(
+                '3. Hang time',
+                't = 2·v·sinθ / g = 2·' + v.toFixed(2) + '·sin(' + d.angleDeg + '°) / ' + g.toFixed(2),
+                hangG.toFixed(3), 's'
+              ),
+              Eq('4. Peak height',
+                'h = (v·sinθ)² / (2g) = (' + v.toFixed(2) + '·sin(' + d.angleDeg + '°))² / (2·' + g.toFixed(2) + ')',
+                peakG.toFixed(2), 'm  (' + (peakG * M2FT).toFixed(2) + ' ft)')
+            ]
+          );
+        })(),
         // Mode-specific controls
         d.mode === 'halfpipe' && h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 } },
           h('div', { style: { background: '#1e293b', border: '1px solid #475569', borderRadius: 10, padding: 12 } },
