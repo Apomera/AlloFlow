@@ -853,7 +853,10 @@ window.StemLab = window.StemLab || {
         progress: function(d) { return (d.coachOpens || 0) + '/3 asks'; } },
       { id: 'sk_predict_within_10', label: 'Predict within 10% on 3 attempts', icon: '🔮',
         check: function(d) { return ((d.predictionStats && d.predictionStats.withinTen) || 0) >= 3; },
-        progress: function(d) { return ((d.predictionStats && d.predictionStats.withinTen) || 0) + '/3 within 10%'; } }
+        progress: function(d) { return ((d.predictionStats && d.predictionStats.withinTen) || 0) + '/3 within 10%'; } },
+      { id: 'sk_streak_5', label: 'Land a 5-trick Hot Streak', icon: '🔥',
+        check: function(d) { return ((d.streak && d.streak.longest) || 0) >= 5; },
+        progress: function(d) { return ((d.streak && d.streak.longest) || 0) + '/5 longest streak'; } }
     ],
     render: function(ctx) {
       var React = ctx.React;
@@ -1074,6 +1077,7 @@ window.StemLab = window.StemLab || {
           coachOpens: 0, coachResponse: null,
           predictionStats: { count: 0, totalErrPct: 0, bestPct: null, withinTen: 0 },
           predictionInput: '',
+          streak: { current: 0, longest: 0, lastTier: null },
           lastResult: null, lastSim: null, activeScenarioId: null,
           resetConfirmOpen: false,
           customScenarios: preserved
@@ -1341,19 +1345,39 @@ window.StemLab = window.StemLab || {
               effMinAir: sim.effMinAir
             };
             _captureAndStampPrediction(bumps, bumps.lastResult, sim.hAir * M2FT);
+            var sk = _applyStreakAndScore(bumps, sim.landed, sim.score);
+            // Tag the result with streak info so the result card can
+            // render the multiplier badge inline.
+            bumps.lastResult.streakAfter = bumps.streak.current;
+            bumps.lastResult.streakTier = sk.tier ? sk.tier.id : null;
+            bumps.lastResult.scoreBonused = sk.totalScore;
+            bumps.lastResult.streakMult = sk.mult;
             if (sim.landed) {
               bumps.landings = (d.landings || 0) + 1;
               bumps.tricksUsed = Object.assign({}, d.tricksUsed || {}, { [sim.trick.id]: ((d.tricksUsed || {})[sim.trick.id] || 0) + 1 });
               bumps.landedTricks = Object.assign({}, d.landedTricks || {}, { [sim.trick.id]: true });
               bumps.biggestSpin = Math.max(d.biggestSpin || 0, sim.trick.rotation);
-              bumps.bestHalfpipeScore = Math.max(d.bestHalfpipeScore || 0, sim.score);
+              bumps.bestHalfpipeScore = Math.max(d.bestHalfpipeScore || 0, sk.totalScore);
               bumps.bestAirFt = Math.max(d.bestAirFt || 0, +(sim.hAir * M2FT).toFixed(2));
               if (sim.vehicle.id === 'bmx') bumps.bmxLanded = true;
-              if (awardXP) awardXP(sim.score, 'SkateLab — ' + sim.trick.label, 'skatelab');
-              if (addToast) addToast('🛹 Landed ' + sim.trick.label + ' on ' + sim.vehicle.label + '! +' + sim.score + ' XP', 'success');
+              if (awardXP) awardXP(sk.totalScore, 'SkateLab — ' + sim.trick.label + (sk.tier ? ' ' + sk.tier.icon : ''), 'skatelab');
+              if (addToast) {
+                var msg = sk.gained
+                  ? sk.tier.icon + ' ' + sk.tier.label + ' (×' + sk.tier.mult + ') — ' + sim.trick.label + ' +' + sk.totalScore + ' XP'
+                  : sk.tier
+                    ? sk.tier.icon + ' Streak ' + bumps.streak.current + '! ' + sim.trick.label + ' +' + sk.totalScore + ' XP'
+                    : '🛹 Landed ' + sim.trick.label + ' on ' + sim.vehicle.label + '! +' + sk.totalScore + ' XP';
+                addToast(msg, 'success');
+              }
             } else {
               bumps.bails = (d.bails || 0) + 1;
-              if (addToast) addToast('💥 Bail. ' + (sim.airTime < sim.effMinAir ? 'Need ' + sim.effMinAir.toFixed(2) + 's air, only got ' + sim.airTime.toFixed(2) + 's.' : 'Almost!'), 'info');
+              if (addToast) {
+                if (sk.prev >= 3) {
+                  addToast('💔 Streak ended at ' + sk.prev + '. Reset and reload.', 'info');
+                } else {
+                  addToast('💥 Bail. ' + (sim.airTime < sim.effMinAir ? 'Need ' + sim.effMinAir.toFixed(2) + 's air, only got ' + sim.airTime.toFixed(2) + 's.' : 'Almost!'), 'info');
+                }
+              }
             }
             upd(bumps);
           }
@@ -1381,15 +1405,33 @@ window.StemLab = window.StemLab || {
               windDeltaFt: sim.windDeltaFt
             };
             _captureAndStampPrediction(bumps, bumps.lastResult, sim.rangeFt);
+            var skG = _applyStreakAndScore(bumps, sim.landed, sim.score);
+            bumps.lastResult.streakAfter = bumps.streak.current;
+            bumps.lastResult.streakTier = skG.tier ? skG.tier.id : null;
+            bumps.lastResult.scoreBonused = skG.totalScore;
+            bumps.lastResult.streakMult = skG.mult;
             if (sim.landed) {
               bumps.landings = (d.landings || 0) + 1;
               bumps.longestGap = Math.max(d.longestGap || 0, sim.gapFt);
-              bumps.bestGapScore = Math.max(d.bestGapScore || 0, sim.score);
-              if (awardXP) awardXP(sim.score, 'SkateLab — ' + sim.gapFt + 'ft gap', 'skatelab');
-              if (addToast) addToast('🦘 Cleared ' + sim.gapFt + ' ft! +' + sim.score + ' XP', 'success');
+              bumps.bestGapScore = Math.max(d.bestGapScore || 0, skG.totalScore);
+              if (awardXP) awardXP(skG.totalScore, 'SkateLab — ' + sim.gapFt + 'ft gap' + (skG.tier ? ' ' + skG.tier.icon : ''), 'skatelab');
+              if (addToast) {
+                var gMsg = skG.gained
+                  ? skG.tier.icon + ' ' + skG.tier.label + ' (×' + skG.tier.mult + ') — ' + sim.gapFt + 'ft +' + skG.totalScore + ' XP'
+                  : skG.tier
+                    ? skG.tier.icon + ' Streak ' + bumps.streak.current + '! ' + sim.gapFt + 'ft +' + skG.totalScore + ' XP'
+                    : '🦘 Cleared ' + sim.gapFt + ' ft! +' + skG.totalScore + ' XP';
+                addToast(gMsg, 'success');
+              }
             } else {
               bumps.bails = (d.bails || 0) + 1;
-              if (addToast) addToast(sim.clearance < 0 ? '💥 Came up short by ' + Math.abs(sim.clearance * M2FT).toFixed(1) + ' ft.' : '💥 Overshot by ' + (sim.clearance * M2FT - 1.2).toFixed(1) + ' ft.', 'info');
+              if (addToast) {
+                if (skG.prev >= 3) {
+                  addToast('💔 Streak ended at ' + skG.prev + '. Reset and reload.', 'info');
+                } else {
+                  addToast(sim.clearance < 0 ? '💥 Came up short by ' + Math.abs(sim.clearance * M2FT).toFixed(1) + ' ft.' : '💥 Overshot by ' + (sim.clearance * M2FT - 1.2).toFixed(1) + ' ft.', 'info');
+                }
+              }
             }
             upd(bumps);
           }
@@ -1641,6 +1683,44 @@ window.StemLab = window.StemLab || {
             )
           );
         })(),
+        // ── Hot-streak HUD chip ─────────────────────────────────
+        // Renders only while a streak is alive (current ≥ 1). Tier
+        // styling (color + glow) intensifies as the chain climbs;
+        // streaks 1–2 show a calm amber chip, 3+ flips to the tier
+        // gradient + outer glow. Live region announces upgrades to
+        // screen readers via skAnnounce on attempt completion.
+        ((d.streak && d.streak.current >= 1) ? (function() {
+          var tier = _streakTier(d.streak.current);
+          var bg = tier
+            ? 'linear-gradient(135deg, ' + tier.color + ', ' + tier.color + 'cc)'
+            : 'linear-gradient(135deg,#fbbf24,#f59e0b)';
+          var glow = tier ? '0 0 18px ' + tier.glow + ', 0 4px 12px rgba(0,0,0,0.35)' : '0 2px 6px rgba(0,0,0,0.25)';
+          return h('div', {
+            role: 'status',
+            'aria-label': 'Active streak ' + d.streak.current + (tier ? ', ' + tier.label : ''),
+            style: {
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              gap: 10, marginBottom: 10, padding: '10px 14px',
+              background: bg, color: '#1f2937',
+              border: '2px solid ' + (tier ? tier.color : '#92400e'),
+              borderRadius: 12,
+              boxShadow: glow,
+              fontWeight: 900,
+              letterSpacing: '0.04em',
+              transition: 'background 200ms ease, box-shadow 200ms ease'
+            }
+          },
+            h('span', { style: { fontSize: 22 } }, tier ? tier.icon : '⚡'),
+            h('span', { style: { fontSize: 14 } }, (tier ? tier.label + ' · ' : '') + 'Streak ×' + d.streak.current),
+            tier && h('span', {
+              style: {
+                fontSize: 11, padding: '2px 8px',
+                background: 'rgba(31,41,55,0.85)', color: '#fef3c7',
+                borderRadius: 999, fontWeight: 800
+              }
+            }, '×' + tier.mult + ' XP')
+          );
+        })() : null),
         // Canvas
         h('div', { style: { background: '#0f172a', borderRadius: 12, border: '2px solid #78350f', padding: 8, marginBottom: 12, boxShadow: '0 6px 20px rgba(0,0,0,0.35)' } },
           h('canvas', {
@@ -2254,9 +2334,9 @@ window.StemLab = window.StemLab || {
         // exists. Three cells: best halfpipe score, best gap score,
         // best air height. Mirrors the "Personal Best" panel pattern
         // teachers asked for in earlier rounds.
-        ((d.bestHalfpipeScore || d.bestGapScore || d.bestAirFt) ? h('div', {
+        ((d.bestHalfpipeScore || d.bestGapScore || d.bestAirFt || (d.streak && d.streak.longest)) ? h('div', {
           style: {
-            display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8,
+            display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8,
             marginBottom: 10,
             background: 'linear-gradient(135deg, rgba(251,191,36,0.10), rgba(180,83,9,0.10))',
             border: '1px solid rgba(251,191,36,0.40)',
@@ -2267,7 +2347,8 @@ window.StemLab = window.StemLab || {
           [
             { label: '🏆 Best Halfpipe', val: d.bestHalfpipeScore || 0, suffix: ' pts', color: '#fbbf24' },
             { label: '🏆 Best Gap',      val: d.bestGapScore || 0,      suffix: ' pts', color: '#fbbf24' },
-            { label: '🏆 Best Air',      val: (d.bestAirFt || 0).toFixed(2), suffix: ' ft', color: '#fde68a' }
+            { label: '🏆 Best Air',      val: (d.bestAirFt || 0).toFixed(2), suffix: ' ft', color: '#fde68a' },
+            { label: '🔥 Longest Streak', val: (d.streak && d.streak.longest) || 0, suffix: '', color: '#fb923c' }
           ].map(function(s, i) {
             return h('div', { key: i, style: { textAlign: 'center' } },
               h('div', { style: { fontSize: 16, fontWeight: 900, color: s.color } }, s.val + s.suffix),
