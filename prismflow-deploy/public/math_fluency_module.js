@@ -35,6 +35,9 @@
       '@keyframes alloGateOpen { 0% { transform: translate(-50%,-50%) scale(1); filter: brightness(1); } 35% { transform: translate(-50%,-50%) scale(1.06); filter: brightness(1.4); } 100% { transform: translate(-50%,-50%) scale(1.04); filter: brightness(1.2); } }',
       '.allo-gate-open { animation: alloGateOpen 220ms ease-out forwards; }',
       '@keyframes alloStreakPulse { 0% { transform: translateX(-50%) scale(0.8); opacity: 0; } 18% { transform: translateX(-50%) scale(1.08); opacity: 1; } 35% { transform: translateX(-50%) scale(1); opacity: 1; } 80% { transform: translateX(-50%) scale(1); opacity: 1; } 100% { transform: translateX(-50%) scale(0.94); opacity: 0; } }',
+      '@keyframes alloVolumeRotate { from { transform: rotateX(-22deg) rotateY(-32deg); } to { transform: rotateX(-22deg) rotateY(328deg); } }',
+      '.allo-volume-rotate { animation: alloVolumeRotate 12s linear infinite; }',
+      '@media (prefers-reduced-motion: reduce) { .allo-volume-rotate { animation: none !important; } }',
       '@media (prefers-reduced-motion: reduce) { .allo-gate-shake, .allo-gate-open { animation: none !important; } [style*="alloStreakPulse"] { animation-duration: 0.01ms !important; } }',
     ].join('\n');
     document.head.appendChild(mfA11yStyle);
@@ -1162,6 +1165,26 @@
       if (op === 'sub') { a = Math.floor(Math.random() * maxN) + 1; b = Math.floor(Math.random() * a) + 1; return { text: a + ' − ' + b, answer: a - b, op: op }; }
       if (op === 'mul') { a = Math.floor(Math.random() * 12) + 1; b = Math.floor(Math.random() * 12) + 1; return { text: a + ' × ' + b, answer: a * b, op: op }; }
       if (op === 'div') { b = Math.floor(Math.random() * 11) + 2; var ans = Math.floor(Math.random() * 12) + 1; a = b * ans; return { text: a + ' ÷ ' + b, answer: ans, op: op }; }
+      if (op === 'volume') {
+        // Visual volume gate. Pick L,W,H so the prism stays readable
+        // (no axis larger than 6 single / 8 double) and total volume
+        // stays manageable to count by hand.
+        var maxAxis = difficulty === 'single' ? 6 : 8;
+        var L = Math.floor(Math.random() * (maxAxis - 1)) + 2;
+        var W = Math.floor(Math.random() * (maxAxis - 1)) + 2;
+        var H = Math.floor(Math.random() * (maxAxis - 1)) + 2;
+        // 25% chance of L-block — only when each axis is at least 3,
+        // so we have room to carve a notch without collapsing the prism.
+        var asLBlock = (L >= 3 && W >= 3 && H >= 3 && Math.random() < 0.25);
+        if (asLBlock) {
+          var nL = Math.max(1, Math.floor(L / 3));
+          var nW = Math.max(1, Math.floor(W / 3));
+          var nH = Math.max(1, Math.floor(H / 3));
+          var vol = (L * W * H) - (nL * nW * nH);
+          return { text: 'V = ?', answer: vol, op: 'volume', type: 'visual', shape: 'lblock', dims: { l: L, w: W, h: H }, notch: { l: nL, w: nW, h: nH } };
+        }
+        return { text: 'V = ?', answer: L * W * H, op: 'volume', type: 'visual', shape: 'rect', dims: { l: L, w: W, h: H } };
+      }
       return { text: '1 + 1', answer: 2, op: 'add' };
     }
 
@@ -1293,9 +1316,17 @@
       if (dir === 'right' && !cell.walls.right) { newC++; canMove = true; }
       if (!canMove) { setFeedback('wall'); playTone(140, 0.08, 'triangle', 0.06); setTimeout(function() { setFeedback(''); }, 300); return; }
       // Show a problem to solve before moving
-      setCurrentProblem({ dir: dir, targetR: newR, targetC: newC, problem: makeProblem() });
+      var _prob = makeProblem();
+      setCurrentProblem({ dir: dir, targetR: newR, targetC: newC, problem: _prob });
       setUserInput('');
       setAttemptCount(0);
+      if (_prob.type === 'visual') {
+        var d = _prob.dims;
+        var msg = (_prob.shape === 'lblock')
+          ? 'L block prism gate. Base ' + d.l + ' by ' + d.w + ' by ' + d.h + ', with a ' + _prob.notch.l + ' by ' + _prob.notch.w + ' by ' + _prob.notch.h + ' corner removed. Solve for total cubes.'
+          : 'Volume gate. ' + d.l + ' by ' + d.w + ' by ' + d.h + '. Solve for total cubes.';
+        _mfAnnounce(msg);
+      }
       setTimeout(function() { if (inputRef.current) inputRef.current.focus(); }, 50);
     }
 
@@ -1342,7 +1373,8 @@
         _mfBumpLifetime({ gatesUnlocked: 1, longestStreak: nextStreak });
         (function() {
           var ptxt = (currentProblem.problem.text || '');
-          var opK = ptxt.indexOf('\u00D7') >= 0 || ptxt.indexOf('x') >= 0 || ptxt.indexOf('*') >= 0 ? 'mul'
+          var opK = currentProblem.problem.type === 'visual' ? 'volume'
+            : ptxt.indexOf('\u00D7') >= 0 || ptxt.indexOf('x') >= 0 || ptxt.indexOf('*') >= 0 ? 'mul'
             : ptxt.indexOf('\u00F7') >= 0 || ptxt.indexOf('/') >= 0 ? 'div'
             : ptxt.indexOf('+') >= 0 ? 'add'
             : (ptxt.indexOf('\u2212') >= 0 || ptxt.indexOf('-') >= 0) ? 'sub'
@@ -1356,7 +1388,7 @@
               var preTier = _mfMasteryTier(pre);
               var postTier = _mfMasteryTier(pre + 1);
               if (postTier && (!preTier || postTier.tier !== preTier.tier)) {
-                var opNice = { add: 'Addition', sub: 'Subtraction', mul: 'Multiplication', div: 'Division' }[opK] || opK;
+                var opNice = { add: 'Addition', sub: 'Subtraction', mul: 'Multiplication', div: 'Division', volume: 'Volume' }[opK] || opK;
                 if (addToast) addToast(postTier.emoji + ' ' + postTier.label + ' ' + opNice + ' Mastery unlocked!', 'success');
                 _mfAnnounce(postTier.label + ' ' + opNice + ' mastery earned. ' + (pre + 1) + ' gates.');
                 // Triple-tone fanfare layered on top of the existing
@@ -2471,8 +2503,8 @@
         (function() {
           var counts = null;
           try { counts = JSON.parse(localStorage.getItem('fluency_maze_op_counts') || '{}'); } catch (e) { counts = {}; }
-          var opNames = { add: 'Add', sub: 'Sub', mul: 'Mul', div: 'Div' };
-          var tiered = ['add', 'sub', 'mul', 'div'].map(function(k) {
+          var opNames = { add: 'Add', sub: 'Sub', mul: 'Mul', div: 'Div', volume: 'Volume' };
+          var tiered = ['add', 'sub', 'mul', 'div', 'volume'].map(function(k) {
             var n = counts[k] || 0;
             var t = _mfMasteryTier(n);
             return t ? { op: k, name: opNames[k], n: n, t: t } : null;
@@ -2504,8 +2536,8 @@
         })(),
         // Operation selector
         h('div', { style: { display: 'flex', gap: '6px', justifyContent: 'center', marginBottom: '12px', flexWrap: 'wrap' } },
-          ['add', 'sub', 'mul', 'div', 'mixed'].map(function(op) {
-            var labels = { add: '➕ Add', sub: '➖ Sub', mul: '✖️ Mul', div: '➗ Div', mixed: '🔀 Mixed' };
+          ['add', 'sub', 'mul', 'div', 'mixed', 'volume'].map(function(op) {
+            var labels = { add: '➕ Add', sub: '➖ Sub', mul: '✖️ Mul', div: '➗ Div', mixed: '🔀 Mixed', volume: '🧊 Volume' };
             var opSel = operation === op;
             return h('button', { key: op, onClick: function() { setOperation(op); },
               'aria-pressed': opSel,
@@ -2886,7 +2918,9 @@
         // even when operation === 'mixed'.
         (function() {
           var ptxt = (currentProblem.problem.text || '');
-          var opLabel = ptxt.indexOf('\u00D7') >= 0 || ptxt.indexOf('x') >= 0 || ptxt.indexOf('*') >= 0 ? 'Multiplication'
+          var opLabel = currentProblem.problem.type === 'visual'
+              ? (currentProblem.problem.shape === 'lblock' ? 'L-Block' : 'Volume')
+            : ptxt.indexOf('\u00D7') >= 0 || ptxt.indexOf('x') >= 0 || ptxt.indexOf('*') >= 0 ? 'Multiplication'
             : ptxt.indexOf('\u00F7') >= 0 || ptxt.indexOf('/') >= 0 ? 'Division'
             : ptxt.indexOf('+') >= 0 ? 'Addition'
             : (ptxt.indexOf('\u2212') >= 0 || ptxt.indexOf('-') >= 0) ? 'Subtraction'
@@ -2902,7 +2936,73 @@
           }, opLabel + ' Gate');
         })(),
         // The "combination" \u2014 math problem
-        h('div', { style: { fontSize: '30px', fontWeight: 800, color: '#fef3c7', marginBottom: '10px', fontFamily: 'monospace', textShadow: '0 0 12px rgba(251,191,36,0.45)' } }, currentProblem.problem.text + ' = ?'),
+        // Visual-volume prism (CSS-3D unit-cube grid) OR text equation.
+        // Renders a small rotating prism made of individual unit cubes
+        // when the gate problem is a visual one, so the math fact is
+        // literally a structure to count. Falls back to the original
+        // text math display for arithmetic gates.
+        currentProblem.problem.type === 'visual'
+          ? (function() {
+              var d = currentProblem.problem.dims;
+              var notch = currentProblem.problem.notch;
+              var isLBlock = currentProblem.problem.shape === 'lblock';
+              // Cube edge sized so the longest axis fits in ~140px.
+              var maxAx = Math.max(d.l, d.w, d.h);
+              var unit = Math.max(14, Math.min(28, 140 / maxAx));
+              var cubes = [];
+              for (var z = 0; z < d.h; z++) {
+                for (var y = 0; y < d.w; y++) {
+                  for (var x = 0; x < d.l; x++) {
+                    if (isLBlock && x < notch.l && y < notch.w && z < notch.h) continue;
+                    var hue = 38 + z * 7;
+                    var face = 'hsl(' + hue + ', 78%, 58%)';
+                    var faceDim = 'hsl(' + hue + ', 60%, 38%)';
+                    cubes.push(h('div', {
+                      key: x + ',' + y + ',' + z,
+                      style: {
+                        position: 'absolute',
+                        width: unit + 'px', height: unit + 'px',
+                        transform: 'translate3d(' + (x * unit) + 'px, ' + (-z * unit) + 'px, ' + (y * unit) + 'px)',
+                        transformStyle: 'preserve-3d'
+                      }
+                    },
+                      // 6 cube faces, positioned via translateZ + rotate
+                      h('div', { style: { position: 'absolute', inset: 0, background: face, border: '1px solid #b45309', transform: 'translateZ(' + (unit/2) + 'px)' } }),
+                      h('div', { style: { position: 'absolute', inset: 0, background: faceDim, border: '1px solid #78350f', transform: 'rotateY(180deg) translateZ(' + (unit/2) + 'px)' } }),
+                      h('div', { style: { position: 'absolute', inset: 0, background: face, border: '1px solid #b45309', transform: 'rotateY(90deg) translateZ(' + (unit/2) + 'px)' } }),
+                      h('div', { style: { position: 'absolute', inset: 0, background: faceDim, border: '1px solid #78350f', transform: 'rotateY(-90deg) translateZ(' + (unit/2) + 'px)' } }),
+                      h('div', { style: { position: 'absolute', inset: 0, background: 'hsl(' + hue + ', 80%, 70%)', border: '1px solid #b45309', transform: 'rotateX(90deg) translateZ(' + (unit/2) + 'px)' } }),
+                      h('div', { style: { position: 'absolute', inset: 0, background: 'hsl(' + hue + ', 50%, 30%)', border: '1px solid #78350f', transform: 'rotateX(-90deg) translateZ(' + (unit/2) + 'px)' } })
+                    ));
+                  }
+                }
+              }
+              var totalW = d.l * unit;
+              var totalD = d.w * unit;
+              var totalH = d.h * unit;
+              return h('div', {
+                'aria-label': isLBlock
+                  ? ('L-block prism, base ' + d.l + ' by ' + d.w + ' by ' + d.h + ' with ' + notch.l + ' by ' + notch.w + ' by ' + notch.h + ' corner removed')
+                  : ('Rectangular prism, ' + d.l + ' by ' + d.w + ' by ' + d.h),
+                style: { perspective: '600px', height: '180px', marginBottom: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'visible' }
+              },
+                h('div', {
+                  className: 'allo-volume-rotate',
+                  style: {
+                    position: 'relative', width: totalW + 'px', height: totalH + 'px',
+                    transformStyle: 'preserve-3d',
+                    transform: 'translateZ(' + (-totalD / 2) + 'px) rotateX(-22deg) rotateY(-32deg)',
+                    transformOrigin: 'center'
+                  }
+                }, cubes),
+                // Dimension caption — small text above so the visual
+                // problem still has a label that matches the aria.
+                h('div', {
+                  style: { position: 'absolute', bottom: '-2px', left: '50%', transform: 'translateX(-50%)', fontSize: '11px', color: '#fbbf24', fontWeight: 700, letterSpacing: '0.08em', fontFamily: 'monospace', whiteSpace: 'nowrap' }
+                }, isLBlock ? (d.l + '×' + d.w + '×' + d.h + '  −  ' + notch.l + '×' + notch.w + '×' + notch.h) : (d.l + ' × ' + d.w + ' × ' + d.h))
+              );
+            })()
+          : h('div', { style: { fontSize: '30px', fontWeight: 800, color: '#fef3c7', marginBottom: '10px', fontFamily: 'monospace', textShadow: '0 0 12px rgba(251,191,36,0.45)' } }, currentProblem.problem.text + ' = ?'),
         // Answer display (read-only echo of userInput so taps on numpad show)
         h('div', {
           style: {

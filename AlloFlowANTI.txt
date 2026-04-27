@@ -4861,6 +4861,11 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [mathFluencyHistory, setMathFluencyHistory] = useState([]);
   const [mathFluencyStudentInput, setMathFluencyStudentInput] = useState('');
   const [cubeDims, setCubeDims] = useState({ l: 3, w: 2, h: 2 });
+  // L-block toggle for the Volume Builder. When 'lblock', a configurable
+  // notch is carved from the (0,0,0) corner so the prism reads as an
+  // L-shape; volume becomes (L*W*H) − (notch_l*notch_w*notch_h).
+  const [cubeShape, setCubeShape] = useState('rect'); // 'rect' | 'lblock'
+  const [cubeNotch, setCubeNotch] = useState({ l: 1, w: 1, h: 1 });
   const [cubeChallenge, setCubeChallenge] = useState(null);
   const [cubeAnswer, setCubeAnswer] = useState("");
   const [cubeFeedback, setCubeFeedback] = useState(null);
@@ -5038,57 +5043,57 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       document.head.appendChild(s);
     })();
-    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d5f67ad/allo_data_module.js');
-    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d5f67ad/large_file_module.js');
-    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d5f67ad/key_concept_map_module.js');
-    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d5f67ad/utils_pure_module.js');
-    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d5f67ad/gemini_api_module.js');
-    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d5f67ad/tts_module.js');
-    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d5f67ad/personas_module.js');
-    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d5f67ad/export_module.js');
-    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d5f67ad/misc_components_module.js');
-    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d5f67ad/remediation_audio_module.js');
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d5f67ad/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d5f67ad/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d5f67ad/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d5f67ad/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d5f67ad/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d5f67ad/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d5f67ad/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d5f67ad/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d5f67ad/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d5f67ad/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d5f67ad/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d5f67ad/story_stage_module.js');
+    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5f8874e/allo_data_module.js');
+    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5f8874e/large_file_module.js');
+    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5f8874e/key_concept_map_module.js');
+    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5f8874e/utils_pure_module.js');
+    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5f8874e/gemini_api_module.js');
+    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5f8874e/tts_module.js');
+    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5f8874e/personas_module.js');
+    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5f8874e/export_module.js');
+    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5f8874e/misc_components_module.js');
+    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5f8874e/remediation_audio_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5f8874e/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5f8874e/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5f8874e/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5f8874e/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5f8874e/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5f8874e/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5f8874e/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5f8874e/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5f8874e/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5f8874e/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5f8874e/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5f8874e/story_stage_module.js');
     loadModule('PoetTree', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5e3ae8e/poet_tree_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d5f67ad/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d5f67ad/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d5f67ad/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d5f67ad/student_interaction_module.js');
-    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d5f67ad/math_fluency_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d5f67ad/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d5f67ad/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d5f67ad/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d5f67ad/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d5f67ad/content_engine_module.js');
-    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d5f67ad/timeline_revision_module.js');
-    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d5f67ad/prompts_library_module.js');
-    loadModule('TextPipelineHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d5f67ad/text_pipeline_helpers_module.js');
-    loadModule('AdaptiveControllerModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d5f67ad/adaptive_controller_module.js');
-    loadModule('UdlChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d5f67ad/udl_chat_module.js');
-    loadModule('AdventureHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d5f67ad/adventure_handlers_module.js');
-    loadModule('GlossaryHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d5f67ad/glossary_helpers_module.js');
-    loadModule('ViewRenderersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d5f67ad/view_renderers_module.js');
-    loadModule('AudioHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d5f67ad/audio_helpers_module.js');
-    loadModule('GenerationHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d5f67ad/generation_helpers_module.js');
-    loadModule('MiscHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d5f67ad/misc_handlers_module.js');
-    loadModule('PureHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d5f67ad/pure_helpers_module.js');
-    loadModule('MathHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d5f67ad/math_helpers_module.js');
-    loadModule('CmapHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d5f67ad/concept_map_handlers_module.js');
-    loadModule('GenDispatcherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d5f67ad/generate_dispatcher_module.js');
-    loadModule('PhaseKHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d5f67ad/phase_k_helpers_module.js');
-    loadModule('AdventureSessionHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d5f67ad/adventure_session_handlers_module.js');
-    loadModule('TextUtilityHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d5f67ad/text_utility_helpers_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5f8874e/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5f8874e/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5f8874e/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5f8874e/student_interaction_module.js');
+    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5f8874e/math_fluency_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5f8874e/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5f8874e/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5f8874e/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5f8874e/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5f8874e/content_engine_module.js');
+    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5f8874e/timeline_revision_module.js');
+    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5f8874e/prompts_library_module.js');
+    loadModule('TextPipelineHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5f8874e/text_pipeline_helpers_module.js');
+    loadModule('AdaptiveControllerModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5f8874e/adaptive_controller_module.js');
+    loadModule('UdlChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5f8874e/udl_chat_module.js');
+    loadModule('AdventureHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5f8874e/adventure_handlers_module.js');
+    loadModule('GlossaryHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5f8874e/glossary_helpers_module.js');
+    loadModule('ViewRenderersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5f8874e/view_renderers_module.js');
+    loadModule('AudioHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5f8874e/audio_helpers_module.js');
+    loadModule('GenerationHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5f8874e/generation_helpers_module.js');
+    loadModule('MiscHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5f8874e/misc_handlers_module.js');
+    loadModule('PureHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5f8874e/pure_helpers_module.js');
+    loadModule('MathHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5f8874e/math_helpers_module.js');
+    loadModule('CmapHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5f8874e/concept_map_handlers_module.js');
+    loadModule('GenDispatcherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5f8874e/generate_dispatcher_module.js');
+    loadModule('PhaseKHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5f8874e/phase_k_helpers_module.js');
+    loadModule('AdventureSessionHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5f8874e/adventure_session_handlers_module.js');
+    loadModule('TextUtilityHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5f8874e/text_utility_helpers_module.js');
     loadModule('PhaseNHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/phase_n_misc_helpers_module.js');
     loadModule('PhaseOHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/phase_o_misc_handlers_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
@@ -5101,7 +5106,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       document.head.appendChild(s);
     })();
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d5f67ad/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5f8874e/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -26970,7 +26975,17 @@ ${t('export.readme_json_desc')}`;
                             );
                         })()}
 {mathMode === 'Volume Builder' && (() => {
-                            const volume = cubeDims.l * cubeDims.w * cubeDims.h;
+                            const isLBlock = cubeShape === 'lblock';
+                            // Clamp notch dims so they never equal or exceed the parent
+                            // axis (an axis-equal notch would slice the entire prism).
+                            const safeNotch = {
+                                l: Math.max(1, Math.min(cubeNotch.l, cubeDims.l - 1)),
+                                w: Math.max(1, Math.min(cubeNotch.w, cubeDims.w - 1)),
+                                h: Math.max(1, Math.min(cubeNotch.h, cubeDims.h - 1)),
+                            };
+                            const rectVolume = cubeDims.l * cubeDims.w * cubeDims.h;
+                            const notchVolume = isLBlock ? (safeNotch.l * safeNotch.w * safeNotch.h) : 0;
+                            const volume = rectVolume - notchVolume;
                             const surfaceArea = 2 * (cubeDims.l * cubeDims.w + cubeDims.l * cubeDims.h + cubeDims.w * cubeDims.h);
                             const cubeUnit = Math.max(18, Math.min(36, 240 / Math.max(cubeDims.l, cubeDims.w, cubeDims.h)));
                             const handleCubeDrag = (e) => {
@@ -26989,6 +27004,9 @@ ${t('export.readme_json_desc')}`;
                             for (let z = 0; z < maxLayer; z++)
                                 for (let y = 0; y < cubeDims.w; y++)
                                     for (let x = 0; x < cubeDims.l; x++) {
+                                        // L-block: skip cubes inside the corner notch so the
+                                        // remaining structure visibly reads as an L-shape.
+                                        if (isLBlock && x < safeNotch.l && y < safeNotch.w && z < safeNotch.h) continue;
                                         const hue = 140 + z * 12;
                                         const lightness = 55 + z * 4;
                                         cubeGridElements.push(
@@ -27058,7 +27076,29 @@ ${t('export.readme_json_desc')}`;
                                         <button onClick={() => { setCubeRotation({ x: -25, y: -35 }); setCubeScale(1.0); }} className="ml-1 px-2 py-1 rounded-md bg-white border border-emerald-300 text-emerald-700 font-bold text-[11px] hover:bg-emerald-100 transition-all" aria-label="Reset view">↺</button>
                                     </div>
                                 </div>
-                                <p className="text-xs text-emerald-700/70">Drag to rotate • Scroll to zoom • Build rectangular prisms with unit cubes (5.MD.3-5)</p>
+                                <p className="text-xs text-emerald-700/70">Drag to rotate • Scroll to zoom • Build rectangular prisms or L-blocks with unit cubes (5.MD.3-5)</p>
+                                {/* Shape selector — toggle between a solid rectangular prism
+                                    and an L-block (rectangular base with a corner notch carved
+                                    out so volume becomes additive: V = L*W*H − notch_l*notch_w*notch_h). */}
+                                <div className="flex gap-2 justify-center" role="radiogroup" aria-label="Volume Builder shape">
+                                    {[
+                                        { id: 'rect',   label: '🧊 Rectangular' },
+                                        { id: 'lblock', label: '📐 L-Block' },
+                                    ].map(s => {
+                                        const sel = cubeShape === s.id;
+                                        return (
+                                            <button
+                                                key={s.id}
+                                                role="radio"
+                                                aria-checked={sel}
+                                                onClick={() => { setCubeShape(s.id); setCubeChallenge(null); setCubeFeedback(null); }}
+                                                className={'px-3 py-1.5 rounded-full text-xs font-bold transition-all border-2 ' + (sel
+                                                    ? 'bg-emerald-600 text-white border-emerald-700 shadow'
+                                                    : 'bg-white text-emerald-700 border-emerald-200 hover:bg-emerald-50')}
+                                            >{s.label}</button>
+                                        );
+                                    })}
+                                </div>
                                 <div className="grid grid-cols-3 gap-2">
                                     {['l','w','h'].map(dim => (
                                         <div key={dim}>
@@ -27071,6 +27111,23 @@ ${t('export.readme_json_desc')}`;
                                         </div>
                                     ))}
                                 </div>
+                                {/* Notch sliders — only when L-block is selected. Each
+                                    notch axis is capped at parent_axis − 1 so the prism
+                                    always retains at least one row in each direction. */}
+                                {isLBlock && (
+                                    <div className="grid grid-cols-3 gap-2 mt-2 p-2 rounded-lg bg-amber-50 border border-amber-200">
+                                        {['l','w','h'].map(dim => (
+                                            <div key={'notch-' + dim}>
+                                                <label className="block text-[10px] text-amber-700 mb-1 font-bold uppercase">{(dim === 'l' ? 'Length' : dim === 'w' ? 'Width' : 'Height') + ' Notch'}</label>
+                                                <input type="range" min="1" max={Math.max(1, cubeDims[dim] - 1)} value={Math.min(cubeNotch[dim], Math.max(1, cubeDims[dim] - 1))}
+                                                    onChange={(e) => { setCubeNotch(prev => ({...prev, [dim]: parseInt(e.target.value)})); setCubeChallenge(null); setCubeFeedback(null); }}
+                                                    className="w-full h-2 bg-amber-200 rounded-lg appearance-none cursor-pointer accent-amber-600"
+                                                    aria-label={'Notch ' + (dim === 'l' ? 'length' : dim === 'w' ? 'width' : 'height')} />
+                                                <div className="text-center text-xs font-bold text-amber-700 mt-1">{Math.min(cubeNotch[dim], Math.max(1, cubeDims[dim] - 1))}</div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                                 <div
                                     className="bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl border-2 border-emerald-300/30 flex items-center justify-center overflow-hidden cursor-grab active:cursor-grabbing select-none"
                                     style={{ minHeight: '400px', perspective: '900px' }}
@@ -27105,14 +27162,18 @@ ${t('export.readme_json_desc')}`;
                                         <div className="text-center">
                                             <div className="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-1">{t('stem.volume')}</div>
                                             <div className="text-lg font-bold text-emerald-800">
-                                                V = {cubeDims.l} × {cubeDims.w} × {cubeDims.h} = <span className="text-2xl text-emerald-600">{volume}</span>
+                                                {isLBlock ? (
+                                                    <>V = ({cubeDims.l}×{cubeDims.w}×{cubeDims.h}) − ({safeNotch.l}×{safeNotch.w}×{safeNotch.h}) = {rectVolume} − {notchVolume} = <span className="text-2xl text-emerald-600">{volume}</span></>
+                                                ) : (
+                                                    <>V = {cubeDims.l} × {cubeDims.w} × {cubeDims.h} = <span className="text-2xl text-emerald-600">{volume}</span></>
+                                                )}
                                             </div>
                                             <div className="text-xs text-slate-600">{volume} unit cube{volume !== 1 ? 's' : ''}</div>
                                         </div>
                                         <div className="text-center">
-                                            <div className="text-xs font-bold text-teal-600 uppercase tracking-wider mb-1">{t('stem.surface_area')}</div>
+                                            <div className="text-xs font-bold text-teal-600 uppercase tracking-wider mb-1">{t('stem.surface_area')}{isLBlock && <span className="ml-1 text-[10px] font-normal text-teal-500/70">(approx — full prism)</span>}</div>
                                             <div className="text-lg font-bold text-teal-800">
-                                                SA = <span className="text-2xl text-teal-600">{surfaceArea}</span>
+                                                SA {isLBlock ? '≈ ' : '= '}<span className="text-2xl text-teal-600">{surfaceArea}</span>
                                             </div>
                                             <div className="text-xs text-slate-600">2({cubeDims.l}×{cubeDims.w} + {cubeDims.l}×{cubeDims.h} + {cubeDims.w}×{cubeDims.h})</div>
                                         </div>
@@ -27130,7 +27191,17 @@ ${t('export.readme_json_desc')}`;
                                         const w = Math.floor(Math.random() * (vmax - 1)) + 1;
                                         const h = Math.floor(Math.random() * (vmax - 1)) + 1;
                                         setCubeDims({ l, w, h });
-                                        setCubeChallenge({ l, w, h, answer: l * w * h });
+                                        // Challenge answer adapts to current shape: rectangular
+                                        // uses V = L*W*H; L-block subtracts the (clamped) notch
+                                        // volume so what's shown equals what's checked.
+                                        if (cubeShape === 'lblock') {
+                                            const nL = Math.max(1, Math.min(cubeNotch.l, l - 1));
+                                            const nW = Math.max(1, Math.min(cubeNotch.w, w - 1));
+                                            const nH = Math.max(1, Math.min(cubeNotch.h, h - 1));
+                                            setCubeChallenge({ l, w, h, shape: 'lblock', notch: { l: nL, w: nW, h: nH }, answer: l * w * h - nL * nW * nH });
+                                        } else {
+                                            setCubeChallenge({ l, w, h, shape: 'rect', answer: l * w * h });
+                                        }
                                         setCubeAnswer('');
                                         setCubeFeedback(null);
                                         setCubeShowLayers(null);
@@ -27144,15 +27215,15 @@ ${t('export.readme_json_desc')}`;
                                 </div>
                                 {cubeChallenge && (
                                     <div className="bg-amber-50 rounded-lg p-3 border border-amber-200">
-                                        <p className="text-sm font-bold text-amber-800 mb-2">🤔 What is the volume of this rectangular prism?</p>
+                                        <p className="text-sm font-bold text-amber-800 mb-2">🤔 What is the volume of this {cubeChallenge.shape === 'lblock' ? 'L-block' : 'rectangular prism'}?</p>
                                         <div className="flex gap-2 items-center">
                                             <input type="number" value={cubeAnswer}
                                                 onChange={(e) => setCubeAnswer(e.target.value)}
-                                                onKeyDown={(e) => { if (e.key === 'Enter' && cubeAnswer) { const ans = parseInt(cubeAnswer); setCubeFeedback(ans === cubeChallenge.answer ? { correct: true, msg: '✅ Correct! ' + cubeChallenge.l + ' × ' + cubeChallenge.w + ' × ' + cubeChallenge.h + ' = ' + cubeChallenge.answer + ' cubic units' } : { correct: false, msg: '❌ Not quite. Try V = L × W × H' }); } }}
+                                                onKeyDown={(e) => { if (e.key === 'Enter' && cubeAnswer) { const ans = parseInt(cubeAnswer); const isLB = cubeChallenge.shape === 'lblock'; const correctMsg = isLB ? ('✅ Correct! (' + cubeChallenge.l + '×' + cubeChallenge.w + '×' + cubeChallenge.h + ') − (' + cubeChallenge.notch.l + '×' + cubeChallenge.notch.w + '×' + cubeChallenge.notch.h + ') = ' + cubeChallenge.answer + ' cubic units') : ('✅ Correct! ' + cubeChallenge.l + ' × ' + cubeChallenge.w + ' × ' + cubeChallenge.h + ' = ' + cubeChallenge.answer + ' cubic units'); const wrongMsg = isLB ? '❌ Not quite. Try V = (L × W × H) − notch' : '❌ Not quite. Try V = L × W × H'; setCubeFeedback(ans === cubeChallenge.answer ? { correct: true, msg: correctMsg } : { correct: false, msg: wrongMsg }); } }}
                                                 placeholder="Enter volume..."
                                                 className="flex-1 px-3 py-2 border border-amber-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-amber-400 outline-none"
                                                 aria-label="Volume answer" />
-                                            <button onClick={() => { const ans = parseInt(cubeAnswer); setCubeFeedback(ans === cubeChallenge.answer ? { correct: true, msg: '✅ Correct! ' + cubeChallenge.l + ' × ' + cubeChallenge.w + ' × ' + cubeChallenge.h + ' = ' + cubeChallenge.answer + ' cubic units' } : { correct: false, msg: '❌ Not quite. Try V = L × W × H' }); }}
+                                            <button onClick={() => { const ans = parseInt(cubeAnswer); const isLB = cubeChallenge.shape === 'lblock'; const correctMsg = isLB ? ('✅ Correct! (' + cubeChallenge.l + '×' + cubeChallenge.w + '×' + cubeChallenge.h + ') − (' + cubeChallenge.notch.l + '×' + cubeChallenge.notch.w + '×' + cubeChallenge.notch.h + ') = ' + cubeChallenge.answer + ' cubic units') : ('✅ Correct! ' + cubeChallenge.l + ' × ' + cubeChallenge.w + ' × ' + cubeChallenge.h + ' = ' + cubeChallenge.answer + ' cubic units'); const wrongMsg = isLB ? '❌ Not quite. Try V = (L × W × H) − notch' : '❌ Not quite. Try V = L × W × H'; setCubeFeedback(ans === cubeChallenge.answer ? { correct: true, msg: correctMsg } : { correct: false, msg: wrongMsg }); }}
                                                 disabled={!cubeAnswer}
                                                 className="px-4 py-2 bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-600 disabled:opacity-40 transition-all">
                                                 Check
