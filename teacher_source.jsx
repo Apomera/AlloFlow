@@ -1307,7 +1307,7 @@ const EscapeRoomTeacherControls = React.memo(({ sessionData, activeSessionCode, 
   );
 });
 // @section LIVE_QUIZ — Teacher live quiz broadcast controls
-const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, activeSessionCode, appId, onGenerateImage, onRefineImage, onCreateGroup, onAssignStudent, onSetGroupResource, onSetGroupLanguage, onSetGroupProfile, onDeleteGroup }) => {
+const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, activeSessionCode, appId, onGenerateImage, onRefineImage, onCreateGroup, onAssignStudent, onSetGroupResource, isPushingResource = {}, onSetGroupLanguage, onSetGroupProfile, onDeleteGroup }) => {
     const { t } = useContext(LanguageContext);
     const { quizState, roster } = sessionData;
     const { currentQuestionIndex, phase, responses, mode, bossStats, teamScores } = quizState;
@@ -1676,13 +1676,24 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                         <select aria-label={t('common.selection')}
                                             value={group.resourceId || ""} data-help-key="quiz_group_resource_select"
                                             onChange={(e) => handleSetGroupResource(gid, e.target.value)}
-                                            className="text-xs p-1 rounded border border-slate-200 w-full truncate bg-slate-50"
+                                            disabled={isPushingResource[gid] === 'pushing'}
+                                            className="text-xs p-1 rounded border border-slate-200 w-full truncate bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
                                             <option value="">{t('groups.default_resource')}</option>
                                             {availableResources.map(r => (
                                                 <option key={r.id} value={r.id}>{r.title || r.type}</option>
                                             ))}
                                         </select>
+                                        {isPushingResource[gid] === 'pushing' && (
+                                            <span className="flex items-center gap-1 text-[10px] text-purple-600 font-bold whitespace-nowrap">
+                                                <RefreshCw size={11} className="animate-spin" /> {t('groups.pushing') || 'Pushing…'}
+                                            </span>
+                                        )}
+                                        {isPushingResource[gid] === 'success' && (
+                                            <span className="flex items-center gap-1 text-[10px] text-emerald-600 font-bold whitespace-nowrap">
+                                                <CheckCircle2 size={11} /> {t('groups.pushed') || 'Sent'}
+                                            </span>
+                                        )}
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <span className="text-[11px] uppercase font-bold text-slate-600">{t('groups.language_label') || 'Quiz Language'}</span>

@@ -9,6 +9,8 @@ var useState = React.useState;
 var useEffect = React.useEffect;
 var useRef = React.useRef;
 var useContext = React.useContext;
+var debugLog = (typeof window !== 'undefined' && (window.__alloDebugLog || window.debugLog)) || function(){};
+var warnLog = (typeof window !== 'undefined' && window.warnLog) || console.warn.bind(console);
 var _lazyIcon = function (name) {
   return function (props) {
     var I = window.AlloIcons && window.AlloIcons[name];
