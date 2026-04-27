@@ -50016,6 +50016,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     onCallGemini: callGemini,
                     onCallTTS: callTTS,
                     onCallImagen: callImagen,
+                    onCallGeminiImageEdit: callGeminiImageEdit,
                     selectedVoice,
                     gradeLevel,
                     addToast,

@@ -470,6 +470,7 @@
     var onCallGemini = props.onCallGemini;
     var onCallTTS = props.onCallTTS;
     var onCallImagen = props.onCallImagen;
+    var onCallGeminiImageEdit = props.onCallGeminiImageEdit;
     var selectedVoice = props.selectedVoice;
     var gradeLevel = props.gradeLevel || '7th Grade';
     var addToast = props.addToast;
@@ -564,6 +565,12 @@
     // Sound Device Coach — alliteration, assonance, consonance, internal rhyme detection
     var _soundDeviceResult = useState(null); var soundDeviceResult = _soundDeviceResult[0]; var setSoundDeviceResult = _soundDeviceResult[1];
     var _soundDeviceLoading = useState(false); var soundDeviceLoading = _soundDeviceLoading[0]; var setSoundDeviceLoading = _soundDeviceLoading[1];
+    // Metaphor Visualizer — detected metaphors + per-metaphor image renders + image-edit refinements
+    var _metaphors = useState(null);   var metaphors = _metaphors[0];   var setMetaphors = _metaphors[1];        // [{ id, type:'metaphor'|'simile', excerpt, tenor, vehicle }] | { error } | null
+    var _metaphorLoading = useState(false); var metaphorLoading = _metaphorLoading[0]; var setMetaphorLoading = _metaphorLoading[1];
+    var _metaphorImages = useState({});      var metaphorImages = _metaphorImages[0];      var setMetaphorImages = _metaphorImages[1];      // { [metaphorId]: imageUrl }
+    var _metaphorImgLoading = useState({}); var metaphorImgLoading = _metaphorImgLoading[0]; var setMetaphorImgLoading = _metaphorImgLoading[1]; // { [metaphorId]: bool }
+    var _metaphorEditText = useState({});    var metaphorEditText = _metaphorEditText[0];    var setMetaphorEditText = _metaphorEditText[1];   // { [metaphorId]: 'make it brighter' }
     // Pre-feedback Self-Assessment — student rates self before AI feedback, builds metacognition
     var _selfAssessment = useState({}); var selfAssessment = _selfAssessment[0]; var setSelfAssessment = _selfAssessment[1];
     var _selfAssessmentSubmitted = useState(false); var selfAssessmentSubmitted = _selfAssessmentSubmitted[0]; var setSelfAssessmentSubmitted = _selfAssessmentSubmitted[1];
@@ -865,6 +872,92 @@
         setSoundDeviceLoading(false);
       }
     }, [onCallGemini, poemText, gradeLevel]);
+
+    // ── Metaphor Visualizer: detect figurative language → render → iteratively edit ──
+    // Three callbacks: detectMetaphors (Gemini parses the poem), visualizeMetaphor
+    // (Imagen renders the literal vehicle), refineMetaphorImage (Gemini image-edit
+    // applies the student's text tweak). Pedagogical: makes figurative language
+    // concrete by literalizing the vehicle ("the moon is a silver coin" → silver
+    // coin in the sky), so students see the IMAGE their words actually paint.
+    var detectMetaphors = useCallback(async function () {
+      if (!onCallGemini || !poemText.trim()) return;
+      setMetaphorLoading(true);
+      setMetaphors(null);
+      try {
+        var prompt = 'Find every metaphor and simile in the poem below. A metaphor says A IS B ("the moon is a silver coin"); a simile uses LIKE or AS ("brave as a lion"). Skip dead/cliched ones ("strong as steel") unless the poem builds on them. Skip personification unless it functions as a metaphor.\n\n'
+          + 'Poem:\n"""\n' + poemText + '\n"""\n\n'
+          + 'For each one, give an exact quote from the poem (3-12 words), name the TENOR (the literal subject) and the VEHICLE (the imaginative comparison). Cap at 5 results — pick the most vivid if there are more.\n\n'
+          + 'Return ONLY JSON:\n'
+          + '{ "items": [\n'
+          + '  { "type": "metaphor"|"simile", "excerpt": "<exact poem text>", "tenor": "<the real subject, 1-3 words>", "vehicle": "<the comparison image, 1-5 words>" }\n'
+          + '] }\n\n'
+          + 'If no metaphors or similes exist, return {"items":[]}. Don\'t invent comparisons that aren\'t actually in the poem.';
+        var result = await onCallGemini(prompt, true);
+        var clean = String(result).trim().replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```$/, '').trim();
+        var parsed = JSON.parse(clean);
+        var items = Array.isArray(parsed.items) ? parsed.items.slice(0, 5) : [];
+        // Stamp a stable client-side id on each so images keyed by it don't collide across re-detects.
+        var stamped = items.map(function (m, i) { return Object.assign({}, m, { id: 'mph_' + Date.now() + '_' + i }); });
+        setMetaphors(stamped);
+        announcePT(stamped.length === 0 ? 'No metaphors or similes found in this draft.' : (stamped.length + ' figurative phrase' + (stamped.length === 1 ? '' : 's') + ' found.'));
+      } catch (err) {
+        warnLog('Metaphor detection failed:', err && err.message);
+        setMetaphors({ error: 'Couldn\'t scan for metaphors right now. Try again in a moment.' });
+      } finally {
+        setMetaphorLoading(false);
+      }
+    }, [onCallGemini, poemText]);
+
+    var visualizeMetaphor = useCallback(async function (m) {
+      if (!onCallImagen || !m || !m.id) return;
+      setMetaphorImgLoading(function (prev) { var n = Object.assign({}, prev); n[m.id] = true; return n; });
+      try {
+        // Render the VEHICLE literally — that's the whole point. The tenor is too
+        // abstract to draw ("courage", "loneliness"); the vehicle is the picture.
+        var prompt = (m.vehicle || m.excerpt || 'an evocative image') + '. ' +
+          (m.type === 'simile' ? 'A literal scene of: ' : 'A literal rendering of: ') +
+          (m.vehicle || m.excerpt) +
+          '. Style: dreamy watercolor and ink, single subject, soft natural light. STRICTLY NO TEXT in the image, no captions, no signatures.';
+        var url = await onCallImagen(prompt, 512, 0.85);
+        if (url) {
+          setMetaphorImages(function (prev) { var n = Object.assign({}, prev); n[m.id] = url; return n; });
+          announcePT('Visualized: ' + (m.vehicle || m.excerpt) + '.');
+        }
+      } catch (err) {
+        warnLog('Metaphor image gen failed:', err && err.message);
+        addToast && addToast('Image gen failed — try again.', 'error');
+      } finally {
+        setMetaphorImgLoading(function (prev) { var n = Object.assign({}, prev); n[m.id] = false; return n; });
+      }
+    }, [onCallImagen, addToast]);
+
+    var refineMetaphorImage = useCallback(async function (m) {
+      if (!onCallGeminiImageEdit || !m || !m.id) return;
+      var existing = metaphorImages[m.id];
+      var instruction = (metaphorEditText[m.id] || '').trim();
+      if (!existing) { addToast && addToast('Generate an image first, then edit it.', 'info'); return; }
+      if (!instruction) { addToast && addToast('Type a tweak (e.g. "make it sunset", "add stars").', 'info'); return; }
+      setMetaphorImgLoading(function (prev) { var n = Object.assign({}, prev); n[m.id] = true; return n; });
+      try {
+        var rawBase64 = String(existing).split(',')[1] || existing; // tolerate either data-URL or raw base64
+        var refined = await onCallGeminiImageEdit(
+          instruction + '. Keep the subject of the original (' + (m.vehicle || m.excerpt) + '). STRICTLY NO TEXT.',
+          rawBase64,
+          512,
+          0.8
+        );
+        if (refined) {
+          setMetaphorImages(function (prev) { var n = Object.assign({}, prev); n[m.id] = refined; return n; });
+          setMetaphorEditText(function (prev) { var n = Object.assign({}, prev); n[m.id] = ''; return n; });
+          announcePT('Image refined.');
+        }
+      } catch (err) {
+        warnLog('Metaphor image edit failed:', err && err.message);
+        addToast && addToast('Image edit failed — try again.', 'error');
+      } finally {
+        setMetaphorImgLoading(function (prev) { var n = Object.assign({}, prev); n[m.id] = false; return n; });
+      }
+    }, [onCallGeminiImageEdit, metaphorImages, metaphorEditText, addToast]);
 
     // ── helpersAvailableForPlan: ≥2 helper outputs unlocks the Revision Plan button ──
     function helpersAvailableForPlan() {
@@ -2101,6 +2194,73 @@
                     )
                   ),
                   !soundDeviceResult && e('p', { style: { fontSize: '11px', color: '#475569', margin: 0, fontStyle: 'italic' } }, 'Hear what your poem is doing with sound — alliteration, assonance, consonance, internal rhyme.')
+                ),
+
+                // ── Metaphor Visualizer (figurative-language detector + per-metaphor image gen + edit) ──
+                onCallImagen && e('div', null,
+                  e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '6px' } },
+                    e('h4', { style: { fontSize: '12px', fontWeight: 800, color: TEAL_DARK, margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' } }, '🎨 Metaphor Visualizer'),
+                    e('button', { onClick: detectMetaphors, disabled: !poemText.trim() || metaphorLoading,
+                      'aria-busy': metaphorLoading ? 'true' : 'false',
+                      'aria-label': metaphorLoading ? 'Scanning for metaphors and similes' : (metaphors && Array.isArray(metaphors) ? 'Re-scan for metaphors' : 'Find metaphors and similes in this poem'),
+                      style: { padding: '4px 12px', borderRadius: '6px', border: 'none', background: poemText.trim() && !metaphorLoading ? TEAL : '#cbd5e1', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: poemText.trim() && !metaphorLoading ? 'pointer' : 'not-allowed' }
+                    }, metaphorLoading ? '⏳…' : (metaphors && Array.isArray(metaphors) ? '🔄 Re-scan' : '🔍 Find them'))
+                  ),
+                  metaphors && metaphors.error && e('p', { style: { fontSize: '11px', color: '#b91c1c', fontStyle: 'italic', margin: 0 } }, metaphors.error),
+                  metaphors && Array.isArray(metaphors) && metaphors.length === 0 && e('p', { style: { fontSize: '11px', color: '#475569', fontStyle: 'italic', margin: 0 } }, 'No metaphors or similes found in this draft. Try adding one — "X is a Y" or "X like Y".'),
+                  metaphors && Array.isArray(metaphors) && metaphors.length > 0 && e('div', { role: 'region', 'aria-label': 'Detected metaphors and similes', style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
+                    metaphors.map(function (m) {
+                      var url = metaphorImages[m.id];
+                      var loading = metaphorImgLoading[m.id];
+                      var edit = metaphorEditText[m.id] || '';
+                      return e('article', { key: m.id, style: { background: '#fff', border: '1px solid #99f6e4', borderRadius: '10px', padding: '10px 12px' } },
+                        // Header — type badge + excerpt + tenor/vehicle
+                        e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px', flexWrap: 'wrap' } },
+                          e('span', { style: { fontSize: '9px', fontWeight: 800, color: m.type === 'simile' ? '#0891b2' : '#7c3aed', background: m.type === 'simile' ? '#cffafe' : '#ede9fe', padding: '2px 8px', borderRadius: '999px', textTransform: 'uppercase', letterSpacing: '0.06em' } }, m.type || 'metaphor'),
+                          e('span', { style: { fontFamily: 'Georgia, serif', fontSize: '13px', color: '#1e293b', fontStyle: 'italic' } }, '"' + (m.excerpt || '') + '"')
+                        ),
+                        e('div', { style: { fontSize: '10px', color: '#475569', marginBottom: url ? '8px' : '6px' } },
+                          e('strong', null, 'Tenor: '), (m.tenor || '—'), '  ',
+                          e('strong', null, 'Vehicle: '), (m.vehicle || '—')
+                        ),
+                        // Generate / View / Re-roll button
+                        !url && e('button', { onClick: function () { visualizeMetaphor(m); }, disabled: loading,
+                          'aria-busy': loading ? 'true' : 'false',
+                          'aria-label': loading ? 'Visualizing ' + (m.vehicle || m.excerpt) : 'Visualize "' + (m.excerpt || '') + '"',
+                          style: { padding: '5px 12px', borderRadius: '6px', border: 'none', background: loading ? '#cbd5e1' : '#7c3aed', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: loading ? 'wait' : 'pointer' }
+                        }, loading ? '⏳ Painting…' : '🎨 Visualize'),
+                        // Image + edit row
+                        url && e('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
+                          e('img', { src: url, alt: 'AI rendering of: ' + (m.vehicle || m.excerpt), style: { width: '100%', maxWidth: '400px', borderRadius: '8px', border: '1px solid #e2e8f0', display: 'block', opacity: loading ? 0.5 : 1, transition: 'opacity 0.2s' } }),
+                          // Edit row (only if image-edit is wired)
+                          onCallGeminiImageEdit && e('div', { style: { display: 'flex', gap: '6px', alignItems: 'stretch', flexWrap: 'wrap' } },
+                            e('input', {
+                              type: 'text', value: edit,
+                              onChange: function (ev) {
+                                var v = ev.target.value;
+                                setMetaphorEditText(function (prev) { var n = Object.assign({}, prev); n[m.id] = v; return n; });
+                              },
+                              onKeyDown: function (ev) { if (ev.key === 'Enter' && edit.trim() && !loading) { ev.preventDefault(); refineMetaphorImage(m); } },
+                              placeholder: 'Tweak this image (e.g. "make it sunset", "add stars")',
+                              'aria-label': 'Image edit instruction for ' + (m.vehicle || m.excerpt),
+                              disabled: loading,
+                              style: { flex: 1, minWidth: '140px', padding: '5px 10px', borderRadius: '6px', border: '1px solid #d1d5db', fontSize: '11px', outline: 'none', background: '#fff' }
+                            }),
+                            e('button', { onClick: function () { refineMetaphorImage(m); }, disabled: loading || !edit.trim(),
+                              'aria-busy': loading ? 'true' : 'false',
+                              'aria-label': 'Apply edit to image',
+                              style: { padding: '5px 12px', borderRadius: '6px', border: 'none', background: loading || !edit.trim() ? '#cbd5e1' : '#0891b2', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: loading || !edit.trim() ? 'not-allowed' : 'pointer' }
+                            }, loading ? '⏳' : '✨ Edit')
+                          ),
+                          e('button', { onClick: function () { visualizeMetaphor(m); }, disabled: loading,
+                            'aria-label': 'Re-roll the image with same prompt',
+                            style: { padding: '4px 10px', borderRadius: '6px', border: '1px solid #d1d5db', background: '#fff', color: '#475569', fontSize: '10px', fontWeight: 700, cursor: loading ? 'wait' : 'pointer', alignSelf: 'flex-start' }
+                          }, loading ? '⏳' : '🔄 Re-roll')
+                        )
+                      );
+                    })
+                  ),
+                  !metaphors && e('p', { style: { fontSize: '11px', color: '#475569', margin: 0, fontStyle: 'italic' } }, 'Find metaphors and similes in your poem, then see them rendered as images. Edit the images to refine your figurative language.')
                 ),
 
                 // ── Spark Words ──
