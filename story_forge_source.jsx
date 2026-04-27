@@ -2584,7 +2584,7 @@ show();
                     <div className="w-full text-sm p-2.5 border border-slate-200 rounded-lg bg-slate-50 font-bold text-slate-700 flex items-center gap-2">
                       <span className="text-base">✍️</span> {authorName}
                     </div>
-                    <p className="text-[11px] text-slate-400 mt-1">Your codename is your pen name — it keeps your identity private</p>
+                    <p className="text-[11px] text-slate-500 mt-1">Your codename is your pen name — it keeps your identity private</p>
                   </div>
                 </div>
               </div>
@@ -2624,7 +2624,7 @@ show();
                     </div>
                   ))}
                   {vocabTerms.length === 0 && (
-                    <p className="text-slate-400 text-sm italic">No vocabulary terms yet — add some below or they'll come from your glossary</p>
+                    <p className="text-slate-500 text-sm italic">No vocabulary terms yet — add some below or they'll come from your glossary</p>
                   )}
                 </div>
                 <div className="flex gap-2">
@@ -2897,7 +2897,7 @@ show();
                         <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 bg-slate-800 text-white rounded-xl p-3 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 pointer-events-none">
                           <div className="text-xs font-bold text-amber-300 mb-1">{v.term}</div>
                           {v.definition && <div className="text-[11px] text-slate-300 leading-relaxed mb-1">{v.definition}</div>}
-                          <div className="text-[11px] text-slate-400 italic">Click to copy · Paste into your paragraph</div>
+                          <div className="text-[11px] text-slate-500 italic">Click to copy · Paste into your paragraph</div>
                           <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 w-0 h-0 border-l-[6px] border-r-[6px] border-t-[6px] border-transparent border-t-slate-800" />
                         </div>
                       </div>
@@ -2966,8 +2966,8 @@ show();
                       <span className="text-xs font-bold text-slate-600">Paragraph {idx + 1}</span>
                       {/* Reorder buttons */}
                       <div className="flex gap-0.5">
-                        <button onClick={() => moveParagraph(idx, -1)} disabled={idx === 0} className="text-slate-400 hover:text-slate-700 disabled:opacity-20 p-0.5 rounded text-[11px] font-bold transition-colors" aria-label="Move paragraph up" title="Move up">▲</button>
-                        <button onClick={() => moveParagraph(idx, 1)} disabled={idx === paragraphs.length - 1} className="text-slate-400 hover:text-slate-700 disabled:opacity-20 p-0.5 rounded text-[11px] font-bold transition-colors" aria-label="Move paragraph down" title="Move down">▼</button>
+                        <button onClick={() => moveParagraph(idx, -1)} disabled={idx === 0} className="text-slate-500 hover:text-slate-700 disabled:opacity-20 p-0.5 rounded text-[11px] font-bold transition-colors" aria-label="Move paragraph up" title="Move up">▲</button>
+                        <button onClick={() => moveParagraph(idx, 1)} disabled={idx === paragraphs.length - 1} className="text-slate-500 hover:text-slate-700 disabled:opacity-20 p-0.5 rounded text-[11px] font-bold transition-colors" aria-label="Move paragraph down" title="Move down">▼</button>
                       </div>
                     </div>
                     <div className="flex gap-2">
@@ -2991,7 +2991,7 @@ show();
                         <Sparkles size={10} /> Help Me
                       </button>
                       {paragraphs.length > 1 && (
-                        <button onClick={() => removeParagraph(idx)} className="text-slate-400 hover:text-red-500 focus:text-red-500 p-1 rounded transition-colors" aria-label={`Remove paragraph ${idx + 1}`}>
+                        <button onClick={() => removeParagraph(idx)} className="text-slate-500 hover:text-red-500 focus:text-red-500 p-1 rounded transition-colors" aria-label={`Remove paragraph ${idx + 1}`}>
                           <Trash2 size={14} />
                         </button>
                       )}
@@ -3160,7 +3160,7 @@ show();
                         className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold border transition-all ${
                           hwPenmanshipOn
                             ? (layoutMode === 'dark' ? 'bg-cyan-900 border-cyan-600 text-cyan-300' : 'bg-violet-100 border-violet-300 text-violet-700')
-                            : (layoutMode === 'dark' ? 'bg-slate-800 border-slate-600 text-slate-600 hover:border-cyan-600' : 'bg-slate-50 border-slate-200 text-slate-400 hover:border-violet-300 hover:text-violet-500')
+                            : (layoutMode === 'dark' ? 'bg-slate-800 border-slate-600 text-slate-600 hover:border-cyan-600' : 'bg-slate-50 border-slate-200 text-slate-500 hover:border-violet-300 hover:text-violet-500')
                         }`}
                       >
                         ✏️ Penmanship Tips {hwPenmanshipOn ? 'ON' : 'OFF'}
@@ -3184,25 +3184,25 @@ show();
                             <div className={`text-sm font-black ${(hwResult.penmanship[key] || 0) >= 18 ? 'text-green-600' : (hwResult.penmanship[key] || 0) >= 12 ? 'text-amber-600' : 'text-slate-600'}`}>
                               {hwResult.penmanship[key] || 0}<span className="text-[11px] opacity-60">/25</span>
                             </div>
-                            <div className="text-[11px] text-slate-400 font-bold uppercase">{label}</div>
+                            <div className="text-[11px] text-slate-500 font-bold uppercase">{label}</div>
                           </div>
                         ))}
                       </div>
                       {hwResult.penmanship.strengths && <p className="text-xs text-green-700 font-medium mb-1">💪 {hwResult.penmanship.strengths}</p>}
                       {hwResult.penmanship.tips && <p className={`text-xs font-medium ${layoutMode === 'dark' ? 'text-cyan-400' : 'text-violet-600'}`}>💡 {hwResult.penmanship.tips}</p>}
-                      <button onClick={() => setHwResult(null)} className="text-[11px] text-slate-400 hover:text-slate-600 font-bold mt-1" aria-label="Dismiss penmanship feedback">Dismiss</button>
+                      <button onClick={() => setHwResult(null)} className="text-[11px] text-slate-500 hover:text-slate-600 font-bold mt-1" aria-label="Dismiss penmanship feedback">Dismiss</button>
                     </div>
                   )}
                   {/* Per-paragraph strength indicator + vocab reminder */}
                   {p.text.length > 0 && (
                     <div className={`px-4 py-1.5 border-t flex flex-wrap items-center gap-3 text-[11px] font-medium ${
-                      layoutMode === 'dark' ? 'bg-slate-900 border-slate-700 text-slate-600' : 'bg-slate-50 border-slate-100 text-slate-400'
+                      layoutMode === 'dark' ? 'bg-slate-900 border-slate-700 text-slate-600' : 'bg-slate-50 border-slate-100 text-slate-500'
                     }`}>
                       <span>{paragraphStats[idx]?.wordCount || 0} words</span>
                       <span>·</span>
                       <span>{paragraphStats[idx]?.sentenceCount || 0} sentences</span>
                       <span>·</span>
-                      <span className={paragraphStats[idx]?.vocabUsed > 0 ? 'text-green-500' : 'text-slate-400'}>{paragraphStats[idx]?.vocabUsed || 0} vocab terms</span>
+                      <span className={paragraphStats[idx]?.vocabUsed > 0 ? 'text-green-500' : 'text-slate-500'}>{paragraphStats[idx]?.vocabUsed || 0} vocab terms</span>
                       {overusedWords.length > 0 && p.text.toLowerCase().split(/\s+/).some(w => overusedWords.includes(w.replace(/[^a-z'-]/g, ''))) && (
                         <span className="text-amber-500" title={`Overused: ${overusedWords.join(', ')}`}>· Repeated words</span>
                       )}
@@ -3247,7 +3247,7 @@ show();
                             'bg-slate-100 text-slate-600'
                           }`}>{issue.type === 'show_dont_tell' ? 'show' : issue.type?.replace('_', ' ') || 'tip'}</span>
                           <div className="flex-1">
-                            {issue.original && <span className="line-through text-slate-400 mr-1">"{issue.original}"</span>}
+                            {issue.original && <span className="line-through text-slate-500 mr-1">"{issue.original}"</span>}
                             {issue.suggestion && <span className="text-emerald-700 font-bold">→ "{issue.suggestion}"</span>}
                             {issue.tip && <div className="text-slate-600 mt-0.5">{issue.tip}</div>}
                           </div>
@@ -3273,7 +3273,7 @@ show();
               ))}
 
               {!focusMode && paragraphs.length < maxParagraphs && (
-                <button onClick={addParagraph} className="w-full p-3 border-2 border-dashed border-slate-300 rounded-2xl text-slate-400 font-bold text-sm hover:border-rose-400 hover:text-rose-500 transition-colors flex items-center justify-center gap-2">
+                <button onClick={addParagraph} className="w-full p-3 border-2 border-dashed border-slate-300 rounded-2xl text-slate-500 font-bold text-sm hover:border-rose-400 hover:text-rose-500 transition-colors flex items-center justify-center gap-2">
                   <Plus size={16} /> Add Paragraph
                 </button>
               )}
@@ -3349,7 +3349,7 @@ show();
                   <div className="flex items-start gap-4">
                     <div className="flex-1">
                       <div className="text-xs font-bold text-purple-600 mb-1">Paragraph {idx + 1}</div>
-                      <p className="text-sm text-slate-700 leading-relaxed">{p.text || <span className="italic text-slate-400">Empty paragraph</span>}</p>
+                      <p className="text-sm text-slate-700 leading-relaxed">{p.text || <span className="italic text-slate-500">Empty paragraph</span>}</p>
                       {/* Show the prompt used */}
                       {illustrations[p.id]?.prompt && !illustrations[p.id]?.isLoading && (
                         <div className="mt-2 text-[11px] text-purple-400 italic truncate" title={illustrations[p.id].prompt}>
@@ -3498,7 +3498,7 @@ show();
                     {characters.map((c, i) => (
                       <div key={i} className="bg-white border border-indigo-200 rounded-xl px-3 py-2 text-xs">
                         <span className="font-bold text-indigo-800">{c.name}</span>
-                        <span className="text-slate-400 ml-2">Voice: {c.voice}</span>
+                        <span className="text-slate-500 ml-2">Voice: {c.voice}</span>
                       </div>
                     ))}
                   </div>
@@ -3609,7 +3609,7 @@ show();
                               {[{k:'pacing',l:'Pace'},{k:'expression',l:'Expr'},{k:'phrasing',l:'Phrase'}].map(({k,l}) => (
                                 <div key={k} className="text-center">
                                   <div className="text-sm font-bold text-slate-700">{fluencyResult.prosody[k]}/5</div>
-                                  <div className="text-[11px] text-slate-400">{l}</div>
+                                  <div className="text-[11px] text-slate-500">{l}</div>
                                 </div>
                               ))}
                             </div>
@@ -3640,7 +3640,7 @@ show();
                         {fluencyResult.feedback && (
                           <div className="mt-2 text-xs text-teal-800 bg-white rounded-lg p-2 border border-teal-200">{fluencyResult.feedback}</div>
                         )}
-                        <button onClick={() => setFluencyResult(null)} className="mt-2 text-[11px] text-slate-400 hover:text-slate-600 font-bold">Dismiss</button>
+                        <button onClick={() => setFluencyResult(null)} className="mt-2 text-[11px] text-slate-500 hover:text-slate-600 font-bold">Dismiss</button>
                       </div>
                     )}
                   </div>
@@ -3758,7 +3758,7 @@ show();
                 <div className="bg-white border-2 border-rose-200 rounded-2xl p-5 shadow-sm">
                   <div className="flex items-center justify-between mb-3">
                     <h4 className="text-sm font-bold text-rose-700 uppercase tracking-wider flex items-center gap-2">🌈 Senses & Imagery</h4>
-                    <button onClick={() => setSensesResult(null)} className="text-[11px] text-slate-400 hover:text-slate-700 font-bold" aria-label="Dismiss senses result">Dismiss</button>
+                    <button onClick={() => setSensesResult(null)} className="text-[11px] text-slate-500 hover:text-slate-700 font-bold" aria-label="Dismiss senses result">Dismiss</button>
                   </div>
                   {(() => {
                     const counts = sensesResult.counts || {};
@@ -3799,7 +3799,7 @@ show();
                 <div role="region" aria-label="Mentor story and analysis" className="bg-white border-2 border-fuchsia-200 rounded-2xl p-5 shadow-sm">
                   <div className="flex items-center justify-between mb-3">
                     <h4 className="text-sm font-bold text-fuchsia-700 uppercase tracking-wider flex items-center gap-2">🎓 Mentor Match</h4>
-                    <button onClick={() => setMentorMatch(null)} className="text-[11px] text-slate-400 hover:text-slate-700 font-bold" aria-label="Dismiss mentor match">Dismiss</button>
+                    <button onClick={() => setMentorMatch(null)} className="text-[11px] text-slate-500 hover:text-slate-700 font-bold" aria-label="Dismiss mentor match">Dismiss</button>
                   </div>
                   {mentorMatch.error && (
                     <p className="text-xs text-red-600 italic">{mentorMatch.error}</p>
@@ -3860,7 +3860,7 @@ show();
                 <div className="bg-white border-2 border-emerald-200 rounded-2xl p-5 shadow-sm">
                   <div className="flex items-center justify-between mb-3">
                     <h4 className="text-sm font-bold text-emerald-700 uppercase tracking-wider flex items-center gap-2">🎭 Show vs Tell</h4>
-                    <button onClick={() => setShowTellResult(null)} className="text-[11px] text-slate-400 hover:text-slate-700 font-bold" aria-label="Dismiss show vs tell result">Dismiss</button>
+                    <button onClick={() => setShowTellResult(null)} className="text-[11px] text-slate-500 hover:text-slate-700 font-bold" aria-label="Dismiss show vs tell result">Dismiss</button>
                   </div>
                   {showTellResult.summary && (
                     <p className="text-xs text-emerald-800 italic mb-3 leading-relaxed">{showTellResult.summary}</p>
@@ -3892,7 +3892,7 @@ show();
                 <div className="bg-white border-2 border-sky-200 rounded-2xl p-5 shadow-sm">
                   <div className="flex items-center justify-between mb-3">
                     <h4 className="text-sm font-bold text-sky-700 uppercase tracking-wider flex items-center gap-2">🎬 Character Arcs</h4>
-                    <button onClick={() => setArcReport(null)} className="text-[11px] text-slate-400 hover:text-slate-700 font-bold" aria-label="Dismiss character arcs result">Dismiss</button>
+                    <button onClick={() => setArcReport(null)} className="text-[11px] text-slate-500 hover:text-slate-700 font-bold" aria-label="Dismiss character arcs result">Dismiss</button>
                   </div>
                   {arcReport.summary && (
                     <p className="text-xs text-sky-800 italic mb-3 leading-relaxed">{arcReport.summary}</p>
@@ -3955,7 +3955,7 @@ show();
                 <div className="bg-white border-2 border-orange-200 rounded-2xl p-5 shadow-sm">
                   <div className="flex items-center justify-between mb-3">
                     <h4 className="text-sm font-bold text-orange-700 uppercase tracking-wider flex items-center gap-2">💬 Dialogue Tune-Up</h4>
-                    <button onClick={() => setDialogueReport(null)} className="text-[11px] text-slate-400 hover:text-slate-700 font-bold" aria-label="Dismiss dialogue tune-up">Dismiss</button>
+                    <button onClick={() => setDialogueReport(null)} className="text-[11px] text-slate-500 hover:text-slate-700 font-bold" aria-label="Dismiss dialogue tune-up">Dismiss</button>
                   </div>
                   {dialogueReport.summary && (
                     <p className="text-xs text-orange-800 italic mb-3 leading-relaxed">{dialogueReport.summary}</p>
@@ -4020,7 +4020,7 @@ show();
                 <div className="bg-gradient-to-br from-purple-50 to-violet-50 border-2 border-purple-300 rounded-2xl p-5 shadow-md">
                   <div className="flex items-center justify-between mb-3">
                     <h4 className="text-base font-black text-purple-800 flex items-center gap-2">🗺️ Your Revision Plan</h4>
-                    <button onClick={() => setRevisionPlan(null)} className="text-[11px] text-slate-400 hover:text-slate-700 font-bold" aria-label="Dismiss revision plan">Dismiss</button>
+                    <button onClick={() => setRevisionPlan(null)} className="text-[11px] text-slate-500 hover:text-slate-700 font-bold" aria-label="Dismiss revision plan">Dismiss</button>
                   </div>
                   {revisionPlan.encouragement && (
                     <div className="bg-white border border-green-200 rounded-xl p-3 mb-4 text-xs text-green-900 leading-relaxed">
@@ -4076,10 +4076,10 @@ show();
                       const vocabDelta = vocabUsedCount - (revisionSnapshot.vocabUsed || 0);
                       return (
                         <>
-                          <span className={`text-xs font-bold ${wordDelta > 0 ? 'text-green-600' : wordDelta < 0 ? 'text-red-500' : 'text-slate-400'}`}>
+                          <span className={`text-xs font-bold ${wordDelta > 0 ? 'text-green-600' : wordDelta < 0 ? 'text-red-500' : 'text-slate-500'}`}>
                             {wordDelta > 0 ? '+' : ''}{wordDelta} words
                           </span>
-                          <span className={`text-xs font-bold ${vocabDelta > 0 ? 'text-green-600' : vocabDelta < 0 ? 'text-red-500' : 'text-slate-400'}`}>
+                          <span className={`text-xs font-bold ${vocabDelta > 0 ? 'text-green-600' : vocabDelta < 0 ? 'text-red-500' : 'text-slate-500'}`}>
                             {vocabDelta > 0 ? '+' : ''}{vocabDelta} vocab terms
                           </span>
                           {readingLevel && revisionSnapshot.grade && (
@@ -4143,12 +4143,12 @@ show();
                         <div key={p.id} className="flex-1 flex flex-col items-center gap-1">
                           <div className="text-[7px] text-slate-600 font-bold">{wordCount}</div>
                           <div className={`w-full ${bgColor} rounded-t-md transition-all`} style={{ height: `${heightPct}%` }} title={`${barLabel}: ${wordCount} words`} role="img" aria-label={`${barLabel}: ${wordCount} words`} />
-                          <span className="text-[11px] text-slate-400">{idx === 0 ? 'Start' : idx === paragraphs.length - 1 ? 'End' : `P${idx + 1}`}</span>
+                          <span className="text-[11px] text-slate-500">{idx === 0 ? 'Start' : idx === paragraphs.length - 1 ? 'End' : `P${idx + 1}`}</span>
                         </div>
                       );
                     })}
                   </div>
-                  <div className="flex justify-between text-[11px] text-slate-400 mt-1">
+                  <div className="flex justify-between text-[11px] text-slate-500 mt-1">
                     <span>Beginning</span><span>Rising Action</span><span>Climax</span><span>Resolution</span>
                   </div>
                 </div>
@@ -4244,7 +4244,7 @@ show();
                               {showCompare ? (
                                 <div className="flex items-center gap-2 shrink-0">
                                   <div className="bg-violet-100 text-violet-800 px-2 py-0.5 rounded-full text-xs font-bold" title="Your self-rating">{selfScore}/5</div>
-                                  <span className="text-slate-400 text-xs">→</span>
+                                  <span className="text-slate-500 text-xs">→</span>
                                   <div className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-sm font-bold" title="AI score">{s.score}</div>
                                   {Math.abs(delta) >= 1 && (
                                     <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${delta > 0 ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`} title={delta > 0 ? 'AI rated higher than you did' : 'AI rated lower than you did'}>
@@ -4370,7 +4370,7 @@ show();
                                 <button key={emoji} onClick={() => setPanelStickers(prev => ({ ...prev, [p.id]: prev[p.id] === emoji ? null : emoji }))} className={`text-sm hover:scale-125 transition-transform ${panelStickers[p.id] === emoji ? 'scale-125' : 'opacity-50 hover:opacity-100'}`} title={`Add ${emoji} sticker`}>{emoji}</button>
                               ))}
                             </div>
-                            <span className="text-[11px] text-slate-400 font-bold">Panel {idx + 1}</span>
+                            <span className="text-[11px] text-slate-500 font-bold">Panel {idx + 1}</span>
                           </div>
                         </div>
                       </div>
@@ -4440,7 +4440,7 @@ show();
                   </button>
                 )}
               </div>
-              <p className="text-slate-400 text-xs text-center">Storybook & slideshow open in new tabs — print or save as PDF</p>
+              <p className="text-slate-500 text-xs text-center">Storybook & slideshow open in new tabs — print or save as PDF</p>
 
               {/* ── Class Portfolio Gallery (teacher view) ── */}
               {liveSession && !isCanvasEnv && (
@@ -4488,7 +4488,7 @@ show();
         >
           <ArrowLeft size={16} /> Back
         </button>
-        <div className="text-xs text-slate-400 font-medium">
+        <div className="text-xs text-slate-500 font-medium">
           {PHASE_LABELS[phaseIdx]} · Step {phaseIdx + 1} of {PHASES.length}
         </div>
         {phaseIdx < PHASES.length - 1 ? (
