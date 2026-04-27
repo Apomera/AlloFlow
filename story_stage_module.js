@@ -1004,14 +1004,22 @@
       body: { flex: 1, overflowY: 'auto', padding: '20px' },
       btn: function (bg, fg, dis) { return { padding: '8px 16px', background: dis ? '#e5e7eb' : bg, color: dis ? '#9ca3af' : fg, border: 'none', borderRadius: '10px', fontWeight: 700, fontSize: '13px', cursor: dis ? 'not-allowed' : 'pointer', transition: 'all 0.15s' }; },
       card: { background: '#f9fafb', borderRadius: '12px', padding: '16px', border: '1px solid #e5e7eb', marginBottom: '12px' },
-      input: { width: '100%', padding: '8px 12px', border: '1px solid #d1d5db', borderRadius: '8px', fontSize: '13px', outline: 'none' },
+      input: { width: '100%', padding: '8px 12px', border: '1px solid #94a3b8', borderRadius: '8px', fontSize: '13px', outline: 'none' },
     };
 
     // ═══════════════════════════════════════════════════════════════════
     // RENDER
     // ═══════════════════════════════════════════════════════════════════
 
-    return e('div', { style: S.modal, onClick: function (ev) { if (ev.target === ev.currentTarget) onClose(); } },
+    return e('div', {
+      role: 'dialog', 'aria-modal': 'true', 'aria-label': 'LitLab — story performance workshop',
+      // ESC closes the modal so keyboard users aren't trapped (WCAG 2.1.2).
+      // tabIndex=-1 so the wrapper is focusable for the keydown handler but not in the tab order.
+      tabIndex: -1,
+      onKeyDown: function (ev) { if (ev.key === 'Escape') { ev.preventDefault(); onClose(); } },
+      style: S.modal,
+      onClick: function (ev) { if (ev.target === ev.currentTarget) onClose(); }
+    },
       e('div', { style: S.container, onClick: function (ev) { ev.stopPropagation(); } },
         // Header
         e('div', { style: S.header },
@@ -1054,7 +1062,7 @@
                 CN_ANI.map(function (a) { return e('option', { key: a, value: a }, a); })
               ),
               e('button', { onClick: function () { setPerformerName(CN_ADJ[Math.floor(Math.random() * CN_ADJ.length)] + ' ' + CN_ANI[Math.floor(Math.random() * CN_ANI.length)]); },
-                style: { fontSize: '11px', background: '#fff', border: '1px solid #d1d5db', borderRadius: '6px', padding: '3px 8px', cursor: 'pointer' }, 'aria-label': 'Randomize codename' }, '🎲')
+                style: { fontSize: '11px', background: '#fff', border: '1px solid #94a3b8', borderRadius: '6px', padding: '3px 8px', cursor: 'pointer' }, 'aria-label': 'Randomize codename' }, '🎲')
             ),
             e('div', { style: { textAlign: 'center', marginBottom: '24px' } },
               e('h3', { style: { fontSize: '22px', fontWeight: 800, color: '#1e293b' } }, '🎭 Create Your Performance'),
@@ -1191,7 +1199,7 @@
                     style: { padding: '8px', borderRadius: '10px', border: '2px solid ' + (genGenre === g.id ? PURPLE : '#e5e7eb'), background: genGenre === g.id ? LIGHT_PURPLE : '#fff', cursor: 'pointer', textAlign: 'left', fontSize: '11px' }
                   },
                     e('div', { style: { fontWeight: 700, color: genGenre === g.id ? PURPLE : '#374151' } }, g.icon + ' ' + g.label),
-                    e('div', { style: { color: '#9ca3af', fontSize: '10px' } }, g.desc)
+                    e('div', { style: { color: '#64748b', fontSize: '10px' } }, g.desc)
                   );
                 })
               ),
@@ -1227,7 +1235,7 @@
                     style: { flex: 1, padding: '6px 10px', borderRadius: '10px', border: '2px solid ' + (genLength === lo.id ? PURPLE : '#e5e7eb'), background: genLength === lo.id ? LIGHT_PURPLE : '#fff', cursor: 'pointer', textAlign: 'center', fontSize: '11px' }
                   },
                     e('div', { style: { fontWeight: 700, color: genLength === lo.id ? PURPLE : '#374151' } }, lo.label),
-                    e('div', { style: { color: '#9ca3af', fontSize: '9px' } }, lo.words ? lo.words + ' words' : 'You choose')
+                    e('div', { style: { color: '#64748b', fontSize: '9px' } }, lo.words ? lo.words + ' words' : 'You choose')
                   );
                 })
               ),
@@ -1238,7 +1246,7 @@
                   onChange: function (ev) { setCustomWordCount(ev.target.value); },
                   style: Object.assign({}, S.input, { width: '120px' }),
                   'aria-label': 'Custom word count' }),
-                e('span', { style: { fontSize: '10px', color: '#9ca3af' } }, 'words (50–5000)')
+                e('span', { style: { fontSize: '10px', color: '#64748b' } }, 'words (50–5000)')
               ),
               e('button', { onClick: generateStory, disabled: isLoading,
                 'aria-busy': isLoading ? 'true' : 'false',
@@ -1256,7 +1264,7 @@
                     style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', background: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px', cursor: 'pointer', textAlign: 'left', fontSize: '12px' }
                   },
                     e('span', { style: { fontWeight: 600, color: '#1e293b' } }, s.title),
-                    e('span', { style: { color: '#9ca3af', fontSize: '10px' } }, new Date(s.savedAt).toLocaleDateString())
+                    e('span', { style: { color: '#64748b', fontSize: '10px' } }, new Date(s.savedAt).toLocaleDateString())
                   );
                 })
               )
@@ -1281,7 +1289,7 @@
                       e('div', { style: { fontSize: '11px', color: '#475569' } }, ch.description || '')
                     ),
                     onCallImagen && !ch.portrait && e('button', { onClick: function () { generatePortrait(ch.id); },
-                      style: { fontSize: '10px', background: '#f1f5f9', border: '1px solid #d1d5db', borderRadius: '6px', padding: '3px 8px', cursor: 'pointer' },
+                      style: { fontSize: '10px', background: '#f1f5f9', border: '1px solid #94a3b8', borderRadius: '6px', padding: '3px 8px', cursor: 'pointer' },
                       'aria-label': 'Generate portrait' }, '🎨')
                   ),
                   e('select', { value: ch.voice || '',
@@ -1347,7 +1355,7 @@
               e('div', { style: { marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '6px' } },
                 e('span', { style: { fontSize: '11px', color: '#475569' } }, 'My Role:'),
                 e('select', { value: myRole || '', onChange: function (ev) { setMyRole(ev.target.value || null); },
-                  style: { fontSize: '11px', padding: '4px 8px', borderRadius: '6px', border: '1px solid #d1d5db' },
+                  style: { fontSize: '11px', padding: '4px 8px', borderRadius: '6px', border: '1px solid #94a3b8' },
                   'aria-label': 'Select your character role'
                 },
                   e('option', { value: '' }, 'Audience (listen only)'),
@@ -1394,7 +1402,7 @@
               onCallGeminiImageEdit && e('button', { onClick: function () { refinePageImage(currentPage); }, disabled: pageImgLoading[currentPage],
                 'aria-busy': pageImgLoading[currentPage] ? 'true' : 'false',
                 'aria-label': pageImgLoading[currentPage] ? 'Refining illustration, please wait' : 'Refine this page illustration with a custom instruction',
-                style: { position: 'absolute', top: '6px', right: '6px', fontSize: '11px', color: '#374151', background: 'rgba(255,255,255,0.92)', border: '1px solid #d1d5db', borderRadius: '8px', padding: '4px 10px', cursor: pageImgLoading[currentPage] ? 'wait' : 'pointer', fontWeight: 700 }
+                style: { position: 'absolute', top: '6px', right: '6px', fontSize: '11px', color: '#374151', background: 'rgba(255,255,255,0.92)', border: '1px solid #94a3b8', borderRadius: '8px', padding: '4px 10px', cursor: pageImgLoading[currentPage] ? 'wait' : 'pointer', fontWeight: 700 }
               }, pageImgLoading[currentPage] ? '⏳' : '✨ Refine')
             ),
             !pageImages[currentPage] && onCallImagen && e('button', { onClick: function () { generatePageImage(currentPage); }, disabled: pageImgLoading[currentPage],
