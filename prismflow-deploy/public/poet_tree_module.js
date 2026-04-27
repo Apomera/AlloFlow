@@ -742,6 +742,9 @@
     var _metaphorImages = useState({});      var metaphorImages = _metaphorImages[0];      var setMetaphorImages = _metaphorImages[1];      // { [metaphorId]: imageUrl }
     var _metaphorImgLoading = useState({}); var metaphorImgLoading = _metaphorImgLoading[0]; var setMetaphorImgLoading = _metaphorImgLoading[1]; // { [metaphorId]: bool }
     var _metaphorEditText = useState({});    var metaphorEditText = _metaphorEditText[0];    var setMetaphorEditText = _metaphorEditText[1];   // { [metaphorId]: 'make it brighter' }
+    // Mood Board — one image per stanza (split by blank lines), narrative-arc style
+    var _stanzaImages = useState([]);      var stanzaImages = _stanzaImages[0];      var setStanzaImages = _stanzaImages[1];      // [{ idx, text, url, loading }]
+    var _stanzaBoardLoading = useState(false); var stanzaBoardLoading = _stanzaBoardLoading[0]; var setStanzaBoardLoading = _stanzaBoardLoading[1];
     // Pre-feedback Self-Assessment — student rates self before AI feedback, builds metacognition
     var _selfAssessment = useState({}); var selfAssessment = _selfAssessment[0]; var setSelfAssessment = _selfAssessment[1];
     var _selfAssessmentSubmitted = useState(false); var selfAssessmentSubmitted = _selfAssessmentSubmitted[0]; var setSelfAssessmentSubmitted = _selfAssessmentSubmitted[1];
@@ -1129,6 +1132,98 @@
         setMetaphorImgLoading(function (prev) { var n = Object.assign({}, prev); n[m.id] = false; return n; });
       }
     }, [onCallGeminiImageEdit, metaphorImages, metaphorEditText, addToast]);
+
+    // ── Mood Board: one image per stanza, narrative-arc style ──
+    // Splits the poem on blank-line separators (standard stanza convention) and
+    // generates an Imagen render for each stanza using the stanza text as the
+    // prompt — same "your words go straight to the model" philosophy as Image Poem,
+    // but applied per-stanza so the student can see how the poem's mood shifts
+    // across its arc.
+    function _splitIntoStanzas(text) {
+      if (!text) return [];
+      // Split on runs of two or more newlines (blank-line separators); also accept
+      // CRLF. Trim each stanza but keep internal line breaks.
+      var parts = String(text).replace(/\r\n/g, '\n').split(/\n{2,}/);
+      return parts.map(function (p) { return p.trim(); }).filter(function (p) { return p.length > 0; });
+    }
+
+    var generateMoodBoard = useCallback(async function () {
+      if (!onCallImagen || !poemText.trim()) return;
+      var stanzas = _splitIntoStanzas(poemText);
+      if (stanzas.length === 0) return;
+      // If only one stanza, encourage the student to add stanza breaks first
+      // (otherwise mood-board === image-poem and there's no narrative arc).
+      if (stanzas.length === 1) {
+        addToast && addToast('Mood Board needs at least 2 stanzas (separate them with a blank line).', 'info');
+        return;
+      }
+      setStanzaBoardLoading(true);
+      // Seed loading state for each stanza upfront so the UI shows skeleton cards
+      var seeded = stanzas.map(function (text, idx) {
+        return { idx: idx, text: text, url: null, loading: true };
+      });
+      setStanzaImages(seeded);
+      // Generate images sequentially (parallel would saturate the API/quota and
+      // also lets earlier stanzas render while later ones are still cooking).
+      try {
+        for (var i = 0; i < stanzas.length; i++) {
+          (function (i, stanzaText) {
+            // Wrapped in IIFE for closure correctness if we ever switch to parallel.
+          })(i, stanzas[i]);
+          try {
+            var prompt = stanzas[i] + '\n\nRender a single illustrative image of the scene/mood described in the stanza above. STRICTLY NO TEXT, no captions, no signatures, no watermark in the image.';
+            var url = await onCallImagen(prompt, 512, 0.85);
+            // Patch this stanza's slot in state without disturbing the others.
+            // Use functional updater to avoid stale-closure issues if state changes
+            // between iterations.
+            setStanzaImages(function (prev) {
+              var n = prev.slice();
+              if (n[i]) n[i] = Object.assign({}, n[i], { url: url || null, loading: false });
+              return n;
+            });
+          } catch (e) {
+            warnLog('Stanza ' + (i + 1) + ' image failed:', e && e.message);
+            setStanzaImages(function (prev) {
+              var n = prev.slice();
+              if (n[i]) n[i] = Object.assign({}, n[i], { url: null, loading: false, error: true });
+              return n;
+            });
+          }
+        }
+        announcePT('Mood board ready: ' + stanzas.length + ' stanza images.');
+      } finally {
+        setStanzaBoardLoading(false);
+      }
+    }, [onCallImagen, poemText, addToast]);
+
+    var rerollStanzaImage = useCallback(async function (idx) {
+      if (!onCallImagen) return;
+      var entry = stanzaImages[idx];
+      if (!entry) return;
+      setStanzaImages(function (prev) {
+        var n = prev.slice();
+        if (n[idx]) n[idx] = Object.assign({}, n[idx], { loading: true });
+        return n;
+      });
+      try {
+        var prompt = entry.text + '\n\nRender a single illustrative image of the scene/mood described in the stanza above. STRICTLY NO TEXT.';
+        var url = await onCallImagen(prompt, 512, 0.85);
+        setStanzaImages(function (prev) {
+          var n = prev.slice();
+          if (n[idx]) n[idx] = Object.assign({}, n[idx], { url: url || null, loading: false });
+          return n;
+        });
+        announcePT('Stanza ' + (idx + 1) + ' re-rolled.');
+      } catch (err) {
+        warnLog('Stanza re-roll failed:', err && err.message);
+        setStanzaImages(function (prev) {
+          var n = prev.slice();
+          if (n[idx]) n[idx] = Object.assign({}, n[idx], { loading: false });
+          return n;
+        });
+        addToast && addToast('Re-roll failed.', 'error');
+      }
+    }, [onCallImagen, stanzaImages, addToast]);
 
     // ── helpersAvailableForPlan: ≥2 helper outputs unlocks the Revision Plan button ──
     function helpersAvailableForPlan() {
@@ -2561,6 +2656,40 @@
                     })
                   ),
                   !metaphors && e('p', { style: { fontSize: '11px', color: '#475569', margin: 0, fontStyle: 'italic' } }, 'Find metaphors and similes in your poem, then see them rendered as images. Edit the images to refine your figurative language.')
+                ),
+
+                // ── Mood Board: one image per stanza ──
+                onCallImagen && e('div', null,
+                  e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '6px' } },
+                    e('h4', { style: { fontSize: '12px', fontWeight: 800, color: TEAL_DARK, margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' } }, '🎬 Mood Board'),
+                    e('button', { onClick: generateMoodBoard, disabled: !poemText.trim() || stanzaBoardLoading,
+                      'aria-busy': stanzaBoardLoading ? 'true' : 'false',
+                      'aria-label': stanzaBoardLoading ? 'Building mood board, please wait' : (stanzaImages.length > 0 ? 'Rebuild mood board' : 'Build mood board for this poem'),
+                      style: { padding: '4px 12px', borderRadius: '6px', border: 'none', background: poemText.trim() && !stanzaBoardLoading ? TEAL : '#cbd5e1', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: poemText.trim() && !stanzaBoardLoading ? 'pointer' : 'not-allowed' }
+                    }, stanzaBoardLoading ? '⏳…' : (stanzaImages.length > 0 ? '🔄 Rebuild' : '🎬 Build'))
+                  ),
+                  // Active board — horizontal scroll grid of stanza cards
+                  stanzaImages.length > 0 && e('div', { role: 'list', 'aria-label': 'Mood board: one image per stanza', style: { display: 'flex', gap: '8px', overflowX: 'auto', padding: '4px 2px 8px', scrollSnapType: 'x mandatory' } },
+                    stanzaImages.map(function (s, si) {
+                      return e('div', { key: si, role: 'listitem', style: { flex: '0 0 220px', scrollSnapAlign: 'start', background: '#fff', border: '1px solid #99f6e4', borderRadius: '10px', padding: '8px', display: 'flex', flexDirection: 'column', gap: '6px' } },
+                        // Stanza number + text preview
+                        e('div', { style: { fontSize: '10px', fontWeight: 800, color: TEAL_DARK, textTransform: 'uppercase', letterSpacing: '0.06em' } }, 'Stanza ' + (si + 1)),
+                        e('p', { style: { fontFamily: 'Georgia, serif', fontSize: '11px', color: '#1e293b', margin: 0, lineHeight: 1.5, maxHeight: '4.5em', overflow: 'hidden', textOverflow: 'ellipsis' } }, s.text.split('\n').slice(0, 3).join(' / ')),
+                        // Image slot — skeleton when loading, error state, or rendered image
+                        s.loading
+                          ? e('div', { 'aria-busy': 'true', 'aria-label': 'Rendering stanza ' + (si + 1), style: { width: '100%', aspectRatio: '1', background: '#f1f5f9', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', fontSize: '12px' } }, '⏳')
+                          : s.url
+                            ? e('img', { src: s.url, alt: 'AI rendering of stanza ' + (si + 1) + ': ' + s.text.split('\n')[0], style: { width: '100%', aspectRatio: '1', objectFit: 'cover', borderRadius: '8px', display: 'block' } })
+                            : e('div', { style: { width: '100%', aspectRatio: '1', background: '#fef2f2', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#b91c1c', fontSize: '11px', fontStyle: 'italic', textAlign: 'center', padding: '8px' } }, s.error ? 'Failed to render' : 'No image yet'),
+                        // Per-stanza re-roll
+                        e('button', { onClick: function () { rerollStanzaImage(si); }, disabled: s.loading,
+                          'aria-label': 'Re-roll stanza ' + (si + 1) + ' image',
+                          style: { padding: '3px 8px', borderRadius: '6px', border: '1px solid #d1d5db', background: '#fff', color: '#475569', fontSize: '10px', fontWeight: 700, cursor: s.loading ? 'wait' : 'pointer', alignSelf: 'flex-start' }
+                        }, s.loading ? '⏳' : '🔄 Re-roll')
+                      );
+                    })
+                  ),
+                  stanzaImages.length === 0 && e('p', { style: { fontSize: '11px', color: '#475569', margin: 0, fontStyle: 'italic' } }, 'See your poem\'s mood arc — one AI image per stanza, scrollable as a series. Separate stanzas with a blank line.')
                 ),
 
                 // ── Spark Words ──
