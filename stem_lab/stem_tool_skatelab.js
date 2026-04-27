@@ -1634,6 +1634,9 @@ window.StemLab = window.StemLab || {
         if (d.running) return;
         var sim = simHalfpipe({
           pumps: d.pumps, trickId: d.trickId,
+          // Resolve custom tricks here so simHalfpipe doesn't need
+          // to know about toolData.customTricks.
+          trickInline: findAnyTrick(d.trickId),
           vehicle: d.vehicle, gravity: d.gravity,
           surfaceId: d.surfaceId
         });
