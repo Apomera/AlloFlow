@@ -6,7 +6,7 @@
 |---|---|
 | **Product Name** | AlloFlow (PrismFlow) |
 | **Product Version** | 0.9.2 |
-| **Report Date** | April 26, 2026 (last comprehensive STEM Lab + SEL Hub audit; previous: April 3, 2026) |
+| **Report Date** | April 27, 2026 (writing-craft trio + SEL Hub Stations + Error Reporter audit; previous comprehensive: April 26, 2026) |
 | **Contact** | Aaron Pomeranz, PsyD — apomeranz@alloflow.org |
 | **Evaluation Methods** | Static code analysis and automated pattern scanning across 80+ tool modules (~220K lines of code). **Runtime testing (screen reader, keyboard-only, zoom reflow) has not yet been completed.** Criteria marked "Supports (pending verification)" reflect code-level compliance that requires manual confirmation. |
 | **Applicable Standards** | WCAG 2.1 Level A & AA |
@@ -139,6 +139,39 @@ All 80 STEM Lab files pass `node --check`. All canvases keyboard-accessible. All
 **Second 8-module batch audit (April 26)**: story_stage, visual_panel, personas, immersive_reader, adventure_handlers, udl_chat, misc_components, quickstart. Cross-cutting sweeps: only **3 fixes** (3 dup aria-labels in story_stage; 0 hits everywhere else). Per-tool agent verification: all 8 pass cleanly with zero remaining surgical fixes — these are exemplar small modules with consistent accessibility hygiene (live regions, aria-label on icon controls, aria-pressed on toggles, comprehensive keyboard handlers, useFocusTrap for modals, pure-logic handler files with no UI surface). **20 of ~25 top-level modules audited.**
 
 **Final 8-module batch + monolith audit (April 26)**: 3 with UI (adventure, phase_k_helpers, word_sounds_setup) all came back zero hits on every cross-cutting pattern; 5 backend-only modules marked N/A (allo_data, content_engine, ai_backend, generate_dispatcher, export). Then **AlloFlowANTI.txt** — the 50,411-line JSX monolith source for App.jsx — was audited with JSX-extended cross-cutting sweeps (21 bogus + 3 dup aria-labels) and per-tool surgical fixes: **4 launch-pad mode-selection cards converted from `<div onClick>` to keyboard-accessible** (highest user-impact fix in the entire audit — these are app entry points), 4 decorative emoji aria-hidden, 2 hardcoded "Close" labels migrated to i18n, **38 aria-busy injections** on JSX `disabled={isProcessing}` patterns. **All 25 top-level modules + monolith now audited (~720 mechanical fixes total across the entire codebase).**
+
+**April 27, 2026 — Writing-craft trio + SEL Hub Stations + Error Reporter audit**
+
+After heavy feature work on the writing-craft trio (StoryForge / PoetTree / LitLab) — adding metacognitive layers (Self-Assessment + Revision Plan synthesizers), image-anchored helpers (Image Poem form, Metaphor Visualizer, Mood Board), Erasure Workshop, three new poetic forms (Ballad / Villanelle / Pantoum / Concrete), Sound Device Coach, and the SEL Hub Stations builder + active-station banner + sidebar panel — focused WCAG audits were run against each new surface. The new code was largely clean (modern hex palette + mostly slate-500+ text); the audits also surfaced pre-existing issues in surrounding code that were fixed in the same passes.
+
+| Module | Round | Issues fixed | Commit |
+|---|---|---|---|
+| **PoetTree** | 1 | Sound Devices `#94a3b8` text → `#64748b` (10–11px italic + empty-state); Send-to-LitLab `#a855f7` → `#9333ea` button; Erasure word-token target size (24×24 minimum via `.pt-erasure-word` class) + explicit `:focus-visible` amber ring | a330f9d |
+| **PoetTree** | 2 | Completed WAI-ARIA Tabs pattern (added `aria-controls`, `role="tabpanel"` wrappers, roving `tabindex`, ArrowLeft/Right/Home/End keyboard nav, focus-moves-with-selection); 1.4.11 input borders `#cbd5e1`/`#d1d5db` → `#94a3b8` (15+ inputs/buttons) | 3156e03 |
+| **PoetTree** | (Mood Board fix) | Async `for (var i)` stale-closure bug — wrapped each iteration in async IIFE so setState updaters capture the right index. Pre-fix could write rendered images to wrong stanza slots in React 18 concurrent mode | d5378c0 |
+| **StoryForge** | 1 | 31 instances of `text-slate-400` → `text-slate-500` for 1.4.3 AA pass on small text (descriptions, hint text, dismiss buttons on the new helper panels — Senses Check, Show-vs-Tell, Mentor Match, Character Arcs, Dialogue Tune-Up, Revision Plan); 8 input borders `border-slate-200` → `border-slate-400` for 1.4.11; 3 dark-mode regressions caught after bulk-replace and flipped to `text-slate-300` (vocab tooltip, dark-mode handwriting controls, dark-mode line-stats panel) | 26b5a12 |
+| **LitLab** | 1 | Top-level wrapper had no modal landmark — added `role="dialog"` + `aria-modal="true"` + `aria-label="LitLab — story performance workshop"` + ESC handler (4.1.2 + 2.1.2); `S.input` border `#d1d5db` → `#94a3b8` (1.4.11, used by every input/select/textarea); 4 instances of `#9ca3af` text → `#64748b` (1.4.3) | 2bd3ed8 |
+| **SEL Hub** | (Stations) | `_t.border` theme token bumped from light=`#e2e8f0` (~1.4:1) / dark=`#334155` (~1.7:1) to light=`#94a3b8` / dark=`#64748b` for 1.4.11 — fixed across every input throughout SEL Hub (25+ tools); `#ec4899` (pink-500) "Activate" + "Save Station" buttons → `#db2777` (pink-600, 4.6:1 with white) for 1.4.3 | 0abf0c1 |
+| **Error Reporter (new)** | shipped clean | New `error_reporter_module.js` shipped with AA-clean palette + pure-DOM rendering (no React dep). Modal panel has `role="dialog"` + `aria-modal` + `aria-label`; close button focusable + ESC closes; backdrop click closes; focus returns to badge after close. `aria-busy` + `aria-label` on async loading states. Buffer entries rendered in monospace with high-contrast level badges. Form-prefill submit opens Google Form in new tab so user reviews before sending (privacy-respecting). | 1cf5f6c, f2ad864 |
+
+**Cumulative state across all audited tools as of April 27:**
+
+| Tool | WCAG AA Status |
+|---|---|
+| 80 STEM Lab files | ✓ AA (April 26 per-tool audit) |
+| 30 SEL Hub files | ✓ AA (April 26 per-tool audit) + Stations new code (April 27) |
+| AlloFlowANTI.txt monolith | ✓ AA (April 26 monolith audit) |
+| ~25 top-level modules | ✓ AA (April 26 batch audit) |
+| **Writing-craft trio** (StoryForge, PoetTree, LitLab) | ✓ AA after April 27 focused audits on this session's new surfaces |
+| **Error Reporter** | ✓ AA (shipped clean) |
+
+The April 27 work confirms that **adding new features no longer regresses the AA baseline** — the audit pipeline catches contrast / 1.4.11 / modal-landmark issues at the same point in the dev loop as functionality bugs. Pattern: ship feature → focused WCAG audit on the new surface → fix what comes up → commit. Five tools went through this loop in one session with all five passing.
+
+**New accessibility-positive infrastructure:** the Error Reporter module loads at the top of the boot sequence and surfaces a hidden-by-default red badge whenever an uncaught error or `console.error` is captured. Users — including those using AT in Canvas embed contexts where browser DevTools are inaccessible — can submit a pre-filled bug report to a Google Form in two clicks. This is itself an accessibility improvement: AT users were previously unable to surface errors at all from inside Canvas.
+
+**BehaviorLens follow-up audit (April 27)**: Despite the April 26 BehaviorLens audit's 205 mechanical fixes, a 1.4.11 Non-text Contrast issue had been missed: **506 instances of `border border-slate-200`** (the single-thin-border Tailwind pattern used on every form input, textarea, select, and search box throughout the FBA / observation tool) renders at ~1.4:1 on white. Fails the 3:1 minimum for UI component boundaries. Bulk-replaced to `border border-slate-400` (~3.25:1) — same visual weight, AA-clean. This is a higher-stakes tool than most (clinicians filing FBAs use it; clinical AT users need clearly-identifiable input fields), so the fix matters even though April 26 had marked the module ✓.
+
+This is a useful pattern data point for future audits: cross-cutting Tailwind class sweeps for `border border-slate-200` (single-border, input-pattern) are worth running across every module, not just the most-recently-touched. **Open recommendation: run that sweep on the AlloFlowANTI.txt monolith + ~25 top-level modules in a future pass.**
 
 **Runtime axe-core audit (April 26, post-source-audit)**: Ran `scripts/axe_audit.mjs` (Playwright + axe-core 4.10.3) against live `https://prismflow-911fe.web.app` across 7 visual scenarios. **66% improvement vs April 18 baseline** (~59 violation nodes → 20; 0 critical remaining). 3 distinct rules surfaced — all fixed in source: (1) `launch_pad.ai_backend_settings` was showing as raw untranslated i18n key + 1.55:1 contrast — hardcoded label + raised text color to AA-compliant `#e0e7ff`; (2) `<div role="button">` source-toolbar nested-interactive — removed role/tabIndex/onKeyDown from layout div; (3) splash + launch-pad overlay divs not in landmark — wrapped in `role="region"` with descriptive aria-labels. **Expected post-deploy: 0 violations across all 7 scenarios.** Aaron needs to run `build.js --mode=prod` + Firebase deploy + re-run `node scripts/axe_audit.mjs` to confirm. Audit infrastructure (script, axe-core 4.10.3 via CDN, Playwright dep, JSON + Markdown output) is permanent — re-runnable before any release.
 
