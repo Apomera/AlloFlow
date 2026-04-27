@@ -341,6 +341,39 @@ window.StemLab = window.StemLab || {
       hint: 'Complete the Trips Bunch concept',
       check: function(d, outcome, stats) {
         return d.sport === 'football' && d.playId === 'trips' && stats && stats.completionsByPlay && stats.completionsByPlay.trips;
+      } },
+    // ── Stretch / mastery badges ──
+    { id: 'streak-hunter-pl', emoji: '🎯', label: 'Streak Hunter',
+      hint: '10-play hot streak (any sport)',
+      check: function(d, outcome, stats) { return (stats.hotStreak || 0) >= 10; } },
+    { id: 'legendary-pl', emoji: '👑', label: 'Legendary',
+      hint: '25-play hot streak — Hall of Fame territory',
+      check: function(d, outcome, stats) { return (stats.hotStreak || 0) >= 25; } },
+    { id: 'all-pro', emoji: '🏆', label: 'All-Pro',
+      hint: 'Beat all 8 football coverages',
+      check: function(d, outcome, stats) {
+        return d.sport === 'football' && stats && (stats.coveragesBeaten || 0) >= 8;
+      } },
+    { id: 'set-piece-master', emoji: '🪂', label: 'Set-Piece Master',
+      hint: 'Run all 5 soccer set-piece TYPES (corner / freekick / throwin / penalty / goalkick)',
+      check: function(d, outcome, stats) {
+        return d.sport === 'soccer' && stats && Object.keys(stats.setPieceTypesRun || {}).length >= 5;
+      } },
+    { id: 'tactician', emoji: '📋', label: 'Tactician',
+      hint: 'Save 5 custom plays',
+      check: function(d) { return (d.savedPlays || []).length >= 5; } },
+    { id: 'globetrotter-pl', emoji: '🌍', label: 'Globetrotter',
+      hint: 'Complete plays in BOTH football and soccer',
+      check: function(d, outcome, stats) {
+        // Tracked via the universal hotStreak / saved plays — completion in both sports
+        var football = stats && Object.keys(stats.completionsByPlay || {}).length >= 1;
+        // For soccer, any high-xG sequence counts
+        var soccer = stats && stats.highXgShot;
+        // Stats are sport-specific so this needs a session-level OR. We reach
+        // for savedPlays as a proxy: if a play has been saved in BOTH sports.
+        var savedSports = {};
+        (d.savedPlays || []).forEach(function(sp) { savedSports[sp.sport] = true; });
+        return savedSports.football && savedSports.soccer;
       } }
   ];
 

@@ -347,7 +347,47 @@ window.StemLab = window.StemLab || {
       check: function(d, lr) { return d.mode === 'golf' && lr.location === 'green' && d.golfClub === 'wedge'; } },
     { id: 'ace-server', emoji: '🏐', label: 'Ace Server',
       hint: 'Land a volleyball ace',
-      check: function(d, lr) { return d.mode === 'volleyball' && lr.location === 'ace'; } }
+      check: function(d, lr) { return d.mode === 'volleyball' && lr.location === 'ace'; } },
+    // ── Stretch / mastery badges ──
+    { id: 'streak-hunter', emoji: '🎯', label: 'Streak Hunter',
+      hint: '10-throw hot streak (any sport)',
+      check: function(d, lr, stats) { return (stats.hotStreak || 0) >= 10; } },
+    { id: 'legendary', emoji: '👑', label: 'Legendary',
+      hint: '25-throw hot streak — Hall of Fame territory',
+      check: function(d, lr, stats) { return (stats.hotStreak || 0) >= 25; } },
+    { id: 'globetrotter', emoji: '🌍', label: 'Globetrotter',
+      hint: 'Score in 3 different sports in one save',
+      check: function(d) {
+        // Counts sports where the student has at least one tracked make
+        var sports = 0;
+        if ((d.strikeCount || 0) >= 1) sports++;
+        if ((d.shotMakeCount || 0) >= 1) sports++;
+        if ((d.goalCount || 0) >= 1) sports++;
+        if ((d.fgMakeCount || 0) >= 1) sports++;
+        if ((d.wicketCount || 0) >= 1) sports++;
+        if ((d.golfGreenCount || 0) >= 1) sports++;
+        if ((d.volleyAceCount || 0) >= 1) sports++;
+        return sports >= 3;
+      } },
+    { id: 'cosmonaut', emoji: '🚀', label: 'Cosmonaut',
+      hint: 'Score on a non-Earth planet',
+      check: function(d, lr, stats) {
+        var loc = lr && lr.location;
+        var isMake = loc === 'strike' || loc === 'swish' || loc === 'made' || loc === 'goal'
+          || loc === 'good' || loc === 'wicket' || loc === 'shaved' || loc === 'ace'
+          || loc === 'in' || loc === 'green' || loc === 'fairway';
+        return isMake && d.gravityId && d.gravityId !== 'earth';
+      } },
+    { id: 'storm-rider', emoji: '🌪️', label: 'Storm Rider',
+      hint: 'Score in 20+ mph wind',
+      check: function(d, lr) {
+        var loc = lr && lr.location;
+        var isMake = loc === 'goal' || loc === 'good' || loc === 'green' || loc === 'fairway' || loc === 'wicket' || loc === 'ace';
+        return isMake && (d.windMph || 0) >= 20;
+      } },
+    { id: 'curator', emoji: '📚', label: 'Curator',
+      hint: 'Save 3 custom scenarios',
+      check: function(d) { return (d.customScenarios || []).length >= 3; } }
   ];
 
   // ── Engagement layer: Hot-Hand + Hype ──
