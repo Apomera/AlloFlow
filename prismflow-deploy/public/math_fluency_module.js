@@ -1714,6 +1714,12 @@
           if (e.key === 'Enter') { e.preventDefault(); submitAnswer(); }
           return;
         }
+        // WCAG 2.1.4 — character-key shortcuts (P/M/F/H/?/WASD) must not
+        // fire when focus is in any editable element on the host page.
+        // The maze's own answer input only mounts inside currentProblem
+        // (handled above), so here we can safely skip on any editable.
+        var ae = (typeof document !== 'undefined') ? document.activeElement : null;
+        if (ae && ae !== document.body && ae.matches && ae.matches('input, textarea, select, [contenteditable="true"]')) return;
         if (e.key === 'p' || e.key === 'P') { setPaused(function(v) { return !v; }); return; }
         if (e.key === '?' || (e.shiftKey && e.key === '/')) { setHelpOpen(function(v) { return !v; }); return; }
         if (e.key === 'm' || e.key === 'M') { _toggleMute(); return; }
@@ -3491,11 +3497,11 @@
       // Arrow buttons (mobile friendly)
       h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: isFullscreen ? '8px' : '4px', maxWidth: isFullscreen ? '240px' : '160px', margin: isFullscreen ? '14px auto 0' : '8px auto 0' } },
         h('div'),
-        h('button', { onClick: function() { tryMove('up'); }, style: { padding: isFullscreen ? '18px' : '12px', borderRadius: '8px', background: 'linear-gradient(180deg, #a8957d 0%, #78350f 100%)', color: '#fef3c7', border: '2px solid #78350f', fontSize: isFullscreen ? '28px' : '20px', fontWeight: 700, cursor: 'pointer', boxShadow: 'inset 0 -2px 0 rgba(0,0,0,0.25)', minHeight: isFullscreen ? '64px' : '44px' } }, '\u25B2'),
+        h('button', { onClick: function() { tryMove('up'); }, 'aria-label': 'Move up', title: 'Move up (up arrow or W key)', style: { padding: isFullscreen ? '18px' : '12px', borderRadius: '8px', background: 'linear-gradient(180deg, #a8957d 0%, #78350f 100%)', color: '#fef3c7', border: '2px solid #78350f', fontSize: isFullscreen ? '28px' : '20px', fontWeight: 700, cursor: 'pointer', boxShadow: 'inset 0 -2px 0 rgba(0,0,0,0.25)', minHeight: isFullscreen ? '64px' : '44px' } }, '\u25B2'),
         h('div'),
-        h('button', { onClick: function() { tryMove('left'); }, style: { padding: isFullscreen ? '18px' : '12px', borderRadius: '8px', background: 'linear-gradient(180deg, #a8957d 0%, #78350f 100%)', color: '#fef3c7', border: '2px solid #78350f', fontSize: isFullscreen ? '28px' : '20px', fontWeight: 700, cursor: 'pointer', boxShadow: 'inset 0 -2px 0 rgba(0,0,0,0.25)', minHeight: isFullscreen ? '64px' : '44px' } }, '\u25C0'),
-        h('button', { onClick: function() { tryMove('down'); }, style: { padding: isFullscreen ? '18px' : '12px', borderRadius: '8px', background: 'linear-gradient(180deg, #a8957d 0%, #78350f 100%)', color: '#fef3c7', border: '2px solid #78350f', fontSize: isFullscreen ? '28px' : '20px', fontWeight: 700, cursor: 'pointer', boxShadow: 'inset 0 -2px 0 rgba(0,0,0,0.25)', minHeight: isFullscreen ? '64px' : '44px' } }, '\u25BC'),
-        h('button', { onClick: function() { tryMove('right'); }, style: { padding: isFullscreen ? '18px' : '12px', borderRadius: '8px', background: 'linear-gradient(180deg, #a8957d 0%, #78350f 100%)', color: '#fef3c7', border: '2px solid #78350f', fontSize: isFullscreen ? '28px' : '20px', fontWeight: 700, cursor: 'pointer', boxShadow: 'inset 0 -2px 0 rgba(0,0,0,0.25)', minHeight: isFullscreen ? '64px' : '44px' } }, '\u25B6')
+        h('button', { onClick: function() { tryMove('left'); }, 'aria-label': 'Move left', title: 'Move left (left arrow or A key)', style: { padding: isFullscreen ? '18px' : '12px', borderRadius: '8px', background: 'linear-gradient(180deg, #a8957d 0%, #78350f 100%)', color: '#fef3c7', border: '2px solid #78350f', fontSize: isFullscreen ? '28px' : '20px', fontWeight: 700, cursor: 'pointer', boxShadow: 'inset 0 -2px 0 rgba(0,0,0,0.25)', minHeight: isFullscreen ? '64px' : '44px' } }, '\u25C0'),
+        h('button', { onClick: function() { tryMove('down'); }, 'aria-label': 'Move down', title: 'Move down (down arrow or S key)', style: { padding: isFullscreen ? '18px' : '12px', borderRadius: '8px', background: 'linear-gradient(180deg, #a8957d 0%, #78350f 100%)', color: '#fef3c7', border: '2px solid #78350f', fontSize: isFullscreen ? '28px' : '20px', fontWeight: 700, cursor: 'pointer', boxShadow: 'inset 0 -2px 0 rgba(0,0,0,0.25)', minHeight: isFullscreen ? '64px' : '44px' } }, '\u25BC'),
+        h('button', { onClick: function() { tryMove('right'); }, 'aria-label': 'Move right', title: 'Move right (right arrow or D key)', style: { padding: isFullscreen ? '18px' : '12px', borderRadius: '8px', background: 'linear-gradient(180deg, #a8957d 0%, #78350f 100%)', color: '#fef3c7', border: '2px solid #78350f', fontSize: isFullscreen ? '28px' : '20px', fontWeight: 700, cursor: 'pointer', boxShadow: 'inset 0 -2px 0 rgba(0,0,0,0.25)', minHeight: isFullscreen ? '64px' : '44px' } }, '\u25B6')
       ),
       h('p', { style: { fontSize: isFullscreen ? '13px' : '10px', color: isFullscreen ? '#fbbf24' : '#92400e', textAlign: 'center', marginTop: isFullscreen ? '12px' : '8px', fontStyle: 'italic' } }, 'Arrow keys or WASD to move \u2022 H for hint \u2022 F for fullscreen \u2022 3-in-a-row for bonus')
     );
