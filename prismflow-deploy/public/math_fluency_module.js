@@ -929,6 +929,43 @@
     return grid;
   }
 
+  // Daily streak — counts consecutive calendar days the maze was
+  // played. Stored as { lastPlayedDate: 'YYYY-MM-DD', current: N,
+  // longest: N }. Computed lazily so the streak record updates on
+  // first render, not on first move.
+  function _mfDailyStreak() {
+    try {
+      var today = new Date().toISOString().slice(0, 10);
+      var rec = JSON.parse(localStorage.getItem('fluency_maze_daily') || '{}');
+      if (rec.lastPlayedDate === today) return rec; // already counted today
+      var yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+      var newCurrent = rec.lastPlayedDate === yesterday ? (rec.current || 0) + 1 : 1;
+      var next = {
+        lastPlayedDate: today,
+        current: newCurrent,
+        longest: Math.max(rec.longest || 0, newCurrent),
+      };
+      localStorage.setItem('fluency_maze_daily', JSON.stringify(next));
+      return next;
+    } catch (e) { return { current: 0, longest: 0 }; }
+  }
+  // Mastery counts — gates unlocked per operation (add / sub / mul /
+  // div). Used to award bronze / silver / gold badges per fact family
+  // so students see steady progress in each op even when total score
+  // is dominated by mixed-mode runs.
+  function _mfBumpOpCount(opLabel) {
+    try {
+      var cur = JSON.parse(localStorage.getItem('fluency_maze_op_counts') || '{}');
+      cur[opLabel] = (cur[opLabel] || 0) + 1;
+      localStorage.setItem('fluency_maze_op_counts', JSON.stringify(cur));
+    } catch (e) {}
+  }
+  function _mfMasteryTier(n) {
+    if (n >= 500) return { tier: 'gold',   emoji: '\uD83E\uDD47', label: 'Gold' };
+    if (n >= 200) return { tier: 'silver', emoji: '\uD83E\uDD48', label: 'Silver' };
+    if (n >= 50)  return { tier: 'bronze', emoji: '\uD83E\uDD49', label: 'Bronze' };
+    return null;
+  }
   // Lifetime stats — accumulates across all sessions, persisted via
   // localStorage. Used to render the "since you started playing" stats
   // strip on the setup screen so students see their long-term progress.
@@ -1075,6 +1112,11 @@
     var minimapTickRef = useRef(0);
     // Bump when we want the "wrong answer" screen shake to fire.
     var shakeRef = useRef(0);
+    // Dust-particle queue — radial puffs spawned in submitAnswer's
+    // correct path at the cell the player just left, decayed per
+    // draw frame in the canvas useEffect. Kept as a ref because
+    // particles are pure visual fluff and shouldn't trigger renders.
+    var dustParticlesRef = useRef([]);
     // Per-gate wrong-attempt counter — surfaces "Attempt 2" / "Attempt 3"
     // on the gate so retries feel acknowledged. Resets to 0 in tryMove
     // when a new problem appears.
@@ -1266,6 +1308,13 @@
         visitedCellsRef.current[playerPos.r + ',' + playerPos.c] = true;
         visitedCellsRef.current[newPos.r + ',' + newPos.c] = true;
         if (!tutorialSeen) _dismissTutorial();
+        // Spawn dust puff at the cell we just left so movement feels
+        // physical. Particles fade over ~0.6s in the draw loop.
+        try {
+          var dustList = dustParticlesRef.current;
+          dustList.push({ r: playerPos.r, c: playerPos.c, age: 0, life: 0.6 });
+          if (dustList.length > 12) dustList.shift();
+        } catch (e) {}
         // Streak bump. Every 3 in a row = bonus score + a little fanfare,
         // reinforcing sustained fluency rather than just isolated correct
         // answers. Captured here synchronously so the milestone check fires
@@ -1287,12 +1336,23 @@
         setScore(function(p) { return p + 10 + streakBonus; });
         setMoveCount(function(p) { return p + 1; });
         _mfBumpLifetime({ gatesUnlocked: 1, longestStreak: nextStreak });
+        (function() {
+          var ptxt = (currentProblem.problem.text || '');
+          var opK = ptxt.indexOf('\u00D7') >= 0 || ptxt.indexOf('x') >= 0 || ptxt.indexOf('*') >= 0 ? 'mul'
+            : ptxt.indexOf('\u00F7') >= 0 || ptxt.indexOf('/') >= 0 ? 'div'
+            : ptxt.indexOf('+') >= 0 ? 'add'
+            : (ptxt.indexOf('\u2212') >= 0 || ptxt.indexOf('-') >= 0) ? 'sub'
+            : null;
+          if (opK) _mfBumpOpCount(opK);
+        })();
         setFeedback('correct');
         _mfAnnounce('Gate opens. ' + currentProblem.problem.text + ' equals ' + currentProblem.problem.answer + '.');
         // Clear any active hint — reward for solving without it
         setHintDir(null);
         playTone(880, 0.05, 'sine', 0.06);
         setTimeout(function() { playTone(1320, 0.05, 'sine', 0.05); }, 50);
+        // Soft stone-footfall layered under the correct chime
+        setTimeout(function() { playTone(180, 0.06, 'triangle', 0.035); }, 110);
         // 3D feedback: green ambient flash + gem drop at the cell we just left
         var eng3d = maze3dEngRef.current;
         if (eng3d) {
@@ -1700,6 +1760,25 @@
         ctx.fillText('\uD83D\uDC7E', (monsterPos.c + 0.5) * CELL_SIZE, (monsterPos.r + 0.5) * CELL_SIZE + 6);
       }
 
+      // Drifting dust puffs — particles spawned at cells we just left
+      // on each successful move. Render before the lantern so they sit
+      // on the corridor floor; decay age each draw frame and reap.
+      var _dustList = dustParticlesRef.current;
+      for (var dpi = _dustList.length - 1; dpi >= 0; dpi--) {
+        var pp = _dustList[dpi];
+        pp.age += 0.05;
+        if (pp.age >= pp.life) { _dustList.splice(dpi, 1); continue; }
+        var dprog = pp.age / pp.life;       // 0..1
+        var dpcx = (pp.c + 0.5) * CELL_SIZE;
+        var dpcy = (pp.r + 0.5) * CELL_SIZE;
+        var dpr = 4 + dprog * 14;            // grows
+        var dpalpha = (1 - dprog) * 0.45;
+        var dustGrad = ctx.createRadialGradient(dpcx, dpcy, 1, dpcx, dpcy, dpr);
+        dustGrad.addColorStop(0, 'rgba(252,232,205,' + dpalpha + ')');
+        dustGrad.addColorStop(1, 'rgba(252,232,205,0)');
+        ctx.fillStyle = dustGrad;
+        ctx.beginPath(); ctx.arc(dpcx, dpcy, dpr, 0, Math.PI * 2); ctx.fill();
+      }
       // Player-carried lantern light — soft amber radial glow centered on
       // the player's cell. Sits over fog/breadcrumbs but under the player
       // marker so the player feels like they're carrying their own light
@@ -2325,6 +2404,61 @@
             h('span', null, '\uD83D\uDD25 x' + (lt.longestStreak || 0)),
             h('span', null, '\u23F1 ' + mins + 'm')
           );
+        })(),
+        // Daily-streak pill — drives habit formation. Shown only when
+        // current streak > 0 (i.e., student has played today).
+        (function() {
+          var dr = _mfDailyStreak();
+          if (!dr.current) return null;
+          return h('div', {
+            style: {
+              display: 'inline-flex', alignItems: 'center', gap: '6px',
+              background: 'linear-gradient(135deg, #fb923c, #b91c1c)',
+              color: '#fef3c7', fontSize: '11px', fontWeight: 800,
+              padding: '4px 12px', borderRadius: '999px',
+              marginBottom: '12px', border: '1px solid #7c2d12',
+              boxShadow: '0 2px 8px rgba(124,45,18,0.3), inset 0 1px 0 rgba(255,235,170,0.25)',
+              letterSpacing: '0.04em'
+            },
+            'aria-label': 'Daily streak: ' + dr.current + ' consecutive days. Longest: ' + (dr.longest || dr.current) + ' days.'
+          }, '\uD83D\uDD25 Day ' + dr.current + (dr.longest > dr.current ? ' (best: ' + dr.longest + ')' : ''));
+        })(),
+        // Mastery badges per operation — bronze (50+), silver (200+),
+        // gold (500+) per fact family. Renders only operations the
+        // student has earned at least bronze in.
+        (function() {
+          var counts = null;
+          try { counts = JSON.parse(localStorage.getItem('fluency_maze_op_counts') || '{}'); } catch (e) { counts = {}; }
+          var opNames = { add: 'Add', sub: 'Sub', mul: 'Mul', div: 'Div' };
+          var tiered = ['add', 'sub', 'mul', 'div'].map(function(k) {
+            var n = counts[k] || 0;
+            var t = _mfMasteryTier(n);
+            return t ? { op: k, name: opNames[k], n: n, t: t } : null;
+          }).filter(Boolean);
+          if (!tiered.length) return null;
+          return h('div', {
+            style: {
+              display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '6px',
+              marginBottom: '14px'
+            },
+            'aria-label': 'Mastery badges earned: ' + tiered.map(function(x) { return x.t.label + ' in ' + x.name + ' (' + x.n + ')'; }).join(', ')
+          }, tiered.map(function(x) {
+            return h('span', {
+              key: x.op,
+              style: {
+                display: 'inline-flex', alignItems: 'center', gap: '4px',
+                background: x.t.tier === 'gold' ? 'linear-gradient(135deg,#fef3c7,#fde68a)'
+                          : x.t.tier === 'silver' ? 'linear-gradient(135deg,#f8fafc,#e2e8f0)'
+                          : 'linear-gradient(135deg,#fed7aa,#fdba74)',
+                color: x.t.tier === 'gold' ? '#78350f' : x.t.tier === 'silver' ? '#475569' : '#9a3412',
+                border: '1px solid ' + (x.t.tier === 'gold' ? '#f59e0b' : x.t.tier === 'silver' ? '#94a3b8' : '#c2410c'),
+                fontSize: '10px', fontWeight: 800, padding: '3px 9px', borderRadius: '999px',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.08)',
+                letterSpacing: '0.04em'
+              },
+              title: x.t.label + ' ' + x.name + ': ' + x.n + ' gates'
+            }, x.t.emoji + ' ' + x.name);
+          }));
         })(),
         // Operation selector
         h('div', { style: { display: 'flex', gap: '6px', justifyContent: 'center', marginBottom: '12px', flexWrap: 'wrap' } },
