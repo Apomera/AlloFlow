@@ -408,12 +408,10 @@
     getBuffer: function () { return buffer.slice(); },
     clearBuffer: function () { buffer.length = 0; persistBuffer(); updateBadge(); refreshPanelIfOpen(); },
     openPanel: openPanel,
-    // Manual report — useful as a "help" entry point when nothing has crashed
-    openManualReport: function () {
-      // Add a synthetic entry so the badge shows + buffer has something to send
-      record('error', 'Manual bug report (no crash captured)', '', '', 0, 0);
-      openPanel();
-    }
+    // Alias kept for API stability — just opens the panel. The form's "what
+    // happened?" field falls back to "(No errors captured. Sending a manual
+    // report.)" when the buffer is empty, so we don't need to inject anything.
+    openManualReport: openPanel
   };
 
   // Show the badge if there are pre-existing errors from a previous session.

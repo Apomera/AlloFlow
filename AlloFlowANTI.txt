@@ -48008,6 +48008,37 @@ Return ONLY the plain language summary in ${lang}.`, false);
                         </label>
                     </div>
                 </div>
+                {/* ── Report a Problem (always-available entry point) ──
+                    Opens the Error Reporter panel so users can review captured
+                    errors and one-click submit a pre-filled bug report — or
+                    file feedback even when nothing has crashed. Calls openPanel()
+                    directly (NOT openManualReport, which would inject a synthetic
+                    error entry into the buffer). The reporter loads at the top of
+                    the boot sequence so window.AlloModules.ErrorReporter is
+                    available by the time this dialog can render. */}
+                <div className="pt-4 mt-2 border-t border-slate-100">
+                    <button
+                        type="button"
+                        onClick={() => {
+                            try {
+                                if (window.AlloModules && window.AlloModules.ErrorReporter && window.AlloModules.ErrorReporter.openPanel) {
+                                    window.AlloModules.ErrorReporter.openPanel();
+                                    handleSetIsProjectSettingsOpenToFalse();
+                                } else {
+                                    // Fallback: open the bare form. ErrorReporter not loaded yet.
+                                    window.open('https://docs.google.com/forms/d/e/1FAIpQLSd9dJexeOjd6fvFio9V0Jd45FDpuL7cSQNnm-BLmqyTwrPrhg/viewform', '_blank', 'noopener,noreferrer');
+                                }
+                            } catch (e) {
+                                console.warn('[Settings] Report-a-problem button failed:', e);
+                            }
+                        }}
+                        className="w-full flex items-center justify-center gap-2 text-xs text-slate-600 hover:text-rose-700 hover:bg-rose-50 px-3 py-2 rounded-lg transition-colors font-medium"
+                        aria-label="Report a problem or send feedback to Aaron"
+                    >
+                        <CircleHelp size={14} aria-hidden="true" />
+                        Report a problem or send feedback
+                    </button>
+                </div>
                 <div className="pt-2 flex justify-end">
                     <button
                         data-help-key="settings_close_btn"
