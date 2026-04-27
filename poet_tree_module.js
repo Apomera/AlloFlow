@@ -376,6 +376,98 @@
       ]
     },
     {
+      id: 'ballad',
+      name: 'Ballad',
+      icon: '🪕',
+      tagline: '4-line stanzas. Rhyme abcb. Tell a story you would sing around a fire.',
+      structure: 'Quatrains (4-line stanzas). Lines 2 and 4 rhyme — ABCB pattern. Traditionally lines 1 and 3 are 4 beats (iambic tetrameter), lines 2 and 4 are 3 beats (iambic trimeter). Ballads tell a story — a hero, a tragedy, a love, a loss — often in plain musical language.',
+      lineCount: null,
+      syllablesPerLine: null,
+      rhymeScheme: 'A-B-C-B per stanza',
+      example: 'It is an ancient Mariner,\nAnd he stoppeth one of three.\n"By thy long grey beard and glittering eye,\nNow wherefore stopp\'st thou me?"\n\n— Coleridge, "The Rime of the Ancient Mariner"',
+      tips: [
+        'Pick a story — a single event with a beginning, middle, and end.',
+        'Keep the language plain. Ballads were sung; they live by ear, not by trick.',
+        'Use a refrain (a repeated line) if the moment deserves echoing.',
+        'Lines 1/3 are slightly longer than lines 2/4. Read aloud — you\'ll feel it.'
+      ],
+      moreExamples: [
+        {
+          title: 'La Belle Dame sans Merci (opening)',
+          author: 'John Keats',
+          year: 1819,
+          text: 'O what can ail thee, knight-at-arms,\nAlone and palely loitering?\nThe sedge has withered from the lake,\nAnd no birds sing.',
+          note: 'Four lines. A knight, a lake, no birds. The whole haunted story turns on what is missing — an inversion of the form\'s usual narrative drive.'
+        },
+        {
+          title: 'Lord Randall (refrain)',
+          author: 'Anonymous (traditional Scottish)',
+          year: 1700,
+          text: '"O where ha\'e ye been, Lord Randall, my son?\nO where ha\'e ye been, my handsome young man?"\n"I ha\'e been to the wild wood; mother, make my bed soon,\nFor I\'m weary wi\' hunting, and fain wad lie down."',
+          note: 'Folk ballads often use repeated questions and refrains — "make my bed soon, for I\'m weary." The structure carries the dread.'
+        }
+      ]
+    },
+    {
+      id: 'villanelle',
+      name: 'Villanelle',
+      icon: '🌀',
+      tagline: '19 lines. Two refrains that loop back. The form remembers what you are trying to say.',
+      structure: '19 lines: five tercets (3-line stanzas) followed by a quatrain (4-line stanza). Two lines act as refrains — line 1 repeats as lines 6, 12, and 18; line 3 repeats as lines 9, 15, and 19. Rhyme scheme: A1 b A2 / a b A1 / a b A2 / a b A1 / a b A2 / a b A1 A2 (where A1 and A2 are the two refrains). The form\'s recursion is the whole point — it is a poem about not letting go.',
+      lineCount: 19,
+      syllablesPerLine: null,
+      rhymeScheme: 'A1 b A2 / a b A1 / a b A2 / a b A1 / a b A2 / a b A1 A2',
+      example: 'Do not go gentle into that good night,\nOld age should burn and rave at close of day;\nRage, rage against the dying of the light.\n\nThough wise men at their end know dark is right,\nBecause their words had forked no lightning they\nDo not go gentle into that good night.\n\n— Dylan Thomas (opening, 1951)',
+      tips: [
+        'Pick your two refrains FIRST. They have to bear the weight of repeated landings.',
+        'Pick refrains that can shift meaning across contexts — slight syntactic ambiguity helps.',
+        'Don\'t fight the recursion; lean into it. Each repeat is a new pressure on the same words.',
+        'Rhyme matters but is secondary to the refrains. Don\'t cripple the refrains for an end-rhyme.'
+      ],
+      moreExamples: [
+        {
+          title: 'One Art (opening)',
+          author: 'Elizabeth Bishop',
+          year: 1976,
+          text: 'The art of losing isn\'t hard to master;\nso many things seem filled with the intent\nto be lost that their loss is no disaster.',
+          note: 'Bishop\'s "One Art" runs the form against itself — each return of "the art of losing isn\'t hard to master" carries more grief, until the parenthetical "(Write it!)" cracks the whole structure open.'
+        },
+        {
+          title: 'Mad Girl\'s Love Song (opening)',
+          author: 'Sylvia Plath',
+          year: 1953,
+          text: 'I shut my eyes and all the world drops dead;\nI lift my lids and all is born again.\n(I think I made you up inside my head.)',
+          note: 'Plath\'s villanelle uses the parenthetical refrain as a private aside — the public claim and the secret knowledge alternate through the poem.'
+        }
+      ]
+    },
+    {
+      id: 'pantoum',
+      name: 'Pantoum',
+      icon: '🪢',
+      tagline: 'Malaysian form. Each stanza\'s 2nd and 4th lines become the next stanza\'s 1st and 3rd.',
+      structure: 'Quatrains where lines 2 and 4 of each stanza become lines 1 and 3 of the next. The poem usually ends by returning to the very first line. Rhyme is optional (often ABAB). The repetition feels like a tide — every wave brings the previous one back, slightly altered by the new context.',
+      lineCount: null,
+      syllablesPerLine: null,
+      rhymeScheme: 'optional ABAB; the form is defined by line repetition',
+      example: 'I am tired, but the work is not done.\nThe lamps come on along the river.\nThe river says nothing back.\nI sit on the bench and wait.\n\nThe lamps come on along the river.\nA dog barks somewhere I cannot see.\nI sit on the bench and wait.\nNothing has changed; everything has.',
+      tips: [
+        'Write your first stanza completely first. Lines 2 and 4 are the seeds of stanza 2.',
+        'Slight punctuation changes (a comma to a period, a question to a statement) let a repeated line shift in meaning.',
+        'Pantoums work best when each line can stand alone — they\'ll be heard twice in different contexts.',
+        'For a clean ending, return to your opening line in the final stanza.'
+      ],
+      moreExamples: [
+        {
+          title: 'Pantoum of the Great Depression (opening)',
+          author: 'Donald Justice',
+          year: 1995,
+          text: 'Our lives avoided tragedy\nSimply by going on and on,\nWithout end and with little apparent meaning.\nOh, there were storms and small catastrophes.\n\nSimply by going on and on,\nWe managed. No need for the heroic.\nOh, there were storms and small catastrophes.\nI don\'t remember all the particulars.',
+          note: 'Justice uses the pantoum\'s recursion to dramatize the slow accretion of an ordinary life — repetition as the texture of just-getting-through.'
+        }
+      ]
+    },
+    {
       id: 'erasure',
       name: 'Erasure Poem',
       icon: '⬛',
