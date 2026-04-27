@@ -244,6 +244,33 @@ window.StemLab = window.StemLab || {
     return null;
   }
 
+  // ── Coach personas ────────────────────────────────────────────────
+  // Four voice options for the AI coach. Each persona's `prepend`
+  // string is injected at the top of every Gemini prompt so the
+  // response feels distinct. Mirrors ThrowLab's COACH_PERSONAS pattern.
+  var COACH_PERSONAS = [
+    {
+      id: 'analyst', label: 'Analyst', icon: '📊',
+      prepend: 'You are a calm, broadcast-style sports analyst — measured, observational, focused on what the data shows. Use second-person ("you"), 2-3 short sentences, no exclamation points. Reference one specific number from the attempt.'
+    },
+    {
+      id: 'oldschool', label: 'Old School', icon: '🎤',
+      prepend: 'You are a terse, demanding old-school skate coach. Direct, no-nonsense, "do it again, this time better" energy. 2 sentences max. Reference one mistake or one strength specifically. No emojis.'
+    },
+    {
+      id: 'hype', label: 'Hype Man', icon: '🔥',
+      prepend: 'You are an energetic hype man — celebrate effort, encourage the next attempt. 2-3 short sentences with energy. Reference one specific physics insight in plain language. ONE emoji max.'
+    },
+    {
+      id: 'zen', label: 'Zen', icon: '🧘',
+      prepend: 'You are a Zen master coach — Phil Jackson reflective. Speak about flow, intention, the relationship between body and physics. 2-3 sentences, calm cadence. Reference one specific number in a contemplative way. No emojis.'
+    }
+  ];
+  function getPersona(id) {
+    for (var i = 0; i < COACH_PERSONAS.length; i++) if (COACH_PERSONAS[i].id === id) return COACH_PERSONAS[i];
+    return COACH_PERSONAS[0];
+  }
+
   // ──────────────────────────────────────────────────────────────────
   // HALFPIPE PHYSICS
   // The student picks: number of pumps (0-5), spin trick.
@@ -721,7 +748,10 @@ window.StemLab = window.StemLab || {
         progress: function(d) { return d.bmxLanded ? '✓' : 'pending'; } },
       { id: 'sk_scenarios_5', label: 'Try 5 famous-trick scenarios', icon: '🎬',
         check: function(d) { return (d.scenariosTried && Object.keys(d.scenariosTried).length >= 5); },
-        progress: function(d) { return ((d.scenariosTried && Object.keys(d.scenariosTried).length) || 0) + '/5 tried'; } }
+        progress: function(d) { return ((d.scenariosTried && Object.keys(d.scenariosTried).length) || 0) + '/5 tried'; } },
+      { id: 'sk_coach_3', label: 'Ask the AI coach 3 times', icon: '🎙️',
+        check: function(d) { return (d.coachOpens || 0) >= 3; },
+        progress: function(d) { return (d.coachOpens || 0) + '/3 asks'; } }
     ],
     render: function(ctx) {
       var React = ctx.React;
@@ -732,6 +762,7 @@ window.StemLab = window.StemLab || {
       var ArrowLeft = ctx.icons && ctx.icons.ArrowLeft;
       var addToast = ctx.addToast;
       var awardXP = ctx.awardXP;
+      var callGemini = ctx.callGemini;
 
       // ── State init ──────────────────────────────────────────────
       if (!labToolData || !labToolData.skatelab) {
@@ -758,6 +789,11 @@ window.StemLab = window.StemLab || {
             landedTricks: {},
             scenariosTried: {},
             bmxLanded: false,
+            // Coach state
+            coachPersona: 'analyst',
+            coachLoading: false,
+            coachResponse: null,   // { text, persona, attemptId } — most recent reply
+            coachOpens: 0,         // count of "Ask Coach" presses, for quest
             lastResult: null,
             running: false
           }});
@@ -813,6 +849,61 @@ window.StemLab = window.StemLab || {
         upd(bumps);
         skAnnounce('Loaded ' + sc.label + '. ' + (sc.mode === 'halfpipe' ? 'Halfpipe' : 'Gap jump') + ' mode, ' +
           (p.vehicle === 'bmx' ? 'BMX' : 'skateboard') + '.');
+      }
+
+      // ── askCoach: persona-flavored Gemini feedback ───────────────
+      // Builds a prompt from: persona prepend + active scenario teach +
+      // last attempt's physics. The model returns a 2-3 sentence
+      // pedagogical note. Aborts cleanly if callGemini isn't wired.
+      function askCoach() {
+        if (!callGemini) {
+          if (addToast) addToast('Coach is offline (no AI backend).', 'info');
+          return;
+        }
+        if (d.coachLoading) return;
+        if (!d.lastResult) {
+          if (addToast) addToast('Take an attempt first — coach reviews your last run.', 'info');
+          return;
+        }
+        var persona = getPersona(d.coachPersona);
+        var sc = getScenario(d.activeScenarioId);
+        var r = d.lastResult;
+
+        // Compose the per-attempt physics summary in plain language.
+        var attemptLine;
+        if (r.mode === 'halfpipe') {
+          attemptLine = (r.landed ? 'Landed' : 'Bailed') + ' a ' + r.trick +
+            ' on the halfpipe. Takeoff speed ' + r.vMph.toFixed(1) + ' mph, air height ' + r.hFt.toFixed(2) + ' ft, ' +
+            'hang time ' + r.airTime.toFixed(2) + ' s, completed ' + Math.round(r.completed) + '° of ' + r.rotation + '° needed. ' +
+            'Vehicle: ' + (r.vehicle || 'skateboard') + '. Gravity: ' + (r.gravity || 9.81).toFixed(2) + ' m/s².';
+        } else {
+          attemptLine = (r.landed ? 'Cleared the' : 'Missed the') + ' ' + r.gapFt + ' ft gap. ' +
+            'Took off at ' + r.vMph + ' mph at ' + r.angleDeg + '°, range ' + r.rangeFt.toFixed(1) + ' ft, ' +
+            'peak height ' + r.peakFt.toFixed(1) + ' ft, hang time ' + r.hangTime.toFixed(2) + ' s. ' +
+            'Clearance: ' + r.clearance.toFixed(1) + ' ft.';
+        }
+        var ctxLine = sc ? 'The student is working on the "' + sc.label + '" scenario. Teaching focus: ' + sc.teach : '';
+
+        var prompt = persona.prepend + '\n\n' +
+          'Context: ' + ctxLine + '\n\n' +
+          'Attempt: ' + attemptLine + '\n\n' +
+          'Give the student concise feedback on what worked or didn\'t, grounded in the physics. ' +
+          'If they bailed, suggest one specific change (more pumps, different angle, etc.). ' +
+          'If they landed, reinforce the physics concept they just demonstrated. ' +
+          'Do NOT use markdown. Do NOT preface with "Here\'s your feedback" — speak directly to the student.';
+
+        upd({ coachLoading: true, coachOpens: (d.coachOpens || 0) + 1 });
+        skAnnounce(persona.label + ' coach is thinking.');
+        // ThrowLab-pattern: callGemini returns a Promise<string>.
+        Promise.resolve(callGemini(prompt, false)).then(function(reply) {
+          var text = (typeof reply === 'string' ? reply : (reply && reply.text) || '').trim();
+          if (!text) text = '(Coach had no comment — try again.)';
+          upd({ coachLoading: false, coachResponse: { text: text, persona: persona.id, attemptId: d.attempts || 0 } });
+          skAnnounce(persona.label + ' coach: ' + text);
+        }).catch(function(err) {
+          console.warn('[SkateLab] Coach call failed:', err);
+          upd({ coachLoading: false, coachResponse: { text: '(Coach is offline. Try again in a moment.)', persona: persona.id, attemptId: d.attempts || 0 } });
+        });
       }
 
       function runHalfpipe() {
@@ -1148,6 +1239,71 @@ window.StemLab = window.StemLab || {
                 h('div', null, '🎯 Clearance: ', h('b', { style: { color: d.lastResult.landed ? '#86efac' : '#fbbf24' } }, (d.lastResult.clearance >= 0 ? '+' : '') + d.lastResult.clearance.toFixed(2) + ' ft')),
                 d.lastResult.landed && h('div', { style: { color: '#86efac', marginTop: 4 } }, '🏆 Score: ' + d.lastResult.score)
               )
+        ),
+        // ── Coach panel ─────────────────────────────────────────
+        // Persona pills + Ask Coach button + response card. Only
+        // shows the Ask button after at least one attempt so students
+        // get the analysis-then-feedback rhythm right.
+        d.lastResult && h('div', {
+          style: {
+            background: 'rgba(124,58,237,0.08)',
+            border: '1px solid rgba(167,139,250,0.4)',
+            borderRadius: 10, padding: 12, marginBottom: 12
+          }
+        },
+          h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 8, flexWrap: 'wrap' } },
+            h('div', { style: { fontSize: 11, fontWeight: 800, color: '#c4b5fd', letterSpacing: '0.06em', textTransform: 'uppercase' } }, '🎙️ AI Coach'),
+            // Persona picker
+            h('div', { role: 'radiogroup', 'aria-label': 'Coach voice', style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
+              COACH_PERSONAS.map(function(p) {
+                var sel = (d.coachPersona || 'analyst') === p.id;
+                return h('button', {
+                  key: 'cp-' + p.id,
+                  onClick: function() { upd('coachPersona', p.id); skAnnounce('Coach voice: ' + p.label); },
+                  role: 'radio',
+                  'aria-checked': sel,
+                  'data-sk-focusable': 'true',
+                  title: p.label + ' — ' + p.prepend.split('.')[0],
+                  style: {
+                    padding: '3px 8px', borderRadius: 999, cursor: 'pointer',
+                    background: sel ? 'rgba(167,139,250,0.25)' : 'rgba(254,243,199,0.06)',
+                    color: sel ? '#fff' : '#c4b5fd',
+                    border: '1px solid ' + (sel ? '#a78bfa' : 'rgba(167,139,250,0.30)'),
+                    fontSize: 10, fontWeight: 700
+                  }
+                }, p.icon + ' ' + p.label);
+              })
+            )
+          ),
+          h('button', {
+            onClick: askCoach,
+            disabled: !!d.coachLoading || !callGemini,
+            'aria-busy': !!d.coachLoading,
+            'aria-label': d.coachLoading ? 'Coach is thinking' : 'Ask the coach for feedback on your last attempt',
+            'data-sk-focusable': 'true',
+            style: {
+              width: '100%', padding: '8px 12px', fontSize: 12, fontWeight: 800,
+              background: d.coachLoading ? '#475569' : (callGemini ? 'linear-gradient(135deg,#7c3aed,#5b21b6)' : '#374151'),
+              color: '#fef3c7', border: '1px solid #6d28d9', borderRadius: 8,
+              cursor: d.coachLoading || !callGemini ? 'not-allowed' : 'pointer',
+              boxShadow: d.coachLoading ? 'none' : '0 2px 8px rgba(91,33,182,0.35)'
+            }
+          }, d.coachLoading ? '⏳ Coach is thinking…' : (callGemini ? '🎙️ Ask the Coach' : '🚫 Coach offline (no AI)')),
+          // Response card
+          d.coachResponse && d.coachResponse.text && h('div', {
+            style: {
+              marginTop: 10, padding: 10,
+              background: 'rgba(15,23,42,0.6)',
+              border: '1px solid rgba(167,139,250,0.30)',
+              borderRadius: 8,
+              fontSize: 12, color: '#e2e8f0', lineHeight: 1.6,
+              fontStyle: d.coachResponse.persona === 'zen' ? 'italic' : 'normal'
+            }
+          },
+            h('div', { style: { fontSize: 10, fontWeight: 800, color: '#c4b5fd', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 4 } },
+              getPersona(d.coachResponse.persona).icon + ' ' + getPersona(d.coachResponse.persona).label),
+            d.coachResponse.text
+          )
         ),
         // Stats footer
         h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 10 } },
