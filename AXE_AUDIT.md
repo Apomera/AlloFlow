@@ -1,7 +1,7 @@
 # AlloFlow axe-core Audit Report
 
 - **Target:** https://prismflow-911fe.web.app
-- **When:** 2026-04-27T22:04:36.759Z
+- **When:** 2026-04-27T23:10:07.195Z
 - **axe-core:** 4.10.3
 - **Scenarios audited:** 7
 
