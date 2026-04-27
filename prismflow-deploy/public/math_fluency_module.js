@@ -1986,7 +1986,7 @@
       container.appendChild(cnv);
       eng.renderer = new THREE.WebGLRenderer({ canvas: cnv, antialias: true });
       eng.renderer.setSize(container.clientWidth, container.clientHeight);
-      eng.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+      eng.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
 
       // Lighting — torch sprite adds a soft glow card so the flame reads as
       // bright even without a post-processing bloom pass.
@@ -2734,7 +2734,7 @@
       // HUD — scores + streak combo meter + hint button. Warm leather/stone
       // band so the HUD reads as part of the dungeon, not a separate cool-
       // slate strip floating above it.
-      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '7px 10px', background: 'linear-gradient(180deg, #5b4d3f 0%, #3a2e26 100%)', borderRadius: '10px', marginBottom: '6px', fontSize: '11px', flexWrap: 'wrap', gap: '8px', border: '1px solid #78350f', boxShadow: 'inset 0 1px 0 rgba(255,235,170,0.15), 0 2px 6px rgba(58,46,38,0.3)' } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: isFullscreen ? '10px 14px' : '7px 10px', background: 'linear-gradient(180deg, #5b4d3f 0%, #3a2e26 100%)', borderRadius: '10px', marginBottom: '6px', fontSize: isFullscreen ? '13px' : '11px', flexWrap: 'wrap', gap: isFullscreen ? '12px' : '8px', border: '1px solid #78350f', boxShadow: 'inset 0 1px 0 rgba(255,235,170,0.15), 0 2px 6px rgba(58,46,38,0.3)' } },
         h('span', { style: { color: '#86efac', fontWeight: 700 } }, '\u2705 ' + correct),
         h('span', { style: { color: '#fca5a5', fontWeight: 700 } }, '\u274C ' + wrong),
         h('span', { style: { color: '#fde68a', fontWeight: 700 } }, '\uD83C\uDFAF ' + score),
@@ -2961,7 +2961,7 @@
         )
       ),
       // 2D minimap overlay (top-right of 3D view)
-      has3D && maze && h('canvas', { ref: canvasRef, style: { position: 'absolute', top: '44px', right: '4px', width: '100px', height: '100px', borderRadius: '8px', border: '1px solid rgba(100,116,139,0.3)', opacity: 0.8 } }),
+      has3D && maze && h('canvas', { ref: canvasRef, style: { position: 'absolute', top: isFullscreen ? '64px' : '44px', right: isFullscreen ? '24px' : '4px', width: isFullscreen ? '160px' : '100px', height: isFullscreen ? '160px' : '100px', borderRadius: '8px', border: '1px solid rgba(100,116,139,0.4)', opacity: 0.85, boxShadow: isFullscreen ? '0 4px 16px rgba(0,0,0,0.5)' : 'none' } }),
       // Gate overlay (when at junction). Styled as a stone-gate with a
       // lock and a 3x4 number pad \u2014 the math problem is the gate's
       // combination, the pad is how you enter it. Border + glow shift
@@ -2987,7 +2987,8 @@
               ? '0 0 24px rgba(239,68,68,0.55), inset 0 0 16px rgba(239,68,68,0.2)'
               : '0 0 0 2px rgba(58,46,38,0.6), 0 12px 40px rgba(0,0,0,0.6), inset 0 0 24px rgba(255,180,80,0.10)',
           zIndex: 10,
-          width: 'min(320px, calc(100vw - 24px))', maxWidth: '90vw',
+          width: isFullscreen ? 'min(460px, calc(100vw - 48px))' : 'min(320px, calc(100vw - 24px))',
+          maxWidth: '92vw',
           transition: 'background 200ms, border-color 200ms, box-shadow 200ms'
         }
       },
@@ -3087,12 +3088,12 @@
                 }, isLBlock ? (d.l + '×' + d.w + '×' + d.h + '  −  ' + notch.l + '×' + notch.w + '×' + notch.h) : (d.l + ' × ' + d.w + ' × ' + d.h))
               );
             })()
-          : h('div', { style: { fontSize: '30px', fontWeight: 800, color: '#fef3c7', marginBottom: '10px', fontFamily: 'monospace', textShadow: '0 0 12px rgba(251,191,36,0.45)' } }, currentProblem.problem.text + ' = ?'),
+          : h('div', { style: { fontSize: isFullscreen ? '42px' : '30px', fontWeight: 800, color: '#fef3c7', marginBottom: '10px', fontFamily: 'monospace', textShadow: '0 0 12px rgba(251,191,36,0.45)' } }, currentProblem.problem.text + ' = ?'),
         // Answer display (read-only echo of userInput so taps on numpad show)
         h('div', {
           style: {
-            display: 'inline-block', minWidth: '120px', padding: '8px 12px', marginBottom: '10px',
-            fontSize: '26px', fontWeight: 800, fontFamily: 'monospace', textAlign: 'center',
+            display: 'inline-block', minWidth: isFullscreen ? '160px' : '120px', padding: isFullscreen ? '10px 16px' : '8px 12px', marginBottom: '10px',
+            fontSize: isFullscreen ? '36px' : '26px', fontWeight: 800, fontFamily: 'monospace', textAlign: 'center',
             color: '#fff', background: '#2a221c', border: '2px solid #a8957d', borderRadius: '8px',
             letterSpacing: '0.08em'
           }
@@ -3105,14 +3106,14 @@
           inputMode: 'numeric', autoFocus: true
         }),
         // \u2500\u2500 Number pad (3 cols x 4 rows) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px', maxWidth: '220px', margin: '0 auto' } },
+        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: isFullscreen ? '8px' : '6px', maxWidth: isFullscreen ? '320px' : '220px', margin: '0 auto' } },
           ['1','2','3','4','5','6','7','8','9'].map(function(d) {
             return h('button', {
               key: 'pad-' + d,
               onClick: function() { setUserInput(function(prev) { return (prev || '') + d; }); if (inputRef.current) inputRef.current.focus(); },
               'aria-label': 'Enter digit ' + d,
               style: {
-                padding: '12px 0', fontSize: '20px', fontWeight: 700, fontFamily: 'monospace',
+                padding: isFullscreen ? '16px 0' : '12px 0', fontSize: isFullscreen ? '26px' : '20px', fontWeight: 700, fontFamily: 'monospace',
                 background: '#5b4d3f', color: '#fef3c7', border: '2px solid #a8957d',
                 borderRadius: '8px', cursor: 'pointer', minHeight: '44px',
                 boxShadow: 'inset 0 -2px 0 rgba(0,0,0,0.3)'
@@ -3157,15 +3158,15 @@
         h('p', { style: { fontSize: '10px', color: '#a8957d', marginTop: attemptCount > 0 ? '4px' : '10px', marginBottom: 0 } }, 'Tap pad or use keyboard \u2022 Enter to submit \u2022 Esc to clear')
       ),
       // Arrow buttons (mobile friendly)
-      h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '4px', maxWidth: '160px', margin: '8px auto 0' } },
+      h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: isFullscreen ? '8px' : '4px', maxWidth: isFullscreen ? '240px' : '160px', margin: isFullscreen ? '14px auto 0' : '8px auto 0' } },
         h('div'),
-        h('button', { onClick: function() { tryMove('up'); }, style: { padding: '12px', borderRadius: '8px', background: 'linear-gradient(180deg, #a8957d 0%, #78350f 100%)', color: '#fef3c7', border: '2px solid #78350f', fontSize: '20px', fontWeight: 700, cursor: 'pointer', boxShadow: 'inset 0 -2px 0 rgba(0,0,0,0.25)', minHeight: '44px' } }, '\u25B2'),
+        h('button', { onClick: function() { tryMove('up'); }, style: { padding: isFullscreen ? '18px' : '12px', borderRadius: '8px', background: 'linear-gradient(180deg, #a8957d 0%, #78350f 100%)', color: '#fef3c7', border: '2px solid #78350f', fontSize: isFullscreen ? '28px' : '20px', fontWeight: 700, cursor: 'pointer', boxShadow: 'inset 0 -2px 0 rgba(0,0,0,0.25)', minHeight: isFullscreen ? '64px' : '44px' } }, '\u25B2'),
         h('div'),
-        h('button', { onClick: function() { tryMove('left'); }, style: { padding: '12px', borderRadius: '8px', background: 'linear-gradient(180deg, #a8957d 0%, #78350f 100%)', color: '#fef3c7', border: '2px solid #78350f', fontSize: '20px', fontWeight: 700, cursor: 'pointer', boxShadow: 'inset 0 -2px 0 rgba(0,0,0,0.25)', minHeight: '44px' } }, '\u25C0'),
-        h('button', { onClick: function() { tryMove('down'); }, style: { padding: '12px', borderRadius: '8px', background: 'linear-gradient(180deg, #a8957d 0%, #78350f 100%)', color: '#fef3c7', border: '2px solid #78350f', fontSize: '20px', fontWeight: 700, cursor: 'pointer', boxShadow: 'inset 0 -2px 0 rgba(0,0,0,0.25)', minHeight: '44px' } }, '\u25BC'),
-        h('button', { onClick: function() { tryMove('right'); }, style: { padding: '12px', borderRadius: '8px', background: 'linear-gradient(180deg, #a8957d 0%, #78350f 100%)', color: '#fef3c7', border: '2px solid #78350f', fontSize: '20px', fontWeight: 700, cursor: 'pointer', boxShadow: 'inset 0 -2px 0 rgba(0,0,0,0.25)', minHeight: '44px' } }, '\u25B6')
+        h('button', { onClick: function() { tryMove('left'); }, style: { padding: isFullscreen ? '18px' : '12px', borderRadius: '8px', background: 'linear-gradient(180deg, #a8957d 0%, #78350f 100%)', color: '#fef3c7', border: '2px solid #78350f', fontSize: isFullscreen ? '28px' : '20px', fontWeight: 700, cursor: 'pointer', boxShadow: 'inset 0 -2px 0 rgba(0,0,0,0.25)', minHeight: isFullscreen ? '64px' : '44px' } }, '\u25C0'),
+        h('button', { onClick: function() { tryMove('down'); }, style: { padding: isFullscreen ? '18px' : '12px', borderRadius: '8px', background: 'linear-gradient(180deg, #a8957d 0%, #78350f 100%)', color: '#fef3c7', border: '2px solid #78350f', fontSize: isFullscreen ? '28px' : '20px', fontWeight: 700, cursor: 'pointer', boxShadow: 'inset 0 -2px 0 rgba(0,0,0,0.25)', minHeight: isFullscreen ? '64px' : '44px' } }, '\u25BC'),
+        h('button', { onClick: function() { tryMove('right'); }, style: { padding: isFullscreen ? '18px' : '12px', borderRadius: '8px', background: 'linear-gradient(180deg, #a8957d 0%, #78350f 100%)', color: '#fef3c7', border: '2px solid #78350f', fontSize: isFullscreen ? '28px' : '20px', fontWeight: 700, cursor: 'pointer', boxShadow: 'inset 0 -2px 0 rgba(0,0,0,0.25)', minHeight: isFullscreen ? '64px' : '44px' } }, '\u25B6')
       ),
-      h('p', { style: { fontSize: '10px', color: '#92400e', textAlign: 'center', marginTop: '8px', fontStyle: 'italic' } }, 'Arrow keys or WASD to move \u2022 H for hint \u2022 Each gate needs the correct math answer \u2022 3-in-a-row for bonus')
+      h('p', { style: { fontSize: isFullscreen ? '13px' : '10px', color: isFullscreen ? '#fbbf24' : '#92400e', textAlign: 'center', marginTop: isFullscreen ? '12px' : '8px', fontStyle: 'italic' } }, 'Arrow keys or WASD to move \u2022 H for hint \u2022 F for fullscreen \u2022 3-in-a-row for bonus')
     );
   }
 
