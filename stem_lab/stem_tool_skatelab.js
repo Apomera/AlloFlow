@@ -136,12 +136,42 @@ window.StemLab = window.StemLab || {
   // minAir = minimum air time (s) required to even attempt cleanly
   // difficulty = scoring multiplier
   var TRICKS = [
-    { id: 'ollie',       label: 'Ollie',         rotation: 0,    axis: 'none',  minAir: 0.18, difficulty: 1, emoji: '🛹' },
-    { id: 'popshove',    label: 'Pop Shove-it',  rotation: 180,  axis: 'board', minAir: 0.30, difficulty: 2, emoji: '↪️' },
-    { id: 'kickflip',    label: 'Kickflip',      rotation: 360,  axis: 'board', minAir: 0.36, difficulty: 3, emoji: '🔄' },
-    { id: 'spin360',     label: '360 Spin',      rotation: 360,  axis: 'body',  minAir: 0.42, difficulty: 4, emoji: '🌀' },
-    { id: 'spin540',     label: '540 Spin',      rotation: 540,  axis: 'body',  minAir: 0.62, difficulty: 6, emoji: '💫' },
-    { id: 'spin720',     label: '720 Spin',      rotation: 720,  axis: 'body',  minAir: 0.85, difficulty: 9, emoji: '✨' }
+    { id: 'ollie',       label: 'Ollie',         rotation: 0,    axis: 'none',  minAir: 0.18, difficulty: 1, emoji: '🛹',
+      lore: {
+        origin: 'Invented by Alan "Ollie" Gelfand in 1976 in Florida. The first no-hands aerial — without it, street skating doesn\'t exist.',
+        physics: 'No rotation, just airtime. The minimum demand on your kinetic-energy budget. Every other trick is built on top of this.',
+        proTip: 'Snap the kicktail down hard, then drag the front foot up the grip tape. The board follows your front foot.'
+      } },
+    { id: 'popshove',    label: 'Pop Shove-it',  rotation: 180,  axis: 'board', minAir: 0.30, difficulty: 2, emoji: '↪️',
+      lore: {
+        origin: 'A 180° rotation of just the deck under your feet — body stays straight. Rodney Mullen popularized it in the early 80s.',
+        physics: 'Half a board-axis spin in 0.30s = 600°/s rotation rate. The kicktail snap has to torque the board fast without lifting too high.',
+        proTip: 'Scoop with the back foot, don\'t kick. Let the deck spin under you — your body is the still point.'
+      } },
+    { id: 'kickflip',    label: 'Kickflip',      rotation: 360,  axis: 'board', minAir: 0.36, difficulty: 3, emoji: '🔄',
+      lore: {
+        origin: 'Rodney Mullen, 1983 — originally called the "magic flip." The benchmark trick: if you can land kickflips, you "skate."',
+        physics: '360° around the long axis in 0.36s = 1000°/s spin rate. The board flips fast because its moment of inertia is tiny along that axis.',
+        proTip: 'Flick off the corner of the nose, not the side. Watch the bolts — when they re-appear under your feet, catch.'
+      } },
+    { id: 'spin360',     label: '360 Spin',      rotation: 360,  axis: 'body',  minAir: 0.42, difficulty: 4, emoji: '🌀',
+      lore: {
+        origin: 'Steve Caballero adapted it for vert in the early 80s. The first "spin" trick where the body — not just the board — rotates a full revolution.',
+        physics: 'Same 360° as a kickflip but around the vertical axis with the whole body. Your moment of inertia is much higher → you need more airtime.',
+        proTip: 'Wind up your shoulders before you pop. The torso starts the spin; the legs just follow.'
+      } },
+    { id: 'spin540',     label: '540 Spin',      rotation: 540,  axis: 'body',  minAir: 0.62, difficulty: 6, emoji: '💫',
+      lore: {
+        origin: 'The McTwist — Mike McGill, 1984, on a vert ramp at the Del Mar Skate Ranch. The first "double-rotation" trick most pros could land.',
+        physics: 'One and a half rotations in 0.62s. To bridge from 360° to 540° you need either more air OR a tighter tuck (smaller moment of inertia).',
+        proTip: 'Tuck tight at the peak — pull arms in like a figure skater. Conservation of angular momentum spins you faster.'
+      } },
+    { id: 'spin720',     label: '720 Spin',      rotation: 720,  axis: 'body',  minAir: 0.85, difficulty: 9, emoji: '✨',
+      lore: {
+        origin: 'Tony Hawk landed the first 720 at age 17 in 1985, then the 900 (2.5 rotations) at the 1999 X Games. SkateLab caps at 720 in v2 — the lesson is the same.',
+        physics: 'Two full rotations needs ~0.85s of air, which means you have to clear 2.85 ft (0.87 m) above the lip. That\'s why it only works on big vert ramps.',
+        proTip: 'You can\'t muscle this — it\'s all setup. Pump for max speed BEFORE the lip, then ride the air time you bought.'
+      } }
   ];
   function getTrick(id) {
     for (var i = 0; i < TRICKS.length; i++) if (TRICKS[i].id === id) return TRICKS[i];
@@ -343,7 +373,10 @@ window.StemLab = window.StemLab || {
 
   function simHalfpipe(opts) {
     var pumps = Math.max(0, Math.min(6, opts.pumps || 0));
-    var trick = getTrick(opts.trickId || 'ollie');
+    // opts.trickInline lets the caller pass a fully-resolved trick
+    // (including custom tricks not in the built-in TRICKS array).
+    // Falls back to id-lookup for the original code path.
+    var trick = opts.trickInline || getTrick(opts.trickId || 'ollie');
     var vehicle = getVehicle(opts.vehicle || 'skate');
     var g = opts.gravity || G;
     // Initial speed entering the pipe (just from rolling in).
@@ -949,6 +982,20 @@ window.StemLab = window.StemLab || {
             // Save-scenario modal state — null when closed, { label }
             // when open. Modal captures current settings on confirm.
             saveModalDraft: null,
+            // Trick Lab — student-invented custom tricks. Same shape
+            // as built-in TRICKS but with isCustom: true so the
+            // picker can render them in a separate purple row and the
+            // delete button shows. Preserved across stat resets,
+            // mirrors customScenarios behavior.
+            customTricks: [],
+            // Trick Lab form draft — live form state. minAir +
+            // difficulty are auto-derived from rotation + axis at
+            // render time, so the draft only needs the inputs.
+            trickLabDraft: { name: '', emoji: '🌟', rotation: 360, axis: 'body' },
+            // Per-session safety acknowledgement. Re-anchors on every
+            // tool re-mount (no localStorage persistence) — that's
+            // the design, not a bug.
+            safetyAck: false,
             // Confirm-reset state — false normally, true while the
             // student/teacher is being asked to confirm a reset.
             resetConfirmOpen: false,
@@ -1048,6 +1095,92 @@ window.StemLab = window.StemLab || {
           ((d.customScenarios || []).find(function(s) { return s.id === id; })) ||
           null;
       }
+      // ── Trick Lab helpers ────────────────────────────────────
+      // findAnyTrick returns built-in trick first, then custom.
+      // Used everywhere the picker / mastery / lore / formula / aria
+      // path needs to resolve a trick id without caring about its
+      // origin (built-in vs student-invented).
+      function findAnyTrick(id) {
+        for (var i = 0; i < TRICKS.length; i++) {
+          if (TRICKS[i].id === id) return TRICKS[i];
+        }
+        var ct = (d.customTricks || []).find(function(t) { return t.id === id; });
+        return ct || TRICKS[0];
+      }
+      // Auto-derive minAir + difficulty from a draft. Spin rates
+      // tuned to match the built-in catalog roughly:
+      //   board axis ≈ 1500 °/s (kickflip-class)
+      //   body  axis ≈ 1000 °/s (spin-class)
+      //   combo axis ≈  800 °/s (both → harder)
+      // Plus a 0.18s "just leaving the ground" baseline.
+      function deriveTrickPhysics(draft) {
+        var rot = Math.max(0, Math.min(1080, draft.rotation || 0));
+        var axis = draft.axis || 'body';
+        var spinRate = axis === 'board' ? 1500 : axis === 'combo' ? 800 : 1000;
+        var minAir = Math.max(0.18, 0.18 + rot / spinRate);
+        var difficulty = Math.max(1, Math.min(12, Math.round(minAir * 12)));
+        var formula = '0.18 + ' + rot + ' ÷ ' + spinRate + ' (' + axis + ' axis) = ' + minAir.toFixed(2) + 's';
+        // Find the closest built-in for an "equivalent" comparison
+        var closest = null;
+        var closestDelta = Infinity;
+        for (var i = 0; i < TRICKS.length; i++) {
+          var dRot = Math.abs(TRICKS[i].rotation - rot);
+          if (dRot < closestDelta) { closestDelta = dRot; closest = TRICKS[i]; }
+        }
+        return { minAir: minAir, difficulty: difficulty, formula: formula, spinRate: spinRate, equivalent: closest };
+      }
+      // Save a custom trick. Validates name (1–30 chars after trim),
+      // normalizes emoji (defaults to 🌟), derives physics from the
+      // draft, pushes to customTricks, sets trickId to the new id,
+      // closes the form (resets draft to defaults), fires toast +
+      // skAnnounce. Mirrors saveCurrentAsScenario validation flow.
+      function saveCustomTrick(draft) {
+        var name = (draft.name || '').trim().slice(0, 30);
+        if (!name) {
+          if (addToast) addToast('Give your trick a name first.', 'info');
+          skAnnounce('Trick needs a name before saving.');
+          return;
+        }
+        var emoji = (draft.emoji || '').trim().slice(0, 4);
+        if (!emoji) emoji = '🌟';
+        var phys = deriveTrickPhysics(draft);
+        // Generate a stable id from the timestamp (collision-safe
+        // across a session; resets if the toolData is wiped).
+        var id = 'custom_' + Date.now().toString(36);
+        var newTrick = {
+          id: id, label: name, emoji: emoji,
+          rotation: Math.max(0, Math.min(1080, draft.rotation || 0)),
+          axis: draft.axis || 'body',
+          minAir: phys.minAir,
+          difficulty: phys.difficulty,
+          isCustom: true,
+          lore: {
+            origin: 'Your invention. Engineered ' + new Date().toLocaleDateString() + '.',
+            physics: 'Custom physics — ' + phys.formula + '. Compare to ' + (phys.equivalent ? phys.equivalent.label : 'no built-in') + '.',
+            proTip: 'Name it after how it feels to land. The board doesn\'t care what you call it; you do.'
+          }
+        };
+        var nextList = (d.customTricks || []).concat([newTrick]);
+        upd({
+          customTricks: nextList,
+          trickId: id,
+          // Reset the form draft so the next invention starts clean.
+          trickLabDraft: { name: '', emoji: '🌟', rotation: 360, axis: 'body' }
+        });
+        if (addToast) addToast('🧪 Saved + selected: ' + emoji + ' ' + name, 'success');
+        skAnnounce('Saved trick: ' + name + '. Now selected.');
+      }
+      // Delete a custom trick. If it's the currently selected trick,
+      // fall back to kickflip so the picker doesn't render an empty
+      // selection.
+      function deleteCustomTrick(id) {
+        var nextList = (d.customTricks || []).filter(function(t) { return t.id !== id; });
+        var bumps = { customTricks: nextList };
+        if (d.trickId === id) bumps.trickId = 'kickflip';
+        upd(bumps);
+        if (addToast) addToast('Custom trick deleted.', 'info');
+        skAnnounce('Custom trick deleted.');
+      }
       function loadScenario(scenarioId) {
         var sc = findAnyScenario(scenarioId);
         if (!sc) return;
@@ -1144,6 +1277,7 @@ window.StemLab = window.StemLab || {
       // (since those are teacher work, not student data).
       function performResetStats() {
         var preserved = d.customScenarios || [];
+        var preservedTricks = d.customTricks || [];
         upd({
           landings: 0, bails: 0, attempts: 0,
           longestGap: 0, biggestSpin: 0,
@@ -1157,7 +1291,8 @@ window.StemLab = window.StemLab || {
           consecutiveBails: 0, nudgeDismissedAt: -1,
           lastResult: null, lastSim: null, activeScenarioId: null,
           resetConfirmOpen: false,
-          customScenarios: preserved
+          customScenarios: preserved,
+          customTricks: preservedTricks
         });
         if (addToast) addToast('SkateLab stats reset.', 'success');
         skAnnounce('Stats cleared. Custom scenarios preserved.');
@@ -2271,6 +2406,46 @@ window.StemLab = window.StemLab || {
                       style: { height: 4, background: 'rgba(15,23,42,0.5)', borderRadius: 2, overflow: 'hidden', marginTop: 2 }
                     },
                       h('div', { style: { height: '100%', width: Math.min(100, (lands / nextThreshold) * 100) + '%', background: m.color, transition: 'width 240ms ease' } })
+                    )
+                  );
+                })
+              )
+            ),
+            // ── Trick Lore ───────────────────────────────────────
+            // Closed by default. Each entry: origin (skate culture),
+            // physics (the tool's lesson), and a pro tip. Connects
+            // the abstract simulation to the real names + people +
+            // physics insight behind each move. Pure cultural
+            // literacy layer — turns "kickflip" from a label into
+            // "Rodney Mullen 1983, the magic flip."
+            h('details', { style: { marginTop: 8 } },
+              h('summary', {
+                style: {
+                  cursor: 'pointer', color: '#a5b4fc', fontWeight: 700,
+                  fontSize: 11, letterSpacing: '0.04em', textTransform: 'uppercase',
+                  padding: '4px 0', userSelect: 'none'
+                }
+              }, '📖 Trick Lore — origin, physics, pro tip'),
+              h('div', { style: { marginTop: 10, display: 'flex', flexDirection: 'column', gap: 8 } },
+                TRICKS.map(function(tk) {
+                  if (!tk.lore) return null;
+                  return h('div', {
+                    key: 'lore-' + tk.id,
+                    style: {
+                      background: 'rgba(99,102,241,0.08)',
+                      border: '1px solid rgba(165,180,252,0.30)',
+                      borderRadius: 10, padding: '10px 12px'
+                    }
+                  },
+                    h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
+                      h('span', { style: { fontSize: 18 } }, tk.emoji),
+                      h('span', { style: { fontSize: 13, fontWeight: 800, color: '#e0e7ff' } }, tk.label),
+                      h('span', { style: { marginLeft: 'auto', fontSize: 10, color: '#a5b4fc', fontFamily: 'monospace' } }, tk.rotation + '° · needs ' + tk.minAir.toFixed(2) + 's')
+                    ),
+                    h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, display: 'flex', flexDirection: 'column', gap: 4 } },
+                      h('div', null, h('b', { style: { color: '#fbbf24' } }, '🛹 Origin: '), tk.lore.origin),
+                      h('div', null, h('b', { style: { color: '#7dd3fc' } }, '📐 Physics: '), tk.lore.physics),
+                      h('div', null, h('b', { style: { color: '#86efac' } }, '💡 Pro tip: '), tk.lore.proTip)
                     )
                   );
                 })

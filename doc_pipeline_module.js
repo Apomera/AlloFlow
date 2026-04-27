@@ -785,6 +785,176 @@ var createDocPipeline = function(deps) {
       .replace(/\\u([0-9a-fA-F]{4})/g, function(_, hex) { return String.fromCharCode(parseInt(hex, 16)); });
   };
 
+  // ──────────────────────────────────────────────────────────────────────
+  // Legend re-extraction pipeline
+  //
+  // The first-pass JSON extraction (single-pass at ~7898 / chunked at ~7949)
+  // can mis-handle figure legends and color-coded keys. Gemini sees a legend
+  // image with N specific entries, decides "this is tabular data," picks K
+  // broad category names as headers, and DROPS the N specific items. The
+  // output: a table with mostly-empty cells.
+  //
+  // Two-tier defense:
+  //   1. Improved first-pass prompts with explicit legend guidance (lower
+  //      false-positive rate; not bulletproof).
+  //   2. This validator + reflow pipeline: detect suspect blocks AFTER the
+  //      first pass parses, fire a focused vision call with a legend-specific
+  //      prompt that demands verbatim enumeration, replace the suspect block
+  //      with a `definition_list` block. Falls back to the original if the
+  //      second call also fails.
+  //
+  // Diagnostics surface to `window._legendDiagnostic` so misfires are
+  // inspectable post-hoc instead of disappearing into the build output.
+  // ──────────────────────────────────────────────────────────────────────
+
+  const _legendDiag = (entry) => {
+    try {
+      if (typeof window === 'undefined') return;
+      window._legendDiagnostic = window._legendDiagnostic || [];
+      window._legendDiagnostic.push(Object.assign({ ts: new Date().toISOString() }, entry || {}));
+      if (window._legendDiagnostic.length > 200) window._legendDiagnostic.splice(0, window._legendDiagnostic.length - 200);
+    } catch (_) {}
+  };
+
+  const _isSuspectExtraction = (block) => {
+    if (!block || !block.type) return null;
+    if (block.type === 'table' && Array.isArray(block.rows)) {
+      const allCells = [];
+      block.rows.forEach(r => { if (Array.isArray(r)) r.forEach(c => allCells.push(c)); else allCells.push(r); });
+      const total = allCells.length;
+      const empty = allCells.filter(c => !c || (typeof c === 'string' && c.trim().length === 0)).length;
+      if (total > 0 && empty / total > 0.5) return 'table-mostly-empty (' + empty + '/' + total + ')';
+      // Small "categorized" tables with a legend/key/figure caption — Gemini
+      // grouped specific items into abstract categories then ran out of cells.
+      const hdrCount = Array.isArray(block.headers) ? block.headers.length : 0;
+      if (hdrCount >= 1 && hdrCount <= 4 && block.rows.length <= 6 && total <= 16) {
+        const cap = String(block.caption || '');
+        if (/\b(legend|key|figure\b)/i.test(cap)) return 'small-table-with-legend-caption';
+      }
+    }
+    if (block.type === 'image') {
+      const desc = String((block.description || '') + ' ' + (block.alt || ''));
+      if (/\b(legend|key|color[- ]?coded|colour[- ]?coded|map\s+(?:legend|key))\b/i.test(desc)) {
+        // Legend keyword present; check whether description actually enumerates entries.
+        // Heuristic: needs a colon followed by ≥3 comma-separated tokens, or a list of
+        // bullet/dash markers, or "and" enumerating multiple items.
+        const enumerated =
+          /:\s*[\w\- ]+(?:[,;]\s*[\w\- ]+){2,}/.test(desc)
+          || /(?:•|•|—|–|\d+\.)/.test(desc)
+          || /(?:[\w\- ]+,\s*){3,}/.test(desc);
+        if (!enumerated) return 'image-mentions-legend-but-not-enumerated';
+      }
+    }
+    return null;
+  };
+
+  const _reextractAsLegend = async (originalBlock, pdfBase64, pdfMimeType, pageRange, callGeminiVisionFn) => {
+    if (!callGeminiVisionFn) return null;
+    const pageHint = pageRange && pageRange.length === 2
+      ? 'Focus on pages ' + pageRange[0] + ' through ' + pageRange[1] + ' of the PDF. '
+      : '';
+    const captionHint = originalBlock.caption
+      ? 'The original figure caption (use this as a hint for which legend to find): "' + String(originalBlock.caption).slice(0, 200) + '". '
+      : '';
+    const descHint = originalBlock.description
+      ? 'A prior pass described the visual as: "' + String(originalBlock.description).slice(0, 200) + '". '
+      : '';
+    const prompt =
+      pageHint + captionHint + descHint + '\n\n' +
+      'You are extracting a LEGEND or KEY from a document figure. A legend pairs visual markers (color swatches, symbols, patterns, icons) with their meanings.\n\n' +
+      'Locate the legend/key on the specified pages. Enumerate EVERY visible entry verbatim. Do NOT summarize. Do NOT group entries into abstract categories. Do NOT skip items. If you see 21 entries, return 21.\n\n' +
+      'Output a single JSON object with this exact shape:\n' +
+      '{\n' +
+      '  "type": "definition_list",\n' +
+      '  "caption": "<short caption describing what the legend is for; may be empty>",\n' +
+      '  "intro": "<optional 1-sentence intro; may be empty>",\n' +
+      '  "sections": [\n' +
+      '    {\n' +
+      '      "title": "<group heading if the legend has visible subgroupings (e.g. \'Shelf & Slope\'); otherwise empty string>",\n' +
+      '      "entries": [\n' +
+      '        { "marker": "dark olive green filled square", "label": "Shelf - high profile" },\n' +
+      '        { "marker": "medium blue filled square", "label": "Hadal" }\n' +
+      '      ]\n' +
+      '    }\n' +
+      '  ]\n' +
+      '}\n\n' +
+      'CRITICAL RULES:\n' +
+      '- Preserve labels VERBATIM (capitalization, hyphens, exact wording from the source).\n' +
+      '- "marker" describes the visual swatch — name the color (or pattern/symbol) and shape. Screen-reader users use this to mentally connect the label to color references in surrounding prose.\n' +
+      '- If the legend has visible subheadings/groupings, put those entries in a section with that title. If flat, use a single section with empty title.\n' +
+      '- Output ONLY the JSON object. No code fence. No commentary.\n' +
+      '- If you cannot find a legend on the specified pages, output exactly: null';
+
+    let raw;
+    try {
+      raw = await callGeminiVisionFn(prompt, pdfBase64, pdfMimeType);
+    } catch (e) {
+      _legendDiag({ phase: 'reextract-error', error: e && e.message ? e.message : String(e), pageRange });
+      return null;
+    }
+    if (!raw) { _legendDiag({ phase: 'reextract-empty-response', pageRange }); return null; }
+    let cleaned = _stripCodeFence(raw).trim();
+    if (!cleaned || cleaned === 'null') { _legendDiag({ phase: 'reextract-said-no-legend', pageRange }); return null; }
+    // Trim to JSON-object boundaries so a stray prefix/suffix doesn't break parsing.
+    const fi = cleaned.indexOf('{'); if (fi >= 0) cleaned = cleaned.substring(fi);
+    const li = cleaned.lastIndexOf('}'); if (li > 0) cleaned = cleaned.substring(0, li + 1);
+    let parsed = null;
+    try { parsed = JSON.parse(cleaned); }
+    catch (e) {
+      // One-shot repair: trailing commas, single-quoted strings.
+      try {
+        const repaired = cleaned.replace(/,\s*([}\]])/g, '$1').replace(/'([^']*)'/g, '"$1"');
+        parsed = JSON.parse(repaired);
+      } catch (e2) {
+        _legendDiag({ phase: 'reextract-json-parse-failed', pageRange, snippet: cleaned.slice(0, 200) });
+        return null;
+      }
+    }
+    if (!parsed || parsed.type !== 'definition_list' || !Array.isArray(parsed.sections)) {
+      _legendDiag({ phase: 'reextract-wrong-shape', pageRange, gotType: parsed && parsed.type });
+      return null;
+    }
+    const totalEntries = parsed.sections.reduce(function(sum, s) {
+      return sum + (Array.isArray(s.entries) ? s.entries.length : 0);
+    }, 0);
+    if (totalEntries === 0) {
+      _legendDiag({ phase: 'reextract-empty-sections', pageRange });
+      return null;
+    }
+    _legendDiag({ phase: 'reextract-success', pageRange, sections: parsed.sections.length, totalEntries });
+    return parsed;
+  };
+
+  const detectAndRepairLegends = async (blocks, pdfBase64, pdfMimeType, pageRange, callGeminiVisionFn) => {
+    if (!Array.isArray(blocks) || blocks.length === 0) return blocks;
+    if (!callGeminiVisionFn || !pdfBase64) return blocks;
+    const out = [];
+    for (let i = 0; i < blocks.length; i++) {
+      const block = blocks[i];
+      const reason = _isSuspectExtraction(block);
+      if (!reason) { out.push(block); continue; }
+      _legendDiag({ phase: 'flagged-suspect', pageRange, reason, originalType: block.type, caption: block.caption || null });
+      const replacement = await _reextractAsLegend(block, pdfBase64, pdfMimeType, pageRange, callGeminiVisionFn);
+      if (replacement) { out.push(replacement); }
+      else {
+        // Reflow the original block to a more honest representation: if it was a
+        // broken table, downgrade to an image with a description that explicitly
+        // names the failure mode so SR users hear something coherent.
+        if (block.type === 'table') {
+          out.push({
+            type: 'image',
+            description: (block.caption || 'Figure legend') + '. Automatic extraction could not enumerate every entry; refer to the source PDF image for the full legend.',
+            alt: block.caption ? String(block.caption).slice(0, 120) : 'Figure legend (full content in source image)'
+          });
+          _legendDiag({ phase: 'fallback-table-to-image', pageRange });
+        } else {
+          out.push(block);
+        }
+      }
+    }
+    return out;
+  };
+
   // ── Heuristic text structuring (RECITATION fallback) ──
   // When Vision refuses to process copyrighted content, structure the pre-extracted text
   // using formatting heuristics. Not as accurate as Vision, but preserves all content.
@@ -7711,6 +7881,26 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
               }).join('');
               return `<table style="width:100%;border-collapse:collapse;margin:1em 0">`+cap+hdr+`<tbody>`+rows+`</tbody></table>`;
             }
+            case 'definition_list': {
+              // Semantic match for legends/keys: each entry pairs a marker description
+              // (color/symbol) with its label. SR users navigate <dl> as "term/definition"
+              // pairs which is what a legend semantically IS — better than a flat table.
+              // Sections (with optional <h4> heading) preserve any visible subgroupings.
+              const _legCap = block.caption ? `<figcaption style="font-weight:bold;color:${docStyle.headingColor};margin-bottom:0.5rem;font-size:1em">`+sanitizeField(block.caption)+`</figcaption>` : '';
+              const _legIntro = block.intro ? `<p style="margin:0 0 0.75rem;color:${docStyle.bodyColor};font-size:0.95em;line-height:1.6">`+sanitizeField(block.intro)+`</p>` : '';
+              const _legSections = (Array.isArray(block.sections) ? block.sections : []).map(sec => {
+                const _heading = sec && sec.title ? `<h4 style="margin:1em 0 0.4em;color:${docStyle.headingColor};font-size:1em;font-weight:bold">`+sanitizeField(sec.title)+`</h4>` : '';
+                const _entries = (Array.isArray(sec && sec.entries) ? sec.entries : []).map(e => {
+                  const _marker = e && e.marker ? sanitizeField(e.marker) : '';
+                  const _label = e && e.label ? sanitizeField(e.label) : '';
+                  return `<dt style="font-weight:600;color:${docStyle.bodyColor};margin-top:0.4em">`+_marker+`</dt>`
+                       + `<dd style="margin:0 0 0.4em 1.5em;color:${docStyle.bodyColor};line-height:1.5">`+_label+`</dd>`;
+                }).join('');
+                return _heading + (_entries ? `<dl style="margin:0">`+_entries+`</dl>` : '');
+              }).join('');
+              return `<figure role="group" aria-label="${(block.caption ? sanitizeField(block.caption).replace(/"/g,'&quot;') : 'Figure legend')}" style="margin:1em 0;padding:1em 1.25em;background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px">`
+                + _legCap + _legIntro + _legSections + `</figure>`;
+            }
             case 'image': {
               // Uploadable placeholder: even when extractedImages is empty (no extraction happened),
               // users can still upload their own image in the preview. The deferred-image block
@@ -7886,6 +8076,10 @@ ACCESSIBILITY RULES (WCAG 2.1 AA):
 - For tables: ALWAYS include a caption that describes what data the table presents.
   Headers must be real column/row labels, not just the first row of data.
   For complex tables with merged cells, split into simpler tables if possible.
+- For LEGENDS, KEYS, color-coded chart references, infographics, and visual reference panels (any image whose purpose is to pair visual markers — colors, swatches, symbols, patterns — with their meanings):
+  Emit as {"type":"image","description":"<thorough enumeration of EVERY label visible: e.g. 'Color-coded categories. Shelf - high profile (dark olive square); Shelf - medium profile (olive square); Shelf - low profile; Slope; Abyss - mountains; Abyss - hills; Abyss - plains; Hadal; canyon; ...'>"}
+  DO NOT emit legends as tables. DO NOT abstract specific entries into broad category headers. If the legend has 21 entries, the description must list all 21 verbatim.
+  A downstream pass will re-extract these into structured definition lists if needed; your job is to preserve the data, not to structure it.
 - For links: link text must describe the destination.
   BAD: <a href="url">click here</a> / <a href="url">link</a>
   GOOD: <a href="url">Download the 2024 Annual Report (PDF)</a>
@@ -7916,8 +8110,19 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
           };
           const blocks = repairSingle(cleaned);
           if (!blocks) throw new Error('JSON repair failed');
-          bodyContent = _stripJsonWrapperArtifacts(renderJsonToHtml(blocks));
-          warnLog(`[PDF Fix] JSON pipeline: ${blocks.length} blocks rendered`);
+          // Legend re-extraction pass: catches images→empty-tables that the
+          // first pass produced when it abstracted legends into broad
+          // categories. Only fires on flagged blocks; no-op for documents
+          // without legend issues. See _isSuspectExtraction for the criteria.
+          let _legendRepairedBlocks = blocks;
+          try {
+            _legendRepairedBlocks = await detectAndRepairLegends(blocks, _base64, _mimeType, null, callGeminiVision);
+          } catch (legendErr) {
+            warnLog('[PDF Fix] Legend repair pass threw; using first-pass blocks unchanged:', legendErr && legendErr.message);
+            _legendRepairedBlocks = blocks;
+          }
+          bodyContent = _stripJsonWrapperArtifacts(renderJsonToHtml(_legendRepairedBlocks));
+          warnLog(`[PDF Fix] JSON pipeline: ${_legendRepairedBlocks.length} blocks rendered (${_legendRepairedBlocks.length - blocks.length === 0 ? 'no legend repairs' : 'legend repair applied'})`);
         } catch(jsonErr) {
           // Fallback: direct HTML generation if JSON parsing fails
           warnLog('[PDF Fix] JSON extraction failed, falling back to direct HTML:', jsonErr);
@@ -7965,6 +8170,7 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
               `- Include ALL content. ALL table rows (not just samples).\n` +
               `- LINKS: Preserve ALL hyperlinks as <a href='URL'>text</a> inside text fields. If text is blue/underlined, include it as a link.\n` +
               `- Describe all images thoroughly for alt text.\n` +
+              `- LEGENDS / KEYS / color-coded references: emit as {"type":"image","description":"<verbatim enumeration of EVERY label visible>"}. NEVER as a table. Do NOT abstract specific entries into broad category headers. If the legend has 21 entries, list all 21.\n` +
               `- Generate slug IDs for h2/h3 headings.\n` +
               `- Use <strong> for bold text and <em> for italic within text fields.\n\n` +
               `Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`,
@@ -8014,6 +8220,14 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
 
               let parsed = repairAndParseJson(cleaned);
               if (parsed && Array.isArray(parsed)) {
+                // Legend re-extraction per chunk. The pageRange hint helps the
+                // second vision call zoom in on the right page (the full PDF
+                // is still passed; the prompt narrows attention).
+                try {
+                  parsed = await detectAndRepairLegends(parsed, _base64, _mimeType, [startPg, endPg], callGeminiVision);
+                } catch (legendErr) {
+                  warnLog('[PDF Fix] Chunk ' + (i + 1) + ' legend repair threw; using parsed blocks unchanged:', legendErr && legendErr.message);
+                }
                 return parsed;
               } else {
                 warnLog(`[PDF Fix] JSON parse failed for chunk ${i + 1}, attempting object-by-object recovery`);

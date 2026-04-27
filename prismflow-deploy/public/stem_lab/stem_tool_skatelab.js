@@ -136,12 +136,42 @@ window.StemLab = window.StemLab || {
   // minAir = minimum air time (s) required to even attempt cleanly
   // difficulty = scoring multiplier
   var TRICKS = [
-    { id: 'ollie',       label: 'Ollie',         rotation: 0,    axis: 'none',  minAir: 0.18, difficulty: 1, emoji: '🛹' },
-    { id: 'popshove',    label: 'Pop Shove-it',  rotation: 180,  axis: 'board', minAir: 0.30, difficulty: 2, emoji: '↪️' },
-    { id: 'kickflip',    label: 'Kickflip',      rotation: 360,  axis: 'board', minAir: 0.36, difficulty: 3, emoji: '🔄' },
-    { id: 'spin360',     label: '360 Spin',      rotation: 360,  axis: 'body',  minAir: 0.42, difficulty: 4, emoji: '🌀' },
-    { id: 'spin540',     label: '540 Spin',      rotation: 540,  axis: 'body',  minAir: 0.62, difficulty: 6, emoji: '💫' },
-    { id: 'spin720',     label: '720 Spin',      rotation: 720,  axis: 'body',  minAir: 0.85, difficulty: 9, emoji: '✨' }
+    { id: 'ollie',       label: 'Ollie',         rotation: 0,    axis: 'none',  minAir: 0.18, difficulty: 1, emoji: '🛹',
+      lore: {
+        origin: 'Invented by Alan "Ollie" Gelfand in 1976 in Florida. The first no-hands aerial — without it, street skating doesn\'t exist.',
+        physics: 'No rotation, just airtime. The minimum demand on your kinetic-energy budget. Every other trick is built on top of this.',
+        proTip: 'Snap the kicktail down hard, then drag the front foot up the grip tape. The board follows your front foot.'
+      } },
+    { id: 'popshove',    label: 'Pop Shove-it',  rotation: 180,  axis: 'board', minAir: 0.30, difficulty: 2, emoji: '↪️',
+      lore: {
+        origin: 'A 180° rotation of just the deck under your feet — body stays straight. Rodney Mullen popularized it in the early 80s.',
+        physics: 'Half a board-axis spin in 0.30s = 600°/s rotation rate. The kicktail snap has to torque the board fast without lifting too high.',
+        proTip: 'Scoop with the back foot, don\'t kick. Let the deck spin under you — your body is the still point.'
+      } },
+    { id: 'kickflip',    label: 'Kickflip',      rotation: 360,  axis: 'board', minAir: 0.36, difficulty: 3, emoji: '🔄',
+      lore: {
+        origin: 'Rodney Mullen, 1983 — originally called the "magic flip." The benchmark trick: if you can land kickflips, you "skate."',
+        physics: '360° around the long axis in 0.36s = 1000°/s spin rate. The board flips fast because its moment of inertia is tiny along that axis.',
+        proTip: 'Flick off the corner of the nose, not the side. Watch the bolts — when they re-appear under your feet, catch.'
+      } },
+    { id: 'spin360',     label: '360 Spin',      rotation: 360,  axis: 'body',  minAir: 0.42, difficulty: 4, emoji: '🌀',
+      lore: {
+        origin: 'Steve Caballero adapted it for vert in the early 80s. The first "spin" trick where the body — not just the board — rotates a full revolution.',
+        physics: 'Same 360° as a kickflip but around the vertical axis with the whole body. Your moment of inertia is much higher → you need more airtime.',
+        proTip: 'Wind up your shoulders before you pop. The torso starts the spin; the legs just follow.'
+      } },
+    { id: 'spin540',     label: '540 Spin',      rotation: 540,  axis: 'body',  minAir: 0.62, difficulty: 6, emoji: '💫',
+      lore: {
+        origin: 'The McTwist — Mike McGill, 1984, on a vert ramp at the Del Mar Skate Ranch. The first "double-rotation" trick most pros could land.',
+        physics: 'One and a half rotations in 0.62s. To bridge from 360° to 540° you need either more air OR a tighter tuck (smaller moment of inertia).',
+        proTip: 'Tuck tight at the peak — pull arms in like a figure skater. Conservation of angular momentum spins you faster.'
+      } },
+    { id: 'spin720',     label: '720 Spin',      rotation: 720,  axis: 'body',  minAir: 0.85, difficulty: 9, emoji: '✨',
+      lore: {
+        origin: 'Tony Hawk landed the first 720 at age 17 in 1985, then the 900 (2.5 rotations) at the 1999 X Games. SkateLab caps at 720 in v2 — the lesson is the same.',
+        physics: 'Two full rotations needs ~0.85s of air, which means you have to clear 2.85 ft (0.87 m) above the lip. That\'s why it only works on big vert ramps.',
+        proTip: 'You can\'t muscle this — it\'s all setup. Pump for max speed BEFORE the lip, then ride the air time you bought.'
+      } }
   ];
   function getTrick(id) {
     for (var i = 0; i < TRICKS.length; i++) if (TRICKS[i].id === id) return TRICKS[i];
@@ -1154,6 +1184,7 @@ window.StemLab = window.StemLab || {
           predictionStats: { count: 0, totalErrPct: 0, bestPct: null, withinTen: 0 },
           predictionInput: '',
           streak: { current: 0, longest: 0, lastTier: null },
+          consecutiveBails: 0, nudgeDismissedAt: -1,
           lastResult: null, lastSim: null, activeScenarioId: null,
           resetConfirmOpen: false,
           customScenarios: preserved
@@ -1336,6 +1367,90 @@ window.StemLab = window.StemLab || {
       // but never landed." Tiers chosen so every trick has a clear
       // next step (Tried → Landed → Solid → Mastered) without making
       // Mastered grindy (5 lands is reachable in a single session).
+      // Adaptive coaching nudge — diagnoses why recent attempts
+      // bailed and returns a one-tap fix. Returns null when the
+      // student isn't stuck (no current bail streak, already
+      // dismissed, or no obvious fix). Each suggestion includes:
+      //   message: human explanation grounded in the failure
+      //   fixLabel: button text
+      //   fixBumps: object to upd() when the fix is applied
+      // Logic prioritizes the most-likely fix in order:
+      //   halfpipe: more pumps → smaller trick → grippy surface
+      //   gap: more speed → 30° angle → smaller gap
+      function _suggestNudge() {
+        if ((d.consecutiveBails || 0) < 3) return null;
+        if ((d.attempts || 0) <= (d.nudgeDismissedAt || -1)) return null;
+        var r = d.lastResult;
+        if (!r || r.landed) return null;
+        if (r.mode === 'halfpipe') {
+          // Halfpipe bails are nearly always "not enough air for
+          // the trick selected." Two clean fixes: more pumps OR a
+          // less-rotation trick. Prefer pumps if there's headroom.
+          if ((d.pumps || 0) < 8) {
+            var nextPumps = Math.min(8, (d.pumps || 0) + 2);
+            return {
+              message: 'Stuck? You\'ve been short on air for ' + getTrick(d.trickId).label + '. Adding pumps gives you more kinetic energy → more height → more air time.',
+              fixLabel: '+ ' + (nextPumps - (d.pumps || 0)) + ' pumps (try ' + nextPumps + ')',
+              fixBumps: { pumps: nextPumps }
+            };
+          }
+          // Out of pumps room? Suggest a smaller trick.
+          var current = getTrick(d.trickId);
+          var smaller = null;
+          for (var i = 0; i < TRICKS.length; i++) {
+            if (TRICKS[i].rotation < current.rotation && (!smaller || TRICKS[i].rotation > smaller.rotation)) smaller = TRICKS[i];
+          }
+          if (smaller) {
+            return {
+              message: 'Maxed out on pumps but still bailing. Try a smaller trick to learn how much air this setup actually gives you.',
+              fixLabel: 'Switch to ' + smaller.emoji + ' ' + smaller.label,
+              fixBumps: { trickId: smaller.id }
+            };
+          }
+          return null;
+        }
+        // Gap mode — diagnose by clearance sign.
+        if (r.clearance < 0) {
+          // Came up short. Two clean fixes: more speed (highest
+          // leverage, since R = v² · sin(2θ) / g — quadratic in v)
+          // OR set angle to 30° if it's far off (peak range angle).
+          if (d.speedMph < 28) {
+            var nextSpeed = Math.min(28, (d.speedMph || 0) + 5);
+            return {
+              message: 'Came up short by ' + Math.abs(r.clearance).toFixed(1) + ' ft. Range scales with v² — speed has the biggest leverage in the projectile equation.',
+              fixLabel: '+ 5 mph (try ' + nextSpeed + ')',
+              fixBumps: { speedMph: nextSpeed }
+            };
+          }
+          if (Math.abs(d.angleDeg - 30) > 5) {
+            return {
+              message: 'At max speed and still short. Range peaks at 45° on flat ground but ~30° works best when you need to land at the same height. Try 30°.',
+              fixLabel: 'Set angle to 30°',
+              fixBumps: { angleDeg: 30 }
+            };
+          }
+          // Last resort — shrink the gap.
+          if (d.gapFt > 8) {
+            return {
+              message: 'Even at max speed and ideal angle, this gap is out of reach. Smaller gap to feel the calibration first.',
+              fixLabel: 'Shrink gap to 10 ft',
+              fixBumps: { gapFt: 10 }
+            };
+          }
+          return null;
+        }
+        // Overshot. Drop speed.
+        if (d.speedMph > 8) {
+          var slowSpeed = Math.max(8, (d.speedMph || 0) - 3);
+          return {
+            message: 'Flying past the landing — too much speed. Trim it down and watch where the parabola peaks.',
+            fixLabel: '− 3 mph (try ' + slowSpeed + ')',
+            fixBumps: { speedMph: slowSpeed }
+          };
+        }
+        return null;
+      }
+
       function _trickMastery(attempts, lands) {
         if ((lands || 0) >= 5) return { id: 'mastered', label: 'Mastered', icon: '👑', color: '#a855f7', bg: 'rgba(168,85,247,0.18)' };
         if ((lands || 0) >= 3) return { id: 'solid',    label: 'Solid',    icon: '💪', color: '#22c55e', bg: 'rgba(34,197,94,0.18)' };
@@ -1439,6 +1554,9 @@ window.StemLab = window.StemLab || {
               effMinAir: sim.effMinAir
             };
             _captureAndStampPrediction(bumps, bumps.lastResult, sim.hAir * M2FT);
+            // Bail counter for adaptive nudge — reset on land,
+            // increment on bail. Used to gate the nudge card.
+            bumps.consecutiveBails = sim.landed ? 0 : (d.consecutiveBails || 0) + 1;
             var sk = _applyStreakAndScore(bumps, sim.landed, sim.score);
             // Tag the result with streak info so the result card can
             // render the multiplier badge inline.
@@ -1501,6 +1619,7 @@ window.StemLab = window.StemLab || {
               windDeltaFt: sim.windDeltaFt
             };
             _captureAndStampPrediction(bumps, bumps.lastResult, sim.rangeFt);
+            bumps.consecutiveBails = sim.landed ? 0 : (d.consecutiveBails || 0) + 1;
             var skG = _applyStreakAndScore(bumps, sim.landed, sim.score);
             bumps.lastResult.streakAfter = bumps.streak.current;
             bumps.lastResult.streakTier = skG.tier ? skG.tier.id : null;
@@ -2186,6 +2305,46 @@ window.StemLab = window.StemLab || {
                   );
                 })
               )
+            ),
+            // ── Trick Lore ───────────────────────────────────────
+            // Closed by default. Each entry: origin (skate culture),
+            // physics (the tool's lesson), and a pro tip. Connects
+            // the abstract simulation to the real names + people +
+            // physics insight behind each move. Pure cultural
+            // literacy layer — turns "kickflip" from a label into
+            // "Rodney Mullen 1983, the magic flip."
+            h('details', { style: { marginTop: 8 } },
+              h('summary', {
+                style: {
+                  cursor: 'pointer', color: '#a5b4fc', fontWeight: 700,
+                  fontSize: 11, letterSpacing: '0.04em', textTransform: 'uppercase',
+                  padding: '4px 0', userSelect: 'none'
+                }
+              }, '📖 Trick Lore — origin, physics, pro tip'),
+              h('div', { style: { marginTop: 10, display: 'flex', flexDirection: 'column', gap: 8 } },
+                TRICKS.map(function(tk) {
+                  if (!tk.lore) return null;
+                  return h('div', {
+                    key: 'lore-' + tk.id,
+                    style: {
+                      background: 'rgba(99,102,241,0.08)',
+                      border: '1px solid rgba(165,180,252,0.30)',
+                      borderRadius: 10, padding: '10px 12px'
+                    }
+                  },
+                    h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
+                      h('span', { style: { fontSize: 18 } }, tk.emoji),
+                      h('span', { style: { fontSize: 13, fontWeight: 800, color: '#e0e7ff' } }, tk.label),
+                      h('span', { style: { marginLeft: 'auto', fontSize: 10, color: '#a5b4fc', fontFamily: 'monospace' } }, tk.rotation + '° · needs ' + tk.minAir.toFixed(2) + 's')
+                    ),
+                    h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, display: 'flex', flexDirection: 'column', gap: 4 } },
+                      h('div', null, h('b', { style: { color: '#fbbf24' } }, '🛹 Origin: '), tk.lore.origin),
+                      h('div', null, h('b', { style: { color: '#7dd3fc' } }, '📐 Physics: '), tk.lore.physics),
+                      h('div', null, h('b', { style: { color: '#86efac' } }, '💡 Pro tip: '), tk.lore.proTip)
+                    )
+                  );
+                })
+              )
             )
           )
         ),
@@ -2445,6 +2604,59 @@ window.StemLab = window.StemLab || {
                 d.lastResult.landed && h('div', { style: { color: '#86efac', marginTop: 4 } }, '🏆 Score: ' + d.lastResult.score)
               )
         ),
+        // ── Adaptive nudge ──────────────────────────────────────
+        // Rule-based hint that fires after 3 consecutive bails to
+        // surface a one-tap fix (more pumps, smaller trick, etc.).
+        // Sits between result panel and AI Coach so students see
+        // the actionable suggestion before the heavier AI ask. The
+        // "Skip" button records the current attempts count so the
+        // nudge stays hidden until the next bail after that.
+        (function() {
+          var nudge = _suggestNudge();
+          if (!nudge) return null;
+          return h('div', {
+            role: 'region',
+            'aria-label': 'Coaching suggestion',
+            style: {
+              background: 'linear-gradient(135deg, rgba(56,189,248,0.10), rgba(168,85,247,0.08))',
+              border: '1px solid rgba(56,189,248,0.45)',
+              borderRadius: 10, padding: 12, marginBottom: 12
+            }
+          },
+            h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 6, flexWrap: 'wrap' } },
+              h('div', { style: { fontSize: 11, fontWeight: 800, color: '#7dd3fc', letterSpacing: '0.06em', textTransform: 'uppercase' } }, '💡 Quick fix · ' + (d.consecutiveBails || 0) + ' bails in a row'),
+              h('button', {
+                onClick: function() { upd('nudgeDismissedAt', d.attempts || 0); skAnnounce('Suggestion dismissed.'); },
+                'aria-label': 'Dismiss this suggestion',
+                'data-sk-focusable': 'true',
+                style: {
+                  padding: '4px 8px', fontSize: 10, fontWeight: 700,
+                  background: 'transparent', color: '#94a3b8',
+                  border: '1px solid rgba(148,163,184,0.35)',
+                  borderRadius: 6, cursor: 'pointer', minHeight: 26
+                }
+              }, '✕ Skip')
+            ),
+            h('p', { style: { margin: '0 0 10px', fontSize: 12, color: '#e2e8f0', lineHeight: 1.5 } }, nudge.message),
+            h('button', {
+              onClick: function() {
+                upd(Object.assign({}, nudge.fixBumps, { nudgeDismissedAt: d.attempts || 0 }));
+                skAnnounce('Applied: ' + nudge.fixLabel);
+                if (addToast) addToast('💡 Applied — ' + nudge.fixLabel, 'success');
+              },
+              'aria-label': 'Apply suggested fix: ' + nudge.fixLabel,
+              'data-sk-focusable': 'true',
+              style: {
+                padding: '8px 14px', fontSize: 12, fontWeight: 800,
+                background: 'linear-gradient(135deg, #38bdf8, #0ea5e9)',
+                color: '#0c4a6e',
+                border: '1px solid #0284c7',
+                borderRadius: 8, cursor: 'pointer', minHeight: 32,
+                boxShadow: '0 2px 6px rgba(14,165,233,0.35)'
+              }
+            }, '✨ ' + nudge.fixLabel)
+          );
+        })(),
         // ── Coach panel ─────────────────────────────────────────
         // Persona pills + Ask Coach button + response card. Only
         // shows the Ask button after at least one attempt so students
