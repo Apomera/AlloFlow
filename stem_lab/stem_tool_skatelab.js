@@ -127,6 +127,123 @@ window.StemLab = window.StemLab || {
     return TRICKS[0];
   }
 
+  // ── Vehicle catalog ───────────────────────────────────────────────
+  // Two-knob abstraction: heavier vehicles accelerate less per pump
+  // (lower pumpEfficiency), have larger moment of inertia (lower
+  // rotationScale), and demand more hang time per trick (higher
+  // minAirScale). Same physics — different numbers.
+  var VEHICLES = {
+    skate: {
+      id: 'skate', label: 'Skateboard', icon: '🛹',
+      mass: 4.0,            // kg (deck + trucks + wheels)
+      pumpEfficiency: 0.6,  // m/s gained per well-timed pump
+      rotationScale: 1.0,   // multiplier on trick rotation rate
+      minAirScale: 1.0      // multiplier on trick minimum air time
+    },
+    bmx: {
+      id: 'bmx', label: 'BMX', icon: '🚲',
+      mass: 12.0,           // kg (avg BMX bike)
+      pumpEfficiency: 0.45, // heavier vehicle accelerates less per pump
+      rotationScale: 0.85,  // larger I = mr^2 → slower rotation
+      minAirScale: 1.15     // each trick needs slightly more air
+    }
+  };
+  function getVehicle(id) { return VEHICLES[id] || VEHICLES.skate; }
+
+  // ── Famous-trick scenarios ───────────────────────────────────────
+  // Each scenario pre-configures the simulator to recreate a real
+  // moment in skate / BMX history (or a thought experiment like the
+  // Moonshot kickflip). The `presets` block fully specifies state,
+  // `teach` is the 2-3 sentence learning objective surfaced as a
+  // Lesson card, and `questions` are 3 short prompts a teacher can
+  // assign as written work.
+  var SCENARIOS = [
+    {
+      id: 'hawk_900', label: "Tony Hawk's 900", icon: '🏆', mode: 'halfpipe',
+      presets: { pumps: 6, trickId: 'spin720', vehicle: 'skate', gravity: 9.81 },
+      teach: "1999 X Games. Hawk needed enough air for 2.5 full rotations on a 13-foot vert ramp. With a 720 selected, see if 6 pumps gets you the hang time. (A real 900 = 900°; we cap at 720 in v2 — the inequality is the same.)",
+      questions: [
+        "If a 540 needs 0.62 s of air, what's the rotation rate in degrees per second?",
+        "Doubling pump count quadruples kinetic energy. By how much does air HEIGHT change? (hint: h = v² / 2g)",
+        "What pump count would be enough to actually land a 900 (900° / your rotation rate)?"
+      ]
+    },
+    {
+      id: 'way_great_wall', label: "Danny Way's Great Wall", icon: '🏯', mode: 'gap',
+      presets: { speedMph: 28, angleDeg: 20, gapFt: 70, vehicle: 'skate', gravity: 9.81 },
+      teach: "2005. Danny Way jumped a 70-foot gap over the Great Wall of China on a mega-ramp. Same projectile equation as a 12-foot gap — just bigger numbers. Try the launch and watch the parabola preview.",
+      questions: [
+        "Plug v = 28 mph and θ = 20° into range = v²·sin(2θ)/g. How does it compare to the 70 ft gap?",
+        "If Way had launched at 30°, would he have cleared more or less distance? Why?",
+        "What's the peak height of his arc? (h_peak = (v·sinθ)² / 2g)"
+      ]
+    },
+    {
+      id: 'burnquist_mega', label: "Bob Burnquist Mega-Ramp", icon: '🛤️', mode: 'gap',
+      presets: { speedMph: 30, angleDeg: 25, gapFt: 75, vehicle: 'skate', gravity: 9.81 },
+      teach: "Bob Burnquist's backyard mega-ramp launches him at 30+ mph. The same range formula scales — but at this speed even a 5° angle change moves the landing 10+ ft.",
+      questions: [
+        "If wind reduced effective speed by 5%, by what % does range drop? (range scales as v²)",
+        "What angle gives MAX range at this speed? (Hint: derivative of sin(2θ))",
+        "How does hang time at 30 mph compare to 15 mph? (Same θ.)"
+      ]
+    },
+    {
+      id: 'moonshot_kickflip', label: "Moonshot Kickflip", icon: '🌙', mode: 'halfpipe',
+      presets: { pumps: 2, trickId: 'kickflip', vehicle: 'skate', gravity: 1.62 },
+      teach: "What if you tried a kickflip on the Moon? Gravity = 1.62 m/s² (about 1/6 of Earth's). Even with just 2 pumps, hang time skyrockets. The board still rotates at the same rate — so on the Moon you'd land 6× rotations.",
+      questions: [
+        "Hang time = 2·sqrt(2h/g). If h is the same, what does dividing g by 6 do to hang time?",
+        "On the Moon with 2 pumps, do you have enough air for a 720? A 1080?",
+        "Why does PE = mgh stay the same on the Moon if h doesn't change? What about KE?"
+      ]
+    },
+    {
+      id: 'andy_mac_vert', label: "Andy Mac's Vert Run", icon: '🛹', mode: 'halfpipe',
+      presets: { pumps: 4, trickId: 'spin540', vehicle: 'skate', gravity: 9.81 },
+      teach: "Andy MacDonald is famous for sustained vert runs — 540 after 540 with no fall. Each 540 needs ~0.62 s of air. Pumping efficiency matters: lose energy on landing, lose your next trick.",
+      questions: [
+        "If each landing loses 10% of speed, how many 540s in a row can you chain before air drops below 0.62 s?",
+        "Energy lost per landing = (1/2)·m·(v² - v_after²). At what point does pumping not recover enough?",
+        "Why is the 540 (1.5 spins) the 'sweet spot' for a vert run vs a 720?"
+      ]
+    },
+    {
+      id: 'sheckler_50ft', label: "Sheckler's 50ft Gap", icon: '🦘', mode: 'gap',
+      presets: { speedMph: 22, angleDeg: 25, gapFt: 50, vehicle: 'skate', gravity: 9.81 },
+      teach: "Ryan Sheckler dropped a 50-foot gap on a downhill approach. Speed dominates — at 22 mph the angle barely matters. Try sliding the angle slider and watch the parabola: most of the magic is in v².",
+      questions: [
+        "At 22 mph, what's the angle range that clears 50 ft? (Try θ = 15°, 25°, 40°.)",
+        "If you dropped to 18 mph, what angle do you need? (Hint: range ∝ v²)",
+        "How does this compare to Danny Way's 70 ft? Why does adding 8 mph almost double the gap?"
+      ]
+    },
+    {
+      id: 'mat_hoffman_flair', label: "Mat Hoffman's BMX Flair", icon: '🚲', mode: 'halfpipe',
+      presets: { pumps: 5, trickId: 'spin540', vehicle: 'bmx', gravity: 9.81 },
+      teach: "BMX flair = back flip + 180 spin (combined-axis rotation). Heavier vehicle (12 kg vs 4 kg) means more moment of inertia — slower spin per unit force. The 540 here represents the combined-axis rotation count.",
+      questions: [
+        "Moment of inertia I = m·r² (roughly). Compare BMX (m=12, r=0.35) to a skateboard (m=4, r=0.04). Ratio?",
+        "If torque is the same, which spins faster? (Hint: τ = I·α)",
+        "Why do BMX riders pump harder on approach than skateboarders for the same height?"
+      ]
+    },
+    {
+      id: 'pool_party', label: "Vans Pool Party", icon: '🌴', mode: 'halfpipe',
+      presets: { pumps: 2, trickId: 'spin360', vehicle: 'skate', gravity: 9.81 },
+      teach: "Backyard pool transitions are tighter than a vert ramp — less radius, less pumping room. With only 2 pumps available, what tricks fit in your air budget? Most pool runs land on 360s and ollies, not 720s.",
+      questions: [
+        "With 2 pumps, what's your max trick rotation that still lands?",
+        "Why does pool radius matter to pumping efficiency? (Hint: shorter arcs = less time to apply force)",
+        "Why are pool sessions usually about flow (linking tricks) instead of single huge airs?"
+      ]
+    }
+  ];
+  function getScenario(id) {
+    for (var i = 0; i < SCENARIOS.length; i++) if (SCENARIOS[i].id === id) return SCENARIOS[i];
+    return null;
+  }
+
   // ──────────────────────────────────────────────────────────────────
   // HALFPIPE PHYSICS
   // The student picks: number of pumps (0-5), spin trick.
@@ -145,31 +262,35 @@ window.StemLab = window.StemLab || {
   function simHalfpipe(opts) {
     var pumps = Math.max(0, Math.min(6, opts.pumps || 0));
     var trick = getTrick(opts.trickId || 'ollie');
+    var vehicle = getVehicle(opts.vehicle || 'skate');
+    var g = opts.gravity || G;
     // Initial speed entering the pipe (just from rolling in).
     var v0 = 4.0;                              // m/s ≈ 9 mph
-    // Each pump adds energy. Pump efficiency is realistic (~0.35 m/s
-    // per well-timed pump).
-    var v = v0 + pumps * 0.6;
+    // Each pump adds energy. Pump efficiency depends on vehicle —
+    // BMX is heavier, gains less speed per pump.
+    var v = v0 + pumps * vehicle.pumpEfficiency;
     // Convert KE → vertical air at the lip. Real halfpipes lose ~15%
     // to friction + drag on the way up.
     var efficiency = 0.85;
-    var hAir = (efficiency * v * v) / (2 * G);  // height above lip, m
-    var airTime = 2 * Math.sqrt(2 * hAir / G);  // up + down, s
-    // Spin rate from the trick the student chose. We assume the
-    // skater commits the rotation cleanly; the question is whether
-    // there's enough air to complete it.
-    var spinRate = trick.rotation > 0 ? (trick.rotation / Math.max(0.36, trick.minAir * 0.95)) : 0; // deg/s
+    var hAir = (efficiency * v * v) / (2 * g);  // height above lip, m
+    var airTime = 2 * Math.sqrt(2 * hAir / g);  // up + down, s
+    // Spin rate from the trick the student chose, scaled by vehicle
+    // moment of inertia. BMX rotates slower because I = mr² is bigger.
+    var baseRate = trick.rotation > 0 ? (trick.rotation / Math.max(0.36, trick.minAir * 0.95)) : 0;
+    var spinRate = baseRate * vehicle.rotationScale; // deg/s
+    var effMinAir = trick.minAir * vehicle.minAirScale;
     var rotationCompleted = trick.rotation === 0 ? 0 : Math.min(trick.rotation, spinRate * airTime);
     var landed = (trick.rotation === 0)
       ? airTime > 0.15
-      : (rotationCompleted >= trick.rotation - 12 && airTime >= trick.minAir);
+      : (rotationCompleted >= trick.rotation - 12 && airTime >= effMinAir);
     var score = 0;
     if (landed) {
       score = Math.round(10 * trick.difficulty + 5 * hAir + 4 * airTime * 10);
     }
     return {
       v0: v0, vTakeoff: v, hAir: hAir, airTime: airTime,
-      trick: trick, rotationCompleted: rotationCompleted,
+      trick: trick, rotationCompleted: rotationCompleted, effMinAir: effMinAir,
+      vehicle: vehicle, gravity: g,
       landed: landed, score: score, pumps: pumps
     };
   }

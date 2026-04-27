@@ -1685,6 +1685,15 @@
       const ttsQuotaExhausted = React.useRef(false);
       const ttsInflight = React.useRef(new Map());
       const currentActiveAudio = React.useRef(null);
+      // Ref-mirror of wordSoundsAudioLibrary so handleAudio reads the LATEST
+      // value at call time, not a closure-captured snapshot. Fixes the
+      // regenerate-word bug where a stale closure inside handleRegenerateWord's
+      // setTimeout(handleAudio, 100) was hitting the pre-clear library entry
+      // and playing the OLD TTS clip — see plan sleepy-yawning-cocke.md.
+      const wordSoundsAudioLibraryRef = React.useRef(wordSoundsAudioLibrary);
+      React.useEffect(function() {
+        wordSoundsAudioLibraryRef.current = wordSoundsAudioLibrary;
+      });
       const handleAudio = React.useCallback(
         async (input, playImmediately = true) => {
           if (!input) {
@@ -1866,8 +1875,14 @@
               debugLog(`⚡ Mapped complex phoneme "${lower}" to "${bankKey}"`);
             return loadAndPlay(window.__ALLO_PHONEME_AUDIO_BANK[bankKey]);
           }
-          if (wordSoundsAudioLibrary && wordSoundsAudioLibrary[lower]) {
-            return loadAndPlay(wordSoundsAudioLibrary[lower]);
+          // Read the audio library from the ref so we always see the LATEST
+          // value, not the closure-captured snapshot. Without this, a stale
+          // handleAudio reference (e.g. captured by handleRegenerateWord's
+          // setTimeout) would short-circuit on the pre-clear entry and play
+          // the OLD TTS clip after a regenerate.
+          var liveLibrary = wordSoundsAudioLibraryRef.current;
+          if (liveLibrary && liveLibrary[lower]) {
+            return loadAndPlay(liveLibrary[lower]);
           }
           const persistent = loadAudioFromStorage(text);
           if (persistent) {
@@ -2091,7 +2106,9 @@
           speakWord,
           wordSoundsLanguage,
           ttsSpeed,
-          wordSoundsAudioLibrary,
+          // wordSoundsAudioLibrary intentionally omitted — handleAudio reads
+          // it via wordSoundsAudioLibraryRef.current to avoid stale-closure
+          // bug in regenerate flow.
         ],
       );
       const playBlending = React.useCallback(async () => {
