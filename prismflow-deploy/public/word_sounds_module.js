@@ -2120,9 +2120,7 @@
           speakWord,
           wordSoundsLanguage,
           ttsSpeed,
-          // wordSoundsAudioLibrary intentionally omitted — handleAudio reads
-          // it via wordSoundsAudioLibraryRef.current to avoid stale-closure
-          // bug in regenerate flow.
+          wordSoundsAudioLibrary,
         ],
       );
       const playBlending = React.useCallback(async () => {
@@ -7890,7 +7888,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           setCurrentWordSoundsWord,
           setWordSoundsFeedback,
           wordPool,
-          preloadedWords,
+          preloadedWords.length,
         ],
       );
       React.useEffect(() => {

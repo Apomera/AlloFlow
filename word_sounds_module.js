@@ -2120,9 +2120,7 @@
           speakWord,
           wordSoundsLanguage,
           ttsSpeed,
-          // wordSoundsAudioLibrary intentionally omitted — handleAudio reads
-          // it via wordSoundsAudioLibraryRef.current to avoid stale-closure
-          // bug in regenerate flow.
+          wordSoundsAudioLibrary,
         ],
       );
       const playBlending = React.useCallback(async () => {
@@ -6609,52 +6607,14 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             }
           }
           try {
-            const phonemeData = await fetchWordData(targetWord, 0, false, true);
-            if (phonemeData) {
-              const refreshedWord = {
-                ...existingWord,
-                phonemes: phonemeData.phonemes || [],
-                phonemeCount: phonemeData.phonemeCount || 0,
-                rhymeWord: phonemeData.rhymeWord || "",
-                rhymeDistractors: phonemeData.rhymeDistractors || [],
-                familyEnding: phonemeData.familyEnding || "",
-                familyMembers: phonemeData.familyMembers || [],
-                blendingDistractors: phonemeData.blendingDistractors || [],
-                soundSortMatches: phonemeData.soundSortMatches || null,
-                rimeFamilyMembers: phonemeData.rimeFamilyMembers || null,
-                orthographyDistractors:
-                  phonemeData.orthographyDistractors || [],
-                firstSound: phonemeData.firstSound || "",
-                lastSound: phonemeData.lastSound || "",
-                manipulationTask: phonemeData.manipulationTask || null,
-                _regeneratedAt: Date.now(),
-              };
-              if (setWsPreloadedWords) {
-                setWsPreloadedWords((prev) => {
-                  const prevArray = Array.isArray(prev) ? prev : [];
-                  const updated = [...prevArray];
-                  if (index < updated.length) updated[index] = refreshedWord;
-                  return updated;
-                });
-              }
-              if (preloadedWordCache.current) {
-                preloadedWordCache.current.set(
-                  targetWord.toLowerCase(),
-                  refreshedWord,
-                );
-              }
-              setTimeout(async () => {
-                if (!isMountedRef.current) return;
-                await handleAudio(targetWord, true);
-              }, 100);
-            }
+            await handleAudio(targetWord, true);
           } catch (err) {
             warnLog("Regeneration failed:", err);
           } finally {
             setRegeneratingIndex(null);
           }
         },
-        [preloadedWords, fetchWordData, setWsPreloadedWords],
+        [preloadedWords, handleAudio],
       );
       // Regenerate only the Sound Swap task for a single word without touching
       // its phonemes/rhymes/etc. Used by the "Regenerate Task" button in the
@@ -7890,7 +7850,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           setCurrentWordSoundsWord,
           setWordSoundsFeedback,
           wordPool,
-          preloadedWords,
+          preloadedWords.length,
         ],
       );
       React.useEffect(() => {
