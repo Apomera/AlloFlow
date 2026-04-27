@@ -39,6 +39,12 @@
       '.allo-volume-rotate { animation: alloVolumeRotate 12s linear infinite; }',
       '@media (prefers-reduced-motion: reduce) { .allo-volume-rotate { animation: none !important; } }',
       '@media (prefers-reduced-motion: reduce) { .allo-gate-shake, .allo-gate-open { animation: none !important; } [style*="alloStreakPulse"] { animation-duration: 0.01ms !important; } }',
+      // Confetti burst on the win screen — pieces fall from above the
+      // viewport with random hue/duration/delay. Pointer-events:none so
+      // they never block the Play Again button. Hidden under reduced-motion.
+      '@keyframes alloConfettiFall { 0% { transform: translateY(-20vh) rotate(0deg); opacity: 0; } 8% { opacity: 1; } 92% { opacity: 0.9; } 100% { transform: translateY(115vh) rotate(720deg); opacity: 0; } }',
+      '.allo-confetti-piece { position: absolute; top: 0; border-radius: 2px; animation-name: alloConfettiFall; animation-timing-function: cubic-bezier(.55,.05,.45,.99); animation-fill-mode: forwards; pointer-events: none; }',
+      '@media (prefers-reduced-motion: reduce) { .allo-confetti-piece { display: none !important; } }',
     ].join('\n');
     document.head.appendChild(mfA11yStyle);
   }
@@ -1051,9 +1057,15 @@
     var setMazeSize = function(v) { mazeSizeState[1](v); _savePrefs({ mazeSize: v }); };
     // Fullscreen toggle — when true the playing-mode wrapper switches to
     // position:fixed inset:0 so the maze fills the viewport. Toggle button
-    // sits in the HUD; F key bound below.
-    var fullscreenState = useState(false);
-    var isFullscreen = fullscreenState[0], setFullscreen = fullscreenState[1];
+    // sits in the HUD; F key bound below. Persisted to _prefs so a teacher
+    // who runs every drill in fullscreen doesn't have to re-toggle each run.
+    var fullscreenState = useState(!!_prefs.fullscreen);
+    var isFullscreen = fullscreenState[0];
+    var setFullscreen = function(v) {
+      var next = typeof v === 'function' ? v(fullscreenState[0]) : v;
+      fullscreenState[1](next);
+      _savePrefs({ fullscreen: !!next });
+    };
     var mazeState = useState(null);
     var maze = mazeState[0], setMaze = mazeState[1];
     var posState = useState({ r: 0, c: 0 });
@@ -1640,9 +1652,10 @@
         shakeRef.current = 1;
         var eng3dW = maze3dEngRef.current;
         if (eng3dW) { eng3dW._feedbackFlash = 1; eng3dW.scene.children.forEach(function(c) { if (c.isAmbientLight) c.color.setHex(0xaa2222); c.intensity = 0.8; }); }
-        setUserInput('');
+        // Keep the wrong answer visible during the shake so the student
+        // sees what they typed — clears with the feedback flag at 600ms.
         setTimeout(function() { if (inputRef.current) inputRef.current.focus(); }, 50);
-        setTimeout(function() { setFeedback(''); }, 600);
+        setTimeout(function() { setFeedback(''); setUserInput(''); }, 600);
         return;  // skip the dismiss-gate path below
       }
       // Correct path: dismiss the gate after a brief beat so the green
@@ -2693,7 +2706,34 @@
         silver: { emoji: '\uD83E\uDD48', label: 'Silver Time', color: '#64748b', bg: 'linear-gradient(135deg,#f8fafc,#e2e8f0)', border: '#94a3b8' },
         bronze: { emoji: '\uD83E\uDD49', label: 'Bronze Time', color: '#92400e', bg: 'linear-gradient(135deg,#fed7aa,#fdba74)', border: '#c2410c' }
       }[medal] : null;
-      return h('div', { style: { maxWidth: 460, margin: '0 auto', padding: '24px 24px 20px', textAlign: 'center', background: won ? 'linear-gradient(180deg, #fef3c7 0%, #fed7aa 100%)' : 'linear-gradient(180deg, #fee2e2 0%, #fecaca 100%)', borderRadius: '14px', border: '2px solid ' + (won ? '#d97706' : '#b91c1c'), boxShadow: '0 8px 24px rgba(146,64,14,0.18), inset 0 0 32px rgba(217,119,6,0.08)' } },
+      return h('div', { style: { maxWidth: 460, margin: '0 auto', padding: '24px 24px 20px', textAlign: 'center', background: won ? 'linear-gradient(180deg, #fef3c7 0%, #fed7aa 100%)' : 'linear-gradient(180deg, #fee2e2 0%, #fecaca 100%)', borderRadius: '14px', border: '2px solid ' + (won ? '#d97706' : '#b91c1c'), boxShadow: '0 8px 24px rgba(146,64,14,0.18), inset 0 0 32px rgba(217,119,6,0.08)', position: 'relative' } },
+        won && h('div', { style: { position: 'fixed', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 9999 }, 'aria-hidden': 'true' },
+          (function() {
+            var pieces = [];
+            for (var i = 0; i < 36; i++) {
+              var hue = (i * 47) % 360;
+              var startX = (i * 2.78 + Math.random() * 6) % 100;
+              var dur = 1.7 + Math.random() * 1.6;
+              var delay = Math.random() * 0.4;
+              var w = 8 + Math.floor(Math.random() * 7);
+              var hh = 10 + Math.floor(Math.random() * 9);
+              pieces.push(h('div', {
+                key: 'cf-' + i,
+                className: 'allo-confetti-piece',
+                style: {
+                  left: startX + '%',
+                  width: w + 'px',
+                  height: hh + 'px',
+                  background: 'hsl(' + hue + ', 78%, 58%)',
+                  animationDuration: dur.toFixed(2) + 's',
+                  animationDelay: delay.toFixed(2) + 's',
+                  boxShadow: '0 0 6px hsla(' + hue + ',70%,55%,0.55)'
+                }
+              }));
+            }
+            return pieces;
+          })()
+        ),
         h('div', { style: { fontSize: '54px', marginBottom: '4px', filter: 'drop-shadow(0 3px 6px rgba(146,64,14,0.4))' } }, won ? '\uD83C\uDFC6' : '\uD83D\uDC7E'),
         h('h2', { style: { fontSize: '24px', fontWeight: 900, color: won ? '#78350f' : '#7f1d1d', marginBottom: '12px', letterSpacing: '0.04em' } },
           won ? 'You Escaped the Maze!' : (gameOver ? 'A Shadow Caught You' : 'Game Over')),
@@ -3139,13 +3179,19 @@
               );
             })()
           : h('div', { style: { fontSize: isFullscreen ? '42px' : '30px', fontWeight: 800, color: '#fef3c7', marginBottom: '10px', fontFamily: 'monospace', textShadow: '0 0 12px rgba(251,191,36,0.45)' } }, currentProblem.problem.text + ' = ?'),
-        // Answer display (read-only echo of userInput so taps on numpad show)
+        // Answer display (read-only echo of userInput so taps on numpad show).
+        // Highlights red on wrong / green on correct so the student gets
+        // direct visual feedback on the answer they actually entered.
         h('div', {
           style: {
             display: 'inline-block', minWidth: isFullscreen ? '160px' : '120px', padding: isFullscreen ? '10px 16px' : '8px 12px', marginBottom: '10px',
             fontSize: isFullscreen ? '36px' : '26px', fontWeight: 800, fontFamily: 'monospace', textAlign: 'center',
-            color: '#fff', background: '#2a221c', border: '2px solid #a8957d', borderRadius: '8px',
-            letterSpacing: '0.08em'
+            color: feedback === 'wrong' ? '#fee2e2' : (feedback === 'correct' ? '#bbf7d0' : '#fff'),
+            background: feedback === 'wrong' ? '#7f1d1d' : (feedback === 'correct' ? '#14532d' : '#2a221c'),
+            border: '2px solid ' + (feedback === 'wrong' ? '#ef4444' : (feedback === 'correct' ? '#22c55e' : '#a8957d')),
+            borderRadius: '8px',
+            letterSpacing: '0.08em',
+            transition: 'background 200ms, color 200ms, border-color 200ms'
           }
         }, userInput || '\u2014'),
         // Hidden input still present for keyboard users + autofocus + Enter handling
