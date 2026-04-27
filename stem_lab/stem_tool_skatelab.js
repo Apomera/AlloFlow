@@ -287,6 +287,24 @@ window.StemLab = window.StemLab || {
     return SURFACES[1]; // standard default
   }
 
+  // ── Wind presets (gap-jump only) ──────────────────────────────────
+  // Wind adds a constant horizontal acceleration during the parabolic
+  // flight. Tailwind helps you clear the gap; headwind cuts your range.
+  // Modeled as `aWind` (m/s² along takeoff direction): + tailwind, − headwind.
+  // Pedagogically teaches relative velocity and lets students see why
+  // outdoor skaters check the wind before a big gap attempt.
+  var WIND_PRESETS = [
+    { id: 'calm',       label: 'Calm',          icon: '☀️', mph: 0,   blurb: 'Indoor or perfectly still day.' },
+    { id: 'tail_light', label: 'Light Tailwind', icon: '🍃', mph: 6,   blurb: '6 mph behind you. Adds a little range.' },
+    { id: 'tail_strong',label: 'Strong Tailwind',icon: '💨', mph: 14,  blurb: '14 mph push from behind.' },
+    { id: 'head_light', label: 'Light Headwind', icon: '🌬️', mph: -6,  blurb: '6 mph against you. Cuts a little range.' },
+    { id: 'head_strong',label: 'Strong Headwind',icon: '🌪️', mph: -14, blurb: '14 mph straight in your face.' }
+  ];
+  function getWind(id) {
+    for (var i = 0; i < WIND_PRESETS.length; i++) if (WIND_PRESETS[i].id === id) return WIND_PRESETS[i];
+    return WIND_PRESETS[0];
+  }
+
   // ──────────────────────────────────────────────────────────────────
   // HALFPIPE PHYSICS
   // The student picks: number of pumps (0-5), spin trick.
@@ -356,9 +374,19 @@ window.StemLab = window.StemLab || {
     var gapM = (opts.gapFt || 12) / M2FT;
     var g = opts.gravity || G;
     var vehicle = getVehicle(opts.vehicle || 'skate');
-    var range = (v * v * Math.sin(2 * theta)) / g; // m
-    var peakH = (v * v * Math.sin(theta) * Math.sin(theta)) / (2 * g); // m
+    var wind = getWind(opts.windId || 'calm');
+    var windMs = wind.mph / MPS2MPH; // m/s, positive = tailwind
+    // Hang time depends only on vertical velocity + gravity (wind is
+    // horizontal). Range is the standard projectile + horizontal wind
+    // contribution: x(t) = v·cosθ·t + 0.5·a_wind·t². We approximate
+    // a_wind as 0.18·windMs (a calibration that makes a 14 mph wind
+    // shift a 50 ft gap by ~6-8 ft, roughly matching real outdoor
+    // skate-gap experience).
     var hangTime = (2 * v * Math.sin(theta)) / g; // s
+    var aWind = 0.18 * windMs; // m/s², along takeoff direction
+    var rangeCalm = (v * v * Math.sin(2 * theta)) / g; // m
+    var range = rangeCalm + 0.5 * aWind * hangTime * hangTime; // m, with wind
+    var peakH = (v * v * Math.sin(theta) * Math.sin(theta)) / (2 * g); // m
     var clearance = range - gapM; // positive = cleared, negative = short
     // Clear on the platform if we're within +0.6 m of the gap's edge
     // (i.e. didn't overshoot wildly into a wall). Tolerance is generous
@@ -375,9 +403,10 @@ window.StemLab = window.StemLab || {
       v_mph: v_mph, vM: v, thetaDeg: thetaDeg, theta: theta,
       gapFt: opts.gapFt || 12, gapM: gapM,
       rangeM: range, rangeFt: range * M2FT,
+      rangeCalmFt: rangeCalm * M2FT, windDeltaFt: (range - rangeCalm) * M2FT,
       peakHM: peakH, peakHFt: peakH * M2FT,
       hangTime: hangTime, clearance: clearance,
-      vehicle: vehicle, gravity: g,
+      vehicle: vehicle, gravity: g, wind: wind,
       landed: landed, bail: bail, score: score
     };
   }
@@ -538,6 +567,34 @@ window.StemLab = window.StemLab || {
     ctx.font = 'bold 12px monospace';
     ctx.textAlign = 'center';
     ctx.fillText((state.gapFt || 12) + ' ft', (gapStartX + gapEndX) / 2, rampTopY - 24);
+    // Wind indicator (top-right) — arrow points the direction the air
+    // is moving relative to the skater. Tailwind: arrow points right
+    // (with takeoff). Headwind: arrow points left (against takeoff).
+    if (state.wind && state.wind.id !== 'calm') {
+      var w = state.wind;
+      var wx = W - 96, wy = 38;
+      var dir = w.mph > 0 ? 1 : -1;
+      var len = Math.min(28, 12 + Math.abs(w.mph) * 1.0);
+      ctx.save();
+      ctx.strokeStyle = w.mph > 0 ? 'rgba(134,239,172,0.85)' : 'rgba(252,165,165,0.85)';
+      ctx.fillStyle = ctx.strokeStyle;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(wx, wy);
+      ctx.lineTo(wx + dir * len, wy);
+      ctx.stroke();
+      // Arrow head
+      ctx.beginPath();
+      ctx.moveTo(wx + dir * len, wy);
+      ctx.lineTo(wx + dir * (len - 6), wy - 4);
+      ctx.lineTo(wx + dir * (len - 6), wy + 4);
+      ctx.closePath();
+      ctx.fill();
+      ctx.font = 'bold 11px monospace';
+      ctx.textAlign = dir > 0 ? 'left' : 'right';
+      ctx.fillText(w.icon + ' ' + Math.abs(w.mph) + ' mph', wx + dir * (len + 6), wy + 4);
+      ctx.restore();
+    }
     // Trajectory preview (when previewing or animating)
     if (state.preview) {
       ctx.strokeStyle = 'rgba(251,191,36,0.4)';
@@ -605,6 +662,12 @@ window.StemLab = window.StemLab || {
     var leftLipX = midX - lipHalfW;
     var rightLipX = midX + lipHalfW;
     var pxPerM = (floorY - lipY) / 4.0;  // fixed scale
+    // Slow-mo support — opts.speedMul scales dt during the AIR phase
+    // only, so the educational moment (parabolic arc + rotation
+    // completion) plays at 0.5x or 0.25x. Pump/descent stay full
+    // speed to keep the loop tight.
+    var speedMul = (opts && opts.speedMul) || 1.0;
+    var dt = (1 / 60) * speedMul;
     var t = 0;
     var phase = 'descend'; // descend → pump → ascend → air → land
     var pumpsLeft = sim.pumps;
@@ -680,7 +743,7 @@ window.StemLab = window.StemLab || {
         }
       }
       drawHalfpipe(canvas, state);
-      t += 1 / 60;
+      t += (phase === 'air') ? dt : (1 / 60);  // only the air phase is slowed
       raf = requestAnimationFrame(step);
     }
     sfxRoll();
@@ -695,14 +758,24 @@ window.StemLab = window.StemLab || {
     var rampTopY = H * 0.55;
     var pxPerFt = (W * 0.6) / 25;
     var pxPerM = pxPerFt * M2FT;
+    // Slow-mo support: opts.speedMul = 1.0 (default), 0.5 (half speed),
+    // 0.25 (quarter speed). Reduces dt per frame so the same animation
+    // plays back at human-friendly tempo for inspection.
+    var speedMul = (opts && opts.speedMul) || 1.0;
+    var dt = (1 / 60) * speedMul;
+    // Wind acceleration during flight (m/s², horizontal). Pulled from
+    // sim so the visual matches the math: tailwind pushes the skater
+    // farther along the parabola than the calm trajectory would.
+    var aWind = sim.wind ? (0.18 * (sim.wind.mph / MPS2MPH)) : 0;
+    var g = sim.gravity || G;
     var t = 0;
     var phase = 'roll'; // roll → launch → flight → land
     var doneCb = opts && opts.onDone;
     var raf = 0;
     function step() {
-      var state = { gapFt: sim.gapFt, speedMph: sim.v_mph, angleDeg: sim.thetaDeg, label: '' };
+      var state = { gapFt: sim.gapFt, speedMph: sim.v_mph, angleDeg: sim.thetaDeg, label: '', wind: sim.wind };
       if (phase === 'roll') {
-        // Roll up the ramp
+        // Roll up the ramp (roll phase isn't slowed — only flight is)
         var p = Math.min(1, t / 0.6);
         state.skX = -10 + p * (rampX + 10);
         state.skY = (H * 0.78) - p * ((H * 0.78) - rampTopY);
@@ -716,8 +789,8 @@ window.StemLab = window.StemLab || {
           else { sfxBail(); skAnnounce(sim.clearance < 0 ? 'Came up short. Need more speed or a steeper angle.' : 'Overshot the landing!'); }
           return;
         }
-        var x = sim.vM * Math.cos(sim.theta) * t;
-        var y = sim.vM * Math.sin(sim.theta) * t - 0.5 * G * t * t;
+        var x = sim.vM * Math.cos(sim.theta) * t + 0.5 * aWind * t * t;
+        var y = sim.vM * Math.sin(sim.theta) * t - 0.5 * g * t * t;
         state.skX = rampX + x * pxPerM;
         state.skY = rampTopY - y * pxPerM;
         state.skRot = -sim.thetaDeg + (t / sim.hangTime) * sim.thetaDeg * 1.7;
@@ -731,7 +804,7 @@ window.StemLab = window.StemLab || {
         if (t > 1.0) { if (doneCb) doneCb(); return; }
       }
       drawGapJump(canvas, state);
-      t += 1 / 60;
+      t += (phase === 'flight') ? dt : (1 / 60);  // only flight is slowed
       raf = requestAnimationFrame(step);
     }
     sfxRoll();
@@ -790,7 +863,10 @@ window.StemLab = window.StemLab || {
             vehicle: 'skate',
             gravity: 9.81,
             surfaceId: 'standard',
+            windId: 'calm',
             activeScenarioId: null,
+            // Cached last sim for slow-mo replay
+            lastSim: null,
             // Halfpipe input
             pumps: 3,
             trickId: 'kickflip',
@@ -1008,6 +1084,26 @@ window.StemLab = window.StemLab || {
         });
       }
 
+      // ── Slow-motion replay ──────────────────────────────────────
+      // Re-runs the most recent attempt's animation at a fractional
+      // speed. Doesn't bump attempts/landings/score — purely visual
+      // for inspection. Only the air/flight phase is slowed; the
+      // pump-and-roll prelude stays full speed so students don't
+      // wait through it.
+      function replayLast(speedMul) {
+        var sim = d.lastSim;
+        if (!sim) return;
+        if (d.running) return;
+        upd({ running: true });
+        if (cancelAnimRef.current) cancelAnimRef.current();
+        var animator = (sim.trick) ? animateHalfpipe : animateGapJump;
+        cancelAnimRef.current = animator(canvasRef.current, sim, {
+          speedMul: speedMul,
+          onDone: function() { upd({ running: false }); }
+        });
+        skAnnounce('Replay at ' + Math.round(speedMul * 100) + ' percent speed.');
+      }
+
       function runHalfpipe() {
         if (d.running) return;
         var sim = simHalfpipe({
@@ -1015,7 +1111,7 @@ window.StemLab = window.StemLab || {
           vehicle: d.vehicle, gravity: d.gravity,
           surfaceId: d.surfaceId
         });
-        upd({ running: true, lastResult: null, attempts: (d.attempts || 0) + 1 });
+        upd({ running: true, lastResult: null, lastSim: sim, attempts: (d.attempts || 0) + 1 });
         if (cancelAnimRef.current) cancelAnimRef.current();
         cancelAnimRef.current = animateHalfpipe(canvasRef.current, sim, {
           onDone: function() {
@@ -1054,9 +1150,9 @@ window.StemLab = window.StemLab || {
         if (d.running) return;
         var sim = simGapJump({
           speedMph: d.speedMph, angleDeg: d.angleDeg, gapFt: d.gapFt,
-          vehicle: d.vehicle, gravity: d.gravity
+          vehicle: d.vehicle, gravity: d.gravity, windId: d.windId
         });
-        upd({ running: true, lastResult: null, attempts: (d.attempts || 0) + 1 });
+        upd({ running: true, lastResult: null, lastSim: sim, attempts: (d.attempts || 0) + 1 });
         if (cancelAnimRef.current) cancelAnimRef.current();
         cancelAnimRef.current = animateGapJump(canvasRef.current, sim, {
           onDone: function() {
@@ -1066,7 +1162,9 @@ window.StemLab = window.StemLab || {
               landed: sim.landed, score: sim.score,
               vMph: sim.v_mph, angleDeg: sim.thetaDeg, gapFt: sim.gapFt,
               rangeFt: sim.rangeFt, peakFt: sim.peakHFt, hangTime: sim.hangTime,
-              clearance: sim.clearance * M2FT
+              clearance: sim.clearance * M2FT,
+              wind: sim.wind ? sim.wind.label : 'Calm',
+              windDeltaFt: sim.windDeltaFt
             };
             if (sim.landed) {
               bumps.landings = (d.landings || 0) + 1;
@@ -1094,19 +1192,20 @@ window.StemLab = window.StemLab || {
           // updates when a Moonshot scenario or BMX toggle is active.
           var sim = simGapJump({
             speedMph: d.speedMph, angleDeg: d.angleDeg, gapFt: d.gapFt,
-            vehicle: d.vehicle, gravity: d.gravity
+            vehicle: d.vehicle, gravity: d.gravity, windId: d.windId
           });
           drawGapJump(canvasRef.current, {
             skX: null, skY: null, skRot: 0,
             speedMph: d.speedMph, angleDeg: d.angleDeg, gapFt: d.gapFt,
             preview: true, previewV: sim.vM, previewTheta: sim.theta, previewHang: sim.hangTime,
+            wind: sim.wind,
             label: 'Ready'
           });
         }
         return function() {
           if (cancelAnimRef.current) cancelAnimRef.current();
         };
-      }, [d.mode, d.speedMph, d.angleDeg, d.gapFt, d.pumps, d.trickId, d.vehicle, d.gravity, d.running]);
+      }, [d.mode, d.speedMph, d.angleDeg, d.gapFt, d.pumps, d.trickId, d.vehicle, d.gravity, d.surfaceId, d.windId, d.running]);
 
       // ── Render UI ───────────────────────────────────────────────
       var modeBtn = function(id, label, emoji) {
@@ -1340,6 +1439,34 @@ window.StemLab = window.StemLab || {
             }, '🎲 New Gap')
           )
         ),
+        // Wind picker — gap-jump only. Mirrors the surface picker.
+        // Adds horizontal acceleration during flight; tailwind helps,
+        // headwind hurts. Shows up below the speed/angle/gap row so
+        // it's clearly an environmental modifier, not a control.
+        d.mode === 'gap' && h('div', { role: 'radiogroup', 'aria-label': 'Wind condition', style: { display: 'flex', gap: 6, justifyContent: 'center', marginBottom: 12, flexWrap: 'wrap' } },
+          WIND_PRESETS.map(function(wp) {
+            var sel = (d.windId || 'calm') === wp.id;
+            return h('button', {
+              key: 'wp-' + wp.id,
+              onClick: function() { upd('windId', wp.id); skAnnounce('Wind: ' + wp.label + '. ' + wp.blurb); },
+              role: 'radio',
+              'aria-checked': sel,
+              'data-sk-focusable': 'true',
+              title: wp.blurb + (wp.mph !== 0 ? ' (' + (wp.mph > 0 ? '+' : '') + wp.mph + ' mph)' : ''),
+              style: {
+                padding: '4px 10px', fontSize: 10, fontWeight: 700,
+                background: sel
+                  ? (wp.mph > 0 ? 'linear-gradient(135deg,#16a34a,#15803d)' : wp.mph < 0 ? 'linear-gradient(135deg,#b91c1c,#7f1d1d)' : 'linear-gradient(135deg,#475569,#334155)')
+                  : 'rgba(254,243,199,0.08)',
+                color: sel ? '#fff' : '#fef3c7',
+                border: '1px solid ' + (sel
+                  ? (wp.mph > 0 ? '#15803d' : wp.mph < 0 ? '#7f1d1d' : '#334155')
+                  : 'rgba(254,243,199,0.25)'),
+                borderRadius: 999, cursor: 'pointer'
+              }
+            }, wp.icon + ' ' + wp.label);
+          })
+        ),
         // Run button
         h('button', {
           onClick: d.mode === 'halfpipe' ? runHalfpipe : runGapJump,
@@ -1358,8 +1485,31 @@ window.StemLab = window.StemLab || {
         // Last-result analysis panel — pedagogically valuable, shows
         // the actual physics that produced what the student just saw.
         d.lastResult && h('div', { style: { background: d.lastResult.landed ? 'rgba(22,163,74,0.12)' : 'rgba(180,83,9,0.12)', border: '1px solid ' + (d.lastResult.landed ? '#22c55e' : '#d97706'), borderRadius: 10, padding: 12, marginBottom: 12 } },
-          h('div', { style: { fontSize: 13, fontWeight: 800, color: d.lastResult.landed ? '#86efac' : '#fbbf24', marginBottom: 6 } },
-            d.lastResult.landed ? '✅ Clean landing — what made it work' : '💥 Bail — here\'s why'),
+          h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 6, flexWrap: 'wrap' } },
+            h('div', { style: { fontSize: 13, fontWeight: 800, color: d.lastResult.landed ? '#86efac' : '#fbbf24' } },
+              d.lastResult.landed ? '✅ Clean landing — what made it work' : '💥 Bail — here\'s why'),
+            // Slow-motion replay buttons — re-run the cached lastSim
+            // at half / quarter speed. Disabled when an animation is
+            // already in flight or there's no sim yet.
+            d.lastSim && h('div', { style: { display: 'flex', gap: 4 } },
+              [{ mul: 0.5, label: '🎬 0.5×' }, { mul: 0.25, label: '🐌 0.25×' }].map(function(opt) {
+                return h('button', {
+                  key: 'rp-' + opt.mul,
+                  onClick: function() { replayLast(opt.mul); },
+                  disabled: !!d.running,
+                  'aria-label': 'Replay last attempt at ' + Math.round(opt.mul * 100) + ' percent speed',
+                  'data-sk-focusable': 'true',
+                  style: {
+                    padding: '3px 9px', fontSize: 10, fontWeight: 700,
+                    background: d.running ? '#475569' : 'rgba(167,139,250,0.18)',
+                    color: '#fef3c7',
+                    border: '1px solid rgba(167,139,250,0.45)',
+                    borderRadius: 6, cursor: d.running ? 'not-allowed' : 'pointer'
+                  }
+                }, opt.label);
+              })
+            )
+          ),
           d.lastResult.mode === 'halfpipe'
             ? h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, fontFamily: 'monospace' } },
                 h('div', null, '⚡ Takeoff speed: ', h('b', { style: { color: '#fbbf24' } }, d.lastResult.vMph.toFixed(1) + ' mph')),
@@ -1371,6 +1521,7 @@ window.StemLab = window.StemLab || {
             : h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, fontFamily: 'monospace' } },
                 h('div', null, '🚀 Takeoff: ', h('b', { style: { color: '#fbbf24' } }, d.lastResult.vMph + ' mph at ' + d.lastResult.angleDeg + '°')),
                 h('div', null, '📐 Range = v² × sin(2θ) / g = ', h('b', { style: { color: '#fbbf24' } }, d.lastResult.rangeFt.toFixed(2) + ' ft'), ' (needed ' + d.lastResult.gapFt + ' ft)'),
+                d.lastResult.wind && d.lastResult.wind !== 'Calm' && h('div', null, '🌬️ Wind: ', h('b', { style: { color: d.lastResult.windDeltaFt > 0 ? '#86efac' : '#fca5a5' } }, d.lastResult.wind + ' (' + (d.lastResult.windDeltaFt > 0 ? '+' : '') + d.lastResult.windDeltaFt.toFixed(2) + ' ft)')),
                 h('div', null, '⛰ Peak height: ', h('b', { style: { color: '#fbbf24' } }, d.lastResult.peakFt.toFixed(2) + ' ft')),
                 h('div', null, '⏱ Hang time: ', h('b', { style: { color: '#fbbf24' } }, d.lastResult.hangTime.toFixed(2) + ' s')),
                 h('div', null, '🎯 Clearance: ', h('b', { style: { color: d.lastResult.landed ? '#86efac' : '#fbbf24' } }, (d.lastResult.clearance >= 0 ? '+' : '') + d.lastResult.clearance.toFixed(2) + ' ft')),
