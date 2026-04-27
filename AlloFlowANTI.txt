@@ -10499,6 +10499,15 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const wizardData = undefined;
   const standardsLookupRegion = undefined;
   const standardsLookupGoal = undefined;
+  const isWizardOpen = false;
+  const setIsWizardOpen = () => {};
+  const setIsLookingUpStandards = () => {};
+  const setStandardsLookupGoal = () => {};
+  const setStandardsLookupRegion = () => {};
+  const setIsRefiningImage = () => {};
+  const setShowImageRefineModal = () => {};
+  const setIsExecutingBlueprint = () => {};
+  const setBlueprintExecutionResult = () => {};
   const handleBotIntroSeen = useCallback(() => {
     setHasSeenBotIntro(true);
     try { safeSetItem('allo_bot_intro_seen', 'true'); } catch {}
