@@ -2959,7 +2959,21 @@
           }
         },
           h('div', { style: { fontSize: '40px', marginBottom: '6px' } }, '\u23F8\uFE0F'),
-          h('div', { style: { fontSize: '16px', fontWeight: 900, color: '#78350f', marginBottom: '4px', letterSpacing: '0.04em' } }, 'Paused'),
+          h('div', { style: { fontSize: '16px', fontWeight: 900, color: '#78350f', marginBottom: '8px', letterSpacing: '0.04em' } }, 'Paused'),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginBottom: '10px', minWidth: '260px' } },
+            h('div', { style: { background: 'rgba(255,255,255,0.55)', borderRadius: '8px', padding: '6px 4px', border: '1px solid #fcd34d' } },
+              h('div', { style: { fontSize: '20px', fontWeight: 900, color: '#15803d' } }, String(correct)),
+              h('div', { style: { fontSize: '9px', color: '#92400e', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase' } }, 'Correct')),
+            h('div', { style: { background: 'rgba(255,255,255,0.55)', borderRadius: '8px', padding: '6px 4px', border: '1px solid #fcd34d' } },
+              h('div', { style: { fontSize: '20px', fontWeight: 900, color: '#b91c1c' } }, String(wrong)),
+              h('div', { style: { fontSize: '9px', color: '#92400e', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase' } }, 'Wrong')),
+            h('div', { style: { background: 'rgba(255,255,255,0.55)', borderRadius: '8px', padding: '6px 4px', border: '1px solid #fcd34d' } },
+              h('div', { style: { fontSize: '20px', fontWeight: 900, color: '#c2410c' } }, '\uD83D\uDD25' + streak),
+              h('div', { style: { fontSize: '9px', color: '#92400e', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase' } }, 'Streak')),
+            h('div', { style: { background: 'rgba(255,255,255,0.55)', borderRadius: '8px', padding: '6px 4px', border: '1px solid #fcd34d' } },
+              h('div', { style: { fontSize: '20px', fontWeight: 900, color: '#a16207' } }, elapsed + 's'),
+              h('div', { style: { fontSize: '9px', color: '#92400e', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase' } }, 'Time'))
+          ),
           h('div', { style: { fontSize: '11px', color: '#92400e', fontStyle: 'italic' } }, 'Tap, press P, or Escape to resume')
         )
       ),
@@ -3251,6 +3265,21 @@
           }, '\ud83d\udd11 Unlock')
         ),
         attemptCount > 0 && h('div', { style: { marginTop: '8px', fontSize: '11px', fontWeight: 700, color: '#fbbf24', letterSpacing: '0.06em', textTransform: 'uppercase' }, 'aria-live': 'off' }, 'Attempt ' + (attemptCount + 1)),
+        // Adaptive answer reveal \u2014 after 3 wrong attempts on the same
+        // gate, surface the correct answer so a stuck student isn't
+        // trapped. They still have to type it to advance so the muscle-
+        // memory drill stays intact. Skipped for visual-volume gates
+        // (those already display the prism \u2014 students count cubes).
+        attemptCount >= 3 && currentProblem.problem.type !== 'visual' && h('div', {
+          'aria-live': 'polite',
+          style: {
+            marginTop: '10px', padding: '6px 12px', display: 'inline-block',
+            fontSize: '12px', fontWeight: 800,
+            color: '#bbf7d0', background: 'rgba(20,83,45,0.55)',
+            border: '1px dashed #22c55e', borderRadius: '8px',
+            letterSpacing: '0.04em'
+          }
+        }, '\ud83d\udca1 Answer: ' + currentProblem.problem.answer + ' \u2014 type it to continue'),
         h('p', { style: { fontSize: '10px', color: '#a8957d', marginTop: attemptCount > 0 ? '4px' : '10px', marginBottom: 0 } }, 'Tap pad or use keyboard \u2022 Enter to submit \u2022 Esc to clear')
       ),
       // Arrow buttons (mobile friendly)
