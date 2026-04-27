@@ -1049,6 +1049,11 @@
     var mazeSizeState = useState(_prefs.mazeSize || 'medium');
     var mazeSize = mazeSizeState[0];
     var setMazeSize = function(v) { mazeSizeState[1](v); _savePrefs({ mazeSize: v }); };
+    // Fullscreen toggle — when true the playing-mode wrapper switches to
+    // position:fixed inset:0 so the maze fills the viewport. Toggle button
+    // sits in the HUD; F key bound below.
+    var fullscreenState = useState(false);
+    var isFullscreen = fullscreenState[0], setFullscreen = fullscreenState[1];
     var mazeState = useState(null);
     var maze = mazeState[0], setMaze = mazeState[1];
     var posState = useState({ r: 0, c: 0 });
@@ -1669,6 +1674,7 @@
         if (e.key === 'p' || e.key === 'P') { setPaused(function(v) { return !v; }); return; }
         if (e.key === '?' || (e.shiftKey && e.key === '/')) { setHelpOpen(function(v) { return !v; }); return; }
         if (e.key === 'm' || e.key === 'M') { _toggleMute(); return; }
+        if (e.key === 'f' || e.key === 'F') { setFullscreen(function(v) { return !v; }); return; }
         if (paused) return;
         if (e.key === 'ArrowUp' || e.key === 'w') tryMove('up');
         if (e.key === 'ArrowDown' || e.key === 's') tryMove('down');
@@ -2431,8 +2437,28 @@
       }
       animate();
 
+      // Resize observer — keeps WebGL canvas matching container size when
+      // fullscreen toggles or the viewport reflows. Without this the maze
+      // renders at the original 320px-height and stretches blurry.
+      var ro = null;
+      try {
+        if (typeof ResizeObserver !== 'undefined') {
+          ro = new ResizeObserver(function() {
+            if (!container || !eng.renderer || !eng.camera) return;
+            var w = container.clientWidth, hpx = container.clientHeight;
+            if (w > 0 && hpx > 0) {
+              eng.renderer.setSize(w, hpx, false);
+              eng.camera.aspect = w / hpx;
+              eng.camera.updateProjectionMatrix();
+            }
+          });
+          ro.observe(container);
+        }
+      } catch (e) {}
+
       return function() {
         cancelAnimationFrame(maze3dAnimRef.current);
+        try { if (ro) ro.disconnect(); } catch (e) {}
         if (cnv.parentNode) cnv.parentNode.removeChild(cnv);
         maze3dEngRef.current = null;
       };
@@ -2700,7 +2726,11 @@
     var has3D = !!window.THREE;
 
     // Playing mode
-    return h('div', { style: { maxWidth: 560, margin: '0 auto', position: 'relative' } },
+    return h('div', {
+      style: isFullscreen
+        ? { position: 'fixed', inset: 0, zIndex: 9999, padding: '14px clamp(14px, 4vw, 48px)', background: 'linear-gradient(180deg, #1a0e08 0%, #2a1810 60%, #1a0e08 100%)', overflowY: 'auto', display: 'flex', flexDirection: 'column' }
+        : { maxWidth: 720, margin: '0 auto', position: 'relative' }
+    },
       // HUD — scores + streak combo meter + hint button. Warm leather/stone
       // band so the HUD reads as part of the dungeon, not a separate cool-
       // slate strip floating above it.
@@ -2767,6 +2797,19 @@
             borderRadius: '999px', cursor: 'pointer'
           }
         }, paused ? '\u25B6 Resume' : '\u23F8 Pause'),
+        h('button', {
+          onClick: function() { setFullscreen(function(v) { return !v; }); },
+          'aria-label': isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen',
+          'aria-pressed': isFullscreen,
+          title: 'Fullscreen (F key)',
+          style: {
+            padding: '4px 10px', fontSize: '11px', fontWeight: 700,
+            background: isFullscreen ? '#fbbf24' : 'rgba(254,243,199,0.18)',
+            color: isFullscreen ? '#7c2d12' : '#fef3c7',
+            border: '1px solid ' + (isFullscreen ? '#fbbf24' : 'rgba(254,243,199,0.35)'),
+            borderRadius: '999px', cursor: 'pointer'
+          }
+        }, isFullscreen ? '\u2922 Exit' : '\u26F6 Fullscreen'),
         // Hint button — costs 5 points, resets streak. Uses BFS to find the
         // direction of the next step along the shortest path to the exit.
         h('button', {
@@ -2781,9 +2824,11 @@
           }
         }, '\uD83D\uDCA1 Hint (-5)')
       ),
-      // 3D View (or 2D fallback)
-      has3D ? h('div', { ref: maze3dRef, style: { width: '100%', height: '320px', borderRadius: '10px', overflow: 'hidden', border: '2px solid #7c3aed', position: 'relative', background: '#0a0a1a' } }) :
-      h('canvas', { ref: canvasRef, style: { width: '100%', height: 'auto', borderRadius: '10px', border: '3px solid #78350f', display: 'block', boxShadow: '0 4px 16px rgba(58,46,38,0.4)' } }),
+      // 3D View (or 2D fallback). Heights bumped for clarity; in fullscreen
+      // the 3D view fills nearly the whole viewport. The ResizeObserver in
+      // the init effect keeps the WebGL canvas matched to the container.
+      has3D ? h('div', { ref: maze3dRef, style: { width: '100%', height: isFullscreen ? 'min(78vh, 900px)' : '440px', borderRadius: '10px', overflow: 'hidden', border: '2px solid #7c3aed', position: 'relative', background: '#0a0a1a', flex: isFullscreen ? '1 1 auto' : 'none' } }) :
+      h('canvas', { ref: canvasRef, style: { width: '100%', height: 'auto', maxHeight: isFullscreen ? '78vh' : 'none', borderRadius: '10px', border: '3px solid #78350f', display: 'block', boxShadow: '0 4px 16px rgba(58,46,38,0.4)', objectFit: 'contain' } }),
       // Streak milestone banner — center-top of the maze area, fades in
       // and out via opacity transition. Pointer-events:none so it never
       // blocks the gate or arrow buttons underneath.
@@ -2859,9 +2904,10 @@
              'Hint (direction): H',
              'Pause / Resume: P',
              'Mute / unmute: M',
+             'Fullscreen: F',
              'This help: ?'].map(function(line, i) {
               var parts = line.split(': ');
-              return h('div', { key: i, style: { display: 'flex', justifyContent: 'space-between', gap: '12px', borderBottom: i < 6 ? '1px dashed rgba(217,119,6,0.3)' : 'none', padding: '3px 0' } },
+              return h('div', { key: i, style: { display: 'flex', justifyContent: 'space-between', gap: '12px', borderBottom: i < 7 ? '1px dashed rgba(217,119,6,0.3)' : 'none', padding: '3px 0' } },
                 h('span', { style: { fontWeight: 700 } }, parts[0]),
                 h('span', { style: { fontFamily: 'monospace', color: '#78350f' } }, parts[1])
               );
