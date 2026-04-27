@@ -38,12 +38,22 @@
     } catch (e) {}
   }
 
-  // ── Reduced-motion CSS scoped to .pt-tool (defense-in-depth alongside host CSS) ──
+  // ── Reduced-motion CSS + erasure-word target-size + focus-visible ring ──
+  // Scoped CSS for the module. Includes: (1) reduced-motion as defense-in-depth
+  // alongside host CSS, (2) erasure-word minimum target size (WCAG 2.5.8 in 2.2 AA;
+  // also good practice for AA). 24×24 minimum so single-char words like "a" and "I"
+  // are still tappable. (3) explicit focus-visible ring on erasure word tokens —
+  // browser default focus on <span tabindex=0> is unreliable across Safari/Firefox.
   (function () {
     if (document.getElementById('pt-a11y-css')) return;
     var st = document.createElement('style');
     st.id = 'pt-a11y-css';
-    st.textContent = '@media (prefers-reduced-motion: reduce) { .pt-tool *, .pt-tool *::before, .pt-tool *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    st.textContent = [
+      '@media (prefers-reduced-motion: reduce) { .pt-tool *, .pt-tool *::before, .pt-tool *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }',
+      '.pt-erasure-word { display: inline-block; min-width: 24px; min-height: 24px; line-height: 24px; text-align: center; }',
+      '.pt-erasure-word:focus-visible { outline: 3px solid #f59e0b; outline-offset: 2px; }',
+      '.pt-erasure-word:focus:not(:focus-visible) { outline: none; }'
+    ].join('\n');
     document.head.appendChild(st);
   })();
 
@@ -2255,11 +2265,12 @@
                             },
                             tabIndex: 0,
                             role: 'button',
+                            className: 'pt-erasure-word',
                             'aria-pressed': kept ? 'true' : 'false',
                             'aria-label': (kept ? 'Keep word: ' : 'Erase word: ') + t.text,
                             style: kept
-                              ? { display: 'inline-block', padding: '0 4px', margin: '0 1px', background: '#fef3c7', borderRadius: '3px', cursor: 'pointer', color: '#1e293b', fontWeight: 700 }
-                              : { display: 'inline-block', padding: '0 4px', margin: '0 1px', background: '#1e293b', borderRadius: '3px', cursor: 'pointer', color: '#1e293b', userSelect: 'none' }
+                              ? { padding: '0 6px', margin: '0 1px', background: '#fef3c7', borderRadius: '3px', cursor: 'pointer', color: '#1e293b', fontWeight: 700 }
+                              : { padding: '0 6px', margin: '0 1px', background: '#1e293b', borderRadius: '3px', cursor: 'pointer', color: '#1e293b', userSelect: 'none' }
                           }, t.text);
                         })
                       );
@@ -2327,7 +2338,7 @@
               // Cross-tool: open this poem in LitLab as a performance script (parent wires the prop).
               onSendToLitLab && e('button', { onClick: sendToLitLab, disabled: !poemText.trim(),
                 'aria-label': 'Send this poem to LitLab to perform with character voices',
-                style: { padding: '8px 14px', background: poemText.trim() ? '#a855f7' : '#cbd5e1', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: poemText.trim() ? 'pointer' : 'not-allowed' }
+                style: { padding: '8px 14px', background: poemText.trim() ? '#9333ea' : '#cbd5e1', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: poemText.trim() ? 'pointer' : 'not-allowed' }
               }, '🎭 Perform in LitLab'),
               onCallGemini && e('button', { onClick: analyzeMeter, disabled: !poemText.trim() || meterLoading,
                 'aria-busy': meterLoading ? 'true' : 'false',
@@ -2591,15 +2602,15 @@
                       var borderColor = isWeakest ? '#fde68a' : (items.length === 0 ? '#e2e8f0' : '#99f6e4');
                       return e('div', { key: d.key, style: { background: bg, border: '1px solid ' + borderColor, borderRadius: '8px', padding: '8px 10px' } },
                         e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: items.length > 0 ? '6px' : '0' } },
-                          e('div', { style: { fontSize: '11px', fontWeight: 700, color: items.length === 0 ? '#94a3b8' : TEAL_DARK, display: 'flex', alignItems: 'center', gap: '6px' } },
+                          e('div', { style: { fontSize: '11px', fontWeight: 700, color: items.length === 0 ? '#64748b' : TEAL_DARK, display: 'flex', alignItems: 'center', gap: '6px' } },
                             e('span', { 'aria-hidden': 'true' }, d.icon),
                             e('span', null, d.label),
-                            e('span', { style: { fontSize: '10px', fontWeight: 500, color: '#94a3b8', fontStyle: 'italic' } }, '— ' + d.desc)
+                            e('span', { style: { fontSize: '10px', fontWeight: 500, color: '#64748b', fontStyle: 'italic' } }, '— ' + d.desc)
                           ),
                           isWeakest && e('span', { style: { fontSize: '9px', fontWeight: 700, color: '#b45309', background: '#fef3c7', padding: '2px 6px', borderRadius: '999px', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'lean in here')
                         ),
                         items.length === 0
-                          ? e('p', { style: { fontSize: '11px', color: '#94a3b8', margin: 0, fontStyle: 'italic' } }, 'Not found in this draft.')
+                          ? e('p', { style: { fontSize: '11px', color: '#64748b', margin: 0, fontStyle: 'italic' } }, 'Not found in this draft.')
                           : e('ul', { style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '4px' } },
                               items.map(function (it, ii) {
                                 return e('li', { key: ii, style: { fontSize: '11px', color: '#1e293b', lineHeight: 1.5 } },
