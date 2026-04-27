@@ -896,6 +896,15 @@ window.StemLab = window.StemLab || {
             bestHalfpipeScore: 0,
             bestGapScore: 0,
             bestAirFt: 0,
+            // Custom scenarios — teacher-saved presets that render
+            // alongside the built-in famous-trick row.
+            customScenarios: [],
+            // Save-scenario modal state — null when closed, { label }
+            // when open. Modal captures current settings on confirm.
+            saveModalDraft: null,
+            // Confirm-reset state — false normally, true while the
+            // student/teacher is being asked to confirm a reset.
+            resetConfirmOpen: false,
             // Coach state
             coachPersona: 'analyst',
             coachLoading: false,
