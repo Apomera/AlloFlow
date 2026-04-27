@@ -718,8 +718,16 @@ window.StemLab = window.StemLab || {
           else { sfxBail(); skAnnounce('Bail. Not enough air for the ' + sim.trick.label); }
           return;
         }
-        // height above lip
-        var h = (sim.vTakeoff * 0.85) * airT - 0.5 * G * airT * airT;
+        // BUG FIX (v6 audit): drive height directly from sim.hAir with
+        // a normalized parametric arc instead of hardcoded G + 0.85.
+        // The previous formula `h = (vTakeoff * 0.85) * t - 0.5 * G * t²`
+        // ignored opts.gravity and opts.surfaceId, which meant Moonshot
+        // Kickflip and Rough-surface scenarios animated at Earth-gravity
+        // / standard-efficiency even though the math underneath used the
+        // right values. Now the visual peak always matches sim.hAir at
+        // p=0.5 regardless of gravity / surface / vehicle.
+        var p = sim.airTime > 0 ? Math.min(1, airT / sim.airTime) : 0;
+        var h = sim.hAir * 4 * p * (1 - p);  // parabola peaks at p = 0.5
         if (h < 0) h = 0;
         state.skX = rightLipX + 6;
         state.skY = lipY - h * pxPerM;
@@ -1094,6 +1102,16 @@ window.StemLab = window.StemLab || {
         var sim = d.lastSim;
         if (!sim) return;
         if (d.running) return;
+        // BUG FIX (v6 audit): if the last attempt was halfpipe and the
+        // user has switched to gap-jump (or vice-versa), replaying
+        // would draw the wrong scene on top of the current preview.
+        // Auto-switch modes on replay so the student sees what they
+        // expect — and announce the switch to screen readers.
+        var simMode = sim.trick ? 'halfpipe' : 'gap';
+        if (simMode !== d.mode) {
+          upd({ mode: simMode });
+          skAnnounce('Switching back to ' + (simMode === 'halfpipe' ? 'halfpipe' : 'gap jump') + ' for the replay.');
+        }
         upd({ running: true });
         if (cancelAnimRef.current) cancelAnimRef.current();
         var animator = (sim.trick) ? animateHalfpipe : animateGapJump;
@@ -1340,13 +1358,13 @@ window.StemLab = window.StemLab || {
                 'aria-label': 'Print this scenario as a student activity sheet',
                 'data-sk-focusable': 'true',
                 title: 'Print classroom-friendly activity sheet with the questions',
-                style: { background: 'rgba(167,139,250,0.18)', border: '1px solid rgba(167,139,250,0.45)', color: '#fef3c7', borderRadius: 6, padding: '2px 8px', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+                style: { background: 'rgba(167,139,250,0.18)', border: '1px solid rgba(167,139,250,0.45)', color: '#fef3c7', borderRadius: 6, padding: '6px 10px', fontSize: 11, fontWeight: 700, cursor: 'pointer', minHeight: 28 }
               }, '🖨️ Print'),
               h('button', {
                 onClick: function() { upd('activeScenarioId', null); skAnnounce('Lesson dismissed.'); },
                 'aria-label': 'Dismiss lesson card',
                 'data-sk-focusable': 'true',
-                style: { background: 'transparent', border: '1px solid rgba(254,243,199,0.30)', color: '#fef3c7', borderRadius: 6, padding: '2px 8px', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+                style: { background: 'transparent', border: '1px solid rgba(254,243,199,0.30)', color: '#fef3c7', borderRadius: 6, padding: '6px 10px', fontSize: 11, fontWeight: 700, cursor: 'pointer', minHeight: 28 }
               }, '✕ Dismiss')
             ),
             h('p', { style: { margin: '0 0 8px', fontSize: 12, color: '#fef3c7', lineHeight: 1.55 } }, sc.teach),
@@ -1363,9 +1381,22 @@ window.StemLab = window.StemLab || {
           h('canvas', {
             ref: canvasRef,
             width: 720, height: 320,
-            'aria-label': d.mode === 'halfpipe'
-              ? 'Halfpipe simulation. Choose pumps and trick, then drop in.'
-              : 'Gap jump simulation. Adjust speed and angle to clear the gap.',
+            // WCAG 1.1.1 — aria-label rolls up the canvas's current
+            // environmental state so screen-reader users know what the
+            // simulation is configured to show without watching it.
+            'aria-label': (function() {
+              var veh = getVehicle(d.vehicle).label;
+              if (d.mode === 'halfpipe') {
+                var sf = getSurface(d.surfaceId).label;
+                return 'Halfpipe simulation. ' + veh + ' on ' + sf + ' surface. ' +
+                  d.pumps + ' pump' + (d.pumps === 1 ? '' : 's') + ', ' + getTrick(d.trickId).label + '. ' +
+                  (d.gravity && d.gravity !== 9.81 ? 'Gravity ' + d.gravity.toFixed(2) + ' meters per second squared.' : '');
+              }
+              var w = getWind(d.windId);
+              return 'Gap jump simulation. ' + veh + ', ' + d.speedMph + ' miles per hour at ' + d.angleDeg + ' degrees, ' +
+                d.gapFt + ' foot gap. Wind: ' + w.label + '.' +
+                (d.gravity && d.gravity !== 9.81 ? ' Gravity ' + d.gravity.toFixed(2) + ' meters per second squared.' : '');
+            })(),
             style: { width: '100%', height: 'auto', display: 'block', borderRadius: 8 }
           })
         ),
@@ -1472,14 +1503,20 @@ window.StemLab = window.StemLab || {
           onClick: d.mode === 'halfpipe' ? runHalfpipe : runGapJump,
           disabled: d.running,
           'aria-label': d.mode === 'halfpipe' ? 'Drop in and attempt the trick' : 'Send it across the gap',
+          'aria-busy': d.running,
           'data-sk-focusable': 'true',
           style: {
             width: '100%', padding: '12px 20px', marginBottom: 12,
-            background: d.running ? '#475569' : 'linear-gradient(135deg, #b45309, #7c2d12)',
-            color: '#fef3c7', border: '2px solid #78350f', borderRadius: 12,
+            // WCAG 1.4.3 — bump disabled background from slate-600 to
+            // slate-500 + darker text so the disabled label still
+            // meets AA contrast on the dimmer background.
+            background: d.running ? '#64748b' : 'linear-gradient(135deg, #b45309, #7c2d12)',
+            color: d.running ? '#0f172a' : '#fef3c7',
+            border: '2px solid ' + (d.running ? '#475569' : '#78350f'),
+            borderRadius: 12,
             fontSize: 16, fontWeight: 800, cursor: d.running ? 'wait' : 'pointer',
             boxShadow: d.running ? 'none' : '0 4px 15px rgba(120,53,15,0.4), inset 0 1px 0 rgba(255,235,170,0.3)',
-            letterSpacing: '0.04em'
+            letterSpacing: '0.04em', opacity: d.running ? 0.85 : 1
           }
         }, d.running ? '⏳ Sending it...' : (d.mode === 'halfpipe' ? '🛹 Drop In!' : '🦘 Send It!')),
         // Last-result analysis panel — pedagogically valuable, shows
@@ -1500,11 +1537,12 @@ window.StemLab = window.StemLab || {
                   'aria-label': 'Replay last attempt at ' + Math.round(opt.mul * 100) + ' percent speed',
                   'data-sk-focusable': 'true',
                   style: {
-                    padding: '3px 9px', fontSize: 10, fontWeight: 700,
+                    padding: '6px 11px', fontSize: 11, fontWeight: 700,
                     background: d.running ? '#475569' : 'rgba(167,139,250,0.18)',
-                    color: '#fef3c7',
+                    color: d.running ? '#94a3b8' : '#fef3c7',
                     border: '1px solid rgba(167,139,250,0.45)',
-                    borderRadius: 6, cursor: d.running ? 'not-allowed' : 'pointer'
+                    borderRadius: 6, cursor: d.running ? 'not-allowed' : 'pointer',
+                    minHeight: 28, opacity: d.running ? 0.6 : 1
                   }
                 }, opt.label);
               })
@@ -1541,8 +1579,10 @@ window.StemLab = window.StemLab || {
         },
           h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 8, flexWrap: 'wrap' } },
             h('div', { style: { fontSize: 11, fontWeight: 800, color: '#c4b5fd', letterSpacing: '0.06em', textTransform: 'uppercase' } }, '🎙️ AI Coach'),
-            // Persona picker
-            h('div', { role: 'radiogroup', 'aria-label': 'Coach voice', style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
+            // Persona picker — hidden when no AI backend is wired,
+            // since persona choice has no effect without callGemini.
+            // Touch targets bumped to ≥28px (WCAG 2.5.5 AA).
+            callGemini && h('div', { role: 'radiogroup', 'aria-label': 'Coach voice', style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
               COACH_PERSONAS.map(function(p) {
                 var sel = (d.coachPersona || 'analyst') === p.id;
                 return h('button', {
@@ -1553,11 +1593,12 @@ window.StemLab = window.StemLab || {
                   'data-sk-focusable': 'true',
                   title: p.label + ' — ' + p.prepend.split('.')[0],
                   style: {
-                    padding: '3px 8px', borderRadius: 999, cursor: 'pointer',
+                    padding: '6px 11px', borderRadius: 999, cursor: 'pointer',
                     background: sel ? 'rgba(167,139,250,0.25)' : 'rgba(254,243,199,0.06)',
                     color: sel ? '#fff' : '#c4b5fd',
                     border: '1px solid ' + (sel ? '#a78bfa' : 'rgba(167,139,250,0.30)'),
-                    fontSize: 10, fontWeight: 700
+                    fontSize: 11, fontWeight: 700,
+                    minHeight: 28
                   }
                 }, p.icon + ' ' + p.label);
               })

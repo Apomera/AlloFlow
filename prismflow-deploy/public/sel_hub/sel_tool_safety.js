@@ -124,7 +124,10 @@ window.SelHub = window.SelHub || {
   var CRISIS_RESOURCES = [
     { name: '988 Suicide & Crisis Lifeline', contact: 'Call or text 988', desc: 'Free, confidential, 24/7 support', icon: '\uD83D\uDCDE' },
     { name: 'Crisis Text Line', contact: 'Text HOME to 741741', desc: 'Free crisis counseling via text', icon: '\uD83D\uDCF1' },
-    { name: 'Childhelp National Child Abuse Hotline', contact: '1-800-422-4453', desc: 'Professional crisis counselors 24/7', icon: '\u2764\uFE0F' }
+    { name: 'Childhelp National Child Abuse Hotline', contact: '1-800-422-4453', desc: 'Professional crisis counselors 24/7', icon: '\u2764\uFE0F' },
+    { name: 'NAMI HelpLine', contact: '1-800-950-NAMI (6264)', desc: 'Mental health info, support, referrals. Mon–Fri 10am–10pm ET.', icon: '\uD83E\uDDE0' },
+    { name: 'SAMHSA National Helpline', contact: '1-800-662-HELP (4357)', desc: 'Treatment referrals, mental health + substance use. Free, confidential, 24/7.', icon: '\uD83D\uDC9A' },
+    { name: 'Trans Lifeline', contact: '1-877-565-8860', desc: 'Peer support by and for trans people. No active rescue policy.', icon: '\uD83C\uDF08' }
   ];
 
   // ══════════════════════════════════════════════════════════════
