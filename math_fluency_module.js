@@ -1698,7 +1698,14 @@
       var ctx = cv.getContext('2d');
       var W = MAZE_COLS * CELL_SIZE;
       var H = MAZE_ROWS * CELL_SIZE;
-      cv.width = W; cv.height = H;
+      // High-DPI scaling — internal resolution is bumped so the canvas
+      // stays crisp when CSS-stretched into the wider container. Higher
+      // multiplier in fullscreen since the canvas displays larger.
+      // Setting cv.width/height resets ctx state per spec, so apply the
+      // scale via setTransform BEFORE any save/translate calls below.
+      var DRAW_SCALE = isFullscreen ? 3 : 2;
+      cv.width = W * DRAW_SCALE; cv.height = H * DRAW_SCALE;
+      ctx.setTransform(DRAW_SCALE, 0, 0, DRAW_SCALE, 0, 0);
       var visited = visitedCellsRef.current || { '0,0': true };
       var pulse = Math.sin(minimapTickRef.current * 0.12) * 0.5 + 0.5; // 0..1
       // Wrong-answer screen shake — shakeRef is set to 1 in submitAnswer's
@@ -2473,6 +2480,49 @@
       var lookX = pr.c * 2 + 1, lookZ = pr.r * 2 + 1 + 2; // default: look forward (+z)
       eng.camera.lookAt(lookX, 1.2, lookZ);
     }, [playerPos]);
+
+    // Native browser Fullscreen API — sync our isFullscreen state with
+    // document.fullscreenElement so the OS chrome hides too. Best-effort:
+    // failures (iframe without allowfullscreen, user permission denial)
+    // are swallowed since the in-page wrapper still covers the viewport.
+    // Also auto-exits when mode leaves 'playing' so the results screen
+    // isn't trapped in a small box on a black native-fullscreen page.
+    useEffect(function() {
+      var shouldBeFs = isFullscreen && mode === 'playing';
+      try {
+        if (shouldBeFs && !document.fullscreenElement && !document.webkitFullscreenElement) {
+          var docEl = document.documentElement;
+          var req = docEl.requestFullscreen || docEl.webkitRequestFullscreen || docEl.msRequestFullscreen;
+          if (req) {
+            var p = req.call(docEl);
+            if (p && p.catch) p.catch(function() {});
+          }
+        } else if (!shouldBeFs && (document.fullscreenElement || document.webkitFullscreenElement)) {
+          var ex = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
+          if (ex) {
+            var px = ex.call(document);
+            if (px && px.catch) px.catch(function() {});
+          }
+        }
+      } catch (e) {}
+    }, [isFullscreen, mode]);
+
+    // Listen for native fullscreenchange (Esc key, browser button) so our
+    // state syncs back when the user exits via the browser instead of the
+    // in-app toggle.
+    useEffect(function() {
+      function onFsChange() {
+        if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+          setFullscreen(false);
+        }
+      }
+      document.addEventListener('fullscreenchange', onFsChange);
+      document.addEventListener('webkitfullscreenchange', onFsChange);
+      return function() {
+        document.removeEventListener('fullscreenchange', onFsChange);
+        document.removeEventListener('webkitfullscreenchange', onFsChange);
+      };
+    }, []);
 
     // ── Render ──
     if (mode === 'setup') {
