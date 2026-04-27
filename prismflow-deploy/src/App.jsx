@@ -5028,6 +5028,25 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       document.head.appendChild(s);
     };
+    // ── Error Reporter — loads FIRST so it can capture errors from every other
+    //    module's load + runtime. Surfaces a hidden-by-default red badge that
+    //    only appears after an error is captured, then opens a panel with a
+    //    one-click "Send to Aaron" button that pre-fills the bug-report form.
+    //    Same CDN + raw-fallback pattern as the AIBackend loader below.
+    (function() {
+      const url = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@50c0e33/error_reporter_module.js';
+      const s = document.createElement('script');
+      s.src = url;
+      s.crossOrigin = 'anonymous';
+      s.onload = () => { console.log('[CDN] ErrorReporter loaded'); };
+      s.onerror = () => {
+        console.warn('[CDN] ErrorReporter CDN failed, trying raw fallback');
+        const fb = document.createElement('script');
+        fb.src = 'https://raw.githubusercontent.com/Apomera/AlloFlow/main/error_reporter_module.js?v=' + Date.now();
+        document.head.appendChild(fb);
+      };
+      document.head.appendChild(s);
+    })();
     (function() {
       const url = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@97e87aa/ai_backend_module.js';
       const s = document.createElement('script');
@@ -5043,57 +5062,57 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       document.head.appendChild(s);
     })();
-    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@66d5a7c/allo_data_module.js');
-    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@66d5a7c/large_file_module.js');
-    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@66d5a7c/key_concept_map_module.js');
-    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@66d5a7c/utils_pure_module.js');
-    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@66d5a7c/gemini_api_module.js');
-    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@66d5a7c/tts_module.js');
-    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@66d5a7c/personas_module.js');
-    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@66d5a7c/export_module.js');
-    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@66d5a7c/misc_components_module.js');
-    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@66d5a7c/remediation_audio_module.js');
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@66d5a7c/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@66d5a7c/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@66d5a7c/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@66d5a7c/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@66d5a7c/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@66d5a7c/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@66d5a7c/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@66d5a7c/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@66d5a7c/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@66d5a7c/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@66d5a7c/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@66d5a7c/story_stage_module.js');
+    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f2ad864/allo_data_module.js');
+    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f2ad864/large_file_module.js');
+    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f2ad864/key_concept_map_module.js');
+    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f2ad864/utils_pure_module.js');
+    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f2ad864/gemini_api_module.js');
+    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f2ad864/tts_module.js');
+    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f2ad864/personas_module.js');
+    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f2ad864/export_module.js');
+    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f2ad864/misc_components_module.js');
+    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f2ad864/remediation_audio_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f2ad864/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f2ad864/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f2ad864/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f2ad864/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f2ad864/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f2ad864/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f2ad864/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f2ad864/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f2ad864/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f2ad864/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f2ad864/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f2ad864/story_stage_module.js');
     loadModule('PoetTree', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5e3ae8e/poet_tree_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@66d5a7c/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@66d5a7c/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@66d5a7c/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@66d5a7c/student_interaction_module.js');
-    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@66d5a7c/math_fluency_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@66d5a7c/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@66d5a7c/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@66d5a7c/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@66d5a7c/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@66d5a7c/content_engine_module.js');
-    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@66d5a7c/timeline_revision_module.js');
-    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@66d5a7c/prompts_library_module.js');
-    loadModule('TextPipelineHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@66d5a7c/text_pipeline_helpers_module.js');
-    loadModule('AdaptiveControllerModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@66d5a7c/adaptive_controller_module.js');
-    loadModule('UdlChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@66d5a7c/udl_chat_module.js');
-    loadModule('AdventureHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@66d5a7c/adventure_handlers_module.js');
-    loadModule('GlossaryHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@66d5a7c/glossary_helpers_module.js');
-    loadModule('ViewRenderersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@66d5a7c/view_renderers_module.js');
-    loadModule('AudioHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@66d5a7c/audio_helpers_module.js');
-    loadModule('GenerationHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@66d5a7c/generation_helpers_module.js');
-    loadModule('MiscHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@66d5a7c/misc_handlers_module.js');
-    loadModule('PureHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@66d5a7c/pure_helpers_module.js');
-    loadModule('MathHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@66d5a7c/math_helpers_module.js');
-    loadModule('CmapHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@66d5a7c/concept_map_handlers_module.js');
-    loadModule('GenDispatcherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@66d5a7c/generate_dispatcher_module.js');
-    loadModule('PhaseKHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@66d5a7c/phase_k_helpers_module.js');
-    loadModule('AdventureSessionHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@66d5a7c/adventure_session_handlers_module.js');
-    loadModule('TextUtilityHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@66d5a7c/text_utility_helpers_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f2ad864/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f2ad864/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f2ad864/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f2ad864/student_interaction_module.js');
+    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f2ad864/math_fluency_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f2ad864/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f2ad864/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f2ad864/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f2ad864/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f2ad864/content_engine_module.js');
+    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f2ad864/timeline_revision_module.js');
+    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f2ad864/prompts_library_module.js');
+    loadModule('TextPipelineHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f2ad864/text_pipeline_helpers_module.js');
+    loadModule('AdaptiveControllerModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f2ad864/adaptive_controller_module.js');
+    loadModule('UdlChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f2ad864/udl_chat_module.js');
+    loadModule('AdventureHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f2ad864/adventure_handlers_module.js');
+    loadModule('GlossaryHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f2ad864/glossary_helpers_module.js');
+    loadModule('ViewRenderersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f2ad864/view_renderers_module.js');
+    loadModule('AudioHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f2ad864/audio_helpers_module.js');
+    loadModule('GenerationHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f2ad864/generation_helpers_module.js');
+    loadModule('MiscHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f2ad864/misc_handlers_module.js');
+    loadModule('PureHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f2ad864/pure_helpers_module.js');
+    loadModule('MathHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f2ad864/math_helpers_module.js');
+    loadModule('CmapHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f2ad864/concept_map_handlers_module.js');
+    loadModule('GenDispatcherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f2ad864/generate_dispatcher_module.js');
+    loadModule('PhaseKHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f2ad864/phase_k_helpers_module.js');
+    loadModule('AdventureSessionHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f2ad864/adventure_session_handlers_module.js');
+    loadModule('TextUtilityHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f2ad864/text_utility_helpers_module.js');
     loadModule('PhaseNHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/phase_n_misc_helpers_module.js');
     loadModule('PhaseOHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/phase_o_misc_handlers_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
@@ -5106,7 +5125,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       document.head.appendChild(s);
     })();
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@66d5a7c/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f2ad864/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -14778,6 +14797,7 @@ Return ONLY valid JSON:
   const [isAgentRunning, setIsAgentRunning] = useState(false);
   const [agentLogFullView, setAgentLogFullView] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
+  const [isPushingResource, setIsPushingResource] = useState({});
   const handleCreateGroup = async (groupName = null) => {
       const nameToUse = groupName || newGroupName.trim();
       if (!nameToUse) return;
@@ -14805,14 +14825,21 @@ Return ONLY valid JSON:
       }
   };
   const handleSetGroupResource = async (groupId, resourceId) => {
+      setIsPushingResource(prev => ({...prev, [groupId]: 'pushing'}));
       const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
       try {
         await updateDoc(sessionRef, {
             [`groups.${groupId}.resourceId`]: resourceId
         });
+        setIsPushingResource(prev => ({...prev, [groupId]: 'success'}));
         addToast(t('toasts.resource_assigned'), "success");
+        setTimeout(() => setIsPushingResource(prev => {
+          const next = {...prev}; delete next[groupId]; return next;
+        }), 1500);
       } catch (error) {
           warnLog("Error setting resource:", error);
+          setIsPushingResource(prev => { const next = {...prev}; delete next[groupId]; return next; });
+          addToast(t('toasts.resource_assign_failed') || 'Could not push resource — try again.', 'error');
       }
   };
   const handleDeleteGroup = async (groupId) => {
@@ -22025,11 +22052,24 @@ ${t('export.readme_json_desc')}`;
                                             <span className="font-bold text-slate-700">{group.name}</span>
                                             <button onClick={() => handleDeleteGroup(gid)} className="text-red-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition-colors" aria-label={t('common.delete')}><X size={16}/></button>
                                         </div>
-                                        <label className="text-[11px] font-bold text-slate-600 uppercase mb-1 block">{t('groups.assign_resource_label')}</label>
+                                        <label className="text-[11px] font-bold text-slate-600 uppercase mb-1 block flex items-center gap-2">
+                                            {t('groups.assign_resource_label')}
+                                            {isPushingResource[gid] === 'pushing' && (
+                                                <span className="flex items-center gap-1 text-[10px] text-purple-600 font-bold normal-case">
+                                                    <RefreshCw size={11} className="animate-spin" /> {t('groups.pushing') || 'Pushing…'}
+                                                </span>
+                                            )}
+                                            {isPushingResource[gid] === 'success' && (
+                                                <span className="flex items-center gap-1 text-[10px] text-emerald-600 font-bold normal-case">
+                                                    <CheckCircle2 size={11} /> {t('groups.pushed') || 'Sent'}
+                                                </span>
+                                            )}
+                                        </label>
                                         <select aria-label={t('common.selection')}
                                             value={group.resourceId || ""}
                                             onChange={(e) => handleSetGroupResource(gid, e.target.value || null)}
-                                            className="w-full text-sm p-2 rounded-lg border border-slate-200 bg-slate-50 text-slate-700 focus:ring-2 focus:ring-purple-300 outline-none"
+                                            disabled={isPushingResource[gid] === 'pushing'}
+                                            className="w-full text-sm p-2 rounded-lg border border-slate-200 bg-slate-50 text-slate-700 focus:ring-2 focus:ring-purple-300 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
                                             <option value="">{t('groups.assign_resource_placeholder')}</option>
                                             {sessionData.resources && sessionData.resources.map(res => {
@@ -33164,6 +33204,7 @@ Return only the corrected version of this exact text:`;
                                 onCreateGroup={handleCreateGroup}
                                 onAssignStudent={handleAssignStudent}
                                 onSetGroupResource={handleSetGroupResource}
+                                isPushingResource={isPushingResource}
                                 onSetGroupLanguage={handleSetGroupLanguage}
                                 onSetGroupProfile={handleSetGroupProfile}
                                 onDeleteGroup={handleDeleteGroup}
@@ -43680,16 +43721,41 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   const _pct = (_integ && typeof _integ.coverage === 'number')
                                     ? _integ.coverage
                                     : (typeof pdfFixResult.integrityCoverage === 'number' ? pdfFixResult.integrityCoverage : null);
+                                  // Hoisted above the _verifying branch so the diff button stays
+                                  // visible while integrity verification is running. Previously the
+                                  // verifying banner replaced the entire banner row, hiding the diff
+                                  // button until verification finished — which made the diff button
+                                  // appear broken after the 1st remediation pass (verification was
+                                  // running in the background) and only "work" after the 2nd pass
+                                  // (which doesn't auto-verify, so the banner never gets hidden).
+                                  const _hasDiffInputs = !!(pdfFixResult.sourceText && pdfFixResult.finalText);
                                   if (_verifying) {
                                     return (
-                                      <div className="mb-2 bg-sky-50 border border-sky-200 rounded-xl px-3 py-2 text-xs text-sky-900 flex items-center gap-2">
+                                      <div className="mb-2 bg-sky-50 border border-sky-200 rounded-xl px-3 py-2 text-xs text-sky-900 flex items-center gap-2 flex-wrap">
                                         <RefreshCw size={14} className="animate-spin text-sky-600 shrink-0" />
                                         <span className="font-bold">Verifying content integrity…</span>
                                         <span className="text-sky-700 text-[11px]">pdf.js source comparison in progress — banner will update when recovery finishes.</span>
+                                        {_hasDiffInputs && (
+                                          <button
+                                            onClick={async () => {
+                                              console.debug('[Diff] Button clicked (during verification) — diffLibReady=' + diffLibReady + ', window.Diff=' + !!window.Diff);
+                                              setDiffViewOpen(true);
+                                              const ok = await _ensureDiffLib();
+                                              if (!ok) {
+                                                console.warn('[Diff] _ensureDiffLib returned false — script load failed');
+                                                if (typeof addToast === 'function') addToast('Diff engine failed to load (network blocked?). Check your connection and try again.', 'error');
+                                              }
+                                            }}
+                                            className="ml-auto text-[10px] px-2 py-1 bg-white border border-sky-300 text-sky-700 rounded-md hover:bg-sky-50 font-bold inline-flex items-center gap-1 shrink-0"
+                                            aria-label="Open diff view (verification still running in background)"
+                                            title="Open the word-level diff view. The integrity verification is still running in the background, but the diff itself is ready now."
+                                          >
+                                            📝 Diff view
+                                          </button>
+                                        )}
                                       </div>
                                     );
                                   }
-                                  const _hasDiffInputs = !!(pdfFixResult.sourceText && pdfFixResult.finalText);
                                   if (_pct == null) {
                                     if (!_hasDiffInputs) return null;
                                     return (
@@ -47966,6 +48032,37 @@ Return ONLY the plain language summary in ${lang}.`, false);
                             />
                         </label>
                     </div>
+                </div>
+                {/* ── Report a Problem (always-available entry point) ──
+                    Opens the Error Reporter panel so users can review captured
+                    errors and one-click submit a pre-filled bug report — or
+                    file feedback even when nothing has crashed. Calls openPanel()
+                    directly (NOT openManualReport, which would inject a synthetic
+                    error entry into the buffer). The reporter loads at the top of
+                    the boot sequence so window.AlloModules.ErrorReporter is
+                    available by the time this dialog can render. */}
+                <div className="pt-4 mt-2 border-t border-slate-100">
+                    <button
+                        type="button"
+                        onClick={() => {
+                            try {
+                                if (window.AlloModules && window.AlloModules.ErrorReporter && window.AlloModules.ErrorReporter.openPanel) {
+                                    window.AlloModules.ErrorReporter.openPanel();
+                                    handleSetIsProjectSettingsOpenToFalse();
+                                } else {
+                                    // Fallback: open the bare form. ErrorReporter not loaded yet.
+                                    window.open('https://docs.google.com/forms/d/e/1FAIpQLSd9dJexeOjd6fvFio9V0Jd45FDpuL7cSQNnm-BLmqyTwrPrhg/viewform', '_blank', 'noopener,noreferrer');
+                                }
+                            } catch (e) {
+                                console.warn('[Settings] Report-a-problem button failed:', e);
+                            }
+                        }}
+                        className="w-full flex items-center justify-center gap-2 text-xs text-slate-600 hover:text-rose-700 hover:bg-rose-50 px-3 py-2 rounded-lg transition-colors font-medium"
+                        aria-label="Report a problem or send feedback to Aaron"
+                    >
+                        <CircleHelp size={14} aria-hidden="true" />
+                        Report a problem or send feedback
+                    </button>
                 </div>
                 <div className="pt-2 flex justify-end">
                     <button
