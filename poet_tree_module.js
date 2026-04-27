@@ -468,6 +468,46 @@
       ]
     },
     {
+      id: 'concrete',
+      name: 'Concrete Poem',
+      icon: '🌳',
+      tagline: 'Arrange your words on the page so the shape is part of the meaning.',
+      structure: 'A concrete (or visual) poem is a poem where the arrangement of the text on the page IS the poem — line breaks, indentation, and white space all carry meaning. The shape might be literal (a poem about a tree, in the shape of a tree) or abstract (jagged lines for chaos, centered lines for stillness). Use the regular text editor below; type spaces and line breaks to position your words. Try a monospaced shape like a triangle, a wave, a falling raindrop, or your own.',
+      lineCount: null,
+      syllablesPerLine: null,
+      rhymeScheme: null,
+      example: '       water\n      falling\n     down a\n    cliff to\n   become a\n  river that\n flows toward\nthe quiet sea',
+      tips: [
+        'Read your poem out loud first, then ask: what shape does this feeling have?',
+        'White space is silence — use it where you want the reader to pause.',
+        'You don\'t have to draw a literal picture. A jagged staircase of lines can carry as much weight as a perfect heart shape.',
+        'Test with monospaced font (toggle Reading Mode off) — it makes alignment honest.'
+      ],
+      moreExamples: [
+        {
+          title: 'Easter Wings',
+          author: 'George Herbert',
+          year: 1633,
+          text: 'Lord, who createdst man in wealth and store,\n  Though foolishly he lost the same,\n     Decaying more and more,\n        Till he became\n          Most poore:\n          With thee\n        O let me rise\n     As larks, harmoniously,\n  And sing this day thy victories:\nThen shall the fall further the flight in me.',
+          note: 'Printed sideways in 1633, this poem\'s lines literally narrow to "Most poore" then expand back out — the shape mirrors the spiritual fall and rise the words describe. One of the earliest English concrete poems.'
+        },
+        {
+          title: 'l(a (the falling-leaf poem)',
+          author: 'e.e. cummings',
+          year: 1958,
+          text: 'l(a\n\nle\naf\nfa\n\nll\n\ns)\none\nl\n\niness',
+          note: 'Cummings smashes "loneliness" through the parenthetical "a leaf falls" — a single leaf descending. Read down: l-(a-leaf-falls)-l-iness. The shape IS the meaning.'
+        },
+        {
+          title: 'Calligramme: La Cravate (sketch idea)',
+          author: 'Guillaume Apollinaire',
+          year: 1918,
+          text: 'a poem typeset in the shape of a necktie',
+          note: 'Apollinaire\'s Calligrammes typeset whole poems in the shape of objects — a fountain, a heart, a rainstorm. The full visual originals belong in a museum but the principle (text arrangement = image) is yours to borrow.'
+        }
+      ]
+    },
+    {
       id: 'erasure',
       name: 'Erasure Poem',
       icon: '⬛',
