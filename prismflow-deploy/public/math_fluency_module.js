@@ -1145,6 +1145,10 @@
     // dim overlay covers the maze. Useful for interruptions.
     var pausedState = useState(false);
     var paused = pausedState[0], setPaused = pausedState[1];
+    // Keyboard help overlay — toggled by ? key. Local state, doesn't
+    // persist. Shows all the keyboard shortcuts in a parchment card.
+    var helpOpenState = useState(false);
+    var helpOpen = helpOpenState[0], setHelpOpen = helpOpenState[1];
     // Mirror paused into a ref so the timer interval (closed over the
     // initial state value) reads the current pause status without
     // needing to be torn down + recreated on every toggle.
@@ -1343,7 +1347,28 @@
             : ptxt.indexOf('+') >= 0 ? 'add'
             : (ptxt.indexOf('\u2212') >= 0 || ptxt.indexOf('-') >= 0) ? 'sub'
             : null;
-          if (opK) _mfBumpOpCount(opK);
+          if (opK) {
+            // Detect tier crossing — read pre-bump value, compute the
+            // tier of (n) and (n+1); if they differ, fire celebration.
+            try {
+              var preCounts = JSON.parse(localStorage.getItem('fluency_maze_op_counts') || '{}');
+              var pre = preCounts[opK] || 0;
+              var preTier = _mfMasteryTier(pre);
+              var postTier = _mfMasteryTier(pre + 1);
+              if (postTier && (!preTier || postTier.tier !== preTier.tier)) {
+                var opNice = { add: 'Addition', sub: 'Subtraction', mul: 'Multiplication', div: 'Division' }[opK] || opK;
+                if (addToast) addToast(postTier.emoji + ' ' + postTier.label + ' ' + opNice + ' Mastery unlocked!', 'success');
+                _mfAnnounce(postTier.label + ' ' + opNice + ' mastery earned. ' + (pre + 1) + ' gates.');
+                // Triple-tone fanfare layered on top of the existing
+                // streak chime — distinct enough to register as a
+                // separate event.
+                playTone(660, 0.08, 'sine', 0.05);
+                setTimeout(function() { playTone(990, 0.08, 'sine', 0.05); }, 90);
+                setTimeout(function() { playTone(1320, 0.12, 'sine', 0.05); }, 180);
+              }
+            } catch (e) {}
+            _mfBumpOpCount(opK);
+          }
         })();
         setFeedback('correct');
         _mfAnnounce('Gate opens. ' + currentProblem.problem.text + ' equals ' + currentProblem.problem.answer + '.');
@@ -1589,6 +1614,7 @@
           return;
         }
         if (e.key === 'p' || e.key === 'P') { setPaused(function(v) { return !v; }); return; }
+        if (e.key === '?' || (e.shiftKey && e.key === '/')) { setHelpOpen(function(v) { return !v; }); return; }
         if (paused) return;
         if (e.key === 'ArrowUp' || e.key === 'w') tryMove('up');
         if (e.key === 'ArrowDown' || e.key === 's') tryMove('down');
@@ -1787,6 +1813,22 @@
       var pcx = (playerPos.c + 0.5) * CELL_SIZE;
       var pcy = (playerPos.r + 0.5) * CELL_SIZE;
       ctx.save();
+      // Golden aura — appears once the key is collected. Slightly larger
+      // than the lantern, pulses on a different phase so the two layers
+      // create a visible double-glow that rewards key pickup for the
+      // remainder of the run.
+      if (keyCollected) {
+        var auraRadius = CELL_SIZE * (2.4 + pulse * 0.4);
+        var auraPulse = 0.6 + 0.4 * Math.sin(minimapTickRef.current * 0.18 + 1.5);
+        var auraGrad = ctx.createRadialGradient(pcx, pcy, 6, pcx, pcy, auraRadius);
+        auraGrad.addColorStop(0, 'rgba(253,224,71,' + (0.55 * auraPulse) + ')');
+        auraGrad.addColorStop(0.4, 'rgba(251,191,36,' + (0.30 * auraPulse) + ')');
+        auraGrad.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.fillStyle = auraGrad;
+        ctx.fillRect(pcx - auraRadius, pcy - auraRadius, auraRadius * 2, auraRadius * 2);
+        ctx.globalCompositeOperation = 'source-over';
+      }
       var lanternRadius = CELL_SIZE * (1.7 + pulse * 0.25);
       var lanternGrad = ctx.createRadialGradient(pcx, pcy, 4, pcx, pcy, lanternRadius);
       lanternGrad.addColorStop(0, 'rgba(255,235,170,0.55)');
@@ -2525,6 +2567,39 @@
         h('div', { style: { fontSize: '54px', marginBottom: '4px', filter: 'drop-shadow(0 3px 6px rgba(146,64,14,0.4))' } }, won ? '\uD83C\uDFC6' : '\uD83D\uDC7E'),
         h('h2', { style: { fontSize: '24px', fontWeight: 900, color: won ? '#78350f' : '#7f1d1d', marginBottom: '12px', letterSpacing: '0.04em' } },
           won ? 'You Escaped the Maze!' : (gameOver ? 'A Shadow Caught You' : 'Game Over')),
+        // Lifetime-average comparison — visible for wins after at least
+        // one prior completed maze. Computes avg = totalSeconds /
+        // mazesCompleted (excluding this run, since the lifetime bump
+        // happens before render). Phrasing depends on direction.
+        won && (function() {
+          try {
+            var lt = JSON.parse(localStorage.getItem('fluency_maze_lifetime') || '{}');
+            var prior = (lt.mazesCompleted || 0) - 1;
+            if (prior < 1) return null;
+            var avg = Math.round(((lt.totalSeconds || 0) - elapsed) / prior);
+            if (avg <= 0) return null;
+            var diff = avg - elapsed;
+            var faster = diff > 0;
+            var msg = faster
+              ? 'Faster than your average by ' + diff + 's (avg: ' + avg + 's)'
+              : diff === 0
+                ? 'Right on your average pace (' + avg + 's)'
+                : (-diff) + 's slower than your average (avg: ' + avg + 's)';
+            return h('div', {
+              style: {
+                fontSize: '11px', fontWeight: 700,
+                color: faster ? '#15803d' : (diff === 0 ? '#92400e' : '#a16207'),
+                background: faster ? 'rgba(220,252,231,0.7)' : 'rgba(254,243,199,0.7)',
+                border: '1px solid ' + (faster ? '#86efac' : '#fcd34d'),
+                borderRadius: '999px',
+                padding: '4px 12px',
+                marginBottom: '12px',
+                display: 'inline-block'
+              },
+              'aria-label': msg
+            }, (faster ? '\u26A1 ' : '\u23F1 ') + msg);
+          } catch (e) { return null; }
+        })(),
         // Medal banner — only on wins that beat one of the three time thresholds.
         won && medalInfo && h('div', {
           style: {
@@ -2594,6 +2669,19 @@
         }, '\uD83D\uDD25 x' + streak),
         h('span', { style: { color: '#fde68a' } }, '\u23F1 ' + elapsed + 's'),
         chaseMode && h('span', { style: { color: '#f59e0b', fontWeight: 700 } }, '\uD83D\uDC7E CHASE!'),
+        // Help button — opens the keyboard-shortcut overlay (also bound
+        // to ?). Tucked first so the order reads Help → Pause → Hint.
+        h('button', {
+          onClick: function() { setHelpOpen(true); },
+          'aria-label': 'Keyboard shortcuts',
+          title: 'Keyboard shortcuts (? key)',
+          style: {
+            marginLeft: 'auto', padding: '4px 8px', fontSize: '11px', fontWeight: 700,
+            background: 'rgba(254,243,199,0.18)', color: '#fef3c7',
+            border: '1px solid rgba(254,243,199,0.35)', borderRadius: '999px',
+            cursor: 'pointer'
+          }
+        }, '?'),
         // Pause button — quick toggle, no score cost. Mirrors the P
         // keyboard shortcut so touch-only users can pause too.
         h('button', {
@@ -2602,7 +2690,7 @@
           'aria-pressed': paused,
           title: 'Pause / resume (P key)',
           style: {
-            marginLeft: 'auto', padding: '4px 10px', fontSize: '11px', fontWeight: 700,
+            padding: '4px 10px', fontSize: '11px', fontWeight: 700,
             background: paused ? '#fbbf24' : 'rgba(254,243,199,0.18)',
             color: paused ? '#7c2d12' : '#fef3c7',
             border: '1px solid ' + (paused ? '#fbbf24' : 'rgba(254,243,199,0.35)'),

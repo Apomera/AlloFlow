@@ -1611,6 +1611,121 @@ window.StemLab = window.StemLab || {
         tlAnnounce('Custom scenario removed.');
       }
 
+      // ── Trading Card export (engagement layer) ──
+      // Generate a Topps-style baseball card from the student\'s latest
+      // throw + their stats + earned badges. Prompts for a player name
+      // on first use; cached in toolData so subsequent exports just go.
+      // Alternative to the academic activity-sheet PDF — a printable
+      // shareable artifact a kid would actually pin to their wall.
+      function exportTradingCard() {
+        if (!d.lastResult) {
+          tlAnnounce('Throw something first, then export a trading card.');
+          if (addToast) addToast('Throw first — card needs a result');
+          return;
+        }
+        var name = d.playerName;
+        if (!name) {
+          name = (typeof window !== 'undefined' && typeof window.prompt === 'function')
+            ? window.prompt('What\'s your player name? (Saved for next time)', 'Lab Athlete')
+            : 'Lab Athlete';
+          if (!name) return;
+          name = String(name).trim().slice(0, 30);
+          if (!name) return;
+          // Persist for future exports
+          setLabToolData(function(prev) {
+            return Object.assign({}, prev, { throwlab: Object.assign({}, prev.throwlab, { playerName: name })});
+          });
+        }
+        var lr = d.lastResult;
+        var stats = d.drillStats || {};
+        var modeLbl = (MODES[d.mode] || {}).label || d.mode;
+        var modeIcon = (MODES[d.mode] || {}).icon || '🏆';
+        var presetLbl = isPitching ? (currentPitch && currentPitch.label) || 'pitch'
+                      : isFreeThrow ? (currentShot && currentShot.label) || 'shot'
+                      : isFreeKick ? (currentKick && currentKick.label) || 'kick'
+                      : isFieldGoal ? (currentGoal && currentGoal.label) || 'kick'
+                      : isBowling ? (currentBowl && currentBowl.label) || 'delivery'
+                      : isGolf ? (currentGolfClub && currentGolfClub.label) || 'club'
+                      : isVolleyball ? (currentVolley && currentVolley.label) || 'serve'
+                      : 'throw';
+        // Build a tiny inline SVG trajectory of the last throw
+        var samples = (lr.samples || []).slice(0, 60);
+        var maxZ = Math.max.apply(null, samples.map(function(s) { return s.z; })) || 1;
+        var maxY = Math.max(2, Math.max.apply(null, samples.map(function(s) { return s.y; })) || 1);
+        var pts = samples.map(function(s) {
+          var px = (s.z / maxZ) * 280;
+          var py = 120 - (s.y / maxY) * 110;
+          return px.toFixed(1) + ',' + py.toFixed(1);
+        }).join(' ');
+        // Compose stat line per sport
+        var statLine;
+        if (isPitching) statLine = 'Strikes: ' + (d.strikeCount || 0) + ' · Streak: ' + (stats.streakStrikes || 0) + ' · Pitch types used: ' + Object.keys(stats.strikeTypes || {}).length;
+        else if (isFreeThrow) statLine = 'Makes: ' + (d.shotMakeCount || 0) + ' · Hot streak: ' + (stats.hotStreak || 0) + ' · Different swish heights: ' + (stats.swishHeights || 0);
+        else if (isFreeKick) statLine = 'Goals: ' + (d.goalCount || 0) + ' · Kick types scored: ' + Object.keys(stats.goalKickTypes || {}).length;
+        else if (isFieldGoal) statLine = 'FGs made: ' + (d.fgMakeCount || 0) + ' · Distances cleared: ' + Object.keys(stats.fgMadeByDist || {}).length;
+        else if (isBowling) statLine = 'Wickets: ' + (d.wicketCount || 0) + ' · Delivery types used: ' + Object.keys(stats.bowlTypes || {}).length;
+        else if (isGolf) statLine = 'Greens hit: ' + (d.golfGreenCount || 0) + ' · Fairways hit: ' + (stats.golfFairwaysHit || 0);
+        else if (isVolleyball) statLine = 'Aces: ' + (d.volleyAceCount || 0) + ' · In-court serves: ' + (stats.volleyInCount || 0);
+        else statLine = 'Throws: ' + (d.throwCount || 0);
+        // Earned badges (top 5)
+        var earnedBadges = BADGES.filter(function(b) { return d.badgesEarned && d.badgesEarned[b.id]; }).slice(0, 5);
+        var badgesHtml = earnedBadges.length
+          ? earnedBadges.map(function(b) { return '<span class="badge">' + b.emoji + ' ' + b.label + '</span>'; }).join('')
+          : '<span class="badge-empty">No badges yet — keep throwing!</span>';
+        var cardHtml = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">'
+          + '<title>ThrowLab Trading Card — ' + name + '</title>'
+          + '<style>'
+          + '*{box-sizing:border-box} body{margin:30px;font-family:Georgia,serif;background:#0f172a;color:#1a1a1a;display:flex;justify-content:center}'
+          + '.card{width:380px;border:8px solid #fbbf24;border-radius:18px;background:linear-gradient(135deg,#fef3c7,#fde68a);padding:0;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,0.3)}'
+          + '.banner{background:linear-gradient(135deg,#1e293b,#334155);color:#fbbf24;padding:14px 20px;text-align:center}'
+          + '.banner .icon{font-size:32px;display:block;margin-bottom:4px}'
+          + '.banner .name{font-size:24px;font-weight:bold;margin:0;letter-spacing:1px}'
+          + '.banner .sport{font-size:11px;color:#cbd5e1;text-transform:uppercase;letter-spacing:2px;margin-top:4px}'
+          + '.body{padding:18px}'
+          + '.preset{background:#1e293b;color:#fbbf24;padding:6px 12px;border-radius:6px;display:inline-block;font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px}'
+          + '.svg-frame{background:#0f172a;border-radius:8px;padding:8px;margin-bottom:10px}'
+          + '.svg-frame svg{display:block}'
+          + '.params{font-family:ui-monospace,monospace;font-size:11px;color:#475569;margin-bottom:8px}'
+          + '.stat-line{font-size:12px;color:#1a1a1a;font-weight:bold;margin-bottom:10px;padding:8px;background:rgba(30,41,59,0.05);border-radius:6px;border-left:3px solid #fbbf24}'
+          + '.badges{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px}'
+          + '.badge{background:#1e293b;color:#fbbf24;padding:3px 8px;border-radius:999px;font-size:10px;font-weight:bold}'
+          + '.badge-empty{color:#94a3b8;font-style:italic;font-size:10px}'
+          + '.footer{text-align:center;font-size:9px;color:#666;border-top:1px dashed #94a3b8;padding-top:6px;margin-top:8px}'
+          + '@media print{body{background:white;margin:0}.card{box-shadow:none}}'
+          + '</style></head><body>'
+          + '<div class="card">'
+          + '  <div class="banner">'
+          + '    <span class="icon">' + modeIcon + '</span>'
+          + '    <div class="name">' + name + '</div>'
+          + '    <div class="sport">' + modeLbl + '</div>'
+          + '  </div>'
+          + '  <div class="body">'
+          + '    <div class="preset">' + presetLbl + ' — ' + (lr.location || 'result').toUpperCase() + '</div>'
+          + '    <div class="svg-frame"><svg width="100%" height="120" viewBox="0 0 280 120" xmlns="http://www.w3.org/2000/svg">'
+          + '      <line x1="0" y1="120" x2="280" y2="120" stroke="#475569" stroke-width="1"/>'
+          + '      <polyline points="' + pts + '" fill="none" stroke="#fbbf24" stroke-width="2.5"/>'
+          + '    </svg></div>'
+          + '    <div class="params">' + d.speedMph + ' mph · ' + d.spinRpm + ' rpm @ ' + d.spinAxisDeg + '° axis · launch ' + d.aimDegV.toFixed(1) + '°</div>'
+          + '    <div class="stat-line">' + statLine + '</div>'
+          + '    <div class="badges">' + badgesHtml + '</div>'
+          + '    <div class="footer">ThrowLab — Sports Physics Lab · AlloFlow · ' + new Date().toLocaleDateString() + '</div>'
+          + '  </div>'
+          + '</div>'
+          + '</body></html>';
+        try {
+          var win = window.open('', '_blank');
+          if (win) {
+            win.document.write(cardHtml);
+            win.document.close();
+            setTimeout(function() { try { win.print(); } catch(e) {} }, 400);
+          } else if (addToast) addToast('Pop-up blocked — allow pop-ups to print', 'error');
+        } catch(e) {
+          if (addToast) addToast('Card export failed', 'error');
+        }
+        tlAnnounce('Trading card exported for ' + name + '.');
+        if (addToast) addToast('📇 Trading card!');
+      }
+
       // Open a printable activity sheet listing every ThrowLab
       // scenario with its teach + 3 discussion questions, formatted
       // for in-class handout. Triggers window.print() so the teacher
@@ -3255,9 +3370,15 @@ window.StemLab = window.StemLab || {
         }
         var start = performance.now();
         var raf;
+        // Slow-mo extends the 0→1 walk from 1.0s to 3.5s when toggled.
+        // Same data, same trajectory — just three-and-a-half-times more
+        // dwell time so students can SEE the curl / drop / break unfold.
+        // Sports-broadcast aesthetic: the replay reveals what was too
+        // fast to perceive at full speed.
+        var dur = d.slowMoActive ? 3.5 : 1.0;
         function step() {
           var t = (performance.now() - start) / 1000;
-          var prog = Math.min(1, t / 1.0);
+          var prog = Math.min(1, t / dur);
           upd('replayT', prog);
           if (prog < 1) {
             raf = requestAnimationFrame(step);
@@ -3753,7 +3874,19 @@ window.StemLab = window.StemLab || {
                   border: '1px solid #fbbf24', background: 'rgba(251,191,36,0.10)',
                   color: '#fbbf24', fontSize: 11, fontWeight: 700, marginLeft: 4
                 }
-              }, '📄 Print activity sheet')
+              }, '📄 Print activity sheet'),
+              h('button', {
+                key: 'sc-card',
+                onClick: exportTradingCard,
+                'aria-label': 'Export your last throw as a printable trading card',
+                'data-tl-focusable': 'true',
+                title: 'Make a Topps-style trading card from your last throw + stats + badges',
+                style: {
+                  padding: '6px 11px', borderRadius: 6, cursor: 'pointer',
+                  border: '1px solid #f59e0b', background: 'rgba(245,158,11,0.10)',
+                  color: '#fbbf24', fontSize: 11, fontWeight: 700
+                }
+              }, '📇 Trading card')
             ])
           )
         ),
@@ -4356,6 +4489,51 @@ window.StemLab = window.StemLab || {
                 color: '#1a1a2e', fontSize: 16, fontWeight: 800
               }
             }, isPitching ? '⚾ THROW PITCH' : isFreeKick ? '⚽ STRIKE' : isFieldGoal ? '🏈 KICK' : isBowling ? '🏏 BOWL' : isGolf ? '⛳ TEE OFF' : isVolleyball ? '🏐 SERVE' : '🏀 SHOOT'),
+            // ── Slow-mo replay controls ──
+            // "Replay last throw" re-runs the canvas trajectory animation
+            // for the current lastResult — students can re-watch a throw
+            // they already executed. Slow-mo toggle stretches the replay
+            // duration from 1.0s to 3.5s. Together they give a SportsCenter-
+            // style "let's see that again, slowed down" experience that
+            // also reveals subtle physics (Magnus curl, late break, etc.)
+            d.lastResult ? h('div', { style: { marginTop: 6, display: 'flex', gap: 6 } },
+              h('button', {
+                onClick: function() {
+                  setLabToolData(function(prev) {
+                    return Object.assign({}, prev, { throwlab: Object.assign({}, prev.throwlab, {
+                      replayActive: true, replayT: 0
+                    })});
+                  });
+                  tlAnnounce(d.slowMoActive ? 'Replaying in slow-motion.' : 'Replaying last throw.');
+                },
+                disabled: !!d.replayActive,
+                'aria-label': 'Replay the last throw' + (d.slowMoActive ? ' in slow motion' : ''),
+                'data-tl-focusable': 'true',
+                style: {
+                  flex: 1, padding: '8px 10px', borderRadius: 6, cursor: d.replayActive ? 'wait' : 'pointer',
+                  border: '1px solid #475569',
+                  background: d.replayActive ? '#1e293b' : 'rgba(34,197,94,0.10)',
+                  color: '#86efac', fontSize: 11, fontWeight: 600
+                }
+              }, d.replayActive ? '▶ Playing…' : '⏪ Replay last throw'),
+              h('button', {
+                onClick: function() {
+                  upd('slowMoActive', !d.slowMoActive);
+                  tlAnnounce(d.slowMoActive ? 'Slow-motion off.' : 'Slow-motion on.');
+                },
+                'aria-label': 'Toggle slow-motion replay (3.5x slower)',
+                'aria-pressed': !!d.slowMoActive,
+                'data-tl-focusable': 'true',
+                title: 'Toggle slow-motion — replays at 3.5× slower so you can see the curl / drop / break',
+                style: {
+                  padding: '8px 12px', borderRadius: 6, cursor: 'pointer',
+                  border: '1px solid ' + (d.slowMoActive ? '#86efac' : '#475569'),
+                  background: d.slowMoActive ? 'rgba(34,197,94,0.18)' : '#1e293b',
+                  color: d.slowMoActive ? '#86efac' : '#cbd5e1',
+                  fontSize: 11, fontWeight: 600
+                }
+              }, '🐢 ' + (d.slowMoActive ? 'Slow-mo ON' : 'Slow-mo'))
+            ) : null,
             // ── Compare Mode controls ──
             // Save the latest trajectory as a reference ghost for the next throw,
             // OR clear the existing reference. Sits between the throw button and
