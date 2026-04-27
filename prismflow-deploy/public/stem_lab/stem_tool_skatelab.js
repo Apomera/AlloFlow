@@ -271,6 +271,22 @@ window.StemLab = window.StemLab || {
     return COACH_PERSONAS[0];
   }
 
+  // ── Surface presets ──────────────────────────────────────────────
+  // The KE → PE conversion in the halfpipe loses energy to friction +
+  // drag on the way up. v1 hardcoded this loss as 15% (efficiency 0.85).
+  // SURFACES lets the student see how the same ramp behaves with a
+  // freshly-waxed coping (almost no loss) vs a dusty backyard pool
+  // (heavy loss). Same physics, different one knob.
+  var SURFACES = [
+    { id: 'wax',      label: 'Waxed',    icon: '✨', efficiency: 0.95, blurb: 'Smooth coping, freshly waxed. Almost no friction.' },
+    { id: 'standard', label: 'Standard', icon: '🛹', efficiency: 0.85, blurb: 'Typical concrete halfpipe — what v1 assumed.' },
+    { id: 'rough',    label: 'Rough',    icon: '🌵', efficiency: 0.72, blurb: 'Dusty backyard pool, lots of energy lost to friction.' }
+  ];
+  function getSurface(id) {
+    for (var i = 0; i < SURFACES.length; i++) if (SURFACES[i].id === id) return SURFACES[i];
+    return SURFACES[1]; // standard default
+  }
+
   // ──────────────────────────────────────────────────────────────────
   // HALFPIPE PHYSICS
   // The student picks: number of pumps (0-5), spin trick.
@@ -296,9 +312,11 @@ window.StemLab = window.StemLab || {
     // Each pump adds energy. Pump efficiency depends on vehicle —
     // BMX is heavier, gains less speed per pump.
     var v = v0 + pumps * vehicle.pumpEfficiency;
-    // Convert KE → vertical air at the lip. Real halfpipes lose ~15%
-    // to friction + drag on the way up.
-    var efficiency = 0.85;
+    // Convert KE → vertical air at the lip. Surface preset dictates
+    // how much of the kinetic energy survives the climb. Waxed coping
+    // ≈ 0.95, standard concrete ≈ 0.85, rough/dusty ≈ 0.72.
+    var surface = getSurface(opts.surfaceId || 'standard');
+    var efficiency = surface.efficiency;
     var hAir = (efficiency * v * v) / (2 * g);  // height above lip, m
     var airTime = 2 * Math.sqrt(2 * hAir / g);  // up + down, s
     // Spin rate from the trick the student chose, scaled by vehicle
@@ -317,7 +335,7 @@ window.StemLab = window.StemLab || {
     return {
       v0: v0, vTakeoff: v, hAir: hAir, airTime: airTime,
       trick: trick, rotationCompleted: rotationCompleted, effMinAir: effMinAir,
-      vehicle: vehicle, gravity: g,
+      vehicle: vehicle, gravity: g, surface: surface,
       landed: landed, score: score, pumps: pumps
     };
   }
@@ -771,6 +789,7 @@ window.StemLab = window.StemLab || {
             mode: 'halfpipe',
             vehicle: 'skate',
             gravity: 9.81,
+            surfaceId: 'standard',
             activeScenarioId: null,
             // Halfpipe input
             pumps: 3,
@@ -789,6 +808,10 @@ window.StemLab = window.StemLab || {
             landedTricks: {},
             scenariosTried: {},
             bmxLanded: false,
+            // Personal bests across the lifetime of the toolData
+            bestHalfpipeScore: 0,
+            bestGapScore: 0,
+            bestAirFt: 0,
             // Coach state
             coachPersona: 'analyst',
             coachLoading: false,
@@ -851,6 +874,85 @@ window.StemLab = window.StemLab || {
           (p.vehicle === 'bmx' ? 'BMX' : 'skateboard') + '.');
       }
 
+      // ── printActivitySheet: classroom-friendly handout ──────────
+      // Opens a popup window with a clean print-ready page containing
+      // the active scenario's title, teach paragraph, and 3 questions
+      // formatted with answer space. Mirrors ThrowLab's pattern. The
+      // window has a print button + a brief CSS reset so the printed
+      // sheet matches the on-screen preview.
+      function printActivitySheet() {
+        var sc = getScenario(d.activeScenarioId);
+        if (!sc) {
+          if (addToast) addToast('Load a scenario first to print its activity sheet.', 'info');
+          return;
+        }
+        var win = window.open('', '_blank', 'width=720,height=900');
+        if (!win) {
+          if (addToast) addToast('Popup blocked — allow popups to print activity sheets.', 'error');
+          return;
+        }
+        var p = sc.presets || {};
+        var presetLines = [];
+        if (sc.mode === 'halfpipe') {
+          presetLines.push('Mode: Halfpipe');
+          if (p.pumps != null) presetLines.push('Pumps: ' + p.pumps);
+          if (p.trickId) presetLines.push('Trick: ' + getTrick(p.trickId).label);
+        } else {
+          presetLines.push('Mode: Gap Jump');
+          if (p.speedMph != null) presetLines.push('Takeoff speed: ' + p.speedMph + ' mph');
+          if (p.angleDeg != null) presetLines.push('Ramp angle: ' + p.angleDeg + '°');
+          if (p.gapFt != null) presetLines.push('Gap: ' + p.gapFt + ' ft');
+        }
+        if (p.vehicle === 'bmx') presetLines.push('Vehicle: BMX (12 kg, slower rotation)');
+        else presetLines.push('Vehicle: Skateboard (4 kg)');
+        if (p.gravity && p.gravity !== 9.81) presetLines.push('Gravity: ' + p.gravity + ' m/s² (' + (p.gravity < 5 ? 'Moon' : 'Earth') + ')');
+        var body = '' +
+          '<!doctype html><html lang="en"><head><meta charset="utf-8">' +
+          '<title>SkateLab — ' + sc.label + '</title>' +
+          '<style>' +
+            '*{box-sizing:border-box}' +
+            'body{font-family:Georgia,serif;color:#1f2937;margin:0;padding:32px;background:#fff;line-height:1.5}' +
+            'h1{font-size:22px;margin:0 0 4px;letter-spacing:0.02em}' +
+            'h2{font-size:13px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#7c3aed;margin:18px 0 6px}' +
+            '.icon{font-size:36px;display:inline-block;margin-right:6px;vertical-align:middle}' +
+            '.meta{font-size:12px;color:#6b7280;margin:0 0 14px}' +
+            '.preset{background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;padding:10px 14px;font-size:13px;margin:0 0 14px}' +
+            '.preset div{margin:2px 0}' +
+            'p{margin:0 0 10px;font-size:14px}' +
+            'ol{padding-left:24px;margin:0 0 12px}' +
+            'ol li{margin-bottom:14px;font-size:14px}' +
+            '.lines{display:block;margin-top:6px;height:46px;background-image:repeating-linear-gradient(transparent,transparent 22px,#cbd5e1 23px);background-size:100% 23px;border-bottom:none}' +
+            '.foot{margin-top:28px;padding-top:12px;border-top:1px solid #e5e7eb;font-size:11px;color:#9ca3af;display:flex;justify-content:space-between}' +
+            '.print-btn{background:#7c3aed;color:#fff;border:none;border-radius:6px;padding:8px 16px;font-size:14px;font-weight:700;cursor:pointer;margin:8px 0}' +
+            '@media print{.print-btn{display:none}body{padding:24px}}' +
+          '</style></head><body>' +
+          '<button class="print-btn" onclick="window.print()">🖨️ Print</button>' +
+          '<h1><span class="icon">' + sc.icon + '</span>SkateLab — ' + escapeHtml(sc.label) + '</h1>' +
+          '<p class="meta">Name: ____________________________&nbsp;&nbsp;&nbsp;&nbsp;Date: __________________</p>' +
+          '<h2>Setup</h2>' +
+          '<div class="preset">' + presetLines.map(function(line) { return '<div>' + escapeHtml(line) + '</div>'; }).join('') + '</div>' +
+          '<h2>The Scenario</h2>' +
+          '<p>' + escapeHtml(sc.teach) + '</p>' +
+          '<h2>Questions</h2>' +
+          '<ol>' +
+            sc.questions.map(function(q) {
+              return '<li>' + escapeHtml(q) + '<span class="lines"></span></li>';
+            }).join('') +
+          '</ol>' +
+          '<div class="foot"><span>SkateLab · STEM Lab · AlloFlow</span><span>Generated ' + new Date().toLocaleDateString() + '</span></div>' +
+          '</body></html>';
+        win.document.open();
+        win.document.write(body);
+        win.document.close();
+        skAnnounce('Activity sheet opened for ' + sc.label + '. Use the print button or browser shortcut to send it to a printer.');
+      }
+      function escapeHtml(s) {
+        return String(s == null ? '' : s)
+          .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
       // ── askCoach: persona-flavored Gemini feedback ───────────────
       // Builds a prompt from: persona prepend + active scenario teach +
       // last attempt's physics. The model returns a 2-3 sentence
@@ -910,7 +1012,8 @@ window.StemLab = window.StemLab || {
         if (d.running) return;
         var sim = simHalfpipe({
           pumps: d.pumps, trickId: d.trickId,
-          vehicle: d.vehicle, gravity: d.gravity
+          vehicle: d.vehicle, gravity: d.gravity,
+          surfaceId: d.surfaceId
         });
         upd({ running: true, lastResult: null, attempts: (d.attempts || 0) + 1 });
         if (cancelAnimRef.current) cancelAnimRef.current();
@@ -925,6 +1028,7 @@ window.StemLab = window.StemLab || {
               airTime: sim.airTime, trick: sim.trick.label,
               rotation: sim.trick.rotation, completed: sim.rotationCompleted,
               vehicle: sim.vehicle.label, gravity: sim.gravity,
+              surface: sim.surface ? sim.surface.label : 'Standard',
               effMinAir: sim.effMinAir
             };
             if (sim.landed) {
@@ -932,6 +1036,8 @@ window.StemLab = window.StemLab || {
               bumps.tricksUsed = Object.assign({}, d.tricksUsed || {}, { [sim.trick.id]: ((d.tricksUsed || {})[sim.trick.id] || 0) + 1 });
               bumps.landedTricks = Object.assign({}, d.landedTricks || {}, { [sim.trick.id]: true });
               bumps.biggestSpin = Math.max(d.biggestSpin || 0, sim.trick.rotation);
+              bumps.bestHalfpipeScore = Math.max(d.bestHalfpipeScore || 0, sim.score);
+              bumps.bestAirFt = Math.max(d.bestAirFt || 0, +(sim.hAir * M2FT).toFixed(2));
               if (sim.vehicle.id === 'bmx') bumps.bmxLanded = true;
               if (awardXP) awardXP(sim.score, 'SkateLab — ' + sim.trick.label, 'skatelab');
               if (addToast) addToast('🛹 Landed ' + sim.trick.label + ' on ' + sim.vehicle.label + '! +' + sim.score + ' XP', 'success');
@@ -965,6 +1071,7 @@ window.StemLab = window.StemLab || {
             if (sim.landed) {
               bumps.landings = (d.landings || 0) + 1;
               bumps.longestGap = Math.max(d.longestGap || 0, sim.gapFt);
+              bumps.bestGapScore = Math.max(d.bestGapScore || 0, sim.score);
               if (awardXP) awardXP(sim.score, 'SkateLab — ' + sim.gapFt + 'ft gap', 'skatelab');
               if (addToast) addToast('🦘 Cleared ' + sim.gapFt + ' ft! +' + sim.score + ' XP', 'success');
             } else {
@@ -1061,6 +1168,29 @@ window.StemLab = window.StemLab || {
             })
           )
         ),
+        // Surface picker — affects halfpipe energy efficiency only.
+        // Only shown in halfpipe mode (gap-jump physics doesn't model
+        // approach-roll friction; that's a separate sandbox).
+        d.mode === 'halfpipe' && h('div', { role: 'radiogroup', 'aria-label': 'Halfpipe surface', style: { display: 'flex', gap: 6, justifyContent: 'center', marginBottom: 8, flexWrap: 'wrap' } },
+          SURFACES.map(function(sf) {
+            var sel = (d.surfaceId || 'standard') === sf.id;
+            return h('button', {
+              key: 'sf-' + sf.id,
+              onClick: function() { upd('surfaceId', sf.id); skAnnounce('Surface: ' + sf.label + '. ' + sf.blurb); },
+              role: 'radio',
+              'aria-checked': sel,
+              'data-sk-focusable': 'true',
+              title: sf.blurb + ' (efficiency ' + sf.efficiency.toFixed(2) + ')',
+              style: {
+                padding: '4px 11px', fontSize: 11, fontWeight: 700,
+                background: sel ? 'linear-gradient(135deg,#0891b2,#0e7490)' : 'rgba(254,243,199,0.08)',
+                color: sel ? '#fff' : '#fef3c7',
+                border: '1px solid ' + (sel ? '#155e75' : 'rgba(254,243,199,0.25)'),
+                borderRadius: 999, cursor: 'pointer'
+              }
+            }, sf.icon + ' ' + sf.label);
+          })
+        ),
         // Vehicle toggle — skateboard vs BMX. Different mass, different
         // pump efficiency, different rotation moment. Same physics.
         h('div', { role: 'radiogroup', 'aria-label': 'Vehicle', style: { display: 'flex', gap: 6, justifyContent: 'center', marginBottom: 12 } },
@@ -1103,9 +1233,16 @@ window.StemLab = window.StemLab || {
             role: 'region',
             'aria-label': 'Lesson: ' + sc.label
           },
-            h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, flexWrap: 'wrap' } },
               h('span', { style: { fontSize: 18 } }, sc.icon),
               h('div', { style: { flex: 1, fontWeight: 800, color: '#fbbf24', fontSize: 13, letterSpacing: '0.04em' } }, sc.label),
+              h('button', {
+                onClick: printActivitySheet,
+                'aria-label': 'Print this scenario as a student activity sheet',
+                'data-sk-focusable': 'true',
+                title: 'Print classroom-friendly activity sheet with the questions',
+                style: { background: 'rgba(167,139,250,0.18)', border: '1px solid rgba(167,139,250,0.45)', color: '#fef3c7', borderRadius: 6, padding: '2px 8px', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+              }, '🖨️ Print'),
               h('button', {
                 onClick: function() { upd('activeScenarioId', null); skAnnounce('Lesson dismissed.'); },
                 'aria-label': 'Dismiss lesson card',
@@ -1306,7 +1443,7 @@ window.StemLab = window.StemLab || {
           )
         ),
         // Stats footer
-        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 10 } },
+        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 8 } },
           [
             { label: 'Lands',   val: d.landings || 0, color: '#86efac' },
             { label: 'Bails',   val: d.bails || 0,    color: '#fca5a5' },
@@ -1319,6 +1456,31 @@ window.StemLab = window.StemLab || {
             );
           })
         ),
+        // Personal bests row — only renders if at least one best
+        // exists. Three cells: best halfpipe score, best gap score,
+        // best air height. Mirrors the "Personal Best" panel pattern
+        // teachers asked for in earlier rounds.
+        ((d.bestHalfpipeScore || d.bestGapScore || d.bestAirFt) ? h('div', {
+          style: {
+            display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8,
+            marginBottom: 10,
+            background: 'linear-gradient(135deg, rgba(251,191,36,0.10), rgba(180,83,9,0.10))',
+            border: '1px solid rgba(251,191,36,0.40)',
+            borderRadius: 8, padding: '8px 10px'
+          },
+          'aria-label': 'Personal bests'
+        },
+          [
+            { label: '🏆 Best Halfpipe', val: d.bestHalfpipeScore || 0, suffix: ' pts', color: '#fbbf24' },
+            { label: '🏆 Best Gap',      val: d.bestGapScore || 0,      suffix: ' pts', color: '#fbbf24' },
+            { label: '🏆 Best Air',      val: (d.bestAirFt || 0).toFixed(2), suffix: ' ft', color: '#fde68a' }
+          ].map(function(s, i) {
+            return h('div', { key: i, style: { textAlign: 'center' } },
+              h('div', { style: { fontSize: 16, fontWeight: 900, color: s.color } }, s.val + s.suffix),
+              h('div', { style: { fontSize: 9, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700 } }, s.label)
+            );
+          })
+        ) : null),
         // Educational annotations panel — frames why this is real STEM,
         // not a game. Switches text by mode.
         h('details', { style: { background: 'rgba(254,243,199,0.04)', border: '1px solid rgba(254,243,199,0.18)', borderRadius: 10, padding: 10, marginBottom: 8 } },
