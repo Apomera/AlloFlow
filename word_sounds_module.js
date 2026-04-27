@@ -6519,17 +6519,6 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         async (index) => {
           debugLog("🔄🔄🔄 handleRegenerateWord CALLED with index:", index);
           setRegeneratingIndex(index);
-          // Yield to the browser so React commits the spinner state BEFORE we
-          // run the (synchronous) cache-clearing block + (async) fetchWordData.
-          // Without this hop, React 18's automatic batching could fold the
-          // initial setRegeneratingIndex(index) and the trailing
-          // setRegeneratingIndex(null) into a single render — the spinner
-          // never appeared even though the cache work and TTS regen DID run.
-          // requestAnimationFrame returns control to the browser's paint
-          // pipeline, guaranteeing one render cycle with the spinner visible.
-          if (typeof requestAnimationFrame === 'function') {
-            await new Promise((resolve) => requestAnimationFrame(() => resolve()));
-          }
           const existingWord = preloadedWords[index];
           if (!existingWord) {
             setRegeneratingIndex(null);
@@ -6605,28 +6594,19 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           if (wordDataCache.current) {
             wordDataCache.current.delete(targetWord.toLowerCase());
           }
-          // Belt-and-suspenders localStorage clear. Calls the bound
-          // removeAudioFromStorage helper (now always defined — see top of
-          // module), AND directly nukes the "alloflow_audio_<word>" entries
-          // in case a host page swapped the helper for a no-op. AND clears
-          // the phoneme bank entry so the next fetchWordData re-fetches
-          // from Gemini instead of pulling from a cached metadata record.
-          try {
-            if (typeof removeAudioFromStorage === "function") {
-              removeAudioFromStorage(targetWord);
-              removeAudioFromStorage(targetWord.toLowerCase());
+          if (typeof removeAudioFromStorage === "function") {
+            removeAudioFromStorage(targetWord);
+            removeAudioFromStorage(targetWord.toLowerCase());
+          } else {
+            try {
+              const bank = JSON.parse(safeGetItem(PHONEME_STORAGE_KEY) || "{}");
+              if (bank[targetWord]) {
+                delete bank[targetWord];
+                safeSetItem(PHONEME_STORAGE_KEY, JSON.stringify(bank));
+              }
+            } catch (e) {
+              warnLog("Caught error:", e?.message || e);
             }
-            if (typeof localStorage !== "undefined") {
-              try { localStorage.removeItem("alloflow_audio_" + targetWord); } catch(_) {}
-              try { localStorage.removeItem("alloflow_audio_" + targetWord.toLowerCase()); } catch(_) {}
-            }
-            const bank = JSON.parse(safeGetItem(PHONEME_STORAGE_KEY) || "{}");
-            if (bank[targetWord]) {
-              delete bank[targetWord];
-              safeSetItem(PHONEME_STORAGE_KEY, JSON.stringify(bank));
-            }
-          } catch (e) {
-            warnLog("Caught error:", e?.message || e);
           }
           try {
             const phonemeData = await fetchWordData(targetWord, 0, false, true);
