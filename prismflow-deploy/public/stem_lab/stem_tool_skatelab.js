@@ -973,6 +973,13 @@ window.StemLab = window.StemLab || {
             // Pure engagement layer — keeps non-academic students
             // chasing a chain instead of burning out on one bail.
             streak: { current: 0, longest: 0, lastTier: null },
+            // Adaptive coaching nudge — fires after 3 consecutive
+            // bails to surface a one-tap fix (more pumps, smaller
+            // trick, etc.). Reset on any land. nudgeDismissedAt is
+            // the attempts-count when the student dismissed; we
+            // suppress the nudge until the next bail after that.
+            consecutiveBails: 0,
+            nudgeDismissedAt: -1,
             // Coach state
             coachPersona: 'analyst',
             coachLoading: false,

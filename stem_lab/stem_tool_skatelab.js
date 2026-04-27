@@ -973,6 +973,13 @@ window.StemLab = window.StemLab || {
             // Pure engagement layer — keeps non-academic students
             // chasing a chain instead of burning out on one bail.
             streak: { current: 0, longest: 0, lastTier: null },
+            // Adaptive coaching nudge — fires after 3 consecutive
+            // bails to surface a one-tap fix (more pumps, smaller
+            // trick, etc.). Reset on any land. nudgeDismissedAt is
+            // the attempts-count when the student dismissed; we
+            // suppress the nudge until the next bail after that.
+            consecutiveBails: 0,
+            nudgeDismissedAt: -1,
             // Coach state
             coachPersona: 'analyst',
             coachLoading: false,
@@ -1147,6 +1154,7 @@ window.StemLab = window.StemLab || {
           predictionStats: { count: 0, totalErrPct: 0, bestPct: null, withinTen: 0 },
           predictionInput: '',
           streak: { current: 0, longest: 0, lastTier: null },
+          consecutiveBails: 0, nudgeDismissedAt: -1,
           lastResult: null, lastSim: null, activeScenarioId: null,
           resetConfirmOpen: false,
           customScenarios: preserved
@@ -1329,6 +1337,90 @@ window.StemLab = window.StemLab || {
       // but never landed." Tiers chosen so every trick has a clear
       // next step (Tried → Landed → Solid → Mastered) without making
       // Mastered grindy (5 lands is reachable in a single session).
+      // Adaptive coaching nudge — diagnoses why recent attempts
+      // bailed and returns a one-tap fix. Returns null when the
+      // student isn't stuck (no current bail streak, already
+      // dismissed, or no obvious fix). Each suggestion includes:
+      //   message: human explanation grounded in the failure
+      //   fixLabel: button text
+      //   fixBumps: object to upd() when the fix is applied
+      // Logic prioritizes the most-likely fix in order:
+      //   halfpipe: more pumps → smaller trick → grippy surface
+      //   gap: more speed → 30° angle → smaller gap
+      function _suggestNudge() {
+        if ((d.consecutiveBails || 0) < 3) return null;
+        if ((d.attempts || 0) <= (d.nudgeDismissedAt || -1)) return null;
+        var r = d.lastResult;
+        if (!r || r.landed) return null;
+        if (r.mode === 'halfpipe') {
+          // Halfpipe bails are nearly always "not enough air for
+          // the trick selected." Two clean fixes: more pumps OR a
+          // less-rotation trick. Prefer pumps if there's headroom.
+          if ((d.pumps || 0) < 8) {
+            var nextPumps = Math.min(8, (d.pumps || 0) + 2);
+            return {
+              message: 'Stuck? You\'ve been short on air for ' + getTrick(d.trickId).label + '. Adding pumps gives you more kinetic energy → more height → more air time.',
+              fixLabel: '+ ' + (nextPumps - (d.pumps || 0)) + ' pumps (try ' + nextPumps + ')',
+              fixBumps: { pumps: nextPumps }
+            };
+          }
+          // Out of pumps room? Suggest a smaller trick.
+          var current = getTrick(d.trickId);
+          var smaller = null;
+          for (var i = 0; i < TRICKS.length; i++) {
+            if (TRICKS[i].rotation < current.rotation && (!smaller || TRICKS[i].rotation > smaller.rotation)) smaller = TRICKS[i];
+          }
+          if (smaller) {
+            return {
+              message: 'Maxed out on pumps but still bailing. Try a smaller trick to learn how much air this setup actually gives you.',
+              fixLabel: 'Switch to ' + smaller.emoji + ' ' + smaller.label,
+              fixBumps: { trickId: smaller.id }
+            };
+          }
+          return null;
+        }
+        // Gap mode — diagnose by clearance sign.
+        if (r.clearance < 0) {
+          // Came up short. Two clean fixes: more speed (highest
+          // leverage, since R = v² · sin(2θ) / g — quadratic in v)
+          // OR set angle to 30° if it's far off (peak range angle).
+          if (d.speedMph < 28) {
+            var nextSpeed = Math.min(28, (d.speedMph || 0) + 5);
+            return {
+              message: 'Came up short by ' + Math.abs(r.clearance).toFixed(1) + ' ft. Range scales with v² — speed has the biggest leverage in the projectile equation.',
+              fixLabel: '+ 5 mph (try ' + nextSpeed + ')',
+              fixBumps: { speedMph: nextSpeed }
+            };
+          }
+          if (Math.abs(d.angleDeg - 30) > 5) {
+            return {
+              message: 'At max speed and still short. Range peaks at 45° on flat ground but ~30° works best when you need to land at the same height. Try 30°.',
+              fixLabel: 'Set angle to 30°',
+              fixBumps: { angleDeg: 30 }
+            };
+          }
+          // Last resort — shrink the gap.
+          if (d.gapFt > 8) {
+            return {
+              message: 'Even at max speed and ideal angle, this gap is out of reach. Smaller gap to feel the calibration first.',
+              fixLabel: 'Shrink gap to 10 ft',
+              fixBumps: { gapFt: 10 }
+            };
+          }
+          return null;
+        }
+        // Overshot. Drop speed.
+        if (d.speedMph > 8) {
+          var slowSpeed = Math.max(8, (d.speedMph || 0) - 3);
+          return {
+            message: 'Flying past the landing — too much speed. Trim it down and watch where the parabola peaks.',
+            fixLabel: '− 3 mph (try ' + slowSpeed + ')',
+            fixBumps: { speedMph: slowSpeed }
+          };
+        }
+        return null;
+      }
+
       function _trickMastery(attempts, lands) {
         if ((lands || 0) >= 5) return { id: 'mastered', label: 'Mastered', icon: '👑', color: '#a855f7', bg: 'rgba(168,85,247,0.18)' };
         if ((lands || 0) >= 3) return { id: 'solid',    label: 'Solid',    icon: '💪', color: '#22c55e', bg: 'rgba(34,197,94,0.18)' };
@@ -1432,6 +1524,9 @@ window.StemLab = window.StemLab || {
               effMinAir: sim.effMinAir
             };
             _captureAndStampPrediction(bumps, bumps.lastResult, sim.hAir * M2FT);
+            // Bail counter for adaptive nudge — reset on land,
+            // increment on bail. Used to gate the nudge card.
+            bumps.consecutiveBails = sim.landed ? 0 : (d.consecutiveBails || 0) + 1;
             var sk = _applyStreakAndScore(bumps, sim.landed, sim.score);
             // Tag the result with streak info so the result card can
             // render the multiplier badge inline.
@@ -1494,6 +1589,7 @@ window.StemLab = window.StemLab || {
               windDeltaFt: sim.windDeltaFt
             };
             _captureAndStampPrediction(bumps, bumps.lastResult, sim.rangeFt);
+            bumps.consecutiveBails = sim.landed ? 0 : (d.consecutiveBails || 0) + 1;
             var skG = _applyStreakAndScore(bumps, sim.landed, sim.score);
             bumps.lastResult.streakAfter = bumps.streak.current;
             bumps.lastResult.streakTier = skG.tier ? skG.tier.id : null;
@@ -2438,6 +2534,59 @@ window.StemLab = window.StemLab || {
                 d.lastResult.landed && h('div', { style: { color: '#86efac', marginTop: 4 } }, '🏆 Score: ' + d.lastResult.score)
               )
         ),
+        // ── Adaptive nudge ──────────────────────────────────────
+        // Rule-based hint that fires after 3 consecutive bails to
+        // surface a one-tap fix (more pumps, smaller trick, etc.).
+        // Sits between result panel and AI Coach so students see
+        // the actionable suggestion before the heavier AI ask. The
+        // "Skip" button records the current attempts count so the
+        // nudge stays hidden until the next bail after that.
+        (function() {
+          var nudge = _suggestNudge();
+          if (!nudge) return null;
+          return h('div', {
+            role: 'region',
+            'aria-label': 'Coaching suggestion',
+            style: {
+              background: 'linear-gradient(135deg, rgba(56,189,248,0.10), rgba(168,85,247,0.08))',
+              border: '1px solid rgba(56,189,248,0.45)',
+              borderRadius: 10, padding: 12, marginBottom: 12
+            }
+          },
+            h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 6, flexWrap: 'wrap' } },
+              h('div', { style: { fontSize: 11, fontWeight: 800, color: '#7dd3fc', letterSpacing: '0.06em', textTransform: 'uppercase' } }, '💡 Quick fix · ' + (d.consecutiveBails || 0) + ' bails in a row'),
+              h('button', {
+                onClick: function() { upd('nudgeDismissedAt', d.attempts || 0); skAnnounce('Suggestion dismissed.'); },
+                'aria-label': 'Dismiss this suggestion',
+                'data-sk-focusable': 'true',
+                style: {
+                  padding: '4px 8px', fontSize: 10, fontWeight: 700,
+                  background: 'transparent', color: '#94a3b8',
+                  border: '1px solid rgba(148,163,184,0.35)',
+                  borderRadius: 6, cursor: 'pointer', minHeight: 26
+                }
+              }, '✕ Skip')
+            ),
+            h('p', { style: { margin: '0 0 10px', fontSize: 12, color: '#e2e8f0', lineHeight: 1.5 } }, nudge.message),
+            h('button', {
+              onClick: function() {
+                upd(Object.assign({}, nudge.fixBumps, { nudgeDismissedAt: d.attempts || 0 }));
+                skAnnounce('Applied: ' + nudge.fixLabel);
+                if (addToast) addToast('💡 Applied — ' + nudge.fixLabel, 'success');
+              },
+              'aria-label': 'Apply suggested fix: ' + nudge.fixLabel,
+              'data-sk-focusable': 'true',
+              style: {
+                padding: '8px 14px', fontSize: 12, fontWeight: 800,
+                background: 'linear-gradient(135deg, #38bdf8, #0ea5e9)',
+                color: '#0c4a6e',
+                border: '1px solid #0284c7',
+                borderRadius: 8, cursor: 'pointer', minHeight: 32,
+                boxShadow: '0 2px 6px rgba(14,165,233,0.35)'
+              }
+            }, '✨ ' + nudge.fixLabel)
+          );
+        })(),
         // ── Coach panel ─────────────────────────────────────────
         // Persona pills + Ask Coach button + response card. Only
         // shows the Ask button after at least one attempt so students

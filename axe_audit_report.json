@@ -1,7 +1,7 @@
 {
   "meta": {
     "url": "https://prismflow-911fe.web.app",
-    "timestamp": "2026-04-27T02:30:32.120Z",
+    "timestamp": "2026-04-27T22:04:36.759Z",
     "axeVersion": "4.10.3"
   },
   "results": [
@@ -56,43 +56,17 @@
     {
       "scenario": "landing_with_text",
       "counts": {
-        "violationRules": 2,
-        "violationNodes": 2,
+        "violationRules": 1,
+        "violationNodes": 1,
         "incomplete": 2,
         "byImpact": {
           "critical": 0,
-          "serious": 1,
+          "serious": 0,
           "moderate": 1,
           "minor": 0
         }
       },
       "violations": [
-        {
-          "id": "color-contrast",
-          "impact": "serious",
-          "help": "Elements must meet minimum color contrast ratio thresholds",
-          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/color-contrast?application=axeAPI",
-          "tags": [
-            "cat.color",
-            "wcag2aa",
-            "wcag143",
-            "TTv5",
-            "TT13.c",
-            "EN-301-549",
-            "EN-9.1.4.3",
-            "ACT"
-          ],
-          "nodeCount": 1,
-          "nodes": [
-            {
-              "target": [
-                "button[aria-label=\"AI Backend Settings\"] > span"
-              ],
-              "html": "<span>AI Backend Settings</span>",
-              "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 1.18 (foreground color: #e0e7ff, background color: #f9fbfc, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
-            }
-          ]
-        },
         {
           "id": "region",
           "impact": "moderate",
@@ -130,50 +104,17 @@
     {
       "scenario": "theme_dark",
       "counts": {
-        "violationRules": 2,
-        "violationNodes": 3,
+        "violationRules": 1,
+        "violationNodes": 1,
         "incomplete": 2,
         "byImpact": {
           "critical": 0,
-          "serious": 1,
+          "serious": 0,
           "moderate": 1,
           "minor": 0
         }
       },
       "violations": [
-        {
-          "id": "color-contrast",
-          "impact": "serious",
-          "help": "Elements must meet minimum color contrast ratio thresholds",
-          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/color-contrast?application=axeAPI",
-          "tags": [
-            "cat.color",
-            "wcag2aa",
-            "wcag143",
-            "TTv5",
-            "TT13.c",
-            "EN-301-549",
-            "EN-9.1.4.3",
-            "ACT"
-          ],
-          "nodeCount": 2,
-          "nodes": [
-            {
-              "target": [
-                ".text-rose-800 > .group-hover\\:tracking-wide"
-              ],
-              "html": "<span class=\"group-hover:tracking-wide transition-all\">StoryForge</span>",
-              "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 1.12 (foreground color: #fda4af, background color: #cfc5ca, font size: 8.3pt (11px), font weight: bold). Expected contrast ratio of 4.5:1"
-            },
-            {
-              "target": [
-                "h3"
-              ],
-              "html": "<h3 class=\"text-lg font-bold text-slate-700 flex items-center gap-2 truncate \">",
-              "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.19 (foreground color: #f8fafc, background color: #878d97, font size: 13.5pt (18px), font weight: bold). Expected contrast ratio of 4.5:1"
-            }
-          ]
-        },
         {
           "id": "region",
           "impact": "moderate",
@@ -204,7 +145,7 @@
         {
           "id": "color-contrast",
           "help": "Elements must meet minimum color contrast ratio thresholds",
-          "nodeCount": 42
+          "nodeCount": 40
         }
       ]
     },
@@ -259,43 +200,17 @@
     {
       "scenario": "reading_theme_sepia",
       "counts": {
-        "violationRules": 2,
-        "violationNodes": 2,
+        "violationRules": 1,
+        "violationNodes": 1,
         "incomplete": 2,
         "byImpact": {
           "critical": 0,
-          "serious": 1,
+          "serious": 0,
           "moderate": 1,
           "minor": 0
         }
       },
       "violations": [
-        {
-          "id": "color-contrast",
-          "impact": "serious",
-          "help": "Elements must meet minimum color contrast ratio thresholds",
-          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/color-contrast?application=axeAPI",
-          "tags": [
-            "cat.color",
-            "wcag2aa",
-            "wcag143",
-            "TTv5",
-            "TT13.c",
-            "EN-301-549",
-            "EN-9.1.4.3",
-            "ACT"
-          ],
-          "nodeCount": 1,
-          "nodes": [
-            {
-              "target": [
-                "button[aria-label=\"AI Backend Settings\"] > span"
-              ],
-              "html": "<span>AI Backend Settings</span>",
-              "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 1.18 (foreground color: #e0e7ff, background color: #f9fbfc, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
-            }
-          ]
-        },
         {
           "id": "region",
           "impact": "moderate",
@@ -333,43 +248,17 @@
     {
       "scenario": "reading_theme_dyslexia",
       "counts": {
-        "violationRules": 2,
-        "violationNodes": 2,
+        "violationRules": 1,
+        "violationNodes": 1,
         "incomplete": 2,
         "byImpact": {
           "critical": 0,
-          "serious": 1,
+          "serious": 0,
           "moderate": 1,
           "minor": 0
         }
       },
       "violations": [
-        {
-          "id": "color-contrast",
-          "impact": "serious",
-          "help": "Elements must meet minimum color contrast ratio thresholds",
-          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/color-contrast?application=axeAPI",
-          "tags": [
-            "cat.color",
-            "wcag2aa",
-            "wcag143",
-            "TTv5",
-            "TT13.c",
-            "EN-301-549",
-            "EN-9.1.4.3",
-            "ACT"
-          ],
-          "nodeCount": 1,
-          "nodes": [
-            {
-              "target": [
-                "button[aria-label=\"AI Backend Settings\"] > span"
-              ],
-              "html": "<span>AI Backend Settings</span>",
-              "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 1.18 (foreground color: #e0e7ff, background color: #f9fbfc, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
-            }
-          ]
-        },
         {
           "id": "region",
           "impact": "moderate",
@@ -407,43 +296,17 @@
     {
       "scenario": "color_overlay_blue",
       "counts": {
-        "violationRules": 2,
-        "violationNodes": 2,
+        "violationRules": 1,
+        "violationNodes": 1,
         "incomplete": 2,
         "byImpact": {
           "critical": 0,
-          "serious": 1,
+          "serious": 0,
           "moderate": 1,
           "minor": 0
         }
       },
       "violations": [
-        {
-          "id": "color-contrast",
-          "impact": "serious",
-          "help": "Elements must meet minimum color contrast ratio thresholds",
-          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/color-contrast?application=axeAPI",
-          "tags": [
-            "cat.color",
-            "wcag2aa",
-            "wcag143",
-            "TTv5",
-            "TT13.c",
-            "EN-301-549",
-            "EN-9.1.4.3",
-            "ACT"
-          ],
-          "nodeCount": 1,
-          "nodes": [
-            {
-              "target": [
-                "button[aria-label=\"AI Backend Settings\"] > span"
-              ],
-              "html": "<span>AI Backend Settings</span>",
-              "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 1.18 (foreground color: #e0e7ff, background color: #f9fbfc, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
-            }
-          ]
-        },
         {
           "id": "region",
           "impact": "moderate",

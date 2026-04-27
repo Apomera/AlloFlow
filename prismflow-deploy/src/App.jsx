@@ -5063,57 +5063,57 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       document.head.appendChild(s);
     })();
-    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a1c8fa2/allo_data_module.js');
-    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a1c8fa2/large_file_module.js');
-    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a1c8fa2/key_concept_map_module.js');
-    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a1c8fa2/utils_pure_module.js');
-    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a1c8fa2/gemini_api_module.js');
-    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a1c8fa2/tts_module.js');
-    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a1c8fa2/personas_module.js');
-    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a1c8fa2/export_module.js');
-    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a1c8fa2/misc_components_module.js');
-    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a1c8fa2/remediation_audio_module.js');
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a1c8fa2/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a1c8fa2/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a1c8fa2/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a1c8fa2/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a1c8fa2/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a1c8fa2/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a1c8fa2/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a1c8fa2/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a1c8fa2/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a1c8fa2/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a1c8fa2/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a1c8fa2/story_stage_module.js');
+    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c3b7b37/allo_data_module.js');
+    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c3b7b37/large_file_module.js');
+    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c3b7b37/key_concept_map_module.js');
+    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c3b7b37/utils_pure_module.js');
+    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c3b7b37/gemini_api_module.js');
+    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c3b7b37/tts_module.js');
+    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c3b7b37/personas_module.js');
+    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c3b7b37/export_module.js');
+    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c3b7b37/misc_components_module.js');
+    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c3b7b37/remediation_audio_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c3b7b37/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c3b7b37/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c3b7b37/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c3b7b37/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c3b7b37/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c3b7b37/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c3b7b37/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c3b7b37/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c3b7b37/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c3b7b37/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c3b7b37/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c3b7b37/story_stage_module.js');
     loadModule('PoetTree', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5e3ae8e/poet_tree_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a1c8fa2/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a1c8fa2/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a1c8fa2/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a1c8fa2/student_interaction_module.js');
-    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a1c8fa2/math_fluency_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a1c8fa2/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a1c8fa2/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a1c8fa2/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a1c8fa2/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a1c8fa2/content_engine_module.js');
-    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a1c8fa2/timeline_revision_module.js');
-    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a1c8fa2/prompts_library_module.js');
-    loadModule('TextPipelineHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a1c8fa2/text_pipeline_helpers_module.js');
-    loadModule('AdaptiveControllerModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a1c8fa2/adaptive_controller_module.js');
-    loadModule('UdlChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a1c8fa2/udl_chat_module.js');
-    loadModule('AdventureHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a1c8fa2/adventure_handlers_module.js');
-    loadModule('GlossaryHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a1c8fa2/glossary_helpers_module.js');
-    loadModule('ViewRenderersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a1c8fa2/view_renderers_module.js');
-    loadModule('AudioHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a1c8fa2/audio_helpers_module.js');
-    loadModule('GenerationHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a1c8fa2/generation_helpers_module.js');
-    loadModule('MiscHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a1c8fa2/misc_handlers_module.js');
-    loadModule('PureHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a1c8fa2/pure_helpers_module.js');
-    loadModule('MathHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a1c8fa2/math_helpers_module.js');
-    loadModule('CmapHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a1c8fa2/concept_map_handlers_module.js');
-    loadModule('GenDispatcherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a1c8fa2/generate_dispatcher_module.js');
-    loadModule('PhaseKHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a1c8fa2/phase_k_helpers_module.js');
-    loadModule('AdventureSessionHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a1c8fa2/adventure_session_handlers_module.js');
-    loadModule('TextUtilityHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a1c8fa2/text_utility_helpers_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c3b7b37/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c3b7b37/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c3b7b37/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c3b7b37/student_interaction_module.js');
+    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c3b7b37/math_fluency_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c3b7b37/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c3b7b37/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c3b7b37/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c3b7b37/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c3b7b37/content_engine_module.js');
+    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c3b7b37/timeline_revision_module.js');
+    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c3b7b37/prompts_library_module.js');
+    loadModule('TextPipelineHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c3b7b37/text_pipeline_helpers_module.js');
+    loadModule('AdaptiveControllerModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c3b7b37/adaptive_controller_module.js');
+    loadModule('UdlChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c3b7b37/udl_chat_module.js');
+    loadModule('AdventureHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c3b7b37/adventure_handlers_module.js');
+    loadModule('GlossaryHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c3b7b37/glossary_helpers_module.js');
+    loadModule('ViewRenderersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c3b7b37/view_renderers_module.js');
+    loadModule('AudioHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c3b7b37/audio_helpers_module.js');
+    loadModule('GenerationHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c3b7b37/generation_helpers_module.js');
+    loadModule('MiscHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c3b7b37/misc_handlers_module.js');
+    loadModule('PureHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c3b7b37/pure_helpers_module.js');
+    loadModule('MathHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c3b7b37/math_helpers_module.js');
+    loadModule('CmapHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c3b7b37/concept_map_handlers_module.js');
+    loadModule('GenDispatcherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c3b7b37/generate_dispatcher_module.js');
+    loadModule('PhaseKHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c3b7b37/phase_k_helpers_module.js');
+    loadModule('AdventureSessionHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c3b7b37/adventure_session_handlers_module.js');
+    loadModule('TextUtilityHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c3b7b37/text_utility_helpers_module.js');
     loadModule('PhaseNHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/phase_n_misc_helpers_module.js');
     loadModule('PhaseOHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/phase_o_misc_handlers_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
@@ -5126,7 +5126,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       document.head.appendChild(s);
     })();
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a1c8fa2/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c3b7b37/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -9508,25 +9508,46 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [diffLibLoading, setDiffLibLoading] = useState(false);
   const _lastDiffFingerprintRef = React.useRef(null);
   useEffect(() => {
+    // Diagnostic ring buffer — every bail/build path writes here so Aaron can
+    // paste `JSON.stringify(window._diffDiagnostic, null, 2)` after a repro
+    // and we can see exactly which guard tripped first. Console.debug is
+    // hidden by default; this surface is always inspectable.
+    const _diag = (msg, extra) => {
+      try {
+        if (typeof window === 'undefined') return;
+        window._diffDiagnostic = window._diffDiagnostic || [];
+        window._diffDiagnostic.push(Object.assign({
+          ts: new Date().toISOString(), msg, source: 'effect',
+          diffViewOpen, hasResult: !!pdfFixResult, diffLibReady,
+          hasWindowDiff: !!window.Diff,
+          srcLen: pdfFixResult && pdfFixResult.sourceText ? pdfFixResult.sourceText.length : null,
+          finLen: pdfFixResult && pdfFixResult.finalText ? pdfFixResult.finalText.length : null,
+          chunks: diffChunks ? diffChunks.length : null,
+          fp: _lastDiffFingerprintRef.current,
+        }, extra || {}));
+        if (window._diffDiagnostic.length > 200) window._diffDiagnostic.splice(0, window._diffDiagnostic.length - 200);
+        console.warn('[Diff]', msg, extra || '');
+      } catch (_) {}
+    };
     if (!diffViewOpen || !pdfFixResult) {
-      if (diffViewOpen && !pdfFixResult) console.debug('[Diff] effect skipped — modal open but pdfFixResult is null');
+      if (diffViewOpen && !pdfFixResult) _diag('skipped — modal open but pdfFixResult is null');
       return;
     }
     if (!diffLibReady || !window.Diff) {
-      console.debug('[Diff] effect skipped — jsdiff library not ready yet (diffLibReady=' + diffLibReady + ', window.Diff=' + !!window.Diff + ')');
+      _diag('skipped — jsdiff library not ready yet');
       return;
     }
     const src = pdfFixResult.sourceText || '';
     const fin = pdfFixResult.finalText || '';
     if (!src || !fin) {
-      console.debug('[Diff] effect skipped — sourceText or finalText is empty (src=' + src.length + ' chars, fin=' + fin.length + ' chars)');
+      _diag('skipped — sourceText or finalText is empty');
       return;
     }
     const _fp = diffGranularity + ':' + src.length + '/' + fin.length + ':' +
       (src.slice(0, 40) + '|' + src.slice(-40)) + ':' +
       (fin.slice(0, 40) + '|' + fin.slice(-40));
     if (_lastDiffFingerprintRef.current === _fp && diffChunks) {
-      console.debug('[Diff] effect skipped — cache hit for fingerprint (' + diffChunks.length + ' chunks preserved)');
+      _diag('skipped — cache hit for fingerprint', { preservedChunks: diffChunks.length });
       return;
     }
     _lastDiffFingerprintRef.current = _fp;
@@ -9564,13 +9585,22 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       const _nAdd = annotated.filter(c => c.type === 'add').length;
       const _nDel = annotated.filter(c => c.type === 'del').length;
       const _nRehydrated = annotated.filter(c => c.rejected).length;
-      console.debug(`[Diff] Built ${annotated.length} chunks (${_nAdd} add, ${_nDel} del${_nRehydrated > 0 ? `, ${_nRehydrated} rejection(s) rehydrated from storage` : ''})`);
+      _diag('built chunks', { total: annotated.length, add: _nAdd, del: _nDel, rehydratedRejections: _nRehydrated });
     } catch (e) {
       console.warn('[Diff] compute failed:', e);
       setDiffChunks(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [diffViewOpen, pdfFixResult, diffGranularity, diffLibReady]);
+  // Defensive cache-invalidation: when the source/final text pair changes
+  // (auto-fix loop iteration, manual remarkup, project load), drop the stale
+  // fingerprint so the next diff-build effect run re-computes against the
+  // fresh pair instead of returning silently from the cache-hit branch.
+  // Depend on the actual values (not the pdfFixResult reference) so cosmetic
+  // spreads that don't touch source/final don't cause unnecessary resets.
+  useEffect(() => {
+    _lastDiffFingerprintRef.current = null;
+  }, [pdfFixResult && pdfFixResult.sourceText, pdfFixResult && pdfFixResult.finalText]);
   useEffect(() => {
     if (!diffChunks || !_lastDiffFingerprintRef.current) return;
     try {
@@ -9639,8 +9669,14 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     }
     if (_pdfFixAutoOpenHandledRef.current) return;
     _pdfFixAutoOpenHandledRef.current = true;
+    // Always pre-load jsdiff once we have an auditable result, regardless of
+    // pdfFixMode. Previously this only ran in 'review' mode, so 'auto' (the
+    // default) paid a fresh-load round-trip on every first Diff click —
+    // creating a race where the click handler awaited the script while the
+    // diff-build effect bailed silently with diffLibReady=false. Lifting it
+    // out of the branch eliminates that first-click race.
+    if (typeof _ensureDiffLib === 'function') _ensureDiffLib();
     if (pdfFixMode === 'review') {
-      if (typeof _ensureDiffLib === 'function') _ensureDiffLib();
       setDiffViewOpen(true);
       if (typeof addToast === 'function') addToast('Review mode: Diff view opened — inspect source ↔ remediated fidelity.', 'info');
     } else if (pdfFixMode === 'expert') {
@@ -43769,7 +43805,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                         <div className="ml-auto inline-flex items-center gap-1 shrink-0">
                                           <button
                                             onClick={async () => {
-                                            console.debug('[Diff] Button clicked — diffLibReady=' + diffLibReady + ', window.Diff=' + !!window.Diff);
+                                            try { if (typeof window !== 'undefined') { window._diffDiagnostic = window._diffDiagnostic || []; window._diffDiagnostic.push({ ts: new Date().toISOString(), msg: 'button clicked', source: 'click', diffLibReady, hasWindowDiff: !!window.Diff, hasResult: !!pdfFixResult, srcLen: pdfFixResult && pdfFixResult.sourceText ? pdfFixResult.sourceText.length : null, finLen: pdfFixResult && pdfFixResult.finalText ? pdfFixResult.finalText.length : null }); console.warn('[Diff] button clicked — diffLibReady=' + diffLibReady + ', window.Diff=' + !!window.Diff); } } catch (_) {}
                                             setDiffViewOpen(true);
                                             const ok = await _ensureDiffLib();
                                             if (!ok) {
@@ -43800,7 +43836,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                       {_hasDiffInputs && (
                                         <button
                                           onClick={async () => {
-                                            console.debug('[Diff] Button clicked — diffLibReady=' + diffLibReady + ', window.Diff=' + !!window.Diff);
+                                            try { if (typeof window !== 'undefined') { window._diffDiagnostic = window._diffDiagnostic || []; window._diffDiagnostic.push({ ts: new Date().toISOString(), msg: 'button clicked', source: 'click', diffLibReady, hasWindowDiff: !!window.Diff, hasResult: !!pdfFixResult, srcLen: pdfFixResult && pdfFixResult.sourceText ? pdfFixResult.sourceText.length : null, finLen: pdfFixResult && pdfFixResult.finalText ? pdfFixResult.finalText.length : null }); console.warn('[Diff] button clicked — diffLibReady=' + diffLibReady + ', window.Diff=' + !!window.Diff); } } catch (_) {}
                                             setDiffViewOpen(true);
                                             const ok = await _ensureDiffLib();
                                             if (!ok) {
@@ -43942,7 +43978,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                           {pdfFixResult.sourceText && pdfFixResult.finalText && (
                                             <button
                                               onClick={async () => {
-                                            console.debug('[Diff] Button clicked — diffLibReady=' + diffLibReady + ', window.Diff=' + !!window.Diff);
+                                            try { if (typeof window !== 'undefined') { window._diffDiagnostic = window._diffDiagnostic || []; window._diffDiagnostic.push({ ts: new Date().toISOString(), msg: 'button clicked', source: 'click', diffLibReady, hasWindowDiff: !!window.Diff, hasResult: !!pdfFixResult, srcLen: pdfFixResult && pdfFixResult.sourceText ? pdfFixResult.sourceText.length : null, finLen: pdfFixResult && pdfFixResult.finalText ? pdfFixResult.finalText.length : null }); console.warn('[Diff] button clicked — diffLibReady=' + diffLibReady + ', window.Diff=' + !!window.Diff); } } catch (_) {}
                                             setDiffViewOpen(true);
                                             const ok = await _ensureDiffLib();
                                             if (!ok) {
@@ -44212,6 +44248,30 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                           {!diffLibReady && !diffLibLoading && (
                                             <div className="text-sm text-rose-700 bg-rose-50 border border-rose-200 rounded-lg p-3">
                                               Couldn't load the diff engine (network blocked?). Try re-opening the diff view, or check your connection.
+                                            </div>
+                                          )}
+                                          {/* Fallback branch — lib loaded but chunks haven't built yet
+                                              (cache-hit-with-null-chunks, race, or empty source/final).
+                                              Without this branch the modal renders blank, which the user
+                                              perceives as "didn't open." Provides a manual rebuild path. */}
+                                          {diffLibReady && !_chunks && !diffLibLoading && (
+                                            <div className="text-sm text-amber-800 bg-amber-50 border border-amber-300 rounded-lg p-3 flex items-center gap-3">
+                                              <RefreshCw size={14} className="animate-spin shrink-0" />
+                                              <div className="flex-1">
+                                                <div className="font-bold mb-1">Computing diff…</div>
+                                                <div className="text-[12px] text-amber-700 leading-relaxed">If this persists, the source text and remediated HTML may have drifted out of sync (or the diff cache is stale).</div>
+                                              </div>
+                                              <button
+                                                onClick={() => {
+                                                  try { _lastDiffFingerprintRef.current = null; } catch (_) {}
+                                                  setDiffChunks(null);
+                                                  // Touch granularity to force the build effect to re-run
+                                                  // (no-op state change retriggers the dep array).
+                                                  setDiffGranularity(g => g);
+                                                }}
+                                                className="shrink-0 px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-md font-bold text-[12px]"
+                                                title="Clear the diff cache and recompute chunks against the current source ↔ remediated pair."
+                                              >Rebuild diff</button>
                                             </div>
                                           )}
                                           {diffLibReady && _chunks && (
@@ -45440,7 +45500,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         {pdfFixResult.sourceText && pdfFixResult.finalText && (
                           <button
                             onClick={async () => {
-                                            console.debug('[Diff] Button clicked — diffLibReady=' + diffLibReady + ', window.Diff=' + !!window.Diff);
+                                            try { if (typeof window !== 'undefined') { window._diffDiagnostic = window._diffDiagnostic || []; window._diffDiagnostic.push({ ts: new Date().toISOString(), msg: 'button clicked', source: 'click', diffLibReady, hasWindowDiff: !!window.Diff, hasResult: !!pdfFixResult, srcLen: pdfFixResult && pdfFixResult.sourceText ? pdfFixResult.sourceText.length : null, finLen: pdfFixResult && pdfFixResult.finalText ? pdfFixResult.finalText.length : null }); console.warn('[Diff] button clicked — diffLibReady=' + diffLibReady + ', window.Diff=' + !!window.Diff); } } catch (_) {}
                                             setDiffViewOpen(true);
                                             const ok = await _ensureDiffLib();
                                             if (!ok) {
@@ -49498,7 +49558,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     {pdfFixResult && pdfFixResult.sourceText && pdfFixResult.finalText && (
                       <button
                         onClick={async () => {
-                                            console.debug('[Diff] Button clicked — diffLibReady=' + diffLibReady + ', window.Diff=' + !!window.Diff);
+                                            try { if (typeof window !== 'undefined') { window._diffDiagnostic = window._diffDiagnostic || []; window._diffDiagnostic.push({ ts: new Date().toISOString(), msg: 'button clicked', source: 'click', diffLibReady, hasWindowDiff: !!window.Diff, hasResult: !!pdfFixResult, srcLen: pdfFixResult && pdfFixResult.sourceText ? pdfFixResult.sourceText.length : null, finLen: pdfFixResult && pdfFixResult.finalText ? pdfFixResult.finalText.length : null }); console.warn('[Diff] button clicked — diffLibReady=' + diffLibReady + ', window.Diff=' + !!window.Diff); } } catch (_) {}
                                             setDiffViewOpen(true);
                                             const ok = await _ensureDiffLib();
                                             if (!ok) {
