@@ -100,6 +100,27 @@ window.StemLab = window.StemLab || {
   function sfxLandClean() { skTone(180, 0.12, 'triangle', 0.07); setTimeout(function() { skTone(360, 0.08, 'sine', 0.06); }, 60); }
   function sfxBail() { skTone(85, 0.32, 'sawtooth', 0.08); setTimeout(function() { skTone(60, 0.18, 'square', 0.05); }, 80); }
   function sfxPump() { skTone(220, 0.12, 'sine', 0.05); skTone(330, 0.10, 'triangle', 0.04); }
+  // Pre-attempt cue — quick 4-step rising sweep so the start of the
+  // animation has a felt moment of "here we go."
+  function sfxTakeoff() {
+    if (isMuted()) return;
+    [180, 240, 320, 460].forEach(function(f, i) {
+      setTimeout(function() { skTone(f, 0.08, 'triangle', 0.05); }, i * 35);
+    });
+  }
+  // Streak fanfare — tier picks the chord. Hot Streak = bright major
+  // triad, On Fire = open fifth + brighter timbre, Going Off = full
+  // arpeggio with a final overtone. Skipped if already muted.
+  function sfxStreakTier(tierId) {
+    if (isMuted()) return;
+    var notes;
+    if (tierId === 'going_off')   notes = [{ f: 392, t: 'square' }, { f: 523, t: 'square' }, { f: 659, t: 'square' }, { f: 784, t: 'sine' }, { f: 988, t: 'sine' }];
+    else if (tierId === 'on_fire') notes = [{ f: 349, t: 'square' }, { f: 523, t: 'square' }, { f: 698, t: 'sine' }, { f: 880, t: 'sine' }];
+    else                            notes = [{ f: 261, t: 'triangle' }, { f: 329, t: 'triangle' }, { f: 392, t: 'sine' }];
+    notes.forEach(function(n, i) {
+      setTimeout(function() { skTone(n.f, 0.16, n.t, 0.07); }, i * 70);
+    });
+  }
 
   // ── Physics constants ────────────────────────────────────────────
   // SI units throughout (meters / seconds). Visible numbers translated
@@ -856,7 +877,21 @@ window.StemLab = window.StemLab || {
         progress: function(d) { return ((d.predictionStats && d.predictionStats.withinTen) || 0) + '/3 within 10%'; } },
       { id: 'sk_streak_5', label: 'Land a 5-trick Hot Streak', icon: '🔥',
         check: function(d) { return ((d.streak && d.streak.longest) || 0) >= 5; },
-        progress: function(d) { return ((d.streak && d.streak.longest) || 0) + '/5 longest streak'; } }
+        progress: function(d) { return ((d.streak && d.streak.longest) || 0) + '/5 longest streak'; } },
+      { id: 'sk_master_3', label: 'Master 3 different tricks', icon: '👑',
+        check: function(d) {
+          var u = d.tricksUsed || {};
+          var n = 0;
+          Object.keys(u).forEach(function(k) { if ((u[k] || 0) >= 5) n++; });
+          return n >= 3;
+        },
+        progress: function(d) {
+          var u = d.tricksUsed || {};
+          var n = 0;
+          Object.keys(u).forEach(function(k) { if ((u[k] || 0) >= 5) n++; });
+          return n + '/3 mastered';
+        }
+      }
     ],
     render: function(ctx) {
       var React = ctx.React;
@@ -896,6 +931,12 @@ window.StemLab = window.StemLab || {
             biggestSpin: 0,
             tricksUsed: {},
             landedTricks: {},
+            // Per-trick attempt counter for the Mastery Tree. The
+            // existing `tricksUsed` only bumps on a *landed* attempt
+            // (it's effectively a per-trick lands counter despite
+            // the name); this fills in the attempts side so the
+            // mastery panel can show "tried but never landed" tricks.
+            trickAttempts: {},
             scenariosTried: {},
             bmxLanded: false,
             // Personal bests across the lifetime of the toolData
@@ -954,6 +995,34 @@ window.StemLab = window.StemLab || {
 
       var canvasRef = React.useRef(null);
       var cancelAnimRef = React.useRef(null);
+
+      // ── Mute mirror ─────────────────────────────────────────────
+      // The module-level toggleMute() updates localStorage, but the
+      // UI button needs a React state cell to re-render its label /
+      // pressed state on flip. Initialize from localStorage so the
+      // preference persists across sessions and tabs.
+      var muteState = React.useState(isMuted());
+      var muted = muteState[0], setMuted = muteState[1];
+      function toggleMuteUI() {
+        toggleMute();
+        var nextMuted = isMuted();
+        setMuted(nextMuted);
+        skAnnounce(nextMuted ? 'Sound off.' : 'Sound on.');
+        if (!nextMuted) skTone(440, 0.08, 'sine', 0.06); // sound-on chime
+      }
+
+      // 'M' keyboard shortcut. Skip when typing in inputs/textareas
+      // so it doesn't hijack the prediction or scenario-name fields.
+      React.useEffect(function() {
+        var onKey = function(e) {
+          if (e.key !== 'm' && e.key !== 'M') return;
+          var t = e.target;
+          if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+          toggleMuteUI();
+        };
+        window.addEventListener('keydown', onKey);
+        return function() { window.removeEventListener('keydown', onKey); };
+      }, [muted]);
 
       // Generate a fresh gap on each "New Gap" press
       function newGap() {
@@ -1071,7 +1140,7 @@ window.StemLab = window.StemLab || {
         upd({
           landings: 0, bails: 0, attempts: 0,
           longestGap: 0, biggestSpin: 0,
-          tricksUsed: {}, landedTricks: {},
+          tricksUsed: {}, landedTricks: {}, trickAttempts: {},
           scenariosTried: {}, bmxLanded: false,
           bestHalfpipeScore: 0, bestGapScore: 0, bestAirFt: 0,
           coachOpens: 0, coachResponse: null,
@@ -1255,6 +1324,19 @@ window.StemLab = window.StemLab || {
       // ThrowLab's Hot-Hand: a clear early reward at 3, a louder one
       // at 5, then a peak at 7 that's reachable but not gimmie. Each
       // tier carries an XP multiplier and color/glow for visual cues.
+      // Mastery tier for a single trick. Lands count is the primary
+      // signal — attempts only differentiate "untried" from "tried
+      // but never landed." Tiers chosen so every trick has a clear
+      // next step (Tried → Landed → Solid → Mastered) without making
+      // Mastered grindy (5 lands is reachable in a single session).
+      function _trickMastery(attempts, lands) {
+        if ((lands || 0) >= 5) return { id: 'mastered', label: 'Mastered', icon: '👑', color: '#a855f7', bg: 'rgba(168,85,247,0.18)' };
+        if ((lands || 0) >= 3) return { id: 'solid',    label: 'Solid',    icon: '💪', color: '#22c55e', bg: 'rgba(34,197,94,0.18)' };
+        if ((lands || 0) >= 1) return { id: 'landed',   label: 'Landed',   icon: '🎯', color: '#fbbf24', bg: 'rgba(251,191,36,0.18)' };
+        if ((attempts || 0) >= 1) return { id: 'tried', label: 'Tried',    icon: '🔓', color: '#94a3b8', bg: 'rgba(148,163,184,0.18)' };
+        return { id: 'locked', label: 'Locked', icon: '🔒', color: '#64748b', bg: 'rgba(71,85,105,0.18)' };
+      }
+
       function _streakTier(n) {
         if (n >= 7) return { id: 'going_off', label: 'Going Off!!', icon: '🚀', mult: 2.5, color: '#fb7185', glow: 'rgba(251,113,133,0.45)' };
         if (n >= 5) return { id: 'on_fire',   label: 'On Fire!',    icon: '🌶️', mult: 2.0, color: '#f97316', glow: 'rgba(249,115,22,0.45)' };
@@ -1328,7 +1410,12 @@ window.StemLab = window.StemLab || {
           vehicle: d.vehicle, gravity: d.gravity,
           surfaceId: d.surfaceId
         });
-        upd({ running: true, lastResult: null, lastSim: sim, attempts: (d.attempts || 0) + 1 });
+        // Bump per-trick attempt count up front (before sim resolves)
+        // so a bail still counts as an attempt for the mastery tree.
+        var nextTrickAttempts = Object.assign({}, d.trickAttempts || {});
+        nextTrickAttempts[d.trickId] = (nextTrickAttempts[d.trickId] || 0) + 1;
+        upd({ running: true, lastResult: null, lastSim: sim, attempts: (d.attempts || 0) + 1, trickAttempts: nextTrickAttempts });
+        sfxTakeoff();
         if (cancelAnimRef.current) cancelAnimRef.current();
         cancelAnimRef.current = animateHalfpipe(canvasRef.current, sim, {
           onDone: function() {
@@ -1361,6 +1448,7 @@ window.StemLab = window.StemLab || {
               bumps.bestAirFt = Math.max(d.bestAirFt || 0, +(sim.hAir * M2FT).toFixed(2));
               if (sim.vehicle.id === 'bmx') bumps.bmxLanded = true;
               if (awardXP) awardXP(sk.totalScore, 'SkateLab — ' + sim.trick.label + (sk.tier ? ' ' + sk.tier.icon : ''), 'skatelab');
+              if (sk.gained) sfxStreakTier(sk.tier.id);
               if (addToast) {
                 var msg = sk.gained
                   ? sk.tier.icon + ' ' + sk.tier.label + ' (×' + sk.tier.mult + ') — ' + sim.trick.label + ' +' + sk.totalScore + ' XP'
@@ -1391,6 +1479,7 @@ window.StemLab = window.StemLab || {
           vehicle: d.vehicle, gravity: d.gravity, windId: d.windId
         });
         upd({ running: true, lastResult: null, lastSim: sim, attempts: (d.attempts || 0) + 1 });
+        sfxTakeoff();
         if (cancelAnimRef.current) cancelAnimRef.current();
         cancelAnimRef.current = animateGapJump(canvasRef.current, sim, {
           onDone: function() {
@@ -1415,6 +1504,7 @@ window.StemLab = window.StemLab || {
               bumps.longestGap = Math.max(d.longestGap || 0, sim.gapFt);
               bumps.bestGapScore = Math.max(d.bestGapScore || 0, skG.totalScore);
               if (awardXP) awardXP(skG.totalScore, 'SkateLab — ' + sim.gapFt + 'ft gap' + (skG.tier ? ' ' + skG.tier.icon : ''), 'skatelab');
+              if (skG.gained) sfxStreakTier(skG.tier.id);
               if (addToast) {
                 var gMsg = skG.gained
                   ? skG.tier.icon + ' ' + skG.tier.label + ' (×' + skG.tier.mult + ') — ' + sim.gapFt + 'ft +' + skG.totalScore + ' XP'
@@ -1858,7 +1948,24 @@ window.StemLab = window.StemLab || {
         // projectile range formula plus the wind-adjusted variant
         // when wind ≠ calm. Updates every render so changing a
         // slider re-evaluates the math without an attempt being run.
-        h('div', { style: { display: 'flex', justifyContent: 'flex-end', marginBottom: 6 } },
+        h('div', { style: { display: 'flex', justifyContent: 'flex-end', gap: 6, marginBottom: 6 } },
+          // Mute toggle — gates every skTone call. Persists in
+          // localStorage so a teacher who silences the classroom
+          // doesn't have to re-mute every reload. Also bound to 'M'.
+          h('button', {
+            onClick: toggleMuteUI,
+            'aria-pressed': muted,
+            'aria-label': muted ? 'Sound off. Press to unmute.' : 'Sound on. Press to mute.',
+            'data-sk-focusable': 'true',
+            title: 'Mute / unmute (M key)',
+            style: {
+              padding: '4px 10px', fontSize: 10, fontWeight: 700,
+              background: muted ? 'rgba(251,191,36,0.20)' : 'rgba(254,243,199,0.06)',
+              color: muted ? '#fbbf24' : '#94a3b8',
+              border: '1px solid ' + (muted ? 'rgba(251,191,36,0.55)' : 'rgba(254,243,199,0.20)'),
+              borderRadius: 999, cursor: 'pointer', minHeight: 26
+            }
+          }, muted ? '🔇 Muted' : '🔊 Sound'),
           h('button', {
             onClick: function() { upd('showFormula', !d.showFormula); skAnnounce(d.showFormula ? 'Formula panel hidden.' : 'Formula panel shown.'); },
             'aria-pressed': !!d.showFormula,
@@ -1989,7 +2096,90 @@ window.StemLab = window.StemLab || {
               })
             ),
             h('p', { style: { margin: '6px 0 0', fontSize: 10, color: '#94a3b8' } },
-              'Selected: ' + getTrick(d.trickId).rotation + '° rotation · needs ≥ ' + getTrick(d.trickId).minAir.toFixed(2) + 's air')
+              'Selected: ' + getTrick(d.trickId).rotation + '° rotation · needs ≥ ' + getTrick(d.trickId).minAir.toFixed(2) + 's air'),
+            // ── Mastery Tree ─────────────────────────────────────
+            // Surfaces per-trick attempts/lands as a 6-card mastery
+            // dashboard. Closed by default (uses native <details>) so
+            // students who want to grind one trick aren't crowded by
+            // the panel; teachers can open it for "what tricks have
+            // you tried?" conversations. Click a card to select that
+            // trick — turns the panel into a discovery surface for
+            // students who don't know what's available.
+            h('details', { style: { marginTop: 10 } },
+              h('summary', {
+                style: {
+                  cursor: 'pointer', color: '#fbbf24', fontWeight: 700,
+                  fontSize: 11, letterSpacing: '0.04em', textTransform: 'uppercase',
+                  padding: '4px 0', userSelect: 'none'
+                }
+              },
+                (function() {
+                  var counts = TRICKS.reduce(function(acc, tk) {
+                    var lands = (d.tricksUsed || {})[tk.id] || 0;
+                    var attempts = (d.trickAttempts || {})[tk.id] || 0;
+                    var m = _trickMastery(attempts, lands);
+                    acc[m.id] = (acc[m.id] || 0) + 1;
+                    return acc;
+                  }, {});
+                  var mastered = counts.mastered || 0;
+                  var landed = (counts.mastered || 0) + (counts.solid || 0) + (counts.landed || 0);
+                  return '🎯 Mastery Tree — ' + landed + '/' + TRICKS.length + ' landed · ' + mastered + ' mastered';
+                })()
+              ),
+              h('div', {
+                style: {
+                  display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8,
+                  marginTop: 10
+                }
+              },
+                TRICKS.map(function(tk) {
+                  var lands = (d.tricksUsed || {})[tk.id] || 0;
+                  var attempts = (d.trickAttempts || {})[tk.id] || 0;
+                  // Defensive: if old toolData has landedTricks[id]=true
+                  // but no count, treat as 1 land.
+                  if (lands === 0 && (d.landedTricks || {})[tk.id]) lands = 1;
+                  // And if attempts < lands (mid-migration), bump up.
+                  if (attempts < lands) attempts = lands;
+                  var m = _trickMastery(attempts, lands);
+                  var nextThreshold = lands < 1 ? 1 : lands < 3 ? 3 : lands < 5 ? 5 : null;
+                  var sel = d.trickId === tk.id;
+                  return h('button', {
+                    key: 'mt-' + tk.id,
+                    onClick: function() { upd('trickId', tk.id); skAnnounce('Selected ' + tk.label); },
+                    disabled: d.running,
+                    'aria-label': tk.label + ', ' + m.label + ', ' + lands + ' land' + (lands === 1 ? '' : 's') + ', ' + attempts + ' attempt' + (attempts === 1 ? '' : 's'),
+                    'data-sk-focusable': 'true',
+                    style: {
+                      textAlign: 'left', padding: 10, borderRadius: 10,
+                      background: m.bg,
+                      border: '2px solid ' + (sel ? '#fbbf24' : m.color),
+                      cursor: d.running ? 'not-allowed' : 'pointer',
+                      display: 'flex', flexDirection: 'column', gap: 4,
+                      opacity: d.running ? 0.7 : 1
+                    }
+                  },
+                    h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 800, color: '#fef3c7' } },
+                      h('span', { style: { fontSize: 18 } }, tk.emoji),
+                      h('span', null, tk.label),
+                      h('span', { style: { marginLeft: 'auto', fontSize: 10, padding: '1px 6px', background: 'rgba(15,23,42,0.5)', color: m.color, borderRadius: 999, border: '1px solid ' + m.color, fontWeight: 800 } }, m.icon + ' ' + m.label)
+                    ),
+                    h('div', { style: { fontSize: 10, color: '#cbd5e1', display: 'flex', justifyContent: 'space-between', gap: 4, fontFamily: 'monospace' } },
+                      h('span', null, tk.rotation + '° · needs ' + tk.minAir.toFixed(2) + 's air'),
+                      h('span', null, '🎯 ' + lands + ' / 🛹 ' + attempts)
+                    ),
+                    nextThreshold && h('div', {
+                      role: 'progressbar',
+                      'aria-valuemin': 0,
+                      'aria-valuemax': nextThreshold,
+                      'aria-valuenow': lands,
+                      style: { height: 4, background: 'rgba(15,23,42,0.5)', borderRadius: 2, overflow: 'hidden', marginTop: 2 }
+                    },
+                      h('div', { style: { height: '100%', width: Math.min(100, (lands / nextThreshold) * 100) + '%', background: m.color, transition: 'width 240ms ease' } })
+                    )
+                  );
+                })
+              )
+            )
           )
         ),
         d.mode === 'gap' && h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 12 } },
