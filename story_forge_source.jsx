@@ -2576,12 +2576,12 @@ show();
                       id="sf-title"
                       type="text" value={storyTitle} onChange={(e) => setStoryTitle(e.target.value)}
                       placeholder="Give your story a title..."
-                      className="w-full text-sm p-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-rose-300 outline-none font-bold"
+                      className="w-full text-sm p-2.5 border border-slate-400 rounded-lg focus:ring-2 focus:ring-rose-300 outline-none font-bold"
                     />
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">Pen Name</label>
-                    <div className="w-full text-sm p-2.5 border border-slate-200 rounded-lg bg-slate-50 font-bold text-slate-700 flex items-center gap-2">
+                    <div className="w-full text-sm p-2.5 border border-slate-400 rounded-lg bg-slate-50 font-bold text-slate-700 flex items-center gap-2">
                       <span className="text-base">✍️</span> {authorName}
                     </div>
                     <p className="text-[11px] text-slate-500 mt-1">Your codename is your pen name — it keeps your identity private</p>
@@ -2633,14 +2633,14 @@ show();
                     onKeyDown={(e) => e.key === 'Enter' && addVocabTerm()}
                     placeholder="Add a term..."
                     aria-label="Vocabulary term"
-                    className="flex-1 text-sm p-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-rose-300 outline-none"
+                    className="flex-1 text-sm p-2 border border-slate-400 rounded-lg focus:ring-2 focus:ring-rose-300 outline-none"
                   />
                   <input
                     type="text" value={newDef} onChange={(e) => setNewDef(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && addVocabTerm()}
                     placeholder="Definition (optional)"
                     aria-label="Term definition"
-                    className="flex-1 text-sm p-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-rose-300 outline-none"
+                    className="flex-1 text-sm p-2 border border-slate-400 rounded-lg focus:ring-2 focus:ring-rose-300 outline-none"
                   />
                   <button onClick={addVocabTerm} disabled={!newTerm.trim()} className="px-4 py-2 bg-rose-600 text-white rounded-lg text-sm font-bold hover:bg-rose-700 disabled:opacity-50 transition-colors flex items-center gap-1">
                     <Plus size={14} /> Add
@@ -2692,7 +2692,7 @@ show();
                     type="text" value={customArtStyle} onChange={(e) => setCustomArtStyle(e.target.value)}
                     placeholder="Describe your custom art style..."
                     aria-label="Custom art style description"
-                    className="mt-3 w-full text-sm p-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-purple-300 outline-none"
+                    className="mt-3 w-full text-sm p-2 border border-slate-400 rounded-lg focus:ring-2 focus:ring-purple-300 outline-none"
                   />
                 )}
               </div>
@@ -2720,7 +2720,7 @@ show();
                     type="text" value={customLanguage} onChange={(e) => setCustomLanguage(e.target.value)}
                     placeholder="Type your language (e.g., Swahili, Haitian Creole, Hmong...)"
                     aria-label="Custom writing language"
-                    className="mt-3 w-full text-sm p-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-300 outline-none"
+                    className="mt-3 w-full text-sm p-2 border border-slate-400 rounded-lg focus:ring-2 focus:ring-teal-300 outline-none"
                   />
                 )}
                 {language !== 'en' && <p className="mt-2 text-[11px] text-teal-500 font-medium">AI scaffolds, coaching, grading, and dictation will use {langLabel}</p>}
@@ -2735,7 +2735,7 @@ show();
                   value={storyPrompt} onChange={(e) => setStoryPrompt(e.target.value)}
                   placeholder="Give your students a theme or starting scenario... e.g., 'Write about a scientist who discovers something unexpected'"
                   aria-label="Story prompt"
-                  className="w-full text-sm p-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-amber-300 outline-none resize-none h-20"
+                  className="w-full text-sm p-3 border border-slate-400 rounded-lg focus:ring-2 focus:ring-amber-300 outline-none resize-none h-20"
                 />
 
                 {/* Story Starters */}
@@ -2769,7 +2769,7 @@ show();
                   id="sf-rubric"
                   value={rubricText} onChange={(e) => setRubricText(e.target.value)}
                   placeholder={"| Criteria | 1 - Beginning | 3 - Developing | 5 - Exemplary |\n|----------|---------------|----------------|---------------|\n| Vocabulary | Few terms used | Some terms used | All terms used correctly |"}
-                  className="w-full text-xs p-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-300 outline-none resize-none h-24 font-mono"
+                  className="w-full text-xs p-3 border border-slate-400 rounded-lg focus:ring-2 focus:ring-emerald-300 outline-none resize-none h-24 font-mono"
                   aria-label="Custom grading rubric"
                 />
               </div>
@@ -2897,7 +2897,7 @@ show();
                         <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 bg-slate-800 text-white rounded-xl p-3 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 pointer-events-none">
                           <div className="text-xs font-bold text-amber-300 mb-1">{v.term}</div>
                           {v.definition && <div className="text-[11px] text-slate-300 leading-relaxed mb-1">{v.definition}</div>}
-                          <div className="text-[11px] text-slate-500 italic">Click to copy · Paste into your paragraph</div>
+                          <div className="text-[11px] text-slate-300 italic">Click to copy · Paste into your paragraph</div>
                           <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 w-0 h-0 border-l-[6px] border-r-[6px] border-t-[6px] border-transparent border-t-slate-800" />
                         </div>
                       </div>
@@ -3160,7 +3160,7 @@ show();
                         className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold border transition-all ${
                           hwPenmanshipOn
                             ? (layoutMode === 'dark' ? 'bg-cyan-900 border-cyan-600 text-cyan-300' : 'bg-violet-100 border-violet-300 text-violet-700')
-                            : (layoutMode === 'dark' ? 'bg-slate-800 border-slate-600 text-slate-600 hover:border-cyan-600' : 'bg-slate-50 border-slate-200 text-slate-500 hover:border-violet-300 hover:text-violet-500')
+                            : (layoutMode === 'dark' ? 'bg-slate-800 border-slate-600 text-slate-300 hover:border-cyan-600' : 'bg-slate-50 border-slate-200 text-slate-500 hover:border-violet-300 hover:text-violet-500')
                         }`}
                       >
                         ✏️ Penmanship Tips {hwPenmanshipOn ? 'ON' : 'OFF'}
@@ -3196,7 +3196,7 @@ show();
                   {/* Per-paragraph strength indicator + vocab reminder */}
                   {p.text.length > 0 && (
                     <div className={`px-4 py-1.5 border-t flex flex-wrap items-center gap-3 text-[11px] font-medium ${
-                      layoutMode === 'dark' ? 'bg-slate-900 border-slate-700 text-slate-600' : 'bg-slate-50 border-slate-100 text-slate-500'
+                      layoutMode === 'dark' ? 'bg-slate-900 border-slate-700 text-slate-300' : 'bg-slate-50 border-slate-100 text-slate-500'
                     }`}>
                       <span>{paragraphStats[idx]?.wordCount || 0} words</span>
                       <span>·</span>
