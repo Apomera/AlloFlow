@@ -8617,7 +8617,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                   }
                   if (data.bridgePayload && data.bridgePayload.timestamp && (Date.now() - data.bridgePayload.timestamp > 86400000)) {
                     try {
-                      const staleRef = doc(db, 'artifacts', effectiveAppId, 'public', 'data', 'sessions', activeSessionCode);
+                      const staleRef = doc(db, 'artifacts', activeSessionAppId, 'public', 'data', 'sessions', activeSessionCode);
                       updateDoc(staleRef, { bridgePayload: deleteField(), bridgeChat: deleteField() }).catch(() => {});
                     } catch(e) { /* ignore */ }
                   }
