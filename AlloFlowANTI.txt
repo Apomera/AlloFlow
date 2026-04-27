@@ -5169,6 +5169,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         'stem_lab/stem_tool_geometryworld.js',
         'stem_lab/stem_tool_spaceexplorer.js',
         'stem_lab/stem_tool_roadready.js',
+        'stem_lab/stem_tool_firstresponse.js',
         'stem_lab/stem_tool_bikelab.js',
         'stem_lab/stem_tool_bakingscience.js',
         'stem_lab/stem_tool_allobotsage.js',
@@ -8707,6 +8708,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                             debugLog('Bridge: Local generation complete, panel displayed');
                           } catch(err) {
                             warnLog('Bridge: Generation failed on student device', err);
+                            try { addToast(t('toasts.bridge_translation_failed') || 'Live translation unavailable — showing original.', 'warning'); } catch(_) {}
                             setBridgeMessage({
                               english: bp.text,
                               translated: '',
@@ -8820,8 +8822,14 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           }
       }, (err) => {
           warnLog("Session Sync Error:", err);
+          // Reset connection state so a re-attach (e.g., on auth refresh) is possible.
+          hasConnectedRef.current = false;
           if (err.code === 'permission-denied') {
-              addToast(t('toasts.access_denied'), "error");
+              addToast(t('toasts.access_denied') || 'Session access denied — please rejoin to reconnect.', "error");
+              // Tear down the dead listener; useEffect will re-fire if activeSessionCode changes.
+              try { if (sessionUnsubscribeRef.current) { sessionUnsubscribeRef.current(); sessionUnsubscribeRef.current = null; } } catch (_) {}
+          } else {
+              addToast(t('toasts.session_sync_error') || 'Session sync interrupted — check connection.', "warning");
           }
       });
       sessionUnsubscribeRef.current = unsubscribe;

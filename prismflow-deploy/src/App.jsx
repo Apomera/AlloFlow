@@ -8820,8 +8820,14 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           }
       }, (err) => {
           warnLog("Session Sync Error:", err);
+          // Reset connection state so a re-attach (e.g., on auth refresh) is possible.
+          hasConnectedRef.current = false;
           if (err.code === 'permission-denied') {
-              addToast(t('toasts.access_denied'), "error");
+              addToast(t('toasts.access_denied') || 'Session access denied — please rejoin to reconnect.', "error");
+              // Tear down the dead listener; useEffect will re-fire if activeSessionCode changes.
+              try { if (sessionUnsubscribeRef.current) { sessionUnsubscribeRef.current(); sessionUnsubscribeRef.current = null; } } catch (_) {}
+          } else {
+              addToast(t('toasts.session_sync_error') || 'Session sync interrupted — check connection.', "warning");
           }
       });
       sessionUnsubscribeRef.current = unsubscribe;
