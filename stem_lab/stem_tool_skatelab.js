@@ -1065,6 +1065,8 @@ window.StemLab = window.StemLab || {
           scenariosTried: {}, bmxLanded: false,
           bestHalfpipeScore: 0, bestGapScore: 0, bestAirFt: 0,
           coachOpens: 0, coachResponse: null,
+          predictionStats: { count: 0, totalErrPct: 0, bestPct: null, withinTen: 0 },
+          predictionInput: '',
           lastResult: null, lastSim: null, activeScenarioId: null,
           resetConfirmOpen: false,
           customScenarios: preserved
