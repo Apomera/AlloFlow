@@ -1791,6 +1791,11 @@
         if (e.key === 'm' || e.key === 'M') { _toggleMute(); return; }
         if (e.key === 'f' || e.key === 'F') { setFullscreen(function(v) { return !v; }); return; }
         if (paused) return;
+        // Explorer Mode keyboard rotate — Q/E rotate the camera 30° each
+        // press so keyboard-only users get free-look without a mouse.
+        // Classic ignores these keys (yaw stays at 0 there anyway).
+        if (isExplorer && (e.key === 'q' || e.key === 'Q')) { lookYawRef.current -= Math.PI / 6; return; }
+        if (isExplorer && (e.key === 'e' || e.key === 'E')) { lookYawRef.current += Math.PI / 6; return; }
         if (e.key === 'ArrowUp' || e.key === 'w') tryMove('up');
         if (e.key === 'ArrowDown' || e.key === 's') tryMove('down');
         if (e.key === 'ArrowLeft' || e.key === 'a') tryMove('left');
@@ -1896,6 +1901,30 @@
           if (cell.walls.right) { ctx.beginPath(); ctx.moveTo(x + CELL_SIZE, y); ctx.lineTo(x + CELL_SIZE, y + CELL_SIZE); ctx.stroke(); }
           if (cell.walls.bottom) { ctx.beginPath(); ctx.moveTo(x, y + CELL_SIZE); ctx.lineTo(x + CELL_SIZE, y + CELL_SIZE); ctx.stroke(); }
           if (cell.walls.left) { ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y + CELL_SIZE); ctx.stroke(); }
+          // Explorer Mode — highlight solved passages with a small gold
+          // dot at the midpoint of each opened doorway. Builds a visible
+          // trail of "doors I've already unlocked" without revealing
+          // unexplored layout. Only checks the right/bottom passages so
+          // each shared passage is drawn exactly once.
+          if (isExplorer) {
+            var solved = solvedPathsRef.current;
+            if (!cell.walls.right && c < MAZE_COLS - 1) {
+              if (solved[_pathKey(r, c, r, c + 1)]) {
+                ctx.fillStyle = 'rgba(251,191,36,0.85)';
+                ctx.beginPath();
+                ctx.arc(x + CELL_SIZE, y + CELL_SIZE / 2, 3, 0, Math.PI * 2);
+                ctx.fill();
+              }
+            }
+            if (!cell.walls.bottom && r < MAZE_ROWS - 1) {
+              if (solved[_pathKey(r, c, r + 1, c)]) {
+                ctx.fillStyle = 'rgba(251,191,36,0.85)';
+                ctx.beginPath();
+                ctx.arc(x + CELL_SIZE / 2, y + CELL_SIZE, 3, 0, Math.PI * 2);
+                ctx.fill();
+              }
+            }
+          }
         }
       }
 
@@ -2049,6 +2078,33 @@
       ctx.font = '22px sans-serif'; ctx.textAlign = 'center';
       ctx.fillStyle = '#fff';
       ctx.fillText(playerAvatar || '\uD83D\uDC31', pcx, pcy + 6);
+
+      // Explorer Mode - draw a small yaw indicator (filled triangle)
+      // pointing in the direction the camera is currently facing, so the
+      // player can ground their orientation against the minimap. Yaw is
+      // read from lookYawRef; 0 = facing +z (down on the map).
+      if (isExplorer) {
+        var yawA = lookYawRef.current;
+        var triR = CELL_SIZE * 0.42;
+        var tipX = pcx + Math.sin(yawA) * triR;
+        var tipY = pcy + Math.cos(yawA) * triR;
+        var baseR = triR * 0.55;
+        var spread = 0.45;
+        var leftX = pcx + Math.sin(yawA + Math.PI - spread) * baseR;
+        var leftY = pcy + Math.cos(yawA + Math.PI - spread) * baseR;
+        var rightX = pcx + Math.sin(yawA + Math.PI + spread) * baseR;
+        var rightY = pcy + Math.cos(yawA + Math.PI + spread) * baseR;
+        ctx.fillStyle = 'rgba(167,139,250,0.92)';
+        ctx.strokeStyle = 'rgba(255,255,255,0.85)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(tipX, tipY);
+        ctx.lineTo(leftX, leftY);
+        ctx.lineTo(rightX, rightY);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+      }
 
       // Feedback flash
       if (feedback === 'correct') { ctx.fillStyle = 'rgba(34,197,94,0.2)'; ctx.fillRect(playerPos.c * CELL_SIZE, playerPos.r * CELL_SIZE, CELL_SIZE, CELL_SIZE); }
@@ -3401,9 +3457,10 @@
              'Mute / unmute: M',
              'Fullscreen: F',
              'Look around (Explorer): Drag',
+             'Rotate camera (Explorer): Q / E',
              'This help: ?'].map(function(line, i) {
               var parts = line.split(': ');
-              return h('div', { key: i, style: { display: 'flex', justifyContent: 'space-between', gap: '12px', borderBottom: i < 8 ? '1px dashed rgba(217,119,6,0.3)' : 'none', padding: '3px 0' } },
+              return h('div', { key: i, style: { display: 'flex', justifyContent: 'space-between', gap: '12px', borderBottom: i < 9 ? '1px dashed rgba(217,119,6,0.3)' : 'none', padding: '3px 0' } },
                 h('span', { style: { fontWeight: 700 } }, parts[0]),
                 h('span', { style: { fontFamily: 'monospace', color: '#78350f' } }, parts[1])
               );
