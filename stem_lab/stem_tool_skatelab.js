@@ -2329,8 +2329,67 @@ window.StemLab = window.StemLab || {
                 }, tk.emoji + ' ' + tk.label);
               })
             ),
+            // ── Custom-trick second row ──────────────────────────
+            // Renders student-invented tricks as purple pills with
+            // an inline × delete button. Visually distinct from the
+            // built-in row (purple vs amber) so students see their
+            // creations and the canon side-by-side.
+            ((d.customTricks || []).length > 0) && h('div', {
+              style: { display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 6 },
+              role: 'group',
+              'aria-label': 'Your invented tricks'
+            },
+              (d.customTricks || []).map(function(tk) {
+                var sel = d.trickId === tk.id;
+                return h('span', {
+                  key: tk.id,
+                  style: {
+                    display: 'inline-flex', alignItems: 'center', gap: 2,
+                    background: sel ? 'linear-gradient(135deg,#a855f7,#7c3aed)' : 'rgba(168,85,247,0.12)',
+                    color: sel ? '#fff' : '#e9d5ff',
+                    border: '1px solid ' + (sel ? '#7c3aed' : 'rgba(168,85,247,0.40)'),
+                    borderRadius: 6, padding: '2px 4px 2px 8px',
+                    cursor: d.running ? 'not-allowed' : 'pointer',
+                    opacity: d.running ? 0.6 : 1
+                  }
+                },
+                  h('button', {
+                    onClick: function() { upd('trickId', tk.id); skAnnounce('Selected ' + tk.label); },
+                    disabled: d.running,
+                    'aria-pressed': sel,
+                    'data-sk-focusable': 'true',
+                    title: tk.label + ' (custom) — ' + tk.rotation + '° ' + tk.axis + ' axis · needs ' + tk.minAir.toFixed(2) + 's air',
+                    style: {
+                      background: 'transparent', color: 'inherit',
+                      border: 'none', padding: '2px 4px',
+                      fontSize: 11, fontWeight: 700, cursor: 'inherit'
+                    }
+                  }, tk.emoji + ' ' + tk.label),
+                  h('button', {
+                    onClick: function() {
+                      if (d.running) return;
+                      if (confirm('Delete custom trick "' + tk.label + '"?')) deleteCustomTrick(tk.id);
+                    },
+                    disabled: d.running,
+                    'aria-label': 'Delete custom trick ' + tk.label,
+                    'data-sk-focusable': 'true',
+                    title: 'Delete this custom trick',
+                    style: {
+                      background: 'rgba(0,0,0,0.30)', color: '#fef3c7',
+                      border: 'none', borderRadius: 4,
+                      padding: '0 4px', fontSize: 11, fontWeight: 800,
+                      cursor: d.running ? 'not-allowed' : 'pointer',
+                      minWidth: 18, minHeight: 18, lineHeight: '16px'
+                    }
+                  }, '×')
+                );
+              })
+            ),
             h('p', { style: { margin: '6px 0 0', fontSize: 10, color: '#94a3b8' } },
-              'Selected: ' + getTrick(d.trickId).rotation + '° rotation · needs ≥ ' + getTrick(d.trickId).minAir.toFixed(2) + 's air'),
+              (function() {
+                var t = findAnyTrick(d.trickId);
+                return 'Selected: ' + t.rotation + '° rotation · needs ≥ ' + t.minAir.toFixed(2) + 's air' + (t.isCustom ? ' (custom)' : '');
+              })()),
             // ── Mastery Tree ─────────────────────────────────────
             // Surfaces per-trick attempts/lands as a 6-card mastery
             // dashboard. Closed by default (uses native <details>) so
