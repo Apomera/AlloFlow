@@ -132,6 +132,65 @@ window.StemLab = window.StemLab || {
     { id: 'jupiter', label: 'Jupiter', g: 24.79, icon: '⚫' },
     { id: 'sun',     label: 'Sun',     g: 274.0,  icon: '☀️' }   // 28× Earth — extreme dropper
   ];
+  // ── Engagement layer: Personal Bests ──
+  // Per-sport "career highs" tracked across sessions. Each metric is a
+  // simple number; on any throw, we walk the relevant metrics, compare,
+  // and announce + persist if the student broke a record. Mirrors NBA
+  // 2K MyCareer Highs / fantasy-sports records pages — a kid sees
+  // their own all-time best and wants to top it.
+  function checkPersonalBests(d, lr, stats) {
+    var pbs = Object.assign({}, d.personalBests || {});
+    var modeKey = d.mode;
+    pbs[modeKey] = pbs[modeKey] || {};
+    var sport = pbs[modeKey];
+    var newRecords = [];
+    function tryPB(metricKey, candidate, label, formatVal) {
+      if (typeof candidate !== 'number' || isNaN(candidate)) return;
+      var prev = sport[metricKey];
+      if (prev == null || candidate > prev) {
+        sport[metricKey] = candidate;
+        newRecords.push({ label: label, value: formatVal ? formatVal(candidate) : candidate });
+      }
+    }
+    var loc = lr && lr.location;
+    var isMake = loc === 'strike' || loc === 'swish' || loc === 'made' || loc === 'goal' || loc === 'caught'
+      || loc === 'good' || loc === 'wicket' || loc === 'shaved' || loc === 'ace' || loc === 'in'
+      || loc === 'green' || loc === 'fairway';
+    if (d.mode === 'pitching' && loc === 'strike') {
+      tryPB('fastestStrike', d.speedMph, 'Fastest strike', function(v) { return v + ' mph'; });
+      tryPB('longestStrikeStreak', stats.streakStrikes || 0, 'Longest strike streak');
+    }
+    if (d.mode === 'freekick' && loc === 'goal' && lr.samples) {
+      var xs = lr.samples.map(function(s) { return s.x; });
+      var curl = Math.max.apply(null, xs) - Math.min.apply(null, xs);
+      tryPB('biggestCurl', +curl.toFixed(2), 'Biggest curl on a goal', function(v) { return v.toFixed(2) + ' m'; });
+    }
+    if (d.mode === 'fieldgoal' && loc === 'good') {
+      tryPB('longestFG', d.fgDistanceYd || 0, 'Longest field goal made', function(v) { return v + ' yd'; });
+    }
+    if (d.mode === 'bowling' && (loc === 'wicket' || loc === 'shaved')) {
+      tryPB('mostWickets', stats.totalWickets || 0, 'Most wickets in a session');
+    }
+    if (d.mode === 'golf' && loc === 'green') {
+      tryPB('greensInSession', (stats.golfClubsOnGreen ? Object.keys(stats.golfClubsOnGreen).length : 0), 'Different clubs to a green');
+    }
+    if (d.mode === 'volleyball' && loc === 'ace') {
+      tryPB('mostAces', stats.volleyAceCount || 0, 'Most aces in a session');
+      tryPB('fastestAce', d.speedMph, 'Fastest ace serve', function(v) { return v + ' mph'; });
+    }
+    if (d.mode === 'freethrow' && (loc === 'swish' || loc === 'made')) {
+      tryPB('longestMakeStreak', stats.hotStreak || 0, 'Longest make streak');
+      tryPB('mostMakes', d.shotMakeCount || 0, 'Most makes in a session');
+    }
+    // Cross-sport: longest hot streak ever (any mode)
+    pbs.cross = pbs.cross || {};
+    if (isMake && (stats.hotStreak || 0) > (pbs.cross.longestStreakAnySport || 0)) {
+      pbs.cross.longestStreakAnySport = stats.hotStreak;
+      newRecords.push({ label: 'Longest streak (any sport)', value: stats.hotStreak });
+    }
+    return { personalBests: pbs, newRecords: newRecords };
+  }
+
   // ── Engagement layer: Daily Challenge ──
   // Deterministic-by-date pick from SCENARIOS + customScenarios so
   // every student in the same class sees the same challenge today.
@@ -205,6 +264,30 @@ window.StemLab = window.StemLab || {
       rows.push({ label: 'Serve types in court', value: Object.keys(s.volleyServesIn || {}).length });
     }
     rows.push({ label: 'Badges earned', value: Object.keys(d.badgesEarned || {}).length + ' / ' + BADGES.length });
+    // Career Highs — append the active sport\'s personal-bests as a
+    // sub-section (separator first, then each PB in the same column
+    // grid).
+    var pbs = (d.personalBests && d.personalBests[d.mode]) || {};
+    var pbKeys = Object.keys(pbs);
+    if (pbKeys.length) {
+      rows.push({ label: '── Career Highs ──', value: '' });
+      // Pretty-print the metric keys we expect; fall back to raw key
+      var pbLabels = {
+        fastestStrike: 'Fastest strike (mph)',
+        longestStrikeStreak: 'Longest strike streak',
+        biggestCurl: 'Biggest curl (m)',
+        longestFG: 'Longest FG (yd)',
+        mostWickets: 'Most wickets',
+        greensInSession: 'Greens / clubs',
+        mostAces: 'Most aces',
+        fastestAce: 'Fastest ace (mph)',
+        longestMakeStreak: 'Longest make streak',
+        mostMakes: 'Most makes'
+      };
+      pbKeys.forEach(function(k) {
+        rows.push({ label: pbLabels[k] || k, value: pbs[k] });
+      });
+    }
     return rows;
   }
 
@@ -2412,6 +2495,13 @@ window.StemLab = window.StemLab || {
             stats.volleyAceCount = (stats.volleyAceCount || 0) + 1;
           }
         }
+        // ── Personal Best check ──
+        // Walk the per-sport metrics; if any record was broken, queue
+        // an announcement + persist the new best to toolData.
+        var pbResult = checkPersonalBests(d, result, stats);
+        var newPersonalBests = pbResult.personalBests;
+        var newPbRecords = pbResult.newRecords;
+
         // ── Daily Challenge completion check ──
         // If the student loaded today's daily challenge AND just landed
         // a make outcome, mark the challenge complete (idempotent — set
@@ -2470,6 +2560,7 @@ window.StemLab = window.StemLab || {
             volleyAceCount: newVolleyAceCount,
             badgesEarned: earnedSet,
             dailyCompleted: newDailyCompleted,
+            personalBests: newPersonalBests,
             pitchTypesUsed: newTypesUsed,
             recentThrows: newRecent,
             drillStats: stats,
@@ -2505,6 +2596,19 @@ window.StemLab = window.StemLab || {
               if (awardXP) awardXP('throwlab', 8, 'Badge: ' + b.label);
               if (celebrate && i === 0) celebrate();
             }, 1200 + (i * 800));
+          });
+        }
+        // Personal Best announcements — fire each as its own toast +
+        // tlAnnounce + small XP, staggered after badges so they don\'t
+        // collide. PBs are rarer than badges so 12 XP each.
+        if (newPbRecords.length) {
+          newPbRecords.forEach(function(r, i) {
+            setTimeout(function() {
+              tlAnnounce('NEW PERSONAL BEST: ' + r.label + ' — ' + r.value);
+              if (addToast) addToast('🏆 New PB: ' + r.label + ' (' + r.value + ')');
+              if (awardXP) awardXP('throwlab', 12, 'Personal Best: ' + r.label);
+              if (celebrate && i === 0) celebrate();
+            }, 1800 + (i * 700));
           });
         }
         // Daily Challenge celebration — separate from drill / badge so

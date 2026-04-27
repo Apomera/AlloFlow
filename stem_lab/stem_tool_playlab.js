@@ -181,6 +181,42 @@ window.StemLab = window.StemLab || {
     return { emoji: '🔥🔥', label: 'ON FIRE', color: '#dc2626' };
   }
 
+  // ── Engagement layer: Personal Bests ──
+  // Per-sport "career highs" tracked across sessions. Mirrors the
+  // ThrowLab personal-bests pattern — kid sees their own all-time
+  // best stat and wants to top it. Surfaced in the Stats Card panel
+  // and announced via toast + XP when a record falls.
+  function checkPlayLabPersonalBests(d, outcome, stats) {
+    var pbs = Object.assign({}, d.personalBests || {});
+    var sportKey = d.sport || 'football';
+    pbs[sportKey] = pbs[sportKey] || {};
+    var sport = pbs[sportKey];
+    var newRecords = [];
+    function tryPB(metricKey, candidate, label, formatVal) {
+      if (typeof candidate !== 'number' || isNaN(candidate)) return;
+      var prev = sport[metricKey];
+      if (prev == null || candidate > prev) {
+        sport[metricKey] = candidate;
+        newRecords.push({ label: label, value: formatVal ? formatVal(candidate) : candidate });
+      }
+    }
+    if (sportKey === 'football' && outcome && outcome.location === 'caught') {
+      if (typeof outcome.opennessYd === 'number') {
+        tryPB('biggestOpenness', +outcome.opennessYd.toFixed(1), 'Biggest receiver openness', function(v) { return v.toFixed(1) + ' yd'; });
+      }
+      tryPB('mostCoveragesBeaten', stats.coveragesBeaten || 0, 'Most coverages beaten');
+      tryPB('mostPlaysCompleted', Object.keys(stats.completionsByPlay || {}).length, 'Most plays completed');
+      tryPB('longestStreak', stats.hotStreak || 0, 'Longest hot streak');
+    }
+    if (sportKey === 'soccer' && outcome && typeof outcome.xG === 'number') {
+      tryPB('highestXG', +outcome.xG.toFixed(2), 'Highest single-sequence xG', function(v) { return v.toFixed(2); });
+      tryPB('mostConcepts', Object.keys(stats.conceptsRun || {}).length, 'Most concepts run');
+      tryPB('mostSetPieceTypes', Object.keys(stats.setPieceTypesRun || {}).length, 'Most set-piece types tried');
+      tryPB('longestStreak', stats.hotStreak || 0, 'Longest hot streak');
+    }
+    return { personalBests: pbs, newRecords: newRecords };
+  }
+
   // ── Engagement layer: Daily Challenge ──
   // Deterministic-by-date pick from PLAYLAB_SCENARIOS so every student
   // in the same class sees the same challenge today. Picks within the
@@ -227,6 +263,25 @@ window.StemLab = window.StemLab || {
     }
     rows.push({ label: 'Badges earned', value: Object.keys(d.badgesEarned || {}).length + ' / ' + PLAYLAB_BADGES.length });
     rows.push({ label: 'Saved plays', value: (d.savedPlays || []).length });
+    // Career Highs — sport-specific PBs
+    var sportKey = d.sport || 'football';
+    var pbs = (d.personalBests && d.personalBests[sportKey]) || {};
+    var pbKeys = Object.keys(pbs);
+    if (pbKeys.length) {
+      rows.push({ label: '── Career Highs ──', value: '' });
+      var pbLabels = {
+        biggestOpenness: 'Biggest receiver openness (yd)',
+        mostCoveragesBeaten: 'Most coverages beaten',
+        mostPlaysCompleted: 'Most plays completed',
+        highestXG: 'Highest single-sequence xG',
+        mostConcepts: 'Most concepts run',
+        mostSetPieceTypes: 'Most set-piece types',
+        longestStreak: 'Longest hot streak'
+      };
+      pbKeys.forEach(function(k) {
+        rows.push({ label: pbLabels[k] || k, value: pbs[k] });
+      });
+    }
     return rows;
   }
 
@@ -2385,6 +2440,10 @@ window.StemLab = window.StemLab || {
                   }
                 } catch (e) { /* defensive */ }
               });
+              // Personal Best check (soccer)
+              var pbResultS = checkPlayLabPersonalBests(d, soccerOutcome, sStats);
+              var newPersonalBestsS = pbResultS.personalBests;
+              var newPbRecordsS = pbResultS.newRecords;
               // Daily Challenge completion check (soccer) — high-quality
               // sequence (xG > 0.20) on today\'s daily counts.
               var dailyKeyS = todayKey();
@@ -2402,7 +2461,8 @@ window.StemLab = window.StemLab || {
                   runActive: false, runT: SOCCER_TOTAL, runOutcome: soccerOutcome,
                   drillStats: sStats, drillTaskIdx: sNewTaskIdx,
                   badgesEarned: sNewEarned,
-                  dailyCompleted: newDailyCompletedS
+                  dailyCompleted: newDailyCompletedS,
+                  personalBests: newPersonalBestsS
                 })});
               });
               var qualLabel = finalXG > 0.30 ? 'high-quality chance' : finalXG > 0.10 ? 'decent shot' : 'low-percentage shot';
@@ -2415,6 +2475,15 @@ window.StemLab = window.StemLab || {
                   if (awardXP) awardXP('playlab', 8, 'Badge: ' + b.label);
                   if (celebrate && i === 0) celebrate();
                 }, 1200 + (i * 800));
+              });
+              // Personal Best announcements (soccer)
+              newPbRecordsS.forEach(function(r, i) {
+                setTimeout(function() {
+                  plAnnounce('NEW PERSONAL BEST: ' + r.label + ' — ' + r.value);
+                  if (addToast) addToast('🏆 New PB: ' + r.label + ' (' + r.value + ')');
+                  if (awardXP) awardXP('playlab', 12, 'Personal Best: ' + r.label);
+                  if (celebrate && i === 0) celebrate();
+                }, 1800 + (i * 700));
               });
               if (dailyJustCompletedS) {
                 var dailyNameS = (getPlayLabDailyChallenge('soccer') || {}).label || 'Today\'s Challenge';
@@ -2522,6 +2591,10 @@ window.StemLab = window.StemLab || {
                 }
               } catch (e) { /* defensive */ }
             });
+            // Personal Best check (football)
+            var pbResultF = checkPlayLabPersonalBests(d, outcome, newStats);
+            var newPersonalBestsF = pbResultF.personalBests;
+            var newPbRecordsF = pbResultF.newRecords;
             // Daily Challenge completion check (football)
             var dailyKeyF = todayKey();
             var newDailyCompletedF = d.dailyCompleted || null;
@@ -2548,7 +2621,8 @@ window.StemLab = window.StemLab || {
                 runActive: false, runT: TOTAL_DURATION, runOutcome: outcome,
                 drillStats: newStats, drillTaskIdx: newDrillTaskIdx,
                 badgesEarned: newEarned,
-                dailyCompleted: newDailyCompletedF
+                dailyCompleted: newDailyCompletedF,
+                personalBests: newPersonalBestsF
               })});
             });
             plAnnounce(loc === 'caught'
@@ -2564,6 +2638,15 @@ window.StemLab = window.StemLab || {
                 if (awardXP) awardXP('playlab', 8, 'Badge: ' + b.label);
                 if (celebrate && i === 0) celebrate();
               }, 1200 + (i * 800));
+            });
+            // Personal Best announcements — staggered after badges
+            newPbRecordsF.forEach(function(r, i) {
+              setTimeout(function() {
+                plAnnounce('NEW PERSONAL BEST: ' + r.label + ' — ' + r.value);
+                if (addToast) addToast('🏆 New PB: ' + r.label + ' (' + r.value + ')');
+                if (awardXP) awardXP('playlab', 12, 'Personal Best: ' + r.label);
+                if (celebrate && i === 0) celebrate();
+              }, 1800 + (i * 700));
             });
             if (dailyJustCompletedF) {
               var dailyNameF = (getPlayLabDailyChallenge('football') || {}).label || 'Today\'s Challenge';
