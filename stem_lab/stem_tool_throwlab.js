@@ -132,6 +132,56 @@ window.StemLab = window.StemLab || {
     { id: 'jupiter', label: 'Jupiter', g: 24.79, icon: '⚫' },
     { id: 'sun',     label: 'Sun',     g: 274.0,  icon: '☀️' }   // 28× Earth — extreme dropper
   ];
+  // ── Engagement layer: Stats Card builder ──
+  // Returns rows of {label, value} per sport — a fantasy-sports
+  // stat-line a kid recognizes from their phone screen. Renders in
+  // a "Your Numbers" panel + reuses the same data points the badges
+  // and trading card already pull from. Pure data formatting, no
+  // new state.
+  function getStatsRows(d) {
+    var s = d.drillStats || {};
+    var pct = function(num, den) { return den ? Math.round((num / den) * 100) + '%' : '—'; };
+    var rows = [];
+    var totalThrows = d.throwCount || 0;
+    rows.push({ label: 'Total throws', value: totalThrows });
+    rows.push({ label: 'Hot streak', value: s.hotStreak || 0 });
+    if (d.mode === 'pitching') {
+      rows.push({ label: 'Strikes', value: d.strikeCount || 0 });
+      rows.push({ label: 'Strike rate', value: pct(d.strikeCount || 0, totalThrows) });
+      rows.push({ label: 'Pitch types thrown', value: Object.keys(d.pitchTypesUsed || {}).length });
+      rows.push({ label: 'Pitch types struck', value: Object.keys(s.strikeTypes || {}).length });
+    } else if (d.mode === 'freethrow') {
+      rows.push({ label: 'Makes', value: d.shotMakeCount || 0 });
+      rows.push({ label: 'Make rate', value: pct(d.shotMakeCount || 0, totalThrows) });
+      rows.push({ label: 'Different swish heights', value: s.swishHeights || 0 });
+      rows.push({ label: 'Bounce pass completed', value: s.completedBouncePass ? '✓' : '—' });
+    } else if (d.mode === 'freekick') {
+      rows.push({ label: 'Goals', value: d.goalCount || 0 });
+      rows.push({ label: 'Goal rate', value: pct(d.goalCount || 0, totalThrows) });
+      rows.push({ label: 'Kick styles scored', value: Object.keys(s.goalKickTypes || {}).length });
+    } else if (d.mode === 'fieldgoal') {
+      rows.push({ label: 'FGs made', value: d.fgMakeCount || 0 });
+      rows.push({ label: 'Make rate', value: pct(d.fgMakeCount || 0, totalThrows) });
+      rows.push({ label: 'Distances cleared', value: Object.keys(s.fgMadeByDist || {}).length });
+    } else if (d.mode === 'bowling') {
+      rows.push({ label: 'Wickets', value: d.wicketCount || 0 });
+      rows.push({ label: 'Wicket rate', value: pct(d.wicketCount || 0, totalThrows) });
+      rows.push({ label: 'Delivery types used', value: Object.keys(s.bowlTypes || {}).length });
+    } else if (d.mode === 'golf') {
+      rows.push({ label: 'Greens hit', value: d.golfGreenCount || 0 });
+      rows.push({ label: 'Green rate', value: pct(d.golfGreenCount || 0, totalThrows) });
+      rows.push({ label: 'Fairways hit', value: s.golfFairwaysHit || 0 });
+      rows.push({ label: 'Clubs to a green', value: Object.keys(s.golfClubsOnGreen || {}).length });
+    } else if (d.mode === 'volleyball') {
+      rows.push({ label: 'Aces', value: d.volleyAceCount || 0 });
+      rows.push({ label: 'Ace rate', value: pct(d.volleyAceCount || 0, totalThrows) });
+      rows.push({ label: 'In-court serves', value: s.volleyInCount || 0 });
+      rows.push({ label: 'Serve types in court', value: Object.keys(s.volleyServesIn || {}).length });
+    }
+    rows.push({ label: 'Badges earned', value: Object.keys(d.badgesEarned || {}).length + ' / ' + BADGES.length });
+    return rows;
+  }
+
   // ── Engagement layer: Coach personality picker ──
   // Same Gemini call, different voice. Each persona prepends a short
   // system-style prefix to the Coach Mode prompt so the response
@@ -3945,6 +3995,38 @@ window.StemLab = window.StemLab || {
                 }
               }, b.emoji + ' ' + b.label);
             })
+          )
+        ),
+
+        // ── Stats Card (engagement layer) ──
+        // Baseball-card-style "your numbers" surface. Pulls from the
+        // same drillStats / throwCount / per-sport counters the badges
+        // and trading card already use; formats them as a 2-column
+        // grid the way fantasy sports apps display stat lines.
+        h('details', {
+          style: { marginBottom: 14, background: '#0f172a', border: '1px solid #1e293b', borderRadius: 10, padding: '8px 12px' }
+        },
+          h('summary', {
+            style: { cursor: 'pointer', fontSize: 12, color: '#cbd5e1', fontWeight: 600 }
+          }, '📊 Your Numbers — ' + (d.playerName || 'session stats')),
+          h('div', {
+            role: 'table', 'aria-label': 'Session stats',
+            style: { marginTop: 10, display: 'grid', gridTemplateColumns: '1fr auto', gap: '4px 12px', fontSize: 12 }
+          },
+            getStatsRows(d).reduce(function(acc, row) {
+              acc.push(h('span', {
+                key: 'sl-' + row.label, role: 'rowheader',
+                style: { color: '#94a3b8' }
+              }, row.label));
+              acc.push(h('span', {
+                key: 'sv-' + row.label, role: 'cell',
+                style: {
+                  color: '#fbbf24', fontWeight: 700,
+                  fontFamily: 'ui-monospace, monospace', textAlign: 'right'
+                }
+              }, row.value));
+              return acc;
+            }, [])
           )
         ),
 

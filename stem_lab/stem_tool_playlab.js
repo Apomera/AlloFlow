@@ -181,6 +181,35 @@ window.StemLab = window.StemLab || {
     return { emoji: '🔥🔥', label: 'ON FIRE', color: '#dc2626' };
   }
 
+  // ── Engagement layer: Stats Card builder ──
+  // Returns rows of {label, value} per sport — a fantasy-sports
+  // stat-line a kid recognizes from their phone screen. Pure data
+  // formatting; no new state. Pulls from drillStats already tracked.
+  function getPlayLabStatsRows(d) {
+    var s = d.drillStats || {};
+    var rows = [];
+    rows.push({ label: 'Hot streak', value: s.hotStreak || 0 });
+    if (d.sport === 'soccer' || (d.sport == null && false)) {
+      rows.push({ label: 'High-xG sequences', value: s.highXgShot ? '✓' : '—' });
+      rows.push({ label: 'Concepts run', value: Object.keys(s.conceptsRun || {}).length + ' / ' + SOCCER_CONCEPTS.length });
+      rows.push({ label: 'Defensive shapes faced', value: Object.keys(s.shapesPlayed || {}).length + ' / ' + SOCCER_SHAPES.length });
+      rows.push({ label: 'Set-piece run', value: s.setPieceRun ? '✓' : '—' });
+      rows.push({ label: 'Set-piece types', value: Object.keys(s.setPieceTypesRun || {}).length + ' / 5' });
+      rows.push({ label: 'Custom high-xG', value: s.customHighXg ? '✓' : '—' });
+    } else {
+      rows.push({ label: 'Coverages beaten', value: (s.coveragesBeaten || 0) + ' / ' + COVERAGES.length });
+      rows.push({ label: 'Plays completed', value: Object.keys(s.completionsByPlay || {}).length + ' / ' + PLAYS.length });
+      rows.push({ label: 'Smash vs Cover 2', value: s.smashVsCover2 ? '✓' : '—' });
+      rows.push({ label: 'Hot route vs Cover 0', value: s.c0WithHot ? '✓' : '—' });
+      rows.push({ label: 'Trips vs Cover 6', value: s.c6WithTrips ? '✓' : '—' });
+      rows.push({ label: 'Mesh vs Robber', value: s.robberWithMesh ? '✓' : '—' });
+      rows.push({ label: 'Custom play completed', value: s.completedCustomPlay ? '✓' : '—' });
+    }
+    rows.push({ label: 'Badges earned', value: Object.keys(d.badgesEarned || {}).length + ' / ' + PLAYLAB_BADGES.length });
+    rows.push({ label: 'Saved plays', value: (d.savedPlays || []).length });
+    return rows;
+  }
+
   // ── Engagement layer: Coach personality picker ──
   // Same Gemini call, different voice. Each persona prepends a short
   // system-style prefix to the Coach Mode prompt so the response
@@ -3237,6 +3266,37 @@ window.StemLab = window.StemLab || {
                 }
               }, b.emoji + ' ' + b.label);
             })
+          )
+        ),
+
+        // ── Stats Card (engagement layer) ──
+        // Baseball-card-style "your numbers" surface for PlayLab. Sport-
+        // aware: football shows coverages-beaten / plays completed / drill
+        // flags; soccer shows xG / concepts run / set-piece types.
+        h('details', {
+          style: { marginBottom: 12, background: '#0f172a', border: '1px solid #1e293b', borderRadius: 10, padding: '8px 12px' }
+        },
+          h('summary', {
+            style: { cursor: 'pointer', fontSize: 12, color: '#cbd5e1', fontWeight: 600 }
+          }, '📊 Your Numbers — ' + (d.playerName || (isSoccer ? 'soccer session' : 'football session'))),
+          h('div', {
+            role: 'table', 'aria-label': 'Session stats',
+            style: { marginTop: 10, display: 'grid', gridTemplateColumns: '1fr auto', gap: '4px 12px', fontSize: 12 }
+          },
+            getPlayLabStatsRows(d).reduce(function(acc, row) {
+              acc.push(h('span', {
+                key: 'plsl-' + row.label, role: 'rowheader',
+                style: { color: '#94a3b8' }
+              }, row.label));
+              acc.push(h('span', {
+                key: 'plsv-' + row.label, role: 'cell',
+                style: {
+                  color: '#fbbf24', fontWeight: 700,
+                  fontFamily: 'ui-monospace, monospace', textAlign: 'right'
+                }
+              }, row.value));
+              return acc;
+            }, [])
           )
         ),
 
