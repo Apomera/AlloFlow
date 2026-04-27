@@ -1061,6 +1061,13 @@
     var avatarState = useState(_prefs.playerAvatar || '🐱'); // default cat
     var playerAvatar = avatarState[0];
     var setPlayerAvatar = function(v) { avatarState[1](v); _savePrefs({ playerAvatar: v }); };
+    // Control mode — 'classic' (every step is a new gate, fluency drill)
+    // or 'explorer' (each wall-passage gates once, then opens both ways +
+    // free-look 3D camera + stricter minimap fog). Toggle on setup screen.
+    var controlModeState = useState(_prefs.controlMode || 'classic');
+    var controlMode = controlModeState[0];
+    var setControlMode = function(v) { controlModeState[1](v); _savePrefs({ controlMode: v }); };
+    var isExplorer = controlMode === 'explorer';
     // Fullscreen toggle — when true the playing-mode wrapper switches to
     // position:fixed inset:0 so the maze fills the viewport. Toggle button
     // sits in the HUD; F key bound below. Persisted to _prefs so a teacher
@@ -1151,6 +1158,19 @@
     // the move handler) rather than state (would trigger extra renders and
     // race with the correct-answer -> move sequence).
     var visitedCellsRef = useRef({ '0,0': true });
+    // Explorer Mode — paths (wall-passages between two cells) that have been
+    // solved this run. Once a path is in here, walking it again skips the
+    // gate. Keyed by canonical "minRC|maxRC" so direction-of-travel is
+    // irrelevant (solving R→L opens L→R too). Reset in startMaze.
+    var solvedPathsRef = useRef({});
+    // Camera yaw offset (radians) for Explorer Mode free-look. 0 = facing the
+    // last-move direction (Classic behavior). Mutated by mouse/touch drag
+    // listeners attached in init3D; read in the camera lookAt loop.
+    var lookYawRef = useRef(0);
+    // Mirror of `isExplorer` so listeners attached once in init3D always see
+    // the current value without a stale closure.
+    var isExplorerRef = useRef(isExplorer);
+    isExplorerRef.current = isExplorer;
     // Animation-time tick used only to nudge the minimap redraw when the
     // you-are-here pulse / breadcrumb trail needs a frame-accurate update.
     var minimapTickRef = useRef(0);
@@ -1309,6 +1329,12 @@
       setPlayerPos({ r: 0, c: 0 }); playerPosRef.current = { r: 0, c: 0 };
       // Reset breadcrumb trail — each new maze starts with only the origin lit.
       visitedCellsRef.current = { '0,0': true };
+      // Reset Explorer-mode state. solvedPathsRef accumulates over a run; a
+      // fresh maze means no paths solved yet. lookYawRef keeps the camera
+      // aimed at the start orientation rather than wherever the previous
+      // maze ended.
+      solvedPathsRef.current = {};
+      lookYawRef.current = 0;
       setMonsterPos({ r: 0, c: 0 });
       setCurrentProblem(null);
       setScore(0); setCorrect(0); setWrong(0); setMoveCount(0); setElapsed(0);
@@ -1357,6 +1383,14 @@
       }
     }
 
+    // Canonical key for the wall-passage between two grid cells. Sorted by
+    // (row,col) so traversal direction is irrelevant — solving R→L opens
+    // the same key as L→R. Used by Explorer Mode's once-per-path gating.
+    function _pathKey(r1, c1, r2, c2) {
+      var a = r1 * 1000 + c1, b = r2 * 1000 + c2;
+      return (a < b) ? (a + '|' + b) : (b + '|' + a);
+    }
+
     function tryMove(dir) {
       if (gameOver || won || paused) return;
       var cell = maze[playerPos.r][playerPos.c];
@@ -1367,6 +1401,32 @@
       if (dir === 'left' && !cell.walls.left) { newC--; canMove = true; }
       if (dir === 'right' && !cell.walls.right) { newC++; canMove = true; }
       if (!canMove) { setFeedback('wall'); playTone(140, 0.08, 'triangle', 0.06); setTimeout(function() { setFeedback(''); }, 300); return; }
+      // Explorer Mode: if this path-passage was already solved this run,
+      // walk through silently — no gate. Mirrors the correct-path side of
+      // submitAnswer so the player still gets the visited / camera updates.
+      if (isExplorer) {
+        var pk = _pathKey(playerPos.r, playerPos.c, newR, newC);
+        if (solvedPathsRef.current[pk]) {
+          var newPos = { r: newR, c: newC };
+          playerPosRef.current = newPos;
+          visitedCellsRef.current[newR + ',' + newC] = true;
+          setPlayerPos(newPos);
+          setMoveCount(function(p) { return p + 1; });
+          // Step tone — soft footstep so the move still has audio feedback.
+          playTone(420, 0.04, 'sine', 0.025);
+          // Key pickup still triggers if walking onto the key cell.
+          var kpE = keyPosRef.current;
+          if (!keyCollected && kpE && newR === kpE.r && newC === kpE.c) {
+            setKeyCollected(true);
+            _mfAnnounce('You picked up the golden key. The exit portal is now unlocked.');
+            if (addToast) addToast('🗝️ Golden key collected! The exit is unlocked.', 'success');
+            playTone(880, 0.08, 'sine', 0.06);
+            setTimeout(function() { playTone(1175, 0.08, 'sine', 0.06); }, 90);
+            setTimeout(function() { playTone(1568, 0.12, 'sine', 0.06); }, 180);
+          }
+          return;
+        }
+      }
       // Show a problem to solve before moving
       var _prob = makeProblem();
       setCurrentProblem({ dir: dir, targetR: newR, targetC: newC, problem: _prob });
@@ -1389,6 +1449,12 @@
         // Correct — move to new cell
         var newPos = { r: currentProblem.targetR, c: currentProblem.targetC };
         setPlayerPos(newPos); playerPosRef.current = newPos;
+        // Explorer Mode: record this path-passage as solved so re-walking
+        // it (or returning through it) skips the gate for the rest of the
+        // run. Direction-agnostic via canonical _pathKey.
+        if (isExplorer) {
+          solvedPathsRef.current[_pathKey(playerPos.r, playerPos.c, newPos.r, newPos.c)] = true;
+        }
         // Mark the cell we just left AND the new one as visited so both show
         // on the breadcrumb/fog-of-war minimap. Using a ref (not state) so
         // there's no extra re-render and no race with the playerPos update.
@@ -1794,14 +1860,22 @@
           var x = c * CELL_SIZE, y = r * CELL_SIZE;
           var isVisited = !!visited[r + ',' + c];
           var isSeen = seen(r, c);
+          // Explorer Mode — stricter fog of war: unseen cells render as
+          // solid black with NO walls drawn, so the player has to actually
+          // explore to learn the maze layout. Seen-but-not-visited cells
+          // (4-neighbor of visited) still render normally as a peek-ahead.
+          if (isExplorer && !isSeen) {
+            ctx.fillStyle = '#000';
+            ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE);
+            continue;
+          }
           // Floor tint — warm tan for visible corridor floor (was near-black).
           if (isSeen) {
             ctx.fillStyle = 'rgba(217,180,140,0.18)';
             ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE);
           }
-          // Fog-of-war: lighter warm-brown overlay (was rgba(2,6,20,0.85),
-          // a near-opaque black). Keeps the unexplored region distinct
-          // without making it feel oppressive.
+          // Fog-of-war (Classic): lighter warm-brown overlay. Keeps the
+          // unexplored region distinct without making it feel oppressive.
           if (!isSeen) {
             ctx.fillStyle = 'rgba(58,46,38,0.55)';
             ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE);
@@ -2043,6 +2117,54 @@
       eng.renderer = new THREE.WebGLRenderer({ canvas: cnv, antialias: true });
       eng.renderer.setSize(container.clientWidth, container.clientHeight);
       eng.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+
+      // Explorer Mode free-look listeners. Mouse/touch drag on the 3D
+      // container rotates lookYawRef (radians); the camera-update loop
+      // below adds it to the base look-direction. Listeners are attached
+      // once here; staleness avoided via isExplorerRef. mousemove sits on
+      // window so a drag started on the container can follow the cursor
+      // outside the box, but it's gated by `dragging` set on container
+      // mousedown so we never grab pointer events without the user's
+      // explicit intent. Cleanup on unmount removes everything.
+      var dragging = false, lastX = 0;
+      function _onMouseDown(e) { if (!isExplorerRef.current) return; dragging = true; lastX = e.clientX; }
+      function _onMouseMove(e) {
+        if (!dragging || !isExplorerRef.current) return;
+        lookYawRef.current -= (e.clientX - lastX) * 0.005;
+        lastX = e.clientX;
+      }
+      function _onMouseUp() { dragging = false; }
+      var touchActive = false, lastTouchX = 0;
+      function _onTouchStart(e) {
+        if (!isExplorerRef.current || !e.touches || e.touches.length !== 1) return;
+        touchActive = true; lastTouchX = e.touches[0].clientX;
+      }
+      function _onTouchMove(e) {
+        if (!touchActive || !isExplorerRef.current || !e.touches || e.touches.length !== 1) return;
+        var x = e.touches[0].clientX;
+        lookYawRef.current -= (x - lastTouchX) * 0.005;
+        lastTouchX = x;
+        // preventDefault keeps the page from scrolling under a 1-finger drag
+        // on the maze, but only when we're actually using it for look.
+        if (e.cancelable) { try { e.preventDefault(); } catch (_) {} }
+      }
+      function _onTouchEnd() { touchActive = false; }
+      container.addEventListener('mousedown', _onMouseDown);
+      window.addEventListener('mousemove', _onMouseMove);
+      window.addEventListener('mouseup', _onMouseUp);
+      container.addEventListener('touchstart', _onTouchStart, { passive: true });
+      container.addEventListener('touchmove', _onTouchMove, { passive: false });
+      container.addEventListener('touchend', _onTouchEnd);
+      container.addEventListener('touchcancel', _onTouchEnd);
+      eng._lookCleanup = function() {
+        container.removeEventListener('mousedown', _onMouseDown);
+        window.removeEventListener('mousemove', _onMouseMove);
+        window.removeEventListener('mouseup', _onMouseUp);
+        container.removeEventListener('touchstart', _onTouchStart);
+        container.removeEventListener('touchmove', _onTouchMove);
+        container.removeEventListener('touchend', _onTouchEnd);
+        container.removeEventListener('touchcancel', _onTouchEnd);
+      };
 
       // Lighting — torch sprite adds a soft glow card so the flame reads as
       // bright even without a post-processing bloom pass.
@@ -2305,6 +2427,18 @@
           eng.camera.position.y += (Math.random() - 0.5) * 0.12 * s;
           shakeRef.current = Math.max(0, s - 0.04);
         }
+        // Explorer Mode free-look: lookAt is recomputed every frame from
+        // camera position + a forward unit vector rotated by lookYawRef.
+        // Classic Mode keeps the per-move lookAt set in the useEffect
+        // below, so we only override here when Explorer is active.
+        if (isExplorerRef.current) {
+          var _ya = lookYawRef.current;
+          eng.camera.lookAt(
+            eng.camera.position.x + Math.sin(_ya),
+            eng.camera.position.y,
+            eng.camera.position.z + Math.cos(_ya)
+          );
+        }
 
         // Exit portal — ring spins one axis, swirl spins the other, glow pulses.
         if (eng.exitPortal) {
@@ -2515,6 +2649,7 @@
       return function() {
         cancelAnimationFrame(maze3dAnimRef.current);
         try { if (ro) ro.disconnect(); } catch (e) {}
+        try { if (eng._lookCleanup) eng._lookCleanup(); } catch (e) {}
         if (cnv.parentNode) cnv.parentNode.removeChild(cnv);
         maze3dEngRef.current = null;
       };
@@ -2728,6 +2863,44 @@
               }
             }, av);
           }));
+        })(),
+        // Control mode — Classic (every step is a question, fluency drill)
+        // vs Explorer (each path is a question, free-look 3D camera, fog of
+        // war on minimap). Toggle persisted via _prefs.controlMode.
+        (function() {
+          var modes = [
+            { id: 'classic',  label: '🎯 Classic',  hint: 'Every step is a question — fluency drill' },
+            { id: 'explorer', label: '🎮 Explorer', hint: 'Each path is a question — adventure with free look + fog of war' }
+          ];
+          return h('div', {
+            style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', marginBottom: '14px' },
+            'aria-label': 'Control mode'
+          },
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px', justifyContent: 'center' } },
+              modes.map(function(m) {
+                var sel = controlMode === m.id;
+                return h('button', {
+                  key: 'cm-' + m.id,
+                  onClick: function() { setControlMode(m.id); },
+                  'aria-pressed': sel,
+                  title: m.hint,
+                  style: {
+                    padding: '6px 14px', borderRadius: '999px', fontSize: '11px', fontWeight: 800, cursor: 'pointer',
+                    background: sel ? 'linear-gradient(135deg, #7c3aed, #5b21b6)' : 'rgba(254,243,199,0.85)',
+                    color: sel ? '#fff' : '#78350f',
+                    border: '1px solid ' + (sel ? '#6d28d9' : '#fcd34d'),
+                    boxShadow: sel ? '0 0 8px rgba(124,58,237,0.45)' : 'none',
+                    letterSpacing: '0.04em'
+                  }
+                }, m.label);
+              })
+            ),
+            h('div', { style: { fontSize: '10px', color: '#92400e', fontStyle: 'italic', marginTop: '2px' } },
+              isExplorer
+                ? 'Each path requires one math fact. Drag to look around.'
+                : 'Every step requires a math fact. Classic fluency drill.'
+            )
+          );
         })(),
         // Quick-Start presets — one-tap setup for the most common modes.
         // Each preset writes all three dimensions (op + difficulty + size)
@@ -3011,6 +3184,12 @@
         }, '\uD83D\uDD25 x' + streak),
         h('span', { style: { color: '#fde68a' } }, '\u23F1 ' + elapsed + 's'),
         chaseMode && h('span', { style: { color: '#f59e0b', fontWeight: 700 } }, '\uD83D\uDC7E CHASE!'),
+        // Explorer-mode chip - visible only in Explorer so the player
+        // knows the rules differ (each path gates once, free-look camera).
+        isExplorer && h('span', {
+          style: { color: '#ddd6fe', fontWeight: 700, background: 'rgba(124,58,237,0.25)', border: '1px solid rgba(167,139,250,0.45)', padding: '2px 8px', borderRadius: '999px', letterSpacing: '0.04em' },
+          'aria-label': 'Explorer mode active'
+        }, '\uD83C\uDFAE Explorer'),
         // Help button — opens the keyboard-shortcut overlay (also bound
         // to ?). Tucked first so the order reads Help → Mute → Pause → Hint.
         h('button', {
@@ -3221,9 +3400,10 @@
              'Pause / Resume: P',
              'Mute / unmute: M',
              'Fullscreen: F',
+             'Look around (Explorer): Drag',
              'This help: ?'].map(function(line, i) {
               var parts = line.split(': ');
-              return h('div', { key: i, style: { display: 'flex', justifyContent: 'space-between', gap: '12px', borderBottom: i < 7 ? '1px dashed rgba(217,119,6,0.3)' : 'none', padding: '3px 0' } },
+              return h('div', { key: i, style: { display: 'flex', justifyContent: 'space-between', gap: '12px', borderBottom: i < 8 ? '1px dashed rgba(217,119,6,0.3)' : 'none', padding: '3px 0' } },
                 h('span', { style: { fontWeight: 700 } }, parts[0]),
                 h('span', { style: { fontFamily: 'monospace', color: '#78350f' } }, parts[1])
               );
