@@ -127,6 +127,123 @@ window.StemLab = window.StemLab || {
     return TRICKS[0];
   }
 
+  // ── Vehicle catalog ───────────────────────────────────────────────
+  // Two-knob abstraction: heavier vehicles accelerate less per pump
+  // (lower pumpEfficiency), have larger moment of inertia (lower
+  // rotationScale), and demand more hang time per trick (higher
+  // minAirScale). Same physics — different numbers.
+  var VEHICLES = {
+    skate: {
+      id: 'skate', label: 'Skateboard', icon: '🛹',
+      mass: 4.0,            // kg (deck + trucks + wheels)
+      pumpEfficiency: 0.6,  // m/s gained per well-timed pump
+      rotationScale: 1.0,   // multiplier on trick rotation rate
+      minAirScale: 1.0      // multiplier on trick minimum air time
+    },
+    bmx: {
+      id: 'bmx', label: 'BMX', icon: '🚲',
+      mass: 12.0,           // kg (avg BMX bike)
+      pumpEfficiency: 0.45, // heavier vehicle accelerates less per pump
+      rotationScale: 0.85,  // larger I = mr^2 → slower rotation
+      minAirScale: 1.15     // each trick needs slightly more air
+    }
+  };
+  function getVehicle(id) { return VEHICLES[id] || VEHICLES.skate; }
+
+  // ── Famous-trick scenarios ───────────────────────────────────────
+  // Each scenario pre-configures the simulator to recreate a real
+  // moment in skate / BMX history (or a thought experiment like the
+  // Moonshot kickflip). The `presets` block fully specifies state,
+  // `teach` is the 2-3 sentence learning objective surfaced as a
+  // Lesson card, and `questions` are 3 short prompts a teacher can
+  // assign as written work.
+  var SCENARIOS = [
+    {
+      id: 'hawk_900', label: "Tony Hawk's 900", icon: '🏆', mode: 'halfpipe',
+      presets: { pumps: 6, trickId: 'spin720', vehicle: 'skate', gravity: 9.81 },
+      teach: "1999 X Games. Hawk needed enough air for 2.5 full rotations on a 13-foot vert ramp. With a 720 selected, see if 6 pumps gets you the hang time. (A real 900 = 900°; we cap at 720 in v2 — the inequality is the same.)",
+      questions: [
+        "If a 540 needs 0.62 s of air, what's the rotation rate in degrees per second?",
+        "Doubling pump count quadruples kinetic energy. By how much does air HEIGHT change? (hint: h = v² / 2g)",
+        "What pump count would be enough to actually land a 900 (900° / your rotation rate)?"
+      ]
+    },
+    {
+      id: 'way_great_wall', label: "Danny Way's Great Wall", icon: '🏯', mode: 'gap',
+      presets: { speedMph: 28, angleDeg: 20, gapFt: 70, vehicle: 'skate', gravity: 9.81 },
+      teach: "2005. Danny Way jumped a 70-foot gap over the Great Wall of China on a mega-ramp. Same projectile equation as a 12-foot gap — just bigger numbers. Try the launch and watch the parabola preview.",
+      questions: [
+        "Plug v = 28 mph and θ = 20° into range = v²·sin(2θ)/g. How does it compare to the 70 ft gap?",
+        "If Way had launched at 30°, would he have cleared more or less distance? Why?",
+        "What's the peak height of his arc? (h_peak = (v·sinθ)² / 2g)"
+      ]
+    },
+    {
+      id: 'burnquist_mega', label: "Bob Burnquist Mega-Ramp", icon: '🛤️', mode: 'gap',
+      presets: { speedMph: 30, angleDeg: 25, gapFt: 75, vehicle: 'skate', gravity: 9.81 },
+      teach: "Bob Burnquist's backyard mega-ramp launches him at 30+ mph. The same range formula scales — but at this speed even a 5° angle change moves the landing 10+ ft.",
+      questions: [
+        "If wind reduced effective speed by 5%, by what % does range drop? (range scales as v²)",
+        "What angle gives MAX range at this speed? (Hint: derivative of sin(2θ))",
+        "How does hang time at 30 mph compare to 15 mph? (Same θ.)"
+      ]
+    },
+    {
+      id: 'moonshot_kickflip', label: "Moonshot Kickflip", icon: '🌙', mode: 'halfpipe',
+      presets: { pumps: 2, trickId: 'kickflip', vehicle: 'skate', gravity: 1.62 },
+      teach: "What if you tried a kickflip on the Moon? Gravity = 1.62 m/s² (about 1/6 of Earth's). Even with just 2 pumps, hang time skyrockets. The board still rotates at the same rate — so on the Moon you'd land 6× rotations.",
+      questions: [
+        "Hang time = 2·sqrt(2h/g). If h is the same, what does dividing g by 6 do to hang time?",
+        "On the Moon with 2 pumps, do you have enough air for a 720? A 1080?",
+        "Why does PE = mgh stay the same on the Moon if h doesn't change? What about KE?"
+      ]
+    },
+    {
+      id: 'andy_mac_vert', label: "Andy Mac's Vert Run", icon: '🛹', mode: 'halfpipe',
+      presets: { pumps: 4, trickId: 'spin540', vehicle: 'skate', gravity: 9.81 },
+      teach: "Andy MacDonald is famous for sustained vert runs — 540 after 540 with no fall. Each 540 needs ~0.62 s of air. Pumping efficiency matters: lose energy on landing, lose your next trick.",
+      questions: [
+        "If each landing loses 10% of speed, how many 540s in a row can you chain before air drops below 0.62 s?",
+        "Energy lost per landing = (1/2)·m·(v² - v_after²). At what point does pumping not recover enough?",
+        "Why is the 540 (1.5 spins) the 'sweet spot' for a vert run vs a 720?"
+      ]
+    },
+    {
+      id: 'sheckler_50ft', label: "Sheckler's 50ft Gap", icon: '🦘', mode: 'gap',
+      presets: { speedMph: 22, angleDeg: 25, gapFt: 50, vehicle: 'skate', gravity: 9.81 },
+      teach: "Ryan Sheckler dropped a 50-foot gap on a downhill approach. Speed dominates — at 22 mph the angle barely matters. Try sliding the angle slider and watch the parabola: most of the magic is in v².",
+      questions: [
+        "At 22 mph, what's the angle range that clears 50 ft? (Try θ = 15°, 25°, 40°.)",
+        "If you dropped to 18 mph, what angle do you need? (Hint: range ∝ v²)",
+        "How does this compare to Danny Way's 70 ft? Why does adding 8 mph almost double the gap?"
+      ]
+    },
+    {
+      id: 'mat_hoffman_flair', label: "Mat Hoffman's BMX Flair", icon: '🚲', mode: 'halfpipe',
+      presets: { pumps: 5, trickId: 'spin540', vehicle: 'bmx', gravity: 9.81 },
+      teach: "BMX flair = back flip + 180 spin (combined-axis rotation). Heavier vehicle (12 kg vs 4 kg) means more moment of inertia — slower spin per unit force. The 540 here represents the combined-axis rotation count.",
+      questions: [
+        "Moment of inertia I = m·r² (roughly). Compare BMX (m=12, r=0.35) to a skateboard (m=4, r=0.04). Ratio?",
+        "If torque is the same, which spins faster? (Hint: τ = I·α)",
+        "Why do BMX riders pump harder on approach than skateboarders for the same height?"
+      ]
+    },
+    {
+      id: 'pool_party', label: "Vans Pool Party", icon: '🌴', mode: 'halfpipe',
+      presets: { pumps: 2, trickId: 'spin360', vehicle: 'skate', gravity: 9.81 },
+      teach: "Backyard pool transitions are tighter than a vert ramp — less radius, less pumping room. With only 2 pumps available, what tricks fit in your air budget? Most pool runs land on 360s and ollies, not 720s.",
+      questions: [
+        "With 2 pumps, what's your max trick rotation that still lands?",
+        "Why does pool radius matter to pumping efficiency? (Hint: shorter arcs = less time to apply force)",
+        "Why are pool sessions usually about flow (linking tricks) instead of single huge airs?"
+      ]
+    }
+  ];
+  function getScenario(id) {
+    for (var i = 0; i < SCENARIOS.length; i++) if (SCENARIOS[i].id === id) return SCENARIOS[i];
+    return null;
+  }
+
   // ──────────────────────────────────────────────────────────────────
   // HALFPIPE PHYSICS
   // The student picks: number of pumps (0-5), spin trick.
@@ -145,31 +262,35 @@ window.StemLab = window.StemLab || {
   function simHalfpipe(opts) {
     var pumps = Math.max(0, Math.min(6, opts.pumps || 0));
     var trick = getTrick(opts.trickId || 'ollie');
+    var vehicle = getVehicle(opts.vehicle || 'skate');
+    var g = opts.gravity || G;
     // Initial speed entering the pipe (just from rolling in).
     var v0 = 4.0;                              // m/s ≈ 9 mph
-    // Each pump adds energy. Pump efficiency is realistic (~0.35 m/s
-    // per well-timed pump).
-    var v = v0 + pumps * 0.6;
+    // Each pump adds energy. Pump efficiency depends on vehicle —
+    // BMX is heavier, gains less speed per pump.
+    var v = v0 + pumps * vehicle.pumpEfficiency;
     // Convert KE → vertical air at the lip. Real halfpipes lose ~15%
     // to friction + drag on the way up.
     var efficiency = 0.85;
-    var hAir = (efficiency * v * v) / (2 * G);  // height above lip, m
-    var airTime = 2 * Math.sqrt(2 * hAir / G);  // up + down, s
-    // Spin rate from the trick the student chose. We assume the
-    // skater commits the rotation cleanly; the question is whether
-    // there's enough air to complete it.
-    var spinRate = trick.rotation > 0 ? (trick.rotation / Math.max(0.36, trick.minAir * 0.95)) : 0; // deg/s
+    var hAir = (efficiency * v * v) / (2 * g);  // height above lip, m
+    var airTime = 2 * Math.sqrt(2 * hAir / g);  // up + down, s
+    // Spin rate from the trick the student chose, scaled by vehicle
+    // moment of inertia. BMX rotates slower because I = mr² is bigger.
+    var baseRate = trick.rotation > 0 ? (trick.rotation / Math.max(0.36, trick.minAir * 0.95)) : 0;
+    var spinRate = baseRate * vehicle.rotationScale; // deg/s
+    var effMinAir = trick.minAir * vehicle.minAirScale;
     var rotationCompleted = trick.rotation === 0 ? 0 : Math.min(trick.rotation, spinRate * airTime);
     var landed = (trick.rotation === 0)
       ? airTime > 0.15
-      : (rotationCompleted >= trick.rotation - 12 && airTime >= trick.minAir);
+      : (rotationCompleted >= trick.rotation - 12 && airTime >= effMinAir);
     var score = 0;
     if (landed) {
       score = Math.round(10 * trick.difficulty + 5 * hAir + 4 * airTime * 10);
     }
     return {
       v0: v0, vTakeoff: v, hAir: hAir, airTime: airTime,
-      trick: trick, rotationCompleted: rotationCompleted,
+      trick: trick, rotationCompleted: rotationCompleted, effMinAir: effMinAir,
+      vehicle: vehicle, gravity: g,
       landed: landed, score: score, pumps: pumps
     };
   }
@@ -188,9 +309,11 @@ window.StemLab = window.StemLab || {
     var thetaDeg = opts.angleDeg || 30;
     var theta = thetaDeg * Math.PI / 180;
     var gapM = (opts.gapFt || 12) / M2FT;
-    var range = (v * v * Math.sin(2 * theta)) / G; // m
-    var peakH = (v * v * Math.sin(theta) * Math.sin(theta)) / (2 * G); // m
-    var hangTime = (2 * v * Math.sin(theta)) / G; // s
+    var g = opts.gravity || G;
+    var vehicle = getVehicle(opts.vehicle || 'skate');
+    var range = (v * v * Math.sin(2 * theta)) / g; // m
+    var peakH = (v * v * Math.sin(theta) * Math.sin(theta)) / (2 * g); // m
+    var hangTime = (2 * v * Math.sin(theta)) / g; // s
     var clearance = range - gapM; // positive = cleared, negative = short
     // Clear on the platform if we're within +0.6 m of the gap's edge
     // (i.e. didn't overshoot wildly into a wall). Tolerance is generous
@@ -209,6 +332,7 @@ window.StemLab = window.StemLab || {
       rangeM: range, rangeFt: range * M2FT,
       peakHM: peakH, peakHFt: peakH * M2FT,
       hangTime: hangTime, clearance: clearance,
+      vehicle: vehicle, gravity: g,
       landed: landed, bail: bail, score: score
     };
   }
@@ -591,7 +715,13 @@ window.StemLab = window.StemLab || {
         progress: function(d) { return (d.landedTricks && d.landedTricks.spin360) ? '✓' : 'pending'; } },
       { id: 'sk_clear_15', label: 'Clear a 15+ ft gap', icon: '🦘',
         check: function(d) { return (d.longestGap || 0) >= 15; },
-        progress: function(d) { return (d.longestGap || 0) + ' ft best'; } }
+        progress: function(d) { return (d.longestGap || 0) + ' ft best'; } },
+      { id: 'sk_bmx_first_land', label: 'Land a trick on BMX', icon: '🚲',
+        check: function(d) { return !!(d.bmxLanded); },
+        progress: function(d) { return d.bmxLanded ? '✓' : 'pending'; } },
+      { id: 'sk_scenarios_5', label: 'Try 5 famous-trick scenarios', icon: '🎬',
+        check: function(d) { return (d.scenariosTried && Object.keys(d.scenariosTried).length >= 5); },
+        progress: function(d) { return ((d.scenariosTried && Object.keys(d.scenariosTried).length) || 0) + '/5 tried'; } }
     ],
     render: function(ctx) {
       var React = ctx.React;
@@ -608,6 +738,9 @@ window.StemLab = window.StemLab || {
         setLabToolData(function(prev) {
           return Object.assign({}, prev, { skatelab: {
             mode: 'halfpipe',
+            vehicle: 'skate',
+            gravity: 9.81,
+            activeScenarioId: null,
             // Halfpipe input
             pumps: 3,
             trickId: 'kickflip',
@@ -623,6 +756,8 @@ window.StemLab = window.StemLab || {
             biggestSpin: 0,
             tricksUsed: {},
             landedTricks: {},
+            scenariosTried: {},
+            bmxLanded: false,
             lastResult: null,
             running: false
           }});
@@ -648,9 +783,44 @@ window.StemLab = window.StemLab || {
         skAnnounce('New gap: ' + ft + ' feet.');
       }
 
+      // ── Load a famous-trick scenario ─────────────────────────────
+      // Sets every relevant key in toolData.skatelab from the
+      // scenario's `presets` block, surfaces the scenario id so the
+      // Lesson card renders, and announces the load to screen readers.
+      function loadScenario(scenarioId) {
+        var sc = getScenario(scenarioId);
+        if (!sc) return;
+        var p = sc.presets || {};
+        var bumps = {
+          activeScenarioId: sc.id,
+          mode: sc.mode,
+          vehicle: p.vehicle || 'skate',
+          gravity: p.gravity || 9.81,
+          lastResult: null
+        };
+        if (sc.mode === 'halfpipe') {
+          if (p.pumps != null) bumps.pumps = p.pumps;
+          if (p.trickId) bumps.trickId = p.trickId;
+        } else {
+          if (p.speedMph != null) bumps.speedMph = p.speedMph;
+          if (p.angleDeg != null) bumps.angleDeg = p.angleDeg;
+          if (p.gapFt != null) bumps.gapFt = p.gapFt;
+        }
+        // Track tried-scenarios for quest progress.
+        var tried = Object.assign({}, d.scenariosTried || {});
+        tried[sc.id] = (tried[sc.id] || 0) + 1;
+        bumps.scenariosTried = tried;
+        upd(bumps);
+        skAnnounce('Loaded ' + sc.label + '. ' + (sc.mode === 'halfpipe' ? 'Halfpipe' : 'Gap jump') + ' mode, ' +
+          (p.vehicle === 'bmx' ? 'BMX' : 'skateboard') + '.');
+      }
+
       function runHalfpipe() {
         if (d.running) return;
-        var sim = simHalfpipe({ pumps: d.pumps, trickId: d.trickId });
+        var sim = simHalfpipe({
+          pumps: d.pumps, trickId: d.trickId,
+          vehicle: d.vehicle, gravity: d.gravity
+        });
         upd({ running: true, lastResult: null, attempts: (d.attempts || 0) + 1 });
         if (cancelAnimRef.current) cancelAnimRef.current();
         cancelAnimRef.current = animateHalfpipe(canvasRef.current, sim, {
@@ -662,18 +832,21 @@ window.StemLab = window.StemLab || {
               landed: sim.landed, score: sim.score,
               vMph: sim.vTakeoff * MPS2MPH, hFt: sim.hAir * M2FT,
               airTime: sim.airTime, trick: sim.trick.label,
-              rotation: sim.trick.rotation, completed: sim.rotationCompleted
+              rotation: sim.trick.rotation, completed: sim.rotationCompleted,
+              vehicle: sim.vehicle.label, gravity: sim.gravity,
+              effMinAir: sim.effMinAir
             };
             if (sim.landed) {
               bumps.landings = (d.landings || 0) + 1;
               bumps.tricksUsed = Object.assign({}, d.tricksUsed || {}, { [sim.trick.id]: ((d.tricksUsed || {})[sim.trick.id] || 0) + 1 });
               bumps.landedTricks = Object.assign({}, d.landedTricks || {}, { [sim.trick.id]: true });
               bumps.biggestSpin = Math.max(d.biggestSpin || 0, sim.trick.rotation);
+              if (sim.vehicle.id === 'bmx') bumps.bmxLanded = true;
               if (awardXP) awardXP(sim.score, 'SkateLab — ' + sim.trick.label, 'skatelab');
-              if (addToast) addToast('🛹 Landed ' + sim.trick.label + '! +' + sim.score + ' XP', 'success');
+              if (addToast) addToast('🛹 Landed ' + sim.trick.label + ' on ' + sim.vehicle.label + '! +' + sim.score + ' XP', 'success');
             } else {
               bumps.bails = (d.bails || 0) + 1;
-              if (addToast) addToast('💥 Bail. ' + (sim.airTime < sim.trick.minAir ? 'Need ' + sim.trick.minAir.toFixed(2) + 's air, only got ' + sim.airTime.toFixed(2) + 's.' : 'Almost!'), 'info');
+              if (addToast) addToast('💥 Bail. ' + (sim.airTime < sim.effMinAir ? 'Need ' + sim.effMinAir.toFixed(2) + 's air, only got ' + sim.airTime.toFixed(2) + 's.' : 'Almost!'), 'info');
             }
             upd(bumps);
           }
@@ -682,7 +855,10 @@ window.StemLab = window.StemLab || {
 
       function runGapJump() {
         if (d.running) return;
-        var sim = simGapJump({ speedMph: d.speedMph, angleDeg: d.angleDeg, gapFt: d.gapFt });
+        var sim = simGapJump({
+          speedMph: d.speedMph, angleDeg: d.angleDeg, gapFt: d.gapFt,
+          vehicle: d.vehicle, gravity: d.gravity
+        });
         upd({ running: true, lastResult: null, attempts: (d.attempts || 0) + 1 });
         if (cancelAnimRef.current) cancelAnimRef.current();
         cancelAnimRef.current = animateGapJump(canvasRef.current, sim, {
@@ -715,8 +891,13 @@ window.StemLab = window.StemLab || {
         if (d.mode === 'halfpipe') {
           drawHalfpipe(canvasRef.current, { skX: null, skY: null, skRot: 0, speedMph: 0, airHeightFt: 0, label: 'Ready' });
         } else {
-          // Pre-compute predicted trajectory for visual feedback
-          var sim = simGapJump({ speedMph: d.speedMph, angleDeg: d.angleDeg, gapFt: d.gapFt });
+          // Pre-compute predicted trajectory for visual feedback —
+          // includes current gravity + vehicle so the parabola
+          // updates when a Moonshot scenario or BMX toggle is active.
+          var sim = simGapJump({
+            speedMph: d.speedMph, angleDeg: d.angleDeg, gapFt: d.gapFt,
+            vehicle: d.vehicle, gravity: d.gravity
+          });
           drawGapJump(canvasRef.current, {
             skX: null, skY: null, skRot: 0,
             speedMph: d.speedMph, angleDeg: d.angleDeg, gapFt: d.gapFt,
@@ -727,7 +908,7 @@ window.StemLab = window.StemLab || {
         return function() {
           if (cancelAnimRef.current) cancelAnimRef.current();
         };
-      }, [d.mode, d.speedMph, d.angleDeg, d.gapFt, d.pumps, d.trickId, d.running]);
+      }, [d.mode, d.speedMph, d.angleDeg, d.gapFt, d.pumps, d.trickId, d.vehicle, d.gravity, d.running]);
 
       // ── Render UI ───────────────────────────────────────────────
       var modeBtn = function(id, label, emoji) {
@@ -762,11 +943,94 @@ window.StemLab = window.StemLab || {
             h('p', { style: { margin: 0, color: '#94a3b8', fontSize: 12 } }, 'Skate / BMX physics — same math that lands a 720.')
           )
         ),
+        // Famous-trick scenario pills — clicking loads a real-world
+        // moment into the simulator. Active scenario gets a bright ring;
+        // others sit on a subtle base. Mirrors ThrowLab's scenario row.
+        h('div', { style: { marginBottom: 10 } },
+          h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fbbf24', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 6, textAlign: 'center' } }, '🎬 Famous tricks'),
+          h('div', { style: { display: 'flex', gap: 6, justifyContent: 'center', flexWrap: 'wrap' } },
+            SCENARIOS.map(function(sc) {
+              var active = d.activeScenarioId === sc.id;
+              return h('button', {
+                key: sc.id,
+                onClick: function() { loadScenario(sc.id); },
+                'aria-pressed': active,
+                'aria-label': 'Load scenario: ' + sc.label,
+                'data-sk-focusable': 'true',
+                title: sc.teach,
+                style: {
+                  padding: '5px 10px', fontSize: 11, fontWeight: 700,
+                  background: active ? 'linear-gradient(135deg,#d97706,#b45309)' : 'rgba(254,243,199,0.08)',
+                  color: active ? '#fff' : '#fef3c7',
+                  border: '1px solid ' + (active ? '#fbbf24' : 'rgba(254,243,199,0.25)'),
+                  borderRadius: 999, cursor: 'pointer',
+                  boxShadow: active ? '0 0 12px rgba(251,191,36,0.4)' : 'none'
+                }
+              }, sc.icon + ' ' + sc.label);
+            })
+          )
+        ),
+        // Vehicle toggle — skateboard vs BMX. Different mass, different
+        // pump efficiency, different rotation moment. Same physics.
+        h('div', { role: 'radiogroup', 'aria-label': 'Vehicle', style: { display: 'flex', gap: 6, justifyContent: 'center', marginBottom: 12 } },
+          ['skate', 'bmx'].map(function(vid) {
+            var v = VEHICLES[vid];
+            var sel = d.vehicle === vid;
+            return h('button', {
+              key: vid,
+              onClick: function() {
+                upd('vehicle', vid);
+                skAnnounce('Switched to ' + v.label + '. ' + (vid === 'bmx' ? 'Heavier vehicle, slower rotation, slightly more air needed per trick.' : 'Standard skateboard physics.'));
+              },
+              role: 'radio',
+              'aria-checked': sel,
+              'data-sk-focusable': 'true',
+              title: v.label + ' — mass ' + v.mass + ' kg · pump efficiency ' + v.pumpEfficiency + ' m/s · rotation ×' + v.rotationScale,
+              style: {
+                padding: '6px 14px', fontSize: 12, fontWeight: 700,
+                background: sel ? 'linear-gradient(135deg,#0ea5e9,#0369a1)' : 'rgba(254,243,199,0.08)',
+                color: sel ? '#fff' : '#fef3c7',
+                border: '1px solid ' + (sel ? '#0369a1' : 'rgba(254,243,199,0.25)'),
+                borderRadius: 999, cursor: 'pointer'
+              }
+            }, v.icon + ' ' + v.label);
+          })
+        ),
         // Mode selector
         h('div', { role: 'tablist', 'aria-label': 'SkateLab mode', style: { display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 14, flexWrap: 'wrap' } },
           modeBtn('halfpipe', 'Halfpipe', '🛹'),
           modeBtn('gap', 'Gap Jump', '🦘')
         ),
+        // Lesson card — surfaces the active scenario's teach text plus
+        // its 3 questions. Dismissible. Renders only when a scenario
+        // has been loaded (activeScenarioId set).
+        d.activeScenarioId && (function() {
+          var sc = getScenario(d.activeScenarioId);
+          if (!sc) return null;
+          return h('div', {
+            style: { background: 'rgba(251,191,36,0.10)', border: '1px solid #fbbf24', borderRadius: 10, padding: 12, marginBottom: 12 },
+            role: 'region',
+            'aria-label': 'Lesson: ' + sc.label
+          },
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
+              h('span', { style: { fontSize: 18 } }, sc.icon),
+              h('div', { style: { flex: 1, fontWeight: 800, color: '#fbbf24', fontSize: 13, letterSpacing: '0.04em' } }, sc.label),
+              h('button', {
+                onClick: function() { upd('activeScenarioId', null); skAnnounce('Lesson dismissed.'); },
+                'aria-label': 'Dismiss lesson card',
+                'data-sk-focusable': 'true',
+                style: { background: 'transparent', border: '1px solid rgba(254,243,199,0.30)', color: '#fef3c7', borderRadius: 6, padding: '2px 8px', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+              }, '✕ Dismiss')
+            ),
+            h('p', { style: { margin: '0 0 8px', fontSize: 12, color: '#fef3c7', lineHeight: 1.55 } }, sc.teach),
+            h('details', null,
+              h('summary', { style: { cursor: 'pointer', color: '#fbbf24', fontWeight: 700, fontSize: 11, letterSpacing: '0.04em', textTransform: 'uppercase' } }, '📝 Questions'),
+              h('ol', { style: { margin: '8px 0 0', paddingLeft: 20, fontSize: 12, color: '#cbd5e1', lineHeight: 1.6 } },
+                sc.questions.map(function(q, i) { return h('li', { key: i, style: { marginBottom: 4 } }, q); })
+              )
+            )
+          );
+        })(),
         // Canvas
         h('div', { style: { background: '#0f172a', borderRadius: 12, border: '2px solid #78350f', padding: 8, marginBottom: 12, boxShadow: '0 6px 20px rgba(0,0,0,0.35)' } },
           h('canvas', {
@@ -923,10 +1187,17 @@ window.StemLab = window.StemLab || {
                   h('p', { key: 2, style: { margin: '0 0 8px' } },
                     h('b', { style: { color: '#fbbf24' } }, 'Speed scales squared. '),
                     'Doubling your takeoff speed quadruples your range — same as pumping in the halfpipe. That\'s why pros sprint hard at gaps.'),
-                  h('p', { key: 3, style: { margin: 0 } },
+                  h('p', { key: 3, style: { margin: '0 0 8px' } },
                     h('b', { style: { color: '#fbbf24' } }, 'Peak height: '),
                     'h_peak = (v · sinθ)² / (2g). At 30° and 15 mph you peak ~3 ft above takeoff; at 45° you peak ~6 ft. More vertical means more time to spot the landing.')
-                ]
+                ],
+            // BMX-specific physics paragraph — only shows when BMX is
+            // active. Frames moment of inertia in plain language tied
+            // to the toggle the student just flipped.
+            d.vehicle === 'bmx' && h('p', { style: { margin: '12px 0 0', padding: '8px 10px', background: 'rgba(14,165,233,0.10)', border: '1px solid rgba(14,165,233,0.40)', borderRadius: 8 } },
+              h('b', { style: { color: '#7dd3fc' } }, '🚲 BMX = bigger moment of inertia. '),
+              'A BMX bike weighs ~12 kg vs a skateboard\'s ~4 kg, and the wheels are much bigger. Moment of inertia I = m·r² determines how much torque you need to spin. Same arm strength → less rotation per second. That\'s why BMX flips and spins look more deliberate than skate spins — the rider is fighting more rotational mass for the same air time.'
+            )
           )
         )
       );
