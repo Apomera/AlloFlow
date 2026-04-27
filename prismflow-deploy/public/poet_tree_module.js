@@ -374,6 +374,39 @@
           note: 'The final couplet of a Shakespearean sonnet often delivers the volta — the turn — in just two lines.'
         }
       ]
+    },
+    {
+      id: 'image-poem',
+      name: 'Image Poem',
+      icon: '🖼️',
+      tagline: 'Your poem is the picture. Write what you want to see.',
+      structure: 'No rules on form, length, or rhyme. The whole poem is your image prompt — when you click Imagine It, an AI artist reads your poem and paints exactly what you wrote. Vivid, concrete, sensory language wins. Vague abstractions ("sadness", "hope") become muddy images; specific images ("a copper kettle in lamplight", "frost on a bicycle chain") become clear ones.',
+      lineCount: null,
+      syllablesPerLine: null,
+      rhymeScheme: null,
+      example: 'a paper boat\nfolded from a grocery list\nfloating on a puddle\nwhere the last leaf fell\n\n— student sample',
+      tips: [
+        'Picture the image in your head FIRST. Then describe what you see.',
+        'Name colors, materials, time of day, light. The AI loves specifics.',
+        'Cut abstract words ("beautiful", "sad", "amazing") — replace with what made you feel that.',
+        'One scene per poem. The AI cannot draw multiple separate scenes well.'
+      ],
+      moreExamples: [
+        {
+          title: 'Fog',
+          author: 'Carl Sandburg',
+          year: 1916,
+          text: 'The fog comes\non little cat feet.\n\nIt sits looking\nover harbor and city\non silent haunches\nand then moves on.',
+          note: 'Six lines. Every word is something you can see. This poem could be drawn with no abstractions to fill in.'
+        },
+        {
+          title: 'In a Station of the Metro',
+          author: 'Ezra Pound',
+          year: 1913,
+          text: 'The apparition of these faces in the crowd;\nPetals on a wet, black bough.',
+          note: 'Two lines. Two images. The whole imagist movement is here — write what is seen, let the reader (or the AI) draw it.'
+        }
+      ]
     }
   ];
 
@@ -480,6 +513,11 @@
     var _emotion = useState('neutral'); var emotion = _emotion[0]; var setEmotion = _emotion[1];
     var _illustration = useState(null); var illustration = _illustration[0]; var setIllustration = _illustration[1];
     var _illusLoading = useState(false); var illusLoading = _illusLoading[0]; var setIllusLoading = _illusLoading[1];
+    // Image Poem — when the 'image-poem' form is active, the poem text itself is the Imagen prompt.
+    // Distinct from `illustration` because Image Poem uses the poem AS the prompt (no extra style wrapper),
+    // and the result is a first-class output the student is iterating on, not a decorative illustration.
+    var _imagePoemUrl = useState(null); var imagePoemUrl = _imagePoemUrl[0]; var setImagePoemUrl = _imagePoemUrl[1];
+    var _imagePoemLoading = useState(false); var imagePoemLoading = _imagePoemLoading[0]; var setImagePoemLoading = _imagePoemLoading[1];
 
     // Saved poems
     var _saved = useState(function () { try { return JSON.parse(localStorage.getItem(STORAGE_POEMS) || '[]'); } catch (e) { return []; } });
@@ -1093,6 +1131,31 @@
         setIllusLoading(false);
       }
     }, [onCallImagen, poemText, poemTitle, addToast]);
+
+    // ── Image Poem: the poem itself is the Imagen prompt ──
+    // Different from generateIllustration because no style wrapping is added — the
+    // student's words go straight to the model. Pedagogical aim: students learn that
+    // concrete sensory language renders cleanly while vague abstractions become mud.
+    var generateImagePoem = useCallback(async function () {
+      if (!onCallImagen || !poemText.trim()) return;
+      setImagePoemLoading(true);
+      try {
+        // Send the poem AS the prompt with the lightest possible framing — only enough to
+        // discourage on-image text. No style override; the poem's own register is the brief.
+        var prompt = poemText.trim() + '\n\nRender a single illustrative image of the scene described in the poem above. STRICTLY NO TEXT, no captions, no signatures, no watermark in the image.';
+        var url = await onCallImagen(prompt, 600, 0.85);
+        if (url) {
+          setImagePoemUrl(url);
+          announcePT('Image poem rendered.');
+          if (typeof addToast === 'function') addToast('Image poem rendered!', 'success');
+        }
+      } catch (err) {
+        warnLog('Image poem failed:', err && err.message);
+        addToast && addToast('Image poem failed — try again.', 'error');
+      } finally {
+        setImagePoemLoading(false);
+      }
+    }, [onCallImagen, poemText, addToast]);
 
     // ── Read-aloud mode (silent recital — student performs live, no TTS) ──
     var startReadAloud = useCallback(function () {
@@ -2299,6 +2362,12 @@
                   : e('button', { onClick: stopPoem, 'aria-label': 'Stop playback',
                       style: { padding: '10px 20px', background: '#ef4444', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 800, fontSize: '14px', cursor: 'pointer' }
                     }, '⏹ Stop'),
+                // Image Poem: primary "Imagine It" button shown only when this form is active.
+                onCallImagen && form && form.id === 'image-poem' && e('button', { onClick: generateImagePoem, disabled: imagePoemLoading || !poemText.trim(),
+                  'aria-busy': imagePoemLoading ? 'true' : 'false',
+                  'aria-label': imagePoemLoading ? 'Rendering image poem, please wait' : (imagePoemUrl ? 'Re-render the image poem' : 'Render the poem as an image'),
+                  style: { padding: '10px 18px', background: imagePoemLoading ? '#cbd5e1' : (poemText.trim() ? '#7c3aed' : '#cbd5e1'), color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 800, fontSize: '14px', cursor: imagePoemLoading || !poemText.trim() ? 'not-allowed' : 'pointer' }
+                }, imagePoemLoading ? '⏳ Imagining…' : (imagePoemUrl ? '🔄 Re-imagine' : '🖼️ Imagine It')),
                 onCallImagen && e('button', { onClick: generateIllustration, disabled: illusLoading,
                   'aria-busy': illusLoading ? 'true' : 'false',
                   'aria-label': illusLoading ? 'Generating illustration, please wait' : 'Generate illustration with AI',
@@ -2312,6 +2381,17 @@
                   'aria-label': 'Open a printable broadside of this poem in a new window',
                   style: { padding: '10px 16px', background: '#fff', color: '#0d9488', border: '1px solid #0d9488', borderRadius: '10px', fontWeight: 700, fontSize: '13px', cursor: poemText.trim() ? 'pointer' : 'not-allowed', opacity: poemText.trim() ? 1 : 0.5 }
                 }, '🖨️ Broadside')
+              ),
+              // Image Poem result — rendered as a primary first-class output, not a sidebar decoration.
+              imagePoemUrl && form && form.id === 'image-poem' && e('figure', { style: { margin: 0, borderRadius: '12px', overflow: 'hidden', border: '2px solid #c4b5fd', background: 'linear-gradient(135deg, #faf5ff, #ede9fe)' } },
+                e('img', { src: imagePoemUrl, alt: 'AI rendering of your image poem' + (poemTitle ? ' titled ' + poemTitle : ''), style: { width: '100%', display: 'block' } }),
+                e('figcaption', { style: { padding: '10px 14px', fontSize: '11px', color: '#5b21b6', fontStyle: 'italic', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' } },
+                  e('span', null, '🖼️ Your poem, made visible. Edit your words and re-imagine to see how the image changes.'),
+                  e('button', { onClick: function () { setImagePoemUrl(null); announcePT('Image poem cleared.'); },
+                    'aria-label': 'Clear the rendered image poem',
+                    style: { fontSize: '10px', color: '#7c3aed', background: 'none', border: '1px solid #c4b5fd', borderRadius: '6px', padding: '3px 8px', cursor: 'pointer', fontWeight: 700 }
+                  }, 'Clear')
+                )
               ),
               illustration && e('div', { style: { borderRadius: '12px', overflow: 'hidden', border: '1px solid #e5e7eb' } },
                 e('img', { src: illustration, alt: 'Illustration for the poem ' + (poemTitle || 'Untitled'), style: { width: '100%', display: 'block' } })
