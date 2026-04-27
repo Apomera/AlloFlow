@@ -132,6 +132,83 @@ window.StemLab = window.StemLab || {
     { id: 'jupiter', label: 'Jupiter', g: 24.79, icon: '⚫' },
     { id: 'sun',     label: 'Sun',     g: 274.0,  icon: '☀️' }   // 28× Earth — extreme dropper
   ];
+  // ── Engagement layer: Achievements / Badges ──
+  // Named badges unlocked from drill-stat criteria. The earn-detector
+  // walks BADGES on every throw, awarding any whose `check` returns
+  // true. Earned set persists in toolData.badgesEarned. Each first-
+  // earn awards a small XP bonus + toast + tlAnnounce. Designed so
+  // an athletic kid sees their collection grow as they explore — the
+  // dopamine loop a sports kid recognizes from Madden / FIFA.
+  var BADGES = [
+    { id: 'beckham', emoji: '🌀', label: 'Beckham Badge',
+      hint: 'Score a free kick with > 1.5 m of curl',
+      check: function(d, lr) {
+        if (d.mode !== 'freekick' || lr.location !== 'goal' || !lr.samples) return false;
+        var xs = lr.samples.map(function(s) { return s.x; });
+        var curl = Math.max.apply(null, xs) - Math.min.apply(null, xs);
+        return curl > 1.5;
+      } },
+    { id: 'howzat', emoji: '🏏', label: 'Howzat',
+      hint: '3 wickets in one session',
+      check: function(d, lr, stats) { return d.mode === 'bowling' && (stats.totalWickets || 0) >= 3; } },
+    { id: 'money', emoji: '💰', label: 'Money',
+      hint: 'Make 5 free throws in a row',
+      check: function(d, lr, stats) { return d.mode === 'freethrow' && (stats.hotStreak || 0) >= 5; } },
+    { id: 'hailmary-hero', emoji: '🌠', label: 'Hail Mary Hero',
+      hint: 'Make a 50+ yd field goal',
+      check: function(d, lr) { return d.mode === 'fieldgoal' && lr.location === 'good' && (d.fgDistanceYd || 0) >= 50; } },
+    { id: 'cutter', emoji: '⚡', label: 'Cutter',
+      hint: 'Strike with the slider pitch',
+      check: function(d, lr) { return d.mode === 'pitching' && lr.location === 'strike' && d.pitchType === 'slider'; } },
+    { id: 'fastball-heat', emoji: '🔥', label: 'Fastball Heat',
+      hint: 'Strike with a 4-Seam at 100+ mph',
+      check: function(d, lr) { return d.mode === 'pitching' && lr.location === 'strike' && d.pitchType === '4seam' && d.speedMph >= 100; } },
+    { id: 'knuckle-king', emoji: '🦋', label: 'Knuckle King',
+      hint: 'Strike with the knuckleball',
+      check: function(d, lr) { return d.mode === 'pitching' && lr.location === 'strike' && d.pitchType === 'knuckle'; } },
+    { id: 'birdie-threat', emoji: '⛳', label: 'Birdie Threat',
+      hint: 'Hit the green with the Sand Wedge',
+      check: function(d, lr) { return d.mode === 'golf' && lr.location === 'green' && d.golfClub === 'wedge'; } },
+    { id: 'ace-server', emoji: '🏐', label: 'Ace Server',
+      hint: 'Land a volleyball ace',
+      check: function(d, lr) { return d.mode === 'volleyball' && lr.location === 'ace'; } }
+  ];
+
+  // ── Engagement layer: Hot-Hand + Hype ──
+  // Sports broadcasting language scaffolding for athletic students who
+  // bounce off academic framing. Streak indicator mirrors NBA Jam's
+  // "He's heating up / On fire" momentum trope. Hype phrases are
+  // cycled into a small pre-throw text box that auto-fades — never
+  // blocks input. Tied to drillStats.streakStrikes (already tracked).
+  var HYPE_PHRASES = [
+    'Money time',
+    'Show me what you got',
+    'Lights, camera, clutch',
+    'This is your moment',
+    "Let's see it",
+    'Time to cook',
+    'Buckets',
+    'In the zone',
+    'Stay locked in',
+    'One more rep',
+    'Make it count',
+    'Show out',
+    'Let it rip',
+    'Trust the work',
+    'Take the shot'
+  ];
+  function pickHypePhrase() {
+    return HYPE_PHRASES[Math.floor(Math.random() * HYPE_PHRASES.length)];
+  }
+  // Map a streak count to a Hot-Hand label. Returns null if the streak
+  // is too short to surface (keeps the UI quiet during early misses).
+  function getHotHand(streak) {
+    if (!streak || streak < 2) return null;
+    if (streak === 2) return { emoji: '🟧', label: 'Warming up', color: '#fb923c' };
+    if (streak <= 4) return { emoji: '🔥', label: "He's heating up!", color: '#ef4444' };
+    return { emoji: '🔥🔥', label: 'ON FIRE', color: '#dc2626' };
+  }
+
   // ── Scenarios ──
   // One-click teaching demos that combine mode + preset + gravity + wind
   // into a configured setup. Useful as a "warm up the lab" feature: the
@@ -1308,7 +1385,7 @@ window.StemLab = window.StemLab || {
             spinAxisDeg: 0,
             throwerHand: 'right',
             showPhysics: false,
-            scaffoldTier: 3, // 1 = speed only, 2 = +angle, 3 = +spin (full)
+            scaffoldTier: 1, // 1 = Rookie (speed only), 2 = Pro (+angle), 3 = All-Star (+spin), 4 = Hall of Fame (full physics + formulas)
             lastResult: null,
             replayActive: false,
             replayT: 0,
@@ -1592,6 +1669,16 @@ window.StemLab = window.StemLab || {
           if (addToast) addToast('Print failed', 'error');
         }
         tlAnnounce('Activity sheet opened with ' + SCENARIOS.length + ' scenarios.');
+      }
+
+      // Quick-Play: pick a random scenario from built-ins + customs and
+      // apply it. Targets the athletic kid who arrives and doesn\'t want
+      // to read setup — one click and they\'re throwing something fun.
+      function runRandomScenario() {
+        var pool = SCENARIOS.concat(d.customScenarios || []);
+        if (!pool.length) return;
+        var pick = pool[Math.floor(Math.random() * pool.length)];
+        applyScenario(pick.id);
       }
 
       function applyScenario(scenarioId) {
@@ -1979,7 +2066,13 @@ window.StemLab = window.StemLab || {
         }
         sfxThrow();
         var newThrowCount = (d.throwCount || 0) + 1;
-        var isMakeOutcome = loc === 'strike' || loc === 'swish' || loc === 'made' || loc === 'goal' || loc === 'caught';
+        // Unified "make" predicate across all sports — feeds the
+        // cross-sport Hot-Hand streak counter so a great cricket bowl
+        // followed by a great golf shot keeps the flame lit.
+        var isMakeOutcome = loc === 'strike' || loc === 'swish' || loc === 'made' || loc === 'goal' || loc === 'caught'
+          || loc === 'good' || loc === 'wicket' || loc === 'shaved'
+          || loc === 'ace' || loc === 'in'
+          || loc === 'green' || loc === 'fairway';
         var newStrikeCount = (d.mode === 'pitching' && loc === 'strike') ? (d.strikeCount || 0) + 1 : (d.strikeCount || 0);
         var newMakeCount = (d.mode === 'freethrow' && (loc === 'swish' || loc === 'made' || loc === 'caught')) ? (d.shotMakeCount || 0) + 1 : (d.shotMakeCount || 0);
         var newGoalCount = (d.mode === 'freekick' && loc === 'goal') ? (d.goalCount || 0) + 1 : (d.goalCount || 0);
@@ -2020,8 +2113,19 @@ window.StemLab = window.StemLab || {
           fgMadeByDist: {},
           bowlTypes: {}, totalWickets: 0,
           golfClubsOnGreen: {}, golfFairwaysHit: 0,
-          volleyServesIn: {}, volleyInCount: 0, volleyAceCount: 0
+          volleyServesIn: {}, volleyInCount: 0, volleyAceCount: 0,
+          // Hot-Hand: cross-sport streak counter (incremented on ANY make,
+          // reset on any miss). Surfaced as the broadcasting-style flame
+          // indicator for athletic engagement.
+          hotStreak: 0
         }, d.drillStats || {});
+        // Cross-sport Hot Hand — increment / reset on the unified make
+        // outcome so every sport feeds the same streak meter.
+        if (isMakeOutcome) {
+          stats.hotStreak = (stats.hotStreak || 0) + 1;
+        } else {
+          stats.hotStreak = 0;
+        }
         // Pitching streak + type-coverage
         if (d.mode === 'pitching') {
           if (loc === 'strike') {
@@ -2095,6 +2199,22 @@ window.StemLab = window.StemLab || {
             stats.volleyAceCount = (stats.volleyAceCount || 0) + 1;
           }
         }
+        // ── Achievement / Badge earn-detection ──
+        // Walk BADGES, awarding any whose `check` returns true that
+        // the student hasn\'t earned yet. Each earn fires a toast +
+        // tlAnnounce + small XP bonus; the earned set persists in
+        // toolData so badges stay lit across reloads.
+        var earnedSet = Object.assign({}, d.badgesEarned || {});
+        var newlyEarned = [];
+        BADGES.forEach(function(b) {
+          if (earnedSet[b.id]) return;
+          try {
+            if (b.check(d, result, stats)) {
+              earnedSet[b.id] = Date.now();
+              newlyEarned.push(b);
+            }
+          } catch (e) { /* defensive — never let a bad check break the throw flow */ }
+        });
         // ── Drill task progression ──
         var newDrillTaskIdx = d.drillTaskIdx || 0;
         var taskJustCompleted = null;
@@ -2121,6 +2241,7 @@ window.StemLab = window.StemLab || {
             wicketCount: newWicketCount,
             golfGreenCount: newGolfGreenCount,
             volleyAceCount: newVolleyAceCount,
+            badgesEarned: earnedSet,
             pitchTypesUsed: newTypesUsed,
             recentThrows: newRecent,
             drillStats: stats,
@@ -2145,6 +2266,18 @@ window.StemLab = window.StemLab || {
               if (awardXP) awardXP('throwlab', 12, 'Drill task');
             }
           }, 800);
+        }
+        // Newly-earned badges — fire toast + tlAnnounce + XP per badge,
+        // staggered so multiple earns don\'t pile on top of each other
+        if (newlyEarned.length) {
+          newlyEarned.forEach(function(b, i) {
+            setTimeout(function() {
+              tlAnnounce('Badge unlocked: ' + b.label + '. ' + b.hint + '.');
+              if (addToast) addToast('🏅 ' + b.emoji + ' ' + b.label + '!');
+              if (awardXP) awardXP('throwlab', 8, 'Badge: ' + b.label);
+              if (celebrate && i === 0) celebrate();
+            }, 1200 + (i * 800));
+          });
         }
         // Outcome SFX + announcement after a tiny delay so it doesn't talk over the throw
         setTimeout(function() {
@@ -3583,6 +3716,19 @@ window.StemLab = window.StemLab || {
                 );
               })
             ).concat([
+              // Quick-Play — random scenario, one click
+              h('button', {
+                key: 'sc-random',
+                onClick: runRandomScenario,
+                'aria-label': 'Run a random scenario — go straight to throwing without reading setup',
+                'data-tl-focusable': 'true',
+                title: 'Pick a random scenario and start immediately — no setup, just throw',
+                style: {
+                  padding: '6px 11px', borderRadius: 6, cursor: 'pointer',
+                  border: '1px dashed #6366f1', background: 'rgba(99,102,241,0.10)',
+                  color: '#a5b4fc', fontSize: 11, fontWeight: 700
+                }
+              }, '🎲 Run something cool'),
               // Save current as scenario
               h('button', {
                 key: 'sc-save',
@@ -3609,6 +3755,41 @@ window.StemLab = window.StemLab || {
                 }
               }, '📄 Print activity sheet')
             ])
+          )
+        ),
+
+        // ── Achievements / Badges (engagement layer) ──
+        // Collection mechanic for athletic students. All badges shown
+        // dimmed; earned badges glow with their color. Tooltip shows the
+        // hint so students can see how to unlock unearned ones — turns
+        // it into a checklist rather than a mystery box.
+        h('details', {
+          style: { marginBottom: 14, background: '#0f172a', border: '1px solid #1e293b', borderRadius: 10, padding: '8px 12px' }
+        },
+          h('summary', {
+            style: { cursor: 'pointer', fontSize: 12, color: '#cbd5e1', fontWeight: 600 }
+          }, '🏅 Achievements (' + Object.keys(d.badgesEarned || {}).length + ' / ' + BADGES.length + ')'),
+          h('div', {
+            role: 'list', 'aria-label': 'Badge achievements',
+            style: { marginTop: 8, display: 'flex', flexWrap: 'wrap', gap: 6 }
+          },
+            BADGES.map(function(b) {
+              var earned = !!(d.badgesEarned && d.badgesEarned[b.id]);
+              return h('span', {
+                key: 'badge-' + b.id,
+                role: 'listitem',
+                'aria-label': b.label + (earned ? ' (earned)' : ' (locked)') + ': ' + b.hint,
+                title: b.hint,
+                style: {
+                  padding: '5px 10px', borderRadius: 999,
+                  border: '1px solid ' + (earned ? '#fbbf24' : '#334155'),
+                  background: earned ? 'rgba(251,191,36,0.18)' : '#1e293b',
+                  color: earned ? '#fbbf24' : '#475569',
+                  fontSize: 11, fontWeight: earned ? 700 : 500,
+                  opacity: earned ? 1 : 0.6
+                }
+              }, b.emoji + ' ' + b.label);
+            })
           )
         ),
 
@@ -3671,30 +3852,42 @@ window.StemLab = window.StemLab || {
         // Tier 3 = + spin (full physics, MS / HS / AP).
         // Wind controls follow tier 2+ so the wind panel doesn't confuse a
         // Tier 1 student. Stored on d.scaffoldTier; defaults to 3.
-        h('div', { role: 'group', 'aria-label': 'Difficulty / scaffold tier',
+        // Difficulty selector — re-skinned in athlete language.
+        // Internally still scaffoldTier 1/2/3/4 (same data model), but
+        // UI reads as career progression: Rookie → Pro → All-Star → HOF.
+        // Tier 4 (Hall of Fame) auto-toggles showFormulas for the
+        // physics-deep-dive student. Same simulation underneath.
+        h('div', { role: 'group', 'aria-label': 'Skill level',
           style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14, flexWrap: 'wrap', fontSize: 12 }
         },
-          h('span', { style: { color: '#cbd5e1' } }, 'Difficulty:'),
+          h('span', { style: { color: '#cbd5e1' } }, 'Skill:'),
           [
-            { tier: 1, label: 'Tier 1 · Speed only', short: '1' },
-            { tier: 2, label: 'Tier 2 · + Angle', short: '2' },
-            { tier: 3, label: 'Tier 3 · + Spin', short: '3' }
+            { tier: 1, label: '🏆 Rookie',     sub: 'Speed only' },
+            { tier: 2, label: '🏆 Pro',        sub: '+ Angle' },
+            { tier: 3, label: '🏆 All-Star',   sub: '+ Spin' },
+            { tier: 4, label: '🏆 Hall of Fame', sub: 'Full physics + formulas' }
           ].map(function(opt) {
             var sel = (d.scaffoldTier || 3) === opt.tier;
             return h('button', {
               key: 'tier' + opt.tier,
               onClick: function() {
-                upd('scaffoldTier', opt.tier);
-                tlAnnounce('Scaffold tier set to ' + opt.label);
+                setLabToolData(function(prev) {
+                  var next = Object.assign({}, prev.throwlab, { scaffoldTier: opt.tier });
+                  // HOF tier auto-shows the physics formulas overlay
+                  if (opt.tier === 4) next.showFormulas = true;
+                  return Object.assign({}, prev, { throwlab: next });
+                });
+                tlAnnounce('Skill level: ' + opt.label.replace(/^\S+\s/, '') + ' — ' + opt.sub);
               },
               'aria-pressed': sel,
-              'aria-label': opt.label,
+              'aria-label': opt.label.replace(/^\S+\s/, '') + ': ' + opt.sub,
               'data-tl-focusable': 'true',
+              title: opt.sub,
               style: {
                 padding: '6px 10px', borderRadius: 6, cursor: 'pointer',
                 border: '1px solid ' + (sel ? '#fbbf24' : '#334155'),
                 background: sel ? 'rgba(251,191,36,0.18)' : '#1e293b',
-                color: '#f1f5f9', fontSize: 12
+                color: '#f1f5f9', fontSize: 12, fontWeight: sel ? 700 : 500
               }
             }, opt.label);
           })
@@ -4123,6 +4316,35 @@ window.StemLab = window.StemLab || {
                   return '↙ Quartering head/left';
                 })())
             ) : null,
+            // ── Hot Hand + Hype HUD (engagement layer) ──
+            // Sits directly above the throw button so the streak status
+            // and pre-throw motivator are inline with where the student's
+            // attention already is. Both auto-derive from existing state:
+            // Hot Hand from drillStats.hotStreak, hype from a freshly
+            // picked phrase whenever the user has no result yet (i.e.,
+            // before they\'ve thrown — once a throw has happened, the
+            // outcome banner takes over the spot).
+            (function() {
+              var hot = getHotHand((d.drillStats || {}).hotStreak);
+              var showHype = !d.lastResult && !d.replayActive;
+              if (!hot && !showHype) return null;
+              return h('div', {
+                role: 'status', 'aria-live': 'polite',
+                style: {
+                  marginBottom: 8, padding: '6px 10px', borderRadius: 6,
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
+                  background: hot ? 'rgba(220,38,38,0.10)' : 'rgba(167,139,250,0.10)',
+                  border: '1px solid ' + (hot ? hot.color : '#a78bfa'),
+                  fontSize: 12
+                }
+              },
+                hot ? h('span', { style: { color: hot.color, fontWeight: 700 } },
+                  hot.emoji + ' ' + hot.label + ' (streak: ' + d.drillStats.hotStreak + ')'
+                ) : h('span', { style: { color: '#a78bfa', fontStyle: 'italic' } },
+                  '🎙️ ' + pickHypePhrase()
+                )
+              );
+            })(),
             // Throw / Shoot button — mode-aware label
             h('button', {
               onClick: throwPitch,

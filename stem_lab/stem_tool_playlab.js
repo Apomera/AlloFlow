@@ -148,6 +148,82 @@ window.StemLab = window.StemLab || {
   //   2 = slant                7 = corner
   //   3 = comeback             8 = post
   //   4 = curl                 9 = fly / go (deep)
+  // ── Engagement layer: Hot-Hand + Hype + Badges (sports re-skin) ──
+  // Sports broadcasting language scaffolding for athletic students who
+  // bounce off academic framing. Mirrors the ThrowLab engagement layer
+  // so both tools have parallel feel. Tied to existing drill-stat
+  // tracking; no new state machinery needed beyond a hot-streak counter
+  // and a badgesEarned set.
+  var HYPE_PHRASES = [
+    'Money time',
+    'Show me what you got',
+    'Lights, camera, clutch',
+    "Let's see it",
+    'In the zone',
+    'Run it',
+    'Time to cook',
+    'Make the read',
+    'Stay locked in',
+    'Trust your reps',
+    'One more rep',
+    'Show out',
+    'Let it rip',
+    'Take what they give',
+    'Find the open man'
+  ];
+  function pickHypePhrase() {
+    return HYPE_PHRASES[Math.floor(Math.random() * HYPE_PHRASES.length)];
+  }
+  function getHotHand(streak) {
+    if (!streak || streak < 2) return null;
+    if (streak === 2) return { emoji: '🟧', label: 'Warming up', color: '#fb923c' };
+    if (streak <= 4) return { emoji: '🔥', label: "He's heating up!", color: '#ef4444' };
+    return { emoji: '🔥🔥', label: 'ON FIRE', color: '#dc2626' };
+  }
+
+  // Named badges unlocked from drill-stat criteria. Each first-earn
+  // fires toast + plAnnounce + small XP bonus. Persisted in
+  // toolData.badgesEarned so badges stay lit across reloads.
+  var PLAYLAB_BADGES = [
+    { id: 'smash-hit', emoji: '🎯', label: 'Smash Hit',
+      hint: 'Beat Cover 2 with the Smash concept',
+      check: function(d, outcome, stats) { return d.sport === 'football' && stats && stats.smashVsCover2; } },
+    { id: 'hot-route', emoji: '⚡', label: 'Hot Route',
+      hint: 'Beat Cover 0 with a hot concept (Slant / Bubble / Stick)',
+      check: function(d, outcome, stats) { return d.sport === 'football' && stats && stats.c0WithHot; } },
+    { id: 'iso-pep', emoji: '🔁', label: 'Iso Pep',
+      hint: 'Run Tiki-Taka against a Low Block successfully',
+      check: function(d, outcome, stats) {
+        return d.sport === 'soccer' && d.conceptId === 'tikitaka' && d.shapeId === 'lowblock'
+          && stats && (stats.highXgShot || stats.customHighXg);
+      } },
+    { id: 'top-bins', emoji: '⚽', label: 'Top Bins',
+      hint: 'Run a Direct Free Kick set-piece',
+      check: function(d, outcome, stats) {
+        return d.sport === 'soccer' && d.conceptId === 'freekick-direct' && stats && stats.setPieceRun;
+      } },
+    { id: 'delap', emoji: '🪂', label: 'Delap',
+      hint: 'Run a Long Throw-In set-piece',
+      check: function(d, outcome, stats) {
+        return d.sport === 'soccer' && d.conceptId === 'throwin-long' && stats && stats.setPieceRun;
+      } },
+    { id: 'triple-threat', emoji: '🏈', label: 'Triple-Threat',
+      hint: 'Complete with 3 different plays',
+      check: function(d, outcome, stats) {
+        return d.sport === 'football' && stats && Object.keys(stats.completionsByPlay || {}).length >= 3;
+      } },
+    { id: 'coordinator', emoji: '🏆', label: 'Coordinator',
+      hint: 'Beat 5 different coverages',
+      check: function(d, outcome, stats) {
+        return d.sport === 'football' && stats && (stats.coveragesBeaten || 0) >= 5;
+      } },
+    { id: 'triangle', emoji: '⫷', label: 'Triangle',
+      hint: 'Complete the Trips Bunch concept',
+      check: function(d, outcome, stats) {
+        return d.sport === 'football' && d.playId === 'trips' && stats && stats.completionsByPlay && stats.completionsByPlay.trips;
+      } }
+  ];
+
   var PLAYS = [
     {
       id: 'slant',
@@ -1694,6 +1770,23 @@ window.StemLab = window.StemLab || {
         plAnnounce('Activity sheet opened for ' + sportLabel + ' with ' + scenarios.length + ' scenarios.');
       }
 
+      // Quick-Play: pick a random scenario from built-ins (current sport)
+      // and saved plays. Targets the athletic kid who arrives and doesn\'t
+      // want to read setup — one click and they\'re running something.
+      function runRandomPlayLabScenario() {
+        var activeSport = d.sport || 'football';
+        var pool = PLAYLAB_SCENARIOS.filter(function(sc) { return sc.sport === activeSport; })
+          .concat((d.savedPlays || []).filter(function(sp) { return sp.sport === activeSport; }));
+        if (!pool.length) return;
+        var pick = pool[Math.floor(Math.random() * pool.length)];
+        // Built-in vs saved-play apply path
+        if (pick.sport && (pick.playId || pick.conceptId) && (pick.coverageId || pick.shapeId) && pick.id && pick.id.indexOf('custom_') === 0) {
+          loadSavedPlay(pick);
+        } else {
+          applyPlayLabScenario(pick.id);
+        }
+      }
+
       function applyPlayLabScenario(scenarioId) {
         var s = PLAYLAB_SCENARIOS.find(function(sc) { return sc.id === scenarioId; });
         if (!s) return;
@@ -2065,7 +2158,8 @@ window.StemLab = window.StemLab || {
               // AND landed in xG > 0.20.
               var sStats = Object.assign({
                 highXgShot: false, conceptsRun: {}, shapesPlayed: {}, customHighXg: false,
-                setPieceRun: false, setPieceTypesRun: {}
+                setPieceRun: false, setPieceTypesRun: {},
+                hotStreak: 0
               }, d.drillStats || {});
               sStats.conceptsRun = Object.assign({}, sStats.conceptsRun);
               sStats.conceptsRun[d.conceptId] = true;
@@ -2073,6 +2167,12 @@ window.StemLab = window.StemLab || {
               sStats.shapesPlayed[d.shapeId] = true;
               if (finalXG > 0.30) sStats.highXgShot = true;
               if (finalXG > 0.20 && Object.keys(d.customPositions || {}).length >= 2) sStats.customHighXg = true;
+              // Engagement layer: hotStreak — increment on a high-quality
+              // chance (xG > 0.20), reset otherwise. Mirrors football\'s
+              // "completion = streak" rule but adjusted for soccer\'s
+              // continuous-quality grading.
+              if (finalXG > 0.20) sStats.hotStreak = (sStats.hotStreak || 0) + 1;
+              else sStats.hotStreak = 0;
               // Set-piece tracking — derived from the active concept's
               // setPiece flag + an ID-prefix mapping to a set-piece TYPE
               // (corner / freekick / throwin / penalty / goalkick). Players
@@ -2099,15 +2199,36 @@ window.StemLab = window.StemLab || {
                   sNewTaskIdx = sNewTaskIdx + 1;
                 }
               }
+              // Engagement layer: badge earn-detection (soccer)
+              var sNewEarned = Object.assign({}, d.badgesEarned || {});
+              var sNewlyEarnedBadges = [];
+              PLAYLAB_BADGES.forEach(function(b) {
+                if (sNewEarned[b.id]) return;
+                try {
+                  if (b.check(d, soccerOutcome, sStats)) {
+                    sNewEarned[b.id] = Date.now();
+                    sNewlyEarnedBadges.push(b);
+                  }
+                } catch (e) { /* defensive */ }
+              });
               setLabToolData(function(prev) {
                 return Object.assign({}, prev, { playlab: Object.assign({}, prev.playlab, {
                   runActive: false, runT: SOCCER_TOTAL, runOutcome: soccerOutcome,
-                  drillStats: sStats, drillTaskIdx: sNewTaskIdx
+                  drillStats: sStats, drillTaskIdx: sNewTaskIdx,
+                  badgesEarned: sNewEarned
                 })});
               });
               var qualLabel = finalXG > 0.30 ? 'high-quality chance' : finalXG > 0.10 ? 'decent shot' : 'low-percentage shot';
               plAnnounce('Sequence complete. ' + (finalReceiver ? finalReceiver.id : 'Final attacker') + ' arrives at xG ' + finalXG.toFixed(2) + ' — a ' + qualLabel + '.');
               if (finalXG > 0.20 && awardXP) awardXP('playlab', 8, 'High-xG sequence');
+              sNewlyEarnedBadges.forEach(function(b, i) {
+                setTimeout(function() {
+                  plAnnounce('Badge unlocked: ' + b.label + '. ' + b.hint + '.');
+                  if (addToast) addToast('🏅 ' + b.emoji + ' ' + b.label + '!');
+                  if (awardXP) awardXP('playlab', 8, 'Badge: ' + b.label);
+                  if (celebrate && i === 0) celebrate();
+                }, 1200 + (i * 800));
+              });
               if (sTaskJustCompleted) {
                 var sAllDone = sNewTaskIdx >= PLAYLAB_SOCCER_DRILLS.tasks.length;
                 setTimeout(function() {
@@ -2171,7 +2292,9 @@ window.StemLab = window.StemLab || {
               coveragesBeaten: 0, coveragesBeatenSet: {},
               completionsByPlay: {}, smashVsCover2: false,
               c0WithHot: false, c6WithTrips: false, robberWithMesh: false,
-              completedCustomPlay: false
+              completedCustomPlay: false,
+              // Engagement layer: cross-play streak counter
+              hotStreak: 0
             }, d.drillStats || {});
             if (loc === 'caught') {
               if (!newStats.coveragesBeatenSet[d.coverageId]) {
@@ -2187,7 +2310,22 @@ window.StemLab = window.StemLab || {
               if (d.coverageId === 'cover6' && d.playId === 'trips') newStats.c6WithTrips = true;
               if (d.coverageId === 'robber' && d.playId === 'mesh') newStats.robberWithMesh = true;
               if (Object.keys(d.customPositions || {}).length >= 2) newStats.completedCustomPlay = true;
+              newStats.hotStreak = (newStats.hotStreak || 0) + 1;
+            } else {
+              newStats.hotStreak = 0;
             }
+            // Engagement layer: badge earn-detection
+            var newEarned = Object.assign({}, d.badgesEarned || {});
+            var newlyEarnedBadges = [];
+            PLAYLAB_BADGES.forEach(function(b) {
+              if (newEarned[b.id]) return;
+              try {
+                if (b.check(d, outcome, newStats)) {
+                  newEarned[b.id] = Date.now();
+                  newlyEarnedBadges.push(b);
+                }
+              } catch (e) { /* defensive */ }
+            });
             // Active-drill task progression
             var newDrillTaskIdx = d.drillTaskIdx || 0;
             var taskJustCompleted = null;
@@ -2201,7 +2339,8 @@ window.StemLab = window.StemLab || {
             setLabToolData(function(prev) {
               return Object.assign({}, prev, { playlab: Object.assign({}, prev.playlab, {
                 runActive: false, runT: TOTAL_DURATION, runOutcome: outcome,
-                drillStats: newStats, drillTaskIdx: newDrillTaskIdx
+                drillStats: newStats, drillTaskIdx: newDrillTaskIdx,
+                badgesEarned: newEarned
               })});
             });
             plAnnounce(loc === 'caught'
@@ -2209,6 +2348,15 @@ window.StemLab = window.StemLab || {
               : loc === 'brokenup' ? 'Pass broken up by the defense at ' + targetId + '.'
               : 'Incomplete pass.');
             if (loc === 'caught' && awardXP) awardXP('playlab', 8, 'Completion');
+            // Newly-earned badges — toast + announce + XP each
+            newlyEarnedBadges.forEach(function(b, i) {
+              setTimeout(function() {
+                plAnnounce('Badge unlocked: ' + b.label + '. ' + b.hint + '.');
+                if (addToast) addToast('🏅 ' + b.emoji + ' ' + b.label + '!');
+                if (awardXP) awardXP('playlab', 8, 'Badge: ' + b.label);
+                if (celebrate && i === 0) celebrate();
+              }, 1200 + (i * 800));
+            });
             if (taskJustCompleted) {
               var allDone = newDrillTaskIdx >= PLAYLAB_DRILLS.tasks.length;
               setTimeout(function() {
@@ -2880,6 +3028,19 @@ window.StemLab = window.StemLab || {
                   );
                 })
             ).concat([
+              // Quick-Play — random scenario, one click
+              h('button', {
+                key: 'plsc-random',
+                onClick: runRandomPlayLabScenario,
+                'aria-label': 'Run a random scenario — go straight to executing without reading setup',
+                'data-pl-focusable': 'true',
+                title: 'Pick a random scenario and start immediately — no setup, just run it',
+                style: {
+                  padding: '6px 11px', borderRadius: 6, cursor: 'pointer',
+                  border: '1px dashed #6366f1', background: 'rgba(99,102,241,0.10)',
+                  color: '#a5b4fc', fontSize: 11, fontWeight: 700
+                }
+              }, '🎲 Run something cool'),
               h('button', {
                 key: 'plsc-save',
                 onClick: openSavePrompt,
@@ -2907,6 +3068,67 @@ window.StemLab = window.StemLab || {
             ])
           )
         ),
+
+        // ── Achievements / Badges (engagement layer) ──
+        // Collection mechanic for athletic students. Earned badges glow
+        // with their color; unearned are dimmed with the hint as tooltip
+        // so students see how to unlock them.
+        h('details', {
+          style: { marginBottom: 12, background: '#0f172a', border: '1px solid #1e293b', borderRadius: 10, padding: '8px 12px' }
+        },
+          h('summary', {
+            style: { cursor: 'pointer', fontSize: 12, color: '#cbd5e1', fontWeight: 600 }
+          }, '🏅 Achievements (' + Object.keys(d.badgesEarned || {}).length + ' / ' + PLAYLAB_BADGES.length + ')'),
+          h('div', {
+            role: 'list', 'aria-label': 'Badge achievements',
+            style: { marginTop: 8, display: 'flex', flexWrap: 'wrap', gap: 6 }
+          },
+            PLAYLAB_BADGES.map(function(b) {
+              var earned = !!(d.badgesEarned && d.badgesEarned[b.id]);
+              return h('span', {
+                key: 'plbadge-' + b.id,
+                role: 'listitem',
+                'aria-label': b.label + (earned ? ' (earned)' : ' (locked)') + ': ' + b.hint,
+                title: b.hint,
+                style: {
+                  padding: '5px 10px', borderRadius: 999,
+                  border: '1px solid ' + (earned ? '#fbbf24' : '#334155'),
+                  background: earned ? 'rgba(251,191,36,0.18)' : '#1e293b',
+                  color: earned ? '#fbbf24' : '#475569',
+                  fontSize: 11, fontWeight: earned ? 700 : 500,
+                  opacity: earned ? 1 : 0.6
+                }
+              }, b.emoji + ' ' + b.label);
+            })
+          )
+        ),
+
+        // ── Hot Hand + Hype HUD (engagement layer) ──
+        // Sports-broadcasting momentum indicator. Surfaces hotStreak when
+        // > 1 (NBA Jam-style), or rotates a coachspeak hype phrase when
+        // there\'s no recent outcome to celebrate. Sits prominently above
+        // the field so it\'s the first thing a student\'s eye lands on.
+        (function() {
+          var hot = getHotHand((d.drillStats || {}).hotStreak);
+          var showHype = !d.runActive && !d.runOutcome;
+          if (!hot && !showHype) return null;
+          return h('div', {
+            role: 'status', 'aria-live': 'polite',
+            style: {
+              marginBottom: 12, padding: '6px 10px', borderRadius: 6,
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
+              background: hot ? 'rgba(220,38,38,0.10)' : 'rgba(167,139,250,0.10)',
+              border: '1px solid ' + (hot ? hot.color : '#a78bfa'),
+              fontSize: 12
+            }
+          },
+            hot ? h('span', { style: { color: hot.color, fontWeight: 700 } },
+              hot.emoji + ' ' + hot.label + ' (streak: ' + d.drillStats.hotStreak + ')'
+            ) : h('span', { style: { color: '#a78bfa', fontStyle: 'italic' } },
+              '🎙️ ' + pickHypePhrase()
+            )
+          );
+        })(),
 
         // ── Active Scenario Briefing ──
         // When a scenario was just loaded, surface its teach blurb +
