@@ -2241,7 +2241,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                     return React.createElement("button", { "aria-label": "Play Progression",
                       key: prog.name,
                       onClick: function () { playProgression(prog); },
-                      className: "text-left px-2.5 py-2 rounded-lg bg-white border border-slate-200 hover:border-purple-300 hover:bg-purple-50 transition-all group"
+                      className: "text-left px-2.5 py-2 rounded-lg bg-white border border-slate-400 hover:border-purple-300 hover:bg-purple-50 transition-all group"
                     },
                       React.createElement("span", { className: "text-[11px] font-bold text-slate-700 group-hover:text-purple-700 block" }, prog.name),
                       React.createElement("span", { className: "text-[11px] text-slate-500" }, prog.desc)
@@ -2709,7 +2709,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                     return React.createElement("button", { "aria-label": "Play Progression",
                       key: prog.name,
                       onClick: function () { playProgression(prog); },
-                      className: "text-left px-2.5 py-2 rounded-lg bg-slate-50 border border-slate-200 hover:border-purple-300 hover:bg-purple-50 transition-all group"
+                      className: "text-left px-2.5 py-2 rounded-lg bg-slate-50 border border-slate-400 hover:border-purple-300 hover:bg-purple-50 transition-all group"
                     },
                       React.createElement("span", { className: "text-[11px] font-bold text-slate-700 group-hover:text-purple-700 block" }, prog.name),
                       React.createElement("span", { className: "text-[11px] text-slate-500" }, prog.desc)
@@ -2851,14 +2851,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                 // Tap Tempo
                 React.createElement("button", { "aria-label": "Tap", onClick: tapTempo, className: "px-2 py-1.5 rounded-lg text-[10px] font-bold bg-amber-100 text-amber-700 hover:bg-amber-200 transition-all border border-amber-200" }, "\uD83E\uDD4A Tap"),
                 // Pattern Length
-                React.createElement("select", { value: String(d.bpPatternLen || 16), onChange: function (e) { upd('bpPatternLen', parseInt(e.target.value)); }, className: "px-2 py-1 rounded text-[10px] font-bold bg-white border border-slate-200", title: "Pattern length in steps" },
+                React.createElement("select", { value: String(d.bpPatternLen || 16), onChange: function (e) { upd('bpPatternLen', parseInt(e.target.value)); }, className: "px-2 py-1 rounded text-[10px] font-bold bg-white border border-slate-400", title: "Pattern length in steps" },
                   React.createElement("option", { value: '8' }, "8 steps"),
                   React.createElement("option", { value: '16' }, "16 steps"),
                   React.createElement("option", { value: '32' }, "32 steps"),
                   React.createElement("option", { value: '64' }, "64 steps")
                 ),
                 // Swing
-                React.createElement("select", { value: d.seqSwing || '0', onChange: function (e) { upd('seqSwing', e.target.value); }, className: "px-2 py-1 rounded text-[10px] font-bold bg-white border border-slate-200" },
+                React.createElement("select", { value: d.seqSwing || '0', onChange: function (e) { upd('seqSwing', e.target.value); }, className: "px-2 py-1 rounded text-[10px] font-bold bg-white border border-slate-400" },
                   React.createElement("option", { value: '0' }, "No Swing"),
                   React.createElement("option", { value: '15' }, "Swing 15%"),
                   React.createElement("option", { value: '30' }, "Swing 30%"),
@@ -2917,7 +2917,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
               ),
 
               // ── Mixer Panel (collapsible) ──
-              React.createElement("div", { className: "bg-gradient-to-r from-slate-50 to-gray-50 rounded-xl border border-slate-200 mb-3 overflow-hidden" },
+              React.createElement("div", { className: "bg-gradient-to-r from-slate-50 to-gray-50 rounded-xl border border-slate-400 mb-3 overflow-hidden" },
                 React.createElement("button", { "aria-label": "Toggle mixer panel", onClick: function () { upd('bpMixerOpen', !d.bpMixerOpen); }, className: "w-full flex items-center gap-2 px-3 py-2 hover:bg-slate-100 transition-all" },
                   React.createElement("span", { className: "text-xs font-bold text-slate-700" }, "\uD83C\uDFA8 Mixer"),
                   React.createElement("span", { className: "text-[11px] text-slate-500" }, "Volume \u2022 Mute \u2022 Solo"),
@@ -2974,7 +2974,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
               ),
 
               // ── Sequencer Grid ──
-              React.createElement("div", { className: "bg-white rounded-xl border border-slate-200 p-3 mb-3 overflow-x-auto shadow-sm" },
+              React.createElement("div", { className: "bg-white rounded-xl border border-slate-400 p-3 mb-3 overflow-x-auto shadow-sm" },
                 React.createElement("div", { className: "flex items-center gap-2 mb-2" },
                   React.createElement("span", { className: "text-xs font-bold text-slate-700" }, "\uD83C\uDFBC Sequencer"),
                   React.createElement("span", { className: "text-[11px] text-slate-500" }, "16 steps = 1 bar"),

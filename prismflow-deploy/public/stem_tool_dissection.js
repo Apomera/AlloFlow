@@ -5762,31 +5762,31 @@ var d = labToolData.dissection || {};
                     upd('specimen', sk); upd('currentLayer', 0); upd('selectedOrgan', null);
                     if (typeof canvasNarrate === 'function') canvasNarrate('dissection', 'specimenSelect', 'Selected ' + sp.name + '. ' + sp.desc, { debounce: 500 });
                   },
-                  className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap transition-all " + (isActive ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200')
+                  className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap transition-all " + (isActive ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-400')
                 }, sp.icon + ' ' + sp.name);
               })
             ),
 
 
             // ── Toolbar ── collapsible dropdown groups
-            React.createElement("div", { className: "flex flex-wrap items-center gap-1 bg-slate-50 rounded-xl p-1.5 border border-slate-200" },
+            React.createElement("div", { className: "flex flex-wrap items-center gap-1 bg-slate-50 rounded-xl p-1.5 border border-slate-400" },
 
               // ── View toggle ──
               React.createElement("button", { "aria-label": "Toggle View toolbar",
                 onClick: function () { upd('toolbarViewOpen', !d.toolbarViewOpen); upd('toolbarToolsOpen', false); upd('toolbarStudyOpen', false); },
-                className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.toolbarViewOpen ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:bg-blue-50')
+                className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.toolbarViewOpen ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-400 hover:bg-blue-50')
               }, '\uD83D\uDC41 View ' + (d.toolbarViewOpen ? '\u25B2' : '\u25BC')),
 
               // ── Tools toggle ──
               React.createElement("button", { "aria-label": "Toggle Tools toolbar",
                 onClick: function () { upd('toolbarToolsOpen', !d.toolbarToolsOpen); upd('toolbarViewOpen', false); upd('toolbarStudyOpen', false); },
-                className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.toolbarToolsOpen ? 'bg-emerald-700 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:bg-emerald-50')
+                className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.toolbarToolsOpen ? 'bg-emerald-700 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-400 hover:bg-emerald-50')
               }, '\uD83D\uDEE0 Tools ' + (d.toolbarToolsOpen ? '\u25B2' : '\u25BC')),
 
               // ── Study toggle ──
               React.createElement("button", { "aria-label": "Toggle Study toolbar",
                 onClick: function () { upd('toolbarStudyOpen', !d.toolbarStudyOpen); upd('toolbarViewOpen', false); upd('toolbarToolsOpen', false); },
-                className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.toolbarStudyOpen ? 'bg-amber-700 text-white shadow-md' : (d.quizMode || d.flashcardMode || d.guidedMode || d.compareMode || d.practicalMode ? 'bg-amber-100 text-amber-700 border border-amber-300' : 'bg-white text-slate-600 border border-slate-200 hover:bg-amber-50'))
+                className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.toolbarStudyOpen ? 'bg-amber-700 text-white shadow-md' : (d.quizMode || d.flashcardMode || d.guidedMode || d.compareMode || d.practicalMode ? 'bg-amber-100 text-amber-700 border border-amber-300' : 'bg-white text-slate-600 border border-slate-400 hover:bg-amber-50'))
               }, '\uD83D\uDCDA Study ' + (d.toolbarStudyOpen ? '\u25B2' : '\u25BC'))
 
             ),
@@ -6017,22 +6017,22 @@ var d = labToolData.dissection || {};
 
                   width: 500, height: 600,
 
-                  className: "w-full rounded-xl border border-slate-200 cursor-crosshair",
+                  className: "w-full rounded-xl border border-slate-400 cursor-crosshair",
 
                   style: { aspectRatio: '5/6', background: '#0f172a' }
 
                 }),
 
                 // Zoom control bar
-                React.createElement("div", { className: "flex items-center justify-center gap-2 mt-1.5 py-1 px-2 rounded-lg bg-slate-100 border border-slate-200" },
+                React.createElement("div", { className: "flex items-center justify-center gap-2 mt-1.5 py-1 px-2 rounded-lg bg-slate-100 border border-slate-400" },
                   React.createElement("button", { "aria-label": "Zoom out canvas",
                     onClick: function () { var z = Math.max(0.5, (d.canvasZoom || 1) - 0.25); upd('canvasZoom', z); },
-                    className: "px-2 py-0.5 rounded text-xs font-bold bg-white border border-slate-300 hover:bg-slate-50"
+                    className: "px-2 py-0.5 rounded text-xs font-bold bg-white border border-slate-400 hover:bg-slate-50"
                   }, '\u2796'),
                   React.createElement("span", { className: "text-[11px] font-mono text-slate-600 min-w-[40px] text-center" }, Math.round((d.canvasZoom || 1) * 100) + '%'),
                   React.createElement("button", { "aria-label": "Zoom in canvas",
                     onClick: function () { var z = Math.min(3, (d.canvasZoom || 1) + 0.25); upd('canvasZoom', z); },
-                    className: "px-2 py-0.5 rounded text-xs font-bold bg-white border border-slate-300 hover:bg-slate-50"
+                    className: "px-2 py-0.5 rounded text-xs font-bold bg-white border border-slate-400 hover:bg-slate-50"
                   }, '\u2795'),
                   (d.canvasZoom || 1) !== 1 ? React.createElement("button", { "aria-label": "100%",
                     onClick: function () { upd('canvasZoom', 1); upd('canvasPanX', 0); upd('canvasPanY', 0); },
@@ -6183,7 +6183,7 @@ var d = labToolData.dissection || {};
 
                       key: sk,
 
-                      className: "p-2 rounded-lg text-xs " + (isCurrent ? 'bg-cyan-100 border border-cyan-300' : 'bg-white border border-slate-200')
+                      className: "p-2 rounded-lg text-xs " + (isCurrent ? 'bg-cyan-100 border border-cyan-300' : 'bg-white border border-slate-400')
 
                     },
 
@@ -6331,7 +6331,7 @@ var d = labToolData.dissection || {};
 
                     Object.keys(weightMap).forEach(function (k) { if (sn.indexOf(k) >= 0) w = weightMap[k]; });
 
-                    return w ? React.createElement("span", { className: "inline-block px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-500 border border-slate-200 mr-1 mb-1" }, '\u2696\uFE0F ' + w + ' ' + 'Human') : null;
+                    return w ? React.createElement("span", { className: "inline-block px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-500 border border-slate-400 mr-1 mb-1" }, '\u2696\uFE0F ' + w + ' ' + 'Human') : null;
 
                   })(),
 
@@ -6520,7 +6520,7 @@ var d = labToolData.dissection || {};
 
                     onChange: function (e) { upd('organSearch', e.target.value); },
 
-                    className: "w-full px-2 py-1.5 rounded-lg border border-slate-200 text-xs mb-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                    className: "w-full px-2 py-1.5 rounded-lg border border-slate-400 text-xs mb-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
 
                   }),
 
@@ -6826,7 +6826,7 @@ var d = labToolData.dissection || {};
 
                 // Specimen stats card
 
-                React.createElement("div", { className: "bg-gradient-to-br from-slate-50 to-gray-50 rounded-xl border border-slate-200 p-3 mb-2" },
+                React.createElement("div", { className: "bg-gradient-to-br from-slate-50 to-gray-50 rounded-xl border border-slate-400 p-3 mb-2" },
 
                   React.createElement("div", { className: "text-[10px] font-bold text-slate-700 mb-1" }, '\uD83D\uDCC8 ' + 'Specimen Stats'),
 

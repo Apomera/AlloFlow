@@ -1101,7 +1101,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
           h('div', { className: 'grid grid-cols-12 gap-3 p-3 flex-1 overflow-auto' },
             // Controls column
             h('div', { className: 'col-span-3 space-y-3' },
-              h('div', { className: 'bg-white rounded-xl p-4 shadow border border-slate-200' },
+              h('div', { className: 'bg-white rounded-xl p-4 shadow border border-slate-400' },
                 h('div', { className: 'text-xs font-bold text-slate-500 uppercase tracking-wider mb-2' }, 'Bike'),
                 BIKES.map(function(b) {
                   return h('button', {
@@ -1117,7 +1117,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                   );
                 })
               ),
-              h('div', { className: 'bg-white rounded-xl p-4 shadow border border-slate-200' },
+              h('div', { className: 'bg-white rounded-xl p-4 shadow border border-slate-400' },
                 h('div', { className: 'text-xs font-bold text-slate-500 uppercase tracking-wider mb-2' }, 'Terrain'),
                 TERRAINS.map(function(tr) {
                   return h('button', {
@@ -1130,7 +1130,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                   );
                 })
               ),
-              h('div', { className: 'bg-white rounded-xl p-4 shadow border border-slate-200' },
+              h('div', { className: 'bg-white rounded-xl p-4 shadow border border-slate-400' },
                 h('label', { className: 'text-xs font-bold text-slate-500 uppercase tracking-wider flex justify-between' },
                   h('span', null, 'Rider Power'), h('span', { className: 'text-cyan-600' }, power + ' W')),
                 h('input', { type: 'range', min: 0, max: 400, value: power,
@@ -1183,14 +1183,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                  ['Kinetic E', (ke / 1000).toFixed(2) + ' kJ', (0.5 * bike.mass * v * v).toFixed(0) + ' J'],
                  ['Potential E', (pe / 1000).toFixed(2) + ' kJ', (bike.mass * G * elev).toFixed(0) + ' J']
                 ].map(function(stat, i) {
-                  return h('div', { key: i, className: 'bg-white rounded-lg p-3 shadow border border-slate-200' },
+                  return h('div', { key: i, className: 'bg-white rounded-lg p-3 shadow border border-slate-400' },
                     h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-500' }, stat[0]),
                     h('div', { className: 'text-lg font-black text-slate-800 mt-0.5' }, stat[1]),
                     h('div', { className: 'text-[10px] text-slate-500 font-mono' }, stat[2])
                   );
                 })
               ),
-              h('div', { className: 'bg-slate-100 rounded-xl p-3 text-xs text-slate-600 leading-relaxed border border-slate-200' },
+              h('div', { className: 'bg-slate-100 rounded-xl p-3 text-xs text-slate-600 leading-relaxed border border-slate-400' },
                 h('span', { className: 'font-bold text-slate-700' }, '💡 Physics notes: '),
                 'Newton\'s 2nd law: F_net = m·a. Forces shown: pedal thrust (green), gravity component parallel to slope (red), rolling resistance (amber), air drag (purple, scales with v²). Normal force (blue) keeps the bike on the ground — it doesn\'t do work. ' + bike.tip
               )
@@ -1298,7 +1298,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
             // Main layout: gear picker + stats + climb sim
             h('div', { className: 'grid grid-cols-1 lg:grid-cols-2 gap-4' },
               // Gear picker card
-              h('div', { className: 'bg-white rounded-xl shadow border border-slate-200 p-5' },
+              h('div', { className: 'bg-white rounded-xl shadow border border-slate-400 p-5' },
                 h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-500 mb-3' }, 'Gear Selection'),
                 h('div', { className: 'space-y-4' },
                   h('div', null,
@@ -1364,7 +1364,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
               )
             ),
             // Cadence→speed curve
-            h('div', { className: 'bg-white rounded-xl shadow border border-slate-200 p-5' },
+            h('div', { className: 'bg-white rounded-xl shadow border border-slate-400 p-5' },
               h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-500 mb-3' }, 'Speed vs. Cadence (this gear)'),
               h('div', { className: 'flex items-end gap-2 h-32' },
                 cadenceCurve.map(function(pt, i) {
@@ -1525,7 +1525,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
           BackBar({ icon: '🔧', title: 'Repair Simulator' }),
           h('div', { className: 'p-4 max-w-5xl mx-auto w-full space-y-4' },
             // Job header + progress
-            h('div', { className: 'bg-white rounded-xl shadow border border-slate-200 p-4' },
+            h('div', { className: 'bg-white rounded-xl shadow border border-slate-400 p-4' },
               h('div', { className: 'flex items-center justify-between mb-3' },
                 h('div', { className: 'flex items-center gap-3' },
                   h('span', { className: 'text-3xl' }, job.icon),
@@ -1565,7 +1565,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
               )
             ),
             // Toolbox — drag source
-            h('div', { className: 'bg-white rounded-xl shadow border border-slate-200 p-5' },
+            h('div', { className: 'bg-white rounded-xl shadow border border-slate-400 p-5' },
               h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-500 mb-3' }, 'Toolbox (drag the right tool to the job)'),
               h('div', { className: 'flex flex-wrap gap-3' },
                 toolbox.map(function(t, i) {
@@ -1645,7 +1645,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
           h('div', { className: 'p-4 max-w-6xl mx-auto w-full' },
             h('div', { className: 'grid grid-cols-1 lg:grid-cols-5 gap-4' },
               h('div', { className: 'lg:col-span-2 space-y-3' },
-                h('div', { className: 'bg-white rounded-xl shadow border border-slate-200 p-5' },
+                h('div', { className: 'bg-white rounded-xl shadow border border-slate-400 p-5' },
                   h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-500 mb-3' }, 'Rider Measurements'),
                   h('label', { className: 'text-sm font-bold text-slate-700 flex justify-between' },
                     h('span', null, 'Height'), h('span', { className: 'text-sky-600' }, heightCm + ' cm · ' + (heightCm / 2.54).toFixed(1) + '″')),
@@ -1812,11 +1812,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
         return h('div', { className: 'flex flex-col h-full bg-slate-50' },
           BackBar({ icon: '🛑', title: 'Braking Physics' }),
           h('div', { className: 'p-4 max-w-6xl mx-auto w-full space-y-4' },
-            h('div', { className: 'bg-white rounded-xl shadow border border-slate-200 overflow-hidden' },
+            h('div', { className: 'bg-white rounded-xl shadow border border-slate-400 overflow-hidden' },
               h('canvas', { ref: cvsRef, width: 1000, height: 200, className: 'w-full block' })
             ),
             h('div', { className: 'grid grid-cols-1 lg:grid-cols-4 gap-3' },
-              h('div', { className: 'bg-white rounded-xl shadow border border-slate-200 p-4' },
+              h('div', { className: 'bg-white rounded-xl shadow border border-slate-400 p-4' },
                 h('label', { className: 'text-xs font-bold uppercase tracking-wider text-slate-500 flex justify-between' },
                   h('span', null, 'Initial Speed'), h('span', { className: 'text-rose-600' }, speedMph + ' mph')),
                 h('input', { type: 'range', min: 5, max: 40, value: speedMph,
@@ -1824,7 +1824,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                   className: 'w-full mt-2 accent-rose-500' }),
                 h('div', { className: 'text-[10px] text-slate-500' }, (speedMph / 2.237).toFixed(1) + ' m/s · ' + (speedMph * 1.609).toFixed(1) + ' km/h')
               ),
-              h('div', { className: 'bg-white rounded-xl shadow border border-slate-200 p-4' },
+              h('div', { className: 'bg-white rounded-xl shadow border border-slate-400 p-4' },
                 h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-500 mb-2' }, 'Surface'),
                 h('div', { className: 'grid grid-cols-2 gap-1' },
                   Object.keys(SURFACES).map(function(k) {
@@ -1837,7 +1837,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                 ),
                 h('div', { className: 'text-[10px] text-slate-500 font-mono mt-2' }, 'μ = ' + mu.toFixed(2))
               ),
-              h('div', { className: 'bg-white rounded-xl shadow border border-slate-200 p-4' },
+              h('div', { className: 'bg-white rounded-xl shadow border border-slate-400 p-4' },
                 h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-500 mb-2' }, 'Brake Used'),
                 h('div', { className: 'grid grid-cols-3 gap-1' },
                   [['front', 'Front'], ['both', 'Both'], ['rear', 'Rear']].map(function(opt) {
@@ -1850,7 +1850,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                 ),
                 h('div', { className: 'text-[10px] text-slate-500 mt-2' }, 'Rear-only stops ~3× slower than front.')
               ),
-              h('div', { className: 'bg-white rounded-xl shadow border border-slate-200 p-4' },
+              h('div', { className: 'bg-white rounded-xl shadow border border-slate-400 p-4' },
                 h('label', { className: 'text-xs font-bold uppercase tracking-wider text-slate-500 flex justify-between' },
                   h('span', null, 'Reaction Time'), h('span', { className: 'text-amber-600' }, reaction.toFixed(1) + ' s')),
                 h('input', { type: 'range', min: 0.3, max: 2.5, step: 0.1, value: reaction,
@@ -2032,7 +2032,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
         return h('div', { className: 'flex flex-col h-full bg-slate-50' },
           BackBar({ icon: '🛡️', title: 'Hand Signals & Safety' }),
           h('div', { className: 'p-4 max-w-4xl mx-auto w-full space-y-4' },
-            h('div', { className: 'bg-white rounded-xl shadow border border-slate-200 p-4' },
+            h('div', { className: 'bg-white rounded-xl shadow border border-slate-400 p-4' },
               h('div', { className: 'flex items-center justify-between mb-2' },
                 h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-500' }, 'Question ' + (idx + 1) + ' / ' + QUESTIONS.length),
                 h('div', { className: 'text-sm font-bold' },
@@ -2045,7 +2045,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                   style: { width: (((idx + 1) / QUESTIONS.length) * 100) + '%' } })
               )
             ),
-            h('div', { className: 'bg-white rounded-xl shadow border border-slate-200 p-5' },
+            h('div', { className: 'bg-white rounded-xl shadow border border-slate-400 p-5' },
               h('div', { className: 'text-base font-bold text-slate-800 mb-4' }, q.q),
               h('div', { className: 'grid grid-cols-1 ' + (q.choices[0].svg ? 'md:grid-cols-3' : 'md:grid-cols-2') + ' gap-3' },
                 q.choices.map(function(c) {
@@ -2383,7 +2383,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
               h('canvas', { ref: canvasRef, width: 1000, height: 380, className: 'w-full block' })
             ),
             h('div', { className: 'grid grid-cols-1 lg:grid-cols-4 gap-3' },
-              h('div', { className: 'bg-white rounded-xl shadow border border-slate-200 p-3 flex flex-col gap-2' },
+              h('div', { className: 'bg-white rounded-xl shadow border border-slate-400 p-3 flex flex-col gap-2' },
                 h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-500' }, 'Session'),
                 !finished && h('button', {
                   onClick: function() { setRunning(!running); },
@@ -2400,7 +2400,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                 bestTime && h('div', { className: 'text-[11px] text-slate-600 text-center border-t border-slate-200 pt-2' },
                   '🏆 Best: ' + bestTime.toFixed(1) + 's')
               ),
-              h('div', { className: 'bg-white rounded-xl shadow border border-slate-200 p-3' },
+              h('div', { className: 'bg-white rounded-xl shadow border border-slate-400 p-3' },
                 h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-500 mb-2' }, 'Bike'),
                 h('div', { className: 'grid grid-cols-2 gap-1' },
                   BIKES.map(function(b) {
@@ -2412,7 +2412,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                   })
                 )
               ),
-              h('div', { className: 'bg-white rounded-xl shadow border border-slate-200 p-3' },
+              h('div', { className: 'bg-white rounded-xl shadow border border-slate-400 p-3' },
                 h('label', { className: 'text-xs font-bold uppercase tracking-wider text-slate-500 flex justify-between' },
                   h('span', null, 'Gear (↑/↓)'), h('span', { className: 'text-violet-600' }, (gear * 100).toFixed(0) + '%')),
                 h('input', { type: 'range', min: 0.2, max: 1.0, step: 0.05, value: gear,
@@ -2424,7 +2424,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                   onChange: function(e) { setPower(parseInt(e.target.value)); },
                   className: 'w-full accent-cyan-500' })
               ),
-              h('div', { className: 'bg-white rounded-xl shadow border border-slate-200 p-3 flex flex-col' },
+              h('div', { className: 'bg-white rounded-xl shadow border border-slate-400 p-3 flex flex-col' },
                 h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-500 mb-2' }, 'Brake (Space)'),
                 h('button', {
                   onMouseDown: function() { setBraking(true); },
@@ -2465,7 +2465,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                 advice.map(function(a, i) { return h('div', { key: i, className: 'leading-relaxed' }, '• ' + a); })
               )
             ),
-            h('div', { className: 'bg-slate-100 rounded-xl p-3 text-xs text-slate-600 leading-relaxed border border-slate-200' },
+            h('div', { className: 'bg-slate-100 rounded-xl p-3 text-xs text-slate-600 leading-relaxed border border-slate-400' },
               h('span', { className: 'font-bold text-slate-700' }, '🧭 Course: '),
               '180 m flat → 🛑 stop sign → flat run → ⛰️ Oak Hill (7% grade) → descent → 🌧️ wet patch → 🏫 school (600 m total). Use ↑/↓ to shift gears, Space to brake. Apply the physics you learned in Sandbox, Gearing, and Braking labs.'
             )
@@ -2565,7 +2565,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
           BackBar({ icon: '🔍', title: 'Bike Parts Inspector' }),
           h('div', { className: 'p-4 max-w-7xl mx-auto w-full' },
             h('div', { className: 'grid grid-cols-1 lg:grid-cols-5 gap-4' },
-              h('div', { className: 'lg:col-span-3 bg-white rounded-xl shadow border border-slate-200 p-4' },
+              h('div', { className: 'lg:col-span-3 bg-white rounded-xl shadow border border-slate-400 p-4' },
                 h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-500 mb-2' }, 'Click any part of the bike'),
                 h('svg', { viewBox: '0 0 500 300', className: 'w-full h-auto', style: { maxHeight: '420px' } },
                   h('line', { x1: 170, y1: 95, x2: 175, y2: 165, stroke: '#334155', strokeWidth: 3 }),
@@ -2613,7 +2613,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                 )
               ),
               h('div', { className: 'lg:col-span-2 space-y-3' },
-                h('div', { className: 'bg-white rounded-xl shadow border border-slate-200 overflow-hidden' },
+                h('div', { className: 'bg-white rounded-xl shadow border border-slate-400 overflow-hidden' },
                   h('div', { className: 'p-4 bg-gradient-to-br from-slate-700 to-slate-900 text-white' },
                     h('div', { className: 'flex items-center justify-between mb-1' },
                       h('span', { className: 'text-xs font-bold uppercase tracking-wider opacity-70' }, selected.cat),

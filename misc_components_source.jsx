@@ -627,7 +627,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                             }>{category}</div>
                                                             <div className="flex flex-wrap gap-1">
                                                                 {(Array.isArray(phonemes) ? phonemes : []).map(p => (
-                                                                    <div key={p} className="inline-flex rounded overflow-hidden border border-slate-300 hover:border-pink-400 transition-colors">
+                                                                    <div key={p} className="inline-flex rounded overflow-hidden border border-slate-400 hover:border-pink-400 transition-colors">
                                                                         <button
                                                                             onClick={() => onPlayAudio && onPlayAudio(p)}
                                                                             className="px-1.5 py-1 bg-slate-100 hover:bg-pink-200 text-slate-600 hover:text-pink-600 transition-colors border-r border-slate-300"

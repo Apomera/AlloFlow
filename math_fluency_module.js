@@ -1055,6 +1055,12 @@
     var mazeSizeState = useState(_prefs.mazeSize || 'medium');
     var mazeSize = mazeSizeState[0];
     var setMazeSize = function(v) { mazeSizeState[1](v); _savePrefs({ mazeSize: v }); };
+    // Player avatar — emoji rendered on the 2D minimap / fallback. Persists
+    // to _prefs so each student keeps their chosen character across runs.
+    // Stored as the literal emoji string (canvas fillText draws it).
+    var avatarState = useState(_prefs.playerAvatar || '🐱'); // default cat
+    var playerAvatar = avatarState[0];
+    var setPlayerAvatar = function(v) { avatarState[1](v); _savePrefs({ playerAvatar: v }); };
     // Fullscreen toggle — when true the playing-mode wrapper switches to
     // position:fixed inset:0 so the maze fills the viewport. Toggle button
     // sits in the HUD; F key bound below. Persisted to _prefs so a teacher
@@ -1544,6 +1550,18 @@
           setWon(true); setMode('results');
           if (timerRef.current) clearInterval(timerRef.current);
           if (monsterTimerRef.current) clearInterval(monsterTimerRef.current);
+          // Win fanfare — rising C major arpeggio + sustained C-E-G chord.
+          // Layered with the existing maze-complete tones in the surrounding
+          // path so the celebration is distinctly bigger than a gate-unlock.
+          playTone(523, 0.14, 'sine', 0.08);
+          setTimeout(function() { playTone(659, 0.14, 'sine', 0.08); }, 110);
+          setTimeout(function() { playTone(784, 0.14, 'sine', 0.08); }, 220);
+          setTimeout(function() { playTone(1047, 0.22, 'sine', 0.09); }, 330);
+          setTimeout(function() {
+            playTone(1047, 0.45, 'sine', 0.06);
+            playTone(1319, 0.45, 'sine', 0.05);
+            playTone(1568, 0.45, 'sine', 0.05);
+          }, 600);
           // Medal thresholds scale with maze size — baseline is 2 seconds per
           // cell, which is a sprinter's pace. Gold = 60% of that, silver =
           // 100%, bronze = 180%. Beyond that, no medal (still a valid win).
@@ -1950,7 +1968,7 @@
       }
       ctx.font = '22px sans-serif'; ctx.textAlign = 'center';
       ctx.fillStyle = '#fff';
-      ctx.fillText('\uD83D\uDC31', pcx, pcy + 6);
+      ctx.fillText(playerAvatar || '\uD83D\uDC31', pcx, pcy + 6);
 
       // Feedback flash
       if (feedback === 'correct') { ctx.fillStyle = 'rgba(34,197,94,0.2)'; ctx.fillRect(playerPos.c * CELL_SIZE, playerPos.r * CELL_SIZE, CELL_SIZE, CELL_SIZE); }
@@ -2657,6 +2675,33 @@
             }, x.t.emoji + ' ' + x.name);
           }));
         })(),
+        // Avatar picker — small row of emoji buttons. The chosen one
+        // renders as the player on the 2D minimap / fallback canvas.
+        // Persisted via _savePrefs so each student keeps their pick.
+        (function() {
+          var avatars = ['🐱', '🐶', '🦊', '🐉', '🤖', '👻', '🦁', '🐼'];
+          return h('div', {
+            style: { display: 'flex', flexWrap: 'wrap', gap: '4px', justifyContent: 'center', marginBottom: '12px' },
+            'aria-label': 'Choose your character'
+          }, avatars.map(function(av) {
+            var sel = playerAvatar === av;
+            return h('button', {
+              key: 'av-' + av,
+              onClick: function() { setPlayerAvatar(av); },
+              'aria-pressed': sel,
+              'aria-label': 'Character ' + av,
+              style: {
+                width: '36px', height: '36px', fontSize: '20px',
+                borderRadius: '8px', cursor: 'pointer',
+                background: sel ? 'linear-gradient(135deg,#fbbf24,#f59e0b)' : 'rgba(254,243,199,0.85)',
+                border: '2px solid ' + (sel ? '#b45309' : '#fcd34d'),
+                boxShadow: sel ? '0 0 8px rgba(245,158,11,0.5)' : 'none',
+                transition: 'transform 120ms',
+                transform: sel ? 'scale(1.08)' : 'scale(1)'
+              }
+            }, av);
+          }));
+        })(),
         // Quick-Start presets — one-tap setup for the most common modes.
         // Each preset writes all three dimensions (op + difficulty + size)
         // so a younger student doesn't have to click through every selector
@@ -2989,6 +3034,50 @@
           }
         }, '\uD83D\uDCA1 Hint (-5)')
       ),
+      // Exploration progress bar - visited cells / total cells. Visual
+      // gauge of how much of the maze the student has uncovered. Does not
+      // reveal direction info, just progress. Label flips to 'Key in hand'
+      // once collected so the student knows the exit is now unlocked.
+      (function() {
+        var visited = visitedCellsRef.current || {};
+        var visitedCount = 0;
+        for (var k in visited) if (visited.hasOwnProperty(k)) visitedCount++;
+        var totalCells = MAZE_COLS * MAZE_ROWS;
+        var pct = Math.min(100, Math.round((visitedCount / totalCells) * 100));
+        var label = keyCollected
+          ? '\uD83D\uDDDD\uFE0F Key in hand · ' + pct + '% explored'
+          : '\uD83D\uDDFA · ' + pct + '% explored · find the \uD83D\uDDDD\uFE0F';
+        return h('div', {
+          role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': pct, 'aria-label': label,
+          style: {
+            position: 'relative', height: isFullscreen ? '14px' : '10px',
+            background: 'rgba(58,46,38,0.55)', border: '1px solid #78350f',
+            borderRadius: '999px', marginBottom: '6px', overflow: 'hidden',
+            boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.4)'
+          }
+        },
+          h('div', {
+            style: {
+              width: pct + '%', height: '100%',
+              background: keyCollected
+                ? 'linear-gradient(90deg, #f59e0b 0%, #fde68a 50%, #f59e0b 100%)'
+                : 'linear-gradient(90deg, #7c3aed 0%, #a855f7 50%, #7c3aed 100%)',
+              transition: 'width 240ms cubic-bezier(.5,.05,.5,.95)',
+              boxShadow: keyCollected ? '0 0 8px rgba(251,191,36,0.55)' : '0 0 6px rgba(168,85,247,0.45)'
+            }
+          }),
+          h('div', {
+            style: {
+              position: 'absolute', inset: 0, display: 'flex',
+              alignItems: 'center', justifyContent: 'center',
+              fontSize: isFullscreen ? '11px' : '9px', fontWeight: 800,
+              color: '#fef3c7', letterSpacing: '0.04em',
+              textShadow: '0 1px 2px rgba(0,0,0,0.7)',
+              pointerEvents: 'none'
+            }
+          }, label)
+        );
+      })(),
       // 3D View (or 2D fallback). Heights bumped for clarity; in fullscreen
       // the 3D view fills nearly the whole viewport. The ResizeObserver in
       // the init effect keeps the WebGL canvas matched to the container.

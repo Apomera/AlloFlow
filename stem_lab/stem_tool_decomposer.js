@@ -1200,7 +1200,7 @@
                 className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all '
                   + (sel.name === m.name
                     ? 'text-white shadow-md scale-105'
-                    : 'bg-slate-50 text-slate-600 border border-slate-200 hover:border-amber-300'),
+                    : 'bg-slate-50 text-slate-600 border border-slate-400 hover:border-amber-300'),
                 style: sel.name === m.name ? { background: m.color } : {}
               }, m.emoji + ' ' + m.name);
             })
@@ -1220,7 +1220,7 @@
                 h('div', { className: 'flex-1' },
                   h('div', { className: 'flex items-center gap-2' },
                     h('h4', { className: 'font-bold text-slate-800 text-lg' }, sel.name),
-                    h('span', { className: 'px-2 py-0.5 bg-white rounded-full text-sm font-mono font-bold text-slate-700 border border-slate-200 shadow-sm' }, sel.formula)
+                    h('span', { className: 'px-2 py-0.5 bg-white rounded-full text-sm font-mono font-bold text-slate-700 border border-slate-400 shadow-sm' }, sel.formula)
                   ),
                   h('p', { className: 'text-xs text-slate-600 mt-1 leading-relaxed' }, sel.desc),
                   h('div', { className: 'flex gap-3 mt-2 text-[11px] font-bold' },
@@ -1286,7 +1286,7 @@
               sel.elements.map(function(el) {
                 return h('div', {
                   key: el.sym,
-                  className: 'bg-white rounded-xl border border-slate-200 p-3 hover:border-amber-300 transition-all hover:shadow-sm'
+                  className: 'bg-white rounded-xl border border-slate-400 p-3 hover:border-amber-300 transition-all hover:shadow-sm'
                 },
                   h('div', { className: 'flex items-center gap-2 mb-1.5' },
                     h('div', {
@@ -2066,7 +2066,7 @@
                     h('div', { className: 'flex items-center gap-2 mb-2' },
                       h('span', { className: 'text-xl' }, linkedMat.emoji),
                       h('span', { className: 'font-bold text-slate-800 text-sm' }, linkedMat.name),
-                      h('span', { className: 'px-2 py-0.5 bg-white rounded-full text-xs font-mono font-bold text-slate-700 border border-slate-200' }, linkedMat.formula)
+                      h('span', { className: 'px-2 py-0.5 bg-white rounded-full text-xs font-mono font-bold text-slate-700 border border-slate-400' }, linkedMat.formula)
                     ),
                     h('p', { className: 'text-xs text-slate-600 leading-relaxed mb-2' }, linkedMat.desc),
                     h('div', { className: 'flex gap-3 text-[11px] font-bold' },
@@ -2076,7 +2076,7 @@
                     ),
                     h('div', { className: 'flex flex-wrap gap-1.5 mt-2 pt-2 border-t border-amber-200' },
                       linkedMat.elements.map(function(el) {
-                        return h('div', { key: el.sym, className: 'flex items-center gap-1 px-2 py-1 bg-white rounded-lg border border-slate-200' },
+                        return h('div', { key: el.sym, className: 'flex items-center gap-1 px-2 py-1 bg-white rounded-lg border border-slate-400' },
                           h('div', { className: 'w-5 h-5 rounded flex items-center justify-center text-white text-[11px] font-bold', style: { background: el.color } }, el.sym),
                           h('span', { className: 'text-[11px] font-bold text-slate-700' }, el.name),
                           el.count > 1 ? h('span', { className: 'text-[11px] text-amber-600 font-bold' }, '\u00D7' + el.count) : null
@@ -2092,7 +2092,7 @@
                 ) : null,
 
                 // Found objects summary
-                sceneFoundCount > 0 ? h('div', { className: 'bg-slate-50 rounded-xl border border-slate-200 p-3' },
+                sceneFoundCount > 0 ? h('div', { className: 'bg-slate-50 rounded-xl border border-slate-400 p-3' },
                   h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2' }, '\u2705 Identified in ' + scene.name),
                   h('div', { className: 'flex flex-wrap gap-1.5' },
                     scene.objects.filter(function(obj) { return foundObjects[obj.id]; }).map(function(obj) {
@@ -2154,7 +2154,7 @@
                     else if (!isA && !isB) { updMulti({ reactantA: m.name, reactantB: null, activeReaction: null }); }
                   },
                   className: 'px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-all ' +
-                    (isA ? 'bg-indigo-500 text-white' : isB ? 'bg-rose-700 text-white' : 'bg-slate-50 text-slate-600 border border-slate-200 hover:border-amber-300')
+                    (isA ? 'bg-indigo-500 text-white' : isB ? 'bg-rose-700 text-white' : 'bg-slate-50 text-slate-600 border border-slate-400 hover:border-amber-300')
                 }, m.emoji + ' ' + m.name);
               })
             ),
@@ -2225,7 +2225,7 @@
             })() : null,
 
             // Discovered reactions log
-            Object.keys(reactionsDiscovered).length > 0 ? h('div', { className: 'bg-slate-50 rounded-xl border border-slate-200 p-3' },
+            Object.keys(reactionsDiscovered).length > 0 ? h('div', { className: 'bg-slate-50 rounded-xl border border-slate-400 p-3' },
               h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2' }, '\uD83E\uDDEA Discovered Reactions (' + Object.keys(reactionsDiscovered).length + '/' + REACTIONS.length + ')'),
               h('div', { className: 'flex flex-wrap gap-1.5' },
                 REACTIONS.map(function(r) {
@@ -2233,7 +2233,7 @@
                   return h('span', {
                     key: r.name,
                     className: 'px-2 py-1 rounded-lg text-[11px] font-bold ' +
-                      (disc ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-slate-100 text-slate-600 border border-slate-200')
+                      (disc ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-slate-100 text-slate-600 border border-slate-400')
                   }, disc ? r.emoji + ' ' + r.name : '\uD83D\uDD12 ???');
                 })
               )
@@ -2251,7 +2251,7 @@
             ),
 
             // Temperature slider
-            h('div', { className: 'bg-gradient-to-r from-blue-50 via-yellow-50 to-red-50 rounded-xl border border-slate-200 p-3 mb-3' },
+            h('div', { className: 'bg-gradient-to-r from-blue-50 via-yellow-50 to-red-50 rounded-xl border border-slate-400 p-3 mb-3' },
               h('div', { className: 'flex items-center justify-between mb-2' },
                 h('span', { className: 'text-[11px] font-bold text-blue-600' }, '\u2744\uFE0F Cold'),
                 h('span', { className: 'text-xs font-bold text-slate-700' }, (d._simTemp != null ? d._simTemp : 25) + '\u00B0C'),
@@ -2443,7 +2443,7 @@
             })(),
 
             // Explanation text
-            h('div', { className: 'bg-slate-50 rounded-xl border border-slate-200 p-3' },
+            h('div', { className: 'bg-slate-50 rounded-xl border border-slate-400 p-3' },
               h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1' }, '\uD83D\uDCDA How it works'),
               h('p', { className: 'text-xs text-slate-600 leading-relaxed' },
                 'All matter is made of particles (atoms or molecules) that are always moving. In a solid, particles vibrate in a fixed arrangement held by strong bonds. As temperature increases, particles gain energy. At the melting point, they break free and flow as a liquid. At the boiling point, they escape into the air as gas.'
@@ -2519,19 +2519,19 @@
 
             /* Molecule stats card */
             h('div', { className: 'grid grid-cols-4 gap-2 mb-3' },
-              h('div', { className: 'bg-white rounded-xl border border-slate-200 p-2 text-center' },
+              h('div', { className: 'bg-white rounded-xl border border-slate-400 p-2 text-center' },
                 h('div', { className: 'text-lg font-black text-slate-800' }, totalAtoms),
                 h('div', { className: 'text-[11px] font-bold text-slate-600' }, 'Total Atoms')
               ),
-              h('div', { className: 'bg-white rounded-xl border border-slate-200 p-2 text-center' },
+              h('div', { className: 'bg-white rounded-xl border border-slate-400 p-2 text-center' },
                 h('div', { className: 'text-lg font-black text-slate-800' }, sel.elements.length),
                 h('div', { className: 'text-[11px] font-bold text-slate-600' }, 'Elements')
               ),
-              h('div', { className: 'bg-white rounded-xl border border-slate-200 p-2 text-center' },
+              h('div', { className: 'bg-white rounded-xl border border-slate-400 p-2 text-center' },
                 h('div', { className: 'text-lg font-black text-slate-800' }, sel.bondType.split(' ')[0]),
                 h('div', { className: 'text-[11px] font-bold text-slate-600' }, 'Bond Type')
               ),
-              h('div', { className: 'bg-white rounded-xl border border-slate-200 p-2 text-center' },
+              h('div', { className: 'bg-white rounded-xl border border-slate-400 p-2 text-center' },
                 h('div', { className: 'text-lg font-black text-slate-800' }, sel.state),
                 h('div', { className: 'text-[11px] font-bold text-slate-600' }, 'State')
               )
@@ -2659,7 +2659,7 @@
             ),
 
             /* Chat messages */
-            h('div', { className: 'bg-slate-50 rounded-xl border border-slate-200 p-3 mb-3 max-h-[300px] overflow-y-auto space-y-2' },
+            h('div', { className: 'bg-slate-50 rounded-xl border border-slate-400 p-3 mb-3 max-h-[300px] overflow-y-auto space-y-2' },
               aiMessages.length === 0 && h('div', { className: 'text-center py-6' },
                 h('div', { className: 'text-4xl mb-2' }, '\uD83E\uDDEC'),
                 h('p', { className: 'text-xs text-slate-600' }, 'Ask a question about chemistry or the current molecule!')
@@ -2674,7 +2674,7 @@
                     className: 'max-w-[80%] px-3 py-2 rounded-xl text-xs leading-relaxed '
                       + (isUser
                         ? 'bg-purple-600 text-white rounded-br-sm'
-                        : 'bg-white text-slate-700 border border-slate-200 rounded-bl-sm')
+                        : 'bg-white text-slate-700 border border-slate-400 rounded-bl-sm')
                   },
                     msg.text,
                     !isUser && h('button', { 'aria-label': 'Speak Text',
@@ -2685,7 +2685,7 @@
                 );
               }),
               aiLoading && h('div', { className: 'flex justify-start' },
-                h('div', { className: 'bg-white border border-slate-200 px-3 py-2 rounded-xl text-xs text-slate-600 animate-pulse' },
+                h('div', { className: 'bg-white border border-slate-400 px-3 py-2 rounded-xl text-xs text-slate-600 animate-pulse' },
                   'Thinking...'
                 )
               )
@@ -2703,7 +2703,7 @@
                   }
                 },
                 placeholder: 'Ask about ' + sel.name + '...',
-                className: 'flex-1 px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-200'
+                className: 'flex-1 px-3 py-2 rounded-xl border border-slate-400 text-sm focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-200'
               }),
               h('button', { onClick: function() {
                   if (aiInput.trim()) handleAiQuestion(aiInput.trim());

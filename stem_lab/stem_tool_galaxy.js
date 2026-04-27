@@ -1883,7 +1883,7 @@ if (!window._galaxyHasLoadedOnce) {
 // ── Quiz mode ──
 
               d.quizMode && d.isGeneratingQuiz && React.createElement("div", { className: "flex flex-col items-center justify-center p-12 mt-6 max-w-2xl mx-auto rounded-2xl bg-indigo-50 border-2 border-indigo-300 animate-pulse"}, React.createElement("h2", {className: "text-lg font-bold text-indigo-600 mb-2"}, "✨ Gemini is Generating Astrophysic Questions..."), React.createElement("p", {className: "text-sm text-indigo-400"}, "Parsing deep space databases...")),
-              d.quizMode && !d.isGeneratingQuiz && quizQ && React.createElement("div", { className: "mt-6 max-w-2xl mx-auto bg-white shadow-xl rounded-2xl border border-slate-200 p-8 animate-in fade-in slide-in-from-bottom-4" },
+              d.quizMode && !d.isGeneratingQuiz && quizQ && React.createElement("div", { className: "mt-6 max-w-2xl mx-auto bg-white shadow-xl rounded-2xl border border-slate-400 p-8 animate-in fade-in slide-in-from-bottom-4" },
 
                 React.createElement("div", { className: "flex items-center justify-between mb-2" },
 
@@ -2688,7 +2688,7 @@ if (!window._galaxyHasLoadedOnce) {
 
               // ── OBAFGKM Star Classification Reference ──
 
-              React.createElement("div", { className: "bg-white rounded-2xl border border-slate-200 p-4 shadow-sm" },
+              React.createElement("div", { className: "bg-white rounded-2xl border border-slate-400 p-4 shadow-sm" },
 
                 React.createElement("h4", { className: "text-sm font-bold text-slate-800 mb-3 flex items-center gap-2" },
 
@@ -2826,7 +2826,7 @@ if (!window._galaxyHasLoadedOnce) {
 
               // ── Size Comparison ──
 
-              React.createElement("div", { className: "bg-white rounded-2xl border border-slate-200 p-4 shadow-sm" },
+              React.createElement("div", { className: "bg-white rounded-2xl border border-slate-400 p-4 shadow-sm" },
 
                 React.createElement("h4", { className: "text-sm font-bold text-slate-800 mb-3 flex items-center gap-2" },
 

@@ -2679,7 +2679,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
 
         var cardClass = isDark
           ? 'bg-slate-800 border border-slate-700 rounded-xl p-4'
-          : 'bg-white border border-slate-200 rounded-xl p-4 shadow-sm';
+          : 'bg-white border border-slate-400 rounded-xl p-4 shadow-sm';
         var headingClass = isDark ? 'text-white font-bold' : 'text-slate-900 font-bold';
         var subTextClass = isDark ? 'text-slate-200 text-xs' : 'text-slate-600 text-xs';
         var btnPrimary = 'px-4 py-2 rounded-lg font-bold text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ' +
@@ -4406,7 +4406,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                   className: 'flex items-center gap-3 p-2 rounded-lg ' +
                     (q.done
                       ? (isDark ? 'bg-green-900/30 border border-green-700' : 'bg-green-50 border border-green-200')
-                      : (isDark ? 'bg-slate-800 border border-slate-700' : 'bg-slate-50 border border-slate-200')),
+                      : (isDark ? 'bg-slate-800 border border-slate-700' : 'bg-slate-50 border border-slate-400')),
                   role: 'listitem'
                 },
                   h('span', { className: 'text-lg' }, q.done ? '\u2705' : q.icon),

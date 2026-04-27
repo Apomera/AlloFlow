@@ -879,13 +879,13 @@ window.SelHub = window.SelHub || {
           ),
 
           // Free write
-          h('div', { className: 'bg-slate-50 rounded-xl border border-slate-200 p-4' },
+          h('div', { className: 'bg-slate-50 rounded-xl border border-slate-400 p-4' },
             h('label', { className: 'text-xs font-bold text-slate-600 block mb-1' }, '\ud83d\udcdd What is on your mind? (private)'),
             h('textarea', {
               value: d.freeWrite || '',
               onChange: function(e) { upd('freeWrite', e.target.value); },
               placeholder: 'Write freely about what you are thinking and feeling. Nobody will see this unless you choose to share it.',
-              className: 'w-full text-sm p-3 border border-slate-200 rounded-lg resize-none h-24 outline-none focus:ring-2 focus:ring-teal-300',
+              className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-24 outline-none focus:ring-2 focus:ring-teal-300',
               'aria-label': 'Free write about your feelings'
             })
           ),
@@ -912,7 +912,7 @@ window.SelHub = window.SelHub || {
                 type: 'text', value: d.issueText || '',
                 onChange: function(e) { upd('issueText', e.target.value); },
                 placeholder: 'e.g., climate change, inequality, bullying, gun violence, housing...',
-                className: 'w-full text-sm p-2.5 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-teal-300',
+                className: 'w-full text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-teal-300',
                 'aria-label': 'Issue you care about'
               })
             ),
@@ -922,7 +922,7 @@ window.SelHub = window.SelHub || {
                 value: d.whyItMatters || '',
                 onChange: function(e) { upd('whyItMatters', e.target.value); },
                 placeholder: 'Connect this issue to your life, your values, or people you care about...',
-                className: 'w-full text-sm p-3 border border-slate-200 rounded-lg resize-none h-20 outline-none focus:ring-2 focus:ring-teal-300',
+                className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-20 outline-none focus:ring-2 focus:ring-teal-300',
                 'aria-label': 'Why it matters to you'
               })
             ),
@@ -932,7 +932,7 @@ window.SelHub = window.SelHub || {
                 value: d.whoAffected || '',
                 onChange: function(e) { upd('whoAffected', e.target.value); },
                 placeholder: 'Think about the people and communities most impacted...',
-                className: 'w-full text-sm p-3 border border-slate-200 rounded-lg resize-none h-16 outline-none focus:ring-2 focus:ring-teal-300',
+                className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-16 outline-none focus:ring-2 focus:ring-teal-300',
                 'aria-label': 'Who is affected'
               })
             )
@@ -1057,7 +1057,7 @@ window.SelHub = window.SelHub || {
           // Action cards
           h('div', { className: 'space-y-2' },
             actions.map(function(a, i) {
-              return h('div', { key: i, className: 'bg-white rounded-xl border border-slate-200 p-4 flex items-start gap-3 hover:border-teal-300 transition-colors' },
+              return h('div', { key: i, className: 'bg-white rounded-xl border border-slate-400 p-4 flex items-start gap-3 hover:border-teal-300 transition-colors' },
                 h('div', { className: 'bg-teal-100 text-teal-700 px-2 py-1 rounded-lg text-[10px] font-bold shrink-0' }, a.impact),
                 h('div', { className: 'flex-1' },
                   h('p', { className: 'text-sm text-slate-800 font-medium' }, a.action),
@@ -1124,13 +1124,13 @@ window.SelHub = window.SelHub || {
                 upd('plannerData', newData);
               },
               placeholder: 'Write your response here...',
-              className: 'w-full text-sm p-3 border border-slate-200 rounded-lg resize-none h-28 outline-none focus:ring-2 focus:ring-teal-300',
+              className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-28 outline-none focus:ring-2 focus:ring-teal-300',
               'aria-label': PLANNER_STEPS[plannerStep].label
             }),
             h('div', { className: 'flex justify-between' },
               plannerStep > 0 ? h('button', { 'aria-label': 'Previous',
                 onClick: function() { upd('plannerStep', plannerStep - 1); },
-                className: 'px-4 py-2 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50'
+                className: 'px-4 py-2 border border-slate-400 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50'
               }, '\u2190 Previous') : h('div'),
               plannerStep < PLANNER_STEPS.length - 1 ? h('button', { 
                 onClick: function() { upd('plannerStep', plannerStep + 1); ctx.awardXP(5); },
@@ -1148,7 +1148,7 @@ window.SelHub = window.SelHub || {
           ),
 
           // Template letters section
-          h('div', { className: 'bg-gradient-to-r from-slate-50 to-teal-50 rounded-2xl border border-slate-200 p-5 space-y-3' },
+          h('div', { className: 'bg-gradient-to-r from-slate-50 to-teal-50 rounded-2xl border border-slate-400 p-5 space-y-3' },
             h('h4', { className: 'text-sm font-bold text-slate-700' }, '\ud83d\udce8 Template Letters'),
             h('p', { className: 'text-xs text-slate-600' }, 'Use these templates to write a formal letter advocating for your issue.'),
             h('div', { className: 'flex gap-2 flex-wrap' },
@@ -1164,7 +1164,7 @@ window.SelHub = window.SelHub || {
             ),
             selectedTemplate && (function() {
               var tmpl = LETTER_TEMPLATES[selectedTemplate];
-              return h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4 mt-2 space-y-2' },
+              return h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 mt-2 space-y-2' },
                 h('div', { className: 'text-sm font-bold text-slate-700' }, tmpl.title),
                 h('div', { className: 'text-xs text-slate-600 italic' }, tmpl.greeting),
                 h('pre', { className: 'text-xs text-slate-700 whitespace-pre-wrap font-sans leading-relaxed mt-2 bg-slate-50 rounded-lg p-3 border border-slate-100' }, tmpl.body),
@@ -1184,7 +1184,7 @@ window.SelHub = window.SelHub || {
                 value: d.petitionTitle || '',
                 onChange: function(e) { upd('petitionTitle', e.target.value); },
                 placeholder: 'e.g., "Add Recycling Bins to Every Classroom"',
-                className: 'w-full text-sm p-2.5 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-amber-300',
+                className: 'w-full text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-amber-300',
                 'aria-label': 'Petition title'
               })
             ),
@@ -1194,7 +1194,7 @@ window.SelHub = window.SelHub || {
                 value: d.petitionDesc || '',
                 onChange: function(e) { upd('petitionDesc', e.target.value); },
                 placeholder: 'Explain the problem and why this change is important...',
-                className: 'w-full text-sm p-3 border border-slate-200 rounded-lg resize-none h-20 outline-none focus:ring-2 focus:ring-amber-300',
+                className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-20 outline-none focus:ring-2 focus:ring-amber-300',
                 'aria-label': 'Petition description'
               })
             ),
@@ -1204,7 +1204,7 @@ window.SelHub = window.SelHub || {
                 value: d.petitionAsks || '',
                 onChange: function(e) { upd('petitionAsks', e.target.value); },
                 placeholder: '1. \n2. \n3. ',
-                className: 'w-full text-sm p-3 border border-slate-200 rounded-lg resize-none h-20 outline-none focus:ring-2 focus:ring-amber-300',
+                className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-20 outline-none focus:ring-2 focus:ring-amber-300',
                 'aria-label': 'Petition asks'
               })
             ),
@@ -1608,13 +1608,13 @@ window.SelHub = window.SelHub || {
               value: surveyTitle,
               onChange: function(e) { upd('surveyTitle', e.target.value); },
               placeholder: 'e.g., "Our Community Needs Assessment"',
-              className: 'w-full text-sm p-2.5 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-teal-300',
+              className: 'w-full text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-teal-300',
               'aria-label': 'Survey title'
             })
           ),
 
           // Template questions
-          h('div', { className: 'bg-slate-50 rounded-2xl border border-slate-200 p-5 space-y-3' },
+          h('div', { className: 'bg-slate-50 rounded-2xl border border-slate-400 p-5 space-y-3' },
             h('h4', { className: 'text-xs font-bold text-slate-600 uppercase tracking-widest' }, '\ud83d\udccb Template Questions (' + gradeBand + ')'),
             h('p', { className: 'text-[10px] text-slate-600' }, 'Click to add a template question to your survey.'),
             h('div', { className: 'space-y-2' },
@@ -1648,7 +1648,7 @@ window.SelHub = window.SelHub || {
               value: surveyCustomQ,
               onChange: function(e) { upd('surveyCustomQ', e.target.value); },
               placeholder: 'Type your question here...',
-              className: 'w-full text-sm p-2.5 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-amber-300',
+              className: 'w-full text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-amber-300',
               'aria-label': 'Custom survey question'
             }),
             h('div', { className: 'flex gap-2' },
@@ -1668,7 +1668,7 @@ window.SelHub = window.SelHub || {
                 value: surveyCustomOpts,
                 onChange: function(e) { upd('surveyCustomOpts', e.target.value); },
                 placeholder: 'e.g., Strongly Agree, Agree, Neutral, Disagree, Strongly Disagree',
-                className: 'w-full text-sm p-2.5 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-amber-300',
+                className: 'w-full text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-amber-300',
                 'aria-label': 'Answer options'
               })
             ),
@@ -1780,7 +1780,7 @@ window.SelHub = window.SelHub || {
 
             return h('div', { className: 'space-y-3' },
               // Section pills (top-level nav)
-              h('div', { className: 'flex gap-1 bg-slate-50 rounded-xl p-1 border border-slate-200 overflow-x-auto', role: 'tablist', 'aria-label': 'Rights & Dissent sections' },
+              h('div', { className: 'flex gap-1 bg-slate-50 rounded-xl p-1 border border-slate-400 overflow-x-auto', role: 'tablist', 'aria-label': 'Rights & Dissent sections' },
                 sections.map(function(s, si) {
                   var sExplored = (rightsExploredBySection && rightsExploredBySection[s.id]) || [];
                   var sectionDone = sExplored.length >= s.items.length;
@@ -1885,7 +1885,7 @@ window.SelHub = window.SelHub || {
                 rightsIdx > 0 ? h('button', {
                   'aria-label': 'Previous item',
                   onClick: function() { updMulti({ rightsIdx: rightsIdx - 1, rightsScenarioAnswer: '' }); },
-                  className: 'px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50'
+                  className: 'px-3 py-1.5 border border-slate-400 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50'
                 }, '\u2190 Previous') : h('div'),
                 h('div', { className: 'text-[10px] text-slate-400 font-bold' }, totalExplored + ' / ' + totalItems + ' explored'),
                 rightsIdx < activeSection.items.length - 1 ? h('button', {
@@ -1906,7 +1906,7 @@ window.SelHub = window.SelHub || {
           })() : (function() {
             // ── Flat fallback render for elementary and high bands (unchanged behavior) ──
             return h('div', { className: 'space-y-4' },
-              h('div', { className: 'flex gap-1 bg-slate-50 rounded-xl p-1 border border-slate-200 overflow-x-auto' },
+              h('div', { className: 'flex gap-1 bg-slate-50 rounded-xl p-1 border border-slate-400 overflow-x-auto' },
                 rightsInfo.rights.map(function(r, ri) {
                   var isExplored = rightsExplored.indexOf(ri) !== -1;
                   return h('button', { 'aria-label': r.icon + ' ' + (ri + 1),
@@ -1975,7 +1975,7 @@ window.SelHub = window.SelHub || {
                   h('div', { className: 'flex justify-between' },
                     rightsIdx > 0 ? h('button', { 'aria-label': 'Previous Right',
                       onClick: function() { updMulti({ rightsIdx: rightsIdx - 1, rightsScenarioAnswer: '' }); },
-                      className: 'px-4 py-2 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50'
+                      className: 'px-4 py-2 border border-slate-400 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50'
                     }, '\u2190 Previous Right') : h('div'),
                     rightsIdx < rightsInfo.rights.length - 1 ? h('button', { 
                       onClick: function() { updMulti({ rightsIdx: rightsIdx + 1, rightsScenarioAnswer: '' }); },
@@ -2068,7 +2068,7 @@ window.SelHub = window.SelHub || {
                     upd('serviceNotes', newNotes);
                   },
                   placeholder: 'Write your notes, plans, and progress here...',
-                  className: 'w-full text-sm p-3 border border-slate-200 rounded-lg resize-none h-28 outline-none focus:ring-2 focus:ring-teal-300',
+                  className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-28 outline-none focus:ring-2 focus:ring-teal-300',
                   'aria-label': currentPhase.label + ' notes'
                 }),
 
@@ -2095,7 +2095,7 @@ window.SelHub = window.SelHub || {
                 h('div', { className: 'flex justify-between mt-2' },
                   servicePhase > 0 ? h('button', { 'aria-label': 'Previous Phase',
                     onClick: function() { upd('servicePhase', servicePhase - 1); },
-                    className: 'px-4 py-2 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50'
+                    className: 'px-4 py-2 border border-slate-400 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50'
                   }, '\u2190 Previous Phase') : h('div'),
                   servicePhase < SERVICE_PHASES.length - 1 ? h('button', { 
                     onClick: function() { upd('servicePhase', servicePhase + 1); ctx.awardXP(5); },
@@ -2332,7 +2332,7 @@ window.SelHub = window.SelHub || {
           h('div', { className: 'space-y-3' },
             h('h4', { className: 'text-xs font-bold text-teal-600 uppercase tracking-widest' }, '\ud83c\udf1f People Who Started Where You Are'),
             HOPE_ANCHORS.map(function(anchor, i) {
-              return h('div', { key: i, className: 'bg-white rounded-xl border border-slate-200 p-4 hover:border-teal-300 transition-colors' },
+              return h('div', { key: i, className: 'bg-white rounded-xl border border-slate-400 p-4 hover:border-teal-300 transition-colors' },
                 h('div', { className: 'flex items-start gap-3' },
                   h('div', { className: 'bg-teal-100 text-teal-700 px-2 py-1 rounded-lg text-[10px] font-bold shrink-0' }, anchor.theme),
                   h('div', null,
@@ -2373,7 +2373,7 @@ window.SelHub = window.SelHub || {
               value: d.visionText || '',
               onChange: function(e) { upd('visionText', e.target.value); },
               placeholder: 'Describe the world you want to help create...',
-              className: 'w-full text-sm p-3 border border-slate-200 rounded-lg resize-none h-24 outline-none focus:ring-2 focus:ring-amber-300',
+              className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-24 outline-none focus:ring-2 focus:ring-amber-300',
               'aria-label': 'Your vision for the future'
             }),
             d.visionText && d.visionText.length > 20 && h('button', { 'aria-label': 'Save My Vision',

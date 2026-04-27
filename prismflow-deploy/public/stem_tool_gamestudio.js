@@ -1332,7 +1332,7 @@ window.StemLab = window.StemLab || {
             ),
 
             // Mechanics guide
-            h('div', { className: 'p-3 rounded-xl border border-slate-200 bg-slate-50' },
+            h('div', { className: 'p-3 rounded-xl border border-slate-400 bg-slate-50' },
               h('div', { className: 'text-xs font-bold text-slate-700 mb-2' }, '\uD83C\uDFAE Game Mechanics'),
               h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2 text-[10px] text-slate-600' },
                 [
@@ -1750,7 +1750,7 @@ window.StemLab = window.StemLab || {
             ),
 
             // Quick stats
-            h('div', { className: 'p-3 rounded-xl border border-slate-200 bg-slate-50' },
+            h('div', { className: 'p-3 rounded-xl border border-slate-400 bg-slate-50' },
               h('div', { className: 'text-xs font-bold text-slate-700 mb-2' }, '\uD83D\uDCCA Project Stats'),
               h('div', { className: 'grid grid-cols-3 gap-3 text-center' },
                 h('div', null,

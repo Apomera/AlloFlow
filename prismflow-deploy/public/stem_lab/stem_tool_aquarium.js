@@ -5603,7 +5603,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   },
 
-                  className: "text-[11px] font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-full px-2 py-0.5 transition-all"
+                  className: "text-[11px] font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-400 rounded-full px-2 py-0.5 transition-all"
 
                 }, "\uD83D\uDCF8 Snapshot")
 
@@ -6109,7 +6109,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                         title: s.tip,
 
-                        className: "px-2 py-1 text-xs font-bold rounded-lg transition-all " + (simSpeed === s.spd ? "bg-cyan-700 text-white shadow-md shadow-cyan-500/25" : "bg-white text-slate-600 hover:bg-cyan-100 border border-slate-200")
+                        className: "px-2 py-1 text-xs font-bold rounded-lg transition-all " + (simSpeed === s.spd ? "bg-cyan-700 text-white shadow-md shadow-cyan-500/25" : "bg-white text-slate-600 hover:bg-cyan-100 border border-slate-400")
 
                       }, s.label);
 
@@ -6611,7 +6611,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                 (function() {
                   var bioStatus = loadPct > 80 ? 'Critical' : loadPct > 60 ? 'Caution' : 'Safe';
                   return React.createElement("div", {
-                    className: "bg-white rounded-xl p-3 border border-slate-200",
+                    className: "bg-white rounded-xl p-3 border border-slate-400",
                     role: "group",
                     "aria-label": "Bioload " + bioStatus + " \u2014 " + currentLoad + " of " + maxLoad + " (" + loadPct + " percent)"
                   },
@@ -7225,7 +7225,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 // Fish stocking list
 
-                React.createElement("div", { className: "bg-white rounded-xl p-3 border border-slate-200" },
+                React.createElement("div", { className: "bg-white rounded-xl p-3 border border-slate-400" },
 
                   React.createElement("h4", { className: "text-xs font-bold text-slate-600 mb-2" }, "\u2795 Add Fish"),
 
@@ -7477,7 +7477,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 // ── Hunger Overview ──
 
-                tankFish.length > 0 && React.createElement("div", { className: "bg-white rounded-xl p-3 border border-slate-200" },
+                tankFish.length > 0 && React.createElement("div", { className: "bg-white rounded-xl p-3 border border-slate-400" },
 
                   React.createElement("h4", { className: "text-xs font-bold text-slate-600 mb-2" }, "\uD83C\uDF7D\uFE0F Fish Hunger Status"),
 
@@ -7699,7 +7699,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 // Event log
 
-                eventLog.length > 0 && React.createElement("div", { className: "bg-slate-50 rounded-xl p-2 border border-slate-200 max-h-32 overflow-y-auto" },
+                eventLog.length > 0 && React.createElement("div", { className: "bg-slate-50 rounded-xl p-2 border border-slate-400 max-h-32 overflow-y-auto" },
 
                   React.createElement("h4", { className: "text-[11px] font-bold text-slate-600 mb-1" }, "\uD83D\uDCDC Event Log (Day " + simDay + ")"),
 
@@ -7823,7 +7823,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               // Population history chart (enhanced with gradients, rounded bars, K reference line)
 
-              oceanHistory.length > 1 && React.createElement("div", { className: "bg-white rounded-xl p-3 border border-slate-200" },
+              oceanHistory.length > 1 && React.createElement("div", { className: "bg-white rounded-xl p-3 border border-slate-400" },
 
                 React.createElement("h4", { className: "text-xs font-bold text-slate-700 mb-2 flex items-center gap-2" }, "\uD83D\uDCC8 Population History", React.createElement("span", { className: "text-[11px] text-slate-600 font-normal" }, "last " + Math.min(20, oceanHistory.length) + " years")),
 
@@ -8029,7 +8029,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 ].map(function (s) {
 
-                  return React.createElement("div", { key: s.label, className: "bg-white rounded-lg p-2 text-center border border-slate-200" },
+                  return React.createElement("div", { key: s.label, className: "bg-white rounded-lg p-2 text-center border border-slate-400" },
 
                     React.createElement("div", { className: "text-xs text-slate-600" }, s.icon + " " + s.label),
 

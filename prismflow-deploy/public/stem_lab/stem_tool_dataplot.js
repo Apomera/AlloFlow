@@ -806,7 +806,7 @@ window.StemLab = window.StemLab || {
             h('button', { onClick: function() { upd('showBadges', !showBadges); }, className: 'text-[11px] font-bold px-2 py-0.5 rounded-full border transition-all ' + (showBadges ? 'bg-amber-100 border-amber-300 text-amber-700' : 'bg-slate-100 border-slate-200 text-slate-600') }, '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + badgeDefs.length),
             h('button', { onClick: function() { upd('showShortcuts', !showShortcuts); }, className: 'text-[11px] font-bold px-2 py-0.5 rounded-full border ' + (showShortcuts ? 'bg-sky-100 border-sky-300 text-sky-700' : 'bg-slate-100 border-slate-200 text-slate-600') }, '\u2328\uFE0F'),
             h('button', { onClick: function() { upd('soundEnabled', !soundEnabled); }, className: 'text-sm px-1' }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
-            h('button', { 'aria-label': 'Set Tool Snapshots', onClick: function() { setToolSnapshots(function(prev) { return prev.concat([{ id: 'dp-' + Date.now(), tool: 'dataPlot', label: n + ' pts r\u00B2=' + regR2.toFixed(2), data: { points: points.slice() }, timestamp: Date.now() }]); }); if (addToast) addToast('\uD83D\uDCF8 Snapshot!', 'success'); }, className: 'text-[11px] font-bold bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-full px-2 py-0.5' }, '\uD83D\uDCF8')
+            h('button', { 'aria-label': 'Set Tool Snapshots', onClick: function() { setToolSnapshots(function(prev) { return prev.concat([{ id: 'dp-' + Date.now(), tool: 'dataPlot', label: n + ' pts r\u00B2=' + regR2.toFixed(2), data: { points: points.slice() }, timestamp: Date.now() }]); }); if (addToast) addToast('\uD83D\uDCF8 Snapshot!', 'success'); }, className: 'text-[11px] font-bold bg-slate-100 hover:bg-slate-200 border border-slate-400 rounded-full px-2 py-0.5' }, '\uD83D\uDCF8')
           )
         ),
 
@@ -834,7 +834,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'grid grid-cols-3 sm:grid-cols-4 gap-2' },
             badgeDefs.map(function(badge) {
               var earned = !!earnedBadges[badge.id];
-              return h('div', { key: badge.id, className: 'flex items-center gap-2 p-1.5 rounded-lg ' + (earned ? 'bg-amber-100 border border-amber-300' : 'bg-white border border-slate-200 opacity-40') },
+              return h('div', { key: badge.id, className: 'flex items-center gap-2 p-1.5 rounded-lg ' + (earned ? 'bg-amber-100 border border-amber-300' : 'bg-white border border-slate-400 opacity-40') },
                 h('span', { className: 'text-base', style: earned ? {} : { filter: 'grayscale(1)' } }, badge.icon),
                 h('div', null,
                   h('div', { className: 'text-[11px] font-bold ' + (earned ? 'text-amber-800' : 'text-slate-600') }, badge.name),
@@ -882,7 +882,7 @@ window.StemLab = window.StemLab || {
                 className: 'px-2 py-1 rounded-lg text-[11px] font-bold transition-all ' + (chartType === ct.id ? 'bg-teal-700 text-white shadow' : 'bg-teal-50 text-teal-700 border border-teal-200 hover:bg-teal-100')
               }, ct.icon + ' ' + ct.label);
             }),
-            h('select', { value: paletteId, onChange: function(e) { upd('paletteId', e.target.value); }, 'aria-label': 'Color palette', className: 'ml-auto text-[11px] px-2 py-1 rounded-lg border border-slate-200 outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' },
+            h('select', { value: paletteId, onChange: function(e) { upd('paletteId', e.target.value); }, 'aria-label': 'Color palette', className: 'ml-auto text-[11px] px-2 py-1 rounded-lg border border-slate-400 outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' },
               palettes.map(function(p) { return h('option', { key: p.id, value: p.id }, '\uD83C\uDFA8 ' + p.name); })
             )
           ),
@@ -1173,12 +1173,12 @@ window.StemLab = window.StemLab || {
           ),
 
           // ── Gallery ──
-          showGallery && h('div', { className: 'bg-slate-50 rounded-xl p-3 border border-slate-200' },
+          showGallery && h('div', { className: 'bg-slate-50 rounded-xl p-3 border border-slate-400' },
             h('div', { className: 'text-xs font-bold text-slate-600 uppercase mb-2' }, '\uD83D\uDCBE Saved Charts'),
             galleryItems.length === 0
               ? h('div', { className: 'text-xs text-slate-600 text-center py-2' }, 'No saved charts yet')
               : h('div', { className: 'space-y-1.5' }, galleryItems.map(function(item) {
-                  return h('div', { key: item.id, className: 'flex items-center gap-2 p-2 bg-white rounded-lg border border-slate-200' },
+                  return h('div', { key: item.id, className: 'flex items-center gap-2 p-2 bg-white rounded-lg border border-slate-400' },
                     h('span', { className: 'text-xs font-bold text-slate-700' }, item.n + ' pts'),
                     h('span', { className: 'text-[11px] text-slate-600' }, 'R\u00B2=' + (item.r2||0).toFixed(3)),
                     h('span', { className: 'text-[11px] text-slate-600 ml-auto' }, new Date(item.timestamp).toLocaleDateString()),
@@ -1495,9 +1495,9 @@ window.StemLab = window.StemLab || {
           ),
 
           // ── CSV Import ──
-          h('div', { className: 'bg-white rounded-xl p-4 border border-slate-200' },
+          h('div', { className: 'bg-white rounded-xl p-4 border border-slate-400' },
             h('div', { className: 'text-xs font-bold text-slate-700 uppercase mb-2' }, '\uD83D\uDCCB Import Data (CSV)'),
-            h('textarea', { id: 'dp-import-csv', placeholder: 'Paste CSV data:\nx,y\n1,5\n2,8\n3,12', className: 'w-full h-20 px-3 py-2 text-xs font-mono border border-slate-200 rounded-lg outline-none focus:ring-1 focus:ring-teal-400 resize-none', rows: 4 }),
+            h('textarea', { id: 'dp-import-csv', placeholder: 'Paste CSV data:\nx,y\n1,5\n2,8\n3,12', className: 'w-full h-20 px-3 py-2 text-xs font-mono border border-slate-400 rounded-lg outline-none focus:ring-1 focus:ring-teal-400 resize-none', rows: 4 }),
             h('button', { 'aria-label': 'Import', onClick: function() {
               var el = document.getElementById('dp-import-csv');
               if (!el || !el.value.trim()) return;

@@ -1388,7 +1388,7 @@ window.StemLab = window.StemLab || {
 
                         onClick: function() { upd({ proofSteps: [], proofComplete: false, selectedSteps: [] }); },
 
-                        className: "px-3 py-1.5 text-xs font-bold text-slate-600 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg transition-all"
+                        className: "px-3 py-1.5 text-xs font-bold text-slate-600 bg-slate-50 hover:bg-slate-100 border border-slate-400 rounded-lg transition-all"
 
                       }, "\uD83D\uDD04 Reset")
 

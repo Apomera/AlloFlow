@@ -922,6 +922,13 @@ window.StemLab = window.StemLab || {
             predictMode: false,
             predictionInput: '',
             predictionStats: { count: 0, totalErrPct: 0, bestPct: null, withinTen: 0 },
+            // Hot-streak combo system — mirrors PlayLab/ThrowLab's
+            // Hot-Hand pattern. Land in a row to climb tiers (3 = Hot
+            // Streak ×1.5, 5 = On Fire ×2, 7 = Going Off ×2.5). Bail
+            // resets current; longest is preserved as a personal best.
+            // Pure engagement layer — keeps non-academic students
+            // chasing a chain instead of burning out on one bail.
+            streak: { current: 0, longest: 0, lastTier: null },
             // Coach state
             coachPersona: 'analyst',
             coachLoading: false,
@@ -1237,6 +1244,44 @@ window.StemLab = window.StemLab || {
           onDone: function() { upd({ running: false }); }
         });
         skAnnounce('Replay at ' + Math.round(speedMul * 100) + ' percent speed.');
+      }
+
+      // ── Hot-streak combo ────────────────────────────────────────
+      // Tier table — chosen to mirror the engagement curve of
+      // ThrowLab's Hot-Hand: a clear early reward at 3, a louder one
+      // at 5, then a peak at 7 that's reachable but not gimmie. Each
+      // tier carries an XP multiplier and color/glow for visual cues.
+      function _streakTier(n) {
+        if (n >= 7) return { id: 'going_off', label: 'Going Off!!', icon: '🚀', mult: 2.5, color: '#fb7185', glow: 'rgba(251,113,133,0.45)' };
+        if (n >= 5) return { id: 'on_fire',   label: 'On Fire!',    icon: '🌶️', mult: 2.0, color: '#f97316', glow: 'rgba(249,115,22,0.45)' };
+        if (n >= 3) return { id: 'hot_streak',label: 'Hot Streak!', icon: '🔥', mult: 1.5, color: '#fbbf24', glow: 'rgba(251,191,36,0.45)' };
+        return null;
+      }
+
+      // Mutates `bumps` with the next streak state. Returns
+      // { totalScore, mult, tier, prev, gained } so the caller can
+      // award the bonused XP and render the right hype copy.
+      function _applyStreakAndScore(bumps, didLand, baseScore) {
+        var prev = (d.streak && typeof d.streak.current === 'number') ? d.streak : { current: 0, longest: 0, lastTier: null };
+        if (didLand) {
+          var nextCurrent = (prev.current || 0) + 1;
+          var tier = _streakTier(nextCurrent);
+          var mult = tier ? tier.mult : 1.0;
+          var totalScore = Math.round(baseScore * mult);
+          // "gained" means the student just *crossed* a tier
+          // boundary — used to fire the celebratory toast only on
+          // the upgrade attempt rather than every land.
+          var prevTier = _streakTier(prev.current || 0);
+          var gained = tier && (!prevTier || prevTier.id !== tier.id);
+          bumps.streak = {
+            current: nextCurrent,
+            longest: Math.max(prev.longest || 0, nextCurrent),
+            lastTier: tier ? tier.id : null
+          };
+          return { totalScore: totalScore, mult: mult, tier: tier, prev: prev.current || 0, gained: !!gained };
+        }
+        bumps.streak = { current: 0, longest: prev.longest || 0, lastTier: null };
+        return { totalScore: 0, mult: 1.0, tier: null, prev: prev.current || 0, gained: false };
       }
 
       // Snap the current prediction (when predict-mode is on) onto

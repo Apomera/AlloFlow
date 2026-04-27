@@ -1701,7 +1701,7 @@ var d = labToolData.universe || {};
 
                     onClick: function () { upd("cosmicTime", ep.t); var cv = document.querySelector('[data-universe-canvas]'); if (cv) cv.dataset.time = String(ep.t); awardStemXP('universe_explore', 5, 'Visited epoch: ' + ep.name); },
 
-                    className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all hover:scale-105 " + (isCurrent ? "text-white shadow-sm" : "bg-white text-slate-600 border border-slate-200 hover:border-violet-300"),
+                    className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all hover:scale-105 " + (isCurrent ? "text-white shadow-sm" : "bg-white text-slate-600 border border-slate-400 hover:border-violet-300"),
 
                     style: isCurrent ? { backgroundColor: ep.border } : {}
 

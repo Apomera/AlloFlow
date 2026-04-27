@@ -1233,7 +1233,7 @@ const VisualPanelGrid = React.memo((props) => {
     const Ext = window.AlloModules && window.AlloModules.VisualPanelGrid;
     if (Ext) return <Ext {...props} />;
     return (
-        <div className="bg-slate-50 rounded-xl p-6 text-center border border-slate-200">
+        <div className="bg-slate-50 rounded-xl p-6 text-center border border-slate-400">
             <div className="text-3xl mb-2">🎨</div>
             <p className="text-sm font-bold text-slate-600">Loading Visual Panel...</p>
             <p className="text-xs text-slate-600 mt-1">Module loading from CDN.</p>
@@ -2071,7 +2071,7 @@ const UiLanguageSelector = () => {
                   <span className="truncate max-w-[180px]">{statusMessage || "Translating..."}</span>
                   <span className="shrink-0 ml-2">{progress}%</span>
               </div>
-              <div className="w-full bg-slate-100 rounded-full h-4 overflow-hidden border border-slate-200 inner-shadow mb-2" dir="ltr">
+              <div className="w-full bg-slate-100 rounded-full h-4 overflow-hidden border border-slate-400 inner-shadow mb-2" dir="ltr">
                   <div
                       className="bg-indigo-600 h-full transition-all duration-300 ease-out"
                       style={{ width: `${progress}%` }}
@@ -3183,7 +3183,7 @@ const ComplexityGauge = React.memo(({ level }) => {
       return 'bg-red-500';
   };
   return (
-    <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden border border-slate-200 relative mt-2">
+    <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden border border-slate-400 relative mt-2">
       <div className="absolute inset-0 flex">
           <div className="flex-1 border-r border-white/50"></div>
           <div className="flex-1 border-r border-white/50"></div>
@@ -3296,7 +3296,7 @@ const SkeletonLoader = ({ type }) => {
           <div className="h-4 bg-slate-200 rounded w-full"></div>
         </div>
       )}
-      <div className="h-32 bg-slate-100 rounded-lg border border-slate-200 mt-6"></div>
+      <div className="h-32 bg-slate-100 rounded-lg border border-slate-400 mt-6"></div>
     </div>
   );
 };
@@ -3414,7 +3414,7 @@ const LearnerProgressView = React.memo((props) => {
     if (Ext) return <Ext {...props} />;
     return (
         <div className="max-w-4xl mx-auto p-8 text-center animate-in fade-in duration-300">
-            <div className="bg-white rounded-2xl p-8 shadow-lg border border-slate-200">
+            <div className="bg-white rounded-2xl p-8 shadow-lg border border-slate-400">
                 <div className="text-4xl mb-3">📊</div>
                 <p className="text-lg font-bold text-slate-700">Loading Learning Progress...</p>
                 <p className="text-sm text-slate-600 mt-2">Module loading from CDN.</p>
@@ -3429,7 +3429,7 @@ const TeacherDashboard = React.memo((props) => {
     if (Ext) return <Ext {...props} />;
     return (
         <div className="fixed inset-0 z-[200] bg-slate-100 flex items-center justify-center animate-in fade-in duration-300">
-            <div className="bg-white rounded-2xl p-8 text-center max-w-md shadow-2xl border border-slate-200">
+            <div className="bg-white rounded-2xl p-8 text-center max-w-md shadow-2xl border border-slate-400">
                 <div className="text-4xl mb-3">📋</div>
                 <p className="text-lg font-bold text-slate-700">Loading Teacher Dashboard...</p>
                 <p className="text-sm text-slate-600 mt-2">Module loading from CDN.</p>
@@ -21470,11 +21470,11 @@ ${t('export.readme_json_desc')}`;
           header: `${headerColor} text-white shadow-sm`,
           body: bodyTint,
           userBubble: `${userBubbleColor} text-white`,
-          modelBubble: 'bg-white text-slate-700 border border-slate-200',
+          modelBubble: 'bg-white text-slate-700 border border-slate-400',
           inputArea: `bg-white border-t ${accentBorder}`,
           input: 'bg-white border-slate-300 text-slate-800 focus:ring-indigo-200 focus:border-indigo-400',
           button: `${headerColor} text-white hover:opacity-90`,
-          secondaryButton: 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50',
+          secondaryButton: 'bg-white border border-slate-400 text-slate-600 hover:bg-slate-50',
           text: 'text-slate-700',
           subText: 'text-slate-600',
       };
@@ -21723,7 +21723,7 @@ ${t('export.readme_json_desc')}`;
                     <button
                         aria-label={t('common.copy')}
                         onClick={() => copyToClipboard(appId)}
-                        className="w-full flex items-center justify-center gap-2 text-xs font-mono font-bold text-slate-600 hover:text-indigo-600 bg-white border border-slate-200 hover:border-indigo-200 rounded-lg p-2 transition-all"
+                        className="w-full flex items-center justify-center gap-2 text-xs font-mono font-bold text-slate-600 hover:text-indigo-600 bg-white border border-slate-400 hover:border-indigo-200 rounded-lg p-2 transition-all"
                     >
                         {appId} <Copy size={12}/>
                     </button>
@@ -21929,7 +21929,7 @@ ${t('export.readme_json_desc')}`;
                             value={newGroupName}
                             onChange={(e) => setNewGroupName(e.target.value)}
                             placeholder={t('groups.new_group_placeholder')}
-                            className="text-sm p-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none w-48"
+                            className="text-sm p-3 rounded-lg border border-slate-400 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none w-48"
                             data-help-key="group_create_input"
                         />
                         <button
@@ -22049,7 +22049,7 @@ ${t('export.readme_json_desc')}`;
                             </h3>
                             <div className="flex-1 space-y-3 overflow-y-auto custom-scrollbar pr-1" data-help-key="group_active_list">
                                 {sessionData.groups && activeSessionGroups.map(([gid, group]) => (
-                                    <div key={gid} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                                    <div key={gid} className="bg-white p-4 rounded-xl border border-slate-400 shadow-sm hover:shadow-md transition-shadow">
                                         <div className="flex justify-between items-center mb-3">
                                             <span className="font-bold text-slate-700">{group.name}</span>
                                             <button onClick={() => handleDeleteGroup(gid)} className="text-red-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition-colors" aria-label={t('common.delete')}><X size={16}/></button>
@@ -22071,7 +22071,7 @@ ${t('export.readme_json_desc')}`;
                                             value={group.resourceId || ""}
                                             onChange={(e) => handleSetGroupResource(gid, e.target.value || null)}
                                             disabled={isPushingResource[gid] === 'pushing'}
-                                            className="w-full text-sm p-2 rounded-lg border border-slate-200 bg-slate-50 text-slate-700 focus:ring-2 focus:ring-purple-300 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                                            className="w-full text-sm p-2 rounded-lg border border-slate-400 bg-slate-50 text-slate-700 focus:ring-2 focus:ring-purple-300 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
                                             <option value="">{t('groups.assign_resource_placeholder')}</option>
                                             {sessionData.resources && sessionData.resources.map(res => {
@@ -22107,7 +22107,7 @@ ${t('export.readme_json_desc')}`;
                                                 <select aria-label={t('common.selection')}
                                                     value={student.groupId || ""}
                                                     onChange={(e) => handleAssignStudent(uid, e.target.value)}
-                                                    className="text-xs p-2 rounded-lg border border-slate-200 bg-white focus:ring-2 focus:ring-purple-300 outline-none min-w-[100px]"
+                                                    className="text-xs p-2 rounded-lg border border-slate-400 bg-white focus:ring-2 focus:ring-purple-300 outline-none min-w-[100px]"
                                                 >
                                                     <option value="">{t('groups.unassigned')}</option>
                                                     {sessionData.groups && activeSessionGroups.map(([gid, group]) => (
@@ -22540,7 +22540,7 @@ ${t('export.readme_json_desc')}`;
                                                     value={selectedFont}
                                                     onChange={(e) => setSelectedFont(e.target.value)}
                                                     data-help-key="header_settings_text_font"
-                                                    className="w-full text-sm p-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                                                    className="w-full text-sm p-2.5 rounded-lg border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
                                                 >
                                                     {FONT_OPTIONS.map((font) => (
                                                         <option key={font.id} value={font.id}>{font.label}</option>
@@ -22688,7 +22688,7 @@ ${t('export.readme_json_desc')}`;
                                                       }
                                                     }}
                                                     data-help-key="header_settings_voice_select"
-                                                    className="w-full text-xs p-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none"
+                                                    className="w-full text-xs p-2 rounded-lg border border-slate-400 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none"
                                                 >
                                                     {_isCanvasEnv ? (
                                                         <>
@@ -22725,7 +22725,7 @@ ${t('export.readme_json_desc')}`;
                                                 </select>
                                                 {/* ── Kokoro Quality Toggle (only visible for Kokoro voices) ── */}
                                                 {_isCanvasEnv && selectedVoice && selectedVoice.includes('_') && window._kokoroTTS && (
-                                                    <div className="mt-2 p-2 rounded-lg bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600">
+                                                    <div className="mt-2 p-2 rounded-lg bg-slate-50 dark:bg-slate-700/50 border border-slate-400 dark:border-slate-600">
                                                         <label className="text-[11px] uppercase font-bold text-slate-600 block mb-1.5">Voice Quality</label>
                                                         <div className="flex gap-1">
                                                             <button
@@ -22756,7 +22756,7 @@ ${t('export.readme_json_desc')}`;
                                                     When Gemini refuses a sentence or exhausts retries, fall back to the
                                                     system voice instead of skipping. Default off because the system voice
                                                     sounds jarring next to Gemini. */}
-                                                <div className="mt-2 p-2 rounded-lg bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600">
+                                                <div className="mt-2 p-2 rounded-lg bg-slate-50 dark:bg-slate-700/50 border border-slate-400 dark:border-slate-600">
                                                     <label className="flex items-start gap-2 cursor-pointer">
                                                         <input
                                                             type="checkbox"
@@ -23101,7 +23101,7 @@ ${t('export.readme_json_desc')}`;
                                                 <WifiOff size={14} /> <span className="hidden lg:inline">{t('session.join')}</span>
                                             </button>
                                             {isJoinPopoverOpen && (
-                                                <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-xl shadow-2xl p-3 border border-slate-200 z-[100] animate-in fade-in zoom-in-95">
+                                                <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-xl shadow-2xl p-3 border border-slate-400 z-[100] animate-in fade-in zoom-in-95">
                                                     <div className="space-y-2">
                                                         <div>
                                                             <label className="block text-[11px] font-bold text-slate-600 mb-1 uppercase">{t('session.host_id_optional')}</label>
@@ -23110,7 +23110,7 @@ ${t('export.readme_json_desc')}`;
                                                                 value={joinAppIdInput}
                                                                 onChange={(e) => setJoinAppIdInput(e.target.value)}
                                                                 placeholder={t('session.default_placeholder', {id: appId})}
-                                                                className="w-full text-xs border border-slate-300 rounded-xl p-2 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-slate-600 font-mono mb-2"
+                                                                className="w-full text-xs border border-slate-400 rounded-xl p-2 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-slate-600 font-mono mb-2"
                                                             />
                                                         </div>
                                                         <div>
@@ -23124,7 +23124,7 @@ ${t('export.readme_json_desc')}`;
                                                                     onKeyDown={(e) => e.key === 'Enter' && joinClassSession(joinCodeInput)}
                                                                     placeholder={t('session.code_placeholder')}
                                                                     maxLength={4}
-                                                                    className="w-full text-center font-mono font-bold text-lg border border-slate-300 rounded p-1 uppercase focus:ring-2 focus:ring-indigo-500 outline-none text-slate-800"
+                                                                    className="w-full text-center font-mono font-bold text-lg border border-slate-400 rounded p-1 uppercase focus:ring-2 focus:ring-indigo-500 outline-none text-slate-800"
                                                                 />
                                                                 <button
                                                                     aria-label={t('common.continue')}
@@ -23174,7 +23174,7 @@ ${t('export.readme_json_desc')}`;
                                     if (e.key === 'ArrowDown') { e.preventDefault(); items[(idx + 1) % items.length]?.focus(); }
                                     else if (e.key === 'ArrowUp') { e.preventDefault(); items[(idx - 1 + items.length) % items.length]?.focus(); }
                                     else if (e.key === 'Escape') { setShowExportMenu(false); document.querySelector('[data-help-key="header_export"]')?.focus(); }
-                                  }} ref={(el) => { if (el) { const first = el.querySelector('[role="menuitem"]'); if (first) first.focus(); } }} className="absolute top-full right-0 mt-2 w-56 bg-white rounded-xl shadow-2xl p-2 border border-slate-200 z-[100] animate-in fade-in zoom-in-95 flex flex-col gap-1">
+                                  }} ref={(el) => { if (el) { const first = el.querySelector('[role="menuitem"]'); if (first) first.focus(); } }} className="absolute top-full right-0 mt-2 w-56 bg-white rounded-xl shadow-2xl p-2 border border-slate-400 z-[100] animate-in fade-in zoom-in-95 flex flex-col gap-1">
                                     <div className="text-xs font-black text-slate-800 px-2 py-1 flex items-center gap-1.5">{"\ud83d\udcc4"} Documents</div>
                                     <button role="menuitem" onClick={() => openExportPreview('print')} className="w-full px-3 py-2.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white rounded-xl text-xs font-bold transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 mb-1">{"\ud83d\udee0\ufe0f"} Document Builder</button>
                                     {customExportCSS && <div className="text-[11px] text-green-600 font-medium px-2 mb-1">✓ Custom style active</div>}
@@ -23319,7 +23319,7 @@ ${t('export.readme_json_desc')}`;
                                     </li>
                                 </ul>
                             </div>
-                            <div className="bg-slate-50 p-3 rounded border border-slate-200 text-xs text-slate-600 italic text-center space-y-2">
+                            <div className="bg-slate-50 p-3 rounded border border-slate-400 text-xs text-slate-600 italic text-center space-y-2">
                                 <p>{t('about.ai_guide_tip')}</p>
                                 <div className="border-t border-slate-200 pt-2">
                                     <a href="https://udlguidelines.cast.org/" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-800 font-bold flex items-center justify-center gap-1 transition-colors">
@@ -23512,12 +23512,12 @@ ${t('export.readme_json_desc')}`;
                     <h2 id="xp-modal-title" className="text-2xl font-black text-indigo-900 uppercase tracking-tight" data-help-key="xp_modal_summary">{t('student_dashboard.level_progress')}</h2>
                     <p className="text-slate-600 font-bold text-sm">{t('student_dashboard.total_xp')}: <span className="text-green-600">{globalPoints}</span></p>
                 </div>
-                <div className="bg-slate-50 rounded-xl p-4 mb-6 border border-slate-200 shadow-inner">
+                <div className="bg-slate-50 rounded-xl p-4 mb-6 border border-slate-400 shadow-inner">
                     <div className="flex justify-between text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">
                         <span>{t('common.progress')}</span>
                         <span>{Math.round(globalProgress)}%</span>
                     </div>
-                    <div className="w-full bg-slate-200 rounded-full h-4 overflow-hidden border border-slate-300">
+                    <div className="w-full bg-slate-200 rounded-full h-4 overflow-hidden border border-slate-400">
                         <div
                             className="h-full bg-gradient-to-r from-yellow-400 to-orange-500 transition-all duration-1000 ease-out relative"
                             style={{ width: `${Math.max(5, globalProgress)}%` }}
@@ -23886,7 +23886,7 @@ ${t('export.readme_json_desc')}`;
                                     })}
                                     {personaState.isLoading && (
                                         <div className="flex justify-center p-4">
-                                            <div className="bg-white px-4 py-2 rounded-full border border-slate-200 shadow-sm flex items-center gap-2 text-xs font-bold text-slate-600 animate-pulse">
+                                            <div className="bg-white px-4 py-2 rounded-full border border-slate-400 shadow-sm flex items-center gap-2 text-xs font-bold text-slate-600 animate-pulse">
                                                 <RefreshCw size={12} className="animate-spin"/> {t('persona.status_deliberating')}
                                             </div>
                                         </div>
@@ -24016,7 +24016,7 @@ ${t('export.readme_json_desc')}`;
                                                     <div className="text-xs text-yellow-700 font-medium">{t('persona.xp_earned') || 'Experience Earned'}</div>
                                                 </div>
                                             </div>
-                                            <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                                            <div className="bg-white p-4 rounded-xl border border-slate-400 shadow-sm">
                                                 <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-1"><MessageSquare size={12} /> {t('persona.teacher_feedback') || 'Teacher Feedback'}</h4>
                                                 <div className="text-slate-700 leading-relaxed prose prose-sm prose-slate max-w-none" dangerouslySetInnerHTML={{ __html: (reflectionFeedback.feedback || '').replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>').replace(/\*([^*]+)\*/g, '<em>$1</em>').replace(/\n/g, '<br/>') }} />
                                             </div>
@@ -24101,7 +24101,7 @@ ${t('export.readme_json_desc')}`;
                      <div className="bg-yellow-100 text-yellow-900 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-6 border border-yellow-200 shadow-sm">
                         {personaState.selectedCharacter.role} ({personaState.selectedCharacter.year})
                      </div>
-                     <div className="w-full bg-white p-4 rounded-xl border border-slate-200 text-sm text-slate-600 leading-relaxed font-serif italic shadow-sm relative">
+                     <div className="w-full bg-white p-4 rounded-xl border border-slate-400 text-sm text-slate-600 leading-relaxed font-serif italic shadow-sm relative">
                          <Quote size={16} className="absolute top-2 left-2 text-slate-200 fill-current" />
                          "{personaState.selectedCharacter.context}"
                      </div>
@@ -24115,7 +24115,7 @@ ${t('export.readme_json_desc')}`;
                                  {personaState.selectedCharacter.rapport ?? personaState.selectedCharacter.initialRapport}%
                              </span>
                          </div>
-                         <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
+                         <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-400">
                              <div
                                  className={`h-full transition-all duration-500 ease-out ${
                                      (personaState.selectedCharacter.rapport ?? personaState.selectedCharacter.initialRapport) >= 70 ? 'bg-green-500' :
@@ -24270,7 +24270,7 @@ ${t('export.readme_json_desc')}`;
                             data-help-key="persona_save_chat"
                             onClick={handleSavePersonaChat}
                             disabled={personaState.chatHistory.length === 0}
-                            className="p-2 rounded-lg bg-white text-slate-600 border border-slate-200 shadow-sm hover:bg-slate-50 hover:border-indigo-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="p-2 rounded-lg bg-white text-slate-600 border border-slate-400 shadow-sm hover:bg-slate-50 hover:border-indigo-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                             title={t('persona.chat_save')}
                             aria-label={t('persona.chat_save')}
                         >
@@ -24329,7 +24329,7 @@ ${t('export.readme_json_desc')}`;
                                  <div className={`flex gap-3 max-w-[85%] ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
                                      {!isUser && avatarUrl && (
                                          <div className="flex-shrink-0 mt-1">
-                                             <div className="w-8 h-8 rounded-full overflow-hidden border border-slate-200 shadow-sm bg-white">
+                                             <div className="w-8 h-8 rounded-full overflow-hidden border border-slate-400 shadow-sm bg-white">
                                                  <img loading="lazy" src={avatarUrl} alt={speakerName} className="w-full h-full object-cover" />
                                              </div>
                                          </div>
@@ -24380,7 +24380,7 @@ ${t('export.readme_json_desc')}`;
                         })}
                         {personaState.isLoading && (
                             <div className="flex items-start">
-                                <div className="bg-white p-3 rounded-2xl border border-slate-200 rounded-bl-none text-xs text-slate-600 italic flex items-center gap-2 shadow-sm animate-pulse">
+                                <div className="bg-white p-3 rounded-2xl border border-slate-400 rounded-bl-none text-xs text-slate-600 italic flex items-center gap-2 shadow-sm animate-pulse">
                                     <History size={14} className="animate-spin text-yellow-600"/>
                                     {t('persona.status_thinking', { name: personaState.selectedCharacter?.name })}
                                 </div>
@@ -24471,7 +24471,7 @@ ${t('export.readme_json_desc')}`;
                                                 <div className="text-xs text-yellow-700 font-medium">{t('persona.xp_earned') || 'Experience Earned'}</div>
                                             </div>
                                         </div>
-                                        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                                        <div className="bg-white p-4 rounded-xl border border-slate-400 shadow-sm">
                                             <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-1">
                                                 <MessageSquare size={12} /> {t('persona.teacher_feedback') || 'Teacher Feedback'}
                                             </h4>
@@ -24678,7 +24678,7 @@ ${t('export.readme_json_desc')}`;
                       value={aiStandardRegion}
                       onChange={(e) => setAiStandardRegion(e.target.value)}
                       data-help-key="standards_region_input" placeholder={t('standards.region_framework_placeholder')}
-                      className={`w-1/3 text-xs border border-slate-300 rounded p-1.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300 ${chatStyles.input}`}
+                      className={`w-1/3 text-xs border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300 ${chatStyles.input}`}
                   />
                   <input aria-label={t('common.text_field')}
                       type="text"
@@ -24984,7 +24984,7 @@ ${t('export.readme_json_desc')}`;
                          aria-label={t('common.refresh')}
                         onClick={() => fileInputRef.current.click()}
                         disabled={isExtracting || isGeneratingSource} aria-busy={isGeneratingSource}
-                        className="text-xs flex items-center gap-1 bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 px-3 py-1.5 rounded-full font-medium transition-colors shadow-sm"
+                        className="text-xs flex items-center gap-1 bg-white border border-slate-400 text-slate-600 hover:bg-slate-50 px-3 py-1.5 rounded-full font-medium transition-colors shadow-sm"
                         title={t('input.upload_tooltip')}
                      >
                         {isExtracting ? <RefreshCw size={12} className="animate-spin"/> : <Upload size={12} />}
@@ -25211,13 +25211,13 @@ ${t('export.readme_json_desc')}`;
                             </select>
                           </div>
                       </div>
-                      <div className="bg-slate-50 p-2 rounded-lg border border-slate-200">
+                      <div className="bg-slate-50 p-2 rounded-lg border border-slate-400">
                             <div className="flex justify-between items-center mb-2">
                                 <label className="text-xs text-slate-600 font-bold flex items-center gap-1">
                                     <CheckCircle size={12} className="text-green-600"/> {isIndependentMode ? t('wizard.learning_goal_header') : t('standards.target_standard')}
                                 </label>
                                 {!isIndependentMode && (
-                                <div className="flex bg-white rounded-md border border-slate-200 p-0.5 shadow-sm">
+                                <div className="flex bg-white rounded-md border border-slate-400 p-0.5 shadow-sm">
                                     <button
                                         onClick={handleSetStandardModeToAi}
                                         className={`px-2 py-0.5 text-[11px] font-bold rounded transition-colors ${standardMode === 'ai' ? 'bg-indigo-100 text-indigo-700' : 'text-slate-600 hover:text-slate-600'}`}
@@ -25241,7 +25241,7 @@ ${t('export.readme_json_desc')}`;
                                             value={aiStandardRegion}
                                             onChange={(e) => setAiStandardRegion(e.target.value)}
                                             placeholder={t('standards.region_optional')}
-                                            className="w-1/3 text-xs border border-slate-300 rounded p-1.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300"
+                                            className="w-1/3 text-xs border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300"
                                         />
                                         <input aria-label={t('common.enter_ai_standard_query')}
                                             type="text"
@@ -25249,7 +25249,7 @@ ${t('export.readme_json_desc')}`;
                                             onChange={(e) => setAiStandardQuery(e.target.value)}
                                             onKeyDown={(e) => e.key === 'Enter' && handleFindStandards(gradeLevel)}
                                             placeholder={t('standards.finder_placeholder')}
-                                            className="flex-grow text-xs border border-slate-300 rounded p-1.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300"
+                                            className="flex-grow text-xs border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300"
                                         />
                                         <button
                                             aria-label={t('common.refresh')}
@@ -25262,7 +25262,7 @@ ${t('export.readme_json_desc')}`;
                                         </button>
                                     </div>
                                     {suggestedStandards.length > 0 && (
-                                        <div className="max-h-32 overflow-y-auto custom-scrollbar border border-slate-200 rounded bg-white divide-y divide-slate-100">
+                                        <div className="max-h-32 overflow-y-auto custom-scrollbar border border-slate-400 rounded bg-white divide-y divide-slate-100">
                                             {suggestedStandards.map((std, idx) => (
                                                 <button
                                                     key={idx}
@@ -25438,7 +25438,7 @@ ${t('export.readme_json_desc')}`;
                     }}
                     placeholder={isGeneratingSource ? t('common.writing_content') : isExtracting ? t('common.scanning_document') : t('input.placeholder')}
                     disabled={isGeneratingSource || isExtracting} aria-busy={isGeneratingSource}
-                    className={`w-full h-48 p-3 text-sm border border-slate-300 rounded-lg focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none resize-none transition-all duration-300 ${(isGeneratingSource || isExtracting) ? 'bg-slate-50 text-slate-600' : ''}`}
+                    className={`w-full h-48 p-3 text-sm border border-slate-400 rounded-lg focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none resize-none transition-all duration-300 ${(isGeneratingSource || isExtracting) ? 'bg-slate-50 text-slate-600' : ''}`}
                     aria-label={t('common.source_material_aria')}
                     data-help-key="input_area"
                   />
@@ -25611,7 +25611,7 @@ ${t('export.readme_json_desc')}`;
                             value={glossaryCustomInstructions}
                             onChange={(e) => setGlossaryCustomInstructions(e.target.value)}
                             placeholder={t('glossary.placeholder_instructions')}
-                            className="w-full text-xs p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-sky-200 outline-none resize-none h-16"
+                            className="w-full text-xs p-2 border border-slate-400 rounded-md focus:ring-2 focus:ring-sky-200 outline-none resize-none h-16"
                         />
                     </div>
                     <p className="text-xs text-slate-600 mb-2">{t('glossary.add_languages_label')}</p>
@@ -25622,7 +25622,7 @@ ${t('export.readme_json_desc')}`;
                         onChange={(e) => setLanguageInput(e.target.value)}
                         onKeyDown={handleKeyDown}
                         placeholder={t('glossary.language_placeholder')}
-                        className="flex-grow text-sm px-2 py-1 border border-slate-300 rounded-md focus:ring-2 focus:ring-sky-200 outline-none"
+                        className="flex-grow text-sm px-2 py-1 border border-slate-400 rounded-md focus:ring-2 focus:ring-sky-200 outline-none"
                         aria-label={t('common.target_language_aria')}
                     />
                     <button
@@ -25653,7 +25653,7 @@ ${t('export.readme_json_desc')}`;
                                 value={glossaryImageStyle}
                                 onChange={(e) => setGlossaryImageStyle(e.target.value)}
                                 placeholder={t('glossary.style_placeholder')}
-                                className="w-full text-xs p-2 border border-slate-200 rounded-md focus:border-sky-500 focus:ring-2 focus:ring-sky-500/30 outline-none"
+                                className="w-full text-xs p-2 border border-slate-400 rounded-md focus:border-sky-500 focus:ring-2 focus:ring-sky-500/30 outline-none"
                             />
                             <p className="text-[11px] text-slate-600 mt-1">{t('glossary.image_style_hint')}</p>
                         </div>
@@ -25806,12 +25806,12 @@ ${t('export.readme_json_desc')}`;
                         </div>
                     </div>
                     <div>
-                        <div className="bg-slate-50 p-2 rounded-lg border border-slate-200" data-help-key="simplified_standards">
+                        <div className="bg-slate-50 p-2 rounded-lg border border-slate-400" data-help-key="simplified_standards">
                             <div className="flex justify-between items-center mb-2">
                                 <label className="text-xs text-slate-600 font-bold flex items-center gap-1">
                                     <CheckCircle size={12} className="text-indigo-600"/> Target Standard
                                 </label>
-                                <div className="flex bg-white rounded-md border border-slate-200 p-0.5 shadow-sm">
+                                <div className="flex bg-white rounded-md border border-slate-400 p-0.5 shadow-sm">
                                     <button
                                         onClick={handleSetStandardModeToAi}
                                         className={`px-2 py-0.5 text-[11px] font-bold rounded transition-colors ${standardMode === 'ai' ? 'bg-indigo-100 text-indigo-700' : 'text-slate-600 hover:text-slate-600'}`}
@@ -25835,7 +25835,7 @@ ${t('export.readme_json_desc')}`;
                                             onChange={(e) => setAiStandardQuery(e.target.value)}
                                             onKeyDown={(e) => e.key === 'Enter' && handleFindStandards(gradeLevel)}
                                             placeholder={`Describe skill (e.g. "identify main idea") for ${gradeLevel}...`}
-                                            className="flex-grow text-xs border border-slate-300 rounded p-1.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300"
+                                            className="flex-grow text-xs border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300"
                                         />
                                         <button
                                             aria-label={t('common.refresh')}
@@ -25848,7 +25848,7 @@ ${t('export.readme_json_desc')}`;
                                         </button>
                                     </div>
                                     {suggestedStandards.length > 0 && (
-                                        <div className="max-h-32 overflow-y-auto custom-scrollbar border border-slate-200 rounded bg-white divide-y divide-slate-100">
+                                        <div className="max-h-32 overflow-y-auto custom-scrollbar border border-slate-400 rounded bg-white divide-y divide-slate-100">
                                             {suggestedStandards.map((std, idx) => (
                                                 <button
                                                     key={idx}
@@ -25929,7 +25929,7 @@ ${t('export.readme_json_desc')}`;
                                     onChange={(e) => setInterestInput(e.target.value)}
                                     onKeyDown={handleInterestKeyDown}
                                     placeholder={t('common.interest_placeholder')}
-                                    className="flex-grow text-sm px-2 py-1.5 border border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300"
+                                    className="flex-grow text-sm px-2 py-1.5 border border-slate-400 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300"
                                 />
                                 <button aria-label={t('common.add')}
                                     onClick={addInterest}
@@ -26081,7 +26081,7 @@ ${t('export.readme_json_desc')}`;
                             value={outlineCustomInstructions}
                             onChange={(e) => setOutlineCustomInstructions(e.target.value)}
                             placeholder={t('outline.placeholder_instructions')}
-                            className="w-full text-xs p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-cyan-200 outline-none resize-none h-16"
+                            className="w-full text-xs p-2 border border-slate-400 rounded-md focus:ring-2 focus:ring-cyan-200 outline-none resize-none h-16"
                         />
                     </div>
                 </div>
@@ -26173,7 +26173,7 @@ ${t('export.readme_json_desc')}`;
                         </div>
                         <div>
                         <label className="block text-xs font-medium text-slate-700 mb-1">{t('input.custom_instructions')} <span className="text-indigo-600 font-normal">{t('common.optional')}</span></label>
-                        <textarea aria-label={t('input.custom_instructions') || 'Custom instructions for visuals'} data-help-key="visuals_custom_instructions" value={visualCustomInstructions} onChange={(e) => setVisualCustomInstructions(e.target.value)} placeholder={t('visuals.placeholder_instructions')} className="w-full text-xs p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-cyan-200 outline-none resize-none h-16"/>
+                        <textarea aria-label={t('input.custom_instructions') || 'Custom instructions for visuals'} data-help-key="visuals_custom_instructions" value={visualCustomInstructions} onChange={(e) => setVisualCustomInstructions(e.target.value)} placeholder={t('visuals.placeholder_instructions')} className="w-full text-xs p-2 border border-slate-400 rounded-md focus:ring-2 focus:ring-cyan-200 outline-none resize-none h-16"/>
                         </div>
                     </div>
                     <button
@@ -26224,7 +26224,7 @@ ${t('export.readme_json_desc')}`;
                             value={faqCustomInstructions}
                             onChange={(e) => setFaqCustomInstructions(e.target.value)}
                             placeholder={t('faq.placeholder_instructions')}
-                            className="w-full text-xs p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-200 outline-none resize-none h-16"
+                            className="w-full text-xs p-2 border border-slate-400 rounded-md focus:ring-2 focus:ring-indigo-200 outline-none resize-none h-16"
                         />
                         </div>
                     </div>
@@ -26288,7 +26288,7 @@ ${t('export.readme_json_desc')}`;
                             value={frameCustomInstructions}
                             onChange={(e) => setFrameCustomInstructions(e.target.value)}
                             placeholder={t('scaffolds.placeholder_instructions')}
-                            className="w-full text-xs p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-cyan-200 outline-none resize-none h-16"
+                            className="w-full text-xs p-2 border border-slate-400 rounded-md focus:ring-2 focus:ring-cyan-200 outline-none resize-none h-16"
                         />
                         </div>
                     </div>
@@ -26326,7 +26326,7 @@ ${t('export.readme_json_desc')}`;
                             value={brainstormCustomInstructions}
                             onChange={(e) => setBrainstormCustomInstructions(e.target.value)}
                             placeholder={t('brainstorm.placeholder_input')}
-                            className="w-full text-xs p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-yellow-200 outline-none resize-none h-16 bg-white text-slate-800 placeholder:text-slate-500"
+                            className="w-full text-xs p-2 border border-slate-400 rounded-md focus:ring-2 focus:ring-yellow-200 outline-none resize-none h-16 bg-white text-slate-800 placeholder:text-slate-500"
                         />
                         </div>
                     </div>
@@ -26428,7 +26428,7 @@ ${t('export.readme_json_desc')}`;
                                 value={personaCustomInstructions}
                                 onChange={(e) => setPersonaCustomInstructions(e.target.value)}
                                 placeholder={t('persona.custom_placeholder')}
-                                className="w-full text-xs p-2 border border-slate-300 rounded-md focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none resize-none h-16 transition-shadow duration-300"
+                                className="w-full text-xs p-2 border border-slate-400 rounded-md focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none resize-none h-16 transition-shadow duration-300"
                             />
                         </div>
                         <div className="flex items-center gap-2 bg-indigo-100/50 p-2 rounded border border-indigo-200" data-help-key="persona_free_response">
@@ -26622,7 +26622,7 @@ ${t('export.readme_json_desc')}`;
                                     onChange={(e) => setConceptInput(e.target.value)}
                                     onKeyDown={handleConceptKeyDown}
                                     placeholder={t('concept_sort.placeholder_categories')}
-                                    className="flex-grow text-sm px-2 py-1 border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-200 outline-none"
+                                    className="flex-grow text-sm px-2 py-1 border border-slate-400 rounded-md focus:ring-2 focus:ring-indigo-200 outline-none"
                                 />
                                 <button aria-label={t('common.add')}
                                     onClick={addConcept}
@@ -27338,7 +27338,7 @@ ${t('export.readme_json_desc')}`;
                                         mathMode === 'Word Problems from Source' ? t('math.placeholder_focus') :
                                         t('math.placeholder_eq')
                                     }
-                                    className="w-full pl-8 text-xs p-2 border border-slate-300 rounded-md focus:border-indigo-500 focus:ring-4 focus:ring-blue-500/30 outline-none resize-none h-24 font-mono transition-shadow duration-300"
+                                    className="w-full pl-8 text-xs p-2 border border-slate-400 rounded-md focus:border-indigo-500 focus:ring-4 focus:ring-blue-500/30 outline-none resize-none h-24 font-mono transition-shadow duration-300"
                                 />
                             </div>
                         </div>
@@ -27502,7 +27502,7 @@ ${t('export.readme_json_desc')}`;
                                     value={adventureCustomInstructions}
                                     onChange={(e) => setAdventureCustomInstructions(e.target.value)}
                                     placeholder={t('common.adventure_instructions_placeholder')}
-                                    className="w-full text-xs p-2 border border-slate-300 rounded-md focus:border-purple-500 focus:ring-4 focus:ring-purple-500/30 outline-none resize-none h-16 transition-shadow duration-300"
+                                    className="w-full text-xs p-2 border border-slate-400 rounded-md focus:border-purple-500 focus:ring-4 focus:ring-purple-500/30 outline-none resize-none h-16 transition-shadow duration-300"
                                 />
                             </div>
                             <div className="flex items-center gap-2 bg-purple-100/50 p-2 rounded border border-purple-200" data-help-key="adventure_free_response">
@@ -27710,7 +27710,7 @@ ${t('export.readme_json_desc')}`;
                                 </label>
                             </div>
                             <details className="group/adv-settings">
-                                <summary className="flex items-center gap-2 bg-slate-100/50 p-2 rounded border border-slate-200 cursor-pointer select-none hover:bg-slate-100 transition-colors list-none">
+                                <summary className="flex items-center gap-2 bg-slate-100/50 p-2 rounded border border-slate-400 cursor-pointer select-none hover:bg-slate-100 transition-colors list-none">
                                     <Settings size={14} className="text-slate-600"/>
                                     <span className="text-xs font-bold text-slate-600">⚙️ {t('adventure.advanced_settings') || 'Advanced Settings'}</span>
                                     <ChevronDown size={12} className="text-slate-600 ml-auto transition-transform group-open/adv-settings:rotate-180"/>
@@ -27984,7 +27984,7 @@ ${t('export.readme_json_desc')}`;
                              value={quizCustomInstructions}
                              onChange={(e) => setQuizCustomInstructions(e.target.value)}
                              placeholder={t('quiz.custom_placeholder')}
-                             className="w-full text-xs p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-200 outline-none resize-none h-16"
+                             className="w-full text-xs p-2 border border-slate-400 rounded-md focus:ring-2 focus:ring-indigo-200 outline-none resize-none h-16"
                          />
                          </div>
  {(generatedContent?.data?.analysis || history.some(h => h && h.type === 'analysis')) && (
@@ -28033,7 +28033,7 @@ ${t('export.readme_json_desc')}`;
                                  value={lessonCustomAdditions}
                                  onChange={(e) => setLessonCustomAdditions(e.target.value)}
                                 placeholder={t('lesson_plan.placeholder_additions')}
-                                className="w-full text-xs p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 outline-none resize-none h-16 bg-white"
+                                className="w-full text-xs p-2 border border-slate-400 rounded-lg focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 outline-none resize-none h-16 bg-white"
                             />
                         </div>
                     </div>
@@ -28138,7 +28138,7 @@ ${t('export.readme_json_desc')}`;
           </div>
           )}
             {!isTeacherMode && !activeSessionCode && (
-                <div className={`bg-white rounded-3xl shadow-xl shadow-indigo-500/10 border border-slate-200 mb-4 shrink-0 animate-in slide-in-from-left-4 duration-500 overflow-hidden transition-all ${isJoinPanelExpanded ? 'p-6' : 'p-2'}`}>
+                <div className={`bg-white rounded-3xl shadow-xl shadow-indigo-500/10 border border-slate-400 mb-4 shrink-0 animate-in slide-in-from-left-4 duration-500 overflow-hidden transition-all ${isJoinPanelExpanded ? 'p-6' : 'p-2'}`}>
                     {isJoinPanelExpanded ? (
                         <div className="text-center relative">
                             <button
@@ -28162,7 +28162,7 @@ ${t('export.readme_json_desc')}`;
                                         value={joinAppIdInput}
                                         onChange={(e) => setJoinAppIdInput(e.target.value)}
                                         placeholder={`Default: ${appId}`}
-                                        className="w-full text-xs border border-slate-300 rounded-xl p-2 focus:outline-none focus:border-indigo-500 text-slate-600 font-mono mb-2"
+                                        className="w-full text-xs border border-slate-400 rounded-xl p-2 focus:outline-none focus:border-indigo-500 text-slate-600 font-mono mb-2"
                                      />
                                 </div>
                                 <input aria-label={t('common.enter_join_code_input')}
@@ -28254,7 +28254,7 @@ ${t('export.readme_json_desc')}`;
                      </button>
                   </div>
                 </div>
-                <div className="bg-white rounded-3xl shadow-lg shadow-purple-500/10 border border-slate-200 overflow-hidden shrink-0 mb-4">
+                <div className="bg-white rounded-3xl shadow-lg shadow-purple-500/10 border border-slate-400 overflow-hidden shrink-0 mb-4">
                      <div className="p-3 bg-purple-50 border-b border-purple-100 flex justify-between items-center">
                           <div className="text-sm font-bold text-purple-800 flex items-center gap-2">
                               <MapIcon size={16} /> {t('adventure.title')}
@@ -28273,7 +28273,7 @@ ${t('export.readme_json_desc')}`;
                                         {t('adventure.earn')} <span className="font-bold text-purple-600">{studentProjectSettings.adventureUnlockXP} XP</span> {t('adventure.to_unlock')}
                                     </div>
                                  </div>
-                                 <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden border border-slate-200">
+                                 <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden border border-slate-400">
                                      <div
                                          className="h-full bg-purple-500 transition-all duration-1000"
                                          style={{ width: `${Math.min(100, (globalPoints / studentProjectSettings.adventureUnlockXP) * 100)}%` }}
@@ -28331,7 +28331,7 @@ ${t('export.readme_json_desc')}`;
                 </>
             )}
             {isTeacherMode && activeSidebarTab === 'history' && !isIndependentMode && (
-            <div id="ui-roster-strip" className="bg-white rounded-3xl shadow-indigo-500/10 border border-slate-200 overflow-hidden shrink-0">
+            <div id="ui-roster-strip" className="bg-white rounded-3xl shadow-indigo-500/10 border border-slate-400 overflow-hidden shrink-0">
                 <div className="p-3 bg-indigo-50 border-b border-indigo-100 flex justify-between items-center">
                     <div className="text-sm font-bold text-indigo-800 flex items-center gap-2">
                         <ClipboardList size={16} /> {t('roster.strip_title') || 'Class Groups'}
@@ -28868,7 +28868,7 @@ ${t('export.readme_json_desc')}`;
             </div>
         )}
         <div
-            className={`bg-white shadow-xl shadow-indigo-500/10 border border-slate-200 flex flex-col overflow-hidden h-full transition-all duration-200 relative ${isZenMode ? 'w-full rounded-none border-0' : (isFullscreen ? 'w-full rounded-3xl' : 'rounded-3xl')}`}
+            className={`bg-white shadow-xl shadow-indigo-500/10 border border-slate-400 flex flex-col overflow-hidden h-full transition-all duration-200 relative ${isZenMode ? 'w-full rounded-none border-0' : (isFullscreen ? 'w-full rounded-3xl' : 'rounded-3xl')}`}
             style={{ width: (window.innerWidth >= 768 && !isFullscreen && !isZenMode) ? `${100 - leftWidth}%` : '100%' }}
         >
           {isZenMode && (
@@ -28969,7 +28969,7 @@ ${t('export.readme_json_desc')}`;
                 <><ImageIcon className="text-purple-600" size={20} /> {t('visuals.title')}</>}
                 </h3>
                 {isTeacherMode && generatedContent && !isOutputHeaderCollapsed && (
-                    <div className="hidden md:flex items-center bg-white rounded-full border border-slate-200 shadow-sm px-1 py-0.5 ml-2">
+                    <div className="hidden md:flex items-center bg-white rounded-full border border-slate-400 shadow-sm px-1 py-0.5 ml-2">
                         <button
                             onClick={handleToggleIsStickerMode}
                             className={`p-1.5 rounded-full transition-all flex items-center gap-1 text-xs font-bold px-2 mr-1 ${isStickerMode ? 'bg-indigo-100 text-indigo-700 ring-2 ring-indigo-200' : 'text-slate-600 hover:bg-slate-100'}`}
@@ -29059,7 +29059,7 @@ ${t('export.readme_json_desc')}`;
                             </div>
                         </div>
                         <h3 className="text-lg font-bold text-slate-800 mb-2 animate-pulse">{generationStep}</h3>
-                        <div data-help-key="gen_loading_progress" className="w-full bg-slate-100 rounded-full h-2 mb-2 overflow-hidden border border-slate-200 relative">
+                        <div data-help-key="gen_loading_progress" className="w-full bg-slate-100 rounded-full h-2 mb-2 overflow-hidden border border-slate-400 relative">
                              {processingProgress.total > 0 ? (
                                  <div
                                      className="bg-indigo-600 h-full transition-all duration-300 ease-out"
@@ -29145,14 +29145,14 @@ ${t('export.readme_json_desc')}`;
               <div id="screenshot-target" ref={contentRef} className="animate-in fade-in slide-in-from-bottom-4 duration-500 h-full">
                 {activeView === 'analysis' && (
                     <div className="space-y-6">
-                          <div className="bg-slate-50 p-4 rounded-lg border border-slate-200 mb-6">
+                          <div className="bg-slate-50 p-4 rounded-lg border border-slate-400 mb-6">
                              <p
                                 className="text-sm text-slate-800"
                                 dangerouslySetInnerHTML={{ __html: t('analysis.header_description') }}
                              />
                           </div>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                             <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col">
+                             <div className="bg-white p-5 rounded-xl border border-slate-400 shadow-sm flex flex-col">
                                  <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-3">{t('output.analysis_complexity')}</h4>
                                  {typeof generatedContent?.data.readingLevel === 'object' ? (
                                     <>
@@ -29187,7 +29187,7 @@ ${t('export.readme_json_desc')}`;
                                      </div>
                                  )}
                              </div>
-                             <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col">
+                             <div className="bg-white p-5 rounded-xl border border-slate-400 shadow-sm flex flex-col">
                                  <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-3">{t('output.analysis_concepts')}</h4>
                                  <div className="flex flex-wrap gap-2 content-start">
                                      {generatedContent?.data.concepts.map((concept, idx) => (
@@ -29196,7 +29196,7 @@ ${t('export.readme_json_desc')}`;
                                  </div>
                              </div>
                           </div>
-                          <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm mb-6">
+                          <div className="bg-white p-5 rounded-xl border border-slate-400 shadow-sm mb-6">
                                  <div className="flex items-center gap-3 mb-3">
                                      <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider">{t('output.analysis_verification')}</h4>
                                      <span className={`px-2 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wide border ${generatedContent?.data.accuracy.rating.toLowerCase().includes('high') ? 'bg-green-100 text-green-700 border-green-200' : 'bg-yellow-100 text-yellow-700 border-yellow-200'}`}>{generatedContent?.data.accuracy.rating}</span>
@@ -29373,7 +29373,7 @@ Return only the corrected version of this exact text:`;
                                   }
                               };
                               return (
-                                  <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm mb-6">
+                                  <div className="bg-white p-5 rounded-xl border border-slate-400 shadow-sm mb-6">
                                       <div className="flex items-center gap-3 mb-3">
                                           <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider">{t('output.analysis_grammar')}</h4>
                                           {hasGrammarErrors && (
@@ -29450,7 +29450,7 @@ Return only the corrected version of this exact text:`;
                                   </div>
                               );
                           })()}
-                          <div className="bg-slate-50 p-6 rounded-xl border border-slate-200 relative group">
+                          <div className="bg-slate-50 p-6 rounded-xl border border-slate-400 relative group">
                              <div className="flex justify-between items-center mb-3">
                                 <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider">{t('output.common_original')}</h4>
                                 {isTeacherMode && (
@@ -30433,7 +30433,7 @@ Return only the corrected version of this exact text:`;
                                 </div>
                                 <div className="space-y-3 mb-6">
                                     {screenerSession.results.map((r, idx) => (
-                                        <div key={idx} className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200">
+                                        <div key={idx} className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-400">
                                             <span className="font-bold text-slate-700 capitalize">{r.activity}</span>
                                             <div className="flex items-center gap-3">
                                                 <span className="text-sm text-slate-600">{r.correct}/{r.total}</span>
@@ -30522,7 +30522,7 @@ Return only the corrected version of this exact text:`;
                                                     <div
                                                         key={c}
                                                         onClick={() => toggleLetterSelection(r, c)}
-                                                        className={`w-8 h-8 sm:w-9 sm:h-9 border border-slate-200 flex items-center justify-center font-mono text-sm sm:text-base font-bold cursor-pointer select-none transition-colors grid-cell ${highlightClass}`}
+                                                        className={`w-8 h-8 sm:w-9 sm:h-9 border border-slate-400 flex items-center justify-center font-mono text-sm sm:text-base font-bold cursor-pointer select-none transition-colors grid-cell ${highlightClass}`}
                                                     >
                                                         {char}
                                                     </div>
@@ -30557,7 +30557,7 @@ Return only the corrected version of this exact text:`;
                         </div>
                     )}
                     {isTeacherMode && (
-                    <div data-help-key="glossary_add_term" className="flex gap-2 mb-4 bg-white p-3 rounded-lg border border-slate-200 shadow-sm items-center animate-in fade-in slide-in-from-top-2">
+                    <div data-help-key="glossary_add_term" className="flex gap-2 mb-4 bg-white p-3 rounded-lg border border-slate-400 shadow-sm items-center animate-in fade-in slide-in-from-top-2">
                         <div className="bg-indigo-100 p-2 rounded-full text-indigo-600">
                             <Plus size={16} />
                         </div>
@@ -30746,7 +30746,7 @@ Return only the corrected version of this exact text:`;
                     </div>
                     )}
                     {!isMemoryGame && (
-                    <div data-help-key="glossary_terms_table" className="overflow-hidden rounded-lg border border-slate-200 shadow-sm">
+                    <div data-help-key="glossary_terms_table" className="overflow-hidden rounded-lg border border-slate-400 shadow-sm">
                       <div className="overflow-x-auto">
                         <table className="w-full text-center text-sm">
                             <thead className="bg-slate-100 text-slate-600 font-semibold">
@@ -30811,7 +30811,7 @@ Return only the corrected version of this exact text:`;
                                                     <select aria-label={t('common.selection')}
                                                         value={item.tier || ''}
                                                         onChange={(e) => handleGlossaryChange(idx, 'tier', e.target.value)}
-                                                        className="text-[11px] font-bold uppercase tracking-wider w-full border border-slate-300 rounded px-1 py-1 outline-none focus:ring-1 focus:ring-indigo-500 bg-slate-50 text-slate-600"
+                                                        className="text-[11px] font-bold uppercase tracking-wider w-full border border-slate-400 rounded px-1 py-1 outline-none focus:ring-1 focus:ring-indigo-500 bg-slate-50 text-slate-600"
                                                         data-help-key="glossary_edit_tier"
                                                     >
                                                         <option value="">{t('glossary.edit_tier_placeholder')}</option>
@@ -30847,7 +30847,7 @@ Return only the corrected version of this exact text:`;
                                                                 src={item.image}
                                                                 alt={`${item.term} icon`}
                                                                 style={{ width: `${glossaryImageSize}px`, height: `${glossaryImageSize}px` }}
-                                                                className="rounded-lg border border-slate-200 object-contain bg-white shadow-sm transition-all duration-200"
+                                                                className="rounded-lg border border-slate-400 object-contain bg-white shadow-sm transition-all duration-200"
                                                                 decoding="async"
                                                             />
                                                             <div className="absolute inset-0 bg-black/60 rounded-lg flex items-center justify-center opacity-0 group-hover/image:opacity-100 transition-opacity gap-2 backdrop-blur-[1px]">
@@ -31685,7 +31685,7 @@ Return only the corrected version of this exact text:`;
                                         <div className={`flex items-center gap-2 overflow-hidden transition-all duration-300 ease-in-out flex-wrap ${isTeacherToolbarExpanded ? 'max-w-[920px] opacity-100 ml-2' : 'max-w-0 opacity-0'}`}>
                                             <button
                                                 onClick={handleDuplicateResource}
-                                                className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-indigo-600 hover:bg-indigo-50 border border-slate-300 transition-all shadow-md whitespace-nowrap"
+                                                className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-indigo-600 hover:bg-indigo-50 border border-slate-400 transition-all shadow-md whitespace-nowrap"
                                                 title={t('simplified.tip_duplicate_btn')}
                                                 aria-label={t('simplified.tip_duplicate_btn')}
                                                 data-help-key="simplified_duplicate"
@@ -31695,7 +31695,7 @@ Return only the corrected version of this exact text:`;
                                             <button
                                                 onClick={handleCheckLevel}
                                                 disabled={isCheckingLevel}
-                                                className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-indigo-600 hover:bg-indigo-50 border border-slate-300 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                                                className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-indigo-600 hover:bg-indigo-50 border border-slate-400 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                                                 title={t('simplified.tip_check_level_btn')}
                                                 aria-label={t('simplified.tip_check_level_btn')}
                                                 data-help-key="simplified_check_level"
@@ -31716,14 +31716,14 @@ Return only the corrected version of this exact text:`;
                                             </button>
                                             <button
                                                 onClick={() => copyToClipboard(generatedContent?.data)}
-                                                className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-indigo-600 hover:bg-indigo-50 border border-slate-300 transition-all shadow-md whitespace-nowrap"
+                                                className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-indigo-600 hover:bg-indigo-50 border border-slate-400 transition-all shadow-md whitespace-nowrap"
                                                 title={t('simplified.tip_copy_btn')}
                                                 aria-label={t('simplified.tip_copy_btn')}
                                                 data-help-key="simplified_copy_text"
                                             >
                                                 <Copy size={14} /> {t('common.copy_text')}
                                             </button>
-                                            <button onClick={() => handleDownloadAudio(generatedContent?.data, `leveled-text-${gradeLevel}`, 'dl-simplified-main')} disabled={downloadingContentId === 'dl-simplified-main'} className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-indigo-600 hover:bg-indigo-50 border border-slate-300 transition-all shadow-md whitespace-nowrap" data-help-key="simplified_download_audio">{downloadingContentId === 'dl-simplified-main' ? <RefreshCw size={14} className="animate-spin"/> : <Download size={14} />}{downloadingContentId === 'dl-simplified-main' ? t('common.downloading') : t('common.download_audio')}</button>
+                                            <button onClick={() => handleDownloadAudio(generatedContent?.data, `leveled-text-${gradeLevel}`, 'dl-simplified-main')} disabled={downloadingContentId === 'dl-simplified-main'} className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-indigo-600 hover:bg-indigo-50 border border-slate-400 transition-all shadow-md whitespace-nowrap" data-help-key="simplified_download_audio">{downloadingContentId === 'dl-simplified-main' ? <RefreshCw size={14} className="animate-spin"/> : <Download size={14} />}{downloadingContentId === 'dl-simplified-main' ? t('common.downloading') : t('common.download_audio')}</button>
                                         </div>
                                     </div>
                                 )}
@@ -31766,9 +31766,9 @@ Return only the corrected version of this exact text:`;
                               {definitionData.text && (
                                   <div className="mt-3 pt-3 border-t border-slate-100">
                                       {definitionData.imageUrl ? (
-                                          <img src={definitionData.imageUrl} alt={definitionData.word} className="w-full h-32 object-contain rounded-lg bg-slate-50 border border-slate-200" />
+                                          <img src={definitionData.imageUrl} alt={definitionData.word} className="w-full h-32 object-contain rounded-lg bg-slate-50 border border-slate-400" />
                                       ) : definitionData.imageLoading ? (
-                                          <div className="flex items-center justify-center gap-2 text-xs text-indigo-500 h-20 bg-slate-50 rounded-lg border border-slate-200 border-dashed">
+                                          <div className="flex items-center justify-center gap-2 text-xs text-indigo-500 h-20 bg-slate-50 rounded-lg border border-slate-400 border-dashed">
                                               <RefreshCw size={12} className="animate-spin"/> {t('common.loading') || 'Loading picture...'}
                                           </div>
                                       ) : definitionData.imageError ? (
@@ -31841,7 +31841,7 @@ Return only the corrected version of this exact text:`;
                                                   {phonicsData.data.syllables.map((syl, i) => (
                                                       <React.Fragment key={i}>
                                                           {i > 0 && <span className="text-emerald-500 font-bold px-0.5" aria-hidden="true">•</span>}
-                                                          <span className="bg-white px-1.5 rounded border border-slate-200 text-sm font-bold text-slate-700 shadow-sm">{syl}</span>
+                                                          <span className="bg-white px-1.5 rounded border border-slate-400 text-sm font-bold text-slate-700 shadow-sm">{syl}</span>
                                                       </React.Fragment>
                                                   ))}
                                               </div>
@@ -32198,7 +32198,7 @@ Return only the corrected version of this exact text:`;
                                 const diff = diffWords(originalText, adaptedText);
                                 return (
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-full pb-8">
-                                        <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm overflow-y-auto max-h-[70vh] custom-scrollbar">
+                                        <div className="bg-white p-6 rounded-lg border border-slate-400 shadow-sm overflow-y-auto max-h-[70vh] custom-scrollbar">
                                             <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-4 border-b pb-2 sticky top-0 bg-white z-10">{t('simplified.diff_original')}</h4>
                                             <div className="text-sm text-slate-700 leading-relaxed font-serif whitespace-pre-wrap">
                                                 {diff.map((part, i) => {
@@ -32210,7 +32210,7 @@ Return only the corrected version of this exact text:`;
                                                 })}
                                             </div>
                                         </div>
-                                        <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm overflow-y-auto max-h-[70vh] custom-scrollbar">
+                                        <div className="bg-white p-6 rounded-lg border border-slate-400 shadow-sm overflow-y-auto max-h-[70vh] custom-scrollbar">
                                             <h4 className="text-xs font-bold text-indigo-500 uppercase tracking-wider mb-4 border-b pb-2 sticky top-0 bg-white z-10">{t('simplified.diff_adapted')}</h4>
                                             <div className="text-sm text-slate-800 leading-relaxed font-medium font-serif whitespace-pre-wrap">
                                                 {diff.map((part, i) => {
@@ -33099,7 +33099,7 @@ Return only the corrected version of this exact text:`;
                                         try { await updateDoc(sessionRef, { "forceStatic": !sessionData?.forceStatic }); } catch(e) { warnLog('Firestore sync failed:', e); }
                                         addToast(sessionData?.forceStatic ? t('session.interactive_unlocked') : t('session.forced_static'), "success");
                                     }}
-                                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${sessionData?.forceStatic ? 'bg-slate-800 text-white hover:bg-slate-700' : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50'}`}
+                                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${sessionData?.forceStatic ? 'bg-slate-800 text-white hover:bg-slate-700' : 'bg-white text-slate-700 border border-slate-400 hover:bg-slate-50'}`}
                                     title={t('session.toggle_interactive_title')}
                                 >
                                     {sessionData?.forceStatic ? <Lock size={12}/> : <Unlock size={12}/>}
@@ -33517,7 +33517,7 @@ Return only the corrected version of this exact text:`;
                                                     <button
                                                         aria-label={t('common.collapse')}
                                                         onClick={() => togglePresentationExplanation(i)}
-                                                        className={`text-xs font-bold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${showExplanation ? 'bg-yellow-100 text-yellow-700' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+                                                        className={`text-xs font-bold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${showExplanation ? 'bg-yellow-100 text-yellow-700' : 'bg-white border border-slate-400 text-slate-600 hover:bg-slate-50'}`}
                                                     >
                                                         {showExplanation ? <ChevronUp size={14}/> : <Info size={14}/>}
                                                         {showExplanation ? t('quiz.hide_explanation') : t('quiz.show_explanation')}
@@ -33564,7 +33564,7 @@ Return only the corrected version of this exact text:`;
                     ) : (
                         <div className="space-y-6">
                             {generatedContent?.data.questions.map((q, i) => (
-                                <div key={i} className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm relative group/question">
+                                <div key={i} className="bg-white p-6 rounded-xl border border-slate-400 shadow-sm relative group/question">
                                     <div className="flex justify-between items-start mb-4 gap-4">
                                         <div className="flex-grow flex gap-3">
                                             <span className="bg-slate-100 text-slate-600 w-6 h-6 rounded-full flex items-center justify-center text-xs shrink-0 mt-1.5">{i + 1}</span>
@@ -33736,7 +33736,7 @@ Return only the corrected version of this exact text:`;
                                 <Copy size={12} /> {t('common.copy')}
                             </button>
                         </div>
-                        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                        <div className="bg-white p-6 rounded-xl border border-slate-400 shadow-sm">
                              <div className="prose prose-sm text-slate-700 whitespace-pre-line font-serif leading-relaxed">
                                 {renderFormattedText(generatedContent?.data)}
                              </div>
@@ -33793,7 +33793,7 @@ Return only the corrected version of this exact text:`;
                         {(() => {
                             let sentenceCounter = 0;
                             return generatedContent?.data.map((faq, idx) => (
-                            <div key={idx} className="bg-white p-5 rounded-lg border border-slate-200 shadow-sm" data-help-key="faq_item">
+                            <div key={idx} className="bg-white p-5 rounded-lg border border-slate-400 shadow-sm" data-help-key="faq_item">
                                 <div className="flex items-start gap-3">
                                     <div className="bg-cyan-100 text-cyan-700 font-bold w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-1">Q</div>
                                     <div className="flex-grow space-y-2">
@@ -33960,7 +33960,7 @@ Return only the corrected version of this exact text:`;
                     ) : generatedContent?.data.mode === 'list' ? (
                         <div className="grid grid-cols-1 gap-4">
                              {generatedContent?.data.items.map((item, idx) => (
-                                 <div key={idx} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:border-indigo-200 transition-colors" data-help-key="scaffolds_item">
+                                 <div key={idx} className="bg-white p-4 rounded-xl border border-slate-400 shadow-sm hover:border-indigo-200 transition-colors" data-help-key="scaffolds_item">
                                      <div className="flex items-start gap-3">
                                          <div className="bg-rose-100 text-rose-600 font-bold px-2 py-1 rounded text-xs shrink-0 mt-1">{idx + 1}</div>
                                          <div className="w-full">
@@ -33993,7 +33993,7 @@ Return only the corrected version of this exact text:`;
                                                         value={studentResponses[generatedContent.id]?.[idx] || ''}
                                                         onChange={(e) => handleStudentInput(generatedContent.id, idx, e.target.value)}
                                                         data-help-key="scaffolds_student_input"
-                                                        className="w-full mt-2 p-3 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-rose-200 focus:border-rose-300 outline-none resize-y bg-slate-50 focus:bg-white transition-all font-sans"
+                                                        className="w-full mt-2 p-3 border border-slate-400 rounded-lg text-sm focus:ring-2 focus:ring-rose-200 focus:border-rose-300 outline-none resize-y bg-slate-50 focus:bg-white transition-all font-sans"
                                                         rows={3}
                                                         placeholder={t('scaffolds.sentence_placeholder')}
                                                     />
@@ -34007,7 +34007,7 @@ Return only the corrected version of this exact text:`;
                               ))}
                         </div>
                     ) : (
-                        <div className="bg-white p-8 rounded-xl border border-slate-200 shadow-sm" data-help-key="scaffolds_paragraph_frame">
+                        <div className="bg-white p-8 rounded-xl border border-slate-400 shadow-sm" data-help-key="scaffolds_paragraph_frame">
                             <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-4">{t('scaffolds.paragraph_frame') || 'Paragraph Frame'}</h4>
                             {isEditingScaffolds ? (
                                 <textarea
@@ -34085,7 +34085,7 @@ Return only the corrected version of this exact text:`;
                                             <button
                                                 aria-label={t('common.copy')}
                                                 onClick={() => copyToClipboard(generatedContent?.data.rubric)}
-                                                className="text-xs flex items-center gap-1 bg-white text-slate-600 hover:text-indigo-600 border border-slate-200 hover:border-indigo-200 px-2 py-1 rounded transition-colors"
+                                                className="text-xs flex items-center gap-1 bg-white text-slate-600 hover:text-indigo-600 border border-slate-400 hover:border-indigo-200 px-2 py-1 rounded transition-colors"
                                                 title={t('scaffolds.rubric_copy_tooltip')}
                                             >
                                                 <Copy size={12}/> {t('scaffolds.rubric_copy')}
@@ -34095,7 +34095,7 @@ Return only the corrected version of this exact text:`;
                                 </div>
                         </div>
                         {generatedContent?.data.rubric && (
-                            <div className={`bg-white p-4 rounded-xl border border-slate-200 relative shadow-sm transition-all ${rubricZoom ? 'text-[11px]' : ''}`}>
+                            <div className={`bg-white p-4 rounded-xl border border-slate-400 relative shadow-sm transition-all ${rubricZoom ? 'text-[11px]' : ''}`}>
                                 <style>{rubricZoom ? `
                                     .rubric-container table th, .rubric-container table td { padding: 4px !important; line-height: 1.2 !important; }
                                     .rubric-container h1, .rubric-container h2, .rubric-container h3 { font-size: 1em !important; margin: 0.5em 0 !important; }
@@ -34106,7 +34106,7 @@ Return only the corrected version of this exact text:`;
                                         aria-label={t('scaffolds.edit_rubric') || 'Edit rubric'}
                                         value={generatedContent?.data.rubric}
                                         onChange={(e) => handleScaffoldTextChange('rubric', e.target.value)}
-                                        className="w-full text-sm bg-transparent border border-slate-200 hover:border-indigo-300 focus:border-indigo-500 focus:bg-slate-50 rounded p-2 outline-none resize-y font-medium text-slate-700 transition-all font-mono"
+                                        className="w-full text-sm bg-transparent border border-slate-400 hover:border-indigo-300 focus:border-indigo-500 focus:bg-slate-50 rounded p-2 outline-none resize-y font-medium text-slate-700 transition-all font-mono"
                                         rows={getRows(generatedContent?.data.rubric)}
                                         placeholder={t('scaffolds.rubric_placeholder')}
                                     />
@@ -34200,7 +34200,7 @@ Return only the corrected version of this exact text:`;
                     </div>
                     <div className="grid grid-cols-1 gap-6">
                          {(Array.isArray(generatedContent?.data) ? generatedContent?.data : []).map((idea, idx) => (
-                             <div key={idx} className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow" data-help-key="brainstorm_card">
+                             <div key={idx} className="bg-white p-6 rounded-xl border border-slate-400 shadow-sm hover:shadow-md transition-shadow" data-help-key="brainstorm_card">
                                  {isEditingBrainstorm ? (
                                      <>
                                         <div className="flex items-center gap-2 mb-2">
@@ -34249,14 +34249,14 @@ Return only the corrected version of this exact text:`;
                                  )}
                                  <div className="border-t border-slate-100 pt-3">
                                      {idea.guide ? (
-                                         <div className="bg-slate-50 rounded-lg p-4 text-sm text-slate-700 border border-slate-200" data-help-key="brainstorm_guide">
+                                         <div className="bg-slate-50 rounded-lg p-4 text-sm text-slate-700 border border-slate-400" data-help-key="brainstorm_guide">
                                              <h5 className="font-bold text-slate-800 mb-2 flex items-center gap-2"><ListChecks size={16}/> {t('brainstorm.teacher_guide')}</h5>
                                              {isEditingBrainstorm ? (
                                                  <textarea
                                                      aria-label={t('brainstorm.edit_guide') || 'Edit teacher guide'}
                                                      value={idea.guide}
                                                      onChange={(e) => handleBrainstormChange(idx, 'guide', e.target.value)}
-                                                     className="w-full bg-white border border-slate-300 hover:border-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 rounded px-3 py-2 outline-none resize-y transition-all font-mono text-xs leading-relaxed"
+                                                     className="w-full bg-white border border-slate-400 hover:border-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 rounded px-3 py-2 outline-none resize-y transition-all font-mono text-xs leading-relaxed"
                                                      rows={Math.max(8, getRows(idea.guide))}
                                                      placeholder={t('brainstorm.placeholder_guide') || 'Step-by-step teacher guide (markdown supported)…'}
                                                      readOnly={!isTeacherMode}
@@ -34316,7 +34316,7 @@ Return only the corrected version of this exact text:`;
                                                              aria-label={t('brainstorm.edit_worksheet') || 'Edit student worksheet'}
                                                              value={idea.worksheet}
                                                              onChange={(e) => handleBrainstormChange(idx, 'worksheet', e.target.value)}
-                                                             className="w-full bg-white border border-slate-300 hover:border-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 rounded px-3 py-2 outline-none resize-y transition-all font-mono text-xs leading-relaxed"
+                                                             className="w-full bg-white border border-slate-400 hover:border-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 rounded px-3 py-2 outline-none resize-y transition-all font-mono text-xs leading-relaxed"
                                                              rows={Math.max(10, getRows(idea.worksheet))}
                                                              placeholder={t('brainstorm.placeholder_worksheet') || 'Student worksheet (markdown)…'}
                                                              readOnly={!isTeacherMode}
@@ -34460,7 +34460,7 @@ Return only the corrected version of this exact text:`;
                                     <h3 className="text-xl font-black text-indigo-900">{t('adventure.ledger_title')}</h3>
                                     <p className="text-xs text-slate-600">{t('adventure.ledger_subtitle')}</p>
                                 </div>
-                                <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 text-sm text-slate-700 leading-relaxed max-h-[60vh] overflow-y-auto custom-scrollbar whitespace-pre-line font-serif">
+                                <div className="bg-slate-50 p-4 rounded-xl border border-slate-400 text-sm text-slate-700 leading-relaxed max-h-[60vh] overflow-y-auto custom-scrollbar whitespace-pre-line font-serif">
                                     {adventureState.narrativeLedger || t('adventure.ledger_empty')}
                                 </div>
                                 <div className="mt-4 flex flex-col gap-2">
@@ -34698,7 +34698,7 @@ Return only the corrected version of this exact text:`;
                             </button>
                         </div>
                     </div>
-                    <div className="flex-grow bg-slate-100 rounded-xl border border-slate-200 shadow-inner overflow-hidden flex flex-col relative">
+                    <div className="flex-grow bg-slate-100 rounded-xl border border-slate-400 shadow-inner overflow-hidden flex flex-col relative">
                         {!adventureState.isImmersiveMode ? (
                         <div ref={adventureScrollRef} className="flex-grow overflow-y-auto p-6 space-y-6 custom-scrollbar">
                             {!adventureState.currentScene && adventureState.history.length === 0 && !adventureState.isLoading && (
@@ -34761,7 +34761,7 @@ Return only the corrected version of this exact text:`;
                                                                 data-help-key="adventure_setup_input_mode" value={adventureInputMode}
                                                                 onChange={(e) => setAdventureInputMode(e.target.value)}
                                                                 disabled={!isTeacherMode && (!studentProjectSettings.adventurePermissions?.allowModeSwitch || studentProjectSettings.adventurePermissions?.lockAllSettings)}
-                                                                className="w-full p-2 border border-slate-200 rounded-lg text-sm font-bold text-slate-700 disabled:opacity-50 disabled:cursor-not-allowed bg-slate-50 focus:bg-white outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                                                                className="w-full p-2 border border-slate-400 rounded-lg text-sm font-bold text-slate-700 disabled:opacity-50 disabled:cursor-not-allowed bg-slate-50 focus:bg-white outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
                                                             >
                                                                 <option value="choice">{t('adventure.mode_choice')}</option>
                                                                 <option value="debate">{t('adventure.mode_debate')}</option>
@@ -34777,7 +34777,7 @@ Return only the corrected version of this exact text:`;
                                                                 data-help-key="adventure_setup_difficulty" value={adventureDifficulty}
                                                                 onChange={(e) => setAdventureDifficulty(e.target.value)}
                                                                 disabled={!isTeacherMode && (!studentProjectSettings.adventurePermissions?.allowDifficultySwitch || studentProjectSettings.adventurePermissions?.lockAllSettings)}
-                                                                className="w-full p-2 border border-slate-200 rounded-lg text-sm font-bold text-slate-700 disabled:opacity-50 disabled:cursor-not-allowed bg-slate-50 focus:bg-white outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                                                                className="w-full p-2 border border-slate-400 rounded-lg text-sm font-bold text-slate-700 disabled:opacity-50 disabled:cursor-not-allowed bg-slate-50 focus:bg-white outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
                                                             >
                                                                 <option value="Story">{t('adventure.diff_story_option')}</option>
                                                                 <option value="Normal">{t('adventure.diff_normal_option')}</option>
@@ -34794,7 +34794,7 @@ Return only the corrected version of this exact text:`;
                                                                 data-help-key="adventure_setup_language" value={adventureLanguageMode}
                                                                 onChange={(e) => setAdventureLanguageMode(e.target.value)}
                                                                 disabled={!isTeacherMode && (!studentProjectSettings.adventurePermissions?.allowLanguageSwitch || studentProjectSettings.adventurePermissions?.lockAllSettings)}
-                                                                className="w-full p-2 border border-slate-200 rounded-lg text-sm font-bold text-slate-700 disabled:opacity-50 disabled:cursor-not-allowed bg-slate-50 focus:bg-white outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                                                                className="w-full p-2 border border-slate-400 rounded-lg text-sm font-bold text-slate-700 disabled:opacity-50 disabled:cursor-not-allowed bg-slate-50 focus:bg-white outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
                                                             >
                                                                 <option value="English">{t('adventure.lang_options.english_only')}</option>
                                                                 {selectedLanguages.map(lang => (
@@ -34962,7 +34962,7 @@ Return only the corrected version of this exact text:`;
                                                                     ? t('adventure.placeholder_locked')
                                                                     : t('adventure.placeholder_custom')
                                                                 }
-                                                                className="w-full p-2 border border-slate-200 rounded-lg text-sm h-28 resize-none focus:border-indigo-500 outline-none disabled:opacity-50 disabled:cursor-not-allowed bg-slate-50 focus:bg-white transition-all shadow-inner"
+                                                                className="w-full p-2 border border-slate-400 rounded-lg text-sm h-28 resize-none focus:border-indigo-500 outline-none disabled:opacity-50 disabled:cursor-not-allowed bg-slate-50 focus:bg-white transition-all shadow-inner"
                                                             />
                                                         </div>
                                                     </div>
@@ -34989,7 +34989,7 @@ Return only the corrected version of this exact text:`;
                                         ? 'bg-indigo-600 text-white rounded-br-none'
                                         : entry.type === 'feedback'
                                         ? 'bg-green-50 border border-green-200 text-green-800 italic text-xs'
-                                        : 'bg-white text-slate-800 border border-slate-200 rounded-bl-none font-serif'
+                                        : 'bg-white text-slate-800 border border-slate-400 rounded-bl-none font-serif'
                                     }`}>
                                         {entry.type === 'choice' && <span className="block text-[11px] font-bold uppercase tracking-wider opacity-70 mb-1">{t('adventure.you_chose')}</span>}
                                         {entry.type === 'feedback' && <span className="block text-[11px] font-bold uppercase tracking-wider opacity-70 mb-1 flex items-center gap-1"><Sparkles size={10}/> {t('adventure.analysis_label')}</span>}
@@ -35010,7 +35010,7 @@ Return only the corrected version of this exact text:`;
                             )}
                             {adventureState.isLoading && (
                                 <div className="flex justify-start animate-pulse">
-                                    <div className="bg-white p-4 rounded-2xl rounded-bl-none border border-slate-200 flex items-center gap-2 text-slate-600 text-sm">
+                                    <div className="bg-white p-4 rounded-2xl rounded-bl-none border border-slate-400 flex items-center gap-2 text-slate-600 text-sm">
                                         <RefreshCw size={14} className="animate-spin"/> {t('adventure.status.loading_story')}
                                     </div>
                                 </div>
@@ -35035,7 +35035,7 @@ Return only the corrected version of this exact text:`;
                                                 </div>
                                             )}
                                         </div>
-                                        <div className="mb-4 rounded-lg overflow-hidden bg-slate-100 border border-slate-200 shadow-inner relative group transition-all duration-300" style={{ minHeight: '200px' }}>
+                                        <div className="mb-4 rounded-lg overflow-hidden bg-slate-100 border border-slate-400 shadow-inner relative group transition-all duration-300" style={{ minHeight: '200px' }}>
                                             {adventureState.sceneImage ? (
                                                 <>
                                                     <img loading="lazy"
@@ -35582,7 +35582,7 @@ Return only the corrected version of this exact text:`;
                                                 </button>
                                                 <button
                                                     onClick={handleSetIsEditingOptionsToFalse}
-                                                    className="px-6 py-3 bg-white text-slate-600 font-bold rounded-xl border border-slate-200 hover:bg-slate-50 transition-all"
+                                                    className="px-6 py-3 bg-white text-slate-600 font-bold rounded-xl border border-slate-400 hover:bg-slate-50 transition-all"
                                                 >
                                                     {t('common.cancel')}
                                                 </button>
@@ -35741,7 +35741,7 @@ Return only the corrected version of this exact text:`;
                         <p className="text-sm text-purple-800"><strong>UDL Goal:</strong> Providing options for perception. Images and diagrams clarify abstract concepts and vocabulary for visual learners.<span className="block mt-1 font-semibold">Language Target: {leveledTextLanguage} {fillInTheBlank ? "(Worksheet Mode)" : ""}</span></p>
                     </div>
                     <div className="flex flex-col items-center">
-                        <div className="w-full max-w-2xl bg-slate-100 rounded-lg border border-slate-300 shadow-md p-2 mb-4 relative overflow-hidden">
+                        <div className="w-full max-w-2xl bg-slate-100 rounded-lg border border-slate-400 shadow-md p-2 mb-4 relative overflow-hidden">
                             {generatedContent?.data.visualPlan && generatedContent?.data.visualPlan.panels.length > 1 ? (
                                 <VisualPanelGrid
                                     key={generatedContent?.id || "default"}
@@ -35800,7 +35800,7 @@ Return only the corrected version of this exact text:`;
                                       aria-label={t('visuals.upload_image') || 'Upload your own image'}
                                       title={t('visuals.upload_image') || 'Upload your own image'}
                                       onClick={() => singleImageFileRef.current?.click()}
-                                      className="flex items-center gap-1 bg-white/90 backdrop-blur-sm border border-slate-200 rounded-lg px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-indigo-50 hover:border-indigo-300 hover:text-indigo-600 transition-all shadow-sm cursor-pointer"
+                                      className="flex items-center gap-1 bg-white/90 backdrop-blur-sm border border-slate-400 rounded-lg px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-indigo-50 hover:border-indigo-300 hover:text-indigo-600 transition-all shadow-sm cursor-pointer"
                                     >📷 {t('visuals.replace_image') || 'Replace'}</button>
                                     {singleImageOverride && (
                                       <button
@@ -35834,7 +35834,7 @@ Return only the corrected version of this exact text:`;
                                 </div>
                             )}
                         </div>
-                        <div className="w-full max-w-2xl bg-white p-4 rounded-lg border border-slate-200 shadow-sm mb-6" data-help-key="visuals_prompt">
+                        <div className="w-full max-w-2xl bg-white p-4 rounded-lg border border-slate-400 shadow-sm mb-6" data-help-key="visuals_prompt">
                             <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">{t('visuals.prompt_label')}</h4>
                             <p className="text-slate-700 italic bg-slate-50 p-3 rounded border border-slate-100 text-sm">"{generatedContent?.data.prompt}"</p>
                         </div>
@@ -35920,7 +35920,7 @@ Return only the corrected version of this exact text:`;
                               </div>
                           </div>
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
-                              <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col h-full">
+                              <div className="bg-white p-6 rounded-xl border border-slate-400 shadow-sm flex flex-col h-full">
                                   <div className="flex justify-between items-center mb-4">
                                       <h3 className="font-bold text-slate-800 flex items-center gap-2"><BookOpen size={18} className="text-indigo-600"/> {t('alignment.text_alignment')}</h3>
                                       <span className={`text-[11px] uppercase font-bold px-2 py-1 rounded ${report.analysis?.textAlignment?.status === 'Aligned' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
@@ -35939,7 +35939,7 @@ Return only the corrected version of this exact text:`;
                                       </div>
                                   </div>
                               </div>
-                              <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col h-full">
+                              <div className="bg-white p-6 rounded-xl border border-slate-400 shadow-sm flex flex-col h-full">
                                   <div className="flex justify-between items-center mb-4">
                                       <h3 className="font-bold text-slate-800 flex items-center gap-2">
                                           <Layout size={18} className="text-purple-600"/> Activities
@@ -35960,7 +35960,7 @@ Return only the corrected version of this exact text:`;
                                       </div>
                                   </div>
                               </div>
-                              <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col h-full">
+                              <div className="bg-white p-6 rounded-xl border border-slate-400 shadow-sm flex flex-col h-full">
                                   <div className="flex justify-between items-center mb-4">
                                       <h3 className="font-bold text-slate-800 flex items-center gap-2"><CheckSquare size={18} className="text-teal-600"/> {t('alignment.assessment')}</h3>
                                       <span className={`text-[11px] uppercase font-bold px-2 py-1 rounded ${report.analysis?.assessmentAlignment?.status === 'Aligned' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
@@ -35980,7 +35980,7 @@ Return only the corrected version of this exact text:`;
                                   </div>
                               </div>
                           </div>
-                          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm mt-6">
+                          <div className="bg-white p-6 rounded-xl border border-slate-400 shadow-sm mt-6">
                               <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2 border-b border-slate-100 pb-2"><ClipboardList size={18} className="text-blue-500"/> {t('alignment.admin_report_title')}</h3>
                               {report.gaps && report.gaps.length > 0 && report.gaps[0] !== "None" && (
                                   <div className="mb-6">
@@ -36045,14 +36045,14 @@ Return only the corrected version of this exact text:`;
                         </div>
                         </div>
                         {isTeacherMode && generatedContent?.data && (
-                            <div className="bg-white p-3 rounded-lg border border-slate-200 shadow-sm flex flex-wrap gap-2 items-center">
+                            <div className="bg-white p-3 rounded-lg border border-slate-400 shadow-sm flex flex-wrap gap-2 items-center">
                                 <Sparkles size={14} className="text-indigo-500" />
                                 <input aria-label={t('common.timeline_revise_placeholder')}
                                     type="text"
                                     value={timelineRevisionInput || ''}
                                     onChange={(e) => setTimelineRevisionInput(e.target.value)}
                                     placeholder={t('timeline.revise_placeholder')}
-                                    className="flex-grow min-w-[200px] text-sm border border-slate-200 rounded-lg px-3 py-1.5 outline-none focus:ring-2 focus:ring-indigo-300"
+                                    className="flex-grow min-w-[200px] text-sm border border-slate-400 rounded-lg px-3 py-1.5 outline-none focus:ring-2 focus:ring-indigo-300"
                                 />
                                 <button
                                     onClick={() => handleTimelineRevision()}
@@ -36118,7 +36118,7 @@ Return only the corrected version of this exact text:`;
                                                 ✨ {t('timeline.detected_label') || 'Detected'}: {TIMELINE_MODE_DEFINITIONS[generatedContent.data.mode].label}
                                             </button>
                                         ) : (
-                                            <span className="bg-slate-100 text-slate-700 border border-slate-200 px-2 py-1 rounded-full text-[11px] font-bold shadow-sm">
+                                            <span className="bg-slate-100 text-slate-700 border border-slate-400 px-2 py-1 rounded-full text-[11px] font-bold shadow-sm">
                                                 🔒 {TIMELINE_MODE_DEFINITIONS[generatedContent.data.mode].label}
                                             </span>
                                         )
@@ -36165,7 +36165,7 @@ Return only the corrected version of this exact text:`;
                                                         data-timeline-event
                                                         value={item.event}
                                                         onChange={(e) => handleTimelineChange(idx, 'event', e.target.value)}
-                                                        className="w-2/3 text-sm font-medium text-slate-800 bg-slate-50 border border-slate-200 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-indigo-300"
+                                                        className="w-2/3 text-sm font-medium text-slate-800 bg-slate-50 border border-slate-400 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-indigo-300"
                                                         placeholder={t('timeline.event_placeholder')}
                                                     />
                                                 </div>
@@ -36182,7 +36182,7 @@ Return only the corrected version of this exact text:`;
                                                             type="text"
                                                             value={item.event_en || ''}
                                                             onChange={(e) => handleTimelineChange(idx, 'event', e.target.value, true)}
-                                                            className="w-2/3 text-xs text-slate-600 bg-white border border-slate-200 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-indigo-300"
+                                                            className="w-2/3 text-xs text-slate-600 bg-white border border-slate-400 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-indigo-300"
                                                             placeholder={t('timeline.event_en_placeholder')}
                                                         />
                                                     </div>
@@ -36195,7 +36195,7 @@ Return only the corrected version of this exact text:`;
                                                             loading="lazy"
                                                             src={item.image}
                                                             alt={`${item.date || ''}: ${item.event || ''}`}
-                                                            className="w-12 h-12 object-contain rounded border border-slate-200 bg-white"
+                                                            className="w-12 h-12 object-contain rounded border border-slate-400 bg-white"
                                                         />
                                                         <button
                                                             onClick={() => handleGenerateTimelineItemImage(idx, item.event, item.date)}
@@ -36208,7 +36208,7 @@ Return only the corrected version of this exact text:`;
                                                             {isGeneratingTimelineImage[idx] ? <RefreshCw size={14} className="animate-spin" /> : <RefreshCw size={14} />}
                                                         </button>
                                                         {isEditingTimeline && (
-                                                            <div className="absolute top-full mt-1 left-0 w-44 bg-white border border-slate-200 rounded shadow-lg p-1.5 z-10 animate-in slide-in-from-top-2">
+                                                            <div className="absolute top-full mt-1 left-0 w-44 bg-white border border-slate-400 rounded shadow-lg p-1.5 z-10 animate-in slide-in-from-top-2">
                                                                 <button
                                                                     aria-label={t('timeline.visuals.remove_text_btn') || 'Remove text from image'}
                                                                     onClick={() => handleGenerateTimelineItemImage(idx, item.event, item.date, "Remove all text, labels, letters, and words from the image. Keep the illustration clean.")}
@@ -36278,7 +36278,7 @@ Return only the corrected version of this exact text:`;
                                     (Array.isArray(generatedContent?.data) ? generatedContent?.data : generatedContent?.data?.items || []).map((item, idx) => (
                                     <div key={idx} className="relative animate-in slide-in-from-bottom-2 duration-300" style={{animationDelay: `${idx * 100}ms`}}>
                                         <div className="absolute -left-[57px] sm:-left-[73px] top-1 w-3 h-3 sm:w-4 sm:h-4 rounded-full bg-indigo-600 border-4 border-indigo-100 box-content"></div>
-                                        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow flex gap-3 items-start">
+                                        <div className="bg-white p-4 rounded-xl border border-slate-400 shadow-sm hover:shadow-md transition-shadow flex gap-3 items-start">
                                             {item.image && (
                                                 <img
                                                     loading="lazy"
@@ -36486,11 +36486,11 @@ Return only the corrected version of this exact text:`;
                                                     const isEditingItem = csEdit && csEdit.kind === 'item' && csEdit.id === item.id;
                                                     const isBusy = csBusyId === item.id;
                                                     return (
-                                                        <div key={item.id} data-help-key="concept_sort_item" className="flex items-center gap-2 bg-white p-2 rounded-lg border border-slate-200 hover:border-slate-300 transition-colors">
+                                                        <div key={item.id} data-help-key="concept_sort_item" className="flex items-center gap-2 bg-white p-2 rounded-lg border border-slate-400 hover:border-slate-300 transition-colors">
                                                             {item.image ? (
                                                                 <img src={item.image} alt="" className="w-8 h-8 object-contain rounded shrink-0 bg-white border border-slate-100" loading="lazy" />
                                                             ) : (
-                                                                <div className="w-8 h-8 rounded bg-slate-100 border border-slate-200 shrink-0 flex items-center justify-center text-slate-400 text-[10px]" title="No image">—</div>
+                                                                <div className="w-8 h-8 rounded bg-slate-100 border border-slate-400 shrink-0 flex items-center justify-center text-slate-400 text-[10px]" title="No image">—</div>
                                                             )}
                                                             {isEditingItem ? (
                                                                 <input
@@ -36520,7 +36520,7 @@ Return only the corrected version of this exact text:`;
                                                             <select
                                                                 value={item.categoryId}
                                                                 onChange={(e) => csMoveItem(item.id, e.target.value)}
-                                                                className="text-[11px] bg-white border border-slate-200 rounded px-1.5 py-1 text-slate-600 hover:border-slate-300 max-w-[120px]"
+                                                                className="text-[11px] bg-white border border-slate-400 rounded px-1.5 py-1 text-slate-600 hover:border-slate-300 max-w-[120px]"
                                                                 title="Move to category"
                                                                 aria-label="Move item to a different category"
                                                                 disabled={isBusy}
@@ -36581,7 +36581,7 @@ Return only the corrected version of this exact text:`;
                                                         </button>
                                                         <button
                                                             onClick={() => { setCsAddingCatId(null); setCsAddingText(''); }}
-                                                            className="px-2 py-1 bg-white text-slate-600 rounded text-[11px] font-bold border border-slate-200 hover:bg-slate-50"
+                                                            className="px-2 py-1 bg-white text-slate-600 rounded text-[11px] font-bold border border-slate-400 hover:bg-slate-50"
                                                         >
                                                             Cancel
                                                         </button>
@@ -36692,7 +36692,7 @@ Return only the corrected version of this exact text:`;
                             </div>
                         </div>
                         {generatedContent?.data.graphData && (
-                            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm animate-in fade-in slide-in-from-bottom-2">
+                            <div className="bg-white p-6 rounded-xl border border-slate-400 shadow-sm animate-in fade-in slide-in-from-bottom-2">
                                 <h4 className="text-xs font-black text-purple-600 uppercase tracking-widest mb-4 flex items-center gap-2">
                                     <ImageIcon size={14}/> {t('math.display.visual_header')}
                                 </h4>
@@ -36862,7 +36862,7 @@ Return only the corrected version of this exact text:`;
                                                     </div>
                                                     <textarea
                                                         aria-label={t('math.display.student_work') || `Show your work for problem ${pIdx + 1}`}
-                                                        className="w-full p-3 pl-10 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300 outline-none resize-y bg-slate-50/50 focus:bg-white transition-all font-serif text-lg leading-relaxed text-slate-700 placeholder:text-slate-600 min-h-[120px]"
+                                                        className="w-full p-3 pl-10 border border-slate-400 rounded-xl focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300 outline-none resize-y bg-slate-50/50 focus:bg-white transition-all font-serif text-lg leading-relaxed text-slate-700 placeholder:text-slate-600 min-h-[120px]"
                                                         placeholder={t('math.display.placeholder_work')}
                                                         value={studentResponses[generatedContent.id]?.[pIdx] || ''}
                                                         onChange={(e) => handleStudentInput(generatedContent.id, pIdx, e.target.value)}
@@ -36961,7 +36961,7 @@ Return only the corrected version of this exact text:`;
                                             </div>
                                         </div>
                                     ) : (
-                                        <div className="ml-12 p-3 bg-slate-50 border border-slate-200 rounded-lg text-center text-sm text-slate-600 italic flex items-center justify-center gap-2 mt-4">
+                                        <div className="ml-12 p-3 bg-slate-50 border border-slate-400 rounded-lg text-center text-sm text-slate-600 italic flex items-center justify-center gap-2 mt-4">
                                             {isIndependentMode ? (
                                                 <button
                                                     aria-label={t('common.show_math_answers')}
@@ -36984,7 +36984,7 @@ Return only the corrected version of this exact text:`;
                                             </div>
                                             <textarea
                                                 aria-label={t('math.display.student_work') || `Show your work for problem ${pIdx + 1}`}
-                                                className="w-full p-3 pl-10 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300 outline-none resize-y bg-slate-50/50 focus:bg-white transition-all font-serif text-lg leading-relaxed text-slate-700 placeholder:text-slate-600 min-h-[120px]"
+                                                className="w-full p-3 pl-10 border border-slate-400 rounded-xl focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300 outline-none resize-y bg-slate-50/50 focus:bg-white transition-all font-serif text-lg leading-relaxed text-slate-700 placeholder:text-slate-600 min-h-[120px]"
                                                 placeholder={t('math.display.placeholder_work') || 'Show your work here... Type your answer and explain your thinking.'}
                                                 value={studentResponses[generatedContent.id]?.[pIdx] || ''}
                                                 onChange={(e) => handleStudentInput(generatedContent.id, pIdx, e.target.value)}
@@ -37125,12 +37125,12 @@ Return only the corrected version of this exact text:`;
                                                                         <div className="flex-1 min-w-0">
                                                                             <p className="text-sm text-slate-700 font-medium leading-relaxed">{step.explanation}</p>
                                                                             {step.latex && (
-                                                                                <div className="mt-1.5 px-3 py-1.5 bg-slate-50 rounded-md border border-slate-200 text-xs text-indigo-700 overflow-x-auto">
+                                                                                <div className="mt-1.5 px-3 py-1.5 bg-slate-50 rounded-md border border-slate-400 text-xs text-indigo-700 overflow-x-auto">
                                                                                     <MathSymbol text={step.latex} />
                                                                                 </div>
                                                                             )}
                                                                             {step.expression && !step.latex && (
-                                                                                <div className="mt-1.5 px-3 py-1.5 bg-slate-50 rounded-md border border-slate-200 font-mono text-xs text-indigo-700">
+                                                                                <div className="mt-1.5 px-3 py-1.5 bg-slate-50 rounded-md border border-slate-400 font-mono text-xs text-indigo-700">
                                                                                     <MathSymbol text={step.expression} />
                                                                                 </div>
                                                                             )}
@@ -37404,7 +37404,7 @@ Return only the corrected version of this exact text:`;
                                          {Array.isArray(generatedContent?.data.extensions) ? (
                                              <div className="grid grid-cols-1 gap-4">
                                                  {generatedContent?.data.extensions.map((ext, idx) => (
-                                                     <div key={idx} className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                                                     <div key={idx} className="bg-slate-50 p-4 rounded-xl border border-slate-400">
                                                          <h5 className="font-bold text-indigo-900 mb-2 text-sm">
                                                              {isEditingLessonPlan && typeof ext !== 'string' ? (
                                                                 <input aria-label={t('common.enter_typeof')}
@@ -37435,7 +37435,7 @@ Return only the corrected version of this exact text:`;
                                                          {typeof ext !== 'string' && (
                                                          <div className="border-t border-slate-200 pt-3">
                                                              {ext.guide ? (
-                                                                 <div className="bg-white rounded-lg p-4 text-sm text-slate-700 border border-slate-200 shadow-sm">
+                                                                 <div className="bg-white rounded-lg p-4 text-sm text-slate-700 border border-slate-400 shadow-sm">
                                                                      <h6 className="font-bold text-slate-800 mb-2 flex items-center gap-2 text-xs uppercase tracking-wider">
                                                                         <ListChecks size={14}/> {t('lesson_headers.teacher_guide_header')}
                                                                      </h6>
@@ -37444,7 +37444,7 @@ Return only the corrected version of this exact text:`;
                                                                              aria-label={t('lesson_plan.edit_teacher_guide') || `Edit extension ${idx + 1} teacher guide`}
                                                                              value={typeof ext.guide === 'string' ? ext.guide : (ext.guide?.en || '')}
                                                                              onChange={(e) => handleLessonPlanChange('extensions', { ...ext, guide: e.target.value }, idx)}
-                                                                             className="w-full bg-slate-50 border border-slate-200 rounded p-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-y"
+                                                                             className="w-full bg-slate-50 border border-slate-400 rounded p-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-y"
                                                                              rows={6}
                                                                          />
                                                                      ) : (
@@ -37858,7 +37858,7 @@ Return only the corrected version of this exact text:`;
                                                 <div className="flex items-center gap-1">
                                                     {[15, 30, 45, 60].map(m => (
                                                         <button key={m} onClick={() => setDbq('_dbqTimerEnd', Date.now() + m * 60 * 1000)}
-                                                            className="px-2 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-[11px] font-bold hover:bg-indigo-100 hover:text-indigo-700 transition-all border border-slate-200"
+                                                            className="px-2 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-[11px] font-bold hover:bg-indigo-100 hover:text-indigo-700 transition-all border border-slate-400"
                                                             aria-label={`Start ${m} minute timer`}>⏱️ {m}m</button>
                                                     ))}
                                                 </div>
@@ -38025,7 +38025,7 @@ Return only the corrected version of this exact text:`;
                                                     <span className="text-xs bg-yellow-200 px-2 py-0.5 rounded font-mono shrink-0">"{ann.text.substring(0, 40)}{ann.text.length > 40 ? '...' : ''}"</span>
                                                     <input type="text" placeholder="Add note..." value={ann.note || ''}
                                                         onChange={(e) => { const u = [...(annotations[activeDoc.id] || [])]; u[ai] = { ...u[ai], note: e.target.value }; setDbq('_annotations', { ...annotations, [activeDoc.id]: u }); }}
-                                                        className="flex-1 text-xs border border-slate-200 rounded px-2 py-1 focus:ring-2 focus:ring-yellow-400 outline-none" aria-label={`Note for annotation ${ai + 1}`} />
+                                                        className="flex-1 text-xs border border-slate-400 rounded px-2 py-1 focus:ring-2 focus:ring-yellow-400 outline-none" aria-label={`Note for annotation ${ai + 1}`} />
                                                     <button onClick={() => { const u = (annotations[activeDoc.id] || []).filter((_, i) => i !== ai); setDbq('_annotations', { ...annotations, [activeDoc.id]: u }); }}
                                                         className="text-red-400 hover:text-red-600 text-xs shrink-0" aria-label="Remove annotation">✕</button>
                                                 </div>
@@ -38325,17 +38325,17 @@ Rules:
                                     )) : (
                                         <div className="overflow-x-auto">
                                             <table className="w-full text-xs border-collapse"><thead><tr>
-                                                <th className="border border-slate-200 p-2 bg-slate-50" scope="col">Document</th>
-                                                <th className="border border-slate-200 p-2 bg-slate-50" scope="col">Key Claim</th>
-                                                <th className="border border-slate-200 p-2 bg-slate-50" scope="col">Agrees With</th>
-                                                <th className="border border-slate-200 p-2 bg-slate-50" scope="col">Disagrees With</th>
+                                                <th className="border border-slate-400 p-2 bg-slate-50" scope="col">Document</th>
+                                                <th className="border border-slate-400 p-2 bg-slate-50" scope="col">Key Claim</th>
+                                                <th className="border border-slate-400 p-2 bg-slate-50" scope="col">Agrees With</th>
+                                                <th className="border border-slate-400 p-2 bg-slate-50" scope="col">Disagrees With</th>
                                             </tr></thead><tbody>
                                                 {docs.map(doc => (
                                                     <tr key={doc.id}>
-                                                        <td className="border border-slate-200 p-2 font-bold">Doc {doc.id}</td>
-                                                        <td className="border border-slate-200 p-1"><input type="text" value={r[`corrob-claim-${doc.id}`] || ''} onChange={(e) => setDbq(`corrob-claim-${doc.id}`, e.target.value)} className="w-full text-xs p-1 border-0 outline-none focus:ring-1 focus:ring-emerald-300" placeholder="Main claim..." aria-label={`Key claim from Document ${doc.id}`} /></td>
-                                                        <td className="border border-slate-200 p-1"><input type="text" value={r[`corrob-agree-${doc.id}`] || ''} onChange={(e) => setDbq(`corrob-agree-${doc.id}`, e.target.value)} className="w-full text-xs p-1 border-0 outline-none focus:ring-1 focus:ring-green-300" placeholder="Doc IDs..." aria-label={`Documents agreeing with Document ${doc.id}`} /></td>
-                                                        <td className="border border-slate-200 p-1"><input type="text" value={r[`corrob-disagree-${doc.id}`] || ''} onChange={(e) => setDbq(`corrob-disagree-${doc.id}`, e.target.value)} className="w-full text-xs p-1 border-0 outline-none focus:ring-1 focus:ring-red-300" placeholder="Doc IDs..." aria-label={`Documents disagreeing with Document ${doc.id}`} /></td>
+                                                        <td className="border border-slate-400 p-2 font-bold">Doc {doc.id}</td>
+                                                        <td className="border border-slate-400 p-1"><input type="text" value={r[`corrob-claim-${doc.id}`] || ''} onChange={(e) => setDbq(`corrob-claim-${doc.id}`, e.target.value)} className="w-full text-xs p-1 border-0 outline-none focus:ring-1 focus:ring-emerald-300" placeholder="Main claim..." aria-label={`Key claim from Document ${doc.id}`} /></td>
+                                                        <td className="border border-slate-400 p-1"><input type="text" value={r[`corrob-agree-${doc.id}`] || ''} onChange={(e) => setDbq(`corrob-agree-${doc.id}`, e.target.value)} className="w-full text-xs p-1 border-0 outline-none focus:ring-1 focus:ring-green-300" placeholder="Doc IDs..." aria-label={`Documents agreeing with Document ${doc.id}`} /></td>
+                                                        <td className="border border-slate-400 p-1"><input type="text" value={r[`corrob-disagree-${doc.id}`] || ''} onChange={(e) => setDbq(`corrob-disagree-${doc.id}`, e.target.value)} className="w-full text-xs p-1 border-0 outline-none focus:ring-1 focus:ring-red-300" placeholder="Doc IDs..." aria-label={`Documents disagreeing with Document ${doc.id}`} /></td>
                                                     </tr>
                                                 ))}
                                             </tbody></table>
@@ -38423,7 +38423,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                                         </div>
                                     )}
                                 </div>
-                                <div className="bg-slate-50 rounded-xl border border-slate-200 p-4">
+                                <div className="bg-slate-50 rounded-xl border border-slate-400 p-4">
                                     <h4 className="text-xs font-bold text-slate-600 uppercase mb-2">📎 Evidence Tracker</h4>
                                     <div className="flex gap-2 flex-wrap">
                                         {docs.map(doc => {
@@ -38519,7 +38519,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                                             <h4 className="text-xs font-bold text-slate-600 uppercase mb-2">Your Self-Assessment</h4>
                                             <div className="flex gap-3 flex-wrap">
                                                 {Object.entries(selfScores).map(([criteria, score]) => (
-                                                    <div key={criteria} className="bg-slate-50 rounded-lg px-3 py-2 border border-slate-200">
+                                                    <div key={criteria} className="bg-slate-50 rounded-lg px-3 py-2 border border-slate-400">
                                                         <div className="text-[11px] font-bold text-slate-600">{criteria}</div>
                                                         <div className="text-lg font-black text-indigo-700">{score}/4</div>
                                                     </div>
@@ -38791,7 +38791,6 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                    };
                    setGeneratedContent(wordSoundsResource);
                    setHistory(prev => [wordSoundsResource, ...prev]);
-                   prevWsPreloadedWordsLengthRef.current = 0;
                    setWsPreloadedWords(words);
                    if (sequence && sequence.length > 0) setWsActivitySequence(sequence);
                    const initialActivity = (sequence && sequence.length > 0) ? sequence[0] : 'counting';
@@ -39206,7 +39205,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                                 <select aria-label={t('common.selection')}
                                     value={fluencyTimeLimit}
                                     onChange={(e) => { setFluencyTimeLimit(parseInt(e.target.value)); setFluencyTimeRemaining(parseInt(e.target.value)); }}
-                                    className="text-xs font-bold border border-slate-200 rounded-lg px-2 py-1 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-300"
+                                    className="text-xs font-bold border border-slate-400 rounded-lg px-2 py-1 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-300"
                                 >
                                     <option value={0}>{t('fluency.time_limit_none')}</option>
                                     <option value={30}>30 sec</option>
@@ -39218,7 +39217,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                                     <select aria-label={t('common.timer_display')}
                                         value={fluencyTimerVisibility}
                                         onChange={(e) => setFluencyTimerVisibility(e.target.value)}
-                                        className="text-xs font-bold border border-slate-200 rounded-lg px-2 py-1 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-300 ml-1"
+                                        className="text-xs font-bold border border-slate-400 rounded-lg px-2 py-1 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-300 ml-1"
                                     >
                                         <option value="visible">{t('math.timer_visible')}</option>
                                         <option value="hidden">{t('math.timer_hidden')}</option>
@@ -39247,7 +39246,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                                 const readingLevelLabels = { independent: t('fluency.independent'), instructional: t('fluency.instructional'), frustrational: t('fluency.frustrational') };
                                 return (<>
                             <div className="flex justify-center mb-4 gap-4 flex-wrap">
-                                <div className="bg-white p-6 rounded-2xl shadow-lg border border-slate-200 text-center relative overflow-hidden">
+                                <div className="bg-white p-6 rounded-2xl shadow-lg border border-slate-400 text-center relative overflow-hidden">
                                     <div className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">{t('fluency.accuracy_score')}</div>
                                     <div className={`text-6xl font-black ${fluencyResult.accuracy >= 90 ? 'text-green-500' : fluencyResult.accuracy >= 70 ? 'text-yellow-500' : 'text-red-500'}`}>
                                         {fluencyResult.accuracy}%
@@ -39256,7 +39255,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                                         {readingLevelLabels[rrMetrics.readingLevel]}
                                     </div>
                                 </div>
-                                <div className="bg-white p-6 rounded-2xl shadow-lg border border-slate-200 text-center relative overflow-hidden animate-in zoom-in duration-300 delay-100">
+                                <div className="bg-white p-6 rounded-2xl shadow-lg border border-slate-400 text-center relative overflow-hidden animate-in zoom-in duration-300 delay-100">
                                     <div className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">{t('fluency.rate_label')}</div>
                                     <div className="text-6xl font-black text-indigo-600">
                                         {fluencyResult.wcpm}
@@ -39269,11 +39268,11 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                             </div>
                             <div className="flex justify-center gap-3 mb-4 items-center">
                                 <label className="text-xs font-bold text-slate-600 uppercase">{t('fluency.benchmark_title')}</label>
-                                <select aria-label={t('common.grade')} value={fluencyBenchmarkGrade} onChange={(e) => setFluencyBenchmarkGrade(e.target.value)} className="text-xs font-bold border border-slate-200 rounded-lg px-2 py-1 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-300">
+                                <select aria-label={t('common.grade')} value={fluencyBenchmarkGrade} onChange={(e) => setFluencyBenchmarkGrade(e.target.value)} className="text-xs font-bold border border-slate-400 rounded-lg px-2 py-1 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-300">
                                     {Object.keys(FLUENCY_BENCHMARKS).map(g => (<option key={g} value={g}>{t('fluency.grade_select')} {g}</option>))}
                                     <option value="custom">{t('fluency.custom_norms') || 'Custom (Manual)'}</option>
                                 </select>
-                                <select aria-label={t('common.season')} value={fluencyBenchmarkSeason} onChange={(e) => setFluencyBenchmarkSeason(e.target.value)} className="text-xs font-bold border border-slate-200 rounded-lg px-2 py-1 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-300">
+                                <select aria-label={t('common.season')} value={fluencyBenchmarkSeason} onChange={(e) => setFluencyBenchmarkSeason(e.target.value)} className="text-xs font-bold border border-slate-400 rounded-lg px-2 py-1 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-300">
                                     <option value="fall">{t('fluency.season_fall')}</option>
                                     <option value="winter">{t('fluency.season_winter')}</option>
                                     <option value="spring">{t('fluency.season_spring')}</option>
@@ -39291,7 +39290,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                                                 max="300"
                                                 value={fluencyCustomNorms[s] || ''}
                                                 onChange={(e) => setFluencyCustomNorms(prev => ({ ...prev, [s]: parseInt(e.target.value) || 0 }))}
-                                                className="w-16 text-center text-xs font-bold border border-slate-200 rounded-lg px-1 py-1 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                                                className="w-16 text-center text-xs font-bold border border-slate-400 rounded-lg px-1 py-1 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-300"
                                                 placeholder="0"
                                                 aria-label={`${s} target WCPM`}
                                             />
@@ -39467,7 +39466,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                     ) : (
                         <div className="max-w-2xl">
                              {fluencyTranscript && (
-                                <div className="mb-8 p-4 bg-white rounded-xl border border-slate-200 shadow-sm text-sm text-slate-600 italic">
+                                <div className="mb-8 p-4 bg-white rounded-xl border border-slate-400 shadow-sm text-sm text-slate-600 italic">
                                     <span className="font-bold uppercase text-xs text-rose-400 block mb-1">{t('fluency.hearing_label')}</span>
                                     "{fluencyTranscript}"
                                 </div>
@@ -39679,14 +39678,14 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
             <div className="flex-1 overflow-y-auto p-4 bg-slate-50 space-y-3 custom-scrollbar" ref={socraticScrollRef}>
                 {socraticMessages.map((msg, i) => (
                     <div key={i} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
-                        <div className={`max-w-[90%] p-2.5 rounded-xl text-xs shadow-sm leading-relaxed ${msg.role === 'user' ? 'bg-teal-700 text-white rounded-br-none' : 'bg-white text-slate-700 border border-slate-200 rounded-bl-none'}`}>
+                        <div className={`max-w-[90%] p-2.5 rounded-xl text-xs shadow-sm leading-relaxed ${msg.role === 'user' ? 'bg-teal-700 text-white rounded-br-none' : 'bg-white text-slate-700 border border-slate-400 rounded-bl-none'}`}>
                             {msg.role === 'user' ? msg.text : renderFormattedText(msg.text)}
                         </div>
                     </div>
                 ))}
                 {isSocraticThinking && (
                     <div className="flex items-start">
-                        <div className="bg-white p-2 rounded-xl border border-slate-200 rounded-bl-none text-xs text-slate-600 italic flex items-center gap-1 shadow-sm">
+                        <div className="bg-white p-2 rounded-xl border border-slate-400 rounded-bl-none text-xs text-slate-600 italic flex items-center gap-1 shadow-sm">
                             <RefreshCw size={10} className="animate-spin"/> {t('socratic.thinking')}
                         </div>
                     </div>
@@ -39721,7 +39720,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                     onChange={(e) => setSocraticInput(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSocraticSubmit()}
                     placeholder={isSocraticDictating ? t('socratic.listening') : t('socratic.placeholder')}
-                    className="flex-grow text-xs p-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-200 focus:border-teal-400 outline-none transition-all"
+                    className="flex-grow text-xs p-2 border border-slate-400 rounded-lg focus:ring-2 focus:ring-teal-200 focus:border-teal-400 outline-none transition-all"
                     autoFocus
                     disabled={isSocraticThinking}
                 />
@@ -39785,7 +39784,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
           {isFabExpanded && (
               <div
                 data-help-toggle="true"
-                className="flex flex-col gap-3 p-3 bg-white/90 backdrop-blur-md border border-slate-200 shadow-2xl rounded-full animate-in slide-in-from-bottom-4 fade-in duration-200 max-h-[75vh] overflow-y-auto custom-scrollbar"
+                className="flex flex-col gap-3 p-3 bg-white/90 backdrop-blur-md border border-slate-400 shadow-2xl rounded-full animate-in slide-in-from-bottom-4 fade-in duration-200 max-h-[75vh] overflow-y-auto custom-scrollbar"
               >
                   {!isTeacherMode && studentProjectSettings.allowSocraticTutor && (
                       <button
@@ -41734,7 +41733,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                 disabled={pdfFixLoading || pdfAutoContinueRunning}
                 aria-label="Close audit modal"
                 title={(pdfFixLoading || pdfAutoContinueRunning) ? 'Wait for remediation to finish or click Stop first' : 'Close (Esc)'}
-                className="pointer-events-auto w-9 h-9 bg-white hover:bg-red-50 text-slate-600 hover:text-red-600 rounded-full shadow-md border border-slate-200 flex items-center justify-center transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-slate-600"
+                className="pointer-events-auto w-9 h-9 bg-white hover:bg-red-50 text-slate-600 hover:text-red-600 rounded-full shadow-md border border-slate-400 flex items-center justify-center transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-slate-600"
               >
                 <X size={18} aria-hidden="true"/>
               </button>
@@ -41759,7 +41758,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                       <label className="text-[11px] font-bold text-slate-600 uppercase" htmlFor="web-audit-url">Website URL</label>
                       <div className="flex gap-2 mt-1">
                         <input type="url" id="web-audit-url" placeholder="https://example.com" aria-label="Website URL to audit"
-                          className="flex-1 text-sm border border-slate-300 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-indigo-300 outline-none" />
+                          className="flex-1 text-sm border border-slate-400 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-indigo-300 outline-none" />
                         <button onClick={async () => {
                           const url = document.getElementById('web-audit-url')?.value?.trim();
                           if (!url) { addToast('Enter a URL', 'info'); return; }
@@ -41789,7 +41788,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
                     <div>
                       <label className="text-[11px] font-bold text-slate-600 uppercase" htmlFor="web-audit-html">HTML Source</label>
                       <textarea id="web-audit-html" rows={8} placeholder="Paste HTML source code here, or use Fetch above..."
-                        className="w-full text-xs border border-slate-300 rounded-lg px-3 py-2 mt-1 font-mono focus:ring-2 focus:ring-indigo-300 outline-none resize-y"
+                        className="w-full text-xs border border-slate-400 rounded-lg px-3 py-2 mt-1 font-mono focus:ring-2 focus:ring-indigo-300 outline-none resize-y"
                         aria-label="HTML source code to audit" />
                     </div>
 
@@ -42138,7 +42137,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                 <p className="text-sm text-slate-600 mb-1">{(pdfAuditResult.fileSize / (1024*1024)).toFixed(1)} MB</p>
                 <p className="text-sm text-slate-600 mb-4">Choose how to process this PDF:</p>
 
-                <details open className="text-left mb-4 bg-slate-50 rounded-xl p-3 border border-slate-200">
+                <details open className="text-left mb-4 bg-slate-50 rounded-xl p-3 border border-slate-400">
                   <summary className="text-[11px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:text-indigo-600">⚙️ Pipeline Settings</summary>
                   <div className="mt-2 space-y-2">
                     <div>
@@ -42180,7 +42179,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   </div>
                 </details>
                 {/* Style & Branding for remediation output */}
-                <details className="bg-slate-50 rounded-lg border border-slate-200 overflow-hidden mb-3">
+                <details className="bg-slate-50 rounded-lg border border-slate-400 overflow-hidden mb-3">
                   <summary className="px-3 py-2 text-[11px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:bg-slate-100 transition-colors">
                     ✨ Output Style & Branding (optional)
                   </summary>
@@ -42298,15 +42297,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             )}
                             <details className="mt-2">
                               <summary className="text-[11px] font-bold text-indigo-500 cursor-pointer hover:text-indigo-700">+ Create Custom Style</summary>
-                              <div className="mt-2 bg-slate-50 rounded-lg p-3 border border-slate-200 space-y-2">
+                              <div className="mt-2 bg-slate-50 rounded-lg p-3 border border-slate-400 space-y-2">
                                 <div className="grid grid-cols-2 gap-2">
                                   <div>
                                     <label htmlFor="custom-style-name" className="text-[11px] text-slate-600 font-bold">Style Name</label>
-                                    <input id="custom-style-name" type="text" placeholder="My Style" aria-label="Custom style name" className="w-full px-2 py-1 text-[11px] border border-slate-300 rounded" />
+                                    <input id="custom-style-name" type="text" placeholder="My Style" aria-label="Custom style name" className="w-full px-2 py-1 text-[11px] border border-slate-400 rounded" />
                                   </div>
                                   <div>
                                     <label htmlFor="custom-style-font" className="text-[11px] text-slate-600 font-bold">Font</label>
-                                    <select id="custom-style-font" aria-label="Font family" className="w-full px-2 py-1 text-[11px] border border-slate-300 rounded">
+                                    <select id="custom-style-font" aria-label="Font family" className="w-full px-2 py-1 text-[11px] border border-slate-400 rounded">
                                       <option value="'Inter', system-ui, sans-serif">Inter (Clean)</option>
                                       <option value="'Georgia', serif">Georgia (Serif)</option>
                                       <option value="'Atkinson Hyperlegible', sans-serif">Atkinson (A11y)</option>
@@ -42320,15 +42319,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 <div className="grid grid-cols-3 gap-2">
                                   <div>
                                     <label htmlFor="custom-style-heading" className="text-[11px] text-slate-600 font-bold">Heading Color</label>
-                                    <input id="custom-style-heading" type="color" defaultValue="#1e3a5f" aria-label="Heading color" className="w-full h-6 rounded border border-slate-300 cursor-pointer" />
+                                    <input id="custom-style-heading" type="color" defaultValue="#1e3a5f" aria-label="Heading color" className="w-full h-6 rounded border border-slate-400 cursor-pointer" />
                                   </div>
                                   <div>
                                     <label htmlFor="custom-style-accent" className="text-[11px] text-slate-600 font-bold">Accent Color</label>
-                                    <input id="custom-style-accent" type="color" defaultValue="#2563eb" aria-label="Accent color" className="w-full h-6 rounded border border-slate-300 cursor-pointer" />
+                                    <input id="custom-style-accent" type="color" defaultValue="#2563eb" aria-label="Accent color" className="w-full h-6 rounded border border-slate-400 cursor-pointer" />
                                   </div>
                                   <div>
                                     <label htmlFor="custom-style-bg" className="text-[11px] text-slate-600 font-bold">Background</label>
-                                    <input id="custom-style-bg" type="color" defaultValue="#ffffff" aria-label="Background color" className="w-full h-6 rounded border border-slate-300 cursor-pointer" />
+                                    <input id="custom-style-bg" type="color" defaultValue="#ffffff" aria-label="Background color" className="w-full h-6 rounded border border-slate-400 cursor-pointer" />
                                   </div>
                                 </div>
                                 <button onClick={() => {
@@ -42365,7 +42364,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   <button onClick={async () => { setPdfAuditResult(null); addToast('Auditing & remediating PDF...', 'info'); await runPdfAccessibilityAudit(pendingPdfBase64); setTimeout(() => { const r = pdfFixResultRef.current; const needsLoop = pdfAutoContinue && r && r.axeAudit && r.axeAudit.totalViolations > 0 && (r.afterScore || 0) < pdfTargetScore; if (needsLoop) { runAutoFixLoop(3); } else if (pdfAutoSaveProject) { saveProjectToFile(true); } }, 150); }} className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg flex items-center gap-2">
                     ♿ Audit & Remediate
                   </button>
-                  <button onClick={() => { setPdfAuditResult(null); proceedWithPdfTransform(); }} className="px-6 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all shadow-sm flex items-center gap-2 border border-slate-200">
+                  <button onClick={() => { setPdfAuditResult(null); proceedWithPdfTransform(); }} className="px-6 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all shadow-sm flex items-center gap-2 border border-slate-400">
                     <Sparkles size={16} /> Skip to Text Extraction
                   </button>
                 </div>
@@ -42401,19 +42400,19 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         <span className="text-[10px] text-slate-500">based on the audit above, no extra API calls</span>
                       </div>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-2.5">
-                        <div className="bg-white border border-slate-200 rounded-lg px-2 py-1.5">
+                        <div className="bg-white border border-slate-400 rounded-lg px-2 py-1.5">
                           <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Pages</div>
                           <div className="text-sm font-black text-slate-800">{pc}</div>
                         </div>
-                        <div className="bg-white border border-slate-200 rounded-lg px-2 py-1.5">
+                        <div className="bg-white border border-slate-400 rounded-lg px-2 py-1.5">
                           <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Source type</div>
                           <div className={`text-sm font-black ${isScanned ? 'text-amber-700' : 'text-emerald-700'}`}>{isScanned ? 'Scanned' : 'Text layer'}</div>
                         </div>
-                        <div className="bg-white border border-slate-200 rounded-lg px-2 py-1.5">
+                        <div className="bg-white border border-slate-400 rounded-lg px-2 py-1.5">
                           <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Images</div>
                           <div className="text-sm font-black text-slate-800">{hasImg ? 'Yes' : '—'}</div>
                         </div>
-                        <div className="bg-white border border-slate-200 rounded-lg px-2 py-1.5">
+                        <div className="bg-white border border-slate-400 rounded-lg px-2 py-1.5">
                           <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Tables</div>
                           <div className="text-sm font-black text-slate-800">{hasTbl ? 'Yes' : '—'}</div>
                         </div>
@@ -42608,7 +42607,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                 </div>
               </div>
             ) : pdfAuditResult && pdfAuditResult.score < 0 ? (
-              <div role="alert" className="rounded-2xl overflow-hidden border border-slate-200 shadow-lg">
+              <div role="alert" className="rounded-2xl overflow-hidden border border-slate-400 shadow-lg">
                 <div className="p-6 text-center bg-gradient-to-r from-slate-600 to-slate-700 text-white">
                   <div className="text-4xl mb-2">⚠️</div>
                   <h3 className="text-lg font-bold">Audit Unavailable</h3>
@@ -42711,13 +42710,13 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     const scoreWithoutPasses = Math.max(0, 100 - rawDed);
                     const passBenefit = Math.max(0, aiScore - scoreWithoutPasses);
                     return (
-                  <details className="bg-slate-50 rounded-lg border border-slate-300 overflow-hidden" open>
+                  <details className="bg-slate-50 rounded-lg border border-slate-400 overflow-hidden" open>
                     <summary className="px-3 py-2 text-[11px] font-bold text-slate-700 uppercase tracking-widest cursor-pointer hover:bg-slate-100 transition-colors">
                       Score Breakdown
                     </summary>
                     <div className="px-3 pb-3 text-[11px] text-slate-700 space-y-2 mt-1">
                       {/* Overview */}
-                      <div className="bg-white rounded-lg border border-slate-300 p-2.5 space-y-1">
+                      <div className="bg-white rounded-lg border border-slate-400 p-2.5 space-y-1">
                         <div className="flex justify-between"><span>Total checks performed</span><span className="font-bold">{totalChecks}</span></div>
                         <div className="flex justify-between text-green-700 font-bold"><span>Passed</span><span>{passCount} ({passRate}%)</span></div>
                         <div className="flex justify-between text-red-700 font-bold"><span>Issues found</span><span>{totalIssues}</span></div>
@@ -43283,7 +43282,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           };
                           const context = getContextNote(pdfFixStep);
                           return (
-                            <div className="mt-3 bg-white rounded-xl border border-slate-200 p-3 space-y-2" role="region" aria-label="Pipeline progress tracker">
+                            <div className="mt-3 bg-white rounded-xl border border-slate-400 p-3 space-y-2" role="region" aria-label="Pipeline progress tracker">
                               <div className="flex items-center gap-1.5 text-[11px]">
                                 {steps.map((s, i) => {
                                   const currentStep = pdfFixStep.includes('Step ' + s.step) || pdfFixStep.includes('step ' + s.step);
@@ -43300,7 +43299,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 })}
                               </div>
                               {context && (
-                                <div className="text-[11px] bg-gradient-to-r from-slate-50 to-indigo-50 rounded-xl px-4 py-3 border border-slate-200 space-y-1.5">
+                                <div className="text-[11px] bg-gradient-to-r from-slate-50 to-indigo-50 rounded-xl px-4 py-3 border border-slate-400 space-y-1.5">
                                   <div className="text-slate-800 font-semibold leading-relaxed whitespace-pre-line">🔄 {context.what}</div>
                                   <div className="text-slate-600 leading-relaxed border-t border-slate-200 pt-1.5">💡 <span className="font-medium">Why this matters:</span> {context.why}</div>
                                 </div>
@@ -43538,10 +43537,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 </div>
                                 <div className="space-y-3">
                                   {extractionData.images.map((img, imgIdx) => (
-                                    <div key={imgIdx} className="flex gap-3 bg-white rounded-xl border border-slate-200 p-3">
+                                    <div key={imgIdx} className="flex gap-3 bg-white rounded-xl border border-slate-400 p-3">
                                       {img.src && (
                                         <div className="shrink-0 flex flex-col items-center gap-1">
-                                          <img src={img.src} alt={img.description || 'Extracted image'} className="w-24 h-20 object-cover rounded-lg border border-slate-200" />
+                                          <img src={img.src} alt={img.description || 'Extracted image'} className="w-24 h-20 object-cover rounded-lg border border-slate-400" />
                                           <a
                                             href={img.src}
                                             download={'image-' + (imgIdx + 1) + '.' + _extFromSrc(img.src)}
@@ -43571,7 +43570,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                           }}
                                           placeholder="Describe this image for screen reader users..."
                                           rows={2}
-                                          className="w-full text-[11px] p-2 border border-slate-200 rounded-lg resize-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-300 outline-none"
+                                          className="w-full text-[11px] p-2 border border-slate-400 rounded-lg resize-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-300 outline-none"
                                           aria-label={`Alt text for image ${imgIdx + 1}`}
                                         />
                                         {img.educationalPurpose && (
@@ -43763,7 +43762,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   if (_pct == null) {
                                     if (!_hasDiffInputs) return null;
                                     return (
-                                      <div className="mb-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-700 flex items-center gap-2 flex-wrap">
+                                      <div className="mb-2 bg-slate-50 border border-slate-400 rounded-xl px-3 py-2 text-xs text-slate-700 flex items-center gap-2 flex-wrap">
                                         <span className="text-slate-500">ℹ</span>
                                         <span className="font-bold">Content integrity unverified</span>
                                         <span className="text-slate-500 text-[11px]">(ground-truth extraction unavailable — use Diff view to inspect source ↔ HTML manually, or Re-check to retry)</span>
@@ -43778,7 +43777,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                               if (typeof addToast === 'function') addToast('Diff engine failed to load (network blocked?). Check your connection and try again.', 'error');
                                             }
                                           }}
-                                            className="text-[10px] px-2 py-1 bg-white border border-slate-300 text-slate-700 rounded-md hover:bg-slate-50 font-bold inline-flex items-center gap-1"
+                                            className="text-[10px] px-2 py-1 bg-white border border-slate-400 text-slate-700 rounded-md hover:bg-slate-50 font-bold inline-flex items-center gap-1"
                                             aria-label="Open diff view of source PDF text vs. final HTML"
                                             title="Side-by-side word-level diff: see every insertion, deletion, and paraphrase between the source PDF and the remediated HTML."
                                           >
@@ -43786,7 +43785,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                           </button>
                                           <button
                                             onClick={_runCheck}
-                                            className="text-[10px] px-2 py-1 bg-white border border-slate-300 text-slate-700 rounded-md hover:bg-slate-50 font-bold inline-flex items-center gap-1"
+                                            className="text-[10px] px-2 py-1 bg-white border border-slate-400 text-slate-700 rounded-md hover:bg-slate-50 font-bold inline-flex items-center gap-1"
                                             aria-label="Re-run pdf.js content integrity check"
                                             title="Re-run the fidelity recovery ladder (Stages A-D) against the current remediated HTML."
                                           >
@@ -43809,7 +43808,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                               if (typeof addToast === 'function') addToast('Diff engine failed to load (network blocked?). Check your connection and try again.', 'error');
                                             }
                                           }}
-                                          className="text-[10px] px-2 py-1 bg-white border border-slate-300 text-slate-700 rounded-md hover:bg-slate-50 font-bold inline-flex items-center gap-1"
+                                          className="text-[10px] px-2 py-1 bg-white border border-slate-400 text-slate-700 rounded-md hover:bg-slate-50 font-bold inline-flex items-center gap-1"
                                           aria-label="Open diff view of source PDF text vs. final HTML"
                                           title="Side-by-side word-level diff: see every insertion, deletion, and paraphrase between the source PDF and the remediated HTML."
                                         >
@@ -43818,7 +43817,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                       )}
                                       <button
                                         onClick={_runCheck}
-                                        className="text-[10px] px-2 py-1 bg-white border border-slate-300 text-slate-700 rounded-md hover:bg-slate-50 font-bold inline-flex items-center gap-1"
+                                        className="text-[10px] px-2 py-1 bg-white border border-slate-400 text-slate-700 rounded-md hover:bg-slate-50 font-bold inline-flex items-center gap-1"
                                         aria-label="Re-run pdf.js content integrity check"
                                         title="Re-run the fidelity recovery ladder (Stages A-D) against the current remediated HTML."
                                       >
@@ -43889,7 +43888,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   const _totalMissing = _integ && typeof _integ.totalMissing === 'number' ? _integ.totalMissing : null;
                                   const _method = pdfFixResult.groundTruthMethod || 'unknown';
                                   return (
-                                    <details open className="mb-2 bg-slate-50 border border-slate-200 rounded-xl text-[11px]">
+                                    <details open className="mb-2 bg-slate-50 border border-slate-400 rounded-xl text-[11px]">
                                       <summary className="cursor-pointer font-bold text-slate-700 select-none px-3 py-1.5 hover:bg-slate-100 rounded-xl inline-flex items-center gap-2">
                                         <span>📋</span>
                                         <span>Verification details</span>
@@ -43897,30 +43896,30 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                       </summary>
                                       <div className="px-3 pb-3 pt-1 grid grid-cols-2 sm:grid-cols-4 gap-2 text-slate-700">
                                         {_charPct != null && (
-                                          <div className="bg-white border border-slate-200 rounded-lg px-2 py-1.5">
+                                          <div className="bg-white border border-slate-400 rounded-lg px-2 py-1.5">
                                             <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Char coverage</div>
                                             <div className={`text-sm font-black ${_charPct >= 98 ? 'text-emerald-600' : _charPct >= 95 ? 'text-amber-600' : 'text-rose-600'}`}>{_charPct}%</div>
                                           </div>
                                         )}
                                         {_wordPct != null && (
-                                          <div className="bg-white border border-slate-200 rounded-lg px-2 py-1.5">
+                                          <div className="bg-white border border-slate-400 rounded-lg px-2 py-1.5">
                                             <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Word coverage</div>
                                             <div className={`text-sm font-black ${_wordPct >= 98 ? 'text-emerald-600' : _wordPct >= 95 ? 'text-amber-600' : 'text-rose-600'}`}>{_wordPct}%</div>
                                           </div>
                                         )}
                                         {_totalSrc != null && (
-                                          <div className="bg-white border border-slate-200 rounded-lg px-2 py-1.5">
+                                          <div className="bg-white border border-slate-400 rounded-lg px-2 py-1.5">
                                             <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Source words</div>
                                             <div className="text-sm font-black text-slate-700">{_totalSrc.toLocaleString()}</div>
                                           </div>
                                         )}
                                         {_totalMissing != null && (
-                                          <div className="bg-white border border-slate-200 rounded-lg px-2 py-1.5">
+                                          <div className="bg-white border border-slate-400 rounded-lg px-2 py-1.5">
                                             <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Unmatched</div>
                                             <div className={`text-sm font-black ${_totalMissing === 0 ? 'text-emerald-600' : _totalMissing < 10 ? 'text-amber-600' : 'text-rose-600'}`}>{_totalMissing.toLocaleString()}</div>
                                           </div>
                                         )}
-                                        <div className="bg-white border border-slate-200 rounded-lg px-2 py-1.5 col-span-2 sm:col-span-4">
+                                        <div className="bg-white border border-slate-400 rounded-lg px-2 py-1.5 col-span-2 sm:col-span-4">
                                           <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Recovery stages applied</div>
                                           <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px]">
                                             <span><span className="font-bold text-indigo-700">{_stagesRan.retry || 0}</span> AI retry</span>
@@ -43929,7 +43928,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                             <span><span className="font-bold text-indigo-700">{_stagesRan.dedup || 0}</span> duplicate collapsed</span>
                                           </div>
                                         </div>
-                                        <div className="bg-white border border-slate-200 rounded-lg px-2 py-1.5 col-span-2 sm:col-span-4 flex items-center gap-3 flex-wrap">
+                                        <div className="bg-white border border-slate-400 rounded-lg px-2 py-1.5 col-span-2 sm:col-span-4 flex items-center gap-3 flex-wrap">
                                           <div>
                                             <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mr-1">Ground truth:</span>
                                             <span className="text-[11px] font-mono text-slate-700">{_method}</span>
@@ -44174,7 +44173,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                           >✕</button>
                                         </div>
                                         <div className="flex items-center gap-2 px-4 py-2 border-b border-slate-200 bg-white flex-wrap">
-                                          <div className="inline-flex rounded-lg border border-slate-300 overflow-hidden text-[11px]">
+                                          <div className="inline-flex rounded-lg border border-slate-400 overflow-hidden text-[11px]">
                                             {['words', 'sentences', 'chars'].map(g => (
                                               <button
                                                 key={g}
@@ -44188,7 +44187,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                             <div className="flex items-center gap-3 ml-2 text-[11px]">
                                               <span className="inline-flex items-center gap-1"><span className="w-3 h-3 rounded-sm bg-emerald-200 border border-emerald-400" /> <span className="font-bold text-emerald-700">{_ins.toLocaleString()}</span> added</span>
                                               <span className="inline-flex items-center gap-1"><span className="w-3 h-3 rounded-sm bg-rose-200 border border-rose-400" /> <span className="font-bold text-rose-700">{_del.toLocaleString()}</span> removed</span>
-                                              <span className="inline-flex items-center gap-1 text-slate-600"><span className="w-3 h-3 rounded-sm bg-slate-100 border border-slate-300" /> <span className="font-bold">{_same.toLocaleString()}</span> unchanged</span>
+                                              <span className="inline-flex items-center gap-1 text-slate-600"><span className="w-3 h-3 rounded-sm bg-slate-100 border border-slate-400" /> <span className="font-bold">{_same.toLocaleString()}</span> unchanged</span>
                                               {_rejCount > 0 && (
                                                 <span className="inline-flex items-center gap-1 ml-1 bg-amber-100 border border-amber-300 px-1.5 py-0.5 rounded font-bold text-amber-800">
                                                   {_rejCount.toLocaleString()} rejected
@@ -44217,7 +44216,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                           )}
                                           {diffLibReady && _chunks && (
                                             <pre
-                                              className="whitespace-pre-wrap font-sans text-[13px] leading-relaxed text-slate-800 bg-white rounded-lg p-4 border border-slate-200"
+                                              className="whitespace-pre-wrap font-sans text-[13px] leading-relaxed text-slate-800 bg-white rounded-lg p-4 border border-slate-400"
                                               onMouseUp={_onDiffMouseUp}
                                             >
                                               {_chunks.map((c) => {
@@ -44287,7 +44286,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                             <button
                                               onClick={_revertLastApply}
                                               disabled={applyingRemarkup}
-                                              className="ml-auto px-3 py-1.5 bg-white border border-slate-300 hover:bg-slate-100 disabled:opacity-60 text-slate-700 rounded-md font-bold inline-flex items-center gap-1.5"
+                                              className="ml-auto px-3 py-1.5 bg-white border border-slate-400 hover:bg-slate-100 disabled:opacity-60 text-slate-700 rounded-md font-bold inline-flex items-center gap-1.5"
                                               title="Restore the accessible HTML to the state before your last Apply & Export"
                                             >
                                               ↶ Revert last Apply
@@ -44394,7 +44393,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   </div>
                                 )}
                                 {fidelityResult && !fidelityResult.notReady && (
-                                  <div className="bg-white rounded-xl border border-slate-200 p-3 space-y-2">
+                                  <div className="bg-white rounded-xl border border-slate-400 p-3 space-y-2">
                                     <div className="flex items-baseline gap-3 text-xs flex-wrap">
                                       <span className={`font-bold ${fidelityResult.fidelity >= 99 ? 'text-emerald-700' : fidelityResult.fidelity >= 95 ? 'text-amber-700' : 'text-red-700'}`}>
                                         {fidelityResult.fidelity}% fidelity
@@ -44772,7 +44771,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               {!isWorking && isExpanded && (
                                 <div className="px-2 pb-2 space-y-2">
                                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
-                                    <div className="bg-white rounded-lg border border-slate-200 p-2">
+                                    <div className="bg-white rounded-lg border border-slate-400 p-2">
                                       <div className="text-[11px] font-bold text-slate-600 uppercase mb-1">Before (original)</div>
                                       <pre className="text-[11px] text-slate-700 whitespace-pre-wrap break-all max-h-40 overflow-y-auto font-mono">{(chunk.originalHtml || '').substring(0, 2000)}{(chunk.originalHtml || '').length > 2000 ? '\n... (truncated)' : ''}</pre>
                                     </div>
@@ -44787,7 +44786,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                     </div>
                                   )}
                                   {chunk.violationInstructions && (
-                                    <details className="bg-slate-50 border border-slate-200 rounded p-1.5">
+                                    <details className="bg-slate-50 border border-slate-400 rounded p-1.5">
                                       <summary className="text-[11px] font-bold text-slate-600 cursor-pointer">Violations targeted in this pass</summary>
                                       <pre className="text-[11px] text-slate-600 whitespace-pre-wrap mt-1">{chunk.violationInstructions}</pre>
                                     </details>
@@ -44825,7 +44824,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               startNewPdfAudit();
                             }
                           }}
-                          className="text-[11px] px-2.5 py-1 bg-white hover:bg-slate-100 text-slate-600 border border-slate-300 rounded-md font-bold inline-flex items-center gap-1"
+                          className="text-[11px] px-2.5 py-1 bg-white hover:bg-slate-100 text-slate-600 border border-slate-400 rounded-md font-bold inline-flex items-center gap-1"
                           title="Clear this audit result and start fresh with a new PDF"
                         >
                           🗑️ {t('pdf_audit.start_new_audit') || 'Start New Audit'}
@@ -44959,7 +44958,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             </div>
                           )}
                           {pdfFixResult.axeAudit.minor.length > 0 && (
-                            <div className="bg-slate-50 rounded-lg p-2 border border-slate-200">
+                            <div className="bg-slate-50 rounded-lg p-2 border border-slate-400">
                               <div className="text-[11px] font-bold text-slate-600 uppercase mb-1">Minor ({pdfFixResult.axeAudit.minor.length})</div>
                               {pdfFixResult.axeAudit.minor.map((v, i) => (
                                 <div key={i} className="text-[11px] text-slate-600 mb-0.5">⚪ {v.description}</div>
@@ -45041,7 +45040,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               return acc;
                             }, { pass: 0, warn: 0, fail: 0 });
                             return (
-                              <details className="bg-slate-50 border border-slate-200 rounded-lg p-3">
+                              <details className="bg-slate-50 border border-slate-400 rounded-lg p-3">
                                 <summary className="cursor-pointer text-xs font-bold text-slate-700 flex flex-wrap items-center gap-2">
                                   📋 WCAG Success Criteria Report
                                   <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-[11px]">✓ {counts.pass} pass</span>
@@ -45113,7 +45112,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         </div>
                       )}
                       {!pdfFixResult.axeAudit && (
-                        <div className="bg-slate-50 rounded-lg p-2 border border-slate-200 text-center">
+                        <div className="bg-slate-50 rounded-lg p-2 border border-slate-400 text-center">
                           <div className="text-[11px] text-slate-600">axe-core automated check could not run (CDN may be blocked). AI verification above is still valid.</div>
                         </div>
                       )}
@@ -45517,7 +45516,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           <button className="px-4 py-2.5 bg-slate-100 text-slate-600 rounded-xl font-bold text-sm hover:bg-slate-200 transition-colors flex items-center gap-1.5">
                             📊 Report ▾
                           </button>
-                          <div className="hidden group-hover:block group-focus-within:block absolute bottom-full left-0 mb-1 bg-white border border-slate-200 rounded-xl shadow-xl z-10 min-w-[180px] overflow-hidden">
+                          <div className="hidden group-hover:block group-focus-within:block absolute bottom-full left-0 mb-1 bg-white border border-slate-400 rounded-xl shadow-xl z-10 min-w-[180px] overflow-hidden">
                             <button onClick={() => {
                               const _rptAi = pdfFixResult.afterScore; const _rptAxe = pdfFixResult.axeAudit?.score ?? null; const _rptBlended = (_rptAi !== null && _rptAxe !== null) ? Math.round((_rptAxe + _rptAi) / 2) : (_rptAxe ?? _rptAi);
                               const full = { before: { score: pdfAuditResult?.score ?? pdfFixResult.beforeScore, audit: pdfAuditResult }, after: { score: _rptBlended, aiAudit: pdfFixResult.verificationAudit, axeCoreAudit: pdfFixResult.axeAudit || null }, beforeScore: pdfAuditResult?.score ?? pdfFixResult.beforeScore, afterScore: _rptBlended, summary: pdfAuditResult?.summary || '' };
@@ -45701,10 +45700,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       {/* Save / Load Project — manual button now delegates to the shared saveProjectToFile helper,
                           which also powers auto-save after the initial remediation + auto-continue loop. */}
                       <div className="flex gap-2">
-                        <button onClick={() => { saveProjectToFile(false); }} className="flex-1 px-3 py-1.5 bg-slate-50 text-slate-600 rounded-lg text-[11px] font-bold border border-slate-200 hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5">
+                        <button onClick={() => { saveProjectToFile(false); }} className="flex-1 px-3 py-1.5 bg-slate-50 text-slate-600 rounded-lg text-[11px] font-bold border border-slate-400 hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5">
                           💾 Save Project
                         </button>
-                        <label className="flex-1 px-3 py-1.5 bg-slate-50 text-slate-600 rounded-lg text-[11px] font-bold border border-slate-200 hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5 cursor-pointer">
+                        <label className="flex-1 px-3 py-1.5 bg-slate-50 text-slate-600 rounded-lg text-[11px] font-bold border border-slate-400 hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5 cursor-pointer">
                           📂 Load Project
                           <input type="file" accept=".json,.alloflow.json" className="hidden" onChange={(e) => {
                             const file = e.target.files?.[0]; if (!file) return;
@@ -46304,7 +46303,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         <summary className="text-[11px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:text-indigo-600 transition-colors flex items-center gap-1">
                           📋 What Changed <span className="text-[11px] text-slate-600 group-open:hidden">▸</span>
                         </summary>
-                        <div className="mt-2 bg-white rounded-lg border border-slate-200 p-3 space-y-1.5 text-xs text-slate-600">
+                        <div className="mt-2 bg-white rounded-lg border border-slate-400 p-3 space-y-1.5 text-xs text-slate-600">
                           {(() => {
                             const changes = [];
                             if (pdfFixResult.autoFixPasses > 0) changes.push(`🔧 ${pdfFixResult.autoFixPasses} automated fix pass${pdfFixResult.autoFixPasses > 1 ? 'es' : ''} applied`);
@@ -46485,7 +46484,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                       } catch(err) { addToast('Style failed — try again', 'error'); }
                       setIsGeneratingStyle(false);
                     }}
-                      className={`px-2 py-1 rounded-md text-[11px] font-bold transition-colors ${isGeneratingStyle ? 'bg-indigo-100 text-indigo-400 animate-pulse' : 'bg-slate-50 border border-slate-200 text-slate-600 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700'}`}
+                      className={`px-2 py-1 rounded-md text-[11px] font-bold transition-colors ${isGeneratingStyle ? 'bg-indigo-100 text-indigo-400 animate-pulse' : 'bg-slate-50 border border-slate-400 text-slate-600 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700'}`}
                     >{isGeneratingStyle ? '⏳ Styling...' : preset.label}</button>
                   ))}
                   {pdfPreviewRef.current?.contentDocument?.getElementById('ai-restyle') && (
@@ -46547,7 +46546,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 <summary className="text-[11px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:text-indigo-600 transition-colors flex items-center gap-1">
                   🎨 Custom Colors & Fonts <span className="text-[11px] text-slate-600 group-open:hidden">▸</span>
                 </summary>
-                <div className="mt-1.5 space-y-1.5 bg-slate-50 rounded-lg p-2 border border-slate-200">
+                <div className="mt-1.5 space-y-1.5 bg-slate-50 rounded-lg p-2 border border-slate-400">
                   {[
                     { label: 'Heading Color', prop: 'headingColor', sel: 'h1,h2,h3,h4', css: 'color', def: '#1e3a5f', isText: true },
                     { label: 'Accent / Link', prop: 'accentColor', sel: 'a', css: 'color', def: '#2563eb', isText: true },
@@ -46571,7 +46570,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                             }
                           }
                         }}
-                        className="w-6 h-6 rounded border border-slate-300 cursor-pointer p-0" />
+                        className="w-6 h-6 rounded border border-slate-400 cursor-pointer p-0" />
                       <span className="text-[11px] text-slate-600">{item.label}</span>
                       {item.isText && <span className="contrast-badge text-[11px] font-bold" style={{color: '#16a34a'}}>✅ 4.5+:1</span>}
                     </div>
@@ -46606,7 +46605,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                           }
                         }
                       }}
-                      className="flex-1 text-[11px] border border-slate-200 rounded px-1 py-1 bg-white">
+                      className="flex-1 text-[11px] border border-slate-400 rounded px-1 py-1 bg-white">
                       <option value="system-ui, sans-serif">System (Default)</option>
                       <option value="'Inter', sans-serif">Inter</option>
                       <option value="'Georgia', serif">Georgia (Serif)</option>
@@ -46668,7 +46667,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                         {[['S','S'],['M','M'],['L','L'],['XL','XL']].map(([key, label], i) => (
                           <button key={key} data-size={key} aria-checked={i === 2 ? 'true' : 'false'} role="radio" aria-label={label + ' size'}
                             style={i === 2 ? { background: '#6366f1', color: 'white', borderColor: '#4f46e5' } : { background: 'white', color: '#475569', borderColor: '#e2e8f0' }}
-                            className="pdf-wordart-size-btn flex-1 text-[10px] font-bold py-1 rounded border border-slate-200 transition-all"
+                            className="pdf-wordart-size-btn flex-1 text-[10px] font-bold py-1 rounded border border-slate-400 transition-all"
                             onClick={(e) => {
                               const btn = e.currentTarget;
                               const parent = btn.parentElement;
@@ -46686,7 +46685,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                         {[['left','⇤','Left'],['center','⇔','Center'],['right','⇥','Right']].map(([key, icon, label], i) => (
                           <button key={key} data-align={key} aria-checked={i === 1 ? 'true' : 'false'} role="radio" aria-label={label + ' alignment'}
                             style={i === 1 ? { background: '#6366f1', color: 'white', borderColor: '#4f46e5' } : { background: 'white', color: '#475569', borderColor: '#e2e8f0' }}
-                            className="pdf-wordart-align-btn flex-1 text-[10px] font-bold py-1 rounded border border-slate-200 transition-all"
+                            className="pdf-wordart-align-btn flex-1 text-[10px] font-bold py-1 rounded border border-slate-400 transition-all"
                             onClick={(e) => {
                               const btn = e.currentTarget;
                               const parent = btn.parentElement;
@@ -46923,11 +46922,11 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   <summary className="text-[11px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:text-indigo-600 transition-colors flex items-center gap-1">
                     🖼️ AI Image Tools <span className="text-[11px] text-slate-600 group-open:hidden">▸</span>
                   </summary>
-                  <div className="mt-1.5 space-y-2 bg-slate-50 rounded-lg p-2 border border-slate-200">
+                  <div className="mt-1.5 space-y-2 bg-slate-50 rounded-lg p-2 border border-slate-400">
                     <div>
                       <input type="text" id="pdf-preview-img-prompt" placeholder="Describe an image to generate..."
                         aria-label="Image generation prompt"
-                        className="w-full text-[11px] p-1.5 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-300"
+                        className="w-full text-[11px] p-1.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-indigo-300"
                         onKeyDown={(e) => { if (e.key === 'Enter') document.getElementById('pdf-preview-gen-img-btn')?.click(); }} />
                       <button id="pdf-preview-gen-img-btn" onClick={async () => {
                         const prompt = document.getElementById('pdf-preview-img-prompt')?.value;
@@ -46999,7 +46998,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 <summary className="text-[11px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:text-indigo-600 transition-colors flex items-center gap-1">
                   📐 Layout & Design <span className="text-[11px] text-slate-600 group-open:hidden">▸</span>
                 </summary>
-                <div className="mt-1.5 space-y-1.5 bg-slate-50 rounded-lg p-2 border border-slate-200">
+                <div className="mt-1.5 space-y-1.5 bg-slate-50 rounded-lg p-2 border border-slate-400">
                   <div className="text-[11px] font-bold text-slate-600 uppercase">Insert Blocks</div>
                   <div className="grid grid-cols-2 gap-1">
                     {[
@@ -47033,7 +47032,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                           sel.addRange(range);
                         }
                         doc.execCommand('insertHTML', false, block.html);
-                      }} className="text-[11px] font-bold text-slate-600 px-1.5 py-1.5 bg-white border border-slate-200 rounded-lg hover:border-indigo-300 hover:text-indigo-700 hover:bg-indigo-50 transition-colors text-left"
+                      }} className="text-[11px] font-bold text-slate-600 px-1.5 py-1.5 bg-white border border-slate-400 rounded-lg hover:border-indigo-300 hover:text-indigo-700 hover:bg-indigo-50 transition-colors text-left"
                         aria-label={`Insert ${block.label}`} title={`Insert ${block.label}`}>
                         {block.icon} {block.label}
                       </button>
@@ -47053,7 +47052,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                         doc.querySelectorAll('p, li, h2, h3, h4, table, figure, blockquote, div').forEach(el => {
                           el.style.marginBottom = sp.val;
                         });
-                      }} className="flex-1 text-[11px] font-bold text-slate-600 py-1 bg-white border border-slate-200 rounded hover:bg-indigo-50 hover:text-indigo-700 transition-colors"
+                      }} className="flex-1 text-[11px] font-bold text-slate-600 py-1 bg-white border border-slate-400 rounded hover:bg-indigo-50 hover:text-indigo-700 transition-colors"
                         title={sp.label}>{sp.label}</button>
                     ))}
                   </div>
@@ -47071,7 +47070,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     const main = doc.querySelector('main') || doc.body;
                     main.insertBefore(header, main.firstChild);
                     addToast('Header added — click to edit text, click again to remove', 'info');
-                  }} className="w-full text-[11px] font-bold text-slate-600 py-1.5 bg-white border border-slate-200 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors">
+                  }} className="w-full text-[11px] font-bold text-slate-600 py-1.5 bg-white border border-slate-400 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors">
                     🏛️ Toggle Document Header
                   </button>
 
@@ -47086,7 +47085,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     footer.innerHTML = '<span>Institution Name · Confidential</span><span>Page __</span>';
                     (doc.querySelector('main') || doc.body).appendChild(footer);
                     addToast('Footer added — click to edit', 'info');
-                  }} className="w-full text-[11px] font-bold text-slate-600 py-1.5 bg-white border border-slate-200 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors">
+                  }} className="w-full text-[11px] font-bold text-slate-600 py-1.5 bg-white border border-slate-400 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors">
                     📋 Toggle Document Footer
                   </button>
 
@@ -47115,7 +47114,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                       addToast('Template applied: ' + e.target.value, 'success');
                     }
                     e.target.value = '';
-                  }} className="w-full text-[11px] border border-slate-200 rounded-lg px-2 py-1.5 bg-white text-slate-600" aria-label="Document template" defaultValue="">
+                  }} className="w-full text-[11px] border border-slate-400 rounded-lg px-2 py-1.5 bg-white text-slate-600" aria-label="Document template" defaultValue="">
                     <option value="" disabled>Apply template...</option>
                     <option value="syllabus">📚 Syllabus</option>
                     <option value="handout">📝 Handout</option>
@@ -47204,7 +47203,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 <summary className="text-[11px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:text-indigo-600 transition-colors flex items-center gap-1">
                   📊 Stats & Readability <span className="text-[11px] text-slate-600 group-open:hidden">▸</span>
                 </summary>
-                <div className="mt-1.5 bg-slate-50 rounded-lg p-2 border border-slate-200 space-y-2">
+                <div className="mt-1.5 bg-slate-50 rounded-lg p-2 border border-slate-400 space-y-2">
                   <button onClick={() => {
                     const doc = pdfPreviewRef.current?.contentDocument;
                     const text = doc?.body?.textContent || '';
@@ -47248,7 +47247,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                       `<span>📑 ${headings} headings</span><span>🖼️ ${images} images</span><span>📊 ${tables} tables</span><span>🔗 ${links} links</span>` +
                       `</div>`;
                     doc.body.appendChild(overlay);
-                  }} className="w-full text-[11px] font-bold text-slate-600 py-1.5 bg-white border border-slate-200 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors">
+                  }} className="w-full text-[11px] font-bold text-slate-600 py-1.5 bg-white border border-slate-400 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors">
                     📊 Toggle Reading Level & Stats
                   </button>
                   <button onClick={async () => {
@@ -47270,7 +47269,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     overlay.innerHTML = '<div style="font-weight:800;font-size:13px;color:#92400e;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">⚠️ A11y Quick Check (' + fixable + ') <span onclick="this.parentElement.parentElement.remove()" style="cursor:pointer;color:#94a3b8;font-size:18px">&times;</span></div>' +
                       issues.map(i => '<div style="padding:4px 0;border-bottom:1px solid #fef3c7;line-height:1.4">' + i + '</div>').join('');
                     doc.body.appendChild(overlay);
-                  }} className="w-full text-[11px] font-bold text-slate-600 py-1.5 bg-white border border-slate-200 rounded-lg hover:bg-amber-50 hover:text-amber-700 transition-colors">
+                  }} className="w-full text-[11px] font-bold text-slate-600 py-1.5 bg-white border border-slate-400 rounded-lg hover:bg-amber-50 hover:text-amber-700 transition-colors">
                     ♿ Quick A11y Check
                   </button>
                   <button onClick={async () => {
@@ -47310,7 +47309,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                       } catch(e) { warnLog('[Alt Gen] Failed for image:', e); img.alt = 'Image'; fixed++; }
                     }
                     addToast('✅ Generated alt text for ' + fixed + '/' + needsAlt.length + ' images', 'success');
-                  }} className="w-full text-[11px] font-bold text-slate-600 py-1.5 bg-white border border-slate-200 rounded-lg hover:bg-emerald-50 hover:text-emerald-700 transition-colors">
+                  }} className="w-full text-[11px] font-bold text-slate-600 py-1.5 bg-white border border-slate-400 rounded-lg hover:bg-emerald-50 hover:text-emerald-700 transition-colors">
                     🖼️ Auto-Generate Alt Text (AI)
                   </button>
                 </div>
@@ -47371,7 +47370,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 `;
                 (doc.querySelector('main') || doc.body).appendChild(stmt);
                 addToast('♿ Accessibility compliance statement added', 'success');
-              }} className="w-full text-[11px] font-bold text-slate-600 py-2 bg-white border border-slate-200 rounded-lg hover:bg-violet-50 hover:text-violet-700 transition-colors flex items-center justify-center gap-1.5">
+              }} className="w-full text-[11px] font-bold text-slate-600 py-2 bg-white border border-slate-400 rounded-lg hover:bg-violet-50 hover:text-violet-700 transition-colors flex items-center justify-center gap-1.5">
                 ♿ Insert Compliance Statement
               </button>
 
@@ -47409,7 +47408,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 const main = doc.querySelector('main') || doc.body;
                 main.insertBefore(toc, main.firstChild);
                 addToast('📑 Table of contents added — click to remove', 'success');
-              }} className="w-full text-[11px] font-bold text-slate-600 py-2 bg-white border border-slate-200 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors flex items-center justify-center gap-1.5">
+              }} className="w-full text-[11px] font-bold text-slate-600 py-2 bg-white border border-slate-400 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors flex items-center justify-center gap-1.5">
                 📑 Toggle Table of Contents
               </button>
 
@@ -47418,7 +47417,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 <summary className="text-[11px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:text-indigo-600 transition-colors flex items-center gap-1">
                   🔒 Watermark & Stamps <span className="text-[11px] text-slate-600 group-open:hidden">▸</span>
                 </summary>
-                <div className="mt-1.5 bg-slate-50 rounded-lg p-2 border border-slate-200 space-y-1">
+                <div className="mt-1.5 bg-slate-50 rounded-lg p-2 border border-slate-400 space-y-1">
                   {[
                     { label: 'DRAFT', color: '#ef4444', opacity: 0.08 },
                     { label: 'CONFIDENTIAL', color: '#7c3aed', opacity: 0.07 },
@@ -47438,7 +47437,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                       el.textContent = wm.label;
                       doc.body.appendChild(el);
                       addToast('Watermark "' + wm.label + '" added — click again to remove', 'success');
-                    }} className="w-full text-[11px] font-bold text-slate-600 py-1.5 bg-white border border-slate-200 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors text-left px-2"
+                    }} className="w-full text-[11px] font-bold text-slate-600 py-1.5 bg-white border border-slate-400 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors text-left px-2"
                       aria-label={`Toggle ${wm.label} watermark`}>
                       🔒 {wm.label}
                     </button>
@@ -47460,7 +47459,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                         el.textContent = stamp.icon + ' ' + stamp.label;
                         doc.body.appendChild(el);
                         addToast('Version stamp added', 'success');
-                      }} className="w-full text-[11px] font-bold text-slate-600 py-1 bg-white border border-slate-200 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors text-left px-2 mb-0.5">
+                      }} className="w-full text-[11px] font-bold text-slate-600 py-1 bg-white border border-slate-400 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors text-left px-2 mb-0.5">
                         {stamp.icon} {stamp.label}
                       </button>
                     ))}
@@ -47515,7 +47514,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   section.style.display = 'none';
                 });
                 addToast('📐 Bilingual layout applied — paste translations in the right column. Click again to remove.', 'success');
-              }} className="w-full text-[11px] font-bold text-slate-600 py-2 bg-white border border-slate-200 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors flex items-center justify-center gap-1.5">
+              }} className="w-full text-[11px] font-bold text-slate-600 py-2 bg-white border border-slate-400 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors flex items-center justify-center gap-1.5">
                 🌐 Toggle Bilingual Side-by-Side
               </button>
 
@@ -47630,7 +47629,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                             } catch (_) {}
                           }}
                           loading="lazy"
-                          className="w-full h-16 object-cover rounded border border-slate-200 cursor-grab active:cursor-grabbing hover:border-indigo-400 hover:shadow-md transition-all"
+                          className="w-full h-16 object-cover rounded border border-slate-400 cursor-grab active:cursor-grabbing hover:border-indigo-400 hover:shadow-md transition-all"
                           title={img.description || ('Image ' + (i + 1))}
                         />
                         {img.isRegenerated && (
@@ -47734,7 +47733,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   aria-label="Redo" title="Redo">↪</button>
                 <span className="w-px h-5 bg-slate-200 mx-1" aria-hidden="true"></span>
                 <select onChange={(e) => { const doc = pdfPreviewRef.current?.contentDocument; if (doc && e.target.value) doc.execCommand('foreColor', false, e.target.value); e.target.value = ''; }}
-                  className="h-7 text-[11px] border border-slate-200 rounded px-1 text-slate-600" aria-label="Text color" defaultValue="">
+                  className="h-7 text-[11px] border border-slate-400 rounded px-1 text-slate-600" aria-label="Text color" defaultValue="">
                   <option value="" disabled>Color</option>
                   <option value="#000000">⬛ Black</option>
                   <option value="#1e3a5f">🟦 Navy</option>
@@ -47744,7 +47743,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   <option value="#92400e">🟫 Brown</option>
                 </select>
                 <select onChange={(e) => { const doc = pdfPreviewRef.current?.contentDocument; if (doc && e.target.value) doc.execCommand('hiliteColor', false, e.target.value); e.target.value = ''; }}
-                  className="h-7 text-[11px] border border-slate-200 rounded px-1 text-slate-600" aria-label="Highlight color" defaultValue="">
+                  className="h-7 text-[11px] border border-slate-400 rounded px-1 text-slate-600" aria-label="Highlight color" defaultValue="">
                   <option value="" disabled>Highlight</option>
                   <option value="#fef08a">🟡 Yellow</option>
                   <option value="#bbf7d0">🟢 Green</option>
@@ -48591,7 +48590,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 {vsTab === 'boards' && (vsBoards.length === 0
                   ? <div className="text-center py-16 text-slate-600"><div className="text-5xl mb-3">📋</div><p className="font-semibold">No saved boards yet</p><p className="text-sm mt-1">Save boards in Symbol Studio to see them here</p></div>
                   : vsBoards.map(board => (
-                    <div key={board.id} className="border border-slate-200 rounded-xl overflow-hidden">
+                    <div key={board.id} className="border border-slate-400 rounded-xl overflow-hidden">
                       <div className="bg-slate-50 px-4 py-2 font-semibold text-slate-700 text-sm border-b border-slate-200">{board.title || 'Untitled Board'}</div>
                       <div className="p-3" style={{display:'grid', gridTemplateColumns:`repeat(${Math.min(board.cols||4,6)},1fr)`, gap:6}}>
                         {(board.words||[]).map((word,i) => (
@@ -48609,7 +48608,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 {vsTab === 'schedules' && (vsSchedules.length === 0
                   ? <div className="text-center py-16 text-slate-600"><div className="text-5xl mb-3">📅</div><p className="font-semibold">No saved schedules yet</p><p className="text-sm mt-1">Save schedules in Symbol Studio to see them here</p></div>
                   : vsSchedules.map(sched => (
-                    <div key={sched.id} className="border border-slate-200 rounded-xl overflow-hidden">
+                    <div key={sched.id} className="border border-slate-400 rounded-xl overflow-hidden">
                       <div className="bg-slate-50 px-4 py-2 font-semibold text-slate-700 text-sm border-b border-slate-200">{sched.title || 'Untitled Schedule'}</div>
                       <div className="p-3 overflow-x-auto">
                         <div style={{display:'flex',gap:8,minWidth:'max-content'}}>
@@ -48925,7 +48924,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
           />
       )}
       {(!isCanvas || isCloudSyncEnabled) && (
-      <div className="fixed bottom-4 left-4 z-[1000] pointer-events-none select-none bg-white/90 backdrop-blur-md rounded-full px-4 py-2 shadow-lg border border-slate-200 flex items-center gap-3 text-[11px] font-black uppercase tracking-widest transition-all duration-500">
+      <div className="fixed bottom-4 left-4 z-[1000] pointer-events-none select-none bg-white/90 backdrop-blur-md rounded-full px-4 py-2 shadow-lg border border-slate-400 flex items-center gap-3 text-[11px] font-black uppercase tracking-widest transition-all duration-500">
           {(isDraftSaving || pendingSync || studentWorkStatus === 'saving' || cloudSyncStatus === 'syncing') ? (
                <>
                    <span className="relative flex h-2.5 w-2.5">
@@ -48989,7 +48988,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   <div className="flex flex-wrap gap-1">
                     {Object.entries(BUILT_IN_PRESETS).map(([key, preset]) => (
                       <button key={key} onClick={() => applyExportPreset(preset)}
-                        className="px-2 py-1 bg-white border border-slate-200 rounded-lg text-[11px] font-bold text-slate-600 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700 transition-all"
+                        className="px-2 py-1 bg-white border border-slate-400 rounded-lg text-[11px] font-bold text-slate-600 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700 transition-all"
                         title={`Apply "${preset.name}" preset`}
                       >{preset.emoji} {preset.name}</button>
                     ))}
@@ -49019,7 +49018,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   <div className="text-[11px] font-bold text-slate-600 uppercase mb-1.5">Format</div>
                   <div className="flex gap-1">
                     {[['print', '📄 PDF'], ['worksheet', '📝 Worksheet'], ['html', '💻 HTML'], ['slides', '📊 Slides']].map(([m, label]) => (
-                      <button key={m} onClick={() => setExportPreviewMode(m)} className={`flex-1 text-xs font-bold py-1.5 rounded-lg transition-all ${exportPreviewMode === m ? 'bg-indigo-600 text-white' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100'}`}>{label}</button>
+                      <button key={m} onClick={() => setExportPreviewMode(m)} className={`flex-1 text-xs font-bold py-1.5 rounded-lg transition-all ${exportPreviewMode === m ? 'bg-indigo-600 text-white' : 'bg-white border border-slate-400 text-slate-600 hover:bg-slate-100'}`}>{label}</button>
                     ))}
                   </div>
                 </div>
@@ -49033,7 +49032,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   <div className="grid grid-cols-2 gap-1">
                     {Object.entries(STYLE_SEEDS).filter(([, s]) => s.cssVars).map(([key, s]) => (
                       <button key={key} onClick={() => { setExportTheme(key); setTimeout(updateExportPreview, 50); }}
-                        className={`text-[11px] font-bold py-1.5 px-2 rounded-lg transition-all ${exportTheme === key ? 'bg-indigo-600 text-white ring-2 ring-indigo-300' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100'}`}
+                        className={`text-[11px] font-bold py-1.5 px-2 rounded-lg transition-all ${exportTheme === key ? 'bg-indigo-600 text-white ring-2 ring-indigo-300' : 'bg-white border border-slate-400 text-slate-600 hover:bg-slate-100'}`}
                       >{s.emoji} {s.name}</button>
                     ))}
                   </div>
@@ -49069,7 +49068,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                             ms.textContent = `@media print { @page { margin: ${m.val}; } } body { padding-left: ${m.val}; padding-right: ${m.val}; }`;
                           }
                         }}
-                          className="flex-1 text-[11px] font-bold text-slate-600 py-1 bg-white border border-slate-200 rounded hover:bg-indigo-50 hover:text-indigo-700 transition-colors"
+                          className="flex-1 text-[11px] font-bold text-slate-600 py-1 bg-white border border-slate-400 rounded hover:bg-indigo-50 hover:text-indigo-700 transition-colors"
                           title={`${m.label} margins (${m.val})`} aria-label={`Set ${m.label} page margins`}>{m.label}</button>
                       ))}
                     </div>
@@ -49077,7 +49076,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 </div>
 
                 {/* Word count + goal */}
-                <div className="bg-slate-50 rounded-lg border border-slate-200 p-2">
+                <div className="bg-slate-50 rounded-lg border border-slate-400 p-2">
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-[11px] font-bold text-slate-600 uppercase">Word Count</span>
                     <span className="text-[11px] font-mono text-slate-600" aria-live="polite">
@@ -49091,7 +49090,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   <div className="flex items-center gap-2">
                     <label className="text-[11px] text-slate-600 shrink-0" htmlFor="word-goal-input">Goal:</label>
                     <input type="number" id="word-goal-input" min="0" step="50" placeholder="e.g. 500" defaultValue=""
-                      className="flex-1 text-[11px] border border-slate-200 rounded px-2 py-1 bg-white"
+                      className="flex-1 text-[11px] border border-slate-400 rounded px-2 py-1 bg-white"
                       aria-label="Target word count goal"
                       onChange={(e) => {
                         const goal = parseInt(e.target.value);
@@ -49145,7 +49144,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                       <div className="flex gap-0.5" role="radiogroup" aria-label="Word art size">
                         {['S','M','L','XL'].map((s) => (
                           <button key={s} type="button" role="radio" aria-checked={s === 'L'} data-wa-size={s}
-                            className="wordart-size-btn flex-1 text-[10px] font-bold py-1 rounded border border-slate-200 transition-all"
+                            className="wordart-size-btn flex-1 text-[10px] font-bold py-1 rounded border border-slate-400 transition-all"
                             style={s === 'L' ? { background: '#4f46e5', color: 'white', borderColor: '#4f46e5' } : { background: 'white', color: '#475569' }}
                             onClick={(e) => {
                               const parent = e.currentTarget.parentElement;
@@ -49165,7 +49164,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                       <div className="flex gap-0.5" role="radiogroup" aria-label="Word art alignment">
                         {[['left','⇤'],['center','⇔'],['right','⇥']].map(([a, icon]) => (
                           <button key={a} type="button" role="radio" aria-checked={a === 'center'} data-wa-align={a}
-                            className="wordart-align-btn flex-1 text-[10px] font-bold py-1 rounded border border-slate-200 transition-all"
+                            className="wordart-align-btn flex-1 text-[10px] font-bold py-1 rounded border border-slate-400 transition-all"
                             style={a === 'center' ? { background: '#4f46e5', color: 'white', borderColor: '#4f46e5' } : { background: 'white', color: '#475569' }}
                             onClick={(e) => {
                               const parent = e.currentTarget.parentElement;
@@ -49360,7 +49359,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     ].map(preset => (
                       <button key={preset.label} onClick={() => { setExportStylePrompt(preset.prompt); setTimeout(() => generateCustomExportStyle(), 50); }}
                         disabled={isGeneratingStyle}
-                        className="px-2 py-1 bg-slate-50 border border-slate-200 rounded-md text-[11px] font-bold text-slate-600 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700 disabled:opacity-40 transition-colors"
+                        className="px-2 py-1 bg-slate-50 border border-slate-400 rounded-md text-[11px] font-bold text-slate-600 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700 disabled:opacity-40 transition-colors"
                       >{preset.label}</button>
                     ))}
                   </div>
@@ -49368,7 +49367,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     <input type="text" value={exportStylePrompt} onChange={(e) => setExportStylePrompt(e.target.value)}
                       onKeyDown={(e) => { if (e.key === 'Enter' && exportStylePrompt.trim()) generateCustomExportStyle(); }}
                       placeholder="Describe a style or click a preset above..."
-                      className="flex-1 text-[11px] p-1.5 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-300"
+                      className="flex-1 text-[11px] p-1.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-indigo-300"
                       aria-label="Custom export style description" />
                     <button onClick={generateCustomExportStyle}
                       disabled={!exportStylePrompt.trim() || isGeneratingStyle}
@@ -49527,7 +49526,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                       <summary className="bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold px-2.5 py-2 rounded-lg cursor-pointer flex items-center gap-1 transition-colors list-none">
                         ♿ Alt Formats <span className="text-[11px] text-slate-600">▾</span>
                       </summary>
-                      <div className="absolute right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl p-2 z-50 w-48 space-y-1">
+                      <div className="absolute right-0 top-full mt-1 bg-white border border-slate-400 rounded-xl shadow-xl p-2 z-50 w-48 space-y-1">
                         <button onClick={() => {
                           const doc = exportPreviewRef.current?.contentDocument;
                           if (!doc) return;
@@ -49629,7 +49628,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   <button onClick={() => { const doc = exportPreviewRef.current?.contentDocument; if (doc) doc.execCommand('redo', false, null); }}
                     className="w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors" aria-label="Redo" title="Redo">↪</button>
                   <select onChange={(e) => { const doc = exportPreviewRef.current?.contentDocument; if (doc && e.target.value) doc.execCommand('foreColor', false, e.target.value); e.target.value = ''; }}
-                    className="h-7 text-[11px] border border-slate-200 rounded px-1 text-slate-600 ml-0.5" aria-label="Text color" defaultValue="">
+                    className="h-7 text-[11px] border border-slate-400 rounded px-1 text-slate-600 ml-0.5" aria-label="Text color" defaultValue="">
                     <option value="" disabled>Color</option>
                     <option value="#000000">⬛ Black</option>
                     <option value="#1e3a5f">🟦 Navy</option>
@@ -49727,7 +49726,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   <iframe
                     ref={exportPreviewRef}
                     title="Export Preview — click any text to edit"
-                    className="w-full h-full bg-white rounded-lg shadow-inner border border-slate-200"
+                    className="w-full h-full bg-white rounded-lg shadow-inner border border-slate-400"
                     sandbox="allow-same-origin allow-scripts allow-forms"
                     onLoad={() => {
                       setTimeout(() => {

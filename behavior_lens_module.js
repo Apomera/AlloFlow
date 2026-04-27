@@ -5135,21 +5135,21 @@ Return ONLY valid JSON:
                 return h('table', { className: 'w-full text-xs border-collapse print:text-[11px]' },
                     h('caption', { className: 'sr-only' }, 'Latency Recording'), h('thead', null,
                         h('tr', { className: 'bg-slate-100' },
-                            h('th', { scope: 'col', className: 'border border-slate-300 px-2 py-1.5 text-left' }, t('behavior_lens.date') || 'Date'),
+                            h('th', { scope: 'col', className: 'border border-slate-400 px-2 py-1.5 text-left' }, t('behavior_lens.date') || 'Date'),
                             ...Array.from({ length: numIntervals }, (_, i) =>
-                                h('th', { scope: 'col', key: i, className: 'border border-slate-300 px-2 py-1.5' }, `Period ${i + 1}`)
+                                h('th', { scope: 'col', key: i, className: 'border border-slate-400 px-2 py-1.5' }, `Period ${i + 1}`)
                             ),
-                            h('th', { scope: 'col', className: 'border border-slate-300 px-2 py-1.5' }, t('behavior_lens.total') || 'Total')
+                            h('th', { scope: 'col', className: 'border border-slate-400 px-2 py-1.5' }, t('behavior_lens.total') || 'Total')
                         )
                     ),
                     h('tbody', null,
                         Array.from({ length: numDays }, (_, d) =>
                             h('tr', { key: d },
-                                h('td', { className: 'border border-slate-300 px-2 py-3' }, '___/___/___'),
+                                h('td', { className: 'border border-slate-400 px-2 py-3' }, '___/___/___'),
                                 ...Array.from({ length: numIntervals }, (_, i) =>
-                                    h('td', { key: i, className: 'border border-slate-300 px-2 py-3 text-center' })
+                                    h('td', { key: i, className: 'border border-slate-400 px-2 py-3 text-center' })
                                 ),
-                                h('td', { className: 'border border-slate-300 px-2 py-3 text-center font-bold' })
+                                h('td', { className: 'border border-slate-400 px-2 py-3 text-center font-bold' })
                             )
                         )
                     )
@@ -5159,21 +5159,21 @@ Return ONLY valid JSON:
                 return h('table', { className: 'w-full text-xs border-collapse print:text-[11px]' },
                     h('caption', { className: 'sr-only' }, 'behavior lens module data table'), h('thead', null,
                         h('tr', { className: 'bg-slate-100' },
-                            h('th', { scope: 'col', className: 'border border-slate-300 px-2 py-1.5 text-left' }, t('behavior_lens.date') || 'Date'),
-                            h('th', { scope: 'col', className: 'border border-slate-300 px-2 py-1.5' }, t('behavior_lens.start_time') || 'Start Time'),
-                            h('th', { scope: 'col', className: 'border border-slate-300 px-2 py-1.5' }, t('behavior_lens.end_time') || 'End Time'),
-                            h('th', { scope: 'col', className: 'border border-slate-300 px-2 py-1.5' }, t('behavior_lens.duration') || 'Duration'),
-                            h('th', { scope: 'col', className: 'border border-slate-300 px-2 py-1.5 text-left' }, t('behavior_lens.notes') || 'Notes')
+                            h('th', { scope: 'col', className: 'border border-slate-400 px-2 py-1.5 text-left' }, t('behavior_lens.date') || 'Date'),
+                            h('th', { scope: 'col', className: 'border border-slate-400 px-2 py-1.5' }, t('behavior_lens.start_time') || 'Start Time'),
+                            h('th', { scope: 'col', className: 'border border-slate-400 px-2 py-1.5' }, t('behavior_lens.end_time') || 'End Time'),
+                            h('th', { scope: 'col', className: 'border border-slate-400 px-2 py-1.5' }, t('behavior_lens.duration') || 'Duration'),
+                            h('th', { scope: 'col', className: 'border border-slate-400 px-2 py-1.5 text-left' }, t('behavior_lens.notes') || 'Notes')
                         )
                     ),
                     h('tbody', null,
                         Array.from({ length: numDays * 3 }, (_, d) =>
                             h('tr', { key: d },
-                                h('td', { className: 'border border-slate-300 px-2 py-3' }),
-                                h('td', { className: 'border border-slate-300 px-2 py-3' }),
-                                h('td', { className: 'border border-slate-300 px-2 py-3' }),
-                                h('td', { className: 'border border-slate-300 px-2 py-3' }),
-                                h('td', { className: 'border border-slate-300 px-2 py-3' })
+                                h('td', { className: 'border border-slate-400 px-2 py-3' }),
+                                h('td', { className: 'border border-slate-400 px-2 py-3' }),
+                                h('td', { className: 'border border-slate-400 px-2 py-3' }),
+                                h('td', { className: 'border border-slate-400 px-2 py-3' }),
+                                h('td', { className: 'border border-slate-400 px-2 py-3' })
                             )
                         )
                     )
@@ -5182,7 +5182,7 @@ Return ONLY valid JSON:
             if (method === 'abc') {
                 return h('div', { className: 'space-y-3' },
                     Array.from({ length: numDays }, (_, d) =>
-                        h('div', { key: d, className: 'border border-slate-300 rounded-lg p-3 print:break-inside-avoid' },
+                        h('div', { key: d, className: 'border border-slate-400 rounded-lg p-3 print:break-inside-avoid' },
                             h('div', { className: 'flex gap-4 text-xs mb-2' },
                                 h('span', null, t('behavior_lens.date_blank') || 'Date: ____________'),
                                 h('span', null, t('behavior_lens.time_blank') || 'Time: ____________'),
@@ -5204,21 +5204,21 @@ Return ONLY valid JSON:
             return h('table', { className: 'w-full text-xs border-collapse print:text-[11px]' },
                 h('caption', { className: 'sr-only' }, 'behavior lens module data table'), h('thead', null,
                     h('tr', { className: 'bg-slate-100' },
-                        h('th', { scope: 'col', className: 'border border-slate-300 px-2 py-1.5 text-left' }, t('behavior_lens.date') || 'Date'),
-                        h('th', { scope: 'col', className: 'border border-slate-300 px-2 py-1.5' }, t('behavior_lens.cue_given') || 'Cue Given'),
-                        h('th', { scope: 'col', className: 'border border-slate-300 px-2 py-1.5' }, t('behavior_lens.response_start') || 'Response Start'),
-                        h('th', { scope: 'col', className: 'border border-slate-300 px-2 py-1.5' }, t('behavior_lens.latency_sec') || 'Latency (sec)'),
-                        h('th', { scope: 'col', className: 'border border-slate-300 px-2 py-1.5 text-left' }, t('behavior_lens.notes') || 'Notes')
+                        h('th', { scope: 'col', className: 'border border-slate-400 px-2 py-1.5 text-left' }, t('behavior_lens.date') || 'Date'),
+                        h('th', { scope: 'col', className: 'border border-slate-400 px-2 py-1.5' }, t('behavior_lens.cue_given') || 'Cue Given'),
+                        h('th', { scope: 'col', className: 'border border-slate-400 px-2 py-1.5' }, t('behavior_lens.response_start') || 'Response Start'),
+                        h('th', { scope: 'col', className: 'border border-slate-400 px-2 py-1.5' }, t('behavior_lens.latency_sec') || 'Latency (sec)'),
+                        h('th', { scope: 'col', className: 'border border-slate-400 px-2 py-1.5 text-left' }, t('behavior_lens.notes') || 'Notes')
                     )
                 ),
                 h('tbody', null,
                     Array.from({ length: numDays * 2 }, (_, d) =>
                         h('tr', { key: d },
-                            h('td', { className: 'border border-slate-300 px-2 py-3' }),
-                            h('td', { className: 'border border-slate-300 px-2 py-3' }),
-                            h('td', { className: 'border border-slate-300 px-2 py-3' }),
-                            h('td', { className: 'border border-slate-300 px-2 py-3' }),
-                            h('td', { className: 'border border-slate-300 px-2 py-3' })
+                            h('td', { className: 'border border-slate-400 px-2 py-3' }),
+                            h('td', { className: 'border border-slate-400 px-2 py-3' }),
+                            h('td', { className: 'border border-slate-400 px-2 py-3' }),
+                            h('td', { className: 'border border-slate-400 px-2 py-3' }),
+                            h('td', { className: 'border border-slate-400 px-2 py-3' })
                         )
                     )
                 )
@@ -5802,17 +5802,17 @@ Generate descriptors for each GAS level and return ONLY valid JSON:
                 h('table', { className: 'w-full text-xs border-collapse' },
                     h('caption', { className: 'sr-only' }, '📐 Goal Attainment Scale'), h('thead', null,
                         h('tr', null,
-                            h('th', { scope: 'col', className: 'border border-slate-300 px-3 py-2 text-left w-16' }, t('behavior_lens.score') || 'Score'),
-                            h('th', { scope: 'col', className: 'border border-slate-300 px-3 py-2 text-left w-40' }, (t('behavior_lens.raw.level') || 'Level')),
-                            h('th', { scope: 'col', className: 'border border-slate-300 px-3 py-2 text-left' }, (t('behavior_lens.raw.descriptor') || 'Descriptor'))
+                            h('th', { scope: 'col', className: 'border border-slate-400 px-3 py-2 text-left w-16' }, t('behavior_lens.score') || 'Score'),
+                            h('th', { scope: 'col', className: 'border border-slate-400 px-3 py-2 text-left w-40' }, (t('behavior_lens.raw.level') || 'Level')),
+                            h('th', { scope: 'col', className: 'border border-slate-400 px-3 py-2 text-left' }, (t('behavior_lens.raw.descriptor') || 'Descriptor'))
                         )
                     ),
                     h('tbody', null,
                         levels.map(lv =>
                             h('tr', { key: lv.score },
-                                h('td', { className: 'border border-slate-300 px-3 py-2 font-black text-center', style: { color: lv.color } }, lv.score > 0 ? `+${lv.score}` : lv.score),
-                                h('td', { className: 'border border-slate-300 px-3 py-2 font-bold', style: { color: lv.color } }, lv.label),
-                                h('td', { className: 'border border-slate-300 px-3 py-2' },
+                                h('td', { className: 'border border-slate-400 px-3 py-2 font-black text-center', style: { color: lv.color } }, lv.score > 0 ? `+${lv.score}` : lv.score),
+                                h('td', { className: 'border border-slate-400 px-3 py-2 font-bold', style: { color: lv.color } }, lv.label),
+                                h('td', { className: 'border border-slate-400 px-3 py-2' },
                                     h('input', {
                                         value: descriptors[String(lv.score)] || '',
                                         onChange: (e) => setDescriptors(prev => ({ ...prev, [String(lv.score)]: e.target.value })),
@@ -17087,7 +17087,7 @@ Use clinical, professional tone, suitable for an IEP team. Keep it structured an
                 h('textarea', {
                     value: editedPlan,
                     onChange: e => setEditedPlan(e.target.value),
-                    className: 'w-full h-96 text-xs text-slate-700 border border-slate-300 rounded-lg p-3 font-mono leading-relaxed focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500'
+                    className: 'w-full h-96 text-xs text-slate-700 border border-slate-400 rounded-lg p-3 font-mono leading-relaxed focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500'
                 }),
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex justify-end gap-2 mt-4' },
                     h('button', { onClick: () => { setIsEditing(false); setEditedPlan(plan); }, className: 'px-4 py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-200' }, 'Cancel'),
@@ -19964,7 +19964,7 @@ Keep the language professional but accessible.`;
                     h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 mt-3' },
                         h('button', { onClick: () => { setResult(null); setResponses({}); setAiInterpretation(''); }, className: 'flex-1 py-2 bg-white border border-slate-400 rounded-xl text-xs font-bold text-slate-600' }, '🔄 New Assessment'),
                         h('button', { onClick: saveForComparison, className: 'flex-1 py-2 bg-blue-100 border border-blue-300 rounded-xl text-xs font-bold text-blue-700' }, '💾 Save for Comparison'),
-                        h('button', { "aria-label": "Export Report", onClick: exportReport, className: 'flex-1 py-2 bg-slate-100 border border-slate-300 rounded-xl text-xs font-bold text-slate-600' }, '📄 Export Report')
+                        h('button', { "aria-label": "Export Report", onClick: exportReport, className: 'flex-1 py-2 bg-slate-100 border border-slate-400 rounded-xl text-xs font-bold text-slate-600' }, '📄 Export Report')
                     )
                 ),
                 // AI Interpretation
@@ -20872,7 +20872,7 @@ Keep the language professional but accessible.`;
 
                 h('label', { className: 'text-xs font-bold text-slate-600 uppercase tracking-wider' }, '📝 Your Observation Notes'),
 
-                h('textarea', { value: rawText, onChange: (e) => setRawText(e.target.value), placeholder: (t('behavior_lens.raw.example_during_math_class_when_asked_to_complete_worksheet_p') || 'Example: During math class, when asked to complete worksheet problems, Johnny pushed his papers off the desk...'), 'aria-label': 'Raw behavior observation text', className: 'w-full h-40 p-3 border border-slate-300 rounded-lg text-sm resize-y focus:ring-2 focus:ring-violet-400 focus:border-violet-400', rows: 6 }),
+                h('textarea', { value: rawText, onChange: (e) => setRawText(e.target.value), placeholder: (t('behavior_lens.raw.example_during_math_class_when_asked_to_complete_worksheet_p') || 'Example: During math class, when asked to complete worksheet problems, Johnny pushed his papers off the desk...'), 'aria-label': 'Raw behavior observation text', className: 'w-full h-40 p-3 border border-slate-400 rounded-lg text-sm resize-y focus:ring-2 focus:ring-violet-400 focus:border-violet-400', rows: 6 }),
 
                 h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-between' },
 

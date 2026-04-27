@@ -423,7 +423,7 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
       "aria-label": t("immersive.font_family") || "Font family",
       value: settings.fontFamily || "",
       onChange: (e) => setSettings((prev) => ({ ...prev, fontFamily: e.target.value })),
-      className: "text-xs bg-slate-100 border border-slate-200 rounded-full px-2 py-1 cursor-pointer hover:bg-slate-200 transition-all font-medium text-slate-700",
+      className: "text-xs bg-slate-100 border border-slate-400 rounded-full px-2 py-1 cursor-pointer hover:bg-slate-200 transition-all font-medium text-slate-700",
       "data-help-key": "immersive_font_family"
     },
     /* @__PURE__ */ React.createElement("option", { value: "" }, "Default"),
@@ -453,7 +453,7 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
           setSettings((prev) => ({ ...prev, ...presets[e.target.value] }));
         }
       },
-      className: "text-xs bg-slate-100 border border-slate-200 rounded-full px-2 py-1 cursor-pointer hover:bg-slate-200 transition-all font-medium text-slate-600"
+      className: "text-xs bg-slate-100 border border-slate-400 rounded-full px-2 py-1 cursor-pointer hover:bg-slate-200 transition-all font-medium text-slate-600"
     },
     /* @__PURE__ */ React.createElement("option", { value: "", disabled: true }, t("immersive.presets") || "Presets"),
     /* @__PURE__ */ React.createElement("option", { value: "warm" }, "\u2600\uFE0F Warm"),
@@ -463,7 +463,7 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
     /* @__PURE__ */ React.createElement("option", { value: "blue-wash" }, "\u{1F4A7} Blue Wash"),
     /* @__PURE__ */ React.createElement("option", { value: "green-tint" }, "\u{1F33F} Green Tint"),
     /* @__PURE__ */ React.createElement("option", { value: "rose" }, "\u{1F338} Rose")
-  ), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement("label", { className: "text-[11px] text-slate-600" }, t("immersive.bg") || "Bg"), /* @__PURE__ */ React.createElement("input", { type: "color", value: settings.bgColor || "#fdfbf7", onChange: (e) => setSettings((prev) => ({ ...prev, bgColor: e.target.value })), className: "w-5 h-5 rounded-full border border-slate-200 cursor-pointer p-0 appearance-none", style: { backgroundColor: settings.bgColor }, "aria-label": t("immersive.bg_color") || "Background color" }), /* @__PURE__ */ React.createElement("label", { className: "text-[11px] text-slate-600" }, t("immersive.text") || "Text"), /* @__PURE__ */ React.createElement("input", { type: "color", value: settings.fontColor || "#1e293b", onChange: (e) => setSettings((prev) => ({ ...prev, fontColor: e.target.value })), className: "w-5 h-5 rounded-full border border-slate-200 cursor-pointer p-0 appearance-none", style: { backgroundColor: settings.fontColor }, "aria-label": t("immersive.text_color") || "Text color" })))), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement("label", { className: "text-[11px] text-slate-600" }, t("immersive.bg") || "Bg"), /* @__PURE__ */ React.createElement("input", { type: "color", value: settings.bgColor || "#fdfbf7", onChange: (e) => setSettings((prev) => ({ ...prev, bgColor: e.target.value })), className: "w-5 h-5 rounded-full border border-slate-400 cursor-pointer p-0 appearance-none", style: { backgroundColor: settings.bgColor }, "aria-label": t("immersive.bg_color") || "Background color" }), /* @__PURE__ */ React.createElement("label", { className: "text-[11px] text-slate-600" }, t("immersive.text") || "Text"), /* @__PURE__ */ React.createElement("input", { type: "color", value: settings.fontColor || "#1e293b", onChange: (e) => setSettings((prev) => ({ ...prev, fontColor: e.target.value })), className: "w-5 h-5 rounded-full border border-slate-400 cursor-pointer p-0 appearance-none", style: { backgroundColor: settings.fontColor }, "aria-label": t("immersive.text_color") || "Text color" })))), /* @__PURE__ */ React.createElement(
     "button",
     {
       "aria-label": t("common.close_word_wall"),

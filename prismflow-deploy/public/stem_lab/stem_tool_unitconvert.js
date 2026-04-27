@@ -662,14 +662,14 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
           // ═══ TAB: ALL UNITS TABLE ═══
           tab === 'table' && h('div', { key: 'table' },
-            h('div', { className: 'bg-white rounded-xl border border-slate-200 overflow-hidden' },
+            h('div', { className: 'bg-white rounded-xl border border-slate-400 overflow-hidden' },
               h('div', { className: 'bg-slate-50 border-b border-slate-200 px-4 py-2 flex items-center justify-between' },
                 h('p', { className: 'text-xs font-bold text-slate-600' }, 'All ' + cat.label.replace(/[^\w\s]/g, '').trim() + ' conversions for:'),
                 h('div', { className: 'flex items-center gap-2' },
                   h('input', {
                     type: 'number', value: d.value,
                     onChange: function(e) { upd('value', parseFloat(e.target.value) || 0); },
-                    className: 'w-24 text-right text-sm font-bold border border-slate-200 rounded-lg px-2 py-1 outline-none focus:ring-2 focus:ring-cyan-500',
+                    className: 'w-24 text-right text-sm font-bold border border-slate-400 rounded-lg px-2 py-1 outline-none focus:ring-2 focus:ring-cyan-500',
                     step: '0.01'
                   }),
                   h('span', { className: 'text-xs font-bold text-slate-600' }, d.fromUnit),

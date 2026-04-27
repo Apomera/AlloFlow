@@ -167,7 +167,7 @@ window.StemLab = window.StemLab || {
                 setToolSnapshots(function(prev) { return prev.concat([snap]); });
                 addToast('\uD83D\uDCF8 Snapshot saved!', 'success');
               },
-              className: 'text-[10px] font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-full px-2 py-0.5 transition-all'
+              className: 'text-[10px] font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 border border-slate-400 rounded-full px-2 py-0.5 transition-all'
             }, '\uD83D\uDCF8 Snapshot')
           )
         ),

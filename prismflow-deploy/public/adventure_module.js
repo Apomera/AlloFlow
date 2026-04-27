@@ -796,7 +796,7 @@ var CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGenera
   }, className: "text-xs px-2 py-1 bg-violet-700 text-white rounded-lg font-bold hover:bg-violet-600" }, "\u2713"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
     setEditIdx(null);
     setEditPrompt("");
-  }, className: "text-xs px-2 py-1 bg-slate-200 text-slate-600 rounded-lg font-bold hover:bg-slate-300" }, "\u2717")) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("button", { onClick: () => setEditIdx(i), className: "text-xs px-3 py-1 bg-slate-100 text-slate-600 rounded-full hover:bg-slate-200 transition-all font-medium border border-slate-200", title: t("adventure.edit_nanobanana") }, "\u270F\uFE0F Refine"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
+  }, className: "text-xs px-2 py-1 bg-slate-200 text-slate-600 rounded-lg font-bold hover:bg-slate-300" }, "\u2717")) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("button", { onClick: () => setEditIdx(i), className: "text-xs px-3 py-1 bg-slate-100 text-slate-600 rounded-full hover:bg-slate-200 transition-all font-medium border border-slate-400", title: t("adventure.edit_nanobanana") }, "\u270F\uFE0F Refine"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
     const link = document.createElement("a");
     link.href = char.portrait;
     link.download = `${(char.name || "character").replace(/\s+/g, "_")}_portrait.png`;

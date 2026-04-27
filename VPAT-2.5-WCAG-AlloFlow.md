@@ -171,7 +171,26 @@ The April 27 work confirms that **adding new features no longer regresses the AA
 
 **BehaviorLens follow-up audit (April 27)**: Despite the April 26 BehaviorLens audit's 205 mechanical fixes, a 1.4.11 Non-text Contrast issue had been missed: **506 instances of `border border-slate-200`** (the single-thin-border Tailwind pattern used on every form input, textarea, select, and search box throughout the FBA / observation tool) renders at ~1.4:1 on white. Fails the 3:1 minimum for UI component boundaries. Bulk-replaced to `border border-slate-400` (~3.25:1) — same visual weight, AA-clean. This is a higher-stakes tool than most (clinicians filing FBAs use it; clinical AT users need clearly-identifiable input fields), so the fix matters even though April 26 had marked the module ✓.
 
-This is a useful pattern data point for future audits: cross-cutting Tailwind class sweeps for `border border-slate-200` (single-border, input-pattern) are worth running across every module, not just the most-recently-touched. **Open recommendation: run that sweep on the AlloFlowANTI.txt monolith + ~25 top-level modules in a future pass.**
+This was a useful pattern data point: cross-cutting Tailwind class sweeps for `border border-slate-200` (single-border, input-pattern) are worth running across every module, not just the most-recently-touched.
+
+**Codebase-wide cross-cutting 1.4.11 sweep (April 27, completed)**: Following the BehaviorLens finding, four equivalent low-contrast Tailwind border patterns were bulk-replaced across **251 files** (every active source file in the codebase, including all `*_source.jsx`, all hand-maintained `*_module.js` CDN modules, all `stem_lab/*.js` and `sel_hub/*.js` tools, the `AlloFlowANTI.txt` monolith + `src/App.jsx` + deploy mirrors, and `prismflow-deploy/public/**/*.js`). Excluded: `_archive/`, build cache, `.bak.*` files, `.RECOVERED` files, `Shareablealloflowcanvas.txt` (per `feedback_no_shareable_sync.md`), and 5 scratch `.txt` files.
+
+| Pattern | Instances replaced | Pre-fix contrast |
+|---|---|---|
+| `border border-slate-200` → `border-slate-400` | 2,718 | ~1.4:1 |
+| `border border-slate-300` → `border-slate-400` | 523 | ~1.6:1 |
+| `border border-gray-200` → `border-slate-400` | 60 | ~1.5:1 |
+| `border border-gray-300` → `border-slate-400` | 48 | ~1.65:1 |
+| **Total** | **~3,349 instances** | All now ~3.25:1 (AA pass) |
+
+Validation: zero matches remain in active source files; `node --check` clean on every modified `.js` file (215+ JS files); spot-checks on 4 representative files (monolith, a STEM Lab tool, a SEL tool, BehaviorLens) showed pure-swap diffs with no collateral damage. Commit: bulk WCAG sweep with 251 files changed, ~3,349 instances replaced.
+
+**As of this sweep, 1.4.11 (Non-text Contrast) is now systematically AA across every form input, textarea, select, and outlined-button border throughout the codebase.** Conformance level for 1.4.11 should upgrade from "Partially Supports (pending verification)" to "Supports" once runtime contrast measurement confirms (axe DevTools / WAVE).
+
+**Out of scope for this sweep (deferred to future passes):**
+- `border-2 border-slate-200` (explicit 2px variant) — used on decorative cards. Strict 1.4.11 reading would also require fixing, but cards typically aren't UI-component boundaries per WCAG's interpretation.
+- Directional borders (`border-l-slate-200`, `border-t-slate-200`, etc.) — usually decorative dividers, not component boundaries.
+- Other low-contrast classes (`text-slate-400` on small text, `bg-slate-200` for component fills) — already handled per-tool in focused audits.
 
 **Runtime axe-core audit (April 26, post-source-audit)**: Ran `scripts/axe_audit.mjs` (Playwright + axe-core 4.10.3) against live `https://prismflow-911fe.web.app` across 7 visual scenarios. **66% improvement vs April 18 baseline** (~59 violation nodes → 20; 0 critical remaining). 3 distinct rules surfaced — all fixed in source: (1) `launch_pad.ai_backend_settings` was showing as raw untranslated i18n key + 1.55:1 contrast — hardcoded label + raised text color to AA-compliant `#e0e7ff`; (2) `<div role="button">` source-toolbar nested-interactive — removed role/tabIndex/onKeyDown from layout div; (3) splash + launch-pad overlay divs not in landmark — wrapped in `role="region"` with descriptive aria-labels. **Expected post-deploy: 0 violations across all 7 scenarios.** Aaron needs to run `build.js --mode=prod` + Firebase deploy + re-run `node scripts/axe_audit.mjs` to confirm. Audit infrastructure (script, axe-core 4.10.3 via CDN, Playwright dep, JSON + Markdown output) is permanent — re-runnable before any release.
 

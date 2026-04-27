@@ -460,7 +460,7 @@
         }
         return (
             <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 animate-in fade-in">
-                <div className="bg-white rounded-3xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden border border-slate-200">
+                <div className="bg-white rounded-3xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden border border-slate-400">
                     <div className="bg-gradient-to-r from-violet-600 to-indigo-600 p-6 flex justify-between items-center text-white shrink-0">
                         <div className="flex items-center gap-4">
                             <div className="bg-white/20 p-3 rounded-2xl backdrop-blur-md">
@@ -548,7 +548,7 @@
                                                     try { sessionStorage.setItem('allo.kokoroRecDismissed', '1'); } catch (_) {}
                                                     setKokoroRecDismissed(true);
                                                 }}
-                                                className="px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 rounded-lg font-bold text-xs transition-colors"
+                                                className="px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-400 rounded-lg font-bold text-xs transition-colors"
                                             >
                                                 Keep Gemini
                                             </button>
@@ -562,7 +562,7 @@
                         <div className="w-1/3 bg-slate-50 border-r border-slate-200 p-6 flex flex-col gap-6 overflow-y-auto">
                             <div className="space-y-3">
                                 <label className="text-xs font-bold text-slate-600 uppercase tracking-widest px-1">{t('word_sounds.settings', 'Settings')}</label>
-                                <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                                <div className="bg-white p-4 rounded-xl border border-slate-400 shadow-sm">
                                     <div className="flex justify-between items-center mb-2">
                                         <span className="font-bold text-slate-700">{t('word_sounds.count', 'Word Count')}</span>
                                         <span className="bg-violet-100 text-violet-700 px-2 py-1 rounded-md text-xs font-bold">{wordCount}</span>
@@ -574,7 +574,7 @@
                                     />
                                     <p className="text-xs text-slate-600 mt-2">{t('word_sounds.auto_select_hint', `Auto-selects ${wordCount} words`)}</p>
                                 </div>
-                                <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm mt-3">
+                                <div className="bg-white p-4 rounded-xl border border-slate-400 shadow-sm mt-3">
                                     <div className="flex justify-between items-center mb-2">
                                         <span className="font-bold text-slate-700">{t('word_sounds.phono_activity_length', 'Sound Activities per Session')}</span>
                                         <span className="bg-emerald-100 text-emerald-700 px-2 py-1 rounded-md text-xs font-bold">{wordSoundsSessionGoal || 30}</span>
@@ -610,7 +610,7 @@
                                         </p>
                                     </div>
                                 </div>
-                                <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm mt-3">
+                                <div className="bg-white p-4 rounded-xl border border-slate-400 shadow-sm mt-3">
                                     <div className="flex justify-between items-center mb-2">
                                         <span className="font-bold text-slate-700">{t('word_sounds.image_theme', 'Image Style')}</span>
                                         <Palette size={18} className="text-pink-500" />
@@ -620,11 +620,11 @@
                                         data-help-key="ws_gen_theme_input" value={imageTheme}
                                         onChange={(e) => setImageTheme(e.target.value)}
                                         placeholder={t('word_sounds.theme_placeholder', 'e.g. cartoon, pixel art, realistic...')}
-                                        className="w-full p-2 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-pink-400 focus:outline-none"
+                                        className="w-full p-2 rounded-lg border border-slate-400 text-sm focus:ring-2 focus:ring-pink-400 focus:outline-none"
                                     />
                                     <p className="text-xs text-slate-600 mt-2">{t('word_sounds.theme_hint', 'Optional: Style for new word images (not glossary)')}</p>
                                 </div>
-                                <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm mt-3">
+                                <div className="bg-white p-4 rounded-xl border border-slate-400 shadow-sm mt-3">
                                     <div className="flex justify-between items-center mb-2">
                                         <span className="font-bold text-slate-700">{t('word_sounds.image_display_mode')}</span>
                                         <ImageIcon size={18} className="text-violet-500" />
@@ -632,7 +632,7 @@
                                     <select aria-label={t('common.image_display_mode')}
                                         value={imageVisibilityMode}
                                         onChange={(e) => setImageVisibilityMode(e.target.value)}
-                                        className="w-full p-2 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-violet-400 focus:outline-none"
+                                        className="w-full p-2 rounded-lg border border-slate-400 text-sm focus:ring-2 focus:ring-violet-400 focus:outline-none"
                                         title={t('common.control_when_word_images_appear_during_activities')}
                                     >
                                         <option value="smart">🧠 Smart (Recommended) - Activity-specific</option>
@@ -642,7 +642,7 @@
                                     </select>
                                     <p className="text-xs text-slate-600 mt-2">When should word images be revealed during activities (Smart = optimized per activity)</p>
                                 </div>
-                                <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm mt-3">
+                                <div className="bg-white p-4 rounded-xl border border-slate-400 shadow-sm mt-3">
                                     <div className="flex justify-between items-center mb-2">
                                         <span className="font-bold text-slate-700">{t('word_sounds.syllable_range')}</span>
                                         <span className="bg-emerald-100 text-emerald-700 px-2 py-1 rounded-md text-xs font-bold">{syllableRange.min} - {syllableRange.max}</span>
@@ -1612,7 +1612,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                             }>{category}</div>
                                                             <div className="flex flex-wrap gap-1">
                                                                 {(Array.isArray(phonemes) ? phonemes : []).map(p => (
-                                                                    <div key={p} className="inline-flex rounded overflow-hidden border border-slate-300 hover:border-pink-400 transition-colors">
+                                                                    <div key={p} className="inline-flex rounded overflow-hidden border border-slate-400 hover:border-pink-400 transition-colors">
                                                                         <button
                                                                             onClick={() => onPlayAudio && onPlayAudio(p)}
                                                                             className="px-1.5 py-1 bg-slate-100 hover:bg-pink-200 text-slate-600 hover:text-pink-600 transition-colors border-r border-slate-300"

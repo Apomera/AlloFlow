@@ -1556,7 +1556,7 @@ Return ONLY valid JSON:
                 h('div', { className: 'flex items-center gap-1 overflow-x-auto pb-1' },
                     STEPS.map((s, i) =>
                         h('button', { 'aria-label': 'Navigate to wizard step', key: s.num,
-                            className: `flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all whitespace-nowrap ${currentStep === s.num ? 'bg-violet-600 text-white shadow-md' : s.num < currentStep ? 'bg-violet-100 text-violet-700' : 'bg-white text-slate-600 border border-slate-200'}`,
+                            className: `flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all whitespace-nowrap ${currentStep === s.num ? 'bg-violet-600 text-white shadow-md' : s.num < currentStep ? 'bg-violet-100 text-violet-700' : 'bg-white text-slate-600 border border-slate-400'}`,
                             onClick: () => setCurrentStep(s.num)
                         }, h('span', null, s.icon), ` ${s.label}`)
                     )
@@ -1564,7 +1564,7 @@ Return ONLY valid JSON:
             ),
             // Step content
             // ═══ STEP 1: Student Selection ═══
-            currentStep === 1 && h('div', { className: 'bg-white rounded-xl p-4 border border-slate-200 space-y-4' },
+            currentStep === 1 && h('div', { className: 'bg-white rounded-xl p-4 border border-slate-400 space-y-4' },
                 h('h3', { className: 'text-sm font-bold text-slate-800 flex items-center gap-2' }, '👤 Student Selection'),
                 h('p', { className: 'text-[11px] text-slate-600' }, 'Select or enter a student code name. All identifiers are privacy-safe code names — never real names.'),
                 isDemoLoaded && h('div', { className: 'px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg text-[11px] text-amber-700 font-medium' }, '⚠️ DEMO DATA LOADED — This is fictional test data, not a real student.'),
@@ -1636,7 +1636,7 @@ Return ONLY valid JSON:
             ),
 
             // ═══ STEP 3: Clinical Observations ═══
-            currentStep === 3 && h('div', { className: 'bg-white rounded-xl p-4 border border-slate-200 space-y-3' },
+            currentStep === 3 && h('div', { className: 'bg-white rounded-xl p-4 border border-slate-400 space-y-3' },
                 h('h3', { className: 'text-sm font-bold text-slate-800 flex items-center gap-2' }, '\u{1F50D} Clinical Observations'),
                 h('p', { className: 'text-[11px] text-slate-600' }, 'Enter clinical observations, interview notes, and collateral information. Each source is tracked for fact attribution.'),
                 // BehaviorLens import
@@ -1704,7 +1704,7 @@ Return ONLY valid JSON:
             ),
 
             // ═══ STEP 4: Assessment Score Entry ═══
-            currentStep === 4 && h('div', { className: 'bg-white rounded-xl p-4 border border-slate-200 space-y-4' },
+            currentStep === 4 && h('div', { className: 'bg-white rounded-xl p-4 border border-slate-400 space-y-4' },
                 h('h3', { className: 'text-sm font-bold text-slate-800 flex items-center gap-2' }, '📊 Assessment Score Entry'),
                 h('p', { className: 'text-[11px] text-slate-600' }, 'Select an assessment and enter scores. Classifications are auto-calculated.'),
                 // Assessment picker
@@ -1774,7 +1774,7 @@ Return ONLY valid JSON:
                 )
             ),
             // ═══ STEP 2: Background & History ═══
-            currentStep === 2 && h('div', { className: 'bg-white rounded-xl p-4 border border-slate-200 space-y-3' },
+            currentStep === 2 && h('div', { className: 'bg-white rounded-xl p-4 border border-slate-400 space-y-3' },
                 h('h3', { className: 'text-sm font-bold text-slate-800 flex items-center gap-2' }, '📋 Background & History'),
                 h('p', { className: 'text-[11px] text-slate-600' }, 'Enter background information. PII is auto-scrubbed before any AI processing.'),
                 h('div', { className: 'flex flex-wrap gap-2' },
@@ -1814,7 +1814,7 @@ Return ONLY valid JSON:
                             h('span', { className: 'text-[11px] px-1.5 py-0.5 bg-indigo-100 text-indigo-600 rounded-full' }, 'Default')
                         ),
                         referenceLibrary.map(ref =>
-                            h('div', { key: ref.id, className: 'px-2 py-1.5 bg-white rounded border border-slate-200 flex items-center justify-between text-[11px]' },
+                            h('div', { key: ref.id, className: 'px-2 py-1.5 bg-white rounded border border-slate-400 flex items-center justify-between text-[11px]' },
                                 h('div', { className: 'flex-1 min-w-0' },
                                     h('span', { className: 'font-medium text-slate-800 block truncate' }, ref.name),
                                     h('span', { className: 'text-slate-600 text-[11px]' }, ref.text.substring(0, 80) + '...')
@@ -1837,7 +1837,7 @@ Return ONLY valid JSON:
                 )
             ),
             // ═══ STEP 5: Fact Chunk Review ═══
-            currentStep === 5 && h('div', { className: 'bg-white rounded-xl p-4 border border-slate-200 space-y-3' },
+            currentStep === 5 && h('div', { className: 'bg-white rounded-xl p-4 border border-slate-400 space-y-3' },
                 h('h3', { className: 'text-sm font-bold text-slate-800 flex items-center gap-2' }, '🔒 Fact Chunk Review'),
                 h('p', { className: 'text-[11px] text-slate-600' }, 'Verify each fact. Verified chunks become immutable and serve as ground truth for the report.'),
                 // Stats bar
@@ -1889,7 +1889,7 @@ Return ONLY valid JSON:
             ),
 
             // ═══ STEP 6: Diagnostic Hypotheses ═══
-            currentStep === 6 && h('div', { className: 'bg-white rounded-xl p-4 border border-slate-200 space-y-3' },
+            currentStep === 6 && h('div', { className: 'bg-white rounded-xl p-4 border border-slate-400 space-y-3' },
                 h('h3', { className: 'text-sm font-bold text-slate-800 flex items-center gap-2' }, '\u{1F52C} Diagnostic Hypotheses'),
                 h('p', { className: 'text-[11px] text-slate-600' }, 'Enter diagnostic hypotheses to evaluate. The AI will organize your verified evidence for and against each hypothesis.'),
                 // Hypothesis presets
@@ -1937,7 +1937,7 @@ Return ONLY valid JSON:
                 Object.keys(differentialResults).length > 0 && h('div', { className: 'space-y-2 mt-2' },
                     h('h4', { className: 'text-xs font-bold text-indigo-700' }, '\u{1F4CA} Differential Evidence Summary'),
                     Object.entries(differentialResults).map(([name, data]) =>
-                        h('details', { key: name, className: 'bg-slate-50 rounded-lg border border-slate-200', open: true },
+                        h('details', { key: name, className: 'bg-slate-50 rounded-lg border border-slate-400', open: true },
                             h('summary', { className: 'text-xs font-medium text-slate-700 px-3 py-2 cursor-pointer hover:bg-slate-100 rounded-t-lg flex items-center gap-2' },
                                 h('span', {
                                     className: 'w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold text-white ' + (data.strengthScore >= 7 ? 'bg-green-500' : data.strengthScore >= 4 ? 'bg-amber-500' : 'bg-red-400')
@@ -1968,7 +1968,7 @@ Return ONLY valid JSON:
             ),
 
             // ═══ STEP 7: Report Blueprint ═══
-            currentStep === 7 && h('div', { className: 'bg-white rounded-xl p-4 border border-slate-200 space-y-3' },
+            currentStep === 7 && h('div', { className: 'bg-white rounded-xl p-4 border border-slate-400 space-y-3' },
                 h('h3', { className: 'text-sm font-bold text-slate-800 flex items-center gap-2' }, '\u{1F4D0} Report Blueprint'),
                 h('p', { className: 'text-[11px] text-slate-600' }, 'Customize your report structure, section order, and add notes to guide each section\'s generation.'),
                 // Report type selector
@@ -1990,7 +1990,7 @@ Return ONLY valid JSON:
                 // Section list
                 h('div', { className: 'space-y-1' },
                     blueprint.map((section, idx) =>
-                        h('div', { key: section.id, className: 'bg-slate-50 rounded-lg border border-slate-200 p-2 ' + (!section.enabled ? 'opacity-50' : '') },
+                        h('div', { key: section.id, className: 'bg-slate-50 rounded-lg border border-slate-400 p-2 ' + (!section.enabled ? 'opacity-50' : '') },
                             h('div', { className: 'flex items-center gap-2' },
                                 h('div', { className: 'flex flex-col gap-0.5' },
                                     h('button', { className: 'text-[11px] text-slate-600 hover:text-slate-700 leading-none', disabled: idx === 0,
@@ -2039,7 +2039,7 @@ Return ONLY valid JSON:
                 )
             ),
             // ═══ STEP 8: Generate Report ═══
-            currentStep === 8 && h('div', { className: 'bg-white rounded-xl p-4 border border-slate-200 space-y-3' },
+            currentStep === 8 && h('div', { className: 'bg-white rounded-xl p-4 border border-slate-400 space-y-3' },
                 h('h3', { className: 'text-sm font-bold text-slate-800 flex items-center gap-2' }, '✍️ Generate Report'),
                 h('div', { className: 'flex items-center gap-3 mb-2' },
                     h('div', { className: 'flex-1' },
@@ -2066,7 +2066,7 @@ Return ONLY valid JSON:
                 // Generated sections with evidence mapping & per-section controls
                 Object.keys(reportSections).length > 0 && h('div', { className: 'space-y-3 mt-3' },
                     Object.entries(reportSections).map(([section, text]) =>
-                        h('div', { key: section, className: 'bg-slate-50 rounded-lg p-3 border border-slate-200' },
+                        h('div', { key: section, className: 'bg-slate-50 rounded-lg p-3 border border-slate-400' },
                             // Section header with controls
                             h('div', { className: 'flex items-center justify-between mb-2 border-b border-slate-200 pb-1' },
                                 h('h4', { className: 'text-xs font-bold text-indigo-700' }, section),
@@ -2157,7 +2157,7 @@ Return ONLY valid JSON:
                 )
             ),
             // ═══ STEP 9: Accuracy Dashboard ═══
-            currentStep === 9 && h('div', { className: 'bg-white rounded-xl p-4 border border-slate-200 space-y-3' },
+            currentStep === 9 && h('div', { className: 'bg-white rounded-xl p-4 border border-slate-400 space-y-3' },
                 h('h3', { className: 'text-sm font-bold text-slate-800 flex items-center gap-2' }, '🎯 Accuracy Dashboard'),
                 h('p', { className: 'text-[11px] text-slate-600' }, 'Dual-pass verification: two independent AI auditors cross-reference each claim against immutable fact chunks.'),
                 checking ? h('div', { className: 'text-center py-8' },
@@ -2213,7 +2213,7 @@ Return ONLY valid JSON:
                 )
             ),
             // ═══ STEP 10: Export ═══
-            currentStep === 10 && h('div', { className: 'bg-white rounded-xl p-4 border border-slate-200 space-y-3' },
+            currentStep === 10 && h('div', { className: 'bg-white rounded-xl p-4 border border-slate-400 space-y-3' },
                 h('h3', { className: 'text-sm font-bold text-slate-800 flex items-center gap-2' }, '📥 Export & Save'),
                 // Accuracy summary
                 accuracyResults.length > 0 && h('div', { className: `rounded-lg p-3 border ${accuracyResults.filter(r => r.status === 'contradicts').length > 0 ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200'}` },
@@ -2312,7 +2312,7 @@ Return ONLY valid JSON:
                     savedReports.length === 0 && h('p', { className: 'text-[11px] text-violet-400 text-center py-2' }, 'No saved reports yet. Use "Save Report" to keep a copy.')
                 ),
                 // Quick report preview
-                Object.keys(reportSections).length > 0 && h('details', { className: 'mt-2 bg-slate-50 rounded-lg border border-slate-200' },
+                Object.keys(reportSections).length > 0 && h('details', { className: 'mt-2 bg-slate-50 rounded-lg border border-slate-400' },
                     h('summary', { className: 'text-xs font-medium text-slate-700 px-3 py-2 cursor-pointer hover:bg-slate-100 rounded-lg' }, '📄 Preview Full Report'),
                     h('div', { className: 'px-4 py-3 space-y-3 max-h-[400px] overflow-y-auto' },
                         h('h2', { className: 'text-sm font-bold text-center text-slate-800' }, reportTitle),

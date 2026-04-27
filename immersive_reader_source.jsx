@@ -545,7 +545,7 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
               aria-label={t('immersive.font_family') || 'Font family'}
               value={settings.fontFamily || ''}
               onChange={(e) => setSettings(prev => ({ ...prev, fontFamily: e.target.value }))}
-              className="text-xs bg-slate-100 border border-slate-200 rounded-full px-2 py-1 cursor-pointer hover:bg-slate-200 transition-all font-medium text-slate-700"
+              className="text-xs bg-slate-100 border border-slate-400 rounded-full px-2 py-1 cursor-pointer hover:bg-slate-200 transition-all font-medium text-slate-700"
               data-help-key="immersive_font_family"
             >
                 <option value="">Default</option>
@@ -578,7 +578,7 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
                   setSettings(prev => ({...prev, ...presets[e.target.value]}));
                 }
               }}
-              className="text-xs bg-slate-100 border border-slate-200 rounded-full px-2 py-1 cursor-pointer hover:bg-slate-200 transition-all font-medium text-slate-600"
+              className="text-xs bg-slate-100 border border-slate-400 rounded-full px-2 py-1 cursor-pointer hover:bg-slate-200 transition-all font-medium text-slate-600"
             >
               <option value="" disabled>{t('immersive.presets') || 'Presets'}</option>
               <option value="warm">☀️ Warm</option>
@@ -591,9 +591,9 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
             </select>
             <div className="flex items-center gap-1.5">
               <label className="text-[11px] text-slate-600">{t('immersive.bg') || 'Bg'}</label>
-              <input type="color" value={settings.bgColor || '#fdfbf7'} onChange={(e) => setSettings(prev => ({...prev, bgColor: e.target.value}))} className="w-5 h-5 rounded-full border border-slate-200 cursor-pointer p-0 appearance-none" style={{backgroundColor: settings.bgColor}} aria-label={t('immersive.bg_color') || 'Background color'}/>
+              <input type="color" value={settings.bgColor || '#fdfbf7'} onChange={(e) => setSettings(prev => ({...prev, bgColor: e.target.value}))} className="w-5 h-5 rounded-full border border-slate-400 cursor-pointer p-0 appearance-none" style={{backgroundColor: settings.bgColor}} aria-label={t('immersive.bg_color') || 'Background color'}/>
               <label className="text-[11px] text-slate-600">{t('immersive.text') || 'Text'}</label>
-              <input type="color" value={settings.fontColor || '#1e293b'} onChange={(e) => setSettings(prev => ({...prev, fontColor: e.target.value}))} className="w-5 h-5 rounded-full border border-slate-200 cursor-pointer p-0 appearance-none" style={{backgroundColor: settings.fontColor}} aria-label={t('immersive.text_color') || 'Text color'}/>
+              <input type="color" value={settings.fontColor || '#1e293b'} onChange={(e) => setSettings(prev => ({...prev, fontColor: e.target.value}))} className="w-5 h-5 rounded-full border border-slate-400 cursor-pointer p-0 appearance-none" style={{backgroundColor: settings.fontColor}} aria-label={t('immersive.text_color') || 'Text color'}/>
             </div>
         </div>
       </div>

@@ -1186,13 +1186,13 @@ window.SelHub = window.SelHub || {
           ),
 
           // Reflection journal
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-slate-50 rounded-xl border border-slate-200 p-4' },
+          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-slate-50 rounded-xl border border-slate-400 p-4' },
             h('label', { className: 'text-xs font-bold text-slate-600 block mb-1' }, '\uD83D\uDCDD Your Reflection (private)'),
             h('textarea', {
               value: d.currentReflection || '',
               onChange: function(e) { upd('currentReflection', e.target.value); },
               placeholder: 'What came up for you during this round? What did you notice?',
-              className: 'w-full text-sm p-3 border border-slate-200 rounded-lg resize-none h-20 outline-none focus:ring-2 focus:ring-amber-300',
+              className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-20 outline-none focus:ring-2 focus:ring-amber-300',
               'aria-label': 'Circle reflection'
             }),
             d.currentReflection && h('button', { 'aria-label': 'Save Reflection',
@@ -1352,7 +1352,7 @@ window.SelHub = window.SelHub || {
                   upd('harmResponses', newResponses);
                 },
                 placeholder: placeholder,
-                className: 'w-full text-sm p-3 border border-slate-200 rounded-lg resize-none h-28 outline-none focus:ring-2 focus:ring-amber-300',
+                className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-28 outline-none focus:ring-2 focus:ring-amber-300',
                 'aria-label': step.title + ' response'
               }),
               callTTS && h('button', { 'aria-label': 'Read Guidance Aloud',
@@ -1386,7 +1386,7 @@ window.SelHub = window.SelHub || {
           })(),
 
           // Summary of responses so far
-          harmStep > 0 && h('div', { className: 'bg-slate-50 rounded-xl border border-slate-200 p-4' },
+          harmStep > 0 && h('div', { className: 'bg-slate-50 rounded-xl border border-slate-400 p-4' },
             h('h4', { className: 'text-xs font-bold text-slate-600 mb-2 uppercase tracking-widest' }, 'Previous Steps'),
             h('div', { className: 'space-y-2' },
               HARM_REPAIR_STEPS.slice(0, harmStep).map(function(step, i) {
@@ -1476,13 +1476,13 @@ window.SelHub = window.SelHub || {
               ),
 
               // Reflection
-              h('div', { className: 'bg-slate-50 rounded-xl border border-slate-200 p-4' },
+              h('div', { className: 'bg-slate-50 rounded-xl border border-slate-400 p-4' },
                 h('label', { className: 'text-xs font-bold text-slate-600 block mb-1' }, '\uD83D\uDCAC What restorative approach would you use in real life?'),
                 h('textarea', {
                   value: d.scenarioReflection || '',
                   onChange: function(e) { upd('scenarioReflection', e.target.value); },
                   placeholder: 'Think about a real situation where a restorative approach could help...',
-                  className: 'w-full text-sm p-3 border border-slate-200 rounded-lg resize-none h-20 outline-none focus:ring-2 focus:ring-amber-300',
+                  className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-20 outline-none focus:ring-2 focus:ring-amber-300',
                   'aria-label': 'Scenario reflection'
                 })
               )
@@ -1516,14 +1516,14 @@ window.SelHub = window.SelHub || {
                   },
                   disabled: isAdded,
                   className: 'px-3 py-1.5 rounded-full text-[10px] font-bold transition-all ' +
-                    (isAdded ? 'bg-emerald-100 text-emerald-600 cursor-default' : 'bg-white text-slate-600 border border-slate-200 hover:border-amber-400 hover:bg-amber-50')
+                    (isAdded ? 'bg-emerald-100 text-emerald-600 cursor-default' : 'bg-white text-slate-600 border border-slate-400 hover:border-amber-400 hover:bg-amber-50')
                 }, (isAdded ? '\u2713 ' : '+ ') + sug);
               })
             )
           ),
 
           // Custom agreement input
-          h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4' },
+          h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4' },
             h('h4', { className: 'text-xs font-bold text-slate-600 mb-2' }, '\u270D\uFE0F Write Your Own Agreement'),
             h('div', { className: 'flex gap-2' },
               h('input', {
@@ -1531,7 +1531,7 @@ window.SelHub = window.SelHub || {
                 value: customAgreement,
                 onChange: function(e) { upd('customAgreement', e.target.value); },
                 placeholder: 'Type a custom agreement...',
-                className: 'flex-1 text-sm p-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-amber-300',
+                className: 'flex-1 text-sm p-2 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-amber-300',
                 'aria-label': 'Custom agreement input',
                 onKeyDown: function(e) {
                   if (e.key === 'Enter' && customAgreement.trim()) {
@@ -1666,7 +1666,7 @@ window.SelHub = window.SelHub || {
                 value: d.rootsReflection || '',
                 onChange: function(e) { upd('rootsReflection', e.target.value); },
                 placeholder: 'Write your reflection here...',
-                className: 'w-full text-sm p-3 border border-slate-200 rounded-lg resize-none h-24 outline-none focus:ring-2 focus:ring-amber-300',
+                className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-24 outline-none focus:ring-2 focus:ring-amber-300',
                 'aria-label': 'Indigenous roots reflection'
               })
             ),
@@ -1936,14 +1936,14 @@ window.SelHub = window.SelHub || {
           (function() {
             var activePerson = d.empathyPerson || 'personA';
             var nameKey = activePerson + 'Name';
-            return h('div', { className: 'bg-white rounded-xl border border-slate-200 p-3' },
+            return h('div', { className: 'bg-white rounded-xl border border-slate-400 p-3' },
               h('label', { className: 'text-xs font-bold text-slate-600 block mb-1' }, (activePerson === 'personA' ? 'Person A' : 'Person B') + '\'s Name (optional)'),
               h('input', {
                 type: 'text',
                 value: d[nameKey] || '',
                 onChange: function(e) { upd(nameKey, e.target.value); },
                 placeholder: 'Enter a name or label...',
-                className: 'w-full text-sm p-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-amber-300',
+                className: 'w-full text-sm p-2 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-amber-300',
                 'aria-label': 'Person name'
               })
             );
@@ -1970,7 +1970,7 @@ window.SelHub = window.SelHub || {
                       upd('empathyData', newData);
                     },
                     placeholder: quad.placeholder,
-                    className: 'w-full text-xs p-2 border border-slate-200 rounded-lg resize-none h-24 outline-none focus:ring-2',
+                    className: 'w-full text-xs p-2 border border-slate-400 rounded-lg resize-none h-24 outline-none focus:ring-2',
                     style: { '--tw-ring-color': quad.color + '60' },
                     'aria-label': quad.label + ' for ' + activePerson
                   })
@@ -2183,7 +2183,7 @@ window.SelHub = window.SelHub || {
                         placeholder: gradeBand === 'elementary'
                           ? 'Tell us why you picked this one...'
                           : 'Explain your reasoning. What makes this approach more effective?',
-                        className: 'w-full text-xs p-2 border border-slate-200 rounded-lg resize-none h-16 outline-none focus:ring-2 focus:ring-amber-300',
+                        className: 'w-full text-xs p-2 border border-slate-400 rounded-lg resize-none h-16 outline-none focus:ring-2 focus:ring-amber-300',
                         'aria-label': 'Comparison reflection'
                       })
                     )

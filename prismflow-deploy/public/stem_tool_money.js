@@ -913,7 +913,7 @@ window.StemLab = window.StemLab || {
                   )
                 ),
                 // Counting board
-                React.createElement("div", { className: "bg-gradient-to-br from-slate-50 to-white rounded-xl p-4 border border-slate-200" },
+                React.createElement("div", { className: "bg-gradient-to-br from-slate-50 to-white rounded-xl p-4 border border-slate-400" },
                   React.createElement("div", { className: "flex items-center justify-between mb-3" },
                     React.createElement("h3", { className: "text-sm font-bold text-slate-700" }, "\uD83E\uDDEE Counting Board"),
                     React.createElement("div", { className: "flex items-center gap-2" },
@@ -1001,7 +1001,7 @@ window.StemLab = window.StemLab || {
                         React.createElement("input", { type: "number", step: isJPY ? "1" : "0.01", placeholder: cur.symbol + "...",
                           value: changeAnswer !== null ? changeAnswer : '',
                           onChange: function (e) { upd('changeAnswer', e.target.value === '' ? null : parseFloat(e.target.value)); },
-                          className: "px-4 py-2 border border-slate-200 rounded-xl text-sm font-bold w-32 focus:ring-2 focus:ring-blue-400 outline-none"
+                          className: "px-4 py-2 border border-slate-400 rounded-xl text-sm font-bold w-32 focus:ring-2 focus:ring-blue-400 outline-none"
                         }),
                         React.createElement("button", { onClick: function () {
                             var correct = Math.round((changePaid - changePrice) * 100) / 100;
@@ -1247,7 +1247,7 @@ window.StemLab = window.StemLab || {
                   storeCats.map(function (cat) {
                     var catIcons = { All: '\uD83C\uDFEA', Produce: '\uD83E\uDD6C', Meat: '\uD83E\uDD69', Dairy: '\uD83E\uDDC0', Bakery: '\uD83C\uDF5E', Pantry: '\uD83E\uDD6B', Frozen: '\uD83E\uDDCA', Drinks: '\uD83E\uDD64', Snacks: '\uD83C\uDF6B' };
                     return React.createElement("button", { key: cat, onClick: function () { upd('storeCat', cat); },
-                      className: "px-2 py-1 rounded-full text-[10px] font-bold transition-all " + (storeCat === cat ? 'bg-orange-500 text-white shadow-sm' : 'bg-white text-slate-600 border border-slate-200 hover:bg-orange-50')
+                      className: "px-2 py-1 rounded-full text-[10px] font-bold transition-all " + (storeCat === cat ? 'bg-orange-500 text-white shadow-sm' : 'bg-white text-slate-600 border border-slate-400 hover:bg-orange-50')
                     }, (catIcons[cat] || '\uD83C\uDFEA') + ' ' + cat);
                   })
                 ),
@@ -1429,7 +1429,7 @@ window.StemLab = window.StemLab || {
                           React.createElement("input", { type: "number", step: isJPY ? "1" : "0.01", placeholder: "Your answer...",
                             value: d.wpAnswer !== null && d.wpAnswer !== undefined ? d.wpAnswer : '',
                             onChange: function (e) { upd('wpAnswer', e.target.value === '' ? null : parseFloat(e.target.value)); },
-                            className: "px-4 py-2 border border-slate-200 rounded-xl text-sm font-bold w-36 focus:ring-2 focus:ring-violet-400 outline-none"
+                            className: "px-4 py-2 border border-slate-400 rounded-xl text-sm font-bold w-36 focus:ring-2 focus:ring-violet-400 outline-none"
                           }),
                           React.createElement("button", { onClick: function () {
                               var correct = d.wpProblem.answer;
@@ -1442,7 +1442,7 @@ window.StemLab = window.StemLab || {
                           }, "\u2714 Check")
                         ),
                         d.wpFeedback && React.createElement("p", { className: "text-sm font-bold " + (d.wpFeedback.ok ? 'text-emerald-600' : 'text-red-500') }, d.wpFeedback.msg),
-                        d.wpFeedback && !d.wpFeedback.ok && d.wpProblem.explanation && React.createElement("div", { className: "bg-slate-50 rounded-xl p-3 border border-slate-200" },
+                        d.wpFeedback && !d.wpFeedback.ok && d.wpProblem.explanation && React.createElement("div", { className: "bg-slate-50 rounded-xl p-3 border border-slate-400" },
                           React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase mb-1" }, "Solution"),
                           React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed whitespace-pre-line" }, d.wpProblem.explanation)
                         ),
@@ -1494,7 +1494,7 @@ window.StemLab = window.StemLab || {
                         React.createElement("input", { type: "number", step: "0.01", placeholder: CURRENCIES[d.exchTo].symbol + "...",
                           value: d.exchAnswer !== null && d.exchAnswer !== undefined ? d.exchAnswer : '',
                           onChange: function (e) { upd('exchAnswer', e.target.value === '' ? null : parseFloat(e.target.value)); },
-                          className: "px-4 py-2 border border-slate-200 rounded-xl text-sm font-bold w-40 focus:ring-2 focus:ring-sky-400 outline-none"
+                          className: "px-4 py-2 border border-slate-400 rounded-xl text-sm font-bold w-40 focus:ring-2 focus:ring-sky-400 outline-none"
                         }),
                         React.createElement("button", { onClick: function () {
                             var correct = d.exchCorrect;
@@ -1544,7 +1544,7 @@ window.StemLab = window.StemLab || {
                         React.createElement("div", { className: "flex items-center gap-3" },
                           React.createElement("input", { type: "number", step: isJPY ? '1' : '0.01', placeholder: 'Per person...',
                             value: d.tipAnswer != null ? d.tipAnswer : '', onChange: function (e) { upd('tipAnswer', e.target.value === '' ? null : parseFloat(e.target.value)); },
-                            className: "px-4 py-2 border border-slate-200 rounded-xl text-sm font-bold w-36 focus:ring-2 focus:ring-pink-400 outline-none"
+                            className: "px-4 py-2 border border-slate-400 rounded-xl text-sm font-bold w-36 focus:ring-2 focus:ring-pink-400 outline-none"
                           }),
                           React.createElement("button", { onClick: function () {
                               var tipAmt = d.tipBill * (d.tipPct / 100);
@@ -1584,7 +1584,7 @@ window.StemLab = window.StemLab || {
                         React.createElement("div", { className: "flex items-center gap-3" },
                           React.createElement("input", { type: "number", step: isJPY ? '1' : '0.01', placeholder: 'Sale price...',
                             value: d.discAnswer != null ? d.discAnswer : '', onChange: function (e) { upd('discAnswer', e.target.value === '' ? null : parseFloat(e.target.value)); },
-                            className: "px-4 py-2 border border-slate-200 rounded-xl text-sm font-bold w-36 focus:ring-2 focus:ring-pink-400 outline-none"
+                            className: "px-4 py-2 border border-slate-400 rounded-xl text-sm font-bold w-36 focus:ring-2 focus:ring-pink-400 outline-none"
                           }),
                           React.createElement("button", { onClick: function () {
                               var discounted = d.discOriginal * (1 - d.discPercent / 100);
@@ -1615,7 +1615,7 @@ window.StemLab = window.StemLab || {
                   React.createElement("label", { className: "text-sm font-bold text-slate-600" }, "Monthly Income:"),
                   React.createElement("input", { type: "number", value: budgetIncome,
                     onChange: function (e) { upd('budgetIncome', parseFloat(e.target.value) || 0); },
-                    className: "px-4 py-2 border border-slate-200 rounded-xl text-sm font-bold w-40 focus:ring-2 focus:ring-indigo-400 outline-none"
+                    className: "px-4 py-2 border border-slate-400 rounded-xl text-sm font-bold w-40 focus:ring-2 focus:ring-indigo-400 outline-none"
                   }),
                   React.createElement("span", { className: "text-xs font-bold " + (budgetUsed === 100 ? 'text-emerald-600' : budgetUsed > 100 ? 'text-red-500' : 'text-amber-500') }, budgetUsed + '% allocated' + (budgetUsed !== 100 ? ' (' + (100 - budgetUsed) + '% remaining)' : ' \u2714'))
                 ),
@@ -1686,7 +1686,7 @@ window.StemLab = window.StemLab || {
                       })
                     ),
                     // Placed items
-                    (d.fcPlaced || []).length > 0 && React.createElement("div", { className: "bg-white rounded-lg p-3 border border-slate-200" },
+                    (d.fcPlaced || []).length > 0 && React.createElement("div", { className: "bg-white rounded-lg p-3 border border-slate-400" },
                       React.createElement("div", { className: "flex items-center justify-between mb-2" },
                         React.createElement("span", { className: "text-xs font-bold text-slate-600" }, "Your selection: " + (d.fcPlaced || []).length + " pieces"),
                         React.createElement("span", { className: "text-sm font-black text-emerald-600" }, fmt((d.fcPlaced || []).reduce(function (s, v) { return s + v; }, 0)))
@@ -2014,7 +2014,7 @@ window.StemLab = window.StemLab || {
                 React.createElement("div", { className: "flex flex-wrap gap-2 mb-2" },
                   [{ id: 'compound', label: '\uD83D\uDCC8 Compound Interest' }, { id: 'retire', label: '\uD83C\uDFD6\uFE0F Retirement' }, { id: 'loans', label: '\uD83C\uDFE6 Loans & Debt' }, { id: 'goals', label: '\uD83C\uDFAF Savings Goals' }, { id: 'quiz', label: '\uD83E\uDDE0 Fin. Quiz' }].map(function (s) {
                     return React.createElement("button", { key: s.id, onClick: function () { upd('finSub', s.id); },
-                      className: "px-3 py-1.5 rounded-xl text-xs font-bold transition-all " + (finSub === s.id ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg' : 'bg-white text-slate-600 border border-slate-200 hover:bg-blue-50')
+                      className: "px-3 py-1.5 rounded-xl text-xs font-bold transition-all " + (finSub === s.id ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg' : 'bg-white text-slate-600 border border-slate-400 hover:bg-blue-50')
                     }, s.label);
                   })
                 ),
@@ -2028,22 +2028,22 @@ window.StemLab = window.StemLab || {
                     React.createElement("div", null,
                       React.createElement("label", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "Principal"),
                       React.createElement("input", { type: "number", value: ciPrincipal, onChange: function (e) { upd('ciPrincipal', Math.max(0, parseFloat(e.target.value) || 0)); },
-                        className: "w-full px-3 py-2 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-blue-400 outline-none mt-1" })
+                        className: "w-full px-3 py-2 border border-slate-400 rounded-lg text-sm font-bold focus:ring-2 focus:ring-blue-400 outline-none mt-1" })
                     ),
                     React.createElement("div", null,
                       React.createElement("label", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "Annual Rate %"),
                       React.createElement("input", { type: "number", step: "0.5", value: ciRate, onChange: function (e) { upd('ciRate', Math.max(0, parseFloat(e.target.value) || 0)); },
-                        className: "w-full px-3 py-2 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-blue-400 outline-none mt-1" })
+                        className: "w-full px-3 py-2 border border-slate-400 rounded-lg text-sm font-bold focus:ring-2 focus:ring-blue-400 outline-none mt-1" })
                     ),
                     React.createElement("div", null,
                       React.createElement("label", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "Years"),
                       React.createElement("input", { type: "number", value: ciYears, onChange: function (e) { upd('ciYears', Math.min(50, Math.max(1, parseInt(e.target.value) || 1))); },
-                        className: "w-full px-3 py-2 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-blue-400 outline-none mt-1" })
+                        className: "w-full px-3 py-2 border border-slate-400 rounded-lg text-sm font-bold focus:ring-2 focus:ring-blue-400 outline-none mt-1" })
                     ),
                     React.createElement("div", null,
                       React.createElement("label", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "Compounding"),
                       React.createElement("select", { value: ciFreq, onChange: function (e) { upd('ciFreq', e.target.value); },
-                        className: "w-full px-3 py-2 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-blue-400 outline-none mt-1" },
+                        className: "w-full px-3 py-2 border border-slate-400 rounded-lg text-sm font-bold focus:ring-2 focus:ring-blue-400 outline-none mt-1" },
                         React.createElement("option", { value: "yearly" }, "Yearly"),
                         React.createElement("option", { value: "quarterly" }, "Quarterly"),
                         React.createElement("option", { value: "monthly" }, "Monthly"),
@@ -2068,7 +2068,7 @@ window.StemLab = window.StemLab || {
                     "\uD83D\uDCA1 Compound earns " + cur.symbol + Math.round(ciCompoundInterest - ciSimpleInterest).toLocaleString() + " MORE than simple interest!"
                   ),
                   // Growth table
-                  React.createElement("div", { className: "bg-white rounded-xl border border-slate-200 overflow-hidden" },
+                  React.createElement("div", { className: "bg-white rounded-xl border border-slate-400 overflow-hidden" },
                     React.createElement("table", { className: "w-full text-xs" },
                       React.createElement("thead", null,
                         React.createElement("tr", { className: "bg-slate-50" },
@@ -2107,12 +2107,12 @@ window.StemLab = window.StemLab || {
                     React.createElement("div", null,
                       React.createElement("label", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "Monthly Contribution"),
                       React.createElement("input", { type: "number", value: retMonthly, onChange: function (e) { upd('retMonthly', Math.max(0, parseFloat(e.target.value) || 0)); },
-                        className: "w-full px-3 py-2 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-violet-400 outline-none mt-1" })
+                        className: "w-full px-3 py-2 border border-slate-400 rounded-lg text-sm font-bold focus:ring-2 focus:ring-violet-400 outline-none mt-1" })
                     ),
                     React.createElement("div", null,
                       React.createElement("label", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "Employer Match %"),
                       React.createElement("input", { type: "number", value: retMatch, onChange: function (e) { upd('retMatch', Math.max(0, parseFloat(e.target.value) || 0)); },
-                        className: "w-full px-3 py-2 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-violet-400 outline-none mt-1" })
+                        className: "w-full px-3 py-2 border border-slate-400 rounded-lg text-sm font-bold focus:ring-2 focus:ring-violet-400 outline-none mt-1" })
                     )
                   ),
                   // Two-scenario comparison
@@ -2123,7 +2123,7 @@ window.StemLab = window.StemLab || {
                       React.createElement("p", { className: "text-[10px] text-slate-500" }, "Contributed: " + cur.symbol + Math.round(retResult.contributed).toLocaleString()),
                       React.createElement("p", { className: "text-[10px] font-bold text-emerald-500" }, "Growth: " + cur.symbol + Math.round(retResult.growth).toLocaleString())
                     ),
-                    React.createElement("div", { className: "bg-white rounded-xl p-4 border border-slate-200 text-center opacity-75" },
+                    React.createElement("div", { className: "bg-white rounded-xl p-4 border border-slate-400 text-center opacity-75" },
                       React.createElement("p", { className: "text-[10px] font-bold text-slate-400 uppercase" }, "Start at " + (retAge + 10)),
                       React.createElement("p", { className: "text-2xl font-black text-slate-500" }, cur.symbol + Math.round(retLateResult.total).toLocaleString()),
                       React.createElement("p", { className: "text-[10px] text-slate-500" }, "Contributed: " + cur.symbol + Math.round(retLateResult.contributed).toLocaleString()),
@@ -2136,7 +2136,7 @@ window.StemLab = window.StemLab || {
                     React.createElement("p", { className: "text-[10px] text-violet-500 mt-1" }, "That's " + Math.round((retResult.total / Math.max(1, retLateResult.total) - 1) * 100) + "% more money \u2014 and you only contributed " + cur.symbol + Math.round(retResult.contributed - retLateResult.contributed).toLocaleString() + " extra.")
                   ),
                   // Milestone table
-                  React.createElement("div", { className: "bg-white rounded-xl border border-slate-200 overflow-hidden mt-4" },
+                  React.createElement("div", { className: "bg-white rounded-xl border border-slate-400 overflow-hidden mt-4" },
                     React.createElement("table", { className: "w-full text-xs" },
                       React.createElement("thead", null,
                         React.createElement("tr", { className: "bg-slate-50" },
@@ -2176,17 +2176,17 @@ window.StemLab = window.StemLab || {
                     React.createElement("div", null,
                       React.createElement("label", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "Loan Amount"),
                       React.createElement("input", { type: "number", value: loanAmt, onChange: function (e) { upd('loanAmt', Math.max(0, parseFloat(e.target.value) || 0)); },
-                        className: "w-full px-3 py-2 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-rose-400 outline-none mt-1" })
+                        className: "w-full px-3 py-2 border border-slate-400 rounded-lg text-sm font-bold focus:ring-2 focus:ring-rose-400 outline-none mt-1" })
                     ),
                     React.createElement("div", null,
                       React.createElement("label", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "Interest Rate %"),
                       React.createElement("input", { type: "number", step: "0.25", value: loanRate, onChange: function (e) { upd('loanRate', Math.max(0, parseFloat(e.target.value) || 0)); },
-                        className: "w-full px-3 py-2 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-rose-400 outline-none mt-1" })
+                        className: "w-full px-3 py-2 border border-slate-400 rounded-lg text-sm font-bold focus:ring-2 focus:ring-rose-400 outline-none mt-1" })
                     ),
                     React.createElement("div", null,
                       React.createElement("label", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "Term (months)"),
                       React.createElement("input", { type: "number", value: loanTerm, onChange: function (e) { upd('loanTerm', Math.max(1, parseInt(e.target.value) || 1)); },
-                        className: "w-full px-3 py-2 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-rose-400 outline-none mt-1" })
+                        className: "w-full px-3 py-2 border border-slate-400 rounded-lg text-sm font-bold focus:ring-2 focus:ring-rose-400 outline-none mt-1" })
                     )
                   ),
                   // Results
@@ -2214,7 +2214,7 @@ window.StemLab = window.StemLab || {
                     )
                   ),
                   // Amortization highlights
-                  React.createElement("div", { className: "bg-white rounded-xl border border-slate-200 overflow-hidden" },
+                  React.createElement("div", { className: "bg-white rounded-xl border border-slate-400 overflow-hidden" },
                     React.createElement("table", { className: "w-full text-xs" },
                       React.createElement("thead", null,
                         React.createElement("tr", { className: "bg-slate-50" },
@@ -2257,22 +2257,22 @@ window.StemLab = window.StemLab || {
                     React.createElement("div", null,
                       React.createElement("label", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "Target Amount"),
                       React.createElement("input", { type: "number", value: sgTarget, onChange: function (e) { upd('sgTarget', Math.max(0, parseFloat(e.target.value) || 0)); },
-                        className: "w-full px-3 py-2 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-emerald-400 outline-none mt-1" })
+                        className: "w-full px-3 py-2 border border-slate-400 rounded-lg text-sm font-bold focus:ring-2 focus:ring-emerald-400 outline-none mt-1" })
                     ),
                     React.createElement("div", null,
                       React.createElement("label", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "Already Saved"),
                       React.createElement("input", { type: "number", value: sgHave, onChange: function (e) { upd('sgHave', Math.max(0, parseFloat(e.target.value) || 0)); },
-                        className: "w-full px-3 py-2 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-emerald-400 outline-none mt-1" })
+                        className: "w-full px-3 py-2 border border-slate-400 rounded-lg text-sm font-bold focus:ring-2 focus:ring-emerald-400 outline-none mt-1" })
                     ),
                     React.createElement("div", null,
                       React.createElement("label", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "Timeline (months)"),
                       React.createElement("input", { type: "number", value: sgMonths, onChange: function (e) { upd('sgMonths', Math.max(1, parseInt(e.target.value) || 1)); },
-                        className: "w-full px-3 py-2 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-emerald-400 outline-none mt-1" })
+                        className: "w-full px-3 py-2 border border-slate-400 rounded-lg text-sm font-bold focus:ring-2 focus:ring-emerald-400 outline-none mt-1" })
                     ),
                     React.createElement("div", null,
                       React.createElement("label", { className: "text-[10px] font-bold text-slate-500 uppercase" }, "Savings Rate %"),
                       React.createElement("input", { type: "number", step: "0.5", value: sgRate, onChange: function (e) { upd('sgRate', Math.max(0, parseFloat(e.target.value) || 0)); },
-                        className: "w-full px-3 py-2 border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-emerald-400 outline-none mt-1" })
+                        className: "w-full px-3 py-2 border border-slate-400 rounded-lg text-sm font-bold focus:ring-2 focus:ring-emerald-400 outline-none mt-1" })
                     )
                   ),
                   // Progress bar

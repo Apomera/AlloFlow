@@ -1514,7 +1514,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           })(),
 
           // Log
-          h('div', { className: 'rounded-xl bg-slate-50 border border-slate-200 p-3 max-h-40 overflow-y-auto' },
+          h('div', { className: 'rounded-xl bg-slate-50 border border-slate-400 p-3 max-h-40 overflow-y-auto' },
             h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-300 mb-1' }, 'Log'),
             (exp.log || []).slice().reverse().slice(0, 8).map(function(entry, i) {
               var color = entry.kind === 'player' ? 'text-violet-700'
@@ -1564,15 +1564,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
             h('div', { className: 'mt-1 inline-block px-4 py-2 rounded-xl bg-white/20 font-bold text-lg' }, '+' + reward + ' \u2B50 Essence')
           ),
           h('div', { className: 'grid grid-cols-3 gap-2 mb-4 text-sm' },
-            h('div', { className: 'p-3 rounded-xl bg-slate-50 border border-slate-200' },
+            h('div', { className: 'p-3 rounded-xl bg-slate-50 border border-slate-400' },
               h('div', { className: 'text-[10px] font-bold text-slate-300 uppercase' }, 'Total Casts'),
               h('div', { className: 'text-xl font-bold text-violet-600' }, totalCasts)
             ),
-            h('div', { className: 'p-3 rounded-xl bg-slate-50 border border-slate-200' },
+            h('div', { className: 'p-3 rounded-xl bg-slate-50 border border-slate-400' },
               h('div', { className: 'text-[10px] font-bold text-slate-300 uppercase' }, 'Critical Casts'),
               h('div', { className: 'text-xl font-bold text-amber-600' }, critCasts)
             ),
-            h('div', { className: 'p-3 rounded-xl bg-slate-50 border border-slate-200' },
+            h('div', { className: 'p-3 rounded-xl bg-slate-50 border border-slate-400' },
               h('div', { className: 'text-[10px] font-bold text-slate-300 uppercase' }, 'Rooms Cleared'),
               h('div', { className: 'text-xl font-bold text-emerald-600' }, roomsCleared + '/' + totalRoomsD)
             )
@@ -1636,7 +1636,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
             )
           ),
           unlockedSpells2.length === 0
-            ? h('div', { className: 'rounded-xl p-6 text-center bg-slate-50 border border-slate-200 text-sm text-slate-600' },
+            ? h('div', { className: 'rounded-xl p-6 text-center bg-slate-50 border border-slate-400 text-sm text-slate-600' },
                 'No spells to upgrade yet. Unlock spells by playing other STEM Lab tools.'
               )
             : h('div', { className: 'space-y-2' },

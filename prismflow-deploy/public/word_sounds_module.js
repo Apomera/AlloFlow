@@ -15080,7 +15080,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               "div",
               {
                 className:
-                  "mt-4 p-4 bg-slate-50 rounded-xl border border-slate-200 text-center",
+                  "mt-4 p-4 bg-slate-50 rounded-xl border border-slate-400 text-center",
               },
               React.createElement(
                 "p",
@@ -15139,7 +15139,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             ),
             React.createElement(
               "div",
-              { className: "bg-white rounded-xl border border-slate-200 p-4" },
+              { className: "bg-white rounded-xl border border-slate-400 p-4" },
               React.createElement(
                 "h5",
                 {
@@ -15227,7 +15227,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             ),
             React.createElement(
               "div",
-              { className: "bg-white rounded-xl border border-slate-200 p-4" },
+              { className: "bg-white rounded-xl border border-slate-400 p-4" },
               React.createElement(
                 "h5",
                 {
@@ -15283,7 +15283,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 "div",
                 {
                   className:
-                    "bg-white rounded-xl border border-slate-200 p-4",
+                    "bg-white rounded-xl border border-slate-400 p-4",
                 },
                 React.createElement(
                   "h5",
@@ -15343,7 +15343,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 "div",
                 {
                   className:
-                    "bg-white rounded-xl border border-slate-200 p-4",
+                    "bg-white rounded-xl border border-slate-400 p-4",
                 },
                 React.createElement(
                   "h5",
@@ -15450,7 +15450,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 "div",
                 {
                   className:
-                    "bg-white rounded-xl border border-slate-200 p-4",
+                    "bg-white rounded-xl border border-slate-400 p-4",
                 },
                 React.createElement(
                   "h5",
@@ -15517,7 +15517,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               "div",
               {
                 className:
-                  "mt-4 p-4 bg-slate-50 rounded-xl border border-slate-200 text-center",
+                  "mt-4 p-4 bg-slate-50 rounded-xl border border-slate-400 text-center",
               },
               React.createElement(
                 "p",
@@ -15806,7 +15806,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     {
                       "aria-label": "Select student for CBM score",
                       className:
-                        "w-full mt-1 px-3 py-2 border border-slate-300 rounded-lg text-sm",
+                        "w-full mt-1 px-3 py-2 border border-slate-400 rounded-lg text-sm",
                       value: cbmForm.student,
                       onChange: (e) =>
                         setCBMForm((p) => ({ ...p, student: e.target.value })),
@@ -15838,7 +15838,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     {
                       "aria-label": "CBM source",
                       className:
-                        "w-full mt-1 px-3 py-2 border border-slate-300 rounded-lg text-sm",
+                        "w-full mt-1 px-3 py-2 border border-slate-400 rounded-lg text-sm",
                       value: cbmForm.source,
                       onChange: (e) =>
                         setCBMForm((p) => ({
@@ -15865,7 +15865,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     {
                       "aria-label": "CBM measure",
                       className:
-                        "w-full mt-1 px-3 py-2 border border-slate-300 rounded-lg text-sm",
+                        "w-full mt-1 px-3 py-2 border border-slate-400 rounded-lg text-sm",
                       value: cbmForm.measure,
                       onChange: (e) =>
                         setCBMForm((p) => ({ ...p, measure: e.target.value })),
@@ -15897,7 +15897,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       type: "number",
                       "aria-label": "CBM score",
                       className:
-                        "w-full mt-1 px-3 py-2 border border-slate-300 rounded-lg text-sm",
+                        "w-full mt-1 px-3 py-2 border border-slate-400 rounded-lg text-sm",
                       value: cbmForm.score,
                       onChange: (e) =>
                         setCBMForm((p) => ({ ...p, score: e.target.value })),
@@ -15918,7 +15918,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       type: "date",
                       "aria-label": "CBM date",
                       className:
-                        "w-full mt-1 px-3 py-2 border border-slate-300 rounded-lg text-sm",
+                        "w-full mt-1 px-3 py-2 border border-slate-400 rounded-lg text-sm",
                       value: cbmForm.date,
                       onChange: (e) =>
                         setCBMForm((p) => ({ ...p, date: e.target.value })),
@@ -15942,7 +15942,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       type: "number",
                       "aria-label": "CBM percentile",
                       className:
-                        "w-full mt-1 px-3 py-2 border border-slate-300 rounded-lg text-sm",
+                        "w-full mt-1 px-3 py-2 border border-slate-400 rounded-lg text-sm",
                       value: cbmForm.percentile,
                       onChange: (e) =>
                         setCBMForm((p) => ({
@@ -15967,7 +15967,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       {
                         "aria-label": "Benchmark status",
                         className:
-                          "w-full mt-1 px-3 py-2 border border-slate-300 rounded-lg text-sm",
+                          "w-full mt-1 px-3 py-2 border border-slate-400 rounded-lg text-sm",
                         value: cbmForm.benchmark,
                         onChange: (e) =>
                           setCBMForm((p) => ({
@@ -16361,7 +16361,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   type: "text",
                   "aria-label": "Respondent name",
                   className:
-                    "w-full mt-1 px-3 py-2 border border-slate-300 rounded-lg text-sm",
+                    "w-full mt-1 px-3 py-2 border border-slate-400 rounded-lg text-sm",
                   value: surveyRespondent,
                   onChange: (e) => setSurveyRespondent(e.target.value),
                   placeholder: "Enter name...",
@@ -16391,7 +16391,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                               "flex-1 py-2 px-1 rounded-lg text-xs font-medium transition-all " +
                               (surveyAnswers[q.id] === idx + 1
                                 ? "bg-purple-600 text-white shadow-md scale-105"
-                                : "bg-white border border-slate-200 text-slate-600 hover:bg-purple-50 hover:border-purple-300"),
+                                : "bg-white border border-slate-400 text-slate-600 hover:bg-purple-50 hover:border-purple-300"),
                             onClick: () =>
                               setSurveyAnswers((p) => ({
                                 ...p,
@@ -16480,7 +16480,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           return React.createElement(
             "div",
             {
-              className: "bg-white rounded-xl border border-slate-200 p-4 mt-4",
+              className: "bg-white rounded-xl border border-slate-400 p-4 mt-4",
             },
             React.createElement(
               "h5",
@@ -16710,7 +16710,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 "button",
                 {
                   className:
-                    "flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-slate-200 hover:border-indigo-400 hover:bg-indigo-50 transition-all text-xs font-medium text-slate-700",
+                    "flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-slate-400 hover:border-indigo-400 hover:bg-indigo-50 transition-all text-xs font-medium text-slate-700",
                   onClick: exportResearchCSV,
                 },
                 React.createElement("span", null, "\u{1F4C4}"),
@@ -16720,7 +16720,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 "button",
                 {
                   className:
-                    "flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-slate-200 hover:border-emerald-400 hover:bg-emerald-50 transition-all text-xs font-medium text-slate-700",
+                    "flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-slate-400 hover:border-emerald-400 hover:bg-emerald-50 transition-all text-xs font-medium text-slate-700",
                   onClick: () => setShowCBMModal(true),
                 },
                 React.createElement("span", null, "\u{1F4CB}"),
@@ -16740,7 +16740,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 "button",
                 {
                   className:
-                    "flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-slate-200 hover:border-purple-400 hover:bg-purple-50 transition-all text-xs font-medium text-slate-700",
+                    "flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-slate-400 hover:border-purple-400 hover:bg-purple-50 transition-all text-xs font-medium text-slate-700",
                   onClick: () => setShowSurveyModal("student"),
                 },
                 React.createElement("span", null, "\u{1F9D2}"),
@@ -16750,7 +16750,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 "button",
                 {
                   className:
-                    "flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-slate-200 hover:border-blue-400 hover:bg-blue-50 transition-all text-xs font-medium text-slate-700",
+                    "flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-slate-400 hover:border-blue-400 hover:bg-blue-50 transition-all text-xs font-medium text-slate-700",
                   onClick: () => setShowSurveyModal("teacher"),
                 },
                 React.createElement("span", null, "\u{1F468}\u{200D}\u{1F3EB}"),
@@ -16760,7 +16760,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 "button",
                 {
                   className:
-                    "col-span-2 flex items-center justify-center gap-2 px-3 py-2 bg-white rounded-lg border border-slate-200 hover:border-pink-400 hover:bg-pink-50 transition-all text-xs font-medium text-slate-700",
+                    "col-span-2 flex items-center justify-center gap-2 px-3 py-2 bg-white rounded-lg border border-slate-400 hover:border-pink-400 hover:bg-pink-50 transition-all text-xs font-medium text-slate-700",
                   onClick: () => setShowSurveyModal("parent"),
                 },
                 React.createElement("span", null, "\u{1F46A}"),
@@ -16907,7 +16907,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     type: "text",
                     "aria-label": "Study name",
                     className:
-                      "w-full mt-1 px-3 py-2 border border-slate-300 rounded-lg text-sm",
+                      "w-full mt-1 px-3 py-2 border border-slate-400 rounded-lg text-sm",
                     value: researchSetupForm.studyName,
                     onChange: (e) =>
                       setResearchSetupForm((p) => ({
@@ -16930,7 +16930,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     {
                       "aria-label": "Auto-survey frequency",
                       className:
-                        "w-full mt-1 px-3 py-2 border border-slate-300 rounded-lg text-sm",
+                        "w-full mt-1 px-3 py-2 border border-slate-400 rounded-lg text-sm",
                       value: researchSetupForm.surveyFrequency,
                       onChange: (e) =>
                         setResearchSetupForm((p) => ({
@@ -16977,7 +16977,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     type: "text",
                     "aria-label": "IRB number",
                     className:
-                      "w-full mt-1 px-3 py-2 border border-slate-300 rounded-lg text-sm",
+                      "w-full mt-1 px-3 py-2 border border-slate-400 rounded-lg text-sm",
                     value: researchSetupForm.irb,
                     onChange: (e) =>
                       setResearchSetupForm((p) => ({
@@ -16998,7 +16998,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   React.createElement("textarea", {
                     "aria-label": "Research notes",
                     className:
-                      "w-full mt-1 px-3 py-2 border border-slate-300 rounded-lg text-sm resize-none",
+                      "w-full mt-1 px-3 py-2 border border-slate-400 rounded-lg text-sm resize-none",
                     rows: 2,
                     value: researchSetupForm.notes,
                     onChange: (e) =>
@@ -17474,7 +17474,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 "button",
                 {
                   className:
-                    "flex-1 text-xs px-3 py-1.5 bg-white rounded-lg border border-slate-200 hover:bg-emerald-50 hover:border-emerald-300 font-medium text-slate-600 transition-colors",
+                    "flex-1 text-xs px-3 py-1.5 bg-white rounded-lg border border-slate-400 hover:bg-emerald-50 hover:border-emerald-300 font-medium text-slate-600 transition-colors",
                   onClick: () => {
                     const headers = [
                       "Date",
@@ -17516,7 +17516,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 "button",
                 {
                   className:
-                    "flex-1 text-xs px-3 py-1.5 bg-white rounded-lg border border-slate-200 hover:bg-purple-50 hover:border-purple-300 font-medium text-slate-600 transition-colors",
+                    "flex-1 text-xs px-3 py-1.5 bg-white rounded-lg border border-slate-400 hover:bg-purple-50 hover:border-purple-300 font-medium text-slate-600 transition-colors",
                   onClick: () => {
                     const allResponses = [];
                     Object.entries(surveyResponses).forEach(([key, arr]) => {
@@ -18935,7 +18935,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   value: searchQuery,
                   onChange: (e) => setSearchQuery(e.target.value),
                   className:
-                    "w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-300 focus:border-indigo-400 outline-none transition-all text-sm",
+                    "w-full px-4 py-2 border border-slate-400 rounded-lg focus:ring-2 focus:ring-indigo-300 focus:border-indigo-400 outline-none transition-all text-sm",
                 }),
               ),
               isIndependentMode &&
@@ -19034,7 +19034,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     "div",
                     {
                       className:
-                        "mt-4 p-3 bg-white/80 rounded-xl border border-slate-200",
+                        "mt-4 p-3 bg-white/80 rounded-xl border border-slate-400",
                     },
                         /*#__PURE__*/ React.createElement(
                       "div",
@@ -19053,7 +19053,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                         value: reportStartDate,
                         onChange: (e) => setReportStartDate(e.target.value),
                         className:
-                          "flex-1 text-xs px-2 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700",
+                          "flex-1 text-xs px-2 py-1.5 rounded-lg border border-slate-400 bg-white text-slate-700",
                         placeholder: "Start",
                       }),
                           /*#__PURE__*/ React.createElement(
@@ -19067,7 +19067,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                         value: reportEndDate,
                         onChange: (e) => setReportEndDate(e.target.value),
                         className:
-                          "flex-1 text-xs px-2 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700",
+                          "flex-1 text-xs px-2 py-1.5 rounded-lg border border-slate-400 bg-white text-slate-700",
                         placeholder: "End",
                       }),
                       (reportStartDate || reportEndDate) &&
@@ -19904,7 +19904,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   "div",
                   {
                     className:
-                      "bg-white border border-slate-200 rounded-xl p-4",
+                      "bg-white border border-slate-400 rounded-xl p-4",
                     style: { minHeight: "200px" },
                   },
                       /*#__PURE__*/ React.createElement("canvas", {
@@ -19916,7 +19916,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   "div",
                   {
                     className:
-                      "bg-white border border-slate-200 rounded-xl p-4",
+                      "bg-white border border-slate-400 rounded-xl p-4",
                     style: { minHeight: "200px" },
                   },
                         /*#__PURE__*/ React.createElement("canvas", {
@@ -20034,7 +20034,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       onChange: (e) =>
                         setProbeTargetStudent(e.target.value || null),
                       className:
-                        "text-xs font-bold border border-slate-200 rounded-lg px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-300",
+                        "text-xs font-bold border border-slate-400 rounded-lg px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-300",
                     },
                       /*#__PURE__*/ React.createElement(
                       "option",
@@ -20199,7 +20199,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       onChange: (e) =>
                         setMathProbeStudent(e.target.value || null),
                       className:
-                        "text-xs font-bold border border-slate-200 rounded-lg px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-300",
+                        "text-xs font-bold border border-slate-400 rounded-lg px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-300",
                     },
                       /*#__PURE__*/ React.createElement(
                       "option",
@@ -22628,7 +22628,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       "div",
                       {
                         className:
-                          "mt-3 p-3 bg-white rounded-lg border border-slate-200",
+                          "mt-3 p-3 bg-white rounded-lg border border-slate-400",
                       },
                           /*#__PURE__*/ React.createElement(
                         "div",
@@ -22904,7 +22904,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       "div",
                       {
                         className:
-                          "mt-3 p-3 bg-white rounded-lg border border-slate-200",
+                          "mt-3 p-3 bg-white rounded-lg border border-slate-400",
                       },
                           /*#__PURE__*/ React.createElement(
                         "div",
@@ -23041,7 +23041,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       "div",
                       {
                         className:
-                          "mt-3 p-3 bg-white rounded-lg border border-slate-200",
+                          "mt-3 p-3 bg-white rounded-lg border border-slate-400",
                       },
                           /*#__PURE__*/ React.createElement(
                         "div",
@@ -23705,7 +23705,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     "div",
                     {
                       className:
-                        "bg-white border border-slate-200 rounded-xl p-4",
+                        "bg-white border border-slate-400 rounded-xl p-4",
                       style: { height: "220px" },
                     },
                             /*#__PURE__*/ React.createElement("canvas", {
@@ -24251,7 +24251,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     {
                       "data-help-key": "dashboard_detail_transcript",
                       className:
-                        "border border-slate-200 rounded-xl overflow-hidden",
+                        "border border-slate-400 rounded-xl overflow-hidden",
                     },
                           /*#__PURE__*/ React.createElement(
                       "div",
@@ -24341,7 +24341,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                                   e.target.value || null,
                                 ),
                               className:
-                                "px-3 py-1.5 text-sm border border-slate-200 rounded-lg",
+                                "px-3 py-1.5 text-sm border border-slate-400 rounded-lg",
                               "aria-label": "Select student",
                             },
                                       /*#__PURE__*/ React.createElement(
@@ -24366,7 +24366,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                           "div",
                           {
                             className:
-                              "bg-white rounded-xl border border-slate-200 p-3",
+                              "bg-white rounded-xl border border-slate-400 p-3",
                           },
                           renderResearchToolbar(),
                         ),
@@ -24396,7 +24396,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                             {
                               onClick: () => setShowResearchSetup(true),
                               className:
-                                "px-3 py-1.5 text-xs font-bold bg-slate-50 text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-100 transition-all flex items-center gap-1",
+                                "px-3 py-1.5 text-xs font-bold bg-slate-50 text-slate-600 border border-slate-400 rounded-lg hover:bg-slate-100 transition-all flex items-center gap-1",
                             },
                             "\u2699\uFE0F Settings",
                           ),
@@ -24408,7 +24408,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                             "div",
                             {
                               className:
-                                "bg-slate-50 rounded-xl p-8 text-center border border-slate-200",
+                                "bg-slate-50 rounded-xl p-8 text-center border border-slate-400",
                             },
                                       /*#__PURE__*/ React.createElement(
                               "div",
@@ -24493,7 +24493,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                                   "div",
                                   {
                                     className:
-                                      "mt-4 bg-white rounded-xl border border-slate-200 p-4",
+                                      "mt-4 bg-white rounded-xl border border-slate-400 p-4",
                                   },
                                                 /*#__PURE__*/ React.createElement(
                                     "h5",
@@ -24527,7 +24527,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                                         onClick: () =>
                                           setResearchStudent(name),
                                         className:
-                                          "p-3 bg-white rounded-xl border border-slate-200 hover:border-indigo-300 hover:shadow-md transition-all text-left group",
+                                          "p-3 bg-white rounded-xl border border-slate-400 hover:border-indigo-300 hover:shadow-md transition-all text-left group",
                                       },
                                                   /*#__PURE__*/ React.createElement(
                                         "div",
@@ -24555,7 +24555,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                               "div",
                               {
                                 className:
-                                  "mt-6 bg-slate-50 rounded-xl p-4 border border-slate-200",
+                                  "mt-6 bg-slate-50 rounded-xl p-4 border border-slate-400",
                               },
                                           /*#__PURE__*/ React.createElement(
                                 "h4",

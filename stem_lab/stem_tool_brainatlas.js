@@ -3497,7 +3497,7 @@ var d = labToolData.brainAtlas || {};
 
                   onClick: function () { upd('view', key); upd('selectedRegion', null); upd('quizMode', false); upd('search', ''); },
 
-                  className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (viewKey === key ? 'bg-purple-600 text-white shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-purple-50 border border-slate-200')
+                  className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (viewKey === key ? 'bg-purple-600 text-white shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-purple-50 border border-slate-400')
 
                 }, v.name);
 
@@ -3517,7 +3517,7 @@ var d = labToolData.brainAtlas || {};
 
                 onChange: function (e) { upd('search', e.target.value); },
 
-                className: "flex-1 min-w-[160px] px-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:ring-2 focus:ring-purple-300 outline-none"
+                className: "flex-1 min-w-[160px] px-3 py-1.5 text-xs border border-slate-400 rounded-lg focus:ring-2 focus:ring-purple-300 outline-none"
 
               }),
 
@@ -4290,7 +4290,7 @@ var d = labToolData.brainAtlas || {};
 
                         className: "w-full text-left px-3 py-2 rounded-lg text-xs transition-all hover:shadow-sm " +
 
-                          (d.selectedRegion === r.id ? 'font-bold border-2 border-purple-400 bg-purple-50' : 'bg-slate-50 hover:bg-white border border-slate-200')
+                          (d.selectedRegion === r.id ? 'font-bold border-2 border-purple-400 bg-purple-50' : 'bg-slate-50 hover:bg-white border border-slate-400')
 
                       },
 

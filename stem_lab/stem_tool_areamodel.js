@@ -620,7 +620,7 @@ window.StemLab = window.StemLab || {
               checkBadges(Object.assign(getBadgeUpdates(), { usedCommutative: true }));
             },
             className: 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' +
-              (swapped ? 'bg-violet-100 text-violet-700 border border-violet-300' : 'bg-slate-100 text-slate-600 hover:bg-violet-50 border border-slate-200')
+              (swapped ? 'bg-violet-100 text-violet-700 border border-violet-300' : 'bg-slate-100 text-slate-600 hover:bg-violet-50 border border-slate-400')
           },
             '\u21C4 Commutative: ' + rows + ' \u00d7 ' + cols + (swapped ? ' (swapped!)' : '')
           ),

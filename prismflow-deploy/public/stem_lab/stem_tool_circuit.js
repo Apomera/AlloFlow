@@ -686,13 +686,13 @@ window.StemLab = window.StemLab || {
               // Badge toggle
               h('button', { 'aria-label': 'Badges',
                 onClick: function() { upd('showBadges', !showBadges); },
-                className: 'px-2 py-1 text-xs rounded-lg transition-all ' + (showBadges ? 'bg-amber-100 text-amber-700 border border-amber-300' : 'bg-slate-50 text-slate-600 border border-slate-200 hover:bg-amber-50')
+                className: 'px-2 py-1 text-xs rounded-lg transition-all ' + (showBadges ? 'bg-amber-100 text-amber-700 border border-amber-300' : 'bg-slate-50 text-slate-600 border border-slate-400 hover:bg-amber-50')
               }, '\uD83C\uDFC5 Badges'),
 
               // AI toggle
               h('button', { 'aria-label': 'AI Tutor',
                 onClick: function() { upd('showAI', !showAI); },
-                className: 'px-2 py-1 text-xs rounded-lg transition-all ' + (showAI ? 'bg-blue-100 text-blue-700 border border-blue-300' : 'bg-slate-50 text-slate-600 border border-slate-200 hover:bg-blue-50')
+                className: 'px-2 py-1 text-xs rounded-lg transition-all ' + (showAI ? 'bg-blue-100 text-blue-700 border border-blue-300' : 'bg-slate-50 text-slate-600 border border-slate-400 hover:bg-blue-50')
               }, '\uD83E\uDD16 AI Tutor'),
 
               // Mode buttons
@@ -994,7 +994,7 @@ window.StemLab = window.StemLab || {
                   var compIcon = getCompIcon(comp.type);
                   var compLabel = getCompLabel(comp);
 
-                  return h('div', { key: comp.id, className: 'flex items-center gap-2 bg-slate-50 rounded-lg px-3 py-2 border border-slate-200' },
+                  return h('div', { key: comp.id, className: 'flex items-center gap-2 bg-slate-50 rounded-lg px-3 py-2 border border-slate-400' },
                     h('span', null, compIcon),
                     h('span', { className: 'text-xs font-bold text-slate-600 min-w-[40px]' }, compLabel),
 
@@ -1168,7 +1168,7 @@ window.StemLab = window.StemLab || {
             // ══════════════════════════════════════
             // Circuit Presets
             // ══════════════════════════════════════
-            h('div', { className: 'mt-3 bg-slate-50 rounded-xl border border-slate-200 p-3' },
+            h('div', { className: 'mt-3 bg-slate-50 rounded-xl border border-slate-400 p-3' },
               h('button', { 'aria-label': 'Circuit Presets',
                 onClick: function() { upd('showPresets', !showPresets); },
                 className: 'flex items-center gap-2 w-full text-left'
@@ -1571,7 +1571,7 @@ window.StemLab = window.StemLab || {
                     return h('button', { key: type,
                       onClick: function() { upd('_selectedComp', active ? null : type); },
                       className: 'px-2 py-1 rounded-lg text-[11px] font-bold transition-all ' +
-                        (active ? 'text-white shadow-sm' : 'bg-white text-slate-600 border border-slate-200 hover:border-amber-300'),
+                        (active ? 'text-white shadow-sm' : 'bg-white text-slate-600 border border-slate-400 hover:border-amber-300'),
                       style: active ? { background: info.color } : {}
                     }, info.icon + ' ' + info.name);
                   })
@@ -1581,7 +1581,7 @@ window.StemLab = window.StemLab || {
                   h('div', { className: 'flex items-center gap-2 mb-2' },
                     h('span', { className: 'text-2xl' }, physics.icon),
                     h('h4', { className: 'font-bold text-slate-800 text-sm' }, physics.name),
-                    h('span', { className: 'ml-auto px-2 py-0.5 rounded-full text-[11px] font-mono font-bold bg-slate-100 text-slate-600 border border-slate-200' }, physics.equation)
+                    h('span', { className: 'ml-auto px-2 py-0.5 rounded-full text-[11px] font-mono font-bold bg-slate-100 text-slate-600 border border-slate-400' }, physics.equation)
                   ),
                   h('p', { className: 'text-xs text-slate-700 leading-relaxed mb-2' }, physics.how),
                   h('div', { className: 'bg-sky-50 rounded-lg p-2 border border-sky-200' },
@@ -1666,7 +1666,7 @@ window.StemLab = window.StemLab || {
                   if (isOpen) summary += ' Circuit is open, no current flowing.';
                   callTTS(summary);
                 },
-                className: 'px-4 py-2 text-xs font-bold text-slate-600 bg-slate-100 rounded-full hover:bg-slate-200 transition-all border border-slate-200'
+                className: 'px-4 py-2 text-xs font-bold text-slate-600 bg-slate-100 rounded-full hover:bg-slate-200 transition-all border border-slate-400'
               }, '\uD83D\uDD0A Read Aloud')
             ),
 

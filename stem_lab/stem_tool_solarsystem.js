@@ -5231,7 +5231,7 @@ const d = labToolData.solarSystem;
 
             // â"€â"€ Planet Info Card (Enhanced with Close-Up & Drone) â"€â"€
 
-            !d.orreryMode && sel && React.createElement("div", { className: "mt-3 bg-slate-50 rounded-xl border border-slate-200 p-4 animate-in slide-in-from-bottom duration-300" },
+            !d.orreryMode && sel && React.createElement("div", { className: "mt-3 bg-slate-50 rounded-xl border border-slate-400 p-4 animate-in slide-in-from-bottom duration-300" },
 
               // Planet header
 
@@ -12594,7 +12594,7 @@ const d = labToolData.solarSystem;
                             var cv2 = document.querySelector('[data-kepler-canvas]');
                             if (cv2) { cv2._keplerBody = body.id; cv2._keplerTrail = []; }
                           },
-                          className: "px-1.5 py-0.5 rounded text-[11px] font-bold transition-all " + (isActive ? 'bg-indigo-600 text-white' : (isDark ? 'bg-slate-700 text-slate-200 hover:bg-slate-600' : 'bg-white text-slate-600 hover:bg-indigo-50 border border-slate-200'))
+                          className: "px-1.5 py-0.5 rounded text-[11px] font-bold transition-all " + (isActive ? 'bg-indigo-600 text-white' : (isDark ? 'bg-slate-700 text-slate-200 hover:bg-slate-600' : 'bg-white text-slate-600 hover:bg-indigo-50 border border-slate-400'))
                         }, body.emoji + ' ' + body.name);
                       })
                     ),
@@ -12606,7 +12606,7 @@ const d = labToolData.solarSystem;
                         return React.createElement("button", {
                           key: tog.id,
                           onClick: function() { upd('_keplerShow_' + tog.id, !on); },
-                          className: "px-1.5 py-0.5 rounded text-[11px] font-bold transition-all " + (on ? 'bg-purple-600 text-white' : (isDark ? 'bg-slate-700 text-slate-200' : 'bg-white text-slate-200 border border-slate-200'))
+                          className: "px-1.5 py-0.5 rounded text-[11px] font-bold transition-all " + (on ? 'bg-purple-600 text-white' : (isDark ? 'bg-slate-700 text-slate-200' : 'bg-white text-slate-200 border border-slate-400'))
                         }, tog.label);
                       })
                     ),

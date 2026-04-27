@@ -3508,7 +3508,7 @@ var d = labToolData.cell;
 
                             ["W/\u2191", "A/\u2190", "S/\u2193", "D/\u2192"].map(function (k) {
 
-                              return React.createElement("span", { key: k, className: "px-1.5 py-0.5 bg-slate-100 rounded text-[11px] font-mono font-bold text-slate-600 border border-slate-200" }, k);
+                              return React.createElement("span", { key: k, className: "px-1.5 py-0.5 bg-slate-100 rounded text-[11px] font-mono font-bold text-slate-600 border border-slate-400" }, k);
 
                             })
 
@@ -3864,7 +3864,7 @@ var d = labToolData.cell;
                 Object.keys(cellBadges).map(function (key) {
                   var b = cellBadges[key];
                   var earned = ext.badges.indexOf(b.id) !== -1;
-                  return React.createElement("div", { key: b.id, className: "flex items-center gap-2 p-2 rounded-lg " + (earned ? "bg-amber-100 border border-amber-300" : "bg-white/60 border border-slate-200 opacity-50") },
+                  return React.createElement("div", { key: b.id, className: "flex items-center gap-2 p-2 rounded-lg " + (earned ? "bg-amber-100 border border-amber-300" : "bg-white/60 border border-slate-400 opacity-50") },
                     React.createElement("span", { className: "text-lg" }, earned ? b.icon : "\uD83D\uDD12"),
                     React.createElement("div", null,
                       React.createElement("p", { className: "text-[11px] font-bold " + (earned ? "text-amber-800" : "text-slate-600") }, b.label),

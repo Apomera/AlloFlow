@@ -560,7 +560,7 @@ const RoleSelectionModal = React.memo(({
     "aria-label": t('common.confirm'),
     onClick: handleMicCheck,
     disabled: micStatus === 'granted' || micStatus === 'requesting',
-    className: `flex items-center justify-center gap-2 w-full py-2 rounded-lg text-xs font-bold transition-all ${micStatus === 'granted' ? 'bg-green-100 text-green-700 cursor-default' : micStatus === 'denied' ? 'bg-red-50 text-red-500 border border-red-100' : micStatus === 'requesting' ? 'bg-slate-100 text-slate-600' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-indigo-600'}`
+    className: `flex items-center justify-center gap-2 w-full py-2 rounded-lg text-xs font-bold transition-all ${micStatus === 'granted' ? 'bg-green-100 text-green-700 cursor-default' : micStatus === 'denied' ? 'bg-red-50 text-red-500 border border-red-100' : micStatus === 'requesting' ? 'bg-slate-100 text-slate-600' : 'bg-white border border-slate-400 text-slate-600 hover:bg-slate-50 hover:text-indigo-600'}`
   }, micStatus === 'granted' ? /*#__PURE__*/React.createElement(CheckCircle, {
     size: 14
   }) : micStatus === 'denied' ? /*#__PURE__*/React.createElement(XCircle, {

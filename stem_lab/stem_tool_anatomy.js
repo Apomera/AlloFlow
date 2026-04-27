@@ -4503,7 +4503,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                     upd('system', key); upd('selectedStructure', null); upd('quizMode', false); upd('search', '');
                     playSound('systemSelect');
                   },
-                  className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (sysKey === key ? 'text-white shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200'),
+                  className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (sysKey === key ? 'text-white shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-400'),
                   style: sysKey === key ? { background: s.accent } : {}
                 }, s.icon + ' ' + s.name);
               })
@@ -4566,7 +4566,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             ),
 
             // Layer toggle bar
-            h('div', { className: 'flex items-center gap-1.5 mb-3 flex-wrap bg-slate-50 rounded-xl px-3 py-2 border border-slate-200' },
+            h('div', { className: 'flex items-center gap-1.5 mb-3 flex-wrap bg-slate-50 rounded-xl px-3 py-2 border border-slate-400' },
               h('span', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mr-1' }, '\uD83E\uDDE0 Layers'),
               LAYER_DEFS.map(function(ld) {
                 var isOn = layers[ld.id] || ld.id === autoLayerId;
@@ -4593,7 +4593,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
 
             // Controls
             h('div', { className: 'flex items-center gap-2 mb-3 flex-wrap' },
-              h('div', { className: 'flex rounded-lg border border-slate-200 overflow-hidden' },
+              h('div', { className: 'flex rounded-lg border border-slate-400 overflow-hidden' },
                 ['anterior', 'posterior'].map(function(v) {
                   return h('button', {
                     key: v,
@@ -4611,12 +4611,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   upd('search', e.target.value);
                   if (e.target.value && filtered.length > 0) { upd('_searchFinds', (d._searchFinds || 0) + 1); }
                 },
-                className: 'flex-1 min-w-[140px] px-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:ring-2 focus:ring-rose-300 outline-none'
+                className: 'flex-1 min-w-[140px] px-3 py-1.5 text-xs border border-slate-400 rounded-lg focus:ring-2 focus:ring-rose-300 outline-none'
               }),
               h('button', { onClick: function() { upd('quizMode', !d.quizMode); upd('quizIdx', 0); upd('quizScore', 0); upd('quizFeedback', null); },
                 className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (d.quizMode ? 'bg-green-700 text-white' : 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100')
               }, d.quizMode ? '\u2705 Quiz On' : '\uD83E\uDDEA Quiz'),
-              h('div', { className: 'flex rounded-lg border border-slate-200 overflow-hidden' },
+              h('div', { className: 'flex rounded-lg border border-slate-400 overflow-hidden' },
                 [{ v: 1, label: 'K\u20135', tip: 'Elementary' }, { v: 2, label: '6\u20138', tip: 'Middle' }, { v: 3, label: '9\u201312+', tip: 'Advanced' }].map(function(lv) {
                   return h('button', { key: lv.v, title: lv.tip + ' level',
                     onClick: function() { upd('complexity', lv.v); upd('selectedStructure', null); },
@@ -4876,7 +4876,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                         return h('button', { key: st.id,
                           onClick: function() { upd('selectedStructure', st.id); playSound('structureClick'); },
                           className: 'w-full text-left px-3 py-2 rounded-lg text-xs transition-all hover:shadow-sm ' +
-                            (d.selectedStructure === st.id ? 'font-bold border-2' : 'bg-slate-50 hover:bg-white border border-slate-200'),
+                            (d.selectedStructure === st.id ? 'font-bold border-2' : 'bg-slate-50 hover:bg-white border border-slate-400'),
                           style: d.selectedStructure === st.id ? { borderColor: sys.accent, background: sys.color } : {}
                         },
                           h('div', { className: 'font-bold text-slate-800' }, st.name),
@@ -4931,7 +4931,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             ) : null,
 
             // Badge section
-            h('div', { className: 'mt-4 bg-slate-50 rounded-xl border border-slate-200 p-3' },
+            h('div', { className: 'mt-4 bg-slate-50 rounded-xl border border-slate-400 p-3' },
               h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2' }, '\uD83C\uDFC5 Badges (' + Object.keys(badges).length + '/' + BADGE_DEFS.length + ')'),
               h('div', { className: 'flex flex-wrap gap-1.5' },
                 BADGE_DEFS.map(function(bd) {

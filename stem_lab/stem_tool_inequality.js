@@ -901,7 +901,7 @@ window.StemLab = window.StemLab || {
         ),
 
         // ── History ──
-        exprHistory.length > 0 && h('div', { className: 'mt-3 bg-slate-50 rounded-lg p-3 border border-slate-200' },
+        exprHistory.length > 0 && h('div', { className: 'mt-3 bg-slate-50 rounded-lg p-3 border border-slate-400' },
           h('div', { className: 'flex items-center justify-between mb-2' },
             h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider' }, '\uD83D\uDD53 Recent Expressions'),
             h('button', { 'aria-label': 'Clear', onClick: function() { upd('exprHistory', []); }, className: 'text-[11px] text-slate-600 hover:text-slate-600' }, 'Clear')
@@ -910,7 +910,7 @@ window.StemLab = window.StemLab || {
             exprHistory.map(function(ex, i) {
               return h('button', { key: i,
                 onClick: function() { upd('expr', ex); },
-                className: 'px-2 py-1 text-[11px] font-mono font-bold bg-white text-slate-600 rounded border border-slate-200 hover:bg-fuchsia-50 hover:border-fuchsia-300 transition-all'
+                className: 'px-2 py-1 text-[11px] font-mono font-bold bg-white text-slate-600 rounded border border-slate-400 hover:bg-fuchsia-50 hover:border-fuchsia-300 transition-all'
               }, ex);
             })
           )

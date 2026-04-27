@@ -838,7 +838,7 @@ window.StemLab = window.StemLab || {
           SUBTOOLS.map(function(st) {
             var active = tab === st.id;
             return h('button', { key: st.id, onClick: function() { updMulti({ tab: st.id }); announceToSR('Switched to ' + st.label); },
-              className: 'px-3 py-1.5 rounded-xl text-xs font-bold transition-all ' + (active ? 'bg-teal-700 text-white shadow-md' : 'bg-white/70 text-slate-600 hover:bg-teal-50 border border-slate-200'),
+              className: 'px-3 py-1.5 rounded-xl text-xs font-bold transition-all ' + (active ? 'bg-teal-700 text-white shadow-md' : 'bg-white/70 text-slate-600 hover:bg-teal-50 border border-slate-400'),
               role: 'tab', 'aria-selected': active
             }, st.icon + ' ' + st.label);
           })
@@ -850,11 +850,11 @@ window.StemLab = window.StemLab || {
             h('h4', { className: 'text-sm font-bold text-slate-700' }, '\uD83E\uDDFE Paycheck & Tax Calculator'),
             h('p', { className: 'text-xs text-slate-600' }, gradeText(gradeBand, 'See how much money you get to keep!', 'See what happens between gross pay and your bank account.', 'Calculate federal marginal tax, FICA, and state withholding.', 'Progressive marginal taxation with bracket visualization, FICA cap analysis, and effective rate computation.')),
             h('div', { className: 'grid grid-cols-2 sm:grid-cols-5 gap-2' },
-              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'Hourly Rate'), h('input', { type: 'number', step: '0.5', value: payRate, onChange: function(e) { upd('payRate', Math.max(0, parseFloat(e.target.value) || 0)); checkBadge('firstPay'); }, className: 'w-full px-2 py-1.5 border border-slate-200 rounded-lg text-sm font-bold mt-1' })),
-              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'Hours/Week'), h('input', { type: 'number', value: payHours, onChange: function(e) { upd('payHours', Math.max(0, parseFloat(e.target.value) || 0)); }, className: 'w-full px-2 py-1.5 border border-slate-200 rounded-lg text-sm font-bold mt-1' })),
-              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'Pay Period'), h('select', { value: payFreq, onChange: function(e) { upd('payFreq', e.target.value); }, className: 'w-full px-2 py-1.5 border border-slate-200 rounded-lg text-sm font-bold mt-1' }, h('option', { value: 'weekly' }, 'Weekly'), h('option', { value: 'biweekly' }, 'Bi-weekly'), h('option', { value: 'monthly' }, 'Monthly'))),
-              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'State'), h('select', { value: payState, onChange: function(e) { upd('payState', e.target.value); }, className: 'w-full px-2 py-1.5 border border-slate-200 rounded-lg text-sm font-bold mt-1' }, h('option', { value: 'none' }, 'No State Tax'), h('option', { value: 'CA' }, 'California'), h('option', { value: 'NY' }, 'New York'), h('option', { value: 'TX' }, 'Texas (0%)'), h('option', { value: 'FL' }, 'Florida (0%)'), h('option', { value: 'IL' }, 'Illinois'), h('option', { value: 'PA' }, 'Pennsylvania'), h('option', { value: 'MA' }, 'Massachusetts'), h('option', { value: 'OH' }, 'Ohio'))),
-              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'Filing'), h('select', { value: payFiling, onChange: function(e) { upd('payFiling', e.target.value); }, className: 'w-full px-2 py-1.5 border border-slate-200 rounded-lg text-sm font-bold mt-1' }, h('option', { value: 'single' }, 'Single'), h('option', { value: 'married' }, 'Married')))
+              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'Hourly Rate'), h('input', { type: 'number', step: '0.5', value: payRate, onChange: function(e) { upd('payRate', Math.max(0, parseFloat(e.target.value) || 0)); checkBadge('firstPay'); }, className: 'w-full px-2 py-1.5 border border-slate-400 rounded-lg text-sm font-bold mt-1' })),
+              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'Hours/Week'), h('input', { type: 'number', value: payHours, onChange: function(e) { upd('payHours', Math.max(0, parseFloat(e.target.value) || 0)); }, className: 'w-full px-2 py-1.5 border border-slate-400 rounded-lg text-sm font-bold mt-1' })),
+              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'Pay Period'), h('select', { value: payFreq, onChange: function(e) { upd('payFreq', e.target.value); }, className: 'w-full px-2 py-1.5 border border-slate-400 rounded-lg text-sm font-bold mt-1' }, h('option', { value: 'weekly' }, 'Weekly'), h('option', { value: 'biweekly' }, 'Bi-weekly'), h('option', { value: 'monthly' }, 'Monthly'))),
+              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'State'), h('select', { value: payState, onChange: function(e) { upd('payState', e.target.value); }, className: 'w-full px-2 py-1.5 border border-slate-400 rounded-lg text-sm font-bold mt-1' }, h('option', { value: 'none' }, 'No State Tax'), h('option', { value: 'CA' }, 'California'), h('option', { value: 'NY' }, 'New York'), h('option', { value: 'TX' }, 'Texas (0%)'), h('option', { value: 'FL' }, 'Florida (0%)'), h('option', { value: 'IL' }, 'Illinois'), h('option', { value: 'PA' }, 'Pennsylvania'), h('option', { value: 'MA' }, 'Massachusetts'), h('option', { value: 'OH' }, 'Ohio'))),
+              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'Filing'), h('select', { value: payFiling, onChange: function(e) { upd('payFiling', e.target.value); }, className: 'w-full px-2 py-1.5 border border-slate-400 rounded-lg text-sm font-bold mt-1' }, h('option', { value: 'single' }, 'Single'), h('option', { value: 'married' }, 'Married')))
             )
           ),
           // Results
@@ -952,7 +952,7 @@ window.StemLab = window.StemLab || {
             // Results
             h('div', { className: 'grid grid-cols-3 gap-2 mt-3' },
               dmTotals.sort(function(a, b) { return b.total - a.total; }).map(function(t, i) {
-                return h('div', { key: t.index, className: 'text-center p-2 rounded-xl ' + (i === 0 ? 'bg-emerald-50 border-2 border-emerald-300' : 'bg-slate-50 border border-slate-200') },
+                return h('div', { key: t.index, className: 'text-center p-2 rounded-xl ' + (i === 0 ? 'bg-emerald-50 border-2 border-emerald-300' : 'bg-slate-50 border border-slate-400') },
                   h('p', { className: 'text-[11px] font-bold ' + (i === 0 ? 'text-emerald-700' : 'text-slate-600') }, (i === 0 ? '\uD83C\uDFC6 ' : '') + t.option),
                   h('p', { className: 'text-lg font-bold ' + (i === 0 ? 'text-emerald-600' : 'text-slate-600') }, t.total),
                   h('div', { className: 'h-2 bg-slate-200 rounded-full mt-1 overflow-hidden' },
@@ -972,7 +972,7 @@ window.StemLab = window.StemLab || {
           ),
           h('div', { className: 'flex gap-1.5 mb-2' },
             CONTRACTS.map(function(c, i) {
-              return h('button', { key: i, onClick: function() { updMulti({ crLevel: i, crFound: [] }); }, className: 'px-2 py-1 rounded-lg text-[11px] font-bold ' + (crLevel % CONTRACTS.length === i ? 'bg-teal-700 text-white' : 'bg-white border border-slate-200 text-slate-600') }, c.title);
+              return h('button', { key: i, onClick: function() { updMulti({ crLevel: i, crFound: [] }); }, className: 'px-2 py-1 rounded-lg text-[11px] font-bold ' + (crLevel % CONTRACTS.length === i ? 'bg-teal-700 text-white' : 'bg-white border border-slate-400 text-slate-600') }, c.title);
             })
           ),
           h('div', { className: glassCard },
@@ -1007,7 +1007,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: glassCard + ' space-y-2' },
             h('div', { className: 'flex gap-2' },
               ['low', 'medium', 'high'].map(function(u) {
-                return h('button', { key: u, onClick: function() { upd('hiUsage', u); checkBadge('insured'); }, className: 'px-3 py-1.5 rounded-xl text-xs font-bold ' + (hiUsage === u ? 'bg-teal-700 text-white' : 'bg-white border border-slate-200') }, u.charAt(0).toUpperCase() + u.slice(1) + ' Usage');
+                return h('button', { key: u, onClick: function() { upd('hiUsage', u); checkBadge('insured'); }, className: 'px-3 py-1.5 rounded-xl text-xs font-bold ' + (hiUsage === u ? 'bg-teal-700 text-white' : 'bg-white border border-slate-400') }, u.charAt(0).toUpperCase() + u.slice(1) + ' Usage');
               })
             ),
             h('p', { className: 'text-[11px] text-slate-600' }, 'Scenario: ' + hiScene.visits + ' doctor visits + ' + fmtMoney(hiScene.bills) + ' in medical bills')
@@ -1066,7 +1066,7 @@ window.StemLab = window.StemLab || {
                   if (idx >= 0) list.splice(idx, 1); else list.push(dev.name);
                   upd('asRunning', list);
                   checkBadge('appliedSci');
-                }, className: 'px-2 py-1 rounded-lg text-[11px] font-bold ' + (on ? 'bg-yellow-100 border-yellow-400 border' : 'bg-white border border-slate-200') }, dev.name + ' (' + dev.watts + 'W)');
+                }, className: 'px-2 py-1 rounded-lg text-[11px] font-bold ' + (on ? 'bg-yellow-100 border-yellow-400 border' : 'bg-white border border-slate-400') }, dev.name + ' (' + dev.watts + 'W)');
               })
             ),
             h('div', { className: 'mt-2' },
@@ -1135,7 +1135,7 @@ window.StemLab = window.StemLab || {
                   stemBeep(correct);
                   updMulti({ ccDashFb: correct ? '\u2705 Correct! ' + ccCurrentDash.desc : '\u274C Wrong! It\'s ' + ccCurrentDash.name + '. ' + ccCurrentDash.desc });
                   if (correct) { awardXP(10, 'Dashboard quiz'); checkBadge('mechanic'); }
-                }, className: 'p-2 rounded-xl text-xs font-bold border border-slate-200 hover:border-teal-300' }, c);
+                }, className: 'p-2 rounded-xl text-xs font-bold border border-slate-400 hover:border-teal-300' }, c);
               })
             ),
             d.ccDashFb && h('p', { className: 'text-[11px] font-bold mt-2 p-2 rounded-lg ' + (d.ccDashFb[0] === '\u2705' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700') }, d.ccDashFb),
@@ -1175,7 +1175,7 @@ window.StemLab = window.StemLab || {
                   stemBeep(correct);
                   updMulti({ plumbFb: correct ? '\u2705 Correct! ' + plumbCurrent.explain : '\u274C Not ' + part.name + '. Try again!' });
                   if (correct) { checkBadge('handyman'); awardXP(15, 'Plumbing diagnosis'); }
-                }, className: 'p-2 rounded-xl text-center text-[11px] font-bold border border-slate-200 hover:border-teal-300' },
+                }, className: 'p-2 rounded-xl text-center text-[11px] font-bold border border-slate-400 hover:border-teal-300' },
                   h('span', { className: 'text-lg block' }, part.icon), part.name
                 );
               })
@@ -1187,9 +1187,9 @@ window.StemLab = window.StemLab || {
           h('div', { className: glassCard },
             h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-2' }, '\uD83C\uDFA8 Paint Calculator'),
             h('div', { className: 'grid grid-cols-3 gap-2' },
-              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'Length (ft)'), h('input', { type: 'number', value: paintL, onChange: function(e) { upd('paintL', parseInt(e.target.value) || 0); }, className: 'w-full px-2 py-1 border border-slate-200 rounded-lg text-sm mt-1' })),
-              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'Width (ft)'), h('input', { type: 'number', value: paintW, onChange: function(e) { upd('paintW', parseInt(e.target.value) || 0); }, className: 'w-full px-2 py-1 border border-slate-200 rounded-lg text-sm mt-1' })),
-              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'Height (ft)'), h('input', { type: 'number', value: paintH, onChange: function(e) { upd('paintH', parseInt(e.target.value) || 0); }, className: 'w-full px-2 py-1 border border-slate-200 rounded-lg text-sm mt-1' }))
+              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'Length (ft)'), h('input', { type: 'number', value: paintL, onChange: function(e) { upd('paintL', parseInt(e.target.value) || 0); }, className: 'w-full px-2 py-1 border border-slate-400 rounded-lg text-sm mt-1' })),
+              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'Width (ft)'), h('input', { type: 'number', value: paintW, onChange: function(e) { upd('paintW', parseInt(e.target.value) || 0); }, className: 'w-full px-2 py-1 border border-slate-400 rounded-lg text-sm mt-1' })),
+              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'Height (ft)'), h('input', { type: 'number', value: paintH, onChange: function(e) { upd('paintH', parseInt(e.target.value) || 0); }, className: 'w-full px-2 py-1 border border-slate-400 rounded-lg text-sm mt-1' }))
             ),
             slider('Coats', paintCoats, 1, 3, 1, 'paintCoats'),
             slider('Windows', paintWindows, 0, 6, 1, 'paintWindows'),
@@ -1216,7 +1216,7 @@ window.StemLab = window.StemLab || {
               h('input', { type: 'text', value: d.homeQ || '', onChange: function(e) { upd('homeQ', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter' && d.homeQ) {
                 upd('homeALoading', true);
                 callGemini('Answer this home maintenance question for a ' + gradeBand + ' student in 2-3 sentences: ' + d.homeQ).then(function(r) { updMulti({ homeA: r, homeALoading: false }); }).catch(function() { upd('homeALoading', false); });
-              }}, placeholder: 'e.g. "Why does my furnace make a clicking sound?"', className: 'flex-1 px-3 py-2 border border-slate-200 rounded-xl text-xs' }),
+              }}, placeholder: 'e.g. "Why does my furnace make a clicking sound?"', className: 'flex-1 px-3 py-2 border border-slate-400 rounded-xl text-xs' }),
               h('button', { onClick: function() {
                 if (!d.homeQ) return;
                 upd('homeALoading', true);
@@ -1275,7 +1275,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: glassCard + ' space-y-3' },
             h('div', { className: 'flex items-center gap-3 mb-2' },
               h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, 'Monthly Income'),
-              h('input', { type: 'number', step: '100', value: budgetIncome, onChange: function(e) { upd('budgetIncome', Math.max(0, parseInt(e.target.value) || 0)); checkBadge('budgeteer'); }, className: 'w-32 px-2 py-1.5 border border-slate-200 rounded-lg text-sm font-bold' }),
+              h('input', { type: 'number', step: '100', value: budgetIncome, onChange: function(e) { upd('budgetIncome', Math.max(0, parseInt(e.target.value) || 0)); checkBadge('budgeteer'); }, className: 'w-32 px-2 py-1.5 border border-slate-400 rounded-lg text-sm font-bold' }),
               h('span', { className: 'text-xs font-bold text-slate-600' }, fmtMoney(budgetIncome) + '/month')
             ),
             // 50/30/20 bar
@@ -1324,9 +1324,9 @@ window.StemLab = window.StemLab || {
           h('div', { className: glassCard + ' space-y-3' },
             h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-1' }, '\uD83C\uDFE6 Savings Goal Calculator'),
             h('div', { className: 'grid grid-cols-3 gap-2' },
-              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'Goal Amount'), h('input', { type: 'number', step: '1000', value: savingsGoal, onChange: function(e) { upd('savingsGoal', Math.max(0, parseInt(e.target.value) || 0)); checkBadge('saver'); }, className: 'w-full px-2 py-1.5 border border-slate-200 rounded-lg text-sm font-bold mt-1' })),
-              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'Monthly Savings'), h('input', { type: 'number', step: '25', value: savingsMonthly, onChange: function(e) { upd('savingsMonthly', Math.max(0, parseInt(e.target.value) || 0)); }, className: 'w-full px-2 py-1.5 border border-slate-200 rounded-lg text-sm font-bold mt-1' })),
-              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'Interest Rate (%)'), h('input', { type: 'number', step: '0.5', value: savingsRate, onChange: function(e) { upd('savingsRate', Math.max(0, parseFloat(e.target.value) || 0)); }, className: 'w-full px-2 py-1.5 border border-slate-200 rounded-lg text-sm font-bold mt-1' }))
+              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'Goal Amount'), h('input', { type: 'number', step: '1000', value: savingsGoal, onChange: function(e) { upd('savingsGoal', Math.max(0, parseInt(e.target.value) || 0)); checkBadge('saver'); }, className: 'w-full px-2 py-1.5 border border-slate-400 rounded-lg text-sm font-bold mt-1' })),
+              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'Monthly Savings'), h('input', { type: 'number', step: '25', value: savingsMonthly, onChange: function(e) { upd('savingsMonthly', Math.max(0, parseInt(e.target.value) || 0)); }, className: 'w-full px-2 py-1.5 border border-slate-400 rounded-lg text-sm font-bold mt-1' })),
+              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'Interest Rate (%)'), h('input', { type: 'number', step: '0.5', value: savingsRate, onChange: function(e) { upd('savingsRate', Math.max(0, parseFloat(e.target.value) || 0)); }, className: 'w-full px-2 py-1.5 border border-slate-400 rounded-lg text-sm font-bold mt-1' }))
             ),
             monthsToGoal > 0 && monthsToGoal < 600 && h('div', { className: 'text-center p-3 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl' },
               h('p', { className: 'text-lg font-bold text-emerald-700' }, Math.floor(monthsToGoal / 12) + ' years, ' + (monthsToGoal % 12) + ' months'),
@@ -1380,10 +1380,10 @@ window.StemLab = window.StemLab || {
           h('div', { className: glassCard + ' space-y-3' },
             h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-1' }, '\uD83D\uDCC8 Compound Interest \u2014 "The 8th Wonder of the World"'),
             h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2' },
-              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'Starting $'), h('input', { type: 'number', step: '500', value: ciPrincipal, onChange: function(e) { upd('ciPrincipal', Math.max(0, parseInt(e.target.value) || 0)); }, className: 'w-full px-2 py-1.5 border border-slate-200 rounded-lg text-sm font-bold mt-1' })),
-              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'Monthly Add'), h('input', { type: 'number', step: '25', value: ciMonthly, onChange: function(e) { upd('ciMonthly', Math.max(0, parseInt(e.target.value) || 0)); }, className: 'w-full px-2 py-1.5 border border-slate-200 rounded-lg text-sm font-bold mt-1' })),
-              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'Rate (%)'), h('input', { type: 'number', step: '0.5', value: ciRate, onChange: function(e) { upd('ciRate', Math.max(0, parseFloat(e.target.value) || 0)); }, className: 'w-full px-2 py-1.5 border border-slate-200 rounded-lg text-sm font-bold mt-1' })),
-              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'Years'), h('input', { type: 'number', step: '1', value: ciYears, onChange: function(e) { upd('ciYears', Math.max(1, Math.min(50, parseInt(e.target.value) || 1))); }, className: 'w-full px-2 py-1.5 border border-slate-200 rounded-lg text-sm font-bold mt-1' }))
+              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'Starting $'), h('input', { type: 'number', step: '500', value: ciPrincipal, onChange: function(e) { upd('ciPrincipal', Math.max(0, parseInt(e.target.value) || 0)); }, className: 'w-full px-2 py-1.5 border border-slate-400 rounded-lg text-sm font-bold mt-1' })),
+              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'Monthly Add'), h('input', { type: 'number', step: '25', value: ciMonthly, onChange: function(e) { upd('ciMonthly', Math.max(0, parseInt(e.target.value) || 0)); }, className: 'w-full px-2 py-1.5 border border-slate-400 rounded-lg text-sm font-bold mt-1' })),
+              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'Rate (%)'), h('input', { type: 'number', step: '0.5', value: ciRate, onChange: function(e) { upd('ciRate', Math.max(0, parseFloat(e.target.value) || 0)); }, className: 'w-full px-2 py-1.5 border border-slate-400 rounded-lg text-sm font-bold mt-1' })),
+              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'Years'), h('input', { type: 'number', step: '1', value: ciYears, onChange: function(e) { upd('ciYears', Math.max(1, Math.min(50, parseInt(e.target.value) || 1))); }, className: 'w-full px-2 py-1.5 border border-slate-400 rounded-lg text-sm font-bold mt-1' }))
             ),
             h('div', { className: 'grid grid-cols-3 gap-2 mt-2' },
               h('div', { className: 'text-center p-2 rounded-xl bg-blue-50' }, h('p', { className: 'text-[11px] font-bold text-blue-500 uppercase' }, 'You Put In'), h('p', { className: 'text-sm font-bold text-blue-700' }, fmtMoney(ciResult.contributed))),
@@ -1400,9 +1400,9 @@ window.StemLab = window.StemLab || {
           h('div', { className: glassCard + ' space-y-3' },
             h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-1' }, '\uD83C\uDFE0 Loan Payment Calculator'),
             h('div', { className: 'grid grid-cols-3 gap-2' },
-              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'Loan Amount'), h('input', { type: 'number', step: '1000', value: loanPrincipal, onChange: function(e) { upd('loanPrincipal', Math.max(0, parseInt(e.target.value) || 0)); checkBadge('loanCalc'); }, className: 'w-full px-2 py-1.5 border border-slate-200 rounded-lg text-sm font-bold mt-1' })),
-              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'APR (%)'), h('input', { type: 'number', step: '0.25', value: loanRate, onChange: function(e) { upd('loanRate', Math.max(0, parseFloat(e.target.value) || 0)); }, className: 'w-full px-2 py-1.5 border border-slate-200 rounded-lg text-sm font-bold mt-1' })),
-              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'Years'), h('select', { value: loanTerm, onChange: function(e) { upd('loanTerm', parseInt(e.target.value)); }, className: 'w-full px-2 py-1.5 border border-slate-200 rounded-lg text-sm font-bold mt-1' },
+              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'Loan Amount'), h('input', { type: 'number', step: '1000', value: loanPrincipal, onChange: function(e) { upd('loanPrincipal', Math.max(0, parseInt(e.target.value) || 0)); checkBadge('loanCalc'); }, className: 'w-full px-2 py-1.5 border border-slate-400 rounded-lg text-sm font-bold mt-1' })),
+              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'APR (%)'), h('input', { type: 'number', step: '0.25', value: loanRate, onChange: function(e) { upd('loanRate', Math.max(0, parseFloat(e.target.value) || 0)); }, className: 'w-full px-2 py-1.5 border border-slate-400 rounded-lg text-sm font-bold mt-1' })),
+              h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'Years'), h('select', { value: loanTerm, onChange: function(e) { upd('loanTerm', parseInt(e.target.value)); }, className: 'w-full px-2 py-1.5 border border-slate-400 rounded-lg text-sm font-bold mt-1' },
                 [1, 2, 3, 5, 7, 10, 15, 20, 30].map(function(y) { return h('option', { key: y, value: y }, y + ' years'); })
               ))
             ),
@@ -1430,7 +1430,7 @@ window.StemLab = window.StemLab || {
             h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-1' }, '\uD83D\uDCCF Recipe Scaler'),
             h('div', { className: 'flex gap-2 mb-2' },
               RECIPES.map(function(r, i) {
-                return h('button', { 'aria-label': 'Select cooking recipe', key: i, onClick: function() { updMulti({ cookRecipeIdx: i, cookScale: 1 }); }, className: 'px-2 py-1 rounded-lg text-[11px] font-bold ' + (cookRecipeIdx % RECIPES.length === i ? 'bg-teal-700 text-white' : 'bg-white border border-slate-200') }, r.icon + ' ' + r.name);
+                return h('button', { 'aria-label': 'Select cooking recipe', key: i, onClick: function() { updMulti({ cookRecipeIdx: i, cookScale: 1 }); }, className: 'px-2 py-1 rounded-lg text-[11px] font-bold ' + (cookRecipeIdx % RECIPES.length === i ? 'bg-teal-700 text-white' : 'bg-white border border-slate-400') }, r.icon + ' ' + r.name);
               })
             ),
             h('div', { className: 'flex items-center gap-3 mb-2' },
@@ -1462,7 +1462,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: glassCard + ' space-y-3' },
             h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-1' }, '\uD83C\uDF4E Nutrition Label Quiz'),
             h('p', { className: 'text-xs text-slate-600' }, 'Score: ' + nutritionScore + '/' + NUTRITION_LABELS.length),
-            h('div', { className: 'bg-white rounded-xl p-3 border border-slate-300 font-mono text-[11px] space-y-0.5' },
+            h('div', { className: 'bg-white rounded-xl p-3 border border-slate-400 font-mono text-[11px] space-y-0.5' },
               h('p', { className: 'text-xs font-bold text-center border-b border-slate-300 pb-1' }, '\uD83C\uDF4F ' + nutritionCurrent.title),
               h('p', null, 'Serving Size: ' + nutritionCurrent.servingSize),
               h('p', null, 'Servings Per Container: ' + nutritionCurrent.servings),
@@ -1481,7 +1481,7 @@ window.StemLab = window.StemLab || {
                   stemBeep(correct);
                   updMulti({ nutritionFb: correct ? '\u2705 Correct! ' + nutritionCurrent.explain : '\u274C Answer: ' + nutritionCurrent.answer + '. ' + nutritionCurrent.explain, nutritionScore: nutritionScore + (correct ? 1 : 0) });
                 }
-              }, placeholder: 'Your answer...', className: 'flex-1 px-3 py-2 border border-slate-200 rounded-xl text-sm font-mono' }),
+              }, placeholder: 'Your answer...', className: 'flex-1 px-3 py-2 border border-slate-400 rounded-xl text-sm font-mono' }),
               h('button', { 'aria-label': 'Check', onClick: function() {
                 if (!nutritionAnswer.trim()) return;
                 var correct = nutritionAnswer.trim().replace(/[^0-9.]/g, '') === nutritionCurrent.answer;
@@ -1510,7 +1510,7 @@ window.StemLab = window.StemLab || {
               })
             ),
             // Quick quiz
-            h('div', { className: 'mt-3 p-3 rounded-xl bg-white border border-slate-200' },
+            h('div', { className: 'mt-3 p-3 rounded-xl bg-white border border-slate-400' },
               h('p', { className: 'text-xs font-bold text-slate-700 mb-2' }, '\uD83E\uDDE0 Quick Quiz: What is the safe temp for ' + foodSafetyCurrent.food + '?'),
               h('div', { className: 'flex flex-wrap gap-1.5' },
                 [125, 145, 155, 160, 165, 180].map(function(temp) {
@@ -1519,7 +1519,7 @@ window.StemLab = window.StemLab || {
                     stemBeep(correct);
                     updMulti({ foodSafetyFb: correct ? '\u2705 Correct! ' + foodSafetyCurrent.tempF + '\u00B0F for ' + foodSafetyCurrent.food : '\u274C It\'s ' + foodSafetyCurrent.tempF + '\u00B0F. ' + foodSafetyCurrent.danger, foodSafetyScore: foodSafetyScore + (correct ? 1 : 0) });
                     if (correct && foodSafetyScore + 1 >= 5) checkBadge('chefSafe');
-                  }, className: 'px-3 py-1.5 rounded-xl text-xs font-bold border border-slate-200 hover:border-amber-300' }, temp + '\u00B0F');
+                  }, className: 'px-3 py-1.5 rounded-xl text-xs font-bold border border-slate-400 hover:border-amber-300' }, temp + '\u00B0F');
                 })
               ),
               d.foodSafetyFb && h('p', { className: 'text-[11px] font-bold mt-2 p-2 rounded-lg ' + (d.foodSafetyFb[0] === '\u2705' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700') }, d.foodSafetyFb),
@@ -1537,7 +1537,7 @@ window.StemLab = window.StemLab || {
                 var labels = { 1: 'Easy', 2: 'Medium', 3: 'Hard' };
                 var colors = { 1: 'bg-emerald-100 text-emerald-700', 2: 'bg-amber-100 text-amber-700', 3: 'bg-red-100 text-red-700' };
                 return h('button', { key: t, onClick: function() { updMulti({ chalTier: t, chalIdx: 0, chalFeedback: '', chalAnswer: '' }); },
-                  className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold ' + (chalTier === t ? colors[t] + ' ring-2 ring-offset-1' : 'bg-white text-slate-600 border border-slate-200') }, labels[t]);
+                  className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold ' + (chalTier === t ? colors[t] + ' ring-2 ring-offset-1' : 'bg-white text-slate-600 border border-slate-400') }, labels[t]);
               })
             ),
             h('div', { className: 'flex gap-3 text-xs' },
@@ -1547,7 +1547,7 @@ window.StemLab = window.StemLab || {
           ),
           h('div', { className: glassCard + ' space-y-3' },
             chalQ && h('p', { className: 'text-sm font-medium text-slate-700' }, chalQ.q),
-            h('input', { type: 'text', value: chalAnswer, onChange: function(e) { upd('chalAnswer', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') chalCheck(); }, placeholder: 'Type your answer...', className: 'w-full px-4 py-2 border border-slate-200 rounded-xl text-sm focus:border-teal-400', 'aria-label': 'Answer' }),
+            h('input', { type: 'text', value: chalAnswer, onChange: function(e) { upd('chalAnswer', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') chalCheck(); }, placeholder: 'Type your answer...', className: 'w-full px-4 py-2 border border-slate-400 rounded-xl text-sm focus:border-teal-400', 'aria-label': 'Answer' }),
             h('div', { className: 'flex gap-2' },
               h('button', { onClick: chalCheck, className: 'px-4 py-2 text-sm font-bold bg-teal-700 text-white rounded-xl' }, 'Check'),
               h('button', { onClick: function() { upd('chalFeedback', '\uD83D\uDCA1 ' + (chalQ.h || 'No hint')); }, className: 'px-3 py-2 text-sm font-bold bg-amber-50 text-amber-600 rounded-xl' }, '\uD83D\uDCA1 Hint'),
@@ -1598,7 +1598,7 @@ window.StemLab = window.StemLab || {
                 return h('div', { className: 'space-y-3' },
                   battleUseAI && h('span', { className: 'px-1.5 py-0.5 bg-purple-100 text-purple-600 text-[11px] font-bold rounded-full' }, '\uD83E\uDDE0 AI'),
                   h('p', { className: 'text-sm font-medium text-slate-700' }, q.q),
-                  h('input', { type: 'text', value: battleAnswer, onChange: function(e) { upd('battleAnswer', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') battleAttack(); }, placeholder: 'Answer...', className: 'w-full px-4 py-2 border border-slate-200 rounded-xl text-sm font-mono focus:border-red-400' }),
+                  h('input', { type: 'text', value: battleAnswer, onChange: function(e) { upd('battleAnswer', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') battleAttack(); }, placeholder: 'Answer...', className: 'w-full px-4 py-2 border border-slate-400 rounded-xl text-sm font-mono focus:border-red-400' }),
                   h('div', { className: 'flex gap-2' },
                     h('button', { onClick: battleAttack, className: 'px-4 py-2 text-sm font-bold bg-red-600 text-white rounded-xl' }, '\u2694\uFE0F Attack!'),
                     h('button', { 'aria-label': 'Hint', onClick: function() { upd('battleFeedback', '\uD83D\uDCA1 ' + (q.h || 'No hint')); }, className: 'px-3 py-2 text-sm font-bold bg-amber-50 text-amber-600 rounded-xl' }, '\uD83D\uDCA1 Hint')
@@ -1635,7 +1635,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'grid grid-cols-2 sm:grid-cols-3 gap-2 mt-3' },
             LS_BADGES.map(function(b) {
               var earned = d.badges && d.badges[b.id];
-              return h('div', { key: b.id, className: 'flex items-center gap-2 p-2 rounded-lg ' + (earned ? 'bg-amber-50 border border-amber-200' : 'bg-slate-50 border border-slate-200 opacity-50') },
+              return h('div', { key: b.id, className: 'flex items-center gap-2 p-2 rounded-lg ' + (earned ? 'bg-amber-50 border border-amber-200' : 'bg-slate-50 border border-slate-400 opacity-50') },
                 h('span', { className: 'text-lg' + (earned ? '' : ' grayscale') }, b.icon),
                 h('div', null, h('p', { className: 'text-[11px] font-bold ' + (earned ? 'text-amber-700' : 'text-slate-600') }, b.name), h('p', { className: 'text-[11px] text-slate-600' }, b.desc))
               );

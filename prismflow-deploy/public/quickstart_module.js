@@ -444,7 +444,7 @@ const QuickStartWizard = React.memo(({
     "aria-modal": "true",
     className: "fixed inset-0 z-[200] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "bg-white w-full max-w-xl rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-300 border border-slate-200 max-h-[90vh]"
+    className: "bg-white w-full max-w-xl rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-300 border border-slate-400 max-h-[90vh]"
   }, /*#__PURE__*/React.createElement("div", {
     className: "bg-slate-50 px-8 py-6 border-b border-slate-100 flex justify-between items-center shrink-0"
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h2", {
@@ -803,7 +803,7 @@ const QuickStartWizard = React.memo(({
       fetchedContent: '',
       resourceMeta: null
     })),
-    className: "px-4 py-3 text-xs font-bold text-slate-600 hover:text-slate-700 bg-white border border-slate-200 rounded-xl"
+    className: "px-4 py-3 text-xs font-bold text-slate-600 hover:text-slate-700 bg-white border border-slate-400 rounded-xl"
   }, t('wizard.back_to_results')), /*#__PURE__*/React.createElement("button", {
     "aria-label": t('common.continue'),
     onClick: () => setStep(4),
@@ -974,7 +974,7 @@ const QuickStartWizard = React.memo(({
   }, t('wizard.dok_levels.l3')), /*#__PURE__*/React.createElement("option", {
     value: "Level 4: Extended Thinking"
   }, t('wizard.dok_levels.l4')))))), !isParentMode && /*#__PURE__*/React.createElement("div", {
-    className: "bg-slate-50 p-2 rounded-lg border border-slate-200"
+    className: "bg-slate-50 p-2 rounded-lg border border-slate-400"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex justify-between items-center mb-2"
   }, /*#__PURE__*/React.createElement("label", {
@@ -983,7 +983,7 @@ const QuickStartWizard = React.memo(({
     size: 12,
     className: "text-green-600"
   }), " ", isIndependentMode ? t('wizard.learning_goals') : t('wizard.target_standard')), !isIndependentMode && /*#__PURE__*/React.createElement("div", {
-    className: "flex bg-white rounded-md border border-slate-200 p-0.5 shadow-sm"
+    className: "flex bg-white rounded-md border border-slate-400 p-0.5 shadow-sm"
   }, /*#__PURE__*/React.createElement("button", {
     "data-help-key": "wizard_std_mode_ai",
     onClick: () => setStandardMode('ai'),
@@ -1002,7 +1002,7 @@ const QuickStartWizard = React.memo(({
     value: aiStandardRegion,
     onChange: e => setAiStandardRegion(e.target.value),
     placeholder: t('common.standards_region_placeholder'),
-    className: "w-1/3 text-xs border border-slate-300 rounded p-1.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300"
+    className: "w-1/3 text-xs border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300"
   }), /*#__PURE__*/React.createElement("input", {
     "aria-label": t('common.enter_ai_standard_query'),
     type: "text",
@@ -1011,7 +1011,7 @@ const QuickStartWizard = React.memo(({
     onKeyDown: e => e.key === 'Enter' && handleFindStandards(),
     "data-help-key": "standards_query_input",
     placeholder: isIndependentMode ? t('wizard.independent_learning_goal') : t('wizard.skill_search_placeholder'),
-    className: "flex-grow text-xs border border-slate-300 rounded p-1.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300"
+    className: "flex-grow text-xs border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300"
   }), /*#__PURE__*/React.createElement("button", {
     onClick: handleFindStandards,
     "data-help-key": "standards_search_btn",
@@ -1026,7 +1026,7 @@ const QuickStartWizard = React.memo(({
     size: 14
   }))), suggestedStandards.length > 0 && /*#__PURE__*/React.createElement("div", {
     ref: standardsListRef,
-    className: "max-h-32 overflow-y-auto custom-scrollbar border border-slate-200 rounded bg-white divide-y divide-slate-100 shadow-inner"
+    className: "max-h-32 overflow-y-auto custom-scrollbar border border-slate-400 rounded bg-white divide-y divide-slate-100 shadow-inner"
   }, suggestedStandards.map((std, idx) => /*#__PURE__*/React.createElement("button", {
     key: idx,
     onClick: () => {
@@ -1062,7 +1062,7 @@ const QuickStartWizard = React.memo(({
     onKeyDown: e => e.key === 'Enter' && handleAddStandard(),
     "data-help-key": "wizard_std_manual_input",
     placeholder: t('standards.manual_placeholder'),
-    className: "flex-grow text-xs border border-slate-300 rounded p-1.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300"
+    className: "flex-grow text-xs border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300"
   }), /*#__PURE__*/React.createElement("button", {
     "aria-label": t('common.add'),
     onClick: handleAddStandard,
@@ -1196,7 +1196,7 @@ const QuickStartWizard = React.memo(({
       ...localData,
       format: e.target.value
     }),
-    className: "w-full p-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none bg-white"
+    className: "w-full p-3 border border-slate-400 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none bg-white"
   }, /*#__PURE__*/React.createElement("option", {
     value: "Standard Text"
   }, t('simplified.formats.standard')), /*#__PURE__*/React.createElement("option", {
@@ -1225,7 +1225,7 @@ const QuickStartWizard = React.memo(({
     onKeyDown: e => e.key === 'Enter' && addWizLanguage(),
     "data-help-key": "wizard_lang_input",
     placeholder: t('wizard.language_placeholder'),
-    className: "flex-grow p-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none bg-white",
+    className: "flex-grow p-3 border border-slate-400 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none bg-white",
     disabled: localData.languages.length >= 4
   }), /*#__PURE__*/React.createElement("button", {
     "aria-label": t('common.add'),
@@ -1242,7 +1242,7 @@ const QuickStartWizard = React.memo(({
       addCommonLanguage(e.target.value);
       e.target.value = "";
     },
-    className: "w-full text-xs border border-slate-200 rounded-lg p-2 bg-slate-50 text-slate-600 mb-3 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 cursor-pointer",
+    className: "w-full text-xs border border-slate-400 rounded-lg p-2 bg-slate-50 text-slate-600 mb-3 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 cursor-pointer",
     disabled: localData.languages.length >= 4
   }, /*#__PURE__*/React.createElement("option", {
     "data-help-key": "wizard_lang_common_select",
@@ -1293,7 +1293,7 @@ const QuickStartWizard = React.memo(({
     onKeyDown: e => e.key === 'Enter' && addWizInterest(),
     "data-help-key": "wizard_interest_input",
     placeholder: t('wizard.interest_placeholder'),
-    className: "flex-grow p-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none",
+    className: "flex-grow p-3 border border-slate-400 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none",
     disabled: localData.interests.length >= 5
   }), /*#__PURE__*/React.createElement("button", {
     "aria-label": t('common.add'),

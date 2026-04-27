@@ -531,7 +531,7 @@ const RoleSelectionModal = React.memo(({ onSelect, onGateRequired }) => {
                 micStatus === 'granted' ? 'bg-green-100 text-green-700 cursor-default' :
                 micStatus === 'denied' ? 'bg-red-50 text-red-500 border border-red-100' :
                 micStatus === 'requesting' ? 'bg-slate-100 text-slate-600' :
-                'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-indigo-600'
+                'bg-white border border-slate-400 text-slate-600 hover:bg-slate-50 hover:text-indigo-600'
             }`}
           >
               {micStatus === 'granted' ? <CheckCircle size={14} /> :

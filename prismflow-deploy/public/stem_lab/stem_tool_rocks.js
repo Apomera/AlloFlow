@@ -2022,7 +2022,7 @@ const d = labToolData.rocks || {};
                         (d.selectedMineral === mineral.id ? 'bg-white shadow-lg border-violet-400' : 'bg-slate-50 border-slate-200 hover:border-violet-200'),
                       style: d.selectedMineral === mineral.id ? { borderColor: '#8b5cf6', color: '#6d28d9' } : {}
                     },
-                      React.createElement("div", { className: "w-5 h-5 rounded-full mx-auto mb-1 border border-slate-200", style: { background: mineral.color } }),
+                      React.createElement("div", { className: "w-5 h-5 rounded-full mx-auto mb-1 border border-slate-400", style: { background: mineral.color } }),
                       mineral.label);
                   })
                 ),

@@ -1321,7 +1321,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                 const formulaStr = sorted.map(k => k + (counts[k] > 1 ? counts[k] : '')).join('');
 
-                return React.createElement("div", { className: "mt-3 bg-slate-50 rounded-xl p-3 border border-slate-200 flex items-center justify-between" },
+                return React.createElement("div", { className: "mt-3 bg-slate-50 rounded-xl p-3 border border-slate-400 flex items-center justify-between" },
 
                   React.createElement("div", null,
 
@@ -1544,7 +1544,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                         React.createElement("div", { className: "flex flex-wrap gap-1" },
 
-                          (detail.uses || []).map((use, i) => React.createElement("span", { key: i, className: "px-2 py-0.5 bg-white/60 rounded-full text-[11px] font-medium text-slate-700 border border-slate-200/80" }, use))
+                          (detail.uses || []).map((use, i) => React.createElement("span", { key: i, className: "px-2 py-0.5 bg-white/60 rounded-full text-[11px] font-medium text-slate-700 border border-slate-400/80" }, use))
 
                         )
 
@@ -1556,7 +1556,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                         React.createElement("div", { className: "flex flex-wrap gap-1" },
 
-                          (detail.compounds || []).map((comp, i) => React.createElement("span", { key: i, className: "px-2 py-0.5 bg-white/60 rounded-full text-[11px] font-medium text-slate-700 border border-slate-200/80" }, comp))
+                          (detail.compounds || []).map((comp, i) => React.createElement("span", { key: i, className: "px-2 py-0.5 bg-white/60 rounded-full text-[11px] font-medium text-slate-700 border border-slate-400/80" }, comp))
 
                         )
 
@@ -1592,7 +1592,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                         React.createElement("canvas", { width: 220, height: 220,
 
-                          className: "rounded-xl border border-slate-200 bg-slate-900 flex-shrink-0",
+                          className: "rounded-xl border border-slate-400 bg-slate-900 flex-shrink-0",
 
                           key: 'bohr-' + d.selectedElement.n,
 
@@ -2180,7 +2180,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
                       onChange: (e) => upd('aiQuestion', e.target.value),
                       onKeyDown: (e) => { if (e.key === 'Enter') askChemTutor(aiQuestion); },
                       placeholder: "Ask about any element, compound, or reaction...",
-                      className: "flex-1 px-3 py-2 rounded-lg border border-slate-300 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                      className: "flex-1 px-3 py-2 rounded-lg border border-slate-400 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-300"
                     }),
                     React.createElement("button", { "aria-label": "Ask Chem Tutor",
                       onClick: () => askChemTutor(aiQuestion),

@@ -96,14 +96,14 @@ const renderFormattedText = (text, enableGlossary = true, isDarkBg = false, deps
                 const chartData = JSON.parse(chartMatch[1]);
                 if (chartData.type === 'bar') {
                     elements.push(
-                        <div key={`chart-${lineIdx}`} className="my-6 p-4 border border-slate-200 rounded-xl bg-white shadow-sm max-w-md mx-auto">
+                        <div key={`chart-${lineIdx}`} className="my-6 p-4 border border-slate-400 rounded-xl bg-white shadow-sm max-w-md mx-auto">
                             {chartData.title && <h4 className="text-center font-bold text-slate-700 mb-4 text-sm uppercase tracking-wider">{chartData.title}</h4>}
                             <SimpleBarChart data={chartData.data} color="indigo" />
                         </div>
                     );
                 } else if (chartData.type === 'donut') {
                     elements.push(
-                        <div key={`chart-${lineIdx}`} className="my-6 p-4 border border-slate-200 rounded-xl bg-white shadow-sm max-w-xs mx-auto flex flex-col items-center">
+                        <div key={`chart-${lineIdx}`} className="my-6 p-4 border border-slate-400 rounded-xl bg-white shadow-sm max-w-xs mx-auto flex flex-col items-center">
                             {chartData.title && <h4 className="text-center font-bold text-slate-700 mb-4 text-sm uppercase tracking-wider">{chartData.title}</h4>}
                             <SimpleDonutChart percentage={chartData.percentage} label={chartData.label} color="indigo" />
                         </div>
@@ -208,7 +208,7 @@ const renderOutlineContent = (deps) => {
                             <input aria-label={t('common.common_placeholder_translation')}
                                 value={main_en || ''}
                                 onChange={(e) => handleOutlineChange(null, 'main', e.target.value, null, true)}
-                                className="text-sm text-center text-slate-600 bg-white border border-slate-200 rounded p-1 focus:ring-2 focus:ring-indigo-400 outline-none w-full"
+                                className="text-sm text-center text-slate-600 bg-white border border-slate-400 rounded p-1 focus:ring-2 focus:ring-indigo-400 outline-none w-full"
                                 placeholder={t('common.placeholder_translation')}
                             />
                         )}
@@ -553,7 +553,7 @@ const renderOutlineContent = (deps) => {
                         <div className="space-y-6">
                             {branches.map((b, i) => (
                                  <div key={i} className="relative pl-4 md:pl-0 group">
-                                     <div className="flex flex-col md:flex-row items-stretch gap-0 bg-white rounded-2xl border border-slate-200 shadow-md overflow-hidden">
+                                     <div className="flex flex-col md:flex-row items-stretch gap-0 bg-white rounded-2xl border border-slate-400 shadow-md overflow-hidden">
                                          <div className="flex-1 p-6 bg-orange-50 border-r border-orange-100 relative">
                                              <div className="absolute top-0 left-0 bg-orange-200 text-orange-800 text-[11px] font-black uppercase tracking-wider px-3 py-1 rounded-br-lg">{t('outline.labels.cause')}</div>
                                              <div className="pt-2 h-full flex items-center">
@@ -778,7 +778,7 @@ const renderOutlineContent = (deps) => {
                                                             <input aria-label={t('common.enter_item')}
                                                                 value={item}
                                                                 onChange={(e) => handleOutlineChange(i, 'item', e.target.value, k)}
-                                                                className="w-full bg-white rounded px-2 py-1 outline-none border border-slate-200 focus:border-indigo-300"
+                                                                className="w-full bg-white rounded px-2 py-1 outline-none border border-slate-400 focus:border-indigo-300"
                                                             />
                                                             {(branch.items_en?.[k] || leveledTextLanguage !== 'English') && (
                                                                 <input aria-label={t('common.common_placeholder_translation')}
@@ -843,7 +843,7 @@ const renderInteractiveMap = (deps) => {
       };
       return (
           <div className="flex flex-col gap-4">
-              <div className="flex flex-wrap items-center gap-2 bg-slate-50 p-2 rounded-lg border border-slate-200 justify-between min-h-[50px]">
+              <div className="flex flex-wrap items-center gap-2 bg-slate-50 p-2 rounded-lg border border-slate-400 justify-between min-h-[50px]">
                   {isVenn ? (
                       <div className="flex items-center justify-center w-full gap-4">
                           <button aria-label={t('common.reset_venn_diagram')}
@@ -857,7 +857,7 @@ const renderInteractiveMap = (deps) => {
                               aria-label={t('common.reorder_list')}
                               onClick={handleVennScrambleBank}
                               disabled={isMapLocked}
-                              className={`flex items-center gap-2 bg-white text-slate-600 border border-slate-200 px-4 py-2 rounded-full text-xs font-bold hover:bg-slate-50 transition-colors shadow-sm ${isMapLocked ? 'opacity-50 cursor-not-allowed' : ''}`}
+                              className={`flex items-center gap-2 bg-white text-slate-600 border border-slate-400 px-4 py-2 rounded-full text-xs font-bold hover:bg-slate-50 transition-colors shadow-sm ${isMapLocked ? 'opacity-50 cursor-not-allowed' : ''}`}
                           >
                               <ListOrdered size={14} /> {t('concept_map.venn.scramble_bank')}
                           </button>
@@ -875,7 +875,7 @@ const renderInteractiveMap = (deps) => {
                           <button
                               aria-label={t('common.locked')}
                               onClick={handleToggleIsMapLocked}
-                              className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isMapLocked ? 'bg-green-700 text-white hover:bg-green-700 ring-2 ring-green-200' : 'bg-white text-slate-600 border border-slate-200 hover:text-indigo-600 hover:bg-indigo-50'}`}
+                              className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isMapLocked ? 'bg-green-700 text-white hover:bg-green-700 ring-2 ring-green-200' : 'bg-white text-slate-600 border border-slate-400 hover:text-indigo-600 hover:bg-indigo-50'}`}
                               title={isMapLocked ? t('concept_map.toolbar.unlock_tooltip') : t('concept_map.toolbar.lock_tooltip')}
                           >
                               {isMapLocked ? <Lock size={14} /> : <Unlock size={14} />}
@@ -905,7 +905,7 @@ const renderInteractiveMap = (deps) => {
                                 onChange={(e) => setNodeInputText(e.target.value)}
                                 onKeyDown={(e) => e.key === 'Enter' && !isChallengeActive && !isMapLocked && handleAddManualNode()}
                                 placeholder={t('concept_map.toolbar.add_placeholder')}
-                                className={`text-xs p-2 rounded border border-slate-300 focus:ring-2 focus:ring-indigo-500 outline-none w-32 sm:w-48 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-100 ${isMapLocked ? 'cursor-not-allowed' : ''}`}
+                                className={`text-xs p-2 rounded border border-slate-400 focus:ring-2 focus:ring-indigo-500 outline-none w-32 sm:w-48 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-100 ${isMapLocked ? 'cursor-not-allowed' : ''}`}
                                 disabled={isChallengeActive || isMapLocked}
                             />
                             <button aria-label={t('common.add')}
@@ -951,7 +951,7 @@ const renderInteractiveMap = (deps) => {
                             <div className="w-px h-6 bg-slate-300 mx-2"></div>
                             <button
                                 onClick={handleToggleIsMapLocked}
-                                className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isMapLocked ? 'bg-green-700 text-white hover:bg-green-700 ring-2 ring-green-200' : 'bg-white text-slate-600 border border-slate-200 hover:text-indigo-600 hover:bg-indigo-50'}`}
+                                className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isMapLocked ? 'bg-green-700 text-white hover:bg-green-700 ring-2 ring-green-200' : 'bg-white text-slate-600 border border-slate-400 hover:text-indigo-600 hover:bg-indigo-50'}`}
                                 title={isMapLocked ? t('concept_map.toolbar.unlock_tooltip') : t('concept_map.toolbar.lock_tooltip')}
                                 aria-label={isMapLocked ? t('concept_map.toolbar.unlock_tooltip') : t('concept_map.toolbar.lock_tooltip')}
                             >
@@ -966,7 +966,7 @@ const renderInteractiveMap = (deps) => {
                                           value={challengeModeType}
                                           onChange={(e) => setChallengeModeType(e.target.value)}
                                           disabled={isMapLocked}
-                                          className={`text-xs font-bold text-slate-600 bg-white border border-slate-300 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-yellow-400 cursor-pointer shadow-sm ${isMapLocked ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                          className={`text-xs font-bold text-slate-600 bg-white border border-slate-400 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-yellow-400 cursor-pointer shadow-sm ${isMapLocked ? 'opacity-50 cursor-not-allowed' : ''}`}
                                           title={t('concept_map.tooltips.select_grading')}
                                       >
                                           <option value="strict">{t('concept_map.challenge.strict_mode')}</option>
@@ -996,7 +996,7 @@ const renderInteractiveMap = (deps) => {
                                                           AI Score: {challengeFeedback.score}%
                                                        </span>
                                                        {challengeFeedback.feedbackText && (
-                                                           <div className="text-[11px] text-slate-600 italic text-right leading-tight bg-white/80 p-1.5 rounded border border-slate-200 shadow-sm animate-in slide-in-from-right-2">
+                                                           <div className="text-[11px] text-slate-600 italic text-right leading-tight bg-white/80 p-1.5 rounded border border-slate-400 shadow-sm animate-in slide-in-from-right-2">
                                                                {challengeFeedback.feedbackText}
                                                            </div>
                                                        )}
@@ -1005,7 +1005,7 @@ const renderInteractiveMap = (deps) => {
                                           )}
                                           <button
                                               onClick={handleRetryChallenge}
-                                              className="flex items-center gap-1 bg-white text-slate-600 hover:text-indigo-600 border border-slate-300 hover:border-indigo-300 px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-sm"
+                                              className="flex items-center gap-1 bg-white text-slate-600 hover:text-indigo-600 border border-slate-400 hover:border-indigo-300 px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-sm"
                                               title={t('concept_map.challenge.retry_tooltip')}
                                               aria-label={t('concept_map.challenge.retry_tooltip')}
                                           >
@@ -1023,7 +1023,7 @@ const renderInteractiveMap = (deps) => {
                                           {isTeacherMode && (
                                               <button
                                                   onClick={handleExitChallenge}
-                                                  className="flex items-center justify-center bg-slate-100 hover:bg-red-100 text-slate-600 hover:text-red-500 border border-slate-200 hover:border-red-200 w-8 h-8 rounded-full transition-colors"
+                                                  className="flex items-center justify-center bg-slate-100 hover:bg-red-100 text-slate-600 hover:text-red-500 border border-slate-400 hover:border-red-200 w-8 h-8 rounded-full transition-colors"
                                                   title={t('concept_map.challenge.exit')}
                                                   aria-label={t('concept_map.challenge.exit')}
                                               >
@@ -1039,7 +1039,7 @@ const renderInteractiveMap = (deps) => {
               </div>
               <div
                   ref={mapContainerRef}
-                  className={`relative w-full ${isVenn ? 'h-[800px]' : 'h-[75vh] min-h-[600px]'} bg-white border border-slate-200 rounded-xl overflow-hidden shadow-inner select-none mb-6 ${isMapLocked ? 'cursor-default' : 'cursor-crosshair'} ${isChallengeActive ? 'ring-4 ring-yellow-100' : ''}`}
+                  className={`relative w-full ${isVenn ? 'h-[800px]' : 'h-[75vh] min-h-[600px]'} bg-white border border-slate-400 rounded-xl overflow-hidden shadow-inner select-none mb-6 ${isMapLocked ? 'cursor-default' : 'cursor-crosshair'} ${isChallengeActive ? 'ring-4 ring-yellow-100' : ''}`}
                   onMouseDown={(e) => { if(e.target === e.currentTarget && !isMapLocked) setConnectingSourceId(null); }}
               >
                   {!isMapLocked && <div className="absolute inset-0 bg-dot-pattern pointer-events-none z-0"></div>}
@@ -1194,8 +1194,8 @@ const renderInteractiveMap = (deps) => {
                                 node.type === 'flow-note' ? 'bg-yellow-100 text-yellow-800 px-3 py-2 text-[11px] border border-yellow-200 shadow-sm max-w-[150px] rounded-bl-none' :
                                 node.type === 'outline-main' ? 'bg-slate-900 text-white w-60 py-4 px-6 rounded-xl border-2 border-slate-700 shadow-xl text-sm z-20' :
                                 node.type === 'outline-branch' ? 'bg-white text-indigo-900 w-48 py-3 px-4 rounded-lg border-l-8 border-l-indigo-600 border-y border-r border-slate-200 text-xs shadow-md z-10' :
-                                node.type === 'outline-item' ? 'bg-slate-50 text-slate-700 w-40 py-2 px-3 rounded border border-slate-300 text-[11px] shadow-sm hover:bg-white z-0' :
-                                'bg-slate-50 text-slate-700 w-28 h-28 rounded-full border border-slate-300 text-[11px] hover:bg-white'}
+                                node.type === 'outline-item' ? 'bg-slate-50 text-slate-700 w-40 py-2 px-3 rounded border border-slate-400 text-[11px] shadow-sm hover:bg-white z-0' :
+                                'bg-slate-50 text-slate-700 w-28 h-28 rounded-full border border-slate-400 text-[11px] hover:bg-white'}
                               ${connectingSourceId === node.id ? 'ring-4 ring-yellow-400 ring-offset-2 scale-105' : ''}
                           `}
                           onMouseDown={(e) => !isMapLocked && handleNodeMouseDown(e, node.id)}
@@ -1215,7 +1215,7 @@ const renderInteractiveMap = (deps) => {
                           )}
                       </div>
                   ))}
-                  <div className="absolute bottom-4 left-4 bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full text-[11px] text-slate-600 pointer-events-none border border-slate-200 shadow-sm">
+                  <div className="absolute bottom-4 left-4 bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full text-[11px] text-slate-600 pointer-events-none border border-slate-400 shadow-sm">
                       {isVenn
                           ? t('concept_map.overlay.venn_instructions')
                           : (isChallengeActive ? t('concept_map.overlay.challenge_instructions') : t('concept_map.overlay.standard_instructions'))

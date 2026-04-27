@@ -343,7 +343,7 @@ const InteractiveBlueprintCard = React.memo(({
     "aria-label": t('common.selection'),
     value: item.type,
     onChange: e => handleTypeChange(idx, e.target.value),
-    className: "w-full text-xs font-bold text-slate-700 bg-white border border-slate-300 rounded p-1.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none"
+    className: "w-full text-xs font-bold text-slate-700 bg-white border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none"
   }, toolOptions.map(opt => /*#__PURE__*/React.createElement("option", {
     key: opt.value,
     value: opt.value
@@ -354,7 +354,7 @@ const InteractiveBlueprintCard = React.memo(({
     type: "text",
     value: item.directive,
     onChange: e => handleDirectiveChange(idx, e.target.value),
-    className: "w-full text-xs text-slate-600 bg-white border border-slate-300 rounded p-1.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none placeholder:italic",
+    className: "w-full text-xs text-slate-600 bg-white border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none placeholder:italic",
     placeholder: t('blueprint.placeholder_instruction')
   }))), /*#__PURE__*/React.createElement("button", {
     "aria-label": t('common.delete'),
@@ -375,7 +375,7 @@ const InteractiveBlueprintCard = React.memo(({
     key: item.id,
     className: "flex gap-3 items-start p-3 bg-slate-50 rounded-lg border border-slate-100"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "bg-white border border-slate-200 text-slate-600 font-bold w-6 h-6 flex items-center justify-center rounded-full text-xs shrink-0 mt-0.5"
+    className: "bg-white border border-slate-400 text-slate-600 font-bold w-6 h-6 flex items-center justify-center rounded-full text-xs shrink-0 mt-0.5"
   }, idx + 1), /*#__PURE__*/React.createElement("div", {
     className: "flex-grow"
   }, /*#__PURE__*/React.createElement("span", {
@@ -483,7 +483,7 @@ const CharacterColumn = React.memo(({
   }, /*#__PURE__*/React.createElement("span", null, t('persona.rapport_label')), /*#__PURE__*/React.createElement("span", {
     className: `${character.rapport >= 70 ? 'text-green-600' : 'text-slate-600'}`
   }, character.rapport || 30, "%")), /*#__PURE__*/React.createElement("div", {
-    className: "w-full h-2 bg-slate-200 rounded-full overflow-hidden border border-slate-300"
+    className: "w-full h-2 bg-slate-200 rounded-full overflow-hidden border border-slate-400"
   }, /*#__PURE__*/React.createElement("div", {
     className: `h-full transition-all duration-500 ${side === 'left' ? 'bg-indigo-500' : 'bg-rose-500'}`,
     style: {

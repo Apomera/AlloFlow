@@ -1961,7 +1961,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                     h('p', { className: 'text-[11px] font-bold text-emerald-400 uppercase' }, 'Exact Value'),
                     h('p', { className: 'text-lg font-black text-emerald-700', style:{animation:'calcPop 0.4s ease'} }, exact.toFixed(4))
                   ),
-                  h('div', { className: 'p-2 bg-white rounded-lg border border-slate-200' },
+                  h('div', { className: 'p-2 bg-white rounded-lg border border-slate-400' },
                     h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, '% Off'),
                     h('p', { className: 'text-sm font-black text-slate-600' }, pctOff.toFixed(1) + '%')
                   )

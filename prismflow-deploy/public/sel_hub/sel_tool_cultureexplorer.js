@@ -942,7 +942,7 @@ window.SelHub = window.SelHub || {
             h('div', { className: 'flex gap-2' },
               h('input', { type: 'text', value: customCulture, onChange: function(e) { upd('customCulture', e.target.value); },
                 placeholder: 'e.g., Hmong, Somali diaspora, Deaf culture, Cajun...',
-                className: 'flex-1 text-sm p-2.5 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-cyan-300',
+                className: 'flex-1 text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-cyan-300',
                 onKeyDown: function(e) { if (e.key === 'Enter' && customCulture.trim()) { updMulti({ culture: customCulture.trim(), tab: 'explore', aspect: 'traditions', cultureData: null, cultureImage: null }); exploreCulture(customCulture.trim(), 'traditions'); } },
                 'aria-label': 'Search for a culture'
               }),
@@ -955,7 +955,7 @@ window.SelHub = window.SelHub || {
 
           // Region grid
           REGIONS.map(function(region) {
-            return h('div', {  key: region.id, className: 'bg-white rounded-2xl border border-slate-200 overflow-hidden' },
+            return h('div', {  key: region.id, className: 'bg-white rounded-2xl border border-slate-400 overflow-hidden' },
               h('div', {  className: 'px-4 py-3 bg-gradient-to-r from-cyan-50 to-teal-50 border-b border-slate-200' },
                 h('h3', { className: 'text-sm font-bold text-slate-800 flex items-center gap-2' }, region.emoji, ' ', region.label)
               ),
@@ -1012,7 +1012,7 @@ window.SelHub = window.SelHub || {
 
             WORLD_MAP_DATA[mapRegion].highlights.map(function(hl, idx) {
               var depthLabel = gradeBand === 'high' ? 'Historical Significance' : gradeBand === 'middle' ? 'Cultural Context' : 'Fun Fact';
-              return h('div', {  key: idx, className: 'bg-white rounded-2xl border border-slate-200 overflow-hidden' },
+              return h('div', {  key: idx, className: 'bg-white rounded-2xl border border-slate-400 overflow-hidden' },
                 h('div', {  className: 'px-4 py-3 bg-gradient-to-r from-cyan-600 to-teal-600 text-white' },
                   h('h4', { className: 'font-bold' }, hl.name)
                 ),
@@ -1174,7 +1174,7 @@ window.SelHub = window.SelHub || {
                   h('p', { className: 'text-sm text-cyan-800 leading-relaxed' }, trad.significance)
                 ),
 
-                h('div', { className: 'bg-slate-50 border border-slate-200 rounded-lg p-3' },
+                h('div', { className: 'bg-slate-50 border border-slate-400 rounded-lg p-3' },
                   h('p', { className: 'text-xs font-bold text-slate-600 uppercase mb-1' }, '\uD83C\uDFB8 Instruments / Elements'),
                   h('p', { className: 'text-sm text-slate-700' }, trad.instruments)
                 ),
@@ -1223,7 +1223,7 @@ window.SelHub = window.SelHub || {
           ),
 
           // Grade band selector info
-          h('div', {  className: 'bg-slate-50 border border-slate-200 rounded-xl p-3 text-center' },
+          h('div', {  className: 'bg-slate-50 border border-slate-400 rounded-xl p-3 text-center' },
             h('p', { className: 'text-xs text-slate-600' }, 'Showing stories for: ',
               h('strong', null, gradeBand === 'middle' || gradeBand === 'high' ? 'Middle School' : 'Elementary'),
               ' level')
@@ -1298,7 +1298,7 @@ window.SelHub = window.SelHub || {
           })(),
 
           // Closing thought
-          h('div', { className: 'bg-slate-50 border border-slate-200 rounded-xl p-4 text-center' },
+          h('div', { className: 'bg-slate-50 border border-slate-400 rounded-xl p-4 text-center' },
             h('p', { className: 'text-xs text-slate-600 italic leading-relaxed' },
               '"Stories are the creative conversion of life itself into a more powerful, clearer, more meaningful experience." \u2014 Robert McKee'
             )
@@ -1352,7 +1352,7 @@ window.SelHub = window.SelHub || {
 
             CULTURAL_CALENDAR[calendarMonth].celebrations.map(function(event, ei) {
               var isEventExpanded = calendarEventExpanded === ei;
-              return h('div', {  key: ei, className: 'bg-white rounded-xl border border-slate-200 overflow-hidden' },
+              return h('div', {  key: ei, className: 'bg-white rounded-xl border border-slate-400 overflow-hidden' },
                 h('button', { 'aria-label': 'calendarEventExpanded', onClick: function() { upd('calendarEventExpanded', isEventExpanded ? null : ei); },
                   className: 'w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-slate-50 transition-colors'
                 },
@@ -1385,7 +1385,7 @@ window.SelHub = window.SelHub || {
           h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
             LANGUAGE_DATA.map(function(lang) {
               var practiced = langPracticed.indexOf(lang.language) >= 0;
-              return h('div', { key: lang.language, className: 'bg-white rounded-xl border border-slate-200 p-3 ' + (practiced ? 'ring-2 ring-cyan-300' : '') },
+              return h('div', { key: lang.language, className: 'bg-white rounded-xl border border-slate-400 p-3 ' + (practiced ? 'ring-2 ring-cyan-300' : '') },
                 h('div', { className: 'flex items-center justify-between mb-2' },
                   h('span', { className: 'text-sm font-bold text-slate-800' }, lang.language),
                   practiced && h('span', { className: 'text-[10px] bg-cyan-100 text-cyan-700 px-2 py-0.5 rounded-full font-bold' }, '\u2713 Practiced')
@@ -1468,19 +1468,19 @@ window.SelHub = window.SelHub || {
           ),
 
           // Culture inputs
-          h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4 space-y-3' },
+          h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 space-y-3' },
             h('div', { className: 'grid grid-cols-2 gap-3' },
               h('div', null,
                 h('label', { className: 'text-[10px] font-bold text-slate-600 uppercase block mb-1' }, 'Culture 1'),
                 h('input', { type: 'text', value: compCulture1, onChange: function(e) { upd('compCulture1', e.target.value); },
-                  placeholder: 'e.g., Japanese', className: 'w-full text-sm p-2.5 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-cyan-300',
+                  placeholder: 'e.g., Japanese', className: 'w-full text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-cyan-300',
                   'aria-label': 'First culture to compare'
                 })
               ),
               h('div', null,
                 h('label', { className: 'text-[10px] font-bold text-slate-600 uppercase block mb-1' }, 'Culture 2'),
                 h('input', { type: 'text', value: compCulture2, onChange: function(e) { upd('compCulture2', e.target.value); },
-                  placeholder: 'e.g., Mexican', className: 'w-full text-sm p-2.5 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-cyan-300',
+                  placeholder: 'e.g., Mexican', className: 'w-full text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-cyan-300',
                   'aria-label': 'Second culture to compare'
                 })
               )
@@ -1625,7 +1625,7 @@ window.SelHub = window.SelHub || {
             ),
 
             // Key Facts
-            cultureData.keyFacts && h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4' },
+            cultureData.keyFacts && h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4' },
               h('h4', { className: 'text-xs font-bold text-slate-600 uppercase tracking-widest mb-2' }, '\u2728 Key Facts'),
               h('div', {  className: 'space-y-2' },
                 cultureData.keyFacts.map(function(fact, i) {
@@ -1657,13 +1657,13 @@ window.SelHub = window.SelHub || {
             ),
 
             // Follow-up question
-            h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4' },
+            h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4' },
               h('label', { className: 'text-xs font-bold text-slate-600 block mb-1' }, '\u2753 Ask a follow-up question:'),
               h('div', { className: 'flex gap-2' },
                 h('input', { type: 'text', value: d.followUpQ || '', onChange: function(e) { upd('followUpQ', e.target.value); },
                   onKeyDown: function(e) { if (e.key === 'Enter' && d.followUpQ && d.followUpQ.trim()) { askFollowUp(d.followUpQ); upd('followUpQ', ''); } },
                   placeholder: 'What else would you like to know?',
-                  className: 'flex-1 text-sm p-2.5 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-cyan-300',
+                  className: 'flex-1 text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-cyan-300',
                   'aria-label': 'Follow-up question'
                 }),
                 h('button', { 'aria-label': 'followUpQ', onClick: function() { if (d.followUpQ && d.followUpQ.trim()) { askFollowUp(d.followUpQ); upd('followUpQ', ''); } },
@@ -1819,7 +1819,7 @@ window.SelHub = window.SelHub || {
                       upd('journalEntries', newEntries);
                     },
                     placeholder: 'Write your thoughts...',
-                    className: 'w-full text-sm p-2 border border-slate-200 rounded-lg resize-none h-14 outline-none focus:ring-2 focus:ring-amber-300',
+                    className: 'w-full text-sm p-2 border border-slate-400 rounded-lg resize-none h-14 outline-none focus:ring-2 focus:ring-amber-300',
                     'aria-label': jp.prompt
                   }),
                   entryVal.length > 20 && !completed && h('button', { 'aria-label': 've Explored:', onClick: function() {
@@ -1841,7 +1841,7 @@ window.SelHub = window.SelHub || {
           ),
 
           // Explored cultures list
-          exploredCultures.length > 0 && h('div', {  className: 'bg-white rounded-xl border border-slate-200 p-4' },
+          exploredCultures.length > 0 && h('div', {  className: 'bg-white rounded-xl border border-slate-400 p-4' },
             h('h4', { className: 'text-xs font-bold text-slate-600 mb-2' }, 'Cultures You\'ve Explored:'),
             h('div', {  className: 'flex flex-wrap gap-2' },
               exploredCultures.map(function(c) {
@@ -1873,7 +1873,7 @@ window.SelHub = window.SelHub || {
           ),
 
           // Closing thought
-          h('div', { className: 'bg-slate-50 border border-slate-200 rounded-xl p-4 text-center' },
+          h('div', { className: 'bg-slate-50 border border-slate-400 rounded-xl p-4 text-center' },
             h('p', { className: 'text-sm text-slate-600 italic leading-relaxed' },
               '"The beauty of the world lies in the diversity of its people." \u2014 Unknown'
             ),

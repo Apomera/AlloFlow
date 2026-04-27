@@ -337,7 +337,7 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
               </span>
           </div>
         </div>
-        <div className={`flex flex-wrap items-center gap-1 p-1 rounded-full shadow-sm ${isFullscreen ? 'bg-white/10 border border-white/20 backdrop-blur-md' : 'bg-white border border-slate-200'}`}>
+        <div className={`flex flex-wrap items-center gap-1 p-1 rounded-full shadow-sm ${isFullscreen ? 'bg-white/10 border border-white/20 backdrop-blur-md' : 'bg-white border border-slate-400'}`}>
           <select aria-label={t('common.selection')}
             value={gameMode}
             onChange={(e) => {
@@ -704,7 +704,7 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                  </h3>
                  <p className="text-xs text-slate-600">{t('matching.instructions')}</p>
                  <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
-                     <span className="inline-flex items-center gap-1 text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200 px-2 py-0.5 rounded-full">
+                     <span className="inline-flex items-center gap-1 text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-400 px-2 py-0.5 rounded-full">
                          <GitMerge size={10} className="text-slate-600"/> {t('matching.pairs') || 'Pairs'}: {connections.length}/{items.length}
                      </span>
                      {isChecked && (
@@ -714,7 +714,7 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                      )}
                  </div>
             </div>
-            <div className="flex items-center gap-1 p-1 rounded-full bg-slate-50 border border-slate-200 shadow-sm self-end sm:self-auto">
+            <div className="flex items-center gap-1 p-1 rounded-full bg-slate-50 border border-slate-400 shadow-sm self-end sm:self-auto">
                 <button
                     onClick={reset}
                     className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors"
@@ -887,7 +887,7 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                                         tabIndex={0}
                                         role="button"
                                         aria-label={`${t('matching.connect_def_aria')}: ${def.text}`}
-                                        className={`bg-white border border-slate-200 p-3 rounded-lg w-full shadow-sm text-xs text-slate-600 flex items-center h-full overflow-y-auto leading-snug print:border-slate-300 select-none cursor-pointer hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-colors ${keyboardSelectedTerm ? 'hover:border-indigo-300 hover:shadow-md' : ''}`}
+                                        className={`bg-white border border-slate-400 p-3 rounded-lg w-full shadow-sm text-xs text-slate-600 flex items-center h-full overflow-y-auto leading-snug print:border-slate-300 select-none cursor-pointer hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-colors ${keyboardSelectedTerm ? 'hover:border-indigo-300 hover:shadow-md' : ''}`}
                                         data-help-key="matching_def_item"
                                     >
                                         {def.text}
@@ -1285,7 +1285,7 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
        <div className="flex-grow overflow-y-auto p-6 bg-slate-100 relative custom-scrollbar">
            {isWon && !answerRevealed && !useReducedMotion() && <ConfettiExplosion />}
            {answerRevealed && (
-               <div className="max-w-3xl mx-auto mb-4 px-4 py-3 bg-slate-100 border border-slate-300 rounded-lg text-slate-700 text-sm font-medium text-center">
+               <div className="max-w-3xl mx-auto mb-4 px-4 py-3 bg-slate-100 border border-slate-400 rounded-lg text-slate-700 text-sm font-medium text-center">
                    👁 {t('timeline.game.answer_revealed_banner') || 'Answer revealed — no points this round. Play again to try for a score.'}
                </div>
            )}
@@ -1483,7 +1483,7 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                {!isWon && (
                    <button
                        onClick={revealAnswer}
-                       className="px-5 py-2.5 rounded-full text-xs font-bold bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100 transition-colors flex items-center gap-2"
+                       className="px-5 py-2.5 rounded-full text-xs font-bold bg-slate-50 text-slate-600 border border-slate-400 hover:bg-slate-100 transition-colors flex items-center gap-2"
                        aria-label={t('timeline.game.reveal_aria') || 'Show the correct answer (no points awarded)'}
                        title={t('timeline.game.reveal_tooltip') || 'Reveal the correct order — no points awarded'}
                        data-help-key="timeline_reveal_btn"
@@ -1918,7 +1918,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                            <button
                                 data-help-key="concept_sort_reset"
                                 onClick={reset}
-                                className="px-4 py-1.5 rounded-full text-xs font-bold text-slate-600 hover:bg-slate-100 border border-slate-200 transition-colors"
+                                className="px-4 py-1.5 rounded-full text-xs font-bold text-slate-600 hover:bg-slate-100 border border-slate-400 transition-colors"
                                 aria-label={t('concept_sort.reset_board')}
                            >
                                {t('concept_sort.reset_board')}
@@ -1978,7 +1978,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                                const el = deckScrollRef.current;
                                if (el) el.scrollBy({ left: -300, behavior: 'smooth' });
                            }}
-                           className="absolute left-2 top-1/2 -translate-y-1/2 bg-white border border-slate-300 rounded-full w-8 h-8 flex items-center justify-center shadow-md hover:bg-slate-50 text-slate-600"
+                           className="absolute left-2 top-1/2 -translate-y-1/2 bg-white border border-slate-400 rounded-full w-8 h-8 flex items-center justify-center shadow-md hover:bg-slate-50 text-slate-600"
                            aria-label="Scroll deck left"
                        >
                            ‹
@@ -1990,7 +1990,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                                const el = deckScrollRef.current;
                                if (el) el.scrollBy({ left: 300, behavior: 'smooth' });
                            }}
-                           className="absolute right-2 top-1/2 -translate-y-1/2 bg-white border border-slate-300 rounded-full w-8 h-8 flex items-center justify-center shadow-md hover:bg-slate-50 text-slate-600"
+                           className="absolute right-2 top-1/2 -translate-y-1/2 bg-white border border-slate-400 rounded-full w-8 h-8 flex items-center justify-center shadow-md hover:bg-slate-50 text-slate-600"
                            aria-label="Scroll deck right to see more cards"
                        >
                            ›
@@ -2228,7 +2228,7 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
                             <button data-help-key="venn_move_shared" onClick={() => handleKeyboardMove('shared')} className="col-span-2 px-4 py-3 bg-purple-100 hover:bg-purple-200 text-purple-800 rounded-xl font-bold text-xs transition-colors border border-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-500">
                                 {getTitle('shared') || t('concept_map.venn.shared_fallback')}
                             </button>
-                            <button data-help-key="venn_move_bank" onClick={() => handleKeyboardMove('bank')} className="col-span-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg font-bold text-xs transition-colors border border-slate-300 mt-2 focus:outline-none focus:ring-2 focus:ring-slate-500">
+                            <button data-help-key="venn_move_bank" onClick={() => handleKeyboardMove('bank')} className="col-span-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg font-bold text-xs transition-colors border border-slate-400 mt-2 focus:outline-none focus:ring-2 focus:ring-slate-500">
                                 {t('concept_map.venn.return_bank')}
                             </button>
                         </div>
@@ -2947,7 +2947,7 @@ const SyntaxScramble = React.memo(({ text, onClose, playSound, onScoreUpdate, on
                         </button>
                     )}
                 </div>
-                <div className="flex flex-wrap gap-3 justify-center p-4 bg-slate-200/50 rounded-xl w-full border border-slate-200 min-h-[100px]">
+                <div className="flex flex-wrap gap-3 justify-center p-4 bg-slate-200/50 rounded-xl w-full border border-slate-400 min-h-[100px]">
                     {shuffledWords.map((word) => (
                         <button
                             key={word.id}
@@ -3092,7 +3092,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                 </h2>
                 <p className="text-slate-600 text-sm">{isCallerMode ? t('bingo.teacher_mode_desc') : t('bingo.generated_desc').replace('{count}', bingoState.cards ? bingoState.cards.length : 0)}</p>
             </div>
-            <div className="flex flex-wrap justify-center items-center gap-4 mb-4 no-print bg-slate-50 p-3 rounded-xl border border-slate-200 shrink-0">
+            <div className="flex flex-wrap justify-center items-center gap-4 mb-4 no-print bg-slate-50 p-3 rounded-xl border border-slate-400 shrink-0">
                 {!isCallerMode ? (
                     <>
                         <div className="flex items-center gap-2">
@@ -3103,11 +3103,11 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                                 max="50"
                                 value={settings.cardCount}
                                 onChange={(e) => setSettings({...settings, cardCount: Math.max(1, Math.min(50, parseInt(e.target.value) || 20))})}
-                                className="w-16 p-1.5 border border-slate-300 rounded-lg text-center font-bold text-slate-700 focus:ring-2 focus:ring-rose-200 focus:outline-none"
+                                className="w-16 p-1.5 border border-slate-400 rounded-lg text-center font-bold text-slate-700 focus:ring-2 focus:ring-rose-200 focus:outline-none"
                                 data-help-key="bingo_card_count_input" aria-label={t('bingo.card_count')}
                             />
                         </div>
-                        <label className="flex items-center gap-2 text-xs font-bold text-slate-600 cursor-pointer select-none bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm hover:border-rose-300 transition-colors">
+                        <label className="flex items-center gap-2 text-xs font-bold text-slate-600 cursor-pointer select-none bg-white px-3 py-1.5 rounded-lg border border-slate-400 shadow-sm hover:border-rose-300 transition-colors">
                             <input
                                 type="checkbox"
                                 checked={settings.includeImages}
@@ -3158,7 +3158,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                             <ArrowDown className="rotate-90" size={14}/> {t('bingo.exit_caller')}
                         </button>
                         <div className="flex items-center gap-4">
-                            <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm">
+                            <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-slate-400 shadow-sm">
                                 <span className="text-xs font-bold text-slate-600 uppercase">{t('bingo.speed')}</span>
                                 <input
                                     type="range"
@@ -3252,7 +3252,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                             </div>
                         )}
                     </div>
-                    <div className="w-64 bg-slate-50 rounded-2xl border border-slate-200 flex flex-col overflow-hidden shrink-0">
+                    <div className="w-64 bg-slate-50 rounded-2xl border border-slate-400 flex flex-col overflow-hidden shrink-0">
                         <div className="bg-slate-200 p-3 text-center font-bold text-slate-600 text-xs uppercase tracking-wider border-b border-slate-300 flex justify-between items-center px-4">
                             <span>{t('bingo.called_terms')}</span>
                             <span className="bg-white/50 px-2 py-0.5 rounded text-slate-600">{currentCallIndex + 1}</span>
@@ -3261,7 +3261,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                             {isHistoryVisible ? (
                                 <>
                                     {callerQueue.slice(0, currentCallIndex + 1).reverse().map((item, i) => (
-                                        <div key={i} className="bg-white p-3 rounded border border-slate-200 shadow-sm flex items-center justify-between animate-in slide-in-from-left-2">
+                                        <div key={i} className="bg-white p-3 rounded border border-slate-400 shadow-sm flex items-center justify-between animate-in slide-in-from-left-2">
                                             <span className="font-bold text-slate-800 text-sm">{item.term}</span>
                                             <span className="text-[11px] text-slate-600 font-mono">#{currentCallIndex - i + 1}</span>
                                         </div>
@@ -3279,7 +3279,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                 </div>
             ) : (
                 bingoState.cards && bingoState.cards.length > 0 ? (
-                    <div className="flex-grow overflow-y-auto custom-scrollbar bg-slate-100 p-4 rounded-xl border border-slate-200 relative bingo-scroll-container">
+                    <div className="flex-grow overflow-y-auto custom-scrollbar bg-slate-100 p-4 rounded-xl border border-slate-400 relative bingo-scroll-container">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 print:grid-cols-2 print:gap-4 print:block" id="bingo-print-area">
                             {bingoState.cards.map((card, cardIdx) => (
                                 <div key={cardIdx} className="bg-white p-6 rounded-xl border-4 border-slate-800 shadow-sm aspect-square flex flex-col page-break-inside-avoid break-inside-avoid mb-8 print:mb-4 print:inline-block print:w-[48%] print:align-top print:mx-[1%] print:border-2">
@@ -3297,7 +3297,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                                         {card.map((cell, cellIdx) => (
                                             <div
                                                 key={cellIdx}
-                                                className={`border border-slate-300 flex flex-col items-center justify-center text-center p-1 text-[11px] sm:text-xs font-bold leading-tight overflow-hidden break-words ${cell.type === 'free' ? 'bg-yellow-400 text-black print:bg-black print:text-white border-yellow-500' : 'bg-slate-50 text-slate-700'}`}
+                                                className={`border border-slate-400 flex flex-col items-center justify-center text-center p-1 text-[11px] sm:text-xs font-bold leading-tight overflow-hidden break-words ${cell.type === 'free' ? 'bg-yellow-400 text-black print:bg-black print:text-white border-yellow-500' : 'bg-slate-50 text-slate-700'}`}
                                             >
                                                 {cell.type === 'free' ? (
                                                     <span className="text-black font-black print:text-white">★ {t('bingo.free_space')} ★</span>
@@ -3887,7 +3887,7 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }
                              <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">{t('games.scramble.progress', { current: currentIndex + 1, total: gameItems.length })}</span>
                              <div className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full font-bold text-sm">{t('flashcards.score_label')} {score}</div>
                         </div>
-                        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm max-w-lg w-full">
+                        <div className="bg-white p-4 rounded-xl border border-slate-400 shadow-sm max-w-lg w-full">
                             <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-1 justify-center"><Search size={12}/> {t('games.scramble.hint_label')}</h4>
                             <div className="flex items-center justify-center gap-2">
                                 <p className="text-lg font-medium text-slate-700 leading-relaxed">"{gameItems[currentIndex].def}"</p>

@@ -2071,7 +2071,7 @@ inputText.substring(0, 6000) + '\n' +
                     onChange: function(e) {
                       handlers.updateEscapeRoomPuzzle(idx, editField, e.target.value);
                     },
-                    className: 'w-full mt-1 p-2 text-sm border border-slate-200 rounded-lg focus:border-amber-400 focus:ring-1 focus:ring-amber-200 outline-none transition-colors'
+                    className: 'w-full mt-1 p-2 text-sm border border-slate-400 rounded-lg focus:border-amber-400 focus:ring-1 focus:ring-amber-200 outline-none transition-colors'
                   })
                 )
               );
@@ -2138,7 +2138,7 @@ inputText.substring(0, 6000) + '\n' +
                       type: 'text',
                       value: puzzle.hint,
                       onChange: function(e) { handlers.updateEscapeRoomPuzzle(idx, 'hint', e.target.value); },
-                      className: 'w-full mt-1 p-2 text-xs border border-slate-200 rounded-lg focus:border-amber-400 focus:ring-1 focus:ring-amber-200 outline-none'
+                      className: 'w-full mt-1 p-2 text-xs border border-slate-400 rounded-lg focus:border-amber-400 focus:ring-1 focus:ring-amber-200 outline-none'
                     })
                   )
                 );
@@ -2146,7 +2146,7 @@ inputText.substring(0, 6000) + '\n' +
 
               return h('div', {
                 key: (puzzle.id || idx),
-                className: 'p-4 bg-slate-50 rounded-xl border border-slate-200 hover:border-amber-300 transition-colors'
+                className: 'p-4 bg-slate-50 rounded-xl border border-slate-400 hover:border-amber-300 transition-colors'
               },
                 h('div', { className: 'space-y-2' }, puzzleChildren)
               );
