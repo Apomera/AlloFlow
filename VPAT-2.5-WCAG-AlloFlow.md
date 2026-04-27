@@ -200,6 +200,18 @@ Two `incomplete` findings per scenario (`aria-prohibited-attr` + `color-contrast
 
 **WCAG-strict claim: 0 axe-detected WCAG 2.1 A or AA violations across all 7 scenarios.** The remaining `region` rule is best-practice and likely originates from a small chunk of splash / launch-pad overlay content that escapes the existing landmark wrappers — flagged for follow-up DOM-level investigation in a future pass. Audit infrastructure (script, JSON + MD output) re-runnable on every deploy.
 
+**`region` rule investigation + fix (April 27 evening)**: Wrote a Playwright DOM probe (`scripts/find_landmark_orphan.mjs`) that walks the live `#root` tree and identifies every element with direct text content not contained by a landmark. Result: 11 orphan elements, dominated by a fixed-position splash/loading overlay (`<div ...>🌊 AlloFlow / Preparing your learning environment...`) plus 5 floating utilities (skip link, sr-only h1, help-mode button, AI guide tooltip, "Saved to Device" status indicator).
+
+Two-line source fix at [AlloFlowANTI.txt:21549-21557](AlloFlowANTI.txt#L21549):
+
+1. Top-level app-shell div (the `min-h-screen` wrapper that React renders into `#root`) gets `role="region"` + `aria-label="AlloFlow application"`. Now every direct child of #root is contained by a named landmark — covers all 11 orphans in one wrapper.
+
+2. Splash/loading overlay gets `role="status"` + `aria-live="polite"` + `aria-label="AlloFlow loading"`. Defense-in-depth (also semantically correct since it IS a status / progress indicator); ensures voice-model load progress is announced to screen readers.
+
+`role="region"` chosen over `role="application"` because the latter changes how screen readers navigate child content (verbatim mode), which would break the existing tab-list and modal patterns.
+
+**Expected post-deploy: 0 violations across all 7 scenarios** (the `region` rule should no longer fire). Re-run `node scripts/axe_audit.mjs` after the next Firebase deploy to confirm.
+
 **Out of scope for this sweep (deferred to future passes):**
 - `border-2 border-slate-200` (explicit 2px variant) — used on decorative cards. Strict 1.4.11 reading would also require fixing, but cards typically aren't UI-component boundaries per WCAG's interpretation.
 - Directional borders (`border-l-slate-200`, `border-t-slate-200`, etc.) — usually decorative dividers, not component boundaries.
