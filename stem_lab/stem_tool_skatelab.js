@@ -850,7 +850,10 @@ window.StemLab = window.StemLab || {
         progress: function(d) { return ((d.scenariosTried && Object.keys(d.scenariosTried).length) || 0) + '/5 tried'; } },
       { id: 'sk_coach_3', label: 'Ask the AI coach 3 times', icon: '🎙️',
         check: function(d) { return (d.coachOpens || 0) >= 3; },
-        progress: function(d) { return (d.coachOpens || 0) + '/3 asks'; } }
+        progress: function(d) { return (d.coachOpens || 0) + '/3 asks'; } },
+      { id: 'sk_predict_within_10', label: 'Predict within 10% on 3 attempts', icon: '🔮',
+        check: function(d) { return ((d.predictionStats && d.predictionStats.withinTen) || 0) >= 3; },
+        progress: function(d) { return ((d.predictionStats && d.predictionStats.withinTen) || 0) + '/3 within 10%'; } }
     ],
     render: function(ctx) {
       var React = ctx.React;
@@ -910,6 +913,15 @@ window.StemLab = window.StemLab || {
             // values plugged in. Default true so first-time students
             // see the math; can be hidden for cleaner classroom demos.
             showFormula: true,
+            // Predict-before-you-run mode — when true, students must
+            // type a numeric prediction (air height for halfpipe,
+            // range for gap) BEFORE the run button activates. Each
+            // attempt logs an error percentage; running stats show
+            // the average gap between predictions and reality so
+            // students see their physics intuition sharpen.
+            predictMode: false,
+            predictionInput: '',
+            predictionStats: { count: 0, totalErrPct: 0, bestPct: null, withinTen: 0 },
             // Coach state
             coachPersona: 'analyst',
             coachLoading: false,
@@ -1225,6 +1237,39 @@ window.StemLab = window.StemLab || {
         skAnnounce('Replay at ' + Math.round(speedMul * 100) + ' percent speed.');
       }
 
+      // Snap the current prediction (when predict-mode is on) onto
+      // a freshly-run lastResult and bump the running stats so the
+      // panel + result card can render actual-vs-predicted deltas.
+      // `actualValue` is the measured quantity (air height in ft for
+      // halfpipe, range in ft for gap) — same units the student typed.
+      function _captureAndStampPrediction(bumps, lastResult, actualValue) {
+        if (!d.predictMode) return;
+        var trimmed = (d.predictionInput || '').trim();
+        var predicted = parseFloat(trimmed);
+        if (!(isFinite(predicted) && predicted >= 0)) return;
+        var denom = Math.max(0.01, Math.abs(actualValue));
+        var errPct = Math.abs(predicted - actualValue) / denom * 100;
+        lastResult.predicted = predicted;
+        lastResult.actual = actualValue;
+        lastResult.errPct = errPct;
+        var prev = d.predictionStats || { count: 0, totalErrPct: 0, bestPct: null, withinTen: 0 };
+        bumps.predictionStats = {
+          count: (prev.count || 0) + 1,
+          totalErrPct: (prev.totalErrPct || 0) + errPct,
+          bestPct: (prev.bestPct === null || prev.bestPct === undefined) ? errPct : Math.min(prev.bestPct, errPct),
+          withinTen: (prev.withinTen || 0) + (errPct <= 10 ? 1 : 0)
+        };
+        // Clear the field so the next attempt requires a fresh
+        // commitment instead of re-using the last guess.
+        bumps.predictionInput = '';
+        if (addToast) {
+          var msg = errPct <= 10
+            ? '🎯 Within ' + errPct.toFixed(1) + '% — your physics intuition is dialed in.'
+            : '📐 Off by ' + errPct.toFixed(1) + '% — see what changed.';
+          addToast(msg, errPct <= 10 ? 'success' : 'info');
+        }
+      }
+
       function runHalfpipe() {
         if (d.running) return;
         var sim = simHalfpipe({
@@ -1248,6 +1293,7 @@ window.StemLab = window.StemLab || {
               surface: sim.surface ? sim.surface.label : 'Standard',
               effMinAir: sim.effMinAir
             };
+            _captureAndStampPrediction(bumps, bumps.lastResult, sim.hAir * M2FT);
             if (sim.landed) {
               bumps.landings = (d.landings || 0) + 1;
               bumps.tricksUsed = Object.assign({}, d.tricksUsed || {}, { [sim.trick.id]: ((d.tricksUsed || {})[sim.trick.id] || 0) + 1 });
@@ -1287,6 +1333,7 @@ window.StemLab = window.StemLab || {
               wind: sim.wind ? sim.wind.label : 'Calm',
               windDeltaFt: sim.windDeltaFt
             };
+            _captureAndStampPrediction(bumps, bumps.lastResult, sim.rangeFt);
             if (sim.landed) {
               bumps.landings = (d.landings || 0) + 1;
               bumps.longestGap = Math.max(d.longestGap || 0, sim.gapFt);
@@ -1876,27 +1923,131 @@ window.StemLab = window.StemLab || {
             }, wp.icon + ' ' + wp.label);
           })
         ),
-        // Run button
-        h('button', {
-          onClick: d.mode === 'halfpipe' ? runHalfpipe : runGapJump,
-          disabled: d.running,
-          'aria-label': d.mode === 'halfpipe' ? 'Drop in and attempt the trick' : 'Send it across the gap',
-          'aria-busy': d.running,
-          'data-sk-focusable': 'true',
-          style: {
-            width: '100%', padding: '12px 20px', marginBottom: 12,
-            // WCAG 1.4.3 — bump disabled background from slate-600 to
-            // slate-500 + darker text so the disabled label still
-            // meets AA contrast on the dimmer background.
-            background: d.running ? '#64748b' : 'linear-gradient(135deg, #b45309, #7c2d12)',
-            color: d.running ? '#0f172a' : '#fef3c7',
-            border: '2px solid ' + (d.running ? '#475569' : '#78350f'),
-            borderRadius: 12,
-            fontSize: 16, fontWeight: 800, cursor: d.running ? 'wait' : 'pointer',
-            boxShadow: d.running ? 'none' : '0 4px 15px rgba(120,53,15,0.4), inset 0 1px 0 rgba(255,235,170,0.3)',
-            letterSpacing: '0.04em', opacity: d.running ? 0.85 : 1
-          }
-        }, d.running ? '⏳ Sending it...' : (d.mode === 'halfpipe' ? '🛹 Drop In!' : '🦘 Send It!')),
+        // ── Predict-mode panel ──────────────────────────────────
+        // Pedagogical core: when on, students must commit to a
+        // numeric prediction BEFORE the simulation runs. The result
+        // card later shows actual-vs-predicted with an error %, and
+        // running stats track how often they're within 10% — the
+        // signal that physics intuition is forming.
+        (function() {
+          var predictUnit = d.mode === 'halfpipe' ? 'air height (ft)' : 'range (ft)';
+          var hint = d.mode === 'halfpipe'
+            ? 'How high above the lip? Typical kickflip ≈ 0.5–3 ft.'
+            : 'How far will it actually go? Range = v² · sin(2θ) / g.';
+          var trimmed = (d.predictionInput || '').trim();
+          var parsed = trimmed === '' ? NaN : parseFloat(trimmed);
+          var predValid = isFinite(parsed) && parsed >= 0;
+          var ps = d.predictionStats || { count: 0, totalErrPct: 0, bestPct: null, withinTen: 0 };
+          var avgErr = ps.count > 0 ? (ps.totalErrPct / ps.count) : null;
+          return h('div', null,
+            h('div', { style: { display: 'flex', justifyContent: 'flex-end', marginBottom: 6 } },
+              h('button', {
+                onClick: function() {
+                  var next = !d.predictMode;
+                  upd({ predictMode: next, predictionInput: '' });
+                  skAnnounce(next ? 'Predict mode on. Type your prediction before each attempt.' : 'Predict mode off.');
+                },
+                'aria-pressed': !!d.predictMode,
+                'aria-label': d.predictMode ? 'Turn off predict mode' : 'Turn on predict mode — type a number before each attempt',
+                'data-sk-focusable': 'true',
+                title: 'Predict, then verify. Builds the physics intuition.',
+                style: {
+                  padding: '4px 10px', fontSize: 10, fontWeight: 700,
+                  background: d.predictMode ? 'rgba(168,85,247,0.20)' : 'rgba(254,243,199,0.06)',
+                  color: d.predictMode ? '#d8b4fe' : '#94a3b8',
+                  border: '1px solid ' + (d.predictMode ? 'rgba(168,85,247,0.55)' : 'rgba(254,243,199,0.20)'),
+                  borderRadius: 999, cursor: 'pointer', minHeight: 26
+                }
+              }, '🔮 Predict: ' + (d.predictMode ? 'on' : 'off'))
+            ),
+            d.predictMode && h('div', {
+              role: 'region',
+              'aria-label': 'Prediction input',
+              style: {
+                background: 'rgba(168,85,247,0.08)',
+                border: '1px solid rgba(168,85,247,0.45)',
+                borderRadius: 10, padding: 10, marginBottom: 10
+              }
+            },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: ps.count > 0 ? 8 : 0 } },
+                h('label', {
+                  htmlFor: 'sk-predict-input',
+                  style: { fontSize: 11, fontWeight: 700, color: '#d8b4fe', letterSpacing: '0.04em', textTransform: 'uppercase' }
+                }, '🔮 Predict ' + predictUnit),
+                h('input', {
+                  id: 'sk-predict-input',
+                  type: 'number', step: '0.1', min: '0',
+                  inputMode: 'decimal',
+                  value: d.predictionInput || '',
+                  onChange: function(e) { upd('predictionInput', e.target.value); },
+                  disabled: d.running,
+                  'data-sk-focusable': 'true',
+                  'aria-describedby': 'sk-predict-hint',
+                  placeholder: '0.0',
+                  style: {
+                    width: 90, padding: '6px 8px', fontSize: 13, fontWeight: 700,
+                    background: '#0f172a', color: '#fef3c7',
+                    border: '1px solid ' + (predValid ? '#a855f7' : '#475569'),
+                    borderRadius: 6
+                  }
+                }),
+                h('span', { id: 'sk-predict-hint', style: { fontSize: 10, color: '#cbd5e1', flex: 1, minWidth: 180 } }, hint)
+              ),
+              ps.count > 0 && h('div', { style: { fontSize: 10, color: '#c4b5fd', display: 'flex', flexWrap: 'wrap', gap: 12, paddingTop: 8, borderTop: '1px solid rgba(168,85,247,0.25)' } },
+                h('span', null, '📊 ', h('b', null, ps.count), ' prediction' + (ps.count === 1 ? '' : 's')),
+                avgErr !== null && h('span', null, '⌀ avg off: ', h('b', { style: { color: '#fbbf24' } }, avgErr.toFixed(1) + '%')),
+                ps.bestPct !== null && h('span', null, '🏆 best: ', h('b', { style: { color: '#86efac' } }, ps.bestPct.toFixed(1) + '%')),
+                h('span', null, '🎯 within 10%: ', h('b', { style: { color: '#86efac' } }, (ps.withinTen || 0) + '/' + ps.count))
+              )
+            )
+          );
+        })(),
+        // Run button — disabled while running OR while predict-mode
+        // is on without a valid numeric prediction. The dim/disabled
+        // path is the same in both cases so screen readers + visual
+        // users get a consistent affordance.
+        (function() {
+          var predTrim = (d.predictionInput || '').trim();
+          var predParsed = parseFloat(predTrim);
+          var predValid = isFinite(predParsed) && predParsed >= 0;
+          var blockedByPredict = d.predictMode && !predValid;
+          var disabled = d.running || blockedByPredict;
+          return h('button', {
+            onClick: function() {
+              if (blockedByPredict) {
+                skAnnounce('Type a numeric prediction first.');
+                if (addToast) addToast('🔮 Predict mode is on, type a number first.', 'info');
+                var input = document.getElementById('sk-predict-input');
+                if (input) input.focus();
+                return;
+              }
+              (d.mode === 'halfpipe' ? runHalfpipe : runGapJump)();
+            },
+            disabled: disabled,
+            'aria-label': blockedByPredict
+              ? 'Type a prediction first'
+              : (d.mode === 'halfpipe' ? 'Drop in and attempt the trick' : 'Send it across the gap'),
+            'aria-busy': d.running,
+            'data-sk-focusable': 'true',
+            style: {
+              width: '100%', padding: '12px 20px', marginBottom: 12,
+              // WCAG 1.4.3 — slate-500 background + slate-900 text on
+              // disabled meets AA on the dimmer state.
+              background: disabled ? '#64748b' : 'linear-gradient(135deg, #b45309, #7c2d12)',
+              color: disabled ? '#0f172a' : '#fef3c7',
+              border: '2px solid ' + (disabled ? '#475569' : '#78350f'),
+              borderRadius: 12,
+              fontSize: 16, fontWeight: 800,
+              cursor: d.running ? 'wait' : (blockedByPredict ? 'not-allowed' : 'pointer'),
+              boxShadow: disabled ? 'none' : '0 4px 15px rgba(120,53,15,0.4), inset 0 1px 0 rgba(255,235,170,0.3)',
+              letterSpacing: '0.04em', opacity: disabled ? 0.85 : 1
+            }
+          }, d.running
+            ? '⏳ Sending it...'
+            : blockedByPredict
+              ? '🔮 Type a prediction first'
+              : (d.mode === 'halfpipe' ? '🛹 Drop In!' : '🦘 Send It!'));
+        })(),
         // Last-result analysis panel — pedagogically valuable, shows
         // the actual physics that produced what the student just saw.
         d.lastResult && h('div', { style: { background: d.lastResult.landed ? 'rgba(22,163,74,0.12)' : 'rgba(180,83,9,0.12)', border: '1px solid ' + (d.lastResult.landed ? '#22c55e' : '#d97706'), borderRadius: 10, padding: 12, marginBottom: 12 } },
@@ -1932,6 +2083,19 @@ window.StemLab = window.StemLab || {
                 h('div', null, '📈 Air height (above lip): ', h('b', { style: { color: '#fbbf24' } }, d.lastResult.hFt.toFixed(2) + ' ft')),
                 h('div', null, '⏱ Hang time: ', h('b', { style: { color: '#fbbf24' } }, d.lastResult.airTime.toFixed(2) + ' s')),
                 h('div', null, '🌀 Rotation: ', h('b', { style: { color: '#fbbf24' } }, Math.round(d.lastResult.completed) + '° of ' + d.lastResult.rotation + '° needed')),
+                d.lastResult.errPct !== undefined && h('div', {
+                  style: {
+                    marginTop: 6, padding: '6px 8px', borderRadius: 6,
+                    background: d.lastResult.errPct <= 10 ? 'rgba(34,197,94,0.18)' : 'rgba(168,85,247,0.18)',
+                    border: '1px solid ' + (d.lastResult.errPct <= 10 ? '#22c55e' : 'rgba(168,85,247,0.55)'),
+                    color: d.lastResult.errPct <= 10 ? '#86efac' : '#d8b4fe'
+                  }
+                },
+                  '🔮 Predicted ', h('b', null, d.lastResult.predicted.toFixed(2) + ' ft'),
+                  ' · Actual ', h('b', null, d.lastResult.actual.toFixed(2) + ' ft'),
+                  ' · Off ', h('b', null, d.lastResult.errPct.toFixed(1) + '%'),
+                  d.lastResult.errPct <= 10 ? ' 🎯' : ''
+                ),
                 d.lastResult.landed && h('div', { style: { color: '#86efac', marginTop: 4 } }, '🏆 Score: ' + d.lastResult.score)
               )
             : h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, fontFamily: 'monospace' } },
@@ -1941,6 +2105,19 @@ window.StemLab = window.StemLab || {
                 h('div', null, '⛰ Peak height: ', h('b', { style: { color: '#fbbf24' } }, d.lastResult.peakFt.toFixed(2) + ' ft')),
                 h('div', null, '⏱ Hang time: ', h('b', { style: { color: '#fbbf24' } }, d.lastResult.hangTime.toFixed(2) + ' s')),
                 h('div', null, '🎯 Clearance: ', h('b', { style: { color: d.lastResult.landed ? '#86efac' : '#fbbf24' } }, (d.lastResult.clearance >= 0 ? '+' : '') + d.lastResult.clearance.toFixed(2) + ' ft')),
+                d.lastResult.errPct !== undefined && h('div', {
+                  style: {
+                    marginTop: 6, padding: '6px 8px', borderRadius: 6,
+                    background: d.lastResult.errPct <= 10 ? 'rgba(34,197,94,0.18)' : 'rgba(168,85,247,0.18)',
+                    border: '1px solid ' + (d.lastResult.errPct <= 10 ? '#22c55e' : 'rgba(168,85,247,0.55)'),
+                    color: d.lastResult.errPct <= 10 ? '#86efac' : '#d8b4fe'
+                  }
+                },
+                  '🔮 Predicted ', h('b', null, d.lastResult.predicted.toFixed(2) + ' ft'),
+                  ' · Actual ', h('b', null, d.lastResult.actual.toFixed(2) + ' ft'),
+                  ' · Off ', h('b', null, d.lastResult.errPct.toFixed(1) + '%'),
+                  d.lastResult.errPct <= 10 ? ' 🎯' : ''
+                ),
                 d.lastResult.landed && h('div', { style: { color: '#86efac', marginTop: 4 } }, '🏆 Score: ' + d.lastResult.score)
               )
         ),
