@@ -2567,6 +2567,27 @@
       };
     }, []);
 
+    // Auto-pause when the window loses focus or the tab goes hidden, so
+    // the timer + monster don't tick while the student is in another
+    // window / talking to a teacher / on a screen-share. They resume
+    // explicitly via P key, click, or the Pause chip.
+    useEffect(function() {
+      if (mode !== 'playing') return;
+      function pauseIfPlaying() {
+        // Respect explicit gate state — if a problem is showing, the
+        // existing gate already blocks movement, no need to pause too.
+        if (currentProblem) return;
+        setPaused(true);
+      }
+      function onVisChange() { if (document.hidden) pauseIfPlaying(); }
+      window.addEventListener('blur', pauseIfPlaying);
+      document.addEventListener('visibilitychange', onVisChange);
+      return function() {
+        window.removeEventListener('blur', pauseIfPlaying);
+        document.removeEventListener('visibilitychange', onVisChange);
+      };
+    }, [mode, currentProblem]);
+
     // ── Render ──
     if (mode === 'setup') {
       // Parchment-card aesthetic — sits inside the outer amber gradient
@@ -2928,6 +2949,27 @@
         ),
         h('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center' } },
           h('button', { onClick: startMaze, style: { padding: '10px 24px', background: 'linear-gradient(135deg, #b45309, #7c2d12)', color: '#fef3c7', border: '2px solid #78350f', borderRadius: '10px', fontSize: '13px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(120,53,15,0.35)' } }, '\uD83D\uDD04 Play Again'),
+          h('button', { onClick: function() {
+            try {
+              var opLabel = { add: 'Addition', sub: 'Subtraction', mul: 'Multiplication', div: 'Division', mixed: 'Mixed', volume: 'Volume' }[operation] || operation;
+              var sizeLabel = (MAZE_SIZES[mazeSize] && MAZE_SIZES[mazeSize].label) || mazeSize;
+              var medalIcon = medal === 'gold' ? '\uD83E\uDD47' : medal === 'silver' ? '\uD83E\uDD48' : medal === 'bronze' ? '\uD83E\uDD49' : '';
+              var card = (won ? '\uD83C\uDFC6 Math Fluency Maze' : '\uD83D\uDC7E Math Fluency Maze') + '\n'
+                + '\u2705 ' + correct + ' gates  ·  \u274C ' + wrong + ' wrong\n'
+                + '\u23F1 ' + elapsed + 's  ·  \uD83C\uDFAF ' + score + ' pts' + (medalIcon ? '  ·  ' + medalIcon + ' ' + medal.toUpperCase() : '') + '\n'
+                + 'Mode: ' + opLabel + ' / ' + (difficulty === 'single' ? 'Single-digit' : 'Double-digit') + ' / ' + sizeLabel;
+              if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(card).then(function() {
+                  if (addToast) addToast('\uD83D\uDCCB Result copied to clipboard', 'success');
+                  else _mfAnnounce('Result copied to clipboard.');
+                }, function() {
+                  if (addToast) addToast('Could not copy — try selecting + Ctrl+C', 'error');
+                });
+              } else if (addToast) {
+                addToast('Clipboard not available in this browser', 'error');
+              }
+            } catch (e) { if (addToast) addToast('Copy failed: ' + e.message, 'error'); }
+          }, style: { padding: '10px 18px', background: '#fef3c7', color: '#78350f', border: '2px solid #fcd34d', borderRadius: '10px', fontSize: '12px', fontWeight: 700, cursor: 'pointer' } }, '\uD83D\uDCCB Copy Result'),
           h('button', { onClick: function() { setMode('setup'); }, style: { padding: '10px 20px', background: '#fef3c7', color: '#78350f', border: '2px solid #fcd34d', borderRadius: '10px', fontSize: '12px', fontWeight: 700, cursor: 'pointer' } }, '\u2699 Settings')
         )
       );
