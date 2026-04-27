@@ -130,7 +130,17 @@
     return _audioCtx;
   }
 
+  // Module-level mute flag. UI toggles set both this in-memory cell
+  // and the localStorage record so cross-tab reloads stay consistent.
+  var _mfMuted = false;
+  try { _mfMuted = localStorage.getItem('fluency_maze_muted') === '1'; } catch (e) {}
+  function _mfSetMuted(v) {
+    _mfMuted = !!v;
+    try { localStorage.setItem('fluency_maze_muted', _mfMuted ? '1' : '0'); } catch (e) {}
+  }
+
   function playTone(freq, duration, type, vol) {
+    if (_mfMuted) return;
     var ctx = getAudioCtx();
     if (!ctx) return;
     try {
@@ -1152,6 +1162,17 @@
     // persist. Shows all the keyboard shortcuts in a parchment card.
     var helpOpenState = useState(false);
     var helpOpen = helpOpenState[0], setHelpOpen = helpOpenState[1];
+    // Mute state — local mirror of the module-level _mfMuted so the HUD
+    // button re-renders on toggle. Initialized from the module flag (which
+    // already read from localStorage at module load).
+    var mutedLocalState = useState(_mfMuted);
+    var mutedLocal = mutedLocalState[0], setMutedLocal = mutedLocalState[1];
+    function _toggleMute() {
+      var next = !mutedLocal;
+      _mfSetMuted(next);
+      setMutedLocal(next);
+      _mfAnnounce(next ? 'Sound off' : 'Sound on');
+    }
     // Mirror paused into a ref so the timer interval (closed over the
     // initial state value) reads the current pause status without
     // needing to be torn down + recreated on every toggle.
@@ -1647,6 +1668,7 @@
         }
         if (e.key === 'p' || e.key === 'P') { setPaused(function(v) { return !v; }); return; }
         if (e.key === '?' || (e.shiftKey && e.key === '/')) { setHelpOpen(function(v) { return !v; }); return; }
+        if (e.key === 'm' || e.key === 'M') { _toggleMute(); return; }
         if (paused) return;
         if (e.key === 'ArrowUp' || e.key === 'w') tryMove('up');
         if (e.key === 'ArrowDown' || e.key === 's') tryMove('down');
@@ -2702,7 +2724,7 @@
         h('span', { style: { color: '#fde68a' } }, '\u23F1 ' + elapsed + 's'),
         chaseMode && h('span', { style: { color: '#f59e0b', fontWeight: 700 } }, '\uD83D\uDC7E CHASE!'),
         // Help button — opens the keyboard-shortcut overlay (also bound
-        // to ?). Tucked first so the order reads Help → Pause → Hint.
+        // to ?). Tucked first so the order reads Help → Mute → Pause → Hint.
         h('button', {
           onClick: function() { setHelpOpen(true); },
           'aria-label': 'Keyboard shortcuts',
@@ -2714,6 +2736,22 @@
             cursor: 'pointer'
           }
         }, '?'),
+        // Mute button — gates all playTone calls. Persists via localStorage
+        // so a teacher who silences the classroom doesn't have to re-mute
+        // every time a student opens the maze.
+        h('button', {
+          onClick: _toggleMute,
+          'aria-pressed': mutedLocal,
+          'aria-label': mutedLocal ? 'Sound off. Press to unmute.' : 'Sound on. Press to mute.',
+          title: 'Mute / unmute (M key)',
+          style: {
+            padding: '4px 8px', fontSize: '11px', fontWeight: 700,
+            background: mutedLocal ? '#fbbf24' : 'rgba(254,243,199,0.18)',
+            color: mutedLocal ? '#7c2d12' : '#fef3c7',
+            border: '1px solid ' + (mutedLocal ? '#fbbf24' : 'rgba(254,243,199,0.35)'),
+            borderRadius: '999px', cursor: 'pointer'
+          }
+        }, mutedLocal ? '\uD83D\uDD07' : '\uD83D\uDD0A'),
         // Pause button — quick toggle, no score cost. Mirrors the P
         // keyboard shortcut so touch-only users can pause too.
         h('button', {
@@ -2820,9 +2858,10 @@
              'Clear answer: Escape (in gate)',
              'Hint (direction): H',
              'Pause / Resume: P',
+             'Mute / unmute: M',
              'This help: ?'].map(function(line, i) {
               var parts = line.split(': ');
-              return h('div', { key: i, style: { display: 'flex', justifyContent: 'space-between', gap: '12px', borderBottom: i < 5 ? '1px dashed rgba(217,119,6,0.3)' : 'none', padding: '3px 0' } },
+              return h('div', { key: i, style: { display: 'flex', justifyContent: 'space-between', gap: '12px', borderBottom: i < 6 ? '1px dashed rgba(217,119,6,0.3)' : 'none', padding: '3px 0' } },
                 h('span', { style: { fontWeight: 700 } }, parts[0]),
                 h('span', { style: { fontFamily: 'monospace', color: '#78350f' } }, parts[1])
               );
