@@ -526,6 +526,21 @@
     // Sound Device Coach — alliteration, assonance, consonance, internal rhyme detection
     var _soundDeviceResult = useState(null); var soundDeviceResult = _soundDeviceResult[0]; var setSoundDeviceResult = _soundDeviceResult[1];
     var _soundDeviceLoading = useState(false); var soundDeviceLoading = _soundDeviceLoading[0]; var setSoundDeviceLoading = _soundDeviceLoading[1];
+    // Pre-feedback Self-Assessment — student rates self before AI feedback, builds metacognition
+    var _selfAssessment = useState({}); var selfAssessment = _selfAssessment[0]; var setSelfAssessment = _selfAssessment[1];
+    var _selfAssessmentSubmitted = useState(false); var selfAssessmentSubmitted = _selfAssessmentSubmitted[0]; var setSelfAssessmentSubmitted = _selfAssessmentSubmitted[1];
+    // Revision Plan — synthesizes whichever helpers ran into one prioritized 3-task plan
+    var _revisionPlan = useState(null); var revisionPlan = _revisionPlan[0]; var setRevisionPlan = _revisionPlan[1];
+    var _revisionPlanLoading = useState(false); var revisionPlanLoading = _revisionPlanLoading[0]; var setRevisionPlanLoading = _revisionPlanLoading[1];
+
+    // Built-in poetry rubric for Self-Assessment (5 criteria, age-responsive language)
+    var POETRY_RUBRIC_CRITERIA = [
+      { id: 'imagery',   label: 'Imagery & Sensory Detail',  desc: 'Concrete, specific images that engage the senses' },
+      { id: 'sound',     label: 'Sound & Music',             desc: 'Rhythm, alliteration, assonance, line breaks that earn their place' },
+      { id: 'structure', label: 'Structure & Form',          desc: 'Form rules met (or broken on purpose); shape supports meaning' },
+      { id: 'voice',     label: 'Voice & Emotion',           desc: 'A real feeling lives in the poem; it sounds like you' },
+      { id: 'wordChoice',label: 'Word Choice',               desc: 'Strong verbs, specific nouns, no filler words' }
+    ];
 
     // Teacher-scaffold fields (saved into the resource-history config payload).
     // teacherPrompt: a writing prompt the teacher authors for the assignment.
@@ -812,6 +827,104 @@
         setSoundDeviceLoading(false);
       }
     }, [onCallGemini, poemText, gradeLevel]);
+
+    // ── helpersAvailableForPlan: ≥2 helper outputs unlocks the Revision Plan button ──
+    function helpersAvailableForPlan() {
+      var n = 0;
+      if (sensesResult && !sensesResult.error) n++;
+      if (soundDeviceResult && !soundDeviceResult.error) n++;
+      if (mentorMatch && !mentorMatch.error) n++;
+      if (verbSuggestions && Array.isArray(verbSuggestions)) n++;
+      if (themeReport && !themeReport.error) n++;
+      if (aiFeedback) n++;
+      if (selfAssessmentSubmitted && Object.keys(selfAssessment).length > 0) n++;
+      return n >= 2;
+    }
+
+    // ── Revision Plan synthesizer ──
+    // Pulls together whichever helpers have produced output (Senses, Sound Devices,
+    // Mentor Match, Stronger Verbs, Theme Tracker, AI Feedback, Self-Assessment)
+    // into a single prioritized 3-task plan ranked by impact. Pedagogical aim:
+    // teach synthesis as its own meta-skill — students see how to weave multiple
+    // feedback streams into a coherent next step rather than chasing each suggestion
+    // in isolation.
+    var synthesizeRevisionPlan = useCallback(async function () {
+      if (!onCallGemini || !poemText.trim()) return;
+      setRevisionPlanLoading(true);
+      try {
+        var helperContext = [];
+        if (sensesResult && !sensesResult.error) {
+          helperContext.push('SENSES CHECK:\n  strongest: ' + (sensesResult.strongest || 'unknown')
+            + '\n  missing: ' + (sensesResult.missing || 'unknown')
+            + '\n  suggestion: ' + (sensesResult.suggestion || ''));
+        }
+        if (soundDeviceResult && !soundDeviceResult.error) {
+          helperContext.push('SOUND DEVICES:\n  weakest: ' + (soundDeviceResult.weakest || 'unknown')
+            + '\n  suggestion: ' + (soundDeviceResult.suggestion || ''));
+        }
+        if (mentorMatch && !mentorMatch.error && mentorMatch.craftToBorrow) {
+          helperContext.push('MENTOR MATCH:\n  reading: ' + ((mentorMatch.mentor && mentorMatch.mentor.title) || 'unknown')
+            + ' by ' + ((mentorMatch.mentor && mentorMatch.mentor.author) || 'unknown')
+            + '\n  craft to borrow: ' + mentorMatch.craftToBorrow);
+        }
+        if (verbSuggestions && Array.isArray(verbSuggestions) && verbSuggestions.length > 0) {
+          var topVerbs = verbSuggestions.slice(0, 3).map(function (v) {
+            return '  - "' + (v.weak || '') + '" → ' + ((v.alternatives || []).slice(0, 3).join(', '));
+          }).join('\n');
+          helperContext.push('STRONGER VERBS:\n' + topVerbs);
+        }
+        if (themeReport && !themeReport.error && themeReport.voiceStrength) {
+          helperContext.push('THEME / VOICE TRACKER:\n  voiceStrength: ' + (themeReport.voiceStrength || ''));
+        }
+        if (aiFeedback) {
+          var fb = '';
+          if (aiFeedback.glow) fb += '  glow: ' + aiFeedback.glow + '\n';
+          if (aiFeedback.grow) fb += '  grow: ' + aiFeedback.grow;
+          if (fb) helperContext.push('AI FEEDBACK:\n' + fb);
+        }
+        if (selfAssessmentSubmitted && Object.keys(selfAssessment).length > 0) {
+          var lowest = Object.keys(selfAssessment).map(function (k) {
+            return [k, selfAssessment[k]];
+          }).sort(function (a, b) { return a[1] - b[1]; }).slice(0, 2);
+          helperContext.push('STUDENT SELF-ASSESSMENT (lowest ratings):\n' + lowest.map(function (pair) {
+            var crit = POETRY_RUBRIC_CRITERIA.find(function (c) { return c.id === pair[0]; });
+            return '  - ' + (crit ? crit.label : pair[0]) + ': ' + pair[1] + '/5';
+          }).join('\n'));
+        }
+        var helpersBlock = helperContext.length > 0
+          ? '\n\nHelpers the student has already run:\n' + helperContext.join('\n\n')
+          : '';
+
+        var prompt = 'You are a kind, specific poetry coach helping a ' + gradeLevel + ' student plan their next revision pass on the poem below.\n\n'
+          + 'Poem:\n"""\n' + poemText + '\n"""' + helpersBlock + '\n\n'
+          + 'Build a prioritized revision plan with EXACTLY 3 tasks. Each task should:\n'
+          + '- Be small enough to do in a single revision session.\n'
+          + '- Be specific (name a line, image, sound, or word when possible).\n'
+          + '- Pull from the helper outputs above when relevant — don\'t repeat what the helpers said, *synthesize* across them.\n'
+          + '- Be ranked by impact (most-impactful first).\n'
+          + '- Include a one-sentence "why" so the student understands the craft reason.\n\n'
+          + 'Tone: warm, concrete, never scolding. Treat the student as a capable poet who\'s iterating, not a beginner being corrected.\n\n'
+          + 'Return ONLY JSON:\n'
+          + '{\n'
+          + '  "tasks": [\n'
+          + '    { "title": "<short imperative title>", "detail": "<one or two specific sentences on what to do>", "why": "<one short sentence on the craft reason>", "source": "<which helper this builds on, or \\"overall\\">" }\n'
+          + '  ],\n'
+          + '  "encouragement": "<one short specific compliment on something the poem is already doing well>"\n'
+          + '}';
+        var result = await onCallGemini(prompt, true);
+        var clean = String(result).trim().replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```$/, '').trim();
+        var parsed = JSON.parse(clean);
+        // Defensive cap at 3 tasks even if Gemini returns more
+        if (Array.isArray(parsed.tasks)) parsed.tasks = parsed.tasks.slice(0, 3);
+        setRevisionPlan(parsed);
+        announcePT('Revision plan ready with ' + ((parsed.tasks || []).length) + ' prioritized tasks.');
+      } catch (err) {
+        warnLog('Revision plan synthesis failed:', err && err.message);
+        setRevisionPlan({ error: 'Couldn\'t build a revision plan right now. Try again in a moment.' });
+      } finally {
+        setRevisionPlanLoading(false);
+      }
+    }, [onCallGemini, poemText, gradeLevel, sensesResult, soundDeviceResult, mentorMatch, verbSuggestions, themeReport, aiFeedback, selfAssessment, selfAssessmentSubmitted]);
 
     var generateSparks = useCallback(async function () {
       if (!onCallGemini) return;
