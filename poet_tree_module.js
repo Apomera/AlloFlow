@@ -523,6 +523,9 @@
     // Mentor Match — pairs the student's poem with a public-domain master poem for study
     var _mentorMatch = useState(null); var mentorMatch = _mentorMatch[0]; var setMentorMatch = _mentorMatch[1];
     var _mentorLoading = useState(false); var mentorLoading = _mentorLoading[0]; var setMentorLoading = _mentorLoading[1];
+    // Sound Device Coach — alliteration, assonance, consonance, internal rhyme detection
+    var _soundDeviceResult = useState(null); var soundDeviceResult = _soundDeviceResult[0]; var setSoundDeviceResult = _soundDeviceResult[1];
+    var _soundDeviceLoading = useState(false); var soundDeviceLoading = _soundDeviceLoading[0]; var setSoundDeviceLoading = _soundDeviceLoading[1];
 
     // Teacher-scaffold fields (saved into the resource-history config payload).
     // teacherPrompt: a writing prompt the teacher authors for the assignment.
@@ -766,6 +769,49 @@
         setSensesLoading(false);
       }
     }, [onCallGemini, poemText]);
+
+    // ── Sound Device Coach: detects alliteration, assonance, consonance, internal rhyme ──
+    // Poetry-specific complement to Senses Check. Surfaces concrete excerpts from the
+    // student's own poem rather than abstract definitions, so the craft move sticks.
+    var analyzeSoundDevices = useCallback(async function () {
+      if (!onCallGemini || !poemText.trim()) return;
+      setSoundDeviceLoading(true);
+      setSoundDeviceResult(null);
+      try {
+        var prompt = 'You are a poetry-craft coach for a ' + gradeLevel + ' student. Analyze their poem for sound devices and surface SHORT concrete excerpts (3-8 words each) from the poem itself.\n\n'
+          + 'Poem:\n"""\n' + poemText + '\n"""\n\n'
+          + 'Definitions to use:\n'
+          + '- Alliteration: same starting consonant sound across nearby words ("silver salt-spray sails")\n'
+          + '- Assonance: same internal vowel sound across nearby words ("the deep green sea")\n'
+          + '- Consonance: same internal/ending consonant sound ("pitter-patter," "blank and dank")\n'
+          + '- Internal rhyme: rhyming words within a single line, not at the ends\n\n'
+          + 'For each device: list up to 3 example excerpts FROM THIS POEM with a brief one-phrase note on why it works. Empty array if the device is genuinely absent. Then offer ONE specific, kind suggestion for ONE device the student could lean into more — name a line and a sound to play with.\n\n'
+          + 'Return ONLY JSON:\n'
+          + '{\n'
+          + '  "alliteration": [{"excerpt":"<exact phrase>","note":"<short reason>"}],\n'
+          + '  "assonance":    [{"excerpt":"<exact phrase>","note":"<short reason>"}],\n'
+          + '  "consonance":   [{"excerpt":"<exact phrase>","note":"<short reason>"}],\n'
+          + '  "internalRhyme":[{"excerpt":"<exact phrase>","note":"<short reason>"}],\n'
+          + '  "weakest":"<which device is least present, lowercase one word>",\n'
+          + '  "suggestion":"<concrete suggestion naming a line + sound to try>"\n'
+          + '}\n\n'
+          + 'Be honest — invented examples crash the lesson. Only quote excerpts that are actually in the poem.';
+        var result = await onCallGemini(prompt, true);
+        var clean = String(result).trim().replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```$/, '').trim();
+        var parsed = JSON.parse(clean);
+        // Cap each list at 3 to stay tidy
+        ['alliteration', 'assonance', 'consonance', 'internalRhyme'].forEach(function (k) {
+          if (Array.isArray(parsed[k])) parsed[k] = parsed[k].slice(0, 3);
+        });
+        setSoundDeviceResult(parsed);
+        announcePT('Sound device coach ready. Try strengthening: ' + (parsed.weakest || 'a sound') + '.');
+      } catch (err) {
+        warnLog('Sound device coach failed:', err && err.message);
+        setSoundDeviceResult({ error: 'Couldn\'t analyze sound devices right now.' });
+      } finally {
+        setSoundDeviceLoading(false);
+      }
+    }, [onCallGemini, poemText, gradeLevel]);
 
     var generateSparks = useCallback(async function () {
       if (!onCallGemini) return;
@@ -1826,6 +1872,59 @@
                     )
                   ),
                   !sensesResult && e('p', { style: { fontSize: '11px', color: '#475569', margin: 0, fontStyle: 'italic' } }, 'See which senses your poem already uses, and which one would add the most.')
+                ),
+
+                // ── Sound Device Coach (alliteration / assonance / consonance / internal rhyme) ──
+                e('div', null,
+                  e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '6px' } },
+                    e('h4', { style: { fontSize: '12px', fontWeight: 800, color: TEAL_DARK, margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' } }, '🎶 Sound Devices'),
+                    e('button', { onClick: analyzeSoundDevices, disabled: !poemText.trim() || soundDeviceLoading,
+                      'aria-busy': soundDeviceLoading ? 'true' : 'false',
+                      'aria-label': soundDeviceLoading ? 'Analyzing sound devices' : 'Analyze alliteration, assonance, consonance, and internal rhyme',
+                      style: { padding: '4px 12px', borderRadius: '6px', border: 'none', background: poemText.trim() && !soundDeviceLoading ? TEAL : '#cbd5e1', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: poemText.trim() && !soundDeviceLoading ? 'pointer' : 'not-allowed' }
+                    }, soundDeviceLoading ? '⏳…' : '🎶 Listen')
+                  ),
+                  soundDeviceResult && soundDeviceResult.error && e('p', { style: { fontSize: '11px', color: '#b91c1c', fontStyle: 'italic', margin: 0 } }, soundDeviceResult.error),
+                  soundDeviceResult && !soundDeviceResult.error && e('div', { role: 'region', 'aria-label': 'Sound device coach results', 'aria-live': 'polite', style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
+                    // Per-device sections
+                    [
+                      { key: 'alliteration', label: 'Alliteration', icon: '🔤', desc: 'same starting consonant' },
+                      { key: 'assonance', label: 'Assonance', icon: '🎵', desc: 'same internal vowel' },
+                      { key: 'consonance', label: 'Consonance', icon: '🔁', desc: 'same internal/ending consonant' },
+                      { key: 'internalRhyme', label: 'Internal Rhyme', icon: '🪶', desc: 'rhyme inside a line' }
+                    ].map(function (d) {
+                      var items = Array.isArray(soundDeviceResult[d.key]) ? soundDeviceResult[d.key] : [];
+                      var isWeakest = soundDeviceResult.weakest && soundDeviceResult.weakest.toLowerCase().indexOf(d.key.toLowerCase()) >= 0;
+                      var bg = items.length === 0 ? '#fff' : '#f0fdfa';
+                      var borderColor = isWeakest ? '#fde68a' : (items.length === 0 ? '#e2e8f0' : '#99f6e4');
+                      return e('div', { key: d.key, style: { background: bg, border: '1px solid ' + borderColor, borderRadius: '8px', padding: '8px 10px' } },
+                        e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: items.length > 0 ? '6px' : '0' } },
+                          e('div', { style: { fontSize: '11px', fontWeight: 700, color: items.length === 0 ? '#94a3b8' : TEAL_DARK, display: 'flex', alignItems: 'center', gap: '6px' } },
+                            e('span', { 'aria-hidden': 'true' }, d.icon),
+                            e('span', null, d.label),
+                            e('span', { style: { fontSize: '10px', fontWeight: 500, color: '#94a3b8', fontStyle: 'italic' } }, '— ' + d.desc)
+                          ),
+                          isWeakest && e('span', { style: { fontSize: '9px', fontWeight: 700, color: '#b45309', background: '#fef3c7', padding: '2px 6px', borderRadius: '999px', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'lean in here')
+                        ),
+                        items.length === 0
+                          ? e('p', { style: { fontSize: '11px', color: '#94a3b8', margin: 0, fontStyle: 'italic' } }, 'Not found in this draft.')
+                          : e('ul', { style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '4px' } },
+                              items.map(function (it, ii) {
+                                return e('li', { key: ii, style: { fontSize: '11px', color: '#1e293b', lineHeight: 1.5 } },
+                                  e('span', { style: { fontFamily: 'Georgia, serif', fontWeight: 700 } }, '"' + (it.excerpt || '') + '"'),
+                                  it.note && e('span', { style: { color: '#475569', fontStyle: 'italic' } }, ' — ' + it.note)
+                                );
+                              })
+                            )
+                      );
+                    }),
+                    // Targeted suggestion
+                    soundDeviceResult.suggestion && e('div', { style: { background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '8px', padding: '8px 10px' } },
+                      e('p', { style: { fontSize: '10px', color: '#78350f', margin: '0 0 2px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' } }, '💡 Try this'),
+                      e('p', { style: { fontSize: '12px', color: '#1e293b', margin: 0, lineHeight: 1.5 } }, soundDeviceResult.suggestion)
+                    )
+                  ),
+                  !soundDeviceResult && e('p', { style: { fontSize: '11px', color: '#475569', margin: 0, fontStyle: 'italic' } }, 'Hear what your poem is doing with sound — alliteration, assonance, consonance, internal rhyme.')
                 ),
 
                 // ── Spark Words ──
