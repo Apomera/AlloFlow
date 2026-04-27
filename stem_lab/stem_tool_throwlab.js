@@ -132,6 +132,23 @@ window.StemLab = window.StemLab || {
     { id: 'jupiter', label: 'Jupiter', g: 24.79, icon: '⚫' },
     { id: 'sun',     label: 'Sun',     g: 274.0,  icon: '☀️' }   // 28× Earth — extreme dropper
   ];
+  // ── Engagement layer: Coach personality picker ──
+  // Same Gemini call, different voice. Each persona prepends a short
+  // system-style prefix to the Coach Mode prompt so the response
+  // matches the persona's tone. The kid who wants Phil Jackson zen
+  // calm gets it; the kid who wants Vince Lombardi intensity gets it.
+  // Persisted in toolData.coachPersona; defaults to 'analyst'.
+  var COACH_PERSONAS = [
+    { id: 'analyst', label: 'Analyst', icon: '🎙️',
+      prepend: 'Use a calm, analytical voice — present the physics like a broadcast color commentator. Educational but warm.' },
+    { id: 'oldschool', label: 'Old School', icon: '🧢',
+      prepend: 'Use a terse, demanding old-school coach voice. No frills. Short sentences. Tell the student what they did well, then exactly what to fix. "Good ball, kid. Now lower your release point" energy.' },
+    { id: 'hype', label: 'Hype Man', icon: '🔥',
+      prepend: 'Use an energetic, encouraging hype-man voice. Pump the student up. Use exclamation points sparingly but enthusiastically. "THERE YOU GO" / "THAT\'S WHAT I\'M TALKING ABOUT" energy. Stay specific and physics-grounded.' },
+    { id: 'zen', label: 'Zen', icon: '🧘',
+      prepend: 'Use a calm, reflective Phil Jackson zen-coach voice. Speak in measured rhythm. Connect the throw to a deeper principle. "Notice the apex. Notice where the ball wanted to go." Present-tense, observational.' }
+  ];
+
   // ── Engagement layer: Achievements / Badges ──
   // Named badges unlocked from drill-stat criteria. The earn-detector
   // walks BADGES on every throw, awarding any whose `check` returns
@@ -2008,7 +2025,12 @@ window.StemLab = window.StemLab || {
           ? 'Net at 9 m midcourt, height 2.43 m (men). Receiving court is 9 m wide × 9 m deep beyond the net. Topspin drops the ball past the net (jump serve); no-spin "float" wobbles unpredictably from drag asymmetry. Outcomes: ace (deep corner) / in / net / out / long / short.'
           : '';
         var presetTeach = (activePreset && activePreset.teach) ? activePreset.teach : '';
-        var prompt = 'You are coaching a student in a sports physics simulator (ThrowLab). '
+        // Coach personality — prepended so the same physics anchors come
+        // through in different voices (Analyst / Old School / Hype Man / Zen)
+        var personaId = d.coachPersona || 'analyst';
+        var persona = COACH_PERSONAS.find(function(p) { return p.id === personaId; }) || COACH_PERSONAS[0];
+        var prompt = (persona.prepend ? persona.prepend + ' ' : '')
+          + 'You are coaching a student in a sports physics simulator (ThrowLab). '
           + 'The student is in ' + modeLabel + ' mode. They are ' + tierHint + '. '
           + (sportAnchor ? 'Sport context: ' + sportAnchor + ' ' : '')
           + (presetTeach ? 'Active preset (' + (activePreset.label || '') + '): ' + presetTeach + ' ' : '')
@@ -4604,20 +4626,46 @@ window.StemLab = window.StemLab || {
             // Coach Mode button — only renders if Gemini is available AND
             // there's been at least one throw, so we don't tease a button
             // that wouldn't do anything useful yet.
-            (typeof callGemini === 'function' && d.lastResult) ? h('button', {
-              onClick: askCoach,
-              disabled: !!d.coachLoading,
-              'aria-busy': !!d.coachLoading,
-              'aria-label': d.coachLoading ? 'Coach is thinking' : 'Ask the coach for feedback on your last throw',
-              'data-tl-focusable': 'true',
-              style: {
-                marginTop: 8, width: '100%', padding: '10px 14px', minHeight: 36,
-                borderRadius: 6, cursor: d.coachLoading ? 'wait' : 'pointer',
-                border: '1px solid #d946ef',
-                background: d.coachLoading ? '#1e293b' : 'rgba(217, 70, 239, 0.18)',
-                color: '#f1f5f9', fontSize: 12, fontWeight: 600
-              }
-            }, d.coachLoading ? '🤖 Coach is thinking…' : '🤖 Ask the coach') : null,
+            (typeof callGemini === 'function' && d.lastResult) ? h('div', { style: { marginTop: 8 } },
+              // Coach persona picker — pill row of 4 voice options
+              h('div', { role: 'group', 'aria-label': 'Coach voice',
+                style: { display: 'flex', gap: 4, marginBottom: 6, flexWrap: 'wrap' } },
+                COACH_PERSONAS.map(function(p) {
+                  var sel = (d.coachPersona || 'analyst') === p.id;
+                  return h('button', {
+                    key: 'coachp-' + p.id,
+                    onClick: function() {
+                      upd('coachPersona', p.id);
+                      tlAnnounce('Coach voice: ' + p.label);
+                    },
+                    'aria-pressed': sel,
+                    'aria-label': 'Coach voice: ' + p.label,
+                    'data-tl-focusable': 'true',
+                    title: p.prepend,
+                    style: {
+                      padding: '4px 9px', borderRadius: 999, cursor: 'pointer',
+                      border: '1px solid ' + (sel ? '#d946ef' : '#334155'),
+                      background: sel ? 'rgba(217,70,239,0.18)' : '#1e293b',
+                      color: '#f1f5f9', fontSize: 11, fontWeight: sel ? 700 : 500
+                    }
+                  }, p.icon + ' ' + p.label);
+                })
+              ),
+              h('button', {
+                onClick: askCoach,
+                disabled: !!d.coachLoading,
+                'aria-busy': !!d.coachLoading,
+                'aria-label': d.coachLoading ? 'Coach is thinking' : 'Ask the coach for feedback on your last throw',
+                'data-tl-focusable': 'true',
+                style: {
+                  width: '100%', padding: '10px 14px', minHeight: 36,
+                  borderRadius: 6, cursor: d.coachLoading ? 'wait' : 'pointer',
+                  border: '1px solid #d946ef',
+                  background: d.coachLoading ? '#1e293b' : 'rgba(217, 70, 239, 0.18)',
+                  color: '#f1f5f9', fontSize: 12, fontWeight: 600
+                }
+              }, d.coachLoading ? '🤖 Coach is thinking…' : '🤖 Ask the coach')
+            ) : null,
             // Stats line — mode-aware. Bumped slate-400 → slate-300 (#cbd5e1)
             // for AA contrast on the dark panel background.
             h('div', { style: { marginTop: 12, fontSize: 11, color: '#cbd5e1', display: 'flex', justifyContent: 'space-between' } },

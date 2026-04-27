@@ -181,6 +181,22 @@ window.StemLab = window.StemLab || {
     return { emoji: '🔥🔥', label: 'ON FIRE', color: '#dc2626' };
   }
 
+  // ── Engagement layer: Coach personality picker ──
+  // Same Gemini call, different voice. Each persona prepends a short
+  // system-style prefix to the Coach Mode prompt so the response
+  // matches the persona's tone. Persisted in toolData.coachPersona;
+  // defaults to 'analyst'.
+  var COACH_PERSONAS = [
+    { id: 'analyst', label: 'Analyst', icon: '🎙️',
+      prepend: 'Use a calm, analytical voice — present the tactics like a broadcast color commentator. Educational but warm.' },
+    { id: 'oldschool', label: 'Old School', icon: '🧢',
+      prepend: 'Use a terse, demanding old-school coach voice. No frills. Short sentences. Tell the student what they did well, then exactly what to fix. "Good call, kid. Now move your slot inside" energy.' },
+    { id: 'hype', label: 'Hype Man', icon: '🔥',
+      prepend: 'Use an energetic, encouraging hype-man voice. Pump the student up. Use exclamation points sparingly but enthusiastically. "THERE YOU GO" / "THAT\'S WHAT I\'M TALKING ABOUT" energy. Stay specific and tactics-grounded.' },
+    { id: 'zen', label: 'Zen', icon: '🧘',
+      prepend: 'Use a calm, reflective Phil Jackson zen-coach voice. Speak in measured rhythm. Connect the play to a deeper principle. "Notice the geometry. Notice where the defense conceded space." Present-tense, observational.' }
+  ];
+
   // Named badges unlocked from drill-stat criteria. Each first-earn
   // fires toast + plAnnounce + small XP bonus. Persisted in
   // toolData.badgesEarned so badges stay lit across reloads.
@@ -2063,6 +2079,11 @@ window.StemLab = window.StemLab || {
             + (liveSuggestions.length ? ' Suggested alternatives: ' + liveSuggestions.map(function(s) { return s.label; }).join(', ') + '.' : '')
             + ' '
           : '';
+        // Coach personality — prepended so the same tactical anchors come
+        // through in different voices (Analyst / Old School / Hype Man / Zen)
+        var personaId = d.coachPersona || 'analyst';
+        var personaDef = COACH_PERSONAS.find(function(p) { return p.id === personaId; }) || COACH_PERSONAS[0];
+        var personaPrepend = personaDef.prepend || '';
         if (isSoccer) {
           // Soccer-flavored prompt: formation + concept + defensive shape +
           // optional xG context. No route end-points (soccer plays don't
@@ -2080,7 +2101,8 @@ window.StemLab = window.StemLab || {
             return (p.role === 'FWD' && (!best || p.x > best.x)) ? p : best;
           }, null) || formation[0];
           var leadXG = lead ? computeXG(lead.x, lead.y).toFixed(2) : '0.00';
-          prompt = 'You are a soccer (football) tactical coach analyzing a student\'s setup. '
+          prompt = (personaPrepend ? personaPrepend + ' ' : '')
+            + 'You are a soccer (football) tactical coach analyzing a student\'s setup. '
             + 'Formation: "' + formationDef.label + '". ' + formationDef.teach + ' '
             + 'Concept: "' + concept.label + '". ' + concept.teach + ' '
             + 'Defending team is in: ' + soccerShape.label + '. ' + soccerShape.teach + ' '
@@ -2105,7 +2127,8 @@ window.StemLab = window.StemLab || {
             return r.id + ' (' + r.opennessYd.toFixed(1) + ' yd from nearest defender, near ' + r.nearestZone + ')';
           }).join(', ');
           var customEdits = Object.keys(d.customPositions || {}).length;
-          prompt = 'You are a football coach analyzing a student\'s play call. '
+          prompt = (personaPrepend ? personaPrepend + ' ' : '')
+            + 'You are a football coach analyzing a student\'s play call. '
             + 'Active play: "' + play.label + '". Concept: ' + play.teach + ' '
             + 'Active defense: ' + coverage.label + '. Note: ' + coverage.teach + ' '
             + matchupDigest
@@ -3809,21 +3832,47 @@ window.StemLab = window.StemLab || {
             // Coach button — only renders if Gemini is available. The
             // analysis itself appears in the bubble under the field canvas
             // (left column) so it doesn't squeeze the narrow right column.
-            typeof callGemini === 'function' ? h('button', {
-              onClick: askCoach,
-              disabled: !!d.coachLoading,
-              'aria-busy': !!d.coachLoading,
-              'aria-label': d.coachLoading ? 'Coach is thinking' : 'Ask the coach to analyze this play vs the active coverage',
-              'data-pl-focusable': 'true',
-              style: {
-                width: '100%', marginBottom: 10,
-                padding: '10px 14px', minHeight: 36, borderRadius: 6,
-                cursor: d.coachLoading ? 'wait' : 'pointer',
-                border: '1px solid #d946ef',
-                background: d.coachLoading ? '#1e293b' : 'rgba(217, 70, 239, 0.18)',
-                color: '#f1f5f9', fontSize: 12, fontWeight: 600
-              }
-            }, d.coachLoading ? '🤖 Coach is analyzing…' : '🤖 Ask the coach') : null,
+            typeof callGemini === 'function' ? h('div', { style: { marginBottom: 10 } },
+              // Coach persona picker — pill row of 4 voice options
+              h('div', { role: 'group', 'aria-label': 'Coach voice',
+                style: { display: 'flex', gap: 4, marginBottom: 6, flexWrap: 'wrap' } },
+                COACH_PERSONAS.map(function(p) {
+                  var sel = (d.coachPersona || 'analyst') === p.id;
+                  return h('button', {
+                    key: 'plcoachp-' + p.id,
+                    onClick: function() {
+                      upd('coachPersona', p.id);
+                      plAnnounce('Coach voice: ' + p.label);
+                    },
+                    'aria-pressed': sel,
+                    'aria-label': 'Coach voice: ' + p.label,
+                    'data-pl-focusable': 'true',
+                    title: p.prepend,
+                    style: {
+                      padding: '4px 9px', borderRadius: 999, cursor: 'pointer',
+                      border: '1px solid ' + (sel ? '#d946ef' : '#334155'),
+                      background: sel ? 'rgba(217,70,239,0.18)' : '#1e293b',
+                      color: '#f1f5f9', fontSize: 11, fontWeight: sel ? 700 : 500
+                    }
+                  }, p.icon + ' ' + p.label);
+                })
+              ),
+              h('button', {
+                onClick: askCoach,
+                disabled: !!d.coachLoading,
+                'aria-busy': !!d.coachLoading,
+                'aria-label': d.coachLoading ? 'Coach is thinking' : 'Ask the coach to analyze this play vs the active coverage',
+                'data-pl-focusable': 'true',
+                style: {
+                  width: '100%',
+                  padding: '10px 14px', minHeight: 36, borderRadius: 6,
+                  cursor: d.coachLoading ? 'wait' : 'pointer',
+                  border: '1px solid #d946ef',
+                  background: d.coachLoading ? '#1e293b' : 'rgba(217, 70, 239, 0.18)',
+                  color: '#f1f5f9', fontSize: 12, fontWeight: 600
+                }
+              }, d.coachLoading ? '🤖 Coach is analyzing…' : '🤖 Ask the coach')
+            ) : null,
             // ── Saved plays list ──
             // Only renders when at least one play has been saved. Each row
             // shows the name + sport icon + load + delete. Clicking the
