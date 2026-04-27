@@ -2758,6 +2758,47 @@
           h('div', { style: { fontSize: '11px', color: '#92400e', fontStyle: 'italic' } }, 'Tap, press P, or Escape to resume')
         )
       ),
+      // Keyboard-shortcut help overlay — toggled by ? key. Click,
+      // Enter/Space, ?, or Escape dismisses.
+      helpOpen && h('div', {
+        onClick: function() { setHelpOpen(false); },
+        role: 'button', tabIndex: 0,
+        onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ' || e.key === '?' || e.key === 'Escape') { e.preventDefault(); setHelpOpen(false); } },
+        'aria-label': 'Keyboard shortcuts. Press Escape or click to dismiss.',
+        style: {
+          position: 'absolute', inset: 0, zIndex: 14,
+          background: 'rgba(58,46,38,0.78)', backdropFilter: 'blur(2px)',
+          borderRadius: '10px',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          cursor: 'pointer', padding: '20px'
+        }
+      },
+        h('div', {
+          style: {
+            background: 'linear-gradient(180deg, #fef3c7 0%, #fed7aa 100%)',
+            border: '2px solid #d97706', borderRadius: '12px',
+            padding: '20px 22px', maxWidth: '320px', textAlign: 'left',
+            boxShadow: '0 12px 40px rgba(58,46,38,0.5)'
+          }
+        },
+          h('h3', { style: { fontSize: '14px', fontWeight: 900, color: '#78350f', margin: '0 0 10px', letterSpacing: '0.04em', textAlign: 'center' } }, '\u2328\uFE0F Keyboard Shortcuts'),
+          h('div', { style: { fontSize: '12px', color: '#92400e', lineHeight: '1.7' } },
+            ['Move: Arrow Keys or WASD',
+             'Submit answer: Enter',
+             'Clear answer: Escape (in gate)',
+             'Hint (direction): H',
+             'Pause / Resume: P',
+             'This help: ?'].map(function(line, i) {
+              var parts = line.split(': ');
+              return h('div', { key: i, style: { display: 'flex', justifyContent: 'space-between', gap: '12px', borderBottom: i < 5 ? '1px dashed rgba(217,119,6,0.3)' : 'none', padding: '3px 0' } },
+                h('span', { style: { fontWeight: 700 } }, parts[0]),
+                h('span', { style: { fontFamily: 'monospace', color: '#78350f' } }, parts[1])
+              );
+            })
+          ),
+          h('div', { style: { textAlign: 'center', fontSize: '10px', color: '#a16207', fontStyle: 'italic', marginTop: '10px' } }, 'Click anywhere or press Esc to close')
+        )
+      ),
       // First-time tutorial overlay — shown on the very first run only.
       // Dismissed by click anywhere on the overlay or auto-dismissed when
       // the student successfully solves their first gate.
