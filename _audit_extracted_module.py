@@ -121,6 +121,74 @@ for m in re.finditer(r'\n  const\s*\{\s*([^}]+)\s*\}\s*=\s*([A-Za-z_$][A-Za-z0-9
         state_set.add(nm)
 
 
+# ─── Step 2.5: phantom-shim-refs check ───────────────────────────────────
+#
+# Catches the bug class fixed across Phase L+M+N+O hotfixes: SEED_DEPS in
+# the extractor script can list names that DON'T exist as App-scope decls,
+# which causes ReferenceError at first invocation when the shim builds its
+# deps object. The body-level audit doesn't catch this because the body
+# may not reference the bad name (just the shim's destructure does).
+#
+# Build a "monolith_declared" set across all indents (not just top-level),
+# subtract DEPS_UNCERTAIN names (those are typeof-guarded in the shim),
+# and check what remains in the extractor's SEED_DEPS.
+
+monolith_declared = set()
+for m in re.finditer(r'^[ \t]*(?:const|let|var)\s+\[\s*([^\]]+)\s*\]', monolith, re.MULTILINE):
+    for nm in re.findall(r'[A-Za-z_$][A-Za-z0-9_$]*', m.group(1)):
+        monolith_declared.add(nm)
+for m in re.finditer(r'^[ \t]*(?:const|let|var)\s+([A-Za-z_$][A-Za-z0-9_$]*)\s*=', monolith, re.MULTILINE):
+    monolith_declared.add(m.group(1))
+for m in re.finditer(r'^[ \t]*function\s+([A-Za-z_$][A-Za-z0-9_$]*)', monolith, re.MULTILINE):
+    monolith_declared.add(m.group(1))
+for m in re.finditer(r'^[ \t]*(?:const|let|var)\s+\{\s*([^}]+)\s*\}', monolith, re.MULTILINE):
+    for nm in re.findall(r'[A-Za-z_$][A-Za-z0-9_$]*', m.group(1)):
+        monolith_declared.add(nm)
+
+# Locate extractor script for this source by scanning all _extract_*.py
+# files for a SOURCE_OUT that references our SOURCE filename.
+import glob
+extractor_path = None
+src_basename = os.path.basename(SOURCE)
+for cand in glob.glob(os.path.join(ROOT, '_extract_*.py')):
+    try:
+        with open(cand, 'r', encoding='utf-8') as f:
+            cand_src = f.read()
+        if src_basename in cand_src:
+            extractor_path = cand
+            break
+    except Exception:
+        continue
+
+phantom_shim_refs = []
+if extractor_path:
+    with open(extractor_path, 'r', encoding='utf-8') as f:
+        extr_src = f.read()
+    uncertain = set()
+    m_uc = re.search(r'^DEPS_UNCERTAIN\s*=\s*\[(.*?)^\]', extr_src, re.DOTALL | re.MULTILINE)
+    if m_uc:
+        for nm in re.findall(r"'([A-Za-z_$][A-Za-z0-9_$]*)'", m_uc.group(1)):
+            uncertain.add(nm)
+    extractor_deps = set()
+    for varname in ('SEED_DEPS', 'DEPS_VERIFIED', 'ALL_DEPS', 'DEPS'):
+        for m in re.finditer(rf'^{varname}\s*=\s*\[(.*?)^\]', extr_src, re.DOTALL | re.MULTILINE):
+            for nm in re.findall(r"'([A-Za-z_$][A-Za-z0-9_$]*)'", m.group(1)):
+                extractor_deps.add(nm)
+    extractor_deps -= uncertain
+    for nm in sorted(extractor_deps):
+        if nm not in monolith_declared:
+            phantom_shim_refs.append(nm)
+    if phantom_shim_refs:
+        print(f'[audit] PHANTOM SHIM REFS in {os.path.basename(extractor_path)}:')
+        for nm in phantom_shim_refs:
+            print(f'    {nm}  (in extractor SEED_DEPS, NOT declared in App scope)')
+        print('  These will throw ReferenceError when the shim deps object is built.')
+        print('  Fix: remove from SEED_DEPS, OR move to DEPS_UNCERTAIN (typeof guard),')
+        print('  OR add a stub at App.jsx phantom-ref block (~line 10498).')
+else:
+    print(f'[audit] note: no extractor script found referencing {src_basename}; phantom-shim-refs check skipped.')
+
+
 # ─── Step 3: audit each extracted function ───────────────────────────────
 
 JSX_TAGS = set((
@@ -339,6 +407,7 @@ for m in FUNC_RE.finditer(compiled):
 # ─── Step 4: Report + exit ───────────────────────────────────────────────
 
 print()
+fail = False
 if functions_with_misses:
     print(f'[audit] FAIL — {len(functions_with_misses)} function(s) have missing deps:')
     for fname, missing in functions_with_misses:
@@ -347,7 +416,15 @@ if functions_with_misses:
     print('Add these to the destructure in source.jsx, the shim deps in')
     print('AlloFlowANTI.txt, AND the DEPS list in the extraction script')
     print('(so re-running extraction-from-backup re-adds them).')
+    fail = True
+if phantom_shim_refs:
+    if fail:
+        print()
+    print(f'[audit] FAIL — {len(phantom_shim_refs)} phantom shim ref(s) (would throw ReferenceError):')
+    print(f'  {", ".join(phantom_shim_refs)}')
+    fail = True
+
+if fail:
     sys.exit(1)
-else:
-    print('[audit] PASS — no missing deps detected.')
-    sys.exit(0)
+print('[audit] PASS — no missing deps detected, no phantom shim refs.')
+sys.exit(0)
