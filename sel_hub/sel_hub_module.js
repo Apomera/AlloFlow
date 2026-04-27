@@ -377,7 +377,7 @@
         bg:       isContrast ? '#000000' : isDark ? '#0f172a' : '#f8fafc',
         bgCard:   isContrast ? '#000000' : isDark ? '#1e293b' : '#ffffff',
         bgInput:  isContrast ? '#000000' : isDark ? '#1e293b' : '#ffffff',
-        border:   isContrast ? '#ffff00' : isDark ? '#334155' : '#e2e8f0',
+        border:   isContrast ? '#ffff00' : isDark ? '#64748b' : '#94a3b8',
         text:     isContrast ? '#ffff00' : isDark ? '#f1f5f9' : '#0f172a',
         textMuted:isContrast ? '#ffff00' : isDark ? '#94a3b8' : '#64748b',
         headerBg: isContrast ? '#000000' : isDark ? 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)' : 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
@@ -793,7 +793,7 @@
                         if (typeof addToast === 'function') addToast('📌 ' + st.name + ' started!', 'success');
                       },
                       'aria-label': 'Activate station ' + st.name,
-                      style: { marginTop: 4, padding: '4px 10px', borderRadius: 8, border: 'none', background: '#ec4899', color: '#fff', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+                      style: { marginTop: 4, padding: '4px 10px', borderRadius: 8, border: 'none', background: '#db2777', color: '#fff', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
                     }, 'Activate')
                   );
                 })
@@ -930,7 +930,7 @@
                   h('button', {
                     onClick: _saveBuilderAsStation,
                     'aria-label': 'Save this station',
-                    style: { padding: '8px 14px', borderRadius: 8, border: 'none', background: '#ec4899', color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer', alignSelf: 'flex-start' }
+                    style: { padding: '8px 14px', borderRadius: 8, border: 'none', background: '#db2777', color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer', alignSelf: 'flex-start' }
                   }, '💾 Save Station')
                 );
               })()

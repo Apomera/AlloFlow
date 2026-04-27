@@ -6523,7 +6523,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             return;
           }
           const targetWord = existingWord.targetWord || existingWord.word || "";
-          debugLog("🔄 Re-fetching phoneme data for:", targetWord);
+          debugLog("🔄 Regenerating TTS for:", targetWord);
           if (audioCache && audioCache.current) {
             audioCache.current.delete(targetWord);
             audioCache.current.delete(targetWord.toLowerCase());
