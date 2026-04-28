@@ -23918,6 +23918,376 @@ Return ONLY valid JSON:
         </ErrorBoundary>,
         document.body
       )}
+      {/* Diff View modal — word-level (or sentence/char) diff of source
+          PDF text vs. remediated HTML text. Loaded via jsdiff from jsdelivr
+          on first open. Verbatim-fidelity is AlloFlow's core promise, so
+          even paraphrases are shown as distinct insertions+deletions.
+          Each chunk is click-to-reject (pairs toggle together), and a
+          drag-selection toolbar lets the user batch-accept/reject. */}
+      {diffViewOpen && pdfFixResult && ReactDOM.createPortal((() => {
+        const _src = pdfFixResult.sourceText || '';
+        const _fin = pdfFixResult.finalText || '';
+        const _chunks = diffChunks;
+        let _ins = 0, _del = 0, _same = 0;
+        let _rejCount = 0, _effectiveText = '';
+        const _countedPairs = new Set();
+        if (_chunks) {
+          _chunks.forEach(c => {
+            if (c.type === 'add') {
+              _ins += (c.count || 1);
+              if (c.rejected) {
+                if (c.pairId && _countedPairs.has(c.pairId)) { /* already counted */ }
+                else { _rejCount++; if (c.pairId) _countedPairs.add(c.pairId); }
+              } else {
+                _effectiveText += c.value;
+              }
+            } else if (c.type === 'del') {
+              _del += (c.count || 1);
+              if (c.rejected) {
+                if (c.pairId && _countedPairs.has(c.pairId)) { /* already counted */ }
+                else { _rejCount++; if (c.pairId) _countedPairs.add(c.pairId); }
+                _effectiveText += c.value;
+              }
+            } else {
+              _same += (c.count || 1);
+              _effectiveText += c.value;
+            }
+          });
+        }
+        const _onTryGranularityChange = (g) => {
+          if (g === 'chars') {
+            const combined = (_src.length || 0) + (_fin.length || 0);
+            const CHARS_GUARD_THRESHOLD = 20000; // ~8-10 PDF pages
+            if (combined > CHARS_GUARD_THRESHOLD) {
+              const approxSec = Math.round((combined * combined) / 1e9);
+              const warn = `Character-level diff on this document (${combined.toLocaleString()} chars total) is very slow and may freeze the browser for ~${Math.max(5, approxSec)}s or more.\n\nConsider Words or Sentences granularity instead.\n\nContinue with Chars anyway?`;
+              if (!window.confirm(warn)) return;
+            }
+          }
+          if (_chunks && _chunks.some(c => c.rejected)) {
+            if (!window.confirm('Changing granularity will reset your rejections. Continue?')) return;
+          }
+          setDiffGranularity(g);
+          setDiffSelection(null);
+        };
+        const _undoAllRejections = () => {
+          setDiffChunks(prev => prev ? prev.map(c => c.rejected ? { ...c, rejected: false } : c) : prev);
+          setDiffSelection(null);
+        };
+        const _onDiffMouseUp = () => {
+          try {
+            const sel = window.getSelection();
+            if (!sel || sel.isCollapsed) { setDiffSelection(null); return; }
+            const startEl = sel.anchorNode?.nodeType === 3 ? sel.anchorNode.parentElement : sel.anchorNode;
+            const endEl = sel.focusNode?.nodeType === 3 ? sel.focusNode.parentElement : sel.focusNode;
+            const startChunk = startEl?.closest?.('[data-chunk-id]');
+            const endChunk = endEl?.closest?.('[data-chunk-id]');
+            if (!startChunk || !endChunk) { setDiffSelection(null); return; }
+            const firstId = parseInt(startChunk.getAttribute('data-chunk-id'), 10);
+            const lastId = parseInt(endChunk.getAttribute('data-chunk-id'), 10);
+            if (Number.isNaN(firstId) || Number.isNaN(lastId)) { setDiffSelection(null); return; }
+            if (firstId === lastId) { setDiffSelection(null); return; }
+            const range = sel.getRangeAt(0);
+            const rect = range.getBoundingClientRect();
+            setDiffSelection({
+              firstId: Math.min(firstId, lastId),
+              lastId: Math.max(firstId, lastId),
+              anchorX: rect.left + rect.width / 2,
+              anchorY: rect.top,
+            });
+          } catch (e) { setDiffSelection(null); }
+        };
+        const _applyAndExport = async () => {
+          if (!_chunks || _rejCount === 0 || applyingRemarkup) return;
+          setApplyingRemarkup(true);
+          try {
+            const _prevHtml = pdfFixResult?.accessibleHtml || '';
+            const _prevFinal = pdfFixResult?.finalText || '';
+            let newHtml = null;
+            let surgeryCoverage = 0;
+            let surgeryFailReason = '';
+            try {
+              const surg = _applyTextSurgery(_prevHtml, _effectiveText);
+              if (surg && surg.html) {
+                newHtml = surg.html;
+                surgeryCoverage = surg.coverage;
+                if (surg.reason) surgeryFailReason = surg.reason;
+                if (surgeryCoverage < 0.95) {
+                  warnLog('[Diff] Surgery coverage below threshold:', Math.round(surgeryCoverage * 100) + '%', '— falling back to Gemini');
+                  newHtml = null;
+                  surgeryFailReason = 'coverage-low-' + Math.round(surgeryCoverage * 100);
+                }
+              }
+            } catch (surgErr) {
+              warnLog('[Diff] Text surgery threw, falling back to Gemini:', surgErr?.message || surgErr);
+              surgeryFailReason = 'surgery-error-' + (surgErr?.message || 'unknown');
+            }
+            let usedFallback = false;
+            if (!newHtml) {
+              usedFallback = true;
+              const prompt =
+                  `You are a WCAG 2.1 AA accessibility remediator. Below is the CURRENT accessible HTML for a document. ` +
+                  `The teacher has reviewed the text and approved a revised version (APPROVED_TEXT). ` +
+                  `Your job: produce a new HTML that has the same structure as CURRENT_HTML (same <img>, <table>, <figure>, <figcaption>, landmark tags, ids, alt text, class attributes, and overall DOM layout) ` +
+                  `but whose TEXT content matches APPROVED_TEXT. ` +
+                  `MANDATORY RULES:\n` +
+                  `1. PRESERVE every <img> tag with its src, alt, and other attributes UNCHANGED.\n` +
+                  `2. PRESERVE every <table>, <thead>, <tbody>, <tr>, <th>, <td> with attributes.\n` +
+                  `3. PRESERVE <figure>/<figcaption>, landmarks, ids, roles.\n` +
+                  `4. Do NOT add, remove, paraphrase, or reorder any words in APPROVED_TEXT beyond what's already there.\n` +
+                  `5. Return ONLY the updated HTML — no commentary, no code fences.\n\n` +
+                  `CURRENT_HTML:\n${_prevHtml}\n\n` +
+                  `APPROVED_TEXT:\n${_effectiveText}`;
+              let remarkedHtml = null;
+              try {
+                const raw = await callGemini(prompt);
+                remarkedHtml = (raw || '').replace(/^```(?:html)?\s*/i, '').replace(/\s*```\s*$/, '').trim();
+              } catch (gErr) {
+                warnLog('[Diff] Gemini fallback remarkup failed:', gErr?.message || gErr);
+              }
+              if (remarkedHtml) {
+                const _stripTags = (h) => h.replace(/<script[\s\S]*?<\/script>/gi, ' ').replace(/<style[\s\S]*?<\/style>/gi, ' ').replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
+                const newText = _stripTags(remarkedHtml);
+                const approvedTokens = _effectiveText.split(/\s+/).filter(t => t.length > 2);
+                const newLower = newText.toLowerCase();
+                let found = 0;
+                for (const tok of approvedTokens) { if (newLower.includes(tok.toLowerCase())) found++; }
+                const cov = approvedTokens.length > 0 ? found / approvedTokens.length : 1;
+                if (cov >= 0.9) {
+                  newHtml = remarkedHtml;
+                } else {
+                  warnLog('[Diff] Gemini fallback coverage too low:', Math.round(cov * 100) + '%');
+                }
+              }
+            }
+            if (newHtml) {
+              setPdfFixResult(prev => prev ? ({
+                ...prev,
+                accessibleHtml: newHtml,
+                finalText: _effectiveText,
+                _userEditedAt: new Date().toISOString(),
+                _rejectedHunkCount: _rejCount,
+                _preApplyHtml: _prevHtml,
+                _preApplyFinalText: _prevFinal,
+                _lastApplyPath: usedFallback ? 'gemini' : 'surgery',
+                _applyVerificationFailed: null,
+              }) : prev);
+              setDiffChunks(null);
+              const pathLabel = usedFallback ? 'via Gemini fallback' : 'via text surgery';
+              addToast('Edits applied ' + pathLabel + '. Accessible HTML updated.', 'success');
+            } else {
+              warnLog('[Diff] Apply failed — both surgery and Gemini paths could not produce acceptable output. surgeryReason:', surgeryFailReason);
+              setPdfFixResult(prev => prev ? ({
+                ...prev,
+                finalText: _effectiveText,
+                _userEditedAt: new Date().toISOString(),
+                _rejectedHunkCount: _rejCount,
+                _applyVerificationFailed: surgeryFailReason || 'gemini-failed',
+              }) : prev);
+              addToast('⚠ Apply kept original HTML — edits could not be committed cleanly (' + (surgeryFailReason || 'both paths failed') + '). Your text edits are recorded; structure was preserved.', 'warning');
+            }
+          } finally {
+            setApplyingRemarkup(false);
+          }
+        };
+        const _revertLastApply = () => {
+          const prev = pdfFixResult;
+          if (!prev || !prev._preApplyHtml) return;
+          setPdfFixResult(p => p ? ({
+            ...p,
+            accessibleHtml: p._preApplyHtml,
+            finalText: p._preApplyFinalText || p.finalText,
+            _preApplyHtml: null,
+            _preApplyFinalText: null,
+            _userEditedAt: null,
+            _rejectedHunkCount: null,
+            _lastApplyPath: null,
+            _applyVerificationFailed: null,
+          }) : p);
+          setDiffChunks(null);
+          addToast('Reverted to the state before your last Apply.', 'info');
+        };
+        const _canRevert = !!(pdfFixResult && pdfFixResult._preApplyHtml);
+        return (
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="allo-diff-title"
+            className="fixed inset-0 z-[300] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4"
+            onClick={(e) => { if (e.target === e.currentTarget) setDiffViewOpen(false); }}
+          >
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden">
+              <div className="flex items-center gap-3 px-4 py-3 border-b border-slate-200 bg-slate-50">
+                <span className="text-lg">📝</span>
+                <div className="flex-1 min-w-0">
+                  <h2 id="allo-diff-title" className="text-sm font-black text-slate-800 truncate">Source PDF ↔ Remediated HTML · Diff</h2>
+                  <p className="text-[11px] text-slate-600">Click any colored span to reject the change. Drag-select across spans to batch-reject. Del→Add paraphrase pairs toggle together.</p>
+                </div>
+                <button
+                  onClick={() => setDiffViewOpen(false)}
+                  className="shrink-0 w-8 h-8 rounded-lg hover:bg-slate-200 text-slate-600 flex items-center justify-center"
+                  aria-label="Close diff view"
+                >✕</button>
+              </div>
+              <div className="flex items-center gap-2 px-4 py-2 border-b border-slate-200 bg-white flex-wrap">
+                <div className="inline-flex rounded-lg border border-slate-400 overflow-hidden text-[11px]">
+                  {['words', 'sentences', 'chars'].map(g => (
+                    <button
+                      key={g}
+                      onClick={() => _onTryGranularityChange(g)}
+                      className={`px-3 py-1 font-bold transition-colors ${diffGranularity === g ? 'bg-indigo-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}
+                      aria-pressed={diffGranularity === g}
+                    >{g.charAt(0).toUpperCase() + g.slice(1)}</button>
+                  ))}
+                </div>
+                {_chunks && (
+                  <div className="flex items-center gap-3 ml-2 text-[11px]">
+                    <span className="inline-flex items-center gap-1"><span className="w-3 h-3 rounded-sm bg-emerald-200 border border-emerald-400" /> <span className="font-bold text-emerald-700">{_ins.toLocaleString()}</span> added</span>
+                    <span className="inline-flex items-center gap-1"><span className="w-3 h-3 rounded-sm bg-rose-200 border border-rose-400" /> <span className="font-bold text-rose-700">{_del.toLocaleString()}</span> removed</span>
+                    <span className="inline-flex items-center gap-1 text-slate-600"><span className="w-3 h-3 rounded-sm bg-slate-100 border border-slate-400" /> <span className="font-bold">{_same.toLocaleString()}</span> unchanged</span>
+                    {_rejCount > 0 && (
+                      <span className="inline-flex items-center gap-1 ml-1 bg-amber-100 border border-amber-300 px-1.5 py-0.5 rounded font-bold text-amber-800">
+                        {_rejCount.toLocaleString()} rejected
+                        <button onClick={_undoAllRejections} className="ml-1 underline hover:no-underline text-amber-900" title="Undo every rejection in this view">undo all</button>
+                      </span>
+                    )}
+                  </div>
+                )}
+                <div className="ml-auto text-[11px] text-slate-500">
+                  <span className="font-mono">{_src.length.toLocaleString()}</span> → <span className="font-mono">{_fin.length.toLocaleString()}</span> chars
+                </div>
+              </div>
+              <div
+                className="flex-1 overflow-auto p-4 bg-slate-50 relative"
+                onScroll={diffSelection ? () => setDiffSelection(null) : undefined}
+              >
+                {!diffLibReady && diffLibLoading && (
+                  <div className="flex items-center gap-2 text-sm text-slate-600">
+                    <RefreshCw size={14} className="animate-spin" /> Loading diff engine (jsdiff)…
+                  </div>
+                )}
+                {!diffLibReady && !diffLibLoading && (
+                  <div className="text-sm text-rose-700 bg-rose-50 border border-rose-200 rounded-lg p-3">
+                    Couldn't load the diff engine (network blocked?). Try re-opening the diff view, or check your connection.
+                  </div>
+                )}
+                {/* Fallback branch — lib loaded but chunks haven't built yet
+                    (cache-hit-with-null-chunks, race, or empty source/final).
+                    Without this branch the modal renders blank, which the user
+                    perceives as "didn't open." Provides a manual rebuild path. */}
+                {diffLibReady && !_chunks && !diffLibLoading && (
+                  <div className="text-sm text-amber-800 bg-amber-50 border border-amber-300 rounded-lg p-3 flex items-center gap-3">
+                    <RefreshCw size={14} className="animate-spin shrink-0" />
+                    <div className="flex-1">
+                      <div className="font-bold mb-1">Computing diff…</div>
+                      <div className="text-[12px] text-amber-700 leading-relaxed">If this persists, the source text and remediated HTML may have drifted out of sync (or the diff cache is stale).</div>
+                    </div>
+                    <button
+                      onClick={() => {
+                        try { _lastDiffFingerprintRef.current = null; } catch (_) {}
+                        setDiffChunks(null);
+                        // Touch granularity to force the build effect to re-run
+                        // (no-op state change retriggers the dep array).
+                        setDiffGranularity(g => g);
+                      }}
+                      className="shrink-0 px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-md font-bold text-[12px]"
+                      title="Clear the diff cache and recompute chunks against the current source ↔ remediated pair."
+                    >Rebuild diff</button>
+                  </div>
+                )}
+                {diffLibReady && _chunks && (
+                  <pre
+                    className="whitespace-pre-wrap font-sans text-[13px] leading-relaxed text-slate-800 bg-white rounded-lg p-4 border border-slate-400"
+                    onMouseUp={_onDiffMouseUp}
+                  >
+                    {_chunks.map((c) => {
+                      const baseCls = c.rejected ? 'opacity-40 line-through' : '';
+                      if (c.type === 'add') {
+                        return (
+                          <ins
+                            key={c.id}
+                            data-chunk-id={c.id}
+                            data-pair-id={c.pairId || ''}
+                            onClick={() => toggleDiffChunk(c.id)}
+                            className={`bg-emerald-100 text-emerald-900 no-underline rounded px-0.5 cursor-pointer hover:ring-2 hover:ring-emerald-400 ${baseCls}`}
+                            title={c.rejected ? 'Rejected — click to keep' : 'Added during remediation — click to reject'}
+                          >{c.value}</ins>
+                        );
+                      }
+                      if (c.type === 'del') {
+                        return (
+                          <del
+                            key={c.id}
+                            data-chunk-id={c.id}
+                            data-pair-id={c.pairId || ''}
+                            onClick={() => toggleDiffChunk(c.id)}
+                            className={`bg-rose-100 text-rose-900 rounded px-0.5 cursor-pointer hover:ring-2 hover:ring-rose-400 ${baseCls}`}
+                            title={c.rejected ? 'Restored — click to keep removed' : 'Removed from source — click to restore'}
+                          >{c.value}</del>
+                        );
+                      }
+                      return (<span key={c.id} data-chunk-id={c.id}>{c.value}</span>);
+                    })}
+                  </pre>
+                )}
+                {diffLibReady && !_chunks && (
+                  <div className="text-sm text-slate-600">Computing diff…</div>
+                )}
+                {diffSelection && (
+                  <div
+                    className="fixed z-[110] bg-slate-900 text-white rounded-lg shadow-2xl px-1 py-1 flex items-center gap-1 text-[11px]"
+                    style={{ left: `${diffSelection.anchorX}px`, top: `${Math.max(8, diffSelection.anchorY - 44)}px`, transform: 'translateX(-50%)' }}
+                    onMouseDown={(e) => e.preventDefault()}
+                  >
+                    <button
+                      onClick={() => setRangeRejected(diffSelection.firstId, diffSelection.lastId, true)}
+                      className="px-2 py-1 rounded bg-rose-600 hover:bg-rose-700 font-bold"
+                    >Reject selection</button>
+                    <button
+                      onClick={() => setRangeRejected(diffSelection.firstId, diffSelection.lastId, false)}
+                      className="px-2 py-1 rounded bg-emerald-600 hover:bg-emerald-700 font-bold"
+                    >Keep selection</button>
+                    <button
+                      onClick={() => setDiffSelection(null)}
+                      className="px-1.5 py-1 rounded hover:bg-slate-700"
+                      aria-label="Dismiss toolbar"
+                    >✕</button>
+                  </div>
+                )}
+              </div>
+              <div className="px-4 py-2 border-t border-slate-200 bg-slate-50 text-[11px] text-slate-600 flex items-center gap-3 flex-wrap">
+                <span>📚 jsdiff@5.2.0</span>
+                <span className="text-slate-400">·</span>
+                <span>Click spans or drag-select to edit. Pairs toggle together.</span>
+                {/* Revert button — only rendered when there's a snapshot
+                    to restore (i.e., the user has previously clicked Apply
+                    on this doc). One-level undo; pressing Apply again
+                    overwrites the snapshot. */}
+                {_canRevert && (
+                  <button
+                    onClick={_revertLastApply}
+                    disabled={applyingRemarkup}
+                    className="ml-auto px-3 py-1.5 bg-white border border-slate-400 hover:bg-slate-100 disabled:opacity-60 text-slate-700 rounded-md font-bold inline-flex items-center gap-1.5"
+                    title="Restore the accessible HTML to the state before your last Apply & Export"
+                  >
+                    ↶ Revert last Apply
+                  </button>
+                )}
+                {_rejCount > 0 && (
+                  <button
+                    onClick={_applyAndExport}
+                    disabled={applyingRemarkup}
+                    className={(_canRevert ? '' : 'ml-auto ') + 'px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white rounded-md font-bold inline-flex items-center gap-1.5 shadow'}
+                    title="Apply rejections via text surgery (preserves all markup, instant, no Gemini call). Falls back to Gemini round-trip only if surgery can't map some chunks."
+                  >
+                    {applyingRemarkup ? <><RefreshCw size={12} className="animate-spin" /> Applying…</> : <>✓ Apply &amp; Export ({_rejCount})</>}
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })(), document.body)}
       {showUDLGuide && (
         <div className={`fixed z-[100] rounded-2xl flex flex-col animate-in fade-in slide-in-from-right-5 duration-300 overflow-hidden transition-all ${isUDLGuideExpanded ? 'inset-4 top-24' : 'top-24 right-4 bottom-4 w-96'} ${isSpotlightMode ? 'opacity-20 hover:opacity-100 pointer-events-none hover:pointer-events-auto' : 'opacity-100'} ${chatStyles.container}`}>
           <div className={`p-4 flex justify-between items-center shrink-0 ${chatStyles.header}`}>
@@ -42169,376 +42539,6 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                     </details>
                                   );
                                 })()}
-                                {/* Diff View modal — word-level (or sentence/char) diff of source
-                                    PDF text vs. remediated HTML text. Loaded via jsdiff from jsdelivr
-                                    on first open. Verbatim-fidelity is AlloFlow's core promise, so
-                                    even paraphrases are shown as distinct insertions+deletions.
-                                    Each chunk is click-to-reject (pairs toggle together), and a
-                                    drag-selection toolbar lets the user batch-accept/reject. */}
-                                {diffViewOpen && pdfFixResult && ReactDOM.createPortal((() => {
-                                  const _src = pdfFixResult.sourceText || '';
-                                  const _fin = pdfFixResult.finalText || '';
-                                  const _chunks = diffChunks;
-                                  let _ins = 0, _del = 0, _same = 0;
-                                  let _rejCount = 0, _effectiveText = '';
-                                  const _countedPairs = new Set();
-                                  if (_chunks) {
-                                    _chunks.forEach(c => {
-                                      if (c.type === 'add') {
-                                        _ins += (c.count || 1);
-                                        if (c.rejected) {
-                                          if (c.pairId && _countedPairs.has(c.pairId)) { /* already counted */ }
-                                          else { _rejCount++; if (c.pairId) _countedPairs.add(c.pairId); }
-                                        } else {
-                                          _effectiveText += c.value;
-                                        }
-                                      } else if (c.type === 'del') {
-                                        _del += (c.count || 1);
-                                        if (c.rejected) {
-                                          if (c.pairId && _countedPairs.has(c.pairId)) { /* already counted */ }
-                                          else { _rejCount++; if (c.pairId) _countedPairs.add(c.pairId); }
-                                          _effectiveText += c.value;
-                                        }
-                                      } else {
-                                        _same += (c.count || 1);
-                                        _effectiveText += c.value;
-                                      }
-                                    });
-                                  }
-                                  const _onTryGranularityChange = (g) => {
-                                    if (g === 'chars') {
-                                      const combined = (_src.length || 0) + (_fin.length || 0);
-                                      const CHARS_GUARD_THRESHOLD = 20000; // ~8-10 PDF pages
-                                      if (combined > CHARS_GUARD_THRESHOLD) {
-                                        const approxSec = Math.round((combined * combined) / 1e9);
-                                        const warn = `Character-level diff on this document (${combined.toLocaleString()} chars total) is very slow and may freeze the browser for ~${Math.max(5, approxSec)}s or more.\n\nConsider Words or Sentences granularity instead.\n\nContinue with Chars anyway?`;
-                                        if (!window.confirm(warn)) return;
-                                      }
-                                    }
-                                    if (_chunks && _chunks.some(c => c.rejected)) {
-                                      if (!window.confirm('Changing granularity will reset your rejections. Continue?')) return;
-                                    }
-                                    setDiffGranularity(g);
-                                    setDiffSelection(null);
-                                  };
-                                  const _undoAllRejections = () => {
-                                    setDiffChunks(prev => prev ? prev.map(c => c.rejected ? { ...c, rejected: false } : c) : prev);
-                                    setDiffSelection(null);
-                                  };
-                                  const _onDiffMouseUp = () => {
-                                    try {
-                                      const sel = window.getSelection();
-                                      if (!sel || sel.isCollapsed) { setDiffSelection(null); return; }
-                                      const startEl = sel.anchorNode?.nodeType === 3 ? sel.anchorNode.parentElement : sel.anchorNode;
-                                      const endEl = sel.focusNode?.nodeType === 3 ? sel.focusNode.parentElement : sel.focusNode;
-                                      const startChunk = startEl?.closest?.('[data-chunk-id]');
-                                      const endChunk = endEl?.closest?.('[data-chunk-id]');
-                                      if (!startChunk || !endChunk) { setDiffSelection(null); return; }
-                                      const firstId = parseInt(startChunk.getAttribute('data-chunk-id'), 10);
-                                      const lastId = parseInt(endChunk.getAttribute('data-chunk-id'), 10);
-                                      if (Number.isNaN(firstId) || Number.isNaN(lastId)) { setDiffSelection(null); return; }
-                                      if (firstId === lastId) { setDiffSelection(null); return; }
-                                      const range = sel.getRangeAt(0);
-                                      const rect = range.getBoundingClientRect();
-                                      setDiffSelection({
-                                        firstId: Math.min(firstId, lastId),
-                                        lastId: Math.max(firstId, lastId),
-                                        anchorX: rect.left + rect.width / 2,
-                                        anchorY: rect.top,
-                                      });
-                                    } catch (e) { setDiffSelection(null); }
-                                  };
-                                  const _applyAndExport = async () => {
-                                    if (!_chunks || _rejCount === 0 || applyingRemarkup) return;
-                                    setApplyingRemarkup(true);
-                                    try {
-                                      const _prevHtml = pdfFixResult?.accessibleHtml || '';
-                                      const _prevFinal = pdfFixResult?.finalText || '';
-                                      let newHtml = null;
-                                      let surgeryCoverage = 0;
-                                      let surgeryFailReason = '';
-                                      try {
-                                        const surg = _applyTextSurgery(_prevHtml, _effectiveText);
-                                        if (surg && surg.html) {
-                                          newHtml = surg.html;
-                                          surgeryCoverage = surg.coverage;
-                                          if (surg.reason) surgeryFailReason = surg.reason;
-                                          if (surgeryCoverage < 0.95) {
-                                            warnLog('[Diff] Surgery coverage below threshold:', Math.round(surgeryCoverage * 100) + '%', '— falling back to Gemini');
-                                            newHtml = null;
-                                            surgeryFailReason = 'coverage-low-' + Math.round(surgeryCoverage * 100);
-                                          }
-                                        }
-                                      } catch (surgErr) {
-                                        warnLog('[Diff] Text surgery threw, falling back to Gemini:', surgErr?.message || surgErr);
-                                        surgeryFailReason = 'surgery-error-' + (surgErr?.message || 'unknown');
-                                      }
-                                      let usedFallback = false;
-                                      if (!newHtml) {
-                                        usedFallback = true;
-                                        const prompt =
-                                            `You are a WCAG 2.1 AA accessibility remediator. Below is the CURRENT accessible HTML for a document. ` +
-                                            `The teacher has reviewed the text and approved a revised version (APPROVED_TEXT). ` +
-                                            `Your job: produce a new HTML that has the same structure as CURRENT_HTML (same <img>, <table>, <figure>, <figcaption>, landmark tags, ids, alt text, class attributes, and overall DOM layout) ` +
-                                            `but whose TEXT content matches APPROVED_TEXT. ` +
-                                            `MANDATORY RULES:\n` +
-                                            `1. PRESERVE every <img> tag with its src, alt, and other attributes UNCHANGED.\n` +
-                                            `2. PRESERVE every <table>, <thead>, <tbody>, <tr>, <th>, <td> with attributes.\n` +
-                                            `3. PRESERVE <figure>/<figcaption>, landmarks, ids, roles.\n` +
-                                            `4. Do NOT add, remove, paraphrase, or reorder any words in APPROVED_TEXT beyond what's already there.\n` +
-                                            `5. Return ONLY the updated HTML — no commentary, no code fences.\n\n` +
-                                            `CURRENT_HTML:\n${_prevHtml}\n\n` +
-                                            `APPROVED_TEXT:\n${_effectiveText}`;
-                                        let remarkedHtml = null;
-                                        try {
-                                          const raw = await callGemini(prompt);
-                                          remarkedHtml = (raw || '').replace(/^```(?:html)?\s*/i, '').replace(/\s*```\s*$/, '').trim();
-                                        } catch (gErr) {
-                                          warnLog('[Diff] Gemini fallback remarkup failed:', gErr?.message || gErr);
-                                        }
-                                        if (remarkedHtml) {
-                                          const _stripTags = (h) => h.replace(/<script[\s\S]*?<\/script>/gi, ' ').replace(/<style[\s\S]*?<\/style>/gi, ' ').replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
-                                          const newText = _stripTags(remarkedHtml);
-                                          const approvedTokens = _effectiveText.split(/\s+/).filter(t => t.length > 2);
-                                          const newLower = newText.toLowerCase();
-                                          let found = 0;
-                                          for (const tok of approvedTokens) { if (newLower.includes(tok.toLowerCase())) found++; }
-                                          const cov = approvedTokens.length > 0 ? found / approvedTokens.length : 1;
-                                          if (cov >= 0.9) {
-                                            newHtml = remarkedHtml;
-                                          } else {
-                                            warnLog('[Diff] Gemini fallback coverage too low:', Math.round(cov * 100) + '%');
-                                          }
-                                        }
-                                      }
-                                      if (newHtml) {
-                                        setPdfFixResult(prev => prev ? ({
-                                          ...prev,
-                                          accessibleHtml: newHtml,
-                                          finalText: _effectiveText,
-                                          _userEditedAt: new Date().toISOString(),
-                                          _rejectedHunkCount: _rejCount,
-                                          _preApplyHtml: _prevHtml,
-                                          _preApplyFinalText: _prevFinal,
-                                          _lastApplyPath: usedFallback ? 'gemini' : 'surgery',
-                                          _applyVerificationFailed: null,
-                                        }) : prev);
-                                        setDiffChunks(null);
-                                        const pathLabel = usedFallback ? 'via Gemini fallback' : 'via text surgery';
-                                        addToast('Edits applied ' + pathLabel + '. Accessible HTML updated.', 'success');
-                                      } else {
-                                        warnLog('[Diff] Apply failed — both surgery and Gemini paths could not produce acceptable output. surgeryReason:', surgeryFailReason);
-                                        setPdfFixResult(prev => prev ? ({
-                                          ...prev,
-                                          finalText: _effectiveText,
-                                          _userEditedAt: new Date().toISOString(),
-                                          _rejectedHunkCount: _rejCount,
-                                          _applyVerificationFailed: surgeryFailReason || 'gemini-failed',
-                                        }) : prev);
-                                        addToast('⚠ Apply kept original HTML — edits could not be committed cleanly (' + (surgeryFailReason || 'both paths failed') + '). Your text edits are recorded; structure was preserved.', 'warning');
-                                      }
-                                    } finally {
-                                      setApplyingRemarkup(false);
-                                    }
-                                  };
-                                  const _revertLastApply = () => {
-                                    const prev = pdfFixResult;
-                                    if (!prev || !prev._preApplyHtml) return;
-                                    setPdfFixResult(p => p ? ({
-                                      ...p,
-                                      accessibleHtml: p._preApplyHtml,
-                                      finalText: p._preApplyFinalText || p.finalText,
-                                      _preApplyHtml: null,
-                                      _preApplyFinalText: null,
-                                      _userEditedAt: null,
-                                      _rejectedHunkCount: null,
-                                      _lastApplyPath: null,
-                                      _applyVerificationFailed: null,
-                                    }) : p);
-                                    setDiffChunks(null);
-                                    addToast('Reverted to the state before your last Apply.', 'info');
-                                  };
-                                  const _canRevert = !!(pdfFixResult && pdfFixResult._preApplyHtml);
-                                  return (
-                                    <div
-                                      role="dialog"
-                                      aria-modal="true"
-                                      aria-labelledby="allo-diff-title"
-                                      className="fixed inset-0 z-[300] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4"
-                                      onClick={(e) => { if (e.target === e.currentTarget) setDiffViewOpen(false); }}
-                                    >
-                                      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden">
-                                        <div className="flex items-center gap-3 px-4 py-3 border-b border-slate-200 bg-slate-50">
-                                          <span className="text-lg">📝</span>
-                                          <div className="flex-1 min-w-0">
-                                            <h2 id="allo-diff-title" className="text-sm font-black text-slate-800 truncate">Source PDF ↔ Remediated HTML · Diff</h2>
-                                            <p className="text-[11px] text-slate-600">Click any colored span to reject the change. Drag-select across spans to batch-reject. Del→Add paraphrase pairs toggle together.</p>
-                                          </div>
-                                          <button
-                                            onClick={() => setDiffViewOpen(false)}
-                                            className="shrink-0 w-8 h-8 rounded-lg hover:bg-slate-200 text-slate-600 flex items-center justify-center"
-                                            aria-label="Close diff view"
-                                          >✕</button>
-                                        </div>
-                                        <div className="flex items-center gap-2 px-4 py-2 border-b border-slate-200 bg-white flex-wrap">
-                                          <div className="inline-flex rounded-lg border border-slate-400 overflow-hidden text-[11px]">
-                                            {['words', 'sentences', 'chars'].map(g => (
-                                              <button
-                                                key={g}
-                                                onClick={() => _onTryGranularityChange(g)}
-                                                className={`px-3 py-1 font-bold transition-colors ${diffGranularity === g ? 'bg-indigo-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}
-                                                aria-pressed={diffGranularity === g}
-                                              >{g.charAt(0).toUpperCase() + g.slice(1)}</button>
-                                            ))}
-                                          </div>
-                                          {_chunks && (
-                                            <div className="flex items-center gap-3 ml-2 text-[11px]">
-                                              <span className="inline-flex items-center gap-1"><span className="w-3 h-3 rounded-sm bg-emerald-200 border border-emerald-400" /> <span className="font-bold text-emerald-700">{_ins.toLocaleString()}</span> added</span>
-                                              <span className="inline-flex items-center gap-1"><span className="w-3 h-3 rounded-sm bg-rose-200 border border-rose-400" /> <span className="font-bold text-rose-700">{_del.toLocaleString()}</span> removed</span>
-                                              <span className="inline-flex items-center gap-1 text-slate-600"><span className="w-3 h-3 rounded-sm bg-slate-100 border border-slate-400" /> <span className="font-bold">{_same.toLocaleString()}</span> unchanged</span>
-                                              {_rejCount > 0 && (
-                                                <span className="inline-flex items-center gap-1 ml-1 bg-amber-100 border border-amber-300 px-1.5 py-0.5 rounded font-bold text-amber-800">
-                                                  {_rejCount.toLocaleString()} rejected
-                                                  <button onClick={_undoAllRejections} className="ml-1 underline hover:no-underline text-amber-900" title="Undo every rejection in this view">undo all</button>
-                                                </span>
-                                              )}
-                                            </div>
-                                          )}
-                                          <div className="ml-auto text-[11px] text-slate-500">
-                                            <span className="font-mono">{_src.length.toLocaleString()}</span> → <span className="font-mono">{_fin.length.toLocaleString()}</span> chars
-                                          </div>
-                                        </div>
-                                        <div
-                                          className="flex-1 overflow-auto p-4 bg-slate-50 relative"
-                                          onScroll={diffSelection ? () => setDiffSelection(null) : undefined}
-                                        >
-                                          {!diffLibReady && diffLibLoading && (
-                                            <div className="flex items-center gap-2 text-sm text-slate-600">
-                                              <RefreshCw size={14} className="animate-spin" /> Loading diff engine (jsdiff)…
-                                            </div>
-                                          )}
-                                          {!diffLibReady && !diffLibLoading && (
-                                            <div className="text-sm text-rose-700 bg-rose-50 border border-rose-200 rounded-lg p-3">
-                                              Couldn't load the diff engine (network blocked?). Try re-opening the diff view, or check your connection.
-                                            </div>
-                                          )}
-                                          {/* Fallback branch — lib loaded but chunks haven't built yet
-                                              (cache-hit-with-null-chunks, race, or empty source/final).
-                                              Without this branch the modal renders blank, which the user
-                                              perceives as "didn't open." Provides a manual rebuild path. */}
-                                          {diffLibReady && !_chunks && !diffLibLoading && (
-                                            <div className="text-sm text-amber-800 bg-amber-50 border border-amber-300 rounded-lg p-3 flex items-center gap-3">
-                                              <RefreshCw size={14} className="animate-spin shrink-0" />
-                                              <div className="flex-1">
-                                                <div className="font-bold mb-1">Computing diff…</div>
-                                                <div className="text-[12px] text-amber-700 leading-relaxed">If this persists, the source text and remediated HTML may have drifted out of sync (or the diff cache is stale).</div>
-                                              </div>
-                                              <button
-                                                onClick={() => {
-                                                  try { _lastDiffFingerprintRef.current = null; } catch (_) {}
-                                                  setDiffChunks(null);
-                                                  // Touch granularity to force the build effect to re-run
-                                                  // (no-op state change retriggers the dep array).
-                                                  setDiffGranularity(g => g);
-                                                }}
-                                                className="shrink-0 px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-md font-bold text-[12px]"
-                                                title="Clear the diff cache and recompute chunks against the current source ↔ remediated pair."
-                                              >Rebuild diff</button>
-                                            </div>
-                                          )}
-                                          {diffLibReady && _chunks && (
-                                            <pre
-                                              className="whitespace-pre-wrap font-sans text-[13px] leading-relaxed text-slate-800 bg-white rounded-lg p-4 border border-slate-400"
-                                              onMouseUp={_onDiffMouseUp}
-                                            >
-                                              {_chunks.map((c) => {
-                                                const baseCls = c.rejected ? 'opacity-40 line-through' : '';
-                                                if (c.type === 'add') {
-                                                  return (
-                                                    <ins
-                                                      key={c.id}
-                                                      data-chunk-id={c.id}
-                                                      data-pair-id={c.pairId || ''}
-                                                      onClick={() => toggleDiffChunk(c.id)}
-                                                      className={`bg-emerald-100 text-emerald-900 no-underline rounded px-0.5 cursor-pointer hover:ring-2 hover:ring-emerald-400 ${baseCls}`}
-                                                      title={c.rejected ? 'Rejected — click to keep' : 'Added during remediation — click to reject'}
-                                                    >{c.value}</ins>
-                                                  );
-                                                }
-                                                if (c.type === 'del') {
-                                                  return (
-                                                    <del
-                                                      key={c.id}
-                                                      data-chunk-id={c.id}
-                                                      data-pair-id={c.pairId || ''}
-                                                      onClick={() => toggleDiffChunk(c.id)}
-                                                      className={`bg-rose-100 text-rose-900 rounded px-0.5 cursor-pointer hover:ring-2 hover:ring-rose-400 ${baseCls}`}
-                                                      title={c.rejected ? 'Restored — click to keep removed' : 'Removed from source — click to restore'}
-                                                    >{c.value}</del>
-                                                  );
-                                                }
-                                                return (<span key={c.id} data-chunk-id={c.id}>{c.value}</span>);
-                                              })}
-                                            </pre>
-                                          )}
-                                          {diffLibReady && !_chunks && (
-                                            <div className="text-sm text-slate-600">Computing diff…</div>
-                                          )}
-                                          {diffSelection && (
-                                            <div
-                                              className="fixed z-[110] bg-slate-900 text-white rounded-lg shadow-2xl px-1 py-1 flex items-center gap-1 text-[11px]"
-                                              style={{ left: `${diffSelection.anchorX}px`, top: `${Math.max(8, diffSelection.anchorY - 44)}px`, transform: 'translateX(-50%)' }}
-                                              onMouseDown={(e) => e.preventDefault()}
-                                            >
-                                              <button
-                                                onClick={() => setRangeRejected(diffSelection.firstId, diffSelection.lastId, true)}
-                                                className="px-2 py-1 rounded bg-rose-600 hover:bg-rose-700 font-bold"
-                                              >Reject selection</button>
-                                              <button
-                                                onClick={() => setRangeRejected(diffSelection.firstId, diffSelection.lastId, false)}
-                                                className="px-2 py-1 rounded bg-emerald-600 hover:bg-emerald-700 font-bold"
-                                              >Keep selection</button>
-                                              <button
-                                                onClick={() => setDiffSelection(null)}
-                                                className="px-1.5 py-1 rounded hover:bg-slate-700"
-                                                aria-label="Dismiss toolbar"
-                                              >✕</button>
-                                            </div>
-                                          )}
-                                        </div>
-                                        <div className="px-4 py-2 border-t border-slate-200 bg-slate-50 text-[11px] text-slate-600 flex items-center gap-3 flex-wrap">
-                                          <span>📚 jsdiff@5.2.0</span>
-                                          <span className="text-slate-400">·</span>
-                                          <span>Click spans or drag-select to edit. Pairs toggle together.</span>
-                                          {/* Revert button — only rendered when there's a snapshot
-                                              to restore (i.e., the user has previously clicked Apply
-                                              on this doc). One-level undo; pressing Apply again
-                                              overwrites the snapshot. */}
-                                          {_canRevert && (
-                                            <button
-                                              onClick={_revertLastApply}
-                                              disabled={applyingRemarkup}
-                                              className="ml-auto px-3 py-1.5 bg-white border border-slate-400 hover:bg-slate-100 disabled:opacity-60 text-slate-700 rounded-md font-bold inline-flex items-center gap-1.5"
-                                              title="Restore the accessible HTML to the state before your last Apply & Export"
-                                            >
-                                              ↶ Revert last Apply
-                                            </button>
-                                          )}
-                                          {_rejCount > 0 && (
-                                            <button
-                                              onClick={_applyAndExport}
-                                              disabled={applyingRemarkup}
-                                              className={(_canRevert ? '' : 'ml-auto ') + 'px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white rounded-md font-bold inline-flex items-center gap-1.5 shadow'}
-                                              title="Apply rejections via text surgery (preserves all markup, instant, no Gemini call). Falls back to Gemini round-trip only if surgery can't map some chunks."
-                                            >
-                                              {applyingRemarkup ? <><RefreshCw size={12} className="animate-spin" /> Applying…</> : <>✓ Apply &amp; Export ({_rejCount})</>}
-                                            </button>
-                                          )}
-                                        </div>
-                                      </div>
-                                    </div>
-                                  );
-                                })(), document.body)}
                                 {/* Image reinsertion failures row — surfaces silently-dropped images so the user sees them. */}
                                 {imgFailCount > 0 && (
                                   <details className="mb-2 bg-amber-50 border border-amber-200 rounded-xl p-2 text-[11px]" open>
