@@ -5014,61 +5014,62 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       document.head.appendChild(s);
     })();
-    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/allo_data_module.js');
-    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/large_file_module.js');
-    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/key_concept_map_module.js');
-    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/utils_pure_module.js');
-    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/gemini_api_module.js');
-    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/tts_module.js');
-    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/personas_module.js');
-    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/export_module.js');
-    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/misc_components_module.js');
-    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/remediation_audio_module.js');
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/story_stage_module.js');
+    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e36faf5/allo_data_module.js');
+    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e36faf5/large_file_module.js');
+    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e36faf5/key_concept_map_module.js');
+    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e36faf5/utils_pure_module.js');
+    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e36faf5/gemini_api_module.js');
+    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e36faf5/tts_module.js');
+    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e36faf5/personas_module.js');
+    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e36faf5/export_module.js');
+    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e36faf5/misc_components_module.js');
+    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e36faf5/remediation_audio_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e36faf5/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e36faf5/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e36faf5/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e36faf5/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e36faf5/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e36faf5/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e36faf5/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e36faf5/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e36faf5/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e36faf5/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e36faf5/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e36faf5/story_stage_module.js');
     loadModule('PoetTree', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5e3ae8e/poet_tree_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/student_interaction_module.js');
-    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/math_fluency_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/content_engine_module.js');
-    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/timeline_revision_module.js');
-    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/prompts_library_module.js');
-    loadModule('TextPipelineHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/text_pipeline_helpers_module.js');
-    loadModule('AdaptiveControllerModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/adaptive_controller_module.js');
-    loadModule('UdlChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/udl_chat_module.js');
-    loadModule('AdventureHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/adventure_handlers_module.js');
-    loadModule('GlossaryHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/glossary_helpers_module.js');
-    loadModule('ViewRenderersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/view_renderers_module.js');
-    loadModule('AudioHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/audio_helpers_module.js');
-    loadModule('GenerationHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/generation_helpers_module.js');
-    loadModule('MiscHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/misc_handlers_module.js');
-    loadModule('PureHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/pure_helpers_module.js');
-    loadModule('MathHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/math_helpers_module.js');
-    loadModule('CmapHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/concept_map_handlers_module.js');
-    loadModule('GenDispatcherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/generate_dispatcher_module.js');
-    loadModule('PhaseKHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/phase_k_helpers_module.js');
-    loadModule('AdventureSessionHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/adventure_session_handlers_module.js');
-    loadModule('TextUtilityHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/text_utility_helpers_module.js');
-    loadModule('ViewDbqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/view_dbq_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e36faf5/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e36faf5/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e36faf5/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e36faf5/student_interaction_module.js');
+    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e36faf5/math_fluency_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e36faf5/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e36faf5/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e36faf5/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e36faf5/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e36faf5/content_engine_module.js');
+    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e36faf5/timeline_revision_module.js');
+    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e36faf5/prompts_library_module.js');
+    loadModule('TextPipelineHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e36faf5/text_pipeline_helpers_module.js');
+    loadModule('AdaptiveControllerModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e36faf5/adaptive_controller_module.js');
+    loadModule('UdlChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e36faf5/udl_chat_module.js');
+    loadModule('AdventureHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e36faf5/adventure_handlers_module.js');
+    loadModule('GlossaryHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e36faf5/glossary_helpers_module.js');
+    loadModule('ViewRenderersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e36faf5/view_renderers_module.js');
+    loadModule('AudioHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e36faf5/audio_helpers_module.js');
+    loadModule('GenerationHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e36faf5/generation_helpers_module.js');
+    loadModule('MiscHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e36faf5/misc_handlers_module.js');
+    loadModule('PureHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e36faf5/pure_helpers_module.js');
+    loadModule('MathHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e36faf5/math_helpers_module.js');
+    loadModule('CmapHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e36faf5/concept_map_handlers_module.js');
+    loadModule('GenDispatcherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e36faf5/generate_dispatcher_module.js');
+    loadModule('PhaseKHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e36faf5/phase_k_helpers_module.js');
+    loadModule('AdventureSessionHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e36faf5/adventure_session_handlers_module.js');
+    loadModule('TextUtilityHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e36faf5/text_utility_helpers_module.js');
+    loadModule('ViewDbqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e36faf5/view_dbq_module.js');
+    loadModule('ViewTimelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/view_timeline_module.js');
     loadModule('PhaseNHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/phase_n_misc_helpers_module.js');
     loadModule('PhaseOHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/phase_o_misc_handlers_module.js');
-    loadModule('ExportHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/export_handlers_module.js');
+    loadModule('ExportHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e36faf5/export_handlers_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     (function() {
       var s = document.createElement('script');
@@ -5079,7 +5080,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       document.head.appendChild(s);
     })();
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e36faf5/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -35371,384 +35372,21 @@ Return only the corrected version of this exact text:`;
                       ))}
                   </div>
                 )}
-                {activeView === 'timeline' && (
-                    <div className="space-y-6">
-                        <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-100 mb-6 flex justify-between items-center flex-wrap gap-4">
-                            <div className="text-sm text-indigo-800">
-                                <strong>{t('simplified.udl_goal').split(':')[0]}:</strong> {t('timeline.udl_goal_desc')}
-                            </div>
-                            <div className="flex gap-2">
-                                <button
-                                    aria-label={t('common.start_game')}
-                                    onClick={handleSetIsTimelineGameToTrue}
-                                    className="flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 transition-all shadow-sm"
-                                >
-                                    <Gamepad2 size={14}/> {isTeacherMode ? t('timeline.preview_game') : t('timeline.launch_sequencer')}
-                                </button>
-                                {isTeacherMode && (
-                                    <button
-                                        aria-label={t('common.toggle_edit_timeline')}
-                                        onClick={handleToggleIsEditingTimeline}
-                                        className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isEditingTimeline ? 'bg-indigo-600 text-white hover:bg-indigo-700' : 'bg-white text-indigo-700 border border-indigo-200 hover:bg-indigo-50'}`}
-                                    >
-                                        {isEditingTimeline ? <CheckCircle2 size={14}/> : <Pencil size={14}/>}
-                                        {isEditingTimeline ? t('timeline.done_editing') : t('timeline.edit_sequence')}
-                                    </button>
-                                )}
-                                <div data-help-key="timeline_image_size" className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full border border-indigo-200 shadow-sm" title={t('timeline.image_size_tooltip') || 'Resize sequence images'}>
-                                    <ImageIcon size={14} className="text-indigo-400"/>
-                                    <input aria-label={t('common.range_slider') || 'Image size'}
-                                        type="range"
-                                        min="64"
-                                        max="300"
-                                        step="16"
-                                        value={timelineImageSize}
-                                        onChange={(e) => setTimelineImageSize(Number(e.target.value))}
-                                        className="w-20 h-1.5 bg-indigo-100 rounded-lg appearance-none cursor-pointer accent-indigo-500"
-                                    />
-                                </div>
-                        </div>
-                        </div>
-                        {isTeacherMode && generatedContent?.data && (
-                            <div className="bg-white p-3 rounded-lg border border-slate-400 shadow-sm flex flex-wrap gap-2 items-center">
-                                <Sparkles size={14} className="text-indigo-500" />
-                                <input aria-label={t('common.timeline_revise_placeholder')}
-                                    type="text"
-                                    value={timelineRevisionInput || ''}
-                                    onChange={(e) => setTimelineRevisionInput(e.target.value)}
-                                    placeholder={t('timeline.revise_placeholder')}
-                                    className="flex-grow min-w-[200px] text-sm border border-slate-400 rounded-lg px-3 py-1.5 outline-none focus:ring-2 focus:ring-indigo-300"
-                                />
-                                <button
-                                    onClick={() => handleTimelineRevision()}
-                                    disabled={isRevisingTimeline || !timelineRevisionInput?.trim()}
-                                    className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    {isRevisingTimeline ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
-                                    {isRevisingTimeline ? t('timeline.revising') : t('timeline.revise_button')}
-                                </button>
-                            </div>
-                        )}
-                        {isTeacherMode && !Array.isArray(generatedContent?.data) && Array.isArray(generatedContent?.data?.validationIssues) && generatedContent.data.validationIssues.length > 0 && (
-                            <details className="bg-amber-50 border border-amber-200 rounded-lg shadow-sm p-3">
-                                <summary className="cursor-pointer flex flex-wrap items-center gap-2 text-xs font-bold text-amber-800">
-                                    <AlertTriangle size={14} className="text-amber-600" />
-                                    {t('timeline.validation.issues_header', { count: generatedContent.data.validationIssues.length }) || `${generatedContent.data.validationIssues.length} structural issue(s) detected`}
-                                    <button
-                                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleAutoFixTimeline(); }}
-                                        disabled={isAutoFixingTimeline}
-                                        className="ml-auto flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-bold bg-amber-600 text-white hover:bg-amber-700 transition-colors disabled:opacity-50"
-                                        aria-busy={isAutoFixingTimeline}
-                                    >
-                                        {isAutoFixingTimeline ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
-                                        {isAutoFixingTimeline ? (t('timeline.validation.fixing') || 'Fixing…') : (t('timeline.validation.auto_fix') || 'Auto-fix')}
-                                    </button>
-                                </summary>
-                                <ul className="mt-2 text-[12px] text-amber-900 list-disc list-inside space-y-1">
-                                    {generatedContent.data.validationIssues.map((iss, i) => (
-                                        <li key={i}>{iss.message}</li>
-                                    ))}
-                                </ul>
-                            </details>
-                        )}
-                        {isTeacherMode && generatedContent?.data && (
-                            <div className="flex justify-end">
-                                <button
-                                    onClick={() => handleVerifyTimelineAccuracy()}
-                                    disabled={isVerifyingTimeline}
-                                    className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                                    aria-busy={isVerifyingTimeline}
-                                    title={t('timeline.validation.verify_tooltip') || 'Run AI accuracy check on each item'}
-                                >
-                                    {isVerifyingTimeline ? <Loader2 size={14} className="animate-spin" /> : '🔍'}
-                                    {isVerifyingTimeline ? (t('timeline.validation.verifying') || 'Verifying…') : (t('timeline.validation.verify') || 'Verify accuracy')}
-                                </button>
-                            </div>
-                        )}
-                        <div className="relative pl-12 sm:pl-16 border-l-2 border-indigo-200 space-y-8 my-8">
-                            <div className="absolute left-[-7px] top-0 font-black text-indigo-300 text-[11px] uppercase tracking-widest -translate-y-full">{t('timeline.start_marker')}</div>
-                            {!Array.isArray(generatedContent?.data) && generatedContent?.data?.progressionLabel && (
-                                <div className="absolute left-4 top-[-24px] flex items-center gap-2">
-                                    <div className="bg-indigo-600 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-md">
-                                        <span className="opacity-70">{t('timeline.order_by')}</span> {generatedContent?.data.progressionLabel}
-                                    </div>
-                                    {generatedContent?.data.mode && TIMELINE_MODE_DEFINITIONS[generatedContent.data.mode] && (
-                                        generatedContent.data.autoDetected ? (
-                                            <button
-                                                onClick={handleLockTimelineMode}
-                                                className="bg-amber-50 text-amber-800 border border-amber-200 px-2 py-1 rounded-full text-[11px] font-bold shadow-sm hover:bg-amber-100 transition-colors"
-                                                title={t('timeline.click_to_lock_tooltip') || 'Click to lock this mode for future generations'}
-                                                aria-label={t('timeline.click_to_lock_aria') || 'Click to lock this mode'}
-                                            >
-                                                ✨ {t('timeline.detected_label') || 'Detected'}: {TIMELINE_MODE_DEFINITIONS[generatedContent.data.mode].label}
-                                            </button>
-                                        ) : (
-                                            <span className="bg-slate-100 text-slate-700 border border-slate-400 px-2 py-1 rounded-full text-[11px] font-bold shadow-sm">
-                                                🔒 {TIMELINE_MODE_DEFINITIONS[generatedContent.data.mode].label}
-                                            </span>
-                                        )
-                                    )}
-                                </div>
-                            )}
-                            <div className="absolute left-[-5px] bottom-[-10px] w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[12px] border-t-indigo-200"></div>
-                            {isEditingTimeline ? (
-                                <div className="space-y-4">
-                                    <div className="text-xs text-slate-600 italic text-center mb-2">
-                                        {t('timeline.edit_instruction')}
-                                    </div>
-                                    {(Array.isArray(generatedContent?.data) ? generatedContent?.data : generatedContent?.data?.items || []).map((item, idx) => (
-                                        <div
-                                            key={idx}
-                                            data-timeline-row
-                                            draggable
-                                            onDragStart={(e) => handleTimelineDragStart(e, idx)}
-                                            onDragOver={(e) => handleTimelineDragOver(e, idx)}
-                                            onDragEnd={handleTimelineDragEnd}
-                                            className={`relative flex items-start gap-2 p-3 rounded-xl border-2 transition-all ${
-                                                draggedTimelineIndex === idx
-                                                ? 'opacity-50 border-dashed border-indigo-300 bg-indigo-50'
-                                                : 'bg-white border-slate-200 shadow-sm'
-                                            }`}
-                                        >
-                                            <div className="flex flex-col items-center gap-1 mt-2 text-slate-600 cursor-grab active:cursor-grabbing hover:text-indigo-500">
-                                                <GripVertical size={16} />
-                                                <span className="text-[11px] font-bold bg-slate-100 px-1.5 rounded text-slate-600">
-                                                    {idx + 1}
-                                                </span>
-                                            </div>
-                                            <div className="flex-grow grid grid-cols-1 gap-3">
-                                                <div className="flex gap-2">
-                                                    <input aria-label={t('common.enter_item')}
-                                                        type="text"
-                                                        value={item.date}
-                                                        onChange={(e) => handleTimelineChange(idx, 'date', e.target.value)}
-                                                        className="w-1/3 text-xs font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-indigo-300"
-                                                        placeholder={t('timeline.label_placeholder')}
-                                                    />
-                                                    <input aria-label={t('common.text_field')}
-                                                        type="text"
-                                                        data-timeline-event
-                                                        value={item.event}
-                                                        onChange={(e) => handleTimelineChange(idx, 'event', e.target.value)}
-                                                        className="w-2/3 text-sm font-medium text-slate-800 bg-slate-50 border border-slate-400 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-indigo-300"
-                                                        placeholder={t('timeline.event_placeholder')}
-                                                    />
-                                                </div>
-                                                {(item.event_en || leveledTextLanguage !== 'English') && (
-                                                    <div className="flex gap-2">
-                                                        <input aria-label={t('common.enter_item')}
-                                                            type="text"
-                                                            value={item.date_en || ''}
-                                                            onChange={(e) => handleTimelineChange(idx, 'date', e.target.value, true)}
-                                                            className="w-1/3 text-[11px] font-bold text-indigo-600 bg-white border border-indigo-100 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-indigo-300"
-                                                            placeholder={t('timeline.label_en_placeholder')}
-                                                        />
-                                                        <input aria-label={t('common.text_field')}
-                                                            type="text"
-                                                            value={item.event_en || ''}
-                                                            onChange={(e) => handleTimelineChange(idx, 'event', e.target.value, true)}
-                                                            className="w-2/3 text-xs text-slate-600 bg-white border border-slate-400 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-indigo-300"
-                                                            placeholder={t('timeline.event_en_placeholder')}
-                                                        />
-                                                    </div>
-                                                )}
-                                            </div>
-                                            <div className="flex flex-col items-center gap-1 mt-1 shrink-0">
-                                                {item.image ? (
-                                                    <div className="relative group/timgimg">
-                                                        <img
-                                                            loading="lazy"
-                                                            src={item.image}
-                                                            alt={`${item.date || ''}: ${item.event || ''}`}
-                                                            className="w-12 h-12 object-contain rounded border border-slate-400 bg-white"
-                                                        />
-                                                        <button
-                                                            onClick={() => handleGenerateTimelineItemImage(idx, item.event, item.date)}
-                                                            disabled={isGeneratingTimelineImage[idx]}
-                                                            aria-busy={!!isGeneratingTimelineImage[idx]}
-                                                            aria-label={t('timeline.visuals.regen_button_aria') || 'Regenerate image for this item'}
-                                                            className="absolute inset-0 bg-black/60 rounded flex items-center justify-center opacity-0 group-hover/timgimg:opacity-100 transition-opacity text-white disabled:opacity-80"
-                                                            title={t('common.regenerate') || 'Regenerate'}
-                                                        >
-                                                            {isGeneratingTimelineImage[idx] ? <RefreshCw size={14} className="animate-spin" /> : <RefreshCw size={14} />}
-                                                        </button>
-                                                        {isEditingTimeline && (
-                                                            <div className="absolute top-full mt-1 left-0 w-44 bg-white border border-slate-400 rounded shadow-lg p-1.5 z-10 animate-in slide-in-from-top-2">
-                                                                <button
-                                                                    aria-label={t('timeline.visuals.remove_text_btn') || 'Remove text from image'}
-                                                                    onClick={() => handleGenerateTimelineItemImage(idx, item.event, item.date, "Remove all text, labels, letters, and words from the image. Keep the illustration clean.")}
-                                                                    disabled={isGeneratingTimelineImage[idx]}
-                                                                    className="w-full mb-1 text-[10px] bg-red-50 text-red-600 hover:bg-red-100 border border-red-100 px-1.5 py-0.5 rounded flex items-center justify-center gap-1 font-bold"
-                                                                    title={t('timeline.visuals.remove_text_tooltip') || 'Remove text/labels from this image'}
-                                                                >
-                                                                    {isGeneratingTimelineImage[idx] ? <RefreshCw size={10} className="animate-spin" /> : <Ban size={10} />} {t('timeline.visuals.remove_text_btn') || 'Remove Text'}
-                                                                </button>
-                                                                <div className="flex gap-1">
-                                                                    <input
-                                                                        type="text"
-                                                                        value={timelineRefinementInputs[idx] || ''}
-                                                                        onChange={(e) => setTimelineRefinementInputs(prev => ({ ...prev, [idx]: e.target.value }))}
-                                                                        placeholder={t('timeline.visuals.refine_placeholder') || 'e.g., make it cuter'}
-                                                                        className="text-[10px] border border-yellow-300 rounded px-1 py-0.5 flex-1 focus:outline-none focus:ring-1 focus:ring-yellow-400 min-w-0"
-                                                                        onKeyDown={(e) => {
-                                                                            if (e.key === 'Enter' && timelineRefinementInputs[idx]) {
-                                                                                handleGenerateTimelineItemImage(idx, item.event, item.date, timelineRefinementInputs[idx]);
-                                                                            }
-                                                                        }}
-                                                                    />
-                                                                    <button
-                                                                        onClick={() => handleGenerateTimelineItemImage(idx, item.event, item.date, timelineRefinementInputs[idx])}
-                                                                        disabled={!timelineRefinementInputs[idx] || isGeneratingTimelineImage[idx]}
-                                                                        className="bg-yellow-400 text-yellow-900 p-1 rounded hover:bg-yellow-500 disabled:opacity-50 shrink-0"
-                                                                        aria-label={t('common.apply_edit') || 'Apply edit'}
-                                                                    >
-                                                                        {isGeneratingTimelineImage[idx] ? <RefreshCw size={10} className="animate-spin" /> : <Send size={10} />}
-                                                                    </button>
-                                                                </div>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                ) : (
-                                                    <button
-                                                        onClick={() => handleGenerateTimelineItemImage(idx, item.event, item.date)}
-                                                        disabled={isGeneratingTimelineImage[idx] || !item.event}
-                                                        aria-busy={!!isGeneratingTimelineImage[idx]}
-                                                        aria-label={t('timeline.visuals.regen_button_aria') || 'Generate image for this item'}
-                                                        className="w-12 h-12 rounded border-2 border-dashed border-indigo-200 text-indigo-500 hover:border-indigo-400 hover:bg-indigo-50 transition-colors flex items-center justify-center disabled:opacity-50 disabled:cursor-wait"
-                                                        title={t('timeline.visuals.regen_button_aria') || 'Generate image'}
-                                                    >
-                                                        {isGeneratingTimelineImage[idx] ? <RefreshCw size={14} className="animate-spin" /> : <ImageIcon size={14} />}
-                                                    </button>
-                                                )}
-                                            </div>
-                                            <button
-                                                aria-label={t('common.delete')}
-                                                onClick={() => handleDeleteTimelineStep(idx)}
-                                                className="p-1.5 text-slate-600 hover:text-red-500 hover:bg-red-50 rounded transition-colors mt-1"
-                                                title={t('timeline.remove_step_title')}
-                                            >
-                                                <Trash2 size={16} />
-                                            </button>
-                                        </div>
-                                    ))}
-                                    <button aria-label={t('common.add')}
-                                        onClick={handleAddTimelineStep}
-                                        className="w-full py-3 border-2 border-dashed border-indigo-200 rounded-xl text-indigo-600 font-bold text-xs hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-300 transition-all flex items-center justify-center gap-2"
-                                    >
-                                        <Plus size={16} /> {t('timeline.add_step')}
-                                    </button>
-                                </div>
-                            ) : (
-                                (isTeacherMode || isIndependentMode) ? (
-                                    (Array.isArray(generatedContent?.data) ? generatedContent?.data : generatedContent?.data?.items || []).map((item, idx) => (
-                                    <div key={idx} className="relative animate-in slide-in-from-bottom-2 duration-300" style={{animationDelay: `${idx * 100}ms`}}>
-                                        <div className="absolute -left-[57px] sm:-left-[73px] top-1 w-3 h-3 sm:w-4 sm:h-4 rounded-full bg-indigo-600 border-4 border-indigo-100 box-content"></div>
-                                        <div className="bg-white p-4 rounded-xl border border-slate-400 shadow-sm hover:shadow-md transition-shadow flex gap-3 items-start">
-                                            {item.image && (
-                                                <img
-                                                    loading="lazy"
-                                                    src={item.image}
-                                                    alt={`${item.date || ''}: ${item.event || ''}`}
-                                                    className="object-contain rounded-lg bg-white border border-slate-100 shrink-0"
-                                                    style={{ width: `${timelineImageSize}px`, height: `${timelineImageSize}px` }}
-                                                />
-                                            )}
-                                            <div className="flex-1 min-w-0">
-                                                <span className="inline-block bg-indigo-100 text-indigo-700 text-xs font-bold px-2 py-0.5 rounded mb-1 border border-indigo-200">
-                                                    {item.date}
-                                                    {item.date_en && <span className="opacity-60 font-normal ml-1">({item.date_en})</span>}
-                                                </span>
-                                                <p className="text-sm font-medium text-slate-800 leading-relaxed">
-                                                    {item.event}
-                                                </p>
-                                                {item.event_en && (
-                                                    <p className="text-xs text-slate-600 italic mt-1">{item.event_en}</p>
-                                                )}
-                                                {(() => {
-                                                    const _vKey = idx + ':' + (item.event || '');
-                                                    const _flagged = item.verification && (item.verification.factual === false || item.verification.position === false);
-                                                    if (!_flagged || dismissedVerifications.has(_vKey)) return null;
-                                                    return (
-                                                        <div className="mt-2 border border-red-200 rounded-lg bg-red-50 p-2 text-[11px] text-red-800">
-                                                            <div className="flex items-center gap-1.5 mb-1">
-                                                                <AlertCircle size={12} className="shrink-0 text-red-600" />
-                                                                <strong>{t('timeline.validation.flagged') || 'Flagged'}</strong>
-                                                                <span className="text-red-700/70">
-                                                                    {item.verification.factual === false ? '• factual' : ''}
-                                                                    {item.verification.position === false ? ' • position' : ''}
-                                                                </span>
-                                                                <button
-                                                                    onClick={() => setDismissedVerifications(prev => { const next = new Set(prev); next.add(_vKey); return next; })}
-                                                                    className="ml-auto text-red-400 hover:text-red-600 p-0.5 rounded"
-                                                                    aria-label={t('timeline.validation.dismiss') || 'Dismiss verification concern'}
-                                                                    title={t('timeline.validation.dismiss') || 'Dismiss'}
-                                                                ><X size={12} /></button>
-                                                            </div>
-                                                            <div className="text-red-700 leading-relaxed pl-4">
-                                                                {item.verification.concern || (item.verification.factual === false ? (t('timeline.validation.factual_concern') || 'Factual concern — review this item.') : (t('timeline.validation.position_concern') || 'Position may be wrong — check placement on the axis.'))}
-                                                            </div>
-                                                        </div>
-                                                    );
-                                                })()}
-                                                {item.verification && item.verification.factual !== false && item.verification.position !== false && (
-                                                    item.verification.rationale ? (
-                                                        <details className="mt-2 group">
-                                                            <summary className="inline-flex items-center gap-1 text-[11px] bg-emerald-50 border border-emerald-200 rounded px-2 py-0.5 text-emerald-800 cursor-pointer hover:bg-emerald-100 list-none transition-colors">
-                                                                <CheckCircle2 size={11} className="text-emerald-600" />
-                                                                {t('timeline.validation.verified') || 'Verified'}
-                                                                <span className="text-emerald-700/70 ml-0.5 group-open:rotate-180 transition-transform">▾</span>
-                                                            </summary>
-                                                            <div className="mt-1.5 text-[11px] bg-emerald-50/50 border-l-2 border-emerald-300 px-2 py-1.5 text-emerald-900/90 leading-relaxed rounded-r">
-                                                                {item.verification.rationale}
-                                                            </div>
-                                                        </details>
-                                                    ) : (
-                                                        <div className="mt-2 inline-flex items-center gap-1 text-[11px] bg-emerald-50 border border-emerald-200 rounded px-2 py-0.5 text-emerald-800">
-                                                            <CheckCircle2 size={11} className="text-emerald-600" /> {t('timeline.validation.verified') || 'Verified'}
-                                                        </div>
-                                                    )
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-                                    ))
-                                ) : (
-                                    <div className="relative -ml-12 sm:-ml-16">
-                                        <div className="flex flex-col items-center justify-center p-12 bg-slate-50 rounded-xl border-2 border-dashed border-slate-200 text-center animate-in fade-in zoom-in duration-300">
-                                            <div className="bg-indigo-100 p-4 rounded-full mb-4">
-                                                <ListOrdered size={48} className="text-indigo-500" />
-                                            </div>
-                                            <h3 className="text-xl font-black text-slate-700 mb-2">{t('timeline.ready_title')}</h3>
-                                            <p className="text-slate-600 mb-8 max-w-md">
-                                                {t('timeline.ready_desc')}
-                                            </p>
-                                            <button
-                                                aria-label={t('common.start_game')}
-                                                onClick={handleSetIsTimelineGameToTrue}
-                                                className="px-8 py-4 bg-indigo-600 text-white font-bold text-lg rounded-xl shadow-lg hover:bg-indigo-700 hover:scale-105 transition-all flex items-center gap-3"
-                                            >
-                                                <Gamepad2 size={24} className="fill-current text-yellow-400" /> {t('timeline.start_activity')}
-                                            </button>
-                                        </div>
-                                    </div>
-                                )
-                            )}
-                        </div>
-                        {isTimelineGame && (
-                            <ErrorBoundary fallbackMessage="Sequence Game encountered an error.">
-                                <TimelineGame
-                                    data={generatedContent?.data}
-                                    onClose={closeTimeline}
-                                    playSound={playSound}
-                                    onScoreUpdate={handleGameScoreUpdate}
-                                    onGameComplete={handleGameCompletion}
-                                    onExplainIncorrect={handleExplainTimelineItem}
-                                    initialImageSize={timelineImageSize}
-                                />
-                            </ErrorBoundary>
-                        )}
-                    </div>
-                )}
+                {activeView === 'timeline' && window.AlloModules && window.AlloModules.TimelineView && React.createElement(window.AlloModules.TimelineView, {
+                    t, generatedContent, isTeacherMode, isIndependentMode, leveledTextLanguage,
+                    dismissedVerifications, draggedTimelineIndex, initialImageSize,
+                    timelineImageSize, timelineRefinementInputs, timelineRevisionInput,
+                    isAutoFixingTimeline, isEditingTimeline, isGeneratingTimelineImage,
+                    isRevisingTimeline, isTimelineGame, isVerifyingTimeline,
+                    setDismissedVerifications, setTimelineImageSize, setTimelineRefinementInputs, setTimelineRevisionInput,
+                    handleAddTimelineStep, handleAutoFixTimeline, handleDeleteTimelineStep,
+                    handleExplainTimelineItem, handleGameCompletion, handleGameScoreUpdate,
+                    handleGenerateTimelineItemImage, handleLockTimelineMode, handleSetIsTimelineGameToTrue,
+                    handleTimelineChange, handleTimelineDragEnd, handleTimelineDragOver, handleTimelineDragStart,
+                    handleTimelineRevision, handleToggleIsEditingTimeline, handleVerifyTimelineAccuracy,
+                    closeTimeline,
+                    ErrorBoundary, TimelineGame
+                })}
                 {activeView === 'concept-sort' && (
                     <div className="space-y-6 h-full flex flex-col" data-help-key="concept_sort_panel">
                         <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-100 mb-6 flex justify-between items-center flex-wrap gap-4">
