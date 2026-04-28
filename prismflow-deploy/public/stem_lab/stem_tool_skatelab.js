@@ -247,6 +247,11 @@ window.StemLab = window.StemLab || {
   };
   function getVehicle(id) { return VEHICLES[id] || VEHICLES.skate; }
 
+  // Rider mass — used for the live energy-budget bar. Approximate
+  // average teen-skater mass; combined with vehicle.mass for total
+  // m in KE = ½mv² and PE = mgh.
+  var RIDER_KG = 60;
+
   // ── Famous-trick scenarios ───────────────────────────────────────
   // Each scenario pre-configures the simulator to recreate a real
   // moment in skate / BMX history (or a thought experiment like the
@@ -517,6 +522,54 @@ window.StemLab = window.StemLab || {
   // pump → drop → launch → spin → land. Uses requestAnimationFrame
   // when an animation is in flight (state.anim).
   // ──────────────────────────────────────────────────────────────────
+  // ── Energy budget bar helper ─────────────────────────────────
+  // Renders a horizontal KE / PE bar with numeric breakdown.
+  // Called from drawHalfpipe + drawGapJump during the air/flight
+  // phase (when state.energyTotal > 0). Skipped if showEnergyBar
+  // is false. Joules are rounded to whole numbers since the
+  // intuitive grain is "this many joules of motion vs height," not
+  // sub-joule precision.
+  function drawEnergyBar(ctx, x, y, w, h, KE, PE, total) {
+    if (!total || total <= 0) return;
+    var keFrac = Math.max(0, Math.min(1, KE / total));
+    var peFrac = Math.max(0, Math.min(1, PE / total));
+    var keW = w * keFrac;
+    var peW = w * peFrac;
+    // Background track
+    ctx.fillStyle = 'rgba(15,23,42,0.85)';
+    ctx.fillRect(x - 1, y - 1, w + 2, h + 2);
+    ctx.strokeStyle = 'rgba(254,243,199,0.45)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(x - 1, y - 1, w + 2, h + 2);
+    // KE segment — red/orange gradient (motion energy)
+    if (keW > 0) {
+      var keGrad = ctx.createLinearGradient(x, y, x + keW, y);
+      keGrad.addColorStop(0, '#fca5a5');
+      keGrad.addColorStop(1, '#f87171');
+      ctx.fillStyle = keGrad;
+      ctx.fillRect(x, y, keW, h);
+    }
+    // PE segment — blue gradient (height energy), pinned to right
+    if (peW > 0) {
+      var peGrad = ctx.createLinearGradient(x + w - peW, y, x + w, y);
+      peGrad.addColorStop(0, '#93c5fd');
+      peGrad.addColorStop(1, '#3b82f6');
+      ctx.fillStyle = peGrad;
+      ctx.fillRect(x + w - peW, y, peW, h);
+    }
+    // Numeric breakdown under the bar
+    ctx.font = 'bold 10px monospace';
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#fca5a5';
+    ctx.fillText('⚡ KE ' + Math.round(KE) + 'J', x, y + h + 12);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#93c5fd';
+    ctx.fillText('📈 PE ' + Math.round(PE) + 'J', x + w, y + h + 12);
+    ctx.textAlign = 'center';
+    ctx.fillStyle = 'rgba(254,243,199,0.75)';
+    ctx.fillText(Math.round(total) + 'J total', x + w / 2, y + h + 12);
+  }
+
   function drawHalfpipe(canvas, state) {
     if (!canvas) return;
     var ctx = canvas.getContext('2d');
@@ -569,6 +622,40 @@ window.StemLab = window.StemLab || {
     ctx.moveTo(rightLipX + radius * 0.45, lipY);
     ctx.lineTo(rightLipX + radius * 0.6, lipY);
     ctx.stroke();
+    // ── Ghost trajectory (best run) ───────────────────────────
+    // Faded arc + skater silhouette at the peak. Same parametric
+    // arc the live animator uses (h = hAir * 4 * p * (1-p)) so the
+    // ghost faithfully represents the previous best. Drawn before
+    // the active skater so the live one always renders on top.
+    if (state.ghost && state.ghost.hAir != null) {
+      var gh = state.ghost;
+      var ghX = rightLipX + 6;
+      var ghPxPerM = (floorY - lipY) / 4.0;
+      ctx.save();
+      ctx.strokeStyle = 'rgba(167,139,250,0.55)';
+      ctx.setLineDash([4, 4]);
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      var samples = 24;
+      for (var gi = 0; gi <= samples; gi++) {
+        var gp = gi / samples;
+        var gh_y = lipY - gh.hAir * 4 * gp * (1 - gp) * ghPxPerM;
+        if (gi === 0) ctx.moveTo(ghX, gh_y);
+        else ctx.lineTo(ghX, gh_y);
+      }
+      ctx.stroke();
+      ctx.setLineDash([]);
+      // Peak marker — small ghost emoji + height label
+      var peakY = lipY - gh.hAir * ghPxPerM;
+      ctx.fillStyle = 'rgba(167,139,250,0.75)';
+      ctx.font = 'bold 14px sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('👻', ghX + 8, peakY + 5);
+      ctx.fillStyle = 'rgba(196,181,253,0.85)';
+      ctx.font = 'bold 10px monospace';
+      ctx.fillText('best ' + (gh.hAir * M2FT).toFixed(1) + 'ft', ghX + 26, peakY + 4);
+      ctx.restore();
+    }
     // Skater — drawn at state.x, state.y with rotation state.angle
     var sx = state.skX != null ? state.skX : leftLipX;
     var sy = state.skY != null ? state.skY : lipY;
@@ -611,6 +698,13 @@ window.StemLab = window.StemLab || {
     }
     if (state.airHeightFt != null) {
       ctx.fillText('Air: ' + state.airHeightFt.toFixed(1) + ' ft', 10, 54);
+    }
+    // Live energy bar — top-right area, only during air phase
+    // when state.energyTotal is set. Skipped when toggle is off.
+    if (state.showEnergyBar !== false && state.energyTotal > 0) {
+      var ebW = 220, ebH = 14;
+      var ebX = W - ebW - 10, ebY = 14;
+      drawEnergyBar(ctx, ebX, ebY, ebW, ebH, state.energyKE || 0, state.energyPE || 0, state.energyTotal);
     }
   }
 
@@ -713,6 +807,40 @@ window.StemLab = window.StemLab || {
       ctx.stroke();
       ctx.setLineDash([]);
     }
+    // ── Ghost trajectory (best run) ───────────────────────────
+    // Faded purple parabola of the highest-scoring landed run on
+    // this mode. Uses the same projectile-motion formula as the
+    // sim. Drawn before the active skater.
+    if (state.ghost && state.ghost.vM != null) {
+      var gh = state.ghost;
+      var gx0 = rampX, gy0 = rampTopY;
+      var gPxPerM = pxPerFt * M2FT;
+      var gG = gh.gravity || G;
+      ctx.save();
+      ctx.strokeStyle = 'rgba(167,139,250,0.55)';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      var apexX = gx0, apexY = gy0;
+      var apexLow = gy0;
+      for (var gt = 0; gt <= gh.hangTime; gt += 0.04) {
+        var gxx = gx0 + (gh.vM * Math.cos(gh.theta) * gt) * gPxPerM;
+        var gyy = gy0 - (gh.vM * Math.sin(gh.theta) * gt - 0.5 * gG * gt * gt) * gPxPerM;
+        if (gt === 0) ctx.moveTo(gxx, gyy); else ctx.lineTo(gxx, gyy);
+        if (gyy < apexLow) { apexLow = gyy; apexX = gxx; apexY = gyy; }
+      }
+      ctx.stroke();
+      ctx.setLineDash([]);
+      // Apex marker
+      ctx.fillStyle = 'rgba(167,139,250,0.75)';
+      ctx.font = 'bold 14px sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('👻', apexX - 8, apexY - 10);
+      ctx.fillStyle = 'rgba(196,181,253,0.85)';
+      ctx.font = 'bold 10px monospace';
+      ctx.fillText('best ' + gh.rangeFt.toFixed(1) + 'ft', apexX + 12, apexY - 8);
+      ctx.restore();
+    }
     // Skater current position
     var sx = state.skX != null ? state.skX : rampX;
     var sy = state.skY != null ? state.skY : rampTopY;
@@ -746,6 +874,14 @@ window.StemLab = window.StemLab || {
       ctx.textAlign = 'right';
       ctx.fillText(state.label, W - 10, 18);
     }
+    // Live energy bar — bottom-center area for gap (top-right is
+    // taken by the wind indicator). Renders during flight phase
+    // when state.energyTotal is set.
+    if (state.showEnergyBar !== false && state.energyTotal > 0) {
+      var ebW2 = 220, ebH2 = 14;
+      var ebX2 = (W - ebW2) / 2, ebY2 = H - 30;
+      drawEnergyBar(ctx, ebX2, ebY2, ebW2, ebH2, state.energyKE || 0, state.energyPE || 0, state.energyTotal);
+    }
   }
 
   // ──────────────────────────────────────────────────────────────────
@@ -762,6 +898,14 @@ window.StemLab = window.StemLab || {
     var leftLipX = midX - lipHalfW;
     var rightLipX = midX + lipHalfW;
     var pxPerM = (floorY - lipY) / 4.0;  // fixed scale
+    // Energy budget pre-compute — total mechanical energy at the
+    // lip (after pumps) is the cap for KE+PE during the air phase.
+    // E_total = ½ m v_takeoff². Used by drawHalfpipe to render the
+    // segmented bar.
+    var totalMass = (sim.vehicle && sim.vehicle.mass ? sim.vehicle.mass : 4.0) + RIDER_KG;
+    var energyTotal = 0.5 * totalMass * sim.vTakeoff * sim.vTakeoff;
+    var energyG = sim.gravity || G;
+    var showEnergy = !opts || opts.showEnergyBar !== false;
     // Slow-mo support — opts.speedMul scales dt during the AIR phase
     // only, so the educational moment (parabolic arc + rotation
     // completion) plays at 0.5x or 0.25x. Pump/descent stay full
@@ -772,9 +916,10 @@ window.StemLab = window.StemLab || {
     var phase = 'descend'; // descend → pump → ascend → air → land
     var pumpsLeft = sim.pumps;
     var doneCb = opts && opts.onDone;
+    var ghost = opts && opts.ghost;
     var raf = 0;
     function step() {
-      var state = { gapFt: 0 };
+      var state = { gapFt: 0, ghost: ghost, showEnergyBar: showEnergy };
       if (phase === 'descend') {
         // Drop in: arc from left lip to floor center
         var p = Math.min(1, t / 0.45);
@@ -837,6 +982,14 @@ window.StemLab = window.StemLab || {
         state.label = sim.trick.emoji + ' ' + sim.trick.label;
         state.speedMph = sim.vTakeoff * MPS2MPH;
         state.airHeightFt = h * M2FT;
+        // Energy budget during air phase: PE = m·g·h, KE = E_total − PE.
+        // Mechanical energy is conserved between lip and lip (we
+        // ignore the surface efficiency loss because that already
+        // happened *before* takeoff — what's in the air is conserved).
+        var pe = totalMass * energyG * h;
+        state.energyKE = Math.max(0, energyTotal - pe);
+        state.energyPE = pe;
+        state.energyTotal = energyTotal;
       } else if (phase === 'land') {
         // hold final pose briefly, then end
         state.skX = rightLipX + 6;
@@ -861,7 +1014,16 @@ window.StemLab = window.StemLab || {
 
   function animateGapJump(canvas, sim, opts) {
     if (!canvas) return;
+    var ghost = opts && opts.ghost;
     var W = canvas.width, H = canvas.height;
+    // Energy budget: total = ½ m v_launch². For projectile motion,
+    // mechanical energy is conserved if we ignore the wind-induced
+    // horizontal acceleration term (≪ 5% energy contribution at
+    // typical winds), so KE+PE ≈ E_total throughout the flight.
+    var totalMassG = (sim.vehicle && sim.vehicle.mass ? sim.vehicle.mass : 4.0) + RIDER_KG;
+    var energyTotalG = 0.5 * totalMassG * sim.vM * sim.vM;
+    var energyGravity = sim.gravity || G;
+    var showEnergyG = !opts || opts.showEnergyBar !== false;
     var rampX = W * 0.18;
     var rampTopY = H * 0.55;
     var pxPerFt = (W * 0.6) / 25;
@@ -881,7 +1043,7 @@ window.StemLab = window.StemLab || {
     var doneCb = opts && opts.onDone;
     var raf = 0;
     function step() {
-      var state = { gapFt: sim.gapFt, speedMph: sim.v_mph, angleDeg: sim.thetaDeg, label: '', wind: sim.wind };
+      var state = { gapFt: sim.gapFt, speedMph: sim.v_mph, angleDeg: sim.thetaDeg, label: '', wind: sim.wind, ghost: ghost, showEnergyBar: showEnergyG };
       if (phase === 'roll') {
         // Roll up the ramp (roll phase isn't slowed — only flight is)
         var p = Math.min(1, t / 0.6);
@@ -903,6 +1065,13 @@ window.StemLab = window.StemLab || {
         state.skY = rampTopY - y * pxPerM;
         state.skRot = -sim.thetaDeg + (t / sim.hangTime) * sim.thetaDeg * 1.7;
         state.label = '🛹 ' + (state.skY > rampTopY - sim.peakHM * pxPerM * 0.95 ? 'rising' : 'falling');
+        // Energy budget during flight: y = current height above launch
+        // (in meters). PE = m·g·y, KE = E_total − PE. Conservation
+        // (modulo the small wind term) makes this clean to render.
+        var peG = totalMassG * energyGravity * Math.max(0, y);
+        state.energyKE = Math.max(0, energyTotalG - peG);
+        state.energyPE = peG;
+        state.energyTotal = energyTotalG;
       } else if (phase === 'land') {
         // hold
         state.skX = rampX + sim.rangeM * pxPerM;
@@ -985,6 +1154,10 @@ window.StemLab = window.StemLab || {
           var landed = ct.some(function(t) { return (u[t.id] || 0) >= 1; });
           return landed ? '✓' : 'land it';
         }
+      },
+      { id: 'sk_beat_best', label: 'Beat your own ghost 3 times', icon: '👻',
+        check: function(d) { return (d.ghostBeatCount || 0) >= 3; },
+        progress: function(d) { return (d.ghostBeatCount || 0) + '/3 ghosts beaten'; }
       }
     ],
     render: function(ctx) {
@@ -1057,6 +1230,20 @@ window.StemLab = window.StemLab || {
             // tool re-mount (no localStorage persistence) — that's
             // the design, not a bug.
             safetyAck: false,
+            // Best-run ghost — keyed by mode. Stores the sim object
+            // from the highest-scoring landed attempt so the
+            // animator can render it as a faded trajectory behind
+            // every subsequent run. Students see their peak as a
+            // target. Cleared on stat reset (those personal bests
+            // are gone, the ghost should follow).
+            bestSimGhost: { halfpipe: null, gap: null },
+            showGhost: true,
+            // Live energy bar — renders KE / PE conversion during the
+            // animation. Pure pedagogy: students see kinetic ↔
+            // potential energy trade in real time as the skater
+            // climbs, peaks, and falls. Default on so first-time
+            // students see the math; can toggle off for cleaner demos.
+            showEnergyBar: true,
             // Confirm-reset state — false normally, true while the
             // student/teacher is being asked to confirm a reset.
             resetConfirmOpen: false,
@@ -1350,6 +1537,8 @@ window.StemLab = window.StemLab || {
           predictionInput: '',
           streak: { current: 0, longest: 0, lastTier: null },
           consecutiveBails: 0, nudgeDismissedAt: -1,
+          bestSimGhost: { halfpipe: null, gap: null },
+          ghostBeatCount: 0,
           lastResult: null, lastSim: null, activeScenarioId: null,
           resetConfirmOpen: false,
           customScenarios: preserved,
@@ -1436,6 +1625,78 @@ window.StemLab = window.StemLab || {
           .replace(/&/g, '&amp;').replace(/</g, '&lt;')
           .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
           .replace(/'/g, '&#39;');
+      }
+
+      // ── printGearChecklist: classroom take-home gear sheet ──────
+      // Opens a popup window with a print-formatted checklist of all
+      // 6 protective-gear items, each with a "why it matters"
+      // one-liner + the citation stat. Bottom: signature line for
+      // student + parent/guardian commitment. Mirrors the
+      // printActivitySheet pattern (same CSS approach + print button
+      // hidden on @media print).
+      function printGearChecklist() {
+        var win = window.open('', '_blank', 'width=720,height=900');
+        if (!win) {
+          if (addToast) addToast('Pop-ups blocked — allow them to print the gear checklist.', 'info');
+          skAnnounce('Pop-up blocked. Allow pop-ups to open the gear checklist.');
+          return;
+        }
+        var rows = GEAR.map(function(g) {
+          return '' +
+            '<div class="row">' +
+              '<input type="checkbox" id="g_' + g.id + '"><label for="g_' + g.id + '">' +
+                '<span class="ge">' + g.icon + '</span>' +
+                '<b>' + escapeHtml(g.label) + '</b>' +
+                '<span class="why">' + escapeHtml(g.does) + '</span>' +
+                '<span class="stat">' + escapeHtml(g.stat) + '</span>' +
+              '</label>' +
+            '</div>';
+        }).join('');
+        var body = '' +
+          '<!doctype html><html lang="en"><head><meta charset="utf-8">' +
+          '<title>SkateLab — Real-World Gear Checklist</title>' +
+          '<style>' +
+            '*{box-sizing:border-box}' +
+            'body{font-family:Georgia,serif;color:#1f2937;margin:0;padding:32px;background:#fff;line-height:1.5}' +
+            'h1{font-size:22px;margin:0 0 4px;letter-spacing:0.02em}' +
+            'h2{font-size:13px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#15803d;margin:18px 0 6px}' +
+            '.icon{font-size:36px;display:inline-block;margin-right:6px;vertical-align:middle}' +
+            '.meta{font-size:12px;color:#6b7280;margin:0 0 14px}' +
+            '.intro{background:#dcfce7;border:1px solid #86efac;border-radius:8px;padding:10px 14px;font-size:13px;margin:0 0 14px;color:#14532d}' +
+            '.row{margin:10px 0;padding:10px 12px;border:1px solid #cbd5e1;border-radius:8px;background:#f8fafc;page-break-inside:avoid}' +
+            '.row label{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px;cursor:pointer;line-height:1.4}' +
+            '.row input[type=checkbox]{transform:scale(1.4);margin-right:8px}' +
+            '.row .ge{font-size:22px;display:inline-block;vertical-align:middle;line-height:1;}' +
+            '.row b{font-size:14px;color:#0f172a;min-width:120px;display:inline-block}' +
+            '.row .why{font-size:12px;color:#374151;flex:1 1 280px}' +
+            '.row .stat{display:block;width:100%;font-size:11px;color:#15803d;font-family:Menlo,Consolas,monospace;margin-top:4px}' +
+            '.commit{margin-top:24px;padding:16px;border:2px dashed #15803d;border-radius:10px;background:#f0fdf4}' +
+            '.commit p{margin:0 0 12px;font-size:14px;color:#0f172a}' +
+            '.sig{display:flex;gap:20px;margin-top:14px;font-size:12px;color:#374151}' +
+            '.sig div{flex:1;border-bottom:1px solid #6b7280;padding-bottom:2px;min-height:30px}' +
+            '.sig small{display:block;color:#6b7280;font-size:10px;margin-top:2px}' +
+            '.foot{margin-top:28px;padding-top:12px;border-top:1px solid #e5e7eb;font-size:11px;color:#9ca3af;display:flex;justify-content:space-between}' +
+            '.print-btn{background:#15803d;color:#fff;border:none;border-radius:6px;padding:8px 16px;font-size:14px;font-weight:700;cursor:pointer;margin:0 0 8px}' +
+            '@media print{.print-btn{display:none}body{padding:24px}}' +
+          '</style></head><body>' +
+          '<button class="print-btn" onclick="window.print()">🖨️ Print</button>' +
+          '<h1><span class="icon">🛡️</span>SkateLab — Real-World Gear Checklist</h1>' +
+          '<p class="meta">Name: ____________________________&nbsp;&nbsp;&nbsp;&nbsp;Date: __________________</p>' +
+          '<div class="intro"><b>Why this matters:</b> Skateboarding is the leading cause of pediatric extremity fractures. Every piece of gear below works because of physics you can derive yourself. Tick off the gear you own, circle what you still need.</div>' +
+          '<h2>My Gear</h2>' +
+          rows +
+          '<div class="commit">' +
+            '<p><b>I commit to wearing my gear when I skate.</b> The math in the simulator is the same in real life. The consequences aren\'t.</p>' +
+            '<div class="sig">' +
+              '<div>&nbsp;<small>Student signature + date</small></div>' +
+              '<div>&nbsp;<small>Parent / guardian signature + date</small></div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="foot"><span>SkateLab — STEM Lab · AlloFlow</span><span>Sources: CDC, AAP, AAPD, SafeKids</span></div>' +
+          '</body></html>';
+        win.document.write(body);
+        win.document.close();
+        skAnnounce('Gear checklist opened. Use the print button or browser shortcut to send it to a printer.');
       }
 
       // ── askCoach: persona-flavored Gemini feedback ───────────────
@@ -1709,6 +1970,8 @@ window.StemLab = window.StemLab || {
         sfxTakeoff();
         if (cancelAnimRef.current) cancelAnimRef.current();
         cancelAnimRef.current = animateHalfpipe(canvasRef.current, sim, {
+          ghost: (d.showGhost !== false) && d.bestSimGhost ? d.bestSimGhost.halfpipe : null,
+          showEnergyBar: d.showEnergyBar !== false,
           onDone: function() {
             var bumps = {};
             bumps.running = false;
@@ -1741,6 +2004,27 @@ window.StemLab = window.StemLab || {
               bumps.bestHalfpipeScore = Math.max(d.bestHalfpipeScore || 0, sk.totalScore);
               bumps.bestAirFt = Math.max(d.bestAirFt || 0, +(sim.hAir * M2FT).toFixed(2));
               if (sim.vehicle.id === 'bmx') bumps.bmxLanded = true;
+              // Best-run ghost — promote this sim if it beats the
+              // current halfpipe ghost on bonused score. Ties don't
+              // promote (a slight tie-breaker bias for the older run
+              // keeps the ghost stable across edge cases).
+              var prevGhost = (d.bestSimGhost && d.bestSimGhost.halfpipe) || null;
+              // Stamp the *previous* ghost onto the result so the
+              // delta row in the result panel compares to the prior
+              // best, not the just-bumped one.
+              if (prevGhost) {
+                bumps.lastResult.prevGhostHFt = prevGhost.hAir * M2FT;
+                bumps.lastResult.prevGhostScore = prevGhost.scoreBonused || prevGhost.score || 0;
+              }
+              if (!prevGhost || sk.totalScore > (prevGhost.scoreBonused || prevGhost.score || 0)) {
+                bumps.lastResult.newBest = true;
+                bumps.bestSimGhost = Object.assign({}, d.bestSimGhost || {}, {
+                  halfpipe: { mode: 'halfpipe', hAir: sim.hAir, airTime: sim.airTime, score: sim.score, scoreBonused: sk.totalScore, trick: { id: sim.trick.id, label: sim.trick.label, emoji: sim.trick.emoji, rotation: sim.trick.rotation, axis: sim.trick.axis }, vehicle: { id: sim.vehicle.id, label: sim.vehicle.label } }
+                });
+                // Only bump the beat-counter when there *was* a prior
+                // ghost — first ghost creation isn't beating anything.
+                if (prevGhost) bumps.ghostBeatCount = (d.ghostBeatCount || 0) + 1;
+              }
               if (awardXP) awardXP(sk.totalScore, 'SkateLab — ' + sim.trick.label + (sk.tier ? ' ' + sk.tier.icon : ''), 'skatelab');
               if (sk.gained) sfxStreakTier(sk.tier.id);
               if (addToast) {
@@ -1776,6 +2060,8 @@ window.StemLab = window.StemLab || {
         sfxTakeoff();
         if (cancelAnimRef.current) cancelAnimRef.current();
         cancelAnimRef.current = animateGapJump(canvasRef.current, sim, {
+          ghost: (d.showGhost !== false) && d.bestSimGhost ? d.bestSimGhost.gap : null,
+          showEnergyBar: d.showEnergyBar !== false,
           onDone: function() {
             var bumps = { running: false };
             bumps.lastResult = {
@@ -1798,6 +2084,19 @@ window.StemLab = window.StemLab || {
               bumps.landings = (d.landings || 0) + 1;
               bumps.longestGap = Math.max(d.longestGap || 0, sim.gapFt);
               bumps.bestGapScore = Math.max(d.bestGapScore || 0, skG.totalScore);
+              // Best-run ghost for gap mode.
+              var prevGhostG = (d.bestSimGhost && d.bestSimGhost.gap) || null;
+              if (prevGhostG) {
+                bumps.lastResult.prevGhostRangeFt = prevGhostG.rangeFt;
+                bumps.lastResult.prevGhostScore = prevGhostG.scoreBonused || prevGhostG.score || 0;
+              }
+              if (!prevGhostG || skG.totalScore > (prevGhostG.scoreBonused || prevGhostG.score || 0)) {
+                bumps.lastResult.newBest = true;
+                bumps.bestSimGhost = Object.assign({}, d.bestSimGhost || {}, {
+                  gap: { mode: 'gap', vM: sim.vM, theta: sim.theta, hangTime: sim.hangTime, peakHFt: sim.peakHFt, rangeFt: sim.rangeFt, gapFt: sim.gapFt, score: sim.score, scoreBonused: skG.totalScore, gravity: sim.gravity }
+                });
+                if (prevGhostG) bumps.ghostBeatCount = (d.ghostBeatCount || 0) + 1;
+              }
               if (awardXP) awardXP(skG.totalScore, 'SkateLab — ' + sim.gapFt + 'ft gap' + (skG.tier ? ' ' + skG.tier.icon : ''), 'skatelab');
               if (skG.gained) sfxStreakTier(skG.tier.id);
               if (addToast) {
@@ -1826,8 +2125,9 @@ window.StemLab = window.StemLab || {
       // Re-render canvas when state changes (and not animating)
       React.useEffect(function() {
         if (d.running) return;
+        var idleGhost = (d.showGhost !== false) && d.bestSimGhost ? d.bestSimGhost[d.mode] : null;
         if (d.mode === 'halfpipe') {
-          drawHalfpipe(canvasRef.current, { skX: null, skY: null, skRot: 0, speedMph: 0, airHeightFt: 0, label: 'Ready' });
+          drawHalfpipe(canvasRef.current, { skX: null, skY: null, skRot: 0, speedMph: 0, airHeightFt: 0, label: 'Ready', ghost: idleGhost });
         } else {
           // Pre-compute predicted trajectory for visual feedback —
           // includes current gravity + vehicle so the parabola
@@ -1841,6 +2141,7 @@ window.StemLab = window.StemLab || {
             speedMph: d.speedMph, angleDeg: d.angleDeg, gapFt: d.gapFt,
             preview: true, previewV: sim.vM, previewTheta: sim.theta, previewHang: sim.hangTime,
             wind: sim.wind,
+            ghost: idleGhost,
             label: 'Ready'
           });
         }
@@ -2295,7 +2596,53 @@ window.StemLab = window.StemLab || {
               border: '1px solid ' + (d.showFormula ? 'rgba(56,189,248,0.50)' : 'rgba(254,243,199,0.20)'),
               borderRadius: 999, cursor: 'pointer', minHeight: 26
             }
-          }, '📐 Formula: ' + (d.showFormula ? 'on' : 'off'))
+          }, '📐 Formula: ' + (d.showFormula ? 'on' : 'off')),
+          // Ghost toggle — flip the faded best-run trajectory on/off
+          // in the canvas. Default on. Only meaningful once a best
+          // run exists; chip stays clickable but visually quieter
+          // when there's no ghost yet for the current mode.
+          (function() {
+            var hasGhost = !!(d.bestSimGhost && d.bestSimGhost[d.mode]);
+            var on = d.showGhost !== false;
+            return h('button', {
+              onClick: function() {
+                upd('showGhost', !on);
+                skAnnounce(on ? 'Ghost trajectory hidden.' : 'Ghost trajectory shown.');
+              },
+              'aria-pressed': on,
+              'aria-label': on ? 'Hide best-run ghost' : 'Show best-run ghost',
+              'data-sk-focusable': 'true',
+              title: hasGhost ? 'Toggle the faded best-run trajectory in the canvas' : 'Land an attempt to set your first ghost',
+              style: {
+                padding: '4px 10px', fontSize: 10, fontWeight: 700,
+                background: on && hasGhost ? 'rgba(168,85,247,0.20)' : 'rgba(254,243,199,0.06)',
+                color: on && hasGhost ? '#c4b5fd' : '#94a3b8',
+                border: '1px solid ' + (on && hasGhost ? 'rgba(168,85,247,0.55)' : 'rgba(254,243,199,0.20)'),
+                borderRadius: 999, cursor: 'pointer', minHeight: 26,
+                opacity: hasGhost ? 1 : 0.65
+              }
+            }, '👻 Ghost: ' + (on ? 'on' : 'off'));
+          })(),
+          // Energy bar toggle — shows live KE / PE during animation.
+          // Default on. Independent of formula panel since this is
+          // mid-attempt visualization, not pre-attempt math.
+          h('button', {
+            onClick: function() {
+              upd('showEnergyBar', !d.showEnergyBar);
+              skAnnounce(d.showEnergyBar ? 'Energy bar hidden.' : 'Energy bar shown.');
+            },
+            'aria-pressed': !!d.showEnergyBar,
+            'aria-label': d.showEnergyBar ? 'Hide live energy bar' : 'Show live energy bar',
+            'data-sk-focusable': 'true',
+            title: 'Toggle the live KE / PE energy bar that updates during the animation',
+            style: {
+              padding: '4px 10px', fontSize: 10, fontWeight: 700,
+              background: d.showEnergyBar ? 'rgba(248,113,113,0.18)' : 'rgba(254,243,199,0.06)',
+              color: d.showEnergyBar ? '#fda4af' : '#94a3b8',
+              border: '1px solid ' + (d.showEnergyBar ? 'rgba(248,113,113,0.50)' : 'rgba(254,243,199,0.20)'),
+              borderRadius: 999, cursor: 'pointer', minHeight: 26
+            }
+          }, '⚡ Energy: ' + (d.showEnergyBar ? 'on' : 'off'))
         ),
         // ── Safety expansion ─────────────────────────────────────
         // Renders ONLY while safetyAck is false (initial state each
@@ -3031,6 +3378,23 @@ window.StemLab = window.StemLab || {
                   ' · Off ', h('b', null, d.lastResult.errPct.toFixed(1) + '%'),
                   d.lastResult.errPct <= 10 ? ' 🎯' : ''
                 ),
+                // Ghost delta row — only after at least one prior best
+                d.lastResult.prevGhostHFt != null && (function() {
+                  var delta = d.lastResult.hFt - d.lastResult.prevGhostHFt;
+                  var beat = delta > 0;
+                  return h('div', {
+                    style: {
+                      marginTop: 6, padding: '6px 8px', borderRadius: 6,
+                      background: beat ? 'rgba(34,197,94,0.18)' : 'rgba(168,85,247,0.18)',
+                      border: '1px solid ' + (beat ? '#22c55e' : 'rgba(168,85,247,0.55)'),
+                      color: beat ? '#86efac' : '#d8b4fe'
+                    }
+                  },
+                    '👻 vs best: prev ', h('b', null, d.lastResult.prevGhostHFt.toFixed(2) + ' ft'),
+                    ' · Δ ', h('b', null, (delta >= 0 ? '+' : '') + delta.toFixed(2) + ' ft'),
+                    d.lastResult.newBest ? ' 🏆 NEW BEST!' : ''
+                  );
+                })(),
                 d.lastResult.landed && h('div', { style: { color: '#86efac', marginTop: 4 } }, '🏆 Score: ' + d.lastResult.score)
               )
             : h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, fontFamily: 'monospace' } },
@@ -3053,6 +3417,23 @@ window.StemLab = window.StemLab || {
                   ' · Off ', h('b', null, d.lastResult.errPct.toFixed(1) + '%'),
                   d.lastResult.errPct <= 10 ? ' 🎯' : ''
                 ),
+                // Ghost delta row for gap — same shape as halfpipe.
+                d.lastResult.prevGhostRangeFt != null && (function() {
+                  var delta = d.lastResult.rangeFt - d.lastResult.prevGhostRangeFt;
+                  var beat = delta > 0;
+                  return h('div', {
+                    style: {
+                      marginTop: 6, padding: '6px 8px', borderRadius: 6,
+                      background: beat ? 'rgba(34,197,94,0.18)' : 'rgba(168,85,247,0.18)',
+                      border: '1px solid ' + (beat ? '#22c55e' : 'rgba(168,85,247,0.55)'),
+                      color: beat ? '#86efac' : '#d8b4fe'
+                    }
+                  },
+                    '👻 vs best: prev ', h('b', null, d.lastResult.prevGhostRangeFt.toFixed(2) + ' ft'),
+                    ' · Δ ', h('b', null, (delta >= 0 ? '+' : '') + delta.toFixed(2) + ' ft'),
+                    d.lastResult.newBest ? ' 🏆 NEW BEST!' : ''
+                  );
+                })(),
                 d.lastResult.landed && h('div', { style: { color: '#86efac', marginTop: 4 } }, '🏆 Score: ' + d.lastResult.score)
               )
         ),
